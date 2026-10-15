@@ -50,3 +50,7 @@ references/**/*.js
 references/**/*.pdf
 references/**/*.json
 !references/**/INDEX.json
+references/**/*.zip
+references/**/*.mov
+references/**/*.m4a
+references/**/*.svg

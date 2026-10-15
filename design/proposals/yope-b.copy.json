@@ -1,0 +1,292 @@
+{
+  "strings": {
+    "chat.composer.placeholder": {
+      "text": "start typing...",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "chat.composer",
+      "evidence": "references/auto/yope/store/yope-store-05.png (App Store screenshot 5, listing 1.229.0), composer field",
+      "level": "SOURCED",
+      "notes": "Group chat placeholder. 1:1 space uses 'message...' (chat.composer.placeholderShort)."
+    },
+    "chat.composer.placeholderShort": {
+      "text": "message...",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "chat.composer",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t48.50-1on1-thread.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847); references/owner/yope-1on1-feed.jpg",
+      "level": "SOURCED"
+    },
+    "chat.composer.placeholderTo": {
+      "text": "message to {name}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "chat.composer",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847) ('message to Oblong'); references/owner/yope-01-find-friends-profile.webp ('message to Sabrina....')",
+      "pattern": "noun swap: the person's name -> {name}",
+      "level": "SOURCED",
+      "notes": "Reply field under a photo in the viewer."
+    },
+    "chat.thread.reply.photoLabel": {
+      "text": "pic",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t49.50-reply-to-photo.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847) (quote block: 'Gabriel' / 'pic')",
+      "level": "SOURCED",
+      "notes": "Shown under the quoted poster's name ({name}) when a reply references a photo."
+    },
+    "chat.thread.reply.quotedName": {
+      "text": "{name}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t49.50-reply-to-photo.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847) ('Gabriel', bold)",
+      "pattern": "noun swap: poster's first name -> {name}",
+      "level": "SOURCED"
+    },
+    "chat.thread.photo.time": {
+      "text": "{h}:{mm} {AM/PM}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/store/yope-store-05.png (App Store screenshot 5, listing 1.229.0) ('10:00 PM'); references/auto/yope/frames/b-yopeapp-7591560669967682847-t49.50-reply-to-photo.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847) ('1:29 PM', '8:47 PM')",
+      "pattern": "time format observed: no leading zero on hour, uppercase AM/PM, space before it",
+      "level": "SOURCED",
+      "notes": "Use the platform's localized short time format; the observed en-US rendering matches it."
+    },
+    "chat.thread.monthLabel": {
+      "text": "{month} {yyyy}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t48.00-month-separator.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847) ('december 2025')",
+      "pattern": "lowercase full month name + year",
+      "level": "SOURCED",
+      "notes": "Drawn as a big white overlay on the first photo of the month (1:1 space)."
+    },
+    "chat.thread.weekLabel": {
+      "text": "{d1}-{d2} {mon}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t49.00-week-separator.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847) ('21-27 dec')",
+      "pattern": "same-month week range: day-day + lowercase 3-letter month, hyphen without spaces",
+      "level": "SOURCED",
+      "notes": "Cross-month form: see week.recap.title."
+    },
+    "chat.thread.open": {
+      "text": "chat",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.83-group-chat-pill.png; press kit splitview.gif",
+      "level": "SOURCED",
+      "notes": "Pill label that opens the chat from the group's photo cards."
+    },
+    "chat.voice.duration": {
+      "text": "{mm}:{ss}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "chat.voice",
+      "evidence": "references/auto/yope/store/yope-store-05.png (App Store screenshot 5, listing 1.229.0) ('00:38')",
+      "pattern": "two-digit minutes and seconds with leading zeros",
+      "level": "SOURCED"
+    },
+    "photo.viewer.title": {
+      "text": "you sent to {name}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847) ('you sent to Oblong'; 'you' and name bold white, 'sent to' gray)",
+      "pattern": "noun swap: recipient (person or group) -> {name}",
+      "level": "SOURCED",
+      "notes": "For a photo someone else posted the form is not observed (Not found)."
+    },
+    "photo.viewer.date": {
+      "text": "{Mon} {d} {yyyy}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847) ('Oct 30 2025')",
+      "pattern": "capitalized 3-letter month, day, year, no comma",
+      "level": "SOURCED",
+      "notes": "Differs in casing from the lowercase range labels; recorded as observed."
+    },
+    "walls.browse.title": {
+      "text": "me & friends",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "walls.browse",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t116.00-me-and-friends.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847)",
+      "level": "SOURCED",
+      "notes": "'friends' may be swapped for the group's member noun when merged (adapted)."
+    },
+    "walls.browse.friendsWall": {
+      "text": "friends wall",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "walls.browse",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t118.00-friends-wall.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847) (label top-left of the wall; low resolution but legible)",
+      "level": "SOURCED"
+    },
+    "walls.mine.picsHeader": {
+      "text": "pics",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "walls.mine",
+      "evidence": "references/auto/yope/frames/b-presskit-profile.png (section header 'pics' + chevron circle)",
+      "level": "SOURCED"
+    },
+    "walls.member.postedToWall": {
+      "text": "{name} sent a pic to the wall",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "walls.member",
+      "evidence": "references/auto/yope/frames/b-yrrah-7673901254787009810-t11.30-sent-to-wall.png ('yrrah sent a pic to the wall · 9:00 PM', https://www.tiktok.com/@yrrah.yope/video/7673901254787009810)",
+      "pattern": "noun swap: poster's name -> {name}",
+      "level": "SOURCED",
+      "notes": "Observed as a Live Activity header (Aug 2026); records Yope's vocabulary 'the wall' for a group's shared photos. Push/Live Activity copy belongs to other surfaces."
+    },
+    "walls.mine.collectCaption": {
+      "text": "collect best memories in your profile",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "walls.mine",
+      "evidence": "references/auto/yope/frames/b-play-05.png (Google Play screenshot caption)",
+      "level": "SOURCED",
+      "notes": "Marketing caption, not in-app UI."
+    },
+    "week.recap.title": {
+      "text": "{d1} {mon1}-{d2} {mon2}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "references/owner/yope-week-recap.jpg ('18 aug-24 aug')",
+      "pattern": "lowercase day + 3-letter month, hyphen without spaces",
+      "level": "CAPTURED"
+    },
+    "week.recap.label": {
+      "text": "{D1} {MON1}-{D2} {MON2}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "references/owner/yope-week-recap.jpg ('18 AUG-24 AUG' on the recap card)",
+      "pattern": "same as week.recap.title, uppercase",
+      "level": "CAPTURED"
+    },
+    "week.recap.segment.recap": {
+      "text": "recap",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "references/owner/yope-week-recap.jpg (segmented capsule, selected)",
+      "level": "CAPTURED"
+    },
+    "week.recap.segment.pics": {
+      "text": "pics",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "references/owner/yope-week-recap.jpg (segmented capsule)",
+      "level": "CAPTURED"
+    },
+    "week.recap.open": {
+      "text": "view recap",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png (https://www.tiktok.com/@alexaa.yope/video/7652512140875566349) (pill at the bottom of a past day's photo cards, June 2026)",
+      "level": "SOURCED"
+    },
+    "week.recap.dayTitle": {
+      "text": "{d} {Month}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png (https://www.tiktok.com/@alexaa.yope/video/7652512140875566349) ('26 May')",
+      "pattern": "day + capitalized month name",
+      "level": "SOURCED",
+      "notes": "Day view title; casing differs from range labels."
+    },
+    "week.recap.today": {
+      "text": "today",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "references/auto/yope/store/yope-store-04.png (App Store screenshot 4) (white pill on the recap scrapbook)",
+      "level": "SOURCED"
+    },
+    "week.recap.todaysRecap": {
+      "text": "today's recap",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "https://yope.app/ (homepage demo label)",
+      "level": "SOURCED",
+      "notes": "Website demo, not confirmed in-app."
+    },
+    "week.edit.edit": {
+      "text": "edit",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "references/auto/yope/store/listing.html (App Store version history) v1.214.0 (2026-04-06): 'recaps are now walls / edit them, remix them, make your own memory albums / save it or share it with your friends'",
+      "level": "SOURCED",
+      "notes": "Verb from release notes; the in-app button label is not observed."
+    },
+    "week.edit.remix": {
+      "text": "remix",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "references/auto/yope/store/listing.html (App Store version history) v1.214.0 (same note)",
+      "level": "SOURCED",
+      "notes": "Verb from release notes; in-app label not observed (the wall editor shows a shuffle glyph)."
+    },
+    "week.edit.save": {
+      "text": "save",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "references/auto/yope/store/listing.html (App Store version history) v1.214.0 ('save it or share it with your friends')",
+      "level": "SOURCED",
+      "notes": "Verb from release notes."
+    },
+    "albums.list.noun": {
+      "text": "memory albums",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "albums.list",
+      "evidence": "references/auto/yope/store/listing.html (App Store version history) v1.214.0 ('make your own memory albums')",
+      "level": "SOURCED",
+      "notes": "Fragment of a release note; no album UI string was found."
+    },
+    "collage.share.button": {
+      "text": "share",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "collage.share",
+      "evidence": "references/auto/yope/store/yope-store-04.png (App Store screenshot 4) (frosted pill); references/auto/yope/frames/b-yopeapp-7591560669967682847-t66.00-share-with-friends.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847) (Instagram pill label)",
+      "level": "SOURCED"
+    },
+    "collage.share.sheetTitle": {
+      "text": "share with friends",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "collage.share",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t66.00-share-with-friends.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847)",
+      "level": "SOURCED",
+      "notes": "'friends' may be swapped for the group's member noun (adapted) at merge."
+    },
+    "chat.voice.announce": {
+      "text": "add voice to your memories or send voice messages in chat to stay even closer with your friends.",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "chat.voice",
+      "evidence": "references/auto/yope/store/listing.html (App Store version history) v1.210.0-1.212.1 (2026-02-27..03-25)",
+      "level": "SOURCED",
+      "notes": "Release-note sentence; voice-pattern example (lowercase sentence start, period at end of full sentences). Not an in-app string."
+    }
+  }
+}
