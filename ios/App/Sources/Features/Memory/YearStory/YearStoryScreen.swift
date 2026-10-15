@@ -256,23 +256,23 @@ struct YearStorySummaryView: View {
         VStack {
             if !cards.isEmpty {
                 VStack(spacing: 0) {
-                TabView(selection: $model.summaryPage) {
-                    ForEach(Array(cards.enumerated()), id: \.element.id) { page, card in
-                        preview(card)
-                            .frame(width: previewWidth, height: previewHeight)
-                            // The pager takes its own taps (no navigation from a tap on a share card).
-                            .onTapGesture {}
-                            .tag(page)
+                    TabView(selection: $model.summaryPage) {
+                        ForEach(Array(cards.enumerated()), id: \.element.id) { page, card in
+                            preview(card)
+                                .frame(width: previewWidth, height: previewHeight)
+                                // The pager takes its own taps (no navigation from a tap on a share card).
+                                .onTapGesture {}
+                                .tag(page)
+                        }
                     }
-                }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .frame(width: size.width, height: previewHeight)
-                .accessibilityIdentifier("year.story.summary.pager")
-                // Dot centres `centerBelowCarousel` under the card and `centerAboveShare` over the pill.
-                YearStorySummaryDots(count: cards.count, selected: min(max(model.summaryPage, 0), cards.count - 1))
-                    .padding(.top, dots.centerBelowCarousel - dots.diameter / 2)
-                    .padding(.bottom, dots.centerAboveShare - dots.diameter / 2)
-                sharePill(cards)
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .frame(width: size.width, height: previewHeight)
+                    .accessibilityIdentifier("year.story.summary.pager")
+                    // Dot centres `centerBelowCarousel` under the card and `centerAboveShare` over the pill.
+                    YearStorySummaryDots(count: cards.count, selected: min(max(model.summaryPage, 0), cards.count - 1))
+                        .padding(.top, dots.centerBelowCarousel - dots.diameter / 2)
+                        .padding(.bottom, dots.centerAboveShare - dots.diameter / 2)
+                    sharePill(cards)
                 }
             }
             Button {

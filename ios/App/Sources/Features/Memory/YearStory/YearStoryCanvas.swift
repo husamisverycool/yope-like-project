@@ -100,11 +100,13 @@ struct YearStoryCardContent: View {
     }
 }
 
-/// Headline, then subline, centred. Reveal (`duration.year.story.reveal.*`,
-/// `dimension.year.story.reveal.*`): the headline moves up as the subline rises in. Its curve
-/// (`MemoryBlocked.yearStoryRevealEasing`) is BLOCKED, so every user gets the Reduce Motion
-/// substitute (`layout.global.reduceMotion`): no movement; the subline cross-fades in
-/// `sublineDelay` after the card appears, over `subline`.
+/// Headline, then subline, centred. Reveal on a card with a subline (year.story.md § Motion): the
+/// headline moves up `dimension.year.story.reveal.headlineShift` over
+/// `duration.year.story.reveal.headline` on `easing.year.story.reveal`; `duration.year.story.reveal.sublineDelay`
+/// after the card appears the subline rises `dimension.year.story.reveal.sublineOffset` and fades in over
+/// `duration.year.story.reveal.subline` on `easing.year.story.reveal.subline`. Reduce Motion
+/// (`layout.global.reduceMotion`): nothing moves; the subline cross-fades in with the same delay,
+/// duration and curve.
 struct YearStoryTextBlock: View {
     let headline: String
     let subline: String?
@@ -113,9 +115,9 @@ struct YearStoryTextBlock: View {
     @State private var sublineVisible = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// Movement only once the curve is sourced, and never under Reduce Motion.
+    /// Movement, except under Reduce Motion (and in snapshots, which show the settled card).
     private var moves: Bool {
-        MemoryBlocked.yearStoryRevealEasing != nil && !reduceMotion && !revealed
+        !reduceMotion && !revealed
     }
 
     var body: some View {
@@ -142,23 +144,23 @@ struct YearStoryTextBlock: View {
 
     private func reveal() {
         guard !revealed, subline != nil else { return }
-        let easing = MemoryBlocked.yearStoryRevealEasing ?? .linear // provenance-ok: cross-fade substitute while easing.year.story.reveal is BLOCKED
-        withAnimation(easing.animation(duration: Tokens.Durations.yearStoryRevealHeadline)) {
+        withAnimation(Tokens.Easings.yearStoryReveal.animation(duration: Tokens.Durations.yearStoryRevealHeadline)) {
             headlineSettled = true
         }
-        withAnimation(easing.animation(duration: Tokens.Durations.yearStoryRevealSubline).delay(Tokens.Durations.yearStoryRevealSublineDelay)) {
+        let sublineAnimation = Tokens.Easings.yearStoryRevealSubline.animation(duration: Tokens.Durations.yearStoryRevealSubline)
+        withAnimation(sublineAnimation.delay(Tokens.Durations.yearStoryRevealSublineDelay)) {
             sublineVisible = true
         }
     }
 }
 
-/// Segmented progress (`layout.year.story.progress`): one segment per card; completed and current
-/// segments filled, upcoming ones white at `opacity.year.story.progress.track`. While
-/// `duration.year.story.card` is BLOCKED the current segment is shown full (no timer).
+/// Segmented progress (`layout.year.story.progress`): one segment per card; completed segments
+/// filled, the current one filling over `duration.year.story.card` on `easing.year.story.progress.fill`,
+/// upcoming ones white at `opacity.year.story.progress.track`.
 struct YearStoryProgressBar: View {
     let count: Int
     let index: Int
-    /// Filled fraction of the current segment (1 while `duration.year.story.card` is BLOCKED).
+    /// Elapsed share (0…1) of the current card's time (`YearStoryModel.currentFraction(at:)`).
     var currentFraction: Double = 1
 
     var body: some View {
@@ -180,7 +182,10 @@ struct YearStoryProgressBar: View {
 
     private func fill(_ position: Int) -> CGFloat {
         if position < index { return 1 }
-        if position == index { return CGFloat(min(max(currentFraction, 0), 1)) }
+        if position == index {
+            let elapsed = min(max(currentFraction, 0), 1)
+            return CGFloat(Tokens.Easings.yearStoryProgressFill.unitCurve.value(at: elapsed))
+        }
         return 0
     }
 }
