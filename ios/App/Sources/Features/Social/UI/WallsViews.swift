@@ -279,7 +279,7 @@ struct WallsBrowseScreen: View {
     private var content: some View {
         switch model.phase {
         case .loading:
-            ProgressView().frame(maxWidth: .infinity)
+            if model.showsLoading { ProgressView().frame(maxWidth: .infinity) }
         case .failed:
             EmptyStateView(
                 title: Copy.wallsMineErrorTitle,

@@ -94,6 +94,25 @@ class SocialViewModelTest {
         assertEquals(listOf("m-1", "m-2", "m-3", "m-4", "m-5", "m-6", "m-7"), fresh.rows.map { it.id })
     }
 
+    @Test fun chatNeverFlashesLoadingOverCachedContent() {
+        val data = FakeSocialData().apply { seedChat() }
+        data.chatCache[GROUP] = data.messages.sortedByDescending { it.createdAt }.take(3)
+        data.readGate = CompletableDeferred()
+        val vm = ChatViewModel(data, GROUP)
+        val states = collect(vm.state)
+        data.readGate!!.complete(Unit)
+        assertTrue(states.isNotEmpty())
+        assertTrue("never the loading HUD", states.all { it.phase == ChatState.Phase.Ready })
+        assertTrue("never an empty list", states.all { it.rows.isNotEmpty() })
+        assertEquals(7, vm.state.value.rows.size)
+    }
+
+    @Test fun viewerShowsTheOpenedPhotoBeforeItsContext() {
+        val data = FakeSocialData().apply { seedAlbums() }
+        val vm = PhotoViewerViewModel(data, GROUP, "w-3", PhotoContext.Album, "a-2", null)
+        assertEquals(app.feature.social.viewer.ViewerState.Phase.Ready, vm.state.value.phase)
+    }
+
     @Test fun chatOfflineWithNothingCachedShowsTheOfflineState() {
         val data = FakeSocialData().apply { seedChat(); offline = true }
         assertEquals(ChatState.Phase.OfflineEmpty, ChatViewModel(data, GROUP).state.value.phase)

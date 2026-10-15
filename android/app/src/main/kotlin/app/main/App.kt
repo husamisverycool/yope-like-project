@@ -9,6 +9,8 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.graphics.toArgb
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import app.billing.Billing
 import app.data.DataGraph
 import app.designsystem.generated.Tokens
@@ -63,6 +65,10 @@ class App : Application() {
 class MainActivity : ComponentActivity() {
     private val deepLinks = Channel<DeepLink>(Channel.BUFFERED)
 
+    /** The navigation controller of the current content (routing tests read the destination). */
+    internal var navController: NavHostController? = null
+        private set
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val dark = Tokens.Colors.globalBackgroundDeep.toArgb()
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(dark), navigationBarStyle = SystemBarStyle.dark(dark))
@@ -71,7 +77,9 @@ class MainActivity : ComponentActivity() {
         // After a configuration change the back stack is restored; route the launch intent once.
         if (savedInstanceState == null) route(intent)
         setContent {
-            AppTheme { AppNavHost(deepLinks = deepLinks.receiveAsFlow(), env = AccountEnvironments.get(this)) }
+            val nav = rememberNavController()
+            navController = nav
+            AppTheme { AppNavHost(deepLinks = deepLinks.receiveAsFlow(), navController = nav, env = AccountEnvironments.get(this)) }
         }
     }
 

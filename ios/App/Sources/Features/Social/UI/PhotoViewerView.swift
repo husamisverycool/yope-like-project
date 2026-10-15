@@ -107,12 +107,11 @@ struct PhotoViewerView: View {
 
     @ViewBuilder
     private func reportSheet(_ target: ReportTarget) -> some View {
+        // The account group's report flow needs its dependencies; the entry is offered only when they are present.
         if let account {
             ReportSheet(target: target)
                 .environment(account)
                 .toastHost(account.toasts)
-        } else {
-            ReportSheet(target: target)
         }
     }
 
@@ -197,13 +196,15 @@ struct PhotoViewerView: View {
                 }
             } else if let post = model.current {
                 let firstName = model.author(of: post)?.socialFirstName ?? ""
-                Button(role: .destructive) {
-                    reportTarget = ReportTarget(
-                        kind: .post, id: post.id.rawValue, name: nil,
-                        person: BlockTarget(userID: post.post.authorID.rawValue, firstName: firstName)
-                    )
-                } label: {
-                    Label(Copy.photoViewerMenuReport, systemImage: Tokens.Icons.globalReport)
+                if account != nil {
+                    Button(role: .destructive) {
+                        reportTarget = ReportTarget(
+                            kind: .post, id: post.id.rawValue, name: nil,
+                            person: BlockTarget(userID: post.post.authorID.rawValue, firstName: firstName)
+                        )
+                    } label: {
+                        Label(Copy.photoViewerMenuReport, systemImage: Tokens.Icons.globalReport)
+                    }
                 }
                 Button(role: .destructive) {
                     blockTarget = BlockTarget(userID: post.post.authorID.rawValue, firstName: firstName)
@@ -304,7 +305,7 @@ struct PhotoViewerView: View {
             if model.phase == .ready, model.current != nil, !model.isCurrentGone {
                 ViewerReplyRow(
                     text: $model.replyDraft,
-                    groupName: model.current.flatMap(model.group)?.name ?? "",
+                    groupName: model.current.flatMap { model.group(of: $0) }?.name ?? "",
                     send: { Task { await model.sendReply() } },
                     react: { emoji in Task { await model.react(emoji) } },
                     openPicker: { pickerOpen = true },
@@ -502,20 +503,28 @@ struct ViewerLivePhoto: View {
 }
 
 enum LivePhotoLoader {
-    /// `PHLivePhoto.request(withResourceFileURLs:…)`; nil if the pair does not form a Live Photo.
+    /// `PHLivePhoto.request(withResourceFileURLs:…)`; nil if the pair does not form a Live Photo. The handler may run
+    /// on any queue and more than once (degraded first); the continuation resumes once.
     @MainActor
     static func load(still: URL, motion: URL) async -> PHLivePhoto? {
-        await withCheckedContinuation { (continuation: CheckedContinuation<PHLivePhoto?, Never>) in
+        let result = await withCheckedContinuation { (continuation: CheckedContinuation<Loaded, Never>) in
             let once = ResumeOnce()
-            PHLivePhoto.request(withResourceFileURLs: [still, motion], placeholderImage: nil, targetSize: .zero, contentMode: .aspectFill) { photo, info in
+            PHLivePhoto.request(
+                withResourceFileURLs: [still, motion], placeholderImage: nil, targetSize: .zero, contentMode: .aspectFill
+            ) { @Sendable photo, info in
                 let degraded = (info[PHLivePhotoInfoIsDegradedKey] as? Bool) ?? false
                 guard !degraded || photo == nil, once.claim() else { return }
-                continuation.resume(returning: photo)
+                continuation.resume(returning: Loaded(photo: photo))
             }
         }
+        return result.photo
     }
 
-    /// The request's handler may run more than once (degraded first); the continuation resumes once.
+    /// Carries the finished photo out of the handler (it is only read once the request is complete).
+    private struct Loaded: @unchecked Sendable {
+        let photo: PHLivePhoto?
+    }
+
     private final class ResumeOnce: @unchecked Sendable {
         private let lock = NSLock()
         private var done = false

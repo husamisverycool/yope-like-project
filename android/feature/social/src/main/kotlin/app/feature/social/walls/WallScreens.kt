@@ -7,6 +7,7 @@ package app.feature.social.walls
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -172,6 +173,20 @@ private fun WallGrid(
             .distinctUntilChanged()
             .collect { last -> if (last >= gridState.layoutInfo.totalItemsCount - LOAD_MORE_THRESHOLD) loader?.loadMore() }
     }
+    if (body !is WallBody.Tiles) {
+        // Loading / empty / error / offline: centred in the space under the header.
+        Column(Modifier.fillMaxSize().padding(bottom = bottomInset)) {
+            Box(Modifier.padding(horizontal = Tokens.Sizes.wallsMineDimensionGridInset)) { header() }
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                when (body) {
+                    WallBody.Loading -> ActivityIndicator()
+                    is WallBody.Message -> EmptyState(body.title, body.detail, body.pill)
+                    WallBody.Tiles -> Unit
+                }
+            }
+        }
+        return
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(Tokens.Counts.wallsMineCountGridColumns),
         state = gridState,
@@ -181,34 +196,22 @@ private fun WallGrid(
         verticalArrangement = Arrangement.spacedBy(gap),
     ) {
         item(key = "header", span = { GridItemSpan(maxLineSpan) }) { header() }
-        when (body) {
-            WallBody.Loading -> item(key = "loading", span = { GridItemSpan(maxLineSpan) }) {
-                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) { ActivityIndicator() }
-            }
-            is WallBody.Message -> item(key = "message", span = { GridItemSpan(maxLineSpan) }) {
-                Box(Modifier.fillMaxWidth().padding(top = Tokens.Sizes.wallsMineDimensionTitleToGrid), contentAlignment = Alignment.Center) {
-                    EmptyState(body.title, body.detail, body.pill)
+        items(state.tiles, key = { it.key }, contentType = { it::class }) { tile ->
+            val date = Formats.viewerDate(tile.createdAt)
+            when (tile) {
+                is WallTile.Photo -> Tile(
+                    tile,
+                    if (mine) stringRes(R.string.photo_viewer_a11y_photomine, date) else stringRes(R.string.photo_viewer_a11y_photo, personName, date),
+                ) { tile.groupId?.let { g -> nav.photo(loader?.userId.orEmpty(), g, tile.postId) } }
+                is WallTile.CollageTile -> Tile(tile, stringRes(R.string.walls_browse_a11y_collage, date)) {
+                    val g = tile.groupId
+                    val inv = tile.invitationId
+                    if (g != null && inv != null) nav.collage(g, inv)
                 }
             }
-            WallBody.Tiles -> {
-                items(state.tiles, key = { it.key }, contentType = { it::class }) { tile ->
-                    val date = Formats.viewerDate(tile.createdAt)
-                    when (tile) {
-                        is WallTile.Photo -> Tile(
-                            tile,
-                            if (mine) stringRes(R.string.photo_viewer_a11y_photomine, date) else stringRes(R.string.photo_viewer_a11y_photo, personName, date),
-                        ) { tile.groupId?.let { g -> nav.photo(loader?.userId.orEmpty(), g, tile.postId) } }
-                        is WallTile.CollageTile -> Tile(tile, stringRes(R.string.walls_browse_a11y_collage, date)) {
-                            val g = tile.groupId
-                            val inv = tile.invitationId
-                            if (g != null && inv != null) nav.collage(g, inv)
-                        }
-                    }
-                }
-                if (state.loadingMore) item(key = "more", span = { GridItemSpan(maxLineSpan) }) {
-                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { ActivityIndicator() }
-                }
-            }
+        }
+        if (state.loadingMore) item(key = "more", span = { GridItemSpan(maxLineSpan) }) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { ActivityIndicator() }
         }
     }
 }

@@ -64,7 +64,7 @@ struct SocialDecodedImage: @unchecked Sendable {
 @MainActor
 final class SocialImageLoader {
     private let cache = NSCache<NSString, UIImage>()
-    private var inFlight: [String: Task<UIImage?, Never>] = [:]
+    private var inFlight: [String: Task<SocialDecodedImage?, Never>] = [:]
     private let data: (any SocialDataSource)?
     /// DEBUG demo images, drawn synchronously (snapshot tests, UI tests).
     private let renderer: ((String) -> UIImage?)?
@@ -100,15 +100,14 @@ final class SocialImageLoader {
         if let image = cached(path, maxPixel: maxPixel) { return image }
         guard let data else { return nil }
         let key = Self.key(path, maxPixel)
-        if let task = inFlight[key] { return await task.value }
-        let task = Task<UIImage?, Never> {
+        if let task = inFlight[key] { return await task.value?.image }
+        let task = Task<SocialDecodedImage?, Never> {
             guard let url = try? await data.fileURL(path: path),
-                  let bytes = await Self.download(url),
-                  let decoded = await Self.decode(bytes, maxPixel: maxPixel) else { return nil }
-            return decoded.image
+                  let bytes = await Self.download(url) else { return nil }
+            return await Self.decode(bytes, maxPixel: maxPixel)
         }
         inFlight[key] = task
-        let image = await task.value
+        let image = await task.value?.image
         inFlight[key] = nil
         if let image { cache.setObject(image, forKey: key as NSString) }
         return image
@@ -241,7 +240,7 @@ enum SocialLaunch {
     static var usesFakes: Bool { ProcessInfo.processInfo.arguments.contains("-SocialFakes") }
 
     /// A defaults suite emptied at launch, so first-use flags start fresh in each UI-test run.
-    static let defaults: UserDefaults = {
+    @MainActor static let defaults: UserDefaults = {
         let name = "social.uitests"
         let defaults = UserDefaults(suiteName: name) ?? .standard
         defaults.removePersistentDomain(forName: name)

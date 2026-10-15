@@ -84,6 +84,7 @@ struct SelfTagToggleControl: View {
 ///   - onPostGone: the photo no longer exists (`post_not_found`): the viewer closes it.
 ///   - onChange: the new state after a successful call (or the optimistic one while it runs).
 /// Not for collages.
+@MainActor
 struct SelfTagToggle: View {
     @State private var model: SelfTagModel
     private let onMessage: ((String) -> Void)?

@@ -201,7 +201,7 @@ struct ChatThreadView: View {
         .onChange(of: model.messages.last?.id) { old, new in
             // Follow new messages only when the reader was at the bottom (or sent it).
             guard let new else { return }
-            if anchor == nil || anchor == old || model.messages.last.map(model.isMine) == true { anchor = new }
+            if anchor == nil || anchor == old || model.messages.last.map({ model.isMine($0) }) == true { anchor = new }
         }
         .onAppear(perform: scrollToFocus)
         .onChange(of: model.messages.count) { _, _ in scrollToFocus() }

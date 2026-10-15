@@ -441,7 +441,7 @@ private fun Cta(label: String, onClick: () -> Unit) {
  * progress while purchasing; billing line under it.
  */
 @Composable
-private fun PlanSheet(state: PaywallUiState, onSelect: (PlanPeriod) -> Unit, onSubscribe: () -> Unit, onRetry: () -> Unit) {
+internal fun PlanSheet(state: PaywallUiState, onSelect: (PlanPeriod) -> Unit, onSubscribe: () -> Unit, onRetry: () -> Unit) {
     val context = LocalContext.current
     val margin = Tokens.Sizes.paywallSizePlanMarginH
     Column(
@@ -518,7 +518,7 @@ private fun PlanCard(name: String, price: String, selected: Boolean, onClick: ()
 
 /** After purchase: `paywall.welcome.title`, `.body` (BLOCKED in release), `.done`. */
 @Composable
-private fun WelcomeSheet(onDone: () -> Unit) {
+internal fun WelcomeSheet(onDone: () -> Unit) {
     val context = LocalContext.current
     Column(
         Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = Tokens.Sizes.paywallSizePlanMarginH),

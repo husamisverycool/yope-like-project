@@ -36,7 +36,10 @@ import app.feature.capture.widget.WidgetPickerState
 import app.media.DualCaptureMode
 import app.model.CountdownState
 import app.ui.theme.AppTheme
+import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.captureRoboImage
+import org.junit.Rule
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -56,6 +59,7 @@ import java.util.TimeZone
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "w393dp-h852dp-xxhdpi")
 class ScreenSnapshotTest {
+    @get:Rule val compose = createComposeRule()
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val dir = File(context.cacheDir, "snap").apply { mkdirs() }
     private lateinit var hour: String
@@ -65,10 +69,16 @@ class ScreenSnapshotTest {
         hour = hourText(context, java.time.Instant.parse("2026-05-26T17:20:00Z").toEpochMilli())
     }
 
-    private fun snap(name: String, content: @Composable () -> Unit) =
-        captureRoboImage("src/test/snapshots/$name.png") {
-            CompositionLocalProvider(LocalReduceMotionOverride provides false) { AppTheme { content() } }
-        }
+    /**
+     * The frame clock is paused (infinite platform spinners never go idle) and advanced past the
+     * longest settle of these screens before the capture.
+     */
+    private fun snap(name: String, content: @Composable () -> Unit) {
+        compose.mainClock.autoAdvance = false
+        compose.setContent { CompositionLocalProvider(LocalReduceMotionOverride provides false) { AppTheme { content() } } }
+        compose.mainClock.advanceTimeBy(SETTLE_MS)
+        compose.onRoot().captureRoboImage("src/test/snapshots/$name.png")
+    }
 
     private val photo get() = Images.photo(900, 1240, 0).asImageBitmap()
     private val front get() = Images.photo(300, 400, 2).asImageBitmap()
@@ -197,6 +207,8 @@ class ScreenSnapshotTest {
     @Test fun widgetPickerGroups() = snap("widget.android_configure-groups") { WidgetPickerScreen(WidgetPickerState.Groups(groups)) {} }
     @Test fun widgetPickerEmpty() = snap("widget.android_configure-empty") { WidgetPickerScreen(WidgetPickerState.Empty) {} }
 }
+
+private const val SETTLE_MS = 1_000L
 
 /** A synthetic option-B page (test fixture): 3 × 4 dual tiles on the matte, 9:16. */
 object CollagePage {

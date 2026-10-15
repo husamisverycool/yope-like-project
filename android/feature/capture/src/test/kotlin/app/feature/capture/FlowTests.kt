@@ -186,12 +186,15 @@ class FlowTests {
             assertFalse(n.extras.getBoolean(NotificationCompat.EXTRA_REQUEST_PROMOTED_ONGOING))
             assertEquals(android.graphics.Color.argb(0xFF, 0xCD, 0xFD, 0x07), n.color) // color.global.accent
             assertEquals("app://daily?group=g1&invitation=inv1", shadowOf(n.contentIntent).savedIntent.dataString)
+            assertTrue(n.flags and Notification.FLAG_AUTO_CANCEL != 0)
+            assertTrue(n.groupAlertBehavior != Notification.GROUP_ALERT_SUMMARY) // not silent outside quiet hours
 
             // Quiet hours (not in the push contract): the same notification, silent.
             QuietHoursSource.current = QuietHoursSource { QuietHours(LocalTime.of(11, 0), LocalTime.of(13, 0)) to ZoneOffset.UTC }
             PushHandler(app, DeepLinkCodec(null)) { now }.handle(payload + ("group_id" to "g2"))
-            val quiet = shadowOf(manager).allNotifications.first { it.extras.getString(Notification.EXTRA_TEXT) != null && it !== n }
-            assertTrue(NotificationCompat.getGroupAlertBehavior(quiet) == NotificationCompat.GROUP_ALERT_SUMMARY || quiet.sound == null)
+            val quiet = shadowOf(manager).allNotifications.first { it !== n }
+            assertEquals(Notification.GROUP_ALERT_SUMMARY, quiet.groupAlertBehavior)
+            assertEquals(120_000L, quiet.timeoutAfter)
         } finally {
             QuietHoursSource.current = QuietHoursSource { null }
             NotificationAppearance.current = object : NotificationAppearance {}

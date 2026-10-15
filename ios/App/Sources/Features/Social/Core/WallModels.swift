@@ -215,30 +215,41 @@ final class WallsBrowseModel {
 
     var selectedPerson: Person? { people.first { $0.id == selectedID } }
 
+    /// The cached copy was looked at: only then may a loading indicator show (no indicator over cached content).
+    private(set) var hasCheckedCache = false
+
+    var showsLoading: Bool { phase == .loading && hasCheckedCache }
+
+    /// Cached people and wall first (offline copy), then the server's, replaced in place.
     func load() async {
         guard let me = await data.currentUserID() else {
             phase = .failed
             return
         }
-        var groups: [PhotoGroup]
+        if people.isEmpty, let cached = await data.cachedGroups() {
+            await build(me: me, groups: cached, fresh: false)
+        }
+        hasCheckedCache = true
+        let groups: [PhotoGroup]
         do {
             groups = try await data.myGroups()
             isOffline = false
         } catch {
             if SocialFailure(error) == .offline { isOffline = true }
-            guard let cached = await data.cachedGroups() else {
-                phase = isOffline ? .offline : .failed
-                return
-            }
-            groups = cached
+            if people.isEmpty { phase = isOffline ? .offline : .failed }
+            return
         }
-        if let groupID { groups = groups.filter { $0.id == groupID } }
+        await build(me: me, groups: groups, fresh: true)
+    }
+
+    private func build(me: UserID, groups all: [PhotoGroup], fresh: Bool) async {
+        let groups = groupID.map { id in all.filter { $0.id == id } } ?? all
         var profiles: [UserID: Profile] = [:]
         var others: [UserID] = []
         for group in groups {
-            let members: [MemberProfile]
-            if let fresh = try? await data.members(groupID: group.id) {
-                members = fresh
+            var members: [MemberProfile] = []
+            if fresh, let current = try? await data.members(groupID: group.id) {
+                members = current
             } else {
                 members = await data.cachedMembers(groupID: group.id) ?? []
             }
@@ -247,13 +258,17 @@ final class WallsBrowseModel {
                 if member.member.userID != me { others.append(member.member.userID) }
             }
         }
-        if profiles[me] == nil, let mine = try? await data.profiles(ids: [me]) { profiles[me] = mine.first }
-        let ordered = await newestFirst(others.socialUnique())
+        if profiles[me] == nil, fresh, let mine = try? await data.profiles(ids: [me]) { profiles[me] = mine.first }
+        if profiles[me] == nil { profiles[me] = people.first { $0.id == me }?.profile }
+        let ordered = await newestFirst(others.socialUnique(), fresh: fresh)
         people = [Person(id: me, profile: profiles[me], isMe: true)]
             + ordered.map { Person(id: $0, profile: profiles[$0], isMe: false) }
         hasNobodyElse = ordered.isEmpty
         phase = .ready
-        if selectedID == nil { await select(me, announce: false) }
+        if selectedID == nil || !people.contains(where: { $0.id == selectedID }) {
+            selectedID = nil
+            await select(me, announce: false)
+        }
     }
 
     func retry() async {
@@ -261,14 +276,17 @@ final class WallsBrowseModel {
         await load()
     }
 
-    /// Orders people by their newest wall item (approximation of the BLOCKED row order).
-    private func newestFirst(_ ids: [UserID]) async -> [UserID] {
+    /// Orders people by their newest wall item (approximation of the BLOCKED row order); `fresh: false` orders
+    /// by the cached walls.
+    private func newestFirst(_ ids: [UserID], fresh: Bool) async -> [UserID] {
         let data = self.data
         let newest = await withTaskGroup(of: (UserID, Date?).self) { group -> [UserID: Date] in
             for id in ids {
                 group.addTask {
-                    let page = try? await data.wall(userID: id, before: nil, limit: 1)
-                    return (id, page?.items.first?.createdAt)
+                    if fresh, let page = try? await data.wall(userID: id, before: nil, limit: 1) {
+                        return (id, page.items.first?.createdAt)
+                    }
+                    return (id, await data.cachedWall(userID: id)?.first?.createdAt)
                 }
             }
             var result: [UserID: Date] = [:]

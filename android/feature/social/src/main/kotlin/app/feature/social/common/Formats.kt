@@ -61,7 +61,8 @@ object Formats {
     /** The locale's Monday–Sunday interval ("Apr 29 – May 5", "10–16 Aug"; `week.history` header range). */
     fun weekRange(context: Context, weekStart: LocalDate, zone: ZoneId): String {
         val start = weekStart.atStartOfDay(zone).toInstant().toEpochMilli()
-        val end = weekStart.plusDays(DAYS_IN_WEEK - 1).atStartOfDay(zone).toInstant().toEpochMilli()
+        // DateUtils treats an end at midnight as exclusive: the day after Sunday shows Monday–Sunday.
+        val end = weekStart.plusDays(DAYS_IN_WEEK).atStartOfDay(zone).toInstant().toEpochMilli()
         return DateUtils.formatDateRange(context, java.util.Formatter(StringBuilder(), locale()), start, end, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_ABBREV_MONTH or DateUtils.FORMAT_NO_YEAR, zone.id).toString()
     }
 

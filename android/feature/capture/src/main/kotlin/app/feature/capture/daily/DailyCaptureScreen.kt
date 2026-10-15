@@ -233,7 +233,7 @@ fun DailyCaptureScreen(
             fill = null,
             tint = text,
             onClick = onDismiss,
-            modifier = Modifier.offset(x = d.centerFromLeading.dp - chevron / 2, y = d.centerFromTop.dp - chevron / 2).semantics { traversalIndex = 0f },
+            modifier = Modifier.offset(x = d.centerFromLeading.dp - chevron / 2, y = d.centerFromTop.dp - chevron / 2).semantics { traversalIndex = 0f }.testTag("daily.dismiss"),
         )
 
         // Countdown: digit tops at countdown.digitsTop, centred (weight BLOCKED → omitted in release).
@@ -385,7 +385,8 @@ private fun ControlRow(state: DailyCaptureViewModel.UiState, capturing: Boolean,
                         stateDescription = flashValue
                         role = Role.Button
                         traversalIndex = 3f
-                    },
+                    }
+                    .testTag("daily.flash"),
                 contentAlignment = Alignment.Center,
             ) { Glyph(if (state.flashOn) Tokens.Icons.globalFlashOn else Tokens.Icons.globalFlashOff, text, null) }
         }
@@ -424,7 +425,8 @@ private fun ControlRow(state: DailyCaptureViewModel.UiState, capturing: Boolean,
             modifier = Modifier
                 .offset(x = maxWidth - side.flipCenterFromTrailing.dp - touch / 2, y = centerY - touch / 2)
                 .alpha(controlsAlpha)
-                .semantics { traversalIndex = 5f },
+                .semantics { traversalIndex = 5f }
+                .testTag("daily.flip"),
         )
     }
 }

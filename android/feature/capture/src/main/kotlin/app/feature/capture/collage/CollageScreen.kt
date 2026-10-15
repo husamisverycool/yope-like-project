@@ -153,14 +153,14 @@ fun CollageScreen(
                 contentDescription = stringResource(R.string.collage_view_a11y_back),
                 onClick = onBack,
                 fill = HeaderCircleFill.OnDeep,
-                modifier = Modifier.align(Alignment.CenterStart).padding(start = Tokens.Sizes.globalHeaderInset).semantics { traversalIndex = 0f },
+                modifier = Modifier.align(Alignment.CenterStart).padding(start = Tokens.Sizes.globalHeaderInset).semantics { traversalIndex = 0f }.testTag("collage.back"),
             )
             if (dateText != null) {
                 BasicText(
                     dateText,
                     style = CaptureText.style(Tokens.FontSizes.collageViewFontSizeTitle, Tokens.FontWeights.collageViewFontWeightTitle)
                         .merge(TextStyle(color = Tokens.Colors.globalTextPrimary)),
-                    modifier = Modifier.align(Alignment.Center).semantics { heading(); traversalIndex = 1f },
+                    modifier = Modifier.align(Alignment.Center).semantics { heading(); traversalIndex = 1f }.testTag("collage.title"),
                 )
             }
         }

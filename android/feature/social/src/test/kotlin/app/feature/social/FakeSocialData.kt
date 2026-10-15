@@ -67,6 +67,8 @@ class FakeSocialData(var me: String = ME) : SocialData {
     val calls = ArrayList<String>()
     /** When set, writes suspend until it completes (to observe optimistic states). */
     var gate: kotlinx.coroutines.CompletableDeferred<Unit>? = null
+    /** When set, message page reads suspend until it completes (to observe cached-first rendering). */
+    var readGate: kotlinx.coroutines.CompletableDeferred<Unit>? = null
 
     val onlineState = MutableStateFlow(true)
     private val eventFlows = HashMap<String, MutableSharedFlow<GroupEvent>>()
@@ -97,6 +99,7 @@ class FakeSocialData(var me: String = ME) : SocialData {
     override fun observeMessages(groupId: String): Flow<DataState<List<Message>>> = cachedFlow(chatCache, groupId) { messages(groupId, null) }
 
     override suspend fun messages(groupId: String, before: Instant?): List<Message> {
+        readGate?.await()
         net("messages")
         return messages.filter { it.groupId == groupId && (before == null || it.createdAt.isBefore(before)) }.sortedByDescending { it.createdAt }.take(PAGE)
     }

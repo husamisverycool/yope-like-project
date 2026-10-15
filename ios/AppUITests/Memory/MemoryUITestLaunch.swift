@@ -5,10 +5,10 @@ import XCTest
 
 enum MemoryUITestLaunch {
     /// Launch arguments for a fixture run starting on `screen` (request, contribute, tribute,
-    /// yearStory, onThisDay, birthdayAdd). Other groups' launch arguments for a signed-in session
-    /// can be appended by the caller.
+    /// yearStory, onThisDay, birthdayAdd), signed in through the account group's in-memory
+    /// scenario (`-account-ui-test-scenario signed-in`, AccountUITestScenario).
     static func arguments(open screen: String) -> [String] {
-        ["-MemoryFixtures", "-MemoryOpen", screen]
+        ["-account-ui-test-scenario", "signed-in", "-MemoryFixtures", "-MemoryOpen", screen]
     }
 
     /// Any element carrying `identifier` (screens carry their surface id).

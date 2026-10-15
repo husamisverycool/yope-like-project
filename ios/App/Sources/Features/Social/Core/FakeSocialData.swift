@@ -49,6 +49,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         var cachedHistory: [GroupID: [HistoryWeek]] = [:]
         var cachedAlbums: [GroupID: [AlbumWithItems]] = [:]
         var cachedGroups: [PhotoGroup]?
+        var cachedMembers: [GroupID: [MemberProfile]] = [:]
         var cachedFeeds: [GroupID: [PostWithMedia]] = [:]
         var blocked: [UserID] = []
         var deletedMedia: [MediaID] = []
@@ -168,7 +169,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         return read { $0.members[groupID] ?? [] }
     }
 
-    func cachedMembers(groupID: GroupID) async -> [MemberProfile]? { nil }
+    func cachedMembers(groupID: GroupID) async -> [MemberProfile]? { read { $0.cachedMembers[groupID] } }
 
     func profiles(ids: [UserID]) async throws -> [Profile] {
         try call("profiles")

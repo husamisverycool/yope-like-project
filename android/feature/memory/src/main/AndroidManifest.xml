@@ -15,6 +15,10 @@
             android:name="app.feature.memory.share.MemoryFileProvider"
             android:authorities="${applicationId}.memory.files"
             android:exported="false"
-            android:grantUriPermissions="true" />
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/memory_file_paths" />
+        </provider>
     </application>
 </manifest>

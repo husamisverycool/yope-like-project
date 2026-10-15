@@ -134,19 +134,19 @@ fun SendToScreen(
                 contentDescription = stringResource(R.string.camera_sendto_a11y_close),
                 onClick = onClose,
                 fill = HeaderCircleFill.OnDeep,
-                modifier = Modifier.align(Alignment.CenterStart).padding(start = Tokens.Sizes.globalHeaderInset).semantics { traversalIndex = 0f },
+                modifier = Modifier.align(Alignment.CenterStart).padding(start = Tokens.Sizes.globalHeaderInset).semantics { traversalIndex = 0f }.testTag("sendto.close"),
             )
             BasicText(
                 stringResource(R.string.camera_sendto_title),
                 style = CaptureText.sheetTitle.merge(TextStyle(color = Tokens.Colors.globalTextPrimary)),
-                modifier = Modifier.align(Alignment.Center).semantics { traversalIndex = 1f },
+                modifier = Modifier.align(Alignment.Center).semantics { traversalIndex = 1f }.testTag("sendto.title"),
             )
             HeaderCircleButton(
                 icon = Tokens.Icons.globalDownload,
                 contentDescription = stringResource(R.string.camera_sendto_a11y_save),
                 onClick = onSave,
                 fill = HeaderCircleFill.OnDeep,
-                modifier = Modifier.align(Alignment.CenterEnd).padding(end = Tokens.Sizes.globalHeaderInset).semantics { traversalIndex = 2f },
+                modifier = Modifier.align(Alignment.CenterEnd).padding(end = Tokens.Sizes.globalHeaderInset).semantics { traversalIndex = 2f }.testTag("sendto.save"),
             )
         }
 
@@ -248,6 +248,7 @@ fun SendToScreen(
                     text = stringResource(if (offline) R.string.camera_sendto_error_offline else R.string.camera_sendto_error_sendfailed),
                     actionLabel = stringResource(R.string.camera_sendto_error_retry),
                     onAction = if (failedGroups != null) onRetryGroups else onSend,
+                    modifier = Modifier.testTag("sendto.toast"),
                 )
             }
         }
@@ -373,7 +374,7 @@ private fun RecipientRow(group: Group, cover: Any?, selected: Boolean, onToggle:
             image = cover,
             size = avatar,
             fallbackIcon = Tokens.Icons.globalGroup,
-            modifier = Modifier.align(Alignment.CenterStart).offset(x = row.avatarCenterInset.dp - avatar / 2),
+            modifier = Modifier.align(Alignment.CenterStart).offset(x = row.avatarCenterInset.dp - avatar / 2).testTag("sendto.avatar.${group.id}"),
         )
         BasicText(
             group.name,
@@ -382,9 +383,10 @@ private fun RecipientRow(group: Group, cover: Any?, selected: Boolean, onToggle:
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(start = row.nameInset.dp, end = row.checkTrailingInset.dp + Tokens.Sizes.globalCheckCircle),
+                .padding(start = row.nameInset.dp, end = row.checkTrailingInset.dp + Tokens.Sizes.globalCheckCircle)
+                .testTag("sendto.name.${group.id}"),
         )
-        CheckCircle(selected, Modifier.align(Alignment.CenterEnd).padding(end = row.checkTrailingInset.dp))
+        CheckCircle(selected, Modifier.align(Alignment.CenterEnd).padding(end = row.checkTrailingInset.dp).testTag("sendto.check.${group.id}"))
     }
 }
 
@@ -408,7 +410,7 @@ private fun SendButton(count: Int, onClick: () -> Unit, modifier: Modifier) {
         Spacer(Modifier.width(Tokens.Sizes.cameraSendtoSizeCountDiscGap))
         // The count disc is hidden from accessibility (the rows expose their selected state).
         Box(
-            Modifier.size(disc).clip(CircleShape).background(Tokens.Colors.globalOnAccent).clearAndSetSemantics { },
+            Modifier.size(disc).clip(CircleShape).background(Tokens.Colors.globalOnAccent).clearAndSetSemantics { }.testTag("sendto.count"),
             contentAlignment = Alignment.Center,
         ) {
             BasicText(

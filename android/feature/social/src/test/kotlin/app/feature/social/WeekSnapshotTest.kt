@@ -22,7 +22,18 @@ import app.feature.social.week.WeekEditViewModel
 import app.feature.social.week.WeekHistoryContent
 import app.feature.social.week.WeekRecapContent
 import org.junit.Test
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
 import java.time.LocalDate
+
+/** A sheet's contents at the bottom of a phone-sized frame (the native sheet itself is the platform's). */
+@androidx.compose.runtime.Composable
+private fun SheetFrame(content: @androidx.compose.runtime.Composable () -> Unit) {
+    androidx.compose.foundation.layout.Box(
+        androidx.compose.ui.Modifier.fillMaxSize().background(app.designsystem.generated.Tokens.Colors.globalBackground),
+        contentAlignment = androidx.compose.ui.Alignment.BottomCenter,
+    ) { content() }
+}
 
 /** week.recap, week.edit, week.history, albums.list, albums.view per state. */
 class WeekSnapshotTest : SnapshotBase() {
@@ -76,12 +87,12 @@ class WeekSnapshotTest : SnapshotBase() {
 
     @Test fun editAlbumSheet() {
         val (data, state) = editState(albumOnly = true)
-        snap(data) { AlbumSheetContent(state.copy(albumName = "lake week"), {}, {}, {}) }
+        snap(data) { SheetFrame { AlbumSheetContent(state.copy(albumName = "lake week"), {}, {}, {}) } }
     }
 
     @Test fun editAlbumSheetNameError() {
         val (data, state) = editState(albumOnly = true)
-        snap(data) { AlbumSheetContent(state.copy(albumName = " ", albumError = EditError.AlbumName), {}, {}, {}) }
+        snap(data) { SheetFrame { AlbumSheetContent(state.copy(albumName = " ", albumError = EditError.AlbumName), {}, {}, {}) } }
     }
 
     // ---- week.history ----
@@ -147,7 +158,7 @@ class WeekSnapshotTest : SnapshotBase() {
 
     @Test fun albumViewRenameSheet() {
         val (data, state) = albumState()
-        snap(data) { RenameSheetContent(state.copy(renaming = true, renameName = state.album!!.name), {}, {}, {}) }
+        snap(data) { SheetFrame { RenameSheetContent(state.copy(renaming = true, renameName = state.album!!.name), {}, {}, {}) } }
     }
 
     @Test fun albumViewEmpty() = snap { AlbumViewContent(AlbumViewState(phase = AlbumViewState.Phase.Ready, album = FakeSocialData().run { seedAlbums(); albums.getValue("a-1") }), {}, {}, {}, {}, {}) }

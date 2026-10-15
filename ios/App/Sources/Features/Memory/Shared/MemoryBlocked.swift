@@ -7,31 +7,31 @@ import DesignSystem
 import Foundation
 
 enum MemoryBlocked {
-    /// `duration.year.story.card` → `Tokens.Durations.yearStoryCard`. With it the story advances on its
+    /// `duration.year.story.card` (`BlockedTokens.Durations.yearStoryCard` → `Tokens.Durations.yearStoryCard`). With it the story advances on its
     /// own (the current segment fills over it, `easing.year.story.progress.fill`) and the pause / play
     /// circle shows; nil: tap-only, pause hidden (M-16).
     static var yearStoryCardDuration: TimeInterval? { nil }
 
-    /// `easing.year.story.reveal` → `Tokens.Easings.yearStoryReveal`. With it the headline moves up and
+    /// `easing.year.story.reveal` (`BlockedTokens.Easings.yearStoryReveal` → `Tokens.Easings.yearStoryReveal`). With it the headline moves up and
     /// the subline rises in (`dimension.year.story.reveal.*`, `duration.year.story.reveal.*`), with the
     /// Reduce Motion cross-fade substitute; nil: everyone gets the substitute (M-17).
     static var yearStoryRevealEasing: DSEasing? { nil }
 
-    /// `layout.year.story.summary.dots` → `Tokens.Layouts.YearStorySummaryDots`. Its fields are not
+    /// `layout.year.story.summary.dots` (`BlockedTokens.Layouts.yearStorySummaryDots` → `Tokens.Layouts`). Its fields are not
     /// known until it is sourced, so the dots are drawn only once that token is wired here; nil: none.
     static var yearStorySummaryDots: Bool { false }
 
-    /// `duration.onthisday.memoryChange` → `Tokens.Durations.onthisdayMemoryChange`. With it the year
-    /// content cross-fades over that duration (curve: `easing.global.native` until a curve is sourced);
+    /// `duration.onthisday.memoryChange` (`BlockedTokens.Durations.onthisdayMemoryChange` → `Tokens.Durations.onthisdayMemoryChange`). With it the year
+    /// content cross-fades over that duration (platform ease-in-out until a curve is sourced with it);
     /// nil: the year changes without animation.
     static var onThisDayMemoryChange: TimeInterval? { nil }
 
-    /// `layout.birthday.contribute.lineMax` → its character limit. With it the line stops growing at
+    /// `layout.birthday.contribute.lineMax` (`BlockedTokens.Layouts.birthdayContributeLineMax` → its character limit in `Tokens.Layouts`). With it the line stops growing at
     /// the limit (still no visible counter); nil: the API bound applies (280, `invalid_line`).
     static var contributeLineMax: Int? { nil }
 
     /// The toast dwell (`safety.block.duration.toast`, `camera.sendto.duration.toastVisible`) →
-    /// `Tokens.Durations.safetyBlockToast`. With it release builds show the toast for that long; nil:
+    /// `Tokens.Durations.safetyBlockDurationToast` (now `BlockedTokens.Durations.safetyBlockDurationToast`). With it release builds show the toast for that long; nil:
     /// release builds announce the text only, DEBUG builds draw it until tapped.
     static var toastDwell: TimeInterval? { nil }
 }

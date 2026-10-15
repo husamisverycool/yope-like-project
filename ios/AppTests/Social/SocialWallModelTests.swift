@@ -132,6 +132,50 @@ final class SocialWallModelTests: XCTestCase {
         XCTAssertEqual(model.people.map(\.id), [SocialDemo.me])
     }
 
+    func testBrowseShowsCachedPeopleFirstThenRefreshesInPlace() async {
+        let data = SocialDemo.makeData()
+        data.update { state in
+            state.holds.insert("myGroups")
+            state.cachedGroups = state.groups.filter { $0.id == SocialDemo.otherGroupID }
+            state.cachedMembers[SocialDemo.otherGroupID] = state.members[SocialDemo.otherGroupID]
+        }
+        let model = WallsBrowseModel(data: data)
+        XCTAssertFalse(model.showsLoading)
+        let task = Task { await model.load() }
+        let cachedReady = await socialEventually { model.phase == .ready }
+        XCTAssertTrue(cachedReady, "the cached people show while the server is asked")
+        XCTAssertFalse(model.showsLoading, "no indicator over cached content")
+        XCTAssertEqual(model.people.map(\.id), [SocialDemo.me, SocialDemo.ben])
+        XCTAssertEqual(model.selectedID, SocialDemo.me)
+
+        data.update { $0.holds.remove("myGroups") }
+        await task.value
+        XCTAssertEqual(model.people.map(\.id), [SocialDemo.me, SocialDemo.cleo, SocialDemo.ana, SocialDemo.ben])
+        XCTAssertEqual(model.selectedID, SocialDemo.me, "the selection survives the refresh")
+        XCTAssertNil(model.signals.feedback)
+    }
+
+    func testBrowseOfflineKeepsTheCachedPeople() async {
+        let data = SocialDemo.makeData()
+        data.update { state in
+            state.cachedGroups = state.groups
+            for group in state.groups { state.cachedMembers[group.id] = state.members[group.id] }
+        }
+        data.update { $0.mode = .offline }
+        let model = WallsBrowseModel(data: data)
+        await model.load()
+        XCTAssertEqual(model.phase, .ready)
+        XCTAssertTrue(model.isOffline)
+        XCTAssertEqual(model.people.first?.id, SocialDemo.me)
+        XCTAssertEqual(Set(model.people.map(\.id)), [SocialDemo.me, SocialDemo.ana, SocialDemo.ben, SocialDemo.cleo])
+
+        let nothing = SocialDemo.makeData()
+        nothing.update { $0.mode = .offline }
+        let empty = WallsBrowseModel(data: nothing)
+        await empty.load()
+        XCTAssertEqual(empty.phase, .offline)
+    }
+
     func testLoadingIndicatorOnlyWithoutACachedCopy() async {
         let data = SocialDemo.makeData()
         data.update { $0.holds.insert("wall") }

@@ -63,7 +63,10 @@ const KOTLIN_RULES = [
   [/\b(stiffness|dampingRatio)\s*=\s*[0-9]/, "literal spring — use Tokens.Springs.*"],
   [/\balpha\s*=\s*0?\.[0-9]+f?/, "literal opacity — use Tokens.Opacities.*"],
   [/\bText\(\s*(text\s*=\s*)?"[^"]*[A-Za-z]/, "literal user-facing string — use stringResource(R.string.*)"],
-  [/\b(contentDescription|label|title|placeholder)\s*=\s*"[^"]*[A-Za-z]/, "literal user-facing string — use stringResource(R.string.*)"],
+  [/\b(contentDescription|label|title|placeholder)\s*=\s*"[^"]*[A-Za-z]/, "literal user-facing string — use stringResource(R.string.*)",
+    // Compose animation `label` is a debug name for Android Studio's Animation Inspector, never shown to people.
+    (lines, i) => /^\s*label\s*=/.test(lines[i].replace(/^.*?\b(?=label\s*=)/, "")) &&
+      /\b([a-zA-Z]*[Aa]nimate[A-Za-z]*AsState|updateTransition|rememberInfiniteTransition|Crossfade|AnimatedContent|animateContentSize)\b/.test(lines.slice(Math.max(0, i - 4), i + 1).join("\n"))],
   [/\bfontSize\s*=\s*[0-9]/, "literal font size — use Tokens.FontSizes.*"],
 ];
 const TS_UI_RULES = [
@@ -78,7 +81,7 @@ function scan(files, rules, { ui = true } = {}) {
     lines.forEach((line, i) => {
       if (line.includes("provenance-ok:")) return;
       const code = line.replace(/\/\/.*$/, "");
-      if (ui && !isTest(rel)) for (const [re, msg] of rules) if (re.test(code)) violations.push(`${rel}:${i + 1}: ${msg}\n      ${line.trim()}`);
+      if (ui && !isTest(rel)) for (const [re, msg, skip] of rules) if (re.test(code) && !(skip && skip(lines, i))) violations.push(`${rel}:${i + 1}: ${msg}\n      ${line.trim()}`);
       if (PHRASES.test(line)) violations.push(`${rel}:${i + 1}: forbidden taste-based wording (directive Part 2)\n      ${line.trim()}`);
     });
   }

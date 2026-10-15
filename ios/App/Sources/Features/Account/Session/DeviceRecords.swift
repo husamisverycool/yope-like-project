@@ -1,6 +1,8 @@
 // Account group — small records the account flow keeps on the device.
 import Foundation
+#if canImport(Security)
 import Security
+#endif
 
 /// Remembers an age-gate refusal on the device so the screen cannot be retried by going back or reinstalling
 /// (auth.agegate "under age": Keychain-backed; the Keychain survives app deletion).
@@ -11,6 +13,7 @@ protocol AgeGateRefusalStoring: AnyObject, Sendable {
     func recordRefusal(minAge: Int?)
 }
 
+#if canImport(Security)
 /// Keychain implementation (generic password item, this device only).
 @MainActor
 final class KeychainAgeGateRefusalStore: AgeGateRefusalStoring {
@@ -44,6 +47,7 @@ final class KeychainAgeGateRefusalStore: AgeGateRefusalStoring {
         ]
     }
 }
+#endif
 
 /// Process-memory implementation (tests, UI-test scenarios).
 @MainActor

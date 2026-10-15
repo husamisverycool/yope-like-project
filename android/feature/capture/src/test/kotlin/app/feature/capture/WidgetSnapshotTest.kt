@@ -157,6 +157,53 @@ class WidgetSnapshotTest {
         assertEquals("Ana’s photo in Sunday dinners, hi", TokenPhotoWidgetSlots.contentDescription(context, snapshot, "g2"))
     }
 
+    /** Pixel geometry of the drawn widget for design/verification/widget.android.md (dp). */
+    @Test fun measureGeometry() {
+        val density = context.resources.displayMetrics.density
+        val small = sizes.getValue("small")
+        writePhoto("g1", caption = "sunday dinner at the limas", avatar = true)
+        meta.prepare("g1")
+        val withOverlay = render(small, "g1")
+        PhotoWidgetSlots.current = object : PhotoWidgetSlots {}
+        val bare = render(small, "g1")
+        PhotoWidgetSlots.current = TokenPhotoWidgetSlots
+        val overlay = diffBox(withOverlay, bare)
+        // Avatar: the leftmost column run of the overlay; pill: what follows after a gap.
+        val cols = (overlay.left..overlay.right).filter { x -> (overlay.top..overlay.bottom).any { y -> withOverlay.getPixel(x, y) != bare.getPixel(x, y) } }
+        val gapStart = cols.zipWithNext().firstOrNull { (a, b) -> b - a > 1 }
+        val avatarRight = gapStart?.first ?: overlay.right
+        val pillLeft = gapStart?.second ?: overlay.right
+        val pillRows = (overlay.top..overlay.bottom).filter { y -> (pillLeft..overlay.right).any { x -> withOverlay.getPixel(x, y) != bare.getPixel(x, y) } }
+        // Empty state ring (#FFB800) and loading avatars.
+        meta.setContent("g1", WidgetGroupMeta.Content.NoPhotos)
+        store.retainGroups(setOf("g1"))
+        store.remove("g1")
+        val empty = render(small, "g1")
+        val ring = colorBox(empty) { c -> android.graphics.Color.red(c) > 230 && android.graphics.Color.green(c) in 160..200 && android.graphics.Color.blue(c) < 40 }
+        fun dp(px: Int) = Math.round(px / density * 10) / 10.0
+        val h = withOverlay.height
+        val json = org.json.JSONObject()
+            .put("widthDp", dp(withOverlay.width)).put("heightDp", dp(h))
+            .put("avatarLeft", dp(overlay.left)).put("avatarBottomInset", dp(h - 1 - overlay.bottom)).put("avatarSize", dp(avatarRight - overlay.left + 1))
+            .put("captionGap", dp(pillLeft - avatarRight - 1)).put("pillHeight", dp(pillRows.size)).put("pillRight", dp(overlay.right + 1))
+            .put("ringDiameter", dp(ring.width() + 1)).put("ringCenterX", dp(ring.centerX())).put("ringCenterY", dp(ring.centerY()))
+            .put("emptyTop", Integer.toHexString(empty.getPixel(empty.width / 2, 2))).put("emptyBottom", Integer.toHexString(empty.getPixel(empty.width / 2, empty.height - 3)))
+        java.io.File("build/verification").mkdirs()
+        java.io.File("build/verification/widget.android.json").writeText(json.toString(2))
+    }
+
+    private fun diffBox(a: Bitmap, b: Bitmap): android.graphics.Rect {
+        val r = android.graphics.Rect(a.width, a.height, -1, -1)
+        for (y in 0 until a.height) for (x in 0 until a.width) if (a.getPixel(x, y) != b.getPixel(x, y)) r.union(x, y)
+        return r
+    }
+
+    private fun colorBox(a: Bitmap, match: (Int) -> Boolean): android.graphics.Rect {
+        val r = android.graphics.Rect(a.width, a.height, -1, -1)
+        for (y in 0 until a.height) for (x in 0 until a.width) if (match(a.getPixel(x, y))) r.union(x, y)
+        return r
+    }
+
     @Test fun arrivalReplacesTheImageInOneUpdate() {
         writePhoto("g1", caption = null, avatar = false, seed = 0)
         meta.prepare("g1")

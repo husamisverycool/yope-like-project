@@ -289,7 +289,7 @@ fun CameraScreen(
                 fill = Tokens.Colors.cameraCaptureColorFlipButton,
                 tint = Tokens.Colors.globalTextPrimary,
                 onClick = onFlip,
-                modifier = Modifier.offset(x = width / 2 + side - flip / 2, y = rowCenterY - flip / 2).semantics { traversalIndex = FLIP_ORDER },
+                modifier = Modifier.offset(x = width / 2 + side - flip / 2, y = rowCenterY - flip / 2).semantics { traversalIndex = FLIP_ORDER }.testTag("camera.flip"),
             )
         }
 
@@ -302,7 +302,7 @@ fun CameraScreen(
                     closeLabel = stringResource(R.string.camera_capture_a11y_close),
                     onClose = onCoachClose,
                     leadingIcon = Tokens.Icons.cameraCaptureIconRecordHint,
-                    modifier = Modifier.semantics { traversalIndex = COACH_ORDER },
+                    modifier = Modifier.semantics { traversalIndex = COACH_ORDER }.testTag("camera.coach"),
                 )
             }
         }

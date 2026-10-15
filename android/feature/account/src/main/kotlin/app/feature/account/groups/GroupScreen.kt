@@ -195,11 +195,11 @@ class GroupFeedViewModel(private val env: AccountEnvironment, private val groupI
                 val list = page.value
                 if (list != null) {
                     posts = (list + posts.filter { old -> list.none { it.id == old.id } && old.createdAt < (list.lastOrNull()?.createdAt ?: Instant.MAX) }).sortedByDescending { it.createdAt }
+                    if (!page.refreshing && list.size < app.data.repo.PostRepository.FEED_PAGE) mutable.update { it.copy(endReached = true) }
                     // Cached page first, then enriched (URLs, names) in place.
                     publish(error = page.error)
                     enrich(list)
                     publish(error = page.error)
-                    if (!page.refreshing && list.size < app.data.repo.PostRepository.FEED_PAGE) mutable.update { it.copy(endReached = true) }
                 } else if (!page.refreshing) {
                     mutable.update { it.copy(error = page.error) }
                 }

@@ -8,6 +8,7 @@ import AppData
 import AppModels
 import DesignSystem
 import SwiftUI
+import UIKit
 
 // MARK: - Shared header
 
