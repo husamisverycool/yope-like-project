@@ -123,7 +123,12 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
-      - working-directory: android
+      - name: install Android platform 37 (Compose 1.12 needs compileSdk 37; targetSdk stays 36)
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0"
+      - name: build, unit and snapshot tests
+        working-directory: android
         run: ./gradlew --no-daemon assembleDebug testDebugUnitTest
 
   ios-core:
