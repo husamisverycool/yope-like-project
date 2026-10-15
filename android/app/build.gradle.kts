@@ -67,6 +67,11 @@ dependencies {
     implementation(project(":core:billing"))
     implementation(project(":core:links"))
     implementation(project(":core:data"))
+    implementation(project(":core:ui"))
+    implementation(project(":feature:account"))
+    implementation(project(":feature:capture"))
+    implementation(project(":feature:social"))
+    implementation(project(":feature:memory"))
 
     implementation(libs.androidx.core)
     implementation(libs.androidx.activity.compose)

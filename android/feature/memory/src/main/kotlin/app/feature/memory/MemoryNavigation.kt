@@ -2,7 +2,7 @@ package app.feature.memory
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import app.main.emptyDestination
+import app.ui.nav.emptyDestination
 import app.model.AppRoute
 
 /**

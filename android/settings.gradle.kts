@@ -27,4 +27,9 @@ include(
     ":core:billing",
     ":core:links",
     ":core:data",
+    ":core:ui",
+    ":feature:account",
+    ":feature:capture",
+    ":feature:social",
+    ":feature:memory",
 )

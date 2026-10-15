@@ -39,12 +39,17 @@ accessibility, data, platform notes, gaps), `design/tokens/README.md` (foundatio
      also owns `ios/Widgets/**` (widget + Live Activity views) and `ios/NotificationService/**`.
      Other groups may *use* `Components/` but not edit it; build what you need locally otherwise.
      Replace a `Screens/<X>Screen.swift` container only if its surface is yours.
-   - Android: `android/app/src/main/kotlin/app/feature/<group>/**` (your `<Group>Navigation.kt`
-     registers your destinations), new routes in `android/core/model/src/main/kotlin/app/model/AppRoute<Group>.kt`
-     (same package, joins the sealed `AppRoute`), tests under the same group package in
-     `src/test`. Account group also owns `app.main` (App, MainActivity, theme, shell) and shared
-     components in `android/app/src/main/kotlin/app/components/`. Capture group also owns the widget
-     UI slots in `core:widget` and the notification UI in `core:push`.
+   - Android: your own Gradle module `android/feature/<group>/` (package `app.feature.<group>`;
+     `<Group>Navigation.kt` registers your destinations — replace each `emptyDestination<…>()` with
+     `composable<AppRoute.X> { … }`), new routes in
+     `android/core/model/src/main/kotlin/app/model/AppRoute<Group>.kt` (same package, joins the sealed
+     `AppRoute`), tests in your module's `src/test` (Roborazzi baselines in its
+     `src/test/snapshots`). Build only your module while you work
+     (`./gradlew :feature:<group>:testDebugUnitTest`), so another group's unfinished code never
+     blocks you; run the full build at the end. Account group also owns `:app` (`app.main`: App,
+     MainActivity, theme, shell, AppNavHost) and shared components in `android/core/ui/`
+     (`app.ui`). Capture group also owns the widget UI slots in `core:widget` and the notification
+     UI in `core:push`. Other groups depend on `core:ui` read-only.
 7. **Tests**: view-model unit tests; one snapshot test per screen **per state** (iOS:
    swift-snapshot-testing via the existing `SnapshotRecorder`, recorded into `ios/build/snapshots`
    on CI; Android: Roborazzi, baselines in `app/src/test/snapshots`); UI/flow tests for every flow
@@ -56,7 +61,8 @@ accessibility, data, platform notes, gaps), `design/tokens/README.md` (foundatio
    locally. iOS snapshots only exist after macOS CI runs — write the checklist from the spec and
    leave the image step to the lead (who downloads the CI artifact).
 9. **Build and check** before you finish:
-   - Android: `export ANDROID_HOME=/opt/android-sdk; cd android && ./gradlew assembleDebug testDebugUnitTest` green.
+   - Android: `export ANDROID_HOME=/opt/android-sdk; cd android && ./gradlew assembleDebug testDebugUnitTest` green
+     (several screens passes share this machine: prefer module-scoped tasks while iterating; one full run at the end).
    - iOS: this machine cannot compile SwiftUI. `swift build`/`swift test` for `ios/Packages/AppCore`
      must stay green on Linux; parse-check your files with
      `/opt/swift/usr/bin/swiftc -frontend -parse <file>`; re-read every file for type errors against
