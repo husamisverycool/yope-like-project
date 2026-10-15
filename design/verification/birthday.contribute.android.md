@@ -8,7 +8,7 @@ Side by side: [`birthday.contribute.android.png`](birthday.contribute.android.pn
 
 Renders: `birthday.contribute/photo-selected.png`, `photo-grid.png`, `photo-loading.png`, `photo-empty.png`, `photo-offline.png`, `photo-error.png`, `photo-not-eligible.png`, `message.png`, `message-empty.png`, `message-error.png`, `message-offline.png`, `done.png`, `closed.png`
 
-**Result: 24 checks — 12 match, 8 match (token), 2 approx, 1 not matched, 1 BLOCKED.**
+**Result: 24 checks — 12 match, 9 match (token), 2 approx, 1 not matched.**
 
 ## Stepper
 
@@ -42,7 +42,7 @@ Renders: `birthday.contribute/photo-selected.png`, `photo-grid.png`, `photo-load
 | match (token) | `dimension.birthday.contribute.input.height` | 46 | 46 dp min, radius 8, fill white 0.08, text 16 sp rgba(231,232,232,0.92), padding 10 dp | references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimoni | no placeholder, grows with the text |
 | match (token) | `dimension.birthday.contribute.group.gap / .label.gap / .button.gap` | ? | 16 / 10 / 24 dp | references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimoni |  |
 | match | Submit disabled | opacity of the platform disabled state | theme `android:disabledAlpha` over the lime button |  | message-empty.png |
-| BLOCKED | `layout.birthday.contribute.lineMax` | BLOCKED | API bound 280 characters, no counter (MemoryBlocked.birthdayLineMax = null) | NOT FOUND: design/research/wrapped-tribute-partiful.md §3.3 ('contributor's text message length: not found') |  |
+| match (token) | `layout.birthday.contribute.lineMax` | maxCharacters: 110 | 110 characters, no visible counter (the API bound 280 stays the server check) | references/auto/vidday/help/vidday-help-written-messages.png (https://help.vidday.com/can-i-add-written-messag | BirthdayRequestViewModelTest.lineIsCappedAtTheSourcedLimit |
 
 ## States and behaviour
 

@@ -6,9 +6,9 @@ Checklist written from the spec (`design/surfaces/chat.thread.md`) against the i
 
 Reference image(s): `references/auto/yope/store/yope-store-05.png`, `references/auto/yope/frames/b-derot-store-05-rot-1.68.png`, `references/auto/yope/frames/b-yopeapp-7591560669967682847-t49.50-reply-to-photo.png`, `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png`, `references/auto/yope/frames/b-alexaa-7652512140875566349-t5.83-group-chat-pill.png`
 
-Snapshots (CI): `chat.thread-ready.png`, `chat.thread-loading.png`, `chat.thread-empty.png`, `chat.thread-error.png`, `chat.thread-offline.png`, `chat.thread-offline-cached.png`
+Snapshots (CI): `chat.thread-ready.png`, `chat.thread-loading.png`, `chat.thread-empty.png`, `chat.thread-error.png`, `chat.thread-offline.png`, `chat.thread-offline-cached.png`, `chat.thread-send-failed.png`
 
-**Summary: 39 matched · 5 approximated · 5 not matched (BLOCKED or not buildable).**
+**Summary: 42 matched · 6 approximated · 1 not matched (BLOCKED or not buildable).**
 
 ## Header
 
@@ -27,11 +27,11 @@ Snapshots (CI): `chat.thread-ready.png`, `chat.thread-loading.png`, `chat.thread
 |---|---|---|---|---|
 | matched | `chat.thread.dimension.bubbleInsetTheirs`<br>`chat.thread.dimension.bubbleInsetMine` | 50.5 pt (SOURCED)<br>23 pt (SOURCED) | their bubble left edge / my bubble right edge | avatar column + padding; trailing padding for mine |
 | matched | `chat.thread.dimension.bubblePaddingH`<br>`chat.thread.dimension.bubbleHeight`<br>`chat.thread.radius.bubble` | 11.5 pt (SOURCED)<br>35.6 pt (SOURCED)<br>16 pt (SOURCED) | bubble padding, single-line height (minimum), corners, no tail | TextBubble: padding, frame(minHeight:), RoundedRectangle |
-| not matched | `chat.thread.dimension.bubbleMaxWidth` | 256 pt (SOURCED) | bubble max width | BLOCKED: bubbles bounded by the opposite side inset (SocialBlocked.bubbleMaxWidth) |
+| matched | `chat.thread.dimension.bubbleMaxWidth` | 256 pt (SOURCED) | bubble hugs its text up to 256, then wraps (G-1) | SocialMaxWidth Layout proposes ≤ 256 to the padded text and takes its size |
 | matched | `chat.thread.color.bubbleTheirs`<br>`chat.thread.color.bubbleMine` | #2B2B2B (SOURCED)<br>#232323 (SOURCED) | bubble fills | background by sender |
 | matched | `chat.thread.dimension.bubbleRim`<br>`chat.thread.color.bubbleRimTheirsTop`<br>`chat.thread.color.bubbleRimTheirsBottom`<br>`chat.thread.color.bubbleRimMineTop`<br>`chat.thread.color.bubbleRimMineBottom` | 0.44 pt (SOURCED)<br>#414141 (SOURCED)<br>#363636 (SOURCED)<br>#393939 (SOURCED)<br>#343434 (SOURCED) | hairline rim shading top → bottom | strokeBorder(LinearGradient top→bottom, lineWidth: bubbleRim) |
 | matched | `chat.thread.dimension.avatarInset`<br>`size.global.avatarSmall`<br>`chat.thread.dimension.avatarGap` | 11.2 pt (SOURCED)<br>32.6 pt (SOURCED)<br>6.7 pt (SOURCED) | avatar column, beside the last message of a run only | ChatRowLayout.showsAvatar (unit-tested); empty column keeps the inset |
-| not matched | `chat.thread.dimension.emojiOnlyGlyph`<br>`chat.thread.count.emojiOnlyMax` | 47.5 pt (SOURCED)<br>3 (SOURCED) | emoji-only message | threshold BLOCKED: emoji-only messages are drawn as text bubbles |
+| approximated | `chat.thread.dimension.emojiOnlyGlyph`<br>`chat.thread.count.emojiOnlyMax`<br>`chat.thread.layout.textStyleMap` | 47.5 pt (SOURCED)<br>3 (SOURCED)<br>replyName: subheadline; replyLabel: footnote; caption: title2; emojiOnly: largeTitle (PLATFORM) | a message of only 1–3 emoji: large, no bubble; 4+ as a text bubble (G-2) | SocialEmojiText.emojiOnlyCount (unit-tested); the glyph width is set as the font size (Apple Color Emoji advance ≈ point size), Dynamic Type largeTitle |
 | matched | `chat.thread.dimension.photoInsetTrailing`<br>`chat.thread.dimension.photoWidth`<br>`chat.thread.dimension.photoHeight`<br>`radius.global.photo`<br>`chat.thread.layout.photoFit` | 18.7 pt (SOURCED)<br>323 pt (SOURCED)<br>174 pt (SOURCED)<br>15 pt (SOURCED)<br>content: aspect fill, centred; frameWidthPt: 323; frameHeightPt: 174; timeOverlay: centred on the photo (text role overlayTime) (SOURCED) | photo message 323 × 174 shape, aspect fill | aspectRatio(photoWidth/photoHeight) between the insets, clipShape(radius.global.photo), image .fill |
 | matched | `chat.thread.dimension.gapSameSender`<br>`chat.thread.dimension.gapTextToVoice`<br>`chat.thread.dimension.photoGap`<br>`chat.thread.dimension.gapBetweenSenders` | 3.6 pt (SOURCED)<br>4.7 pt (SOURCED)<br>15.3 pt (SOURCED)<br>15 pt (SOURCED) | vertical gaps | ChatGap per row (unit-tested) |
 | approximated | `chat.thread.dimension.photoGap` | 15.3 pt (SOURCED) | photo ↔ bubble gap (not measured) | photoGap, per spec Gaps |
@@ -42,7 +42,7 @@ Snapshots (CI): `chat.thread-ready.png`, `chat.thread-loading.png`, `chat.thread
 |---|---|---|---|---|
 | matched | `fontSize.global.overlayTime`<br>`fontWeight.global.overlayTime`<br>`color.global.textPrimary`<br>`chat.thread.layout.timeFormat` | 21 pt (SOURCED)<br>heavy (SOURCED)<br>#FFFFFF (SOURCED)<br>pattern: h:mm a; example: 10:00 PM; locale: device locale short time (SOURCED) | time centred on the photo | TextRole.overlayTime; DateFormatter template h:mm a in the device locale |
 | matched | `chat.thread.dimension.captionInsetBottom`<br>`chat.thread.dimension.captionHeight`<br>`chat.thread.dimension.captionPaddingH`<br>`chat.thread.radius.caption`<br>`chat.thread.fontSize.caption`<br>`chat.thread.fontWeight.caption` | 7.8 pt (SOURCED)<br>45.8 pt (SOURCED)<br>20 pt (SOURCED)<br>13 pt (SOURCED)<br>21 pt (SOURCED)<br>bold (SOURCED) | caption box, one line, tail truncation | PhotoCaption (lineLimit 1) |
-| not matched | `color.global.scrim` | BLOCKED | caption box fill | BLOCKED: drawn without a fill (SocialBlocked.scrim) |
+| not matched | `color.global.scrim` | #00000080 (SOURCED) | caption box fill | BLOCKED: drawn without a fill (SocialBlocked.scrim) |
 | matched | `chat.reactions.dimension.clusterInsetLeading`<br>`chat.reactions.dimension.clusterInsetBottom`<br>`chat.reactions.a11y.cluster` | 17 pt (SOURCED)<br>20 pt (SOURCED)<br>“Reactions: {emoji_names}” (SOURCED) | reaction cluster bottom-left, never a number | ReactionCluster overlay (see chat.reactions) |
 
 ## Reply to a photo
@@ -62,14 +62,14 @@ Snapshots (CI): `chat.thread-ready.png`, `chat.thread-loading.png`, `chat.thread
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| approximated | `groups.create.size.hud`<br>`groups.create.color.hud`<br>`groups.create.fontSize.hudLabel`<br>`groups.create.hud.loading` | 100 pt (SOURCED)<br>#262626 (SOURCED)<br>15 pt (SOURCED)<br>“Loading” (SOURCED) | loading HUD (first page) | shared LoadingHUD, shown only after the cache was checked and nothing was cached (no HUD flash) |
-| not matched | `chat.thread.radius.loadingHud` | 10.5 pt (SOURCED) | HUD corners | BLOCKED: shared HUD draws square corners |
+| approximated | `groups.create.size.hud`<br>`groups.create.color.hud`<br>`groups.create.fontSize.hudLabel`<br>`groups.create.hud.loading` | 100 pt (SOURCED)<br>#0C0C0C (SOURCED)<br>15 pt (SOURCED)<br>“Loading” (SOURCED) | loading HUD (first page) | shared LoadingHUD, shown only after the cache was checked and nothing was cached (no HUD flash) |
+| matched | `chat.thread.radius.loadingHud` | 10.5 pt (SOURCED) | HUD corners 10.5 (G-3) | the account group’s shared LoadingHUD uses the token |
 | matched | `easing.global.native` | keyboard: system; alert: system; activityIndicator: system (ProgressView / CircularProgressIndicator); scrollIndicator: system; navigationPush: system (Navig… (PLATFORM) | older page indicator at the top | ProgressView row; the next older page is prefetched a fifth of a page before the top |
 | matched | `chat.thread.empty.titleCreator`<br>`chat.thread.empty.titleMember`<br>`chat.thread.empty.detail`<br>`chat.thread.empty.invite`<br>`icon.global.link` | “you created group” (SOURCED)<br>“{name} created group” (SOURCED)<br>“and added {names}” (SOURCED)<br>“invite more friends” (SOURCED)<br>ios: link; android: Rounded.Link (PLATFORM) | empty: title, italic detail, white pill → groups.invite | shared EmptyStateView + LightPill action; composer stays |
 | matched | `chat.thread.error.title`<br>`chat.thread.error.detail`<br>`chat.thread.error.retry` | “couldn’t load this chat” (SOURCED)<br>“check your connection and try again — your pics are safe” (SOURCED)<br>“try again” (SOURCED) | error, retry pill | EmptyStateView; retry reloads |
 | matched | `chat.thread.offline.title`<br>`chat.thread.offline.detail` | “you’re offline” (SOURCED)<br>“your group’s pics will be right here when you’re back” (SOURCED) | offline with nothing cached | EmptyStateView without pill |
 | matched | `—` | — | offline with cached messages | cached messages first (also online: cached first, refreshed in place) |
-| not matched | `chat.thread.layout.failedMessage`<br>`chat.thread.sendFailed`<br>`haptic.global.error` | indicator: outlined exclamation-mark circle beside the bubble on its trailing side, vertically centred on the bubble; indicatorIconIos: exclamationmark.circl… (SOURCED)<br>“couldn’t send — tap to try again” (SOURCED)<br>ios: notification.error; android: REJECT (PLATFORM) | failed message layout | BLOCKED: the optimistic message is taken back, its text returns to the field, sendFailed announced (toast) + error haptic |
+| matched | `chat.thread.layout.failedMessage`<br>`chat.thread.sendFailed`<br>`color.global.destructive`<br>`haptic.global.error` | indicator: outlined exclamation-mark circle beside the bubble on its trailing side, vertically centred on the bubble; indicatorIconIos: exclamationmark.circl… (SOURCED)<br>“couldn’t send — tap to try again” (SOURCED)<br>#FF4245 (PLATFORM)<br>ios: notification.error; android: REJECT (PLATFORM) | failed message: red outlined ! (22) 14 after the bubble in the trailing slot, red caption label 2 under it; tap ! / label / bubble retries (G-4) | the message stays (local copy kept through refreshes), error haptic, line announced (no toast); retry re-sends the same payload; a failed copy can be deleted locally (unit-tested) |
 | matched | `—` | — | photo deleted while open | post_deleted removes the photo message and strips quotes |
 
 ## Motion and haptics
@@ -96,5 +96,5 @@ Snapshots (CI): `chat.thread-ready.png`, `chat.thread-loading.png`, `chat.thread
 
 ## Notes
 
-- Optimistic sends: a text / voice message shows at once with a local id, is replaced by the server row once (realtime echo de-duplicated) and taken back with the spec’s error on failure.
+- Optimistic sends: a text / voice message shows at once with a local id and is replaced by the server row once (realtime echo de-duplicated); on failure it keeps the failed-message layout until a tap re-sends it.
 - Deep link `chat?message=` opens the thread on that message (scrollPosition anchor).

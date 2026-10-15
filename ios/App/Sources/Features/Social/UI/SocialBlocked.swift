@@ -4,15 +4,13 @@
 // approximation for) the part that needs it. When a value is filled, `tools/designgen.mjs` moves it from the DEBUG-only
 // `BlockedTokens` into `Tokens`: replace that accessor's `nil` / `false` with the token (one line), or build the
 // behaviour a layout token describes. The 19 values sourced by the social gap fill (MERGE_DECISIONS "Gap fill (social)",
-// G-1…G-17) are read from `Tokens` directly at their use sites.
+// G-1…G-17) and `color.global.scrim` (gap fill G2) are read from `Tokens` directly at their use sites.
 import DesignSystem
 import SwiftUI
 
 enum SocialBlocked {
     // MARK: Values (one line each when filled)
 
-    /// `color.global.scrim` (foundations) — the caption box fill (thread and viewer); drawn without a fill meanwhile.
-    static var scrim: Color? { nil }
     /// `chat.reactions.count.clusterMaxVisible` — every distinct emoji shows (clipped by the photo) meanwhile.
     static var clusterMaxVisible: Int? { nil }
     /// `week.recap.dimension.shortRowHeight` (with `week.recap.layout.shortRowSplit`) — the card's leftover row; those
