@@ -11,7 +11,7 @@ import type { Scheduler } from "../../src/scheduler.js";
 import type { Services } from "../../src/services.js";
 import { WORKER_ROOT } from "../../src/config.js";
 import path from "node:path";
-import { API_URL, SERVICE_ROLE_KEY, admin } from "./db.js";
+import { API_URL, SERVICE_ROLE_KEY, admin, cancelOwnQueuedJobs, rpc, scopedClaim, tracked } from "./db.js";
 import { pushKeys, selfSignedCert, startMockApns, startMockFcm, type MockApns, type MockFcm } from "./mockPush.js";
 
 export const BUNDLE_ID = "com.example.groupphotos";
@@ -31,7 +31,8 @@ export interface World {
   fcm: MockFcm;
   logs: LogFields[];
   config: WorkerConfig;
-  close(): Promise<void>;
+  /** keepData: leave this file's users for a later world in the same file */
+  close(opts?: { keepData?: boolean }): Promise<void>;
 }
 
 export async function startWorld(opts: { recapModel?: RecapModel | null; lanes?: Partial<WorkerConfig["lanes"]> } = {}): Promise<World> {
@@ -66,7 +67,8 @@ export async function startWorld(opts: { recapModel?: RecapModel | null; lanes?:
   setCopyTable(testCopyTable());
   const { log, lines } = memoryLogger("debug");
   const svc = buildServices(config, { log, db: admin, recapModel: opts.recapModel ?? null });
-  const runner = buildRunner(svc);
+  // this file's own jobs only: the local stack is shared with other test suites
+  const runner = buildRunner(svc, { claim: scopedClaim(config.workerId) });
   const scheduler = buildScheduler(svc, runner);
   return {
     svc,
@@ -76,9 +78,10 @@ export async function startWorld(opts: { recapModel?: RecapModel | null; lanes?:
     fcm,
     logs: lines,
     config,
-    close: async () => {
+    close: async (closeOpts: { keepData?: boolean } = {}) => {
       await scheduler.stop();
       await runner.stop(2000);
+      if (!closeOpts.keepData) await cleanupTestData(runner);
       svc.push.close();
       await apns.close();
       await fcm.close();
@@ -101,4 +104,23 @@ export function apnsDeviceSends(apns: MockApns) {
       payload: r.json,
       receivedAt: r.receivedAt,
     }));
+}
+
+/**
+ * Deletes every account this test file created through delete_account (the real cascade: media,
+ * memberships, groups left empty, devices …), lets this file's runner delete their files and
+ * auth users, and cancels whatever of this file's jobs is still queued.
+ */
+export async function cleanupTestData(runner: Runner): Promise<void> {
+  for (const u of tracked.users.splice(0)) {
+    try {
+      await rpc(u.client, "delete_account");
+    } catch {
+      // already deleted by the test
+    }
+    tracked.groups.add(u.id); // keep the id in scope for its storage / auth jobs
+  }
+  await runner.runUntilIdle({ kinds: ["storage.delete", "auth.delete_user"] });
+  await cancelOwnQueuedJobs();
+  tracked.groups.clear();
 }

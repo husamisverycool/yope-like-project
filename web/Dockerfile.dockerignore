@@ -1,0 +1,9 @@
+# Build context is the repository root (see Dockerfile); send only what the image needs.
+*
+!web/package.json
+!web/package-lock.json
+!web/.npmrc
+!web/tsconfig.json
+!web/tsconfig.build.json
+!web/src
+!config/app.json

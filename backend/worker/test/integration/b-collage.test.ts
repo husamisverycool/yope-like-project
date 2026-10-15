@@ -2,13 +2,12 @@
 // and is excluded; collages compose for 1 and 30 answers.
 import sharp from "sharp";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { closeDb, createGroup, createUsers, jobs, objectsUnder, parkQueuedJobs, postPhoto, sleep, sql, type TestGroup, type TestUser } from "../helpers/db.js";
+import { closeDb, createGroup, createUsers, jobs, objectsUnder, postPhoto, sleep, sql, type TestGroup, type TestUser } from "../helpers/db.js";
 import { startWorld, type World } from "../helpers/world.js";
 
 let w: World;
 
 beforeAll(async () => {
-  await parkQueuedJobs();
   w = await startWorld();
 });
 afterAll(async () => {

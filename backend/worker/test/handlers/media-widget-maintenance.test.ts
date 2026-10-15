@@ -6,7 +6,7 @@ import path from "node:path";
 import sharp from "sharp";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { WIDGETKIT_MIN_INTERVAL_MS } from "../../src/push/throttle.js";
-import { admin, closeDb, createGroup, createUsers, jobs, objectExists, objectsUnder, parkQueuedJobs, postPhoto, registerDevice, rpc, sql, testJpeg, uploadAs, type TestGroup, type TestUser } from "../helpers/db.js";
+import { admin, closeDb, createGroup, createUsers, jobs, objectExists, objectsUnder, postPhoto, registerDevice, rpc, sql, testJpeg, uploadAs, type TestGroup, type TestUser } from "../helpers/db.js";
 import { apnsDeviceSends, startWorld, type World } from "../helpers/world.js";
 
 let w: World;
@@ -14,7 +14,6 @@ let u: TestUser[];
 let g: TestGroup;
 
 beforeAll(async () => {
-  await parkQueuedJobs();
   w = await startWorld();
   u = await createUsers(4, "Media");
   g = await createGroup(u[0]!, u.slice(1), { name: "Roommates" });
@@ -148,7 +147,7 @@ describe("storage.delete / auth.delete_user / moderation.report", () => {
     await rpc(admin, "enqueue_job", { p_kind: "storage.delete", p_payload: { bucket: "media", paths: [p1, `u/${x!.id}/missing.jpg`], prefixes: [`u/${x!.id}/b/`] } });
     await w.runner.runUntilIdle({ kinds: ["storage.delete"] });
     expect(await objectsUnder(`u/${x!.id}/`)).toEqual([]);
-    const id = await rpc(admin, "enqueue_job", { p_kind: "storage.delete", p_payload: { bucket: "media", paths: [], prefixes: ["u/"] } });
+    const id = await rpc(admin, "enqueue_job", { p_kind: "storage.delete", p_payload: { bucket: "media", paths: [`u/${x!.id}/none.jpg`], prefixes: ["u/"] } });
     await w.runner.runUntilIdle({ kinds: ["storage.delete"] });
     const [j] = await sql(`select status, last_error from public.jobs where id = $1`, [id]);
     expect(j.status).toBe("failed");

@@ -3,7 +3,7 @@
 // and end pushes are correct.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { unixSeconds } from "../../src/time.js";
-import { closeDb, createGroup, createUsers, parkQueuedJobs, registerDevice, rpc, sql, waitFor, type TestGroup, type TestUser } from "../helpers/db.js";
+import { closeDb, createGroup, createUsers, registerDevice, rpc, sql, waitFor, type TestGroup, type TestUser } from "../helpers/db.js";
 import { apnsDeviceSends, BUNDLE_ID, startWorld, type World } from "../helpers/world.js";
 
 let w: World;
@@ -13,7 +13,6 @@ let inv: { id: string; fires_at: string; closes_at: string };
 const dev: Record<string, any> = {};
 
 beforeAll(async () => {
-  await parkQueuedJobs();
   w = await startWorld({ lanes: { realtime: { concurrency: 8, pollMs: 5_000 } } });
   u = await createUsers(5, "Inv");
   // a waking window covering the whole day, so tomorrow's invitation is always schedulable
@@ -24,11 +23,14 @@ beforeAll(async () => {
   dev.u3 = await registerDevice(u[3]!, "android");
   dev.u4 = await registerDevice(u[4]!, "android");
 
-  // the real scheduler creates tomorrow's invitation (+ invitation.fire and collage.compose jobs)
-  const report = await w.scheduler.tick();
+  // The real scheduler step creates the invitation (+ invitation.fire and collage.compose jobs).
+  // The stack is shared with other suites, so the tick schedules a far-future date nobody else
+  // uses (schedule_daily_invitations covers every group) and skips the global due_* helpers.
+  const far = `${2031 + Math.floor(Math.random() * 40)}-0${1 + Math.floor(Math.random() * 9)}-1${Math.floor(Math.random() * 9)}`;
+  const report = await w.scheduler.tick(new Date(), { dates: [far], steps: ["invitations"] });
   expect(report.errors).toEqual([]);
-  const [row] = await sql(`select id from public.daily_invitations where group_id = $1 order by local_date desc limit 1`, [g.id]);
-  await sql(`delete from public.daily_invitations where group_id = $1 and id <> $2`, [g.id, row.id]);
+  expect(report.invitations.created + report.invitations.existing).toBeGreaterThan(0);
+  const [row] = await sql(`select id from public.daily_invitations where group_id = $1 and local_date = $2`, [g.id, far]);
   // bring the moment to "in 3 seconds" with a short window, so the test sees fire and close
   const [moved] = await sql(
     `update public.daily_invitations set fires_at = now() + interval '3 seconds', closes_at = now() + interval '8 seconds' where id = $1 returning id, fires_at, closes_at`,
@@ -39,7 +41,7 @@ beforeAll(async () => {
   await sql(`update public.jobs set run_at = $2 where dedupe_key = $1`, [`collage.compose:${inv.id}`, inv.closes_at]);
   w.runner.start();
   // a second tick arms the runner's wake-ups for fires_at / closes_at (the poll interval is 5 s)
-  const armed = await w.scheduler.tick();
+  const armed = await w.scheduler.tick(new Date(), { steps: ["arm"] });
   expect(armed.armed).toBeGreaterThanOrEqual(2);
 });
 

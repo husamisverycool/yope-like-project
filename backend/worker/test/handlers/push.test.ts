@@ -2,7 +2,7 @@
 // push.tribute against the local stack and mock APNs / FCM.
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { apnsDeviceSends, startWorld, type World } from "../helpers/world.js";
-import { closeDb, createGroup, createUsers, jobs, parkQueuedJobs, postPhoto, registerDevice, rpc, sql, type TestGroup, type TestUser } from "../helpers/db.js";
+import { closeDb, createGroup, createUsers, jobs, postPhoto, registerDevice, rpc, sql, type TestGroup, type TestUser } from "../helpers/db.js";
 
 let w: World;
 let u: TestUser[];
@@ -11,7 +11,6 @@ const ios = new Map<string, string>();
 const android = new Map<string, string>();
 
 beforeAll(async () => {
-  await parkQueuedJobs();
   w = await startWorld();
   u = await createUsers(5, "Push");
   g = await createGroup(u[0]!, u.slice(1), { name: "Lima family" });

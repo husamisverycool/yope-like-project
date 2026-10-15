@@ -35,18 +35,25 @@ export interface RunnerStats {
   failed: number;
 }
 
+/** Claims up to `limit` due jobs of `kinds` for this worker (default: the claim_jobs RPC). */
+export type ClaimFn = (kinds: string[], limit: number) => Promise<JobRow[]>;
+
 export class Runner {
   private lanes: LaneState[];
   private running = false;
   private completed = 0;
   private failed = 0;
   private active = new Map<number, { kind: string; startedAt: number }>();
+  private readonly claimFn: ClaimFn;
 
   constructor(
     private readonly svc: Services,
     private readonly handlers: Record<string, Handler>,
     lanes: LaneSpec[],
+    opts: { claim?: ClaimFn } = {},
   ) {
+    this.claimFn =
+      opts.claim ?? ((kinds, limit) => rpc<JobRow[]>(this.svc.db, "claim_jobs", { p_worker_id: this.svc.config.workerId, p_kinds: kinds, p_limit: limit }));
     const covered = new Set(lanes.flatMap((l) => l.kinds));
     for (const k of Object.keys(handlers)) if (!covered.has(k)) throw new Error(`handler ${k} is in no lane`);
     for (const k of covered) if (!handlers[k]) throw new Error(`lane kind ${k} has no handler`);
@@ -118,7 +125,7 @@ export class Runner {
   }
 
   private async claim(kinds: string[], limit: number): Promise<JobRow[]> {
-    return rpc<JobRow[]>(this.svc.db, "claim_jobs", { p_worker_id: this.svc.config.workerId, p_kinds: kinds, p_limit: limit });
+    return this.claimFn(kinds, limit);
   }
 
   /** Runs one claimed job and records its outcome. Never throws. */
@@ -197,7 +204,8 @@ export class Runner {
 
   /**
    * Graceful shutdown: stop claiming, let in-flight jobs finish for up to `graceMs`, then hand
-   * the unfinished ones back to the queue (fail_job with retry) so another worker can take them.
+   * the unfinished ones back to the queue (release_job: no attempt spent, runnable at once) so
+   * another worker takes them. Handlers are idempotent, so a half-done job is safe to redo.
    */
   async stop(graceMs: number): Promise<void> {
     if (!this.running) return;
@@ -216,7 +224,7 @@ export class Runner {
     if (!finished) {
       for (const [id, a] of this.active) {
         try {
-          await rpc(this.svc.db, "fail_job", { p_job_id: id, p_worker_id: this.svc.config.workerId, p_error: "worker shutdown", p_retry: true });
+          await rpc(this.svc.db, "release_job", { p_job_id: id, p_worker_id: this.svc.config.workerId });
           this.svc.log.warn("job handed back on shutdown", { job_id: id, kind: a.kind });
         } catch (e) {
           this.svc.log.error("could not hand back job on shutdown", { job_id: id, error: e });

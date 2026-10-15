@@ -1,6 +1,6 @@
 // (d) Muted group: no alert, widget update only. Quiet hours: delivered silently.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { closeDb, createGroup, createUsers, parkQueuedJobs, postPhoto, registerDevice, rpc, sql, type TestGroup, type TestUser } from "../helpers/db.js";
+import { closeDb, createGroup, createUsers, postPhoto, registerDevice, rpc, sql, type TestGroup, type TestUser } from "../helpers/db.js";
 import { apnsDeviceSends, startWorld, type World } from "../helpers/world.js";
 
 let w: World;
@@ -9,7 +9,6 @@ let g: TestGroup;
 const d: Record<string, any> = {};
 
 beforeAll(async () => {
-  await parkQueuedJobs();
   w = await startWorld();
   u = await createUsers(5, "Quiet");
   g = await createGroup(u[0]!, u.slice(1), { name: "Muted test", tz: "UTC" });

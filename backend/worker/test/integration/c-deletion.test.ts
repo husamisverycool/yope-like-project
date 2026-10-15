@@ -2,7 +2,7 @@
 // an affected tribute, recomputes the year story and sends widget refreshes.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { setTokenOverrides } from "../../src/tokens.js";
-import { closeDb, createGroup, createUsers, objectsUnder, parkQueuedJobs, postPhoto, registerDevice, rpc, sleep, sql, type TestGroup, type TestUser } from "../helpers/db.js";
+import { closeDb, createGroup, createUsers, objectsUnder, postPhoto, registerDevice, rpc, sleep, sql, type TestGroup, type TestUser } from "../helpers/db.js";
 import { TEST_TRIBUTE_TOKENS } from "../helpers/tokens.js";
 import { apnsDeviceSends, startWorld, type World } from "../helpers/world.js";
 
@@ -18,7 +18,6 @@ let storyId: string;
 const year = new Date().getUTCFullYear();
 
 beforeAll(async () => {
-  await parkQueuedJobs();
   setTokenOverrides(TEST_TRIBUTE_TOKENS);
   w = await startWorld();
   u = await createUsers(4, "Del");
@@ -43,8 +42,10 @@ beforeAll(async () => {
   );
   await rpc(u[0]!.client, "contribute_tribute", { p_request_id: req.id, p_post_id: A.post.id, p_line: "you make every sunday better" });
   await rpc(u[1]!.client, "contribute_tribute", { p_request_id: req.id, p_post_id: B.post.id, p_line: "happy birthday!" });
-  await sql(`update public.tribute_requests set due_at = now() - interval '1 second' where id = $1`, [req.id]);
-  await rpc(w.svc.db, "due_tributes", { p_now: new Date().toISOString() });
+  // what due_tributes does for this request (the helper itself is global; the stack is shared)
+  await sql(`update public.tribute_requests set due_at = now() - interval '1 second', closed_at = now() where id = $1`, [req.id]);
+  const [tr] = await sql(`insert into public.tributes (request_id, group_id, honoree_id) values ($1, $2, $3) returning id`, [req.id, g.id, u[3]!.id]);
+  await sql(`select private.enqueue('tribute.render', jsonb_build_object('tribute_id', $1::uuid, 'request_id', $2::uuid, 'group_id', $3::uuid), 'tribute.render:' || $1, now())`, [tr.id, req.id, g.id]);
 
   // the year story, with A the most-reacted photo
   await rpc(u[1]!.client, "react", { p_post_id: A.post.id, p_emoji: "🔥" });

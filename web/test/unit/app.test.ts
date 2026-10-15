@@ -49,6 +49,11 @@ const visibleText = (html: string) =>
     .replace(/<style[\s\S]*?<\/style>/g, "")
     .replace(/<svg[\s\S]*?<\/svg>/g, "")
     .replace(/<[^>]+>/g, " ")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -63,7 +68,7 @@ describe("GET /i/:token — valid invite", () => {
     const html = await res.text();
     const text = visibleText(html);
     expect(text).toBe(
-      ["Lima family", "Invited by Ana", copy["invite.web.members.title"], "R", copy["invite.web.members.viewAll"], "Ana", "R", "Rui", copy["invite.web.gate.title"], copy["invite.web.gate.body"].replace("'", "&#39;"), copy["invite.web.getApp"], copy["invite.web.getApp"]].join(" "),
+      ["Lima family", "Invited by Ana", copy["invite.web.members.title"], "R", copy["invite.web.members.viewAll"], "Ana", "R", "Rui", copy["invite.web.gate.title"], copy["invite.web.gate.body"], copy["invite.web.getApp"], copy["invite.web.getApp"]].join(" "),
     );
     expect(text).not.toMatch(/[0-9]/); // no member count, no number of anything
     expect(html).toContain(`<h1 class="title">Lima family</h1>`);
@@ -370,7 +375,7 @@ describe("rate limiting", () => {
     const third = await get(app, `/i/${"C".repeat(24)}`);
     expect(third.status).toBe(429);
     expect(Number(third.headers.get("retry-after"))).toBeGreaterThan(0);
-    expect(visibleText(await third.text())).toContain(copy["invite.web.rateLimited.body"].replace("'", "&#39;"));
+    expect(visibleText(await third.text())).toContain(copy["invite.web.rateLimited.body"]);
     expect(up.calls.preview).toBe(2);
   });
 

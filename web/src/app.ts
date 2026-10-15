@@ -12,6 +12,7 @@
 import { randomBytes } from "node:crypto";
 import { Hono, type Context } from "hono";
 import { appClipBundleId, type Config } from "./config.js";
+import { invitePairs } from "./contrastReport.js";
 import type { InviteService, LoadedInvite } from "./inviteService.js";
 import { detectPlatform, getAppUrl } from "./platform.js";
 import { clientAddress, RateLimiter } from "./rateLimit.js";
@@ -133,6 +134,11 @@ export function createApp(deps: AppDeps): Hono {
     if (!r.ok) return r.response;
     const token = c.req.param("token");
     const nonce = randomBytes(16).toString("base64");
+    if (config.mode === "development") {
+      // Sourced values are never adjusted; failing WCAG pairs for this theme are reported.
+      const failing = invitePairs(r.invite.theme).filter((p) => !p.pass);
+      if (failing.length) log(`WCAG: theme ${r.invite.theme.background} fails ${failing.map((p) => `${p.element} ${p.ratio.toFixed(2)}:1 < ${p.need}:1`).join("; ")}`);
+    }
     return html(c, 200, invitePage(token, r.invite, context(c, token, nonce)), nonce, `private, max-age=${ttl}`);
   });
 

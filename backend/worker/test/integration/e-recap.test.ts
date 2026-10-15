@@ -2,13 +2,12 @@
 // (structured draft, copy-rule check, refusal, cost logged per job to ai_cost_log).
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import type { RecapInput, RecapModel, RecapModelResult } from "../../src/recap/ai.js";
-import { closeDb, createGroup, createUsers, getConfig, parkQueuedJobs, postPhoto, rpc, setConfig, sql, type TestGroup, type TestUser } from "../helpers/db.js";
+import { closeDb, createGroup, createUsers, postPhoto, rpc, sql, type TestGroup, type TestUser } from "../helpers/db.js";
 import { apnsDeviceSends, startWorld, type World } from "../helpers/world.js";
-import { admin, registerDevice } from "../helpers/db.js";
+import { registerDevice } from "../helpers/db.js";
 
 const WEEK_START = "2026-09-07"; // a Monday
 let u: TestUser[];
-let recapTimeBefore: unknown;
 
 /** A group with a week of photos: a moment everyone answered, a reacted photo, an ordinary one. */
 async function weekGroup(name: string): Promise<{ g: TestGroup; moment: string[]; reacted: string; plain: string }> {
@@ -34,23 +33,17 @@ async function weekGroup(name: string): Promise<{ g: TestGroup; moment: string[]
   return { g, moment, reacted, plain };
 }
 
+/** The recap due_weekly_recaps would create for that week (the helper is global and needs a config the shared stack must keep). */
 async function createRecap(groupId: string): Promise<string> {
-  // the recap moment after that week: Sunday 2026-09-13 at the configured time
-  await rpc(u[0]!.client, "set_group_muted", { p_group_id: groupId, p_muted: false });
-  const rows = await rpc<any[]>(admin, "due_weekly_recaps", { p_now: "2026-09-13T20:00:00Z" });
-  const mine = rows.find((r) => r.group_id === groupId);
-  expect(mine, "recap created").toBeDefined();
-  return mine.id;
+  const [r] = await sql(`insert into public.weekly_recaps (group_id, week_start) values ($1, $2) returning id`, [groupId, WEEK_START]);
+  await sql(`select private.enqueue('recap.generate', jsonb_build_object('recap_id', $1::uuid, 'group_id', $2::uuid, 'week_start', $3::date), 'recap.generate:' || $1, now())`, [r.id, groupId, WEEK_START]);
+  return r.id;
 }
 
 beforeAll(async () => {
-  await parkQueuedJobs();
   u = await createUsers(3, "Recap");
-  recapTimeBefore = await getConfig("weekly_recap_local_time");
-  await setConfig("weekly_recap_local_time", "18:00");
 });
 afterAll(async () => {
-  await setConfig("weekly_recap_local_time", recapTimeBefore);
   await closeDb();
 });
 
@@ -59,7 +52,7 @@ describe("without an API key", () => {
   beforeAll(async () => {
     w = await startWorld({ recapModel: null });
   });
-  afterAll(async () => w.close());
+  afterAll(async () => w.close({ keepData: true }));
 
   it("orders deterministically (moment everyone shared, then most-reacted, then time), uses the template text, logs no AI cost, notifies members", async () => {
     const { g, moment, reacted, plain } = await weekGroup("Recap fallback");

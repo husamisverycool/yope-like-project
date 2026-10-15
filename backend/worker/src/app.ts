@@ -10,7 +10,7 @@ import { FcmClient } from "./push/fcm.js";
 import { PushService } from "./push/service.js";
 import { WidgetThrottle } from "./push/throttle.js";
 import { AnthropicRecapModel, type RecapModel } from "./recap/ai.js";
-import { Runner } from "./runner.js";
+import { Runner, type ClaimFn } from "./runner.js";
 import { Scheduler } from "./scheduler.js";
 import type { Services } from "./services.js";
 import { Storage } from "./storage.js";
@@ -45,8 +45,8 @@ export function buildServices(config: WorkerConfig, opts: BuildOptions = {}): Se
   };
 }
 
-export function buildRunner(svc: Services): Runner {
-  return new Runner(svc, HANDLERS, lanes(svc.config));
+export function buildRunner(svc: Services, opts: { claim?: ClaimFn } = {}): Runner {
+  return new Runner(svc, HANDLERS, lanes(svc.config), opts);
 }
 
 export function buildScheduler(svc: Services, runner: Runner | null): Scheduler {

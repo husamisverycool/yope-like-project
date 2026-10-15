@@ -95,7 +95,9 @@ describe("runner", () => {
     await runner.stop(300);
     const j = await job(id);
     expect(j.status).toBe("queued");
-    expect(j.last_error).toBe("worker shutdown");
+    expect(j.attempts).toBe(0); // release_job spends no attempt
+    expect(j.last_error).toBe("released: worker shutdown");
+    expect(new Date(j.run_at).getTime()).toBeLessThanOrEqual(Date.now() + 1000);
     expect(lines.some((l) => l.msg === "job handed back on shutdown")).toBe(true);
     await sql(`update public.jobs set status = 'cancelled' where id = $1`, [id]);
   });

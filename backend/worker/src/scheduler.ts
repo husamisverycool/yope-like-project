@@ -10,6 +10,16 @@ import type { Runner } from "./runner.js";
 import type { Services } from "./services.js";
 import { addDays, utcDate } from "./time.js";
 
+export type TickStep = "invitations" | "arm" | "recaps" | "birthdays" | "tributes" | "years";
+export const ALL_STEPS: TickStep[] = ["invitations", "arm", "recaps", "birthdays", "tributes", "years"];
+
+export interface TickOptions {
+  /** steps to run (default all) */
+  steps?: TickStep[];
+  /** UTC dates passed to schedule_daily_invitations (default today and tomorrow) */
+  dates?: string[];
+}
+
 export interface TickReport {
   at: string;
   invitations: { created: number; existing: number; skipped: Record<string, number> };
@@ -20,6 +30,15 @@ export interface TickReport {
   yearStories: number;
   errors: string[];
 }
+
+const STEP_OF: Record<string, TickStep> = {
+  schedule_daily_invitations: "invitations",
+  arm: "arm",
+  due_weekly_recaps: "recaps",
+  due_birthday_requests: "birthdays",
+  due_tributes: "tributes",
+  due_year_stories: "years",
+};
 
 interface ScheduleRow {
   group_id: string;
@@ -57,15 +76,16 @@ export class Scheduler {
     await this.ticking?.catch(() => undefined);
   }
 
-  async tick(now: Date = this.svc.now()): Promise<TickReport> {
+  async tick(now: Date = this.svc.now(), opts: TickOptions = {}): Promise<TickReport> {
     if (this.ticking) return this.ticking;
-    this.ticking = this.doTick(now).finally(() => {
+    this.ticking = this.doTick(now, opts).finally(() => {
       this.ticking = null;
     });
     return this.ticking;
   }
 
-  private async doTick(now: Date): Promise<TickReport> {
+  private async doTick(now: Date, opts: TickOptions): Promise<TickReport> {
+    const steps = new Set(opts.steps ?? ALL_STEPS);
     const report: TickReport = {
       at: now.toISOString(),
       invitations: { created: 0, existing: 0, skipped: {} },
@@ -77,6 +97,8 @@ export class Scheduler {
       errors: [],
     };
     const step = async (name: string, fn: () => Promise<void>) => {
+      const key = STEP_OF[name];
+      if (key && !steps.has(key)) return;
       try {
         await fn();
       } catch (e) {
@@ -86,7 +108,7 @@ export class Scheduler {
     };
 
     await step("schedule_daily_invitations", async () => {
-      for (const d of [utcDate(now), addDays(utcDate(now), 1)]) {
+      for (const d of opts.dates ?? [utcDate(now), addDays(utcDate(now), 1)]) {
         const rows = await rpc<ScheduleRow[]>(this.svc.db, "schedule_daily_invitations", { p_for_utc_date: d });
         for (const r of rows) {
           if (r.created) report.invitations.created++;

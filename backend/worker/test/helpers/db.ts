@@ -38,6 +38,52 @@ export function mintJwt(sub: string, ttlSeconds = 3600): string {
   return `${header}.${payload}.${sig}`;
 }
 
+/**
+ * The local stack is shared with other agents' test suites: everything a worker test touches is
+ * tracked here, test runners only claim jobs that belong to these ids (scopedClaim), and
+ * cleanup deletes the accounts again through delete_account.
+ */
+export const tracked = { users: [] as TestUser[], groups: new Set<string>() };
+
+export function trackedIds(): string[] {
+  return [...tracked.users.map((u) => u.id), ...tracked.groups];
+}
+
+/** claim_jobs semantics (FOR UPDATE SKIP LOCKED, attempts + 1), limited to this test file's own data. */
+export function scopedClaim(workerId: string) {
+  return async (kinds: string[], limit: number): Promise<any[]> => {
+    const ids = trackedIds();
+    if (!ids.length) return [];
+    const rows = await sql(
+      `with c as (
+         select j.id from public.jobs j
+          where j.status = 'queued' and j.run_at <= now() and j.kind = any($2::text[])
+            and (exists (select 1 from unnest($4::text[]) as t(id) where strpos(j.payload::text, t.id) > 0)
+                 or exists (select 1 from public.media m where m.id::text = j.payload ->> 'media_id' and m.owner_id::text = any($4::text[]))
+                 or exists (select 1 from public.reports r where r.id::text = j.payload ->> 'report_id' and r.reporter_id::text = any($4::text[])))
+          order by j.run_at, j.id
+          limit $3
+          for update skip locked)
+       update public.jobs j set status = 'running', locked_at = now(), locked_by = $1, attempts = j.attempts + 1
+         from c where j.id = c.id
+       returning j.*`,
+      [workerId, kinds, limit, ids],
+    );
+    return rows.map((r) => ({ ...r, id: Number(r.id), run_at: new Date(r.run_at).toISOString() }));
+  };
+}
+
+/** Cancels this file's own leftover queued jobs (never anyone else's). */
+export async function cancelOwnQueuedJobs(): Promise<void> {
+  const ids = trackedIds();
+  if (!ids.length) return;
+  await sql(
+    `update public.jobs j set status = 'cancelled', finished_at = now(), last_error = 'worker test cleanup'
+      where j.status = 'queued' and exists (select 1 from unnest($1::text[]) as t(id) where strpos(j.payload::text, t.id) > 0)`,
+    [ids],
+  );
+}
+
 export interface TestUser {
   id: string;
   name: string;
@@ -56,7 +102,9 @@ export async function createUser(name = "Test User"): Promise<TestUser> {
   const id = data.user!.id;
   const token = mintJwt(id);
   const client = createClient(API_URL, ANON_KEY, { ...noSession, accessToken: async () => token });
-  return { id, name, client };
+  const user = { id, name, client };
+  tracked.users.push(user);
+  return user;
 }
 
 export async function createUsers(n: number, prefix = "Member"): Promise<TestUser[]> {
@@ -84,6 +132,7 @@ export async function createGroup(owner: TestUser, members: TestUser[] = [], opt
     p_waking_start: opts.start ?? null,
     p_waking_end: opts.end ?? null,
   });
+  tracked.groups.add(g.id);
   if (members.length) {
     const invite = await rpc(owner.client, "create_invite", { p_group_id: g.id });
     for (const m of members) await rpc(m.client, "join_group", { p_token: invite.token });
@@ -166,11 +215,6 @@ export async function setConfig(key: string, value: unknown): Promise<void> {
 export async function getConfig(key: string): Promise<unknown> {
   const rows = await sql<{ value: unknown }>(`select value from public.app_config where key = $1`, [key]);
   return rows[0]?.value ?? null;
-}
-
-/** Queued jobs left by other test files would be claimed by these tests' runners: park them. */
-export async function parkQueuedJobs(): Promise<void> {
-  await sql(`update public.jobs set status = 'cancelled', finished_at = now(), last_error = 'parked by worker tests' where status in ('queued', 'running')`);
 }
 
 export async function jobs(kind: string, match: Record<string, unknown> = {}): Promise<any[]> {

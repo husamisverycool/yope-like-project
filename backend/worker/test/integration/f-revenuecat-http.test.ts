@@ -7,13 +7,16 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createHttpServer } from "../../src/http.js";
 import { memoryLogger } from "../../src/log.js";
 import { admin, closeDb, createUsers, sql, type TestUser } from "../helpers/db.js";
+import { startWorld, type World } from "../helpers/world.js";
 
 const SECRET = "Bearer rc-test-secret-value";
 let server: http.Server;
 let base: string;
 let u: TestUser[];
+let w: World;
 
 beforeAll(async () => {
+  w = await startWorld();
   u = await createUsers(3, "Rc");
   server = createHttpServer({ db: admin, log: memoryLogger().log, workerId: "test", revenuecatAuth: SECRET });
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
@@ -21,6 +24,7 @@ beforeAll(async () => {
 });
 afterAll(async () => {
   await new Promise<void>((r) => server.close(() => r()));
+  await w.close();
   await closeDb();
 });
 

@@ -30,8 +30,8 @@ const asUser = (id: string) => ({ apikey: ANON_KEY, Authorization: `Bearer ${use
 async function req(method: string, path: string, body?: unknown, headers: Record<string, string> = {}, auth: Record<string, string> = admin): Promise<any> {
   const res = await fetch(`${SUPABASE_URL}${path}`, {
     method,
-    headers: { ...auth, ...(body !== undefined && !(body instanceof Uint8Array) ? { "Content-Type": "application/json" } : {}), ...headers },
-    body: body === undefined ? undefined : body instanceof Uint8Array ? body : JSON.stringify(body),
+    headers: { ...auth, ...(body !== undefined && !(body instanceof Blob) ? { "Content-Type": "application/json" } : {}), ...headers },
+    body: body === undefined ? undefined : body instanceof Blob ? body : JSON.stringify(body),
   });
   const text = await res.text();
   if (!res.ok) throw new Error(`${method} ${path}: HTTP ${res.status} ${text}`);
@@ -69,7 +69,7 @@ export async function deleteUser(id: string) {
 }
 
 export async function upload(path: string, bytes: Buffer, contentType = "image/jpeg") {
-  await req("POST", `/storage/v1/object/media/${path}`, new Uint8Array(bytes), { "Content-Type": contentType, "x-upsert": "false" });
+  await req("POST", `/storage/v1/object/media/${path}`, new Blob([Uint8Array.from(bytes)]), { "Content-Type": contentType, "x-upsert": "false" });
 }
 
 export async function removeObjects(paths: string[]) {
