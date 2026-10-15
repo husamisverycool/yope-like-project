@@ -24,7 +24,7 @@ import java.time.ZoneId
  * passing `R.string.*` values. Until then nothing is posted (Android requires a channel).
  */
 enum class AppChannel(val id: String, val importance: Int) {
-    /** Same-moment invitation: shown as heads-up (the iOS counterpart is Time Sensitive). */
+    /** Same-moment invitation (importance per design/surfaces/daily.ongoing.md; the iOS alert is `active`, never Time Sensitive). */
     DailyInvitation("daily_invitation", NotificationManager.IMPORTANCE_HIGH),
     NewPost("new_post", NotificationManager.IMPORTANCE_DEFAULT),
     ReactionsAndReplies("reactions_replies", NotificationManager.IMPORTANCE_DEFAULT),

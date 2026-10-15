@@ -37,8 +37,8 @@ Placeholders used below:
    → `config/app.json` `ios.teamId`.
 2. **Identifiers** (Certificates, Identifiers & Profiles → Identifiers → +):
    - App ID `APP_BUNDLE_ID` with capabilities: **App Groups**, **Push Notifications**,
-     **Associated Domains**, **Sign in with Apple: no**, **Time Sensitive Notifications**,
-     **Communication Notifications: no**.
+     **Associated Domains**. (No Time Sensitive Notifications: the daily invitation is an
+     ordinary `active` alert — tenet 5, see design/surfaces/daily.notification.md.)
    - App ID `APP_BUNDLE_ID.widgets` (widget + Live Activity extension) with **App Groups**,
      **Push Notifications**.
    - App ID `APP_BUNDLE_ID.notificationservice` with **App Groups**.

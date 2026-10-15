@@ -353,6 +353,7 @@ final class ScenarioIntegrationTests: XCTestCase {
             "composed_at": Timestamp.format(Date()),
         ])
         let collageID = CollageID(try XCTUnwrap(collageRow["id"] as? String))
+        XCTAssertEqual(collageRow["page_count"] as? Int, 1, "migration 0015 default")
         let value26 = try await ana.data.memories.collages(groupID: g1.id, localDate: invitationDay).map(\.id)
         XCTAssertEqual(value26, [collageID])
         let value27 = try await ana.data.memories.collage(invitationID: invitationID)?.id

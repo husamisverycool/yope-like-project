@@ -78,6 +78,23 @@ final class CodingTests: XCTestCase {
         XCTAssertEqual(decoded.wakingEnd, LocalTime(hour: 21, minute: 30))
     }
 
+    func testCollagePagesAndOlderRowsWithoutPageCount() throws {
+        let json = """
+        {"id":"c1","group_id":"g1","invitation_id":null,"option":"B","post_ids":["p1"],"page_count":3,
+         "image_path":"g/g1/collages/c1/v2/display-1.jpg","widget_path":"g/g1/collages/c1/v2/widget.jpg",
+         "share_path":"g/g1/collages/c1/v2/share-1.jpg","status":"ready","composed_at":null,
+         "created_at":"2026-10-15T13:35:09+00:00"}
+        """
+        let collage = try DataCoding.makeDecoder().decode(Collage.self, from: Data(json.utf8))
+        XCTAssertEqual(collage.pageCount, 3)
+        XCTAssertEqual(collage.imagePath(page: 2), "g/g1/collages/c1/v2/display-2.jpg")
+        XCTAssertEqual(collage.sharePath(page: 3), "g/g1/collages/c1/v2/share-3.jpg")
+        XCTAssertNil(collage.imagePath(page: 4))
+        XCTAssertNil(collage.imagePath(page: 0))
+        let older = json.replacingOccurrences(of: #""page_count":3,"#, with: "")
+        XCTAssertEqual(try DataCoding.makeDecoder().decode(Collage.self, from: Data(older.utf8)).pageCount, 1)
+    }
+
     func testEnumsDecodeUnknownValuesLeniently() throws {
         let kinds = try JSONDecoder().decode([MessageKind].self, from: Data(#"["text","sticker"]"#.utf8))
         XCTAssertEqual(kinds, [.text, .unknown])

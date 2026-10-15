@@ -100,11 +100,11 @@ final class OfflineTests: XCTestCase {
     func testCoordinatorRemovesDeletedPostsFromTheWidgetStoreWithoutNetwork() async throws {
         let widgetStore = WidgetStore(rootURL: directory.appendingPathComponent("widgets"))
         try widgetStore.syncGroups([WidgetGroup(id: "g1", name: "Family")])
-        let photo = WidgetSnapshot(groupID: "g1", sourceID: "p1", photoFileName: "photo-p1.jpg", kind: .photo, postedAt: Date())
-        let other = WidgetSnapshot(groupID: "g1", sourceID: "p2", photoFileName: "photo-p2.jpg", kind: .photo, postedAt: Date())
+        let photo = WidgetSnapshot(groupID: "g1", sourceID: "p1", photoFileName: "photo-p1.jpg", kind: .photo, postedAt: Date(timeIntervalSince1970: 1_000))
+        let other = WidgetSnapshot(groupID: "g1", sourceID: "p2", photoFileName: "photo-p2.jpg", kind: .photo, postedAt: Date(timeIntervalSince1970: 1_000))
         try widgetStore.writeFile(Data([1]), groupID: "g1", fileName: photo.photoFileName)
         try widgetStore.save(photo)
-        let collage = WidgetSnapshot(groupID: "g1", sourceID: "c1", photoFileName: "collage-c1.jpg", kind: .collage, postedAt: Date())
+        let collage = WidgetSnapshot(groupID: "g1", sourceID: "c1", photoFileName: "collage-c1.jpg", kind: .collage, postedAt: Date(timeIntervalSince1970: 1_000))
         try widgetStore.writeFile(Data([2]), groupID: "g1", fileName: collage.photoFileName)
         try widgetStore.save(collage)
 

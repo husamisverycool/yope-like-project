@@ -46,15 +46,19 @@ public struct Collage: Codable, Hashable, Sendable, Identifiable {
     public var invitationID: InvitationID?
     public var option: String
     public var postIDs: [PostID]
+    /// Number of composed pages (≥ 1; layout metadata used to build file paths, never shown).
+    public var pageCount: Int
+    /// Page 1 (`…/<version>/display-1.jpg`).
     public var imagePath: String?
     public var widgetPath: String?
+    /// The 9:16 share image of page 1 (option B only).
     public var sharePath: String?
     public var status: RenderStatus
     public var composedAt: Date?
     public var createdAt: Date
 
     public init(
-        id: CollageID, groupID: GroupID, invitationID: InvitationID?, option: String, postIDs: [PostID],
+        id: CollageID, groupID: GroupID, invitationID: InvitationID?, option: String, postIDs: [PostID], pageCount: Int = 1,
         imagePath: String?, widgetPath: String?, sharePath: String?, status: RenderStatus, composedAt: Date?, createdAt: Date
     ) {
         self.id = id
@@ -62,6 +66,7 @@ public struct Collage: Codable, Hashable, Sendable, Identifiable {
         self.invitationID = invitationID
         self.option = option
         self.postIDs = postIDs
+        self.pageCount = pageCount
         self.imagePath = imagePath
         self.widgetPath = widgetPath
         self.sharePath = sharePath
@@ -76,6 +81,7 @@ public struct Collage: Codable, Hashable, Sendable, Identifiable {
         case invitationID = "invitation_id"
         case option
         case postIDs = "post_ids"
+        case pageCount = "page_count"
         case imagePath = "image_path"
         case widgetPath = "widget_path"
         case sharePath = "share_path"
@@ -84,7 +90,41 @@ public struct Collage: Codable, Hashable, Sendable, Identifiable {
         case createdAt = "created_at"
     }
 
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(CollageID.self, forKey: .id)
+        groupID = try container.decode(GroupID.self, forKey: .groupID)
+        invitationID = try container.decodeIfPresent(InvitationID.self, forKey: .invitationID)
+        option = try container.decode(String.self, forKey: .option)
+        postIDs = try container.decode([PostID].self, forKey: .postIDs)
+        // Migration 0015; rows read from an older server or cache have one page.
+        pageCount = try container.decodeIfPresent(Int.self, forKey: .pageCount) ?? 1
+        imagePath = try container.decodeIfPresent(String.self, forKey: .imagePath)
+        widgetPath = try container.decodeIfPresent(String.self, forKey: .widgetPath)
+        sharePath = try container.decodeIfPresent(String.self, forKey: .sharePath)
+        status = try container.decode(RenderStatus.self, forKey: .status)
+        composedAt = try container.decodeIfPresent(Date.self, forKey: .composedAt)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+    }
+
     public var isReady: Bool { status == .ready && imagePath != nil }
+
+    /// Page `page` (1-based) of the composed collage: `display-<n>.jpg` next to `imagePath`.
+    public func imagePath(page: Int) -> String? {
+        pagePath(imagePath, prefix: "display", page: page)
+    }
+
+    /// The 9:16 share image of page `page` (option B only).
+    public func sharePath(page: Int) -> String? {
+        pagePath(sharePath, prefix: "share", page: page)
+    }
+
+    private func pagePath(_ first: String?, prefix: String, page: Int) -> String? {
+        guard let first, page >= 1, page <= pageCount else { return nil }
+        let suffix = "/\(prefix)-1.jpg"
+        guard first.hasSuffix(suffix) else { return page == 1 ? first : nil }
+        return String(first.dropLast(suffix.count)) + "/\(prefix)-\(page).jpg"
+    }
 }
 
 /// `weekly_recaps` (§5.14).
