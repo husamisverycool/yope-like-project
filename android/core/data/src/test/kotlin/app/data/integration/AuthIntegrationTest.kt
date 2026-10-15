@@ -129,8 +129,9 @@ class AuthIntegrationTest {
             assertNotNull(confirmed.ageConfirmedAt)
         } catch (e: app.data.error.DataException) {
             // min_age_years is NULL until sourced: the gate fails closed (docs/API.md §2).
-            assertEquals(ApiError.AgeGateNotConfigured, (e.error as DataError.Api).code)
-            assertEquals(503, (e.error as DataError.Api).httpStatus)
+            val error = e.error as DataError.Api
+            assertEquals(ApiError.AgeGateNotConfigured, error.code)
+            assertEquals(503, error.httpStatus)
         }
         expectApi(ApiError.InvalidBirthday) { graph.profiles.setBirthday(LocalDate.now().plusDays(3), optIn = true) }
         val withBirthday = graph.profiles.setBirthday(LocalDate.of(1991, 2, 28), optIn = true)
