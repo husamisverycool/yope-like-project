@@ -26,9 +26,14 @@ struct GroupPhotoEntry: TimelineEntry {
 }
 
 /// Reads the newest photo or same-moment collage for the configured group from the App Group.
-/// Timelines never refresh on a schedule: new photos arrive by push, and the Notification
-/// Service Extension (or the app) reloads this widget kind after writing the rendition.
+/// New photos arrive by push: the Notification Service Extension (or the app) writes the
+/// rendition and requests a reload. Those reloads are budgeted and best effort
+/// (docs/PLATFORM_CONSTRAINTS.md §1.2), so each timeline also asks to be rebuilt after a random
+/// 15–60 minutes (§1.6 step 4: inside the 40–70 daily refreshes, jittered per request) to pick
+/// up renditions whose reload was dropped.
 struct GroupPhotoProvider: AppIntentTimelineProvider {
+    static let safetyRefreshSeconds: ClosedRange<TimeInterval> = 15 * 60...60 * 60
+
     func placeholder(in context: Context) -> GroupPhotoEntry {
         .empty(at: Date())
     }
@@ -38,13 +43,21 @@ struct GroupPhotoProvider: AppIntentTimelineProvider {
     }
 
     func timeline(for configuration: SelectGroupIntent, in context: Context) async -> Timeline<GroupPhotoEntry> {
-        Timeline(entries: [entry(for: configuration, at: Date())], policy: .never)
+        let now = Date()
+        let refresh = now.addingTimeInterval(TimeInterval.random(in: Self.safetyRefreshSeconds))
+        return Timeline(entries: [entry(for: configuration, at: now)], policy: .after(refresh))
     }
 
     private func entry(for configuration: SelectGroupIntent, at date: Date) -> GroupPhotoEntry {
         let store = WidgetStore.forBundle(.main)
         let configuredGroup = configuration.group?.id
-        let snapshot = configuredGroup.map { store.latestSnapshot(groupID: $0) } ?? store.latestSnapshot()
+        // A configured group shows only its own photos (or its empty state).
+        let snapshot: WidgetSnapshot?
+        if let configuredGroup {
+            snapshot = store.latestSnapshot(groupID: configuredGroup)
+        } else {
+            snapshot = store.latestSnapshot()
+        }
         return GroupPhotoEntry(
             date: date,
             groupID: configuredGroup ?? snapshot?.groupID,

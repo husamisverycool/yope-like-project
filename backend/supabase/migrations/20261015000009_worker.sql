@@ -167,7 +167,8 @@ $$;
 -- inside the waking window. Windows that end at/before they start wrap past midnight.
 -- Computed on absolute instants, so DST days (23 h / 25 h) stay inside the window:
 -- an ambiguous/skipped start resolves to the later instant (Postgres default), an
--- ambiguous/skipped end to the earlier one (window_end_instant).
+-- ambiguous/skipped end to the earlier one (window_end_instant). NULL when the
+-- window holds less real time than one invitation on that date.
 create function private.invitation_fires_at(
   p_group uuid, p_local_date date, p_tz text, p_start time, p_end time, p_window_seconds integer
 )
@@ -183,8 +184,8 @@ declare
                          p_tz);
   v_span double precision := extract(epoch from (v_end - v_start)) - p_window_seconds;
 begin
-  if v_span <= 0 then
-    return v_start;
+  if v_span < 0 then
+    return null; -- less real time than one invitation that day (e.g. swallowed by a DST gap)
   end if;
   return v_start + make_interval(secs => floor(private.invitation_fraction(p_group, p_local_date) * v_span));
 end;
@@ -194,7 +195,9 @@ $$;
 -- non-paused group with members (call it for today and tomorrow, UTC; that covers
 -- every time zone's "today"). Idempotent per (group, local_date): existing rows are
 -- returned unchanged with created = false. Groups are skipped (with a reason) when
--- no waking window is known or the instant has already passed.
+-- no waking window is known (waking_window_not_set), the window holds less real time
+-- than one invitation that day (window_too_short, only possible inside a DST gap) or
+-- the instant has already passed (window_passed).
 -- On creation it enqueues invitation.fire (run_at = fires_at) and collage.compose
 -- (run_at = closes_at).
 create function public.schedule_daily_invitations(p_for_utc_date date)
@@ -256,6 +259,12 @@ begin
     end if;
 
     v_fires := private.invitation_fires_at(g.id, p_for_utc_date, g.time_zone, v_start, v_end, v_window);
+    if v_fires is null then
+      group_id := g.id; local_date := p_for_utc_date; invitation_id := null;
+      fires_at := null; closes_at := null; created := false; skipped_reason := 'window_too_short';
+      return next;
+      continue;
+    end if;
     if v_fires <= now() then
       group_id := g.id; local_date := p_for_utc_date; invitation_id := null;
       fires_at := v_fires; closes_at := v_fires + make_interval(secs => v_window);

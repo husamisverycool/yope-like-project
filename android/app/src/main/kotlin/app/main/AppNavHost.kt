@@ -82,7 +82,10 @@ fun AppNavHost(deepLinks: Flow<DeepLink>, navController: NavHostController = rem
 }
 
 private inline fun <reified T : AppRoute> NavGraphBuilder.empty() {
-    composable<T> { entry -> EmptyDestination(entry.toRoute<T>()) }
+    // The route class is captured here: a reified call inside the composable lambda is not
+    // inlined by the Compose compiler and fails at runtime.
+    val type = T::class
+    composable<T> { entry -> EmptyDestination(entry.toRoute<AppRoute>(type)) }
 }
 
 /** Replaces the back stack above home with [stack] (a deep link's full path). */

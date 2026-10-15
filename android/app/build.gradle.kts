@@ -45,7 +45,7 @@ roborazzi {
 }
 
 // config/app.json: release builds refuse BLOCKED owner values (docs/OWNER_SETUP.md).
-val checkReleaseConfig by tasks.registering {
+val checkReleaseConfig = tasks.register("checkReleaseConfig") {
     val blocked = listOfNotNull(
         "displayName".takeIf { appDisplayName == null },
         "domain".takeIf { appDomain == null },

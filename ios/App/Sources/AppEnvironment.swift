@@ -82,11 +82,14 @@ final class AppEnvironment {
                 wasInBackground = false
                 router.startSession()
             }
+            // Reloads requested while the app is in the foreground are not budgeted
+            // (docs/PLATFORM_CONSTRAINTS.md §1.1), so every foreground refreshes the widgets.
+            WidgetReloader.reloadAll()
             let liveActivities = self.liveActivities
             Task { await liveActivities.endClosedActivities() }
         case .background:
             wasInBackground = true
-            try? widgetStore.prune(now: Date(), gracePeriod: Self.widgetPruneGracePeriod)
+            _ = try? widgetStore.prune(now: Date(), gracePeriod: Self.widgetPruneGracePeriod)
         default:
             break
         }

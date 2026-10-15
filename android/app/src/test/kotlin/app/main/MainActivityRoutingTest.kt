@@ -3,7 +3,7 @@ package app.main
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -13,6 +13,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 
 /** Widget and notification taps are explicit intents to MainActivity that land on their screen. */
 @RunWith(AndroidJUnit4::class)
@@ -31,12 +32,12 @@ class MainActivityRoutingTest {
     }
 
     @Test fun notificationTapWhileRunningRoutesThroughOnNewIntent() {
-        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            compose.onNode(hasTestTag("groups.list"), useUnmergedTree = true).assertExists()
-            val tap = DeepLinkIntents.intent(app, DeepLink.DailyInvitation("g1", "inv1"))!!
-            scenario.onActivity { it.onNewIntent(tap) }
-            compose.onNode(hasTestTag("daily.capture"), useUnmergedTree = true).assertExists()
-        }
+        val controller = Robolectric.buildActivity(MainActivity::class.java).setup()
+        compose.onNode(hasTestTag("groups.list"), useUnmergedTree = true).assertExists()
+        val tap = DeepLinkIntents.intent(app, DeepLink.DailyInvitation("g1", "inv1"))!!
+        controller.newIntent(tap)
+        compose.onNode(hasTestTag("daily.capture"), useUnmergedTree = true).assertExists()
+        controller.pause().stop().destroy()
     }
 
     @Test fun inviteAppLinkIsIgnoredWhileTheDomainIsUnset() {

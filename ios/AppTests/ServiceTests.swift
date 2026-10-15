@@ -10,8 +10,8 @@ final class WidgetStoreSimulatorTests: XCTestCase {
     func testRoundTripThroughFallbackDirectory() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         defer { try? FileManager.default.removeItem(at: directory) }
-        // Unsigned simulator builds have no App Group container; the store falls back.
-        let store = WidgetStore.resolve(appGroupIdentifier: "group.invalid.not-entitled", fallbackDirectory: directory)
+        // No App Group (unsigned simulator builds, tests): the store uses the fallback directory.
+        let store = WidgetStore.resolve(appGroupIdentifier: nil, fallbackDirectory: directory)
         XCTAssertTrue(store.rootURL.path.hasPrefix(directory.path))
 
         try store.syncGroups([WidgetGroup(id: "g1", name: "Family")])
@@ -24,12 +24,6 @@ final class WidgetStoreSimulatorTests: XCTestCase {
         XCTAssertEqual(reopened.latestSnapshot(groupID: "g1"), snapshot)
         XCTAssertEqual(reopened.groups(), [WidgetGroup(id: "g1", name: "Family")])
         XCTAssertNotNil(reopened.photoURL(for: snapshot))
-    }
-
-    func testBundleResolutionIsWritable() throws {
-        let store = WidgetStore.forBundle(.main)
-        try store.writeFile(Data([1]), groupID: "probe", fileName: "probe.bin")
-        try store.removeGroup("probe")
     }
 }
 

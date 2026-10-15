@@ -215,6 +215,13 @@ describe('membership changes', () => {
       400,
     );
     await expectRpcError(
+      rpc(a.client, 'set_group_invitation_hours', { p_group_id: g.id, p_start: '10:00', p_end: '10:01' }),
+      'invalid_waking_window',
+      400,
+    );
+    const wrap = await rpc(a.client, 'set_group_invitation_hours', { p_group_id: g.id, p_start: '23:59', p_end: '00:01' });
+    expect([wrap.waking_start, wrap.waking_end]).toEqual(['23:59:00', '00:01:00']);
+    await expectRpcError(
       rpc(b.client, 'set_group_invitation_hours', { p_group_id: g.id, p_start: '10:00', p_end: '20:00' }),
       'not_group_admin',
       403,

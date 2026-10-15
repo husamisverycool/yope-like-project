@@ -57,7 +57,8 @@ public struct PhotoLibraryService: Sendable {
     public static func pickerConfiguration(selectionLimit: Int, includeVideos: Bool) -> PHPickerConfiguration {
         var configuration = PHPickerConfiguration()
         configuration.selectionLimit = selectionLimit
-        configuration.filter = includeVideos ? .any(of: [.images, .livePhotos, .videos]) : .any(of: [.images, .livePhotos])
+        let filters: [PHPickerFilter] = includeVideos ? [.images, .livePhotos, .videos] : [.images, .livePhotos]
+        configuration.filter = PHPickerFilter.any(of: filters)
         configuration.preferredAssetRepresentationMode = .current
         return configuration
     }

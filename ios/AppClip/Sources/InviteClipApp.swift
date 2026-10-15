@@ -5,6 +5,7 @@ import AppModels
 import Observation
 import StoreKit
 import SwiftUI
+import UIKit
 
 @main
 struct InviteClipApp: App {

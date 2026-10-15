@@ -41,6 +41,22 @@ as $$
   select nullif(split_part(btrim(coalesce(p_display_name, '')), ' ', 1), '')
 $$;
 
+-- A waking window (wrapping past midnight when end <= start) must be able to hold
+-- at least one invitation.
+create function private.waking_window_ok(p_start time, p_end time)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select (p_start is null and p_end is null)
+      or (p_start is not null and p_end is not null and p_start <> p_end
+          and extract(epoch from (case when p_end > p_start then p_end - p_start
+                                       else (p_end - p_start) + interval '24 hours' end))
+              >= coalesce(private.config_int('invitation_window_seconds'), 120))
+$$;
+
 -- Unfired invitations are recomputed after a change of hours / pause / time zone.
 create function private.cancel_scheduled_invitations(p_group uuid)
 returns void
@@ -135,7 +151,7 @@ begin
   if not private.is_valid_time_zone(p_time_zone) then
     raise exception 'invalid_time_zone' using errcode = 'PT400';
   end if;
-  if (p_waking_start is null) <> (p_waking_end is null) or p_waking_start = p_waking_end then
+  if not private.waking_window_ok(p_waking_start, p_waking_end) then
     raise exception 'invalid_waking_window' using errcode = 'PT400';
   end if;
   if p_cover_path is not null and not private.is_own_upload(p_cover_path, v_uid) then
@@ -394,7 +410,7 @@ begin
   if not private.is_admin(p_group_id) then
     raise exception 'not_group_admin' using errcode = 'PT403';
   end if;
-  if (p_start is null) <> (p_end is null) or p_start = p_end then
+  if not private.waking_window_ok(p_start, p_end) then
     raise exception 'invalid_waking_window' using errcode = 'PT400';
   end if;
   update public.groups g set waking_start = p_start, waking_end = p_end

@@ -102,13 +102,20 @@ describe('fires_at computation (all days, many zones)', () => {
                   and $4::time > $3::time
                or (((f + interval '120 seconds') at time zone $1)::time > $4::time and $4::time > $3::time)
              )::int as violations,
+                count(*) filter (where f is null)::int as nulls,
                 count(*)::int as n
            from x`,
         [tz, d, s, e],
       );
       expect(r.n).toBe(3000);
       expect(r.violations, `${tz} ${d} ${s}-${e}`).toBe(0);
+      expect((r as any).nulls, `${tz} ${d} ${s}-${e}`).toBe(0);
     }
+    // a window that lies entirely inside a DST gap has no instant that day
+    const [gap] = await sql<{ f: string | null }>(
+      `select private.invitation_fires_at(gen_random_uuid(), '2027-03-14', 'America/Havana', '00:00', '00:45', 120) as f`,
+    );
+    expect(gap.f).toBeNull();
   });
 
   it('spreads instants across the window (not a constant)', async () => {
