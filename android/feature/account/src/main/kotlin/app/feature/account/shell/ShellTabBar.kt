@@ -75,15 +75,19 @@ fun ShellTabBar(nav: NavHostController, env: AccountEnvironment, modifier: Modif
                         AppTab.Walls -> AppRoute.WallsBrowse
                         AppTab.Me -> AppRoute.WallMine
                     }
-                    if (tab == selected) {
-                        // Already there.
-                    } else if (tab == AppTab.Camera) {
-                        nav.navigate(route) { launchSingleTop = true }
-                    } else {
-                        nav.navigate(route) {
-                            popUpTo(nav.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
+                    when {
+                        tab == selected -> Unit
+                        tab == AppTab.Camera -> nav.navigate(route) { launchSingleTop = true }
+                        else -> {
+                            // The camera is never kept in a tab's saved state: leave it first.
+                            if (selected == AppTab.Camera) nav.popBackStack()
+                            if (nav.currentDestination?.hasRoute(route::class) != true) {
+                                nav.navigate(route) {
+                                    popUpTo(nav.graph.startDestinationId) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
                         }
                     }
                 },

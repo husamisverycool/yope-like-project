@@ -81,7 +81,7 @@ import app.ui.components.PrimaryButtonSize
 
 /**
  * The editor as a native sheet over `week.recap` (Android: `ModalBottomSheet(skipPartiallyExpanded =
- * true)`, `easing.global.native.sheet`; Yope's own sheet spring is BLOCKED). [onClose] pops the route.
+ * true)`, `easing.global.native.sheet`: native sheets keep the system motion; `spring.global.sheetPresent` is for custom sheets). [onClose] pops the route.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

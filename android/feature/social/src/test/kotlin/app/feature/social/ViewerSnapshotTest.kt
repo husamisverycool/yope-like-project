@@ -79,6 +79,22 @@ class ViewerSnapshotTest : SnapshotBase() {
         viewer(state("v-2", d), ViewerUiState(confirmDelete = true, coach = false), d, screen = true)
     }
 
+    /** "saved" as Yope's lime toast for `camera.sendto.duration.toastVisible` (sourced, G2-7). */
+    @Test fun toastSaved() {
+        val d = data()
+        val ui = ViewerUiState(coach = false).apply { toast = "pic saved" }
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            TestScreen(d) { PhotoViewerContent(state("v-1", d), ui, nav, testVoice, VoicePlayback(null, false), {}, {}, {}, {}, {}, {}, {}, {}, {}, {}) }
+        }
+        compose.mainClock.advanceTimeBy(TOAST_FRAME_MS)
+        com.github.takahirom.roborazzi.captureScreenRoboImage()
+    }
+
+    private companion object {
+        const val TOAST_FRAME_MS = 500L
+    }
+
     @Test fun replyTyping() {
         val d = data()
         viewer(state("v-1", d).copy(draft = "where is this"), data = d)

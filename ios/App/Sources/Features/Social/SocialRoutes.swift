@@ -72,3 +72,16 @@ struct SocialModalDestination: View {
         }
     }
 }
+
+/// `week.edit` presented as an app modal (`SocialModal`), outside `week.recap` / `week.history`: it hosts its
+/// own toasts, the way those screens do for the sheet they present.
+struct WeekEditScreen: View {
+    let groupID: String
+    let mode: WeekEditModel.Mode
+    @State private var toasts = ToastCenter()
+
+    var body: some View {
+        WeekEditView(groupID: GroupID(groupID), mode: mode, toasts: toasts)
+            .toastHost(toasts)
+    }
+}

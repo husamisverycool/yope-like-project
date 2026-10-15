@@ -327,7 +327,15 @@ def groups_screen():
     prow = first(row_runs(e, (pcol[0] + pcol[1]) / 2, near(t("color.global.surfaceLight"), 3)))
     rows += [("'invite more' pill height", "groups.screen.size.lightPillHeight", t("groups.screen.size.lightPillHeight"), span(pcol), {"tol": 1.0}),
              ("'invite more' pill radius", "groups.screen.radius.lightPill", t("groups.screen.radius.lightPill"), round(corner_radius(e, {"left": prow[0], "top": pcol[0], "color": t("color.global.surfaceLight")}, t("color.global.background")), 2), {"tol": 1.0})]
-    return [("Layout (groups.screen/default, profile, created)", rows)]
+    en = snap("groups.screen/entries")
+    ecol = col_runs(en, 270, near(t("color.global.control"), 3), 40, 300)
+    erow = first(row_runs(en, ecol[0][0] + 17, near(t("color.global.control"), 3)))
+    erows = [("entry card side margin", "groups.screen.size.cardMarginH", t("groups.screen.size.cardMarginH"), erow[0], {"tol": 1.0}),
+             ("entry card gap", "groups.screen.size.cardGap", t("groups.screen.size.cardGap"), ecol[1][0] - ecol[0][1] if len(ecol) > 1 else None, {"tol": 1.0}),
+             ("entry card radius", "radius.global.card", t("radius.global.card"), round(corner_radius(en, {"left": erow[0], "top": ecol[0][0], "color": t("color.global.control")}, t("color.global.background")), 2), {"tol": 1.0}),
+             ("entry card fill", "color.global.control", t("color.global.control"), color_at(en, 270, ecol[0][0] + 4), {"status": "approx", "note": "the fill choice is this pass's: Yope has no such row (see the note above the tables)"}),
+             ("'Let's go' capsule height", "onboarding.permission.contacts.size.cardButtonHeight", t("onboarding.permission.contacts.size.cardButtonHeight"), span(first(col_runs(en, 330, near(t("color.global.surfaceLight"), 3), ecol[1][0], ecol[1][1]))), {"tol": 1.0})]
+    return [("Layout (groups.screen/default, profile, created)", rows), ("Memory entries above the feed (groups.screen/entries)", erows)]
 
 
 def system_rows(surface, state, row_label, y_hint):
@@ -422,7 +430,8 @@ SURFACES = [
     dict(id="groups.invite", what="Invite: share link, contacts — `groups/GroupInviteScreen.kt`.",
          ours="groups.invite/default-family", ref=_y("a-yrrah-7452976839846382855-t10.73-add-friends-share-link-2024.png"), measure=groups_invite),
     dict(id="groups.screen", what="Group feed, profile page, created / empty states — `groups/GroupScreen.kt`, `GroupProfileScreen.kt`.",
-         ours="groups.screen/default", ref=_y("a-itsmthuyope-7644974799302823175-t43.73-group-screen-hourly.png"), measure=groups_screen),
+         ours="groups.screen/default", ref=_y("a-itsmthuyope-7644974799302823175-t43.73-group-screen-hourly.png"), measure=groups_screen,
+         extra="Memory entries (onthisday.md, year.story.md, birthday.request.md → A: \"the row component, its position and tokens belong to the groups.screen pass\"): the memory pass's `OnThisDayEntry`, `YearStoryEntry` and `BirthdayRequestEntries` supply copy and action; this screen places them above the feed in `GroupEntryCard`. **Approximated**: Yope draws no such row and groups.screen names no tokens for it, so the card is Yope's inline-card pattern (`onboarding.permission.contacts.layout.card`: 16 insets, title 17 bold, detail 14 secondary, white capsule button) filled with the screen's control colour (`color.global.control`), photo-card margins and gap (`groups.screen.size.cardMarginH` / `.cardGap`), corners `radius.global.card`."),
     dict(id="groups.settings", what="Group settings (M3 list) — `groups/GroupSettingsScreen.kt`.",
          ours="groups.settings/default-admin", ref=_y("a-yrrah-7434441926000037121-t43.23-members-list-2024.png"), ref_note="Yope's members list; ours is the platform list the spec prescribes.", measure=lambda: settings_simple("groups.settings", "default-admin")),
     dict(id="settings.root", what="Settings (M3 list) — `settings/SettingsRootScreen.kt`.",

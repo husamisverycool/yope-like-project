@@ -62,7 +62,7 @@ NOTES = {
     ("*", "paywall.layout.requiredDisclosures"): (B, "store prices at runtime (Play ProductDetails via core:billing), renewal + cancellation lines, Restore Purchases, Terms / Privacy links", ""),
     ("*", "paywall.size.iconTile"): ("BLOCKED", "tile omitted (its art paywall.layout.iconTileArt is BLOCKED)", "the title moves up"),
     ("*", "paywall.layout.iconTileArt"): ("BLOCKED", "tile omitted", "owner asset (the app icon)"),
-    ("*", "paywall.fontSize.planDetail"): ("MISS", "no detail line under the yearly plan", "the monthly-equivalent price needs the store's per-month breakdown, not built (paywall.plans.yearly.detail)"),
+    ("*", "paywall.fontSize.planDetail"): ("MISS", "no detail line under the yearly plan", "not built: core:billing's PremiumPackage exposes only formattedPrice; the per-month price (RevenueCat pricePerMonth) needs a core:billing accessor (foundation API, not this pass's)"),
     ("*", "paywall.color.planDetail"): ("MISS", "no detail line under the yearly plan", "as above"),
     ("*", "color.global.separator"): (NA, "Yope surfaces separate cards with gaps; system lists use system.outline", "core:ui Hairline() provides it for surfaces that name it"),
 }
@@ -86,7 +86,7 @@ COPY_NOTES = {
     ("*", "walls.mine.a11y.settings"): (NA, "the walls pass's settings entry", "names the entry point into settings.root"),
     ("*", "paywall.legal.billing.ios"): (NA, "Android shows paywall.legal.billing.android", "iOS only"),
     ("*", "paywall.locked.badge"): (NA, "the 'Premium' badge sits on other passes' locked controls", ""),
-    ("*", "paywall.plans.yearly.detail"): ("MISS", "not shown", "needs the per-month breakdown from the store; not built"),
+    ("*", "paywall.plans.yearly.detail"): ("MISS", "not shown", "needs a per-month price from core:billing (PremiumPackage exposes only formattedPrice)"),
     ("*", "paywall.perk.history.emoji"): ("BLOCKED", "history perk drawn without an emoji in release", "no sourced emoji (owner)"),
     ("*", "safety.report.menuItem"): (B, "menus use groups.screen.photo.menu.report / groups.settings.members.menu.report (same text, surface-specific keys)", ""),
     ("*", "safety.block.menuItem"): (B, "menus use groups.settings.members.menu.block", ""),

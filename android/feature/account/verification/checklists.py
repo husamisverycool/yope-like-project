@@ -31,6 +31,7 @@ import re
 import subprocess
 import sys
 
+sys.dont_write_bytecode = True  # no __pycache__ next to the sources
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import measure as M  # noqa: E402
 from notes import COPY_NOTES, NOTES  # noqa: E402

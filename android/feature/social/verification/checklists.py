@@ -364,8 +364,8 @@ def photo_viewer():
     sh.row("••• menu (save; delete own / report + block others)", "`photo.viewer.layout.menu`", "renders `menuMine`, `menuOthers`", status="match (token)")
     sh.row("delete everywhere → `delete_media` (confirmation `photo.viewer.layout.deleteConfirm`)", "spec", "flow test deleteEverywhere", status="match (token)")
     sh.row("reply with a photo → AppRoute.Camera(groupId) + SocialHandoff.REPLY_TO_POST_ID", "spec", "flow test replyToAPhotoWithTextAndWithAPhoto", status="match (token)")
-    sh.row("self-tag toggle with `tagging.*` copy, optimistic", "tagging.md", "VM test viewerTagIsOptimistic…; render `othersPhotoCoach`", status="match (token)")
-    sh.row("toasts (`camera.sendto.duration.toastVisible`)", "BLOCKED", "no toast drawn; the text is announced", status="BLOCKED")
+    sh.row("\"i'm in this\": the memory group's `SelfTagToggle` (tagging.md: optimistic, coach, toasts)", "tagging.md", "embedded at the action slot; renders `othersPhoto`, `othersPhotoCoach`; post_not_found → gone (VM test viewerLoadsYourTagAndMarksAPhotoGone)", status="match (token)")
+    sh.row("toasts `camera.sendto.duration.toastVisible` (G2-7), core:ui LimeToast", tok("camera.sendto.duration.toastVisible"), "lime toast for 2000 ms + TalkBack announcement (render `toastSaved`)", status="match (token)")
     return sh
 
 
@@ -551,7 +551,7 @@ SURFACES = [
     ("chat.composer", chat_composer, ["ChatSnapshotTest.content", "ChatSnapshotTest.composerTyping"], YOPE05, "175,610,897,1936"),
     ("chat.voice", chat_voice, ["ChatSnapshotTest.voicePlaying", "ChatSnapshotTest.composerRecordingHolding", "ChatSnapshotTest.composerRecordingLocked"], YOPE05, "175,610,897,1936"),
     ("chat.reactions", chat_reactions, ["ChatSnapshotTest.reactionsManyStickers", "ChatSnapshotTest.reactionsPicker", "ChatSnapshotTest.reactionsFlyToCluster"], "references/auto/locket/store/locket-store-04.png", None),
-    ("photo.viewer", photo_viewer, ["ViewerSnapshotTest.othersPhoto", "ViewerSnapshotTest.replyTyping"], "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png", "98,75,524,1130"),
+    ("photo.viewer", photo_viewer, ["ViewerSnapshotTest.othersPhoto", "ViewerSnapshotTest.replyTyping", "ViewerSnapshotTest.toastSaved"], "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png", "98,75,524,1130"),
     ("walls.mine", walls_mine, ["WallsSnapshotTest.mineContent"], "references/auto/yope/frames/b-presskit-profile.png", None),
     ("walls.member", lambda: walls_mine("walls.member", "back"), ["WallsSnapshotTest.memberContent"], "references/auto/yope/frames/b-presskit-profile.png", None),
     ("walls.browse", walls_browse, ["WallsSnapshotTest.browseContent"], "references/auto/yope/frames/b-yopeapp-7591560669967682847-t116.00-me-and-friends.png", None),

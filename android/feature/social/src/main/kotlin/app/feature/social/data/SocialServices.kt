@@ -74,9 +74,9 @@ class SocialServices(val voice: (Context) -> VoiceServices, val gallery: Gallery
 }
 
 /**
- * core:voice-backed [VoiceServices]. The recorder samples the input level for the waveform; the
- * player's progress ticks are not displayed (the playing state's visuals are BLOCKED,
- * design/surfaces/chat.voice.md), so its interval only paces state updates.
+ * core:voice-backed [VoiceServices]. The recorder samples the input level (the paused draft's
+ * waveform); the player's progress ticks move the played / unplayed split bar by bar
+ * (`chat.voice.color.waveformPlayed`), so they come at least once per bar of a short message.
  */
 class PlatformVoiceServices(private val context: Context) : VoiceServices {
     private val recorder = VoiceRecorder(context)
@@ -136,7 +136,7 @@ class PlatformVoiceServices(private val context: Context) : VoiceServices {
     private companion object {
         /** Level sampling of the recorder (waveform resolution before it is resampled to the bar count). */
         const val LEVEL_SAMPLE_MS = 50L
-        const val PLAYER_TICK_MS = 250L
+        const val PLAYER_TICK_MS = 100L
     }
 }
 

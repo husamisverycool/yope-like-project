@@ -25,6 +25,12 @@ import app.model.DeepLink
 import app.ui.theme.AppTheme
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableSharedFlow
+import androidx.compose.runtime.CompositionLocalProvider
+import app.feature.memory.common.LocalMemoryBackend
+import app.feature.memory.common.MemoryBackend
+import app.feature.memory.common.UnconfiguredMemoryBackend
+import app.data.model.OnThisDayItem
+import app.model.OnThisDayRoute
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -50,10 +56,16 @@ class AccountFlowsTest {
 
     @After fun clear() = GroupsListViewModel.Details.byGroup.clear()
 
-    private fun start(env: AccountEnvironment) {
+    private companion object {
+        const val WAIT_MS = 5_000L
+    }
+
+    private fun start(env: AccountEnvironment, memory: MemoryBackend? = null) {
         compose.setContent {
             nav = rememberNavController()
-            AppTheme { AppNavHost(links, nav, env) }
+            CompositionLocalProvider(LocalMemoryBackend provides memory) {
+                AppTheme { AppNavHost(links, nav, env) }
+            }
         }
         compose.waitForIdle()
     }
@@ -209,6 +221,49 @@ class AccountFlowsTest {
         assertTrue(backend.accountDeleted)
         at<AppRoute.AuthPhone>()
         text("sign up or log in").assertExists()
+    }
+
+    /** camera.capture → In: "app launch (the app opens to the camera)", over groups.list. */
+    @Test fun launchWithAGroupOpensTheCameraOverHome() {
+        val backend = FakeAccountBackend().apply {
+            signIn(); ageConfirmed = true; profile(meId, "Ana Lima")
+            group("g1", "Sunday dinners"); member("g1", meId, MemberRole.Admin)
+        }
+        start(fakeEnvironment(backend, FakeStores().apply { onboarded += backend.meId }, launchToCamera = true))
+        at<AppRoute.Camera>()
+        assertTrue(nav.previousBackStackEntry!!.destination.hasRoute<AppRoute.GroupsList>())
+        // The tab bar sits under the camera; Groups goes home.
+        compose.onNode(hasContentDescription("groups")).performClick()
+        compose.waitForIdle()
+        at<AppRoute.GroupsList>()
+    }
+
+    @Test fun launchWithoutGroupsStaysHome() {
+        val backend = FakeAccountBackend().apply { signIn(); ageConfirmed = true; profile(meId, "Ana Lima") }
+        start(fakeEnvironment(backend, FakeStores().apply { onboarded += backend.meId }, launchToCamera = true))
+        at<AppRoute.GroupsList>()
+    }
+
+    /** The memory pass's entry sits above the feed and opens the day (onthisday.md → A). */
+    @Test fun onThisDayEntryOpensTheDay() {
+        val backend = FakeAccountBackend().apply {
+            signIn(); ageConfirmed = true; profile(meId, "Ana Lima")
+            group("g1", "Sunday dinners"); member("g1", meId, MemberRole.Admin)
+        }
+        backend.post("g1", backend.meId, backend.now)
+        val group = backend.groups.getValue("g1")
+        val memory = object : MemoryBackend by UnconfiguredMemoryBackend {
+            override suspend fun group(groupId: String) = group
+            override suspend fun onThisDay(groupId: String, localDate: java.time.LocalDate) =
+                listOf(OnThisDayItem("p0", "m0", backend.meId, backend.now.minus(java.time.Duration.ofDays(365)), 1))
+        }
+        start(fakeEnvironment(backend, FakeStores().apply { onboarded += backend.meId }), memory)
+        compose.runOnIdle { nav.navigate(AppRoute.Group("g1")) }
+        compose.waitForIdle()
+        compose.waitUntil(WAIT_MS) { compose.onAllNodes(hasText("Day in History", substring = true)).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNode(hasText("Day in History", substring = true)).performClick()
+        compose.waitForIdle()
+        assertTrue("at ${nav.currentDestination?.route}", nav.currentBackStack.value.any { it.destination.hasRoute<OnThisDayRoute>() })
     }
 
     @Test fun cachedGroupsShowWithoutASpinnerWhileRefreshing() {
