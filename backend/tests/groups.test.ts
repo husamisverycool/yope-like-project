@@ -84,6 +84,9 @@ describe('update_group (admin only)', () => {
     r = await rpc(a.client, 'update_group', { p_group_id: g.id, p_cover_path: '' });
     expect(r.cover_path).toBeNull();
     expect(r.name).toBe('New');
+    // the replaced cover object is queued for deletion
+    const del = await sql(`select 1 from public.jobs where kind = 'storage.delete' and payload -> 'paths' ? $1`, [cover]);
+    expect(del).toHaveLength(1);
     await expectRpcError(rpc(b.client, 'update_group', { p_group_id: g.id, p_name: 'Nope' }), 'not_group_admin', 403);
     await expectRpcError(rpc(stranger.client, 'update_group', { p_group_id: g.id, p_name: 'Nope' }), 'not_group_member', 403);
     await expectRpcError(rpc(a.client, 'update_group', { p_group_id: g.id, p_time_zone: 'Nowhere/X' }), 'invalid_time_zone', 400);

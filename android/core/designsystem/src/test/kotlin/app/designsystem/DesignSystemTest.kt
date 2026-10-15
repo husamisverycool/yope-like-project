@@ -80,7 +80,7 @@ class DesignSystemTest {
     }
 
     @Test fun springTokenBecomesASpringSpec() {
-        val spec = DSSpring(dampingRatio = 0.5f, stiffness = 300f).spec<Float>() as SpringSpec<Float>
+        val spec: SpringSpec<Float> = DSSpring(dampingRatio = 0.5f, stiffness = 300f).spec()
         assertEquals(0.5f, spec.dampingRatio)
         assertEquals(300f, spec.stiffness)
     }

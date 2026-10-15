@@ -183,6 +183,7 @@ as $$
 declare
   v_uid uuid := private.require_user();
   v_group public.groups;
+  v_old_cover text;
 begin
   if not private.is_member(p_group_id) then
     raise exception 'not_group_member' using errcode = 'PT403';
@@ -201,6 +202,7 @@ begin
   end if;
 
   select * into v_group from public.groups g where g.id = p_group_id for update;
+  v_old_cover := v_group.cover_path;
 
   if p_time_zone is not null and p_time_zone <> v_group.time_zone then
     perform private.cancel_scheduled_invitations(p_group_id);
@@ -215,6 +217,11 @@ begin
          time_zone = coalesce(p_time_zone, g.time_zone)
    where g.id = p_group_id
   returning * into v_group;
+  -- a replaced cover nobody uses any more is deleted
+  if v_old_cover is not null and v_old_cover is distinct from v_group.cover_path
+     and not exists (select 1 from public.groups g where g.cover_path = v_old_cover) then
+    perform private.enqueue_storage_delete(array[v_old_cover]);
+  end if;
   return v_group;
 end;
 $$;
