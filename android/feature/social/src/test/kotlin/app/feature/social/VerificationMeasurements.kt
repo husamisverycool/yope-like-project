@@ -166,14 +166,14 @@ class VerificationMeasurements {
         colour("background", 5f, 300f)
         colour("theirBubbleFill", their.f("left") + 4f, (their.f("top") + their.f("bottom")) / 2)
         colour("myBubbleFill", mine.f("left") + 4f, (mine.f("top") + mine.f("bottom")) / 2)
-        colour("voiceFill", voice.f("right") - 3f, voice.f("top") + 6f)
+        colour("voiceFill", voice.f("left") + 4f, (voice.f("top") + voice.f("bottom")) / 2)
         colour("cameraFill", camera.f("left") + 4f, (camera.f("top") + camera.f("bottom")) / 2)
         colour("micFill", mic.f("left") + 4f, (mic.f("top") + mic.f("bottom")) / 2)
         colour("fieldFill", (field.f("left") + field.f("right")) / 2 + 60f, (field.f("top") + field.f("bottom")) / 2)
         colour("quoteFill", reply.f("left") + 6f, reply.f("top") + 40f)
         colour("controlFill", cap.f("right") - 6f, (cap.f("top") + cap.f("bottom")) / 2)
         val theirVoice = boundsOf("voiceTheirs")
-        colour("voiceTheirsFill", theirVoice.f("right") - 3f, theirVoice.f("top") + 6f)
+        colour("voiceTheirsFill", theirVoice.f("left") + 4f, (theirVoice.f("top") + theirVoice.f("bottom")) / 2)
         out["screen"] = buildJsonObject { put("height", (bitmap!!.height / density)); put("width", (bitmap!!.width / density)) }
 
         // Typing: the send circle in the mic's slot; a failed send: indicator + label.
@@ -197,6 +197,14 @@ class VerificationMeasurements {
         val start = (fb.f("right") * density).toInt()
         val ink = (start until b.width).filter { x -> val c = b.getPixel(x, cy); android.graphics.Color.red(c) > 200 && android.graphics.Color.green(c) < 120 }
         if (ink.isNotEmpty()) out["indicatorInk"] = buildJsonObject { put("left", ink.first() / density); put("right", ink.last() / density); put("hex", String.format("#%06X", b.getPixel(ink.first() + 1, cy) and 0xFFFFFF)) }
+        data.messages += FakeSocialData.message("m-8", GROUP, BEN, app.data.model.MessageKind.Text, body = "😂🔥😍", at = BASE.plusSeconds(500))
+        data.messages += FakeSocialData.message("m-9", GROUP, ME, app.data.model.MessageKind.Text, body = "okay but who is bringing the speaker on saturday because mine is dead", at = BASE.plusSeconds(560))
+        val longState = ChatViewModel(data, GROUP).state.value
+        render(data) {
+            ChatContent(longState, ChatUiState(), nav, null, testVoice, VoicePlayback(null, false), VoiceControls(null), {}, {}, {}, {}, { _, _ -> }, { _, _ -> }, {}, {}, {}, {})
+        }
+        box("longBubble", node("you, okay but who", substring = true))
+        box("emojiOnly", node("Ben, 😂🔥😍"))
         write("chat")
     }
 

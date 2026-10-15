@@ -111,16 +111,21 @@ class Sheet:
         self.counts[key] = self.counts.get(key, 0) + 1
         self.sections[-1][1].append((status, token, str(expected), str(ours), ref, note))
 
-    def measured(self, label, token, expected, ours, tol=0.75, note="", unit=""):
-        if isinstance(expected, str) and isinstance(ours, str):
-            ok = M.near(expected, 8)(M.rgb(ours))
+    def measured(self, label, token, expected, ours, tol=0.75, note="", unit="", status=None):
+        if status is not None:
+            ok = None
+        elif isinstance(expected, str) and isinstance(ours, str) and expected.startswith("#") and ours.startswith("#"):
+            ok = M.near(expected[:7], tol if tol > 1 else 8)(M.rgb(ours))
+        elif isinstance(expected, str) or isinstance(ours, str):
+            ok = str(expected) == str(ours)
         elif ours is None:
             ok = False
         else:
             ok = abs(float(expected) - float(ours)) <= tol
         show = (lambda v: f"{v:.2f}".rstrip("0").rstrip(".") + unit if isinstance(v, float) else f"{v}{unit}")
         tok = f"`{token}`" if token in TOKENS else token
-        self.add("match" if ok else "MISS", f"{label}: {tok}" if label else tok, show(expected), "—" if ours is None else show(ours), evidence(token), note)
+        verdict = status or ("match" if ok else "MISS")
+        self.add(verdict, f"{label}: {tok}" if label else tok, show(expected), "—" if ours is None else show(ours), evidence(token), note)
 
 
 def token_rows(sheet, surface, spec, measured_tokens):

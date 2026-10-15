@@ -42,7 +42,7 @@ enum AccountModal: Hashable {
 }
 
 /// What is being reported (`report(p_target_kind, p_target_id, p_reason)`).
-struct ReportTarget: Hashable {
+struct ReportTarget: Hashable, Identifiable {
     enum Kind: String, Hashable {
         case post
         case message

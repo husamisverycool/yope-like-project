@@ -304,6 +304,29 @@ class SocialFlowTest {
         assertTrue(closed)
     }
 
+    /** `week.edit.layout.reorder`: touch and hold a checked tile, drag it onto another slot, drop; the recap keeps the new order. */
+    @Test fun reorderARecapByDragging() {
+        val data = FakeSocialData().apply { seedWeek() }
+        val vm = WeekEditViewModel(data, GROUP, "r-w", null, albumOnly = false)
+        compose.setContent { TestScreen(data) { WeekEditSheet(vm, onClose = {}) } }
+        compose.waitForIdle()
+        val first = vm.state.value.checked.first()
+        val second = vm.state.value.checked[1]
+        val tile = compose.onAllNodes(androidx.compose.ui.test.hasStateDescription("in recap")).onFirst()
+        tile.performTouchInput {
+            down(center)
+            advanceEventTime(HOLD_MS)
+            moveBy(androidx.compose.ui.geometry.Offset(width.toFloat(), 0f))
+            advanceEventTime(HOLD_MS / 10)
+            up()
+        }
+        compose.waitForIdle()
+        assertEquals(listOf(second, first), vm.state.value.checked.take(2))
+        compose.onAllNodesWithText("save").onLast().performClick()
+        compose.waitForIdle()
+        assertTrue(data.calls.any { it.startsWith("updateRecap:$second,$first,") })
+    }
+
     @Test fun saveAWeekAsANamedAlbum() {
         val data = FakeSocialData().apply { seedWeek() }
         val vm = WeekEditViewModel(data, GROUP, null, LocalDate.parse("2026-10-12"), albumOnly = true)

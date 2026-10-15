@@ -51,6 +51,7 @@ import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -699,9 +700,10 @@ private fun MessageRow(
             }
             if (row.failed) {
                 Spacer(Modifier.width(failedSpec.indicatorGap.dp))
-                // `indicatorIconAndroid` (Rounded.ErrorOutline), its circle `indicatorSize` wide, `color.global.destructive`.
-                Box(Modifier.clickable { onRetrySend(row.id) }.clearAndSetSemantics { }) {
-                    InkGlyph(androidx.compose.material.icons.Icons.Rounded.ErrorOutline, Tokens.Colors.globalDestructive, inkWidth = failedSpec.indicatorSize.dp)
+                // `indicatorIconAndroid` (Rounded.ErrorOutline): its ring `indicatorSize` wide, `color.global.destructive`;
+                // the slot is the ring's own width (the vector's padding draws outside it).
+                Box(Modifier.size(failedSpec.indicatorSize.dp).clickable { onRetrySend(row.id) }.clearAndSetSemantics { }, contentAlignment = Alignment.Center) {
+                    InkGlyph(androidx.compose.material.icons.Icons.Rounded.ErrorOutline, Tokens.Colors.globalDestructive, Modifier.wrapContentSize(unbounded = true), inkWidth = failedSpec.indicatorSize.dp)
                 }
             }
         }

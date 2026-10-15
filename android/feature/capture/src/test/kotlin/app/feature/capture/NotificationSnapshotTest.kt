@@ -86,6 +86,9 @@ class NotificationSnapshotTest {
         PushHandler(app, DeepLinkCodec(null)) { now }.handle(
             mapOf("type" to "new_post", "group_id" to "g1", "post_id" to "p1", "title" to "Sunday dinners", "body" to "Ana sent you a photo!"),
         )
-        render(shadowOf(manager).allNotifications.single(), expanded = true).captureRoboImage("src/test/snapshots/notifications.push_new-post.png")
+        val n = shadowOf(manager).allNotifications.single()
+        // The shade shows the post time relative to the device clock: pin it to the post ("now").
+        android.os.SystemClock.setCurrentTimeMillis(n.`when`)
+        render(n, expanded = true).captureRoboImage("src/test/snapshots/notifications.push_new-post.png")
     }
 }
