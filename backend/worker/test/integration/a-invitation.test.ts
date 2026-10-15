@@ -100,11 +100,11 @@ describe("daily invitation dispatch", () => {
     expect(typeof aps.timestamp).toBe("number");
   });
 
-  it("iOS without a push-to-start token gets a time-sensitive alert; Android a high-priority countdown data message", async () => {
+  it("iOS without a push-to-start token gets an active (not time-sensitive) alert; Android a high-priority countdown data message", async () => {
     const alert = apnsDeviceSends(w.apns).find((s) => s.token === dev.u2.push_token)!;
     expect(alert.pushType).toBe("alert");
     expect(alert.payload).toMatchObject({ type: "daily_invitation", group_id: g.id, invitation_id: inv.id });
-    expect(alert.payload.aps["interruption-level"]).toBe("time-sensitive");
+    expect(alert.payload.aps["interruption-level"]).toBe("active");
     expect(Number(alert.expiration)).toBe(unixSeconds(inv.closes_at));
     const m = w.fcm.messages().find((x) => x.token === dev.u3.push_token)!;
     expect(m.android.priority).toBe("HIGH");

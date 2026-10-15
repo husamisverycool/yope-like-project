@@ -151,11 +151,23 @@ describe("APNs payloads", () => {
     expect(p.aps).toEqual({ timestamp: now.getTime() / 1000, event: "end", "content-state": { closes_at: Date.parse("2026-10-15T12:02:00Z") / 1000, group_name: "Lima" }, "dismissal-date": Date.parse("2026-10-15T12:02:00Z") / 1000 });
   });
 
-  it("invitation alert fallback is time-sensitive and expires at window close", () => {
+  it("invitation alert fallback is active (never time-sensitive, tenet 5) and expires at window close", () => {
     const d = apnsInvitationAlert({ groupId: "g", groupName: "G", invitationId: "i", closesAt: "2026-10-15T12:02:00Z", title: "T", body: "B", quiet: false });
-    expect((d.payload.aps as any)["interruption-level"]).toBe("time-sensitive");
+    expect((d.payload.aps as any)["interruption-level"]).toBe("active");
+    expect(d.payload.aps).toMatchObject({ "thread-id": "g", sound: "default" });
+    expect(d.expiration).toBe(Date.parse("2026-10-15T12:02:00Z") / 1000);
+    const quiet = apnsInvitationAlert({ groupId: "g", groupName: "G", invitationId: "i", closesAt: "2026-10-15T12:02:00Z", title: "T", body: "B", quiet: true });
+    expect((quiet.payload.aps as any)["interruption-level"]).toBe("passive");
+    expect((quiet.payload.aps as any).sound).toBeUndefined();
     expect(d.payload).toMatchObject({ type: "daily_invitation", group_id: "g", invitation_id: "i" });
     expect(d.collapseId).toBe("daily:i");
+  });
+
+  it("no worker source emits the time-sensitive interruption level (tenet 5, C-10)", () => {
+    const dir = path.join(REPO_ROOT, "backend/worker/src");
+    const files = fs.readdirSync(dir, { recursive: true, encoding: "utf8" }).filter((f) => f.endsWith(".ts"));
+    expect(files.length).toBeGreaterThan(20);
+    for (const f of files) expect(fs.readFileSync(path.join(dir, f), "utf8"), f).not.toMatch(/["'`]time-sensitive["'`]/);
   });
 
   it("a long caption is shortened so alert, background and FCM widget payloads stay within 4 KB", () => {

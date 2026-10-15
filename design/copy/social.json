@@ -1147,6 +1147,15 @@
       "evidence": "references/auto/yope/store/listing.html (App Store version history v1.214.0, 2026-04-06: 'recaps are now walls / edit them, remix them, make your own memory albums / save it or share it with your friends') ('make your own memory albums')",
       "level": "SOURCED"
     },
+    "albums.list.error.title": {
+      "text": "couldn’t load your albums",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "albums.list",
+      "evidence": "no Yope album error observed (yope-b §7); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.')",
+      "level": "SOURCED"
+    },
     "albums.list.row.subtitle": {
       "text": "saved by {name}",
       "origin": "new",

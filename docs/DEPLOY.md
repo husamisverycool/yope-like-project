@@ -103,8 +103,9 @@ Without the APNs or FCM values the worker runs and skips that platform's pushes 
   the channel. Apple's broadcast documentation requires broadcast push to be enabled for the app;
   if channel creation fails the worker logs it and activities end by their `stale-date` and the
   app instead.
-- **Time Sensitive Notifications** capability (OWNER_SETUP §1.2): the iOS invitation alert uses
-  `interruption-level: time-sensitive` when Live Activities are off.
+- **No Time Sensitive Notifications capability is needed by the worker**: every alert, the
+  iOS invitation fallback included, is `interruption-level: active` (`passive` in quiet hours);
+  tenet 5, design/surfaces/daily.notification.md, MERGE_DECISIONS C-10.
 - **FCM**: the service account needs the Firebase Cloud Messaging API (HTTP v1) enabled on the
   project.
 

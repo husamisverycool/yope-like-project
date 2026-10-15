@@ -92,8 +92,6 @@ export interface AlertSpec {
   widget?: WidgetFields;
   /** UNIX seconds after which the alert is pointless (header omitted when undefined) */
   expiresAt?: number;
-  /** the daily invitation is time-sensitive (OWNER_SETUP: Time Sensitive Notifications capability) */
-  timeSensitive?: boolean;
 }
 
 function compact<T extends Record<string, unknown>>(o: T): Record<string, string> {
@@ -174,7 +172,10 @@ function buildApnsAlert(spec: AlertSpec): ApnsDraft {
     alert: { title: spec.title, body: spec.body },
     category: spec.type,
     "thread-id": spec.groupId,
-    "interruption-level": spec.quiet ? "passive" : spec.timeSensitive ? "time-sensitive" : "active",
+    // Every alert is `active` (`passive` in quiet hours); none is time-sensitive, the daily
+    // invitation included: tenet 5 "invitations, never obligations" (design/surfaces/
+    // daily.notification.md, token daily.notification.layout.delivery, MERGE_DECISIONS C-10).
+    "interruption-level": spec.quiet ? "passive" : "active",
   };
   if (!spec.quiet) aps.sound = DEFAULT_SOUND;
   if (spec.widget) aps["mutable-content"] = 1;
@@ -290,7 +291,11 @@ export function liveActivityEndPayload(spec: { closesAt: string; groupName: stri
   };
 }
 
-/** Alert fallback for iOS devices without a push-to-start token (Live Activities off, iOS < 17.2). */
+/**
+ * Alert fallback for iOS devices without a push-to-start token (Live Activities off, iOS < 17.2):
+ * a standard alert, interruption level `active` (`passive` in quiet hours), thread = group
+ * (daily.notification.layout.delivery).
+ */
 export function apnsInvitationAlert(spec: InvitationSpec): ApnsDraft {
   return apnsAlert({
     type: "daily_invitation",
@@ -301,7 +306,6 @@ export function apnsInvitationAlert(spec: InvitationSpec): ApnsDraft {
     collapseKey: `daily:${spec.invitationId}`,
     quiet: spec.quiet,
     expiresAt: unixSeconds(spec.closesAt),
-    timeSensitive: true,
   });
 }
 

@@ -33,7 +33,7 @@ No in-app Dynamic Type, appearance or language switches (HIG: respect system set
 |---|---|---|---|
 | list | `settings.root.layout.list`; iOS `color.global.system.ios`; Android `color.global.system.surface` / `.onSurface` / `.onSurfaceVariant` / `.outline`, `settings.root.size.listItemOneLine.android`, `.listItemTwoLine.android` (premium row), `.listItemPaddingH.android`, `.listItemPaddingV.android`, `.divider.android`; type `layout.global.system.typography` | — | — |
 | rows | system (disclosure indicator on iOS) | as Structure | — |
-| entry circle (on `walls.mine`) | `size.global.headerButton`, `icon.global.settings`, `color.global.control` / `.controlOnDeep` per that screen's background | `settings.root.entry.accessibilityLabel` | → this screen |
+| entry circle (on `walls.mine`, social pass) | `size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.settings` | `walls.mine.a11y.settings` | → this screen |
 
 ## States
 
@@ -73,6 +73,6 @@ Badges with counts on rows (HIG badge = unread counts; tenets forbid counts).
 
 | item | status | owner input |
 |---|---|---|
-| where the settings entry sits | `walls.mine` header (cross-group: the walls pass places the circle) — Yope's own-profile settings entry not captured | one screenshot of Yope's own profile header |
+| where the settings entry sits | `walls.mine` header circle (placed by the social pass, `walls.mine.md`) | — |
 | support e-mail for "Contact Us" | not in `config/app.json` | owner (App Review 1.2 requires published contact information) |
 | legal URLs | `config/app.json` `legal.privacyUrl` / `legal.termsUrl` are null | owner |

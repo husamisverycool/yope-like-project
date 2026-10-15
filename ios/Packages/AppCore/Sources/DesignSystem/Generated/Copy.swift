@@ -9,6 +9,8 @@ public enum Copy {
     public static var albumsListEmptyDetail: String { CopyLookup.string("albums.list.empty.detail", default: "save a recap, or any pics from it, as an album") }
     /// "no memory albums yet" — Yope · albums.list · new · SOURCED
     public static var albumsListEmptyTitle: String { CopyLookup.string("albums.list.empty.title", default: "no memory albums yet") }
+    /// "couldn’t load your albums" — Yope · albums.list · new · SOURCED
+    public static var albumsListErrorTitle: String { CopyLookup.string("albums.list.error.title", default: "couldn’t load your albums") }
     /// "saved by {name}" — Yope · albums.list · new · SOURCED
     public static func albumsListRowSubtitle(name: String) -> String { CopyLookup.format("albums.list.row.subtitle", default: "saved by {name}", ["name": name]) }
     /// "memory albums" — Yope · albums.list · verbatim · SOURCED
@@ -1191,34 +1193,6 @@ public enum Copy {
     public static var settingsBlockedUnknown: String { CopyLookup.string("settings.blocked.unknown", default: "Someone you blocked") }
     /// "Notification Categories" — Apple HIG · settings.notifications · new · VERIFIED
     public static var settingsNotificationsCategories: String { CopyLookup.string("settings.notifications.categories", default: "Notification Categories") }
-    /// "Private requests to add a photo to a birthday tribute" — Locket · settings.notifications · new · SOURCED
-    public static var settingsNotificationsChannelBirthdayRequestDescription: String { CopyLookup.string("settings.notifications.channel.birthdayRequest.description", default: "Private requests to add a photo to a birthday tribute") }
-    /// "Birthday Requests" — Locket · settings.notifications · new · SOURCED
-    public static var settingsNotificationsChannelBirthdayRequestName: String { CopyLookup.string("settings.notifications.channel.birthdayRequest.name", default: "Birthday Requests") }
-    /// "The once-a-day invitation to share a photo with your group at the same moment" — Locket · settings.notifications · new · SOURCED
-    public static var settingsNotificationsChannelDailyInvitationDescription: String { CopyLookup.string("settings.notifications.channel.dailyInvitation.description", default: "The once-a-day invitation to share a photo with your group at the same moment") }
-    /// "Daily Invitation" — Locket · settings.notifications · new · SOURCED
-    public static var settingsNotificationsChannelDailyInvitationName: String { CopyLookup.string("settings.notifications.channel.dailyInvitation.name", default: "Daily Invitation") }
-    /// "Notifications when group members post new photos" — Locket · settings.notifications · adapted · SOURCED
-    public static var settingsNotificationsChannelNewPostDescription: String { CopyLookup.string("settings.notifications.channel.newPost.description", default: "Notifications when group members post new photos") }
-    /// "New Photos" — Locket · settings.notifications · adapted · SOURCED
-    public static var settingsNotificationsChannelNewPostName: String { CopyLookup.string("settings.notifications.channel.newPost.name", default: "New Photos") }
-    /// "Notifications for new messages and reactions in groups" — Locket · settings.notifications · verbatim · SOURCED
-    public static var settingsNotificationsChannelReactionsRepliesDescription: String { CopyLookup.string("settings.notifications.channel.reactionsReplies.description", default: "Notifications for new messages and reactions in groups") }
-    /// "Reactions & Replies" — Locket · settings.notifications · new · SOURCED
-    public static var settingsNotificationsChannelReactionsRepliesName: String { CopyLookup.string("settings.notifications.channel.reactionsReplies.name", default: "Reactions & Replies") }
-    /// "Notifications when your group’s week is ready" — Locket · settings.notifications · new · SOURCED
-    public static var settingsNotificationsChannelRecapDescription: String { CopyLookup.string("settings.notifications.channel.recap.description", default: "Notifications when your group’s week is ready") }
-    /// "Weekly Recaps" — Locket · settings.notifications · new · SOURCED
-    public static var settingsNotificationsChannelRecapName: String { CopyLookup.string("settings.notifications.channel.recap.name", default: "Weekly Recaps") }
-    /// "Notifications when your group makes you a birthday tribute" — Locket · settings.notifications · new · SOURCED
-    public static var settingsNotificationsChannelTributeDescription: String { CopyLookup.string("settings.notifications.channel.tribute.description", default: "Notifications when your group makes you a birthday tribute") }
-    /// "Birthday Tributes" — Locket · settings.notifications · new · SOURCED
-    public static var settingsNotificationsChannelTributeName: String { CopyLookup.string("settings.notifications.channel.tribute.name", default: "Birthday Tributes") }
-    /// "Notifications when your group’s year story is ready" — Locket · settings.notifications · new · SOURCED
-    public static var settingsNotificationsChannelYearStoryDescription: String { CopyLookup.string("settings.notifications.channel.yearStory.description", default: "Notifications when your group’s year story is ready") }
-    /// "Year Story" — Locket · settings.notifications · new · SOURCED
-    public static var settingsNotificationsChannelYearStoryName: String { CopyLookup.string("settings.notifications.channel.yearStory.name", default: "Year Story") }
     /// "Your change didn’t save. Check your connection and try again." — Apple HIG · settings.notifications · new · VERIFIED
     public static var settingsNotificationsError: String { CopyLookup.string("settings.notifications.error", default: "Your change didn’t save. Check your connection and try again.") }
     /// "Turn a group off to mute it. Its photos still reach your widgets." — Apple HIG · settings.notifications · new · VERIFIED
@@ -1247,8 +1221,6 @@ public enum Copy {
     public static var settingsRootBlocked: String { CopyLookup.string("settings.root.blocked", default: "Blocked People") }
     /// "Contact Us" — Apple HIG · settings.root · new · VERIFIED
     public static var settingsRootContact: String { CopyLookup.string("settings.root.contact", default: "Contact Us") }
-    /// "settings" — Yope · settings.root · new · SOURCED
-    public static var settingsRootEntryAccessibilityLabel: String { CopyLookup.string("settings.root.entry.accessibilityLabel", default: "settings") }
     /// "Manage Subscription" — Apple HIG · settings.root · new · VERIFIED
     public static var settingsRootManageSubscription: String { CopyLookup.string("settings.root.manageSubscription", default: "Manage Subscription") }
     /// "Notifications" — Apple HIG · settings.root · new · VERIFIED

@@ -6,6 +6,8 @@
 // src/collage/params.ts). A value proposed differently by two research passes counts as missing.
 // A missing token throws MissingTokenError("missing design token <name>"): the job fails and is
 // retried later. Nothing here invents a value.
+// canonicalToken() reads the generated canonical tokens only (no proposal fallback); the collage
+// compositor uses it (MERGE_DECISIONS capture C-21).
 
 import fs from "node:fs";
 import path from "node:path";
@@ -70,6 +72,22 @@ export function designToken<T>(name: string): T {
   if (!p) throw new MissingTokenError(name);
   if (p.conflict) throw new MissingTokenError(name, `proposals disagree: ${p.files.join(", ")}`);
   return p.value as T;
+}
+
+/**
+ * The value of canonical design token `name` (src/generated/tokens.ts ← design/tokens/*.json),
+ * never a proposal value: MissingTokenError when the canonical tokens do not carry it.
+ */
+export function canonicalToken<T>(name: string): T {
+  if (overrides && name in overrides) {
+    if (overrides[name] === null || overrides[name] === undefined) throw new MissingTokenError(name);
+    return overrides[name] as T;
+  }
+  const canonical = generatedTokens as TokenMap;
+  if (!(name in canonical)) {
+    throw new MissingTokenError(name, "not in the canonical tokens design/tokens/*.json → src/generated/tokens.ts; design/proposals is not read here");
+  }
+  return canonical[name] as T;
 }
 
 export function hasToken(name: string): boolean {

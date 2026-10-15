@@ -5,7 +5,8 @@
 //   iOS with a push-to-start token: Live Activity push-to-start with the alert, stale-date =
 //     closes_at, subscribed to a per-invitation broadcast channel (iOS 18+) for the end push
 //     (docs/PLATFORM_CONSTRAINTS.md §2: "The start alert *is* the daily invitation").
-//   iOS without one (Live Activities off, iOS < 17.2): a time-sensitive alert.
+//   iOS without one (Live Activities off, iOS < 17.2): a standard alert, interruption level
+//     `active` (never time-sensitive: tenet 5, design/surfaces/daily.notification.md, C-10).
 //   Android: high-priority data message → ongoing chronometer countdown notification.
 // Muted members get nothing (no alert; their widgets update with the collage later). Quiet
 // hours: no sound (iOS passive alert; Android applies quiet hours on the device).

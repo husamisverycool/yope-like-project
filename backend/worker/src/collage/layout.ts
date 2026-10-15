@@ -2,16 +2,19 @@
 //
 // Composed only from two references (directive Part 3):
 //  - BeReal's dual image: each answer is the back photo at 3:4 with the front photo inset at the
-//    top-left (token `layout.collage.dualTile`, design/research/bereal.md §3);
-//  - Yope's collage composition, spacing and edges (tokens `layout.collage.option{A,B,C}`,
-//    design/research/yope-b.md §8).
-// The option in production is chosen by the owner (design/collage-options/README.md).
+//    top-left (canonical token `daily.dualimage.layout.composition`, design/research/bereal.md §3);
+//  - Yope's collage composition, spacing and edges (option B: canonical `collage.view.layout.page`;
+//    options A and C: proposals `layout.collage.option{A,C}`, owner review only; design/research/yope-b.md §8).
+// The option in production is chosen by the owner (design/collage-options/README.md); the token
+// reading is in params.ts.
 //
 // Pure and deterministic: the same answers and parameters always give the same integer layout.
 
 export interface DualTileParams {
-  /** width ÷ height of one answer's main (back) photo */
+  /** width ÷ height of one answer's main (back) photo (dualimage mainAspect) */
   tileAspect: number;
+  /** width ÷ height of the inset (front) photo, border included */
+  insetAspect: number;
   /** inset outer width ÷ base tile width */
   insetWidthRatio: number;
   /** inset margin from the tile's top and left ÷ base tile width */
@@ -68,7 +71,7 @@ const r = Math.round;
 
 function inset(tile: Rect, baseWidth: number, dual: DualTileParams): InsetLayout {
   const outerW = r(baseWidth * dual.insetWidthRatio);
-  const outerH = r(outerW / dual.tileAspect);
+  const outerH = r(outerW / dual.insetAspect);
   const margin = r(baseWidth * dual.insetMarginRatio);
   const border = Math.max(1, r(baseWidth * dual.insetBorderRatio));
   const outerRadius = r(outerW * dual.insetOuterRadiusRatio);

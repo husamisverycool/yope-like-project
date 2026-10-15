@@ -36,9 +36,9 @@ function shrink(rect: Rect, by: number): Rect {
 }
 
 export interface RenderColors {
-  /** token color.collage.matte */
+  /** page corners and empty cells in the JPEGs: color.global.backgroundDeep (collage.view.md) */
   matte: string;
-  /** token color.collage.insetBorder */
+  /** the inset's border: color.global.backgroundDeep (daily.dualimage.md) */
   insetBorder: string;
 }
 

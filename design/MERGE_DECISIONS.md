@@ -261,3 +261,123 @@ All pixel work on the original files (`python3 -I`, PIL + numpy); scales as docu
 ## Lead reconciliation
 
 - **L-1 Birthday push texts.** The memory pass wrote `birthday.request.push.*` and `birthday.tribute.push.*`; the capture pass owns all push texts (`notifications.push.*`, the keys the worker sends per `backend/worker/COPY_KEYS.md`) and wrote the same events under `notifications.push.birthdayRequest.*` / `notifications.push.tribute.*` following the same patterns (P-BR-1, P-BT-1). The memory duplicates were never read by any code and were removed.
+
+---
+
+## Account (`auth.*`, `onboarding.permission.*`, `onboarding.widget`, `groups.list`, `groups.create`, `groups.invite`, `groups.screen`, `groups.settings`, `settings.*`, `safety.*`, `system.permissions`, `paywall`)
+
+Pass: account consolidation, 2026-10-15. Owns `design/tokens/account.json` (171 tokens), `design/copy/account.json`
+(350 strings), `design/surfaces/{auth.phone,auth.code,auth.agegate,auth.profile,onboarding.permission.camera,
+onboarding.permission.notifications,onboarding.permission.photos,onboarding.permission.contacts,onboarding.widget,
+groups.list,groups.create,groups.invite,groups.screen,groups.settings,settings.root,settings.notifications,
+settings.account,settings.blocked,safety.report,safety.block,system.permissions,paywall}.md` and this section.
+Inputs: `design/research/{yope-a,yope-b,locket,platform}.md`, `docs/PLATFORM_CONSTRAINTS.md`, the proposals
+`design/proposals/{yope-a,locket,platform}.*.json`, `docs/API.md`.
+
+### Evidence gathered in this pass
+
+| what | source | method | used for |
+|---|---|---|---|
+| 2024 sign-up screen | `references/auto/yope/frames/a-yrrah-7454430216123862280-t6.73-signup-2024.png` (screen x50-525 = 476 px → 1.211 px/pt) | glyph heights; brightest-8 % glyph colour | `auth.phone.fontSize.subtitle` (14, italic), title 39-40 pt confirms the onboarding title role, footer text "by continuing you agree to our Terms of Use and Privacy Policy" (legible; yope-a had not used it) |
+| 2024 "create new group" | `…a-yrrah-7452976839846382855-t3.73-create-new-group-empty-2024.png` | edge runs, corner fit, box medians | cover placeholder 330 × 221 r 7 (#494949), gaps 71 / 34 / 23 / 18 pt, disabled button #201D21 / #49464A, two-tone title |
+| 2026 "new group" | `…a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png` | x-height / ascender | field text 15 pt bold, picker name 13.5 pt bold |
+| 2026 group screen / profile / created state | `…-t43.73`, `-t51.73`, `-t51.23` | runs, corner fits | photo cards 378 × 152 r 20 gap 8.5; chat pill 88 × 51 #080808 15 bold; segmented control 41.5 / inset 4 / #111111 / 14.5 bold; profile avatar 92, name 25 bold; white pill r 11 |
+| 2026 sign-in link, HUD label, home cover | `…a-virgi-…-t31.23`, `…-t50.60`, `…a-chuongxetank-…-t7.73` | x-height, cap height, column runs | lime link 14.5 bold; "Loading" 15 pt; cover header 205 pt |
+| Locket welcome screen | `references/auto/locket/lazyweb/locket-lazyweb-20260821-cap-welcome.png` (@3x) | cap heights, runs, medians | `onboarding.widget.*` title 33 bold, steps 22 semibold #B8B6B2, CTA label 18 / #332500 / padding 18 / arrow gap 17 |
+| Locket plan sheet | `…locket-lazyweb-20260803-cap-plan-picker.png` (@3x) | edge scans, circle fit, medians | sheet radius ≈46 pt + grabber 34 × 5 (= system sheet), sheet fill #292824 → #312C1F, title 24.5 / pitch 29, plan name 18, price 17, detail 15 #BFB598, cards #2C2922 / #3B3627, unselected height 58, Subscribe #F4BB40 / label 19 #302506 |
+| Locket perk stack inner corners | `…locket-mobbin-paywall-screen.png` | corner fit at the card joins | `paywall.radius.perkInner` 6 |
+
+### Conflicts and resolutions
+
+| # | topic | values and sources | resolution | rule / evidence | status |
+|---|---|---|---|---|---|
+| A-1 | Paywall and onboarding.widget palette | Locket's measured Gold palette (black→dark-gold gradient, cream title, #FEB900 / #FFB800 yellow) vs the app-wide Yope lime/black foundations | Locket values as surface tokens (`paywall.color.*`, `onboarding.widget.color.*`) | SURFACES assigns Locket to both surfaces; tokens README: a surface adds tokens when its own reference measured differently | resolved by rule; **owner to confirm** (the gold/yellow is Locket's brand look; the alternative is the global lime/black mapping) |
+| A-2 | Yearly plan price prominence | Locket: "$2.99/mo" big, "$36 per year" in the detail line | billed amount `{yearly_price}/yr` is the prominent price; the monthly equivalent moves to the detail line (`paywall.plans.yearly.*`) | App Store 3.1.2 / HIG IAP ("the billing amount … the most prominent pricing element") — a legal constraint, not a design choice | resolved |
+| A-3 | Sign-up legal footer | 2026: gray, bold link phrases, 12 pt (V-virgi t31.23); 2024: lighter (#BFBDC0 core), white underlined links, ≈13-14 pt (S24) | 2026 (`auth.phone.layout.legalFooter`, global caption role) | 2026 beats older | resolved; footer weight stays F-24's open item |
+| A-4 | `onboarding.widget` reference and voice | Locket (assigned) vs Yope's own widget pre-prompt (es, lime "añadir widget", "saltar") and Yope's English coach line "install widget for friends updates on your home screen" (V-arkadeep) | Locket layout and Sentence case | SURFACES assignment (F-18) | resolved; case change mid-onboarding flagged (F-18) |
+| A-5 | Contacts ask on iOS | Yope: dismissible inline card ("can’t see your friends?" + ✕) vs HIG pre-alert rule (one button, no close) | iOS: no card, no onboarding screen — system `ContactAccessButton` (iOS 18) / `CNContactPickerViewController` (iOS 17) inside `groups.invite`; Android keeps Yope's card (Android requires a cancel) | PLATFORM_CONSTRAINTS Summary + platform §system.permissions | resolved |
+| A-6 | `groups.screen` background (F-2) and card height | feed #171717 (store-01 lossless; 2026-05 group screen and created state, video 16/255) vs black (2026-06 S6 cards; 2026-10 1:1 space V-chuong t8.73); cards 152 pt (2026-05 group) vs ≈305 pt (2026-10 1:1) | feed = `color.global.background`, profile page = `backgroundDeep` (`groups.screen.layout.background`); cards from the 2026-05 group screen | lossless first; same surface type (group, not 1:1) | resolved for build; **capture** one lossless 2026-10 group screen to confirm |
+| A-7 | White secondary pill corners | foundations map white pills to `radius.global.capsule`; this surface measures r ≈ 11 pt on a 45-pt pill (V-mthu t51.23; yope-a "≈10, not full pill") | `groups.screen.radius.lightPill` = 11 for pills on this group's surfaces | README: surface token when its own reference measured differently | resolved |
+| A-8 | Native menu labels on `groups.screen` / `groups.settings` | copy-patterns: native menus use `platform.menuItem` (Title Case); Yope's observed native group menu uses lowercase ("share invite", "leave group", "report") | observed Yope menu items verbatim lowercase; unobserved native menus (member row, photo card, safety) use `platform.menuItem` | a verbatim string on the surface itself beats a pattern | resolved |
+| A-9 | Pre-alert button | platform proposal "Continue" vs Yope "continue" | lowercase "continue" on the Yope-referenced pre-alert; HIG requires the term, not its case; "Continue" kept for the Android rationale dialog (system surface) | yope.voice.button + HIG | resolved |
+| A-10 | Purpose strings | Yope fragments without period vs `platform.purposeString` | platform proposal texts (F-20) | system.permissions = HIG | resolved |
+| A-11 | Group creation flow | 2026: name (optional) + friend picker, no cover/type; 2024-25: cover step; directive: name, cover, type; API: name required | 2026 sheet header, field and button; 2024 cover placeholder; Yope's segmented control (group profile) for the type; placeholder "name group" without "(optional)" | newest per element; the type step has no Yope source (approximation) | resolved with approximation; owner to confirm |
+| A-12 | Android channel strings | copy-patterns maps `locket.push.channel` to both `settings.*` and `notifications.push`; the capture pass owns `notifications.push.channel.*` | this pass writes none and references the capture keys | lead note: push texts live under `notifications.push.*` | resolved; `AppChannel.YearStory` still has no string (capture pass) |
+| A-13 | Safety titles in native dialogs | F-21: titles/explanations in Yope voice; `platform.alertTitle` would give "Block Sam?" | lowercase Yope titles ("block {first_name}?") in the block confirmation and report sheet; buttons/menus platform | F-21 | resolved |
+| A-14 | `groups.settings` labels vs `settings.*` labels | groups.settings = Yope + HIG/M3 (Yope labels, lowercase); settings.* = HIG/M3 only (Title Case labels via `platform.menuItem`) | as stated | SURFACES assignments + copy-patterns surface map | resolved (two cases inside the app, by design of the references) |
+| A-15 | Paywall CTA yellows | #FEB900 (paywall CTA, MB 2025-10) vs #F4BB40 (Subscribe, LZ 2026-08) vs #FFB800 (border, brand) | each kept for its own element | different elements, all measured | resolved |
+| A-16 | Contrast of container fills | field #141414, card #181818, permission card #131313, HUD #262626, segment track #111111, chat pill #080808, cover #494949, perk card, unselected plan card vs their backgrounds: 1.05-2.33:1 | reported, not adjusted (no sourced alternative); every container carries text or a glyph that passes | rule: never adjust a sourced value | reported |
+
+### Unresolved (owner, capture or verification)
+
+- BLOCKED: `auth.phone.layout.countryCode`, `auth.phone.layout.inlineError` — one ~40 s English screen recording of a
+  fresh Yope install up to the first camera screen, tapping "try other options" (entering one wrong code);
+  `safety.block.duration.toast` — one 10-s recording until Yope's "posted in the wall" toast disappears;
+  `groups.list.color.headerCircleOverPhoto` — one lossless screenshot of the 2026 Yope home with its cover photo;
+  `paywall.layout.iconTileArt` — the app icon; `paywall.perk.history.emoji` — owner pick (perk hidden while history is
+  unlimited); `safety.report.layout.reasons` — the moderation categories.
+- Owner: A-1 palette, A-11 type step, `min_age_years`, tier name "Premium", tenet check of the paywall subtitle,
+  support e-mail, legal URLs, invite domain, deletion-completion statement, shared-photo deletion vs "Nothing gets lost".
+
+---
+
+## Social (`chat.thread`, `chat.composer`, `chat.voice`, `chat.reactions`, `photo.viewer`, `walls.mine`, `walls.member`, `walls.browse`, `week.recap`, `week.edit`, `week.history`, `albums.list`, `albums.view`)
+
+Pass: social consolidation, 2026-10-15. Owns `design/tokens/social.json`, `design/copy/social.json`, the 13
+`design/surfaces/<id>.md` above and this section. Inputs: `design/research/yope-b.md` (primary), `yope-a.md`, `locket.md` §7,
+`retro-timehop.md` §week.history, `platform.md`, the matching proposals, and (read-only, for reuse by name) the finished
+`global`, `account`, `capture` and `memory` files.
+
+### Evidence gathered in this pass
+
+| what | source | used for |
+|---|---|---|
+| Lossless re-sample of yope-b's chat colours | `references/auto/yope/store/yope-store-05.png` rotated −1.68° about (621,1344) with **NEAREST** resampling (same geometry as `b-derot-store-05-rot-1.68.png`; mean difference to the bicubic copy 3/255, every pixel an original pixel) | S-2 |
+| Reply-to-photo bubble geometry and type | `references/auto/yope/frames/b-yopeapp-7591560669967682847-t49.50-reply-to-photo.png`: lime corner circle fit 24.5 px; thumbnail mask x285–341 / y540–594; 'Gabriel' cap rows 549–562, x-height 553–562; 'pic' x-height 576–584; caption box 'Chloe' x323.75–458.75 / y1001–1062.5, text cap 1022–1041 (×0.744 pt/px) | `chat.thread.*reply*`, `chat.thread.*caption*` |
+| Viewer header, photo frame, sender overlay, top-right chip slot, background | `…-t57.07-photo-viewer.png`: ✕ x139–157 / y163–181; ••• x559–592; title rows 155–174, date 185–197; photo x98–621 / y291–988; avatar row 333 x116.5–168.5; chip ink x428–589 / y326–345; background (300,240) etc. #1C191D | `photo.viewer.*` |
+| Walls browser | `…-t116.00-me-and-friends.png`: title x-height rows 166–179; circles x230–312 / y232–311, centres 167…584; label baseline y342; wall top y380 | `walls.browse.*` |
+| Profile 'pics' title → grid | `references/auto/yope/frames/b-presskit-profile.png` (exact @2x): 'pics' x-height rows 1306–1327, grid top 1374 | `walls.mine.dimension.titleToGrid` |
+| Composer glyphs and text start | S1 nearest copy: camera glyph y2417–2460 / x240–293; mic glyph y2413–2462 / x941–975; placeholder ink from x367 | `chat.composer.dimension.*Glyph`, `.fieldPaddingLeading` |
+| Home card avatar → name | `references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png`: avatar right x207, name ink x229 (÷1.466) | `albums.list.dimension.coverToTitle` |
+| Locket emoji-picker Popular grid | `references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg` crop x340–880 / y1040–1480 (28 of 30 cells legible) | `chat.reactions.layout.pickerPopular`, `.count.pickerColumns`, picker sizes (filmed, approximate) |
+| Week-recap colours | `references/owner/yope-week-recap.jpg`: background #121011, header circle #0A0809, segment track #292526–#2B292A (JPEG ±6) | S-15 |
+
+### Conflicts and resolutions
+
+| # | topic | values and sources | resolution | rule / evidence | status |
+|---|---|---|---|---|---|
+| S-1 | Composer height (F-19) | 40.6 / 39.5 pt group chat (S1, lossless) vs 49–51 pt 1:1 space (S5, O4) | group-chat values | this product has groups only; S1 is the group-chat reference | resolved |
+| S-2 | yope-b colours sampled on the bicubic copy | re-sampled on lossless pixels: their bubble #2B2B2B (confirmed); my bubble #232323 (confirmed, #222222→#242424); rims #414141 / #363636 (theirs), #393939 / #343434 (mine) vs yope-b #404040; **voice bubble #262626** vs yope-b #222222 (yope-b's column 400 y1903–1910 is the bubble's rim); play circle #333333 vs #313131; waveform #919191 (confirmed, plateau 145); **duration #929292** vs #949494 (plateau 146, bicubic max 161); mic circle median #414141 vs #3F3F3F → within ±2 of `color.global.controlRaised` (#434343), which is used; field rim #4B4B4B / #474747 (foundations) vs #535353; placeholder #969696 (F-3) vs #A3A3A3 | lossless values | lossless original beats an interpolated derivative (Foundations rule) | resolved |
+| S-3 | Text-bubble corners | global: chat bubbles = `radius.global.capsule` (h/2 = 17.8) vs measured corner fit 16 (15.4–16.0) | `chat.thread.radius.bubble` 16 | the measurement itself; it also defines multi-line bubbles | resolved |
+| S-4 | Reactions under chat photos | Yope: dark capsule (#2C2C2C, 24 pt) with emoji + reactor avatar under the photo (S1) vs Locket: overlapping emoji stickers on the photo, no numbers (AS-4) | Locket cluster in the thread and the viewer | SURFACES: `chat.reactions` = Locket | resolved |
+| S-5 | Text part of a reply bubble | #444145 (S5, 1:1 space, video) vs the group chat's bubble fills #2B2B2B / #232323 (S1, lossless) | the sender's S1 bubble fill | same role (message text in a bubble); lossless + group-chat reference | resolved |
+| S-6 | Message timestamps | S5 (1:1) shows "8:47 PM" beside a reply; S1 (group chat) shows none | none on text / voice bubbles; photo messages keep the time overlay | group-chat reference | open: S1 is a marketing mock (owner capture yope-b §14 #1) |
+| S-7 | Reply to a photo with a photo | not observed | photo message with the lime quote part attached above | composition of two observed parts | flagged |
+| S-8 | Caption position on a photo | Yope 1:1 cards: box left of centre by different amounts (S5 'Chloe', O4 'Best dayyy') — no consistent rule; Locket History: centred near the bottom | centred, Yope box styling (21 bold, 45.8 pt box, 13 corners) | `photo.viewer` = Yope + Locket; Locket's placement is the only consistent one | resolved; fill = `color.global.scrim` (BLOCKED) |
+| S-9 | Emoji-rain layer | 2022 History: copies behind the photo card; 2023 reply sheet: over the photo | behind (History is the viewer's counterpart) | same kind of screen; values are from the 2022 build (flagged in every token) | resolved; current-build capture open |
+| S-10 | Viewer reply row and quick reactions | Yope viewer row: sticker · field "message to Oblong" · camera; Yope 1:1 field holds ❤️ 😂 🔥; Locket History bar holds 🔥 💖 + add glyph | Yope row minus the sticker; Locket's 🔥 💖 + add inside the field's right end | reactions = Locket; the field / row = Yope | resolved |
+| S-11 | What a wall looks like | Yope 2026 free-form 9:16 canvas (no observable rule) vs profile "pics" grid (S4, Jul 2026, lossless) vs 2-column grid of 9:16 wall thumbnails (S3 Play, rotated marketing render); background #000000 (S4) vs #171717 (S3) | every wall = the S4 3-column grid on `color.global.backgroundDeep`; canvas BLOCKED | the only fully specified layout; lossless, exact device render | flagged (owner capture yope-b §14 #3) |
+| S-12 | "me & friends", "invite more friends" | verbatim Yope nouns vs family / roommates groups | kept verbatim | a noun swap needs the owner's member noun | owner decision |
+| S-13 | `week.edit` | no Yope UI beyond release-note verbs | built from Yope components: sheet header (✕ + title), check circles, week pics grid, lime / dark button pair, "new group" name sheet; reorder and text placement BLOCKED; pencil circle on `week.recap` as the entry | brief: "build from documented Yope components and patterns where possible, else BLOCKED" | flagged |
+| S-14 | `albums.list` / `albums.view` | no Yope album screen | home list card (V-sav) for albums; week pics grid + native ••• menu + name sheet for one album | same brief rule | flagged |
+| S-15 | Recap presentation | O3 grid card (CAPTURED, ≈Jan 2026) vs 2026 "recaps are now walls" (free-form, unobservable); page dots 8 / 17.3 pt and #4B4B4B (O3, JPEG) vs 7.6 / 15.5 pt #424242 (S1 group header, lossless); O3 header circle #0A0809, background #121011, track #292526 (JPEG) | O3 grid card; dot size from O3 (its own screen), dot colour `color.global.controlRaised` (lossless, same role); circle `color.global.controlOnDeep`, background `color.global.background`, track `color.global.control` (each within the JPEG's ±6) | the only measurable recap; lossless colour for the same role | resolved; 2026 wall recaps open |
+| S-16 | `week.history` colours | Retro measured light mode only (#FFFFFF, #000000, #999999, #F1F1F1, #D9D9D9); app is dark only (F-1); Retro dark mode seen only in a low-res photo (black background, dark-gray tiles) | text / background from global dark tokens (`backgroundDeep`, `textPrimary`, `textSecondary`); empty / add tile colours BLOCKED; Retro geometry, sizes, voice kept; a Yope back circle above Retro's display title (Retro's profile is a tab root) | appearance is app-wide (F-1); unmeasured dark values are not invented | flagged |
+| S-17 | Viewer ••• labels | Yope's own native menu: lowercase "report" (2024) vs platform.menuItem "Report…" / "Block" used inside the safety flows (F-21, account group) | Yope lowercase on the viewer menu (`photo.viewer.menu.*`, `chat.thread.menu.*`); the safety sheets keep their own copy | `photo.viewer` is a Yope app surface; F-21 covers the safety surfaces | resolved |
+| S-18 | Viewer background | #1C191D (S5 video) vs `color.global.background` #171717 | #1C191D (`photo.viewer.color.background`) | the same video renders the 1:1 sheet exactly #171717, so the viewer is genuinely lighter | resolved (±6/255) |
+| S-19 | "I'm in this" | memory pass owns `tagging` (`tagging.toggle` etc., white capsule toggle placed by this pass) | the toggle sits in Yope's top-right chip slot on the viewer photo (where "✂ create sticker" is, do-not-build), measured `photo.viewer.dimension.actionTrailing` / `.actionCenterTop`; keys `tagging.*` reused, none defined here | brief + coordinator: reuse memory's keys | resolved |
+| S-20 | Push texts | reaction / reply / recap-ready pushes | owned by the capture pass (`notifications.push.reaction.*`, `.reply.*`, `.recapReady.*`); this pass defines none | one owner per push (Lead L-1) | resolved |
+| S-21 | Loading HUD, white pill, toast, permission card | duplicated measurements would collide with other groups | reused by name: `groups.create.size.hud` / `.color.hud` / `.fontSize.hudLabel` + `groups.create.hud.loading`; `groups.screen.size.lightPillHeight` / `.radius.lightPill`; `camera.sendto.layout.toast`; `onboarding.permission.contacts.*` card tokens; this pass adds only `chat.thread.radius.loadingHud` (BLOCKED) | single source per measured component | resolved |
+| S-22 | Delete confirmation | Yope's not observed; HIG action sheet for intentional actions, M3 AlertDialog | platform component, Yope-voice text ("delete this pic?" / "it’ll be gone everywhere — …"), buttons lowercased ("delete", "cancel") | brief: confirmation in Yope's voice and must say it is removed everywhere | flagged (case of "cancel" vs HIG "Cancel") |
+
+### Contrast failures (reported, not adjusted; no sourced alternative pair)
+
+Non-text boundaries only (all text and glyph pairs pass): their / my bubble on #171717 1.27 / 1.14:1; bubble rim 1.76:1;
+HUD 1.18:1; composer field 1.32:1 and its rim 2.06:1; mic circle 1.81:1; play circle on the voice bubble 1.20:1; voice bubble
+1.18:1; viewer reply field 1.28:1 and camera circle 1.76:1 on #1C191D; recap header circle #101010 on #171717 1.06:1;
+inactive page dot 1.81:1; album card on black 1.18:1. Lowest passing text pair: placeholder #969696 on #2E2E2E 4.59:1;
+voice duration #929292 on #262626 4.86:1.
+
+### Unresolved (owner, capture or verification)
+
+S-6, S-7, S-11, S-12, S-13, S-14, S-16, S-22 and the 33 BLOCKED tokens in `design/tokens/social.json` (each names its
+smallest capture in `notes`; summary in the surface specs' Gaps sections).

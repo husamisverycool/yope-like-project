@@ -5,6 +5,7 @@ const table = {
   "albums.list.empty.action": "view recap", // Yope · albums.list · SOURCED
   "albums.list.empty.detail": "save a recap, or any pics from it, as an album", // Yope · albums.list · SOURCED
   "albums.list.empty.title": "no memory albums yet", // Yope · albums.list · SOURCED
+  "albums.list.error.title": "couldn’t load your albums", // Yope · albums.list · SOURCED
   "albums.list.row.subtitle": "saved by {name}", // Yope · albums.list · SOURCED
   "albums.list.title": "memory albums", // Yope · albums.list · SOURCED
   "albums.view.delete.confirm": "delete", // Yope · albums.view · SOURCED
@@ -596,20 +597,6 @@ const table = {
   "settings.blocked.unblock": "Unblock", // Apple HIG · settings.blocked · VERIFIED
   "settings.blocked.unknown": "Someone you blocked", // Apple HIG · settings.blocked · VERIFIED
   "settings.notifications.categories": "Notification Categories", // Apple HIG · settings.notifications · VERIFIED
-  "settings.notifications.channel.birthdayRequest.description": "Private requests to add a photo to a birthday tribute", // Locket · settings.notifications · SOURCED
-  "settings.notifications.channel.birthdayRequest.name": "Birthday Requests", // Locket · settings.notifications · SOURCED
-  "settings.notifications.channel.dailyInvitation.description": "The once-a-day invitation to share a photo with your group at the same moment", // Locket · settings.notifications · SOURCED
-  "settings.notifications.channel.dailyInvitation.name": "Daily Invitation", // Locket · settings.notifications · SOURCED
-  "settings.notifications.channel.newPost.description": "Notifications when group members post new photos", // Locket · settings.notifications · SOURCED
-  "settings.notifications.channel.newPost.name": "New Photos", // Locket · settings.notifications · SOURCED
-  "settings.notifications.channel.reactionsReplies.description": "Notifications for new messages and reactions in groups", // Locket · settings.notifications · SOURCED
-  "settings.notifications.channel.reactionsReplies.name": "Reactions & Replies", // Locket · settings.notifications · SOURCED
-  "settings.notifications.channel.recap.description": "Notifications when your group’s week is ready", // Locket · settings.notifications · SOURCED
-  "settings.notifications.channel.recap.name": "Weekly Recaps", // Locket · settings.notifications · SOURCED
-  "settings.notifications.channel.tribute.description": "Notifications when your group makes you a birthday tribute", // Locket · settings.notifications · SOURCED
-  "settings.notifications.channel.tribute.name": "Birthday Tributes", // Locket · settings.notifications · SOURCED
-  "settings.notifications.channel.yearStory.description": "Notifications when your group’s year story is ready", // Locket · settings.notifications · SOURCED
-  "settings.notifications.channel.yearStory.name": "Year Story", // Locket · settings.notifications · SOURCED
   "settings.notifications.error": "Your change didn’t save. Check your connection and try again.", // Apple HIG · settings.notifications · VERIFIED
   "settings.notifications.groups.footer": "Turn a group off to mute it. Its photos still reach your widgets.", // Apple HIG · settings.notifications · VERIFIED
   "settings.notifications.groups.header": "Groups", // Apple HIG · settings.notifications · VERIFIED
@@ -624,7 +611,6 @@ const table = {
   "settings.root.account": "Account", // Apple HIG · settings.root · VERIFIED
   "settings.root.blocked": "Blocked People", // Apple HIG · settings.root · VERIFIED
   "settings.root.contact": "Contact Us", // Apple HIG · settings.root · VERIFIED
-  "settings.root.entry.accessibilityLabel": "settings", // Yope · settings.root · SOURCED
   "settings.root.manageSubscription": "Manage Subscription", // Apple HIG · settings.root · VERIFIED
   "settings.root.notifications": "Notifications", // Apple HIG · settings.root · VERIFIED
   "settings.root.privacy": "Privacy Policy", // Apple HIG · settings.root · VERIFIED

@@ -7,6 +7,8 @@
     <string name="albums_list_empty_detail" formatted="false">save a recap, or any pics from it, as an album</string>
     <!-- Yope · albums.list · new · SOURCED -->
     <string name="albums_list_empty_title" formatted="false">no memory albums yet</string>
+    <!-- Yope · albums.list · new · SOURCED -->
+    <string name="albums_list_error_title" formatted="false">couldn’t load your albums</string>
     <!-- Yope · albums.list · new · SOURCED · args: name -->
     <string name="albums_list_row_subtitle">saved by %1$s</string>
     <!-- Yope · albums.list · verbatim · SOURCED -->
@@ -1189,34 +1191,6 @@
     <string name="settings_blocked_unknown" formatted="false">Someone you blocked</string>
     <!-- Apple HIG · settings.notifications · new · VERIFIED -->
     <string name="settings_notifications_categories" formatted="false">Notification Categories</string>
-    <!-- Locket · settings.notifications · new · SOURCED -->
-    <string name="settings_notifications_channel_birthdayrequest_description" formatted="false">Private requests to add a photo to a birthday tribute</string>
-    <!-- Locket · settings.notifications · new · SOURCED -->
-    <string name="settings_notifications_channel_birthdayrequest_name" formatted="false">Birthday Requests</string>
-    <!-- Locket · settings.notifications · new · SOURCED -->
-    <string name="settings_notifications_channel_dailyinvitation_description" formatted="false">The once-a-day invitation to share a photo with your group at the same moment</string>
-    <!-- Locket · settings.notifications · new · SOURCED -->
-    <string name="settings_notifications_channel_dailyinvitation_name" formatted="false">Daily Invitation</string>
-    <!-- Locket · settings.notifications · adapted · SOURCED -->
-    <string name="settings_notifications_channel_newpost_description" formatted="false">Notifications when group members post new photos</string>
-    <!-- Locket · settings.notifications · adapted · SOURCED -->
-    <string name="settings_notifications_channel_newpost_name" formatted="false">New Photos</string>
-    <!-- Locket · settings.notifications · verbatim · SOURCED -->
-    <string name="settings_notifications_channel_reactionsreplies_description" formatted="false">Notifications for new messages and reactions in groups</string>
-    <!-- Locket · settings.notifications · new · SOURCED -->
-    <string name="settings_notifications_channel_reactionsreplies_name" formatted="false">Reactions &amp; Replies</string>
-    <!-- Locket · settings.notifications · new · SOURCED -->
-    <string name="settings_notifications_channel_recap_description" formatted="false">Notifications when your group’s week is ready</string>
-    <!-- Locket · settings.notifications · new · SOURCED -->
-    <string name="settings_notifications_channel_recap_name" formatted="false">Weekly Recaps</string>
-    <!-- Locket · settings.notifications · new · SOURCED -->
-    <string name="settings_notifications_channel_tribute_description" formatted="false">Notifications when your group makes you a birthday tribute</string>
-    <!-- Locket · settings.notifications · new · SOURCED -->
-    <string name="settings_notifications_channel_tribute_name" formatted="false">Birthday Tributes</string>
-    <!-- Locket · settings.notifications · new · SOURCED -->
-    <string name="settings_notifications_channel_yearstory_description" formatted="false">Notifications when your group’s year story is ready</string>
-    <!-- Locket · settings.notifications · new · SOURCED -->
-    <string name="settings_notifications_channel_yearstory_name" formatted="false">Year Story</string>
     <!-- Apple HIG · settings.notifications · new · VERIFIED -->
     <string name="settings_notifications_error" formatted="false">Your change didn’t save. Check your connection and try again.</string>
     <!-- Apple HIG · settings.notifications · new · VERIFIED -->
@@ -1245,8 +1219,6 @@
     <string name="settings_root_blocked" formatted="false">Blocked People</string>
     <!-- Apple HIG · settings.root · new · VERIFIED -->
     <string name="settings_root_contact" formatted="false">Contact Us</string>
-    <!-- Yope · settings.root · new · SOURCED -->
-    <string name="settings_root_entry_accessibilitylabel" formatted="false">settings</string>
     <!-- Apple HIG · settings.root · new · VERIFIED -->
     <string name="settings_root_managesubscription" formatted="false">Manage Subscription</string>
     <!-- Apple HIG · settings.root · new · VERIFIED -->

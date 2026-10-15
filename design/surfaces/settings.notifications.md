@@ -2,8 +2,8 @@
 
 Reference: **Apple HIG / Material 3** (system surface). Research: `design/research/platform.md` §settings, §daily.liveactivity,
 §Haptics; `docs/PLATFORM_CONSTRAINTS.md` §2 (Live Activity off switch), §4.6 (channels); `docs/SPEC_FLAGS.md` T6;
-`docs/WIDGET_REFRESH.md` (mute and quiet-hours behaviour). Android channel names follow `locket.push.channel`
-(copy-patterns surface map). Tokens: `settings.root.layout.list`, `settings.root.layout.toggleHaptic`. Copy: `settings.notifications.*`.
+`docs/WIDGET_REFRESH.md` (mute and quiet-hours behaviour). Android channel names and descriptions are owned by the
+`notifications.push` pass (`notifications.push.channel.*`, `design/copy/capture.json`) and only referenced here. Tokens: `settings.root.layout.list`, `settings.root.layout.toggleHaptic`. Copy: `settings.notifications.*`.
 
 ## References
 
@@ -11,7 +11,6 @@ Reference: **Apple HIG / Material 3** (system surface). Research: `design/resear
 |---|---|---|
 | HIG-L / M3-L | list guidance (as `settings.root`) | container |
 | HIG-LA | https://developer.apple.com/design/human-interface-guidelines/live-activities | "offer an in-app control to turn the invitation Live Activity off" |
-| APK | Locket Android 1.243.0 channels ("New Lockets", "Groups", …) | channel naming pattern |
 | WR | `docs/WIDGET_REFRESH.md` | quiet hours = silent delivery; muted groups still update widgets |
 
 ## Structure (`settings.root.layout.list`; title `settings.notifications.title`)
@@ -35,7 +34,7 @@ Reference: **Apple HIG / Material 3** (system surface). Research: `design/resear
 | quiet hours | Toggle + two time rows | `settings.notifications.quietHours*` | `set_quiet_hours(p_start, p_end, p_time_zone: device zone)`; off → both null |
 | Live Activity toggle | Toggle | `settings.notifications.liveActivity`, `.footer` | device-local preference read by the push-to-start registration (when off, the push-to-start token is not registered: `register_device(… p_push_to_start_token: null)`) |
 | open settings | system row | `settings.notifications.openSettings` | iOS `UIApplication.openNotificationSettingsURLString`; Android `ACTION_APP_NOTIFICATION_SETTINGS` |
-| Android channels | system channel UI | `settings.notifications.channel.<id>.name` / `.description` for `dailyInvitation`, `newPost`, `reactionsReplies`, `recap`, `birthdayRequest`, `tribute`, `yearStory` (registered by `NotificationChannels.register`) | — |
+| Android channels | system channel UI | `notifications.push.channel.<id>.name` / `.description` (capture pass) for `dailyInvitation`, `newPost`, `reactionsReplies`, `recap`, `birthdayRequest`, `tribute`; `yearStory` has no string yet (see Gaps) | registered by `NotificationChannels.register` |
 
 ## States
 
@@ -76,4 +75,4 @@ Locket's "Daily Reminders" channel ("Reminders to share a Locket with your frien
 
 | item | status |
 |---|---|
-| channel strings may also be written by the `notifications.push` pass | MERGE account A-12: keys live here; that pass should reference them |
+| Android channel for year stories (`AppChannel.YearStory`) | no `notifications.push.channel.yearStory.*` string exists; owned by the `notifications.push` pass (MERGE account A-12) |
