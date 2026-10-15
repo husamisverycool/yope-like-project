@@ -103,3 +103,11 @@ specs; wrap snapshots in the appearance under test (iOS `.environment(\.colorSch
 `DsTheme(dark = …)`); record every state in light and the primary state of each surface also in dark;
 snapshots use the real sample photos in `fixtures/photos/`; view models, data access and tests of
 behaviour stay unless the new spec changes the behaviour.
+
+## Pass 5 — Design review (lead)
+Before anything is shown to the owner as finished: every rebuilt screen, in light and dark, is placed
+next to its Retro reference (or, for compositions, next to the Retro components it is built from) and
+reviewed at full size for alignment, spacing rhythm, type hierarchy, photo cropping, empty/edge states
+and consistency across screens. Each deviation from the reference is fixed in code (or traced to a
+spec error and fixed there) and the screen re-rendered; the review notes go in
+`design/verification/REVIEW.md`.
