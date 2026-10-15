@@ -556,3 +556,91 @@ in react-native main on 2026-10-15). The motion Locket actually shows is therefo
 with dampingFraction 1.0, settling in about 0.4 s; 4.564 in SwiftUI / Compose would be a much slower
 overdamped curve (about 90 % after 1.1 s). Found by the Android capture pass; value changed, evidence
 unchanged.
+
+---
+
+## Redesign — Foundations (R-*)
+
+Pass: redesign Pass 1 (Foundations), 2026-10-15 — docs/REDESIGN_BRIEF.md. Owns `design/tokens/global.json`
+(259 tokens: 182 SOURCED, 70 PLATFORM, 7 VERIFIED, 0 BLOCKED — surfaces `global` / `global.system`),
+`design/tokens/README.md`, `design/components.md` (new), `design/copy-patterns.md`, `tools/contrast.mjs`,
+`design/CONTRAST.md`, `docs/SURFACES.md`, `docs/OWNER_SETUP.md` §0 item 6, the Inter font in
+`android/core/designsystem/` and this section. Inputs: `design/research/retro-visual.md`,
+`design/research/retro-package-copy-motion.md`, `references/auto/retro/` (INDEX.md); platform values carried over
+from the Foundations section above. Rule: Retro is the reference for every visual value and the copy voice;
+between two Retro measurements RAW beats render, exact constants beat image readings, newer beats older.
+
+### Evidence gathered in this pass
+
+| what | source | used for |
+|---|---|---|
+| Apple editorial video of story id1888002859 (HLS, 1080×1350, 30 fps, 40.47 s; mp4 SHA-256 `0d544f8e…660de`, deleted) | `references/auto/retro/video/apple-editorial-1888002859-retro-segment-t31.5-37.5-10fps.png` (INDEX row) | R-14: the Retro part is a montage of the static App Store renders (pans / zooms with ease-out, 0.5–0.9 s); **no in-app motion** to measure |
+| Page dots, dark | `press/tc-2023-12-recaps.png` phone 2: dots x1360–1417 y1470–1478, active (255,255,255), inactive (128,128,128) on (0,0,0); 10 px Ø, 16.3 px pitch; screen x1056–1722 = 666 px ÷ 393 = 1.695 px/pt | `color.global.pageDotInactive` dark, `size.global.pageDot`, `.pageDotPitch` |
+| Pushed header, search field | `store/editorial/…-1854931006-week3-albums.png`: chevron ink x1891–1933 y388–458 (11.1 × 18.3 pt, left ink 21.1 pt); title ink from x1991 (gap 14.6 pt); "Search" 'S' rows 635–681, 'e' 647–681 (17.1 / 17.4 pt); magnifier rows 632–684 | `size.global.backInset`, `.headerGap`, text role `placeholder` (17) |
+| Viewer in light appearance; disabled capsule | `press/tc-2023-12-retro3.png`: phone 1 black viewer under a white sheet, phone 3 light modal + light keyboard; phone 2 disabled "Send Postcard" fill (77,77,77) (47,057 px), label (0,0,0) (814 px) | `color.global.backgroundDeep` role, `layout.global.appearance.media`, `color.global.controlRaised`, components C-05 |
+| Viewer comment field and avatars | `press/tc-2023-07-retro-2b.jpg`: field rows 1821–1934 (48 pt), TL corner circle fit 27.9 px → 12.1 pt (residual 7.3); comment avatar x1356–1423 (29.6 pt); field avatar x1377–1446 (30.5 pt); header avatar x1345–1434 (39.2 pt) | `radius.global.commentField`, `size.global.avatarComment`, `.avatarHeader` |
+| Alphas solved from RWA pairs | `press/tc-2025-12-rewind-device-a.png`: glass inside #8D8376 vs outside #7D7263 → white 0.123 / 0.121 / 0.122; inactive tab #B2AFAC over #322C25 → white 0.62 per channel | `color.global.glass` (#FFFFFF1F), `color.global.tabInactiveOnMedia` (#FFFFFF9E) |
+| Material 3 baseline light scheme | androidx-main `compose/material3/…/tokens/ColorLightTokens.kt` + `PaletteTokens.kt` (v0_210, fetched 2026-10-15): SurfaceContainerHigh Neutral92 (236,230,240), SurfaceContainerLow Neutral96 (247,242,250), OnSurfaceVariant NeutralVariant30 (73,69,79), Outline NeutralVariant50 (121,116,126) | `color.global.system.*` light values |
+| Compose icon names | `material-icons-extended-android` / `-core-android` 1.7.8 classes.jar from the Gradle cache: all 48 Android icon names in `global.json` exist (incl. `AutoMirrored.Rounded.ArrowBackIos`, `AutoMirrored.Outlined.MenuBook`, `Outlined.History`, `Outlined.Casino`, `Outlined.LibraryAdd`) | `icon.global.*` |
+| Inter Variable for Android | rsms/inter git tag `v4.1` (commit e3a3d4c, 2024-11-15), `docs/font-files/InterVariable.woff2` (SHA-256 `693b77d4…429a8e3`) converted to TTF with fontTools 4.67 (container change only) → `android/core/designsystem/src/main/res/font/inter.ttf` (SHA-256 `27b6b7cb…af65c8`): family "Inter Variable", "Version 4.001;git-9221beed3", axes opsz 14–32 / wght 100–900, fsType 0 — the same file Retro bundles (`inter_variable.ttf`, RP §2.2). Licence `LICENSE.txt` of the same tag → `android/core/designsystem/licenses/Inter-OFL.txt` (SIL OFL 1.1). The GitHub release asset itself was unreachable from this session (github.com 403 for release downloads); the git tag is the same build | `font.global.family` android "Inter" |
+| Android compile | `./gradlew --offline compileDebugKotlin` after generation: errors only in `core:ui` (removed tab-bar / overlay tokens; themed colours read outside composition) — downstream modules not reached; the rest found by read-only scan (README "Compile impact") | "Problems found" below |
+
+### Conflicts and resolutions
+
+| # | topic | values and sources | resolution | rule / evidence | status |
+|---|---|---|---|---|---|
+| R-1 | Appearance | Foundations F-1 "dark only" (Yope) vs Retro in both appearances (ST-01/02, ED-A/W3, JED light; H43, H22, LAND, ENG-D dark) | Follow the system setting (`layout.global.appearance`); media surfaces (viewer, camera, composer-on-photo, recap preview, full-bleed photos) black in both | owner decision 2026-10-15; TC-R3 phone 1 shows the viewer black under a white sheet | resolved |
+| R-2 | "Accent" | Researchers call #EA3337 the "accent red"; the token `color.global.accent` (56 code sites) is the primary action fill | `color.global.accent` = Retro's primary fill (#000000 / #FFFFFF) with `onAccent` the inverse; the red is `color.global.badge` + `color.global.destructive` (+ `color.global.system.error`) | keep a name when its role is unchanged (brief); Retro has no brand colour in chrome (RV §3.2) | resolved |
+| R-3 | Dark page per platform | iOS #000000 in every capture vs Android default #1C1C1E (APK `d42.v`, values-night splash), "true black" #000000 as an Android option | Two tokens: `color.global.background` (iOS) and `color.global.background.android`; our Android uses Retro's default; the true-black option is not offered | Retro differs per platform → per-platform values (brief) | resolved; owner may ask for the option |
+| R-4 | Grouped rows / chips fill | APK `vv3.l` #F7F7F7 (18 call sites: chips, rows, reply bar, sheet cards) vs iOS stills: every fill #F1F1F1, settings frame ≈#F2F2F2 (±6, magenta-shifted) | iOS rows = `color.global.control` (#F1F1F1); Android rows / chips = `color.global.surfaceSecondary.android` (#F7F7F7); tiles #F1F1F1 on both (APK `d42.o`, PLAY-01) | per-platform evidence; the iOS frame is closer to #F1F1F1 | resolved; raw iOS light Settings capture would confirm |
+| R-5 | Hairline | APK #CCCCCC / #4D4D4D vs image readings #E3E3E3–#EFEFEF / #333333–#353535 | APK values | 1-device-px lines in 2.2–2.4 px/pt renders are resampled (lighter in light, darker in dark); exact constant wins | resolved |
+| R-6 | Secondary / tertiary / placeholder greys | iOS secondary #999999 (RAW + renders, APK `vv3.e`) vs Android meta black 50 % / white 60 % (`vv3.o`); placeholder 2025 ED-W3 #979797 vs 2023 #B0B0B0 (light) / #8B8B8B (dark); tertiary APK #C1C1C1 / white 30 % vs iOS 2023 timestamp #B4B4B4 | secondary per platform (`textSecondary`, `textSecondary.android`); placeholder = `textSecondary` (2025: in the same image known-#999999 text reads #959595, the placeholder #979797); tertiary = APK constants (no exact iOS sample) | newest; exact over WebP | resolved; tertiary iOS open (one raw capture with a timestamp) |
+| R-7 | 60 pt capsule label size | 17 (PAY 16.5 / 16.1, ST-03 17.2) vs 18 (LAND 18.2 / 18.7) | 17 | 2 of 3 captures incl. the newest RAW (PAY 2026-05) | resolved |
+| R-8 | Display sizes with the platform serif | APK Roslindale Retro 40/48; iOS cap 30.5 pt (consistent with 40 pt at cap/em 0.76); display-narrow sizes 32 (APK ×5, web h1 32 px) vs iOS PAY "Share Video" cap 22.3 (≈29 pt at the same ratio, face unknown) | `headerTitle` 40 / line 48; `displayMedium` 32; `displaySmall` 24 (APK 24/29, 24/28); sizes are Retro's and are **not** re-fitted to New York / Noto Serif (they render a smaller cap height) | exact constants; re-fitting to another face would be a design decision | resolved; exact when the owner licenses Roslindale |
+| R-9 | UI sans on Android | Retro: Inter Variable (OFL) for every UI style (APK `osg.b`, `wv3`) | Bundled (`inter.ttf`), `font.global.family.android` = "Inter"; Android body = Inter 14/17 W450 (−0.3 sp tracking, Latin only), names 15/18 W600 (−0.35), badge 11/11 W600 (−0.2) as `.android` tokens; W450 in `layout.global.variableWeight.android` (named weights cannot express 450) | APK constants | resolved; **Pass 3**: `DSFontFamily.Custom` loads one `Font(id)` (weight 400 only), so W450 / W600 would be synthesized — declare one `Font(resId, FontWeight(w), variationSettings = FontVariation.Settings(FontVariation.weight(w)))` per weight used |
+| R-10 | Margins and strip radius | renders: strips at 20, strip radius 16, retro-timehop 20 / 14 vs RAW 2025–2026 + JED: 16 margin, 18 continuous radius | 16 / 18 | RAW beats render (RV §3.4, §3.5) | resolved |
+| R-11 | Field radius | 2025 search field 52 high r ≈19 (ED-W3, ±2) vs 2023 search 36 high r 12 (TC-1B), comment field 48 high r 12.1 (TC-2B, this pass), APK 12 dp ×9 | search / text field `radius.global.field` 19 (newest); comment / reply field `radius.global.commentField` 12 | newest per element; the two fields are different components | resolved |
+| R-12 | Haptics | Retro Android plays only tap (VIRTUAL_KEY, 17 wrapped handlers) and tick (SEGMENT_FREQUENT_TICK / CLOCK_TICK); no CONFIRM / REJECT / Vibrator; iOS app not inspected | `haptic.global.tap` {ios none, android VIRTUAL_KEY}; `haptic.global.select` android → SEGMENT_FREQUENT_TICK; `send` / `success` / `warning` / `error` kept as PLATFORM outcome feedback (82 + 42 + 17 + 15 code sites) | APK call sites; HIG notification feedback | resolved; owner / verification may drop the outcome haptics to match Retro exactly |
+| R-13 | Contrast of Retro's palette | light secondary #999999 2.85:1 on white; fills vs page 1.07–1.39:1; empty-tile text 1.25 / 1.91:1; light inactive tab 2.12:1, dark tab state 2.85:1; white on red 4.18:1; red text 3.62–4.18:1; Retro blue on M3 dialog 2.98 / 3.94:1; inactive dot 1.36:1 | Reported in `design/CONTRAST.md` with the alternatives searched; **no value changed** | CONVENTIONS (never adjust a sourced value) | unresolved — owner / verification |
+| R-14 | Motion not captured | push / pop, tab switch, viewer advance / close, pull-to-refresh, iOS photo open: not in any source; the Apple editorial video holds no in-app motion | Native components keep platform motion (`easing.global.native`); custom transitions use Retro's house fade (150 ms FastOutSlowIn); `duration.global.navigationPush` (Yope) removed; `spring.global.sheetPresent` = Retro's fit (response 0.347, ζ 1) instead of Locket's 0.3441 (within 1 %) | VM §A / §C; APK-X motion counts | resolved; 60 fps owner recording would close the rest |
+| R-15 | Comment avatar | RV §4 #15 "comment row (avatar 36…)" vs re-measured 29.6 (row) / 30.5 (field) on the same image | `size.global.avatarComment` 30; `avatarPicker` 37 cites only the request rows (TC-1B 36.3) | re-measurement on the cited image | resolved |
+| R-16 | Tab bar spacing | renders pitch 72–73 with 50–52 side insets (ST-01, ED-A) vs RAW / REAL even pitch 80.4 = width ÷ 5 (H43, H22, JED ≈80) | even distribution; `size.global.tabBarInset` 0 (name kept; Yope's 22 floating inset has no Retro counterpart) | RAW wins | resolved |
+| R-17 | Alphas | researchers: glass "white 8–12 % or a light blur material", over-photo inactive tab "≈60 %" | solved from the measured pairs: glass 12 % (#FFFFFF1F), inactive tab on photo 62 % (#FFFFFF9E) | arithmetic on the cited pixel values | resolved (blur not excluded) |
+| R-18 | Header buttons | Yope 44 pt circles vs Retro bare outline glyphs, 48 pt apart | `size.global.headerButton` 44 = hit area (PLATFORM), no circle; `size.global.headerIconPitch` 48; `headerInset` 16 = ink of the last glyph | H22; HIG minimum hit area | resolved |
+| R-19 | Tab glyph variant | HIG: tab bars prefer the fill variant (basis of Foundations F-17) vs Retro: outline glyphs selected and unselected | outline (`icon.global.variantRule.tabBar`) | identity layer = Retro | resolved |
+| R-20 | Menu item casing | `platform.menuItem` title-style vs Retro's own menus in Sentence case ("Share to my week", "Hide photo") | item text `retro.voice.menu-labels`; HIG layout rules (destructive placement, ellipsis) stay | copy voice = Retro (brief) | resolved |
+| R-21 | Dialog titles | Retro titles some confirmations "Are you sure?" (`composer_lost_changes_warning_title`, `rewind_home_delete_confirmation_title`) vs HIG rejects it | use Retro's other form, the action question ("Unfriend %1$s?", "Block %1$s?") — `retro.voice.confirm` | both forms are Retro's; the HIG-compatible one is chosen | resolved |
+| R-22 | Section header separator | brief example "Week 26 · Jun 26 – Jul 2" vs Retro "Week 27  Jul 3 - 9" (space; semibold black + regular grey) | Retro's form (C-20); " · " is Retro's meta separator elsewhere ("Muted · Seen") | ST-02, retro-timehop | resolved |
+| R-23 | Kept names with changed roles | `backgroundDeep` (home / sheets → media), `controlRaised` (selected tab → disabled / container), `surfaceLight` (secondary pill → pill on media), `headerTitle` (capsule title → serif screen title), avatar sizes, `buttonMarginHSheet` = `buttonMarginH`, `buttonHeightSheet` = `buttonHeight`, `radius.global.viewfinder` = `radius.global.card` | names kept so code compiles; role text rewritten in each token's `element`; listed in README "Redesign renames" | brief: keep names where the role survives | resolved |
+| R-24 | Removed Yope-only tokens | `accentSecondary`, `overlayTime*`, `tabBarWidth`, `tabBarSelectedWidth/Height`, `tabBarAvatar`, `sheetPresentObserved`, `photoSwipe` (2), `navigationPush`, `icon.global.grid` | removed; code references listed in README (iOS 8 lines, Android 6 lines) | no Retro role | resolved; Pass 3 / 4 replace the components |
+| R-25 | Page-dot geometry | TC-1B (2023-07, light): 5 pt / 12 pitch vs TC-REC (2023-12, dark): 5.9 / 9.6 | TC-REC | newer | resolved |
+| R-26 | Copy voice of mechanics surfaces | Timehop (on this day), Partiful (invite web), Locket (widgets, paywall, pushes), Wrapped (year story), BeReal (push, labels) vs Retro analogs (Rewind, `/u/` and `/j/` pages, widgets, paywall, notifications, retrospective) | Retro voice; those ids retired with successors (`design/copy-patterns.md` "Retired patterns"); content-only patterns kept where Retro has nothing (countdown format, widget steps, reaction line, birthday) | brief: copy voice = Retro | resolved |
+| R-27 | Android viewer appearance | iOS 2023 viewer black in light appearance (TC-R3) vs APK `vv3.l` lists the "reply bar" among #F7F7F7 (light) surfaces | media stays black on both platforms (`layout.global.appearance.media`); the reply bar takes `controlOnDeep` on media and `surfaceSecondary.android` on page threads | iOS capture is direct evidence; the APK role list is inferred from contexts | open: one Android capture of the viewer in light mode |
+| R-28 | Display face | Roslindale (commercial, DJR) | `font.global.display` = platform serif (PLATFORM) until the owner licenses Roslindale Display Narrow / Deck Narrow or keeps the platform serif (OWNER_SETUP §0 item 6) | DESIGN_DIRECTION; never bundle Retro's files | owner decision |
+
+### Problems found (for Pass 2 / 3 / 4)
+
+- **Compile impact.** Removed tokens are referenced by `ios/App/Sources/Components/{TextRoles,FloatingTabBar}.swift`,
+  `ios/App/Sources/Features/Capture/Support/{CaptureStyle,CaptureFakes}.swift`,
+  `ios/App/Sources/Features/Social/UI/SocialServices.swift`, `ios/AppTests/Account/AccountTestSupport.swift`,
+  `android/core/ui/…/{text/TextRoles,components/FloatingTabBar}.kt`, `android/feature/capture/…/ui/CaptureText.kt`,
+  `android/feature/social/…/common/SocialUi.kt`; `{light, dark}` colours read outside composition in
+  `android/core/ui/…/components/HeaderCircleButton.kt:23,29`, `android/core/ui/…/theme/AppTheme.kt:21-29`,
+  `android/app/…/App.kt:44`, `android/core/push/…/NotificationUi.kt:62`,
+  `android/feature/capture/…/ui/Components.kt:273` (exact lines in `design/tokens/README.md`). All are component /
+  theme code (Pass 3) or screen code (Pass 4).
+- **Theme.** iOS still forces dark (`ios/Config/App.xcconfig` `INFOPLIST_KEY_UIUserInterfaceStyle = Dark`,
+  `.preferredColorScheme(.dark)` in `RootView.swift`, `SignUpLayout.swift` and three test hosts); Android
+  `AppTheme` builds a dark-only scheme and nothing provides `DsTheme` — so `{light, dark}` tokens render light on
+  Android until Pass 3 wraps the app.
+- **Group token files** (`design/tokens/{account,capture,social,memory,invite}.json`) mention Yope global values in
+  `element` / `notes` (e.g. "on #171717", "lime") and override foundations Retro now covers — Pass 2 rewrites them.
+- **Copy entries** name retired pattern ids (`yope.voice.*`, `locket.*`, `P-IW-*` …) — resolvable through the
+  retired table; Pass 2 rewrites the strings and their `pattern` fields.
+- **Inter weights** — see R-9.
+
+### Unresolved (owner, capture or verification)
+
+R-3 (true-black option), R-4 (raw light Settings capture), R-6 (iOS tertiary), R-12 (outcome haptics), R-13
+(contrast of Retro's palette), R-14 (60 fps recording), R-27 (Android viewer in light mode), R-28 (display face
+licence); gaps listed in `design/tokens/README.md` → "Not available yet" and `design/components.md` → "Gaps".

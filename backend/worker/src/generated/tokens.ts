@@ -240,6 +240,8 @@ export const tokens = {
   "color.global.system.surfaceContainerHigh": {"light":"#ECE6F0","dark":"#2B2930"}, // Material 3 · global.system · PLATFORM
   "color.global.system.surfaceContainerLow": {"light":"#F7F2FA","dark":"#1D1B20"}, // Material 3 · global.system · PLATFORM
   "color.global.tabInactive": {"light":"#B2B2B2","dark":"#999999"}, // Retro · global · SOURCED
+  "color.global.tabInactiveOnMedia": "#FFFFFF9E", // Retro · global · SOURCED
+  "color.global.textOnMedia": "#FFFFFF", // Retro · global · SOURCED
   "color.global.textPrimary": {"light":"#000000","dark":"#FFFFFF"}, // Retro · global · SOURCED
   "color.global.textSecondary": "#999999", // Retro · global · SOURCED
   "color.global.textSecondary.android": {"light":"#00000080","dark":"#FFFFFF99"}, // Retro · global · SOURCED
@@ -392,6 +394,7 @@ export const tokens = {
   "fontSize.global.meta": 13, // Retro · global · SOURCED
   "fontSize.global.onboardingTitle": 30, // Retro · global · SOURCED
   "fontSize.global.pill": 15, // Retro · global · SOURCED
+  "fontSize.global.pillSmall": 13, // Retro · global · SOURCED
   "fontSize.global.placeholder": 17, // Retro · global · SOURCED
   "fontSize.global.sectionLabel": 15, // Retro · global · SOURCED
   "fontSize.global.sheetTitle": 17, // Retro · global · SOURCED
@@ -429,6 +432,7 @@ export const tokens = {
   "fontWeight.global.meta": "regular", // Retro · global · SOURCED
   "fontWeight.global.onboardingTitle": "regular", // Retro · global · SOURCED
   "fontWeight.global.pill": "semibold", // Retro · global · SOURCED
+  "fontWeight.global.pillSmall": "bold", // Retro · global · SOURCED
   "fontWeight.global.sectionLabel": "semibold", // Retro · global · SOURCED
   "fontWeight.global.sheetTitle": "semibold", // Retro · global · SOURCED
   "fontWeight.global.textButton": "regular", // Retro · global · SOURCED
@@ -684,7 +688,7 @@ export const tokens = {
   "layout.global.premiumGradient": {"top":"#D543DE","bottom":"#A327B8","direction":"vertical"}, // Retro · global · SOURCED
   "layout.global.reduceMotion": {"ios":"UIAccessibility.isReduceMotionEnabled / @Environment(\\.accessibilityReduceMotion)","android":"Settings.Global.ANIMATOR_DURATION_SCALE == 0 or ValueAnimator.areAnimatorsEnabled() == false (Accessibility > Remove animations)","substitute":"replace x/y/z movement with a cross-fade of the same token duration; springs lose their bounce (dampingFraction 1); drop zoom, scale, peripheral and automatic repeating animation; never animate into or out of blur; motion that tracks the finger stays"}, // Apple HIG / Material 3 · global · PLATFORM
   "layout.global.system.typography": {"ios":"built-in text styles (Font.TextStyle) inside native alerts, menus, share sheet, pickers","android":"MaterialTheme.typography with Retro's overrides: headlineLarge = display 40/48, bodyLarge = Inter 15/18 W600, bodyMedium = Inter 14/17 W600, bodySmall = Inter 11/11 W600; other M3 styles stay baseline"}, // Apple HIG / Material 3 · global.system · PLATFORM
-  "layout.global.textStyleMap": {"headerTitle":"largeTitle","displayMedium":"largeTitle","displaySmall":"title2","onboardingTitle":"title","sheetTitle":"headline","listTitle":"subheadline","listSubtitle":"subheadline","body":"subheadline","button":"headline","pill":"subheadline","textButton":"body","caption":"subheadline","meta":"footnote","placeholder":"body","sectionLabel":"subheadline","emptyTitle":"title3","emptyDetail":"subheadline","tileLabel":"footnote","tileDay":"title","tileMonth":"subheadline","badge":"caption2"}, // Apple HIG · global · PLATFORM
+  "layout.global.textStyleMap": {"headerTitle":"largeTitle","displayMedium":"largeTitle","displaySmall":"title2","onboardingTitle":"title","sheetTitle":"headline","listTitle":"subheadline","listSubtitle":"subheadline","body":"subheadline","button":"headline","pill":"subheadline","textButton":"body","caption":"subheadline","meta":"footnote","placeholder":"body","sectionLabel":"subheadline","emptyTitle":"title3","emptyDetail":"subheadline","tileLabel":"footnote","tileDay":"title","tileMonth":"subheadline","badge":"caption2","pillSmall":"footnote"}, // Apple HIG · global · PLATFORM
   "layout.global.variableWeight.android": {"body":450}, // Retro · global · SOURCED
   "layout.onthisday.banner": {"width":"full screen width","top":"screen top edge, behind the status bar","labelAlign":"centre","labelCase":"uppercase","colourPerMemory":"color.onthisday.banner"}, // Timehop · onthisday · SOURCED
   "layout.onthisday.dayBoundary": {"hour":5,"clock":"group time zone (groups.time_zone)"}, // Timehop · onthisday · SOURCED
@@ -838,6 +842,7 @@ export const tokens = {
   "radius.global.capsule": {"shape":"capsule","radius":"height / 2"}, // Retro · global · SOURCED
   "radius.global.card": 18, // Retro · global · SOURCED
   "radius.global.cardLarge": 36, // Retro · global · SOURCED
+  "radius.global.commentField": 12, // Retro · global · SOURCED
   "radius.global.field": 19, // Retro · global · SOURCED
   "radius.global.groupedRow": 12, // Retro · global · SOURCED
   "radius.global.photo": 0, // Retro · global · SOURCED
@@ -863,6 +868,7 @@ export const tokens = {
   "settings.root.size.listItemPaddingV.android": 10, // Material 3 · settings.root · VERIFIED
   "settings.root.size.listItemThreeLine.android": 88, // Material 3 · settings.root · VERIFIED
   "settings.root.size.listItemTwoLine.android": 72, // Material 3 · settings.root · VERIFIED
+  "size.global.avatarComment": 30, // Retro · global · SOURCED
   "size.global.avatarGrid": 81, // Retro · global · SOURCED
   "size.global.avatarHeader": 39, // Retro · global · SOURCED
   "size.global.avatarList": 26.5, // Retro · global · SOURCED
@@ -899,6 +905,7 @@ export const tokens = {
   "size.global.headerIconPitch": 48, // Retro · global · SOURCED
   "size.global.headerInset": 16, // Retro · global · SOURCED
   "size.global.icon": 24, // Retro · global · SOURCED
+  "size.global.iconPillWidth": 49, // Retro · global · SOURCED
   "size.global.iconSmall": 14.7, // Retro · global · SOURCED
   "size.global.infoRowPitch": 29, // Retro · global · SOURCED
   "size.global.listGap": 22.5, // Retro · global · SOURCED

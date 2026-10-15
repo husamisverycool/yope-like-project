@@ -218,6 +218,12 @@ public enum Tokens {
         /// Retro · global · unselected tab-bar glyphs (black 30 % on white / white 60 % on black) · SOURCED
         /// token: `color.global.tabInactive`
         public static let globalTabInactive: Color = Color(light: Color(.sRGB, red: 0.698, green: 0.698, blue: 0.698, opacity: 1), dark: Color(.sRGB, red: 0.6, green: 0.6, blue: 0.6, opacity: 1))
+        /// Retro · global · unselected tab glyphs over a full-bleed photo (selected: color.global.textOnMedia) · SOURCED
+        /// token: `color.global.tabInactiveOnMedia`
+        public static let globalTabInactiveOnMedia: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.6196)
+        /// Retro · global · text and glyphs on media surfaces and over photos in both appearances: viewer header name, close / more glyphs, weekday tile labels, date title on Rewind, controls on color.global.controlOnDeep · SOURCED
+        /// token: `color.global.textOnMedia`
+        public static let globalTextOnMedia: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
         /// Retro · global · primary text and glyphs; selected tab glyph; page-dot selected · SOURCED
         /// token: `color.global.textPrimary`
         public static let globalTextPrimary: Color = Color(light: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1), dark: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1))
@@ -679,7 +685,7 @@ public enum Tokens {
         /// Tribute · birthday.tribute · secondary button label · VERIFIED
         /// token: `fontSize.birthday.tribute.button`
         public static let birthdayTributeButton: CGFloat = 14
-        /// Retro · global · label of the red 'new' badge and small pills · SOURCED
+        /// Retro · global · label of the red 'new' badge, the grey relative-week pill and the viewer position pill · SOURCED
         /// token: `fontSize.global.badge`
         public static let globalBadge: CGFloat = 11
         /// Retro · global · body / list row text on iOS ('Weeks Posted: 32'-style info rows, comment text, address lines, sheet rows) · SOURCED
@@ -724,6 +730,9 @@ public enum Tokens {
         /// Retro · global · label of the 36–37 pt capsules ('Get this week started', 'Recaps', 'Share Profile', 'Accept', 'Create') · SOURCED
         /// token: `fontSize.global.pill`
         public static let globalPill: CGFloat = 15
+        /// Retro · global · label of small pills on media / the paywall ('FREE', video duration '1:00' with monospaced digits) · SOURCED
+        /// token: `fontSize.global.pillSmall`
+        public static let globalPillSmall: CGFloat = 13
         /// Retro · global · placeholder and typed text in the search / text field ('Search'), colour color.global.textSecondary · SOURCED
         /// token: `fontSize.global.placeholder`
         public static let globalPlaceholder: CGFloat = 17
@@ -963,7 +972,7 @@ public enum Tokens {
         /// Tribute · birthday.tribute · secondary button label · VERIFIED
         /// token: `fontWeight.birthday.tribute.button`
         public static let fontWeightBirthdayTributeButton: Font.Weight = .semibold
-        /// Retro · global · label of the red 'new' badge and small pills · SOURCED
+        /// Retro · global · label of the red 'new' badge, the grey relative-week pill and the viewer position pill · SOURCED
         /// token: `fontWeight.global.badge`
         public static let fontWeightGlobalBadge: Font.Weight = .semibold
         /// Retro · global · body / list row text on iOS ('Weeks Posted: 32'-style info rows, comment text, address lines, sheet rows) · SOURCED
@@ -1005,6 +1014,9 @@ public enum Tokens {
         /// Retro · global · label of the 36–37 pt capsules ('Get this week started', 'Recaps', 'Share Profile', 'Accept', 'Create') · SOURCED
         /// token: `fontWeight.global.pill`
         public static let fontWeightGlobalPill: Font.Weight = .semibold
+        /// Retro · global · label of small pills on media / the paywall ('FREE', video duration '1:00' with monospaced digits) · SOURCED
+        /// token: `fontWeight.global.pillSmall`
+        public static let fontWeightGlobalPillSmall: Font.Weight = .bold
         /// Retro · global · section header ('Week 27' before its date range; dated album group 'January 25, 2024') · SOURCED
         /// token: `fontWeight.global.sectionLabel`
         public static let fontWeightGlobalSectionLabel: Font.Weight = .semibold
@@ -2328,6 +2340,7 @@ public enum Tokens {
             public static let tileDay: String = "title"
             public static let tileMonth: String = "subheadline"
             public static let badge: String = "caption2"
+            public static let pillSmall: String = "footnote"
         }
         /// Retro · global · Android weights on Inter's wght axis that the named weights cannot express (FontWeight(450)) · SOURCED
         /// token: `layout.global.variableWeight.android`
@@ -3102,6 +3115,9 @@ public enum Tokens {
         /// Retro · global · large card on a blurred backdrop (paywall plan card) · SOURCED
         /// token: `radius.global.cardLarge`
         public static let globalCardLarge: CGFloat = 36
+        /// Retro · global · reply / comment field at the bottom of the viewer (48 pt high, rounded rectangle — not a capsule) · SOURCED
+        /// token: `radius.global.commentField`
+        public static let globalCommentField: CGFloat = 12
         /// Retro · global · search / text field corners (52 pt field) · SOURCED
         /// token: `radius.global.field`
         public static let globalField: CGFloat = 19
@@ -3824,6 +3840,9 @@ public enum Tokens {
         /// Material 3 · settings.root · M3 two-line list item height · VERIFIED
         /// token: `settings.root.size.listItemTwoLine.android`
         public static let settingsRootSizeListItemTwoLineAndroid: CGFloat = 72
+        /// Retro · global · avatar in a comment row and inside the reply / comment field · SOURCED
+        /// token: `size.global.avatarComment`
+        public static let globalAvatarComment: CGFloat = 30
         /// Retro · global · avatar in a 3-column people grid (name centred below) · SOURCED
         /// token: `size.global.avatarGrid`
         public static let globalAvatarGrid: CGFloat = 81
@@ -3833,7 +3852,7 @@ public enum Tokens {
         /// Retro · global · avatar beside a name above a friend card (home feed) · SOURCED
         /// token: `size.global.avatarList`
         public static let globalAvatarList: CGFloat = 26.5
-        /// Retro · global · avatar in a people row (friend request, member, comment rows) · SOURCED
+        /// Retro · global · avatar in a people row (friend request, member rows) · SOURCED
         /// token: `size.global.avatarPicker`
         public static let globalAvatarPicker: CGFloat = 37
         /// Retro · global · avatar in the profile header (right margin, aligned to the title) · SOURCED
@@ -3929,6 +3948,9 @@ public enum Tokens {
         /// Retro · global · glyph box of outline icons: tab bar, header, list accessories · SOURCED
         /// token: `size.global.icon`
         public static let globalIcon: CGFloat = 24
+        /// Retro · global · icon-only capsule in an action row (the gear capsule after 'Recaps' / 'Share Profile') · SOURCED
+        /// token: `size.global.iconPillWidth`
+        public static let globalIconPillWidth: CGFloat = 49
         /// Retro · global · inline glyph inside a pill ('+' in 'Get this week started'); info-row icons measure 14 · SOURCED
         /// token: `size.global.iconSmall`
         public static let globalIconSmall: CGFloat = 14.7

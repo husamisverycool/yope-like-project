@@ -127,6 +127,7 @@ Generated from `design/tokens/global.json` (values; full evidence in the JSON an
 | `color.global.textTertiary` | #C1C1C1 | #FFFFFF4D | SOURCED | tertiary / disabled text and glyphs | `Tokens.Colors.globalTextTertiary` |
 | `color.global.emptyTileText` | #D9D9D9 | #515151 | SOURCED | month / day number / weekday on an empty-day tile | `Tokens.Colors.globalEmptyTileText` |
 | `color.global.tabInactive` | #B2B2B2 | #999999 | SOURCED | unselected tab-bar glyphs (black 30 % on white / white 60 % on black) | `Tokens.Colors.globalTabInactive` |
+| `color.global.tabInactiveOnMedia` | #FFFFFF9E | #FFFFFF9E | SOURCED | unselected tab glyphs over a full-bleed photo (selected: color.global.textOnMedia) | `Tokens.Colors.globalTabInactiveOnMedia` |
 | `color.global.badge` | #EA3337 | #EA3337 | SOURCED | Retro red: 'new' badge capsule, 4 pt unread dot on a tab, red count-free markers | `Tokens.Colors.globalBadge` |
 | `color.global.onBadge` | #FFFFFF | #FFFFFF | SOURCED | label on the red badge; label on the grey 'Last Week' relative-week pill | `Tokens.Colors.globalOnBadge` |
 | `color.global.accent` | #000000 | #FFFFFF | SOURCED | primary action fill: full-width primary capsule, primary medium capsule ('Accept'), selected state that is a fill. Retro has no brand colour in chrome — the primary fill is the inverse of the page | `Tokens.Colors.globalAccent` |
@@ -210,8 +211,10 @@ Generated from `design/tokens/global.json` (values; full evidence in the JSON an
 | `fontSize.global.tileDay` | 28 pt | SOURCED | day number on an empty-day tile ('20'), tabular digits | `Tokens.FontSizes.globalTileDay` |
 | `fontWeight.global.tileDay` | semibold | SOURCED | day number on an empty-day tile ('20'), tabular digits | `Tokens.FontWeights.fontWeightGlobalTileDay` |
 | `fontSize.global.tileMonth` | 14 pt | SOURCED | month and weekday lines on an empty-day tile ('Oct' / 'Mon') | `Tokens.FontSizes.globalTileMonth` |
-| `fontSize.global.badge` | 11 pt | SOURCED | label of the red 'new' badge and small pills | `Tokens.FontSizes.globalBadge` |
-| `fontWeight.global.badge` | semibold | SOURCED | label of the red 'new' badge and small pills | `Tokens.FontWeights.fontWeightGlobalBadge` |
+| `fontSize.global.badge` | 11 pt | SOURCED | label of the red 'new' badge, the grey relative-week pill and the viewer position pill | `Tokens.FontSizes.globalBadge` |
+| `fontWeight.global.badge` | semibold | SOURCED | label of the red 'new' badge, the grey relative-week pill and the viewer position pill | `Tokens.FontWeights.fontWeightGlobalBadge` |
+| `fontSize.global.pillSmall` | 13 pt | SOURCED | label of small pills on media / the paywall ('FREE', video duration '1:00' with monospaced digits) | `Tokens.FontSizes.globalPillSmall` |
+| `fontWeight.global.pillSmall` | bold | SOURCED | label of small pills on media / the paywall ('FREE', video duration '1:00' with monospaced digits) | `Tokens.FontWeights.fontWeightGlobalPillSmall` |
 | `fontSize.global.body.android` | 14 sp | SOURCED | Android body text (Retro's most-used style, 33 call sites) | `Tokens.FontSizes.globalBodyAndroid` |
 | `lineHeight.global.body.android` | 17 sp | SOURCED | Android body line height | `Tokens.LineHeights.globalBodyAndroid` |
 | `letterSpacing.global.body.android` | -0.3 sp | SOURCED | Android body tracking — only when the locale's script is Latin (hh3.p0), else 0 | `Tokens.Tracking.globalBodyAndroid` |
@@ -221,7 +224,7 @@ Generated from `design/tokens/global.json` (values; full evidence in the JSON an
 | `lineHeight.global.badge.android` | 11 sp | SOURCED | Android badge line height (Inter 11/11 W600) | `Tokens.LineHeights.globalBadgeAndroid` |
 | `letterSpacing.global.badge.android` | -0.2 sp | SOURCED | Android badge tracking — Latin script only | `Tokens.Tracking.globalBadgeAndroid` |
 | `lineHeight.global.headerTitle` | 48 pt | SOURCED | line height of the display serif title (multi-line titles) | `Tokens.LineHeights.globalHeaderTitle` |
-| `layout.global.textStyleMap` | headerTitle: largeTitle; displayMedium: largeTitle; displaySmall: title2; onboardingTitle: title; sheetTitle: headline; listTitle: subheadline; listSubtitle: subheadline; body: subheadline; button: headline; pill: subheadline; textButton: body; caption: subheadline; meta: footnote; placeholder: body; sectionLabel: subheadline; emptyTitle: title3; emptyDetail: subheadline; tileLabel: footnote; tileDay: title; tileMonth: subheadline; badge: caption2 | PLATFORM | iOS Dynamic Type text style each fontSize.global.<role> scales with (SwiftUI Font.TextStyle case; DSTextStyle.relativeTo); Android sp sizes follow the font scale | `Tokens.Layouts.GlobalTextStyleMap.<key>` |
+| `layout.global.textStyleMap` | headerTitle: largeTitle; displayMedium: largeTitle; displaySmall: title2; onboardingTitle: title; sheetTitle: headline; listTitle: subheadline; listSubtitle: subheadline; body: subheadline; button: headline; pill: subheadline; textButton: body; caption: subheadline; meta: footnote; placeholder: body; sectionLabel: subheadline; emptyTitle: title3; emptyDetail: subheadline; tileLabel: footnote; tileDay: title; tileMonth: subheadline; badge: caption2; pillSmall: footnote | PLATFORM | iOS Dynamic Type text style each fontSize.global.<role> scales with (SwiftUI Font.TextStyle case; DSTextStyle.relativeTo); Android sp sizes follow the font scale | `Tokens.Layouts.GlobalTextStyleMap.<key>` |
 | `layout.global.system.typography` | ios: built-in text styles (Font.TextStyle) inside native alerts, menus, share sheet, pickers; android: MaterialTheme.typography with Retro's overrides: headlineLarge = display 40/48, bodyLarge = Inter 15/18 W600, bodyMedium = Inter 14/17 W600, bodySmall = Inter 11/11 W600; other M3 styles stay baseline | PLATFORM | text styles of components the system draws | `Tokens.Layouts.GlobalSystemTypography.<key>` |
 
 ### Spacing and sizes
@@ -234,6 +237,7 @@ Generated from `design/tokens/global.json` (values; full evidence in the JSON an
 | `size.global.buttonHeight` | 60 pt | SOURCED | height of the full-width primary / secondary capsule | `Tokens.Sizes.globalButtonHeight` |
 | `size.global.buttonHeightSheet` | 60 pt | SOURCED | height of the full-width capsule at the bottom of a sheet / modal (same as buttonHeight in Retro) | `Tokens.Sizes.globalButtonHeightSheet` |
 | `size.global.pillHeight` | 37 pt | SOURCED | height of the medium capsules (outline CTA, action pairs, profile action row) | `Tokens.Sizes.globalPillHeight` |
+| `size.global.iconPillWidth` | 49 pt | SOURCED | icon-only capsule in an action row (the gear capsule after 'Recaps' / 'Share Profile') | `Tokens.Sizes.globalIconPillWidth` |
 | `size.global.pillGap` | 8.8 pt | SOURCED | gap between side-by-side capsules (Recaps / Share Profile / gear) | `Tokens.Sizes.globalPillGap` |
 | `size.global.pillPaddingLeading` | 18 pt | SOURCED | outline CTA with icon: leading edge → icon | `Tokens.Sizes.globalPillPaddingLeading` |
 | `size.global.pillPaddingTrailing` | 17 pt | SOURCED | outline CTA with icon: label → trailing edge | `Tokens.Sizes.globalPillPaddingTrailing` |
@@ -265,7 +269,8 @@ Generated from `design/tokens/global.json` (values; full evidence in the JSON an
 | `size.global.tabBadgeDot` | 4 pt | SOURCED | red unread dot under a tab glyph | `Tokens.Sizes.globalTabBadgeDot` |
 | `size.global.tabBadgeOffset` | 5 pt | SOURCED | tab glyph bottom → dot top (dot centred) | `Tokens.Sizes.globalTabBadgeOffset` |
 | `size.global.avatarList` | 26.5 pt | SOURCED | avatar beside a name above a friend card (home feed) | `Tokens.Sizes.globalAvatarList` |
-| `size.global.avatarPicker` | 37 pt | SOURCED | avatar in a people row (friend request, member, comment rows) | `Tokens.Sizes.globalAvatarPicker` |
+| `size.global.avatarPicker` | 37 pt | SOURCED | avatar in a people row (friend request, member rows) | `Tokens.Sizes.globalAvatarPicker` |
+| `size.global.avatarComment` | 30 pt | SOURCED | avatar in a comment row and inside the reply / comment field | `Tokens.Sizes.globalAvatarComment` |
 | `size.global.avatarSmall` | 22.6 pt | SOURCED | avatar in an avatar stack (≈3 pt overlap, white ring) | `Tokens.Sizes.globalAvatarSmall` |
 | `size.global.avatarHeader` | 39 pt | SOURCED | viewer / story header avatar including its white ring with a gap | `Tokens.Sizes.globalAvatarHeader` |
 | `size.global.avatarProfile` | 64 pt | SOURCED | avatar in the profile header (right margin, aligned to the title) | `Tokens.Sizes.globalAvatarProfile` |
@@ -309,6 +314,7 @@ Generated from `design/tokens/global.json` (values; full evidence in the JSON an
 | `radius.global.button` | 30 pt | SOURCED | full-width 60 pt capsule (radius = height ÷ 2) | `Tokens.Radii.globalButton` |
 | `radius.global.capsule` | shape: capsule; radius: height / 2 | SOURCED | buttons (60 / 37 / 36), pills, badges, position pill; circles for avatars and circle buttons | `Tokens.Layouts.GlobalCapsule.<key>` |
 | `radius.global.field` | 19 pt | SOURCED | search / text field corners (52 pt field) | `Tokens.Radii.globalField` |
+| `radius.global.commentField` | 12 pt | SOURCED | reply / comment field at the bottom of the viewer (48 pt high, rounded rectangle — not a capsule) | `Tokens.Radii.globalCommentField` |
 | `radius.global.groupedRow` | 12 pt | SOURCED | grouped list (settings) — first row top corners, last row bottom corners, a single row all corners; middle rows square | `Tokens.Radii.globalGroupedRow` |
 | `radius.global.cardLarge` | 36 pt | SOURCED | large card on a blurred backdrop (paywall plan card) | `Tokens.Radii.globalCardLarge` |
 | `radius.global.viewfinder` | 18 pt | SOURCED | camera viewfinder corners — composition: the viewfinder is drawn as Retro's photo container (radius.global.card) | `Tokens.Radii.globalViewfinder` |

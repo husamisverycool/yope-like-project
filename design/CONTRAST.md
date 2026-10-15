@@ -105,28 +105,29 @@ pairs use `color.global.background.android` (#1C1C1E dark) where Retro's Android
 | 46 | `color.global.textOnMedia` #FFFFFF | `color.global.scrim,#FFFFFF` #666666 | text | both | 5.74:1 | 4.5:1 | pass | white text at the tile's bottom edge (scrim 60 %) over a white photo |
 | 47 | `color.global.textOnMedia` #FFFFFF | `color.global.glass,#FFFFFF` #FFFFFF | nontext | both | 1.00:1 | 3:1 | **FAIL** | white glyph in a glass circle over a white photo — worst case |
 | 48 | `color.global.textOnMedia` #FFFFFF | `color.global.glass,#7D7263` #8D8376 | nontext | both | 3.72:1 | 3:1 | pass | white glyph in a glass circle over the measured Rewind photo (RWA outside #7D7263) |
-| 49 | `color.global.system.onSurface` #000000 | `color.global.system.surface` #FFFFFF | text | light | 21.00:1 | 4.5:1 | pass | M3 list item label (bodyLarge) on surface |
-| 49 | `color.global.system.onSurface` #FFFFFF | `color.global.system.surface` #1C1C1E | text | dark | 17.01:1 | 4.5:1 | pass | M3 list item label (bodyLarge) on surface |
-| 50 | `color.global.system.onSurfaceVariant` #49454F | `color.global.system.surface` #FFFFFF | text | light | 9.34:1 | 4.5:1 | pass | M3 supporting text (bodyMedium 14) on surface |
-| 50 | `color.global.system.onSurfaceVariant` #CAC4D0 | `color.global.system.surface` #1C1C1E | text | dark | 9.98:1 | 4.5:1 | pass | M3 supporting text (bodyMedium 14) on surface |
-| 51 | `color.global.system.onSurface` #000000 | `color.global.system.surfaceContainerHigh` #ECE6F0 | text | light | 17.14:1 | 4.5:1 | pass | M3 dialog headline / text on the dialog container |
-| 51 | `color.global.system.onSurface` #FFFFFF | `color.global.system.surfaceContainerHigh` #2B2930 | text | dark | 14.36:1 | 4.5:1 | pass | M3 dialog headline / text on the dialog container |
-| 52 | `color.global.system.onSurfaceVariant` #49454F | `color.global.system.surfaceContainerHigh` #ECE6F0 | text | light | 7.63:1 | 4.5:1 | pass | M3 dialog supporting text |
-| 52 | `color.global.system.onSurfaceVariant` #CAC4D0 | `color.global.system.surfaceContainerHigh` #2B2930 | text | dark | 8.42:1 | 4.5:1 | pass | M3 dialog supporting text |
-| 53 | `color.global.system.primary` #0A84FF | `color.global.system.surfaceContainerHigh` #ECE6F0 | text | light | 2.98:1 | 4.5:1 | **FAIL** | M3 dialog action label (labelLarge 14/500) in Retro blue |
-| 53 | `color.global.system.primary` #0A84FF | `color.global.system.surfaceContainerHigh` #2B2930 | text | dark | 3.94:1 | 4.5:1 | **FAIL** | M3 dialog action label (labelLarge 14/500) in Retro blue |
-| 54 | `color.global.system.primary` #0A84FF | `color.global.system.surface` #FFFFFF | text | light | 3.65:1 | 4.5:1 | **FAIL** | M3 text button / link in Retro blue on surface |
-| 54 | `color.global.system.primary` #0A84FF | `color.global.system.surface` #1C1C1E | text | dark | 4.66:1 | 4.5:1 | pass | M3 text button / link in Retro blue on surface |
-| 55 | `color.global.system.error` #EA3337 | `color.global.system.surface` #FFFFFF | text | light | 4.18:1 | 4.5:1 | **FAIL** | M3 error / destructive text on surface |
-| 55 | `color.global.system.error` #EA3337 | `color.global.system.surface` #1C1C1E | text | dark | 4.07:1 | 4.5:1 | **FAIL** | M3 error / destructive text on surface |
-| 56 | `color.global.system.error` #EA3337 | `color.global.system.surfaceContainerHigh` #ECE6F0 | text | light | 3.41:1 | 4.5:1 | **FAIL** | M3 destructive action label in a dialog |
-| 56 | `color.global.system.error` #EA3337 | `color.global.system.surfaceContainerHigh` #2B2930 | text | dark | 3.44:1 | 4.5:1 | **FAIL** | M3 destructive action label in a dialog |
-| 57 | `color.global.system.onSurface` #000000 | `color.global.system.surfaceContainerLow` #F7F2FA | text | light | 19.04:1 | 4.5:1 | pass | M3 bottom-sheet list text |
-| 57 | `color.global.system.onSurface` #FFFFFF | `color.global.system.surfaceContainerLow` #1D1B20 | text | dark | 17.07:1 | 4.5:1 | pass | M3 bottom-sheet list text |
-| 58 | `color.global.system.outline` #79747E | `color.global.system.surface` #FFFFFF | nontext | light | 4.55:1 | 3:1 | pass | M3 outline (outlined field border) |
-| 58 | `color.global.system.outline` #938F99 | `color.global.system.surface` #1C1C1E | nontext | dark | 5.37:1 | 3:1 | pass | M3 outline (outlined field border) |
-| 59 | `#CAC4D066` | `color.global.system.surfaceContainerLow` #1D1B20 | nontext | dark | 2.71:1 | 3:1 | **FAIL** | M3 sheet drag handle: on-surface-variant at 0.4 opacity (dark) |
-| 60 | `#49454F66` | `color.global.system.surfaceContainerLow` #F7F2FA | nontext | light | 2.00:1 | 3:1 | **FAIL** | M3 sheet drag handle: on-surface-variant at 0.4 opacity (light) |
+| 49 | `color.global.tabInactiveOnMedia` #B1AFAC | `#322C25` #322C25 | nontext | both | 6.29:1 | 3:1 | pass | unselected tab glyph over the measured Rewind photo and scrim (RWA #322C25) |
+| 50 | `color.global.system.onSurface` #000000 | `color.global.system.surface` #FFFFFF | text | light | 21.00:1 | 4.5:1 | pass | M3 list item label (bodyLarge) on surface |
+| 50 | `color.global.system.onSurface` #FFFFFF | `color.global.system.surface` #1C1C1E | text | dark | 17.01:1 | 4.5:1 | pass | M3 list item label (bodyLarge) on surface |
+| 51 | `color.global.system.onSurfaceVariant` #49454F | `color.global.system.surface` #FFFFFF | text | light | 9.34:1 | 4.5:1 | pass | M3 supporting text (bodyMedium 14) on surface |
+| 51 | `color.global.system.onSurfaceVariant` #CAC4D0 | `color.global.system.surface` #1C1C1E | text | dark | 9.98:1 | 4.5:1 | pass | M3 supporting text (bodyMedium 14) on surface |
+| 52 | `color.global.system.onSurface` #000000 | `color.global.system.surfaceContainerHigh` #ECE6F0 | text | light | 17.14:1 | 4.5:1 | pass | M3 dialog headline / text on the dialog container |
+| 52 | `color.global.system.onSurface` #FFFFFF | `color.global.system.surfaceContainerHigh` #2B2930 | text | dark | 14.36:1 | 4.5:1 | pass | M3 dialog headline / text on the dialog container |
+| 53 | `color.global.system.onSurfaceVariant` #49454F | `color.global.system.surfaceContainerHigh` #ECE6F0 | text | light | 7.63:1 | 4.5:1 | pass | M3 dialog supporting text |
+| 53 | `color.global.system.onSurfaceVariant` #CAC4D0 | `color.global.system.surfaceContainerHigh` #2B2930 | text | dark | 8.42:1 | 4.5:1 | pass | M3 dialog supporting text |
+| 54 | `color.global.system.primary` #0A84FF | `color.global.system.surfaceContainerHigh` #ECE6F0 | text | light | 2.98:1 | 4.5:1 | **FAIL** | M3 dialog action label (labelLarge 14/500) in Retro blue |
+| 54 | `color.global.system.primary` #0A84FF | `color.global.system.surfaceContainerHigh` #2B2930 | text | dark | 3.94:1 | 4.5:1 | **FAIL** | M3 dialog action label (labelLarge 14/500) in Retro blue |
+| 55 | `color.global.system.primary` #0A84FF | `color.global.system.surface` #FFFFFF | text | light | 3.65:1 | 4.5:1 | **FAIL** | M3 text button / link in Retro blue on surface |
+| 55 | `color.global.system.primary` #0A84FF | `color.global.system.surface` #1C1C1E | text | dark | 4.66:1 | 4.5:1 | pass | M3 text button / link in Retro blue on surface |
+| 56 | `color.global.system.error` #EA3337 | `color.global.system.surface` #FFFFFF | text | light | 4.18:1 | 4.5:1 | **FAIL** | M3 error / destructive text on surface |
+| 56 | `color.global.system.error` #EA3337 | `color.global.system.surface` #1C1C1E | text | dark | 4.07:1 | 4.5:1 | **FAIL** | M3 error / destructive text on surface |
+| 57 | `color.global.system.error` #EA3337 | `color.global.system.surfaceContainerHigh` #ECE6F0 | text | light | 3.41:1 | 4.5:1 | **FAIL** | M3 destructive action label in a dialog |
+| 57 | `color.global.system.error` #EA3337 | `color.global.system.surfaceContainerHigh` #2B2930 | text | dark | 3.44:1 | 4.5:1 | **FAIL** | M3 destructive action label in a dialog |
+| 58 | `color.global.system.onSurface` #000000 | `color.global.system.surfaceContainerLow` #F7F2FA | text | light | 19.04:1 | 4.5:1 | pass | M3 bottom-sheet list text |
+| 58 | `color.global.system.onSurface` #FFFFFF | `color.global.system.surfaceContainerLow` #1D1B20 | text | dark | 17.07:1 | 4.5:1 | pass | M3 bottom-sheet list text |
+| 59 | `color.global.system.outline` #79747E | `color.global.system.surface` #FFFFFF | nontext | light | 4.55:1 | 3:1 | pass | M3 outline (outlined field border) |
+| 59 | `color.global.system.outline` #938F99 | `color.global.system.surface` #1C1C1E | nontext | dark | 5.37:1 | 3:1 | pass | M3 outline (outlined field border) |
+| 60 | `#CAC4D066` | `color.global.system.surfaceContainerLow` #1D1B20 | nontext | dark | 2.71:1 | 3:1 | **FAIL** | M3 sheet drag handle: on-surface-variant at 0.4 opacity (dark) |
+| 61 | `#49454F66` | `color.global.system.surfaceContainerLow` #F7F2FA | nontext | light | 2.00:1 | 3:1 | **FAIL** | M3 sheet drag handle: on-surface-variant at 0.4 opacity (light) |
 <!-- contrast:end -->
 
 ## Failures and what the research offers instead

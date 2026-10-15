@@ -1073,7 +1073,7 @@
       "surface": "global",
       "type": "fontSize",
       "value": 11,
-      "element": "label of the red 'new' badge and small pills",
+      "element": "label of the red 'new' badge, the grey relative-week pill and the viewer position pill",
       "evidence": "references/auto/retro/store/editorial/retro-appstore-story-1840659619-albums.png '6' y1436–1464, 'n' 1443–1464 (cap 7.5, x 5.7) — design/research/retro-visual.md §3.3; references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt wv3.a Inter 11/11 W600 (M3 bodySmall)",
       "method": "cap / x-height; APK constant",
       "precision": "±0.5 pt",
@@ -1085,7 +1085,7 @@
       "surface": "global",
       "type": "fontWeight",
       "value": "semibold",
-      "element": "label of the red 'new' badge and small pills",
+      "element": "label of the red 'new' badge, the grey relative-week pill and the viewer position pill",
       "evidence": "references/auto/retro/store/editorial/retro-appstore-story-1840659619-albums.png '6' y1436–1464, 'n' 1443–1464 (cap 7.5, x 5.7) — design/research/retro-visual.md §3.3; references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt wv3.a Inter 11/11 W600 (M3 bodySmall)",
       "method": "visual weight comparison against the regular / semibold text in the same capture",
       "precision": "±1 weight step"

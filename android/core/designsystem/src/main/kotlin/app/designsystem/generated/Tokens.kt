@@ -238,6 +238,10 @@ object Tokens {
         /** Retro · global · unselected tab-bar glyphs (black 30 % on white / white 60 % on black) · SOURCED — token `color.global.tabInactive` */
         val globalTabInactive: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF999999) else Color(0xFFB2B2B2)
+        /** Retro · global · unselected tab glyphs over a full-bleed photo (selected: color.global.textOnMedia) · SOURCED — token `color.global.tabInactiveOnMedia` */
+        val globalTabInactiveOnMedia: Color = Color(0x9EFFFFFF)
+        /** Retro · global · text and glyphs on media surfaces and over photos in both appearances: viewer header name, close / more glyphs, weekday tile labels, date title on Rewind, controls on color.global.controlOnDeep · SOURCED — token `color.global.textOnMedia` */
+        val globalTextOnMedia: Color = Color(0xFFFFFFFF)
         /** Retro · global · primary text and glyphs; selected tab glyph; page-dot selected · SOURCED — token `color.global.textPrimary` */
         val globalTextPrimary: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFFFFFFFF) else Color(0xFF000000)
@@ -551,7 +555,7 @@ object Tokens {
         val birthdayRequestTitle: TextUnit = 24.sp
         /** Tribute · birthday.tribute · secondary button label · VERIFIED — token `fontSize.birthday.tribute.button` */
         val birthdayTributeButton: TextUnit = 14.sp
-        /** Retro · global · label of the red 'new' badge and small pills · SOURCED — token `fontSize.global.badge` */
+        /** Retro · global · label of the red 'new' badge, the grey relative-week pill and the viewer position pill · SOURCED — token `fontSize.global.badge` */
         val globalBadge: TextUnit = 11.sp
         /** Retro · global · body / list row text on iOS ('Weeks Posted: 32'-style info rows, comment text, address lines, sheet rows) · SOURCED — token `fontSize.global.body` */
         val globalBody: TextUnit = 15.sp
@@ -581,6 +585,8 @@ object Tokens {
         val globalOnboardingTitle: TextUnit = 30.sp
         /** Retro · global · label of the 36–37 pt capsules ('Get this week started', 'Recaps', 'Share Profile', 'Accept', 'Create') · SOURCED — token `fontSize.global.pill` */
         val globalPill: TextUnit = 15.sp
+        /** Retro · global · label of small pills on media / the paywall ('FREE', video duration '1:00' with monospaced digits) · SOURCED — token `fontSize.global.pillSmall` */
+        val globalPillSmall: TextUnit = 13.sp
         /** Retro · global · placeholder and typed text in the search / text field ('Search'), colour color.global.textSecondary · SOURCED — token `fontSize.global.placeholder` */
         val globalPlaceholder: TextUnit = 17.sp
         /** Retro · global · section header ('Week 27' before its date range; dated album group 'January 25, 2024') · SOURCED — token `fontSize.global.sectionLabel` */
@@ -741,7 +747,7 @@ object Tokens {
         val fontWeightBirthdayRequestTitle: FontWeight = FontWeight(600)
         /** Tribute · birthday.tribute · secondary button label · VERIFIED — token `fontWeight.birthday.tribute.button` */
         val fontWeightBirthdayTributeButton: FontWeight = FontWeight(600)
-        /** Retro · global · label of the red 'new' badge and small pills · SOURCED — token `fontWeight.global.badge` */
+        /** Retro · global · label of the red 'new' badge, the grey relative-week pill and the viewer position pill · SOURCED — token `fontWeight.global.badge` */
         val fontWeightGlobalBadge: FontWeight = FontWeight(600)
         /** Retro · global · body / list row text on iOS ('Weeks Posted: 32'-style info rows, comment text, address lines, sheet rows) · SOURCED — token `fontWeight.global.body` */
         val fontWeightGlobalBody: FontWeight = FontWeight(400)
@@ -769,6 +775,8 @@ object Tokens {
         val fontWeightGlobalOnboardingTitle: FontWeight = FontWeight(400)
         /** Retro · global · label of the 36–37 pt capsules ('Get this week started', 'Recaps', 'Share Profile', 'Accept', 'Create') · SOURCED — token `fontWeight.global.pill` */
         val fontWeightGlobalPill: FontWeight = FontWeight(600)
+        /** Retro · global · label of small pills on media / the paywall ('FREE', video duration '1:00' with monospaced digits) · SOURCED — token `fontWeight.global.pillSmall` */
+        val fontWeightGlobalPillSmall: FontWeight = FontWeight(700)
         /** Retro · global · section header ('Week 27' before its date range; dated album group 'January 25, 2024') · SOURCED — token `fontWeight.global.sectionLabel` */
         val fontWeightGlobalSectionLabel: FontWeight = FontWeight(600)
         /** Retro · global · modal / sheet title, centred ('Postcard', 'Create Recap', 'Settings', 'Add to Your Week') · SOURCED — token `fontWeight.global.sheetTitle` */
@@ -1869,6 +1877,7 @@ object Tokens {
             const val tileDay: String = "title"
             const val tileMonth: String = "subheadline"
             const val badge: String = "caption2"
+            const val pillSmall: String = "footnote"
         }
         /** Retro · global · Android weights on Inter's wght axis that the named weights cannot express (FontWeight(450)) · SOURCED — token `layout.global.variableWeight.android` */
         object GlobalVariableWeightAndroid {
@@ -2508,6 +2517,8 @@ object Tokens {
         val globalCard: Dp = 18.dp
         /** Retro · global · large card on a blurred backdrop (paywall plan card) · SOURCED — token `radius.global.cardLarge` */
         val globalCardLarge: Dp = 36.dp
+        /** Retro · global · reply / comment field at the bottom of the viewer (48 pt high, rounded rectangle — not a capsule) · SOURCED — token `radius.global.commentField` */
+        val globalCommentField: Dp = 12.dp
         /** Retro · global · search / text field corners (52 pt field) · SOURCED — token `radius.global.field` */
         val globalField: Dp = 19.dp
         /** Retro · global · grouped list (settings) — first row top corners, last row bottom corners, a single row all corners; middle rows square · SOURCED — token `radius.global.groupedRow` */
@@ -2990,13 +3001,15 @@ object Tokens {
         val settingsRootSizeListItemThreeLineAndroid: Dp = 88.dp
         /** Material 3 · settings.root · M3 two-line list item height · VERIFIED — token `settings.root.size.listItemTwoLine.android` */
         val settingsRootSizeListItemTwoLineAndroid: Dp = 72.dp
+        /** Retro · global · avatar in a comment row and inside the reply / comment field · SOURCED — token `size.global.avatarComment` */
+        val globalAvatarComment: Dp = 30.dp
         /** Retro · global · avatar in a 3-column people grid (name centred below) · SOURCED — token `size.global.avatarGrid` */
         val globalAvatarGrid: Dp = 81.dp
         /** Retro · global · viewer / story header avatar including its white ring with a gap · SOURCED — token `size.global.avatarHeader` */
         val globalAvatarHeader: Dp = 39.dp
         /** Retro · global · avatar beside a name above a friend card (home feed) · SOURCED — token `size.global.avatarList` */
         val globalAvatarList: Dp = 26.5.dp
-        /** Retro · global · avatar in a people row (friend request, member, comment rows) · SOURCED — token `size.global.avatarPicker` */
+        /** Retro · global · avatar in a people row (friend request, member rows) · SOURCED — token `size.global.avatarPicker` */
         val globalAvatarPicker: Dp = 37.dp
         /** Retro · global · avatar in the profile header (right margin, aligned to the title) · SOURCED — token `size.global.avatarProfile` */
         val globalAvatarProfile: Dp = 64.dp
@@ -3060,6 +3073,8 @@ object Tokens {
         val globalHeaderInset: Dp = 16.dp
         /** Retro · global · glyph box of outline icons: tab bar, header, list accessories · SOURCED — token `size.global.icon` */
         val globalIcon: Dp = 24.dp
+        /** Retro · global · icon-only capsule in an action row (the gear capsule after 'Recaps' / 'Share Profile') · SOURCED — token `size.global.iconPillWidth` */
+        val globalIconPillWidth: Dp = 49.dp
         /** Retro · global · inline glyph inside a pill ('+' in 'Get this week started'); info-row icons measure 14 · SOURCED — token `size.global.iconSmall` */
         val globalIconSmall: Dp = 14.7.dp
         /** Retro · global · profile info rows (14 pt icon + 15 pt text) baseline pitch · SOURCED — token `size.global.infoRowPitch` */
@@ -3310,6 +3325,8 @@ object Tokens {
         val globalSystemSurfaceContainerHigh: Color = Color(0xFFECE6F0)
         val globalSystemSurfaceContainerLow: Color = Color(0xFFF7F2FA)
         val globalTabInactive: Color = Color(0xFFB2B2B2)
+        val globalTabInactiveOnMedia: Color = Color(0x9EFFFFFF)
+        val globalTextOnMedia: Color = Color(0xFFFFFFFF)
         val globalTextPrimary: Color = Color(0xFF000000)
         val globalTextSecondary: Color = Color(0xFF999999)
         val globalTextSecondaryAndroid: Color = Color(0x80000000)
@@ -3450,6 +3467,8 @@ object Tokens {
         val globalSystemSurfaceContainerHigh: Color = Color(0xFF2B2930)
         val globalSystemSurfaceContainerLow: Color = Color(0xFF1D1B20)
         val globalTabInactive: Color = Color(0xFF999999)
+        val globalTabInactiveOnMedia: Color = Color(0x9EFFFFFF)
+        val globalTextOnMedia: Color = Color(0xFFFFFFFF)
         val globalTextPrimary: Color = Color(0xFFFFFFFF)
         val globalTextSecondary: Color = Color(0xFF999999)
         val globalTextSecondaryAndroid: Color = Color(0x99FFFFFF)

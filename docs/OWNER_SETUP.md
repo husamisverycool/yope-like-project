@@ -29,6 +29,22 @@ Placeholders used below:
    ("nothing gets lost"). Our implementation never deletes anything; the window (if you set one)
    only limits browsing old weeks for free users. `app_config.free_history_days` = NULL means
    unlimited for everyone.
+6. **Display typeface (titles such as "Week 27", profile names, headlines).** The design follows
+   Retro, whose display face is **Roslindale** by David Jonathan Ross (DJR) — a commercial font we
+   may not copy from Retro's app. Choose one:
+   - **License Roslindale** from DJR (https://djr.com/roslindale; terms https://djr.com/license):
+     the retail styles **Roslindale Display Narrow** (headlines) and **Roslindale Deck Narrow**
+     (smaller display text), with an **app-embedding licence for iOS and Android** (and a web licence
+     if the invite page should match). Retro's own "Roslindale Retro v0.2" cut is custom and only DJR
+     can offer it. Send back the licensed font files (`.otf` / `.ttf`) and the licence text; we bundle
+     them and set `font.global.display` (design/tokens/global.json) to their names — every display
+     size is already Retro's.
+   - **Keep the platform serif** (New York on iOS, Noto Serif on Android — free, already in place).
+     The titles keep Retro's sizes but look like the system serif, not Retro's face.
+   - Or name **another licensed display serif** you prefer (same steps as the first option).
+   Until you decide, the platform serif ships. (The UI text face needs nothing from you: SF Pro is
+   the iPhone's own font and Inter, used on Android, is free under the SIL Open Font License —
+   bundled with its licence at `android/core/designsystem/licenses/Inter-OFL.txt`.)
 
 ## 1. Apple
 
