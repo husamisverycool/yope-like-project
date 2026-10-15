@@ -37,7 +37,25 @@ enum SnapshotRecorder {
             testName: testName,
             line: line
         )
-        let contents = (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
-        return contents.first { $0.lastPathComponent.hasSuffix(".\(name).png") }
+        // swift-snapshot-testing names the file `<sanitized test name>.<sanitized name>.png`, where sanitizing replaces
+        // every run of non-word characters with "-" ("auth.phone-default" → "auth-phone-default").
+        let suffix = ".\(sanitizedPathComponent(name)).png"
+        let contents = (try? FileManager.default.contentsOfDirectory(
+            at: folder, includingPropertiesForKeys: [.contentModificationDateKey]
+        )) ?? []
+        return contents
+            .filter { $0.lastPathComponent.hasSuffix(suffix) }
+            .max { modificationDate($0) < modificationDate($1) }
+    }
+
+    /// The same sanitizing swift-snapshot-testing applies to test and snapshot names.
+    static func sanitizedPathComponent(_ string: String) -> String {
+        string
+            .replacingOccurrences(of: "\\W+", with: "-", options: .regularExpression)
+            .replacingOccurrences(of: "^-|-$", with: "", options: .regularExpression)
+    }
+
+    private static func modificationDate(_ url: URL) -> Date {
+        (try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
     }
 }

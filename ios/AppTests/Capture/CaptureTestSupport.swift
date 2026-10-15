@@ -127,9 +127,12 @@ final class CaptureTestRig {
 
 /// Test pictures (literal colours are allowed in tests).
 enum CaptureTestImages {
-    /// A gradient "photo" of `size` points.
+    /// A gradient "photo" of `size` pixels (scale 1, so its pixel size matches `still()`'s pixelWidth / pixelHeight
+    /// on every simulator).
     static func photo(_ size: CGSize = CGSize(width: 300, height: 400), hue: CGFloat = 0.08) -> UIImage {
-        let renderer = UIGraphicsImageRenderer(size: size)
+        let format = UIGraphicsImageRendererFormat.preferred()
+        format.scale = 1
+        let renderer = UIGraphicsImageRenderer(size: size, format: format)
         return renderer.image { context in
             let colors = [UIColor(hue: hue, saturation: 0.55, brightness: 0.95, alpha: 1).cgColor,
                           UIColor(hue: hue + 0.5, saturation: 0.6, brightness: 0.45, alpha: 1).cgColor] as CFArray
