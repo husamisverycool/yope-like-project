@@ -6,7 +6,7 @@ Checklist written from the spec (`design/surfaces/safety.report.md`) against the
 
 Snapshots (CI): `safety.report-form.png`, `safety.report-sent.png`, `safety.report-error.png`, `safety.report-not-found.png`
 
-**Summary: 27 matched · 0 approximated · 2 not matched (BLOCKED or not buildable) · 3 not applicable on iOS / placed by another pass.**
+**Summary: 27 matched · 1 approximated · 2 not matched (BLOCKED or not buildable) · 3 not applicable on iOS / placed by another pass.**
 
 | status | kind | token / copy | reference value | element | what the snapshot shows (iOS implementation) |
 |---|---|---|---|---|---|
@@ -42,6 +42,10 @@ Snapshots (CI): `safety.report-form.png`, `safety.report-sent.png`, `safety.repo
 | matched | token | `haptic.global.success` | ios: notification.success; android: CONFIRM (PLATFORM) | any task completed successfully (same generator as send) | `Tokens.…globalSuccess` in ReportSheet.swift |
 | matched | token | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | a task failed (send failed) | `Tokens.…globalError` in BlockConfirmation.swift, ReportSheet.swift |
 | matched | token | `safety.block.duration.toast` | 2000 ms (SOURCED) | how long the lime toast stays before it leaves | `Tokens.…safetyBlockDurationToast` in Toast.swift |
+
+## Approximations
+
+- Reason list BLOCKED (owner categories): the sheet ships with the optional free-text details, the sourced presentation of MERGE G2-8; with categories, one single-select list above the details field (`DesignGaps.showsReportReasons`).
 
 ## Not matched
 

@@ -183,10 +183,9 @@ struct WidgetOverlay: View {
 }
 
 /// Locket's empty widget (`widget.home.small.layout.empty`, md variant): a translucent circle holding
-/// the photo glyph inside a ring, then the label `labelGap` below in `label` pt — drawn once its color
-/// `widget.home.small.color.emptyLabel` is unblocked (WidgetBlocked); the text is the accessibility
-/// label meanwhile. The lg variant for large / extra large exists only in the token's notes, so md is
-/// used at every size.
+/// the photo glyph inside a ring, then the label `labelGap` below in `label` pt,
+/// `widget.home.small.color.emptyLabel` (weight not measured: platform regular). The lg variant for
+/// large / extra large exists only in the token's notes, so md is used at every size.
 struct WidgetEmptyStack: View {
     var text: String?
 
@@ -195,7 +194,7 @@ struct WidgetEmptyStack: View {
     var body: some View {
         VStack(spacing: Empty.labelGap) {
             graphic
-            if let text, let color = WidgetBlocked.emptyLabelColor {
+            if let text {
                 Text(text)
                     .dsTextStyle(DSTextStyle(
                         family: Tokens.Fonts.globalFamily,
@@ -203,7 +202,7 @@ struct WidgetEmptyStack: View {
                         weight: .regular,
                         relativeTo: WidgetTextStyleName.resolve(Tokens.Layouts.WidgetHomeSmallLayoutTextStyleMap.emptyLabel)
                     ))
-                    .foregroundStyle(color)
+                    .foregroundStyle(Tokens.Colors.widgetHomeSmallColorEmptyLabel)
                     .lineLimit(1)
             }
         }

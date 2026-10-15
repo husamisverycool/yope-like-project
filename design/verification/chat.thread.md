@@ -8,7 +8,7 @@ Reference image(s): `references/auto/yope/store/yope-store-05.png`, `references/
 
 Snapshots (CI): `chat.thread-ready.png`, `chat.thread-loading.png`, `chat.thread-empty.png`, `chat.thread-error.png`, `chat.thread-offline.png`, `chat.thread-offline-cached.png`, `chat.thread-send-failed.png`
 
-**Summary: 42 matched · 6 approximated · 1 not matched (BLOCKED or not buildable).**
+**Summary: 43 matched · 6 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Header
 
@@ -42,7 +42,7 @@ Snapshots (CI): `chat.thread-ready.png`, `chat.thread-loading.png`, `chat.thread
 |---|---|---|---|---|
 | matched | `fontSize.global.overlayTime`<br>`fontWeight.global.overlayTime`<br>`color.global.textPrimary`<br>`chat.thread.layout.timeFormat` | 21 pt (SOURCED)<br>heavy (SOURCED)<br>#FFFFFF (SOURCED)<br>pattern: h:mm a; example: 10:00 PM; locale: device locale short time (SOURCED) | time centred on the photo | TextRole.overlayTime; DateFormatter template h:mm a in the device locale |
 | matched | `chat.thread.dimension.captionInsetBottom`<br>`chat.thread.dimension.captionHeight`<br>`chat.thread.dimension.captionPaddingH`<br>`chat.thread.radius.caption`<br>`chat.thread.fontSize.caption`<br>`chat.thread.fontWeight.caption` | 7.8 pt (SOURCED)<br>45.8 pt (SOURCED)<br>20 pt (SOURCED)<br>13 pt (SOURCED)<br>21 pt (SOURCED)<br>bold (SOURCED) | caption box, one line, tail truncation | PhotoCaption (lineLimit 1) |
-| not matched | `color.global.scrim` | #00000080 (SOURCED) | caption box fill | BLOCKED: drawn without a fill (SocialBlocked.scrim) |
+| matched | `color.global.scrim` | #00000080 (SOURCED) | caption box fill (gap fill G2) | RoundedRectangle fill behind the caption |
 | matched | `chat.reactions.dimension.clusterInsetLeading`<br>`chat.reactions.dimension.clusterInsetBottom`<br>`chat.reactions.a11y.cluster` | 17 pt (SOURCED)<br>20 pt (SOURCED)<br>“Reactions: {emoji_names}” (SOURCED) | reaction cluster bottom-left, never a number | ReactionCluster overlay (see chat.reactions) |
 
 ## Reply to a photo

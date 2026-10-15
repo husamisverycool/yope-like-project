@@ -145,7 +145,7 @@ struct DailyCaptureView: View {
 
     // MARK: Preview controls
 
-    /// Retake ✕ on its circle (`daily.capture.color.overlayControl`, drawn once unblocked).
+    /// Retake ✕ on its translucent circle (`daily.capture.color.overlayControl`).
     private var retakeButton: some View {
         let retake = Tokens.Layouts.DailyCaptureLayoutRetake.self
         return Button {
@@ -157,9 +157,7 @@ struct DailyCaptureView: View {
                 .frame(width: retake.glyph, height: retake.glyph)
                 .foregroundStyle(Tokens.Colors.dailyCaptureColorText)
                 .frame(width: retake.diameter, height: retake.diameter)
-                .background {
-                    if let fill = CaptureBlocked.overlayControlFill { Circle().fill(fill) }
-                }
+                .background(Tokens.Colors.dailyCaptureColorOverlayControl, in: Circle())
                 .contentShape(Circle())
                 .captureMinimumHitArea { Task { await model.retake() } }
         }
@@ -171,7 +169,7 @@ struct DailyCaptureView: View {
     }
 
     /// Not interactive: the answer goes to the invitation's group. Fill
-    /// `daily.capture.color.overlayControl` (drawn once unblocked).
+    /// `daily.capture.color.overlayControl`.
     private var audienceChip: some View {
         let chip = Tokens.Layouts.DailyCaptureLayoutAudienceChip.self
         return HStack(spacing: chip.glyphToText) {
@@ -184,9 +182,7 @@ struct DailyCaptureView: View {
         .padding(.leading, chip.paddingLeading)
         .padding(.trailing, chip.paddingTrailing)
         .frame(height: chip.height)
-        .background {
-            if let fill = CaptureBlocked.overlayControlFill { Capsule().fill(fill) }
-        }
+        .background(Tokens.Colors.dailyCaptureColorOverlayControl, in: Capsule())
         .padding(.bottom, chip.bottomInset)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("daily.capture.audience")

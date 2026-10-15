@@ -1,6 +1,5 @@
 package app.feature.social.common
 
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 
 /**
@@ -16,13 +15,10 @@ import androidx.compose.ui.unit.Dp
  * `.layout.typingState`; `chat.voice.color.bubbleTheirs`, `.color.waveformPlayed`, `.icon.pause`,
  * `.layout.recording`; `chat.reactions.layout.clusterOrder`, `.easing.rain`, `.duration.flyToCluster`,
  * `.layout.unreact`; `photo.viewer.dimension.pageGap`; `week.history.color.emptyTile`, `.emptyTileText`;
- * `week.edit.layout.reorder`; `albums.list.layout.yopeAlbums`.
+ * `week.edit.layout.reorder`; `albums.list.layout.yopeAlbums`; and by the second global pass (G2):
+ * `color.global.scrim` (the caption box fill).
  */
 object SocialBlocked {
-    // chat.thread / photo.viewer
-    /** `color.global.scrim` (caption box fill) → `Tokens.Colors.globalScrim`. */
-    val scrim: Color? = null
-
     // chat.voice
     /** `chat.voice.layout.widthRule` → true once built (until then: the observed width for every duration). */
     const val voiceWidthRule: Boolean = false

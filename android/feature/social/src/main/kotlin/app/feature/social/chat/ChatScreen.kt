@@ -906,8 +906,8 @@ private fun Overlapped(overlap: Dp, alignStart: Boolean, top: @Composable () -> 
 
 /**
  * A photo message: `chat.thread.dimension.photoWidth` × `.photoHeight` frame scaled to the column
- * (aspect fill, `radius.global.photo`), the time centred, the caption box (its `color.global.scrim`
- * fill is BLOCKED and not drawn), and the reaction cluster bottom-left. Tap → viewer; long press →
+ * (aspect fill, `radius.global.photo`), the time centred, the caption box (`color.global.scrim`,
+ * `chat.thread.radius.caption`), and the reaction cluster bottom-left. Tap → viewer; long press →
  * reaction picker.
  */
 @OptIn(ExperimentalFoundationApi::class)
@@ -941,7 +941,6 @@ private fun PhotoMessage(
             RemotePhoto(media?.imagePath(Media.Rendition.Display), label, Modifier.fillMaxSize(), ContentScale.Crop, fallbackPath = media?.imagePath(Media.Rendition.Thumb))
             Line(Formats.overlayTime(row.message.createdAt), Type.overlayTime(), Tokens.Colors.globalTextPrimary, Modifier.align(Alignment.Center).clearAndSetSemantics { })
             if (caption != null) {
-                val scrim = SocialBlocked.scrim
                 Box(
                     Modifier
                         .align(Alignment.BottomCenter)
@@ -952,7 +951,7 @@ private fun PhotoMessage(
                             end = Tokens.Sizes.chatReactionsDimensionClusterInsetLeading + Tokens.Sizes.chatReactionsDimensionClusterEmoji,
                         )
                         .heightIn(min = Tokens.Sizes.chatThreadDimensionCaptionHeight)
-                        .let { if (scrim != null) it.background(scrim, RoundedCornerShape(Tokens.Radii.chatThreadRadiusCaption)) else it }
+                        .background(Tokens.Colors.globalScrim, RoundedCornerShape(Tokens.Radii.chatThreadRadiusCaption))
                         .padding(horizontal = Tokens.Sizes.chatThreadDimensionCaptionPaddingH)
                         .clearAndSetSemantics { if (captionLabel != null) contentDescription = captionLabel },
                     contentAlignment = Alignment.Center,

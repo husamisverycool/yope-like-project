@@ -1,5 +1,14 @@
 package app.feature.capture
 
+import android.content.Context
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
@@ -7,6 +16,8 @@ import androidx.navigation.toRoute
 import app.feature.capture.camera.CameraRoute
 import app.feature.capture.collage.CollageRoute
 import app.feature.capture.daily.DailyCaptureRoute
+import app.designsystem.ReduceMotion
+import app.designsystem.generated.Tokens
 import app.feature.capture.sendto.SendToRoute
 import app.model.AppRoute
 import app.model.DeepLinkRouting
@@ -18,7 +29,11 @@ import app.model.SocialHandoff
  * `daily.capture` (+ `daily.dualimage`), `collage.view` (+ `collage.share`).
  */
 fun NavGraphBuilder.captureDestinations(navController: NavHostController) {
-    composable<AppRoute.Camera> { entry ->
+    composable<AppRoute.Camera>(
+        // The send-to sheet rises over the camera, which stays in place under it.
+        exitTransition = { if (targetState.destination.hasRoute<AppRoute.SendTo>()) ExitTransition.KeepUntilTransitionsFinished else null },
+        popEnterTransition = { if (initialState.destination.hasRoute<AppRoute.SendTo>()) EnterTransition.None else null },
+    ) { entry ->
         val route = entry.toRoute<AppRoute.Camera>()
         CameraRoute(
             groupId = route.groupId,
@@ -28,7 +43,10 @@ fun NavGraphBuilder.captureDestinations(navController: NavHostController) {
             onOpenPaywall = { navController.navigate(AppRoute.Paywall) },
         )
     }
-    composable<AppRoute.SendTo> {
+    composable<AppRoute.SendTo>(
+        enterTransition = { SheetMotion.enter(navController.context) },
+        popExitTransition = { SheetMotion.exit(navController.context) },
+    ) {
         SendToRoute(
             onClose = { navController.popBackStack() },
             // Sent: the sheet closes at once; Yope returns to the home list with the toast.
@@ -52,4 +70,25 @@ fun NavGraphBuilder.captureDestinations(navController: NavHostController) {
             onOpenCamera = { navController.navigate(AppRoute.Camera(route.groupId)) },
         )
     }
+}
+
+/**
+ * capture → `camera.sendto` (camera.capture.md → Motion): Yope's sheet, rising from the bottom with
+ * `spring.global.sheetPresent` and leaving the same way; Reduce Motion cross-fades over
+ * `duration.global.sheetPresent`.
+ */
+internal object SheetMotion {
+    fun enter(context: Context): EnterTransition =
+        if (ReduceMotion.isEnabled(context)) {
+            fadeIn(tween(Tokens.Durations.globalSheetPresent))
+        } else {
+            slideInVertically(Tokens.Springs.globalSheetPresent.spec()) { height -> height }
+        }
+
+    fun exit(context: Context): ExitTransition =
+        if (ReduceMotion.isEnabled(context)) {
+            fadeOut(tween(Tokens.Durations.globalSheetPresent))
+        } else {
+            slideOutVertically(Tokens.Springs.globalSheetPresent.spec()) { height -> height }
+        }
 }

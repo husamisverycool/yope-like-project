@@ -55,11 +55,11 @@ final class CaptureSendCenter {
         }
     }
 
-    /// A confirmation: always announced to VoiceOver; drawn as the lime toast for
-    /// `camera.sendto.duration.toastVisible` once that value is unblocked (CaptureBlocked).
+    /// A confirmation: the lime toast for `camera.sendto.duration.toastVisible`, also announced to
+    /// VoiceOver.
     func confirm(_ text: String) {
         AccessibilityNotification.Announcement(text).post()
-        guard let visible = CaptureBlocked.toastVisible else { return }
+        let visible = Tokens.Durations.cameraSendtoDurationToastVisible
         confirmation = text
         confirmationTask?.cancel()
         confirmationTask = Task { [weak self] in
@@ -146,7 +146,7 @@ final class CaptureSendCenter {
 }
 
 /// The lime toast bar (`camera.sendto.layout.toast`): `icon.global.check` in `color.global.onAccent`
-/// (C-12) and the confirmation text.
+/// (C-12) and the confirmation text, shown for `camera.sendto.duration.toastVisible`.
 struct CaptureConfirmationToast: View {
     let text: String
 
@@ -221,23 +221,25 @@ extension View {
 private struct CaptureSendStatusModifier: ViewModifier {
     let center: CaptureSendCenter
 
+    /// Toast in / out (camera.sendto Motion): the curve was not measurable, so the platform default
+    /// spring (`spring.global.platformDefault.ios`) moves it in from the top; Reduce Motion cross-fades.
     func body(content: Content) -> some View {
         content.overlay(alignment: .top) {
-            // Toast motion is BLOCKED (camera.sendto Motion: toast in / out): it appears and
-            // leaves without animation.
-            if let failure = center.failure {
-                CaptureFailureToast(failure: failure, isRetrying: center.isRetrying) {
-                    Task { await center.retry() }
+            ZStack {
+                if let failure = center.failure {
+                    CaptureFailureToast(failure: failure, isRetrying: center.isRetrying) {
+                        Task { await center.retry() }
+                    }
+                    .dsTransition(.move(edge: .top).combined(with: .opacity))
+                } else if let confirmation = center.confirmation {
+                    CaptureConfirmationToast(text: confirmation)
+                        .dsTransition(.move(edge: .top).combined(with: .opacity))
                 }
-                .padding(.top, Tokens.Layouts.CameraSendtoLayoutToast.top)
-                .ignoresSafeArea(edges: .top)
-                .transition(.identity)
-            } else if let confirmation = center.confirmation {
-                CaptureConfirmationToast(text: confirmation)
-                    .padding(.top, Tokens.Layouts.CameraSendtoLayoutToast.top)
-                    .ignoresSafeArea(edges: .top)
-                    .transition(.identity)
             }
+            .padding(.top, Tokens.Layouts.CameraSendtoLayoutToast.top)
+            .ignoresSafeArea(edges: .top)
+            .dsAnimation(.spring(Tokens.Springs.globalPlatformDefaultIos), value: center.failure)
+            .dsAnimation(.spring(Tokens.Springs.globalPlatformDefaultIos), value: center.confirmation)
         }
     }
 }

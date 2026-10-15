@@ -16,6 +16,8 @@ struct CameraCaptureView: View {
     let sendCenter: CaptureSendCenter
 
     @State private var isPickerPresented = false
+    /// Recording progress, 0 → 1 linearly over `camera.capture.duration.videoMax`.
+    @State private var recordingProgress: CGFloat = 0
 
     private typealias Viewfinder = Tokens.Layouts.CameraCaptureLayoutViewfinder
 
@@ -31,9 +33,8 @@ struct CameraCaptureView: View {
                     .frame(width: width, height: viewfinderHeight)
                     .clipShape(RoundedRectangle(cornerRadius: Tokens.Radii.globalViewfinder, style: .continuous))
                     .overlay {
-                        if model.isRecording, let outline = CaptureBlocked.recordingOutlineWidth {
-                            RoundedRectangle(cornerRadius: Tokens.Radii.globalViewfinder, style: .continuous)
-                                .strokeBorder(Tokens.Colors.globalAccent, lineWidth: outline)
+                        if model.isRecording {
+                            recordingOutline
                         }
                     }
                     .offset(y: Viewfinder.top)
@@ -57,7 +58,27 @@ struct CameraCaptureView: View {
         }
         .task { await model.appear() }
         .onDisappear { Task { await model.disappear() } }
+        .onChange(of: model.isRecording) { _, recording in
+            recordingProgress = 0
+            guard recording else { return }
+            withDSAnimation(.timing(duration: Tokens.Durations.cameraCaptureDurationVideoMax, easing: .linear)) {
+                recordingProgress = 1
+            }
+        }
         .captureSendStatus(sendCenter)
+    }
+
+    /// While a video records, the viewfinder's outline (`camera.capture.size.recordingOutline`,
+    /// `color.global.accent`) is traced from empty to full, linearly, over the maximum video length
+    /// (Locket's progress stroke).
+    private var recordingOutline: some View {
+        let width = Tokens.Sizes.cameraCaptureSizeRecordingOutline
+        return RoundedRectangle(cornerRadius: Tokens.Radii.globalViewfinder, style: .continuous)
+            .inset(by: width / 2)
+            .trim(from: 0, to: recordingProgress)
+            .stroke(Tokens.Colors.globalAccent, style: StrokeStyle(lineWidth: width, lineCap: .butt))
+            .accessibilityHidden(true)
+            .allowsHitTesting(false)
     }
 
     // MARK: Viewfinder

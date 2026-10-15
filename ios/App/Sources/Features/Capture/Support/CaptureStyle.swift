@@ -32,9 +32,8 @@ enum CaptureTextStyleName {
 /// Text roles of the capture surfaces. Every size, weight and Dynamic Type style is a token.
 enum CaptureType {
     /// Roles whose weight was never measured have no weight token (design/tokens/README.md "Not
-    /// available yet": placeholder / emptyDetail weight); they keep the platform's regular weight.
-    /// `daily.capture.fontWeight.countdown` is BLOCKED and uses the same platform weight until its
-    /// verification render closes it (design/surfaces/daily.capture.md Gaps).
+    /// available yet": placeholder / emptyDetail / prompt / chip weight); they keep the platform's
+    /// regular weight.
     static let platformWeight: Font.Weight = .regular
 
     private static func role(_ size: CGFloat, _ weight: Font.Weight, _ style: String) -> DSTextStyle {
@@ -92,7 +91,7 @@ enum CaptureType {
     // MARK: daily.capture
 
     static var countdown: DSTextStyle {
-        role(Tokens.FontSizes.dailyCaptureFontSizeCountdown, CaptureBlocked.countdownWeight ?? platformWeight, Tokens.Layouts.DailyCaptureLayoutTextStyleMap.countdown)
+        role(Tokens.FontSizes.dailyCaptureFontSizeCountdown, Tokens.FontWeights.dailyCaptureFontWeightCountdown, Tokens.Layouts.DailyCaptureLayoutTextStyleMap.countdown)
     }
 
     static var prompt: DSTextStyle {

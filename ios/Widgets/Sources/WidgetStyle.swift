@@ -49,14 +49,13 @@ enum WidgetType {
         )
     }
 
-    /// Lock Screen countdown: `daily.capture.fontSize.countdown`. Its weight
-    /// (`daily.capture.fontWeight.countdown`) is BLOCKED; every Live Activity text is at least
-    /// `daily.liveactivity.fontWeight.min`, which is used until it closes.
+    /// Lock Screen countdown: `daily.capture.fontSize.countdown` / `.fontWeight.countdown` (bold, above
+    /// the `daily.liveactivity.fontWeight.min` floor).
     static var lockScreenCountdown: DSTextStyle {
         DSTextStyle(
             family: Tokens.Fonts.globalFamily,
             size: Tokens.FontSizes.dailyCaptureFontSizeCountdown,
-            weight: WidgetBlocked.countdownWeight ?? Tokens.FontWeights.dailyLiveactivityFontWeightMin,
+            weight: Tokens.FontWeights.dailyCaptureFontWeightCountdown,
             relativeTo: WidgetTextStyleName.resolve(Tokens.Layouts.DailyCaptureLayoutTextStyleMap.countdown)
         )
     }

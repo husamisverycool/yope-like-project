@@ -8,7 +8,7 @@ Reference image(s): `references/auto/yope/frames/b-yopeapp-7591560669967682847-t
 
 Snapshots (CI): `photo.viewer-ready.png`, `photo.viewer-reply-typing.png`, `photo.viewer-ready-own.png`, `photo.viewer-permission-denied.png`, `photo.viewer-loading.png`, `photo.viewer-gone.png`, `photo.viewer-error.png`, `photo.viewer-offline.png`
 
-**Summary: 31 matched · 3 approximated · 2 not matched (BLOCKED or not buildable).**
+**Summary: 32 matched · 3 approximated · 1 not matched (BLOCKED or not buildable).**
 
 ## Header
 
@@ -31,7 +31,7 @@ Snapshots (CI): `photo.viewer-ready.png`, `photo.viewer-reply-typing.png`, `phot
 | matched | `photo.viewer.dimension.senderAvatar`<br>`photo.viewer.dimension.senderInsetLeading`<br>`photo.viewer.dimension.senderInsetTop`<br>`photo.viewer.dimension.senderNameGap` | 38.7 pt (SOURCED)<br>13.8 pt (SOURCED)<br>12.3 pt (SOURCED)<br>13 pt (SOURCED) | sender avatar + first name (“you”), top-aligned | Button → walls.member / walls.mine |
 | matched | `photo.viewer.dimension.actionTrailing`<br>`photo.viewer.dimension.actionCenterTop`<br>`tagging.toggle`<br>`tagging.coach` | 23.8 pt (SOURCED)<br>33.1 pt (SOURCED)<br>“i'm in this” (SOURCED)<br>“tap if you're in this pic” (SOURCED) | “i'm in this” toggle at Yope’s chip slot with its coach | memory group’s SelfTagToggleControl drawn from PhotoViewerModel state (optimistic, rollback, toasts; unit-tested) |
 | matched | `chat.thread.fontSize.caption`<br>`chat.thread.dimension.captionHeight`<br>`chat.thread.dimension.captionPaddingH`<br>`chat.thread.radius.caption`<br>`chat.thread.dimension.captionInsetBottom` | 21 pt (SOURCED)<br>45.8 pt (SOURCED)<br>20 pt (SOURCED)<br>13 pt (SOURCED)<br>7.8 pt (SOURCED) | caption box bottom-centre, long captions wrap | PhotoCaption(wraps: true) |
-| not matched | `color.global.scrim` | #00000080 (SOURCED) | caption fill | BLOCKED: no fill |
+| matched | `color.global.scrim` | #00000080 (SOURCED) | caption fill (gap fill G2) | RoundedRectangle fill behind the caption |
 | matched | `chat.reactions.dimension.clusterInsetLeading`<br>`chat.reactions.dimension.clusterInsetBottom` | 17 pt (SOURCED)<br>20 pt (SOURCED) | reaction cluster bottom-left → Activity sheet | ReactionCluster button |
 | matched | `—` | — | Live Photo plays while pressed; dual capture as daily.dualimage; video with the platform player | PHLivePhotoView (still + motion downloaded), capture group’s DualImageView, VideoPlayer |
 | approximated | `photo.viewer.layout.voiceNote` | BLOCKED | voice note position | BLOCKED: spec approximation — under the photo, left edge at size.global.screenMargin, chat.voice bubble |

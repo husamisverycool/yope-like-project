@@ -131,13 +131,13 @@ class SocialFlowTest {
         micGranted()
         val data = FakeSocialData().apply { seedChat() }
         chat(data)
-        compose.onNodeWithContentDescription("record a voice message").performTouchInput {
-            down(center)
-            advanceEventTime(HOLD_MS)
-        }
+        compose.onNodeWithContentDescription("record a voice message").performTouchInput { down(center) }
         assertTrue(testVoice.recording)
         compose.onNodeWithText("slide to cancel").assertExists()
-        compose.onNodeWithContentDescription("record a voice message").performTouchInput { up() }
+        compose.onNodeWithContentDescription("record a voice message").performTouchInput {
+            advanceEventTime(HOLD_MS)
+            up()
+        }
         compose.waitForIdle()
         assertFalse(testVoice.recording)
         assertTrue(data.calls.contains("sendVoice:${FakeVoice.DURATION_MS}"))
@@ -178,7 +178,7 @@ class SocialFlowTest {
         compose.onNodeWithContentDescription("pause").performClick()
         compose.waitForIdle()
         assertFalse(testVoice.recording)
-        compose.onNodeWithContentDescription("play voice message", substring = true).assertExists()
+        compose.onNodeWithContentDescription("play voice message, 4 seconds").assertExists()
         compose.onNodeWithContentDescription("send").performClick()
         compose.waitForIdle()
         assertTrue(data.calls.contains("sendVoice:${FakeVoice.DURATION_MS}"))

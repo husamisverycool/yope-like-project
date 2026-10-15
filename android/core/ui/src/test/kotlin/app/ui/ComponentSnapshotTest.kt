@@ -45,6 +45,9 @@ import app.ui.system.SystemSectionFooter
 import app.ui.system.SystemSectionHeader
 import app.ui.system.SystemSwitchRow
 import app.ui.theme.AppTheme
+import app.ui.components.Hairline
+import app.ui.system.ErrorAlert
+import androidx.compose.material3.Text
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.github.takahirom.roborazzi.captureScreenRoboImage
 import org.junit.Rule
@@ -176,6 +179,20 @@ class ComponentSnapshotTest {
             SystemRow("leave group", destructive = true, leading = { androidx.compose.material3.Icon(Tokens.Icons.globalLeave, null) }, onClick = {})
             SystemEmpty("No Blocked People", "When you block someone, you won’t see each other’s photos.")
         }
+    }
+
+    @Test fun hairline() = shot("hairline") {
+        Column {
+            Text("Sunday dinners", color = Tokens.Colors.globalTextPrimary)
+            Hairline()
+            Text("Roomies", color = Tokens.Colors.globalTextPrimary)
+        }
+    }
+
+    @Test fun errorAlert() {
+        compose.setContent { AppTheme { ErrorAlert("check your number and try again", "OK", {}) } }
+        compose.waitForIdle()
+        captureScreenRoboImage("src/test/snapshots/components/errorAlert.png")
     }
 
     @Test fun alertDialog() {

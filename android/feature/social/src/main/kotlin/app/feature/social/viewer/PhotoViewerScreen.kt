@@ -644,9 +644,8 @@ private fun PhotoFrame(
                 coach?.place(width - coach.width, y + toggle.height)
             }
         }
-        // Caption (bottom-centre; its color.global.scrim box fill is BLOCKED and not drawn).
+        // Caption (bottom-centre) on its `color.global.scrim` box.
         if (caption != null) {
-            val scrim = app.feature.social.common.SocialBlocked.scrim
             Box(
                 Modifier
                     .align(Alignment.BottomCenter)
@@ -656,7 +655,7 @@ private fun PhotoFrame(
                         end = Tokens.Sizes.chatReactionsDimensionClusterInsetLeading + Tokens.Sizes.chatReactionsDimensionClusterEmoji,
                     )
                     .heightIn(min = Tokens.Sizes.chatThreadDimensionCaptionHeight)
-                    .let { if (scrim != null) it.background(scrim, RoundedCornerShape(Tokens.Radii.chatThreadRadiusCaption)) else it }
+                    .background(Tokens.Colors.globalScrim, RoundedCornerShape(Tokens.Radii.chatThreadRadiusCaption))
                     .padding(horizontal = Tokens.Sizes.chatThreadDimensionCaptionPaddingH)
                     .clearAndSetSemantics { if (captionLabel != null) contentDescription = captionLabel },
                 contentAlignment = Alignment.Center,

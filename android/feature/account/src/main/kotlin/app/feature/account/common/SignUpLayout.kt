@@ -89,10 +89,6 @@ fun CenteredState(modifier: Modifier = Modifier, background: Color = Tokens.Colo
     )
 }
 
-/**
- * The one button of the field-error alert (`auth.phone.layout.inlineError`: "one button,
- * auth.phone.error.dismiss ('OK')"). That copy key is not in design/copy yet; the platform's own OK
- * (`android.R.string.ok`, platform case as the token notes for native dialog buttons) stands in.
- */
+/** The one button of the field-error alert (`auth.phone.layout.inlineError`): `auth.phone.error.dismiss` ("OK"). */
 @Composable
-fun errorDismissLabel(): String = androidx.compose.ui.res.stringResource(android.R.string.ok)
+fun errorDismissLabel(): String = androidx.compose.ui.res.stringResource(app.designsystem.R.string.auth_phone_error_dismiss)
