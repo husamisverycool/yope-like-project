@@ -97,6 +97,10 @@ public enum DSDynamicType {
         switch family {
         case .system:
             return UIFont.systemFont(ofSize: size, weight: uiWeight(weight)).lineHeight
+        case .systemSerif:
+            let base = UIFont.systemFont(ofSize: size, weight: uiWeight(weight))
+            let serif = base.fontDescriptor.withDesign(.serif).map { UIFont(descriptor: $0, size: size) } ?? base
+            return serif.lineHeight
         case let .custom(name):
             return UIFont(name: name, size: size)?.lineHeight ?? size
         }

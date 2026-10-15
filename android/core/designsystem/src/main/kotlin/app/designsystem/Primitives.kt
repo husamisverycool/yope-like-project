@@ -25,6 +25,9 @@ import androidx.compose.ui.unit.DpOffset
 sealed interface DSFontFamily {
     data object System : DSFontFamily
 
+    /** The platform serif (Noto Serif), level PLATFORM: fills a serif role until a licensed face is bundled. */
+    data object Serif : DSFontFamily
+
     /**
      * A named family: a font resource bundled under `res/font/` whose file name is [resourceName],
      * else a font installed on the device under [name].
@@ -41,6 +44,7 @@ fun DSFontFamily.toFontFamily(): FontFamily {
     return remember(this) {
         when (this) {
             DSFontFamily.System -> FontFamily.Default
+            DSFontFamily.Serif -> FontFamily.Serif
             is DSFontFamily.Custom -> {
                 @Suppress("DiscouragedApi") // name-based lookup is the point: tokens name fonts by string
                 val id = context.resources.getIdentifier(resourceName, "font", context.packageName)

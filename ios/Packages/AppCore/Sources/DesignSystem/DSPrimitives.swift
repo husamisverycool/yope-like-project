@@ -88,6 +88,8 @@ extension View {
 /// A font family token (`Tokens.Fonts.*`): the platform font (SF Pro) or a bundled custom font.
 public enum DSFontFamily: Hashable, Sendable {
     case system
+    /// The platform serif (New York), level PLATFORM: fills a serif role until a licensed face is bundled.
+    case systemSerif
     case custom(String)
 
     /// A font of this family at a fixed point size. Use `DSTextStyle` / `.dsTextStyle` for text
@@ -96,8 +98,26 @@ public enum DSFontFamily: Hashable, Sendable {
         switch self {
         case .system:
             return .system(size: size, weight: weight) // provenance-ok: size and weight are token parameters
+        case .systemSerif:
+            return .system(size: size, weight: weight, design: .serif) // provenance-ok: size and weight are token parameters
         case let .custom(name):
             return .custom(name, fixedSize: size).weight(weight)
         }
+    }
+}
+
+// MARK: - Appearance
+
+extension Color {
+    /// A colour token with a value per appearance (`{light, dark}` in design/tokens): resolves against the
+    /// environment's colour scheme / trait collection, so it follows the system Light / Dark setting.
+    public init(light: Color, dark: Color) {
+        #if canImport(UIKit)
+        self.init(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
+        })
+        #else
+        self = light
+        #endif
     }
 }

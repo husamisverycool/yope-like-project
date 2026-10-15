@@ -106,7 +106,9 @@ for (const [name, t] of Object.entries(tokens)) {
   if (t.level && !LEVELS.includes(t.level)) problem(`token ${name}: bad level ${t.level}`);
   if (t.type && !TYPES[t.type]) problem(`token ${name}: unknown type ${t.type}`);
   if (t.level !== "BLOCKED" && (t.value === undefined || t.value === null)) problem(`token ${name}: no value but level ${t.level}`);
-  if (t.type === "color" && t.value && !/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(t.value)) problem(`token ${name}: color must be #RRGGBB or #RRGGBBAA`);
+  const HEX = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+  if (t.type === "color" && t.value && !(typeof t.value === "string" ? HEX.test(t.value) : typeof t.value === "object" && HEX.test(t.value.light ?? "") && HEX.test(t.value.dark ?? "")))
+    problem(`token ${name}: color must be #RRGGBB, #RRGGBBAA or {light, dark} of those`);
   if (t.type === "icon" && t.value && (!t.value.ios || !t.value.android)) problem(`token ${name}: icon needs {ios, android}`);
   if (t.type === "haptic" && t.value && (!t.value.ios || !t.value.android)) problem(`token ${name}: haptic needs {ios, android}`);
   if (["SOURCED", "CAPTURED"].includes(t.level) && !["icon", "font", "haptic"].includes(t.type) && !t.method) problem(`token ${name}: ${t.level} needs method`);
@@ -125,6 +127,7 @@ for (const [name, t] of Object.entries(tokens)) {
     if (t.type === "haptic" && v.ios && !/^(impact\.(light|medium|heavy|soft|rigid)|selection|notification\.(success|warning|error))$/.test(v.ios)) problem(`token ${name}: haptic ios must be impact.light|medium|heavy|soft|rigid, selection, notification.success|warning|error, or none (got ${v.ios})`);
     if (t.type === "haptic" && v.android && !/^[A-Z][A-Z0-9_]*$/.test(v.android)) problem(`token ${name}: haptic android must be a HapticFeedbackConstants name (got ${v.android})`);
     if (t.type === "font" && !(typeof v === "object" && v.ios && v.android)) problem(`token ${name}: font must be {ios, android}`);
+    if (t.type === "font" && typeof v === "object" && (/^system-/.test(v.ios) && v.ios !== "system-serif" || /^(sans|mono)/.test(v.android ?? ""))) problem(`token ${name}: font ios is "system", "system-serif" or a bundled PostScript name; android is "system", "serif" or a bundled font name`);
     if (t.type === "layout" && (typeof v !== "object" || Array.isArray(v))) problem(`token ${name}: layout must be an object of named values`);
   }
 }
@@ -168,7 +171,12 @@ const num = (v) => (Number.isInteger(v) ? `${v}` : `${+v.toFixed(4)}`);
 function swiftValue(t) {
   const v = t.value;
   switch (t.type) {
-    case "color": { const { r, g, b, a } = hexParts(v); return { type: "Color", expr: `Color(.sRGB, red: ${num(r / 255)}, green: ${num(g / 255)}, blue: ${num(b / 255)}, opacity: ${num(a)})` }; }
+    case "color": {
+      const lit = (hex) => { const { r, g, b, a } = hexParts(hex); return `Color(.sRGB, red: ${num(r / 255)}, green: ${num(g / 255)}, blue: ${num(b / 255)}, opacity: ${num(a)})`; };
+      // {light, dark}: a dynamic colour that follows the trait collection (system appearance).
+      if (typeof v === "object") return { type: "Color", expr: `Color(light: ${lit(v.light)}, dark: ${lit(v.dark)})` };
+      return { type: "Color", expr: lit(v) };
+    }
     case "dimension": case "radius": case "fontSize": case "lineHeight": case "letterSpacing": case "blur": case "count":
       return { type: "CGFloat", expr: num(v) };
     case "aspectRatio": return { type: "CGFloat", expr: num(typeof v === "object" ? v.width / v.height : v) };
@@ -183,7 +191,7 @@ function swiftValue(t) {
     case "shadow": { const { r, g, b } = hexParts(v.color); return { type: "DSShadow", expr: `DSShadow(color: Color(.sRGB, red: ${num(r / 255)}, green: ${num(g / 255)}, blue: ${num(b / 255)}, opacity: ${num(v.opacity ?? 1)}), radius: ${num(v.blur)}, x: ${num(v.x ?? 0)}, y: ${num(v.y ?? 0)})` }; }
     case "icon": return { type: "String", expr: JSON.stringify(v.ios) };
     case "haptic": return { type: "DSHaptic", expr: `.${camel(v.ios.split("."))}` };
-    case "font": return { type: "DSFontFamily", expr: v.ios === "system" ? ".system" : `.custom(${JSON.stringify(v.ios)})` };
+    case "font": return { type: "DSFontFamily", expr: v.ios === "system" ? ".system" : v.ios === "system-serif" ? ".systemSerif" : `.custom(${JSON.stringify(v.ios)})` };
     case "layout": return null;
   }
   return null;
@@ -246,7 +254,11 @@ function genSwiftCopy(blocked) {
 function ktValue(t, imports) {
   const v = t.value;
   switch (t.type) {
-    case "color": { const { r, g, b, a } = hexParts(v); const argb = ((Math.round(a * 255) << 24) >>> 0) + (r << 16) + (g << 8) + b; return { type: "Color", expr: `Color(0x${argb.toString(16).toUpperCase().padStart(8, "0")})` }; }
+    case "color": {
+      const lit = (hex) => { const { r, g, b, a } = hexParts(hex); const argb = ((Math.round(a * 255) << 24) >>> 0) + (r << 16) + (g << 8) + b; return `Color(0x${argb.toString(16).toUpperCase().padStart(8, "0")})`; };
+      if (typeof v === "object") return { type: "Color", expr: lit(v.light), light: lit(v.light), dark: lit(v.dark), themed: true };
+      return { type: "Color", expr: lit(v), light: lit(v), dark: lit(v) };
+    }
     case "dimension": case "radius": case "blur": return { type: "Dp", expr: `${num(v)}.dp` };
     case "fontSize": case "lineHeight": case "letterSpacing": return { type: "TextUnit", expr: `${num(v)}.sp` };
     case "count": return { type: "Int", expr: `${Math.round(v)}` };
@@ -273,7 +285,7 @@ function ktValue(t, imports) {
       return { type: "ImageVector", expr: `androidx.compose.material.icons.Icons.${parts.join(".")}.${alias}`, alias };
     }
     case "haptic": return { type: "Int", expr: `HapticFeedbackConstants.${v.android}` };
-    case "font": return { type: "DSFontFamily", expr: v.android === "system" ? "DSFontFamily.System" : `DSFontFamily.Custom(${JSON.stringify(v.android)})` };
+    case "font": return { type: "DSFontFamily", expr: v.android === "system" ? "DSFontFamily.System" : v.android === "serif" ? "DSFontFamily.Serif" : `DSFontFamily.Custom(${JSON.stringify(v.android)})` };
   }
   return null;
 }
@@ -294,14 +306,24 @@ function genKotlinTokens() {
       }
       const kv = ktValue(t, imports);
       if (t.type === "icon") body += `        val ${ident(name)}: ImageVector get() = ${kv.expr}\n`;
+      // {light, dark}: read in composition from LocalDsDarkTheme (DsTheme); ColorsLight / ColorsDark hold both
+      // values for code outside composition (draw lambdas, Glance ColorProvider, notifications).
+      else if (kv.themed) body += `        val ${ident(name)}: Color\n            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) ${kv.dark} else ${kv.light}\n`;
       else body += `        val ${ident(name)}: ${kv.type} = ${kv.expr}\n`;
     }
+    body += `    }\n`;
+  }
+  // Both appearances of every colour, as plain values.
+  const colorList = (byType["Colors"] ?? []).sort((a, b) => a[0].localeCompare(b[0]));
+  for (const [objName, key] of [["ColorsLight", "light"], ["ColorsDark", "dark"]]) {
+    body += `    object ${objName} {\n`;
+    for (const [name, t] of colorList) body += `        val ${ident(name)}: Color = ${ktValue(t, imports)[key]}\n`;
     body += `    }\n`;
   }
   body += "}\n";
   // Icons are extension properties imported under an alias and called on the fully qualified
   // receiver, because Tokens.Icons shadows androidx.compose.material.icons.Icons here.
-  return `// GENERATED by tools/designgen.mjs from design/tokens.json — do not edit.\n// Every value below is traced in design/SOURCES.md.\n@file:Suppress("unused")\n\npackage app.designsystem.generated\n\nimport android.view.HapticFeedbackConstants\nimport androidx.compose.animation.core.*\nimport androidx.compose.ui.graphics.Color\nimport androidx.compose.ui.graphics.vector.ImageVector\nimport androidx.compose.ui.text.font.FontWeight\nimport androidx.compose.ui.unit.Dp\nimport androidx.compose.ui.unit.TextUnit\nimport androidx.compose.ui.unit.dp\nimport androidx.compose.ui.unit.sp\nimport app.designsystem.DSFontFamily\nimport app.designsystem.DSShadow\nimport app.designsystem.DSSpring\n${[...imports].sort().join("\n")}\n\n${body}`;
+  return `// GENERATED by tools/designgen.mjs from design/tokens.json — do not edit.\n// Every value below is traced in design/SOURCES.md.\n@file:Suppress("unused")\n\npackage app.designsystem.generated\n\nimport android.view.HapticFeedbackConstants\nimport androidx.compose.animation.core.*\nimport androidx.compose.ui.graphics.Color\nimport androidx.compose.ui.graphics.vector.ImageVector\nimport androidx.compose.ui.text.font.FontWeight\nimport androidx.compose.ui.unit.Dp\nimport androidx.compose.ui.unit.TextUnit\nimport androidx.compose.ui.unit.dp\nimport androidx.compose.ui.unit.sp\nimport androidx.compose.runtime.Composable\nimport androidx.compose.runtime.ReadOnlyComposable\nimport app.designsystem.DSFontFamily\nimport app.designsystem.DSShadow\nimport app.designsystem.DSSpring\nimport app.designsystem.LocalDsDarkTheme\n${[...imports].sort().join("\n")}\n\n${body}`;
 }
 function xmlEscape(text) {
   let s = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, "\\n");
