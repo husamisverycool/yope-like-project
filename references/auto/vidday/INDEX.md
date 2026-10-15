@@ -21,3 +21,24 @@
 | `store/vidday-store-17.png` | https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c1/5d/ba/c15dba5f-87db-f153-042c-849887633445/2048x2732__U2013_Screen_8.jpg/9999x0w.png | 2026-10-15 | App Store screenshot 17 of 19 (https://apps.apple.com/us/app/id6748774475) | listing version 2.1 |
 | `store/vidday-store-18.png` | https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/db/a8/50/dba8501b-0480-109f-96cb-af80cd5def8e/2048x2732__U2013_Screen_9.jpg/9999x0w.png | 2026-10-15 | App Store screenshot 18 of 19 (https://apps.apple.com/us/app/id6748774475) | listing version 2.1 |
 | `store/vidday-store-19.png` | https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/ee/0d/07/ee0d07eb-b071-a100-f629-b9695b4c34cc/2048x2732__U2013_Screen_10.jpg/9999x0w.png | 2026-10-15 | App Store screenshot 19 of 19 (https://apps.apple.com/us/app/id6748774475) | listing version 2.1 |
+
+Note: `store/vidday-store-01.png` … `-09.png` are iPhone (1242×2688) panels; `-10` … `-19` are iPad (2048×2732) panels. App: "VidDay: Group Video Gift Maker" (VidDay Media Inc.), id6748774475, version 2.1 released 2026-08-11 (iTunes Search API, 2026-10-15).
+
+## Frames from VidDay's official 2-minute tour video
+
+Source: https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4 (1920×1080, 30 fps, 136.0 s; linked from https://www.vidday.com/). Crops are the phone screen region x680–1240, y40–1040 (phone screen 542 px wide).
+
+| file | source URL | accessed | what it shows | version/date |
+|---|---|---|---|---|
+| `frames/vidday-tour-t036-phone.png` | tour video t = 36 s | 2026-10-15 | invitation editor: "Upload a nice photo of Amelia", "Join in a celebration video for", First/Last name, "ANOTHER NAME", default Custom message | tour video live 2026-10-15 |
+| `frames/vidday-tour-t042-phone.png` | t = 42 s | 2026-10-15 | default Custom message with counter "216/500"; "Contribute before… Friday, May 14" | same |
+| `frames/vidday-tour-t060-phone.png` | t = 60 s | 2026-10-15 | same editor (second reference image) | same |
+| `frames/vidday-tour-t064-phone.png` | t = 64 s | 2026-10-15 | invitee page in "Review Mode": recipient photo, "Celebration video for / Amelia Harris", message, "RECORD OR UPLOAD" | same |
+| `frames/vidday-tour-t072-phone.png` | t = 72 s | 2026-10-15 | SMS invitation bubble (verbatim default text + link + "to submit before May 14.") | same |
+| `frames/vidday-tour-t096-phone.png` | t = 96 s | 2026-10-15 | creator clip view: player, "Submitted by Emma Williams", Rotate Media / Clip Audio On / Background Music On | same |
+| `frames/vidday-tour-t102-phone.png` | t = 102 s | 2026-10-15 | "Let's add media!" sheet: VIDEOS & PHOTOS, TEXT CARD, CANCEL | same |
+| `frames/vidday-tour-t111-phone.png` | t = 111 s | 2026-10-15 | "Preview & Finalize", "Want a sneak peek?", MAKE A PREVIEW | same |
+| `frames/vidday-tour-t114-phone.png` | t = 114 s | 2026-10-15 | "Create Your Video", FINALIZE, "It'll take 10 – 30 minutes to finalize your video." | same |
+| `frames/vidday-tour-t116.500-phone.png`, `-t117.400-phone.png` | t = 116.5 / 117.4 s | 2026-10-15 | recipient gift page: gift-wrap bow with "UNWRAP VIDEO", ribbons sliding away | same |
+| `frames/vidday-tour-t118.300-phone.png` | t = 118.3 s | 2026-10-15 | title card "HAPPY BIRTHDAY, AMELIA!" (theme background) | same |
+| `frames/vidday-tour-t119.300-phone.png`, `-t120.000-phone.png` | t = 119.3 / 120.0 s | 2026-10-15 | crossfade title → first photo; first photo with slow zoom; "Share / Send a special link" row | same |

@@ -1,0 +1,21 @@
+# Tribute (tribute.co) references (SOURCED)
+
+Tribute is web-only: no official Tribute.co app was found on the US App Store (iTunes Search API queries "tribute group video", "vidday" on 2026-10-15 returned VidDay, Memento and unrelated apps; "Tribute Maker by MemoryShare" id1665247224 is a different, funeral-only product). Internal reference only; the Tribute logo/wordmark and intro/outro animation are not saved (frames containing them were excluded).
+
+| file | source URL | accessed | what it shows | version/date |
+|---|---|---|---|---|
+| `web/tribute-web-testimonials-contribution-page-viewport.png` | https://www.tribute.co/testimonials/ | 2026-10-15 | Live contribution page (Tribute's own collection page), Playwright 390×844 @3x, iPhone UA: hero photo with title + welcome message, "Add Your Video" button, "Tribute Ends In:" D/H/M/S countdown (do-not-copy), "Questions to answer in your video", share buttons | legacy page template (videos dated 2017–2022), live 2026-10-15 |
+| `web/tribute-web-testimonials.computed-styles.json` | same | 2026-10-15 | getComputedStyle for visible elements (Figtree, sizes, colors, radii) | same |
+| `web/tribute-web-ayejaye-contribution-page-viewport.png` | https://www.tribute.co/aye-jaye/ | 2026-10-15 | second live contribution page, same template (birthday occasion: "Life of Achievement Tribute for Aye Jaye's 82 Birthday") | same |
+| `web/tribute-web-testimonials-upload-step1-info.png` | https://www.tribute.co/testimonials/upload/ (after tapping "Add Your Video"; nothing submitted) | 2026-10-15 | upload flow step 1 of 4 (Info · Video · Photos · Done): "Let's record a video for Tribute!", "Thank you for taking the time to participate!", Your Name, Your Email, Continue, pre-ticked marketing opt-in (do-not-copy) | live 2026-10-15 |
+| `web/tribute-web-testimonials-upload-step1.computed-styles.json` | same | 2026-10-15 | computed styles of step 1 | same |
+| `mockups/tribute-home-phone-step-1-contribution-page.png` | https://www.tribute.co/static/images/homepage/phone-step-1.35d5990de0b7.png | 2026-10-15 | official marketing mockup of the current contribution page: recipient photo, "Congrats Tribute for Ollie!", "Submit by Wednesday, December 31, 2025", welcome message, "Record Your Video", Allow Gifts toggle | homepage 2026 (CSS version tag how-glass-20260921) |
+| `mockups/tribute-home-phone-step-2-guest-tracking.png` | https://www.tribute.co/static/images/homepage/phone-step-2.5bbcf76cd172.png | 2026-10-15 | creator "Guest Tracking": All Invites, search, All / Submitted / Not Submitted tabs, Name / Email / Status ("Sent") | same |
+| `mockups/tribute-home-phone-step-3-completed-page.png` | https://www.tribute.co/static/images/homepage/phone-step-3.7b196684e9d2.png | 2026-10-15 | finished Tribute page: "Completed" status, video player, "Congrats Tribute for Ollie!", WhatsApp / Facebook / Messenger share icons, "Download" | same |
+| `frames/tribute-sample-tess-t007.080-first-clip.png` | https://website.tribute.co/6KY_IZ1tLME.mp4 ("Birthday Tribute for Tess", 640×360, 29.97 fps, 104.28 s) | 2026-10-15 | first frame after the 7.04 s intro: portrait clip pillarboxed on black (content 204 px of 640) | sample listed on https://www.tribute.co/ (schema uploadDate 2024-01-01) |
+| `frames/tribute-sample-tess-t012.000.png`, `-t050.000.png` | same | 2026-10-15 | mid-video contributor clips (portrait pillarboxed; no name caption) | same |
+| `frames/tribute-sample-tess-t094.300.png` | same | 2026-10-15 | outro background begins at 94.19 s (plain teal, before the wordmark draws) | same |
+| `frames/tribute-sample-tess-clips-7.2-94.0s-every2s.png` | same | 2026-10-15 | contact sheet of the clip section only | same |
+| `frames/tribute-sample-doug-clips-7.2-62.2s-every2s.png` | https://website.tribute.co/QQe5RpbFIyI.mp4 ("Happy Birthday to Doug!", 640×360, 29.97 fps, 72.49 s) | 2026-10-15 | contact sheet of the clip section only | same |
+
+Text sources (no image): help articles under https://www.tribute.co/help/creators/ and https://www.tribute.co/help/participants/ (listed in `design/research/wrapped-tribute-partiful.md`), blog https://blog.tribute.co/birthday-video-from-friends/ (published 2026-04-12, updated 2026-04-14).
