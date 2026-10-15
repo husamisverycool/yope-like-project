@@ -211,11 +211,9 @@ class BirthdayRequestViewModelTest {
         val backend = Scenario.backend().apply { gates["request"] = CompletableDeferred() }
         val vm = vm(backend = backend, cache = cache)
         val seen = mutableListOf<RequestState>()
-        val job = launch(UnconfinedTestDispatcher(testScheduler)) { vm.state.toList(mutableListOf()).also { } }
         val collect = launch(UnconfinedTestDispatcher(testScheduler)) { vm.state.collect { seen += it.request } }
         assertTrue(vm.state.value.request is RequestState.Ready)
         backend.gates.getValue("request").complete(Unit)
-        job.cancel()
         collect.cancel()
         assertFalse(seen.any { it !is RequestState.Ready })
     }

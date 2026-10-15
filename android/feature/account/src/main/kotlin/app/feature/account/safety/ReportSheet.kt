@@ -109,7 +109,11 @@ class ReportViewModel(private val env: AccountEnvironment, target: ReportTarget)
     }
 }
 
-/** Builds the target from the route (post, person, group or message). */
+/** A chat message target (`chat.thread` long-press menu). */
+fun reportTarget(route: app.model.SafetyReportMessageRoute): ReportTarget =
+    ReportTarget(ReportTargetKind.Message, route.messageId, route.groupId, route.authorId)
+
+/** Builds the target from the route (post, person or group). */
 fun reportTarget(route: AppRoute.SafetyReport): ReportTarget? = when {
     route.postId != null -> ReportTarget(ReportTargetKind.Post, route.postId!!, route.groupId, null)
     route.userId != null -> ReportTarget(ReportTargetKind.User, route.userId!!, route.groupId, route.userId)
@@ -226,7 +230,6 @@ fun ReportContent(
                     enabled = !sending,
                     placeholder = { Text(stringResource(R.string.safety_report_details_placeholder)) },
                     modifier = Modifier.fillMaxWidth().padding(vertical = Tokens.Sizes.settingsRootSizeListItemPaddingVAndroid),
-                    minLines = REPORT_FIELD_MIN_LINES,
                 )
                 if (state.phase == ReportPhase.Error) {
                     Text(stringResource(R.string.safety_report_error_title), style = MaterialTheme.typography.bodyMedium, color = Tokens.Colors.globalSystemError)
@@ -236,6 +239,3 @@ fun ReportContent(
         }
     }
 }
-
-/** The multi-line details field (`TextField(axis: .vertical)` / M3 OutlinedTextField) starts at three lines (HIG sheet text input; not a measured value). */
-private const val REPORT_FIELD_MIN_LINES = 3
