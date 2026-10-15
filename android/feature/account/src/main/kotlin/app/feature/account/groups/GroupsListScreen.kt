@@ -65,7 +65,6 @@ import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.account.AccountEnvironment
 import app.feature.account.LocalAccountEnvironment
-import app.feature.account.blocked.BlockedValues
 import app.feature.account.common.AccountViewModel
 import app.feature.account.common.CollectEvents
 import app.feature.account.common.dataError
@@ -348,15 +347,13 @@ private fun CoverHeader(cover: CoverPhoto?, onCreate: () -> Unit, onCover: (Cove
                     AsyncImage(model = cover.url, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
                 }
             }
-            BlockedValues.groupsListHeaderCircleOverPhoto?.let { fill ->
-                HeaderCircleButton(
-                    Tokens.Icons.globalAdd,
-                    addLabel,
-                    onCreate,
-                    fillColor = fill,
-                    modifier = Modifier.align(Alignment.TopEnd).windowInsetsPadding(WindowInsets.statusBars).padding(horizontal = Tokens.Sizes.globalHeaderInset),
-                )
-            }
+            HeaderCircleButton(
+                Tokens.Icons.globalAdd,
+                addLabel,
+                onCreate,
+                fillColor = Tokens.Colors.groupsListColorHeaderCircleOverPhoto,
+                modifier = Modifier.align(Alignment.TopEnd).windowInsetsPadding(WindowInsets.statusBars).padding(horizontal = Tokens.Sizes.globalHeaderInset),
+            )
         }
         Icon(Tokens.Icons.globalChevronDown, contentDescription = null, tint = Tokens.Colors.globalTextPrimary)
         Spacer(Modifier.height(Tokens.Sizes.globalListGap))

@@ -1,7 +1,6 @@
 package app.feature.account.blocked
 
 import androidx.compose.ui.graphics.Color
-import app.designsystem.generated.Tokens
 
 /**
  * Every BLOCKED design value the account screens reference, behind one accessor each (BLOCKED copy
@@ -10,9 +9,6 @@ import app.designsystem.generated.Tokens
  * `Tokens` and the accessor becomes a one-line switch to that constant.
  */
 object BlockedValues {
-    /** `groups.list.color.headerCircleOverPhoto`: the "+" circle over the cover photo (omitted while null). */
-    val groupsListHeaderCircleOverPhoto: Color? = Tokens.Colors.groupsListColorHeaderCircleOverPhoto
-
     /** `safety.report.layout.reasons`: the report reason list (omitted; the details field is the reason). */
     val reportReasons: List<String>? = null
 
