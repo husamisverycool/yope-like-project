@@ -1,0 +1,59 @@
+{
+  "$comment": "Same-moment collage: composed ONLY from BeReal's dual-image presentation (design/research/bereal.md §3) and Yope's collage/wall composition (design/research/yope-b.md §8). Ratios are relative to the main image width (BeReal) or the canvas width (Yope) as stated. Option choice is pending the owner (design/collage-options/README.md).",
+  "tokens": {
+    "layout.collage.dualTile": {
+      "type": "layout",
+      "value": { "tileAspect": 0.75, "insetWidthRatio": 0.31, "insetMarginRatio": 0.03, "insetBorderRatio": 0.0051, "insetOuterRadiusRatio": 0.126 },
+      "source_app": "BeReal",
+      "surface": "collage.view",
+      "element": "one member's answer: back photo 3:4 with the front photo inset top-left",
+      "evidence": "design/research/bereal.md §3 'Measured values' and 'Dual-image composition facts' (references/auto/bereal/help/help-21083730354333_feed-bonus-3x.png H3; help-21083708285725_bts-post-preview-2x.png H2; App Store preview frames #205, #220)",
+      "method": "subpixel edge measurements; inset width ÷ main width 0.308–0.313 across 5 sources; margin 0.0299–0.0305; border 2 pt ÷ 393 pt; inset radius ÷ inset width 0.126–0.129",
+      "precision": "±0.003 on ratios",
+      "level": "SOURCED"
+    },
+    "color.collage.insetBorder": {
+      "type": "color", "value": "#000000", "source_app": "BeReal", "surface": "collage.view",
+      "element": "border around the front-camera inset",
+      "evidence": "design/research/bereal.md §3 (H3 rows 1992–1994 exact (0,0,0); HG (0,0,2))",
+      "method": "median and max of border core pixels", "level": "SOURCED"
+    },
+    "color.collage.matte": {
+      "type": "color", "value": "#000000", "source_app": "BeReal", "surface": "collage.view",
+      "element": "background behind the composition (outside rounded corners, empty cells, JPEG matte)",
+      "evidence": "design/research/bereal.md §3 fact 7 'Background around the composition: #000000'; Yope profile pics grid background #000000 (design/research/yope-b.md §5, S4 profile.png (30,1500))",
+      "method": "median of background pixels in both references", "level": "SOURCED",
+      "notes": "Both references agree."
+    },
+    "layout.collage.optionA": {
+      "type": "layout",
+      "value": { "columns": 3, "gapRatio": 0, "outerRadiusRatio": 0.0359 },
+      "source_app": "Yope", "surface": "collage.view",
+      "element": "Option A 'recap card': 3 equal columns, tiles touch, rounded outer corners, square inner corners; a row with fewer photos goes first and spans the full width",
+      "evidence": "design/research/yope-b.md §6 and §8 C1 (references/owner/yope-week-recap.jpg): rows 2–3 three equal columns, 0 gap (seams x 207.5/332.5), outer radius ≈12 pt on a 334 pt card, row 1 two tiles spanning the width",
+      "method": "column-gradient seams; corner inset profile; 12 / 334 = 0.0359",
+      "precision": "radius ±3 pt (JPEG)", "level": "CAPTURED",
+      "notes": "C1 tiles are 2:3; BeReal tiles 3:4 win because the photo presentation is BeReal's (directive Part 3). Equal widths in the spanning row and its height are NOT observed (C1 shows one unequal 2-tile row, height clipped)."
+    },
+    "layout.collage.optionB": {
+      "type": "layout",
+      "value": { "columns": 3, "rowsPerPage": 4, "gapRatio": 0, "outerRadiusRatio": 0.0498, "canvasAspect": 0.5625 },
+      "source_app": "Yope", "surface": "collage.view",
+      "element": "Option B 'wall pages': 9:16 pages, 3 columns × 4 rows of 3:4 tiles that touch (exactly fills 9:16), rounded page corners; more than 12 answers continue on further pages",
+      "evidence": "design/research/yope-b.md §8 C5 (wall canvas 804×1430 px, radius ≈20 pt on 402 pt), C4/C7 (9:16 walls and exports), C1 (paged recap card with page dots); 3 columns as in C1/C2/C3",
+      "method": "20 / 402 = 0.0498; 4 rows follows from 3 columns of 3:4 tiles in a 9:16 canvas: 3 × (4/9) = 16/9",
+      "precision": "radius ±2 pt", "level": "SOURCED",
+      "notes": "Empty cells on a part-filled page are NOT observed in any Yope image."
+    },
+    "layout.collage.optionC": {
+      "type": "layout",
+      "value": { "columns": 3, "gapRatio": 0.01018, "sideInsetRatio": 0.06107, "tileRadiusRatio": 0.0565 },
+      "source_app": "Yope", "surface": "collage.view",
+      "element": "Option C 'pics grid': 3 columns with small gaps and rounded tiles on black, side insets",
+      "evidence": "design/research/yope-b.md §5 and §8 C3 (Yope press kit profile.png, Jul 2026): 3 columns, gap 4 pt, side insets 24 pt, tile radius 6.5 pt on ≈115 pt tiles, tile aspect 0.73",
+      "method": "4 / 393 = 0.01018; 24 / 393 = 0.06107; 6.5 / 115 = 0.0565",
+      "precision": "±0.5 pt", "level": "SOURCED",
+      "notes": "C3 tile aspect 0.73 is within 0.02 of BeReal's 0.75. How a part-filled last row aligns is NOT observed."
+    }
+  }
+}
