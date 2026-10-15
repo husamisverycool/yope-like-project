@@ -13,6 +13,19 @@ import UIKit
 @MainActor
 @Observable
 final class SendToModel: Identifiable {
+    /// `chat.voice.layout.recording`: press and hold the mic to record, lift to keep the note, slide left
+    /// to cancel, slide up onto the lock for hands-free; while locked, pause stops into a draft that
+    /// can be played; the mic circle (showing send) keeps it.
+    enum VoicePhase: Equatable {
+        case idle
+        /// Finger down on the mic.
+        case holding
+        /// Hands-free (slid onto the lock, or started by VoiceOver).
+        case locked
+        /// Locked and paused: the draft is finished and can be played.
+        case paused
+    }
+
     enum ListState: Equatable {
         /// Before the offline cache answered: nothing is drawn, so cached groups appear without a
         /// spinner frame first.
@@ -40,8 +53,12 @@ final class SendToModel: Identifiable {
     private(set) var selection: [String] = []
     private(set) var covers: [String: UIImage] = [:]
     var caption = ""
+    /// The voice note attached to the post (optional; it goes on every chosen group's post).
     private(set) var voiceNote: VoiceNote? = nil
-    private(set) var isRecordingVoice = false
+    /// The recorder's state (`chat.voice.layout.recording`).
+    private(set) var voicePhase: VoicePhase = .idle
+    /// A locked recording paused into a draft (play it, then attach or delete it).
+    private(set) var voiceDraft: VoiceNote? = nil
     private(set) var showsVoiceCoach = false
     private(set) var isPremium = false
     /// Increments on every recipient toggle (`haptic.global.select` trigger).
@@ -86,8 +103,29 @@ final class SendToModel: Identifiable {
 
     // MARK: Derived state
 
-    /// The voice note's recording interaction is BLOCKED (CaptureBlocked.voiceNoteRecording).
-    var isVoiceNoteAvailable: Bool { CaptureBlocked.voiceNoteRecording }
+    /// The longest caption (`camera.sendto.size.captionMaxLength`, no counter).
+    static var captionMaxLength: Int { Int(Tokens.Counts.cameraSendtoSizeCaptionMaxLength) }
+
+    /// Keeps the caption within `captionMaxLength` (called as the member types).
+    func clampCaption() {
+        if caption.count > Self.captionMaxLength {
+            caption = String(caption.prefix(Self.captionMaxLength))
+        }
+    }
+
+    var isRecordingVoice: Bool { voicePhase == .holding || voicePhase == .locked }
+
+    /// The recorder row replaces the message field while recording, with a draft or an attached note.
+    var showsVoiceRow: Bool { voicePhase != .idle || voiceNote != nil }
+
+    /// Elapsed time of the recording, or the length of the draft / attached note.
+    var voiceElapsedMs: Int {
+        if let voiceDraft { return voiceDraft.durationMs }
+        if voicePhase == .idle, let voiceNote { return voiceNote.durationMs }
+        return voice.elapsedMs
+    }
+
+    var isPlayingVoice: Bool { voice.isPlaying }
 
     /// A video needs premium at `create_post`; a free member's video cannot be sent.
     var isMediaSendable: Bool { !media.needsPremium || isPremium }
@@ -109,7 +147,7 @@ final class SendToModel: Identifiable {
     func load() async {
         async let decoded = decodePreview()
         isPremium = await premium.isPremium()
-        showsVoiceCoach = isVoiceNoteAvailable && !coach.isDismissed(.voice)
+        showsVoiceCoach = !coach.isDismissed(.voice)
         if let cached = await groupSource.cachedGroups(), !cached.isEmpty {
             apply(cached)
         } else if listState == .idle {
@@ -177,7 +215,8 @@ final class SendToModel: Identifiable {
     /// Upload + `create_post` in the background; the sheet closes at once.
     func send() {
         guard canSend else { return }
-        if isRecordingVoice { finishVoiceRecording() }
+        if voicePhase != .idle { keepVoiceRecording() }
+        voice.stopPlayback()
         let names = groups.filter { selection.contains($0.id) }.map(\.name)
         let request = CaptureSendRequest(
             payload: .media(media),
@@ -192,10 +231,8 @@ final class SendToModel: Identifiable {
 
     /// ✕: discards the capture, caption and voice note; back to the camera (no confirmation).
     func close() {
-        voice.cancel()
-        isRecordingVoice = false
-        if let voiceNote { try? FileManager.default.removeItem(at: voiceNote.fileURL) }
-        voiceNote = nil
+        cancelVoiceRecording()
+        removeVoiceNote()
         onClose()
     }
 
@@ -211,33 +248,89 @@ final class SendToModel: Identifiable {
 
     // MARK: Voice note (optional; the note goes on every chosen group's post)
 
-    func toggleVoiceRecording() async {
-        guard isVoiceNoteAvailable else { return }
-        if isRecordingVoice {
-            finishVoiceRecording()
-            return
+    /// Finger down on the mic (`locked`: VoiceOver's activation records hands-free). Microphone
+    /// permission is asked here at first use (App Review 5.1.1(iv)); the system prompt ends the hold,
+    /// so the member presses again once they answered.
+    @discardableResult
+    func beginVoiceRecording(locked: Bool = false) async -> Bool {
+        guard voicePhase == .idle else { return false }
+        let status = voice.permission()
+        if status == .notDetermined {
+            _ = await voice.requestPermission()
+            return false
         }
-        // Microphone permission is asked here at first use (App Review 5.1.1(iv)).
-        var status = voice.permission()
-        if status == .notDetermined { status = await voice.requestPermission() }
-        guard status == .granted else {
-            if status == .denied || status == .restricted { navigation.openSystemSettings() }
-            return
+        guard status.allowsAccess else {
+            // Microphone denied: the system-settings path (owned by system.permissions).
+            navigation.openSystemSettings()
+            return false
         }
         dismissVoiceCoach()
+        voice.stopPlayback()
         do {
-            if let voiceNote { try? FileManager.default.removeItem(at: voiceNote.fileURL) }
-            voiceNote = nil
             try voice.start()
-            isRecordingVoice = true
+            voicePhase = locked ? .locked : .holding
+            return true
         } catch {
-            isRecordingVoice = false
+            voicePhase = .idle
+            return false
         }
     }
 
-    private func finishVoiceRecording() {
-        voiceNote = try? voice.stop()
-        isRecordingVoice = false
+    /// Slide up onto the lock: recording continues hands-free.
+    func lockVoiceRecording() {
+        if voicePhase == .holding { voicePhase = .locked }
+    }
+
+    /// Slide left (or delete while locked / paused): the recording is discarded.
+    func cancelVoiceRecording() {
+        voice.stopPlayback()
+        voice.cancel()
+        if let voiceDraft { try? FileManager.default.removeItem(at: voiceDraft.fileURL) }
+        voiceDraft = nil
+        voicePhase = .idle
+    }
+
+    /// Locked → paused: the recording stops into a draft that can be played.
+    func pauseVoiceRecording() {
+        guard voicePhase == .locked else { return }
+        voiceDraft = try? voice.stop()
+        voicePhase = voiceDraft == nil ? .idle : .paused
+    }
+
+    /// Lift (holding) or the send circle (locked / paused): the recording becomes the post's voice
+    /// note, replacing an earlier one. A recording that reads 00:00 is not a note.
+    func keepVoiceRecording() {
+        let recording: VoiceNote?
+        switch voicePhase {
+        case .idle:
+            return
+        case .paused:
+            recording = voiceDraft
+        case .holding, .locked:
+            recording = try? voice.stop()
+        }
+        voiceDraft = nil
+        voicePhase = .idle
+        guard let recording else { return }
+        guard recording.durationMs >= 1000 else {
+            try? FileManager.default.removeItem(at: recording.fileURL)
+            return
+        }
+        removeVoiceNote()
+        voiceNote = recording
+    }
+
+    /// Delete on the attached note.
+    func removeVoiceNote() {
+        voice.stopPlayback()
+        if let voiceNote { try? FileManager.default.removeItem(at: voiceNote.fileURL) }
+        voiceNote = nil
+    }
+
+    /// ▶ / pause on a draft or the attached note.
+    func toggleVoicePlayback() {
+        guard let file = (voiceDraft ?? voiceNote)?.fileURL else { return }
+        voice.togglePlayback(file)
     }
 
     func dismissVoiceCoach() {

@@ -112,11 +112,17 @@ struct VoiceNote: Sendable, Equatable {
 @MainActor
 protocol CaptureVoiceRecorder: AnyObject, Sendable {
     var isRecording: Bool { get }
+    /// Elapsed recording time (observable in the live recorder).
+    var elapsedMs: Int { get }
+    var isPlaying: Bool { get }
     func permission() -> PermissionStatus
     func requestPermission() async -> PermissionStatus
     func start() throws
     func stop() throws -> VoiceNote
     func cancel()
+    /// Plays (or pauses) a recorded note.
+    func togglePlayback(_ fileURL: URL)
+    func stopPlayback()
 }
 
 // MARK: - Posting

@@ -9,9 +9,11 @@ import app.designsystem.generated.Tokens
  * reads its token; a value that becomes BLOCKED again is set back to `null` here (one line) and the
  * screens fall back to each spec's Gaps rule.
  *
- * Toast dwell (`safety.block.duration.toast`) is shared app-wide: `app.ui.components.ToastDwell`.
- * The tribute video values (`duration.birthday.tribute.photoHold`, `layout.birthday.tribute.caption`,
- * `.endCard`, copy `birthday.tribute.endCard`) are read by the worker only, never by the app.
+ * Toast dwell (`safety.block.duration.toast`, 2000 ms, G2-7) is shared app-wide:
+ * `app.ui.components.ToastDwell`. The tribute video values are sourced too (G2-22 … G2-25:
+ * `duration.birthday.tribute.photoHold` 4000 ms, `layout.birthday.tribute.caption`, `.endCard`,
+ * copy `birthday.tribute.endCard` "We love you!") but are burned into the video by the worker; the
+ * app never reads them, so they have no line here.
  */
 object MemoryBlocked {
     /** `duration.onthisday.memoryChange` (ms): years cross-fade. Null: they change without animation. */

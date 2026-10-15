@@ -1,5 +1,13 @@
 package app.feature.memory
 
+import android.content.Context
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalView
@@ -26,6 +34,8 @@ import app.feature.memory.onthisday.OnThisDayScreen
 import app.feature.memory.onthisday.OnThisDayState
 import app.feature.memory.onthisday.OnThisDayViewModel
 import app.feature.memory.yearstory.YearStoryDestination
+import app.designsystem.ReduceMotion
+import app.designsystem.generated.Tokens
 import app.model.AppRoute
 import app.model.OnThisDayRoute
 import app.ui.nav.emptyDestination
@@ -52,7 +62,10 @@ fun NavGraphBuilder.memoryDestinations(navController: NavHostController) {
     composable<AppRoute.BirthdayAdd> {
         BirthdayAddDestination(onClose = { navController.popBackStack() })
     }
-    composable<AppRoute.BirthdayContribute> { entry ->
+    composable<AppRoute.BirthdayContribute>(
+        enterTransition = { RequestSheetMotion.enter(navController.context) },
+        popExitTransition = { RequestSheetMotion.exit(navController.context) },
+    ) { entry ->
         val route = entry.toRoute<AppRoute.BirthdayContribute>()
         BirthdayRequestDestination(
             groupId = route.groupId,
@@ -69,6 +82,21 @@ fun NavGraphBuilder.memoryDestinations(navController: NavHostController) {
         val route = entry.toRoute<AppRoute.YearStory>()
         YearStoryDestination(route.groupId, route.year, onClose = { navController.popBackStack() })
     }
+}
+
+/**
+ * `birthday.request` is a full-screen sheet (birthday.request.md → Motion, Platform notes): it rises
+ * from the bottom on `spring.global.sheetPresent` and leaves the same way; Reduce Motion
+ * (`layout.global.reduceMotion`) cross-fades over `duration.global.sheetPresent`.
+ */
+internal object RequestSheetMotion {
+    fun enter(context: Context): EnterTransition =
+        if (ReduceMotion.isEnabled(context)) fadeIn(tween(Tokens.Durations.globalSheetPresent))
+        else slideInVertically(Tokens.Springs.globalSheetPresent.spec()) { height -> height }
+
+    fun exit(context: Context): ExitTransition =
+        if (ReduceMotion.isEnabled(context)) fadeOut(tween(Tokens.Durations.globalSheetPresent))
+        else slideOutVertically(Tokens.Springs.globalSheetPresent.spec()) { height -> height }
 }
 
 /** Opens the day of [groupId] (for the `groups.screen` entry). */

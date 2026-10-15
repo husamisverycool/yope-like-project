@@ -300,10 +300,24 @@ final class LiveCapturePremium: CapturePremium {
 
 @MainActor
 final class LiveCaptureVoiceRecorder: CaptureVoiceRecorder {
-    /// The send-to voice note draws no waveform, so one level sample per second is enough.
+    /// The send-to voice note draws no waveform; one sample per second paces the elapsed time
+    /// (`chat.voice.layout.durationFormat` mm:ss).
     private let recorder = VoiceRecorder(meteringInterval: .seconds(1))
+    private let player = VoicePlayer(progressInterval: .seconds(1))
 
     var isRecording: Bool { recorder.isRecording }
+    var elapsedMs: Int { recorder.elapsedMs }
+    var isPlaying: Bool { player.isPlaying }
+
+    func togglePlayback(_ fileURL: URL) {
+        if player.isPlaying, player.currentURL == fileURL {
+            player.pause()
+        } else {
+            try? player.play(fileURL: fileURL)
+        }
+    }
+
+    func stopPlayback() { player.stop() }
     func permission() -> PermissionStatus { VoiceRecorder.permission() }
     func requestPermission() async -> PermissionStatus { await VoiceRecorder.requestPermission() }
     func start() throws { try recorder.start() }

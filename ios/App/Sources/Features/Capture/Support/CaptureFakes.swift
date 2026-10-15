@@ -225,9 +225,25 @@ final class FakeCapturePremium: CapturePremium {
 final class FakeCaptureVoiceRecorder: CaptureVoiceRecorder {
     var status: PermissionStatus = .granted
     private(set) var isRecording = false
+    var elapsedMs = 0
+    /// Length of the next stopped recording.
+    var recordedDurationMs = 1000
+    private(set) var isPlaying = false
+    private(set) var playedFiles: [URL] = []
+
+    func togglePlayback(_ fileURL: URL) {
+        isPlaying.toggle()
+        if isPlaying { playedFiles.append(fileURL) }
+    }
+
+    func stopPlayback() { isPlaying = false }
 
     func permission() -> PermissionStatus { status }
-    func requestPermission() async -> PermissionStatus { status }
+    /// The system prompt: the fake grants.
+    func requestPermission() async -> PermissionStatus {
+        status = .granted
+        return status
+    }
 
     func start() throws {
         isRecording = true
@@ -237,7 +253,7 @@ final class FakeCaptureVoiceRecorder: CaptureVoiceRecorder {
         isRecording = false
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString).appendingPathExtension("m4a")
         try Data().write(to: url)
-        return VoiceNote(fileURL: url, durationMs: 1000)
+        return VoiceNote(fileURL: url, durationMs: recordedDurationMs)
     }
 
     func cancel() {

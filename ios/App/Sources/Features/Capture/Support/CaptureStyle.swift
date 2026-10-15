@@ -149,6 +149,12 @@ enum CaptureFormat {
         Duration.seconds(max(0, remainingSeconds)).formatted(.units(allowed: [.minutes, .seconds], width: .wide))
     }
 
+    /// A voice note's length in `chat.voice.layout.durationFormat` (mm:ss, whole seconds).
+    static func voiceDuration(milliseconds: Int) -> String {
+        let seconds = max(0, milliseconds / 1000)
+        return twoDigits(seconds / 60) + ":" + twoDigits(seconds % 60)
+    }
+
     static func twoDigits(_ value: Int) -> String {
         value < 10 ? "0\(value)" : "\(value)"
     }
