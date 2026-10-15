@@ -23,6 +23,7 @@ configs:
 packages:
   AppCore:
     path: Packages/AppCore
+  # Linked through AppCore/AppData too (Packages/AppCore/Package.swift pins the same version).
   Supabase:
     url: https://github.com/supabase/supabase-swift.git
     from: 2.55.4
@@ -56,6 +57,9 @@ targets:
         product: DesignSystem
       - package: AppCore
         product: AppServices
+      # Backend client (auth, repositories, uploads, realtime, offline cache, session glue).
+      - package: AppCore
+        product: AppData
       - package: Supabase
         product: Supabase
 
@@ -100,6 +104,10 @@ targets:
         product: AppModels
       - package: AppCore
         product: DesignSystem
+      # Invite preview, phone sign-in and join (foreground uploads only: App Clips get no
+      # background networking).
+      - package: AppCore
+        product: AppData
 
   AppTests:
     type: bundle.unit-test
@@ -122,6 +130,8 @@ targets:
         product: DesignSystem
       - package: AppCore
         product: AppServices
+      - package: AppCore
+        product: AppData
 
   AppUITests:
     type: bundle.ui-testing

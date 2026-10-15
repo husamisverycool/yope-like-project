@@ -86,8 +86,7 @@ class ErrorMappingTest {
         assertEquals(DataError.Network, expectDataError { mock.graph.appConfig.publicConfig() })
         failWith = null
         answer(503, "upstream unavailable")
-        val error = expectDataError { mock.graph.appConfig.publicConfig() }
-        assertTrue("$error", error == DataError.Network || (error is DataError.Database && error.httpStatus == 503))
+        assertEquals(DataError.Network, expectDataError { mock.graph.appConfig.publicConfig() })
     }
 
     @Test fun authErrorsMapToFailures() = runBlocking {

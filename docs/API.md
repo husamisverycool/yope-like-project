@@ -1009,7 +1009,7 @@ A NULL value means "not sourced yet", and the dependent feature fails closed (ex
 | `invitation_window_seconds` | 120 | yes | invitation length |
 | `default_waking_start` / `default_waking_end` | "09:48" / "21:12" (BeReal sample, `design/research/bereal.md` §1; migration 0012) | no | the waking window of groups without their own hours |
 | `weekly_recap_local_time` | NULL ("HH:MM") | no | optional override of the recap moment; NULL = the end of each group's waking window on the recap day (migration 0014) |
-| `collage_option` | "B" (pending the owner, `design/collage-options/README.md`) | no | layout of new collages; existing ones keep theirs |
+| `collage_option` | "B" (pending the owner, `design/collage-options/README.md`) | no | layout of new collages; existing ones keep theirs. Only B has canonical tokens (`collage.view.layout.page`); "A" or "C" makes collage jobs fail (missing design token, retried) until the design pass adds them |
 | `weekly_recap_isodow` | 7 (Sunday) | no | recap day |
 | `week_start_isodow` | 1 (Monday) | yes | history weeks, recap weeks |
 | `free_history_days` | NULL (unlimited) | yes | `group_history_weeks` for non-premium |

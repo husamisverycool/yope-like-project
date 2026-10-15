@@ -48,6 +48,11 @@ data class ClientOptions(
     /** Realtime: delay before reconnecting the socket and rejoining channels. */
     val realtimeReconnectDelay: Duration = 3.seconds,
     val logLevel: LogLevel = LogLevel.WARNING,
+    /**
+     * postgrest-kt retries reads (GET) on network errors and HTTP 503/520 with 1 s, 2 s, 4 s
+     * backoff. Screens render cached pages meanwhile; tests against a mock server set 0.
+     */
+    val readRetries: Int = 3,
     /** Replaces the OkHttp engine (unit tests use Ktor's MockEngine). */
     val engine: HttpClientEngine? = null,
 )
@@ -71,7 +76,7 @@ object SupabaseSetup {
                 autoSaveToStorage = true
                 enableLifecycleCallbacks = options.lifecycleCallbacks
             }
-            install(Postgrest)
+            install(Postgrest) { maxRetries = options.readRetries }
             install(Storage) {
                 // Uploads are single requests driven by WorkManager; the resumable (TUS) URL cache
                 // would otherwise default to multiplatform-settings storage.

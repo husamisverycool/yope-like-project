@@ -66,6 +66,7 @@ dependencies {
     implementation(project(":core:push"))
     implementation(project(":core:billing"))
     implementation(project(":core:links"))
+    implementation(project(":core:data"))
 
     implementation(libs.androidx.core)
     implementation(libs.androidx.activity.compose)

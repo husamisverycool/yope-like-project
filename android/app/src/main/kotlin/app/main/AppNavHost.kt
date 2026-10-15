@@ -16,11 +16,17 @@ import androidx.navigation.toRoute
 import app.model.AppRoute
 import app.model.DeepLink
 import app.model.DeepLinkRouting
+import app.feature.account.accountDestinations
+import app.feature.capture.captureDestinations
+import app.feature.memory.memoryDestinations
+import app.feature.social.socialDestinations
 import kotlinx.coroutines.flow.Flow
 
 /**
- * The navigation graph. Every destination is registered and empty; the screens pass replaces each
- * [EmptyDestination] with its screen (one file per surface, header naming the surface id).
+ * The navigation graph. Destinations are registered per feature group in
+ * `app.feature.<group>.<Group>Navigation.kt`; a destination whose screen is not built yet uses
+ * [emptyDestination]. New routes for a group go in `core/model/.../AppRoute<Group>.kt` (same package,
+ * so they join the sealed [AppRoute]).
  */
 @Composable
 fun AppNavHost(deepLinks: Flow<DeepLink>, navController: NavHostController = rememberNavController()) {
@@ -28,60 +34,16 @@ fun AppNavHost(deepLinks: Flow<DeepLink>, navController: NavHostController = rem
         deepLinks.collect { link -> navController.show(DeepLinkRouting.backStack(link)) }
     }
     NavHost(navController = navController, startDestination = DeepLinkRouting.home) {
-        // Getting in
-        empty<AppRoute.AuthPhone>()
-        empty<AppRoute.AuthCode>()
-        empty<AppRoute.AuthAgeGate>()
-        empty<AppRoute.AuthProfile>()
-        empty<AppRoute.PermissionCamera>()
-        empty<AppRoute.PermissionNotifications>()
-        empty<AppRoute.PermissionPhotos>()
-        empty<AppRoute.PermissionContacts>()
-        empty<AppRoute.OnboardingWidget>()
-        empty<AppRoute.InviteJoin>()
-        // Groups
-        empty<AppRoute.GroupsList>()
-        empty<AppRoute.GroupCreate>()
-        empty<AppRoute.GroupInvite>()
-        empty<AppRoute.Group>()
-        empty<AppRoute.GroupSettings>()
-        // Posting
-        empty<AppRoute.Camera>()
-        empty<AppRoute.SendTo>()
-        // Chat and photos
-        empty<AppRoute.Chat>()
-        empty<AppRoute.PhotoViewer>()
-        // Walls
-        empty<AppRoute.WallMine>()
-        empty<AppRoute.WallMember>()
-        empty<AppRoute.WallsBrowse>()
-        // Daily invitation
-        empty<AppRoute.DailyCapture>()
-        empty<AppRoute.Collage>()
-        // The week
-        empty<AppRoute.WeekRecap>()
-        empty<AppRoute.WeekEdit>()
-        empty<AppRoute.WeekHistory>()
-        empty<AppRoute.AlbumsList>()
-        empty<AppRoute.AlbumView>()
-        // Remembering
-        empty<AppRoute.OnThisDay>()
-        empty<AppRoute.BirthdayAdd>()
-        empty<AppRoute.BirthdayContribute>()
-        empty<AppRoute.Tribute>()
-        empty<AppRoute.YearStory>()
-        // Account, notifications, subscription, safety
-        empty<AppRoute.Settings>()
-        empty<AppRoute.SettingsNotifications>()
-        empty<AppRoute.SettingsAccount>()
-        empty<AppRoute.SettingsBlocked>()
-        empty<AppRoute.Paywall>()
-        empty<AppRoute.SafetyReport>()
-        empty<AppRoute.SafetyBlock>()
+        // One registration file per feature group, so each group's screens are built independently
+        // (docs/SURFACES.md groups: account, capture, social, memory).
+        accountDestinations(navController)
+        captureDestinations(navController)
+        socialDestinations(navController)
+        memoryDestinations(navController)
     }
 }
 
-private inline fun <reified T : AppRoute> NavGraphBuilder.empty() {
+inline fun <reified T : AppRoute> NavGraphBuilder.emptyDestination() {
     // The route class is captured here: a reified call inside the composable lambda is not
     // inlined by the Compose compiler and fails at runtime.
     val type = T::class

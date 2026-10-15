@@ -4,7 +4,7 @@ import Foundation
 /// Push tokens collected on this device: APNs (`PushService.onDeviceToken`), the Live Activity
 /// push-to-start token (`LiveActivityService.onPushToStartToken`) and the WidgetKit push token
 /// (iOS 26 widget push handler, shared through `WidgetPushTokenStore`). All lowercase hex.
-public struct DeviceTokens: Codable, Hashable, Sendable {
+public struct DevicePushTokens: Codable, Hashable, Sendable {
     public var apns: String?
     public var pushToStart: String?
     public var widgetPush: String?
@@ -75,8 +75,8 @@ public actor SessionCoordinator {
     public let widgetStore: WidgetStore?
     public let hooks: SessionHooks
 
-    private var tokens = DeviceTokens()
-    private var registered: (user: UserID, tokens: DeviceTokens)?
+    private var tokens = DevicePushTokens()
+    private var registered: (user: UserID, tokens: DevicePushTokens)?
     private var signedInUser: UserID?
     private var authTask: Task<Void, Never>?
     private var reachabilityTask: Task<Void, Never>?
@@ -141,12 +141,12 @@ public actor SessionCoordinator {
 
     /// Records the device's current tokens and registers them when signed in. Pass every token
     /// you have: a nil token is cleared on the server (`register_device` semantics).
-    public func updateDeviceTokens(_ tokens: DeviceTokens) async {
+    public func updateDeviceTokens(_ tokens: DevicePushTokens) async {
         self.tokens = tokens
         await registerDeviceIfNeeded()
     }
 
-    public var currentDeviceTokens: DeviceTokens { tokens }
+    public var currentDeviceTokens: DevicePushTokens { tokens }
 
     private func registerDeviceIfNeeded() async {
         guard let user = signedInUser, let apns = tokens.apns else { return }

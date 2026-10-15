@@ -99,6 +99,11 @@ nearest of Thin/Light/Regular/Medium/Bold/Black.
 
 | token | used for | status today |
 |---|---|---|
-| `layout.collage.dualTile`, `layout.collage.option{A,B,C}`, `color.collage.matte`, `color.collage.insetBorder` | collage composition (`src/collage/params.ts`) | proposals (collage.tokens.json) |
-| `dimension.collage.share.storyCanvas` | collage width and the 9:16 share image | proposal 1080×1920 (platform) |
+| `daily.dualimage.layout.composition` | each answer tile (mainAspect → tileAspect, insetAspect, insetWidthRatio, insetMarginRatio, insetBorderRatio, insetOuterRadiusRatio; mainRadiusRatio unused: tiles touch) | canonical (capture.json) |
+| `collage.view.layout.page` | option B pages (columns, rowsPerPage, gapRatio, outerRadiusRatio, canvasAspect) and the collage width (canvasWidthPx) | canonical (capture.json) |
+| `color.global.backgroundDeep` | matte (page corners, empty cells in the JPEGs) and the inset border | canonical (global.json) |
+| `collage.share.layout.export` | the 9:16 share image (widthPx × heightPx) | canonical (capture.json) |
+| options A and C | none in production: `collage_option` 'A' / 'C' fails with `MissingTokenError`; their proposals `layout.collage.option{A,C}` are read only by `scripts/render-collage-options.ts` | proposals only (C-21) |
+
+The collage reads these through `canonicalToken` (`src/tokens.ts`): no proposal fallback.
 | `layout.media.renditions` | thumb / widget / display sizes `{ thumb|widget|display: { width, height, fit } }` | missing → derived sizes in `src/media/renditions.ts` (iOS widget sizes @3x) |

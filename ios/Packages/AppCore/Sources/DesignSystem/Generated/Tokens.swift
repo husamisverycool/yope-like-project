@@ -1124,14 +1124,14 @@ public enum Tokens {
         public enum AuthAgegateLayoutDateEntry {
             public static let control: String = "the Yope form field (groups.create.color.field, size.global.fieldHeight, radius.global.field, groups.create.fontSize.fieldText) with a numeric keyboard"
             public static let format: String = "the device locale's numeric short-date order (DateFormatter.dateFormat(fromTemplate: \"MMddyyyy\", options: 0, locale: .current) / DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, null, IsoChronology.INSTANCE, locale)), shown in the placeholder"
-            public static let default: String = "empty: no pre-filled date, no default year, no age options"
+            public static let `default`: String = "empty: no pre-filled date, no default year, no age options"
             public static let threshold: String = "the minimum age is never shown before the person submits"
         }
         /// Yope · auth.agegate · optional 'tell my groups on my birthday' opt-in row · SOURCED
         /// token: `auth.agegate.layout.optIn`
         public enum AuthAgegateLayoutOptIn {
             public static let control: String = "row with icon.global.uncheck / icon.global.check (color.global.selection) at size.global.checkCircle, trailing, as in Yope's pickers"
-            public static let default: String = "unchecked (opt-in)"
+            public static let `default`: String = "unchecked (opt-in)"
             public static let label: String = "fontSize.global.listSubtitle (14 pt) regular, color.global.textPrimary"
             public static let detail: String = "fontSize.global.listSubtitle, color.global.textSecondary"
         }

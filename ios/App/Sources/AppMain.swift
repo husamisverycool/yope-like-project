@@ -1,3 +1,4 @@
+import AppData
 import AppModels
 import AppServices
 import SwiftUI
@@ -53,6 +54,16 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         environment.push.didFailToRegister(error)
+    }
+
+    /// Background uploads (AppData's background `URLSession`) finished while the app was not
+    /// running; the system waits until the session has delivered its events.
+    func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String) async {
+        guard let data = environment.data else { return }
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            let handled = data.handleBackgroundURLSessionEvents(identifier: identifier) { continuation.resume() }
+            if !handled { continuation.resume() }
+        }
     }
 
     func application(

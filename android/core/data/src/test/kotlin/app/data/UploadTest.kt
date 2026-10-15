@@ -117,7 +117,7 @@ class UploadTest {
         assertEquals("u/$userId/$id/original.jpg", draft.original.storagePath)
         assertEquals("u/$userId/$id/front.jpg", draft.front!!.storagePath)
         assertEquals("u/$userId/$id/voice.m4a", draft.voice!!.storagePath)
-        assertEquals("audio/mp4", draft.voice?.contentType)
+        assertEquals("audio/mp4", draft.voice.contentType)
         assertEquals(listOf("g1", "g2"), draft.groupIds)
         assertEquals(1800L, draft.totalBytes)
         assertTrue(File(draft.original.localPath).parentFile == store.dir(id))

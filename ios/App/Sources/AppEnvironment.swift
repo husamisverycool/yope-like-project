@@ -1,3 +1,4 @@
+import AppData
 import AppModels
 import AppServices
 import Foundation
@@ -38,6 +39,10 @@ final class AppEnvironment {
     let purchases: PurchasesService
     let widgetStore: WidgetStore
     let deviceTokens = DeviceTokens()
+    /// The WidgetKit push token written by the widget extension (iOS 26 widget push handler).
+    let widgetPushTokens: WidgetPushTokenStore
+    /// The backend (AppData). Nil while config/app.json has no Supabase URL / anon key (BLOCKED).
+    let data: DataEnvironment?
 
     private var hasLaunched = false
     private var wasInBackground = false
@@ -49,8 +54,26 @@ final class AppEnvironment {
         router = AppRouter(parser: parser)
         push = PushService(parser: parser)
         liveActivities = LiveActivityService()
-        purchases = PurchasesService(entitlementID: configuration.premiumEntitlement)
-        widgetStore = WidgetStore.forBundle(bundle)
+        let purchases = PurchasesService(entitlementID: configuration.premiumEntitlement)
+        self.purchases = purchases
+        let widgetStore = WidgetStore.forBundle(bundle)
+        self.widgetStore = widgetStore
+        widgetPushTokens = WidgetPushTokenStore.forBundle(bundle)
+        // Session glue: RevenueCat follows the signed-in user; widget reloads after the group
+        // list or a deleted post changed the widget store.
+        let hooks = SessionHooks(
+            linkPurchases: { userID in
+                if let userID {
+                    try? await purchases.logIn(userID: userID.rawValue)
+                } else {
+                    try? await purchases.logOut()
+                }
+            },
+            reloadWidgets: {
+                await MainActor.run { WidgetReloader.reloadGroupWidgets() }
+            }
+        )
+        data = try? DataEnvironment.live(configuration: configuration, widgetStore: widgetStore, hooks: hooks)
     }
 
     func didFinishLaunching() {
@@ -61,14 +84,26 @@ final class AppEnvironment {
         let router = self.router
         let deviceTokens = self.deviceTokens
         push.onRoute = { link in router.handle(link) }
-        push.onDeviceToken = { token in deviceTokens.apnsToken = token }
+        push.onDeviceToken = { [weak self] token in
+            deviceTokens.apnsToken = token
+            self?.syncDeviceTokens()
+        }
         push.install()
 
-        liveActivities.onPushToStartToken = { token in deviceTokens.pushToStartToken = token }
+        liveActivities.onPushToStartToken = { [weak self] token in
+            deviceTokens.pushToStartToken = token
+            self?.syncDeviceTokens()
+        }
         liveActivities.onActivityToken = { token in deviceTokens.record(token) }
         liveActivities.startObserving()
 
-        purchases.configure(apiKey: configuration.revenueCatAPIKey, appUserID: nil)
+        purchases.configure(apiKey: configuration.revenueCatAPIKey, appUserID: data?.auth.currentUserID?.rawValue)
+
+        // Registers the device after sign-in, keeps widgets and RevenueCat in step with the
+        // session, resumes unsent posts.
+        if let data {
+            Task { await data.coordinator.start() }
+        }
 
         // Sign-in and onboarding arrive with the API and screens passes; until then every link
         // is applied immediately.
@@ -85,6 +120,8 @@ final class AppEnvironment {
             // Reloads requested while the app is in the foreground are not budgeted
             // (docs/PLATFORM_CONSTRAINTS.md §1.1), so every foreground refreshes the widgets.
             WidgetReloader.reloadAll()
+            // Picks up a widget push token the widget extension recorded meanwhile.
+            syncDeviceTokens()
             let liveActivities = self.liveActivities
             Task { await liveActivities.endClosedActivities() }
         case .background:
@@ -93,6 +130,18 @@ final class AppEnvironment {
         default:
             break
         }
+    }
+
+    /// Hands the device's current push tokens to the session glue, which registers them
+    /// (`register_device`) once someone is signed in.
+    private func syncDeviceTokens() {
+        guard let data else { return }
+        let tokens = DevicePushTokens(
+            apns: deviceTokens.apnsToken,
+            pushToStart: deviceTokens.pushToStartToken,
+            widgetPush: widgetPushTokens.load()
+        )
+        Task { await data.coordinator.updateDeviceTokens(tokens) }
     }
 
     /// Background (content-available) push carrying a `widget` payload: muted groups still get

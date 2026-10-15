@@ -86,15 +86,15 @@ public actor OfflineCache {
         do {
             let data = try DataCoding.makeEncoder().encode(Envelope(savedAt: now(), value: value))
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            var url = directory.appendingPathComponent(key.fileName)
+            let url = directory.appendingPathComponent(key.fileName)
             #if canImport(Darwin)
             try data.write(to: url, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+            var excluded = url
             var values = URLResourceValues()
             values.isExcludedFromBackup = true
-            try? url.setResourceValues(values)
+            try? excluded.setResourceValues(values)
             #else
             try data.write(to: url, options: [.atomic])
-            _ = url
             #endif
         } catch {
             // A cache write failure only costs the offline copy.

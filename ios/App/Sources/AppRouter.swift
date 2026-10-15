@@ -11,6 +11,11 @@ enum AppRoute: Hashable {
     case birthdayRequest(requestID: String, groupID: String?)
     case tribute(tributeID: String, groupID: String?)
     case yearStory(groupID: String, year: Int)
+    // Further screens, owned by each feature group (Features/<Group>/<Group>Routes.swift).
+    case account(AccountRoute)
+    case capture(CaptureRoute)
+    case social(SocialRoute)
+    case memory(MemoryRoute)
 }
 
 /// A screen presented over the navigation stack.
@@ -19,12 +24,19 @@ enum AppModal: Hashable, Identifiable {
     case camera(groupID: String?, invitationID: String?)
     /// `groups.invite` join flow for an invite link opened inside the app.
     case invite(token: String)
+    // Further modal screens, owned by each feature group.
+    case account(AccountModal)
+    case capture(CaptureModal)
+    case social(SocialModal)
+    case memory(MemoryModal)
 
     var id: Self { self }
 
     var isCapture: Bool {
-        if case .camera = self { return true }
-        return false
+        switch self {
+        case .camera, .capture: return true
+        default: return false
+        }
     }
 }
 

@@ -40,9 +40,9 @@ describe("copyText", () => {
 });
 
 describe("designToken", () => {
-  it("reads a non-BLOCKED proposal value until the canonical tokens carry it", () => {
-    expect(designToken<{ width: number; height: number }>("dimension.collage.share.storyCanvas")).toEqual({ width: 1080, height: 1920 });
-    expect(tokenSource("dimension.collage.share.storyCanvas")).toBe("proposal");
+  it("reads a non-BLOCKED proposal value until the canonical tokens carry it (not for the collage: canonicalToken)", () => {
+    expect(designToken<number>("font.size.textStyle.ios.title1")).toBe(28);
+    expect(tokenSource("font.size.textStyle.ios.title1")).toBe("proposal");
   });
 
   it("treats BLOCKED and unknown tokens as missing, with the token's name in the error", () => {
@@ -53,9 +53,9 @@ describe("designToken", () => {
 
   it("test overrides layer over the real sources; null reads as missing", () => {
     const real = designToken("duration.birthday.tribute.titleHold");
-    setTokenOverrides({ "duration.birthday.tribute.photoHold": 2500, "dimension.collage.share.storyCanvas": null });
+    setTokenOverrides({ "duration.birthday.tribute.photoHold": 2500, "font.size.textStyle.ios.title1": null });
     expect(designToken("duration.birthday.tribute.photoHold")).toBe(2500);
-    expect(() => designToken("dimension.collage.share.storyCanvas")).toThrow(MissingTokenError);
+    expect(() => designToken("font.size.textStyle.ios.title1")).toThrow(MissingTokenError);
     expect(designToken("duration.birthday.tribute.titleHold")).toBe(real); // not overridden: the real value
   });
 });

@@ -34,7 +34,7 @@ describe("collage params (production)", () => {
     const e = T["collage.share.layout.export"];
     expect(shareCanvas()).toEqual({ width: e.widthPx, height: e.heightPx });
     // the page is the 9:16 share canvas, so option B pages are the share images
-    expect(Math.round(collageWidth() / optionParams("B").kind.length / p.canvasAspect)).toBe(e.heightPx);
+    expect(Math.round(collageWidth() / p.canvasAspect)).toBe(e.heightPx);
   });
 
   it.each(["daily.dualimage.layout.composition", "collage.view.layout.page", "color.global.backgroundDeep"])(
@@ -65,14 +65,19 @@ describe("collage params (production)", () => {
     expect(canonicalToken(COLLAGE_TOKENS.page)).toEqual(T["collage.view.layout.page"]);
   });
 
-  it("no production source reads the collage proposal names or file", () => {
+  it("no production source reads the collage proposal names, file or reader", () => {
     const dir = path.join(WORKER_ROOT, "src");
     const files = fs.readdirSync(dir, { recursive: true, encoding: "utf8" }).filter((f) => f.endsWith(".ts") && !f.startsWith("generated"));
     expect(files.length).toBeGreaterThan(20);
     for (const f of files) {
       const code = fs.readFileSync(path.join(dir, f), "utf8");
-      expect(code, f).not.toMatch(/["'`](layout\.collage\.|color\.collage\.|dimension\.collage\.)/);
-      expect(code, f).not.toMatch(/collage\.tokens\.json|collage-proposals/);
+      expect(code, f).not.toMatch(/["'](layout\.collage\.|color\.collage\.|dimension\.collage\.)/); // string literals, not comments
+      expect(code, f).not.toMatch(/from\s+["'][^"']*collage-proposals/);
+      // the compositor and its job read tokens through canonicalToken only (designToken falls back to proposals)
+      if (f.startsWith("collage/") || f === "jobs/collage.ts") {
+        expect(code, f).not.toMatch(/\b(designToken|hasToken)\s*[<(]/);
+        expect(code, f).not.toMatch(/from\s+["']node:fs["']/);
+      }
     }
   });
 });

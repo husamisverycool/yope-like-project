@@ -60,6 +60,17 @@ function ident(name) {
   if (/^[0-9]/.test(id)) id = "_" + id;
   return id;
 }
+const KOTLIN_RESERVED = new Set(["as", "break", "class", "continue", "do", "else", "false", "for", "fun", "if", "in", "interface", "is", "null", "object", "package", "return", "super", "this", "throw", "true", "try", "typealias", "typeof", "val", "var", "when", "while"]);
+const SWIFT_RESERVED = new Set(["associatedtype", "class", "deinit", "enum", "extension", "fileprivate", "func", "import", "init", "inout", "internal", "let", "open", "operator", "private", "protocol", "public", "rethrows", "static", "struct", "subscript", "typealias", "var", "break", "case", "continue", "default", "defer", "do", "else", "fallthrough", "for", "guard", "if", "in", "repeat", "return", "switch", "where", "while", "as", "catch", "false", "is", "nil", "self", "Self", "super", "throw", "throws", "true", "try", "Type", "Protocol"]);
+const ktId = (id) => (KOTLIN_RESERVED.has(id) ? `\`${id}\`` : id);
+const swId = (id) => (SWIFT_RESERVED.has(id) ? `\`${id}\`` : id);
+// layout fields: numbers, booleans and strings are typed; anything nested is kept as its JSON text
+function layoutField(v) {
+  if (typeof v === "number") return { sw: ["CGFloat", num(v)], kt: ["Float", `${num(v)}f`] };
+  if (typeof v === "boolean") return { sw: ["Bool", String(v)], kt: ["Boolean", String(v)] };
+  const text = typeof v === "string" ? v : JSON.stringify(v);
+  return { sw: ["String", JSON.stringify(text)], kt: ["String", JSON.stringify(text).replace(/\$/g, "\\$")] };
+}
 function snake(key) { return key.replace(/[^A-Za-z0-9]+/g, "_").toLowerCase(); }
 
 const problems = [];
@@ -197,7 +208,7 @@ function genSwiftTokens(blocked) {
       }
       if (t.type === "layout") {
         out += `        public enum ${ident(name)[0].toUpperCase() + ident(name).slice(1)} {\n`;
-        for (const [k, v] of Object.entries(t.value)) out += `            public static let ${camel([k])}: ${typeof v === "number" ? "CGFloat" : "String"} = ${typeof v === "number" ? num(v) : JSON.stringify(String(v))}\n`;
+        for (const [k, v] of Object.entries(t.value)) { const f = layoutField(v); out += `            public static let ${swId(camel([k]))}: ${f.sw[0]} = ${f.sw[1]}\n`; }
         out += `        }\n`;
         continue;
       }
@@ -277,7 +288,7 @@ function genKotlinTokens() {
       body += `        /** ${swiftComment(t).replace(/\*\//g, "* /")} — token \`${name}\` */\n`;
       if (t.type === "layout") {
         body += `        object ${ident(name)[0].toUpperCase() + ident(name).slice(1)} {\n`;
-        for (const [k, v] of Object.entries(t.value)) body += `            const val ${camel([k])}: ${typeof v === "number" ? "Float" : "String"} = ${typeof v === "number" ? num(v) + "f" : JSON.stringify(String(v))}\n`;
+        for (const [k, v] of Object.entries(t.value)) { const f = layoutField(v); body += `            const val ${ktId(camel([k]))}: ${f.kt[0]} = ${f.kt[1]}\n`; }
         body += `        }\n`;
         continue;
       }

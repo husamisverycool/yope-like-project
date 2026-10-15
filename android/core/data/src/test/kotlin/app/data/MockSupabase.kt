@@ -43,7 +43,7 @@ class MockSupabase(context: Context, root: File, route: MockRequestHandleScope.(
         context,
         SupabaseConfig("https://project.example", "anon-key"),
         DataOptions(
-            client = ClientOptions(sessionManager = MemorySessionManager(), lifecycleCallbacks = false, autoRefresh = false, logLevel = LogLevel.NONE, engine = engine),
+            client = ClientOptions(sessionManager = MemorySessionManager(), lifecycleCallbacks = false, autoRefresh = false, logLevel = LogLevel.NONE, readRetries = 0, engine = engine),
             cacheDir = File(root, "offline"),
             uploadsDir = File(root, "uploads"),
             reconnect = ReconnectPolicy(),

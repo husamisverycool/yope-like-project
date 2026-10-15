@@ -37,6 +37,14 @@ struct RouteDestination: View {
             TributeScreen(tributeID: tributeID, groupID: groupID)
         case let .yearStory(groupID, year):
             YearStoryScreen(groupID: groupID, year: year)
+        case let .account(route):
+            AccountDestination(route: route)
+        case let .capture(route):
+            CaptureDestination(route: route)
+        case let .social(route):
+            SocialDestination(route: route)
+        case let .memory(route):
+            MemoryDestination(route: route)
         }
     }
 }
@@ -50,6 +58,14 @@ struct ModalDestination: View {
             CameraScreen(groupID: groupID, invitationID: invitationID)
         case let .invite(token):
             InviteScreen(token: token)
+        case let .account(modal):
+            AccountModalDestination(modal: modal)
+        case let .capture(modal):
+            CaptureModalDestination(modal: modal)
+        case let .social(modal):
+            SocialModalDestination(modal: modal)
+        case let .memory(modal):
+            MemoryModalDestination(modal: modal)
         }
     }
 }

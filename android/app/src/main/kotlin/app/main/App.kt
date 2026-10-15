@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import app.billing.Billing
+import app.data.DataGraph
 import app.links.AppLinks
 import app.links.DeepLinkIntents
 import app.model.DeepLink
@@ -17,13 +18,16 @@ import kotlinx.coroutines.flow.receiveAsFlow
  * Process start. Firebase is not touched here (it initialises lazily, and only when configured).
  * The screens pass registers what needs copy and tokens: notification channel names
  * (`NotificationChannels.register`), `NotificationAppearance`, `PhotoWidgetSlots`,
- * `WidgetConfigureUi`; the API pass sets `PushTokens.sink` and `QuietHoursSource`.
+ * `WidgetConfigureUi`. The data layer's session glue sets `PushTokens.sink` and
+ * `QuietHoursSource` (core:data `SessionGlue`); it stays off while config/app.json has no
+ * Supabase URL / key.
  */
 class App : Application() {
     override fun onCreate() {
         super.onCreate()
         DeepLinkIntents.targetActivity = MainActivity::class.java
         Billing.configure(this)
+        DataGraph.install(this)
     }
 }
 

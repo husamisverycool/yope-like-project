@@ -123,15 +123,34 @@ public final class DataEnvironment: Sendable {
     }
 
     /// The app's environment from `config/app.json`; throws `DataError.notConfigured` while the
-    /// Supabase URL / anon key are not provided.
+    /// Supabase URL / anon key are not provided. Create it once per process.
+    /// - Parameter backgroundUploads: false in the App Clip (App Clips get no background networking,
+    ///   docs/PLATFORM_CONSTRAINTS.md §3) and wherever a background `URLSession` is unavailable.
     public static func live(
         configuration: AppConfiguration,
         sessionStorage: (any AuthLocalStorage)? = nil,
         widgetStore: WidgetStore? = nil,
-        hooks: SessionHooks = SessionHooks()
+        hooks: SessionHooks = SessionHooks(),
+        backgroundUploads: Bool = true
     ) throws -> DataEnvironment {
         let client = DataClient(configuration: try DataConfiguration(configuration), sessionStorage: sessionStorage)
-        return DataEnvironment(client: client, widgetStore: widgetStore, hooks: hooks)
+        return DataEnvironment(
+            client: client,
+            uploadTransport: backgroundUploads ? nil : FoundationUploadTransport(),
+            widgetStore: widgetStore,
+            hooks: hooks
+        )
+    }
+
+    /// Forward `application(_:handleEventsForBackgroundURLSession:completionHandler:)`. Returns
+    /// false when the session is not AppData's (call the handler yourself then).
+    public func handleBackgroundURLSessionEvents(identifier: String, completionHandler: @escaping () -> Void) -> Bool {
+        #if canImport(Darwin)
+        if let background = uploader.transport as? BackgroundUploadTransport {
+            return background.handleEvents(forSession: identifier, completionHandler: completionHandler)
+        }
+        #endif
+        return false
     }
 }
 

@@ -94,7 +94,7 @@ final class SessionIntegrationTests: XCTestCase {
 
         // Tokens collected before sign-in are registered at sign-in, with all three tokens.
         let apns = String(repeating: "c0", count: 32) + users.runID
-        await rui.data.coordinator.updateDeviceTokens(DeviceTokens(apns: apns, pushToStart: "p2s-\(users.runID)", widgetPush: "w-\(users.runID)"))
+        await rui.data.coordinator.updateDeviceTokens(DevicePushTokens(apns: apns, pushToStart: "p2s-\(users.runID)", widgetPush: "w-\(users.runID)"))
         var devices = try await rui.data.account.myDevices()
         XCTAssertTrue(devices.isEmpty, "nothing is registered before sign-in")
         await rui.data.coordinator.didSignIn(rui.id)
@@ -107,7 +107,7 @@ final class SessionIntegrationTests: XCTestCase {
         XCTAssertEqual(widgetStore.groups(), [WidgetGroup(id: group.id.rawValue, name: group.name)])
 
         // A token change re-registers (a nil token is cleared).
-        await rui.data.coordinator.updateDeviceTokens(DeviceTokens(apns: apns, pushToStart: "p2s-2-\(users.runID)", widgetPush: nil))
+        await rui.data.coordinator.updateDeviceTokens(DevicePushTokens(apns: apns, pushToStart: "p2s-2-\(users.runID)", widgetPush: nil))
         devices = try await rui.data.account.myDevices()
         XCTAssertEqual(devices.first?.pushToStartToken, "p2s-2-\(users.runID)")
         XCTAssertNil(devices.first?.widgetPushToken)

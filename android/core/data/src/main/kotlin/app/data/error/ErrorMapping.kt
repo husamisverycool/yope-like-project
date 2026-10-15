@@ -48,6 +48,8 @@ object ErrorMapping {
             code == "23505" -> DataError.Database(DbFailure.UniqueViolation, code, status)
             code == "22P02" || code == "22007" || code == "22008" || code == "22023" -> DataError.Database(DbFailure.InvalidInput, code, status)
             code != null && code.startsWith("PGRST") -> DataError.Database(DbFailure.Request, code, status)
+            // Gateway / PostgREST unavailable (no error code of ours): transient, like a network failure.
+            status >= 500 -> DataError.Network
             else -> DataError.Database(DbFailure.Other, code, status)
         }
     }
