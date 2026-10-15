@@ -364,22 +364,19 @@ final class PhotoViewerModel {
         }
     }
 
-    /// `block_user` for the current photo's author, after the confirmation: their pics leave the viewer.
-    func blockCurrentAuthor() async {
-        guard let post = current, !isOwn(post) else { return }
-        let author = post.post.authorID
-        signals.emit(.warning)
+    /// `block_user` for the current photo's author (run by the shared block confirmation, `safety.block`).
+    func blockAuthor(_ userID: UserID) async throws {
         do {
-            try await data.block(userID: author)
+            try await data.block(userID: userID)
         } catch {
             if SocialFailure(error) == .offline { isOffline = true }
-            signals.emit(.failed)
-            signals.post(.blockFailed)
-            return
+            throw error
         }
-        let name = profiles[author]?.socialFirstName ?? ""
-        removeFromContext(Set(postIDs.filter { posts[$0]?.post.authorID == author }))
-        signals.post(.blocked(firstName: name))
+    }
+
+    /// After a block: the person's pics leave the viewer (RLS hides them everywhere).
+    func authorBlocked(_ userID: UserID) {
+        removeFromContext(Set(postIDs.filter { posts[$0]?.post.authorID == userID }))
     }
 
     // MARK: Reply
@@ -399,53 +396,6 @@ final class PhotoViewerModel {
             if replyDraft.isEmpty { replyDraft = body }
             signals.emit(.failed)
             signals.post(.sendFailed)
-        }
-    }
-}
-
-/// `safety.report` sheet: optional details, then the sent result (`safety.report` "States").
-@MainActor
-@Observable
-final class SocialReportModel {
-    enum Phase: Equatable {
-        case editing
-        case sending
-        case sent
-        case failed
-        case targetGone
-    }
-
-    let kind: ReportTargetKind
-    let targetID: String
-    /// The person behind the reported content (offered "Block" after sending), nil for a group.
-    let personID: UserID?
-    let personFirstName: String?
-    @ObservationIgnored private let data: any SocialDataSource
-
-    var details = ""
-    private(set) var phase: Phase = .editing
-    private(set) var signals = SocialSignals()
-
-    init(kind: ReportTargetKind, targetID: String, personID: UserID?, personFirstName: String?, data: any SocialDataSource) {
-        self.kind = kind
-        self.targetID = targetID
-        self.personID = personID
-        self.personFirstName = personFirstName
-        self.data = data
-    }
-
-    /// `report(p_target_kind, p_target_id, p_reason)`; empty details send the target kind as the reason.
-    func submit() async {
-        guard phase == .editing || phase == .failed else { return }
-        phase = .sending
-        let trimmed = details.trimmingCharacters(in: .whitespacesAndNewlines)
-        do {
-            try await data.report(kind: kind, targetID: targetID, reason: trimmed.isEmpty ? kind.rawValue : trimmed)
-            phase = .sent
-            signals.emit(.success)
-        } catch {
-            phase = SocialFailure(error) == .notFound ? .targetGone : .failed
-            signals.emit(.failed)
         }
     }
 }

@@ -188,6 +188,8 @@ final class WallsBrowseModel {
     }
 
     @ObservationIgnored private let data: any SocialDataSource
+    /// `groups.screen` profile "wall" segment: only this group's members.
+    let groupID: GroupID?
 
     private(set) var phase: SocialPhase = .loading
     private(set) var isOffline = false
@@ -199,8 +201,9 @@ final class WallsBrowseModel {
     private(set) var walls: [UserID: WallModel] = [:]
     private(set) var signals = SocialSignals()
 
-    init(data: any SocialDataSource) {
+    init(data: any SocialDataSource, groupID: GroupID? = nil) {
         self.data = data
+        self.groupID = groupID
     }
 
     var selectedWall: WallModel? { selectedID.flatMap { walls[$0] } }
@@ -224,6 +227,7 @@ final class WallsBrowseModel {
             }
             groups = cached
         }
+        if let groupID { groups = groups.filter { $0.id == groupID } }
         var profiles: [UserID: Profile] = [:]
         var others: [UserID] = []
         for group in groups {

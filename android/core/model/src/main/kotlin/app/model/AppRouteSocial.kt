@@ -68,10 +68,4 @@ object SocialHandoff {
      * (core:data `NewPost.replyToPostId` / `PostOptions.replyToPostId`).
      */
     const val REPLY_TO_POST_ID = "replyToPostId"
-
-    /**
-     * Set on the [AppRoute.SafetyReport] entry when a chat message is reported (target kind
-     * `message`): the message id. [AppRoute.SafetyReport] has no message argument.
-     */
-    const val REPORT_MESSAGE_ID = "messageId"
 }

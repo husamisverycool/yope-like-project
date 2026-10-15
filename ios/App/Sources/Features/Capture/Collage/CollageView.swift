@@ -22,7 +22,8 @@ struct CollageView: View {
         GeometryReader { proxy in
             let width = proxy.size.width
             let bottomInset = proxy.safeAreaInsets.bottom
-            let pageArea = CGSize(width: width, height: max(0, proxy.size.height + proxy.safeAreaInsets.top - Screen.pageTop))
+            let screenHeight = proxy.size.height + proxy.safeAreaInsets.top + bottomInset
+            let pageArea = CGSize(width: width, height: max(0, screenHeight - Screen.pageTop))
             ZStack(alignment: .top) {
                 Tokens.Colors.globalBackgroundDeep
                 header(width: width)
@@ -47,6 +48,7 @@ struct CollageView: View {
         }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("collage.view")
         .task { await model.load() }
         .onChange(of: model.currentPage) { _, _ in
@@ -149,7 +151,6 @@ struct CollageView: View {
         let hud = Tokens.Layouts.CollageViewLayoutHud.self
         return VStack {
             ProgressView()
-                .tint(Tokens.Colors.globalTextPrimary)
             Text(Copy.collageViewLoading)
                 .dsTextStyle(CaptureType.body)
                 .foregroundStyle(Tokens.Colors.globalTextPrimary)

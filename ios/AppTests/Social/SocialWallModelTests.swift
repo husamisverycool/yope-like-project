@@ -117,6 +117,12 @@ final class SocialWallModelTests: XCTestCase {
         XCTAssertEqual(model.selectedWall?.photoPostIDs, [SocialDemo.p2, SocialDemo.p5])
     }
 
+    func testBrowseScopedToOneGroup() async {
+        let model = WallsBrowseModel(data: SocialDemo.makeData(), groupID: SocialDemo.otherGroupID)
+        await model.load()
+        XCTAssertEqual(model.people.map(\.id), [SocialDemo.me, SocialDemo.ben])
+    }
+
     func testBrowseWithNobodyElse() async {
         let data = FakeSocialData(me: SocialDemo.me)
         data.update { $0.profiles[SocialDemo.me] = SocialDemo.profiles[0] }

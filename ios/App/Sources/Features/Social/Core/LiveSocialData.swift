@@ -112,10 +112,6 @@ struct LiveSocialData: SocialDataSource {
 
     // MARK: Safety
 
-    func report(kind: ReportTargetKind, targetID: String, reason: String) async throws {
-        try await environment.safety.report(kind, targetID: targetID, reason: reason)
-    }
-
     func block(userID: UserID) async throws {
         try await environment.safety.block(userID: userID)
     }
@@ -223,7 +219,6 @@ struct UnconfiguredSocialData: SocialDataSource {
     func react(postID: PostID, emoji: String) async throws -> Reaction { try fail() }
     func isTagged(postID: PostID, userID: UserID) async throws -> Bool { try fail() }
     func setTagged(_ tagged: Bool, postID: PostID) async throws { try fail() as Void }
-    func report(kind: ReportTargetKind, targetID: String, reason: String) async throws { try fail() as Void }
     func block(userID: UserID) async throws { try fail() as Void }
     func wall(userID: UserID, before: Date?, limit: Int) async throws -> Page<WallItem> { try fail() }
     func cachedWall(userID: UserID) async -> [WallItem]? { nil }

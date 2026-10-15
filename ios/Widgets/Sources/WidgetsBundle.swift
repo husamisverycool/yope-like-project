@@ -5,6 +5,7 @@ import WidgetKit
 struct AppWidgets: WidgetBundle {
     var body: some Widget {
         GroupPhotoWidget()
+        GroupLockWidget()
         DailyInvitationLiveActivity()
     }
 }

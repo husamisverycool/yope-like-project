@@ -2,14 +2,16 @@ import AppIntents
 import AppModels
 import WidgetKit
 
-// The widget's "choose group" configuration. Its titles are LocalizedStringResource keys
-// (App Intents metadata needs compile-time literals); their texts belong in design/copy.json
-// and reach the extension's Localizable.strings through the copy pipeline.
+// Surfaces: widget.home.small (configuration, shared by every widget size and the Lock Screen kind).
+// The widget's "choose group" configuration. Its titles are LocalizedStringResource keys (App
+// Intents metadata needs compile-time literals): the copy keys `widget.home.small.configuration.*`
+// (design/copy/capture.json, MERGE_DECISIONS C-25). Their texts reach the extension only through a
+// Localizable.strings entry per key, which the copy pipeline does not emit yet (reported).
 
 /// A group the widget can show, from the group list the app writes to the App Group.
 struct GroupEntity: AppEntity {
     static var typeDisplayRepresentation: TypeDisplayRepresentation {
-        TypeDisplayRepresentation(name: "widget.configuration.group.type")
+        TypeDisplayRepresentation(name: "widget.home.small.configuration.groupType")
     }
 
     static var defaultQuery: GroupEntityQuery { GroupEntityQuery() }
@@ -42,9 +44,9 @@ struct GroupEntityQuery: EntityQuery {
 }
 
 struct SelectGroupIntent: WidgetConfigurationIntent {
-    static var title: LocalizedStringResource { "widget.configuration.title" }
+    static var title: LocalizedStringResource { "widget.home.small.configuration.title" }
 
-    @Parameter(title: "widget.configuration.group")
+    @Parameter(title: "widget.home.small.configuration.group")
     var group: GroupEntity?
 
     init() {}

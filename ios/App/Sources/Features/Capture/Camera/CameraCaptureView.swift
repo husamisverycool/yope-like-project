@@ -37,6 +37,7 @@ struct CameraCaptureView: View {
             }
         }
         .ignoresSafeArea()
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("camera.capture")
         .fullScreenCover(item: $model.captured) { media in
             SendToView(model: makeSendTo(media))

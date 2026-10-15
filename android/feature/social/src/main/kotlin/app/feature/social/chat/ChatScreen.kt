@@ -102,6 +102,8 @@ import app.feature.social.common.EmptyState
 import app.feature.social.common.Formats
 import app.feature.social.common.Glyph
 import app.feature.social.common.HeaderCircle
+import app.ui.components.HeaderCircleFill
+import app.ui.components.PermissionCard
 import app.feature.social.common.Line
 import app.feature.social.common.LoadingHud
 import app.feature.social.common.LocalApproximations
@@ -342,6 +344,7 @@ fun ChatContent(
                     stringRes(R.string.chat_voice_permission_detail),
                     stringRes(R.string.chat_voice_permission_button),
                     onMicCard,
+                    Modifier.padding(horizontal = Tokens.Sizes.onboardingPermissionContactsSizeCardMarginH),
                 )
             }
             ComposerRow(state.draft, onDraft, onSend, nav.camera, onMic, recordingLevels)
@@ -384,7 +387,7 @@ private fun Header(state: ChatState, nav: ChatNav) {
         Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars).padding(horizontal = Tokens.Sizes.globalHeaderInset),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        HeaderCircle(Tokens.Icons.globalBack, stringRes(R.string.chat_thread_a11y_back), Tokens.Colors.globalControl, nav.back)
+        HeaderCircle(Tokens.Icons.globalBack, stringRes(R.string.chat_thread_a11y_back), HeaderCircleFill.Control, nav.back)
         Spacer(Modifier.width(Tokens.Sizes.globalHeaderGap))
         Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
             if (group != null) GroupCapsule(group.name, group.coverPath, nav.groupInfo)
@@ -392,7 +395,7 @@ private fun Header(state: ChatState, nav: ChatNav) {
         val recap = state.recapId
         if (recap != null) {
             Spacer(Modifier.width(Tokens.Sizes.globalHeaderGap))
-            HeaderCircle(Tokens.Icons.globalRecap, stringRes(R.string.chat_thread_a11y_recap), Tokens.Colors.globalControl, { nav.recap(recap) })
+            HeaderCircle(Tokens.Icons.globalRecap, stringRes(R.string.chat_thread_a11y_recap), HeaderCircleFill.Control, { nav.recap(recap) })
         }
     }
 }
@@ -418,9 +421,7 @@ private fun GroupCapsule(name: String, coverPath: String?, onClick: () -> Unit) 
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalHeaderGap),
     ) {
-        Box(Modifier.size(Tokens.Sizes.globalAvatarHeader).clip(CircleShape), contentAlignment = Alignment.Center) {
-            if (coverPath != null) RemotePhoto(coverPath, null, Modifier.fillMaxSize()) else Glyph(Tokens.Icons.globalGroup, Tokens.Colors.globalTextSecondary)
-        }
+        Avatar(coverPath, Tokens.Sizes.globalAvatarHeader, fallbackIcon = Tokens.Icons.globalGroup)
         Line(name, Type.headerTitle(), Tokens.Colors.globalTextPrimary, Modifier.weight(1f, fill = false))
         Glyph(Tokens.Icons.globalChevron, Tokens.Colors.globalTextSecondary)
     }

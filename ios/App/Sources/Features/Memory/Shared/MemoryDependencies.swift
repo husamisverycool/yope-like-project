@@ -1,6 +1,6 @@
 // Where the memory screens get their data, images, clock and haptics from.
 // The app uses AppData (AppEnvironment.shared.data); DEBUG builds launched with the argument
-// `-MemoryFixtures YES` (AppUITests/Memory) use `FixtureMemoryData.uiTest` instead.
+// `-MemoryFixtures` (AppUITests/Memory, `MemoryLaunch`) use `FixtureMemoryData.uiTest` instead.
 import AppData
 import DesignSystem
 import Foundation
@@ -36,13 +36,13 @@ struct MemoryDependencies {
         self.openGroup = openGroup
     }
 
-    /// The launch argument (`-MemoryFixtures YES`) that switches the memory screens to fixtures.
-    static let fixturesArgument = "MemoryFixtures"
+    /// The launch argument (`-MemoryFixtures`) that switches the memory screens to fixtures.
+    nonisolated static let fixturesArgument = "MemoryFixtures"
 
     /// The dependencies screens use when none are injected.
     static var current: MemoryDependencies {
         #if DEBUG
-        if UserDefaults.standard.bool(forKey: fixturesArgument) {
+        if MemoryLaunch.usesFixtures {
             return MemoryDependencies(data: FixtureMemoryData.uiTest, images: MemoryImageLoader.shared)
         }
         #endif

@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.Dp
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.social.common.Glyph
+import app.feature.social.common.InkGlyph
 import app.feature.social.common.Line
 import app.feature.social.common.Type
 import app.feature.social.common.stringRes
@@ -50,7 +51,8 @@ fun CircleButton(
     fill: Color,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     tint: Color,
-    glyph: Dp?,
+    /** The glyph's ink height (spec glyph sizes are ink measurements); null = platform icon size. */
+    glyphInkHeight: Dp?,
     label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -66,7 +68,7 @@ fun CircleButton(
                 role = Role.Button
             },
         contentAlignment = Alignment.Center,
-    ) { Glyph(icon, tint, size = glyph) }
+    ) { if (glyphInkHeight != null) InkGlyph(icon, tint, inkHeight = glyphInkHeight) else Glyph(icon, tint) }
 }
 
 /**
@@ -145,7 +147,7 @@ fun ComposerRow(
             fill = Tokens.Colors.globalAccent,
             icon = Tokens.Icons.globalCamera,
             tint = Tokens.Colors.globalOnAccent,
-            glyph = Tokens.Sizes.chatComposerDimensionCameraGlyph,
+            glyphInkHeight = Tokens.Sizes.chatComposerDimensionCameraGlyph,
             label = stringRes(R.string.chat_composer_a11y_camera),
             onClick = onCamera,
         )
@@ -176,7 +178,7 @@ fun ComposerRow(
                 fill = Tokens.Colors.globalControlRaised,
                 icon = Tokens.Icons.globalMic,
                 tint = Tokens.Colors.globalTextPrimary,
-                glyph = Tokens.Sizes.chatComposerDimensionMicGlyph,
+                glyphInkHeight = Tokens.Sizes.chatComposerDimensionMicGlyph,
                 label = stringRes(R.string.chat_composer_a11y_mic),
                 onClick = onMic,
             )
@@ -184,6 +186,3 @@ fun ComposerRow(
         Spacer(Modifier.width(Tokens.Sizes.chatComposerDimensionInsetTrailing))
     }
 }
-
-@Suppress("unused")
-private val roleButton = Role.Button

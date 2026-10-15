@@ -226,14 +226,21 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         XCTAssertTrue(model.saveDenied, "denied: the inline permission card")
     }
 
-    func testBlockingTheAuthorRemovesTheirPhotos() async {
+    func testBlockingTheAuthorRemovesTheirPhotos() async throws {
         let data = SocialDemo.makeData()
         let model = makeModel(data, start: SocialDemo.p1)
         await model.load()
-        await model.blockCurrentAuthor()
+        try await model.blockAuthor(SocialDemo.ben)
         XCTAssertEqual(data.read { $0.blocked }, [SocialDemo.ben])
+        model.authorBlocked(SocialDemo.ben)
         XCTAssertFalse(model.postIDs.contains(SocialDemo.p1))
-        XCTAssertEqual(model.signals.notice?.notice, .blocked(firstName: "Ben"))
+        XCTAssertEqual(model.selection, SocialDemo.p2, "the viewer moves on to the next photo")
+
+        data.update { $0.failOnce.insert("block") }
+        do {
+            try await model.blockAuthor(SocialDemo.ana)
+            XCTFail("a failed block throws so the dialog shows safety.block.error")
+        } catch {}
     }
 
     // MARK: Reply
@@ -256,25 +263,5 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         await model.sendReply()
         XCTAssertEqual(model.replyDraft, "again")
         XCTAssertEqual(model.signals.notice?.notice, .sendFailed)
-    }
-
-    // MARK: Report
-
-    func testReportSendsTheTargetAndOffersBlock() async {
-        let data = SocialDemo.makeData()
-        let report = SocialReportModel(kind: .post, targetID: SocialDemo.p1.rawValue, personID: SocialDemo.ben, personFirstName: "Ben", data: data)
-        await report.submit()
-        XCTAssertEqual(report.phase, .sent)
-        let sent = data.read { $0.reports.last }
-        XCTAssertEqual(sent?.0, .post)
-        XCTAssertEqual(sent?.1, SocialDemo.p1.rawValue)
-        XCTAssertEqual(sent?.2, "post", "empty details send the target kind as the reason")
-
-        let failing = SocialDemo.makeData()
-        failing.update { $0.notFoundOnce.insert("report") }
-        let gone = SocialReportModel(kind: .message, targetID: "x", personID: nil, personFirstName: nil, data: failing)
-        gone.details = "spam"
-        await gone.submit()
-        XCTAssertEqual(gone.phase, .targetGone)
     }
 }

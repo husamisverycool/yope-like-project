@@ -1,8 +1,11 @@
 // Surface: daily.liveactivity — reference: BeReal + Apple HIG (Live Activities).
-// Reference images: design/surfaces/daily.liveactivity.md. Plumbing: regions and the countdown;
-// styling goes into the slots in WidgetSlots.swift.
+// Reference images: references/auto/platform/hig-live-activities-ios-dimensions.png,
+// references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (design/surfaces/daily.liveactivity.md).
+// Presentations: Lock Screen / banner, Dynamic Island compact, minimal and expanded. Content views
+// are in LiveActivitySlots.swift. Every tap opens the daily capture for the group.
 import ActivityKit
 import AppModels
+import DesignSystem
 import SwiftUI
 import WidgetKit
 
@@ -10,31 +13,38 @@ struct DailyInvitationLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: DailyInvitationAttributes.self) { context in
             InvitationLockScreenSlot(attributes: context.attributes, state: context.state, isStale: context.isStale)
+                .activityBackgroundTint(Tokens.Colors.globalBackgroundDeep)
+                .activitySystemActionForegroundColor(Tokens.Colors.globalTextPrimary)
                 .widgetURL(InvitationLink.url(for: context.attributes))
         } dynamicIsland: { context in
             DynamicIsland {
-                DynamicIslandExpandedRegion(.center) {
+                DynamicIslandExpandedRegion(.leading) {
+                    InvitationCompactLeadingSlot()
+                }
+                DynamicIslandExpandedRegion(.trailing) {
+                    if !context.isStale {
+                        InvitationCompactTrailingSlot(state: context.state)
+                    }
+                }
+                DynamicIslandExpandedRegion(.bottom) {
                     InvitationExpandedSlot(state: context.state)
                 }
             } compactLeading: {
-                InvitationCompactLeadingSlot(state: context.state)
+                InvitationCompactLeadingSlot()
             } compactTrailing: {
-                InvitationCountdown(closesAt: context.state.closesAt)
+                if !context.isStale {
+                    InvitationCompactTrailingSlot(state: context.state)
+                }
             } minimal: {
-                InvitationCountdown(closesAt: context.state.closesAt)
+                if context.isStale {
+                    InvitationCompactLeadingSlot()
+                } else {
+                    InvitationMinimalSlot(state: context.state)
+                }
             }
+            .keylineTint(Tokens.Colors.globalAccent)
             .widgetURL(InvitationLink.url(for: context.attributes))
         }
-    }
-}
-
-/// The system-drawn countdown to the window's close. The range is clamped so it never inverts
-/// after the close (an inverted range traps).
-struct InvitationCountdown: View {
-    let closesAt: Date
-
-    var body: some View {
-        Text(timerInterval: CountdownState.timerRange(closesAt: closesAt, now: Date()), countsDown: true)
     }
 }
 

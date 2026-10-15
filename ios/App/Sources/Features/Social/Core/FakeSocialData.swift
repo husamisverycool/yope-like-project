@@ -48,7 +48,6 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         var cachedAlbums: [GroupID: [AlbumWithItems]] = [:]
         var cachedGroups: [PhotoGroup]?
         var cachedFeeds: [GroupID: [PostWithMedia]] = [:]
-        var reports: [(ReportTargetKind, String, String)] = []
         var blocked: [UserID] = []
         var deletedMedia: [MediaID] = []
         var sentVoice: [(URL, Int)] = []
@@ -261,11 +260,6 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
                 state.tags.append(PostTag(postID: postID, userID: me, groupID: post.post.groupID, createdAt: state.now))
             }
         }
-    }
-
-    func report(kind: ReportTargetKind, targetID: String, reason: String) async throws {
-        try call("report")
-        update { $0.reports.append((kind, targetID, reason)) }
     }
 
     func block(userID: UserID) async throws {

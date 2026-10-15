@@ -43,6 +43,7 @@ struct DailyCaptureView: View {
         }
         .ignoresSafeArea()
         .statusBarHidden(true)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("daily.capture")
         .task { await model.appear() }
         .onDisappear { Task { await model.disappear() } }
@@ -132,7 +133,6 @@ struct DailyCaptureView: View {
         VStack(spacing: Tokens.Layouts.DailyCaptureLayoutPrompt.gapBelowSpinner) {
             ProgressView()
                 .controlSize(.large)
-                .tint(Tokens.Colors.dailyCaptureColorText)
                 .frame(width: Tokens.Sizes.dailyCaptureSizeProgress, height: Tokens.Sizes.dailyCaptureSizeProgress)
             Text(Copy.dailyCapturePrompt)
                 .dsTextStyle(CaptureType.prompt)

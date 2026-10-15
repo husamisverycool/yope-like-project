@@ -49,8 +49,7 @@ protocol SocialDataSource: Sendable {
     /// `tag_self` / `untag_self`.
     func setTagged(_ tagged: Bool, postID: PostID) async throws
 
-    // MARK: Safety (§6.3)
-    func report(kind: ReportTargetKind, targetID: String, reason: String) async throws
+    // MARK: Safety (§6.3; the report sheet is the account group's `safety.report`)
     func block(userID: UserID) async throws
 
     // MARK: Walls (§6.4 `wall`)

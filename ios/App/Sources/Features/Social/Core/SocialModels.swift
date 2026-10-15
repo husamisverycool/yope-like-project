@@ -55,8 +55,6 @@ enum SocialNotice: Equatable, Sendable {
     case albumDeleted
     /// `week.edit.error.save` (album rename / delete failed).
     case changesFailed
-    case blocked(firstName: String)
-    case blockFailed
     case playFailed
     case recordFailed
 }

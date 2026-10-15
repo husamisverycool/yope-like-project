@@ -42,6 +42,7 @@ struct SendToView: View {
         }
         .ignoresSafeArea()
         .ignoresSafeArea(.keyboard)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("camera.sendto")
         .dsHaptic(Tokens.Haptics.globalSelect, trigger: model.selectionChanges)
         .task { await model.load() }
@@ -130,7 +131,6 @@ struct SendToView: View {
             }
             .dsTextStyle(CaptureType.messagePlaceholder)
             .foregroundStyle(Tokens.Colors.globalTextPrimary)
-            .tint(Tokens.Colors.globalAccent)
             .focused($isCaptionFocused)
             .submitLabel(.done)
             .onSubmit { isCaptionFocused = false }
@@ -191,7 +191,6 @@ struct SendToView: View {
         switch model.listState {
         case .loading:
             ProgressView()
-                .tint(Tokens.Colors.globalTextPrimary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .empty:
             CaptureEmptyState(

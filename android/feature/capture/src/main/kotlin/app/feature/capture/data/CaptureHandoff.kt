@@ -24,14 +24,18 @@ data class CapturedMedia(
  * Files live in [dir]; the upload queue copies them, so they are deleted after sending or ✕.
  */
 class CaptureHandoff {
-    data class Pending(val media: CapturedMedia, val contextGroupId: String?)
+    /**
+     * [replyToPostId]: a reply to a photo with a photo (`photo.viewer` → camera,
+     * `SocialHandoff.REPLY_TO_POST_ID`): it goes to exactly the replied post's group.
+     */
+    data class Pending(val media: CapturedMedia, val contextGroupId: String?, val replyToPostId: String? = null)
 
     private val state = MutableStateFlow<Pending?>(null)
     val pending: StateFlow<Pending?> = state.asStateFlow()
 
-    fun put(media: CapturedMedia, contextGroupId: String?) {
+    fun put(media: CapturedMedia, contextGroupId: String?, replyToPostId: String? = null) {
         state.value?.media?.file?.takeIf { it != media.file }?.delete()
-        state.value = Pending(media, contextGroupId)
+        state.value = Pending(media, contextGroupId, replyToPostId)
     }
 
     /** Drops the capture and its file (✕ on send-to, or after it was queued). */

@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.Dp
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.social.common.Formats
-import app.feature.social.common.Glyph
+import app.feature.social.common.InkGlyph
 import app.feature.social.common.Line
 import app.feature.social.common.LocalSocialData
 import app.feature.social.common.Type
@@ -111,7 +111,7 @@ fun VoiceBubble(
                 },
             contentAlignment = Alignment.Center,
         ) {
-            Glyph(Tokens.Icons.globalPlay, Tokens.Colors.globalTextPrimary, size = Tokens.Sizes.chatVoiceDimensionPlayGlyph)
+            InkGlyph(Tokens.Icons.globalPlay, Tokens.Colors.globalTextPrimary, inkWidth = Tokens.Sizes.chatVoiceDimensionPlayGlyph)
         }
         Spacer(Modifier.width(Tokens.Sizes.chatVoiceDimensionPlayToWaveform))
         BoxWithConstraints(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
@@ -136,42 +136,3 @@ fun VoiceBubble(
 fun playLabel(playing: Boolean, durationMs: Int): String =
     if (playing) stringRes(R.string.chat_voice_a11y_pause) else stringRes(R.string.chat_voice_a11y_play, Formats.spokenDuration(durationMs))
 
-/**
- * Yope's inline permission card (onboarding.permission.contacts card tokens): bold question, gray
- * detail, white button (opens the system prompt again, or app settings once it no longer shows).
- */
-@Composable
-fun PermissionCard(title: String, detail: String, button: String, onButton: () -> Unit, modifier: Modifier = Modifier) {
-    Row(
-        modifier
-            .padding(horizontal = Tokens.Sizes.onboardingPermissionContactsSizeCardMarginH)
-            .fillMaxWidth()
-            .heightIn(min = Tokens.Sizes.onboardingPermissionContactsSizeCardHeight)
-            .clip(RoundedCornerShape(Tokens.Radii.globalCard))
-            .background(Tokens.Colors.onboardingPermissionContactsColorCard)
-            .padding(horizontal = PermissionCardInset),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Line(title, Type.style(Tokens.FontSizes.onboardingPermissionContactsFontSizeCardTitle, Tokens.FontWeights.onboardingPermissionContactsFontWeightCardTitle), Tokens.Colors.globalTextPrimary, maxLines = Int.MAX_VALUE)
-            Line(detail, Type.style(Tokens.FontSizes.onboardingPermissionContactsFontSizeCardDetail), Tokens.Colors.globalTextSecondary, maxLines = Int.MAX_VALUE)
-        }
-        Box(
-            Modifier
-                .width(Tokens.Sizes.onboardingPermissionContactsSizeCardButtonWidth)
-                .height(Tokens.Sizes.onboardingPermissionContactsSizeCardButtonHeight)
-                .clip(CircleShape)
-                .background(Tokens.Colors.globalSurfaceLight)
-                .clickable(role = Role.Button, onClick = onButton),
-            contentAlignment = Alignment.Center,
-        ) {
-            Line(button, Type.button(), Tokens.Colors.globalOnSurfaceLight)
-        }
-    }
-}
-
-/**
- * 16 pt between the card's edges and its text / button: `onboarding.permission.contacts.layout.card`
- * names it as `groups.list.size.avatarInset`.
- */
-private val PermissionCardInset: Dp get() = Tokens.Sizes.groupsListSizeAvatarInset
