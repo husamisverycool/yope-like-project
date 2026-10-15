@@ -117,7 +117,7 @@ class UploadTest {
         assertEquals("u/$userId/$id/original.jpg", draft.original.storagePath)
         assertEquals("u/$userId/$id/front.jpg", draft.front!!.storagePath)
         assertEquals("u/$userId/$id/voice.m4a", draft.voice!!.storagePath)
-        assertEquals("audio/mp4", draft.voice!!.contentType)
+        assertEquals("audio/mp4", draft.voice?.contentType)
         assertEquals(listOf("g1", "g2"), draft.groupIds)
         assertEquals(1800L, draft.totalBytes)
         assertTrue(File(draft.original.localPath).parentFile == store.dir(id))
@@ -137,8 +137,8 @@ class UploadTest {
         assertThrows(IllegalArgumentException::class.java) { NewPost(kind = MediaKind.Video, original = file("a.mp4", 1), groupIds = listOf("g")) }
         assertThrows(IllegalArgumentException::class.java) { NewPost(kind = MediaKind.Photo, original = file("a.jpg", 1), groupIds = emptyList()) }
         val live = queue().enqueue(NewPost(kind = MediaKind.LivePhoto, original = file("b.jpg", 1), motion = file("clip.mp4", 2), durationMs = 1400, groupIds = listOf("g")))
-        assertEquals("u/$userId/$live/motion.mp4", store.load(live)!!.motion!!.storagePath)
-        assertEquals("video/mp4", store.load(live)!!.motion!!.contentType)
+        assertEquals("u/$userId/$live/motion.mp4", store.load(live)?.motion?.storagePath)
+        assertEquals("video/mp4", store.load(live)?.motion?.contentType)
         val signedOut = UploadQueue(context, store) { null }
         val error = assertThrows(DataException::class.java) { signedOut.enqueue(NewPost(kind = MediaKind.Photo, original = file("c.jpg", 1), groupIds = listOf("g"))) }
         assertEquals(DataError.NotSignedIn, error.error)

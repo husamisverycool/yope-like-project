@@ -9,7 +9,7 @@ final class RealtimeIntegrationTests: XCTestCase {
     private var users: TestUsers!
 
     override func setUp() async throws {
-        try await LocalStack.require()
+        try await LocalStack.requireWebSockets()
         users = TestUsers()
     }
 

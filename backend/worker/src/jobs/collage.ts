@@ -11,6 +11,7 @@ import { PermanentError } from "../errors.js";
 import { orderAnswers } from "../collage/layout.js";
 import type { AnswerImages } from "../collage/render.js";
 import { collageWidth, composeCollage, isCollageOption, type CollageOption } from "../collage/pipeline.js";
+import { collageParams } from "../collage/params.js";
 import { enqueue, str, type JobContext, type Services } from "../services.js";
 import { MEDIA_COLUMNS, POST_COLUMNS, type CollageRow, type InvitationRow, type MediaRow, type PostRow } from "../types.js";
 import { ensureImageRenditions } from "./media.js";
@@ -76,6 +77,7 @@ async function imagesFor(svc: Services, answers: Answer[]): Promise<AnswerImages
 /** Composes, uploads, and points the row at the new files if its post set is still `postIds`. */
 async function render(ctx: JobContext, collage: CollageRow, option: CollageOption, answers: Answer[]): Promise<boolean> {
   const postIds = answers.map((a) => a.post.id);
+  collageParams(option); // MissingTokenError (canonical tokens only) before any download
   const width = collageWidth();
   const version = collageVersion(option, width, postIds);
   const dir = `${collageFolder(collage.group_id, collage.id)}/${version}`;

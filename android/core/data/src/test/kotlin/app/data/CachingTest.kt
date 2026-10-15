@@ -106,6 +106,7 @@ class CachingTest {
         cache.clearAll()
         assertNull(cache.get(key, posts))
         assertThrows(IllegalArgumentException::class.java) { CacheKey("../escape") }
+        Unit
     }
 
     @Test fun cachedFlowEmitsCacheThenNetworkAndKeepsCacheWhenOffline() = runBlocking {

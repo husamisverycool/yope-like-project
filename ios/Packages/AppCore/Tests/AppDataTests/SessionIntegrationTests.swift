@@ -78,6 +78,7 @@ final class SessionIntegrationTests: XCTestCase {
     }
 
     func testCoordinatorRegistersDeviceSyncsWidgetsAndAppliesDeletions() async throws {
+        try await LocalStack.requireWebSockets() // deletions arrive over Realtime
         let widgetRoot = FileManager.default.temporaryDirectory.appendingPathComponent("widgets-\(UUID().uuidString)", isDirectory: true)
         addTeardownBlock { try? FileManager.default.removeItem(at: widgetRoot) }
         let widgetStore = WidgetStore(rootURL: widgetRoot)

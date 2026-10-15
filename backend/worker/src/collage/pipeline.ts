@@ -4,18 +4,19 @@
 //   widget.jpg      page 1 at the widget rendition width (src/media/renditions.ts); for the tall
 //                   options A and C only its top, as tall as the largest widget (the widget crops
 //                   the top of a tall image, design/collage-options/README.md)
-//   share-<n>.jpg   9:16 Stories image. Option B pages are 9:16 at the Stories canvas width, so
-//                   they are the share images; options A and C need a share layout no reference
-//                   shows (README "What the choice changes elsewhere"), so none is produced.
+//   share-<n>.jpg   9:16 Stories image (collage.share.layout.export). Option B pages are 9:16 at
+//                   the Stories canvas width, so they are the share images; options A and C need a
+//                   share layout no reference shows (README "What the choice changes elsewhere"),
+//                   so none is produced.
+// Every parameter comes from the canonical tokens (params.ts); production has no proposal fallback.
 
 import sharp from "sharp";
 import { layoutCollage, type Answer } from "./layout.js";
 import { renderPage, toJpeg, type AnswerImages } from "./render.js";
-import { collageParams } from "./params.js";
-import { designToken } from "../tokens.js";
+import { collageParams, collageWidth, shareCanvas, type CollageOption } from "./params.js";
 import { JPEG_OPTIONS, renditionSpecs } from "../media/renditions.js";
 
-export type CollageOption = "A" | "B" | "C";
+export { collageWidth, type CollageOption };
 
 export function isCollageOption(v: unknown): v is CollageOption {
   return v === "A" || v === "B" || v === "C";
@@ -29,20 +30,11 @@ export interface CollageFiles {
   shares: Buffer[] | null;
 }
 
-/**
- * Collage width in px: the Stories canvas width (token dimension.collage.share.storyCanvas,
- * 1080 = Meta's 9:16 frame at 1080 wide, ≥ the 720×1280 minimum), so option B pages are the
- * share images without resampling.
- */
-export function collageWidth(): number {
-  return designToken<{ width: number; height: number }>("dimension.collage.share.storyCanvas").width;
-}
-
 export async function composeCollage(images: AnswerImages[], option: CollageOption, width = collageWidth()): Promise<CollageFiles> {
   if (!images.length) throw new Error("a collage needs at least one answer");
-  const params = collageParams();
+  const params = collageParams(option);
   const answers: Answer[] = images.map((im) => ({ hasFront: im.front !== null }));
-  const pages = layoutCollage(answers, params.options[option], params.dual, width);
+  const pages = layoutCollage(answers, params.layout, params.dual, width);
   const masters: Buffer[] = [];
   for (const page of pages) masters.push(await renderPage(page, images, params.colors));
   const displays: Buffer[] = [];
@@ -62,7 +54,7 @@ export async function composeCollage(images: AnswerImages[], option: CollageOpti
 
   let shares: Buffer[] | null = null;
   if (option === "B") {
-    const canvas = designToken<{ width: number; height: number }>("dimension.collage.share.storyCanvas");
+    const canvas = shareCanvas();
     const firstPage = pages[0];
     if (firstPage && firstPage.width === canvas.width && firstPage.height === canvas.height) shares = displays;
   }

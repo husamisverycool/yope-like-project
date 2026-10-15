@@ -115,17 +115,21 @@ class GroupRealtimeTest {
         assertEquals(2, channels.opened.size)
         advanceTimeBy(10_001 + 2_001); runCurrent()
         assertEquals(3, channels.opened.size)
-        // A hanging open (socket never connects) is bounded by the subscribe timeout too.
+        // An open that hangs (socket never connects) is bounded by the subscribe timeout too,
+        // and a refused open is retried: the loop keeps going until one succeeds.
         channels.hang = true
-        advanceTimeBy(10_001 + 4_001 + 10_001 + 8_001); runCurrent()
+        advanceTimeBy(60_000); runCurrent()
+        assertEquals(3, channels.opened.size)
         channels.hang = false
         channels.refuse = true
-        advanceTimeBy(8_001); runCurrent()
+        advanceTimeBy(60_000); runCurrent()
+        assertEquals(3, channels.opened.size)
         channels.refuse = false
-        advanceTimeBy(8_001); runCurrent()
-        val reopened = channels.opened.size
-        assertTrue("reopened $reopened", reopened >= 4)
-        assertEquals(GroupEvent.Stream.entries.size, 2)
+        advanceTimeBy(30_000); runCurrent()
+        assertTrue(channels.opened.size >= 4)
+        channels.current(GroupEvent.Stream.Deletions).state.value = true
+        runCurrent()
+        assertEquals(GroupEvent.Subscribed("g", GroupEvent.Stream.Deletions, resumed = false), events.last())
     }
 
     @Test fun channelsCloseAfterTheLastCollectorLeavesAndListenersSeeEveryEvent() = runTest {

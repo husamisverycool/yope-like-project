@@ -146,6 +146,11 @@ extension DataError {
         if let code = APIErrorCode(rawValue: error.message) {
             return .api(code, details: error.details)
         }
+        // Signed out (anon role): RPCs are granted to `authenticated` only, so PostgREST refuses
+        // before the function's own `not_authenticated` check runs.
+        if error.code == "42501", error.message.hasPrefix("permission denied for function") {
+            return .api(.notAuthenticated, details: error.message)
+        }
         return .database(code: error.code ?? "", message: error.message)
     }
 

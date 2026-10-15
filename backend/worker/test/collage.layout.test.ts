@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { layoutCollage, orderAnswers, type OptionParams, type DualTileParams, type Rect } from "../src/collage/layout.js";
-import { collageParams } from "../src/collage/params.js";
+import { dualTileParams } from "../src/collage/params.js";
+import { reviewOptions } from "../scripts/collage-proposals.js";
 
-const { dual, options } = collageParams();
+// B = canonical collage.view.layout.page (production); A and C = owner-review proposals
+const dual = dualTileParams();
+const options = reviewOptions();
 const W = 1080;
 
 function overlaps(a: Rect, b: Rect) {

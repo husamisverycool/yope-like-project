@@ -2,18 +2,23 @@
 // each composed strictly from BeReal's dual image + Yope's walls, every value traced).
 // Output: design/collage-options/option-{A,B,C}.jpg. Photos are CC0 / public-domain
 // fixtures. The captions on these sheets are for the owner's review only; they are not app UI.
+// Tiles and colors come from the canonical tokens (src/collage/params.ts); option B is the canonical
+// collage.view.layout.page, options A and C the proposals (scripts/collage-proposals.ts).
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp, { type OverlayOptions } from "sharp";
 import { layoutCollage } from "../src/collage/layout.js";
 import { renderPage } from "../src/collage/render.js";
-import { collageParams } from "../src/collage/params.js";
+import { collageColors, dualTileParams } from "../src/collage/params.js";
+import { reviewOptions } from "./collage-proposals.js";
 import { sampleAnswers } from "../test/fixtures/answers.js";
 
 const OUT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../design/collage-options");
 fs.mkdirSync(OUT, { recursive: true });
-const { dual, options, colors } = collageParams();
+const dual = dualTileParams();
+const colors = collageColors();
+const options = reviewOptions();
 const COUNTS = [1, 2, 3, 5, 8, 12, 20, 30];
 const WIDTH = 360;
 const CAPTION = 44;

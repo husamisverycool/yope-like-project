@@ -64,6 +64,53 @@ enum LocalStack {
         }
     }
 
+    private static let webSocketProbe = WebSocketProbe()
+
+    /// Skips the calling test when this platform's URLSession cannot open WebSockets.
+    ///
+    /// supabase-swift Realtime uses `URLSessionWebSocketTask`. On Linux that goes through the
+    /// system libcurl, and Ubuntu 24.04's libcurl 8.5.0 (also in the `swift:*-noble` images) is
+    /// built without ws/wss, so Realtime cannot connect there. To run the realtime tests on such
+    /// a system, build libcurl with `--enable-websockets` and run `swift test` with
+    /// `LD_LIBRARY_PATH=<that libcurl's lib directory>`.
+    static func requireWebSockets() async throws {
+        try await require()
+        if let reason = await webSocketProbe.unavailableReason() {
+            print("[AppDataTests] skipped: \(reason)")
+            throw XCTSkip(reason)
+        }
+    }
+
+    private actor WebSocketProbe {
+        private var result: String??
+
+        func unavailableReason() async -> String? {
+            if let result { return result }
+            #if canImport(FoundationNetworking)
+            var components = URLComponents(url: LocalStack.url.appendingPathComponent("realtime/v1/websocket"), resolvingAgainstBaseURL: false)!
+            components.scheme = LocalStack.url.scheme == "https" ? "wss" : "ws"
+            components.queryItems = [URLQueryItem(name: "apikey", value: LocalStack.anonKey), URLQueryItem(name: "vsn", value: "1.0.0")]
+            let task = URLSession.shared.webSocketTask(with: components.url!)
+            task.resume()
+            var reason: String?
+            do {
+                try await task.send(.string(#"{"topic":"phoenix","event":"heartbeat","payload":{},"ref":"1"}"#))
+                _ = try await task.receive()
+            } catch {
+                reason = "URLSession WebSockets unavailable on this system (\(error.localizedDescription)); "
+                    + "Ubuntu's libcurl 8.5.0 has no ws/wss support, so supabase-swift Realtime cannot connect. "
+                    + "Run with LD_LIBRARY_PATH pointing at a libcurl built with --enable-websockets to run these tests"
+            }
+            task.cancel(with: .normalClosure, reason: nil)
+            result = .some(reason)
+            return reason
+            #else
+            result = .some(nil)
+            return nil
+            #endif
+        }
+    }
+
     // MARK: Tokens
 
     /// HS256 access token signed with the local JWT secret, like backend/tests/helpers.ts `mintJwt`.

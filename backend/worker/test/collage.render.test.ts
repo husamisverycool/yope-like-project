@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import sharp from "sharp";
 import { layoutCollage } from "../src/collage/layout.js";
 import { renderPage, toJpeg } from "../src/collage/render.js";
-import { collageParams } from "../src/collage/params.js";
+import { collageColors, dualTileParams } from "../src/collage/params.js";
+import { reviewOptions } from "../scripts/collage-proposals.js";
 import { sampleAnswers } from "./fixtures/answers.js";
 
-const { dual, options, colors } = collageParams();
+const dual = dualTileParams();
+const options = reviewOptions();
+const colors = collageColors();
 
 describe("collage rendering", () => {
   for (const [name, option] of Object.entries(options)) {
