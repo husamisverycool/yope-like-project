@@ -8,7 +8,7 @@ Reference image(s): `references/auto/yope/store/yope-store-04.png`, `references/
 
 Snapshots (CI): `tagging-off.png`, `tagging-on.png`, `tagging-pending.png`, `tagging-coach.png`, `tagging-error-toast.png`
 
-**Summary: 6 matched · 3 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 7 matched · 2 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Toggle
 
@@ -27,7 +27,7 @@ Snapshots (CI): `tagging-off.png`, `tagging-on.png`, `tagging-pending.png`, `tag
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
 | approximated | `tagging.coach`<br>`color.global.accent`<br>`color.global.onAccent`<br>`icon.global.close` | “tap if you're in this pic” (SOURCED)<br>#CDFD07 (SOURCED)<br>#000000 (SOURCED)<br>ios: xmark; android: Rounded.Close (PLATFORM) | first-use coach on others' photos, once per account | geometry of the measured Yope coach (camera.capture.layout.coach, camera.capture.fontSize/fontWeight.coach); ✕ labelled photo.viewer.a11y.close (no tagging key) |
-| approximated | `tagging.error`<br>`tagging.notFound`<br>`tagging.offline` | “couldn't save that — try again in a moment” (SOURCED)<br>“this pic isn't here anymore” (SOURCED)<br>“you're offline — try again when you're connected” (SOURCED) | toasts; the toggle reverts | lines handed to the host (onMessage) + announced; toast drawn only in DEBUG while the dwell is BLOCKED |
+| matched | `tagging.error`<br>`tagging.notFound`<br>`tagging.offline` | “couldn't save that — try again in a moment” (SOURCED)<br>“this pic isn't here anymore” (SOURCED)<br>“you're offline — try again when you're connected” (SOURCED) | toasts; the toggle reverts | lines handed to the host (onMessage / PhotoViewerModel) for its ToastCenter (shown for safety.block.duration.toast) + announced |
 
 ## Notes
 

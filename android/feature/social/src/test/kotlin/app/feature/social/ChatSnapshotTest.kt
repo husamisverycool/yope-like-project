@@ -173,9 +173,10 @@ class ChatSnapshotTest : SnapshotBase() {
         compose.mainClock.autoAdvance = false
         compose.setContent { TestScreen(data) { content(state, ChatUiState(), flights = flights) } }
         compose.mainClock.advanceTimeByFrame()
-        compose.runOnIdle { org.junit.Assert.assertTrue("the cluster's landing slot is known", flights.launch("p-1", "😂", androidx.compose.ui.geometry.Rect(FLIGHT_START_X, FLIGHT_START_Y, FLIGHT_START_X + FLIGHT_SIZE, FLIGHT_START_Y + FLIGHT_SIZE))) }
+        compose.runOnIdle { org.junit.Assert.assertTrue("the cluster's landing slot is known", flights.launch("p-1", "😂", androidx.compose.ui.geometry.Rect(FLIGHT_START_X, FLIGHT_START_Y, FLIGHT_START_X + FLIGHT_SIZE, FLIGHT_START_Y + FLIGHT_SIZE)))
+            androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications()
+        }
         compose.mainClock.advanceTimeBy(FLIGHT_FRAME_MS)
-        println("DEBUGFLIGHT " + flights.flight)
         com.github.takahirom.roborazzi.captureScreenRoboImage()
     }
 

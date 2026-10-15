@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,7 +25,11 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.designsystem.generated.Tokens
@@ -81,13 +86,16 @@ fun CountryFlagButton(region: String, onClick: () -> Unit) {
     val name = remember(region) { Countries.name(region) }
     Box(
         Modifier
-            .size(CountryFlagSlot.touchTarget)
+            // The touch target may overhang the field (it is taller than size.global.fieldHeight).
+            .requiredSize(CountryFlagSlot.touchTarget)
             .clickable(role = Role.Button, onClick = onClick)
             .semantics { contentDescription = name },
         contentAlignment = Alignment.Center,
     ) {
         BasicText(
             Countries.flag(region),
+            // Line box = font size, trimmed, so the emoji (not its line spacing) is what fits the slot.
+            style = TextStyle(lineHeight = 1.em, lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both), textAlign = TextAlign.Center),
             autoSize = TextAutoSize.StepBased(minFontSize = (Tokens.Layouts.AuthPhoneLayoutCountryCode.flagHeight / 4).sp),
             maxLines = 1,
             modifier = Modifier.size(CountryFlagSlot.width, CountryFlagSlot.height),

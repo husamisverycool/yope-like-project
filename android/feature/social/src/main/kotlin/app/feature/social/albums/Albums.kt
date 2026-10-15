@@ -194,7 +194,8 @@ fun AlbumsListContent(state: AlbumsState, onBack: () -> Unit, onAlbum: (String) 
                 else -> LazyVerticalGrid(
                     columns = GridCells.Fixed(grid.columns.toInt()),
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(start = grid.marginH.dp, end = grid.marginH.dp, bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
+                    // The header → first row gap is not measured: the grid's own `gap` (approximation).
+                    contentPadding = PaddingValues(start = grid.marginH.dp, top = grid.gap.dp, end = grid.marginH.dp, bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
                     horizontalArrangement = Arrangement.spacedBy(grid.gap.dp),
                     verticalArrangement = Arrangement.spacedBy(grid.gap.dp),
                 ) {

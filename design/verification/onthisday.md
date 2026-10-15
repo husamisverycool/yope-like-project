@@ -8,7 +8,7 @@ Reference image(s): `references/auto/timehop/store/timehop-store-01.png`, `refer
 
 Snapshots (CI): `onthisday-loading.png`, `onthisday-single.png`, `onthisday-grid.png`, `onthisday-error.png`, `onthisday-offline.png`, `onthisday-entry.png`
 
-**Summary: 24 matched · 4 approximated · 1 not matched (BLOCKED or not buildable).**
+**Summary: 25 matched · 4 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Banner
 
@@ -60,7 +60,7 @@ Snapshots (CI): `onthisday-loading.png`, `onthisday-single.png`, `onthisday-grid
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| not matched | `duration.onthisday.memoryChange` | None (BLOCKED) | year → year transition (BLOCKED) | changes without animation; one-line switch MemoryBlocked.onThisDayMemoryChange |
+| matched | `duration.onthisday.memoryChange`<br>`easing.global.native` | 700 ms (SOURCED)<br>keyboard: system; alert: system; activityIndicator: system (ProgressView / CircularProgressIndicator); scrollIndicator: system; navigatio… (PLATFORM) | year → year: cross-fade over 700 ms, native curve; same under Reduce Motion; progress fill and banner label jump | content ZStack keyed by year with .transition(.opacity) and .animation(easeInOut(memoryChange)) on the content only; next year's photos preloaded at screen pixel size (unit-tested) |
 | matched | `easing.global.native` | keyboard: system; alert: system; activityIndicator: system (ProgressView / CircularProgressIndicator); scrollIndicator: system; navigatio… (PLATFORM) | open / close: native full-screen presentation | OnThisDayEntry → .fullScreenCover; MemoryModal.onThisDay → shell cover |
 
 ## Entry (groups.screen)

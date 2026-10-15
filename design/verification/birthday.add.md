@@ -8,7 +8,7 @@ Reference image(s): `references/auto/yope/frames/a-chuongxetank-7694968408424582
 
 Snapshots (CI): `birthday.add-loading.png`, `birthday.add-empty-field.png`, `birthday.add-filled.png`, `birthday.add-saving.png`, `birthday.add-invalid.png`, `birthday.add-error.png`, `birthday.add-offline.png`, `birthday.add-manage.png`, `birthday.add-removed-toast.png`
 
-**Summary: 13 matched · 4 approximated · 1 not matched (BLOCKED or not buildable).**
+**Summary: 15 matched · 3 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Add (not opted in)
 
@@ -39,6 +39,6 @@ Snapshots (CI): `birthday.add-loading.png`, `birthday.add-empty-field.png`, `bir
 | matched | `birthday.add.error.title`<br>`birthday.add.error.detail`<br>`birthday.add.error.retry` | “couldn't save your birthday” (SOURCED)<br>“try again in a moment” (SOURCED)<br>“try again” (SOURCED) | error above the buttons; primary becomes retry | MemoryStateMessage + label swap |
 | matched | `birthday.add.offline` | “you're offline — connect to add your birthday” (SOURCED) | offline under the field | inline line |
 | approximated | `—` | — (no token) | loading (not in the spec) | platform indicator while profile_private is read the first time; cached opt-in state afterwards |
-| not matched | `birthday.add.added` | “birthday added” (SOURCED) | toast ‘birthday added’, then close | toast dwell BLOCKED: the screen closes with a VoiceOver announcement and onFinish(.added) for the presenter's toast |
-| approximated | `birthday.add.removed` | “birthday removed” (SOURCED) | toast after remove | DEBUG builds draw the foundations toast until tapped; release announces it (dwell BLOCKED, MemoryBlocked.toastDwell) |
+| matched | `birthday.add.added`<br>`safety.block.duration.toast` | “birthday added” (SOURCED)<br>2000 ms (SOURCED) | toast ‘birthday added’, then close | the screen closes with onFinish(.added); the presenter (BirthdayAddRoute) shows it in the window's ToastCenter for 2 s, announced |
+| matched | `birthday.add.removed`<br>`safety.block.duration.toast` | “birthday removed” (SOURCED)<br>2000 ms (SOURCED) | toast after remove | foundations toast look, shown for safety.block.duration.toast (tap dismisses), announced; every build |
 | matched | `haptic.global.success`<br>`haptic.global.error` | ios: notification.success; android: CONFIRM (PLATFORM)<br>ios: notification.error; android: REJECT (PLATFORM) | add / remove succeeded; failed | dependencies.haptics (unit-tested) |

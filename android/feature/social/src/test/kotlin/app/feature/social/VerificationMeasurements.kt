@@ -35,6 +35,7 @@ import app.feature.social.viewer.PhotoViewerViewModel
 import app.feature.social.viewer.ViewerNav
 import app.feature.social.viewer.ViewerUiState
 import app.feature.social.walls.BrowseViewModel
+import app.feature.social.walls.WallMemberContent
 import app.feature.social.walls.WallMineContent
 import app.feature.social.walls.WallNav
 import app.feature.social.walls.WallViewModel
@@ -242,6 +243,17 @@ class VerificationMeasurements {
         val s = boundsOf("settings")
         colour("settingsFill", s.f("left") + 4f, (s.f("top") + s.f("bottom")) / 2)
         write("walls.mine")
+
+        val memberData = FakeSocialData().apply { seedWall(ANA, 8) }
+        render(memberData) { WallMemberContent(WallViewModel(memberData, ANA).state.value, null, nav) }
+        box("back", node("back"))
+        val memberTiles = compose.onAllNodesWithContentDescription("Ana’s pic", substring = true, useUnmergedTree = true).fetchSemanticsNodes()
+        record("tile1", memberTiles[0])
+        record("tile2", memberTiles[1])
+        val back = boundsOf("back")
+        colour("backFill", back.f("left") + 4f, (back.f("top") + back.f("bottom")) / 2)
+        colour("background", 5f, 400f)
+        write("walls.member")
 
         val browse = BrowseViewModel(FakeSocialData().apply { seedWall(ME, 10) })
         val loader = browse.wall.value!!

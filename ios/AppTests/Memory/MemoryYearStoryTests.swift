@@ -104,10 +104,133 @@ final class MemoryYearStoryTests: XCTestCase {
         XCTAssertEqual(model.currentCard, .summary)
         model.replay()
         XCTAssertEqual(model.index, 0)
-        XCTAssertNil(model.cardDuration, "tap-only while duration.year.story.card is BLOCKED")
-        XCTAssertEqual(model.currentFraction(at: Date()), 1, "the current segment is shown full")
         model.close()
         XCTAssertTrue(model.isFinished)
+    }
+
+    // MARK: Auto-advance (`duration.year.story.card`)
+
+    func testEachCardAdvancesOnItsOwnAfterTheCardDurationAndTheSummaryWaits() async {
+        let context = MemoryTestContext()
+        let model = YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: context.dependencies)
+        await model.loadIfNeeded()
+        XCTAssertEqual(model.cardDuration, Tokens.Durations.yearStoryCard)
+        XCTAssertTrue(model.advancesOnItsOwn)
+        XCTAssertTrue(model.clockRuns)
+        let slept = await memoryEventually { context.sleeper.requested == [Tokens.Durations.yearStoryCard] }
+        XCTAssertTrue(slept, "the first card waits the full card duration")
+        context.sleeper.fire()
+        let advanced = await memoryEventually { model.index == 1 }
+        XCTAssertTrue(advanced, "the story moves to card 2 on its own")
+        let rescheduled = await memoryEventually { context.sleeper.pending == 1 }
+        XCTAssertTrue(rescheduled, "card 2 gets its own full duration")
+        XCTAssertEqual(context.sleeper.requested.last, Tokens.Durations.yearStoryCard)
+
+        // The card before the summary advances to it; the summary does not advance.
+        while model.index + 2 < model.cards.count { model.next() }
+        await memoryEventually { context.sleeper.pending == 1 }
+        context.sleeper.fire()
+        let onSummary = await memoryEventually { model.currentCard == .summary }
+        XCTAssertTrue(onSummary)
+        XCTAssertFalse(model.advancesOnItsOwn)
+        XCTAssertFalse(model.clockRuns)
+        XCTAssertEqual(context.sleeper.pending, 0, "no timer on the summary")
+        XCTAssertEqual(model.currentFraction(at: context.now), 1, "the summary's segment reads full")
+        XCTAssertFalse(model.advanceIfDue(at: context.now.addingTimeInterval(Tokens.Durations.yearStoryCard * 2)))
+        XCTAssertEqual(model.currentCard, .summary)
+    }
+
+    func testTheSegmentFillsWithElapsedTimeAndAdvancesWhenDue() async {
+        let context = MemoryTestContext()
+        let model = YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: context.dependencies)
+        await model.loadIfNeeded()
+        let start = context.now
+        let duration = Tokens.Durations.yearStoryCard
+        XCTAssertEqual(model.currentFraction(at: start), 0, accuracy: 0.0001)
+        XCTAssertEqual(model.currentFraction(at: start.addingTimeInterval(duration / 4)), 0.25, accuracy: 0.0001)
+        XCTAssertEqual(model.currentFraction(at: start.addingTimeInterval(duration * 2)), 1, "clamped")
+        XCTAssertFalse(model.advanceIfDue(at: start.addingTimeInterval(duration * 0.99)))
+        XCTAssertEqual(model.index, 0)
+        XCTAssertTrue(model.advanceIfDue(at: start.addingTimeInterval(duration)))
+        XCTAssertEqual(model.index, 1)
+        XCTAssertEqual(model.currentFraction(at: start), 0, accuracy: 0.0001, "a new card starts empty")
+    }
+
+    func testPauseFreezesTheSegmentAndResumesWithTheRemainingTime() async {
+        let context = MemoryTestContext()
+        let model = YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: context.dependencies)
+        await model.loadIfNeeded()
+        await memoryEventually { context.sleeper.pending == 1 }
+        let duration = Tokens.Durations.yearStoryCard
+        context.clock.advance(by: duration / 4)
+        model.togglePause()
+        XCTAssertTrue(model.isPaused)
+        XCTAssertFalse(model.clockRuns)
+        let cancelled = await memoryEventually { context.sleeper.pending == 0 }
+        XCTAssertTrue(cancelled, "pausing cancels the card timer")
+        context.clock.advance(by: duration)
+        XCTAssertEqual(model.currentFraction(at: context.now), 0.25, accuracy: 0.0001, "frozen while paused")
+        XCTAssertFalse(model.advanceIfDue(at: context.now.addingTimeInterval(duration)))
+
+        // Taps while paused change the card but keep the story paused (WCAG 2.2.2).
+        model.next()
+        XCTAssertEqual(model.index, 1)
+        XCTAssertTrue(model.isPaused)
+        XCTAssertEqual(model.currentFraction(at: context.now), 0, accuracy: 0.0001)
+        model.previous()
+        XCTAssertEqual(model.index, 0)
+
+        model.togglePause()
+        XCTAssertFalse(model.isPaused)
+        let resumed = await memoryEventually { context.sleeper.pending == 1 }
+        XCTAssertTrue(resumed)
+        XCTAssertEqual(context.sleeper.requested.last, duration, "the new card's full time")
+
+        context.clock.advance(by: duration / 2)
+        model.pause()
+        model.pause()
+        XCTAssertTrue(model.isPaused, "pause() (sharing) never resumes")
+        XCTAssertEqual(model.currentFraction(at: context.now), 0.5, accuracy: 0.0001)
+        model.togglePause()
+        await memoryEventually { context.sleeper.pending == 1 }
+        XCTAssertEqual(context.sleeper.requested.last ?? 0, duration / 2, accuracy: 0.0001, "only the rest of the card's time")
+    }
+
+    func testTheClockStopsWhileTheAppIsInTheBackground() async {
+        let context = MemoryTestContext()
+        let model = YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: context.dependencies)
+        await model.loadIfNeeded()
+        await memoryEventually { context.sleeper.pending == 1 }
+        let duration = Tokens.Durations.yearStoryCard
+        context.clock.advance(by: duration / 4)
+        model.setSuspended(true)
+        XCTAssertFalse(model.clockRuns)
+        XCTAssertFalse(model.isPaused, "not the user's pause: no play glyph")
+        let stopped = await memoryEventually { context.sleeper.pending == 0 }
+        XCTAssertTrue(stopped)
+        context.clock.advance(by: duration * 10)
+        XCTAssertEqual(model.currentFraction(at: context.now), 0.25, accuracy: 0.0001)
+        model.setSuspended(false)
+        XCTAssertTrue(model.clockRuns)
+        await memoryEventually { context.sleeper.pending == 1 }
+        XCTAssertEqual(context.sleeper.requested.last ?? 0, duration * 0.75, accuracy: 0.0001)
+        XCTAssertEqual(model.index, 0)
+    }
+
+    func testSummaryDotColoursParseFromTheTokenText() {
+        let selected = MemoryTokenColor.components(Tokens.Layouts.YearStorySummaryDots.selectedColor)
+        XCTAssertEqual(selected, MemoryTokenColor.Components(red: 1, green: 1, blue: 1, opacity: 1))
+        let others = MemoryTokenColor.components(Tokens.Layouts.YearStorySummaryDots.unselectedColor)
+        XCTAssertEqual(others?.red ?? 0, 0.4, accuracy: 0.001)
+        XCTAssertEqual(others?.green ?? 0, 0.4, accuracy: 0.001)
+        XCTAssertEqual(others?.blue ?? 0, 0.4, accuracy: 0.001)
+        XCTAssertEqual(others?.opacity, 1)
+        let translucent = MemoryTokenColor.components("#00000080")
+        XCTAssertEqual(translucent?.red, 0)
+        XCTAssertEqual(translucent?.opacity ?? 0, 128.0 / 255.0, accuracy: 0.0001)
+        XCTAssertNil(MemoryTokenColor.components("white"))
+        XCTAssertNil(MemoryTokenColor.components("#12345"))
+        XCTAssertGreaterThan(Tokens.Layouts.YearStorySummaryDots.pitch, Tokens.Layouts.YearStorySummaryDots.diameter, "dots never touch")
     }
 
     func testPreloadsTheNextCardsImages() async {

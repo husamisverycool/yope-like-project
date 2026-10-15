@@ -8,7 +8,7 @@ Reference image(s): `references/auto/vidday/store/vidday-store-08.png`, `referen
 
 Snapshots (CI): `birthday.tribute-loading.png`, `birthday.tribute-ready.png`, `birthday.tribute-saved-toast.png`, `birthday.tribute-rendering.png`, `birthday.tribute-not-found.png`, `birthday.tribute-error.png`, `birthday.tribute-offline.png`, `birthday.tribute-save-failed.png`
 
-**Summary: 11 matched · 1 approximated · 1 not matched (BLOCKED or not buildable).**
+**Summary: 12 matched · 1 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Screen
 
@@ -29,11 +29,11 @@ Snapshots (CI): `birthday.tribute-loading.png`, `birthday.tribute-ready.png`, `b
 | matched | `birthday.tribute.notFound.title`<br>`birthday.tribute.notFound.detail` | “this video isn't here anymore” (SOURCED)<br>“your memories are waiting” (SOURCED) | deleted — or not yet delivered to the honoree | TributeModel.isVisible (unit-tested before / after delivery) |
 | matched | `birthday.tribute.error.title`<br>`birthday.tribute.error.detail`<br>`birthday.tribute.error.retry` | “couldn't load your video” (SOURCED)<br>“try again in a moment” (SOURCED)<br>“try again” (SOURCED) | error + retry |  |
 | matched | `birthday.tribute.offline` | “you're offline — connect to watch your video” (SOURCED) | offline under the title |  |
-| approximated | `birthday.tribute.saved`<br>`birthday.tribute.saveFailed` | “saved to your photos” (SOURCED)<br>“couldn't save the video — try again in a moment” (SOURCED) | toasts | DEBUG draws the foundations toast; release announces (dwell BLOCKED); settings link for denied access not added (owned by system.permissions) |
+| approximated | `birthday.tribute.saved`<br>`birthday.tribute.saveFailed`<br>`safety.block.duration.toast` | “saved to your photos” (SOURCED)<br>“couldn't save the video — try again in a moment” (SOURCED)<br>2000 ms (SOURCED) | toasts | foundations toast for safety.block.duration.toast, announced, every build; settings link for denied access not added (owned by system.permissions) |
 | matched | `haptic.global.success`<br>`haptic.global.error` | ios: notification.success; android: CONFIRM (PLATFORM)<br>ios: notification.error; android: REJECT (PLATFORM) | saved / failed | unit-tested |
 
 ## Video (worker contract, not drawn by the app)
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| not matched | `duration.birthday.tribute.photoHold`<br>`layout.birthday.tribute.caption`<br>`layout.birthday.tribute.endCard`<br>`birthday.tribute.endCard` | None (BLOCKED)<br>None (BLOCKED)<br>None (BLOCKED)<br>“From {group}” (BLOCKED) | BLOCKED worker values | the worker refuses to render until sourced; the app shows ‘loading’ while status = pending |
+| matched | `duration.birthday.tribute.photoHold`<br>`layout.birthday.tribute.caption`<br>`layout.birthday.tribute.endCard`<br>`birthday.tribute.endCard` | 4000 ms (SOURCED)<br>textColor: #FFFFFF; nameFontWeight: 700; nameFontSizeRatio: 0.0463; lineFontWeight: 700; lineFontSizeRatio: 0.0795; leftRatio: 0.0577; bo… (SOURCED)<br>background: #EFEEF3; textColor: #444347; fontWeight: 500; fontSizeRatio: 0.084; maxWidthRatio: 0.405; centerYRatio: 0.5 (SOURCED)<br>“We love you!” (SOURCED) | worker render values (now sourced) | drawn into the MP4 by the worker; the app plays the delivered video and shows ‘loading’ while status = pending (no app change) |

@@ -3,8 +3,6 @@ package app.ui
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.printToString
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.designsystem.generated.Tokens
 import app.ui.components.ToastDwell
@@ -24,11 +22,11 @@ class ToastHostTest {
     @Test fun showsForTheDwellThenLeaves() {
         assertEquals(Tokens.Durations.safetyBlockDurationToast.toLong(), ToastDwell.millis)
         val state = ToastState()
-        compose.mainClock.autoAdvance = false
         compose.setContent { AppTheme { ToastHost(state) } }
+        compose.waitForIdle()
+        compose.mainClock.autoAdvance = false
         compose.runOnIdle { state.show("you blocked Sam"); Snapshot.sendApplyNotifications() }
         compose.mainClock.advanceTimeBy(ENTER_MS)
-        println("TREE:" + compose.onRoot(useUnmergedTree = true).printToString() + " current=" + state.current)
         compose.onNodeWithText("you blocked Sam", useUnmergedTree = true).assertExists()
         compose.runOnIdle { state.show("you unblocked Sam"); Snapshot.sendApplyNotifications() }
         compose.mainClock.advanceTimeBy(ENTER_MS)

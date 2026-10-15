@@ -277,7 +277,7 @@ def camera_sendto():
     reddest = max(((x, y) for x in range(int(field["left"] * SCALE), int(field["right"] * SCALE), 2)
                    for y in range(int(field["top"] * SCALE), int(field["bottom"] * SCALE), 2)),
                   key=lambda q: (lambda c: c[0] - (c[1] + c[2]) / 2)(rec.getpixel(q)))
-    sh.row("mic + voice coach ship", "recorder SOURCED", "Blocked.voiceNoteRecorder = true in debug and release", status="match (token)")
+    sh.row("mic + voice coach ship", "recorder SOURCED", "shown in every build on devices with a microphone", status="match (token)")
     sh.row("`chat.voice.layout.recording` start / lift / cancel / lock", "hold records; lift keeps; slide left cancels; slide up locks",
            "same (FlowTests.voiceMicHoldSlideAndLockGestures)", status="match",
            note="on camera.sendto lifting attaches the note to the post, which leaves with SEND (chat sends at once)")

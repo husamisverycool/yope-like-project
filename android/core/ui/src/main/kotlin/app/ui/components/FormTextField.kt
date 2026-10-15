@@ -88,7 +88,11 @@ fun FormTextField(
                 contentAlignment = Alignment.Center,
             ) {
                 if (leading != null) {
-                    Box(Modifier.align(Alignment.CenterStart).padding(start = if (leadingInset.isSpecified) leadingInset else Tokens.Radii.globalField)) { leading() }
+                    // matchParentSize: the leading element never changes the field's height.
+                    Box(
+                        Modifier.matchParentSize().padding(start = if (leadingInset.isSpecified) leadingInset else Tokens.Radii.globalField),
+                        contentAlignment = Alignment.CenterStart,
+                    ) { leading() }
                 }
                 Box(Modifier.fillMaxWidth().padding(horizontal = sideInset), contentAlignment = Alignment.Center) {
                     if (value.text.isEmpty()) {

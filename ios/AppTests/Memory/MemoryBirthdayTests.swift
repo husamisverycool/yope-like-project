@@ -334,6 +334,33 @@ final class MemoryBirthdayTests: XCTestCase {
         model.stopListening()
     }
 
+    func testTheLineStaysOneLineAndStopsAtTheCharacterLimit() async {
+        let context = MemoryTestContext()
+        let model = BirthdayContributeModel(requestID: MemoryIDs.request, dependencies: context.dependencies)
+        await model.loadIfNeeded()
+        XCTAssertEqual(BirthdayContributeModel.lineMax, Int(Tokens.Layouts.BirthdayContributeLineMax.maxCharacters))
+        XCTAssertEqual(BirthdayContributeModel.lineMax, 110)
+
+        model.line = "you light up every room"
+        XCTAssertFalse(model.normalizeLine(), "nothing to change")
+        XCTAssertEqual(model.line, "you light up every room")
+
+        model.line = "you light up every room\n"
+        XCTAssertTrue(model.normalizeLine(), "a typed return ends the entry")
+        XCTAssertEqual(model.line, "you light up every room")
+
+        let limit = BirthdayContributeModel.lineMax
+        model.line = String(repeating: "a", count: limit)
+        model.normalizeLine()
+        XCTAssertEqual(model.line.count, limit, "exactly the limit is kept")
+        model.line = String(repeating: "b", count: limit + 25)
+        model.normalizeLine()
+        XCTAssertEqual(model.line, String(repeating: "b", count: limit), "a longer paste is cut at the limit")
+        model.line = String(repeating: "🎉", count: limit + 1)
+        model.normalizeLine()
+        XCTAssertEqual(model.line.count, limit, "counted in characters, not bytes")
+    }
+
     func testStepperEdgeInsetComesFromTheToken() {
         XCTAssertEqual(ContributeStepperMetrics.edgeInset, 11, accuracy: 0.001)
     }

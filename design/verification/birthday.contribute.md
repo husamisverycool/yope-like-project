@@ -8,7 +8,7 @@ Reference image(s): `references/auto/tribute/web/tribute-web-testimonials-upload
 
 Snapshots (CI): `birthday.contribute-loading.png`, `birthday.contribute-photo.png`, `birthday.contribute-photo-selected.png`, `birthday.contribute-message.png`, `birthday.contribute-message-filled.png`, `birthday.contribute-sending.png`, `birthday.contribute-done.png`, `birthday.contribute-not-eligible.png`, `birthday.contribute-error.png`, `birthday.contribute-offline.png`, `birthday.contribute-empty.png`, `birthday.contribute-closed.png`, `birthday.contribute-load-error.png`
 
-**Summary: 21 matched · 5 approximated · 1 not matched (BLOCKED or not buildable).**
+**Summary: 22 matched · 5 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Header and stepper
 
@@ -38,7 +38,7 @@ Snapshots (CI): `birthday.contribute-loading.png`, `birthday.contribute-photo.pn
 | matched | `radius.global.photo` | 15 pt (SOURCED) | chosen photo, content width, aspect kept | display rendition |
 | matched | `birthday.contribute.line.label`<br>`fontSize.birthday.contribute.label`<br>`fontWeight.birthday.contribute.label`<br>`dimension.birthday.contribute.label.gap` | “Your Message” (VERIFIED)<br>16 pt (VERIFIED)<br>semibold (VERIFIED)<br>10 pt (VERIFIED) | label + field 10 below | Text + TextField(axis: .vertical), field labelled for VoiceOver |
 | matched | `dimension.birthday.contribute.input.height`<br>`radius.birthday.contribute.input`<br>`color.birthday.contribute.input.fill`<br>`color.birthday.contribute.input.text`<br>`fontSize.birthday.contribute.input` | 46 pt (VERIFIED)<br>8 pt (VERIFIED)<br>#FFFFFF14 (VERIFIED)<br>#E7E8E8EB (VERIFIED)<br>16 pt (VERIFIED) | field 46 (grows), r8, white 0.08 fill, no placeholder | return key = done (newline ends entry) |
-| not matched | `layout.birthday.contribute.lineMax` | None (BLOCKED) | UI character limit (BLOCKED) | API bound 280 applies (invalid_line → error line); one-line switch MemoryBlocked.contributeLineMax |
+| matched | `layout.birthday.contribute.lineMax` | maxCharacters: 110 (SOURCED) | line stops at 110 characters, no visible counter (API 280 stays the server check) | BirthdayContributeModel.normalizeLine() after each edit: removes a typed return (ends editing) and cuts at maxCharacters (unit-tested) |
 | matched | `birthday.request.prompts.title`<br>`birthday.request.prompt.appreciate`<br>`birthday.request.prompt.impact` | “Message Ideas” (SOURCED)<br>“What do you appreciate most about {name}?” (SOURCED)<br>“How has {name} impacted your life?” (SOURCED) | Message Ideas as on the request | MemoryMessageIdeas |
 | matched | `birthday.contribute.submit`<br>`dimension.birthday.contribute.button.gap`<br>`dimension.birthday.contribute.button.height`<br>`radius.birthday.contribute.button`<br>`fontSize.birthday.contribute.button`<br>`fontWeight.birthday.contribute.button`<br>`color.global.accent`<br>`color.global.onAccent` | “Submit” (SOURCED)<br>24 pt (VERIFIED)<br>50 pt (VERIFIED)<br>8 pt (VERIFIED)<br>16 pt (VERIFIED)<br>semibold (VERIFIED)<br>#CDFD07 (SOURCED)<br>#000000 (SOURCED) | Submit 24 below, 50 high, disabled until a non-space character | platform disabled state |
 | matched | `birthday.contribute.review.retake`<br>`color.global.surfaceLight`<br>`color.global.onSurfaceLight` | “Retake” (SOURCED)<br>#FFFFFF (SOURCED)<br>#000000 (SOURCED) | Retake → step 1 (selection kept) |  |

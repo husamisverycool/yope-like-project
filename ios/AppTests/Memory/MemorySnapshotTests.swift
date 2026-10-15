@@ -408,6 +408,14 @@ final class MemorySnapshotTests: XCTestCase {
             let state = card == .summary ? "summary" : "card-\(String(format: "%02d", position + 1))-\(Self.kind(card))"
             record(screen(model), "year.story", state, context: story)
         }
+        // Paused (play glyph in the chrome) on the first fact card; the summary above shows its page dots.
+        if let fact = model.cards.firstIndex(where: \.isShareable) {
+            model.index = fact
+            model.togglePause()
+            XCTAssertTrue(model.isPaused)
+            record(screen(model), "year.story", "paused", context: story)
+            model.togglePause()
+        }
 
         let failing = makeContext()
         failing.data.fail(.yearStory, with: .http(status: 500))

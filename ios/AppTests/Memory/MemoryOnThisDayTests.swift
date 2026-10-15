@@ -58,6 +58,26 @@ final class MemoryOnThisDayTests: XCTestCase {
         XCTAssertTrue(context.haptics.isEmpty, "the day plays no haptics")
     }
 
+    func testTheNextYearsPhotosArePreloadedForTheCrossFade() async {
+        let context = MemoryTestContext()
+        let model = OnThisDayModel(groupID: MemoryIDs.group, dependencies: context.dependencies)
+        await model.loadIfNeeded()
+        await memoryEventually { !context.images.requested.isEmpty }
+        XCTAssertTrue(context.images.requested.isEmpty, "nothing is decoded before the screen gives its pixel size")
+
+        model.imagePixelSize = 2532
+        model.preloadUpcoming()
+        let olderYear = model.years[1].photos.compactMap(\.thumbURL)
+        XCTAssertEqual(olderYear.count, 3)
+        let preloaded = await memoryEventually { context.images.requested.count == olderYear.count }
+        XCTAssertTrue(preloaded)
+        XCTAssertEqual(context.images.requested, olderYear, "the next (older) year's grid thumbnails, in order")
+
+        model.next()
+        await memoryEventually { context.images.requested.count > olderYear.count }
+        XCTAssertEqual(context.images.requested.count, olderYear.count, "the oldest year has no next year to preload")
+    }
+
     func testMetaIsUppercasedAbbreviatedWeekdayAndShortTime() {
         let posix = Locale(identifier: "en_US_POSIX")
         let date = Date(timeIntervalSince1970: 1_760_567_640) // 2025-10-15T22:34:00Z, a Wednesday
