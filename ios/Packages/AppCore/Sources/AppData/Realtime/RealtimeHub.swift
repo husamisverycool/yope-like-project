@@ -225,19 +225,23 @@ public actor RealtimeHub {
         }
     }
 
-    private func subscribe(_ box: Channel, groupID: GroupID, kind: GroupEventFilter) async {
+    private func subscribe(_ box: Channel, groupID: GroupID, kind: GroupEventFilter, attempt: Int = 0) async {
         let channel = box.channel
         do {
             try await channel.subscribeWithError()
         } catch {
+            // The server answers a refused join (a non-member on `group:<id>`) with nothing, so a
+            // failure on a connected socket is final; with the socket down (offline) it is retried.
+            let socketDown = client.supabase.realtimeV2.status != .connected
             emit(.subscriptionFailed(topic: channel.topic), groupID: groupID, kind: kind)
-            // Drop the dead channel so a later subscriber can try again.
+            // Drop the dead channel so a later subscriber (or the retry) can join again.
             if var state = groups[groupID] {
                 if kind == .changes, state.changes === box { state.changes = nil }
                 if kind == .deletions, state.deletions === box { state.deletions = nil }
                 groups[groupID] = state
             }
             await close(box)
+            if socketDown { scheduleRetry(groupID: groupID, kind: kind, attempt: attempt + 1) }
             return
         }
         emit(.subscribed(topic: channel.topic), groupID: groupID, kind: kind)
@@ -259,6 +263,31 @@ public actor RealtimeHub {
                 }
             }
         })
+    }
+
+    /// Re-joins after `min(60, 2^attempt)` seconds while someone still wants that channel.
+    private func scheduleRetry(groupID: GroupID, kind: GroupEventFilter, attempt: Int) {
+        let delay = min(60, pow(2, Double(attempt)))
+        Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            await self?.retry(groupID: groupID, kind: kind, attempt: attempt)
+        }
+    }
+
+    private func retry(groupID: GroupID, kind: GroupEventFilter, attempt: Int) async {
+        guard var state = groups[groupID], state.subscribers.values.contains(where: { $0.filter.contains(kind) }) else { return }
+        let box: Channel
+        if kind == .changes {
+            guard state.changes == nil else { return }
+            box = makeChangesChannel(groupID)
+            state.changes = box
+        } else {
+            guard state.deletions == nil else { return }
+            box = makeDeletionsChannel(groupID)
+            state.deletions = box
+        }
+        groups[groupID] = state
+        await subscribe(box, groupID: groupID, kind: kind, attempt: attempt)
     }
 
     private func close(_ box: Channel?) async {
