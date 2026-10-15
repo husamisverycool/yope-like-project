@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <!-- Android 16 Live Updates: lets the daily-invitation countdown be a promoted ongoing notification. -->
-    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
+    <!-- No POST_PROMOTED_NOTIFICATIONS: the daily invitation is never a Live Update
+         (design/surfaces/daily.ongoing.md, MERGE_DECISIONS C-11). -->
 
     <application>
         <service

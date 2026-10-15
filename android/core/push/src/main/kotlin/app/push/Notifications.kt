@@ -20,11 +20,11 @@ import java.time.ZoneId
 
 /**
  * Notification channels, one per kind of notification so people can tune each separately.
- * Channel names are user-facing copy: the screens pass registers them with [NotificationChannels.register]
- * passing `R.string.*` values. Until then nothing is posted (Android requires a channel).
+ * Channel names are user-facing copy: [ChannelCopy.registerAll] registers them with
+ * `notifications.push.channel.*`. Until then nothing is posted (Android requires a channel).
  */
 enum class AppChannel(val id: String, val importance: Int) {
-    /** Same-moment invitation (importance per design/surfaces/daily.ongoing.md; the iOS alert is `active`, never Time Sensitive). */
+    /** Same-moment invitation (importance per design/surfaces/daily.ongoing.md: heads-up; it does not override Do Not Disturb). */
     DailyInvitation("daily_invitation", NotificationManager.IMPORTANCE_HIGH),
     NewPost("new_post", NotificationManager.IMPORTANCE_DEFAULT),
     ReactionsAndReplies("reactions_replies", NotificationManager.IMPORTANCE_DEFAULT),
@@ -55,14 +55,22 @@ object NotificationChannels {
         context: Context,
         name: (AppChannel) -> CharSequence,
         description: (AppChannel) -> CharSequence? = { null },
+    ) = register(context, AppChannel.entries, name, description)
+
+    /** Creates or updates [channels] only (see [ChannelCopy.registerAll] for the app's set). */
+    fun register(
+        context: Context,
+        channels: Collection<AppChannel>,
+        name: (AppChannel) -> CharSequence,
+        description: (AppChannel) -> CharSequence? = { null },
     ) {
         val manager = context.getSystemService(NotificationManager::class.java)
-        val channels = AppChannel.entries.map { channel ->
+        val created = channels.map { channel ->
             NotificationChannel(channel.id, name(channel), channel.importance).apply {
                 description(channel)?.let { setDescription(it.toString()) }
             }
         }
-        manager.createNotificationChannels(channels)
+        manager.createNotificationChannels(created)
     }
 
     fun isRegistered(context: Context, channel: AppChannel): Boolean =
@@ -111,9 +119,13 @@ internal fun NotificationCompat.Builder.applyAppearance(): NotificationCompat.Bu
 }
 
 /**
- * The daily invitation's ongoing countdown (surface `daily.ongoing`): a chronometer counting down
- * to the server's `closesAt`, removed by the system when the window closes. On Android 16+ it asks
- * to be a promoted ongoing notification (Live Update), which the system grants per its rules.
+ * The daily invitation's countdown notification (surface `daily.ongoing`,
+ * `Tokens.Layouts.DailyOngoingLayoutNotification`): a standard notification whose header
+ * chronometer counts down to the server's `closesAt`, removed by the system when the window
+ * closes. It is dismissible and never promoted to a Live Update (MERGE_DECISIONS C-11: the
+ * invitation is triggered by the server, not by the person; tenet "Invitations, never
+ * obligations"). During the person's quiet hours it arrives silently (the push contract carries no
+ * quiet-hours flag, so the device applies [QuietHoursSource]).
  */
 object DailyInvitationNotifier {
     private const val ID = 1
@@ -136,13 +148,17 @@ object DailyInvitationNotifier {
             cancel(context, message.groupId)
             return false
         }
+        // Quiet hours are judged on the server's clock, like the window itself.
+        val quiet = QuietHoursSource.current.current()?.let { (hours, zone) -> hours.isQuietAt(deviceNow.plus(skew), zone) } ?: false
 
         val builder = NotificationCompat.Builder(context, channel.id)
             .setSmallIcon(icon)
             .setContentTitle(message.title)
             .setContentText(message.body)
             .setCategory(NotificationCompat.CATEGORY_EVENT)
-            .setOngoing(true)
+            // Dismissible (not ongoing) and removed on tap: an invitation, not an obligation.
+            .setOngoing(false)
+            .setAutoCancel(true)
             .setOnlyAlertOnce(true)
             .setShowWhen(true)
             .setWhen(deviceClosesAt.toEpochMilli())
@@ -150,14 +166,9 @@ object DailyInvitationNotifier {
             .setChronometerCountDown(true)
             .setTimeoutAfter(state.remaining.toMillis())
             .setContentIntent(DeepLinkIntents.pendingIntent(context, message.link))
-            .applyAppearance()
-            // Promoted notifications must not be colorized; an accent color alone is allowed.
+            .setSilent(quiet)
+            .setColor(InvitationAppearance.accentColor)
             .setColorized(false)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
-            // Android 16 Live Update: the system promotes it (status-bar chip with the countdown)
-            // if the person allows it; see PromotedNotifications.
-            builder.setRequestPromotedOngoing(true)
-        }
         NotificationManagerCompat.from(context).notifyChecked(context, tag(message.groupId), ID, builder)
         return true
     }

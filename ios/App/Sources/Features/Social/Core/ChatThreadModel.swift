@@ -1,0 +1,385 @@
+// Surface: chat.thread (+ chat.composer, chat.voice, chat.reactions inside it) — reference app: Yope
+// (reactions: Locket). Spec: design/surfaces/chat.thread.md "States", "Data & actions".
+// View model only (Foundation + Observation + AppData); the view is ChatThreadView.
+import AppData
+import AppModels
+import Foundation
+import Observation
+
+/// A reaction just sent by this person (starts the emoji rain on their screen, `chat.reactions` §4).
+struct SentReaction: Equatable, Sendable {
+    var postID: PostID
+    var emoji: String
+    var id: Int
+}
+
+@MainActor
+@Observable
+final class ChatThreadModel {
+    let groupID: GroupID
+    /// Deep link target (`DeepLink.chatMessage`): the thread scrolls to it once loaded.
+    let focusMessageID: MessageID?
+    @ObservationIgnored private let data: any SocialDataSource
+
+    private(set) var phase: SocialPhase = .loading
+    /// Reachability says offline, or the last request could not reach the server.
+    private(set) var isOffline = false
+    private(set) var me: UserID?
+    private(set) var group: PhotoGroup?
+    private(set) var members: [MemberProfile] = []
+    /// Oldest first (top → bottom).
+    private(set) var messages: [Message] = []
+    private(set) var posts: [PostID: PostWithMedia] = [:]
+    private(set) var reactions: [PostID: ReactionSummary] = [:]
+    private(set) var profiles: [UserID: Profile] = [:]
+    /// The latest ready recap (film-strip circle; hidden while nil).
+    private(set) var latestRecapID: RecapID?
+    /// Cursor of the next older page (nil = no older messages).
+    private(set) var olderCursor: Date?
+    private(set) var isLoadingOlder = false
+    private(set) var isSending = false
+    private(set) var signals = SocialSignals()
+    /// The newest message someone else sent while the thread was open (announced to VoiceOver).
+    private(set) var arrival: Message?
+    private(set) var sentReaction: SentReaction?
+    /// Composer text.
+    var draft = ""
+
+    private var reactionCounter = 0
+
+    init(groupID: GroupID, focusMessageID: MessageID? = nil, data: any SocialDataSource) {
+        self.groupID = groupID
+        self.focusMessageID = focusMessageID
+        self.data = data
+    }
+
+    // MARK: Derived
+
+    var hasOlder: Bool { olderCursor != nil }
+
+    /// Photo posts of the thread in chronological order (`photo.viewer` context).
+    var photoPostIDs: [PostID] {
+        messages.compactMap { $0.kind == .photo ? $0.postID : nil }
+    }
+
+    func isMine(_ message: Message) -> Bool { message.authorID == me }
+
+    func profile(_ id: UserID) -> Profile? { profiles[id] }
+
+    /// Empty state: the viewer created the group (`chat.thread.empty.titleCreator`) or someone else did.
+    var viewerCreatedGroup: Bool {
+        guard let creator = group?.createdBy else { return false }
+        return creator == me
+    }
+
+    var creatorFirstName: String? {
+        guard let creator = group?.createdBy else { return nil }
+        return profiles[creator]?.socialFirstName
+    }
+
+    /// First names of the members the creator added (`chat.thread.empty.detail`), joining order.
+    var addedMemberNames: [String] {
+        let creator = group?.createdBy
+        return members.filter { $0.member.userID != creator }.compactMap { $0.profile?.socialFirstName }
+    }
+
+    // MARK: Loading
+
+    /// First load: the offline copy at once, then the newest page from the server.
+    func load() async {
+        if me == nil { me = await data.currentUserID() }
+        if messages.isEmpty, let cached = await data.cachedMessages(groupID: groupID), !cached.isEmpty {
+            messages = Self.ascending(cached)
+            for post in await data.cachedPosts(groupID: groupID) where posts[post.id] == nil {
+                posts[post.id] = post
+            }
+            phase = .ready
+        }
+        await loadGroup()
+        await refresh()
+    }
+
+    /// Reloads the newest page (pull, foreground, reconnect — docs/API.md §8.3).
+    func refresh() async {
+        do {
+            let page = try await data.messages(groupID: groupID, before: nil)
+            isOffline = false
+            let newest = Self.ascending(page.items)
+            if let oldestNew = newest.first, hasLoadedBeyondFirstPage {
+                messages = messages.filter { $0.createdAt < oldestNew.createdAt } + newest
+            } else {
+                messages = newest
+                olderCursor = page.nextCursor
+            }
+            await loadDetails(for: newest)
+            phase = messages.isEmpty ? .empty : .ready
+            await loadLatestRecap()
+        } catch {
+            let failure = SocialFailure(error)
+            if failure == .offline { isOffline = true }
+            if messages.isEmpty {
+                phase = isOffline ? .offline : .failed
+            } else {
+                phase = .ready
+            }
+        }
+    }
+
+    /// Error state "try again".
+    func retry() async {
+        phase = .loading
+        await load()
+    }
+
+    /// Next older page, when the list reaches its top.
+    func loadOlder() async {
+        guard let cursor = olderCursor, !isLoadingOlder else { return }
+        isLoadingOlder = true
+        defer { isLoadingOlder = false }
+        do {
+            let page = try await data.messages(groupID: groupID, before: cursor)
+            let known = Set(messages.map(\.id))
+            let older = Self.ascending(page.items).filter { !known.contains($0.id) }
+            messages = older + messages
+            olderCursor = page.nextCursor
+            pagesBeyondFirst += 1
+            await loadDetails(for: older)
+        } catch {
+            if SocialFailure(error) == .offline { isOffline = true }
+        }
+    }
+
+    @ObservationIgnored private var pagesBeyondFirst = 0
+    private var hasLoadedBeyondFirstPage: Bool { pagesBeyondFirst > 0 }
+
+    private func loadGroup() async {
+        if let group = try? await data.group(id: groupID) {
+            self.group = group
+        } else if group == nil {
+            group = await data.cachedGroup(id: groupID)
+        }
+        if let members = try? await data.members(groupID: groupID) {
+            self.members = members
+        } else if members.isEmpty {
+            members = await data.cachedMembers(groupID: groupID) ?? []
+        }
+        for member in members {
+            if let profile = member.profile { profiles[profile.id] = profile }
+        }
+    }
+
+    private func loadLatestRecap() async {
+        guard let recaps = try? await data.recaps(groupID: groupID) else { return }
+        latestRecapID = recaps.first { $0.status == .ready }?.id
+    }
+
+    /// Posts (photo messages and reply targets), their reactions, and authors' profiles.
+    private func loadDetails(for batch: [Message]) async {
+        let photoIDs = batch.compactMap(\.postID)
+        let wanted = (photoIDs + batch.compactMap(\.replyToPostID)).socialUnique().filter { posts[$0] == nil }
+        if !wanted.isEmpty {
+            if let found = try? await data.posts(ids: wanted) {
+                for post in found { posts[post.id] = post }
+            } else {
+                for post in await data.cachedPosts(groupID: groupID) where wanted.contains(post.id) {
+                    posts[post.id] = post
+                }
+            }
+        }
+        if !photoIDs.isEmpty, let rows = try? await data.reactions(postIDs: photoIDs) {
+            let summaries = ReactionSummary.byPost(rows)
+            for id in photoIDs.socialUnique() {
+                reactions[id] = summaries[id] ?? ReactionSummary()
+            }
+        }
+        let people = (batch.map(\.authorID) + posts.values.map(\.post.authorID))
+            .socialUnique()
+            .filter { profiles[$0] == nil }
+        if !people.isEmpty, let found = try? await data.profiles(ids: people) {
+            for profile in found { profiles[profile.id] = profile }
+        }
+    }
+
+    // MARK: Live
+
+    /// Realtime and reachability for as long as the screen is visible (`.task`).
+    func run() async {
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await self.listenToEvents() }
+            group.addTask { await self.listenToNetwork() }
+        }
+    }
+
+    private func listenToEvents() async {
+        for await event in data.events(groupID: groupID) {
+            await handle(event)
+        }
+    }
+
+    private func listenToNetwork() async {
+        for await status in data.network() {
+            await setNetwork(status)
+        }
+    }
+
+    func setNetwork(_ status: NetworkStatus) async {
+        let wasOffline = isOffline
+        switch status {
+        case .offline:
+            isOffline = true
+        case .online:
+            isOffline = false
+            if wasOffline { await refresh() }
+        case .unknown:
+            break
+        }
+    }
+
+    /// Applies one realtime event (docs/API.md §8.1–8.2).
+    func handle(_ event: GroupEvent) async {
+        switch event {
+        case let .messageInserted(message):
+            guard message.groupID == groupID, !messages.contains(where: { $0.id == message.id }) else { return }
+            insert(message)
+            await loadDetails(for: [message])
+            phase = .ready
+            if message.authorID != me { arrival = message }
+        case let .messageUpdated(message):
+            guard let index = messages.firstIndex(where: { $0.id == message.id }) else { return }
+            messages[index] = message
+        case let .postInserted(post), let .postUpdated(post):
+            guard post.groupID == groupID, let known = posts[post.id] else { return }
+            posts[post.id] = PostWithMedia(post: post, media: known.media)
+        case let .postDeleted(postID, _):
+            removePost(postID)
+        case let .messageDeleted(messageID):
+            messages.removeAll { $0.id == messageID }
+            if messages.isEmpty, phase == .ready { phase = .empty }
+        case let .reactionInserted(reaction):
+            guard posts[reaction.postID] != nil || messages.contains(where: { $0.postID == reaction.postID }) else { return }
+            reactions[reaction.postID, default: ReactionSummary()].insert(reaction)
+        case let .reactionsChanged(postID):
+            await reloadReactions(postID)
+        case .resubscribed:
+            await refresh()
+        case .subscribed, .subscriptionFailed:
+            break
+        }
+    }
+
+    /// `post_deleted`: the photo message goes; replies to it lose their quote part.
+    private func removePost(_ postID: PostID) {
+        messages.removeAll { $0.kind == .photo && $0.postID == postID }
+        for index in messages.indices where messages[index].replyToPostID == postID {
+            messages[index].replyToPostID = nil
+        }
+        posts[postID] = nil
+        reactions[postID] = nil
+        if messages.isEmpty, phase == .ready { phase = .empty }
+    }
+
+    private func reloadReactions(_ postID: PostID) async {
+        guard let rows = try? await data.reactions(postIDs: [postID]) else { return }
+        reactions[postID] = ReactionSummary(rows)
+    }
+
+    private func insert(_ message: Message) {
+        let index = messages.firstIndex { Self.isOrdered(message, before: $0) } ?? messages.endIndex
+        messages.insert(message, at: index)
+    }
+
+    // MARK: Composer
+
+    /// Sends the composer text (`send_message`, kind text). The keyboard's return key sends: the send
+    /// control is BLOCKED (`chat.composer.layout.typingState`).
+    func sendDraft() async {
+        let body = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !body.isEmpty, !isSending else { return }
+        isSending = true
+        draft = ""
+        defer { isSending = false }
+        do {
+            let message = try await data.sendText(groupID: groupID, body: body, replyToPostID: nil)
+            if !messages.contains(where: { $0.id == message.id }) { insert(message) }
+            phase = .ready
+            signals.emit(.sent)
+        } catch {
+            if SocialFailure(error) == .offline { isOffline = true }
+            if draft.isEmpty { draft = body }
+            signals.emit(.failed)
+            signals.post(.sendFailed)
+        }
+    }
+
+    /// Uploads and sends a recorded voice message (`chat.voice`).
+    func sendVoice(fileURL: URL, durationMs: Int) async {
+        guard durationMs > 0 else { return }
+        do {
+            let message = try await data.sendVoice(groupID: groupID, fileURL: fileURL, durationMs: durationMs)
+            if !messages.contains(where: { $0.id == message.id }) { insert(message) }
+            phase = .ready
+            signals.emit(.sent)
+        } catch {
+            if SocialFailure(error) == .offline { isOffline = true }
+            signals.emit(.failed)
+            signals.post(.sendFailed)
+        }
+    }
+
+    /// Recording could not start or finish (`chat.voice.error.record`).
+    func voiceRecordingFailed() {
+        signals.emit(.failed)
+        signals.post(.recordFailed)
+    }
+
+    // MARK: Messages
+
+    /// Deletes one of my text / voice messages after the native confirmation.
+    func delete(_ message: Message) async {
+        guard isMine(message), message.kind != .photo else { return }
+        signals.emit(.warning)
+        do {
+            try await data.deleteMessage(id: message.id, groupID: groupID)
+            messages.removeAll { $0.id == message.id }
+            if messages.isEmpty { phase = .empty }
+        } catch {
+            if SocialFailure(error) == .notFound {
+                messages.removeAll { $0.id == message.id }
+            } else {
+                signals.emit(.failed)
+            }
+        }
+    }
+
+    // MARK: Reactions
+
+    /// `react` with optimistic display: the sticker appears at once and is removed if the call fails.
+    func react(postID: PostID, emoji: String) async {
+        guard let me else { return }
+        let alreadyThere = reactions[postID]?.contains(userID: me, emoji: emoji) ?? false
+        if !alreadyThere {
+            reactions[postID, default: ReactionSummary()].insert(
+                Reaction(postID: postID, userID: me, emoji: emoji, groupID: groupID, createdAt: Date())
+            )
+        }
+        reactionCounter += 1
+        sentReaction = SentReaction(postID: postID, emoji: emoji, id: reactionCounter)
+        do {
+            _ = try await data.react(postID: postID, emoji: emoji)
+        } catch {
+            if !alreadyThere { reactions[postID]?.remove(userID: me, emoji: emoji) }
+            signals.emit(.failed)
+            signals.post(.reactionFailed)
+        }
+    }
+
+    // MARK: Ordering
+
+    private static func isOrdered(_ lhs: Message, before rhs: Message) -> Bool {
+        lhs.createdAt != rhs.createdAt ? lhs.createdAt < rhs.createdAt : lhs.id < rhs.id
+    }
+
+    private static func ascending(_ page: [Message]) -> [Message] {
+        page.sorted(by: isOrdered)
+    }
+}

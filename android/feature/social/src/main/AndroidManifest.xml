@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+      photo.viewer "save": MediaStore insert needs no permission on API 29+; API 26–28 need
+      WRITE_EXTERNAL_STORAGE (design/surfaces/photo.viewer.md → Platform notes; minSdk 26).
+    -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+</manifest>

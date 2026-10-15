@@ -1,0 +1,226 @@
+// Surface: year.story — the 9:16 canvas and its cards (B, C, D in design/surfaces/year.story.md).
+import AppData
+import DesignSystem
+import SwiftUI
+import UIKit
+
+/// Text roles of the story (`font.year.story`, `layout.year.story.textStyleMap`).
+enum YearStoryType {
+    static var headline: DSTextStyle {
+        MemoryType.style(Tokens.Fonts.yearStory, size: Tokens.FontSizes.yearStoryHeadline,
+                         weight: Tokens.FontWeights.fontWeightYearStoryHeadline,
+                         relativeTo: Tokens.Layouts.YearStoryTextStyleMap.headline, lineHeight: Tokens.LineHeights.yearStoryHeadline)
+    }
+
+    static var body: DSTextStyle {
+        MemoryType.style(Tokens.Fonts.yearStory, size: Tokens.FontSizes.yearStoryBody,
+                         weight: Tokens.FontWeights.fontWeightYearStoryBody,
+                         relativeTo: Tokens.Layouts.YearStoryTextStyleMap.body, lineHeight: Tokens.LineHeights.yearStoryBody)
+    }
+
+    static var share: DSTextStyle {
+        MemoryType.style(Tokens.Fonts.yearStory, size: Tokens.FontSizes.yearStoryShare,
+                         weight: Tokens.FontWeights.fontWeightYearStoryShare, relativeTo: Tokens.Layouts.YearStoryTextStyleMap.share)
+    }
+
+    static var sharePill: DSTextStyle {
+        MemoryType.style(Tokens.Fonts.yearStory, size: Tokens.FontSizes.yearStorySharePill,
+                         weight: Tokens.FontWeights.fontWeightYearStorySharePill, relativeTo: Tokens.Layouts.YearStoryTextStyleMap.sharePill)
+    }
+}
+
+enum YearStoryGeometry {
+    /// 9:16 (`layout.year.story.canvas`).
+    static var aspect: CGFloat { Tokens.Layouts.YearStoryCanvas.aspectWidth / Tokens.Layouts.YearStoryCanvas.aspectHeight }
+
+    /// The canvas: screen width, kept 9:16, fitted inside the safe area.
+    static func canvasSize(in available: CGSize) -> CGSize {
+        let width = min(available.width, available.height * aspect)
+        return CGSize(width: width, height: width / aspect)
+    }
+}
+
+/// The content of one card on the canvas, without the progress bar, chrome or share row: this is
+/// both what the player shows and what the share image (D) renders.
+struct YearStoryCardContent: View {
+    let card: YearStoryCard
+    let size: CGSize
+    /// True: the subline is shown at once (share images, snapshots). False: the reveal runs.
+    var revealed = false
+
+    var body: some View {
+        switch card {
+        case .mostReacted, .togetherDay:
+            photoCard
+        case .summary:
+            Color.clear
+        default:
+            YearStoryTextBlock(headline: card.headline, subline: card.subline, revealed: revealed)
+                .frame(maxWidth: Tokens.Sizes.yearStoryTextMaxWidth)
+                .frame(width: size.width, height: size.height)
+        }
+    }
+
+    /// `layout.year.story.photoCard`: square box `boxWidthRatio` × width, centred at
+    /// `boxCenterYRatio` × height; photos fill it, collages are fitted inside it; headline
+    /// `textGap` below. At large text sizes the text is pushed down, the box stays.
+    private var photoCard: some View {
+        let box = size.width * Tokens.Layouts.YearStoryPhotoCard.boxWidthRatio
+        let boxTop = size.height * Tokens.Layouts.YearStoryPhotoCard.boxCenterYRatio - box / 2
+        let isCollage: Bool = {
+            if case .togetherDay = card { return true }
+            return false
+        }()
+        return ZStack(alignment: .top) {
+            MemoryRemoteImage(url: card.imageURL, contentMode: isCollage ? .fit : .fill)
+                .frame(width: box, height: box)
+                .padding(.top, boxTop)
+                .accessibilityElement()
+                .accessibilityLabel(collageLabel)
+                .accessibilityHidden(!isCollage)
+                .accessibilitySortPriority(0)
+            Text(card.headline)
+                .dsTextStyle(YearStoryType.headline)
+                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: Tokens.Sizes.yearStoryTextMaxWidth)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, boxTop + box + Tokens.Layouts.YearStoryPhotoCard.textGap)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilitySortPriority(2)
+        }
+        .frame(width: size.width, height: size.height, alignment: .top)
+    }
+
+    private var collageLabel: String {
+        if case let .togetherDay(collage) = card {
+            return Copy.yearStoryA11yCollage(date: MemoryFormat.storyDate(collage.date))
+        }
+        return ""
+    }
+}
+
+/// Headline, then subline, centred. Reveal (`duration.year.story.reveal.*`): the curve
+/// `easing.year.story.reveal` is BLOCKED, so every user gets the Reduce Motion substitute — no
+/// movement; the subline cross-fades in `sublineDelay` after the card appears, over `subline`.
+struct YearStoryTextBlock: View {
+    let headline: String
+    let subline: String?
+    var revealed = false
+    @State private var sublineVisible = false
+
+    var body: some View {
+        VStack {
+            Text(headline)
+                .dsTextStyle(YearStoryType.headline)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilitySortPriority(2)
+            if let subline {
+                Text(subline)
+                    .dsTextStyle(YearStoryType.body)
+                    .opacity(revealed || sublineVisible ? 1 : 0)
+                    .accessibilitySortPriority(1)
+            }
+        }
+        .foregroundStyle(Tokens.Colors.globalTextPrimary)
+        .multilineTextAlignment(.center)
+        .fixedSize(horizontal: false, vertical: true)
+        .onAppear {
+            guard !revealed, subline != nil else { return }
+            let fade = DSAnimation.timing(duration: Tokens.Durations.yearStoryRevealSubline, easing: .linear) // provenance-ok: cross-fade substitute; the reveal curve is BLOCKED (easing.year.story.reveal)
+            withAnimation(fade.animation.delay(Tokens.Durations.yearStoryRevealSublineDelay)) {
+                sublineVisible = true
+            }
+        }
+    }
+}
+
+/// Segmented progress (`layout.year.story.progress`): one segment per card; completed and current
+/// segments filled, upcoming ones white at `opacity.year.story.progress.track`. While
+/// `duration.year.story.card` is BLOCKED the current segment is shown full (no timer).
+struct YearStoryProgressBar: View {
+    let count: Int
+    let index: Int
+
+    var body: some View {
+        HStack(spacing: Tokens.Sizes.yearStoryProgressGap) {
+            ForEach(0..<count, id: \.self) { position in
+                Rectangle()
+                    .fill(position <= index
+                          ? Tokens.Colors.yearStoryProgressFill
+                          : Tokens.Colors.globalTextPrimary.opacity(Tokens.Opacities.yearStoryProgressTrack))
+                    .frame(height: Tokens.Sizes.yearStoryProgressHeight)
+            }
+        }
+        .padding(.horizontal, Tokens.Sizes.yearStoryProgressInset)
+        .accessibilityHidden(true)
+    }
+}
+
+/// "Share this story" row look (`layout.year.story.share`): glyph as tall as the row, gap, label.
+struct YearStoryShareRowLabel: View {
+    var body: some View {
+        HStack(spacing: Tokens.Sizes.yearStoryShareGlyphGap) {
+            Image(systemName: Tokens.Icons.yearStoryShare)
+                .resizable()
+                .scaledToFit()
+                .frame(height: Tokens.Sizes.yearStoryShareRowHeight)
+                .accessibilityHidden(true)
+            Text(Copy.yearStoryShare)
+                .dsTextStyle(YearStoryType.share)
+        }
+        .foregroundStyle(Tokens.Colors.globalTextPrimary)
+        .frame(minHeight: Tokens.Sizes.yearStoryShareRowHeight)
+        .frame(minHeight: Tokens.Sizes.globalMinTouchTargetIos)
+        .contentShape(Rectangle())
+    }
+}
+
+/// Share pill of the summary (`dimension.year.story.summary.shareWidth/Height`, capsule, light fill).
+struct YearStorySharePillLabel: View {
+    var body: some View {
+        Text(Copy.yearStorySummaryShare)
+            .dsTextStyle(YearStoryType.sharePill)
+            .foregroundStyle(Tokens.Colors.globalOnSurfaceLight)
+            .frame(minWidth: Tokens.Sizes.yearStorySummaryShareWidth, minHeight: Tokens.Sizes.yearStorySummaryShareHeight)
+            .background(Tokens.Colors.globalSurfaceLight, in: Capsule())
+            .contentShape(Capsule())
+    }
+}
+
+// MARK: - Share image (D)
+
+/// Renders a fact card's canvas (no progress bar, chrome or share row) at 1080 × 1920 px
+/// (`layout.year.story.shareCard`) with `ImageRenderer`, at the default text size, and writes the PNG.
+@MainActor
+enum YearStoryShareRenderer {
+    struct Output {
+        let image: UIImage
+        let file: URL
+    }
+
+    /// - Parameter width: the canvas width in points the card is laid out at (the player's canvas).
+    static func render(_ card: YearStoryCard, width: CGFloat, images: any MemoryImageLoading) async -> Output? {
+        guard width > 0 else { return nil }
+        if let url = card.imageURL { _ = await images.image(for: url) }
+        let size = CGSize(width: width, height: width / YearStoryGeometry.aspect)
+        let content = YearStoryCardContent(card: card, size: size, revealed: true)
+            .frame(width: size.width, height: size.height)
+            .background(Tokens.Colors.globalBackgroundDeep)
+            .environment(\.memoryImageLoader, images)
+            .environment(\.dynamicTypeSize, .large)
+        let renderer = ImageRenderer(content: content)
+        renderer.scale = Tokens.Layouts.YearStoryShareCard.width / width
+        renderer.isOpaque = true
+        guard let image = renderer.uiImage, let png = image.pngData() else { return nil }
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("YearStoryShare", isDirectory: true)
+        do {
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            let file = folder.appendingPathComponent(card.id + ".png") // provenance-ok: file extension of the PNG
+            try png.write(to: file, options: .atomic)
+            return Output(image: image, file: file)
+        } catch {
+            return nil
+        }
+    }
+}

@@ -15,13 +15,14 @@ struct MainApp: App {
     }
 }
 
-/// Connects the scene to the environment: incoming URLs, universal links and scene phase.
+/// Connects the scene to the environment: incoming URLs, universal links and scene phase (each return to the
+/// foreground starts a new premium-prompt session, `AppRouter.startSession`).
 struct AppRootView: View {
     let environment: AppEnvironment
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
-        RootView(router: environment.router)
+        RootView(router: environment.router, dependencies: environment.accountDependencies)
             .onOpenURL { url in
                 environment.router.open(url)
             }

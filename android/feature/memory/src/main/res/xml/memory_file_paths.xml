@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Files the memory screens hand to the share sheet (cache only, deleted by the system). -->
+<paths>
+    <cache-path name="memory_share" path="memory-share/" />
+</paths>

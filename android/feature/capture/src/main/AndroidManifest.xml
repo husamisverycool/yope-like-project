@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- camera.sendto "download": saving to the shared photo library needs this only before
+         Android 10 (MediaStore inserts need no permission afterwards). -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <application>
+        <!-- Installs the capture group's widget picker, notification channels and appearance at
+             process start (also when a widget or FCM starts the process), without app-shell code. -->
+        <provider
+            android:name="app.feature.capture.CaptureStartupProvider"
+            android:authorities="${applicationId}.capture.startup"
+            android:exported="false"
+            android:initOrder="50" />
+
+        <!-- collage.share: the page image handed to the Sharesheet as content:// (read grant only). -->
+        <provider
+            android:name="app.feature.capture.collage.CaptureFileProvider"
+            android:authorities="${applicationId}.capture.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/capture_shared_files" />
+        </provider>
+    </application>
+</manifest>

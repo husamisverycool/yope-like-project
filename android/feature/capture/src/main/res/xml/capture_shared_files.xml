@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Files the capture feature hands to other apps: the collage page shared through the
+     Sharesheet (collage.share). Nothing else under cache/ is exposed. -->
+<paths>
+    <cache-path name="collage_share" path="collage-share/" />
+</paths>

@@ -14,8 +14,13 @@ sealed interface DeepLink {
     /** `https://<domain>/i/<token>` */
     data class Invite(val token: String) : DeepLink
 
-    /** `app://camera?group=<id>` — widget tap, opens straight into the camera for that group. */
-    data class Camera(val groupId: String) : DeepLink
+    /**
+     * `app://camera?group=<id>` — widget tap, opens straight into the camera for that group.
+     * [groupId] is null for `app://camera` (an unconfigured widget) and for an unreadable id: the
+     * camera still opens, with nothing preselected (design/MERGE_DECISIONS.md C-24, iOS
+     * `DeepLink.camera(groupID:)`).
+     */
+    data class Camera(val groupId: String? = null) : DeepLink
 
     /** `app://post?group=<id>&post=<id>` — new post, reaction to your post. */
     data class Post(val groupId: String, val postId: String) : DeepLink
@@ -64,7 +69,7 @@ class DeepLinkCodec(private val domain: String?) {
     /** The URI for [link]; null for [DeepLink.Invite] while no domain is configured. */
     fun format(link: DeepLink): String? = when (link) {
         is DeepLink.Invite -> domain?.let { "$HTTPS://$it$INVITE_PATH${encode(link.token)}" }
-        is DeepLink.Camera -> app(HOST_CAMERA, P_GROUP to link.groupId)
+        is DeepLink.Camera -> link.groupId?.let { app(HOST_CAMERA, P_GROUP to it) } ?: "$APP_SCHEME://$HOST_CAMERA"
         is DeepLink.Post -> app(HOST_POST, P_GROUP to link.groupId, P_POST to link.postId)
         is DeepLink.ChatMessage -> app(HOST_CHAT, P_GROUP to link.groupId, P_MESSAGE to link.messageId)
         is DeepLink.DailyInvitation -> app(HOST_DAILY, P_GROUP to link.groupId, P_INVITATION to link.invitationId)
@@ -90,10 +95,11 @@ class DeepLinkCodec(private val domain: String?) {
         val host = (uri.host ?: uri.authority)?.lowercase() ?: return null
         val path = uri.rawPath.orEmpty()
         if (path.isNotEmpty() && path != "/") return null
+        // The camera opens even when its group id is missing or unreadable (C-24).
+        if (host == HOST_CAMERA) return DeepLink.Camera(query(uri.rawQuery)?.get(P_GROUP)?.takeIf(::isId))
         val q = query(uri.rawQuery) ?: return null
         fun id(key: String) = q[key]?.takeIf(::isId)
         return when (host) {
-            HOST_CAMERA -> id(P_GROUP)?.let(DeepLink::Camera)
             HOST_POST -> both(id(P_GROUP), id(P_POST), DeepLink::Post)
             HOST_CHAT -> both(id(P_GROUP), id(P_MESSAGE), DeepLink::ChatMessage)
             HOST_DAILY -> both(id(P_GROUP), id(P_INVITATION), DeepLink::DailyInvitation)

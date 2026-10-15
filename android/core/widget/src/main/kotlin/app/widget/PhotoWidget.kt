@@ -35,6 +35,8 @@ import androidx.glance.currentState
 import androidx.glance.layout.Box
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.fillMaxSize
+import androidx.glance.semantics.contentDescription
+import androidx.glance.semantics.semantics
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.unit.ColorProvider
 import app.links.DeepLinkIntents
@@ -45,8 +47,8 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 
 /**
- * Styling around the photo comes from tokens in the screens pass; nothing here invents a value.
- * The default draws only the photo filling the widget (surface `widget.android`).
+ * Styling around the photo comes from tokens ([TokenPhotoWidgetSlots], surface `widget.android`);
+ * nothing here invents a value. The interface's own defaults draw only the photo.
  */
 interface PhotoWidgetSlots {
     /** Drawn over the photo (sender, caption, group name …) for the given size class. */
@@ -58,9 +60,18 @@ interface PhotoWidgetSlots {
     /** Behind the photo (e.g. while it loads); null draws nothing. */
     val background: ColorProvider? get() = null
 
+    /** The widget's one TalkBack label (the whole widget is one element). Default: the caption. */
+    fun contentDescription(context: Context, snapshot: WidgetSnapshot?, groupId: String?): String? = snapshot?.caption
+
+    /**
+     * Whether a tap opens the camera for [groupId] (`camera.fromwidget`); otherwise it opens the
+     * configuration activity. Default: whenever a group is bound.
+     */
+    fun opensCamera(context: Context, snapshot: WidgetSnapshot?, groupId: String?): Boolean = groupId != null
+
     companion object {
-        /** Set once at app start by the screens pass. */
-        @Volatile var current: PhotoWidgetSlots = object : PhotoWidgetSlots {}
+        /** The token styling; replaceable (tests). */
+        @Volatile var current: PhotoWidgetSlots = TokenPhotoWidgetSlots
     }
 }
 
@@ -146,6 +157,18 @@ class GroupPhotoWidget : GlanceAppWidget() {
             )
         }
     }
+
+    /**
+     * The widget picker's generated preview (Android 15+, `widget.android` → widget provider):
+     * the newest rendition this device holds, else the loading placeholder.
+     */
+    override suspend fun providePreview(context: Context, widgetCategory: Int) {
+        val store = WidgetFileStore.default(context)
+        val newest = store.groups().mapNotNull { runCatching { store.read(it) }.getOrNull() }.maxByOrNull { it.postedAtEpochMillis }
+        provideContent {
+            PhotoWidgetContent(store = store, groupId = newest?.groupId, revision = 0L, appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID, preview = true)
+        }
+    }
 }
 
 class GroupPhotoWidgetReceiver : GlanceAppWidgetReceiver() {
@@ -153,7 +176,7 @@ class GroupPhotoWidgetReceiver : GlanceAppWidgetReceiver() {
 }
 
 @Composable
-private fun PhotoWidgetContent(store: WidgetFileStore, groupId: String?, revision: Long, appWidgetId: Int) {
+internal fun PhotoWidgetContent(store: WidgetFileStore, groupId: String?, revision: Long, appWidgetId: Int, preview: Boolean = false) {
     val context = LocalContext.current
     val size = LocalSize.current
     val sizeClass = WidgetSizeClass.of(size)
@@ -166,8 +189,12 @@ private fun PhotoWidgetContent(store: WidgetFileStore, groupId: String?, revisio
     val bitmap = remember(snapshot, widthPx, heightPx) {
         snapshot?.let { WidgetBitmaps.decodeCropped(store.photo(it), widthPx, heightPx) }
     }
+    // A preview (widget picker) shows the newest photo, or the loading placeholder; never "set up".
+    val emptyGroup = if (preview && snapshot == null) null else groupId
 
-    var modifier = GlanceModifier.fillMaxSize().appWidgetBackground().clickable(tapAction(context, groupId, appWidgetId))
+    var modifier = GlanceModifier.fillMaxSize().appWidgetBackground()
+    if (!preview) modifier = modifier.clickable(tapAction(context, groupId.takeIf { slots.opensCamera(context, snapshot, groupId) }, appWidgetId))
+    slots.contentDescription(context, snapshot, groupId)?.let { label -> modifier = modifier.semantics { contentDescription = label } }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         // PLATFORM: the launcher's own widget corner radius.
         modifier = modifier.cornerRadius(android.R.dimen.system_app_widget_background_radius)
@@ -178,16 +205,24 @@ private fun PhotoWidgetContent(store: WidgetFileStore, groupId: String?, revisio
         if (snapshot != null && bitmap != null) {
             Image(
                 provider = ImageProvider(bitmap),
-                // The sender's own caption (user content) describes the photo for TalkBack.
-                contentDescription = snapshot.caption,
+                // The root carries the widget's one TalkBack label (slots.contentDescription).
+                contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = GlanceModifier.fillMaxSize(),
             )
             slots.Overlay(snapshot, sizeClass)
+        } else if (preview) {
+            PreviewPlaceholder(slots, sizeClass)
         } else {
-            slots.Empty(groupId, sizeClass)
+            slots.Empty(emptyGroup, sizeClass)
         }
     }
+}
+
+/** The loading placeholder without member avatars (the picker preview has no group). */
+@Composable
+private fun PreviewPlaceholder(slots: PhotoWidgetSlots, sizeClass: WidgetSizeClass) {
+    if (slots === TokenPhotoWidgetSlots) TokenPhotoWidgetSlots.Placeholder() else slots.Empty(null, sizeClass)
 }
 
 private fun tapAction(context: Context, groupId: String?, appWidgetId: Int): Action {

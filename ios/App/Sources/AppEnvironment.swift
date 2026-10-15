@@ -43,6 +43,8 @@ final class AppEnvironment {
     let widgetPushTokens: WidgetPushTokenStore
     /// The backend (AppData). Nil while config/app.json has no Supabase URL / anon key (BLOCKED).
     let data: DataEnvironment?
+    /// Session flow, account screens' data and platform seams (`RootView` injects them).
+    let accountDependencies: AccountDependencies
 
     private var hasLaunched = false
     private var wasInBackground = false
@@ -51,8 +53,10 @@ final class AppEnvironment {
         let configuration = AppConfiguration.load(from: bundle) ?? AppConfiguration()
         self.configuration = configuration
         parser = DeepLinkParser(configuration: configuration)
-        router = AppRouter(parser: parser)
-        push = PushService(parser: parser)
+        let router = AppRouter(parser: parser)
+        self.router = router
+        let push = PushService(parser: parser)
+        self.push = push
         liveActivities = LiveActivityService()
         let purchases = PurchasesService(entitlementID: configuration.premiumEntitlement)
         self.purchases = purchases
@@ -73,7 +77,27 @@ final class AppEnvironment {
                 await MainActor.run { WidgetReloader.reloadGroupWidgets() }
             }
         )
-        data = try? DataEnvironment.live(configuration: configuration, widgetStore: widgetStore, hooks: hooks)
+        let data = try? DataEnvironment.live(configuration: configuration, widgetStore: widgetStore, hooks: hooks)
+        self.data = data
+
+        #if DEBUG
+        if let scenario = AccountUITestScenario.fromLaunchArguments() {
+            accountDependencies = scenario.makeDependencies(router: router, configuration: configuration)
+            return
+        }
+        #endif
+        let liveData = LiveAccountData(environment: data)
+        let liveActivityPreference = LiveActivityPreference()
+        accountDependencies = AccountDependencies.live(
+            data: liveData,
+            router: router,
+            configuration: configuration,
+            notifications: LiveNotificationAuthorizer(push: push),
+            purchases: RevenueCatPurchases(service: purchases),
+            liveActivity: liveActivityPreference,
+            currentPhone: { liveData.currentPhone },
+            liveActivityChanged: { AppEnvironment.shared.syncDeviceTokens() }
+        )
     }
 
     func didFinishLaunching() {
@@ -105,9 +129,11 @@ final class AppEnvironment {
             Task { await data.coordinator.start() }
         }
 
-        // Sign-in and onboarding arrive with the API and screens passes; until then every link
-        // is applied immediately.
-        router.setReady(true)
+        // Signed out → sign-up; signed in → onboarding steps not done yet, or home. The router applies links
+        // (`pendingLink`) only once the person is home (`AccountSession` calls `router.setReady`).
+        let account = accountDependencies
+        account.network.follow(account.data.networkUpdates())
+        account.session.start(handoff: InviteHandoff.take(from: InviteHandoff.defaults()))
     }
 
     func scenePhaseChanged(_ phase: ScenePhase) {
@@ -133,12 +159,13 @@ final class AppEnvironment {
     }
 
     /// Hands the device's current push tokens to the session glue, which registers them
-    /// (`register_device`) once someone is signed in.
-    private func syncDeviceTokens() {
+    /// (`register_device`) once someone is signed in. The Live Activity push-to-start token is left out while the
+    /// person turned Live Activities off (settings.notifications).
+    func syncDeviceTokens() {
         guard let data else { return }
         let tokens = DevicePushTokens(
             apns: deviceTokens.apnsToken,
-            pushToStart: deviceTokens.pushToStartToken,
+            pushToStart: accountDependencies.liveActivity.isEnabled ? deviceTokens.pushToStartToken : nil,
             widgetPush: widgetPushTokens.load()
         )
         Task { await data.coordinator.updateDeviceTokens(tokens) }
@@ -162,4 +189,59 @@ final class AppEnvironment {
 enum NotificationWidgetDownload {
     /// Background pushes get about 30 s of execution; the request must finish well inside it.
     static let downloader = HTTPDownloader(timeout: 20, maxBytes: 10 * 1024 * 1024)
+}
+
+extension AccountDependencies {
+    /// The live set: AppData-backed data, the session flow, reachability and the toast center.
+    static func live(
+        data: AccountDataSource,
+        router: AppRouter,
+        configuration: AppConfiguration,
+        notifications: NotificationAuthorizing,
+        purchases: PurchasesProviding,
+        liveActivity: LiveActivityPreference,
+        refusals: AgeGateRefusalStoring = KeychainAgeGateRefusalStore(),
+        onboarding: OnboardingRecord = OnboardingRecord(),
+        currentPhone: @escaping @MainActor () -> String? = { nil },
+        liveActivityChanged: @escaping @MainActor () -> Void = {}
+    ) -> AccountDependencies {
+        let toasts = ToastCenter()
+        let session = AccountSession(
+            data: data,
+            router: router,
+            refusals: refusals,
+            onboarding: onboarding,
+            notifications: notifications,
+            toasts: toasts
+        )
+        return AccountDependencies(
+            data: data,
+            router: router,
+            session: session,
+            network: NetworkMonitor(status: data.networkStatus),
+            toasts: toasts,
+            configuration: configuration,
+            notifications: notifications,
+            purchases: purchases,
+            liveActivity: liveActivity,
+            currentPhone: currentPhone,
+            liveActivityChanged: liveActivityChanged
+        )
+    }
+
+    /// No backend, no services (previews, the snapshot pipeline test): the signed-out sign-up screen.
+    static func unconfigured(router: AppRouter) -> AccountDependencies {
+        let dependencies = live(
+            data: LiveAccountData(environment: nil),
+            router: router,
+            configuration: AppConfiguration(),
+            notifications: StaticNotificationAuthorizer(status: .notDetermined),
+            purchases: UnavailablePurchases(),
+            liveActivity: LiveActivityPreference(),
+            refusals: InMemoryAgeGateRefusalStore(),
+            onboarding: OnboardingRecord(defaults: UserDefaults(suiteName: "account.unconfigured") ?? .standard) // provenance-ok: defaults suite name
+        )
+        dependencies.session.start()
+        return dependencies
+    }
 }

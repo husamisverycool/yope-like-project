@@ -139,9 +139,13 @@ class WidgetFileStore(val root: File) {
         }.forEach { it.deleteRecursively() }
     }
 
-    /** Removes every group not in [groupIds] (e.g. groups the person has left). */
+    /**
+     * Removes every group not in [groupIds] (e.g. groups the person has left), and their widget
+     * metadata ([WidgetGroupMeta]), so a widget still bound to one shows "not set up".
+     */
     fun retainGroups(groupIds: Set<String>) = synchronized(lock) {
         root.listFiles()?.filter { it.isDirectory && it.name !in groupIds }?.forEach { it.deleteRecursively() }
+        WidgetGroupMeta.of(this).retain(groupIds)
     }
 
     fun remove(groupId: String) = synchronized(lock) { groupDir(groupId).deleteRecursively() }

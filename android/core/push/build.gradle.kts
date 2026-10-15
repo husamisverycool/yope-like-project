@@ -12,6 +12,8 @@ dependencies {
     api(project(":core:model"))
     implementation(project(":core:links"))
     implementation(project(":core:widget"))
+    // Channel copy (R.string) and the invitation accent (Tokens) for the notification UI.
+    implementation(project(":core:designsystem"))
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
     implementation(libs.androidx.core)

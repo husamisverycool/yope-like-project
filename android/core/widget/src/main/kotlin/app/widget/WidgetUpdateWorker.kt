@@ -6,6 +6,7 @@ import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
+import androidx.work.ForegroundInfo
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
@@ -178,6 +179,17 @@ class WidgetUpdateWorker(
 
     private fun retryOrFail(): Result = if (runAttemptCount + 1 < MAX_ATTEMPTS) Result.retry() else Result.failure()
 
+    /**
+     * Expedited work on Android 11 and lower runs as a foreground service: the "Updating
+     * widget..." notification (`widget.arrival`). Requested only when one can be shown
+     * ([WidgetUpdateScheduler.enqueue]).
+     */
+    override suspend fun getForegroundInfo(): ForegroundInfo {
+        val notification = WidgetRefreshNotification.build(applicationContext)
+            ?: throw IllegalStateException("no small icon for the widget refresh notification")
+        return ForegroundInfo(WidgetRefreshNotification.NOTIFICATION_ID, notification)
+    }
+
     companion object {
         private const val MAX_ATTEMPTS = 5
         private val CLIENT_ERRORS = 400..499
@@ -189,16 +201,19 @@ object WidgetUpdateScheduler {
 
     fun uniqueWorkName(groupId: String) = "widget-update:$groupId"
 
-    fun request(request: WidgetUpdateRequest, expedited: Boolean): OneTimeWorkRequest =
+    /**
+     * [canShowForegroundNotification]: below API 31 expedited work runs as a foreground service,
+     * which shows the "Updating widget..." notification (`widget.arrival`); without a small icon
+     * for it the refresh runs as regular work there (FCM high-priority delivery already lifts
+     * background limits).
+     */
+    fun request(request: WidgetUpdateRequest, expedited: Boolean, canShowForegroundNotification: Boolean = false): OneTimeWorkRequest =
         OneTimeWorkRequestBuilder<WidgetUpdateWorker>()
             .setInputData(request.toData())
             .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
             .addTag(TAG)
             .apply {
-                // Below API 31 expedited work runs as a foreground service, which needs a visible
-                // notification; a silent widget refresh should not show one, so it runs as regular
-                // work there (FCM high-priority delivery already lifts background limits).
-                if (expedited && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (expedited && (!WidgetRefreshNotification.neededFor() || canShowForegroundNotification)) {
                     setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 }
             }
@@ -212,7 +227,7 @@ object WidgetUpdateScheduler {
         WorkManager.getInstance(context).enqueueUniqueWork(
             uniqueWorkName(request.groupId),
             ExistingWorkPolicy.APPEND_OR_REPLACE,
-            request(request, expedited),
+            request(request, expedited, WidgetRefreshNotification.isAvailable(context)),
         )
     }
 }

@@ -71,19 +71,21 @@ class PushHandlerTest {
         assertTrue(shadowOf(manager).allNotifications.isEmpty())
     }
 
-    @Test fun dailyInvitationIsAnOngoingCountdownUntilClosesAt() {
+    @Test fun dailyInvitationIsADismissibleCountdownUntilClosesAt() {
         registerChannels()
         assertEquals(PushHandler.Outcome.CountdownShown, handler.handle(daily))
         val n: Notification = shadowOf(manager).allNotifications.single()
         val closesAt = Instant.parse("2026-10-15T12:02:00Z").toEpochMilli()
-        assertTrue(n.flags and Notification.FLAG_ONGOING_EVENT != 0)
+        // daily.ongoing: not ongoing (swipe dismisses), removed on tap, never promoted (C-11).
+        assertTrue(n.flags and Notification.FLAG_ONGOING_EVENT == 0)
+        assertTrue(n.flags and Notification.FLAG_AUTO_CANCEL != 0)
+        assertFalse(n.extras.getBoolean(NotificationCompat.EXTRA_REQUEST_PROMOTED_ONGOING))
         assertEquals(closesAt, n.`when`)
         assertTrue(n.extras.getBoolean(Notification.EXTRA_SHOW_CHRONOMETER))
         assertTrue(n.extras.getBoolean(Notification.EXTRA_CHRONOMETER_COUNT_DOWN))
         assertEquals(120_000L, n.timeoutAfter)
         assertEquals(AppChannel.DailyInvitation.id, n.channelId)
         assertEquals("server title", n.extras.getString(Notification.EXTRA_TITLE))
-        assertTrue(n.extras.getBoolean(NotificationCompat.EXTRA_REQUEST_PROMOTED_ONGOING))
         assertEquals("app://daily?group=g1&invitation=inv1", shadowOf(n.contentIntent).savedIntent.dataString)
     }
 

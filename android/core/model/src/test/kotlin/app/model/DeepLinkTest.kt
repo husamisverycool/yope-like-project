@@ -34,9 +34,6 @@ class DeepLinkTest {
     @Test fun parsesWidgetCameraLink() {
         assertEquals(DeepLink.Camera("0b7c1f9e-4a7d-4c1e-9f00-1a2b3c4d5e6f"), codec.parse("app://camera?group=0b7c1f9e-4a7d-4c1e-9f00-1a2b3c4d5e6f"))
         assertEquals(DeepLink.Camera("g"), codec.parse("APP://CAMERA?group=g"))
-        assertNull(codec.parse("app://camera"))
-        assertNull(codec.parse("app://camera?group="))
-        assertNull(codec.parse("app://camera?group=../x"))
         assertNull(codec.parse("app://camera/extra?group=g"))
         assertNull(codec.parse("app:camera?group=g"))
         assertNull(codec.parse("other://camera?group=g"))
@@ -55,12 +52,22 @@ class DeepLinkTest {
         assertNull(codec.parse("app://unknown?group=g"))
     }
 
+    /** C-24: a widget without a group (or with an unreadable one) still opens the camera. */
+    @Test fun cameraLinkWithoutAReadableGroupOpensTheCamera() {
+        assertEquals(DeepLink.Camera(null), codec.parse("app://camera"))
+        assertEquals(DeepLink.Camera(null), codec.parse("app://camera?group="))
+        assertEquals(DeepLink.Camera(null), codec.parse("app://camera?group=../x"))
+        assertEquals("app://camera", codec.format(DeepLink.Camera()))
+        assertEquals(DeepLink.Camera(), codec.parse(codec.format(DeepLink.Camera())))
+        assertEquals(listOf(AppRoute.GroupsList, AppRoute.Camera(null)), DeepLinkRouting.backStack(DeepLink.Camera()))
+    }
+
     @Test fun firstValueOfARepeatedKeyWins() {
         assertEquals(DeepLink.Camera("a"), codec.parse("app://camera?group=a&group=b"))
     }
 
     @Test fun rejectsGarbage() {
-        listOf(null, "", "  ", "not a uri", "app://", "app://%zz?group=g", "app://camera?group=%zz", "mailto:x@example.org")
+        listOf(null, "", "  ", "not a uri", "app://", "app://%zz?group=g", "app://camera?group=%zz", "app://post?group=%zz&post=p", "mailto:x@example.org")
             .forEach { assertNull(it, codec.parse(it)) }
     }
 

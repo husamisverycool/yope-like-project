@@ -1,4 +1,6 @@
-// Feature module: the capture group's screens (design/surfaces/, docs/SCREENS_BRIEF.md).
+// Feature module: the capture group's screens (design/surfaces/, docs/SCREENS_BRIEF.md):
+// camera.capture, camera.sendto, camera.fromwidget, daily.capture (+ daily.dualimage),
+// collage.view, collage.share, and the widget configuration picker (widget.android).
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
@@ -28,6 +30,11 @@ dependencies {
     implementation(project(":core:links"))
     implementation(libs.androidx.core)
     implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.compose.bom))
+    // The widget configuration picker is a system surface: Material 3 list (widget.android).
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:${libs.versions.lifecycle.get()}")
+    implementation(libs.kotlinx.coroutines.android)
     debugImplementation(libs.compose.ui.test.manifest)
 
     testImplementation(libs.bundles.robolectric.test)
@@ -35,4 +42,5 @@ dependencies {
     testImplementation(libs.roborazzi)
     testImplementation(libs.roborazzi.compose)
     testImplementation(libs.roborazzi.junit.rule)
+    testImplementation(libs.work.testing)
 }

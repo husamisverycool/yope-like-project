@@ -13,6 +13,8 @@ android {
 dependencies {
     api(project(":core:model"))
     implementation(project(":core:links"))
+    // Widget UI (surfaces widget.android, widget.home.*, widget.arrival): tokens and copy.
+    implementation(project(":core:designsystem"))
     api(libs.glance.appwidget)
     api(libs.work.runtime)
     implementation(libs.androidx.core)

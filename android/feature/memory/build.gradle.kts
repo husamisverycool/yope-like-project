@@ -28,6 +28,15 @@ dependencies {
     implementation(project(":core:links"))
     implementation(libs.androidx.core)
     implementation(libs.androidx.activity.compose)
+    // ViewModels per destination (version from the shared lifecycle line).
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:${libs.versions.lifecycle.get()}")
+    // Platform activity indicator (CircularProgressIndicator, easing.global.native activityIndicator).
+    implementation("androidx.compose.material3:material3")
+    // birthday.tribute: Media3 PlayerView with default controls (layout.birthday.tribute.player).
+    implementation(libs.media3.exoplayer)
+    implementation("androidx.media3:media3-ui:${libs.versions.media3.get()}")
+    // Coil fetches signed https URLs only with a network fetcher on the classpath (auto-registered).
+    implementation("io.coil-kt.coil3:coil-network-okhttp:${libs.versions.coil.get()}")
     debugImplementation(libs.compose.ui.test.manifest)
 
     testImplementation(libs.bundles.robolectric.test)
