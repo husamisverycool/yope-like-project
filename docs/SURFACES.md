@@ -4,6 +4,10 @@ Every screen and system surface in the app, with the reference app assigned to i
 Part 3). A reference is used only on the surfaces listed for it. Each surface gets a build spec at
 `design/surfaces/<id>.md` once its references are gathered.
 
+Two pseudo-surfaces hold values shared across screens: `global` (app-wide foundations: background,
+text colors, accent, type scale, spacing, motion, haptics — Yope as the primary reference, platform
+font) and `global.system` (native components used on system surfaces per Apple HIG / Material 3).
+
 Every app surface needs these states, each with sourced design and copy:
 **loading · empty · error · offline · permission-denied** (where a permission applies).
 

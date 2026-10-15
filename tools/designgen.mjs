@@ -4,7 +4,8 @@
 //   node tools/designgen.mjs           validate + generate
 //   node tools/designgen.mjs --check   validate only (exit 1 on problems)
 //
-// Inputs:  design/tokens.json, design/copy.json, design/copy-patterns.md, config/app.json
+// Inputs:  design/tokens.json + design/tokens/*.json, design/copy.json + design/copy/*.json,
+//          design/copy-patterns.md, config/app.json
 // Outputs: ios/Packages/AppCore/Sources/DesignSystem/Generated/{Tokens,Copy}.swift
 //          ios/Packages/AppCore/Sources/DesignSystem/Generated/Blocked*.swift  (DEBUG only)
 //          ios/Config/InfoPlist.generated.xcconfig  (purpose strings: copy entries with infoPlistKey)
@@ -47,8 +48,6 @@ const CATEGORY_WORDS = new Set([
 const SWIFT_WEIGHTS = { ultralight: ".ultraLight", thin: ".thin", light: ".light", regular: ".regular", medium: ".medium", semibold: ".semibold", bold: ".bold", heavy: ".heavy", black: ".black" };
 const NUM_WEIGHTS = { ultralight: 200, thin: 100, light: 300, regular: 400, medium: 500, semibold: 600, bold: 700, heavy: 800, black: 900 };
 
-const problems = [];
-const problem = (m) => problems.push(m);
 
 function camel(parts) {
   const words = parts.flatMap((p) => p.split(/[^A-Za-z0-9]+/)).filter(Boolean);
@@ -63,11 +62,32 @@ function ident(name) {
 }
 function snake(key) { return key.replace(/[^A-Za-z0-9]+/g, "_").toLowerCase(); }
 
+const problems = [];
+const problem = (m) => problems.push(m);
+
 // ---------- load ----------
 const app = rd("config/app.json");
 const appName = app.displayName?.value ?? null;
-const tokens = exists("design/tokens.json") ? rd("design/tokens.json").tokens ?? {} : {};
-const strings = exists("design/copy.json") ? rd("design/copy.json").strings ?? {} : {};
+// Canonical files: design/tokens.json + design/tokens/*.json, design/copy.json + design/copy/*.json
+// (split by surface group so several people can edit without conflicts). A key defined twice is an error.
+function loadAll(single, dir, field) {
+  const files = [];
+  if (exists(single)) files.push(single);
+  if (exists(dir)) for (const f of fs.readdirSync(path.join(ROOT, dir)).sort()) if (f.endsWith(".json")) files.push(`${dir}/${f}`);
+  const out = {};
+  const origin = {};
+  for (const f of files) {
+    const data = rd(f)[field] ?? {};
+    for (const [k, v] of Object.entries(data)) {
+      if (k in out) problems.push(`${field} key ${k} defined in both ${origin[k]} and ${f}`);
+      out[k] = v;
+      origin[k] = f;
+    }
+  }
+  return out;
+}
+const tokens = loadAll("design/tokens.json", "design/tokens", "tokens");
+const strings = loadAll("design/copy.json", "design/copy", "strings");
 
 // ---------- validate ----------
 for (const [name, t] of Object.entries(tokens)) {

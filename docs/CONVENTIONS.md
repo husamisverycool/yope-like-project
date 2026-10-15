@@ -39,7 +39,7 @@ fails the build if any value used by shipped code is `BLOCKED`.
       "type": "color | dimension | radius | fontSize | fontWeight | lineHeight | letterSpacing | duration | easing | spring | opacity | blur | shadow | icon | haptic | font | layout",
       "value": "...",
       "unit": "pt | px | ms | ... (optional)",
-      "source_app": "Yope | Locket | BeReal | Retro | Timehop | Spotify Wrapped | Tribute | VidDay | Partiful | Apple HIG | Material 3",
+      "source_app": "Yope | Locket | BeReal | Retro | Timehop | Spotify Wrapped | Tribute | VidDay | Partiful | Apple HIG | Material 3 | W3C WCAG 2.2 | Meta developer docs (standards: accessibility thresholds, share-image specs)",
       "surface": "<surface id from docs/SURFACES.md>",
       "element": "what exactly on the screen",
       "evidence": "file path + pixel coords, or URL (+ timestamp for video)",
