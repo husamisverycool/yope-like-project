@@ -111,7 +111,8 @@ class AuthIntegrationTest {
         sessionFile.writeBytes(ByteArray(64) { 1 })
         val third = graphs.create("session-$tag")
         third.awaitSessionLoaded()
-        assertEquals(AuthState.SignedOut, third.auth.authState.value)
+        // authState follows the client's session status asynchronously (Initializing first), as above.
+        eventually { third.auth.authState.value == AuthState.SignedOut }
         assertFalse(sessionFile.exists())
     }
 
