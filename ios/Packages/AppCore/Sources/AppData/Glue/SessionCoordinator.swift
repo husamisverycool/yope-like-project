@@ -102,7 +102,7 @@ public actor SessionCoordinator {
         let updates = environment.reachability.updates()
         reachabilityTask = Task { [weak self] in
             for await status in updates where status == .online {
-                await self?.resumeOutbox()
+                await self?.cameOnline()
             }
         }
     }
@@ -236,6 +236,12 @@ public actor SessionCoordinator {
         let stillShown = collage.map { $0.status == .ready && $0.imagePath != nil && ($0.composedAt ?? .distantPast) <= snapshot.postedAt } ?? false
         guard !stillShown else { return false }
         return (try? widgetStore.removeSource(source)) ?? false
+    }
+
+    /// Back online: whatever failed for lack of network is retried.
+    private func cameOnline() async {
+        await registerDeviceIfNeeded()
+        await resumeOutbox()
     }
 
     // MARK: Outbox
