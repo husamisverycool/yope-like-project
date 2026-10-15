@@ -1,0 +1,470 @@
+{
+  "strings": {
+    "year.story.intro.title": {
+      "text": "We're ready for you.",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/frames/wrapped25-rec-cdragon2010-t004.800.png (https://www.tiktok.com/@cdragon2010/video/7579703263306485022 t=4.8 s)",
+      "level": "SOURCED",
+      "notes": "First card of 2025 Wrapped."
+    },
+    "year.story.intro.subtitle": {
+      "text": "Come on down.",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/frames/wrapped25-rec-cdragon2010-t004.800.png",
+      "level": "SOURCED"
+    },
+    "year.story.photos.title": {
+      "text": "You shared. We saved.",
+      "origin": "new",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "pattern examples: 'You listened. We counted.' (references/auto/wrapped/press/wrapped25-press-minutes.png)",
+      "pattern": "P-YS-1 two-beat headline (design/research/wrapped-tribute-partiful.md §1.5)",
+      "level": "SOURCED",
+      "notes": "No number; avoids the count card."
+    },
+    "year.story.share": {
+      "text": "Share this story",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg; references/auto/wrapped/press/wrapped25-press-minutes.png; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png",
+      "level": "SOURCED"
+    },
+    "year.story.summary.share": {
+      "text": "Share",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg; references/auto/wrapped/frames/wrapped25-rec-cdragon2010-t252.000.png",
+      "level": "SOURCED"
+    },
+    "year.story.summary.replay": {
+      "text": "Replay from beginning",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg",
+      "level": "SOURCED"
+    },
+    "year.story.outro.more": {
+      "text": "One more thing...",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/frames/wrapped25-rec-cdragon2010-t258.000.png",
+      "level": "SOURCED",
+      "notes": "Three full stops as rendered."
+    },
+    "year.story.outro.title": {
+      "text": "Thanks for coming along for the ride",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-xenarxoxo-sheet-every3s.png (https://www.tiktok.com/@xenarxoxo/video/7444879789359467809, last tile)",
+      "level": "SOURCED",
+      "notes": "No final period in the reference (headline)."
+    },
+    "year.story.outro.subtitle": {
+      "text": "Until we meet again...",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-xenarxoxo-sheet-every3s.png (last tile)",
+      "level": "SOURCED"
+    },
+    "year.story.coach.swipe": {
+      "text": "Swipe up for more",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/frames/wrapped25-rec-cdragon2010-t007.500.png (https://www.tiktok.com/@cdragon2010/video/7579703263306485022 t=7.5 s)",
+      "level": "SOURCED",
+      "notes": "Only if the vertical (2025) navigation model is chosen."
+    },
+    "birthday.request.greeting": {
+      "text": "Hi everyone!",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t036-phone.png, -t042-phone.png (https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4) default invitation message",
+      "level": "SOURCED"
+    },
+    "birthday.request.body": {
+      "text": "You're invited to submit a photo and join in on the fun of making a birthday video for {name}.",
+      "origin": "adapted",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t036-phone.png, -t042-phone.png (https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4) 'You're invited to submit a video message and join in on the fun of making a personalized video for Amelia.'",
+      "level": "SOURCED",
+      "notes": "Nouns swapped: 'video message' → 'photo', 'personalized video' → 'birthday video', 'Amelia' → {name}."
+    },
+    "birthday.request.ease": {
+      "text": "It's quick and easy.",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t036-phone.png, -t042-phone.png (https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4)",
+      "level": "SOURCED"
+    },
+    "birthday.request.thanks": {
+      "text": "Thank you!",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t036-phone.png, -t042-phone.png (https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4)",
+      "level": "SOURCED",
+      "notes": "The reference's preceding sentence 'It's your contribution that will help to make this unforgettable.' is do-not-copy (obligation framing)."
+    },
+    "birthday.request.occasion": {
+      "text": "Birthday Video",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "evidence": "references/auto/vidday/store/vidday-store-01.png (under the recipient name)",
+      "level": "SOURCED"
+    },
+    "birthday.request.prompts.title": {
+      "text": "Message Ideas",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "evidence": "references/auto/vidday/store/vidday-store-01.png",
+      "level": "SOURCED"
+    },
+    "birthday.request.prompt.appreciate": {
+      "text": "What do you appreciate most about {name}?",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "evidence": "references/auto/vidday/store/vidday-store-01.png ('What do you appreciate most about Harper?')",
+      "level": "SOURCED",
+      "notes": "Recipient name as placeholder."
+    },
+    "birthday.request.prompt.impact": {
+      "text": "How has {name} impacted your life?",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "evidence": "references/auto/vidday/store/vidday-store-01.png ('How has Harper impacted your life?')",
+      "level": "SOURCED"
+    },
+    "birthday.request.due": {
+      "text": "Submit by {date}",
+      "origin": "verbatim",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "evidence": "references/auto/tribute/mockups/tribute-home-phone-step-1-contribution-page.png ('Submit by Wednesday, December 31, 2025'); https://www.tribute.co/help/creators/how-to-change-the-deadline-for-your-tribute/",
+      "level": "SOURCED",
+      "notes": "A date, never a countdown (countdowns are do-not-copy)."
+    },
+    "birthday.request.cta": {
+      "text": "Add Your Photo",
+      "origin": "adapted",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-contribution-page-viewport.png ('Add Your Video')",
+      "level": "VERIFIED",
+      "notes": "Noun swapped Video → Photo. Title Case as in the reference; align with the app-wide button case pattern."
+    },
+    "notifications.push.birthdayRequest": {
+      "text": "You're invited to submit a photo for {name}'s birthday video.",
+      "origin": "new",
+      "source_app": "VidDay",
+      "surface": "notifications.push",
+      "evidence": "pattern examples: VidDay invitation 'You're invited to submit a video message … for Amelia.' (references/auto/vidday/frames/vidday-tour-t036-phone.png, -t042-phone.png (https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4))",
+      "pattern": "P-BR-1 invitation (design/research/wrapped-tribute-partiful.md §2.4)",
+      "level": "SOURCED",
+      "notes": "Push wording of either reference was not found."
+    },
+    "birthday.contribute.greeting": {
+      "text": "Let's add a photo for {name}!",
+      "origin": "new",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "evidence": "pattern example: 'Let's record a video for Tribute!' (references/auto/tribute/web/tribute-web-testimonials-upload-step1-info.png; 'Tribute' is that page's recipient name)",
+      "pattern": "P-BC-1 step greeting (design/research/wrapped-tribute-partiful.md §3.5)",
+      "level": "VERIFIED"
+    },
+    "birthday.contribute.thanks": {
+      "text": "Thank you for taking the time to participate!",
+      "origin": "verbatim",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1-info.png",
+      "level": "VERIFIED"
+    },
+    "birthday.contribute.retake": {
+      "text": "Retake",
+      "origin": "verbatim",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "evidence": "https://www.tribute.co/help/creators/how-do-i-upload-a-video/; https://help.vidday.com/how-to-record-a-video-with-a-phone/",
+      "level": "SOURCED",
+      "notes": "Same word in both references."
+    },
+    "birthday.contribute.submit": {
+      "text": "Submit",
+      "origin": "verbatim",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "evidence": "https://www.tribute.co/help/creators/how-do-i-upload-a-video/",
+      "level": "SOURCED"
+    },
+    "birthday.contribute.continue": {
+      "text": "Continue",
+      "origin": "verbatim",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1-info.png",
+      "level": "VERIFIED"
+    },
+    "birthday.contribute.done": {
+      "text": "Photo Upload Complete!",
+      "origin": "adapted",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "evidence": "https://www.tribute.co/help/creators/how-do-i-upload-a-video/ ('Video Upload Complete!')",
+      "level": "SOURCED",
+      "notes": "Noun swapped Video → Photo."
+    },
+    "birthday.contribute.another": {
+      "text": "Submit Another",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.contribute",
+      "evidence": "https://help.vidday.com/how-many-people-can-i-invite/",
+      "level": "SOURCED"
+    },
+    "birthday.contribute.line.placeholder": {
+      "text": null,
+      "origin": "new",
+      "source_app": "Tribute / VidDay",
+      "surface": "birthday.contribute",
+      "evidence": "not found in either reference",
+      "level": "BLOCKED",
+      "notes": "No reference shows a one-line caption field for contributors."
+    },
+    "birthday.tribute.titleCard": {
+      "text": "Happy birthday, {name}!",
+      "origin": "adapted",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t118.300-phone.png ('HAPPY BIRTHDAY, AMELIA!')",
+      "level": "SOURCED",
+      "notes": "Name → {name}. The reference renders the theme title in capitals; case is left to the type style."
+    },
+    "birthday.tribute.unwrap": {
+      "text": "UNWRAP VIDEO",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t115.000-phone.png; https://help.vidday.com/what-features-do-finalized-video-gifts-get/",
+      "level": "SOURCED",
+      "notes": "Shown in capitals on the bow; underlying case unknown."
+    },
+    "birthday.tribute.present": {
+      "text": "Present Now",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "evidence": "references/auto/vidday/store/vidday-store-08.png",
+      "level": "SOURCED"
+    },
+    "birthday.tribute.download": {
+      "text": "Download",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "evidence": "references/auto/vidday/store/vidday-store-08.png; references/auto/tribute/mockups/tribute-home-phone-step-3-completed-page.png",
+      "level": "SOURCED"
+    },
+    "birthday.tribute.share.title": {
+      "text": "Share",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t118.300-phone.png (row under the player)",
+      "level": "SOURCED"
+    },
+    "birthday.tribute.share.subtitle": {
+      "text": "Send a special link",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t118.300-phone.png",
+      "level": "SOURCED"
+    },
+    "birthday.tribute.send.title": {
+      "text": "Send to {name}",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "evidence": "references/auto/vidday/store/vidday-store-08.png ('Send to Harper')",
+      "level": "SOURCED"
+    },
+    "birthday.tribute.send.subtitle": {
+      "text": "A private link to share",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "evidence": "references/auto/vidday/store/vidday-store-08.png",
+      "level": "SOURCED"
+    },
+    "invite.web.hostedBy": {
+      "text": "Hosted by",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-private-past-02.png (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z); references/auto/partiful/web/pf-web-public-light-02.png (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv)",
+      "level": "VERIFIED"
+    },
+    "invite.web.members.title": {
+      "text": "Member List",
+      "origin": "adapted",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-private-past-02.png (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) ('Guest List')",
+      "level": "VERIFIED",
+      "notes": "Noun swapped Guest → Member. The reference's count line ('11 Went · 4 Maybe') is do-not-copy."
+    },
+    "invite.web.members.viewAll": {
+      "text": "View all",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-private-past-02.png (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z)",
+      "level": "VERIFIED"
+    },
+    "invite.web.gate.title": {
+      "text": "Restricted Access",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-private-past-02.png (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z)",
+      "level": "VERIFIED"
+    },
+    "invite.web.gate.body": {
+      "text": "Verify your phone number to view the group's photos and members",
+      "origin": "adapted",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-private-past-02.png (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) ('Verify your phone number to view event details and activity')",
+      "level": "VERIFIED",
+      "notes": "Nouns swapped: 'event details and activity' → 'the group's photos and members'. No final period in the reference."
+    },
+    "invite.web.gate.signIn": {
+      "text": "Sign in",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-private-past-02.png (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z)",
+      "level": "VERIFIED"
+    },
+    "invite.web.returning": {
+      "text": "Already a member? Sign in",
+      "origin": "new",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "pattern example: 'Already RSVP'd? Sign in' (references/auto/partiful/web/pf-web-public-light-03.png)",
+      "pattern": "P-IW-3 returning-user link (design/research/wrapped-tribute-partiful.md §5.5)",
+      "level": "VERIFIED"
+    },
+    "invite.web.field.name": {
+      "text": "Your Name",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png",
+      "level": "VERIFIED"
+    },
+    "invite.web.field.phone": {
+      "text": "Phone Number",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png",
+      "level": "VERIFIED"
+    },
+    "invite.web.phone.helper": {
+      "text": "Just for group updates. No spam.",
+      "origin": "adapted",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png ('Just for event updates. No spam.')",
+      "level": "VERIFIED",
+      "notes": "Noun swapped event → group."
+    },
+    "invite.web.cancel": {
+      "text": "Cancel",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png",
+      "level": "VERIFIED"
+    },
+    "invite.web.continue": {
+      "text": "Continue",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png",
+      "level": "VERIFIED"
+    },
+    "invite.web.getApp": {
+      "text": "Get the app",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-04.png (footer 'Get the app ↗')",
+      "level": "VERIFIED"
+    },
+    "invite.web.og.title": {
+      "text": "{group_name} | {app_name}",
+      "origin": "adapted",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "https://partiful.com/e/egrwj3biCR6g5MLJ0dbv og:title 'Tompkins Square Dog Parade | Partiful'",
+      "level": "VERIFIED",
+      "notes": "Title and site name swapped for placeholders."
+    },
+    "invite.appclip.action": {
+      "text": "View",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/store/partiful-store-04.png (App Clip card action)",
+      "level": "SOURCED",
+      "notes": "One of Apple's preset App Clip action verbs."
+    },
+    "invite.appclip.share.title": {
+      "text": "Share Link",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/store/partiful-store-03.png",
+      "level": "SOURCED"
+    },
+    "invite.appclip.share.subtitle": {
+      "text": "Anyone with the link can join",
+      "origin": "adapted",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/store/partiful-store-03.png ('Anyone with the link can RSVP')",
+      "level": "SOURCED",
+      "notes": "'RSVP' → 'join' (the reference's action word for responding)."
+    },
+    "invite.appclip.copyLink": {
+      "text": "Copy Link",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/store/partiful-store-03.png",
+      "level": "SOURCED"
+    }
+  }
+}

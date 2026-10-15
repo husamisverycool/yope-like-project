@@ -39,6 +39,7 @@ Source: https://static.vidday.com/videos/vidday-group-videos-getting-started-2-m
 | `frames/vidday-tour-t102-phone.png` | t = 102 s | 2026-10-15 | "Let's add media!" sheet: VIDEOS & PHOTOS, TEXT CARD, CANCEL | same |
 | `frames/vidday-tour-t111-phone.png` | t = 111 s | 2026-10-15 | "Preview & Finalize", "Want a sneak peek?", MAKE A PREVIEW | same |
 | `frames/vidday-tour-t114-phone.png` | t = 114 s | 2026-10-15 | "Create Your Video", FINALIZE, "It'll take 10 – 30 minutes to finalize your video." | same |
+| `frames/vidday-tour-t115.000-phone.png` | tour video t = 115.0 s | 2026-10-15 | gift page (creator view): "Amelia Harris / Birthday", download icon, "Gift Effect On" toggle, wrap-paper swatches, wrapped player with "UNWRAP VIDEO" on the bow | tour video live 2026-10-15 |
 | `frames/vidday-tour-t116.500-phone.png`, `-t117.400-phone.png` | t = 116.5 / 117.4 s | 2026-10-15 | recipient gift page: gift-wrap bow (the "UNWRAP VIDEO" label shows on the bow at ~116.0 s), then ribbons sliding away | same |
 | `frames/vidday-tour-t118.300-phone.png` | t = 118.3 s | 2026-10-15 | title card "HAPPY BIRTHDAY, AMELIA!" (theme background) | same |
 | `frames/vidday-tour-t119.300-phone.png`, `-t120.000-phone.png` | t = 119.3 / 120.0 s | 2026-10-15 | crossfade title → first photo; first photo with slow zoom; "Share / Send a special link" row | same |

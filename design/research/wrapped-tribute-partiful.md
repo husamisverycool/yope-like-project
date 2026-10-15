@@ -405,7 +405,7 @@ Complete!"; **P-BC-3 buttons** single verbs ("Retake", "Submit", "Continue").
 | T5 | `references/auto/tribute/frames/tribute-sample-tess-t007.080-first-clip.png`, `-t012.000.png`, `-t050.000.png`, `tribute-sample-tess-clips-7.2-94.0s-every2s.png` | Tribute sample "Birthday Tribute for Tess", https://website.tribute.co/6KY_IZ1tLME.mp4 (640×360, 29.97 fps, 104.28 s) |
 | T6 | `references/auto/tribute/frames/tribute-sample-doug-clips-7.2-62.2s-every2s.png` | Tribute sample "Happy Birthday to Doug!", https://website.tribute.co/QQe5RpbFIyI.mp4 (72.49 s) |
 | T7 | `references/auto/tribute/mockups/tribute-home-phone-step-3-completed-page.png` | finished Tribute page (player, share icons, Download) |
-| V7 | `references/auto/vidday/frames/vidday-tour-t116.500-phone.png` … `-t120.000-phone.png` | VidDay recipient page: gift wrap → unwrap → title card → first photo |
+| V7 | `references/auto/vidday/frames/vidday-tour-t115.000-phone.png`, `-t116.500-phone.png` … `-t120.000-phone.png` | VidDay recipient page: gift wrap → unwrap → title card → first photo |
 | V8 | `references/auto/vidday/store/vidday-store-08.png`, `-09.png` | gift-wrap picker, "Present Now", "Download", "Send to Harper / A private link to share"; final player "0:46 / 8:30" |
 | V9 | `references/auto/vidday/frames/vidday-tour-t111-phone.png`, `-t114-phone.png` | "Preview & Finalize", "Create Your Video", "It'll take 10 – 30 minutes to finalize your video." |
 
@@ -517,7 +517,7 @@ theme colour. Observed theme colours: `#FBEBE4`, `#A7C8FF`, `#1C0606`, `#2F2F2F`
 | 1.4 | default line height | P6 `--shared-line-height:1.4`; all body text lh = 1.4 × size | — | CSS + computed | VERIFIED |
 | 700 / 700 / 600 / 400 / 400 | weights: display / header / subheader / body / detail | P6 `--text-*-font-weight` | — | CSS | VERIFIED |
 | 39 / 700 / lh 46.8 / ls −0.78 (−0.02 em) | event title (26 chars); auto-fits by length: 39, 38, 32, 28, 25 seen | P1 `span.summary`; P2; 9 pages via script | y 229.6, w 323 | computed | VERIFIED |
-| PartifulGrotesk (default), Goodman, Snell, Nokja, Manrope, Afacad, LibreBaskerville, Engravers, BootzyTM | title font options (host picks) | P6 font-face names; computed `font-family` on 9 pages | — | CSS + computed | VERIFIED (proprietary → PLATFORM) |
+| PartifulGrotesk (6 of 11 pages checked), Goodman (3), Snell (1), Nokja (1); also declared: Manrope, Afacad, LibreBaskerville, Engravers, BootzyTM | title font options (host picks) | P6 font-face names; computed `font-family` on 9 pages | — | CSS + computed | VERIFIED (proprietary → PLATFORM) |
 | TWK Lausanne | UI font | computed `font-family: Lausanne, "Helvetica Neue", …` | — | computed | VERIFIED (proprietary → PLATFORM) |
 | 358 wide, own aspect, radius 0 | poster | P1 img | x 16, y 345, 358×286 | rect | VERIFIED |
 | 28 / 500 / lh 39.2, alpha 0.9 | date | P1 `rgba(0,0,0,.9)`; P2 `rgba(255,255,255,.9)` | y 647 | computed | VERIFIED |
