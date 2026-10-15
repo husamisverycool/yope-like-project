@@ -149,3 +149,33 @@ enum MemoryFormat {
         return formatter
     }
 }
+
+/// Colours that a layout token stores as text (e.g. `layout.year.story.summary.dots` selectedColor /
+/// unselectedColor), in the token file's hex form: six digits (opaque) or eight (last pair = alpha).
+enum MemoryTokenColor {
+    struct Components: Equatable {
+        let red: Double
+        let green: Double
+        let blue: Double
+        let opacity: Double
+    }
+
+    /// The channels of `text`, each 0…1; nil when it is not a hex colour.
+    static func components(_ text: String) -> Components? {
+        var digits = text.trimmingCharacters(in: .whitespaces)
+        if digits.first == "#" { digits.removeFirst() }
+        guard digits.count == 6 || digits.count == 8, digits.allSatisfy(\.isHexDigit),
+              let value = UInt64(digits, radix: 16) else { return nil }
+        let rgba = digits.count == 8 ? value : value << 8 | 0xFF
+        func channel(_ byte: UInt64) -> Double {
+            Double(rgba >> (byte * 8) & 0xFF) / 0xFF
+        }
+        return Components(red: channel(3), green: channel(2), blue: channel(1), opacity: channel(0))
+    }
+
+    static func color(_ text: String) -> Color? {
+        components(text).map {
+            Color(.sRGB, red: $0.red, green: $0.green, blue: $0.blue, opacity: $0.opacity) // provenance-ok: channels parsed from the token's colour text
+        }
+    }
+}

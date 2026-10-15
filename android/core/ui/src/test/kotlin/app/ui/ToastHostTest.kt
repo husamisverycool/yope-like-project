@@ -2,6 +2,8 @@ package app.ui
 
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.printToString
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.designsystem.generated.Tokens
 import app.ui.components.ToastDwell
@@ -25,6 +27,7 @@ class ToastHostTest {
         compose.setContent { AppTheme { ToastHost(state) } }
         compose.runOnIdle { state.show("you blocked Sam") }
         compose.mainClock.advanceTimeBy(ENTER_MS)
+        println("TREE:" + compose.onRoot(useUnmergedTree = true).printToString() + " current=" + state.current)
         compose.onNodeWithText("you blocked Sam", useUnmergedTree = true).assertExists()
         compose.runOnIdle { state.show("you unblocked Sam") }
         compose.mainClock.advanceTimeBy(ENTER_MS)

@@ -62,8 +62,12 @@ struct OnThisDayScreen: View {
         model.preloadUpcoming()
     }
 
-    /// `duration.onthisday.memoryChange` on the native ease-in-out curve.
-    static let memoryChange = DSAnimation.timing(duration: Tokens.Durations.onthisdayMemoryChange, easing: .easeInOut).animation
+    /// `duration.onthisday.memoryChange` on the platform's curve (`easing.global.native`, a PLATFORM token
+    /// whose value is "system": the system ease-in-out of a cross-dissolve).
+    static let memoryChange = DSAnimation.timing(
+        duration: Tokens.Durations.onthisdayMemoryChange,
+        easing: .easeInOut // provenance-ok: easing.global.native (PLATFORM) — the system cross-dissolve curve
+    ).animation
 
     // MARK: Banner
 
