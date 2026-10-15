@@ -182,8 +182,9 @@ protocol CaptureNavigation: AnyObject {
     func closeCapture()
     /// Opens the camera with a group preselected (collage.view empty state).
     func openCamera(groupID: String?)
-    /// `groups.create` from the send-to empty state. Nil while the account group has no route for it.
-    var openGroupCreation: (() -> Void)? { get }
+    /// Whether send-to's empty state can open `groups.create` (the account group's
+    /// `AccountModal.groupCreate`, presented over send-to so the capture is kept).
+    var canCreateGroup: Bool { get }
     /// The app's page in system Settings (permission-denied states).
     func openSystemSettings()
 }

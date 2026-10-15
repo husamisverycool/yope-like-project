@@ -90,7 +90,7 @@ final class SendToModel: Identifiable {
     /// The send button is hidden with nothing selected (a disabled look was never observed).
     var canSend: Bool { !selection.isEmpty && isMediaSendable }
 
-    var groupCreation: (() -> Void)? { navigation.openGroupCreation }
+    var canCreateGroup: Bool { navigation.canCreateGroup }
 
     func isSelected(_ groupID: String) -> Bool {
         selection.contains(groupID)

@@ -201,8 +201,9 @@ fun PlatformSpinner(modifier: Modifier = Modifier) {
 }
 
 /**
- * The app default voice's message layout (`yope.voice.error` / empty state): text roles `emptyTitle`
- * (header) and `emptyDetail`, centred, then an optional white pill.
+ * The app default voice's message layout (`yope.voice.error` / empty state) for empty, error,
+ * offline and closed states: the shared `app.ui.components.EmptyState` (text roles `emptyTitle` /
+ * `emptyDetail`, centred, optional white pill).
  */
 @Composable
 fun MessageBlock(
@@ -211,30 +212,7 @@ fun MessageBlock(
     modifier: Modifier = Modifier,
     action: String? = null,
     onAction: () -> Unit = {},
-) {
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        BasicText(
-            title,
-            Modifier.padding(horizontal = Tokens.Sizes.globalButtonMarginH).semantics { heading() },
-            style = roleStyle(Tokens.FontSizes.globalEmptyTitle, Tokens.FontWeights.fontWeightGlobalEmptyTitle)
-                .copy(color = Tokens.Colors.globalTextPrimary, textAlign = TextAlign.Center),
-        )
-        if (detail != null) {
-            Spacer(Modifier.size(Tokens.Sizes.globalListGap))
-            BasicText(
-                detail,
-                Modifier.padding(horizontal = Tokens.Sizes.globalButtonMarginH),
-                // `fontSize.global.emptyDetail` is measured on an italic line (token element note).
-                style = roleStyle(Tokens.FontSizes.globalEmptyDetail, Tokens.FontWeights.fontWeightGlobalListSubtitle)
-                    .copy(color = Tokens.Colors.globalTextSecondary, textAlign = TextAlign.Center, fontStyle = FontStyle.Italic),
-            )
-        }
-        if (action != null) {
-            Spacer(Modifier.size(Tokens.Sizes.globalListGap))
-            LightPill(action, onAction, Modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalButtonMarginH))
-        }
-    }
-}
+) = app.ui.components.EmptyState(title, detail, modifier, action?.let { app.ui.components.EmptyStateAction(it, onAction) })
 
 /**
  * Supplies images by URL below this point (snapshot tests use generated bitmaps, never network or

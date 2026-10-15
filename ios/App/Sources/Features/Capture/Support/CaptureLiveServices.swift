@@ -276,9 +276,7 @@ final class LiveCapturePremium: CapturePremium {
         blockers.remove(.capture)
         guard router.promptGate.canPrompt(activeBlockers: blockers) else { return false }
         router.dismissModal()
-        guard router.consumePremiumPrompt() else { return false }
-        router.modal = .account(.paywall)
-        return true
+        return router.presentPaywallForLockedFeature(isPremium: false)
     }
 }
 
@@ -488,8 +486,7 @@ final class LiveCaptureNavigation: CaptureNavigation {
         router.handle(.camera(groupID: groupID))
     }
 
-    /// `groups.create` belongs to the account group; no route for it exists yet (reported).
-    var openGroupCreation: (() -> Void)? { nil }
+    var canCreateGroup: Bool { true }
 
     func openSystemSettings() {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }

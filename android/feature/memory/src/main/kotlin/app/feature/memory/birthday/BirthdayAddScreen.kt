@@ -36,7 +36,7 @@ import app.feature.memory.common.LimeButton
 import app.feature.memory.common.MemoryFormats
 import app.feature.memory.common.MemoryToast
 import app.feature.memory.common.PlatformSpinner
-import app.feature.memory.common.TOASTS_SHOWN
+import app.feature.memory.common.toastsShown
 import app.feature.memory.common.heading
 import app.feature.memory.common.roleStyle
 import app.feature.memory.common.touchOutset
@@ -58,7 +58,9 @@ fun BirthdayAddScreen(
     onDismissToast: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LaunchedEffect(state.finished) { if (state.finished && !TOASTS_SHOWN) onClose() }
+    // Added: close after the toast; while the toast dwell is BLOCKED there is no toast, so close at once.
+    val toasts = toastsShown()
+    LaunchedEffect(state.finished, toasts) { if (state.finished && !toasts) onClose() }
     val text = Tokens.Colors.globalTextPrimary
     val secondary = roleStyle(Tokens.FontSizes.globalListSubtitle, Tokens.FontWeights.fontWeightGlobalListSubtitle)
         .copy(color = Tokens.Colors.globalTextSecondary, textAlign = TextAlign.Center)

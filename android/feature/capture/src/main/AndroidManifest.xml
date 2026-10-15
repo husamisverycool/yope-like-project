@@ -8,14 +8,6 @@
         android:maxSdkVersion="28" />
 
     <application>
-        <!-- Installs the capture group's widget picker, notification channels and appearance at
-             process start (also when a widget or FCM starts the process), without app-shell code. -->
-        <provider
-            android:name="app.feature.capture.CaptureStartupProvider"
-            android:authorities="${applicationId}.capture.startup"
-            android:exported="false"
-            android:initOrder="50" />
-
         <!-- collage.share: the page image handed to the Sharesheet as content:// (read grant only). -->
         <provider
             android:name="app.feature.capture.collage.CaptureFileProvider"

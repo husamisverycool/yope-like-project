@@ -64,7 +64,7 @@ struct CollageView: View {
                 .accessibilityAddTraits(.isHeader)
                 .accessibilitySortPriority(4)
             HStack {
-                CaptureHeaderCircle(icon: Tokens.Icons.globalBack, label: Copy.collageViewA11yBack, fill: Tokens.Colors.globalControlOnDeep) {
+                HeaderCircleButton(icon: Tokens.Icons.globalBack, accessibilityLabel: Copy.collageViewA11yBack, fill: .onDeep) {
                     dismiss()
                 }
                 .accessibilitySortPriority(5)

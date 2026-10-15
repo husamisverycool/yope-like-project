@@ -5,26 +5,6 @@ import AppServices
 import DesignSystem
 import SwiftUI
 
-/// A circle icon button of a header (`size.global.headerButton`, glyph `color.global.textPrimary`).
-struct CaptureHeaderCircle: View {
-    let icon: String
-    let label: String
-    let fill: Color
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: icon)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                .frame(width: Tokens.Sizes.globalHeaderButton, height: Tokens.Sizes.globalHeaderButton)
-                .background(fill, in: Circle())
-                .contentShape(Circle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(label)
-    }
-}
-
 /// Yope's empty-state layout (`yope.voice.empty-state`): title, detail, light pill.
 struct CaptureEmptyState: View {
     let title: String

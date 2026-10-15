@@ -11,6 +11,7 @@ import SwiftUI
 struct SendToView: View {
     @State var model: SendToModel
     @FocusState private var isCaptionFocused: Bool
+    @State private var isCreatingGroup = false
 
     private typealias Preview = Tokens.Layouts.CameraSendtoLayoutPreview
     private typealias Field = Tokens.Layouts.CameraSendtoLayoutMessageField
@@ -44,6 +45,10 @@ struct SendToView: View {
         .accessibilityIdentifier("camera.sendto")
         .dsHaptic(Tokens.Haptics.globalSelect, trigger: model.selectionChanges)
         .task { await model.load() }
+        // groups.create (account group) over send-to, so the capture is kept; the list reloads after.
+        .sheet(isPresented: $isCreatingGroup, onDismiss: { Task { await model.reload() } }) {
+            AccountModalDestination(modal: .groupCreate)
+        }
     }
 
     // MARK: Header
@@ -56,13 +61,13 @@ struct SendToView: View {
                 .accessibilityAddTraits(.isHeader)
                 .accessibilitySortPriority(9)
             HStack {
-                CaptureHeaderCircle(icon: Tokens.Icons.globalClose, label: Copy.cameraSendtoA11yClose, fill: Tokens.Colors.globalControlOnDeep) {
+                HeaderCircleButton(icon: Tokens.Icons.globalClose, accessibilityLabel: Copy.cameraSendtoA11yClose, fill: .onDeep) {
                     model.close()
                 }
                 .accessibilitySortPriority(10)
                 .accessibilityIdentifier("camera.sendto.close")
                 Spacer()
-                CaptureHeaderCircle(icon: Tokens.Icons.globalDownload, label: Copy.cameraSendtoA11ySave, fill: Tokens.Colors.globalControlOnDeep) {
+                HeaderCircleButton(icon: Tokens.Icons.globalDownload, accessibilityLabel: Copy.cameraSendtoA11ySave, fill: .onDeep) {
                     Task { await model.save() }
                 }
                 .accessibilitySortPriority(8)
@@ -192,8 +197,8 @@ struct SendToView: View {
             CaptureEmptyState(
                 title: Copy.cameraSendtoEmptyTitle,
                 detail: Copy.cameraSendtoEmptyDetail,
-                buttonTitle: model.groupCreation == nil ? nil : Copy.cameraSendtoEmptyButton,
-                action: model.groupCreation
+                buttonTitle: model.canCreateGroup ? Copy.cameraSendtoEmptyButton : nil,
+                action: model.canCreateGroup ? { isCreatingGroup = true } : nil
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .accessibilityIdentifier("camera.sendto.empty")
