@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- android:label and android:icon are owner/copy values (app name and icon are BLOCKED in
+         config/app.json); the screens pass adds them once they exist. -->
+    <application
+        android:name="app.main.App"
+        android:allowBackup="false"
+        android:enableOnBackInvokedCallback="true"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.App">
+
+        <activity
+            android:name="app.main.MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Invite links: https://<domain>/i/<token> (App Links, verified via
+                 /.well-known/assetlinks.json served by web/). -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" />
+                <data android:host="${appLinkHost}" />
+                <data android:pathPrefix="/i/" />
+            </intent-filter>
+            <!-- app:// links (widgets, notifications) are explicit intents to this activity, so
+                 they need no exported filter. -->
+        </activity>
+    </application>
+</manifest>

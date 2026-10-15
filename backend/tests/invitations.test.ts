@@ -77,6 +77,40 @@ describe('fires_at computation (all days, many zones)', () => {
     expect(rows[0].violations).toBe(0);
   });
 
+  it('handles window edges that fall on a DST transition (ambiguous or skipped wall times)', async () => {
+    // [zone, local date, start, end] — each edge sits on a transition of that day
+    const cases: [string, string, string, string][] = [
+      ['America/Santiago', '2027-04-03', '07:30', '23:00'], // end repeated (24:00 -> 23:00 fall-back)
+      ['America/New_York', '2027-03-14', '01:00', '02:30'], // end skipped (02:00 -> 03:00)
+      ['America/New_York', '2027-03-14', '02:30', '06:00'], // start skipped
+      ['America/New_York', '2026-11-01', '01:30', '05:00'], // start repeated
+      ['America/New_York', '2026-11-01', '00:00', '01:30'], // end repeated
+      ['Europe/London', '2026-10-24', '22:00', '01:30'], // wraps; end repeated on 10-25
+      ['Australia/Lord_Howe', '2027-04-04', '00:00', '01:45'], // 30-minute repeat
+      ['Australia/Lord_Howe', '2027-10-03', '01:00', '02:15'], // 30-minute gap
+    ];
+    for (const [tz, d, s, e] of cases) {
+      const [r] = await sql<{ violations: number; n: number }>(
+        `with x as (
+           select private.invitation_fires_at(gen_random_uuid(), $2::date, $1, $3::time, $4::time, 120) as f
+             from generate_series(1, 3000))
+         select count(*) filter (where
+                  (f at time zone $1) < ($2::date + $3::time)
+               or ((f + interval '120 seconds') at time zone $1)
+                    > ($2::date + $4::time + case when $4::time <= $3::time then interval '1 day' else interval '0' end)
+               or (f at time zone $1)::time not between least($3::time, $4::time) and greatest($3::time, $4::time)
+                  and $4::time > $3::time
+               or (((f + interval '120 seconds') at time zone $1)::time > $4::time and $4::time > $3::time)
+             )::int as violations,
+                count(*)::int as n
+           from x`,
+        [tz, d, s, e],
+      );
+      expect(r.n).toBe(3000);
+      expect(r.violations, `${tz} ${d} ${s}-${e}`).toBe(0);
+    }
+  });
+
   it('spreads instants across the window (not a constant)', async () => {
     const rows = await sql<{ distinct_minutes: number }>(
       `select count(distinct date_trunc('minute', (private.invitation_fires_at(gen_random_uuid(), date '2027-01-10',

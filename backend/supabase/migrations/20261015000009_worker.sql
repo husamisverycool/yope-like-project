@@ -136,10 +136,38 @@ as $$
           / 1152921504606846976::double precision)
 $$;
 
+-- The last instant at which the wall clock in p_tz still reads <= p_local:
+--   * ambiguous wall time (DST fall-back repeats it): its EARLIER occurrence
+--     (Postgres resolves ambiguity to the later one, which would stretch the window);
+--   * wall time skipped by a DST gap: an instant before the gap.
+create function private.window_end_instant(p_local timestamp, p_tz text)
+returns timestamptz
+language plpgsql
+stable
+set search_path = ''
+as $$
+declare
+  v_x timestamptz := p_local at time zone p_tz;
+  v_delta interval;
+begin
+  if (v_x at time zone p_tz) > p_local then
+    v_x := v_x - ((v_x at time zone p_tz) - p_local);
+  end if;
+  foreach v_delta in array array[interval '30 minutes', interval '1 hour', interval '2 hours'] loop
+    if ((v_x - v_delta) at time zone p_tz) = p_local then
+      v_x := v_x - v_delta;
+    end if;
+  end loop;
+  return v_x;
+end;
+$$;
+
 -- fires_at for a group on a local date: a deterministic instant in
--- [window start, window end - invitation window) so the whole countdown happens
+-- [window start, window end - invitation window] so the whole countdown happens
 -- inside the waking window. Windows that end at/before they start wrap past midnight.
--- Computed on absolute instants, so DST days (23 h / 25 h) stay inside the window.
+-- Computed on absolute instants, so DST days (23 h / 25 h) stay inside the window:
+-- an ambiguous/skipped start resolves to the later instant (Postgres default), an
+-- ambiguous/skipped end to the earlier one (window_end_instant).
 create function private.invitation_fires_at(
   p_group uuid, p_local_date date, p_tz text, p_start time, p_end time, p_window_seconds integer
 )
@@ -150,8 +178,9 @@ set search_path = ''
 as $$
 declare
   v_start timestamptz := (p_local_date + p_start) at time zone p_tz;
-  v_end timestamptz := (p_local_date + p_end + case when p_end <= p_start then interval '1 day' else interval '0' end)
-                       at time zone p_tz;
+  v_end timestamptz := private.window_end_instant(
+                         p_local_date + p_end + case when p_end <= p_start then interval '1 day' else interval '0' end,
+                         p_tz);
   v_span double precision := extract(epoch from (v_end - v_start)) - p_window_seconds;
 begin
   if v_span <= 0 then

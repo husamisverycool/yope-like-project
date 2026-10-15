@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- PLATFORM window theme following the system light/dark setting; the Compose theme built
+         from tokens is added by the screens pass. -->
+    <style name="Theme.App" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>

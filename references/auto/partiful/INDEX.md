@@ -12,3 +12,27 @@
 | `store/partiful-store-08.png` | https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/98/44/00/9844005a-7f52-99cd-b0e2-21c3e6965997/7.jpg/9999x0w.png | 2026-10-15 | App Store screenshot 8 of 10 (https://apps.apple.com/us/app/id1662982304) | listing version 3.10.09 |
 | `store/partiful-store-09.png` | https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/96/92/86/9692865c-38a2-23ab-082d-94ec710ac6ec/8.jpg/9999x0w.png | 2026-10-15 | App Store screenshot 9 of 10 (https://apps.apple.com/us/app/id1662982304) | listing version 3.10.09 |
 | `store/partiful-store-10.png` | https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/53/9a/c4/539ac445-c82d-9bb7-5467-886e2c0606bd/9.jpg/9999x0w.png | 2026-10-15 | App Store screenshot 10 of 10 (https://apps.apple.com/us/app/id1662982304) | listing version 3.10.09 |
+
+## Live invite pages (web), captured with Playwright Chromium (iPhone UA, 390×844 CSS px @3x = 1170×2532 px), 2026-10-15
+
+Person avatars (guest list, hosts, activity) are blurred in every saved screenshot (CSS `filter: blur(7px)` on avatar `<img>` only; geometry unchanged). Computed styles were read before blurring and saved alongside.
+
+| file | source URL | accessed | what it shows | version/date |
+|---|---|---|---|---|
+| `web/pf-web-public-light-01.png` | https://partiful.com/e/egrwj3biCR6g5MLJ0dbv | 2026-10-15 | Public event (org-hosted "Tompkins Square Dog Parade", Partiful Picks NYC), light theme, scrollY 0: "Events can be easy 🕺 / Make your own" banner, logo + Login, "See all in 🗽 Trending in NYC" pill, title, poster, date/time, floating "👍 RSVP / ☆ Interested" bar, bottom nav | live site, Next.js build dpl_68jTrKjNvy2nK2x5FYwMN16Zt8Yv |
+| `web/pf-web-public-light-02.png` | same | 2026-10-15 | scrollY 760: timezone pills, Remind me / link / more buttons, "Hosted by …" row with host avatar + crown badge + Follow, location, description, Guest List header with counts (do-not-copy) | same |
+| `web/pf-web-public-light-03.png` | same | 2026-10-15 | scrollY 1520: Trending This Week, "Restricted Access" card (lock, "Only RSVP'd guests can view event activity & see who's going", RSVP, Remind me, "Already RSVP'd? Sign in") | same |
+| `web/pf-web-public-light-04.png` | same | 2026-10-15 | page end: footer (Explore events / Create a free event / Get the app ↗) | same |
+| `web/pf-web-public-light-rsvp-sheet.png` | same (after tapping RSVP; nothing submitted) | 2026-10-15 | RSVP sheet: 96 px emoji buttons 👍 Going / 🤔 Maybe / 😢 Can't Go, Your Name, Phone Number, "Just for event updates. No spam.", "1 attendee", "+Post a comment", follow checkbox, Cancel / Continue | same |
+| `web/pf-web-public-light.computed-styles.json` | same | 2026-10-15 | getComputedStyle + getBoundingClientRect for every visible text/button/image element (CSS px) | same |
+| `web/pf-web-public-light-rsvp-sheet.computed-styles.json` | same | 2026-10-15 | computed styles of the RSVP sheet | same |
+| `web/pf-web-public-dark-01.png` … `-04.png` | https://partiful.com/e/tdWKXXnFRQqtuxOcPz5e | 2026-10-15 | Public event "Secret Saturday: Halloween" (band host), dark theme (`html.ptf-dark`): white text, inverted white RSVP bar with event-specific ❤️ emoji, accordion rows, host row | same |
+| `web/pf-web-public-dark-rsvp-sheet.png` | same (after tapping RSVP; nothing submitted) | 2026-10-15 | dark RSVP sheet with this event's emoji set ❤️ Going / ❤️‍🩹 Maybe / 💔 Can't Go (U+2764 FE0F / U+2764 FE0F 200D 1FA79 / U+1F494) | same |
+| `web/pf-web-public-dark.computed-styles.json`, `web/pf-web-public-dark-rsvp-sheet.computed-styles.json` | same | 2026-10-15 | computed styles (dark mode) | same |
+| `web/pf-web-private-past-01.png` … `-03.png` | https://partiful.com/e/6p1Hm5OlE2YIH1VX515z | 2026-10-15 | Non-public (unlisted, no "Public Event" badge) event, past date, logged-out view: title, poster, date, PT/ET, "Hosted by" with 3 host avatars + crown badges, "Sign in for full location", Guest List "11 Went · 4 Maybe" (do-not-copy), Restricted Access card "Verify your phone number to view event details and activity" / Sign in | same |
+| `web/pf-web-private-past.computed-styles.json` | same | 2026-10-15 | computed styles | same |
+| `og/pf-og-public-crawler-1200x630.jpg` | https://partiful.imgix.net/external/user/2KgDoRZix3CnC9fcdYUz/B3UeXQlwr-bcsaw-IG8Du?w=1200&h=630&fit=fill&fill=blur | 2026-10-15 | og:image served to UA `facebookexternalhit/1.1 Facebot Twitterbot/1.0` (iMessage/Facebook link preview): poster letterboxed to 1200×630 with blurred fill | same |
+| `og/pf-og-public-browser-834x666.jpg` | https://partiful.imgix.net/external/user/2KgDoRZix3CnC9fcdYUz/B3UeXQlwr-bcsaw-IG8Du?w=834&h=666&fit=clip | 2026-10-15 | og:image served to browsers/Twitterbot/Discordbot: poster at own aspect, max 834×666 (other events: max 1000×1000) | same |
+| `css/partiful-web-css-excerpt-2026-10-15.css` | https://partiful.com/_next/static/css/6c6472b16cd85517.css and …/30e76274b56216f0.css | 2026-10-15 | text excerpt: mobile `:root` tokens (type scale, spacing, radii, animation durations), `.ptf-light` / `.ptf-dark` semantic colors, font-family names (no font files), RSVP component rules | same |
+
+Other evidence (not images): `https://partiful.com/.well-known/apple-app-site-association` (appclips: `Z9A649Q6W9.com.partiful.partiful.Clip`; applinks `/e/*`), `https://partiful.com/.well-known/assetlinks.json` (Android `com.partiful.partiful`), page `<meta name="apple-itunes-app" content="app-id=1662982304, app-clip-bundle-id=com.partiful.partiful.Clip">` — all fetched 2026-10-15.

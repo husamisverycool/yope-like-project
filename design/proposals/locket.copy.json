@@ -1,0 +1,1162 @@
+{
+  "strings": {
+    "widget.home.gallery.title.reference": {
+      "text": "Locket Widget",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/frames/locket-tt-7168613044728155438-11.900s-widget-gallery-card.jpg (2022-11-21); references/auto/locket/frames/locket-tt-7532209311150329102-13.750s-gallery-locket-widget-3-friends.jpg",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use. Pattern: \"<Name> Widget\", title case."
+    },
+    "widget.home.gallery.description": {
+      "text": "See live pics from all your friends right on your Home Screen",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/frames/locket-tt-7168613044728155438-11.900s-widget-gallery-card.jpg (2022-11-21)",
+      "level": "SOURCED",
+      "notes": "iOS widget-gallery description (2022). No trademark."
+    },
+    "widget.home.gallery.description.android": {
+      "text": "Live pics from your friends, on your home screen",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.android",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc string app_widget_description; same line on the onboarding welcome references/auto/locket/lazyweb/locket-lazyweb-20260821-cap-welcome.png",
+      "level": "SOURCED"
+    },
+    "widget.home.gallery.preview.friendCount": {
+      "text": "{count} Friends",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/frames/locket-tt-7168613044728155438-11.900s-widget-gallery-card.jpg (2022-11-21) (\"20 Friends\"); Locket Android APK 1.243.0 (2026-10-09) Hermes string \"{{senderCount}} Friends\"",
+      "level": "SOURCED",
+      "notes": "Gallery/empty preview naming how many people feed the widget. A membership count, not a score; keep neutral."
+    },
+    "widget.home.gallery.bestFriend.title": {
+      "text": "Best Friend Widget",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/frames/locket-tt-7532209311150329102-14.500s-gallery-best-friend-widget.jpg, -15.500s-gallery-crush-widget.jpg (2025-07-28)",
+      "level": "SOURCED"
+    },
+    "widget.home.gallery.bestFriend.description.partial": {
+      "text": "…a special widget just for your best friend",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/frames/locket-tt-7532209311150329102-14.500s-gallery-best-friend-widget.jpg, -15.500s-gallery-crush-widget.jpg (2025-07-28)",
+      "level": "SOURCED",
+      "notes": "The first word is cut off in every frame (filmed at an angle). Do not ship as complete."
+    },
+    "widget.home.gallery.bestFriend.preview.title": {
+      "text": "Best Friend",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/frames/locket-tt-7532209311150329102-14.500s-gallery-best-friend-widget.jpg, -15.500s-gallery-crush-widget.jpg (2025-07-28)",
+      "level": "SOURCED"
+    },
+    "widget.home.gallery.bestFriend.preview.subtitle": {
+      "text": "Pick one friend",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/frames/locket-tt-7532209311150329102-14.500s-gallery-best-friend-widget.jpg, -15.500s-gallery-crush-widget.jpg (2025-07-28)",
+      "level": "SOURCED"
+    },
+    "widget.home.gallery.crush.title": {
+      "text": "Crush Widget",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/frames/locket-tt-7532209311150329102-14.500s-gallery-best-friend-widget.jpg, -15.500s-gallery-crush-widget.jpg (2025-07-28)",
+      "level": "SOURCED"
+    },
+    "widget.home.gallery.crush.description.partial": {
+      "text": "…a special widget just for your crush",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/frames/locket-tt-7532209311150329102-14.500s-gallery-best-friend-widget.jpg, -15.500s-gallery-crush-widget.jpg (2025-07-28)",
+      "level": "SOURCED",
+      "notes": "The first word is cut off."
+    },
+    "widget.home.gallery.crush.preview.title": {
+      "text": "Crush",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/frames/locket-tt-7532209311150329102-14.500s-gallery-best-friend-widget.jpg, -15.500s-gallery-crush-widget.jpg (2025-07-28)",
+      "level": "SOURCED"
+    },
+    "widget.home.gallery.crush.preview.subtitle": {
+      "text": "Pick your crush",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/frames/locket-tt-7532209311150329102-14.500s-gallery-best-friend-widget.jpg, -15.500s-gallery-crush-widget.jpg (2025-07-28)",
+      "level": "SOURCED"
+    },
+    "widget.android.empty.title": {
+      "text": "No pics yet",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.android",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc no_pics_yet",
+      "level": "SOURCED"
+    },
+    "widget.android.empty.unconfigured": {
+      "text": "Tap to set up",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.android",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc tap_to_set_up",
+      "level": "SOURCED"
+    },
+    "widget.home.config.section": {
+      "text": "Widgets",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260803-autocap-21.png (profile sheet section header, with a \"New\" tag)",
+      "level": "SOURCED"
+    },
+    "widget.home.config.everyone": {
+      "text": "Everyone",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260803-autocap-21.png; Locket Android APK 1.243.0 (2026-10-09) Hermes \"Everyone\"",
+      "level": "SOURCED",
+      "notes": "Label of a widget that shows all friends."
+    },
+    "widget.home.config.edit": {
+      "text": "Edit",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260803-autocap-21.png",
+      "level": "SOURCED"
+    },
+    "widget.home.config.create": {
+      "text": "Create",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260803-autocap-21.png",
+      "level": "SOURCED"
+    },
+    "widget.home.config.friendHint": {
+      "text": "Once a friend accepts your friend request, you can add them to a widget.",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table",
+      "level": "SOURCED"
+    },
+    "widget.home.config.personalize": {
+      "text": "Personalize your widget",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table",
+      "level": "SOURCED"
+    },
+    "widget.arrival.help.delay.reference": {
+      "text": "When a friend sends you a photo on Locket, it will appear on your Home Screen, but there may be a slight delay of up to 5 minutes. This delay helps conserve your phone’s battery. If you experience a delay of more than 5 minutes, try the following steps.",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.arrival",
+      "evidence": "https://help.locket.com/en/articles/5859739-why-isn-t-my-locket-widget-updating (updated 2026-05-05)",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use. Feeds the refresh-strategy doc and a help/FAQ answer."
+    },
+    "widget.arrival.help.steps": {
+      "text": "Restart your device / Check that the Locket app is up to date / Check that iOS/Android is up to date",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.arrival",
+      "evidence": "https://help.locket.com/en/articles/5859739-why-isn-t-my-locket-widget-updating",
+      "level": "SOURCED",
+      "notes": "Three list items, separated here by \" / \". REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "widget.arrival.help.galleryDelay.reference": {
+      "text": "After you install Locket, it can occasionally take up to an hour for the widget to appear in the Widget Gallery. If you don't want to wait, restarting your device will make the widget appear immediately.",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.arrival",
+      "evidence": "https://help.locket.com/en/articles/5859709-why-doesn-t-locket-appear-when-i-try-to-add-the-widget",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "widget.arrival.android.refreshNotification.title": {
+      "text": "Updating widget...",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.arrival",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc notification_widget_refresh_title",
+      "level": "SOURCED",
+      "notes": "Shown briefly by the Android short foreground service while the widget refreshes."
+    },
+    "widget.arrival.android.refreshChannel.name": {
+      "text": "Widget Updating",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.arrival",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc notification_channel_widget_refresh_name",
+      "level": "SOURCED"
+    },
+    "widget.arrival.android.refreshChannel.description": {
+      "text": "Shown briefly while the home screen widget refreshes",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.arrival",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc notification_channel_widget_refresh_description",
+      "level": "SOURCED"
+    },
+    "camera.fromwidget.headline": {
+      "text": "Tap the widget to open the camera",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "camera.fromwidget",
+      "evidence": "references/auto/locket/store/locket-store-07.png; references/auto/locket/play/locket-play-05.png",
+      "level": "SOURCED"
+    },
+    "camera.capture.history": {
+      "text": "History",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "camera.capture",
+      "evidence": "references/auto/locket/store/locket-store-07.png; references/auto/locket/play/locket-play-05.png; references/auto/locket/frames/locket-tt-7069892557970345259-02.800s-camera-2022.jpg",
+      "level": "SOURCED"
+    },
+    "camera.capture.friendsPill": {
+      "text": "{count} Friends",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "camera.capture",
+      "evidence": "references/auto/locket/store/locket-store-07.png (\"12 Friends\"); references/auto/locket/play/locket-play-05.png (\"8 friends\", lower case on Android)",
+      "level": "SOURCED",
+      "notes": "Opens the audience/friends sheet. A membership count, not a score."
+    },
+    "camera.capture.video.help.reference": {
+      "text": "Touch and hold on the shutter button to begin recording. The yellow outline around the viewfinder indicates that capture is in progress.",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "camera.capture",
+      "evidence": "https://help.locket.com/en/articles/7915017-how-do-i-capture-video-on-locket",
+      "level": "SOURCED",
+      "notes": "No trademark; describes hold-to-record and the yellow viewfinder outline."
+    },
+    "camera.sendto.header": {
+      "text": "Send to",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "camera.sendto",
+      "evidence": "references/owner/locket-review-sendto.jpg (2023); references/auto/locket/frames/locket-tt-7069892557970345259-03.533s-review-sendto-all-friends-2022.jpg",
+      "level": "CAPTURED"
+    },
+    "camera.sendto.header.android": {
+      "text": "Send to...",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/locket/frames/locket-tt-7498394022428331295-01.300s-android-sendto-add-a-message.jpg; Locket Android APK 1.243.0 (2026-10-09) Hermes \"Send to...\"",
+      "level": "SOURCED"
+    },
+    "camera.sendto.allFriends": {
+      "text": "All Friends",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/locket/frames/locket-tt-7069892557970345259-03.533s-review-sendto-all-friends-2022.jpg; Locket Android APK 1.243.0 (2026-10-09) Hermes \"All Friends\"",
+      "level": "SOURCED"
+    },
+    "camera.sendto.pickFriends": {
+      "text": "Pick Friends",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/locket/frames/locket-tt-7069892557970345259-03.533s-review-sendto-all-friends-2022.jpg",
+      "level": "SOURCED",
+      "notes": "2022 capsule button followed by a › chevron."
+    },
+    "camera.sendto.caption.placeholder": {
+      "text": "Add a message",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/locket/frames/locket-tt-7498394022428331295-01.300s-android-sendto-add-a-message.jpg; Locket Android APK 1.243.0 (2026-10-09) Hermes \"Add a message\"",
+      "level": "SOURCED"
+    },
+    "camera.sendto.sending.reference": {
+      "text": "Sending your Locket",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "camera.sendto",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use. Where it appears was not observed."
+    },
+    "camera.sendto.error.noFriends.reference": {
+      "text": "You need to have at least one friend added on Locket before you can send a photo.",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "camera.sendto",
+      "evidence": "https://help.locket.com/en/articles/14294442-why-can-t-i-send-photos-on-locket",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use. Help text, not in-app."
+    },
+    "photo.viewer.reply.placeholder": {
+      "text": "Send message...",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/locket/store/locket-store-08.png; references/auto/locket/play/locket-play-07.png; references/owner/locket-reply-grid.jpg; Locket Android APK 1.243.0 (2026-10-09) Hermes \"Send message...\"",
+      "level": "SOURCED"
+    },
+    "photo.viewer.reply.placeholder.named": {
+      "text": "Reply to {name}...",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "photo.viewer",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes \"Reply to {{name}}...\"",
+      "level": "SOURCED"
+    },
+    "chat.reactions.sheet.title": {
+      "text": "Reply to {name}",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "references/owner/locket-reply-grid.jpg (\"Reply to Kile\", with avatar)",
+      "level": "CAPTURED"
+    },
+    "chat.reactions.picker.search": {
+      "text": "Search",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg (2025)",
+      "level": "SOURCED"
+    },
+    "chat.reactions.picker.search.2022": {
+      "text": "Search Emoji",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "references/auto/locket/frames/locket-tt-7147749171762908462-02.000s-emoji-picker-search.jpg (2022)",
+      "level": "SOURCED"
+    },
+    "chat.reactions.picker.frequent": {
+      "text": "Frequently Used",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg",
+      "level": "SOURCED"
+    },
+    "chat.reactions.picker.popular": {
+      "text": "Popular",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg",
+      "level": "SOURCED"
+    },
+    "chat.reactions.picker.all": {
+      "text": "All",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg",
+      "level": "SOURCED"
+    },
+    "chat.reactions.empty": {
+      "text": "No reactions yet",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table",
+      "level": "SOURCED",
+      "notes": "Empty state for the reactions/activity list."
+    },
+    "chat.reactions.activity.title": {
+      "text": "Activity",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table",
+      "level": "SOURCED"
+    },
+    "chat.reactions.row.received.reference": {
+      "text": "{contactName} reacted {emoji} to your Locket",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes \"{{contactName}} reacted {{emoji}} to your Locket\"",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "chat.reactions.row.receivedOnMessage": {
+      "text": "{contactName} reacted {emoji} to \"{message}\"",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table",
+      "level": "SOURCED"
+    },
+    "chat.reactions.row.sentShort": {
+      "text": "{name} sent {emoji}",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes \"{{name}} sent {{emoji}}\"",
+      "level": "SOURCED"
+    },
+    "chat.reactions.row.mine.reference": {
+      "text": "You reacted {emoji} to {name}'s Locket",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "chat.reactions.store.why.reference": {
+      "text": "Send a Locket reaction to your friends to let them know you saw their image.",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "https://apps.apple.com/us/app/id1600525061 description (v2.68.0); Google Play description",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "chat.reactions.store.rain": {
+      "text": "They’ll get a notification and you’ll love watching the emojis rain down on your photo.",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "https://apps.apple.com/us/app/id1600525061 description; Google Play description",
+      "level": "SOURCED"
+    },
+    "chat.reactions.store.noCounts": {
+      "text": "We don’t count or track the reactions, so you can be real and authentic without worrying about likes and filters like other platforms.",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "https://apps.apple.com/us/app/id1600525061 description",
+      "level": "SOURCED",
+      "notes": "Matches our no-counts tenet. Play variant: \"We don’t count or track reactions publicly, so you can be real and authentic without worrying about likes and filters of other platforms.\""
+    },
+    "onboarding.widget.title": {
+      "text": "Add the widget\nto your home screen",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (onboarding widget step)",
+      "level": "SOURCED"
+    },
+    "onboarding.widget.title.final": {
+      "text": "Finally, add the widget\nto your home screen",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (onboarding widget step)",
+      "level": "SOURCED"
+    },
+    "onboarding.widget.howto.title": {
+      "text": "How to add the widget",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (onboarding widget step)",
+      "level": "SOURCED"
+    },
+    "onboarding.widget.step.android.1": {
+      "text": "Hold down on an empty\nspace on your Home Screen",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (onboarding widget step)",
+      "level": "SOURCED"
+    },
+    "onboarding.widget.step.android.2": {
+      "text": "Tap the “Widgets” button\nto add a new widget",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (onboarding widget step)",
+      "level": "SOURCED"
+    },
+    "onboarding.widget.step.3.reference": {
+      "text": "Search for Locket and\nadd the widget",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (onboarding widget step)",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "onboarding.widget.step.3": {
+      "text": "Search for {app_name} and\nadd the widget",
+      "origin": "adapted",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (onboarding widget step)",
+      "level": "SOURCED",
+      "notes": "Noun swap: \"Locket\" → {app_name}."
+    },
+    "onboarding.widget.confirm.question": {
+      "text": "Have you enabled the widget?",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (onboarding widget step)",
+      "level": "SOURCED"
+    },
+    "onboarding.widget.confirm.button": {
+      "text": "I've enabled the widget",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (onboarding widget step)",
+      "level": "SOURCED"
+    },
+    "onboarding.widget.warning.reference": {
+      "text": "Locket doesn't work unless you add the widget to your home screen.",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (onboarding widget step)",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use. DO-NOT-COPY as is: pressure framing (\"doesn't work unless\"), against tenet 5."
+    },
+    "onboarding.widget.waiting": {
+      "text": "We’ll notify you once your\nfriends have set up theirs",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (onboarding widget step)",
+      "level": "SOURCED"
+    },
+    "onboarding.widget.setup.title": {
+      "text": "Widget Setup",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (onboarding widget step)",
+      "level": "SOURCED"
+    },
+    "onboarding.widget.tutorial.title": {
+      "text": "Widget Tutorial",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (onboarding widget step); references/auto/locket/frames/locket-tt-7498394022428331295-04.600s-android-settings-widget-tutorial.jpg (settings row)",
+      "level": "SOURCED"
+    },
+    "onboarding.widget.add.button": {
+      "text": "Add Widget",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (onboarding widget step)",
+      "level": "SOURCED",
+      "notes": "Same label as the iOS system \"Add Widget\" button."
+    },
+    "onboarding.widget.ios.steps.tiktok": {
+      "text": "1. Edit Home Screen / 2. Click on + in left corner / 3. Search Locket and Add Widget",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "references/owner/locket-add-widget-steps.jpg; https://www.tiktok.com/@locketcamera/video/7282839171952102686",
+      "level": "CAPTURED",
+      "notes": "Official TikTok overlay text, not in-app. REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "onboarding.widget.ios.steps.help": {
+      "text": "From your Home Screen, touch and hold a widget or empty area until the apps jiggle. / Tap Edit in the upper-left corner. / Tap Add Widget. / Search for \"Locket\", then tap on it. / Select a widget size, then tap Add Widget. / You're done!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "https://help.locket.com/en/articles/7914857-how-do-i-add-the-locket-widget-to-my-home-screen",
+      "level": "SOURCED",
+      "notes": "Six list items, separated here by \" / \". REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "onboarding.widget.android.steps.help": {
+      "text": "From your Home Screen, touch and hold on an empty space. / Tap Widgets. / Search for \"Locket\", tap on the widget, then tap Add. / You're done!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "https://help.locket.com/en/articles/7914857-how-do-i-add-the-locket-widget-to-my-home-screen",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "onboarding.widget.welcome.tagline": {
+      "text": "Live pics from your friends, on your home screen",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260821-cap-welcome.png; Locket Android APK 1.243.0 (2026-10-09) Hermes \"Live pics from your friends,\\non your home screen\"",
+      "level": "SOURCED"
+    },
+    "onboarding.widget.welcome.cta.reference": {
+      "text": "Set up my Locket",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260821-cap-welcome.png",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use. Followed by a → arrow."
+    },
+    "onboarding.widget.finishAlert.title.reference": {
+      "text": "Finish setting up your Locket",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260821-cap-setup-3.png",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "onboarding.widget.finishAlert.body": {
+      "text": "Locket works best once you’ve added your best friends.",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260821-cap-setup-3.png",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "paywall.title.reference": {
+      "text": "Locket Gold",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-paywall-screen.png (2025-10); references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-paywall-2.png (2026-08); ",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use. Product name."
+    },
+    "paywall.subtitle.reference": {
+      "text": "Members have so much\nmore fun on Locket!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-paywall-screen.png (2025-10); references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-paywall-2.png (2026-08); Locket Android APK 1.243.0 (2026-10-09) Hermes",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "paywall.perk.1.title": {
+      "text": "Remove ads",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-paywall-screen.png (2025-10); references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-paywall-2.png (2026-08); Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED",
+      "notes": "DO-NOT-COPY: we have no ads."
+    },
+    "paywall.perk.1.subtitle": {
+      "text": "Never see an ad in History!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-paywall-screen.png (2025-10); references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-paywall-2.png (2026-08); Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED",
+      "notes": "DO-NOT-COPY: we have no ads."
+    },
+    "paywall.perk.2.title": {
+      "text": "Video Lockets",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-paywall-screen.png (2025-10); ",
+      "level": "SOURCED",
+      "notes": "2025 wording; REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "paywall.perk.2.subtitle": {
+      "text": "Record short video clips!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-paywall-screen.png (2025-10); ",
+      "level": "SOURCED",
+      "notes": "2025 wording; REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "paywall.perk.3.title": {
+      "text": "Longer videos",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-paywall-2.png (2026-08); Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED",
+      "notes": "2026 wording, replaces \"Video Lockets\"."
+    },
+    "paywall.perk.3.subtitle": {
+      "text": "Record up to 10 seconds",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-paywall-2.png (2026-08); Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED",
+      "notes": "2026 wording, replaces \"Video Lockets\"."
+    },
+    "paywall.perk.4.title": {
+      "text": "Locket views",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-paywall-screen.png (2025-10); references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-paywall-2.png (2026-08); Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED",
+      "notes": "DO-NOT-COPY: view tracking. REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "paywall.perk.4.subtitle": {
+      "text": "See who's opened your Lockets",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-paywall-screen.png (2025-10); references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-paywall-2.png (2026-08); Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED",
+      "notes": "DO-NOT-COPY: view tracking. REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "paywall.perk.5.title": {
+      "text": "Upload from camera roll",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-paywall-screen.png (2025-10); references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-paywall-2.png (2026-08); Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED"
+    },
+    "paywall.perk.5.subtitle": {
+      "text": "Share memories from your library",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-paywall-screen.png (2025-10); references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-paywall-2.png (2026-08); Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED"
+    },
+    "paywall.perk.6.title": {
+      "text": "Unlimited friends",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-paywall-screen.png (2025-10); references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-paywall-2.png (2026-08); Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED",
+      "notes": "Shown with an \"Early access!\" badge."
+    },
+    "paywall.perk.6.subtitle": {
+      "text": "Add as many friends as you’d like!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-paywall-screen.png (2025-10); references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-paywall-2.png (2026-08); Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED",
+      "notes": "Shown with an \"Early access!\" badge."
+    },
+    "paywall.perk.7.title": {
+      "text": "Widget frames",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-2.png",
+      "level": "SOURCED"
+    },
+    "paywall.perk.7.subtitle": {
+      "text": "Personalize your widgets",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-2.png",
+      "level": "SOURCED"
+    },
+    "paywall.perk.8.title": {
+      "text": "Custom app icon",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-2.png; Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED"
+    },
+    "paywall.perk.8.subtitle": {
+      "text": "Decorate your Home Screen",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-2.png; Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED"
+    },
+    "paywall.perk.9.title": {
+      "text": "Send longer captions",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-2.png; Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED"
+    },
+    "paywall.perk.9.subtitle": {
+      "text": "Type even more on your photos!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-2.png; Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED"
+    },
+    "paywall.perk.badge": {
+      "text": "Early access!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-paywall-screen.png (2025-10); references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-paywall-2.png (2026-08); ",
+      "level": "SOURCED"
+    },
+    "paywall.more.title": {
+      "text": "Plus so much more...",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-2.png; Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED"
+    },
+    "paywall.more.chip.1": {
+      "text": "Early product updates",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-2.png; Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED",
+      "notes": "Chip with the 🆕 emoji."
+    },
+    "paywall.more.chip.2": {
+      "text": "Monthly feature drops",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-2.png; Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED",
+      "notes": "Chip with the 🎁 emoji."
+    },
+    "paywall.more.chip.3": {
+      "text": "Membership badge",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-2.png; Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED",
+      "notes": "Chip with a medal emoji. Caution: a status badge shown to others is performative (tenet 2)."
+    },
+    "paywall.cta.reference": {
+      "text": "Upgrade your Locket",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-paywall-screen.png (2025-10); references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-paywall-2.png (2026-08); Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use. Followed by an unlocked-padlock glyph."
+    },
+    "paywall.dismiss": {
+      "text": "No thanks!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-paywall-screen.png (2025-10); references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-paywall-2.png (2026-08); Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED"
+    },
+    "paywall.entry.row.reference": {
+      "text": "Locket Gold",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260803-autocap-21.png",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "paywall.entry.row.subtitle": {
+      "text": "Unlock the best of Locket",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260803-autocap-21.png; Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "paywall.entry.pill.reference": {
+      "text": "Get Locket Gold",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-0.png; Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use. After purchase: \"View Locket Gold\"."
+    },
+    "paywall.locked.badge": {
+      "text": "Gold",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260803-autocap-21.png (\"Change app icon  💛 Gold ›\", \"Camera theme  💛 Gold ›\")",
+      "level": "SOURCED",
+      "notes": "Tag on locked rows."
+    },
+    "paywall.plans.title.reference": {
+      "text": "Subscribe to\nLocket Gold",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-3.png; references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-plan-picker.png; Locket Android APK 1.243.0 (2026-10-09) ",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "paywall.plans.monthly": {
+      "text": "Monthly",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-3.png",
+      "level": "SOURCED"
+    },
+    "paywall.plans.monthly.note": {
+      "text": "Cancel anytime!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-3.png",
+      "level": "SOURCED",
+      "notes": "The APK also has \"Cancel anytime\" without the exclamation mark."
+    },
+    "paywall.plans.yearly.title": {
+      "text": "1 Year",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-plan-picker.png",
+      "level": "SOURCED"
+    },
+    "paywall.plans.yearly.detail": {
+      "text": "12 mo • {yearly_price} per year",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-plan-picker.png (\"12 mo • $36 per year\"); Locket Android APK 1.243.0 (2026-10-09) Hermes \"12 mo • #yearlyprice# per year\"",
+      "level": "SOURCED"
+    },
+    "paywall.plans.monthlyPrice": {
+      "text": "{price}/mo",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-plan-picker.png (\"$2.99/mo\", \"$3.99/mo\"); references/auto/locket/mobbin/locket-mobbin-gold-flow-3.png (\"$5.98/mo\")",
+      "level": "SOURCED"
+    },
+    "paywall.plans.month.title": {
+      "text": "1 Month",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-plan-picker.png",
+      "level": "SOURCED"
+    },
+    "paywall.plans.subscribe": {
+      "text": "Subscribe",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-3.png; references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-plan-picker.png",
+      "level": "SOURCED"
+    },
+    "paywall.legal.renews": {
+      "text": "Subscription renews automatically. Cancel anytime.",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table",
+      "level": "SOURCED",
+      "notes": "Placement not observed (no footer visible on the iOS paywall or plan sheet)."
+    },
+    "paywall.legal.trial": {
+      "text": "After your trial ends, you will be charged {price} {per_frequency} starting {renewal_date}. You can cancel any time before this date.",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table",
+      "level": "SOURCED",
+      "notes": "Present in 20+ languages; may come from a bundled paywall SDK. Placement not observed."
+    },
+    "paywall.success.alert.title": {
+      "text": "You’re all set",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-4.png",
+      "level": "SOURCED",
+      "notes": "Shown in an iOS system-style alert."
+    },
+    "paywall.success.alert.body": {
+      "text": "Your purchase was successful.",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-4.png",
+      "level": "SOURCED"
+    },
+    "paywall.welcome.title.reference": {
+      "text": "Welcome to Gold!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-5.png; references/auto/locket/mobbin/locket-mobbin-gold-flow-6.png",
+      "level": "SOURCED",
+      "notes": "Says \"Gold\" (our tier name is the owner's call)."
+    },
+    "paywall.welcome.body.reference": {
+      "text": "You now have access to all Locket Gold features. We’re always adding more benefits, so check back soon.",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-5.png; references/auto/locket/mobbin/locket-mobbin-gold-flow-6.png",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "paywall.welcome.done": {
+      "text": "Done",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "references/auto/locket/mobbin/locket-mobbin-gold-flow-6.png",
+      "level": "SOURCED"
+    },
+    "paywall.help.description.reference": {
+      "text": "Locket Gold is the ultimate Locket experience — with features that make it easier to personalize your Locket.",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "https://help.locket.com/en/articles/11057185-what-is-locket-gold-and-what-features-are-included",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "paywall.help.perks.reference": {
+      "text": "Custom app icons / Upload from Camera Roll / Unlimited Friends / Longer videos / Streak restoration / No Ads / Custom Gold Badge / Camera themes",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "https://help.locket.com/en/articles/11057185-what-is-locket-gold-and-what-features-are-included",
+      "level": "SOURCED",
+      "notes": "Help-center list (title case). DO-NOT-COPY: Streak restoration, No Ads, Custom Gold Badge."
+    },
+    "paywall.friendLimit.help.reference": {
+      "text": "Locket is for your friends, family, and significant others in your life so there's a limit of 20 of your closest friends. You can add unlimited friends with Locket Gold!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "paywall",
+      "evidence": "https://help.locket.com/en/articles/7915024-how-many-friends-can-i-have-on-locket",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "notifications.push.newPost.body.single": {
+      "text": "Sent you a Locket!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc moment_notif_body_one_user_one_moment",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use. The title is presumably the sender's name (not observed). Adapted: \"Sent you a {photo_noun}!\" once the noun is decided."
+    },
+    "notifications.push.newPost.body.two": {
+      "text": "{name1} and {name2} sent you Lockets!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc moment_notif_body_two_users (\"%1$s and %2$s sent you Lockets!\")",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "notifications.push.newPost.body.three": {
+      "text": "{name1}, {name2}, and {name3} sent you Lockets!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc moment_notif_body_three_users",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "notifications.push.newPost.body.many": {
+      "text": "{name1}, {name2}, and {count} other friends sent you Lockets!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc moment_notif_body_many_users (\"%1$s, %2$s, and %3$d other friends sent you Lockets!\")",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use. Contains a count of senders (not of likes). Review against the no-counts tenet before using."
+    },
+    "notifications.push.newPost.senderFallback": {
+      "text": "A friend",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc moment_notif_sender_fallback_name",
+      "level": "SOURCED"
+    },
+    "notifications.push.reaction.inApp.reference": {
+      "text": "{contactName} reacted {emoji} to your Locket",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table",
+      "level": "SOURCED",
+      "notes": "Closest verbatim reaction string. The push text itself was not observed. REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "notifications.push.channel.newPosts.name": {
+      "text": "New Lockets",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc notification_channel_moment_name",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "notifications.push.channel.newPosts.description": {
+      "text": "Notifications when friends post new Lockets",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc notification_channel_moment_description",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    },
+    "notifications.push.channel.groups.description": {
+      "text": "Notifications for new messages and reactions in groups",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc notification_channel_group_chat_description",
+      "level": "SOURCED"
+    },
+    "notifications.push.rollcall.title": {
+      "text": "Shared their Rollcall!",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc notification_rollcall_post_title",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY: \"Rollcall\" is a Locket feature name."
+    },
+    "notifications.push.rollcall.subtitle": {
+      "text": "Tap to see what they did this week.",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc notification_rollcall_post_subtitle",
+      "level": "SOURCED",
+      "notes": "Pattern for a weekly-recap push (recap is Yope-referenced; listed for voice)."
+    },
+    "notifications.push.dailyReminder.body.reference": {
+      "text": "It's been {day} days since your last Locket",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) resources.arsc daily_reminder_body_fallback_plural (\"It's been #day# days since your last Locket\")",
+      "level": "SOURCED",
+      "notes": "DO-NOT-COPY: guilt/nag framing (tenet 5). REFERENCE ONLY: contains the trademark \"Locket\"; replace with {app_name} or our photo noun before use."
+    }
+  }
+}
