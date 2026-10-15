@@ -1,0 +1,1251 @@
+{
+  "$comment": "Social surface group strings (chat.*, photo.viewer, walls.*, week.*, albums.*). Decisions: design/MERGE_DECISIONS.md → Social.",
+  "strings": {
+    "chat.thread.a11y.back": {
+      "text": "back",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "design/surfaces: icon.global.back (‹ in a header circle); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED",
+      "notes": "VoiceOver / TalkBack label of the back circle."
+    },
+    "chat.thread.a11y.groupCapsule": {
+      "text": "{group_name}, group info",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/store/yope-store-05.png (App Store screenshot 5, group chat, listing 1.229.0) (header capsule: group avatar · name · ›); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record'); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
+      "level": "SOURCED",
+      "notes": "Label of the header capsule that opens the group's profile / settings."
+    },
+    "chat.thread.a11y.recap": {
+      "text": "view recap",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png (S6, 2026-06) (pill label next to the same film-strip glyph)",
+      "level": "SOURCED",
+      "notes": "Label of the film-strip circle in the chat header."
+    },
+    "chat.thread.a11y.photo": {
+      "text": "{name}’s pic, {time}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); 'pic' as in references/auto/yope/frames/b-yopeapp-7591560669967682847-t49.50-reply-to-photo.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847 @ 49.50 s); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record'); yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "level": "SOURCED",
+      "notes": "{time} uses chat.thread.layout.timeFormat. Add chat.thread.a11y.caption when the post has a caption."
+    },
+    "chat.thread.a11y.photoMine": {
+      "text": "your pic, {time}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s)",
+      "pattern": "yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "level": "SOURCED"
+    },
+    "chat.thread.a11y.message": {
+      "text": "{name}, {message}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED",
+      "notes": "Text / emoji message read with its sender (the avatar shows only beside the last bubble of a run)."
+    },
+    "chat.thread.a11y.messageMine": {
+      "text": "you, {message}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s)",
+      "pattern": "yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "level": "SOURCED"
+    },
+    "chat.thread.a11y.caption": {
+      "text": "caption: {caption}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts) ('Group an image with its caption so VoiceOver reads them together'); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED"
+    },
+    "chat.thread.a11y.replyQuote": {
+      "text": "reply to {name}’s pic",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t49.50-reply-to-photo.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847 @ 49.50 s) (quote block 'Gabriel / pic'); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED"
+    },
+    "chat.thread.reply.photoLabel": {
+      "text": "pic",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t49.50-reply-to-photo.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847 @ 49.50 s) (word under the quoted poster's name)",
+      "level": "SOURCED"
+    },
+    "chat.thread.empty.titleCreator": {
+      "text": "you created group",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
+      "level": "SOURCED",
+      "notes": "Shown to the member who created the group (groups.created_by)."
+    },
+    "chat.thread.empty.titleMember": {
+      "text": "{name} created group",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05) ('you created group')",
+      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "level": "SOURCED",
+      "notes": "Noun swap: 'you' → the creator's first name, for the other members. Left out when created_by is null."
+    },
+    "chat.thread.empty.detail": {
+      "text": "and added {names}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05) ('and added mẹ, Anh')",
+      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "level": "SOURCED",
+      "notes": "{names}: first names of the other members, comma-separated (data)."
+    },
+    "chat.thread.empty.invite": {
+      "text": "invite more friends",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
+      "level": "SOURCED",
+      "notes": "Opens groups.invite. 'friends' kept verbatim; the owner may want the group's member noun for family / roommates groups."
+    },
+    "chat.thread.loading": {
+      "text": "Loading",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png (V-mthu, 2026-05) (HUD text; the only capitalised in-app word, yope.voice.lowercase exceptions)",
+      "level": "SOURCED"
+    },
+    "chat.thread.error.title": {
+      "text": "couldn’t load this chat",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "no Yope in-app error observed (yope-a §6); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.'); yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED"
+    },
+    "chat.thread.error.detail": {
+      "text": "check your connection and try again — your pics are safe",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "no Yope in-app error observed (yope-a §6); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.') (names the next step, ends warm); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
+      "level": "SOURCED"
+    },
+    "chat.thread.error.retry": {
+      "text": "try again",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "no Yope retry button observed; pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "level": "SOURCED"
+    },
+    "chat.thread.offline.title": {
+      "text": "you’re offline",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "Yope offline states not found (yope-a §1.8, §6); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.'); yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "level": "SOURCED"
+    },
+    "chat.thread.offline.detail": {
+      "text": "your group’s pics will be right here when you’re back",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "Yope offline states not found (yope-a §1.8, §6); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.') ('Your next memories are waiting.')",
+      "level": "SOURCED"
+    },
+    "chat.thread.sendFailed": {
+      "text": "couldn’t send — tap to try again",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "design/research/yope-b.md §1 'Not found: … failed-send state'; pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.'); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
+      "level": "SOURCED",
+      "notes": "Placement of this line is BLOCKED (chat.thread.layout.failedMessage)."
+    },
+    "chat.thread.menu.delete": {
+      "text": "delete",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (Yope ••• menu, 2024 build: 'download all photos', 'get group recap', 'share invite', 'leave group', 'report') (lowercase verbs in Yope's native ••• menu); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "level": "SOURCED",
+      "notes": "Context-menu item on your own text / voice message (delete_message)."
+    },
+    "chat.thread.menu.report": {
+      "text": "report",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (Yope ••• menu, 2024 build: 'download all photos', 'get group recap', 'share invite', 'leave group', 'report')",
+      "level": "SOURCED",
+      "notes": "Context-menu item on another member's message; opens safety.report."
+    },
+    "chat.thread.deleteMessage.title": {
+      "text": "delete this message?",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "no Yope confirmation observed; pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s)",
+      "pattern": "yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong') (question form 'can’t see your friends?')",
+      "level": "SOURCED"
+    },
+    "chat.thread.deleteMessage.message": {
+      "text": "it’s removed from the chat for everyone.",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "docs/API.md §6.2 delete_message (members get a message_deleted broadcast); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.') (one plain sentence with a period, like 'Ask your friend to send you a new link.')",
+      "level": "SOURCED"
+    },
+    "chat.composer.placeholder": {
+      "text": "start typing...",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "chat.composer",
+      "evidence": "references/auto/yope/store/yope-store-05.png (App Store screenshot 5, group chat, listing 1.229.0) (group chat field)",
+      "level": "SOURCED"
+    },
+    "chat.composer.a11y.camera": {
+      "text": "send a pic",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.composer",
+      "evidence": "references/auto/yope/store/yope-store-05.png (App Store screenshot 5, group chat, listing 1.229.0) (lime camera circle); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap') (verb first, 'pic' as in 'new pic added')",
+      "level": "SOURCED"
+    },
+    "chat.composer.a11y.mic": {
+      "text": "record a voice message",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.composer",
+      "evidence": "references/auto/yope/store/listing.html (v1.210.0–1.212.1: 'add voice to your memories or send voice messages in chat …'); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap'); noun 'voice messages' from the release note",
+      "level": "SOURCED"
+    },
+    "chat.composer.a11y.field": {
+      "text": "message",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.composer",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t48.50-1on1-thread.png ('message...'); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group'); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.placeholder ('name group (optional)', 'add a message', 'message to Oblong')",
+      "level": "SOURCED"
+    },
+    "chat.composer.a11y.send": {
+      "text": "send",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "chat.composer",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10) (lime 'send' button)",
+      "level": "SOURCED",
+      "notes": "Label of the send control once chat.composer.layout.typingState is captured."
+    },
+    "chat.voice.a11y.play": {
+      "text": "play voice message, {duration}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.voice",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); references/auto/yope/store/listing.html (v1.210.0–1.212.1: 'add voice to your memories or send voice messages in chat …'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap'); yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED",
+      "notes": "{duration} spoken from the mm:ss value."
+    },
+    "chat.voice.a11y.pause": {
+      "text": "pause",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.voice",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "level": "SOURCED"
+    },
+    "chat.voice.a11y.message": {
+      "text": "{name}’s voice message, {duration}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.voice",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); references/auto/yope/store/listing.html (v1.210.0–1.212.1: 'add voice to your memories or send voice messages in chat …'); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED"
+    },
+    "chat.voice.a11y.messageMine": {
+      "text": "your voice message, {duration}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.voice",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); references/auto/yope/store/listing.html (v1.210.0–1.212.1: 'add voice to your memories or send voice messages in chat …'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s)",
+      "pattern": "yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "level": "SOURCED"
+    },
+    "chat.voice.permission.title": {
+      "text": "can’t send voice messages?",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.voice",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png ('can’t see your friends?'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.permission ('can’t see your friends?' / 'enable contacts' / 'enable')",
+      "level": "SOURCED",
+      "notes": "Shown when the microphone permission is denied and the person taps the mic."
+    },
+    "chat.voice.permission.detail": {
+      "text": "enable your mic",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "chat.voice",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) ('enable contacts')",
+      "pattern": "yope.voice.permission ('can’t see your friends?' / 'enable contacts' / 'enable')",
+      "level": "SOURCED",
+      "notes": "Noun swap: contacts → your mic."
+    },
+    "chat.voice.permission.button": {
+      "text": "enable",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "chat.voice",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) (white 'enable' button)",
+      "level": "SOURCED",
+      "notes": "Opens the app's page in system Settings."
+    },
+    "chat.voice.error.play": {
+      "text": "couldn’t play this voice message",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.voice",
+      "evidence": "Yope playback errors not found (yope-b §3); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.')",
+      "level": "SOURCED"
+    },
+    "chat.voice.error.record": {
+      "text": "couldn’t record — try again",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "chat.voice",
+      "evidence": "Yope recording UI not found (yope-b §3); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.'); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
+      "level": "SOURCED"
+    },
+    "chat.reactions.picker.search": {
+      "text": "Search",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg (2025-01-16)",
+      "level": "SOURCED"
+    },
+    "chat.reactions.picker.frequent": {
+      "text": "Frequently Used",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg (2025-01-16)",
+      "level": "SOURCED"
+    },
+    "chat.reactions.picker.popular": {
+      "text": "Popular",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg (2025-01-16)",
+      "level": "SOURCED"
+    },
+    "chat.reactions.picker.all": {
+      "text": "All",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg (2025-01-16)",
+      "level": "SOURCED"
+    },
+    "chat.reactions.activity.title": {
+      "text": "Activity",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (design/research/locket.md §7) ('Activity')",
+      "level": "SOURCED",
+      "notes": "Title of the sheet listing who reacted to one photo."
+    },
+    "chat.reactions.activity.row": {
+      "text": "{name} sent {emoji}",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (design/research/locket.md §7) ('{{name}} sent {{emoji}}')",
+      "level": "SOURCED",
+      "notes": "One row per reaction; never a count."
+    },
+    "chat.reactions.activity.rowMine": {
+      "text": "You reacted {emoji} to {name}’s pic",
+      "origin": "adapted",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (design/research/locket.md §7) ('You reacted {{emoji}} to {{name}}'s Locket')",
+      "pattern": "locket.push.reaction ('{{contactName}} reacted {{emoji}} to your Locket', '{{name}} sent {{emoji}}')",
+      "level": "SOURCED",
+      "notes": "Noun swap: Locket (the photo) → pic."
+    },
+    "chat.reactions.empty": {
+      "text": "No reactions yet",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (design/research/locket.md §7) ('No reactions yet')",
+      "level": "SOURCED"
+    },
+    "chat.reactions.a11y.cluster": {
+      "text": "Reactions: {emoji_names}",
+      "origin": "new",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: https://help.locket.com (design/research/locket.md §11: 'Remove ads', 'Upload from camera roll')",
+      "pattern": "locket.voice.sentence-case ('Remove ads', 'Upload from camera roll', 'How to add the widget')",
+      "level": "SOURCED",
+      "notes": "{emoji_names}: the system names of the distinct emoji, comma-separated; never a number."
+    },
+    "chat.reactions.a11y.add": {
+      "text": "Add reaction",
+      "origin": "new",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "references/auto/locket/store/locket-store-08.png (smiley-plus glyph); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: https://help.locket.com (design/research/locket.md §11: 'Remove ads', 'Upload from camera roll')",
+      "pattern": "locket.voice.sentence-case ('Remove ads', 'Upload from camera roll', 'How to add the widget')",
+      "level": "SOURCED"
+    },
+    "chat.reactions.a11y.quick": {
+      "text": "React with {emoji_name}",
+      "origin": "new",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "references/auto/locket/store/locket-store-08.png (quick 🔥 💖); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: https://help.locket.com (design/research/locket.md §11: 'Remove ads', 'Upload from camera roll')",
+      "pattern": "locket.voice.sentence-case ('Remove ads', 'Upload from camera roll', 'How to add the widget')",
+      "level": "SOURCED"
+    },
+    "chat.reactions.error": {
+      "text": "Couldn’t send your reaction",
+      "origin": "new",
+      "source_app": "Locket",
+      "surface": "chat.reactions",
+      "evidence": "Locket reaction errors not found (locket.md §7); pattern examples: https://help.locket.com (design/research/locket.md §11: 'Remove ads', 'Upload from camera roll')",
+      "pattern": "locket.voice.sentence-case ('Remove ads', 'Upload from camera roll', 'How to add the widget'); locket.widget.empty ('No pics yet' / 'Tap to set up', 'No reactions yet')",
+      "level": "SOURCED"
+    },
+    "photo.viewer.title.you": {
+      "text": "you",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s) ('you sent to Oblong': 'you' in white bold)",
+      "level": "SOURCED",
+      "notes": "First word of the title when the photo is yours."
+    },
+    "photo.viewer.title.sentTo": {
+      "text": "sent to",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s) ('sent to' in grey between the two white bold names)",
+      "level": "SOURCED",
+      "notes": "Title = [you | sender first name] + 'sent to' + [group name]; only 'sent to' is grey (photo.viewer.md)."
+    },
+    "photo.viewer.reply.placeholder": {
+      "text": "message to {group_name}...",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s) ('message to Oblong'); references/owner/yope-01-find-friends-profile.webp ('message to Sabrina....')",
+      "pattern": "yope.voice.placeholder ('name group (optional)', 'add a message', 'message to Oblong'); locket.voice.ellipsis ('Send message...', 'Reply to {{name}}...')",
+      "level": "SOURCED",
+      "notes": "Noun swap: the 1:1 person → the group name; three periods (copy-patterns do-not-copy: four dots)."
+    },
+    "photo.viewer.menu.save": {
+      "text": "save",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t66.00-share-with-friends.png (same video @ 66.00 s; blue 'save' button)",
+      "level": "SOURCED"
+    },
+    "photo.viewer.menu.delete": {
+      "text": "delete",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (Yope ••• menu, 2024 build: 'download all photos', 'get group recap', 'share invite', 'leave group', 'report') (lowercase verbs; destructive items in red); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "level": "SOURCED",
+      "notes": "Own photos only (delete_media)."
+    },
+    "photo.viewer.menu.report": {
+      "text": "report",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (Yope ••• menu, 2024 build: 'download all photos', 'get group recap', 'share invite', 'leave group', 'report')",
+      "level": "SOURCED",
+      "notes": "Others' photos; opens safety.report with target kind 'post'."
+    },
+    "photo.viewer.menu.block": {
+      "text": "block {name}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (Yope ••• menu, 2024 build: 'download all photos', 'get group recap', 'share invite', 'leave group', 'report'); design/research/platform.md §safety.block ('Block'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap'); yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED",
+      "notes": "Others' photos; opens safety.block for the author."
+    },
+    "photo.viewer.delete.title": {
+      "text": "delete this pic?",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "no Yope delete confirmation observed (yope-b §4); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s)",
+      "pattern": "yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong') (question form 'can’t see your friends?', 'who would you like to add?')",
+      "level": "SOURCED"
+    },
+    "photo.viewer.delete.message": {
+      "text": "it’ll be gone everywhere — from every group you sent it to, and from chats, walls, recaps & albums.",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "docs/API.md §6.2 delete_media ('Deletes the photo everywhere: every post (all groups), its chat photo messages, reactions, tags, album items, recap items …'); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.') (plain full sentence with a period); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
+      "level": "SOURCED",
+      "notes": "Required by the brief: says the deletion removes it everywhere."
+    },
+    "photo.viewer.delete.confirm": {
+      "text": "delete",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "design/research/platform.md §settings.account (destructive 'Delete' button); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap') (lowercase per yope.voice.lowercase; HIG 'Delete')",
+      "level": "SOURCED"
+    },
+    "photo.viewer.delete.cancel": {
+      "text": "cancel",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "HIG Alerts ('Always use the title Cancel'), design/research/platform.md §settings; pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap') (HIG word, lowercased per yope.voice.lowercase)",
+      "level": "SOURCED"
+    },
+    "photo.viewer.toast.saved": {
+      "text": "pic saved",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) (lime toast 'posted in the wall'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM')",
+      "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall') ('new pic added')",
+      "level": "SOURCED"
+    },
+    "photo.viewer.toast.deleted": {
+      "text": "pic deleted",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) (lime toast 'posted in the wall'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM')",
+      "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall') ('new pic added')",
+      "level": "SOURCED"
+    },
+    "photo.viewer.error.save": {
+      "text": "couldn’t save this pic",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "no Yope save error observed; pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.')",
+      "level": "SOURCED"
+    },
+    "photo.viewer.error.delete": {
+      "text": "couldn’t delete this pic — try again",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "no Yope delete error observed; pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.'); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
+      "level": "SOURCED"
+    },
+    "photo.viewer.permission.title": {
+      "text": "can’t save your pics?",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) ('can’t see your friends?')",
+      "pattern": "yope.voice.permission ('can’t see your friends?' / 'enable contacts' / 'enable')",
+      "level": "SOURCED",
+      "notes": "Shown when photo-library add access is denied and the person taps save."
+    },
+    "photo.viewer.permission.detail": {
+      "text": "enable photos",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) ('enable contacts')",
+      "pattern": "yope.voice.permission ('can’t see your friends?' / 'enable contacts' / 'enable')",
+      "level": "SOURCED",
+      "notes": "Noun swap: contacts → photos."
+    },
+    "photo.viewer.permission.button": {
+      "text": "enable",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10)",
+      "level": "SOURCED",
+      "notes": "Opens the app's page in system Settings."
+    },
+    "photo.viewer.gone.title": {
+      "text": "this pic isn’t here anymore",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "docs/API.md §3 post_not_found (deleted or not visible); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.'); yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED"
+    },
+    "photo.viewer.gone.detail": {
+      "text": "the person who shared it took it down",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "docs/API.md §6.2 delete_media / delete_post (author only); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.') (blame-free statement)",
+      "level": "SOURCED"
+    },
+    "photo.viewer.a11y.close": {
+      "text": "close",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s) (✕); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "level": "SOURCED"
+    },
+    "photo.viewer.a11y.more": {
+      "text": "more",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s) (•••); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "level": "SOURCED"
+    },
+    "photo.viewer.a11y.photo": {
+      "text": "{name}’s pic, {date}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record'); yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "level": "SOURCED",
+      "notes": "Also used for wall and album tiles; add chat.thread.a11y.caption when there is a caption."
+    },
+    "photo.viewer.a11y.photoMine": {
+      "text": "your pic, {date}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s)",
+      "pattern": "yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "level": "SOURCED"
+    },
+    "walls.mine.title": {
+      "text": "my wall",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "walls.mine",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10) (own wall row 'my wall' / 'just for friends' in send to...)",
+      "level": "SOURCED"
+    },
+    "walls.mine.empty.title": {
+      "text": "nothing on your wall yet",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "walls.mine",
+      "evidence": "Yope empty wall not found (yope-b §5); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
+      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends'); yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "level": "SOURCED"
+    },
+    "walls.mine.empty.detail": {
+      "text": "pics you send to your groups show up here",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "walls.mine",
+      "evidence": "Yope empty wall not found (yope-b §5); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
+      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "level": "SOURCED"
+    },
+    "walls.mine.empty.action": {
+      "text": "share a pic",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "walls.mine",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t44.23-home-list-new-group-icon.png ('you’re friends!✨ share a pic?')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "level": "SOURCED",
+      "notes": "The action fragment of the verbatim line, without the question mark and emoji (buttons carry none). Opens camera.capture."
+    },
+    "walls.member.empty.title": {
+      "text": "no pics from {name} yet",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "walls.member",
+      "evidence": "Yope empty wall not found (yope-b §5); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
+      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends'); yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED"
+    },
+    "walls.member.empty.detail": {
+      "text": "you’ll see the pics {name} sends to groups you’re both in",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "walls.member",
+      "evidence": "docs/API.md §6.4 wall (only groups you both belong to); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
+      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends'); yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "level": "SOURCED",
+      "notes": "Also shown for a person you have a block with (the RPC returns nothing); it reveals nothing about the block."
+    },
+    "walls.member.a11y.wall": {
+      "text": "{name}’s wall",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "walls.member",
+      "evidence": "references/auto/yope/frames/b-yrrah-7673901254787009810-t11.30-sent-to-wall.png ('the wall'); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED"
+    },
+    "walls.browse.title": {
+      "text": "me & friends",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "walls.browse",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t116.00-me-and-friends.png (same video @ 116.00 s)",
+      "level": "SOURCED",
+      "notes": "'friends' kept verbatim (walls span all your groups); flagged for the owner (MERGE_DECISIONS Social S-12)."
+    },
+    "walls.browse.me": {
+      "text": "me",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "walls.browse",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t116.00-me-and-friends.png (same video @ 116.00 s) ('me & friends'); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED",
+      "notes": "Label under your own circle, first in the row."
+    },
+    "walls.browse.empty.title": {
+      "text": "no walls here yet",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "walls.browse",
+      "evidence": "Yope empty state not found for walls (yope-b §5); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
+      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "level": "SOURCED"
+    },
+    "walls.browse.empty.detail": {
+      "text": "create a group and everyone’s pics show up here",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "walls.browse",
+      "evidence": "Yope empty state not found for walls (yope-b §5); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
+      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends'); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
+      "level": "SOURCED"
+    },
+    "walls.browse.empty.action": {
+      "text": "create group",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "walls.browse",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "level": "SOURCED",
+      "notes": "Opens groups.create."
+    },
+    "walls.browse.a11y.collage": {
+      "text": "collage, {date}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "walls.browse",
+      "evidence": "docs/API.md §6.4 wall (item_kind 'collage'); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED"
+    },
+    "week.recap.segment.recap": {
+      "text": "recap",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "references/owner/yope-week-recap.jpg (segmented capsule, selected)",
+      "level": "CAPTURED"
+    },
+    "week.recap.segment.pics": {
+      "text": "pics",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "references/owner/yope-week-recap.jpg (segmented capsule)",
+      "level": "CAPTURED"
+    },
+    "week.recap.open": {
+      "text": "view recap",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png (S6, 2026-06)",
+      "level": "SOURCED",
+      "notes": "Entry label (chat header circle label, albums empty action)."
+    },
+    "week.recap.a11y.edit": {
+      "text": "edit",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "references/auto/yope/store/listing.html (App Store version history v1.214.0, 2026-04-06: 'recaps are now walls / edit them, remix them, make your own memory albums / save it or share it with your friends') ('edit them')",
+      "level": "SOURCED",
+      "notes": "Label of the pencil circle that opens week.edit."
+    },
+    "week.recap.a11y.card": {
+      "text": "recap of {week_label}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "references/owner/yope-week-recap.jpg ('18 aug-24 aug'); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED",
+      "notes": "{week_label} in week.recap.layout.weekFormat (title form)."
+    },
+    "week.recap.empty.title": {
+      "text": "your first recap shows up on sunday",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "docs/API.md §11 weekly_recap_isodow = 7 (Sunday); Yope 'recap' noun; pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
+      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends'); yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "level": "SOURCED",
+      "notes": "If the owner changes weekly_recap_isodow, change the day here. No progress count (do-not-copy 'Add {n} pics more to get a recap')."
+    },
+    "week.recap.empty.detail": {
+      "text": "it’s made from the pics your group shares this week",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "docs/API.md §10 recap.generate (items from that week's posts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
+      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "level": "SOURCED"
+    },
+    "week.recap.empty.action": {
+      "text": "share a pic",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t44.23-home-list-new-group-icon.png ('you’re friends!✨ share a pic?')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "level": "SOURCED",
+      "notes": "Action fragment of the verbatim line. Opens camera.capture for this group."
+    },
+    "week.recap.pending": {
+      "text": "your recap is on its way",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "docs/API.md §5.14 status 'pending' while the worker generates it; pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM')",
+      "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall'); yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "level": "SOURCED"
+    },
+    "week.edit.title": {
+      "text": "edit recap",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "references/auto/yope/store/listing.html (App Store version history v1.214.0, 2026-04-06: 'recaps are now walls / edit them, remix them, make your own memory albums / save it or share it with your friends') ('edit them'); Yope noun 'recap'; pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group'); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.title ('new group', 'send to...', 'suggested friends')",
+      "level": "SOURCED"
+    },
+    "week.edit.save": {
+      "text": "save",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "references/auto/yope/store/listing.html (App Store version history v1.214.0, 2026-04-06: 'recaps are now walls / edit them, remix them, make your own memory albums / save it or share it with your friends') ('save it'); references/auto/yope/frames/b-yopeapp-7591560669967682847-t66.00-share-with-friends.png (same video @ 66.00 s; blue 'save' button)",
+      "level": "SOURCED"
+    },
+    "week.edit.saveAsAlbum": {
+      "text": "save as album",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "references/auto/yope/store/listing.html (App Store version history v1.214.0, 2026-04-06: 'recaps are now walls / edit them, remix them, make your own memory albums / save it or share it with your friends') ('save it', 'make your own memory albums'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "level": "SOURCED"
+    },
+    "week.edit.textPlaceholder": {
+      "text": "add a message",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10) (caption placeholder)",
+      "level": "SOURCED",
+      "notes": "Recap text field; its placement is BLOCKED (week.edit.layout.recapText)."
+    },
+    "week.edit.album.title": {
+      "text": "new album",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group') ('new group')",
+      "pattern": "yope.voice.title ('new group', 'send to...', 'suggested friends')",
+      "level": "SOURCED",
+      "notes": "Noun swap: group → album."
+    },
+    "week.edit.album.namePlaceholder": {
+      "text": "name album",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group') ('name group (optional)'); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group'); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.placeholder ('name group (optional)', 'add a message', 'message to Oblong')",
+      "level": "SOURCED",
+      "notes": "'(optional)' is dropped because an album needs a name (docs/API.md save_album invalid_name)."
+    },
+    "week.edit.toast.saved": {
+      "text": "recap saved",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) ('posted in the wall'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM')",
+      "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall')",
+      "level": "SOURCED"
+    },
+    "week.edit.toast.albumSaved": {
+      "text": "album saved",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) ('posted in the wall'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM')",
+      "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall')",
+      "level": "SOURCED"
+    },
+    "week.edit.error.save": {
+      "text": "couldn’t save your changes — try again",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "no Yope save error observed; pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.'); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
+      "level": "SOURCED"
+    },
+    "week.edit.error.notReady": {
+      "text": "this recap is still being made",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "docs/API.md §3 recap_not_ready; pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.')",
+      "level": "SOURCED"
+    },
+    "week.edit.error.albumName": {
+      "text": "give your album a name",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "docs/API.md §3 invalid_name; pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.') (names the next step)",
+      "level": "SOURCED"
+    },
+    "week.edit.a11y.close": {
+      "text": "close",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "level": "SOURCED"
+    },
+    "week.edit.a11y.inRecap": {
+      "text": "in recap",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED",
+      "notes": "Accessibility value of a checked tile."
+    },
+    "week.edit.a11y.notInRecap": {
+      "text": "not in recap",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "week.edit",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED",
+      "notes": "Accessibility value of an unchecked tile."
+    },
+    "week.history.header.title": {
+      "text": "Week {week_number}",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/store/retro-store-02.png ('Week 27', 'Week 26', 'Week 25')",
+      "level": "SOURCED",
+      "notes": "{week_number}: ISO-8601 week number (week.history.layout.weeks)."
+    },
+    "week.history.menu.viewRecap": {
+      "text": "View recap",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-panels.png (menu labels); Yope 'view recap'; pattern examples: references/auto/retro/press/tc-2025-12-rewind-panels.png ('Hide photo', 'Share to my week')",
+      "pattern": "retro.voice.menu-labels ('On this week', 'Hide photo', 'Share to my week')",
+      "level": "SOURCED",
+      "notes": "Week '•••' item when that week has a ready recap; the menu's own Retro contents are BLOCKED (week.history.layout.weekMenu)."
+    },
+    "week.history.menu.saveAsAlbum": {
+      "text": "Save as album",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-panels.png ('Add to Album', 'Share to my week'); pattern examples: references/auto/retro/press/tc-2025-12-rewind-panels.png ('Hide photo', 'Share to my week')",
+      "pattern": "retro.voice.menu-labels ('On this week', 'Hide photo', 'Share to my week')",
+      "level": "SOURCED",
+      "notes": "Opens week.edit's album sheet with that week's photos. Retro's 'Add to Album' adds to an existing album, which the API cannot do."
+    },
+    "week.history.a11y.more": {
+      "text": "More",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/store/retro-store-02.png ('Week 27', 'Week 26', 'Week 25') ('•••'); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/retro/store/retro-store-02.png ('Week 27', 'Week 26', 'Week 25') ('Share Profile', 'Recaps')",
+      "pattern": "retro.voice.title-case ('Share Profile', 'Create Recap', 'Add to Album', 'Last Week')",
+      "level": "SOURCED"
+    },
+    "week.history.a11y.add": {
+      "text": "Add Photos",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/store/retro-store-02.png ('Week 27', 'Week 26', 'Week 25') ('+' tile); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/retro/store/retro-store-02.png ('Week 27', 'Week 26', 'Week 25') ('Share Profile', 'Recaps')",
+      "pattern": "retro.voice.title-case ('Share Profile', 'Create Recap', 'Add to Album', 'Last Week')",
+      "level": "SOURCED",
+      "notes": "Opens camera.capture for this group."
+    },
+    "week.history.a11y.tile": {
+      "text": "{weekday}, {date}, {name}’s photo",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/retro/store/retro-store-02.png ('Week 27', 'Week 26', 'Week 25')",
+      "pattern": "retro.voice.terse-numbers ('Week 27', 'Apr 29 – May 5', 'Mon')",
+      "level": "SOURCED"
+    },
+    "week.history.a11y.emptyDay": {
+      "text": "{weekday}, {date}, no photos",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/retro/store/retro-store-02.png ('Week 27', 'Week 26', 'Week 25')",
+      "pattern": "retro.voice.terse-numbers ('Week 27', 'Apr 29 – May 5', 'Mon')",
+      "level": "SOURCED"
+    },
+    "week.history.empty": {
+      "text": "Photos shared in {group_name} collect here, week by week.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/press/engadget-2026-08-profile.jpg ('Retro is a weekly photo album. Try adding photos to 3 different weeks below.'); pattern examples: references/auto/retro/press/tc-2023-07-retro-2b.jpg; references/auto/retro/press/engadget-2026-08-profile.jpg",
+      "pattern": "retro.voice.explanation ('Only friends you've given a key to can see back more than 4 weeks.', 'Retro is a weekly photo album. Try adding photos to 3 different weeks below.')",
+      "level": "SOURCED",
+      "notes": "Retro's '3 different weeks' goal and its progress ring are a count (do-not-copy), so the sentence is rewritten without a target."
+    },
+    "week.history.error": {
+      "text": "Couldn’t load your group’s weeks. Pull down to try again.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "Retro errors not found (retro-timehop.md); pattern examples: references/auto/retro/press/tc-2023-07-retro-2b.jpg; references/auto/retro/press/engadget-2026-08-profile.jpg",
+      "pattern": "retro.voice.explanation ('Only friends you've given a key to can see back more than 4 weeks.', 'Retro is a weekly photo album. Try adding photos to 3 different weeks below.')",
+      "level": "SOURCED"
+    },
+    "week.history.offline": {
+      "text": "You’re offline. Weeks you’ve already opened are still here.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "Retro offline state not found (retro-timehop.md); pattern examples: references/auto/retro/press/tc-2023-07-retro-2b.jpg; references/auto/retro/press/engadget-2026-08-profile.jpg",
+      "pattern": "retro.voice.explanation ('Only friends you've given a key to can see back more than 4 weeks.', 'Retro is a weekly photo album. Try adding photos to 3 different weeks below.')",
+      "level": "SOURCED"
+    },
+    "albums.list.title": {
+      "text": "memory albums",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "albums.list",
+      "evidence": "references/auto/yope/store/listing.html (App Store version history v1.214.0, 2026-04-06: 'recaps are now walls / edit them, remix them, make your own memory albums / save it or share it with your friends') ('make your own memory albums')",
+      "level": "SOURCED"
+    },
+    "albums.list.row.subtitle": {
+      "text": "saved by {name}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "albums.list",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM') (row subtitle 'new pic added · 10:10 AM'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM')",
+      "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall')",
+      "level": "SOURCED",
+      "notes": "{name}: first name of albums.created_by; left out when null."
+    },
+    "albums.list.empty.title": {
+      "text": "no memory albums yet",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "albums.list",
+      "evidence": "Yope album screens not found (yope-b §7); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
+      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "level": "SOURCED"
+    },
+    "albums.list.empty.detail": {
+      "text": "save a recap, or any pics from it, as an album",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "albums.list",
+      "evidence": "references/auto/yope/store/listing.html (App Store version history v1.214.0, 2026-04-06: 'recaps are now walls / edit them, remix them, make your own memory albums / save it or share it with your friends') ('save it', 'make your own memory albums'); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
+      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "level": "SOURCED"
+    },
+    "albums.list.empty.action": {
+      "text": "view recap",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "albums.list",
+      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png (S6, 2026-06)",
+      "level": "SOURCED",
+      "notes": "Opens week.recap."
+    },
+    "albums.view.menu.rename": {
+      "text": "rename",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "albums.view",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (Yope ••• menu, 2024 build: 'download all photos', 'get group recap', 'share invite', 'leave group', 'report') (lowercase verbs in Yope's ••• menu); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "level": "SOURCED"
+    },
+    "albums.view.menu.delete": {
+      "text": "delete album",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "albums.view",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (Yope ••• menu, 2024 build: 'download all photos', 'get group recap', 'share invite', 'leave group', 'report') ('leave group' form: verb + noun, red); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "level": "SOURCED",
+      "notes": "Shown only to the album's creator and group admins (delete_album)."
+    },
+    "albums.view.rename.title": {
+      "text": "rename album",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "albums.view",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group') ('new group'); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group'); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.title ('new group', 'send to...', 'suggested friends')",
+      "level": "SOURCED"
+    },
+    "albums.view.delete.title": {
+      "text": "delete this album?",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "albums.view",
+      "evidence": "no Yope confirmation observed; pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s)",
+      "pattern": "yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong') (question form)",
+      "level": "SOURCED"
+    },
+    "albums.view.delete.message": {
+      "text": "the pics stay in your group — only the album goes away.",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "albums.view",
+      "evidence": "docs/API.md §6.4 delete_album (posts are untouched); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.') (plain sentence with a period); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
+      "level": "SOURCED"
+    },
+    "albums.view.delete.confirm": {
+      "text": "delete",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "albums.view",
+      "evidence": "design/research/platform.md §settings.account (destructive 'Delete'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap') (lowercase per yope.voice.lowercase)",
+      "level": "SOURCED"
+    },
+    "albums.view.toast.renamed": {
+      "text": "album renamed",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "albums.view",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) ('posted in the wall'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM')",
+      "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall')",
+      "level": "SOURCED"
+    },
+    "albums.view.toast.deleted": {
+      "text": "album deleted",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "albums.view",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) ('posted in the wall'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM')",
+      "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall')",
+      "level": "SOURCED"
+    },
+    "albums.view.empty.title": {
+      "text": "nothing left in this album",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "albums.view",
+      "evidence": "docs/API.md §5.15 (album items need the post to be visible; deleted posts leave albums); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
+      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "level": "SOURCED"
+    },
+    "albums.view.empty.detail": {
+      "text": "pics taken down by the people who shared them leave albums too",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "albums.view",
+      "evidence": "docs/API.md §6.2 delete_media (album items removed); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
+      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "level": "SOURCED"
+    }
+  }
+}

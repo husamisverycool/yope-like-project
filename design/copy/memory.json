@@ -1,0 +1,1234 @@
+{
+  "strings": {
+    "onthisday.entry.title": {
+      "text": "{group}'s Day in History",
+      "origin": "adapted",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/help/th-help-2024-03-intro-day-in-history.jpg ('VERONICA'S DAY IN HISTORY'); https://help.timehop.com/article/774-can-i-view-a-previous-day-in-timehop ('[Your Name]'s Yesterday in History')",
+      "pattern": "timehop.voice.title-case-names; noun swap person's name -> group name ({group})",
+      "level": "SOURCED",
+      "notes": "Shown on the entry that groups.screen places while the group has memories for today; rendered as stored (Title Case)."
+    },
+    "onthisday.banner.yearsAgo.one": {
+      "text": "1 YEAR AGO",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/help/th-help-2024-02-panel-share-1-year-ago.png ('1 YEAR AGO'); references/auto/timehop/help/th-help-2024-02-panel-best-photos.png ('TUESDAY  1 YEAR AGO  AUG 30')",
+      "level": "SOURCED",
+      "notes": "Singular form; banner label and the entry's second line."
+    },
+    "onthisday.banner.yearsAgo.other": {
+      "text": "{count} YEARS AGO",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/store/timehop-store-01.png '3 YEARS AGO'; -02 '8 YEARS AGO'; -05 '2 YEARS AGO'; references/auto/timehop/help/th-help-2025-06-share-full-43-years-ago.png '43 YEARS AGO'",
+      "level": "SOURCED",
+      "notes": "{count} = on_this_day.years_ago (2 or more), digits. A number of years, not a social count."
+    },
+    "onthisday.memory.meta": {
+      "text": "{weekday} {time}",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png ('TUE  10:34 PM')",
+      "level": "SOURCED",
+      "notes": "{weekday} = three-letter weekday in capitals (TUE); {time} = h:mm AM/PM in the device locale (yope.voice.formats '10:00 PM'). Author first name is not part of the visible row (Timehop shows none); the avatar stands in for the source icon."
+    },
+    "onthisday.loading": {
+      "text": "Collecting Memories",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "https://help.timehop.com/article/812-my-app-wont-load-collecting-memories- ; https://help.timehop.com/article/774-can-i-view-a-previous-day-in-timehop",
+      "level": "SOURCED"
+    },
+    "onthisday.error.title": {
+      "text": "Time Travel Failed",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "https://help.timehop.com/article/767-im-getting-time-travel-failed (title 'Time Travel Failed Error')",
+      "level": "SOURCED",
+      "notes": "Timehop's on-screen body for this error was not found; the detail below follows the app default voice."
+    },
+    "onthisday.error.detail": {
+      "text": "try again in a moment — your memories are waiting",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "onthisday",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error + yope.voice.lowercase; 'Your next memories are waiting.' with 'next' dropped (these memories are past); em dash per yope.voice.punctuation",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "onthisday.error.retry": {
+      "text": "try again",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "onthisday",
+      "evidence": "design/copy-patterns.md yope.voice.button: 'create group', 'invite more friends', 'enable', 'send', 'new recap' (V-mthu, V-chuong)",
+      "pattern": "yope.voice.button (verb first, lowercase, no punctuation)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "onthisday.offline.title": {
+      "text": "you're offline",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "onthisday",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error (calm statement of what happened, no blame)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "onthisday.offline.detail": {
+      "text": "connect to see this day — your memories are waiting",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "onthisday",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error: next step, then the warm ending 'Your next memories are waiting.' ('next' dropped)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "onthisday.a11y.close": {
+      "text": "Close",
+      "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "onthisday",
+      "evidence": "design/research/platform.md 'VoiceOver / TalkBack labeling' (HIG VoiceOver 'Provide alternative labels for all key interface elements'; Android 'make the button's description Submit, not Submit button')",
+      "pattern": "platform.alertButton (one- or two-word verb, title-style capitalization) + design/research/platform.md 'VoiceOver / TalkBack labeling' (purpose of the control, never 'button')",
+      "level": "PLATFORM",
+      "notes": "VoiceOver / TalkBack label of the ✕ (icon-only)."
+    },
+    "onthisday.a11y.next": {
+      "text": "Older",
+      "origin": "adapted",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "https://help.timehop.com/article/754-how-to-move-through-your-timehop-day ('move towards older memories')",
+      "pattern": "accessibility action name: one word from the help text ('older memories'); platform.alertButton capitalization",
+      "level": "SOURCED",
+      "notes": "Custom accessibility action that does what a tap on the right half does."
+    },
+    "onthisday.a11y.previous": {
+      "text": "Back",
+      "origin": "adapted",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "https://help.timehop.com/article/754-how-to-move-through-your-timehop-day ('tap or swipe the left side' to go back)",
+      "pattern": "accessibility action name: one word from the help text ('go back'); platform.alertButton capitalization",
+      "level": "SOURCED",
+      "notes": "Custom accessibility action that does what a tap on the left half does."
+    },
+    "onthisday.a11y.photo": {
+      "text": "Photo by {name}, {weekday} {time}",
+      "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "onthisday",
+      "evidence": "design/research/platform.md 'VoiceOver / TalkBack labeling' ('Apply to: photo cells (who and when, plus caption, but not visual details)')",
+      "pattern": "platform VoiceOver labeling for photo cells (who + when) + onthisday.memory.meta format",
+      "level": "PLATFORM",
+      "notes": "{name} = poster's first name; {weekday} full weekday name for speech (Tuesday)."
+    },
+    "year.story.entry.title": {
+      "text": "It's time for your {year} story",
+      "origin": "adapted",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/press/wrapped25-press-entrypoints.png ('It's time for your 2025 Wrapped')",
+      "pattern": "P-YS-5 welcome; '2025' -> {year}; trademark 'Wrapped' -> generic noun 'story' (Adaptation rules)",
+      "level": "SOURCED",
+      "notes": "Entry row that groups.screen shows from December 1 while the group's year story is ready."
+    },
+    "year.story.entry.subtitle": {
+      "text": "We can't wait to show it to you.",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/press/wrapped25-press-entrypoints.png",
+      "level": "SOURCED"
+    },
+    "year.story.entry.button": {
+      "text": "Let's go",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/press/wrapped25-press-entrypoints.png",
+      "level": "SOURCED"
+    },
+    "year.story.intro.title": {
+      "text": "We're ready for you.",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/frames/wrapped25-rec-cdragon2010-t004.800.png (https://www.tiktok.com/@cdragon2010/video/7579703263306485022 t=4.8 s)",
+      "level": "SOURCED"
+    },
+    "year.story.intro.subtitle": {
+      "text": "Come on down.",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/frames/wrapped25-rec-cdragon2010-t004.800.png",
+      "level": "SOURCED"
+    },
+    "year.story.moments.title": {
+      "text": "You shared. We saved.",
+      "origin": "new",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "pattern example 'You listened. We counted.' (references/auto/wrapped/press/wrapped25-press-minutes.png)",
+      "pattern": "P-YS-1 two-beat headline 'You {verb}. We {verb}.'",
+      "level": "SOURCED",
+      "notes": "No number on this card."
+    },
+    "year.story.moments.count": {
+      "text": "{group} shared {count} moments this year.",
+      "origin": "new",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "pattern examples 'You listened to {n} albums this year.' / 'You listened to {n} songs this year.' (research §1.5, E sheet)",
+      "pattern": "P-YS-2 setup sentence; subject is the group, never a person",
+      "level": "SOURCED",
+      "notes": "{count} = year_stories.data.moments_shared, the group-level number allowed by docs/SPEC_FLAGS.md T3 (owner may drop it). No per-person numbers anywhere."
+    },
+    "year.story.moments.aside": {
+      "text": "Long live the moment.",
+      "origin": "adapted",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "research §1.5 'You listened to {n} albums this year.' / 'Long live the album.' (E sheet)",
+      "pattern": "P-YS-2 aside; noun swap album -> moment",
+      "level": "SOURCED"
+    },
+    "year.story.busiestMonth.title": {
+      "text": "{month} was your busiest month",
+      "origin": "adapted",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-sheet-every3s.png ('January was your Academic Wrestling Christian Rock phase'; research §1.5 '{Month} was your {X} phase')",
+      "pattern": "P-YS-2 setup; noun swap '{X} phase' -> 'busiest month'; no final period as in the reference",
+      "level": "SOURCED",
+      "notes": "{month} = full month name (layout.year.story.monthFormat) of year_stories.data.busiest_month. No number of photos."
+    },
+    "year.story.busiestMonth.aside": {
+      "text": "Life moves fast",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-sheet-every3s.png; xenarxoxo sheet (research §1.5 'Life moves fast')",
+      "level": "SOURCED",
+      "notes": "Used as the subline (P-YS-2 aside, 3 words)."
+    },
+    "year.story.mostReacted.title": {
+      "text": "Your most-reacted moments",
+      "origin": "new",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "pattern examples 'Your top genres', 'Your top song', 'Your listening age' (research §1.5)",
+      "pattern": "P-YS-3 section label 'Your {noun phrase}', no period; no rank word ('top') and no numbers",
+      "level": "SOURCED",
+      "notes": "docs/SPEC_FLAGS.md T2: order computed server-side only, never shown as a number or rank."
+    },
+    "year.story.mostReacted.aside": {
+      "text": "And these were extra special.",
+      "origin": "adapted",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "research §1.5 'You listened to {n} artists this year.' / 'And these 5 were extra special.' (E sheet)",
+      "pattern": "P-YS-2 aside; the number '5' removed (tenet filter: no counts)",
+      "level": "SOURCED"
+    },
+    "year.story.mostReacted.photo": {
+      "text": "{name} shared this on {date}",
+      "origin": "new",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "pattern examples 'Your top song was {song} by {artist}' and 'Your biggest listening day was February 25' (research §1.5, emilycraig sheet)",
+      "pattern": "P-YS-2 setup sentence; date as 'February 25' (layout.year.story.dateFormat); no final period like the 2024 card headlines",
+      "level": "SOURCED",
+      "notes": "{name} = poster's first name, {date} = post date. One card per photo, up to count.year.story.listLength."
+    },
+    "year.story.together.title": {
+      "text": "Some days, everyone was there.",
+      "origin": "new",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "pattern examples 'Life moves fast' / 'Luckily, we took notes.'; 'Once upon a time, there was a book lover.' (research §1.5)",
+      "pattern": "P-YS-2 setup sentence",
+      "level": "SOURCED",
+      "notes": "Introduces the collages from days when every member answered the daily invitation (year_stories.data.everyone_days). Celebrates those days; never names who did not answer."
+    },
+    "year.story.together.aside": {
+      "text": "Luckily, we took notes.",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-xenarxoxo-sheet-every3s.png t7.5 s (research §1.5; emilycraig run shows the same line without the comma)",
+      "level": "SOURCED"
+    },
+    "year.story.outro.teaser": {
+      "text": "One more thing...",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/frames/wrapped25-rec-cdragon2010-t258.000.png",
+      "level": "SOURCED",
+      "notes": "P-YS-4; three full stops as rendered."
+    },
+    "year.story.outro.title": {
+      "text": "Thanks for coming along for the ride",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-xenarxoxo-sheet-every3s.png (last tile)",
+      "level": "SOURCED"
+    },
+    "year.story.outro.subtitle": {
+      "text": "Until we meet again...",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-xenarxoxo-sheet-every3s.png (last tile)",
+      "level": "SOURCED"
+    },
+    "year.story.share": {
+      "text": "Share this story",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png; references/auto/wrapped/press/wrapped25-press-minutes.png",
+      "level": "SOURCED"
+    },
+    "year.story.summary.share": {
+      "text": "Share",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg; references/auto/wrapped/frames/wrapped25-rec-cdragon2010-t252.000.png",
+      "level": "SOURCED"
+    },
+    "year.story.summary.replay": {
+      "text": "Replay from beginning",
+      "origin": "verbatim",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg",
+      "level": "SOURCED"
+    },
+    "year.story.loading": {
+      "text": "Loading",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "year.story",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png (loading HUD 'Loading', design/research/yope-a.md §1.8)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "year.story.error.title": {
+      "text": "couldn't load your year",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "year.story",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error + yope.voice.lowercase",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "year.story.error.detail": {
+      "text": "try again in a moment — your memories are waiting",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "year.story",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error; 'Your next memories are waiting.' with 'next' dropped",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "year.story.error.retry": {
+      "text": "try again",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "year.story",
+      "evidence": "design/copy-patterns.md yope.voice.button: 'create group', 'invite more friends', 'enable', 'send', 'new recap' (V-mthu, V-chuong)",
+      "pattern": "yope.voice.button",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "year.story.offline.title": {
+      "text": "you're offline",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "year.story",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "year.story.offline.detail": {
+      "text": "connect to see your year — your memories are waiting",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "year.story",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error: next step + warm ending ('next' dropped)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "year.story.a11y.close": {
+      "text": "Close",
+      "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "year.story",
+      "evidence": "design/research/platform.md 'VoiceOver / TalkBack labeling' (HIG VoiceOver 'Provide alternative labels for all key interface elements'; Android 'make the button's description Submit, not Submit button')",
+      "pattern": "platform.alertButton (one- or two-word verb, title-style capitalization) + design/research/platform.md 'VoiceOver / TalkBack labeling' (purpose of the control, never 'button')",
+      "level": "PLATFORM"
+    },
+    "year.story.a11y.pause": {
+      "text": "Pause",
+      "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "year.story",
+      "evidence": "design/research/platform.md 'VoiceOver / TalkBack labeling' (HIG VoiceOver 'Provide alternative labels for all key interface elements'; Android 'make the button's description Submit, not Submit button')",
+      "pattern": "platform.alertButton (one- or two-word verb, title-style capitalization) + design/research/platform.md 'VoiceOver / TalkBack labeling' (purpose of the control, never 'button')",
+      "level": "PLATFORM",
+      "notes": "Used only once duration.year.story.card is sourced (auto-advance)."
+    },
+    "year.story.a11y.play": {
+      "text": "Play",
+      "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "year.story",
+      "evidence": "design/research/platform.md 'VoiceOver / TalkBack labeling' (HIG VoiceOver 'Provide alternative labels for all key interface elements'; Android 'make the button's description Submit, not Submit button')",
+      "pattern": "platform.alertButton (one- or two-word verb, title-style capitalization) + design/research/platform.md 'VoiceOver / TalkBack labeling' (purpose of the control, never 'button')",
+      "level": "PLATFORM",
+      "notes": "Label of the same control while paused."
+    },
+    "year.story.a11y.next": {
+      "text": "Next",
+      "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "year.story",
+      "evidence": "https://uproxx.com/music/how-to-watch-your-spotify-wrapped-2022-again/ ('tap the left or right of the screen to go to the previous or next screen'); design/research/platform.md 'VoiceOver / TalkBack labeling' (HIG VoiceOver 'Provide alternative labels for all key interface elements'; Android 'make the button's description Submit, not Submit button')",
+      "pattern": "platform.alertButton (one- or two-word verb, title-style capitalization) + design/research/platform.md 'VoiceOver / TalkBack labeling' (purpose of the control, never 'button')",
+      "level": "PLATFORM",
+      "notes": "Custom accessibility action = tap on the right half."
+    },
+    "year.story.a11y.previous": {
+      "text": "Previous",
+      "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "year.story",
+      "evidence": "https://uproxx.com/music/how-to-watch-your-spotify-wrapped-2022-again/; design/research/platform.md 'VoiceOver / TalkBack labeling' (HIG VoiceOver 'Provide alternative labels for all key interface elements'; Android 'make the button's description Submit, not Submit button')",
+      "pattern": "platform.alertButton (one- or two-word verb, title-style capitalization) + design/research/platform.md 'VoiceOver / TalkBack labeling' (purpose of the control, never 'button')",
+      "level": "PLATFORM",
+      "notes": "Custom accessibility action = tap on the left half."
+    },
+    "year.story.a11y.collage": {
+      "text": "Collage from {date}",
+      "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "year.story",
+      "evidence": "design/research/platform.md 'VoiceOver / TalkBack labeling' ('Describe meaningful images'; photo cells: who and when)",
+      "pattern": "platform VoiceOver labeling (what and when); date as layout.year.story.dateFormat",
+      "level": "PLATFORM"
+    },
+    "birthday.add.title": {
+      "text": "want a birthday video?",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.add",
+      "evidence": "design/copy-patterns.md yope.voice.permission: 'can’t see your friends?' / 'enable contacts' / 'enable' (V-chuong t7.73); https://www.yope.tv/legal Privacy ('If you choose to provide them, we collect your birth day and month so people you know get reminded when it’s your birthday.', design/research/yope-a.md §2.3)",
+      "pattern": "yope.voice.permission (in-app ask = a question about the benefit + a plain action); yope.voice.lowercase",
+      "level": "SOURCED"
+    },
+    "birthday.add.detail": {
+      "text": "a week before your birthday, your groups get asked for a pic & a line. on the day, you get the video",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.add",
+      "evidence": "https://www.yope.tv/legal Privacy ('If you choose to provide them, we collect your birth day and month so people you know get reminded when it’s your birthday.', design/research/yope-a.md §2.3); design/copy-patterns.md yope.voice.punctuation ('&' for 'and'; no terminal period) and yope.voice.release-notes-style sentence breaks ('fewer steps. less noise. more sharing.')",
+      "pattern": "yope.voice.second-person + yope.voice.punctuation",
+      "level": "SOURCED",
+      "notes": "Describes docs/API.md: requests created birthday_request_lead_days (7) before; tribute delivered on the day."
+    },
+    "birthday.add.privacy": {
+      "text": "only the day & month are shared, never your age",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.add",
+      "evidence": "https://www.yope.tv/legal Privacy ('If you choose to provide them, we collect your birth day and month so people you know get reminded when it’s your birthday.', design/research/yope-a.md §2.3)",
+      "pattern": "yope.voice.second-person + yope.voice.punctuation",
+      "level": "SOURCED",
+      "notes": "True to docs/API.md: profile_private is readable only by its owner; members see tribute_requests.birthday_date (this year's date), never the birth year."
+    },
+    "birthday.add.confirm": {
+      "text": "add my birthday",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.add",
+      "evidence": "design/copy-patterns.md yope.voice.button: 'create group', 'invite more friends', 'enable', 'send', 'new recap' (V-mthu, V-chuong)",
+      "pattern": "yope.voice.button (3 words, verb first)",
+      "level": "SOURCED"
+    },
+    "birthday.add.later": {
+      "text": "maybe later",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "birthday.add",
+      "evidence": "https://yope.app/ interactive demo text (design/research/yope-a.md §3.1 Website: 'maybe later')",
+      "level": "SOURCED",
+      "notes": "Yope's own website demo; no in-app birthday screen was observed (yope-a §2.3)."
+    },
+    "birthday.add.added": {
+      "text": "birthday added",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.add",
+      "evidence": "design/copy-patterns.md yope.voice.confirmation: 'posted in the wall' (V-chuong), 'you created group' (V-mthu), 'new pic added' (V-sav)",
+      "pattern": "yope.voice.confirmation (past tense, lowercase, no exclamation)",
+      "level": "SOURCED"
+    },
+    "birthday.add.manage.title": {
+      "text": "your birthday",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.add",
+      "evidence": "design/copy-patterns.md yope.voice.title: 'new group', 'send to...', 'me & friends'",
+      "pattern": "yope.voice.title (short lowercase noun phrase)",
+      "level": "SOURCED"
+    },
+    "birthday.add.manage.remove": {
+      "text": "remove my birthday",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.add",
+      "evidence": "design/copy-patterns.md yope.voice.button: 'create group', 'invite more friends', 'enable', 'send', 'new recap' (V-mthu, V-chuong)",
+      "pattern": "yope.voice.button (3 words, verb first)",
+      "level": "SOURCED"
+    },
+    "birthday.add.removed": {
+      "text": "birthday removed",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.add",
+      "evidence": "design/copy-patterns.md yope.voice.confirmation: 'posted in the wall' (V-chuong), 'you created group' (V-mthu), 'new pic added' (V-sav)",
+      "pattern": "yope.voice.confirmation",
+      "level": "SOURCED"
+    },
+    "birthday.add.invalid": {
+      "text": "that date doesn't look right",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.add",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error (calm, blame-free)",
+      "level": "SOURCED",
+      "notes": "invalid_birthday (missing, in the future, before 1900)."
+    },
+    "birthday.add.error.title": {
+      "text": "couldn't save your birthday",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.add",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.add.error.detail": {
+      "text": "try again in a moment",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.add",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error (names the next step)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.add.error.retry": {
+      "text": "try again",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.add",
+      "evidence": "design/copy-patterns.md yope.voice.button: 'create group', 'invite more friends', 'enable', 'send', 'new recap' (V-mthu, V-chuong)",
+      "pattern": "yope.voice.button",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.add.offline": {
+      "text": "you're offline — connect to add your birthday",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.add",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error + yope.voice.punctuation (em dash)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.request.title": {
+      "text": "Birthday Video for {name}!",
+      "origin": "adapted",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "evidence": "references/auto/tribute/mockups/tribute-home-phone-step-1-contribution-page.png ('Congrats Tribute for Ollie!'); references/auto/vidday/store/vidday-store-01.png ('{Name}' / 'Birthday Video')",
+      "pattern": "Tribute title '{Occasion} Tribute for {Name}!' (research §2.2): occasion 'Congrats' -> 'Birthday'; trademark 'Tribute' -> 'Video' (VidDay's occasion line 'Birthday Video'); Ollie -> {name}",
+      "level": "SOURCED",
+      "notes": "{name} = honoree's first name. Also the label of the request row groups.screen shows while the request is open."
+    },
+    "birthday.request.due": {
+      "text": "Submit by {date}",
+      "origin": "verbatim",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "evidence": "references/auto/tribute/mockups/tribute-home-phone-step-1-contribution-page.png ('Submit by Wednesday, December 31, 2025'); https://www.tribute.co/help/creators/how-to-change-the-deadline-for-your-tribute/",
+      "level": "SOURCED",
+      "notes": "P-BR-3: {date} = layout.birthday.request.dueDate (a date, never a countdown)."
+    },
+    "birthday.request.body": {
+      "text": "You're invited to submit a photo and join in on the fun of making a birthday video for {name}.",
+      "origin": "adapted",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t036-phone.png, -t042-phone.png (https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4) ('You're invited to submit a video message and join in on the fun of making a personalized video for Amelia.')",
+      "pattern": "P-BR-1 invitation; noun swaps 'video message' -> 'photo', 'personalized video' -> 'birthday video', 'Amelia' -> {name}",
+      "level": "SOURCED",
+      "notes": "VidDay's 'Hi everyone!' greeting is not used: each request is private to one member."
+    },
+    "birthday.request.ease": {
+      "text": "It's quick and easy.",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t036-phone.png, -t042-phone.png (https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4)",
+      "level": "SOURCED",
+      "notes": "P-BR-1 bar-lowering line."
+    },
+    "birthday.request.thanks": {
+      "text": "Thank you!",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t036-phone.png, -t042-phone.png (https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4)",
+      "level": "SOURCED",
+      "notes": "The reference's preceding sentence 'It's your contribution that will help to make this unforgettable.' is do-not-copy (obligation)."
+    },
+    "birthday.request.prompts.title": {
+      "text": "Message Ideas",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "evidence": "references/auto/vidday/store/vidday-store-01.png",
+      "level": "SOURCED"
+    },
+    "birthday.request.prompt.appreciate": {
+      "text": "What do you appreciate most about {name}?",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "evidence": "references/auto/vidday/store/vidday-store-01.png ('What do you appreciate most about Harper?')",
+      "level": "SOURCED",
+      "notes": "P-BR-2; recipient name as placeholder."
+    },
+    "birthday.request.prompt.impact": {
+      "text": "How has {name} impacted your life?",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "evidence": "references/auto/vidday/store/vidday-store-01.png ('How has Harper impacted your life?')",
+      "level": "SOURCED",
+      "notes": "P-BR-2."
+    },
+    "birthday.request.cta": {
+      "text": "Add Your Photo",
+      "origin": "adapted",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-contribution-page-viewport.png + tribute-web-testimonials.computed-styles.json ('Add Your Video')",
+      "pattern": "noun swap Video -> Photo (Adaptation rules: Tribute / VidDay 'video' -> 'photo')",
+      "level": "VERIFIED"
+    },
+    "birthday.request.contributed.title": {
+      "text": "Your Photo",
+      "origin": "adapted",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1-info.png ('Your Name', 'Your Email')",
+      "pattern": "P-BC-3 Title Case labels; noun swap Name -> Photo",
+      "level": "VERIFIED",
+      "notes": "Heading of the block that shows the member's own photo and line after they contributed (only they see it)."
+    },
+    "birthday.request.contributed.change": {
+      "text": "Retake",
+      "origin": "verbatim",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "evidence": "https://www.tribute.co/help/creators/how-do-i-upload-a-video/ ('Click Retake if you want another go'); https://help.vidday.com/how-to-record-a-video-with-a-phone/",
+      "level": "SOURCED",
+      "notes": "Opens birthday.contribute again; calling contribute_tribute again replaces the photo and line."
+    },
+    "birthday.request.contributed.remove": {
+      "text": "Remove",
+      "origin": "new",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "evidence": "pattern examples 'Retake', 'Submit', 'Continue' (Tribute), 'Use Video' (VidDay) (research §3.5)",
+      "pattern": "P-BC-3 single verb, Title Case",
+      "level": "SOURCED",
+      "notes": "Withdraws the contribution (direct DELETE before due_at, docs/API.md 5.0)."
+    },
+    "birthday.request.push.title": {
+      "text": "Birthday video for {name}",
+      "origin": "adapted",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t064-phone.png ('Celebration video for' / 'Amelia Harris')",
+      "pattern": "noun swap 'Celebration' -> 'Birthday', full name -> {name} (first name); P-BR-1 surface voice",
+      "level": "SOURCED",
+      "notes": "Push text of the one private request (worker job push.birthday_request; never sent to {name}; no reminders, docs/SPEC_FLAGS.md T5). The worker currently reads notifications.push.birthdayRequest.title (owned by the notifications.push pass) - hand-off in design/MERGE_DECISIONS.md memory M-22."
+    },
+    "birthday.request.push.body": {
+      "text": "You're invited to submit a photo and a line. It's quick and easy.",
+      "origin": "adapted",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t036-phone.png, -t042-phone.png (https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4) ('You're invited to submit a video message …' / 'It's quick and easy.')",
+      "pattern": "P-BR-1 invitation + bar-lowering line; noun swap 'a video message' -> 'a photo and a line'",
+      "level": "SOURCED",
+      "notes": "Tribute's and VidDay's own push / SMS wording for a request was not found (research §2.6). Worker key: notifications.push.birthdayRequest.body (M-22)."
+    },
+    "birthday.request.closed.title": {
+      "text": "this request has closed",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.request",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error (calm, no blame, no 'late')",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface'). tribute_closed (past due_at). Never says the member missed anything."
+    },
+    "birthday.request.closed.detail": {
+      "text": "{name}'s video is on its way",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.request",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error (ends warm)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.request.notFound.title": {
+      "text": "this request isn't available anymore",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.request",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface'). request_not_found (honoree opted out, left, or a block)."
+    },
+    "birthday.request.notFound.detail": {
+      "text": "your memories are waiting",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "birthday.request",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error warm ending 'Your next memories are waiting.' ('next' dropped)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.request.loading": {
+      "text": "Loading",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "birthday.request",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png (loading HUD 'Loading', design/research/yope-a.md §1.8)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.request.error.title": {
+      "text": "couldn't load this request",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.request",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.request.error.detail": {
+      "text": "try again in a moment",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.request",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.request.error.retry": {
+      "text": "try again",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.request",
+      "evidence": "design/copy-patterns.md yope.voice.button: 'create group', 'invite more friends', 'enable', 'send', 'new recap' (V-mthu, V-chuong)",
+      "pattern": "yope.voice.button",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.request.offline": {
+      "text": "you're offline — connect to see this request",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.request",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error + em dash (yope.voice.punctuation)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.request.a11y.close": {
+      "text": "Close",
+      "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "birthday.request",
+      "evidence": "design/research/platform.md 'VoiceOver / TalkBack labeling' (HIG VoiceOver 'Provide alternative labels for all key interface elements'; Android 'make the button's description Submit, not Submit button')",
+      "pattern": "platform.alertButton (one- or two-word verb, title-style capitalization) + design/research/platform.md 'VoiceOver / TalkBack labeling' (purpose of the control, never 'button')",
+      "level": "PLATFORM"
+    },
+    "birthday.contribute.step.photo": {
+      "text": "Photo",
+      "origin": "adapted",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1-info.png + tribute-web-testimonials-upload-step1.computed-styles.json (https://www.tribute.co/testimonials/upload/) (stepper 'Info · Video · Photos · Done')",
+      "pattern": "Tribute stepper label (one Title Case noun); noun swap Video -> Photo",
+      "level": "VERIFIED"
+    },
+    "birthday.contribute.step.message": {
+      "text": "Message",
+      "origin": "new",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1-info.png + tribute-web-testimonials-upload-step1.computed-styles.json (https://www.tribute.co/testimonials/upload/) (stepper labels 'Info', 'Video', 'Photos', 'Done'); references/auto/vidday/store/vidday-store-01.png ('Message Ideas')",
+      "pattern": "Tribute stepper label: one Title Case noun; the noun is VidDay's 'Message' ('Message Ideas')",
+      "level": "SOURCED"
+    },
+    "birthday.contribute.step.done": {
+      "text": "Done",
+      "origin": "verbatim",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1-info.png + tribute-web-testimonials-upload-step1.computed-styles.json (https://www.tribute.co/testimonials/upload/) (stepper step 4)",
+      "level": "VERIFIED"
+    },
+    "birthday.contribute.greeting": {
+      "text": "Let's add a photo for {name}!",
+      "origin": "new",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "evidence": "pattern examples 'Let's record a video for Tribute!' (references/auto/tribute/web/tribute-web-testimonials-upload-step1-info.png + tribute-web-testimonials-upload-step1.computed-styles.json (https://www.tribute.co/testimonials/upload/); 'Tribute' is that page's recipient name) and 'Let's add media!' (references/auto/vidday/frames/vidday-tour-t102-phone.png)",
+      "pattern": "P-BC-1 step greeting 'Let's {verb} a {noun} for {name}!'",
+      "level": "VERIFIED"
+    },
+    "birthday.contribute.thanks": {
+      "text": "Thank you for taking the time to participate!",
+      "origin": "verbatim",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1-info.png + tribute-web-testimonials-upload-step1.computed-styles.json (https://www.tribute.co/testimonials/upload/)",
+      "level": "VERIFIED",
+      "notes": "Thanks stated once, under the greeting of the first step (P-BC-2 rule)."
+    },
+    "birthday.contribute.picker.empty.title": {
+      "text": "no pics with you in {group} yet",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.contribute",
+      "evidence": "design/copy-patterns.md yope.voice.empty-state: 'you created group' / 'and added mẹ, Anh' / 'invite more friends' (V-mthu t51.23)",
+      "pattern": "yope.voice.empty-state (bold statement naming the place)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface'). Shown when the member posted no photo in the group and is self-tagged in none (contribute_tribute eligibility, docs/API.md)."
+    },
+    "birthday.contribute.picker.empty.detail": {
+      "text": "tap “i'm in this” on a pic you're in, or share a new one",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.contribute",
+      "evidence": "design/copy-patterns.md yope.voice.empty-state: 'you created group' / 'and added mẹ, Anh' / 'invite more friends' (V-mthu t51.23)",
+      "pattern": "yope.voice.empty-state detail (gray line telling what to do)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.contribute.picker.empty.action": {
+      "text": "open group",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.contribute",
+      "evidence": "design/copy-patterns.md yope.voice.button: 'create group', 'invite more friends', 'enable', 'send', 'new recap' (V-mthu, V-chuong)",
+      "pattern": "yope.voice.button (light pill action of yope.voice.empty-state)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.contribute.review.use": {
+      "text": "Use Photo",
+      "origin": "adapted",
+      "source_app": "VidDay",
+      "surface": "birthday.contribute",
+      "evidence": "https://help.vidday.com/how-to-record-a-video-with-a-phone/ ('tap Use Video to upload it')",
+      "pattern": "P-BC-3; noun swap Video -> Photo",
+      "level": "SOURCED"
+    },
+    "birthday.contribute.review.retake": {
+      "text": "Retake",
+      "origin": "verbatim",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "evidence": "https://www.tribute.co/help/creators/how-do-i-upload-a-video/; https://help.vidday.com/how-to-record-a-video-with-a-phone/",
+      "level": "SOURCED",
+      "notes": "Back to the photo grid."
+    },
+    "birthday.contribute.line.label": {
+      "text": "Your Message",
+      "origin": "adapted",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1-info.png + tribute-web-testimonials-upload-step1.computed-styles.json (https://www.tribute.co/testimonials/upload/) ('Your Name', 'Your Email' field labels)",
+      "pattern": "P-BC-3 Title Case label; noun swap Name -> Message",
+      "level": "VERIFIED",
+      "notes": "Field placeholder not found (research §3.6) - the field has none."
+    },
+    "birthday.contribute.submit": {
+      "text": "Submit",
+      "origin": "verbatim",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "evidence": "https://www.tribute.co/help/creators/how-do-i-upload-a-video/ ('Add your name and email, then click Submit.')",
+      "level": "SOURCED"
+    },
+    "birthday.contribute.done.title": {
+      "text": "Photo Upload Complete!",
+      "origin": "adapted",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "evidence": "https://www.tribute.co/help/creators/how-do-i-upload-a-video/ ('You'll see Video Upload Complete! when it's through.')",
+      "pattern": "P-BC-2 completion '{Noun} Upload Complete!'; noun swap Video -> Photo",
+      "level": "SOURCED"
+    },
+    "birthday.contribute.done.button": {
+      "text": "Done",
+      "origin": "verbatim",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1-info.png + tribute-web-testimonials-upload-step1.computed-styles.json (https://www.tribute.co/testimonials/upload/) (stepper 'Done')",
+      "level": "VERIFIED",
+      "notes": "Closes the flow."
+    },
+    "birthday.contribute.notEligible": {
+      "text": "you can only pick pics you posted or are in",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.contribute",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error (calm, says what works)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface'). post_not_eligible."
+    },
+    "birthday.contribute.closed": {
+      "text": "this request has closed — {name}'s video is on its way",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.contribute",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error + em dash",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface'). tribute_closed while submitting."
+    },
+    "birthday.contribute.loading": {
+      "text": "Loading",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "birthday.contribute",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png (loading HUD 'Loading', design/research/yope-a.md §1.8)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.contribute.error.title": {
+      "text": "couldn't send your photo",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.contribute",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.contribute.error.detail": {
+      "text": "try again in a moment",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.contribute",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.contribute.error.retry": {
+      "text": "try again",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.contribute",
+      "evidence": "design/copy-patterns.md yope.voice.button: 'create group', 'invite more friends', 'enable', 'send', 'new recap' (V-mthu, V-chuong)",
+      "pattern": "yope.voice.button",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.contribute.offline": {
+      "text": "you're offline — connect to send your photo",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.contribute",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error + em dash",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.contribute.a11y.photo": {
+      "text": "Photo from {date}",
+      "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "birthday.contribute",
+      "evidence": "design/research/platform.md 'VoiceOver / TalkBack labeling' (photo cells: who and when)",
+      "pattern": "platform VoiceOver labeling",
+      "level": "PLATFORM",
+      "notes": "Grid cells of the picker; {date} in the device's medium date style. Selection is announced by the selected trait / state."
+    },
+    "birthday.contribute.a11y.close": {
+      "text": "Close",
+      "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "birthday.contribute",
+      "evidence": "design/research/platform.md 'VoiceOver / TalkBack labeling' (HIG VoiceOver 'Provide alternative labels for all key interface elements'; Android 'make the button's description Submit, not Submit button')",
+      "pattern": "platform.alertButton (one- or two-word verb, title-style capitalization) + design/research/platform.md 'VoiceOver / TalkBack labeling' (purpose of the control, never 'button')",
+      "level": "PLATFORM"
+    },
+    "birthday.tribute.titleCard": {
+      "text": "Happy birthday, {name}!",
+      "origin": "adapted",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t118.300-phone.png ('HAPPY BIRTHDAY, AMELIA!')",
+      "pattern": "P-BT-1 title card; name -> {name}; case normalised (the reference's capitals are the theme's style)",
+      "level": "SOURCED",
+      "notes": "Rendered by the worker on the title card (layout.birthday.tribute.titleCard); {name} = honoree's first name."
+    },
+    "birthday.tribute.endCard": {
+      "text": "From {group}",
+      "origin": "adapted",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "evidence": "design/research/wrapped-tribute-partiful.md §4.5 (VidDay cover attribution 'From Russell and 36 others'); end card NOT FOUND (§4.5)",
+      "pattern": "Adaptation rules: the people list with a count -> {group}; the count is removed (tenet filter)",
+      "level": "BLOCKED",
+      "notes": "The end card itself was not observed in either reference (layout.birthday.tribute.endCard BLOCKED); this text stays debug-only until research capture 5 (one finished Tribute / VidDay) shows an end card. Worker key."
+    },
+    "birthday.tribute.title": {
+      "text": "Birthday Video",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "evidence": "references/auto/vidday/store/vidday-store-01.png (occasion line under the recipient name)",
+      "level": "SOURCED",
+      "notes": "Screen title above the player; {group} name below it is data, not copy."
+    },
+    "birthday.tribute.download": {
+      "text": "Download",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "evidence": "references/auto/vidday/store/vidday-store-08.png ('Download'); references/auto/tribute/mockups/tribute-home-phone-step-3-completed-page.png ('Download')",
+      "level": "SOURCED",
+      "notes": "Saves the MP4 to the photo library (save permission string owned by system.permissions)."
+    },
+    "birthday.tribute.share": {
+      "text": "Share",
+      "origin": "verbatim",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t118.300-phone.png (row 'Share' under the player)",
+      "level": "SOURCED",
+      "notes": "Opens the system share sheet with the MP4. VidDay's subtitle 'Send a special link' is not used: there is no public link."
+    },
+    "birthday.tribute.saved": {
+      "text": "saved to your photos",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.tribute",
+      "evidence": "design/copy-patterns.md yope.voice.confirmation: 'posted in the wall' (V-chuong), 'you created group' (V-mthu), 'new pic added' (V-sav)",
+      "pattern": "yope.voice.confirmation (past tense, lowercase)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface'). Toast after Download."
+    },
+    "birthday.tribute.push.title": {
+      "text": "Happy birthday!",
+      "origin": "adapted",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t118.300-phone.png ('HAPPY BIRTHDAY, AMELIA!')",
+      "pattern": "P-BT-1; the name is dropped because the push goes to the birthday person (the worker passes only {group})",
+      "level": "SOURCED",
+      "notes": "Push to the honoree when the tribute is delivered (worker job push.tribute). Worker key today: notifications.push.tribute.title (M-22)."
+    },
+    "birthday.tribute.push.body": {
+      "text": "A collection of photos from {group}, brought together in a video as a gift.",
+      "origin": "adapted",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "evidence": "https://help.vidday.com/i-received-a-vidday-how-does-this-work/ ('A VidDay is a collection of videos and photos from people who love you, brought together in a video montage as a gift.')",
+      "pattern": "noun swaps: trademark 'A VidDay is' dropped; 'videos and photos' -> 'photos'; 'people who love you' -> {group}; 'video montage' -> 'video'",
+      "level": "SOURCED",
+      "notes": "No number of contributors. The 'video is ready' wording of either reference was not found (research §4.5). Worker key today: notifications.push.tribute.body (M-22)."
+    },
+    "birthday.tribute.notFound.title": {
+      "text": "this video isn't here anymore",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.tribute",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface'). The tribute was deleted (every contribution withdrawn or its photos deleted)."
+    },
+    "birthday.tribute.notFound.detail": {
+      "text": "your memories are waiting",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "birthday.tribute",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error warm ending ('next' dropped)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.tribute.loading": {
+      "text": "Loading",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "birthday.tribute",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png (loading HUD 'Loading', design/research/yope-a.md §1.8)",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.tribute.error.title": {
+      "text": "couldn't load your video",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.tribute",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.tribute.error.detail": {
+      "text": "try again in a moment",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.tribute",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.tribute.error.retry": {
+      "text": "try again",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.tribute",
+      "evidence": "design/copy-patterns.md yope.voice.button: 'create group', 'invite more friends', 'enable', 'send', 'new recap' (V-mthu, V-chuong)",
+      "pattern": "yope.voice.button",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.tribute.offline": {
+      "text": "you're offline — connect to watch your video",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.tribute",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error + em dash",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "birthday.tribute.saveFailed": {
+      "text": "couldn't save the video — try again in a moment",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "birthday.tribute",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error + em dash",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface'). Download failed or photo-library access denied (the system.permissions pass owns the purpose string and the settings link)."
+    },
+    "birthday.tribute.a11y.close": {
+      "text": "Close",
+      "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "birthday.tribute",
+      "evidence": "design/research/platform.md 'VoiceOver / TalkBack labeling' (HIG VoiceOver 'Provide alternative labels for all key interface elements'; Android 'make the button's description Submit, not Submit button')",
+      "pattern": "platform.alertButton (one- or two-word verb, title-style capitalization) + design/research/platform.md 'VoiceOver / TalkBack labeling' (purpose of the control, never 'button')",
+      "level": "PLATFORM"
+    },
+    "tagging.toggle": {
+      "text": "i'm in this",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "tagging",
+      "evidence": "design/copy-patterns.md yope.voice.button: 'create group', 'invite more friends', 'enable', 'send', 'new recap' (V-mthu, V-chuong); docs/SURFACES.md tagging ('\"I'm in this\" self-tag')",
+      "pattern": "yope.voice.button (3 words, lowercase, no punctuation); the product spec's own name for the feature",
+      "level": "SOURCED",
+      "notes": "Same label in both states; the state is shown by the glyph and announced as selected / on."
+    },
+    "tagging.coach": {
+      "text": "tap if you're in this pic",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "tagging",
+      "evidence": "design/copy-patterns.md yope.voice.coach: 'hold down to record' (V-jacob), 'add a voice memo on this pic' (V-chuong)",
+      "pattern": "yope.voice.coach (lowercase imperative, 6 words, dismissible ✕)",
+      "level": "SOURCED",
+      "notes": "Shown once, the first time a member opens a photo they did not post."
+    },
+    "tagging.error": {
+      "text": "couldn't save that — try again in a moment",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "tagging",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error + em dash",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    },
+    "tagging.notFound": {
+      "text": "this pic isn't here anymore",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "tagging",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface'). post_not_found."
+    },
+    "tagging.offline": {
+      "text": "you're offline — try again when you're connected",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "tagging",
+      "evidence": "design/copy-patterns.md yope.voice.error: 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (yope-a §1.8, W-inv)",
+      "pattern": "yope.voice.error + em dash",
+      "level": "SOURCED",
+      "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
+    }
+  }
+}

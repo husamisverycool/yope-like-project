@@ -1,0 +1,2042 @@
+{
+  "tokens": {
+    "color.onthisday.banner": {
+      "type": "color",
+      "value": "#FC5F33",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "years-ago banner fill (every memory)",
+      "evidence": "references/auto/timehop/store/timehop-store-01.png (300-306, 680-686); references/auto/timehop/store/timehop-store-03.png left half (230-236, 635-641)",
+      "method": "median of 7x7 box; two images agree",
+      "level": "SOURCED",
+      "precision": "±2/255",
+      "notes": "Timehop varies the banner colour between memories, but the rule that assigns a colour to a memory was not observed. The other v5 colours fail with the sourced white label: #FFC700 (store-02) 1.56:1, #14B6EF (store-05) 2.34:1; #DB6FA3 (share card) passes 3.08:1 but appears only on the share screen. Until the assignment is captured (owner capture: 15-20 s recording tapping through three years on Timehop v5) every memory uses this colour. See design/MERGE_DECISIONS.md memory M-9."
+    },
+    "color.onthisday.banner.label": {
+      "type": "color",
+      "value": "#FFFFFF",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "'N YEARS AGO' banner label",
+      "evidence": "references/auto/timehop/store/timehop-store-01.png label bbox x416-824 y718-760; references/auto/timehop/help/th-help-2025-06-share-full-43-years-ago.png x419-749 y372-403",
+      "method": "glyph core pixels > 235",
+      "level": "SOURCED",
+      "precision": "±2/255"
+    },
+    "fontSize.onthisday.banner.label": {
+      "type": "fontSize",
+      "value": 25.8,
+      "unit": "pt",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "'N YEARS AGO' banner label, set in the platform font",
+      "evidence": "references/auto/timehop/store/timehop-store-01.png y718-760, references/auto/timehop/store/timehop-store-02.png y978-1020, references/auto/timehop/store/timehop-store-05.png y640-682 (cap height 43 px = 18.2 pt each)",
+      "method": "cap height 18.2 pt (px / 2.366 (930-px mockup screen, 393 pt assumed; design/research/retro-timehop.md 'Scale conventions')) / SF Pro cap-height ratio 0.705",
+      "level": "SOURCED",
+      "precision": "±5% (marketing render scale)",
+      "notes": "Reference face appears to be Proxima Nova (commercial) -> platform font."
+    },
+    "fontWeight.onthisday.banner.label": {
+      "type": "fontWeight",
+      "value": "bold",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "'N YEARS AGO' banner label",
+      "evidence": "references/auto/timehop/store/timehop-store-01.png; references/auto/timehop/help/th-help-2025-06-share-full-43-years-ago.png",
+      "method": "visual stem weight",
+      "level": "SOURCED",
+      "precision": "±1 weight step"
+    },
+    "dimension.onthisday.banner.height": {
+      "type": "dimension",
+      "value": 96.8,
+      "unit": "pt",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "banner bottom edge measured from the screen top (the banner runs behind the status bar)",
+      "evidence": "references/auto/timehop/store/timehop-store-02.png y852-1080",
+      "method": "px / 2.366 (930-px mockup screen, 393 pt assumed; design/research/retro-timehop.md 'Scale conventions')",
+      "level": "SOURCED",
+      "precision": "±5% (mockup)",
+      "notes": "The banner height without the status bar could not be separated (research Not found)."
+    },
+    "dimension.onthisday.banner.labelBaseline": {
+      "type": "dimension",
+      "value": 25.4,
+      "unit": "pt",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "label baseline to banner bottom edge",
+      "evidence": "references/auto/timehop/store/timehop-store-02.png 1020->1080; references/auto/timehop/store/timehop-store-05.png 682->743",
+      "method": "px / 2.366 (930-px mockup screen, 393 pt assumed; design/research/retro-timehop.md 'Scale conventions')",
+      "level": "SOURCED",
+      "precision": "±5%"
+    },
+    "layout.onthisday.banner": {
+      "type": "layout",
+      "value": {
+        "width": "full screen width",
+        "top": "screen top edge, behind the status bar",
+        "labelAlign": "centre",
+        "labelCase": "uppercase",
+        "colourPerMemory": "color.onthisday.banner"
+      },
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "years-ago banner geometry",
+      "evidence": "references/auto/timehop/store/timehop-store-01.png banner x156-1085 = screen width, label centre x620 vs banner centre 620.5; references/auto/timehop/store/timehop-store-02.png; references/auto/timehop/store/timehop-store-05.png; references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop)",
+      "method": "observation + centre measurement",
+      "level": "SOURCED"
+    },
+    "font.onthisday": {
+      "type": "font",
+      "value": {
+        "ios": "system",
+        "android": "system"
+      },
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "all on-this-day text",
+      "evidence": "https://www.timehop.com CSS: font-family proxima-nova (Adobe Fonts); design/research/retro-timehop.md 'Typeface (Timehop)'",
+      "level": "PLATFORM",
+      "notes": "Proxima Nova is commercial; platform font (SF Pro / Roboto)."
+    },
+    "layout.onthisday.navigation": {
+      "type": "layout",
+      "value": {
+        "order": "one memory screen per year, newest first (1 YEAR AGO, then 2, 3 ...)",
+        "next": "tap or swipe on the right half of the screen (older)",
+        "previous": "tap or swipe on the left half (back)",
+        "autoAdvance": "none"
+      },
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "moving between years of one day",
+      "evidence": "https://help.timehop.com/article/754-how-to-move-through-your-timehop-day ('from most recent to oldest'; 'tap or swipe the right side of your screen to move towards older memories', 'tap or swipe the left side' to go back)",
+      "method": "help-center text",
+      "level": "SOURCED",
+      "notes": "'right side / left side' read as halves; no timer is documented, so memories do not advance on their own. Exact zone widths not found."
+    },
+    "layout.onthisday.dayBoundary": {
+      "type": "layout",
+      "value": {
+        "hour": 5,
+        "clock": "group time zone (groups.time_zone)"
+      },
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "when the on-this-day set rolls over to the next date",
+      "evidence": "https://help.timehop.com/article/775-when-does-my-timehop-day-begin-and-end ('Your Timehop Day spans 24 hours from 5 am to 5 am')",
+      "method": "help-center text",
+      "level": "SOURCED",
+      "notes": "Client passes p_local_date = date of (now in the group time zone minus 5 h) to on_this_day."
+    },
+    "dimension.onthisday.progress.height": {
+      "type": "dimension",
+      "value": 4.3,
+      "unit": "pt",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "progress bar thickness",
+      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) rows y395-402 at x900 (7.5 px)",
+      "method": "2023 help composite: phone screen x 628-1308 = 681 px for 393 pt (1.733 px/pt), measured in this pass (design/MERGE_DECISIONS.md, memory section)",
+      "level": "SOURCED",
+      "precision": "±0.6 pt (composite image)",
+      "notes": "Seen in the 2016-2023 UI; the v5 marketing renders show no bar (research: v5 memory view not captured)."
+    },
+    "color.onthisday.progress.fill": {
+      "type": "color",
+      "value": "#F7D23E",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "progress bar, reached part",
+      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) x629-732 y396-401",
+      "method": "median of the run (247,210,62)",
+      "level": "SOURCED",
+      "precision": "±3/255"
+    },
+    "color.onthisday.progress.track": {
+      "type": "color",
+      "value": "#93140A",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "progress bar, part not reached yet",
+      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) x734-1308 y396-401",
+      "method": "median of the run (147,20,10)",
+      "level": "SOURCED",
+      "precision": "±3/255",
+      "notes": "Observed over the 2023 orange banner (#F26E41). Against color.onthisday.banner it is 2.91:1 (non-text needs 3:1) - reported, no sourced alternative."
+    },
+    "layout.onthisday.progress": {
+      "type": "layout",
+      "value": {
+        "position": "top edge of the banner, directly below the status bar",
+        "width": "full screen width",
+        "sideInset": 0,
+        "fill": "fraction of the day's years reached: (index + 1) / years",
+        "gaps": "none"
+      },
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "progress bar structure",
+      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) (bar starts at the screen edge x629, one continuous run, yellow 104 px then track 575 px)",
+      "method": "row scan",
+      "level": "SOURCED",
+      "notes": "One continuous bar (no segment gaps observed); the fill shows how far through the day's years the viewer is."
+    },
+    "layout.onthisday.photo.single": {
+      "type": "layout",
+      "value": {
+        "width": "full screen width",
+        "top": "banner bottom",
+        "bottom": "screen bottom",
+        "fit": "fill (cropped to the area)",
+        "cornerRadius": 0
+      },
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "memory with one photo",
+      "evidence": "references/auto/timehop/store/timehop-store-01.png; references/auto/timehop/store/timehop-store-02.png; references/auto/timehop/play/timehop-play-01.png",
+      "method": "observation",
+      "level": "SOURCED"
+    },
+    "layout.onthisday.grid": {
+      "type": "layout",
+      "value": {
+        "columns": 2,
+        "arrangement": "masonry: every photo keeps its aspect ratio and goes to the shorter column",
+        "scroll": "vertical",
+        "background": "color.global.background"
+      },
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "memory with several photos from that date",
+      "evidence": "references/auto/timehop/store/timehop-store-05.png col 1 x165-615, col 2 x626-1076",
+      "method": "observation",
+      "level": "SOURCED",
+      "notes": "Timehop draws the grid on #F5F0ED (light appearance). The app is dark only (layout.global.appearance, MERGE F-1) and Timehop's dark-mode value was not measured, so the gaps show color.global.background (MERGE memory M-8)."
+    },
+    "dimension.onthisday.grid.margin": {
+      "type": "dimension",
+      "value": 3.8,
+      "unit": "pt",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "grid outer margin (left / right)",
+      "evidence": "references/auto/timehop/store/timehop-store-05.png x156-164",
+      "method": "px / 2.366 (930-px mockup screen, 393 pt assumed; design/research/retro-timehop.md 'Scale conventions')",
+      "level": "SOURCED",
+      "precision": "±0.5 pt"
+    },
+    "dimension.onthisday.grid.gutter": {
+      "type": "dimension",
+      "value": 4.2,
+      "unit": "pt",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "gap between grid photos (columns and rows)",
+      "evidence": "references/auto/timehop/store/timehop-store-05.png x616-625; y1209-1218",
+      "method": "px / 2.366 (930-px mockup screen, 393 pt assumed; design/research/retro-timehop.md 'Scale conventions')",
+      "level": "SOURCED",
+      "precision": "±0.5 pt"
+    },
+    "dimension.onthisday.grid.top": {
+      "type": "dimension",
+      "value": 5.5,
+      "unit": "pt",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "gap between banner bottom and the first grid row",
+      "evidence": "references/auto/timehop/store/timehop-store-05.png y745-757",
+      "method": "px / 2.366 (930-px mockup screen, 393 pt assumed; design/research/retro-timehop.md 'Scale conventions')",
+      "level": "SOURCED",
+      "precision": "±0.5 pt"
+    },
+    "dimension.onthisday.meta.avatar": {
+      "type": "dimension",
+      "value": 19.0,
+      "unit": "pt",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "meta row leading circle (Timehop's source icon; here the poster's avatar)",
+      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) icon bbox x656-688 y516-549 (33 px)",
+      "method": "2023 help composite: phone screen x 628-1308 = 681 px for 393 pt (1.733 px/pt), measured in this pass (design/MERGE_DECISIONS.md, memory section)",
+      "level": "SOURCED",
+      "precision": "±0.6 pt",
+      "notes": "Timehop shows the third-party source icon in this slot; in a group the source is the member who posted, so their avatar fills it (MERGE memory M-25)."
+    },
+    "dimension.onthisday.meta.inset": {
+      "type": "dimension",
+      "value": 16.2,
+      "unit": "pt",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "screen edge to the meta row's leading circle",
+      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) screen left x628, icon left x656",
+      "method": "2023 help composite: phone screen x 628-1308 = 681 px for 393 pt (1.733 px/pt), measured in this pass (design/MERGE_DECISIONS.md, memory section)",
+      "level": "SOURCED",
+      "precision": "±0.6 pt"
+    },
+    "dimension.onthisday.meta.centerY": {
+      "type": "dimension",
+      "value": 25.7,
+      "unit": "pt",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "banner bottom edge to the meta row's vertical centre",
+      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) photo top y488 (x1200 column), icon centre y532.5",
+      "method": "2023 help composite: phone screen x 628-1308 = 681 px for 393 pt (1.733 px/pt), measured in this pass (design/MERGE_DECISIONS.md, memory section)",
+      "level": "SOURCED",
+      "precision": "±0.6 pt"
+    },
+    "dimension.onthisday.meta.gap": {
+      "type": "dimension",
+      "value": 11.5,
+      "unit": "pt",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "leading circle to weekday text",
+      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) icon right x688, text left x708",
+      "method": "2023 help composite: phone screen x 628-1308 = 681 px for 393 pt (1.733 px/pt), measured in this pass (design/MERGE_DECISIONS.md, memory section)",
+      "level": "SOURCED",
+      "precision": "±0.6 pt"
+    },
+    "fontSize.onthisday.meta": {
+      "type": "fontSize",
+      "value": 10.6,
+      "unit": "pt",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "meta row text ('TUE 10:34 PM')",
+      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) text rows y526-538 (13 px cap height = 7.5 pt)",
+      "method": "2023 help composite: phone screen x 628-1308 = 681 px for 393 pt (1.733 px/pt), measured in this pass (design/MERGE_DECISIONS.md, memory section); cap height / 0.705",
+      "level": "SOURCED",
+      "precision": "±0.6 pt"
+    },
+    "fontWeight.onthisday.meta": {
+      "type": "fontWeight",
+      "value": "bold",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "meta row text",
+      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop)",
+      "method": "visual stem weight",
+      "level": "SOURCED",
+      "precision": "±1 weight step"
+    },
+    "color.onthisday.meta.text": {
+      "type": "color",
+      "value": "#FFFFFF",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "meta row text over the photo",
+      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop)",
+      "method": "glyph core pixels",
+      "level": "SOURCED",
+      "precision": "±5/255",
+      "notes": "No scrim behind the text in the reference; contrast over a light photo is not guaranteed (reported in the spec)."
+    },
+    "duration.onthisday.memoryChange": {
+      "type": "duration",
+      "value": null,
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "element": "transition between two years' memories",
+      "evidence": "NOT FOUND: design/research/retro-timehop.md 'Motion - onthisday' (no video obtainable)",
+      "method": "—",
+      "level": "BLOCKED",
+      "notes": "Owner capture: one 15-20 s screen recording tapping through three years of one day on Timehop v5. Until then the memory changes without animation."
+    },
+    "layout.onthisday.textStyleMap": {
+      "type": "layout",
+      "value": {
+        "bannerLabel": "title1",
+        "meta": "caption2"
+      },
+      "source_app": "Apple HIG",
+      "surface": "onthisday",
+      "element": "iOS Dynamic Type style each on-this-day text role scales with",
+      "evidence": "HIG Typography Large (default) sizes (design/research/platform.md): Title 1 28, Caption 2 11",
+      "method": "nearest Large size (MERGE F-13 method): 25.8 -> title1 (28), 10.6 -> caption2 (11)",
+      "level": "PLATFORM"
+    },
+    "layout.year.story.canvas": {
+      "type": "layout",
+      "value": {
+        "aspectWidth": 9,
+        "aspectHeight": 16,
+        "width": "screen width",
+        "vertical": "centred in the safe area",
+        "outside": "letterbox bands (color.year.story.letterbox)",
+        "background": "color.global.backgroundDeep"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "story canvas",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg card 558-979 x 187-937 (1.780); references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg 107-554 x 178-972 (1.775); references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) 108-971 x 214-1750 (1.779)",
+      "method": "extent of non-background pixels",
+      "level": "SOURCED",
+      "precision": "±0.003",
+      "notes": "Wrapped's card art and colours are brand assets and are not copied; the canvas is black (MERGE memory M-15)."
+    },
+    "color.year.story.letterbox": {
+      "type": "color",
+      "value": "#111111",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "bands above and below the 9:16 canvas on taller phones",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) x540 y180-212 and y1752-1868",
+      "method": "luma sample (full range)",
+      "level": "SOURCED",
+      "precision": "±2/255"
+    },
+    "layout.year.story.navigation": {
+      "type": "layout",
+      "value": {
+        "next": "tap the right half of the canvas",
+        "previous": "tap the left half",
+        "hold": "none",
+        "model": "2024 tap-through (one card per fact)"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "story navigation",
+      "evidence": "https://uproxx.com/music/how-to-watch-your-spotify-wrapped-2022-again/ ('Users can tap the left or right of the screen to go to the previous or next screen.'); references/auto/wrapped/press/wrapped24-press-minutes.jpg; references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024)",
+      "method": "press quote + 2024 renders and recording",
+      "level": "SOURCED",
+      "notes": "Zone widths and hold-to-pause not found; 'left or right of the screen' read as halves (MERGE memory M-24). The 2025 vertical-swipe model is not used (M-11)."
+    },
+    "dimension.year.story.progress.height": {
+      "type": "dimension",
+      "value": 1.8,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "progress segment thickness",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg y9-10 of card (2 px/448); references/auto/wrapped/press/wrapped24-press-minutes.jpg y196-197 (2 px/422); references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) y231-234 (~4 px/864)",
+      "method": "rows with luma > 90; px / card width x 393",
+      "level": "SOURCED",
+      "precision": "±0.3 pt (1.75 / 1.86 / 1.82)"
+    },
+    "dimension.year.story.progress.top": {
+      "type": "dimension",
+      "value": 8,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "canvas top to progress bar",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg 9 px/448; references/auto/wrapped/press/wrapped24-press-minutes.jpg 9 px/422; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) 17 px/864",
+      "method": "first bar row minus canvas top",
+      "level": "SOURCED",
+      "precision": "±0.5 pt"
+    },
+    "dimension.year.story.progress.gap": {
+      "type": "dimension",
+      "value": 3.6,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "gap between progress segments",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg 4 px/448; references/auto/wrapped/press/wrapped24-press-minutes.jpg 4 px/422; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) 8 px/864",
+      "method": "run analysis along the bar row",
+      "level": "SOURCED",
+      "precision": "±0.4 pt"
+    },
+    "dimension.year.story.progress.inset": {
+      "type": "dimension",
+      "value": 11,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "progress bar side inset",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) 24 px left / 25 px right of 864",
+      "method": "first / last bar pixel to the card edge",
+      "level": "SOURCED",
+      "precision": "±0.5 pt",
+      "notes": "Press renders give 16.7 pt (WB) and 17.7 / 14.9 pt (WA); the device recording is used (MERGE memory M-12)."
+    },
+    "color.year.story.progress.fill": {
+      "type": "color",
+      "value": "#FFFFFF",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "completed and current (filled part) segment",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg luma 254; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) RGB(255,249,255)",
+      "method": "median of 40x3 px",
+      "level": "SOURCED",
+      "precision": "±3/255"
+    },
+    "opacity.year.story.progress.track": {
+      "type": "opacity",
+      "value": 0.43,
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "upcoming segment: white at this opacity",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg segments 5-6 luma 109-113 over black",
+      "method": "alpha = (L - bg) / (255 - bg)",
+      "level": "SOURCED",
+      "precision": "±0.05"
+    },
+    "easing.year.story.progress.fill": {
+      "type": "easing",
+      "value": "linear",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "current segment fill over time",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-progress-fill.csv (segments 1 and 11)",
+      "method": "linear fit of fill vs time, R2 = 0.997 both, quadratic term ~0",
+      "level": "SOURCED"
+    },
+    "layout.year.story.progress": {
+      "type": "layout",
+      "value": {
+        "segments": "one per card",
+        "completed": "filled (color.year.story.progress.fill)",
+        "current": "fills left to right over duration.year.story.card",
+        "upcoming": "track (white at opacity.year.story.progress.track)"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "segmented progress bar behaviour",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg; references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024); references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020-bars-zoom2x.png",
+      "method": "observation",
+      "level": "SOURCED"
+    },
+    "duration.year.story.card": {
+      "type": "duration",
+      "value": null,
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "time one card stays before the story advances on its own",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-progress-fill.csv: segment 1 2.23->13.53 s (11290 ms), segment 11 110.88->137.16 s (26280 ms)",
+      "method": "1/slope of the linear fill fit",
+      "level": "BLOCKED",
+      "notes": "Measured segments are chapters holding several beats; the time per single fact was not measurable (research §1.7). Owner capture: the 30 s 'Your Stories' replay recording (research capture 1) with three single-beat cards. Until then the story does not advance on its own and the pause control is hidden (MERGE memory M-16)."
+    },
+    "duration.year.story.reveal.headline": {
+      "type": "duration",
+      "value": 800,
+      "unit": "ms",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "headline moves up when the subline arrives",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv (15.533 -> 16.333 s)",
+      "method": "per-frame top row of white text",
+      "level": "SOURCED",
+      "precision": "±33 ms (1 frame at 30 fps)"
+    },
+    "dimension.year.story.reveal.headlineShift": {
+      "type": "dimension",
+      "value": 18.2,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "distance the headline moves up",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv y956 -> 916 px",
+      "method": "40 px x 393 / 864",
+      "level": "SOURCED",
+      "precision": "±0.5 pt"
+    },
+    "duration.year.story.reveal.subline": {
+      "type": "duration",
+      "value": 600,
+      "unit": "ms",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "subline slides up into place",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv (15.800 -> 16.400 s)",
+      "method": "per-frame top row",
+      "level": "SOURCED",
+      "precision": "±33 ms"
+    },
+    "dimension.year.story.reveal.sublineOffset": {
+      "type": "dimension",
+      "value": 25.0,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "subline start offset below its final position",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv y1083 -> 1028 px",
+      "method": "55 px x 393 / 864",
+      "level": "SOURCED",
+      "precision": "±0.5 pt"
+    },
+    "duration.year.story.reveal.sublineDelay": {
+      "type": "duration",
+      "value": 267,
+      "unit": "ms",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "headline motion start to subline appearance",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv (15.533 -> 15.800 s)",
+      "method": "frame count",
+      "level": "SOURCED",
+      "precision": "±33 ms"
+    },
+    "layout.year.story.reveal.samples": {
+      "type": "layout",
+      "value": {
+        "t25": 0.125,
+        "t50": 0.725,
+        "t75": 0.925
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "normalised distance travelled at 25 / 50 / 75 % of the reveal time (S-curve)",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv",
+      "method": "normalised position vs time",
+      "level": "SOURCED",
+      "notes": "Kept as measured; no named curve fitted (see easing.year.story.reveal)."
+    },
+    "easing.year.story.reveal": {
+      "type": "easing",
+      "value": null,
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "curve of the headline / subline reveal",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv (3 samples, layout.year.story.reveal.samples)",
+      "method": "not fitted: 3 samples under-determine a cubic Bezier (same rule as MERGE F-15)",
+      "level": "BLOCKED",
+      "notes": "Owner capture: one 60 fps recording of any Wrapped card whose subline appears. Until then the reveal plays as the global Reduce Motion substitute (cross-fade, same durations)."
+    },
+    "font.year.story": {
+      "type": "font",
+      "value": {
+        "ios": "system",
+        "android": "system"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "all story text",
+      "evidence": "https://newsroom.spotify.com/2024-05-22/introducing-spotify-mix-our-new-and-exclusive-font/ (Spotify Mix, proprietary)",
+      "level": "PLATFORM"
+    },
+    "fontSize.year.story.headline": {
+      "type": "fontSize",
+      "value": 31.6,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "card headline",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) 'Y' cap height 49 px of 864 = 22.3 pt",
+      "method": "cap height / 0.705 (SF Pro)",
+      "level": "SOURCED",
+      "precision": "±1 pt",
+      "notes": "2024 value (tap-through model). 2025 renders give ~25 pt (MERGE memory M-14)."
+    },
+    "fontWeight.year.story.headline": {
+      "type": "fontWeight",
+      "value": "bold",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "card headline",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024); references/auto/wrapped/press/wrapped25-press-minutes.png",
+      "method": "visual (heavy display weight)",
+      "level": "SOURCED"
+    },
+    "lineHeight.year.story.headline": {
+      "type": "lineHeight",
+      "value": 36.4,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "headline line pitch",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) line tops 813 -> 893 px",
+      "method": "px x 393 / 864 (card width in the 2024 recording)",
+      "level": "SOURCED",
+      "precision": "±0.5 pt"
+    },
+    "fontSize.year.story.body": {
+      "type": "fontSize",
+      "value": 15.4,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "card subline",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) ascender 'worldwide.' 25 px of 864 = 11.4 pt",
+      "method": "ascender / 0.74",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "fontWeight.year.story.body": {
+      "type": "fontWeight",
+      "value": "regular",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "card subline",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024)",
+      "method": "visual",
+      "level": "SOURCED"
+    },
+    "lineHeight.year.story.body": {
+      "type": "lineHeight",
+      "value": 21.4,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "subline line pitch",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) 1085 -> 1132 px",
+      "method": "px x 393 / 864 (card width in the 2024 recording)",
+      "level": "SOURCED",
+      "precision": "±0.5 pt"
+    },
+    "dimension.year.story.text.maxWidth": {
+      "type": "dimension",
+      "value": 274,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "widest line of card text (text block width)",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) headline line '36,826 minutes this' x240-842 (602 px); 'You listened for 36,826' and the full subline did not fit on one line",
+      "method": "widest observed line x 393 / 864; the wrap width lies in 602-703 px = 274-320 pt",
+      "level": "SOURCED",
+      "precision": "+46 pt (lower bound)",
+      "notes": "Lower bound of the container width (MERGE memory M-23)."
+    },
+    "layout.year.story.text": {
+      "type": "layout",
+      "value": {
+        "align": "centre",
+        "block": "centred horizontally and vertically on the canvas",
+        "order": "headline, then subline"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "text card arrangement",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024)",
+      "method": "visual",
+      "level": "SOURCED"
+    },
+    "layout.year.story.photoCard": {
+      "type": "layout",
+      "value": {
+        "box": "square",
+        "boxWidthRatio": 0.66,
+        "boxCenterYRatio": 0.412,
+        "cornerRadius": 0,
+        "textGap": 24.6,
+        "text": "headline below the box, centred",
+        "photoFit": "fill the square",
+        "collageFit": "fit inside the square on the canvas colour"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "card showing one photo or collage (Wrapped 'Your top song' card)",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-sheet-every3s.png tile row 2 col 1: canvas x18-161 y355-611 (144 x 257 px), art x43-137 y414-507, text from y516",
+      "method": "ratios of the canvas; text gap 9 px x 393 / 144",
+      "level": "SOURCED",
+      "precision": "±1 px of 144 (±0.7 % width, ±2.7 pt)",
+      "notes": "Album art is square and fills its box, so a photo fills the square. A collage is fitted instead of cropped so no member's photo is cut away (tenet 'Nothing gets lost'; MERGE memory M-19)."
+    },
+    "count.year.story.listLength": {
+      "type": "count",
+      "value": 5,
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "most photos one list shows (most-reacted, everyone-answered days)",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-sheet-every3s.png ('Your top songs' and 'Your top artists' list 5 each); research §1.5 'And these 5 were extra special.'",
+      "method": "read from the cards",
+      "level": "SOURCED",
+      "notes": "The rank numbers 1-5 are not copied (no ranks)."
+    },
+    "layout.year.story.dateFormat": {
+      "type": "layout",
+      "value": {
+        "pattern": "MMMM d",
+        "example": "February 25"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "day shown on a card",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-sheet-every3s.png 'Your biggest listening day was February 25 with 920 minutes' (research §1.5)",
+      "method": "read from the card",
+      "level": "SOURCED",
+      "notes": "Localised with the device locale's month-day template."
+    },
+    "layout.year.story.monthFormat": {
+      "type": "layout",
+      "value": {
+        "pattern": "MMMM",
+        "example": "January"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "month shown on a card",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-sheet-every3s.png 'January was your Academic Wrestling Christian Rock phase', 'December'",
+      "method": "read from the cards",
+      "level": "SOURCED"
+    },
+    "layout.year.story.share": {
+      "type": "layout",
+      "value": {
+        "align": "centre of the canvas",
+        "content": "share glyph, then label",
+        "shownOn": "every card that states a fact (not the intro, teaser or outro cards)"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "per-card 'Share this story' row",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024); references/auto/wrapped/press/wrapped24-press-minutes.jpg cards 2-3; references/auto/wrapped/frames/wrapped24-rec-emilycraig-sheet-every3s.png",
+      "method": "observation",
+      "level": "SOURCED"
+    },
+    "dimension.year.story.share.bottomInset": {
+      "type": "dimension",
+      "value": 29,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "share row bottom to canvas bottom",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) row 1646-1686, canvas bottom 1750",
+      "method": "px x 393 / 864 (card width in the 2024 recording)",
+      "level": "SOURCED",
+      "precision": "±0.5 pt"
+    },
+    "dimension.year.story.share.rowHeight": {
+      "type": "dimension",
+      "value": 18.6,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "share row height (= glyph height)",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) glyph x386-426 y1646-1685",
+      "method": "px x 393 / 864 (card width in the 2024 recording)",
+      "level": "SOURCED",
+      "precision": "±0.5 pt"
+    },
+    "dimension.year.story.share.glyphGap": {
+      "type": "dimension",
+      "value": 15.5,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "share glyph to label",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) glyph right x426, label left x460",
+      "method": "px x 393 / 864 (card width in the 2024 recording)",
+      "level": "SOURCED",
+      "precision": "±0.5 pt"
+    },
+    "fontSize.year.story.share": {
+      "type": "fontSize",
+      "value": 16.1,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "'Share this story' label",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) 'S' rows 1654-1678 (25 px cap = 11.4 pt)",
+      "method": "cap height / 0.705",
+      "level": "SOURCED",
+      "precision": "±0.5 pt"
+    },
+    "fontWeight.year.story.share": {
+      "type": "fontWeight",
+      "value": "bold",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "'Share this story' label",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024)",
+      "method": "visual",
+      "level": "SOURCED"
+    },
+    "icon.year.story.share": {
+      "type": "icon",
+      "value": {
+        "ios": "square.and.arrow.up",
+        "android": "Rounded.Share"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "share glyph left of 'Share this story'",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg (iOS box-and-arrow); references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) (Android three connected dots)",
+      "level": "PLATFORM",
+      "notes": "Android differs from icon.global.share (Rounded.IosShare): Wrapped's Android build uses the Material share glyph."
+    },
+    "dimension.year.story.chrome.button": {
+      "type": "dimension",
+      "value": 29.6,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "pause / close circle diameter (visual; hit area extends to size.global.minTouchTarget)",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) close circle x880-948, y288-352",
+      "method": "px x 393 / 864 (card width in the 2024 recording)",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "dimension.year.story.chrome.centerY": {
+      "type": "dimension",
+      "value": 48.3,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "canvas top to the chrome row's centre",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) circle centre y320, canvas top y214",
+      "method": "px x 393 / 864 (card width in the 2024 recording)",
+      "level": "SOURCED",
+      "precision": "±1 pt",
+      "notes": "Press render B gives 42 pt; the device recording is used (MERGE memory M-13)."
+    },
+    "dimension.year.story.chrome.insetRight": {
+      "type": "dimension",
+      "value": 10.5,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "canvas right edge to the close circle",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) circle right x948, canvas right x971",
+      "method": "px x 393 / 864 (card width in the 2024 recording)",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "dimension.year.story.chrome.pitch": {
+      "type": "dimension",
+      "value": 45.9,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "centre-to-centre distance of the chrome circles",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) centres x711 / 812 / 913",
+      "method": "px x 393 / 864 (card width in the 2024 recording)",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "dimension.year.story.chrome.glyph": {
+      "type": "dimension",
+      "value": 14.9,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "pause / close glyph height",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg y40-56 of card",
+      "method": "extent x 393 / 448",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "color.year.story.chrome.fill": {
+      "type": "color",
+      "value": "#00000080",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "translucent circle behind the pause / close glyphs",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) inside vs outside the close circle edge: R 86/182, 72/129; G 8/22, 7/25 ... (ratio 0.47-0.56)",
+      "method": "per-channel ratio inside / outside at 3 edge points -> black at ~0.5",
+      "level": "SOURCED",
+      "precision": "±0.1 alpha (art behind varies; H.264)"
+    },
+    "icon.year.story.pause": {
+      "type": "icon",
+      "value": {
+        "ios": "pause.fill",
+        "android": "Rounded.Pause"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "pause (two bars)",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg; references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024)",
+      "level": "PLATFORM"
+    },
+    "icon.year.story.replay": {
+      "type": "icon",
+      "value": {
+        "ios": "arrow.counterclockwise",
+        "android": "Rounded.Replay"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "replay glyph before 'Replay from beginning'",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg",
+      "level": "PLATFORM"
+    },
+    "layout.year.story.summary": {
+      "type": "layout",
+      "value": {
+        "order": "share-card carousel, Share pill, Replay from beginning",
+        "previewWidthRatio": 0.6,
+        "carousel": "horizontal paging through the story's share cards"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "last screen (summary)",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg; references/auto/wrapped/frames/wrapped25-rec-cdragon2010-t252.000.png",
+      "method": "visual",
+      "level": "SOURCED"
+    },
+    "dimension.year.story.summary.shareWidth": {
+      "type": "dimension",
+      "value": 148,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "summary 'Share' pill width",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg x140-308 of card",
+      "method": "extent x 393 / 448",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "dimension.year.story.summary.shareHeight": {
+      "type": "dimension",
+      "value": 50,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "summary 'Share' pill height",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg y620-676 of card; references/auto/wrapped/press/wrapped25-press-minutes.png pill 49.9 pt",
+      "method": "extent x 393 / width",
+      "level": "SOURCED",
+      "precision": "±0.6 pt"
+    },
+    "fontSize.year.story.sharePill": {
+      "type": "fontSize",
+      "value": 17.7,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "'Share' pill label",
+      "evidence": "references/auto/wrapped/press/wrapped25-press-minutes.png screen 2 'S' cap 23 px of 725 = 12.5 pt",
+      "method": "cap height / 0.705",
+      "level": "SOURCED",
+      "precision": "±0.6 pt",
+      "notes": "Measured on the 2025 'Share this story' pill; the 2024 summary pill label was not measured."
+    },
+    "fontWeight.year.story.sharePill": {
+      "type": "fontWeight",
+      "value": "bold",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "'Share' pill label",
+      "evidence": "references/auto/wrapped/press/wrapped25-press-minutes.png; references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg",
+      "method": "visual",
+      "level": "SOURCED"
+    },
+    "layout.year.story.summary.dots": {
+      "type": "layout",
+      "value": null,
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "page dots under the share-card carousel",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg (4 dots)",
+      "method": "size, gap and colours not measured",
+      "level": "BLOCKED",
+      "notes": "Owner capture: one full-resolution screenshot of the Wrapped summary screen. Until then the carousel shows no dots."
+    },
+    "layout.year.story.shareCard": {
+      "type": "layout",
+      "value": {
+        "width": 1080,
+        "height": 1920,
+        "content": "the card's canvas without progress bar, chrome or share row"
+      },
+      "source_app": "Spotify Wrapped + Meta developer docs",
+      "surface": "year.story",
+      "element": "exported share image",
+      "evidence": "references/auto/wrapped/press/wrapped25-press-sharecards.png (808-810 x 1436-1437 px, 1.775); https://developers.facebook.com/docs/instagram-platform/sharing-to-stories/ ('Minimum dimensions 720x1280. Recommended image ratios 9:16 or 9:18')",
+      "method": "Wrapped aspect 9:16; 1080 x 1920 = 9:16 at 1080 width (computed, above Meta's minimum; docs/PLATFORM_CONSTRAINTS.md summary)",
+      "level": "SOURCED"
+    },
+    "layout.year.story.shareSheet": {
+      "type": "layout",
+      "value": {
+        "ios": "ShareLink(item:preview:) / UIActivityViewController",
+        "android": "Intent.createChooser(ACTION_SEND, content:// URI + FLAG_GRANT_READ_URI_PERMISSION)"
+      },
+      "source_app": "Apple HIG / Material 3",
+      "surface": "year.story",
+      "element": "share sheet opened by 'Share this story' and 'Share'",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/activity-views ('Use the Share button to display an activity view'); https://developer.android.com/training/sharing/send",
+      "level": "PLATFORM",
+      "notes": "Share targets after the tap were not observed in Wrapped (research §1.7)."
+    },
+    "layout.year.story.textStyleMap": {
+      "type": "layout",
+      "value": {
+        "headline": "largeTitle",
+        "body": "subheadline",
+        "share": "callout",
+        "sharePill": "headline"
+      },
+      "source_app": "Apple HIG",
+      "surface": "year.story",
+      "element": "iOS Dynamic Type style each year-story text role scales with",
+      "evidence": "HIG Typography Large sizes (design/research/platform.md): Large Title 34, Title 1 28, Headline 17 semibold, Body 17, Callout 16, Subhead 15",
+      "method": "nearest Large size, tie -> weight (MERGE F-13): 31.6 -> largeTitle, 15.4 -> subheadline, 16.1 -> callout, 17.7 bold -> headline",
+      "level": "PLATFORM"
+    },
+    "layout.birthday.add.dateFormat": {
+      "type": "layout",
+      "value": {
+        "pattern": "d MMMM",
+        "example": "26 May"
+      },
+      "source_app": "Yope",
+      "surface": "birthday.add",
+      "element": "birthday shown back to the person (day and month only)",
+      "evidence": "design/copy-patterns.md yope.voice.formats ('26 May', day title, yope-b S6); https://www.yope.tv/legal ('we collect your birth day and month')",
+      "method": "read from the reference",
+      "level": "SOURCED",
+      "notes": "The year is never shown."
+    },
+    "layout.birthday.request.structure": {
+      "type": "layout",
+      "value": {
+        "order": "hero (honoree photo behind title, due line, message), primary button, Message Ideas",
+        "countdown": "none (do-not-copy)"
+      },
+      "source_app": "Tribute + VidDay",
+      "surface": "birthday.request",
+      "element": "request screen order",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/); references/auto/tribute/mockups/tribute-home-phone-step-1-contribution-page.png (due line under the title); references/auto/vidday/store/vidday-store-01.png (Message Ideas)",
+      "method": "computed layout + visual",
+      "level": "SOURCED"
+    },
+    "dimension.birthday.request.margin": {
+      "type": "dimension",
+      "value": 15,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "side margin of title, message, button and prompts",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) x15",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.request.hero.height": {
+      "type": "dimension",
+      "value": 365.8,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "hero (photo band) height",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) div.banner 390 x 365.8",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "opacity.birthday.request.hero.image": {
+      "type": "opacity",
+      "value": 0.7,
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "honoree photo over the black hero background",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) div.banner bg rgb(0,0,0); div.banner-bg opacity 0.7",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.request.title.top": {
+      "type": "dimension",
+      "value": 84,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "hero top to title top",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) title y84",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontSize.birthday.request.title": {
+      "type": "fontSize",
+      "value": 24,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "title ('Birthday Video for {name}!')",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) span.tribute-wall-title-fit 24px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontWeight.birthday.request.title": {
+      "type": "fontWeight",
+      "value": "semibold",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "title",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) font-weight 600",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "lineHeight.birthday.request.title": {
+      "type": "lineHeight",
+      "value": 28.8,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "title",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) line-height 28.8px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.request.message.gap": {
+      "type": "dimension",
+      "value": 20.8,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "title bottom to message top",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) title y84 h29, message y133.8",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontSize.birthday.request.message": {
+      "type": "fontSize",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "welcome message (and due line)",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) p 16px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED",
+      "notes": "The due line (Tribute T1 mockup) was not measured; it uses this message role."
+    },
+    "lineHeight.birthday.request.message": {
+      "type": "lineHeight",
+      "value": 28,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "welcome message",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) line-height 28px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "opacity.birthday.request.message": {
+      "type": "opacity",
+      "value": 0.9,
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "welcome message (white at this opacity)",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) p color white, opacity 0.9",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.request.cta.gap": {
+      "type": "dimension",
+      "value": 15,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "hero bottom to primary button",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) hero bottom 365.8, button y380.8",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.request.cta.height": {
+      "type": "dimension",
+      "value": 62,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "primary button height ('Add Your Photo')",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) button.btn-danger 360 x 62",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "radius.birthday.request.cta": {
+      "type": "radius",
+      "value": 8,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "primary button corners",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) border-radius 8px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontSize.birthday.request.cta": {
+      "type": "fontSize",
+      "value": 22,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "primary button label",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) 'Add Your Video' 22px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontWeight.birthday.request.cta": {
+      "type": "fontWeight",
+      "value": "semibold",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "primary button label",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) font-weight 600",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED",
+      "notes": "Fill: Tribute's #FF4B4A and VidDay's #0086FE are each brand's accent -> color.global.accent / color.global.onAccent (MERGE memory M-7)."
+    },
+    "dimension.birthday.request.prompts.gap": {
+      "type": "dimension",
+      "value": 20,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "space above the Message Ideas block",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) countdown bottom y539.8 -> prompts y559.8",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED",
+      "notes": "The countdown that sits between button and prompts in the reference is do-not-copy; the prompts keep their own top spacing."
+    },
+    "color.birthday.request.prompts.header": {
+      "type": "color",
+      "value": "#292D34",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "'Message Ideas' header bar fill",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) strong bg rgb(41,45,52)",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.request.prompts.headerHeight": {
+      "type": "dimension",
+      "value": 42,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "header bar height",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) strong 360 x 42",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.request.prompts.headerPadding": {
+      "type": "dimension",
+      "value": 24,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "header bar horizontal padding",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) padding 12px 24px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "radius.birthday.request.prompts": {
+      "type": "radius",
+      "value": 8,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "prompts block corners (top corners of the header bar)",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) div.tribute-wall-prompts border-radius 8px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontSize.birthday.request.prompts.header": {
+      "type": "fontSize",
+      "value": 15,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "header label",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) 15px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontWeight.birthday.request.prompts.header": {
+      "type": "fontWeight",
+      "value": "medium",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "header label",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) font-weight 500",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.request.prompt.top": {
+      "type": "dimension",
+      "value": 24,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "header bar bottom to first prompt",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) header bottom 601.8, first li y625.8",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.request.prompt.indent": {
+      "type": "dimension",
+      "value": 39,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "block left edge to prompt text (bullet in between)",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) li x54 vs block x15",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.request.prompt.gap": {
+      "type": "dimension",
+      "value": 19.9,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "gap between prompts",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) li 1 y625.8 h18.8, li 2 y664.5",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontSize.birthday.request.prompt": {
+      "type": "fontSize",
+      "value": 15,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "prompt text",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) li 15px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "lineHeight.birthday.request.prompt": {
+      "type": "lineHeight",
+      "value": 18.75,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "prompt text",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) li line-height 18.75px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "font.birthday": {
+      "type": "font",
+      "value": {
+        "ios": "system",
+        "android": "system"
+      },
+      "source_app": "Tribute + VidDay",
+      "surface": "birthday.request",
+      "element": "all birthday surfaces (request, contribute, tribute screen)",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) (Tribute uses Figtree, OFL); VidDay face unknown",
+      "level": "PLATFORM",
+      "notes": "One platform typeface app-wide (font.global.family); Figtree not adopted."
+    },
+    "layout.birthday.request.dueDate": {
+      "type": "layout",
+      "value": {
+        "style": "full date: weekday, month day, year",
+        "example": "Wednesday, December 31, 2025",
+        "value": "the day before tribute_requests.birthday_date (due_at is 00:00 on the birthday)"
+      },
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "date in the 'Submit by {date}' line",
+      "evidence": "references/auto/tribute/mockups/tribute-home-phone-step-1-contribution-page.png ('Submit by Wednesday, December 31, 2025')",
+      "method": "read from the mockup",
+      "level": "SOURCED",
+      "notes": "iOS DateFormatter .full / Android DateFormat.FULL produce this form; a date, never a countdown."
+    },
+    "layout.birthday.request.textStyleMap": {
+      "type": "layout",
+      "value": {
+        "title": "title2",
+        "message": "callout",
+        "cta": "title2",
+        "promptsHeader": "subheadline",
+        "prompt": "subheadline"
+      },
+      "source_app": "Apple HIG",
+      "surface": "birthday.request",
+      "element": "iOS Dynamic Type style each request text role scales with",
+      "evidence": "HIG Typography Large sizes (design/research/platform.md)",
+      "method": "nearest Large size (MERGE F-13): 24 -> title2 (22), 16 -> callout, 22 -> title2, 15 -> subheadline",
+      "level": "PLATFORM"
+    },
+    "dimension.birthday.contribute.margin": {
+      "type": "dimension",
+      "value": 20,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "side margin of every step",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) x20",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "layout.birthday.contribute.stepper": {
+      "type": "layout",
+      "value": {
+        "steps": 3,
+        "labels": "Photo, Message, Done",
+        "distribution": "first circle 11 pt inside the margin, last circle 11 pt inside the opposite margin, the rest evenly spaced between",
+        "labelGap": 10
+      },
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "step indicator",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) circles x31 / 127 / 223 / 319 (w40) on a 390-pt page with 20-pt margins; labels y154 under circles ending y144",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED",
+      "notes": "Tribute has 4 steps (Info, Video, Photos, Done). 'Info' asks group members for name and email (do-not-copy) and is dropped; 'Video' becomes 'Photo'; the one-line step is 'Message' (MERGE memory M-27)."
+    },
+    "dimension.birthday.contribute.stepper.circle": {
+      "type": "dimension",
+      "value": 40,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "step circle diameter",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 40 x 40, radius 9999",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "color.birthday.contribute.stepper.active": {
+      "type": "color",
+      "value": "#B8B9B9",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "current step circle fill (number in color.global.textPrimary)",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) bg rgb(184,185,185)",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED",
+      "notes": "White number on it is 1.97:1 (FAIL for 14-pt text) - reported, no sourced alternative."
+    },
+    "color.birthday.contribute.stepper.inactive": {
+      "type": "color",
+      "value": "#FFFFFF38",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "other step circle fill (white at 0.22)",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) bg rgba(255,255,255,0.22)",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "color.birthday.contribute.stepper.inactiveLabel": {
+      "type": "color",
+      "value": "#FFFFFF8C",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "number and caption of other steps (white at 0.55)",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) color rgba(255,255,255,0.55)",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontSize.birthday.contribute.stepper.number": {
+      "type": "fontSize",
+      "value": 14,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "step number",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 14px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontWeight.birthday.contribute.stepper.number": {
+      "type": "fontWeight",
+      "value": "semibold",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "step number",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 600",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontSize.birthday.contribute.stepper.label": {
+      "type": "fontSize",
+      "value": 10,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "step caption under the circle",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) span 10px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontWeight.birthday.contribute.stepper.labelActive": {
+      "type": "fontWeight",
+      "value": "medium",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "current step caption",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 'Info' 500",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontWeight.birthday.contribute.stepper.label": {
+      "type": "fontWeight",
+      "value": "regular",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "other step captions",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 'Video' / 'Photos' / 'Done' 400",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.contribute.heading.gap": {
+      "type": "dimension",
+      "value": 107,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "step captions bottom to step heading top",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) captions end y167, heading y274",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontSize.birthday.contribute.heading": {
+      "type": "fontSize",
+      "value": 20,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "step heading ('Let's add a photo for {name}!'), centred",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) span 20px, x66 w259 (centred)",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontWeight.birthday.contribute.heading": {
+      "type": "fontWeight",
+      "value": "medium",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "step heading",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 500",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.contribute.subheading.gap": {
+      "type": "dimension",
+      "value": 12,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "heading bottom to sub-heading",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) heading y274 h28, p y314",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontSize.birthday.contribute.subheading": {
+      "type": "fontSize",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "sub-heading ('Thank you for taking the time to participate!')",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) p 16px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "opacity.birthday.contribute.subheading": {
+      "type": "opacity",
+      "value": 0.72,
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "sub-heading (white at this opacity)",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) rgba(255,255,255,0.72)",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontSize.birthday.contribute.label": {
+      "type": "fontSize",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "field label ('Your Message')",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) label 16px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontWeight.birthday.contribute.label": {
+      "type": "fontWeight",
+      "value": "semibold",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "field label",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 600",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.contribute.label.gap": {
+      "type": "dimension",
+      "value": 10,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "label bottom to field top",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) label y356 h24, input y390",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.contribute.input.height": {
+      "type": "dimension",
+      "value": 46,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "one-line field height",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) input 350 x 46",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "radius.birthday.contribute.input": {
+      "type": "radius",
+      "value": 8,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "field corners",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) border-radius 8px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "color.birthday.contribute.input.fill": {
+      "type": "color",
+      "value": "#FFFFFF14",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "field fill (white at 0.08)",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) bg rgba(255,255,255,0.08)",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "color.birthday.contribute.input.text": {
+      "type": "color",
+      "value": "#E7E8E8EB",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "typed text (rgba 231,232,232,0.92)",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) input color rgba(231,232,232,0.92)",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontSize.birthday.contribute.input": {
+      "type": "fontSize",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "typed text",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 16px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.contribute.group.gap": {
+      "type": "dimension",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "field bottom to the next label",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) input y390 h46, next label y452",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.contribute.button.gap": {
+      "type": "dimension",
+      "value": 24,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "last field bottom to the button",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) input y486 h46, button y556",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.contribute.button.height": {
+      "type": "dimension",
+      "value": 50,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "step button height ('Submit', 'Done')",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) button 350 x 50",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "radius.birthday.contribute.button": {
+      "type": "radius",
+      "value": 8,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "step button corners",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) border-radius 8px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontSize.birthday.contribute.button": {
+      "type": "fontSize",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "step button label",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 16px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontWeight.birthday.contribute.button": {
+      "type": "fontWeight",
+      "value": "semibold",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "step button label",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 600",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED",
+      "notes": "Tribute's button sits on an image gradient (fill not sampled) -> color.global.accent / color.global.onAccent (MERGE memory M-7)."
+    },
+    "layout.birthday.contribute.lineMax": {
+      "type": "layout",
+      "value": null,
+      "source_app": "Tribute + VidDay",
+      "surface": "birthday.contribute",
+      "element": "UI character limit of the one line",
+      "evidence": "NOT FOUND: design/research/wrapped-tribute-partiful.md §3.3 ('contributor's text message length: not found')",
+      "method": "—",
+      "level": "BLOCKED",
+      "notes": "Until found the field accepts the API bound (280, invalid_line, docs/API.md contribute_tribute) with no visible counter. Owner capture: research capture 4 (a real Tribute or VidDay invitation opened to the contribution screen)."
+    },
+    "layout.birthday.contribute.textStyleMap": {
+      "type": "layout",
+      "value": {
+        "heading": "title3",
+        "subheading": "callout",
+        "label": "callout",
+        "input": "callout",
+        "button": "callout",
+        "stepperNumber": "subheadline",
+        "stepperLabel": "caption2"
+      },
+      "source_app": "Apple HIG",
+      "surface": "birthday.contribute",
+      "element": "iOS Dynamic Type style each contribute text role scales with",
+      "evidence": "HIG Typography Large sizes (design/research/platform.md)",
+      "method": "nearest Large size, tie -> larger (MERGE F-13): 20 -> title3, 16 -> callout, 14 -> subheadline (tie with footnote 13), 10 -> caption2 (11)",
+      "level": "PLATFORM"
+    },
+    "layout.birthday.tribute.video": {
+      "type": "layout",
+      "value": {
+        "width": 1920,
+        "height": 1080,
+        "fps": 29.97
+      },
+      "source_app": "Tribute + VidDay",
+      "surface": "birthday.tribute",
+      "element": "tribute video canvas (read by the worker)",
+      "evidence": "https://website.tribute.co/6KY_IZ1tLME.mp4 ('Birthday Tribute for Tess', 640x360, 30000/1001 fps); frames references/auto/tribute/frames/tribute-sample-tess-* and https://website.tribute.co/QQe5RpbFIyI.mp4 ('Happy Birthday to Doug!', 640x360, 30000/1001 fps); references/auto/tribute/frames/tribute-sample-doug-clips-7.2-62.2s-every2s.png: 640x360 (16:9), 30000/1001 fps (ffprobe, this pass); https://help.vidday.com/what-features-do-finalized-video-gifts-get/ ('Your finalized video is delivered in crisp, high-definition 1080p')",
+      "method": "16:9 from both Tribute samples; 1080 lines from VidDay; 29.97 = 30000/1001 from the Tribute samples",
+      "level": "SOURCED",
+      "precision": "fps ±0.01 (29.97 written for 30000/1001)",
+      "notes": "Portrait photos sit inside the landscape frame on the pillarbox colour (Tribute: 'nothing gets cut off'). MERGE memory M-1."
+    },
+    "duration.birthday.tribute.titleHold": {
+      "type": "duration",
+      "value": 1167,
+      "unit": "ms",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "element": "title card fully visible before the crossfade (read by the worker)",
+      "evidence": "https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4 (1920x1080, 30 fps); frame references/auto/vidday/frames/vidday-tour-t118.300-phone.png (phone crop x680-1240, y40-1040): player region static (frame diff = noise 2.85) from 117.767 s to 118.933 s",
+      "method": "per-frame mean abs diff on the player crop (x688-1232, y175-728), 30 fps",
+      "level": "SOURCED",
+      "precision": "±33 ms; +500 ms if playback starts at the unwrap tap (117.267 s)",
+      "notes": "Research proposal 1300 ms (117.67 -> 118.97 s) started while ribbons still covered the card; re-measured frame-accurately (MERGE memory M-2)."
+    },
+    "duration.birthday.tribute.titleCrossfade": {
+      "type": "duration",
+      "value": 600,
+      "unit": "ms",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "element": "crossfade from the title card to the first contribution (read by the worker)",
+      "evidence": "https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4 (1920x1080, 30 fps); frame references/auto/vidday/frames/vidday-tour-t118.300-phone.png (phone crop x680-1240, y40-1040): references/auto/vidday/frames/vidday-tour-t118.300-phone.png -> -t119.300 / -t120.000 (118.93 -> ~119.57 s)",
+      "method": "decaying per-frame diff 8.3 -> 3.5 until it meets the slow-zoom baseline",
+      "level": "SOURCED",
+      "precision": "±67 ms (2 frames)"
+    },
+    "duration.birthday.tribute.photoHold": {
+      "type": "duration",
+      "value": null,
+      "source_app": "Tribute + VidDay",
+      "surface": "birthday.tribute",
+      "element": "time each contribution card stays on screen (read by the worker)",
+      "evidence": "NOT FOUND: Tribute help 'Photos stay on screen for a set number of seconds' (value not stated); marketing samples are highlight edits (research §4.3)",
+      "method": "—",
+      "level": "BLOCKED",
+      "notes": "Owner capture: one finished Tribute or VidDay video that contains photos (its share link, or a 20 s screen recording playing three photo contributions) - research capture 5."
+    },
+    "duration.birthday.tribute.clipTransition": {
+      "type": "duration",
+      "value": 0,
+      "unit": "ms",
+      "source_app": "Tribute",
+      "surface": "birthday.tribute",
+      "element": "transition between two contribution cards: hard cut (read by the worker)",
+      "evidence": "https://website.tribute.co/6KY_IZ1tLME.mp4 ('Birthday Tribute for Tess', 640x360, 30000/1001 fps); frames references/auto/tribute/frames/tribute-sample-tess-* (28 cuts) and https://website.tribute.co/QQe5RpbFIyI.mp4 ('Happy Birthday to Doug!', 640x360, 30000/1001 fps); references/auto/tribute/frames/tribute-sample-doug-clips-7.2-62.2s-every2s.png (22 cuts)",
+      "method": "ffmpeg scene score > 0.25, then per-frame mean abs diff: one spike frame, flat both sides",
+      "level": "SOURCED",
+      "precision": "±1 frame",
+      "notes": "VidDay's only observed crossfade is title card -> first photo (duration.birthday.tribute.titleCrossfade). MERGE memory M-6."
+    },
+    "duration.birthday.tribute.endTransition": {
+      "type": "duration",
+      "value": 0,
+      "unit": "ms",
+      "source_app": "Tribute",
+      "surface": "birthday.tribute",
+      "element": "transition from the last contribution to the end card: hard cut (read by the worker)",
+      "evidence": "https://website.tribute.co/6KY_IZ1tLME.mp4 ('Birthday Tribute for Tess', 640x360, 30000/1001 fps); frames references/auto/tribute/frames/tribute-sample-tess-*: diff 64.2 at 94.201 s, 0.00 on the following frames; https://website.tribute.co/QQe5RpbFIyI.mp4 ('Happy Birthday to Doug!', 640x360, 30000/1001 fps); references/auto/tribute/frames/tribute-sample-doug-clips-7.2-62.2s-every2s.png: diff 125.8 at 62.400 s, 0.00 after",
+      "method": "per-frame mean abs diff (this pass)",
+      "level": "SOURCED",
+      "precision": "±1 frame"
+    },
+    "duration.birthday.tribute.endHold": {
+      "type": "duration",
+      "value": 10003,
+      "unit": "ms",
+      "source_app": "Tribute",
+      "surface": "birthday.tribute",
+      "element": "end card length (read by the worker)",
+      "evidence": "https://website.tribute.co/6KY_IZ1tLME.mp4 ('Birthday Tribute for Tess', 640x360, 30000/1001 fps); frames references/auto/tribute/frames/tribute-sample-tess-*: end segment 94.201 s -> end 104.204 s; https://website.tribute.co/QQe5RpbFIyI.mp4 ('Happy Birthday to Doug!', 640x360, 30000/1001 fps); references/auto/tribute/frames/tribute-sample-doug-clips-7.2-62.2s-every2s.png: 62.400 s -> 72.406 s (10006 ms)",
+      "method": "cut time to stream end (ffprobe duration)",
+      "level": "SOURCED",
+      "precision": "±33 ms",
+      "notes": "Tribute fills this slot with its brand outro (wordmark on brand teal, do-not-copy); only the slot length is used (MERGE memory M-3)."
+    },
+    "color.birthday.tribute.pillarbox": {
+      "type": "color",
+      "value": "#000000",
+      "source_app": "Tribute",
+      "surface": "birthday.tribute",
+      "element": "fill around a photo that does not cover the 16:9 frame (read by the worker)",
+      "evidence": "references/auto/tribute/frames/tribute-sample-tess-t007.080-first-clip.png (content x218-421 of 640)",
+      "method": "luma <= 20 outside the content",
+      "level": "SOURCED",
+      "precision": "±2/255",
+      "notes": "Tribute help: 'A vertical video is fine. It plays inside your Tribute with the background filling the space on either side, and nothing gets cut off.'"
+    },
+    "layout.birthday.tribute.titleCard": {
+      "type": "layout",
+      "value": {
+        "background": "#EFEEF3",
+        "textColor": "#444347",
+        "fontWeight": 500,
+        "fontSizeRatio": 0.084,
+        "maxWidthRatio": 0.405,
+        "centerYRatio": 0.5
+      },
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "element": "title card ('Happy birthday, {name}!') (read by the worker)",
+      "evidence": "https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4 (1920x1080, 30 fps); frame references/auto/vidday/frames/vidday-tour-t118.300-phone.png (phone crop x680-1240, y40-1040) frame 118.3 s: player y135-688 (553 px) x8-549 in the phone crop; caps lines y368-400 and y422-454.5 (cap height 33.0 px); widest line x81-478 (398 px), centred at x279; stem width 5.16 px (sub-pixel coverage, 19 stems)",
+      "method": "background = median of 125,000 paper pixels (239,238,243); text = median of the darkest 25 % of glyph pixels (68,67,71); fontSizeRatio = cap 33.0 / 553 / Roboto cap-height 0.711; centerYRatio = caps-block centre 411.25 -> (411.25-135)/553 = 0.4995; maxWidthRatio = 398 px / (553 x 16/9) = 0.405 (VidDay's 1080p frame is 16:9, cropped to fill a square player on the gift page); fontWeight = stem/cap 0.156, nearest Roboto weight Medium (0.173; Regular 0.134, both rendered from backend/worker/fonts)",
+      "level": "SOURCED",
+      "precision": "colours ±8/255 (H.264); ratios ±2 %; maxWidthRatio depends on the 16:9 crop reading; weight between Regular and Medium",
+      "notes": "VidDay draws this text in its theme's hand-lettered face over watercolour confetti; the confetti art and face are not copied (solid paper colour, platform Roboto in the worker). P-BT-1 normalises the reference's capitals to Sentence case. MERGE memory M-4."
+    },
+    "layout.birthday.tribute.endCard": {
+      "type": "layout",
+      "value": null,
+      "source_app": "Tribute + VidDay",
+      "surface": "birthday.tribute",
+      "element": "end card text layout (read by the worker)",
+      "evidence": "NOT FOUND: Tribute's end slot is its brand outro (https://website.tribute.co/6KY_IZ1tLME.mp4 ('Birthday Tribute for Tess', 640x360, 30000/1001 fps); frames references/auto/tribute/frames/tribute-sample-tess-* 94.2-104.2 s, wordmark + tagline on brand teal); VidDay's end card not observed (research §4.5)",
+      "method": "—",
+      "level": "BLOCKED",
+      "notes": "Owner capture: one finished birthday Tribute or VidDay link (research capture 5), last 15 s."
+    },
+    "layout.birthday.tribute.caption": {
+      "type": "layout",
+      "value": null,
+      "source_app": "Tribute + VidDay",
+      "surface": "birthday.tribute",
+      "element": "first name + one line over each contribution photo (read by the worker)",
+      "evidence": "NOT FOUND: neither Tribute sample shows automatic captions; Tribute's optional creator-added 'text on a clip' ('Auntie Jean, Chicago' at the bottom of the frame) has no measured layout; VidDay none (research §4.2, §4.5)",
+      "method": "—",
+      "level": "BLOCKED",
+      "notes": "Owner capture: one finished Tribute in which the creator added 'text on a clip', or a VidDay with contributor names on photos - a 10 s screen recording or the share link settles text colour, sizes, position, gap and any band behind the text."
+    },
+    "layout.birthday.tribute.structure": {
+      "type": "layout",
+      "value": {
+        "order": "title card, one card per contribution (photo + contributor first name + line), end card",
+        "photoFit": "whole photo inside the 16:9 frame on color.birthday.tribute.pillarbox",
+        "audio": "none"
+      },
+      "source_app": "Tribute + VidDay",
+      "surface": "birthday.tribute",
+      "element": "tribute video structure",
+      "evidence": "https://website.tribute.co/6KY_IZ1tLME.mp4 ('Birthday Tribute for Tess', 640x360, 30000/1001 fps); frames references/auto/tribute/frames/tribute-sample-tess-*; https://website.tribute.co/QQe5RpbFIyI.mp4 ('Happy Birthday to Doug!', 640x360, 30000/1001 fps); references/auto/tribute/frames/tribute-sample-doug-clips-7.2-62.2s-every2s.png; https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4 (1920x1080, 30 fps); frame references/auto/vidday/frames/vidday-tour-t118.300-phone.png (phone crop x680-1240, y40-1040) (unwrap -> title card -> crossfade -> first photo); design/research/wrapped-tribute-partiful.md §4.2",
+      "method": "frame analysis",
+      "level": "SOURCED",
+      "notes": "Tribute's intro / outro brand stings, VidDay's theme frame and slow zoom (curve not measurable) and background music (timings not found) are not used (MERGE memory M-5)."
+    },
+    "layout.birthday.tribute.player": {
+      "type": "layout",
+      "value": {
+        "ios": "AVPlayerViewController (SwiftUI VideoPlayer), system controls",
+        "android": "Media3 PlayerView, default controls",
+        "aspect": "16:9 (layout.birthday.tribute.video)"
+      },
+      "source_app": "Tribute + VidDay",
+      "surface": "birthday.tribute",
+      "element": "video player on the tribute screen",
+      "evidence": "references/auto/tribute/mockups/tribute-home-phone-step-3-completed-page.png (standard player); references/auto/vidday/store/vidday-store-09.png (standard controls '0:46 / 8:30', mute, full screen)",
+      "level": "PLATFORM",
+      "notes": "Both references play the video in a standard player with the platform's own controls."
+    },
+    "dimension.birthday.tribute.button.height": {
+      "type": "dimension",
+      "value": 44,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.tribute",
+      "element": "secondary button height ('Download', 'Share')",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) button 'Share on Facebook' 360 x 44",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "radius.birthday.tribute.button": {
+      "type": "radius",
+      "value": 8,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.tribute",
+      "element": "secondary button corners",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) border-radius 8px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontSize.birthday.tribute.button": {
+      "type": "fontSize",
+      "value": 14,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.tribute",
+      "element": "secondary button label",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) 14px",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "fontWeight.birthday.tribute.button": {
+      "type": "fontWeight",
+      "value": "semibold",
+      "source_app": "Tribute",
+      "surface": "birthday.tribute",
+      "element": "secondary button label",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) 600",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "color.birthday.tribute.button.label": {
+      "type": "color",
+      "value": "#292D34",
+      "source_app": "Tribute",
+      "surface": "birthday.tribute",
+      "element": "secondary button label and glyph (fill color.global.surfaceLight)",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) color rgb(41,45,52) on rgb(255,255,255)",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.tribute.button.gap": {
+      "type": "dimension",
+      "value": 10,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.tribute",
+      "element": "gap between stacked secondary buttons",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) buttons y746 h44, next y800",
+      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    }
+  }
+}

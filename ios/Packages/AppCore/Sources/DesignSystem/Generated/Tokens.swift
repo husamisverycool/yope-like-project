@@ -3,6 +3,20 @@
 import SwiftUI
 
 public enum Tokens {
+    public enum AspectRatios {
+        /// Yope · walls.mine · wall grid tile shape (width:height 0.73) · SOURCED
+        /// token: `walls.mine.aspectRatio.gridTile`
+        public static let wallsMineAspectRatioGridTile: CGFloat = 0.7274
+        /// Retro · week.history · day tile shape · SOURCED
+        /// token: `week.history.aspectRatio.tile`
+        public static let weekHistoryAspectRatioTile: CGFloat = 0.75
+        /// Yope · week.recap · recap card tile in a full row (≈2:3 portrait) · CAPTURED
+        /// token: `week.recap.aspectRatio.gridTile`
+        public static let weekRecapAspectRatioGridTile: CGFloat = 0.6647
+        /// Yope · week.recap · pics-grid tile (3:4, square corners, full screen width, no side inset) · CAPTURED
+        /// token: `week.recap.aspectRatio.picsTile`
+        public static let weekRecapAspectRatioPicsTile: CGFloat = 0.7486
+    }
     public enum Blurs {
         /// Partiful · invite.web · outlined button backdrop blur radius · VERIFIED
         /// token: `invite.web.blur.button.outlined`
@@ -12,6 +26,87 @@ public enum Tokens {
         public static let inviteWebBlurOgImageFill: CGFloat = 360
     }
     public enum Colors {
+        /// Yope · albums.list · album card fill on black (Yope home list card) · SOURCED
+        /// token: `albums.list.color.card`
+        public static let albumsListColorCard: Color = Color(.sRGB, red: 0.0941, green: 0.0941, blue: 0.0941, opacity: 1)
+        /// Yope · camera.capture · flip-camera circle fill · SOURCED
+        /// token: `camera.capture.color.flipButton`
+        public static let cameraCaptureColorFlipButton: Color = Color(.sRGB, red: 0.1216, green: 0.1216, blue: 0.1216, opacity: 1)
+        /// Locket · camera.capture · shutter disc while pressed · SOURCED
+        /// token: `camera.capture.color.shutterDiscPressed`
+        public static let cameraCaptureColorShutterDiscPressed: Color = Color(.sRGB, red: 0.8784, green: 0.8706, blue: 0.8745, opacity: 1)
+        /// Yope · chat.composer · hairline rim along the bottom of the text field · SOURCED
+        /// token: `chat.composer.color.fieldRimBottom`
+        public static let chatComposerColorFieldRimBottom: Color = Color(.sRGB, red: 0.2784, green: 0.2784, blue: 0.2784, opacity: 1)
+        /// Yope · chat.composer · hairline light rim along the top of the text field · SOURCED
+        /// token: `chat.composer.color.fieldRimTop`
+        public static let chatComposerColorFieldRimTop: Color = Color(.sRGB, red: 0.2941, green: 0.2941, blue: 0.2941, opacity: 1)
+        /// Locket · chat.reactions · sticker outline colour · SOURCED
+        /// token: `chat.reactions.color.clusterOutline`
+        public static let chatReactionsColorClusterOutline: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
+        /// Yope · chat.thread · my text bubble fill ('no way'); vertical gradient #222222 at the top to #242424 at the bottom · SOURCED
+        /// token: `chat.thread.color.bubbleMine`
+        public static let chatThreadColorBubbleMine: Color = Color(.sRGB, red: 0.1373, green: 0.1373, blue: 0.1373, opacity: 1)
+        /// Yope · chat.thread · hairline rim along the bottom of my bubble · SOURCED
+        /// token: `chat.thread.color.bubbleRimMineBottom`
+        public static let chatThreadColorBubbleRimMineBottom: Color = Color(.sRGB, red: 0.2039, green: 0.2039, blue: 0.2039, opacity: 1)
+        /// Yope · chat.thread · hairline light rim along the top of my bubble (brightest point) · SOURCED
+        /// token: `chat.thread.color.bubbleRimMineTop`
+        public static let chatThreadColorBubbleRimMineTop: Color = Color(.sRGB, red: 0.2235, green: 0.2235, blue: 0.2235, opacity: 1)
+        /// Yope · chat.thread · hairline rim along the bottom of another member's bubble · SOURCED
+        /// token: `chat.thread.color.bubbleRimTheirsBottom`
+        public static let chatThreadColorBubbleRimTheirsBottom: Color = Color(.sRGB, red: 0.2118, green: 0.2118, blue: 0.2118, opacity: 1)
+        /// Yope · chat.thread · hairline light rim along the top of another member's bubble (brightest point) · SOURCED
+        /// token: `chat.thread.color.bubbleRimTheirsTop`
+        public static let chatThreadColorBubbleRimTheirsTop: Color = Color(.sRGB, red: 0.2549, green: 0.2549, blue: 0.2549, opacity: 1)
+        /// Yope · chat.thread · another member's text bubble fill ('valid') · SOURCED
+        /// token: `chat.thread.color.bubbleTheirs`
+        public static let chatThreadColorBubbleTheirs: Color = Color(.sRGB, red: 0.1686, green: 0.1686, blue: 0.1686, opacity: 1)
+        /// Yope · chat.thread · loading HUD fill · SOURCED
+        /// token: `chat.thread.color.loadingHud`
+        public static let chatThreadColorLoadingHud: Color = Color(.sRGB, red: 0.149, green: 0.149, blue: 0.149, opacity: 1)
+        /// Yope · chat.voice · voice message bubble fill (mine) · SOURCED
+        /// token: `chat.voice.color.bubble`
+        public static let chatVoiceColorBubble: Color = Color(.sRGB, red: 0.149, green: 0.149, blue: 0.149, opacity: 1)
+        /// Yope · chat.voice · duration text ('00:38') · SOURCED
+        /// token: `chat.voice.color.duration`
+        public static let chatVoiceColorDuration: Color = Color(.sRGB, red: 0.5725, green: 0.5725, blue: 0.5725, opacity: 1)
+        /// Yope · chat.voice · play circle fill (vertical gradient #2F2F2F top → #373737 bottom, light rim) · SOURCED
+        /// token: `chat.voice.color.playButton`
+        public static let chatVoiceColorPlayButton: Color = Color(.sRGB, red: 0.2, green: 0.2, blue: 0.2, opacity: 1)
+        /// Yope · chat.voice · waveform bars · SOURCED
+        /// token: `chat.voice.color.waveform`
+        public static let chatVoiceColorWaveform: Color = Color(.sRGB, red: 0.5686, green: 0.5686, blue: 0.5686, opacity: 1)
+        /// Yope · collage.view · loading HUD fill · SOURCED
+        /// token: `collage.view.color.hud`
+        public static let collageViewColorHud: Color = Color(.sRGB, red: 0.0471, green: 0.0471, blue: 0.0471, opacity: 1)
+        /// Yope · collage.view · active page dot (Android) · SOURCED
+        /// token: `collage.view.color.pageDotActive`
+        public static let collageViewColorPageDotActive: Color = Color(.sRGB, red: 0.9569, green: 0.9569, blue: 0.9569, opacity: 1)
+        /// Tribute · birthday.contribute · field fill (white at 0.08) · VERIFIED
+        /// token: `color.birthday.contribute.input.fill`
+        public static let birthdayContributeInputFill: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.0784)
+        /// Tribute · birthday.contribute · typed text (rgba 231,232,232,0.92) · VERIFIED
+        /// token: `color.birthday.contribute.input.text`
+        public static let birthdayContributeInputText: Color = Color(.sRGB, red: 0.9059, green: 0.9098, blue: 0.9098, opacity: 0.9216)
+        /// Tribute · birthday.contribute · current step circle fill (number in color.global.textPrimary) · VERIFIED
+        /// token: `color.birthday.contribute.stepper.active`
+        public static let birthdayContributeStepperActive: Color = Color(.sRGB, red: 0.7216, green: 0.7255, blue: 0.7255, opacity: 1)
+        /// Tribute · birthday.contribute · other step circle fill (white at 0.22) · VERIFIED
+        /// token: `color.birthday.contribute.stepper.inactive`
+        public static let birthdayContributeStepperInactive: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.2196)
+        /// Tribute · birthday.contribute · number and caption of other steps (white at 0.55) · VERIFIED
+        /// token: `color.birthday.contribute.stepper.inactiveLabel`
+        public static let birthdayContributeStepperInactiveLabel: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.549)
+        /// Tribute · birthday.request · 'Message Ideas' header bar fill · VERIFIED
+        /// token: `color.birthday.request.prompts.header`
+        public static let birthdayRequestPromptsHeader: Color = Color(.sRGB, red: 0.1608, green: 0.1765, blue: 0.2039, opacity: 1)
+        /// Tribute · birthday.tribute · secondary button label and glyph (fill color.global.surfaceLight) · VERIFIED
+        /// token: `color.birthday.tribute.button.label`
+        public static let birthdayTributeButtonLabel: Color = Color(.sRGB, red: 0.1608, green: 0.1765, blue: 0.2039, opacity: 1)
+        /// Tribute · birthday.tribute · fill around a photo that does not cover the 16:9 frame (read by the worker) · SOURCED
+        /// token: `color.birthday.tribute.pillarbox`
+        public static let birthdayTributePillarbox: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
         /// Yope · global · brand lime: composer camera button, primary buttons, coach tooltips, toasts, shutter ring, 'today' bar · SOURCED
         /// token: `color.global.accent`
         public static let globalAccent: Color = Color(.sRGB, red: 0.8039, green: 0.9922, blue: 0.0275, opacity: 1)
@@ -78,6 +173,57 @@ public enum Tokens {
         /// Yope · global · secondary text, placeholders ('start typing...'), inactive tab-bar glyphs, chevrons inside capsules · SOURCED
         /// token: `color.global.textSecondary`
         public static let globalTextSecondary: Color = Color(.sRGB, red: 0.5882, green: 0.5882, blue: 0.5882, opacity: 1)
+        /// Timehop · onthisday · years-ago banner fill (every memory) · SOURCED
+        /// token: `color.onthisday.banner`
+        public static let onthisdayBanner: Color = Color(.sRGB, red: 0.9882, green: 0.3725, blue: 0.2, opacity: 1)
+        /// Timehop · onthisday · 'N YEARS AGO' banner label · SOURCED
+        /// token: `color.onthisday.banner.label`
+        public static let onthisdayBannerLabel: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
+        /// Timehop · onthisday · meta row text over the photo · SOURCED
+        /// token: `color.onthisday.meta.text`
+        public static let onthisdayMetaText: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
+        /// Timehop · onthisday · progress bar, reached part · SOURCED
+        /// token: `color.onthisday.progress.fill`
+        public static let onthisdayProgressFill: Color = Color(.sRGB, red: 0.9686, green: 0.8235, blue: 0.2431, opacity: 1)
+        /// Timehop · onthisday · progress bar, part not reached yet · SOURCED
+        /// token: `color.onthisday.progress.track`
+        public static let onthisdayProgressTrack: Color = Color(.sRGB, red: 0.5765, green: 0.0784, blue: 0.0392, opacity: 1)
+        /// Spotify Wrapped · year.story · translucent circle behind the pause / close glyphs · SOURCED
+        /// token: `color.year.story.chrome.fill`
+        public static let yearStoryChromeFill: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.502)
+        /// Spotify Wrapped · year.story · bands above and below the 9:16 canvas on taller phones · SOURCED
+        /// token: `color.year.story.letterbox`
+        public static let yearStoryLetterbox: Color = Color(.sRGB, red: 0.0667, green: 0.0667, blue: 0.0667, opacity: 1)
+        /// Spotify Wrapped · year.story · completed and current (filled part) segment · SOURCED
+        /// token: `color.year.story.progress.fill`
+        public static let yearStoryProgressFill: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
+        /// BeReal · daily.capture · countdown digits, SEND label, prompt line (all BeReal capture text) · SOURCED
+        /// token: `daily.capture.color.text`
+        public static let dailyCaptureColorText: Color = Color(.sRGB, red: 0.9804, green: 0.9804, blue: 0.9804, opacity: 1)
+        /// Yope · groups.create · primary button while its form is incomplete ('continue' with an empty name) · SOURCED
+        /// token: `groups.create.color.buttonDisabledFill`
+        public static let groupsCreateColorButtonDisabledFill: Color = Color(.sRGB, red: 0.1255, green: 0.1137, blue: 0.1294, opacity: 1)
+        /// Yope · groups.create · label of the disabled primary button · SOURCED
+        /// token: `groups.create.color.buttonDisabledLabel`
+        public static let groupsCreateColorButtonDisabledLabel: Color = Color(.sRGB, red: 0.2863, green: 0.2745, blue: 0.2902, opacity: 1)
+        /// Yope · groups.create · cover-photo placeholder fill (before a photo is chosen) · SOURCED
+        /// token: `groups.create.color.cover`
+        public static let groupsCreateColorCover: Color = Color(.sRGB, red: 0.2863, green: 0.2863, blue: 0.2863, opacity: 1)
+        /// Yope · groups.create · single-line text field fill on black ('name group (optional)'); reused by every form field on black (auth.*, groups.invite search) · SOURCED
+        /// token: `groups.create.color.field`
+        public static let groupsCreateColorField: Color = Color(.sRGB, red: 0.0784, green: 0.0784, blue: 0.0784, opacity: 1)
+        /// Yope · groups.create · Loading HUD square fill (on black) · SOURCED
+        /// token: `groups.create.color.hud`
+        public static let groupsCreateColorHud: Color = Color(.sRGB, red: 0.149, green: 0.149, blue: 0.149, opacity: 1)
+        /// Yope · groups.list · group card fill on the black home list · SOURCED
+        /// token: `groups.list.color.card`
+        public static let groupsListColorCard: Color = Color(.sRGB, red: 0.0941, green: 0.0941, blue: 0.0941, opacity: 1)
+        /// Yope · groups.screen · floating 'chat' pill fill · SOURCED
+        /// token: `groups.screen.color.chatPill`
+        public static let groupsScreenColorChatPill: Color = Color(.sRGB, red: 0.0314, green: 0.0314, blue: 0.0314, opacity: 1)
+        /// Yope · groups.screen · segmented control track fill (on black) · SOURCED
+        /// token: `groups.screen.color.segmentTrack`
+        public static let groupsScreenColorSegmentTrack: Color = Color(.sRGB, red: 0.0667, green: 0.0667, blue: 0.0667, opacity: 1)
         /// Partiful · invite.web · filled button fill on dark themes · VERIFIED
         /// token: `invite.web.color.button.filled.fill.dark`
         public static let inviteWebColorButtonFilledFillDark: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
@@ -105,13 +251,181 @@ public enum Tokens {
         /// Partiful · invite.web · theme colour when the group has no cover, and on every non-ideal state (not found, link no longer works, error) · VERIFIED
         /// token: `invite.web.color.theme.default`
         public static let inviteWebColorThemeDefault: Color = Color(.sRGB, red: 0.0667, green: 0.0667, blue: 0.0667, opacity: 1)
+        /// Yope · onboarding.permission.contacts · inline permission card fill (contacts card; reused for every permission-denied card) · SOURCED
+        /// token: `onboarding.permission.contacts.color.card`
+        public static let onboardingPermissionContactsColorCard: Color = Color(.sRGB, red: 0.0745, green: 0.0745, blue: 0.0745, opacity: 1)
+        /// Yope · onboarding.permission.notifications · dark secondary button fill on black ('maybe later', Android only) · SOURCED
+        /// token: `onboarding.permission.notifications.color.secondaryButton`
+        public static let onboardingPermissionNotificationsColorSecondaryButton: Color = Color(.sRGB, red: 0.0902, green: 0.0902, blue: 0.0902, opacity: 1)
+        /// Locket · onboarding.widget · screen background, bottom · SOURCED
+        /// token: `onboarding.widget.color.backgroundBottom`
+        public static let onboardingWidgetColorBackgroundBottom: Color = Color(.sRGB, red: 0.0431, green: 0.0353, blue: 0.0431, opacity: 1)
+        /// Locket · onboarding.widget · screen background, top (warm near-black) · SOURCED
+        /// token: `onboarding.widget.color.backgroundTop`
+        public static let onboardingWidgetColorBackgroundTop: Color = Color(.sRGB, red: 0.0549, green: 0.0392, blue: 0.0275, opacity: 1)
+        /// Locket · onboarding.widget · CTA capsule fill · SOURCED
+        /// token: `onboarding.widget.color.cta`
+        public static let onboardingWidgetColorCta: Color = Color(.sRGB, red: 1, green: 0.7216, blue: 0, opacity: 1)
+        /// Locket · onboarding.widget · CTA label and arrow colour · SOURCED
+        /// token: `onboarding.widget.color.ctaLabel`
+        public static let onboardingWidgetColorCtaLabel: Color = Color(.sRGB, red: 0.2, green: 0.1451, blue: 0, opacity: 1)
+        /// Locket · onboarding.widget · step text colour · SOURCED
+        /// token: `onboarding.widget.color.step`
+        public static let onboardingWidgetColorStep: Color = Color(.sRGB, red: 0.7216, green: 0.7137, blue: 0.698, opacity: 1)
+        /// Locket · onboarding.widget · title colour · SOURCED
+        /// token: `onboarding.widget.color.title`
+        public static let onboardingWidgetColorTitle: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
+        /// Locket · paywall · background gradient stop at 0.861 of the screen height (x = 20) · SOURCED
+        /// token: `paywall.color.backgroundBottom`
+        public static let paywallColorBackgroundBottom: Color = Color(.sRGB, red: 0.2157, green: 0.1569, blue: 0.0196, opacity: 1)
+        /// Locket · paywall · background gradient stop at 0.587 of the screen height (x = 20) · SOURCED
+        /// token: `paywall.color.backgroundLower`
+        public static let paywallColorBackgroundLower: Color = Color(.sRGB, red: 0.1176, green: 0.0784, blue: 0.0157, opacity: 1)
+        /// Locket · paywall · background gradient stop at 0.078 of the screen height (x = 20) · SOURCED
+        /// token: `paywall.color.backgroundTop`
+        public static let paywallColorBackgroundTop: Color = Color(.sRGB, red: 0.0118, green: 0.0039, blue: 0.0039, opacity: 1)
+        /// Locket · paywall · background gradient stop at 0.274 of the screen height (x = 20) · SOURCED
+        /// token: `paywall.color.backgroundUpper`
+        public static let paywallColorBackgroundUpper: Color = Color(.sRGB, red: 0.0549, green: 0.0314, blue: 0.0118, opacity: 1)
+        /// Locket · paywall · primary CTA fill · SOURCED
+        /// token: `paywall.color.cta`
+        public static let paywallColorCta: Color = Color(.sRGB, red: 0.9961, green: 0.7255, blue: 0, opacity: 1)
+        /// Locket · paywall · CTA label and glyph colour · SOURCED
+        /// token: `paywall.color.ctaLabel`
+        public static let paywallColorCtaLabel: Color = Color(.sRGB, red: 0.1647, green: 0.1176, blue: 0.0196, opacity: 1)
+        /// Locket · paywall · 'No thanks!' colour; also the legal footer text and links · SOURCED
+        /// token: `paywall.color.dismiss`
+        public static let paywallColorDismiss: Color = Color(.sRGB, red: 0.7294, green: 0.6667, blue: 0.5098, opacity: 1)
+        /// Locket · paywall · perk card fill (upper cards) · SOURCED
+        /// token: `paywall.color.perk`
+        public static let paywallColorPerk: Color = Color(.sRGB, red: 0.1294, green: 0.1059, blue: 0.0745, opacity: 1)
+        /// Locket · paywall · perk subtitle colour · SOURCED
+        /// token: `paywall.color.perkSubtitle`
+        public static let paywallColorPerkSubtitle: Color = Color(.sRGB, red: 0.5686, green: 0.5412, blue: 0.502, opacity: 1)
+        /// Locket · paywall · perk title colour · SOURCED
+        /// token: `paywall.color.perkTitle`
+        public static let paywallColorPerkTitle: Color = Color(.sRGB, red: 0.9608, green: 0.9451, blue: 0.9216, opacity: 1)
+        /// Locket · paywall · unselected plan card fill · SOURCED
+        /// token: `paywall.color.plan`
+        public static let paywallColorPlan: Color = Color(.sRGB, red: 0.2314, green: 0.2118, blue: 0.1529, opacity: 1)
+        /// Locket · paywall · selected plan card border · SOURCED
+        /// token: `paywall.color.planBorder`
+        public static let paywallColorPlanBorder: Color = Color(.sRGB, red: 1, green: 0.7216, blue: 0, opacity: 1)
+        /// Locket · paywall · plan detail colour · SOURCED
+        /// token: `paywall.color.planDetail`
+        public static let paywallColorPlanDetail: Color = Color(.sRGB, red: 0.749, green: 0.7098, blue: 0.5961, opacity: 1)
+        /// Locket · paywall · selected plan card fill · SOURCED
+        /// token: `paywall.color.planSelected`
+        public static let paywallColorPlanSelected: Color = Color(.sRGB, red: 0.1725, green: 0.1608, blue: 0.1333, opacity: 1)
+        /// Locket · paywall · plan sheet fill beside the second plan card · SOURCED
+        /// token: `paywall.color.planSheetBottom`
+        public static let paywallColorPlanSheetBottom: Color = Color(.sRGB, red: 0.1922, green: 0.1725, blue: 0.1216, opacity: 1)
+        /// Locket · paywall · plan sheet fill at its top (warms downwards to paywall.color.planSheetBottom) · SOURCED
+        /// token: `paywall.color.planSheetTop`
+        public static let paywallColorPlanSheetTop: Color = Color(.sRGB, red: 0.1608, green: 0.1569, blue: 0.1412, opacity: 1)
+        /// Locket · paywall · 'Subscribe' capsule fill · SOURCED
+        /// token: `paywall.color.subscribe`
+        public static let paywallColorSubscribe: Color = Color(.sRGB, red: 0.9569, green: 0.7333, blue: 0.251, opacity: 1)
+        /// Locket · paywall · 'Subscribe' label colour · SOURCED
+        /// token: `paywall.color.subscribeLabel`
+        public static let paywallColorSubscribeLabel: Color = Color(.sRGB, red: 0.1882, green: 0.1451, blue: 0.0235, opacity: 1)
+        /// Locket · paywall · subtitle colour · SOURCED
+        /// token: `paywall.color.subtitle`
+        public static let paywallColorSubtitle: Color = Color(.sRGB, red: 0.698, green: 0.6667, blue: 0.549, opacity: 1)
+        /// Locket · paywall · title colour (cream gold); also the plan-sheet title, plan names and prices · SOURCED
+        /// token: `paywall.color.title`
+        public static let paywallColorTitle: Color = Color(.sRGB, red: 0.9922, green: 0.9176, blue: 0.7216, opacity: 1)
+        /// Yope · photo.viewer · viewer background behind the photo and header · SOURCED
+        /// token: `photo.viewer.color.background`
+        public static let photoViewerColorBackground: Color = Color(.sRGB, red: 0.1098, green: 0.098, blue: 0.1137, opacity: 1)
+        /// Locket · widget.android · avatar placeholder gradient end · SOURCED
+        /// token: `widget.android.color.avatarPlaceholderBottom`
+        public static let widgetAndroidColorAvatarPlaceholderBottom: Color = Color(.sRGB, red: 0.5098, green: 0.5098, blue: 0.5098, opacity: 0.9608)
+        /// Locket · widget.android · avatar placeholder (sender has no avatar), gradient start (angle 270) · SOURCED
+        /// token: `widget.android.color.avatarPlaceholderTop`
+        public static let widgetAndroidColorAvatarPlaceholderTop: Color = Color(.sRGB, red: 0.6275, green: 0.6275, blue: 0.6275, opacity: 0.9608)
+        /// Locket · widget.home.small · avatar ring color (black 10 %) · SOURCED
+        /// token: `widget.home.small.color.avatarRing`
+        public static let widgetHomeSmallColorAvatarRing: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.102)
+        /// Locket · widget.home.small · caption pill fill, iOS and Android (shape radius.global.capsule) · SOURCED
+        /// token: `widget.home.small.color.captionPill`
+        public static let widgetHomeSmallColorCaptionPill: Color = Color(.sRGB, red: 0.2, green: 0.2, blue: 0.2, opacity: 0.8)
+        /// Locket · widget.home.small · empty widget background, bottom of the gradient · SOURCED
+        /// token: `widget.home.small.color.emptyBottom`
+        public static let widgetHomeSmallColorEmptyBottom: Color = Color(.sRGB, red: 0.1059, green: 0.1059, blue: 0.1059, opacity: 1)
+        /// Locket · widget.home.small · empty-state circle fill (white 24 %) · SOURCED
+        /// token: `widget.home.small.color.emptyCircle`
+        public static let widgetHomeSmallColorEmptyCircle: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.2392)
+        /// Locket · widget.home.small · empty-state ring stroke · SOURCED
+        /// token: `widget.home.small.color.emptyRing`
+        public static let widgetHomeSmallColorEmptyRing: Color = Color(.sRGB, red: 1, green: 0.7216, blue: 0, opacity: 1)
+        /// Locket · widget.home.small · empty / unconfigured widget background, top of the vertical gradient (angle 270) · SOURCED
+        /// token: `widget.home.small.color.emptyTop`
+        public static let widgetHomeSmallColorEmptyTop: Color = Color(.sRGB, red: 0.1804, green: 0.1804, blue: 0.1804, opacity: 1)
+        /// Locket · widget.home.small · loading placeholder tile, bottom of the vertical gradient · SOURCED
+        /// token: `widget.home.small.color.placeholderBottom`
+        public static let widgetHomeSmallColorPlaceholderBottom: Color = Color(.sRGB, red: 0.1255, green: 0.1176, blue: 0.1294, opacity: 1)
+        /// Locket · widget.home.small · loading placeholder tile (just added, before the first photo), top of the vertical gradient · SOURCED
+        /// token: `widget.home.small.color.placeholderTop`
+        public static let widgetHomeSmallColorPlaceholderTop: Color = Color(.sRGB, red: 0.1765, green: 0.1686, blue: 0.1843, opacity: 1)
     }
     public enum Counts {
+        /// Locket · chat.reactions · emoji per row in the picker grid · SOURCED
+        /// token: `chat.reactions.count.pickerColumns`
+        public static let chatReactionsCountPickerColumns: CGFloat = 6
+        /// Locket · chat.reactions · copies of the chosen emoji in one emoji-rain burst · SOURCED
+        /// token: `chat.reactions.count.rainCopies`
+        public static let chatReactionsCountRainCopies: CGFloat = 18
+        /// Spotify Wrapped · year.story · most photos one list shows (most-reacted, everyone-answered days) · SOURCED
+        /// token: `count.year.story.listLength`
+        public static let yearStoryListLength: CGFloat = 5
         /// Partiful · invite.web · title: most lines allowed before the size shrinks · VERIFIED
         /// token: `invite.web.count.title.maxLines`
         public static let inviteWebCountTitleMaxLines: CGFloat = 3
+        /// Yope · walls.mine · columns of the wall photo grid (walls.mine, walls.member, walls.browse) · SOURCED
+        /// token: `walls.mine.count.gridColumns`
+        public static let wallsMineCountGridColumns: CGFloat = 3
+        /// Yope · week.recap · columns of the full rows of the recap card grid · CAPTURED
+        /// token: `week.recap.count.gridColumns`
+        public static let weekRecapCountGridColumns: CGFloat = 3
+        /// Yope · week.recap · columns of the week's pics grid under the card · CAPTURED
+        /// token: `week.recap.count.picsColumns`
+        public static let weekRecapCountPicsColumns: CGFloat = 3
     }
     public enum Durations {
+        /// Supabase Auth documentation · auth.code · time after a code request before 'send new code' is enabled · VERIFIED
+        /// token: `auth.code.duration.resendLock`
+        public static let authCodeDurationResendLock: TimeInterval = 60
+        /// Locket · camera.capture · maximum length of a hold-to-record video (premium) · SOURCED
+        /// token: `camera.capture.duration.videoMax`
+        public static let cameraCaptureDurationVideoMax: TimeInterval = 10
+        /// Locket · chat.reactions · interval between consecutive copies entering · SOURCED
+        /// token: `chat.reactions.duration.rainSpawnInterval`
+        public static let chatReactionsDurationRainSpawnInterval: TimeInterval = 0.125
+        /// Locket · chat.reactions · whole emoji-rain effect, first entry to last exit · SOURCED
+        /// token: `chat.reactions.duration.rainTotal`
+        public static let chatReactionsDurationRainTotal: TimeInterval = 2.94
+        /// Locket · chat.reactions · one copy's travel from below the bottom edge to past the top edge · SOURCED
+        /// token: `chat.reactions.duration.rainTravel`
+        public static let chatReactionsDurationRainTravel: TimeInterval = 0.77
+        /// Apple HIG · daily.liveactivity · longest allowed Live Activity animation · VERIFIED
+        /// token: `daily.liveactivity.duration.animationMax`
+        public static let dailyLiveactivityDurationAnimationMax: TimeInterval = 2
+        /// Tribute · birthday.tribute · transition between two contribution cards: hard cut (read by the worker) · SOURCED
+        /// token: `duration.birthday.tribute.clipTransition`
+        public static let birthdayTributeClipTransition: TimeInterval = 0
+        /// Tribute · birthday.tribute · end card length (read by the worker) · SOURCED
+        /// token: `duration.birthday.tribute.endHold`
+        public static let birthdayTributeEndHold: TimeInterval = 10.003
+        /// Tribute · birthday.tribute · transition from the last contribution to the end card: hard cut (read by the worker) · SOURCED
+        /// token: `duration.birthday.tribute.endTransition`
+        public static let birthdayTributeEndTransition: TimeInterval = 0
+        /// VidDay · birthday.tribute · crossfade from the title card to the first contribution (read by the worker) · SOURCED
+        /// token: `duration.birthday.tribute.titleCrossfade`
+        public static let birthdayTributeTitleCrossfade: TimeInterval = 0.6
+        /// VidDay · birthday.tribute · title card fully visible before the crossfade (read by the worker) · SOURCED
+        /// token: `duration.birthday.tribute.titleHold`
+        public static let birthdayTributeTitleHold: TimeInterval = 1.167
         /// Yope · global · horizontal push to the next screen ('new group' → new group chat after create) · SOURCED
         /// token: `duration.global.navigationPush`
         public static let globalNavigationPush: TimeInterval = 0.1
@@ -121,22 +435,130 @@ public enum Tokens {
         /// Yope · global · bottom-sheet presentation, first movement to rest (rise ≈ 100 ms to an overshoot ≈ 16 pt past rest, settle ≈ 100 ms) · SOURCED
         /// token: `duration.global.sheetPresent`
         public static let globalSheetPresent: TimeInterval = 0.215
+        /// Spotify Wrapped · year.story · headline moves up when the subline arrives · SOURCED
+        /// token: `duration.year.story.reveal.headline`
+        public static let yearStoryRevealHeadline: TimeInterval = 0.8
+        /// Spotify Wrapped · year.story · subline slides up into place · SOURCED
+        /// token: `duration.year.story.reveal.subline`
+        public static let yearStoryRevealSubline: TimeInterval = 0.6
+        /// Spotify Wrapped · year.story · headline motion start to subline appearance · SOURCED
+        /// token: `duration.year.story.reveal.sublineDelay`
+        public static let yearStoryRevealSublineDelay: TimeInterval = 0.267
         /// Partiful · invite.web · button/link background-colour and colour transition · VERIFIED
         /// token: `invite.web.duration.button.colour`
         public static let inviteWebDurationButtonColour: TimeInterval = 0.2
         /// Partiful · invite.web · button opacity transition (press feedback) · VERIFIED
         /// token: `invite.web.duration.button.opacity`
         public static let inviteWebDurationButtonOpacity: TimeInterval = 0.1
+        /// Locket · widget.android · system periodic update interval (safety net; refresh is push-driven) · SOURCED
+        /// token: `widget.android.duration.updatePeriod`
+        public static let widgetAndroidDurationUpdatePeriod: TimeInterval = 86400
+        /// Locket · widget.arrival · documented worst-case delay before a sent photo shows on a member's widget · SOURCED
+        /// token: `widget.arrival.duration.expectedDelay`
+        public static let widgetArrivalDurationExpectedDelay: TimeInterval = 300
+        /// Locket · widget.arrival · placeholder / previous photo → new photo on the widget (instant swap, no animation) · SOURCED
+        /// token: `widget.arrival.duration.transition`
+        public static let widgetArrivalDurationTransition: TimeInterval = 0
     }
     public enum Easings {
         /// Material 3 · global.system · M3 standard easing for custom transitions on Android system surfaces · PLATFORM
         /// token: `easing.global.system.standard`
         public static let globalSystemStandard: DSEasing = .cubicBezier(0.2, 0, 0, 1)
+        /// Spotify Wrapped · year.story · current segment fill over time · SOURCED
+        /// token: `easing.year.story.progress.fill`
+        public static let yearStoryProgressFill: DSEasing = .linear
         /// Partiful · invite.web · button/link transitions · VERIFIED
         /// token: `invite.web.easing.button`
         public static let inviteWebEasingButton: DSEasing = .easeOut
     }
     public enum FontSizes {
+        /// Yope · auth.code · lime text link ('send new code'; Yope's sign-in link 'probar otras opciones' = 'try other options') · SOURCED
+        /// token: `auth.code.fontSize.textLink`
+        public static let authCodeFontSizeTextLink: CGFloat = 14.5
+        /// Yope · auth.phone · italic subtitle under the sign-up title ('to join or create your friends groups') · SOURCED
+        /// token: `auth.phone.fontSize.subtitle`
+        public static let authPhoneFontSizeSubtitle: CGFloat = 14
+        /// Yope · camera.capture · coach tooltip text ('hold down to record') · SOURCED
+        /// token: `camera.capture.fontSize.coach`
+        public static let cameraCaptureFontSizeCoach: CGFloat = 11
+        /// Yope · camera.sendto · caption typed on the preview, centred under the hour overlay (color.global.textPrimary) · SOURCED
+        /// token: `camera.sendto.fontSize.caption`
+        public static let cameraSendtoFontSizeCaption: CGFloat = 16
+        /// Yope · camera.sendto · number inside the count disc · SOURCED
+        /// token: `camera.sendto.fontSize.countNumber`
+        public static let cameraSendtoFontSizeCountNumber: CGFloat = 11
+        /// Yope · camera.sendto · 'add a message' placeholder (color.global.textPrimary: measured near-white (254,251,238), not the gray placeholder of text fields) · SOURCED
+        /// token: `camera.sendto.fontSize.messagePlaceholder`
+        public static let cameraSendtoFontSizeMessagePlaceholder: CGFloat = 15
+        /// Locket · chat.reactions · section labels 'Frequently Used', 'Popular', 'All' (grey) · SOURCED
+        /// token: `chat.reactions.fontSize.pickerSection`
+        public static let chatReactionsFontSizePickerSection: CGFloat = 13
+        /// Yope · chat.thread · caption text in the dark box on a photo ('Chloe'), white · SOURCED
+        /// token: `chat.thread.fontSize.caption`
+        public static let chatThreadFontSizeCaption: CGFloat = 21
+        /// Yope · chat.thread · the word 'pic' under the quoted name · SOURCED
+        /// token: `chat.thread.fontSize.replyLabel`
+        public static let chatThreadFontSizeReplyLabel: CGFloat = 12.7
+        /// Yope · chat.thread · quoted poster's first name in the reply quote ('Gabriel'), black on lime · SOURCED
+        /// token: `chat.thread.fontSize.replyName`
+        public static let chatThreadFontSizeReplyName: CGFloat = 14.5
+        /// Yope · collage.share · 'share' label · SOURCED
+        /// token: `collage.share.fontSize.label`
+        public static let collageShareFontSizeLabel: CGFloat = 18
+        /// Yope · collage.view · date title ('26 May') centred on the back circle's centre line (color.global.textPrimary) · SOURCED
+        /// token: `collage.view.fontSize.title`
+        public static let collageViewFontSizeTitle: CGFloat = 16
+        /// BeReal · daily.capture · audience chip text · SOURCED
+        /// token: `daily.capture.fontSize.chip`
+        public static let dailyCaptureFontSizeChip: CGFloat = 13
+        /// BeReal · daily.capture · countdown digits (MM:SS) in the platform font · SOURCED
+        /// token: `daily.capture.fontSize.countdown`
+        public static let dailyCaptureFontSizeCountdown: CGFloat = 23
+        /// BeReal · daily.capture · prompt line under the spinner · SOURCED
+        /// token: `daily.capture.fontSize.prompt`
+        public static let dailyCaptureFontSizePrompt: CGFloat = 17
+        /// BeReal · daily.capture · SEND label (capitals) · SOURCED
+        /// token: `daily.capture.fontSize.send`
+        public static let dailyCaptureFontSizeSend: CGFloat = 40.5
+        /// Tribute · birthday.contribute · step button label · VERIFIED
+        /// token: `fontSize.birthday.contribute.button`
+        public static let birthdayContributeButton: CGFloat = 16
+        /// Tribute · birthday.contribute · step heading ('Let's add a photo for {name}!'), centred · VERIFIED
+        /// token: `fontSize.birthday.contribute.heading`
+        public static let birthdayContributeHeading: CGFloat = 20
+        /// Tribute · birthday.contribute · typed text · VERIFIED
+        /// token: `fontSize.birthday.contribute.input`
+        public static let birthdayContributeInput: CGFloat = 16
+        /// Tribute · birthday.contribute · field label ('Your Message') · VERIFIED
+        /// token: `fontSize.birthday.contribute.label`
+        public static let birthdayContributeLabel: CGFloat = 16
+        /// Tribute · birthday.contribute · step caption under the circle · VERIFIED
+        /// token: `fontSize.birthday.contribute.stepper.label`
+        public static let birthdayContributeStepperLabel: CGFloat = 10
+        /// Tribute · birthday.contribute · step number · VERIFIED
+        /// token: `fontSize.birthday.contribute.stepper.number`
+        public static let birthdayContributeStepperNumber: CGFloat = 14
+        /// Tribute · birthday.contribute · sub-heading ('Thank you for taking the time to participate!') · VERIFIED
+        /// token: `fontSize.birthday.contribute.subheading`
+        public static let birthdayContributeSubheading: CGFloat = 16
+        /// Tribute · birthday.request · primary button label · VERIFIED
+        /// token: `fontSize.birthday.request.cta`
+        public static let birthdayRequestCta: CGFloat = 22
+        /// Tribute · birthday.request · welcome message (and due line) · VERIFIED
+        /// token: `fontSize.birthday.request.message`
+        public static let birthdayRequestMessage: CGFloat = 16
+        /// Tribute · birthday.request · prompt text · VERIFIED
+        /// token: `fontSize.birthday.request.prompt`
+        public static let birthdayRequestPrompt: CGFloat = 15
+        /// Tribute · birthday.request · header label · VERIFIED
+        /// token: `fontSize.birthday.request.prompts.header`
+        public static let birthdayRequestPromptsHeader: CGFloat = 15
+        /// Tribute · birthday.request · title ('Birthday Video for {name}!') · VERIFIED
+        /// token: `fontSize.birthday.request.title`
+        public static let birthdayRequestTitle: CGFloat = 24
+        /// Tribute · birthday.tribute · secondary button label · VERIFIED
+        /// token: `fontSize.birthday.tribute.button`
+        public static let birthdayTributeButton: CGFloat = 14
         /// Yope · global · chat message text in bubbles (body text) · SOURCED
         /// token: `fontSize.global.body`
         public static let globalBody: CGFloat = 17
@@ -179,6 +601,45 @@ public enum Tokens {
         /// Yope · global · sheet title centred between header circles ('send to...') · SOURCED
         /// token: `fontSize.global.sheetTitle`
         public static let globalSheetTitle: CGFloat = 19.5
+        /// Timehop · onthisday · 'N YEARS AGO' banner label, set in the platform font · SOURCED
+        /// token: `fontSize.onthisday.banner.label`
+        public static let onthisdayBannerLabel: CGFloat = 25.8
+        /// Timehop · onthisday · meta row text ('TUE 10:34 PM') · SOURCED
+        /// token: `fontSize.onthisday.meta`
+        public static let onthisdayMeta: CGFloat = 10.6
+        /// Spotify Wrapped · year.story · card subline · SOURCED
+        /// token: `fontSize.year.story.body`
+        public static let yearStoryBody: CGFloat = 15.4
+        /// Spotify Wrapped · year.story · card headline · SOURCED
+        /// token: `fontSize.year.story.headline`
+        public static let yearStoryHeadline: CGFloat = 31.6
+        /// Spotify Wrapped · year.story · 'Share this story' label · SOURCED
+        /// token: `fontSize.year.story.share`
+        public static let yearStoryShare: CGFloat = 16.1
+        /// Spotify Wrapped · year.story · 'Share' pill label · SOURCED
+        /// token: `fontSize.year.story.sharePill`
+        public static let yearStorySharePill: CGFloat = 17.7
+        /// Yope · groups.create · typed text in the form field (centred) · SOURCED
+        /// token: `groups.create.fontSize.fieldText`
+        public static let groupsCreateFontSizeFieldText: CGFloat = 15
+        /// Yope · groups.create · 'Loading' label under the spinner in the HUD · SOURCED
+        /// token: `groups.create.fontSize.hudLabel`
+        public static let groupsCreateFontSizeHudLabel: CGFloat = 15
+        /// Yope · groups.create · sheet title 'new group' · SOURCED
+        /// token: `groups.create.fontSize.title`
+        public static let groupsCreateFontSizeTitle: CGFloat = 14.5
+        /// Yope · groups.invite · name on a picker row (bold, white) · SOURCED
+        /// token: `groups.invite.fontSize.pickerName`
+        public static let groupsInviteFontSizePickerName: CGFloat = 13.5
+        /// Yope · groups.screen · 'chat' label in the pill (bold, white, after icon.global.chats) · SOURCED
+        /// token: `groups.screen.fontSize.chatPill`
+        public static let groupsScreenFontSizeChatPill: CGFloat = 15
+        /// Yope · groups.screen · group name on the group profile page (bold, white, centred) · SOURCED
+        /// token: `groups.screen.fontSize.profileName`
+        public static let groupsScreenFontSizeProfileName: CGFloat = 25
+        /// Yope · groups.screen · segment labels ('pics', 'wall', 'recaps'): bold, white unselected / black selected · SOURCED
+        /// token: `groups.screen.fontSize.segmentLabel`
+        public static let groupsScreenFontSizeSegmentLabel: CGFloat = 14.5
         /// Partiful · invite.appclip · join sheet helper line ('Just for group updates. No spam.') · VERIFIED
         /// token: `invite.appclip.fontSize.sheetHelper`
         public static let inviteAppclipFontSizeSheetHelper: CGFloat = 14.4
@@ -212,8 +673,149 @@ public enum Tokens {
         /// Partiful · invite.web · title: upper bound for titles that fit on one line at the base size (largest size tried 47) · VERIFIED
         /// token: `invite.web.fontSize.title.singleLineMax`
         public static let inviteWebFontSizeTitleSingleLineMax: CGFloat = 48
+        /// Yope · onboarding.permission.contacts · card detail ('enable contacts', color.global.textSecondary) · SOURCED
+        /// token: `onboarding.permission.contacts.fontSize.cardDetail`
+        public static let onboardingPermissionContactsFontSizeCardDetail: CGFloat = 14
+        /// Yope · onboarding.permission.contacts · card title ('can’t see / your friends?', bold, white, 2 lines) · SOURCED
+        /// token: `onboarding.permission.contacts.fontSize.cardTitle`
+        public static let onboardingPermissionContactsFontSizeCardTitle: CGFloat = 17
+        /// Locket · onboarding.widget · CTA label (bold) · SOURCED
+        /// token: `onboarding.widget.fontSize.ctaLabel`
+        public static let onboardingWidgetFontSizeCtaLabel: CGFloat = 18
+        /// Locket · onboarding.widget · step lines (welcome tagline style), centred · SOURCED
+        /// token: `onboarding.widget.fontSize.step`
+        public static let onboardingWidgetFontSizeStep: CGFloat = 22
+        /// Locket · onboarding.widget · title ('Add the widget\nto your home screen'), bold, white, centred · SOURCED
+        /// token: `onboarding.widget.fontSize.title`
+        public static let onboardingWidgetFontSizeTitle: CGFloat = 33
+        /// Locket · paywall · CTA label (bold) + trailing unlock glyph · SOURCED
+        /// token: `paywall.fontSize.ctaLabel`
+        public static let paywallFontSizeCtaLabel: CGFloat = 18
+        /// Locket · paywall · 'No thanks!' text button (regular) · SOURCED
+        /// token: `paywall.fontSize.dismiss`
+        public static let paywallFontSizeDismiss: CGFloat = 16
+        /// Locket · paywall · perk subtitle (regular) · SOURCED
+        /// token: `paywall.fontSize.perkSubtitle`
+        public static let paywallFontSizePerkSubtitle: CGFloat = 15
+        /// Locket · paywall · perk title (semibold) · SOURCED
+        /// token: `paywall.fontSize.perkTitle`
+        public static let paywallFontSizePerkTitle: CGFloat = 17
+        /// Locket · paywall · plan detail line under the name (regular) · SOURCED
+        /// token: `paywall.fontSize.planDetail`
+        public static let paywallFontSizePlanDetail: CGFloat = 15
+        /// Locket · paywall · plan name ('1 Year', '1 Month'), bold, paywall.color.title · SOURCED
+        /// token: `paywall.fontSize.planName`
+        public static let paywallFontSizePlanName: CGFloat = 18
+        /// Locket · paywall · plan price, trailing, bold, paywall.color.title · SOURCED
+        /// token: `paywall.fontSize.planPrice`
+        public static let paywallFontSizePlanPrice: CGFloat = 17
+        /// Locket · paywall · plan sheet title (2 lines, bold, centred, paywall.color.title) · SOURCED
+        /// token: `paywall.fontSize.planSheetTitle`
+        public static let paywallFontSizePlanSheetTitle: CGFloat = 24.5
+        /// Locket · paywall · 'Subscribe' label (bold) · SOURCED
+        /// token: `paywall.fontSize.subscribeLabel`
+        public static let paywallFontSizeSubscribeLabel: CGFloat = 19
+        /// Locket · paywall · subtitle (2 lines, regular, centred) · SOURCED
+        /// token: `paywall.fontSize.subtitle`
+        public static let paywallFontSizeSubtitle: CGFloat = 17
+        /// Locket · paywall · title ('{app_name} Premium'), bold · SOURCED
+        /// token: `paywall.fontSize.title`
+        public static let paywallFontSizeTitle: CGFloat = 30
+        /// Retro · week.history · day number on an empty-day tile (bold) · SOURCED
+        /// token: `week.history.fontSize.emptyDay`
+        public static let weekHistoryFontSizeEmptyDay: CGFloat = 29
+        /// Retro · week.history · month and weekday lines on an empty-day tile · SOURCED
+        /// token: `week.history.fontSize.emptyDayLabel`
+        public static let weekHistoryFontSizeEmptyDayLabel: CGFloat = 15
+        /// Retro · week.history · 'Week N' and its date range · SOURCED
+        /// token: `week.history.fontSize.header`
+        public static let weekHistoryFontSizeHeader: CGFloat = 15
+        /// Retro · week.history · screen title (the group's name) in the display role, left-aligned · SOURCED
+        /// token: `week.history.fontSize.title`
+        public static let weekHistoryFontSizeTitle: CGFloat = 43
+        /// Retro · week.history · weekday label on a photo tile ('Mon'), white, bottom-centred · SOURCED
+        /// token: `week.history.fontSize.weekday`
+        public static let weekHistoryFontSizeWeekday: CGFloat = 13
+        /// Yope · week.recap · week label on the card ('18 AUG-24 AUG'), uppercase, white · CAPTURED
+        /// token: `week.recap.fontSize.label`
+        public static let weekRecapFontSizeLabel: CGFloat = 20
+        /// Yope · week.recap · segment labels ('recap' black on white, 'pics' white) · CAPTURED
+        /// token: `week.recap.fontSize.segmented`
+        public static let weekRecapFontSizeSegmented: CGFloat = 17
+        /// Yope · week.recap · screen title ('18 aug-24 aug'), centred · CAPTURED
+        /// token: `week.recap.fontSize.title`
+        public static let weekRecapFontSizeTitle: CGFloat = 17
+        /// Locket · widget.home.small · caption text ('Sundays ☀️'), color.global.textPrimary (measured (253.5,254,253.5)) · SOURCED
+        /// token: `widget.home.small.fontSize.caption`
+        public static let widgetHomeSmallFontSizeCaption: CGFloat = 12
     }
     public enum FontWeights {
+        /// Yope · auth.code · lime text link weight · SOURCED
+        /// token: `auth.code.fontWeight.textLink`
+        public static let authCodeFontWeightTextLink: Font.Weight = .bold
+        /// Yope · camera.capture · coach tooltip text weight · SOURCED
+        /// token: `camera.capture.fontWeight.coach`
+        public static let cameraCaptureFontWeightCoach: Font.Weight = .semibold
+        /// Yope · camera.sendto · caption on the preview · SOURCED
+        /// token: `camera.sendto.fontWeight.caption`
+        public static let cameraSendtoFontWeightCaption: Font.Weight = .semibold
+        /// Yope · camera.sendto · number inside the count disc · SOURCED
+        /// token: `camera.sendto.fontWeight.countNumber`
+        public static let cameraSendtoFontWeightCountNumber: Font.Weight = .bold
+        /// Locket · chat.reactions · picker section labels · SOURCED
+        /// token: `chat.reactions.fontWeight.pickerSection`
+        public static let chatReactionsFontWeightPickerSection: Font.Weight = .semibold
+        /// Yope · chat.thread · caption text on a photo · SOURCED
+        /// token: `chat.thread.fontWeight.caption`
+        public static let chatThreadFontWeightCaption: Font.Weight = .bold
+        /// Yope · chat.thread · the word 'pic' under the quoted name · SOURCED
+        /// token: `chat.thread.fontWeight.replyLabel`
+        public static let chatThreadFontWeightReplyLabel: Font.Weight = .regular
+        /// Yope · chat.thread · quoted poster's name in the reply quote · SOURCED
+        /// token: `chat.thread.fontWeight.replyName`
+        public static let chatThreadFontWeightReplyName: Font.Weight = .bold
+        /// Yope · collage.share · 'share' label weight · SOURCED
+        /// token: `collage.share.fontWeight.label`
+        public static let collageShareFontWeightLabel: Font.Weight = .bold
+        /// Yope · collage.view · date title weight · SOURCED
+        /// token: `collage.view.fontWeight.title`
+        public static let collageViewFontWeightTitle: Font.Weight = .semibold
+        /// BeReal · daily.capture · SEND label weight · SOURCED
+        /// token: `daily.capture.fontWeight.send`
+        public static let dailyCaptureFontWeightSend: Font.Weight = .heavy
+        /// Apple HIG · daily.liveactivity · minimum weight of any Live Activity text · VERIFIED
+        /// token: `daily.liveactivity.fontWeight.min`
+        public static let dailyLiveactivityFontWeightMin: Font.Weight = .medium
+        /// Tribute · birthday.contribute · step button label · VERIFIED
+        /// token: `fontWeight.birthday.contribute.button`
+        public static let fontWeightBirthdayContributeButton: Font.Weight = .semibold
+        /// Tribute · birthday.contribute · step heading · VERIFIED
+        /// token: `fontWeight.birthday.contribute.heading`
+        public static let fontWeightBirthdayContributeHeading: Font.Weight = .medium
+        /// Tribute · birthday.contribute · field label · VERIFIED
+        /// token: `fontWeight.birthday.contribute.label`
+        public static let fontWeightBirthdayContributeLabel: Font.Weight = .semibold
+        /// Tribute · birthday.contribute · other step captions · VERIFIED
+        /// token: `fontWeight.birthday.contribute.stepper.label`
+        public static let fontWeightBirthdayContributeStepperLabel: Font.Weight = .regular
+        /// Tribute · birthday.contribute · current step caption · VERIFIED
+        /// token: `fontWeight.birthday.contribute.stepper.labelActive`
+        public static let fontWeightBirthdayContributeStepperLabelActive: Font.Weight = .medium
+        /// Tribute · birthday.contribute · step number · VERIFIED
+        /// token: `fontWeight.birthday.contribute.stepper.number`
+        public static let fontWeightBirthdayContributeStepperNumber: Font.Weight = .semibold
+        /// Tribute · birthday.request · primary button label · VERIFIED
+        /// token: `fontWeight.birthday.request.cta`
+        public static let fontWeightBirthdayRequestCta: Font.Weight = .semibold
+        /// Tribute · birthday.request · header label · VERIFIED
+        /// token: `fontWeight.birthday.request.prompts.header`
+        public static let fontWeightBirthdayRequestPromptsHeader: Font.Weight = .medium
+        /// Tribute · birthday.request · title · VERIFIED
+        /// token: `fontWeight.birthday.request.title`
+        public static let fontWeightBirthdayRequestTitle: Font.Weight = .semibold
+        /// Tribute · birthday.tribute · secondary button label · VERIFIED
+        /// token: `fontWeight.birthday.tribute.button`
+        public static let fontWeightBirthdayTributeButton: Font.Weight = .semibold
         /// Yope · global · chat message text · SOURCED
         /// token: `fontWeight.global.body`
         public static let fontWeightGlobalBody: Font.Weight = .regular
@@ -250,6 +852,39 @@ public enum Tokens {
         /// Yope · global · sheet title ('send to...') · SOURCED
         /// token: `fontWeight.global.sheetTitle`
         public static let fontWeightGlobalSheetTitle: Font.Weight = .bold
+        /// Timehop · onthisday · 'N YEARS AGO' banner label · SOURCED
+        /// token: `fontWeight.onthisday.banner.label`
+        public static let fontWeightOnthisdayBannerLabel: Font.Weight = .bold
+        /// Timehop · onthisday · meta row text · SOURCED
+        /// token: `fontWeight.onthisday.meta`
+        public static let fontWeightOnthisdayMeta: Font.Weight = .bold
+        /// Spotify Wrapped · year.story · card subline · SOURCED
+        /// token: `fontWeight.year.story.body`
+        public static let fontWeightYearStoryBody: Font.Weight = .regular
+        /// Spotify Wrapped · year.story · card headline · SOURCED
+        /// token: `fontWeight.year.story.headline`
+        public static let fontWeightYearStoryHeadline: Font.Weight = .bold
+        /// Spotify Wrapped · year.story · 'Share this story' label · SOURCED
+        /// token: `fontWeight.year.story.share`
+        public static let fontWeightYearStoryShare: Font.Weight = .bold
+        /// Spotify Wrapped · year.story · 'Share' pill label · SOURCED
+        /// token: `fontWeight.year.story.sharePill`
+        public static let fontWeightYearStorySharePill: Font.Weight = .bold
+        /// Yope · groups.create · typed text weight in the form field · SOURCED
+        /// token: `groups.create.fontWeight.fieldText`
+        public static let groupsCreateFontWeightFieldText: Font.Weight = .bold
+        /// Yope · groups.create · sheet title weight 'new group' · SOURCED
+        /// token: `groups.create.fontWeight.title`
+        public static let groupsCreateFontWeightTitle: Font.Weight = .medium
+        /// Yope · groups.invite · picker row name weight · SOURCED
+        /// token: `groups.invite.fontWeight.pickerName`
+        public static let groupsInviteFontWeightPickerName: Font.Weight = .bold
+        /// Yope · groups.screen · group name weight on the profile page · SOURCED
+        /// token: `groups.screen.fontWeight.profileName`
+        public static let groupsScreenFontWeightProfileName: Font.Weight = .bold
+        /// Yope · groups.screen · segment label weight · SOURCED
+        /// token: `groups.screen.fontWeight.segmentLabel`
+        public static let groupsScreenFontWeightSegmentLabel: Font.Weight = .bold
         /// Partiful · invite.web · body text weight (400) · VERIFIED
         /// token: `invite.web.fontWeight.body`
         public static let inviteWebFontWeightBody: Font.Weight = .regular
@@ -268,14 +903,62 @@ public enum Tokens {
         /// Partiful · invite.web · member first name in a row (600) · VERIFIED
         /// token: `invite.web.fontWeight.userRow.name`
         public static let inviteWebFontWeightUserRowName: Font.Weight = .semibold
+        /// Yope · onboarding.permission.contacts · card title weight · SOURCED
+        /// token: `onboarding.permission.contacts.fontWeight.cardTitle`
+        public static let onboardingPermissionContactsFontWeightCardTitle: Font.Weight = .bold
+        /// Locket · onboarding.widget · step line weight · SOURCED
+        /// token: `onboarding.widget.fontWeight.step`
+        public static let onboardingWidgetFontWeightStep: Font.Weight = .semibold
+        /// Locket · onboarding.widget · title weight · SOURCED
+        /// token: `onboarding.widget.fontWeight.title`
+        public static let onboardingWidgetFontWeightTitle: Font.Weight = .bold
+        /// Locket · paywall · perk title weight · SOURCED
+        /// token: `paywall.fontWeight.perkTitle`
+        public static let paywallFontWeightPerkTitle: Font.Weight = .semibold
+        /// Retro · week.history · date range after 'Week N' · SOURCED
+        /// token: `week.history.fontWeight.headerRange`
+        public static let weekHistoryFontWeightHeaderRange: Font.Weight = .regular
+        /// Retro · week.history · 'Week N' · SOURCED
+        /// token: `week.history.fontWeight.headerTitle`
+        public static let weekHistoryFontWeightHeaderTitle: Font.Weight = .semibold
+        /// Retro · week.history · screen title · SOURCED
+        /// token: `week.history.fontWeight.title`
+        public static let weekHistoryFontWeightTitle: Font.Weight = .heavy
+        /// Retro · week.history · weekday label on a photo tile · SOURCED
+        /// token: `week.history.fontWeight.weekday`
+        public static let weekHistoryFontWeightWeekday: Font.Weight = .semibold
+        /// Yope · week.recap · week label on the card · CAPTURED
+        /// token: `week.recap.fontWeight.label`
+        public static let weekRecapFontWeightLabel: Font.Weight = .heavy
+        /// Yope · week.recap · segment labels · CAPTURED
+        /// token: `week.recap.fontWeight.segmented`
+        public static let weekRecapFontWeightSegmented: Font.Weight = .semibold
+        /// Yope · week.recap · screen title · CAPTURED
+        /// token: `week.recap.fontWeight.title`
+        public static let weekRecapFontWeightTitle: Font.Weight = .semibold
+        /// Locket · widget.home.small · caption text weight · SOURCED
+        /// token: `widget.home.small.fontWeight.caption`
+        public static let widgetHomeSmallFontWeightCaption: Font.Weight = .semibold
     }
     public enum Fonts {
+        /// Tribute + VidDay · birthday.request · all birthday surfaces (request, contribute, tribute screen) · PLATFORM
+        /// token: `font.birthday`
+        public static let birthday: DSFontFamily = .system
         /// Yope · global · typeface of all text (SF Pro on iOS, Roboto on Android) · PLATFORM
         /// token: `font.global.family`
         public static let globalFamily: DSFontFamily = .system
+        /// Timehop · onthisday · all on-this-day text · PLATFORM
+        /// token: `font.onthisday`
+        public static let onthisday: DSFontFamily = .system
+        /// Spotify Wrapped · year.story · all story text · PLATFORM
+        /// token: `font.year.story`
+        public static let yearStory: DSFontFamily = .system
         /// Partiful · invite.web · all page text · PLATFORM
         /// token: `invite.web.font`
         public static let inviteWebFont: DSFontFamily = .system
+        /// Retro · week.history · screen title typeface · PLATFORM
+        /// token: `week.history.font.title`
+        public static let weekHistoryFontTitle: DSFontFamily = .system
     }
     public enum Haptics {
         /// Apple HIG / Material 3 · global · a task failed (send failed) · PLATFORM
@@ -295,6 +978,12 @@ public enum Tokens {
         public static let globalWarning: DSHaptic = .notificationWarning
     }
     public enum Icons {
+        /// Locket · chat.reactions · add-reaction button (smiley with a plus) · PLATFORM
+        /// token: `chat.reactions.icon.add`
+        public static let chatReactionsIconAdd: String = "face.smiling"
+        /// Yope · collage.share · filled share glyph (box + up arrow) in the pill · PLATFORM
+        /// token: `collage.share.icon.share`
+        public static let collageShareIconShare: String = "square.and.arrow.up.fill"
         /// Yope · global · add (+ in a header circle) · PLATFORM
         /// token: `icon.global.add`
         public static let globalAdd: String = "plus"
@@ -394,14 +1083,336 @@ public enum Tokens {
         /// Yope · global · walls / recaps tab (film frame with stacked lines, filled) · PLATFORM
         /// token: `icon.global.wall`
         public static let globalWall: String = "film.stack.fill"
+        /// Spotify Wrapped · year.story · pause (two bars) · PLATFORM
+        /// token: `icon.year.story.pause`
+        public static let yearStoryPause: String = "pause.fill"
+        /// Spotify Wrapped · year.story · replay glyph before 'Replay from beginning' · PLATFORM
+        /// token: `icon.year.story.replay`
+        public static let yearStoryReplay: String = "arrow.counterclockwise"
+        /// Spotify Wrapped · year.story · share glyph left of 'Share this story' · PLATFORM
+        /// token: `icon.year.story.share`
+        public static let yearStoryShare: String = "square.and.arrow.up"
         /// Partiful · invite.web · arrow after 'Get the app' (web: Material Icons 'north_east', Apache-2.0) · PLATFORM
         /// token: `invite.web.icon.getApp`
         public static let inviteWebIconGetApp: String = "arrow.up.right"
         /// Partiful · invite.web · lock glyph on the members-only card (web: Material Icons 'lock', Apache-2.0) · PLATFORM
         /// token: `invite.web.icon.lock`
         public static let inviteWebIconLock: String = "lock.fill"
+        /// Locket · onboarding.widget · trailing arrow in the CTA ('→') · PLATFORM
+        /// token: `onboarding.widget.icon.ctaArrow`
+        public static let onboardingWidgetIconCtaArrow: String = "arrow.right"
+        /// Locket · paywall · open-padlock glyph after the CTA label · PLATFORM
+        /// token: `paywall.icon.ctaUnlock`
+        public static let paywallIconCtaUnlock: String = "lock.open.fill"
+        /// Apple HIG / Material 3 · photo.viewer · delete item in the ••• menu (own photos) · PLATFORM
+        /// token: `photo.viewer.icon.delete`
+        public static let photoViewerIconDelete: String = "trash"
+        /// Retro · week.history · '+' in the add tile · PLATFORM
+        /// token: `week.history.icon.add`
+        public static let weekHistoryIconAdd: String = "plus"
     }
     public enum Layouts {
+        /// Yope · albums.list · albums.list built from documented Yope components · SOURCED
+        /// token: `albums.list.layout.composition`
+        public enum AlbumsListLayoutComposition {
+            public static let basis: String = "Yope home list card: cover circle (size.global.avatarList) at coverInset, name (text role listTitle), subtitle (text role listSubtitle, color.global.textSecondary)"
+            public static let list: String = "cards stacked with size.global.listGap, side margin size.global.screenMargin, corners radius.global.card, on color.global.backgroundDeep"
+            public static let cover: String = "the album's first photo (thumb_path), aspect fill in the circle"
+        }
+        /// FTC COPPA FAQ · auth.agegate · birthday entry (neutral age screen) · VERIFIED
+        /// token: `auth.agegate.layout.dateEntry`
+        public enum AuthAgegateLayoutDateEntry {
+            public static let control: String = "the Yope form field (groups.create.color.field, size.global.fieldHeight, radius.global.field, groups.create.fontSize.fieldText) with a numeric keyboard"
+            public static let format: String = "the device locale's numeric short-date order (DateFormatter.dateFormat(fromTemplate: \"MMddyyyy\", options: 0, locale: .current) / DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, null, IsoChronology.INSTANCE, locale)), shown in the placeholder"
+            public static let default: String = "empty: no pre-filled date, no default year, no age options"
+            public static let threshold: String = "the minimum age is never shown before the person submits"
+        }
+        /// Yope · auth.agegate · optional 'tell my groups on my birthday' opt-in row · SOURCED
+        /// token: `auth.agegate.layout.optIn`
+        public enum AuthAgegateLayoutOptIn {
+            public static let control: String = "row with icon.global.uncheck / icon.global.check (color.global.selection) at size.global.checkCircle, trailing, as in Yope's pickers"
+            public static let default: String = "unchecked (opt-in)"
+            public static let label: String = "fontSize.global.listSubtitle (14 pt) regular, color.global.textPrimary"
+            public static let detail: String = "fontSize.global.listSubtitle, color.global.textSecondary"
+        }
+        /// Yope · auth.code · verification-code field and its autofill · PLATFORM
+        /// token: `auth.code.layout.codeField`
+        public enum AuthCodeLayoutCodeField {
+            public static let ios: String = "one TextField, textContentType .oneTimeCode, keyboardType .numberPad; no per-digit boxes (a custom input view cannot show the AutoFill suggestion)"
+            public static let android: String = "one TextField, KeyboardType.NumberPassword with visualTransformation None, autofill ContentType.SmsOtpCode; SMS User Consent API (SmsRetriever.getClient(context).startSmsUserConsent) shows the system consent sheet and fills the field"
+        }
+        /// Yope · auth.phone · keyboard and AutoFill of the phone-number field · PLATFORM
+        /// token: `auth.phone.layout.keyboard`
+        public enum AuthPhoneLayoutKeyboard {
+            public static let ios: String = "UITextField/TextField keyboardType .phonePad, textContentType .telephoneNumber (system AutoFill)"
+            public static let android: String = "TextField KeyboardOptions(keyboardType = KeyboardType.Phone), autofill ContentType.PhoneNumber"
+        }
+        /// Yope · auth.phone · legal footer under the sign-up controls · SOURCED
+        /// token: `auth.phone.layout.legalFooter`
+        public enum AuthPhoneLayoutLegalFooter {
+            public static let text: String = "color.global.textSecondary"
+            public static let links: String = "same colour, bold weight (2026 build: bold 'Términos de uso' / 'Política de privacidad'); the 2024 build drew the links white and underlined"
+            public static let size: String = "fontSize.global.caption"
+            public static let lineHeight: String = "lineHeight.global.caption"
+            public static let align: String = "center"
+            public static let placement: String = "bottom of the screen, centred, above the home indicator (2024 and 2026 sign-in screens)"
+        }
+        /// Yope · auth.phone · subtitle text style under the sign-up title · SOURCED
+        /// token: `auth.phone.layout.subtitle`
+        public enum AuthPhoneLayoutSubtitle {
+            public static let style: String = "italic"
+            public static let weight: String = "regular"
+            public static let color: String = "color.global.textPrimary"
+            public static let align: String = "center"
+        }
+        /// Yope · auth.profile · avatar picker · PLATFORM
+        /// token: `auth.profile.layout.avatarPicker`
+        public enum AuthProfileLayoutAvatarPicker {
+            public static let ios: String = "PhotosPicker (SwiftUI) / PHPickerViewController, single image, no library permission"
+            public static let android: String = "ActivityResultContracts.PickVisualMedia(ImageOnly), no READ_MEDIA_* permission"
+            public static let empty: String = "circle filled color.global.controlRaised with icon.global.person centred in color.global.textSecondary"
+        }
+        /// Yope · camera.capture · first-use coach tooltip (lime pill with leading glyph, text, ✕, and a pointer at the control it explains) · SOURCED
+        /// token: `camera.capture.layout.coach`
+        public enum CameraCaptureLayoutCoach {
+            public static let height: CGFloat = 34
+            public static let cornerRadius: CGFloat = 8
+            public static let paddingHorizontal: CGFloat = 13.6
+            public static let textToCloseGap: CGFloat = 13.6
+            public static let closeGlyph: CGFloat = 9.5
+            public static let pointerWidth: CGFloat = 13.6
+            public static let pointerHeight: CGFloat = 6.8
+            public static let pointerToTarget: CGFloat = 2
+        }
+        /// Yope · camera.capture · flash toggle glyph inside the viewfinder, bottom-left (centre from the viewfinder's leading and bottom edges) · SOURCED
+        /// token: `camera.capture.layout.flashGlyph`
+        public enum CameraCaptureLayoutFlashGlyph {
+            public static let centerFromLeading: CGFloat = 28.3
+            public static let centerFromBottom: CGFloat = 33
+            public static let glyphHeight: CGFloat = 15
+        }
+        /// Locket · camera.capture · shutter scale at full press · SOURCED
+        /// token: `camera.capture.layout.shutterPress`
+        public enum CameraCaptureLayoutShutterPress {
+            public static let scale: CGFloat = 0.85
+        }
+        /// Apple HIG · camera.capture · Dynamic Type style each camera.capture font size scales with · PLATFORM
+        /// token: `camera.capture.layout.textStyleMap`
+        public enum CameraCaptureLayoutTextStyleMap {
+            public static let coach: String = "caption2"
+        }
+        /// Yope · camera.capture · live viewfinder: full screen width, portrait, top edge below the status bar (corner radius = radius.global.viewfinder) · SOURCED
+        /// token: `camera.capture.layout.viewfinder`
+        public enum CameraCaptureLayoutViewfinder {
+            public static let width: String = "full screen width"
+            public static let heightOverWidth: CGFloat = 1.38
+            public static let top: CGFloat = 103
+        }
+        /// Locket · camera.fromwidget · what a widget tap does · SOURCED
+        /// token: `camera.fromwidget.layout.target`
+        public enum CameraFromwidgetLayoutTarget {
+            public static let link: String = "app://camera?group=<group_id>"
+            public static let ios: String = "widgetURL on the whole widget"
+            public static let android: String = "PendingIntent ACTION_VIEW on the widget root"
+            public static let opens: String = "camera.capture, group preselected in camera.sendto"
+        }
+        /// Yope · camera.sendto · 'add a message' capsule and mic circle along the bottom of the preview card · SOURCED
+        /// token: `camera.sendto.layout.messageField`
+        public enum CameraSendtoLayoutMessageField {
+            public static let height: CGFloat = 37
+            public static let insetLeading: CGFloat = 10
+            public static let insetBottom: CGFloat = 14.5
+            public static let gapToMic: CGFloat = 7.5
+            public static let micDiameter: CGFloat = 38
+            public static let insetTrailing: CGFloat = 8.5
+        }
+        /// Yope · camera.sendto · captured-photo preview card, centred (corners radius.global.photo per MERGE_DECISIONS F-10) · SOURCED
+        /// token: `camera.sendto.layout.preview`
+        public enum CameraSendtoLayoutPreview {
+            public static let width: CGFloat = 218
+            public static let height: CGFloat = 290
+            public static let top: CGFloat = 130
+            public static let gapBelowHeader: CGFloat = 30.5
+        }
+        /// Yope · camera.sendto · recipient (group) row: avatar (size.global.avatarSmall), name (text role headerTitle), check circle (size.global.checkCircle) at the trailing edge · SOURCED
+        /// token: `camera.sendto.layout.recipientRow`
+        public enum CameraSendtoLayoutRecipientRow {
+            public static let pitch: CGFloat = 60
+            public static let avatarCenterInset: CGFloat = 51.5
+            public static let nameInset: CGFloat = 83
+            public static let checkTrailingInset: CGFloat = 29
+            public static let firstRowCenterBelowPreview: CGFloat = 49.5
+        }
+        /// Apple HIG · camera.sendto · Dynamic Type style each camera.sendto font size scales with · PLATFORM
+        /// token: `camera.sendto.layout.textStyleMap`
+        public enum CameraSendtoLayoutTextStyleMap {
+            public static let caption: String = "callout"
+            public static let messagePlaceholder: String = "subheadline"
+            public static let countNumber: String = "caption2"
+        }
+        /// Yope · camera.sendto · confirmation toast ('posted in …'): lime bar under the status bar with a check glyph and text · SOURCED
+        /// token: `camera.sendto.layout.toast`
+        public enum CameraSendtoLayoutToast {
+            public static let height: CGFloat = 49
+            public static let marginHorizontal: CGFloat = 8.5
+            public static let top: CGFloat = 59
+            public static let cornerRadius: CGFloat = 20
+            public static let glyph: CGFloat = 17
+            public static let glyphInset: CGFloat = 19.5
+            public static let glyphToText: CGFloat = 11
+        }
+        /// Locket · chat.reactions · how reactions are shown on a photo · SOURCED
+        /// token: `chat.reactions.layout.cluster`
+        public enum ChatReactionsLayoutCluster {
+            public static let content: String = "one sticker per distinct emoji that anyone reacted with"
+            public static let arrangement: String = "horizontal row, each sticker overlapping the previous one by the step"
+            public static let numbers: String = "none anywhere (no counts, no '+N')"
+            public static let position: String = "bottom-left corner of the photo"
+        }
+        /// Locket · chat.reactions · emoji picker sheet · SOURCED
+        /// token: `chat.reactions.layout.picker`
+        public enum ChatReactionsLayoutPicker {
+            public static let presentation: String = "bottom sheet with a grabber over the photo"
+            public static let top: String = "search field ('Search')"
+            public static let sections: String = "Frequently Used, Popular, All"
+            public static let selection: String = "any emoji; tapping one sends the reaction and closes the sheet"
+        }
+        /// Locket · chat.reactions · the 'Popular' section, in order · SOURCED
+        /// token: `chat.reactions.layout.pickerPopular`
+        public enum ChatReactionsLayoutPickerPopular {
+            public static let row1: String = "💛 🫶 😍 🔥 🤣"
+            public static let row2: String = "😭 😋 🥹 🥰 🥲"
+            public static let row3: String = "😂 😱 😎 🤭 😯 🫠"
+            public static let row4: String = "❤️‍🔥 💕 💘 ❤️ 💖 💋"
+            public static let row5: String = "🤍 💚 💙 💜 🧡 🖤"
+            public static let hidden: String = "row 1 and row 2 have a sixth cell hidden by a finger in the frame; they are left out"
+        }
+        /// Locket · chat.reactions · quick reactions in the photo viewer's reply field · SOURCED
+        /// token: `chat.reactions.layout.quickReactions`
+        public enum ChatReactionsLayoutQuickReactions {
+            public static let emoji: String = "🔥 💖"
+            public static let then: String = "add-reaction button (chat.reactions.icon.add)"
+            public static let place: String = "inside the right end of the reply field, after the text"
+        }
+        /// Locket · chat.reactions · emoji-rain path and layering · SOURCED
+        /// token: `chat.reactions.layout.rainPath`
+        public enum ChatReactionsLayoutRainPath {
+            public static let direction: String = "upward"
+            public static let start: String = "just below the bottom screen edge"
+            public static let end: String = "just above the top screen edge"
+            public static let x: String = "random across the full screen width, one x per copy"
+            public static let emoji: String = "the one emoji just sent, every copy"
+            public static let layer: String = "behind the photo, in front of the background (2022 History screen = viewer)"
+            public static let trigger: String = "on the reacting person's screen, when the reaction is sent"
+        }
+        /// Apple HIG / Material 3 · chat.reactions · Reduce Motion substitute for the emoji rain · PLATFORM
+        /// token: `chat.reactions.layout.reduceMotion`
+        public enum ChatReactionsLayoutReduceMotion {
+            public static let rain: String = "not played (automatic, repeating, peripheral motion is dropped)"
+            public static let cluster: String = "the new sticker appears in place"
+            public static let haptics: String = "unchanged"
+        }
+        /// Apple HIG · chat.reactions · iOS Dynamic Type style for chat.reactions text roles · PLATFORM
+        /// token: `chat.reactions.layout.textStyleMap`
+        public enum ChatReactionsLayoutTextStyleMap {
+            public static let pickerSection: String = "footnote"
+        }
+        /// Yope · chat.thread · how a photo fills the photo-message frame · SOURCED
+        /// token: `chat.thread.layout.photoFit`
+        public enum ChatThreadLayoutPhotoFit {
+            public static let content: String = "aspect fill, centred"
+            public static let frameWidthPt: CGFloat = 323
+            public static let frameHeightPt: CGFloat = 174
+            public static let timeOverlay: String = "centred on the photo (text role overlayTime)"
+        }
+        /// Apple HIG · chat.thread · iOS Dynamic Type style each chat.thread text role scales with · PLATFORM
+        /// token: `chat.thread.layout.textStyleMap`
+        public enum ChatThreadLayoutTextStyleMap {
+            public static let replyName: String = "subheadline"
+            public static let replyLabel: String = "footnote"
+            public static let caption: String = "title2"
+            public static let emojiOnly: String = "largeTitle"
+        }
+        /// Yope · chat.thread · time overlay on photo messages · SOURCED
+        /// token: `chat.thread.layout.timeFormat`
+        public enum ChatThreadLayoutTimeFormat {
+            public static let pattern: String = "h:mm a"
+            public static let example: String = "10:00 PM"
+            public static let locale: String = "device locale short time"
+        }
+        /// Yope · chat.voice · voice duration format · SOURCED
+        /// token: `chat.voice.layout.durationFormat`
+        public enum ChatVoiceLayoutDurationFormat {
+            public static let pattern: String = "mm:ss"
+            public static let example: String = "00:38"
+        }
+        /// Meta developer docs (standards: accessibility thresholds, share-image specs) · collage.share · the image handed to the share sheet · VERIFIED
+        /// token: `collage.share.layout.export`
+        public enum CollageShareLayoutExport {
+            public static let aspect: String = "9:16"
+            public static let widthPx: CGFloat = 1080
+            public static let heightPx: CGFloat = 1920
+            public static let source: String = "collages.share_path page n (worker share-<n>.jpg)"
+            public static let watermark: String = "none"
+        }
+        /// Yope · collage.share · 'share' pill, bottom centre over the collage page (glyph collage.share.icon.share and label, both color.global.textPrimary) · SOURCED
+        /// token: `collage.share.layout.pill`
+        public enum CollageShareLayoutPill {
+            public static let width: CGFloat = 126
+            public static let height: CGFloat = 58
+            public static let cornerRadius: CGFloat = 10
+            public static let bottomFromScreenBottom: CGFloat = 36
+            public static let glyph: CGFloat = 25.7
+        }
+        /// Apple HIG · collage.share · share entry point (system share sheet replaces Yope's third-party buttons) · PLATFORM
+        /// token: `collage.share.layout.sheet`
+        public enum CollageShareLayoutSheet {
+            public static let ios: String = "ShareLink(item:preview: SharePreview(title, image))"
+            public static let android: String = "Intent.createChooser(ACTION_SEND image/jpeg content:// + FLAG_GRANT_READ_URI_PERMISSION, title)"
+        }
+        /// Apple HIG · collage.share · Dynamic Type style of the 'share' label (18 pt bold) · PLATFORM
+        /// token: `collage.share.layout.textStyleMap`
+        public enum CollageShareLayoutTextStyleMap {
+            public static let label: String = "headline"
+        }
+        /// Yope · collage.view · loading HUD: dark rounded square with the platform activity indicator over 'Loading' · SOURCED
+        /// token: `collage.view.layout.hud`
+        public enum CollageViewLayoutHud {
+            public static let width: CGFloat = 100
+            public static let height: CGFloat = 99
+            public static let cornerRadius: CGFloat = 8.5
+        }
+        /// Yope · collage.view · option B 'wall pages': 9:16 pages of 3 × 4 dual tiles that touch; more than 12 answers continue on further pages; empty cells and the matte color.global.backgroundDeep · SOURCED
+        /// token: `collage.view.layout.page`
+        public enum CollageViewLayoutPage {
+            public static let columns: CGFloat = 3
+            public static let rowsPerPage: CGFloat = 4
+            public static let gapRatio: CGFloat = 0
+            public static let outerRadiusRatio: CGFloat = 0.0498
+            public static let canvasAspect: CGFloat = 0.5625
+            public static let canvasWidthPx: CGFloat = 1080
+        }
+        /// Yope · collage.view · page indicator under the header (Android draws these dots; iOS uses the native control Yope uses) · SOURCED
+        /// token: `collage.view.layout.pageDots`
+        public enum CollageViewLayoutPageDots {
+            public static let diameter: CGFloat = 7.6
+            public static let pitch: CGFloat = 15.5
+            public static let inactive: String = "color.global.controlRaised"
+            public static let ios: String = "native page control (UIPageControl / TabView .page index)"
+        }
+        /// Yope · collage.view · day-view screen: back circle + date title, page dots, then the page · SOURCED
+        /// token: `collage.view.layout.screen`
+        public enum CollageViewLayoutScreen {
+            public static let headerCenterFromTop: CGFloat = 81
+            public static let dotsCenterFromTop: CGFloat = 125
+            public static let pageTop: CGFloat = 145
+            public static let pageFit: String = "9:16, aspect-fit in the space above the home indicator, centred"
+        }
+        /// Apple HIG · collage.view · Dynamic Type style of the date title · PLATFORM
+        /// token: `collage.view.layout.textStyleMap`
+        public enum CollageViewLayoutTextStyleMap {
+            public static let title: String = "callout"
+        }
         /// Apple HIG · global.system · semantic colors of native inset-grouped lists, alerts and sheets on system surfaces (settings.*, safety.*, system.permissions), iOS · PLATFORM
         /// token: `color.global.system.ios`
         public enum GlobalSystemIos {
@@ -413,6 +1424,165 @@ public enum Tokens {
             public static let separator: String = "separator"
             public static let tint: String = "systemBlue"
             public static let destructive: String = "systemRed"
+        }
+        /// BeReal · daily.capture · audience chip (icon.global.group + group name) centred near the bottom of the preview image (shape radius.global.capsule) · SOURCED
+        /// token: `daily.capture.layout.audienceChip`
+        public enum DailyCaptureLayoutAudienceChip {
+            public static let height: CGFloat = 37.4
+            public static let paddingLeading: CGFloat = 15.7
+            public static let paddingTrailing: CGFloat = 18
+            public static let glyphToText: CGFloat = 7.6
+            public static let bottomInset: CGFloat = 12.5
+        }
+        /// BeReal · daily.capture · shutter press → controls leave → black + spinner + prompt → back photo fades in → front capture → preview (ms) · SOURCED
+        /// token: `daily.capture.layout.captureSequence`
+        public enum DailyCaptureLayoutCaptureSequence {
+            public static let pressScale: CGFloat = 0.912
+            public static let press: CGFloat = 133
+            public static let controlsOut: CGFloat = 370
+            public static let viewfinderFadeOut: CGFloat = 267
+            public static let betweenShots: CGFloat = 500
+            public static let backPhotoFadeIn: CGFloat = 200
+        }
+        /// BeReal · daily.capture · countdown position: centred, digits top from the screen top · SOURCED
+        /// token: `daily.capture.layout.countdown`
+        public enum DailyCaptureLayoutCountdown {
+            public static let digitsTop: CGFloat = 92.3
+            public static let gapAboveViewfinder: CGFloat = 16.2
+        }
+        /// BeReal · daily.capture · countdown roll: only changed digits move; old digit slides up and fades out, new digit rises from 3 pt below and fades in (ms; travel pt) · SOURCED
+        /// token: `daily.capture.layout.countdownTick`
+        public enum DailyCaptureLayoutCountdownTick {
+            public static let tick: CGFloat = 1000
+            public static let digitOut: CGFloat = 100
+            public static let digitIn: CGFloat = 300
+            public static let digitFadeIn: CGFloat = 550
+            public static let travel: CGFloat = 3
+        }
+        /// BeReal · daily.capture · dismiss chevron (icon.global.chevronDown, color daily.capture.color.text) centre · SOURCED
+        /// token: `daily.capture.layout.dismiss`
+        public enum DailyCaptureLayoutDismiss {
+            public static let centerFromLeading: CGFloat = 31.7
+            public static let centerFromTop: CGFloat = 74.5
+        }
+        /// BeReal · daily.capture · one centred prompt line under the spinner · SOURCED
+        /// token: `daily.capture.layout.prompt`
+        public enum DailyCaptureLayoutPrompt {
+            public static let gapBelowSpinner: CGFloat = 11.4
+        }
+        /// BeReal · daily.capture · retake ✕ circle (icon.global.close) inside the preview image, top-trailing · SOURCED
+        /// token: `daily.capture.layout.retake`
+        public enum DailyCaptureLayoutRetake {
+            public static let diameter: CGFloat = 34
+            public static let inset: CGFloat = 12
+            public static let glyph: CGFloat = 14
+        }
+        /// BeReal · daily.capture · SEND label + right-pointing triangle (icon.global.play), centred under the preview image · SOURCED
+        /// token: `daily.capture.layout.send`
+        public enum DailyCaptureLayoutSend {
+            public static let capTopBelowImage: CGFloat = 69
+            public static let glyphGap: CGFloat = 11.4
+            public static let glyph: CGFloat = 19.5
+        }
+        /// BeReal · daily.capture · shutter: white ring (color.global.surfaceLight), black gap, white disc; horizontally centred · SOURCED
+        /// token: `daily.capture.layout.shutter`
+        public enum DailyCaptureLayoutShutter {
+            public static let outer: CGFloat = 74
+            public static let ring: CGFloat = 4
+            public static let gap: CGFloat = 2.75
+            public static let disc: CGFloat = 60.5
+            public static let centerFromBottom: CGFloat = 148
+        }
+        /// BeReal · daily.capture · flash (icon.global.flashOff / .flashOn) and flip (icon.global.flip) glyph centres, vertically centred on the shutter · SOURCED
+        /// token: `daily.capture.layout.sideControls`
+        public enum DailyCaptureLayoutSideControls {
+            public static let flashCenterFromLeading: CGFloat = 59.2
+            public static let flipCenterFromTrailing: CGFloat = 60.1
+        }
+        /// Apple HIG · daily.capture · Dynamic Type style each daily.capture font size scales with · PLATFORM
+        /// token: `daily.capture.layout.textStyleMap`
+        public enum DailyCaptureLayoutTextStyleMap {
+            public static let countdown: String = "title2"
+            public static let prompt: String = "body"
+            public static let chip: String = "footnote"
+            public static let send: String = "largeTitle"
+        }
+        /// BeReal · daily.capture · live viewfinder: 3:4, centred, rounded · SOURCED
+        /// token: `daily.capture.layout.viewfinder`
+        public enum DailyCaptureLayoutViewfinder {
+            public static let width: CGFloat = 378.7
+            public static let sideMargin: CGFloat = 7
+            public static let top: CGFloat = 124.4
+            public static let aspect: CGFloat = 0.75
+            public static let cornerRadius: CGFloat = 16
+        }
+        /// BeReal · daily.dualimage · back photo 3:4 with the front photo inset top-leading; every value is a ratio of the main image width except the inset radius (ratio of the inset width) · SOURCED
+        /// token: `daily.dualimage.layout.composition`
+        public enum DailyDualimageLayoutComposition {
+            public static let mainAspect: CGFloat = 0.75
+            public static let mainRadiusRatio: CGFloat = 0.0455
+            public static let insetWidthRatio: CGFloat = 0.31
+            public static let insetAspect: CGFloat = 0.75
+            public static let insetMarginRatio: CGFloat = 0.03
+            public static let insetBorderRatio: CGFloat = 0.0051
+            public static let insetOuterRadiusRatio: CGFloat = 0.126
+        }
+        /// Apple HIG · daily.liveactivity · colors of the Live Activity · PLATFORM
+        /// token: `daily.liveactivity.layout.colors`
+        public enum DailyLiveactivityLayoutColors {
+            public static let islandBackground: String = "system black (not customizable)"
+            public static let lockScreenBackground: String = "color.global.backgroundDeep"
+            public static let countdown: String = "color.global.accent"
+            public static let text: String = "color.global.textPrimary"
+            public static let keyLine: String = "color.global.accent"
+            public static let systemActionForeground: String = "color.global.textPrimary"
+        }
+        /// Apple HIG · daily.liveactivity · start, countdown and end of the activity · PLATFORM
+        /// token: `daily.liveactivity.layout.lifecycle`
+        public enum DailyLiveactivityLayoutLifecycle {
+            public static let start: String = "push-to-start at fires_at with the invitation alert"
+            public static let stale: String = "closes_at"
+            public static let end: String = "event end at closes_at, dismissal immediate"
+            public static let countdown: String = "Text(timerInterval: now...closesAt, countsDown: true)"
+        }
+        /// Apple HIG · daily.liveactivity · presentation sizes (pt) · VERIFIED
+        /// token: `daily.liveactivity.layout.size`
+        public enum DailyLiveactivityLayoutSize {
+            public static let w393compact: String = "52.33x36.67"
+            public static let w393minimal: String = "36.67-45x36.67"
+            public static let w393expanded: String = "371x84-160"
+            public static let w393lockScreen: String = "371x84-160"
+            public static let w430compact: String = "62.33x36.67"
+            public static let w430expanded: String = "408x84-160"
+            public static let w430lockScreen: String = "408x84-160"
+            public static let limitedWidth: String = "28x28"
+        }
+        /// Apple HIG · daily.liveactivity · text styles per presentation · PLATFORM
+        /// token: `daily.liveactivity.layout.typography`
+        public enum DailyLiveactivityLayoutTypography {
+            public static let groupName: String = "headline (17 pt semibold, Dynamic Type)"
+            public static let countdownLockScreen: String = "daily.capture.fontSize.countdown (23 pt), monospaced digits"
+            public static let countdownCompact: String = "headline, monospaced digits"
+            public static let countdownMinimal: String = "caption1, semibold, monospaced digits"
+        }
+        /// BeReal · daily.notification · how the one daily invitation is delivered · PLATFORM
+        /// token: `daily.notification.layout.delivery`
+        public enum DailyNotificationLayoutDelivery {
+            public static let ios: String = "interruption-level active; passive during quiet hours; thread-id = group id; default sound (none in quiet hours)"
+            public static let iosLiveActivities: String = "the Live Activity push-to-start alert is the invitation (no second notification)"
+            public static let android: String = "channel daily_invitation; one notification per group per day; no reminder, no update on window close"
+        }
+        /// Material 3 · daily.ongoing · the Android countdown notification · PLATFORM
+        /// token: `daily.ongoing.layout.notification`
+        public enum DailyOngoingLayoutNotification {
+            public static let style: String = "NotificationCompat standard (title + text)"
+            public static let countdown: String = "setUsesChronometer(true) + setChronometerCountDown(true) + setWhen(closesAt)"
+            public static let removal: String = "setTimeoutAfter(closesAt - now)"
+            public static let ongoing: String = "false (dismissible)"
+            public static let promoted: String = "no (Live Update only after an explicit opt-in, with an Unpin action)"
+            public static let channel: String = "daily_invitation"
+            public static let color: String = "color.global.accent"
+            public static let tap: String = "app://daily?group=<id>&invitation=<id>"
         }
         /// Material 3 · global.system · M3 duration scale (ms) for custom transitions on Android system surfaces · PLATFORM
         /// token: `duration.global.system.scale`
@@ -449,6 +1619,49 @@ public enum Tokens {
         public enum GlobalPhotoSwipe {
             public static let ios: String = "system paging scroll physics"
             public static let android: String = "Compose HorizontalPager default fling"
+        }
+        /// Yope · groups.create · two-tone title ('create **new group**', 'create your / **first group**', 'Add friends to / **2025 dumps**') · SOURCED
+        /// token: `groups.create.layout.titleAccent`
+        public enum GroupsCreateLayoutTitleAccent {
+            public static let line1: String = "color.global.textPrimary"
+            public static let line2: String = "color.global.accent"
+            public static let rule: String = "a two-line onboarding or sheet title draws its second part in lime"
+            public static let font: String = "fontSize.global.onboardingTitle / fontWeight.global.onboardingTitle, centred"
+        }
+        /// Apple HIG · groups.invite · invite from contacts · PLATFORM
+        /// token: `groups.invite.layout.contacts`
+        public enum GroupsInviteLayoutContacts {
+            public static let ios18: String = "ContactAccessButton(queryString:) under a search field: the person grants access per contact (limited access); granted contacts list below"
+            public static let ios17: String = "button that presents CNContactPickerViewController (no contacts permission); the chosen contact gets the invite through MFMessageComposeViewController so the message is seen before it is sent"
+            public static let android: String = "READ_CONTACTS granted: contact rows; not granted: Yope's inline contacts card (onboarding.permission.contacts.*); targetSdk ≥ 37 on API 37+: Contact Picker (Intent.ACTION_PICK_CONTACTS), no card"
+            public static let send: String = "SMS compose with the invite text (iOS MFMessageComposeViewController, Android ACTION_SENDTO smsto:)"
+        }
+        /// Yope · groups.invite · system share sheet opened by 'share invite' · PLATFORM
+        /// token: `groups.invite.layout.share`
+        public enum GroupsInviteLayoutShare {
+            public static let ios: String = "ShareLink / UIActivityViewController with the invite text and URL"
+            public static let android: String = "Intent.createChooser(ACTION_SEND text/plain) (Sharesheet)"
+        }
+        /// Yope · groups.list · floating tab bar on the home list · SOURCED
+        /// token: `groups.list.layout.tabBar`
+        public enum GroupsListLayoutTabBar {
+            public static let order: String = "camera · groups (chats glyph) · walls (film-strip) · me (own avatar)"
+            public static let selected: String = "pill color.global.controlRaised (size.global.tabBarSelectedWidth × .tabBarSelectedHeight), glyph color.global.textPrimary"
+            public static let unselected: String = "glyph color.global.textSecondary"
+            public static let labels: String = "none (icon-only)"
+            public static let badges: String = "none (Yope's red count badges are do-not-copy)"
+        }
+        /// Yope · groups.screen · screen background of the group feed and of the group profile page · SOURCED
+        /// token: `groups.screen.layout.background`
+        public enum GroupsScreenLayoutBackground {
+            public static let feed: String = "color.global.background (#171717)"
+            public static let profile: String = "color.global.backgroundDeep (#000000)"
+        }
+        /// Yope · groups.screen · group profile ••• menu (share invite, group settings, leave group, report) · PLATFORM
+        /// token: `groups.screen.layout.menu`
+        public enum GroupsScreenLayoutMenu {
+            public static let ios: String = "Menu (UIMenu) from the ••• circle; items with trailing SF Symbols; destructive items role .destructive (red)"
+            public static let android: String = "DropdownMenu anchored to the ••• circle; destructive items in color.global.system.error"
         }
         /// Apple HIG / Material 3 · global · a long press starts (context menu) · PLATFORM
         /// token: `haptic.global.longPressStart`
@@ -578,6 +1791,84 @@ public enum Tokens {
             public static let words: String = "split on whitespace"
             public static let search: String = "integer binary search; returns the lower bound"
         }
+        /// Yope · birthday.add · birthday shown back to the person (day and month only) · SOURCED
+        /// token: `layout.birthday.add.dateFormat`
+        public enum BirthdayAddDateFormat {
+            public static let pattern: String = "d MMMM"
+            public static let example: String = "26 May"
+        }
+        /// Tribute · birthday.contribute · step indicator · VERIFIED
+        /// token: `layout.birthday.contribute.stepper`
+        public enum BirthdayContributeStepper {
+            public static let steps: CGFloat = 3
+            public static let labels: String = "Photo, Message, Done"
+            public static let distribution: String = "first circle 11 pt inside the margin, last circle 11 pt inside the opposite margin, the rest evenly spaced between"
+            public static let labelGap: CGFloat = 10
+        }
+        /// Apple HIG · birthday.contribute · iOS Dynamic Type style each contribute text role scales with · PLATFORM
+        /// token: `layout.birthday.contribute.textStyleMap`
+        public enum BirthdayContributeTextStyleMap {
+            public static let heading: String = "title3"
+            public static let subheading: String = "callout"
+            public static let label: String = "callout"
+            public static let input: String = "callout"
+            public static let button: String = "callout"
+            public static let stepperNumber: String = "subheadline"
+            public static let stepperLabel: String = "caption2"
+        }
+        /// Tribute · birthday.request · date in the 'Submit by {date}' line · SOURCED
+        /// token: `layout.birthday.request.dueDate`
+        public enum BirthdayRequestDueDate {
+            public static let style: String = "full date: weekday, month day, year"
+            public static let example: String = "Wednesday, December 31, 2025"
+            public static let value: String = "the day before tribute_requests.birthday_date (due_at is 00:00 on the birthday)"
+        }
+        /// Tribute + VidDay · birthday.request · request screen order · SOURCED
+        /// token: `layout.birthday.request.structure`
+        public enum BirthdayRequestStructure {
+            public static let order: String = "hero (honoree photo behind title, due line, message), primary button, Message Ideas"
+            public static let countdown: String = "none (do-not-copy)"
+        }
+        /// Apple HIG · birthday.request · iOS Dynamic Type style each request text role scales with · PLATFORM
+        /// token: `layout.birthday.request.textStyleMap`
+        public enum BirthdayRequestTextStyleMap {
+            public static let title: String = "title2"
+            public static let message: String = "callout"
+            public static let cta: String = "title2"
+            public static let promptsHeader: String = "subheadline"
+            public static let prompt: String = "subheadline"
+        }
+        /// Tribute + VidDay · birthday.tribute · video player on the tribute screen · PLATFORM
+        /// token: `layout.birthday.tribute.player`
+        public enum BirthdayTributePlayer {
+            public static let ios: String = "AVPlayerViewController (SwiftUI VideoPlayer), system controls"
+            public static let android: String = "Media3 PlayerView, default controls"
+            public static let aspect: String = "16:9 (layout.birthday.tribute.video)"
+        }
+        /// Tribute + VidDay · birthday.tribute · tribute video structure · SOURCED
+        /// token: `layout.birthday.tribute.structure`
+        public enum BirthdayTributeStructure {
+            public static let order: String = "title card, one card per contribution (photo + contributor first name + line), end card"
+            public static let photoFit: String = "whole photo inside the 16:9 frame on color.birthday.tribute.pillarbox"
+            public static let audio: String = "none"
+        }
+        /// VidDay · birthday.tribute · title card ('Happy birthday, {name}!') (read by the worker) · SOURCED
+        /// token: `layout.birthday.tribute.titleCard`
+        public enum BirthdayTributeTitleCard {
+            public static let background: String = "#EFEEF3"
+            public static let textColor: String = "#444347"
+            public static let fontWeight: CGFloat = 500
+            public static let fontSizeRatio: CGFloat = 0.084
+            public static let maxWidthRatio: CGFloat = 0.405
+            public static let centerYRatio: CGFloat = 0.5
+        }
+        /// Tribute + VidDay · birthday.tribute · tribute video canvas (read by the worker) · SOURCED
+        /// token: `layout.birthday.tribute.video`
+        public enum BirthdayTributeVideo {
+            public static let width: CGFloat = 1920
+            public static let height: CGFloat = 1080
+            public static let fps: CGFloat = 29.97
+        }
         /// Yope · global · appearance of every surface (app and system) · PLATFORM
         /// token: `layout.global.appearance`
         public enum GlobalAppearance {
@@ -634,6 +1925,260 @@ public enum Tokens {
             public static let emptyTitle: String = "callout"
             public static let emptyDetail: String = "subheadline"
         }
+        /// Timehop · onthisday · years-ago banner geometry · SOURCED
+        /// token: `layout.onthisday.banner`
+        public enum OnthisdayBanner {
+            public static let width: String = "full screen width"
+            public static let top: String = "screen top edge, behind the status bar"
+            public static let labelAlign: String = "centre"
+            public static let labelCase: String = "uppercase"
+            public static let colourPerMemory: String = "color.onthisday.banner"
+        }
+        /// Timehop · onthisday · when the on-this-day set rolls over to the next date · SOURCED
+        /// token: `layout.onthisday.dayBoundary`
+        public enum OnthisdayDayBoundary {
+            public static let hour: CGFloat = 5
+            public static let clock: String = "group time zone (groups.time_zone)"
+        }
+        /// Timehop · onthisday · memory with several photos from that date · SOURCED
+        /// token: `layout.onthisday.grid`
+        public enum OnthisdayGrid {
+            public static let columns: CGFloat = 2
+            public static let arrangement: String = "masonry: every photo keeps its aspect ratio and goes to the shorter column"
+            public static let scroll: String = "vertical"
+            public static let background: String = "color.global.background"
+        }
+        /// Timehop · onthisday · moving between years of one day · SOURCED
+        /// token: `layout.onthisday.navigation`
+        public enum OnthisdayNavigation {
+            public static let order: String = "one memory screen per year, newest first (1 YEAR AGO, then 2, 3 ...)"
+            public static let next: String = "tap or swipe on the right half of the screen (older)"
+            public static let previous: String = "tap or swipe on the left half (back)"
+            public static let autoAdvance: String = "none"
+        }
+        /// Timehop · onthisday · memory with one photo · SOURCED
+        /// token: `layout.onthisday.photo.single`
+        public enum OnthisdayPhotoSingle {
+            public static let width: String = "full screen width"
+            public static let top: String = "banner bottom"
+            public static let bottom: String = "screen bottom"
+            public static let fit: String = "fill (cropped to the area)"
+            public static let cornerRadius: CGFloat = 0
+        }
+        /// Timehop · onthisday · progress bar structure · SOURCED
+        /// token: `layout.onthisday.progress`
+        public enum OnthisdayProgress {
+            public static let position: String = "top edge of the banner, directly below the status bar"
+            public static let width: String = "full screen width"
+            public static let sideInset: CGFloat = 0
+            public static let fill: String = "fraction of the day's years reached: (index + 1) / years"
+            public static let gaps: String = "none"
+        }
+        /// Apple HIG · onthisday · iOS Dynamic Type style each on-this-day text role scales with · PLATFORM
+        /// token: `layout.onthisday.textStyleMap`
+        public enum OnthisdayTextStyleMap {
+            public static let bannerLabel: String = "title1"
+            public static let meta: String = "caption2"
+        }
+        /// Spotify Wrapped · year.story · story canvas · SOURCED
+        /// token: `layout.year.story.canvas`
+        public enum YearStoryCanvas {
+            public static let aspectWidth: CGFloat = 9
+            public static let aspectHeight: CGFloat = 16
+            public static let width: String = "screen width"
+            public static let vertical: String = "centred in the safe area"
+            public static let outside: String = "letterbox bands (color.year.story.letterbox)"
+            public static let background: String = "color.global.backgroundDeep"
+        }
+        /// Spotify Wrapped · year.story · day shown on a card · SOURCED
+        /// token: `layout.year.story.dateFormat`
+        public enum YearStoryDateFormat {
+            public static let pattern: String = "MMMM d"
+            public static let example: String = "February 25"
+        }
+        /// Spotify Wrapped · year.story · month shown on a card · SOURCED
+        /// token: `layout.year.story.monthFormat`
+        public enum YearStoryMonthFormat {
+            public static let pattern: String = "MMMM"
+            public static let example: String = "January"
+        }
+        /// Spotify Wrapped · year.story · story navigation · SOURCED
+        /// token: `layout.year.story.navigation`
+        public enum YearStoryNavigation {
+            public static let next: String = "tap the right half of the canvas"
+            public static let previous: String = "tap the left half"
+            public static let hold: String = "none"
+            public static let model: String = "2024 tap-through (one card per fact)"
+        }
+        /// Spotify Wrapped · year.story · card showing one photo or collage (Wrapped 'Your top song' card) · SOURCED
+        /// token: `layout.year.story.photoCard`
+        public enum YearStoryPhotoCard {
+            public static let box: String = "square"
+            public static let boxWidthRatio: CGFloat = 0.66
+            public static let boxCenterYRatio: CGFloat = 0.412
+            public static let textGap: CGFloat = 24.6
+            public static let text: String = "headline below the box, centred"
+            public static let photoFit: String = "fill the square"
+            public static let collageFit: String = "fit inside the square on the canvas colour"
+        }
+        /// Spotify Wrapped · year.story · segmented progress bar behaviour · SOURCED
+        /// token: `layout.year.story.progress`
+        public enum YearStoryProgress {
+            public static let segments: String = "one per card"
+            public static let completed: String = "filled (color.year.story.progress.fill)"
+            public static let current: String = "fills left to right over duration.year.story.card"
+            public static let upcoming: String = "track (white at opacity.year.story.progress.track)"
+        }
+        /// Spotify Wrapped · year.story · normalised distance travelled at 25 / 50 / 75 % of the reveal time (S-curve) · SOURCED
+        /// token: `layout.year.story.reveal.samples`
+        public enum YearStoryRevealSamples {
+            public static let t25: CGFloat = 0.125
+            public static let t50: CGFloat = 0.725
+            public static let t75: CGFloat = 0.925
+        }
+        /// Spotify Wrapped · year.story · per-card 'Share this story' row · SOURCED
+        /// token: `layout.year.story.share`
+        public enum YearStoryShare {
+            public static let align: String = "centre of the canvas"
+            public static let content: String = "share glyph, then label"
+            public static let shownOn: String = "every card that states a fact (not the intro, teaser or outro cards)"
+        }
+        /// Spotify Wrapped + Meta developer docs · year.story · exported share image · SOURCED
+        /// token: `layout.year.story.shareCard`
+        public enum YearStoryShareCard {
+            public static let width: CGFloat = 1080
+            public static let height: CGFloat = 1920
+            public static let content: String = "the card's canvas without progress bar, chrome or share row"
+        }
+        /// Apple HIG / Material 3 · year.story · share sheet opened by 'Share this story' and 'Share' · PLATFORM
+        /// token: `layout.year.story.shareSheet`
+        public enum YearStoryShareSheet {
+            public static let ios: String = "ShareLink(item:preview:) / UIActivityViewController"
+            public static let android: String = "Intent.createChooser(ACTION_SEND, content:// URI + FLAG_GRANT_READ_URI_PERMISSION)"
+        }
+        /// Spotify Wrapped · year.story · last screen (summary) · SOURCED
+        /// token: `layout.year.story.summary`
+        public enum YearStorySummary {
+            public static let order: String = "share-card carousel, Share pill, Replay from beginning"
+            public static let previewWidthRatio: CGFloat = 0.6
+            public static let carousel: String = "horizontal paging through the story's share cards"
+        }
+        /// Spotify Wrapped · year.story · text card arrangement · SOURCED
+        /// token: `layout.year.story.text`
+        public enum YearStoryText {
+            public static let align: String = "centre"
+            public static let block: String = "centred horizontally and vertically on the canvas"
+            public static let order: String = "headline, then subline"
+        }
+        /// Apple HIG · year.story · iOS Dynamic Type style each year-story text role scales with · PLATFORM
+        /// token: `layout.year.story.textStyleMap`
+        public enum YearStoryTextStyleMap {
+            public static let headline: String = "largeTitle"
+            public static let body: String = "subheadline"
+            public static let share: String = "callout"
+            public static let sharePill: String = "headline"
+        }
+        /// Material 3 · notifications.push · Android notification channels that carry the push texts (one per kind of event) · PLATFORM
+        /// token: `notifications.push.layout.channels`
+        public enum NotificationsPushLayoutChannels {
+            public static let dailyInvitation: String = "IMPORTANCE_HIGH"
+            public static let newPost: String = "IMPORTANCE_DEFAULT"
+            public static let reactionsReplies: String = "IMPORTANCE_DEFAULT"
+            public static let recap: String = "IMPORTANCE_DEFAULT"
+            public static let birthdayRequest: String = "IMPORTANCE_DEFAULT"
+            public static let tribute: String = "IMPORTANCE_DEFAULT"
+        }
+        /// Apple HIG · notifications.push · iOS alert presentation for every push text · PLATFORM
+        /// token: `notifications.push.layout.ios`
+        public enum NotificationsPushLayoutIos {
+            public static let interruptionLevel: String = "active (passive during quiet hours)"
+            public static let threadId: String = "group id"
+            public static let newPostAttachment: String = "widget rendition attached by the notification service extension"
+            public static let sound: String = "default"
+        }
+        /// Yope · onboarding.permission.camera · when and how camera access is requested · SOURCED
+        /// token: `onboarding.permission.camera.layout.request`
+        public enum OnboardingPermissionCameraLayoutRequest {
+            public static let ios: String = "no pre-alert screen: AVCaptureDevice.requestAccess(for: .video) the first time camera.capture opens; the system alert shows NSCameraUsageDescription over the camera"
+            public static let android: String = "Manifest.permission.CAMERA requested the first time camera.capture opens; rationale = M3 basic dialog only when shouldShowRequestPermissionRationale() is true"
+            public static let denied: String = "inline permission card (onboarding.permission.contacts.* tokens) centred in the viewfinder area of camera.capture"
+        }
+        /// Yope · onboarding.permission.contacts · inline permission card structure · SOURCED
+        /// token: `onboarding.permission.contacts.layout.card`
+        public enum OnboardingPermissionContactsLayoutCard {
+            public static let leading: String = "none (Yope's contacts-app-like illustration with a red '!' is do-not-copy)"
+            public static let text: String = "title then detail, left-aligned, 16 pt from the card's leading edge (groups.list.size.avatarInset)"
+            public static let trailing: String = "white button vertically centred, 16 pt from the trailing edge"
+            public static let dismiss: String = "icon.global.close at the top-trailing corner, color.global.textPrimary (only where the card may be dismissed)"
+        }
+        /// Apple HIG · onboarding.permission.notifications · notifications pre-alert screen · VERIFIED
+        /// token: `onboarding.permission.notifications.layout.preAlert`
+        public enum OnboardingPermissionNotificationsLayoutPreAlert {
+            public static let ios: String = "one button ('continue') that triggers UNUserNotificationCenter.requestAuthorization; no close, skip or back on this screen"
+            public static let android: String = "API 33+: same screen, plus a dark secondary button ('maybe later') under the lime one; then the POST_NOTIFICATIONS runtime dialog; API ≤ 32: screen skipped (no runtime permission)"
+            public static let structure: String = "title (fontSize.global.onboardingTitle, centred, near the top as in Yope's notifications pre-prompt) · detail · primary button pinned to the bottom (size.global.buttonHeightSheet, size.global.buttonMarginHSheet)"
+        }
+        /// Apple HIG · onboarding.permission.photos · photo library access · VERIFIED
+        /// token: `onboarding.permission.photos.layout.request`
+        public enum OnboardingPermissionPhotosLayoutRequest {
+            public static let ios: String = "no screen: PhotosPicker / PHPickerViewController need no permission; saving asks add-only access (PHPhotoLibrary.requestAuthorization(for: .addOnly)) at the first save, alert text NSPhotoLibraryAddUsageDescription"
+            public static let android: String = "no screen: Photo Picker (PickVisualMedia); no READ_MEDIA_* permission; saving through MediaStore needs no permission on API 29+"
+            public static let limited: String = "only if PhotoKit reading is ever added: handle .limited with PHPhotoLibraryPreventAutomaticLimitedAccessAlert = YES and presentLimitedLibraryPicker from an in-app control"
+        }
+        /// Locket · paywall · 'Subscribe to …' plan sheet container · PLATFORM
+        /// token: `paywall.layout.planSheet`
+        public enum PaywallLayoutPlanSheet {
+            public static let ios: String = "sheet with presentationDetents([.medium]) and presentationDragIndicator(.visible); system corner radius"
+            public static let android: String = "ModalBottomSheet with the M3 drag handle; top corners radius.global.sheet.android"
+            public static let measuredCorner: CGFloat = 46
+            public static let measuredGrabber: String = "34 × 5 pt, #5D5C58"
+        }
+        /// Locket · paywall · when the paywall may appear · SOURCED
+        /// token: `paywall.layout.promptRule`
+        public enum PaywallLayoutPromptRule {
+            public static let settingsEntry: String = "always opens (navigation the person chose; not counted)"
+            public static let lockedFeature: String = "the first tap on a locked perk per session opens the paywall (SessionPromptGate.consumePrompt); later taps that session only show the 'Premium' badge already on the control"
+            public static let never: String = "during capture or onboarding (SessionPromptGate.Blocker), on launch, after a post, or on a timer"
+            public static let core: String = "nothing free is ever gated or interrupted"
+        }
+        /// Apple HIG · paywall · store-required elements on the paywall and plan sheet · VERIFIED
+        /// token: `paywall.layout.requiredDisclosures`
+        public enum PaywallLayoutRequiredDisclosures {
+            public static let price: String = "the store's localized price for each plan's period (StoreKit Product.displayPrice + subscription.subscriptionPeriod / Play ProductDetails.SubscriptionOfferDetails pricing phases), read at runtime; never a hard-coded price"
+            public static let prominence: String = "the billed amount for the period is the most prominent price on each plan card; any per-month breakdown sits in the detail line"
+            public static let renewal: String = "auto-renewal sentence + cancellation path (paywall.legal.*) under the Subscribe button"
+            public static let restore: String = "'Restore Purchases' (StoreKit AppStore.sync / RevenueCat restorePurchases)"
+            public static let links: String = "Terms of Use and Privacy Policy (config/app.json legal.termsUrl / legal.privacyUrl)"
+            public static let optional: String = "a line saying the app is usable without a subscription (Google Play)"
+            public static let dismiss: String = "'No thanks!' always visible on the paywall"
+        }
+        /// Yope · photo.viewer · date line under the viewer title · SOURCED
+        /// token: `photo.viewer.layout.dateFormat`
+        public enum PhotoViewerLayoutDateFormat {
+            public static let pattern: String = "MMM d yyyy"
+            public static let example: String = "Oct 30 2025"
+        }
+        /// Apple HIG / Material 3 · photo.viewer · confirmation before deleting your own photo everywhere · PLATFORM
+        /// token: `photo.viewer.layout.deleteConfirm`
+        public enum PhotoViewerLayoutDeleteConfirm {
+            public static let ios: String = "confirmationDialog (action sheet): title, message, destructive button, Cancel at the bottom"
+            public static let android: String = "M3 AlertDialog: title, text, dismiss + confirm buttons"
+        }
+        /// Yope + Apple HIG / Material 3 · photo.viewer · ••• menu in the viewer · PLATFORM
+        /// token: `photo.viewer.layout.menu`
+        public enum PhotoViewerLayoutMenu {
+            public static let ios: String = "Menu (pull-down) from the ••• glyph, items with trailing SF Symbols, destructive items in the system red"
+            public static let android: String = "DropdownMenu anchored to the ••• glyph"
+            public static let order: String = "save, i'm in this, then destructive: delete (own) or report, block (others)"
+        }
+        /// Yope · photo.viewer · photo frame in the viewer · SOURCED
+        /// token: `photo.viewer.layout.photo`
+        public enum PhotoViewerLayoutPhoto {
+            public static let width: String = "full screen width"
+            public static let height: String = "the photo's own aspect (3:4 observed)"
+            public static let corners: String = "radius.global.photo on all four corners"
+            public static let swipe: String = "horizontal paging to the adjacent photo"
+        }
         /// Yope · global · full pill: header title capsule, composer text field, chat bubbles, tab-bar capsule, tooltip ends, white secondary pills · SOURCED
         /// token: `radius.global.capsule`
         public enum GlobalCapsule {
@@ -646,12 +2191,281 @@ public enum Tokens {
             public static let ios: String = "system"
             public static let android: CGFloat = 28
         }
+        /// Apple HIG · safety.block · block confirmation · VERIFIED
+        /// token: `safety.block.layout.confirm`
+        public enum SafetyBlockLayoutConfirm {
+            public static let ios: String = "confirmationDialog(titleVisibility: .visible) with message; 'Block' role .destructive at the top, Cancel at the bottom"
+            public static let android: String = "M3 AlertDialog (settings.account.layout.alert) with 'Block' as the confirming action"
+        }
+        /// Apple HIG · safety.block · 'Block' / 'Report…' items in overflow menus · VERIFIED
+        /// token: `safety.block.layout.menu`
+        public enum SafetyBlockLayoutMenu {
+            public static let ios: String = "Menu (UIMenu) item with role .destructive"
+            public static let android: String = "DropdownMenu item (M3 baseline: 48 dp items, 4 dp container corner, labelLarge) in color.global.system.error"
+        }
+        /// Yope · safety.block · confirmation toast after block / unblock / report (Yope lime toast) · SOURCED
+        /// token: `safety.block.layout.toast`
+        public enum SafetyBlockLayoutToast {
+            public static let fill: String = "color.global.accent"
+            public static let content: String = "icon.global.checkmark + label in color.global.onAccent, text role button"
+            public static let shape: String = "radius.global.capsule, full width minus size.global.screenMargin"
+            public static let position: String = "top, under the status bar"
+            public static let enter: String = "spring.global.platformDefault.ios / .android (global rule for custom motion whose Yope curve was not measured); Reduce Motion: cross-fade"
+            public static let dwell: String = "safety.block.duration.toast (BLOCKED)"
+        }
+        /// Apple HIG · safety.report · report flow container · VERIFIED
+        /// token: `safety.report.layout.flow`
+        public enum SafetyReportLayoutFlow {
+            public static let entry: String = "a menu item 'Report…' (ellipsis: more input follows)"
+            public static let ios: String = "sheet with presentationDetents([.medium, .large]) and a visible grabber: title + explanation (Yope voice), an optional multi-line details field, then 'Report' (destructive role) and 'Cancel' in the navigation bar"
+            public static let android: String = "ModalBottomSheet (top corners 28 dp, drag handle 32 × 4 dp in onSurfaceVariant at 0.4 opacity, container color.global.system.surfaceContainerLow, initial height ≤ 50 % of the screen) with the same content; 'Report' as a TextButton in color.global.system.error"
+            public static let after: String = "the sheet content changes to the 'report sent' state; for a person or their content it offers Block (destructive) and Done"
+        }
+        /// Apple HIG · settings.account · confirmation alerts / dialogs (delete account; also leave group, remove member, block, turn off link) · VERIFIED
+        /// token: `settings.account.layout.alert`
+        public enum SettingsAccountLayoutAlert {
+            public static let ios: String = "alert(_:isPresented:actions:message:): destructive-role button + Cancel; at most 3 buttons; Cancel is never the default; Cancel on the leading side"
+            public static let android: String = "M3 AlertDialog: container color.global.system.surfaceContainerHigh, corner 28 dp, headline headlineSmall, text bodyMedium, actions labelLarge; at most 2 actions; dismissive leading, confirming trailing (closest to the edge); destructive confirm label color.global.system.error"
+            public static let androidCornerDp: CGFloat = 28
+            public static let iosMaxButtons: CGFloat = 3
+            public static let androidMaxActions: CGFloat = 2
+        }
+        /// Apple HIG · settings.account · 'Manage Subscription' destination · VERIFIED
+        /// token: `settings.account.layout.manageSubscription`
+        public enum SettingsAccountLayoutManageSubscription {
+            public static let ios: String = "AppStore.showManageSubscriptions(in:) (manageSubscriptionsSheet)"
+            public static let android: String = "open https://play.google.com/store/account/subscriptions?sku={productId}&package={applicationId} (Play Subscription Center)"
+        }
+        /// Apple HIG · settings.blocked · empty state of the blocked list · PLATFORM
+        /// token: `settings.blocked.layout.empty`
+        public enum SettingsBlockedLayoutEmpty {
+            public static let ios: String = "ContentUnavailableView(title, systemImage: nil, description)"
+            public static let android: String = "centred Column: headline in MaterialTheme.typography.bodyLarge, color.global.system.onSurface; supporting text bodyMedium, color.global.system.onSurfaceVariant"
+        }
+        /// Apple HIG · settings.root · settings list container (also settings.notifications, settings.account, settings.blocked, groups.settings) · PLATFORM
+        /// token: `settings.root.layout.list`
+        public enum SettingsRootLayoutList {
+            public static let ios: String = "List with .listStyle(.insetGrouped); Section(header:footer:); NavigationLink rows show the system disclosure indicator; colours color.global.system.ios"
+            public static let android: String = "LazyColumn of M3 ListItem rows on color.global.system.surface; section headers and footers in MaterialTheme.typography.bodyMedium, color.global.system.onSurfaceVariant; HorizontalDivider (settings.root.size.divider.android, color.global.system.outline) between groups"
+        }
+        /// Apple HIG · settings.root · haptic of every switch on settings surfaces · PLATFORM
+        /// token: `settings.root.layout.toggleHaptic`
+        public enum SettingsRootLayoutToggleHaptic {
+            public static let ios: String = "system (SwiftUI Toggle plays its own haptic; no custom generator)"
+            public static let android: String = "TOGGLE_ON / TOGGLE_OFF (API 34) only if the Switch does not already play one"
+        }
         /// Yope · global · observed shape of the sheet presentation: overshoot past rest, time to the peak, time from the peak to rest · SOURCED
         /// token: `spring.global.sheetPresentObserved`
         public enum GlobalSheetPresentObserved {
             public static let overshootPt: CGFloat = 16
             public static let timeToPeakMs: CGFloat = 100
             public static let settleMs: CGFloat = 100
+        }
+        /// Yope · walls.mine · how wall items fill the grid · SOURCED
+        /// token: `walls.mine.layout.gridOrder`
+        public enum WallsMineLayoutGridOrder {
+            public static let order: String = "wall() items newest first, filled left to right, row by row"
+            public static let items: String = "photos and same-moment collages, each in one tile, aspect fill"
+            public static let rows: String = "every row has gridColumns tiles; the last row keeps tile size"
+        }
+        /// Apple HIG / Material 3 · week.edit · a dragged tile settles into a new slot · PLATFORM
+        /// token: `week.edit.haptic.dragAlign`
+        public enum WeekEditHapticDragAlign {
+            public static let ios: String = "sensoryFeedback(.alignment) (iOS 17)"
+            public static let android: String = "SEGMENT_TICK"
+        }
+        /// Apple HIG / Material 3 · week.edit · a recap tile is picked up to reorder · PLATFORM
+        /// token: `week.edit.haptic.dragStart`
+        public enum WeekEditHapticDragStart {
+            public static let ios: String = "system (List / drag reordering plays its own feedback; no custom generator)"
+            public static let android: String = "DRAG_START"
+        }
+        /// Yope · week.edit · week.edit screen built from documented Yope components · SOURCED
+        /// token: `week.edit.layout.composition`
+        public enum WeekEditLayoutComposition {
+            public static let header: String = "close circle (icon.global.close, size.global.headerButton) at the left, sheet title centred (text role sheetTitle)"
+            public static let body: String = "the week's photos in the pics grid (week.recap.count.picsColumns, .picsGap, .picsTile) with a check circle on each tile"
+            public static let check: String = "icon.global.check (selected) / icon.global.uncheck, size.global.checkCircle, color.global.selection"
+            public static let footer: String = "lime primary button at the sheet bottom (size.global.buttonHeightSheet, size.global.buttonMarginHSheet, radius.global.button)"
+        }
+        /// Apple HIG · week.history · iOS Dynamic Type style for week.history text roles · PLATFORM
+        /// token: `week.history.layout.textStyleMap`
+        public enum WeekHistoryLayoutTextStyleMap {
+            public static let header: String = "subheadline"
+            public static let weekday: String = "footnote"
+            public static let emptyDay: String = "title1"
+            public static let emptyDayLabel: String = "subheadline"
+            public static let title: String = "largeTitle"
+        }
+        /// Retro · week.history · week sections and strips · SOURCED
+        /// token: `week.history.layout.weeks`
+        public enum WeekHistoryLayoutWeeks {
+            public static let order: String = "newest week first, scrolling back without end"
+            public static let weekNumber: String = "ISO-8601 week number, Monday start"
+            public static let range: String = "locale date interval Monday–Sunday (month once within a month), omitted for a current week with no photos"
+            public static let strip: String = "one tile per photo in chronological order Mon→Sun; several photos on one day = several tiles with the same weekday"
+            public static let currentWeek: String = "photo tiles, then the add tile, then one empty-day tile for each day of the week that has no photo"
+        }
+        /// Yope · week.recap · where the row with fewer than three photos goes · CAPTURED
+        /// token: `week.recap.layout.shortRow`
+        public enum WeekRecapLayoutShortRow {
+            public static let position: String = "first row of the card"
+            public static let span: String = "the full card width"
+            public static let tiles: String = "the photos that do not fill a row of three"
+        }
+        /// Apple HIG · week.recap · iOS Dynamic Type style for week.recap text roles · PLATFORM
+        /// token: `week.recap.layout.textStyleMap`
+        public enum WeekRecapLayoutTextStyleMap {
+            public static let title: String = "headline"
+            public static let label: String = "title3"
+            public static let segmented: String = "headline"
+        }
+        /// Yope · week.recap · week label formats · CAPTURED
+        /// token: `week.recap.layout.weekFormat`
+        public enum WeekRecapLayoutWeekFormat {
+            public static let title: String = "d MMM-d MMM, lowercase, bare hyphen"
+            public static let label: String = "the title in uppercase"
+            public static let example: String = "18 aug-24 aug / 18 AUG-24 AUG"
+            public static let week: String = "Monday–Sunday in the group's time zone"
+        }
+        /// Material 3 · widget.android · handheld size ranges the same layout must fill edge to edge · VERIFIED
+        /// token: `widget.android.layout.sizes`
+        public enum WidgetAndroidLayoutSizes {
+            public static let default: String = "2x2 (minWidth/minHeight 110 dp)"
+            public static let range2x2: String = "109-306 x 115-276 dp"
+            public static let range4x2: String = "245-624 x 115-276 dp"
+            public static let range4x3: String = "245-624 x 185-422 dp"
+            public static let lockScreenHub: String = "about 4x3 cells"
+        }
+        /// Apple HIG · widget.home.large · systemLarge size by iPhone screen (pt) · VERIFIED
+        /// token: `widget.home.large.layout.size`
+        public enum WidgetHomeLargeLayoutSize {
+            public static let w430h932: String = "364x382"
+            public static let w428h926: String = "364x382"
+            public static let w414h896: String = "360x379"
+            public static let w414h736: String = "348x357"
+            public static let w393h852: String = "338x354"
+            public static let w390h844: String = "338x354"
+            public static let w375h812: String = "329x345"
+            public static let w375h667: String = "321x324"
+            public static let w360h780: String = "329x345"
+            public static let w320h568: String = "292x311"
+        }
+        /// Apple HIG · widget.home.medium · systemMedium size by iPhone screen (pt) · VERIFIED
+        /// token: `widget.home.medium.layout.size`
+        public enum WidgetHomeMediumLayoutSize {
+            public static let w430h932: String = "364x170"
+            public static let w428h926: String = "364x170"
+            public static let w414h896: String = "360x169"
+            public static let w414h736: String = "348x157"
+            public static let w393h852: String = "338x158"
+            public static let w390h844: String = "338x158"
+            public static let w375h812: String = "329x155"
+            public static let w375h667: String = "321x148"
+            public static let w360h780: String = "329x155"
+            public static let w320h568: String = "292x141"
+        }
+        /// Locket · widget.home.small · empty state centred stack: translucent circle with a photo glyph inside a ring, then one label line (default 'md' variant) · SOURCED
+        /// token: `widget.home.small.layout.empty`
+        public enum WidgetHomeSmallLayoutEmpty {
+            public static let circle: CGFloat = 72
+            public static let ring: CGFloat = 82
+            public static let ringStroke: CGFloat = 3
+            public static let glyphWidth: CGFloat = 32
+            public static let glyphHeight: CGFloat = 28
+            public static let label: CGFloat = 19
+            public static let labelGap: CGFloat = 9
+        }
+        /// Locket · widget.home.small · newest photo (or the collage page 1) filling the whole widget · SOURCED
+        /// token: `widget.home.small.layout.photo`
+        public enum WidgetHomeSmallLayoutPhoto {
+            public static let fill: String = "aspect-fill, full bleed"
+            public static let ios: String = "containerBackground(for: .widget) with the image; contentMarginsDisabled"
+            public static let android: String = "ImageView centerCrop"
+        }
+        /// Locket · widget.home.small · loading placeholder content: up to 3 member avatars in a row at the bottom-leading corner, not overlapping · SOURCED
+        /// token: `widget.home.small.layout.placeholderAvatars`
+        public enum WidgetHomeSmallLayoutPlaceholderAvatars {
+            public static let diameter: CGFloat = 25
+            public static let gap: CGFloat = 2.5
+            public static let max: CGFloat = 3
+            public static let inset: CGFloat = 6
+        }
+        /// Apple HIG · widget.home.small · systemSmall size by iPhone screen (pt; the system sizes the widget, for comps only) · VERIFIED
+        /// token: `widget.home.small.layout.size`
+        public enum WidgetHomeSmallLayoutSize {
+            public static let w430h932: String = "170x170"
+            public static let w428h926: String = "170x170"
+            public static let w414h896: String = "169x169"
+            public static let w414h736: String = "159x159"
+            public static let w393h852: String = "158x158"
+            public static let w390h844: String = "158x158"
+            public static let w375h812: String = "155x155"
+            public static let w375h667: String = "148x148"
+            public static let w360h780: String = "155x155"
+            public static let w320h568: String = "141x141"
+        }
+        /// Apple HIG · widget.home.small · Dynamic Type style of the widget caption (12 pt) and the empty label (19 pt) — widgets support Large to AX5 (HIG Widgets) · PLATFORM
+        /// token: `widget.home.small.layout.textStyleMap`
+        public enum WidgetHomeSmallLayoutTextStyleMap {
+            public static let caption: String = "caption"
+            public static let emptyLabel: String = "title3"
+        }
+        /// Apple HIG · widget.home.xl · systemExtraLarge size (iPad only; HIG: 'System extra large | iPhone: Not supported') · VERIFIED
+        /// token: `widget.home.xl.layout.size`
+        public enum WidgetHomeXlLayoutSize {
+            public static let ipad1024x1366: String = "748x356"
+            public static let ipad834x1194: String = "628x300"
+            public static let ipad820x1180: String = "628x300"
+            public static let ipad768x1024: String = "540x260"
+            public static let ipad744x1133: String = "540x260"
+        }
+        /// Apple HIG · widget.lock.circular · accessoryCircular size by iPhone screen (pt) · VERIFIED
+        /// token: `widget.lock.circular.layout.size`
+        public enum WidgetLockCircularLayoutSize {
+            public static let w430h932: String = "76x76"
+            public static let w428h926: String = "76x76"
+            public static let w414h896: String = "76x76"
+            public static let w414h736: String = "76x76"
+            public static let w393h852: String = "72x72"
+            public static let w390h844: String = "72x72"
+            public static let w375h812: String = "72x72"
+            public static let w375h667: String = "68x68"
+            public static let w360h780: String = "72x72"
+        }
+        /// Apple HIG · widget.lock.inline · accessoryInline size by iPhone screen (pt) · VERIFIED
+        /// token: `widget.lock.inline.layout.size`
+        public enum WidgetLockInlineLayoutSize {
+            public static let w430h932: String = "257x26"
+            public static let w428h926: String = "257x26"
+            public static let w414h896: String = "248x26"
+            public static let w414h736: String = "248x26"
+            public static let w393h852: String = "234x26"
+            public static let w390h844: String = "234x26"
+            public static let w375h812: String = "225x26"
+            public static let w375h667: String = "225x26"
+            public static let w360h780: String = "225x26"
+        }
+        /// Apple HIG · widget.lock.rect · how every Lock Screen widget renders (circular, rectangular, inline) · VERIFIED
+        /// token: `widget.lock.rect.layout.rendering`
+        public enum WidgetLockRectLayoutRendering {
+            public static let mode: String = "vibrant (monochrome, desaturated)"
+            public static let content: String = "opaque grayscale at full opacity; white / light gray for the most prominent content"
+            public static let minText: CGFloat = 11
+            public static let margins: String = "system (smaller on the Lock Screen)"
+        }
+        /// Apple HIG · widget.lock.rect · accessoryRectangular size by iPhone screen (pt) · VERIFIED
+        /// token: `widget.lock.rect.layout.size`
+        public enum WidgetLockRectLayoutSize {
+            public static let w430h932: String = "172x76"
+            public static let w428h926: String = "172x76"
+            public static let w414h896: String = "160x72"
+            public static let w414h736: String = "170x76"
+            public static let w393h852: String = "160x72"
+            public static let w390h844: String = "160x72"
+            public static let w375h812: String = "157x72"
+            public static let w375h667: String = "153x68"
+            public static let w360h780: String = "157x72"
         }
     }
     public enum LineHeights {
@@ -661,9 +2475,33 @@ public enum Tokens {
         /// Partiful · invite.web · title line height (× size) · VERIFIED
         /// token: `invite.web.lineHeight.title`
         public static let inviteWebLineHeightTitle: CGFloat = 1.2
+        /// Tribute · birthday.request · welcome message · VERIFIED
+        /// token: `lineHeight.birthday.request.message`
+        public static let birthdayRequestMessage: CGFloat = 28
+        /// Tribute · birthday.request · prompt text · VERIFIED
+        /// token: `lineHeight.birthday.request.prompt`
+        public static let birthdayRequestPrompt: CGFloat = 18.75
+        /// Tribute · birthday.request · title · VERIFIED
+        /// token: `lineHeight.birthday.request.title`
+        public static let birthdayRequestTitle: CGFloat = 28.8
         /// Yope · global · line pitch of the 3-line legal footer under sign-up (12 pt text) · SOURCED
         /// token: `lineHeight.global.caption`
         public static let globalCaption: CGFloat = 15.2
+        /// Spotify Wrapped · year.story · subline line pitch · SOURCED
+        /// token: `lineHeight.year.story.body`
+        public static let yearStoryBody: CGFloat = 21.4
+        /// Spotify Wrapped · year.story · headline line pitch · SOURCED
+        /// token: `lineHeight.year.story.headline`
+        public static let yearStoryHeadline: CGFloat = 36.4
+        /// Locket · onboarding.widget · step line pitch · SOURCED
+        /// token: `onboarding.widget.lineHeight.step`
+        public static let onboardingWidgetLineHeightStep: CGFloat = 32
+        /// Locket · paywall · plan sheet title line pitch · SOURCED
+        /// token: `paywall.lineHeight.planSheetTitle`
+        public static let paywallLineHeightPlanSheetTitle: CGFloat = 29
+        /// Locket · paywall · subtitle line pitch · SOURCED
+        /// token: `paywall.lineHeight.subtitle`
+        public static let paywallLineHeightSubtitle: CGFloat = 22
     }
     public enum Opacities {
         /// Partiful · invite.appclip · join sheet helper alpha on dark themes · VERIFIED
@@ -726,8 +2564,47 @@ public enum Tokens {
         /// Partiful · invite.web · body text alpha ('Invited by' row, gate card body, initials) · VERIFIED
         /// token: `invite.web.opacity.text.body`
         public static let inviteWebOpacityTextBody: Double = 0.8
+        /// Tribute · birthday.contribute · sub-heading (white at this opacity) · VERIFIED
+        /// token: `opacity.birthday.contribute.subheading`
+        public static let birthdayContributeSubheading: Double = 0.72
+        /// Tribute · birthday.request · honoree photo over the black hero background · VERIFIED
+        /// token: `opacity.birthday.request.hero.image`
+        public static let birthdayRequestHeroImage: Double = 0.7
+        /// Tribute · birthday.request · welcome message (white at this opacity) · VERIFIED
+        /// token: `opacity.birthday.request.message`
+        public static let birthdayRequestMessage: Double = 0.9
+        /// Spotify Wrapped · year.story · upcoming segment: white at this opacity · SOURCED
+        /// token: `opacity.year.story.progress.track`
+        public static let yearStoryProgressTrack: Double = 0.43
     }
     public enum Radii {
+        /// Yope · camera.capture · library thumbnail corner radius · SOURCED
+        /// token: `camera.capture.radius.libraryThumb`
+        public static let cameraCaptureRadiusLibraryThumb: CGFloat = 8
+        /// Yope · chat.thread · text bubble corner radius (all four corners, no tail) · SOURCED
+        /// token: `chat.thread.radius.bubble`
+        public static let chatThreadRadiusBubble: CGFloat = 16
+        /// Yope · chat.thread · caption box corner radius · SOURCED
+        /// token: `chat.thread.radius.caption`
+        public static let chatThreadRadiusCaption: CGFloat = 13
+        /// Yope · chat.thread · corner radius of the lime quote part (top corners; the text part overlaps its bottom) · SOURCED
+        /// token: `chat.thread.radius.replyQuote`
+        public static let chatThreadRadiusReplyQuote: CGFloat = 18.2
+        /// Yope · chat.thread · reply thumbnail corner radius · SOURCED
+        /// token: `chat.thread.radius.replyThumb`
+        public static let chatThreadRadiusReplyThumb: CGFloat = 7
+        /// Yope · chat.voice · voice bubble corner radius · SOURCED
+        /// token: `chat.voice.radius.bubble`
+        public static let chatVoiceRadiusBubble: CGFloat = 14
+        /// Yope · groups.create · cover-photo placeholder corner radius · SOURCED
+        /// token: `groups.create.radius.cover`
+        public static let groupsCreateRadiusCover: CGFloat = 7
+        /// Yope · groups.screen · photo card corner radius · SOURCED
+        /// token: `groups.screen.radius.card`
+        public static let groupsScreenRadiusCard: CGFloat = 20
+        /// Yope · groups.screen · white secondary pill ('invite more friends') corner radius · SOURCED
+        /// token: `groups.screen.radius.lightPill`
+        public static let groupsScreenRadiusLightPill: CGFloat = 11
         /// Partiful · invite.web · avatar corners (circle) · VERIFIED
         /// token: `invite.web.radius.avatar`
         public static let inviteWebRadiusAvatar: CGFloat = 800
@@ -743,6 +2620,27 @@ public enum Tokens {
         /// Partiful · invite.web · members-only card corners · VERIFIED
         /// token: `invite.web.radius.gateCard`
         public static let inviteWebRadiusGateCard: CGFloat = 4
+        /// Locket · paywall · inner corners between stacked perk cards · SOURCED
+        /// token: `paywall.radius.perkInner`
+        public static let paywallRadiusPerkInner: CGFloat = 6
+        /// Locket · paywall · outer corners of the perk stack (top of the first card, bottom of the last) · SOURCED
+        /// token: `paywall.radius.perkOuter`
+        public static let paywallRadiusPerkOuter: CGFloat = 23
+        /// Tribute · birthday.contribute · step button corners · VERIFIED
+        /// token: `radius.birthday.contribute.button`
+        public static let birthdayContributeButton: CGFloat = 8
+        /// Tribute · birthday.contribute · field corners · VERIFIED
+        /// token: `radius.birthday.contribute.input`
+        public static let birthdayContributeInput: CGFloat = 8
+        /// Tribute · birthday.request · primary button corners · VERIFIED
+        /// token: `radius.birthday.request.cta`
+        public static let birthdayRequestCta: CGFloat = 8
+        /// Tribute · birthday.request · prompts block corners (top corners of the header bar) · VERIFIED
+        /// token: `radius.birthday.request.prompts`
+        public static let birthdayRequestPrompts: CGFloat = 8
+        /// Tribute · birthday.tribute · secondary button corners · VERIFIED
+        /// token: `radius.birthday.tribute.button`
+        public static let birthdayTributeButton: CGFloat = 8
         /// Yope · global · primary (lime) button corners — not a full pill · SOURCED
         /// token: `radius.global.button`
         public static let globalButton: CGFloat = 14
@@ -758,8 +2656,479 @@ public enum Tokens {
         /// Yope · global · camera viewfinder corners (full-width viewfinder) · SOURCED
         /// token: `radius.global.viewfinder`
         public static let globalViewfinder: CGFloat = 18.5
+        /// Yope · walls.mine · wall grid tile corner radius · SOURCED
+        /// token: `walls.mine.radius.gridTile`
+        public static let wallsMineRadiusGridTile: CGFloat = 6.5
+        /// Retro · week.history · outer corners of a strip only (first tile's left corners, last tile's right corners); inner corners square · SOURCED
+        /// token: `week.history.radius.strip`
+        public static let weekHistoryRadiusStrip: CGFloat = 14
+        /// Yope · week.recap · recap card corner radius (the outer corners; tiles inside are square) · CAPTURED
+        /// token: `week.recap.radius.card`
+        public static let weekRecapRadiusCard: CGFloat = 12
+        /// Locket · widget.android · widget corner radius before Android 12 (theme attr appWidgetRadius); 12+ uses @android:dimen/system_app_widget_background_radius · SOURCED
+        /// token: `widget.android.radius.fallback`
+        public static let widgetAndroidRadiusFallback: CGFloat = 8
     }
     public enum Sizes {
+        /// Yope · albums.list · album card height (Yope home list card) · SOURCED
+        /// token: `albums.list.dimension.cardHeight`
+        public static let albumsListDimensionCardHeight: CGFloat = 100
+        /// Yope · albums.list · cover circle left inset inside the card · SOURCED
+        /// token: `albums.list.dimension.coverInset`
+        public static let albumsListDimensionCoverInset: CGFloat = 16
+        /// Yope · albums.list · cover circle right edge to the album name ink · SOURCED
+        /// token: `albums.list.dimension.coverToTitle`
+        public static let albumsListDimensionCoverToTitle: CGFloat = 15
+        /// Yope · auth.profile · large avatar circle (name + avatar step) · SOURCED
+        /// token: `auth.profile.size.avatar`
+        public static let authProfileSizeAvatar: CGFloat = 92
+        /// Yope · camera.capture · flip-camera circle button diameter · SOURCED
+        /// token: `camera.capture.size.flipButton`
+        public static let cameraCaptureSizeFlipButton: CGFloat = 47
+        /// Yope · camera.capture · photo-library thumbnail (last photo) square, left of the shutter · SOURCED
+        /// token: `camera.capture.size.libraryThumb`
+        public static let cameraCaptureSizeLibraryThumb: CGFloat = 46
+        /// Yope · camera.capture · white border around the library thumbnail (color.global.textPrimary) · SOURCED
+        /// token: `camera.capture.size.libraryThumbBorder`
+        public static let cameraCaptureSizeLibraryThumbBorder: CGFloat = 1
+        /// Yope · camera.capture · light pill action in empty / permission-denied states ('invite more friends' empty-state pill) · SOURCED
+        /// token: `camera.capture.size.permissionButtonHeight`
+        public static let cameraCaptureSizePermissionButtonHeight: CGFloat = 45
+        /// Yope · camera.capture · white shutter disc diameter (color.global.surfaceLight) · SOURCED
+        /// token: `camera.capture.size.shutterDisc`
+        public static let cameraCaptureSizeShutterDisc: CGFloat = 59
+        /// Yope · camera.capture · black gap between ring and disc (color.global.backgroundDeep) · SOURCED
+        /// token: `camera.capture.size.shutterGap`
+        public static let cameraCaptureSizeShutterGap: CGFloat = 5.5
+        /// Yope · camera.capture · shutter outer diameter (lime ring outer edge) · SOURCED
+        /// token: `camera.capture.size.shutterOuter`
+        public static let cameraCaptureSizeShutterOuter: CGFloat = 80
+        /// Yope · camera.capture · shutter ring stroke (color.global.accent) · SOURCED
+        /// token: `camera.capture.size.shutterRing`
+        public static let cameraCaptureSizeShutterRing: CGFloat = 3.5
+        /// Yope · camera.capture · viewfinder bottom edge → shutter ring top · SOURCED
+        /// token: `camera.capture.size.shutterTopGap`
+        public static let cameraCaptureSizeShutterTopGap: CGFloat = 38
+        /// Yope · camera.capture · horizontal distance shutter centre → library thumbnail centre and → flip button centre · SOURCED
+        /// token: `camera.capture.size.sideControlOffset`
+        public static let cameraCaptureSizeSideControlOffset: CGFloat = 110
+        /// Yope · camera.sendto · hour-overlay baseline → caption baseline · SOURCED
+        /// token: `camera.sendto.size.captionBaselineOffset`
+        public static let cameraSendtoSizeCaptionBaselineOffset: CGFloat = 31
+        /// Yope · camera.sendto · black disc after 'send' holding the number of selected groups (fill color.global.onAccent, number color.global.accent) · SOURCED
+        /// token: `camera.sendto.size.countDisc`
+        public static let cameraSendtoSizeCountDisc: CGFloat = 18.5
+        /// Yope · camera.sendto · 'send' label → count disc · SOURCED
+        /// token: `camera.sendto.size.countDiscGap`
+        public static let cameraSendtoSizeCountDiscGap: CGFloat = 7
+        /// Yope · camera.sendto · send button bottom edge → screen bottom · SOURCED
+        /// token: `camera.sendto.size.sendButtonBottom`
+        public static let cameraSendtoSizeSendButtonBottom: CGFloat = 41.5
+        /// Yope · chat.composer · lime camera circle at the left of the composer · SOURCED
+        /// token: `chat.composer.dimension.cameraButton`
+        public static let chatComposerDimensionCameraButton: CGFloat = 40.6
+        /// Yope · chat.composer · camera glyph height on the lime circle (glyph 24 pt wide) · SOURCED
+        /// token: `chat.composer.dimension.cameraGlyph`
+        public static let chatComposerDimensionCameraGlyph: CGFloat = 19.5
+        /// Yope · chat.composer · text field height (capsule; radius.global.capsule) · SOURCED
+        /// token: `chat.composer.dimension.fieldHeight`
+        public static let chatComposerDimensionFieldHeight: CGFloat = 39.5
+        /// Yope · chat.composer · field left edge to the placeholder / text ink · SOURCED
+        /// token: `chat.composer.dimension.fieldPaddingLeading`
+        public static let chatComposerDimensionFieldPaddingLeading: CGFloat = 17.8
+        /// Yope · chat.composer · rim stroke width of the text field · SOURCED
+        /// token: `chat.composer.dimension.fieldRim`
+        public static let chatComposerDimensionFieldRim: CGFloat = 0.44
+        /// Yope · chat.composer · gap between the lime camera circle and the field · SOURCED
+        /// token: `chat.composer.dimension.gapCameraField`
+        public static let chatComposerDimensionGapCameraField: CGFloat = 6.2
+        /// Yope · chat.composer · gap between the field and the next circle to its right · SOURCED
+        /// token: `chat.composer.dimension.gapFieldButton`
+        public static let chatComposerDimensionGapFieldButton: CGFloat = 7.1
+        /// Yope · chat.composer · screen edge to the camera circle · SOURCED
+        /// token: `chat.composer.dimension.insetLeading`
+        public static let chatComposerDimensionInsetLeading: CGFloat = 22.8
+        /// Yope · chat.composer · last circle to the screen edge · SOURCED
+        /// token: `chat.composer.dimension.insetTrailing`
+        public static let chatComposerDimensionInsetTrailing: CGFloat = 23.4
+        /// Yope · chat.composer · mic glyph height on the dark circle (glyph 15.5 pt wide) · SOURCED
+        /// token: `chat.composer.dimension.micGlyph`
+        public static let chatComposerDimensionMicGlyph: CGFloat = 21.8
+        /// Yope · chat.composer · dark circle buttons beside the field (mic in the chat; camera in the photo viewer's reply row) · SOURCED
+        /// token: `chat.composer.dimension.sideButton`
+        public static let chatComposerDimensionSideButton: CGFloat = 39.5
+        /// Locket · chat.reactions · one emoji sticker in the reaction cluster on a photo (white outline included) · SOURCED
+        /// token: `chat.reactions.dimension.clusterEmoji`
+        public static let chatReactionsDimensionClusterEmoji: CGFloat = 39
+        /// Locket · chat.reactions · cluster bottom to the photo's bottom edge · SOURCED
+        /// token: `chat.reactions.dimension.clusterInsetBottom`
+        public static let chatReactionsDimensionClusterInsetBottom: CGFloat = 20
+        /// Locket · chat.reactions · cluster left edge to the photo's left edge · SOURCED
+        /// token: `chat.reactions.dimension.clusterInsetLeading`
+        public static let chatReactionsDimensionClusterInsetLeading: CGFloat = 17
+        /// Locket · chat.reactions · white sticker outline around each cluster emoji · SOURCED
+        /// token: `chat.reactions.dimension.clusterOutline`
+        public static let chatReactionsDimensionClusterOutline: CGFloat = 2
+        /// Locket · chat.reactions · centre-to-centre step between overlapping cluster stickers (overlap ≈7 pt) · SOURCED
+        /// token: `chat.reactions.dimension.clusterStep`
+        public static let chatReactionsDimensionClusterStep: CGFloat = 27
+        /// Locket · chat.reactions · emoji glyph size in the picker grid · SOURCED
+        /// token: `chat.reactions.dimension.pickerEmoji`
+        public static let chatReactionsDimensionPickerEmoji: CGFloat = 40
+        /// Locket · chat.reactions · size of each rain copy · SOURCED
+        /// token: `chat.reactions.dimension.rainEmoji`
+        public static let chatReactionsDimensionRainEmoji: CGFloat = 52
+        /// Yope · chat.thread · sender avatar right edge to the bubble / photo left edge · SOURCED
+        /// token: `chat.thread.dimension.avatarGap`
+        public static let chatThreadDimensionAvatarGap: CGFloat = 6.7
+        /// Yope · chat.thread · sender avatar left edge to the screen edge · SOURCED
+        /// token: `chat.thread.dimension.avatarInset`
+        public static let chatThreadDimensionAvatarInset: CGFloat = 11.2
+        /// Yope · chat.thread · single-line text bubble height · SOURCED
+        /// token: `chat.thread.dimension.bubbleHeight`
+        public static let chatThreadDimensionBubbleHeight: CGFloat = 35.6
+        /// Yope · chat.thread · my bubble's right edge to the screen edge (also my voice and photo-reply bubbles) · SOURCED
+        /// token: `chat.thread.dimension.bubbleInsetMine`
+        public static let chatThreadDimensionBubbleInsetMine: CGFloat = 23
+        /// Yope · chat.thread · another member's bubble left edge to the screen edge (= avatarInset + size.global.avatarSmall + avatarGap) · SOURCED
+        /// token: `chat.thread.dimension.bubbleInsetTheirs`
+        public static let chatThreadDimensionBubbleInsetTheirs: CGFloat = 50.5
+        /// Yope · chat.thread · horizontal padding from the bubble edge to the text ink · SOURCED
+        /// token: `chat.thread.dimension.bubblePaddingH`
+        public static let chatThreadDimensionBubblePaddingH: CGFloat = 11.5
+        /// Yope · chat.thread · rim stroke width of text bubbles (one pixel of the reference) · SOURCED
+        /// token: `chat.thread.dimension.bubbleRim`
+        public static let chatThreadDimensionBubbleRim: CGFloat = 0.44
+        /// Yope · chat.thread · caption box height · SOURCED
+        /// token: `chat.thread.dimension.captionHeight`
+        public static let chatThreadDimensionCaptionHeight: CGFloat = 45.8
+        /// Yope · chat.thread · caption box bottom to the photo's bottom edge · SOURCED
+        /// token: `chat.thread.dimension.captionInsetBottom`
+        public static let chatThreadDimensionCaptionInsetBottom: CGFloat = 7.8
+        /// Yope · chat.thread · caption box horizontal padding to the text · SOURCED
+        /// token: `chat.thread.dimension.captionPaddingH`
+        public static let chatThreadDimensionCaptionPaddingH: CGFloat = 20
+        /// Yope · chat.thread · rendered width of one emoji in an emoji-only message (no bubble) · SOURCED
+        /// token: `chat.thread.dimension.emojiOnlyGlyph`
+        public static let chatThreadDimensionEmojiOnlyGlyph: CGFloat = 47.5
+        /// Yope · chat.thread · vertical gap between runs of different senders · SOURCED
+        /// token: `chat.thread.dimension.gapBetweenSenders`
+        public static let chatThreadDimensionGapBetweenSenders: CGFloat = 15
+        /// Yope · chat.thread · vertical gap between consecutive text bubbles of one sender · SOURCED
+        /// token: `chat.thread.dimension.gapSameSender`
+        public static let chatThreadDimensionGapSameSender: CGFloat = 3.6
+        /// Yope · chat.thread · vertical gap between a text bubble and the next voice bubble of the same sender · SOURCED
+        /// token: `chat.thread.dimension.gapTextToVoice`
+        public static let chatThreadDimensionGapTextToVoice: CGFloat = 4.7
+        /// Yope · chat.thread · group capsule height in the chat header (avatar · name · ›) · SOURCED
+        /// token: `chat.thread.dimension.headerCapsuleHeight`
+        public static let chatThreadDimensionHeaderCapsuleHeight: CGFloat = 43.3
+        /// Yope · chat.thread · loading HUD square (platform spinner + 'Loading') · SOURCED
+        /// token: `chat.thread.dimension.loadingHud`
+        public static let chatThreadDimensionLoadingHud: CGFloat = 100
+        /// Yope · chat.thread · vertical gap between two consecutive photo messages · SOURCED
+        /// token: `chat.thread.dimension.photoGap`
+        public static let chatThreadDimensionPhotoGap: CGFloat = 15.3
+        /// Yope · chat.thread · photo message height (landscape crop, aspect 1.86) · SOURCED
+        /// token: `chat.thread.dimension.photoHeight`
+        public static let chatThreadDimensionPhotoHeight: CGFloat = 174
+        /// Yope · chat.thread · photo message right edge to the screen edge · SOURCED
+        /// token: `chat.thread.dimension.photoInsetTrailing`
+        public static let chatThreadDimensionPhotoInsetTrailing: CGFloat = 18.7
+        /// Yope · chat.thread · photo message width · SOURCED
+        /// token: `chat.thread.dimension.photoWidth`
+        public static let chatThreadDimensionPhotoWidth: CGFloat = 323
+        /// Yope · chat.thread · baseline of the word 'pic' below the top of the lime block · SOURCED
+        /// token: `chat.thread.dimension.replyLabelBaseline`
+        public static let chatThreadDimensionReplyLabelBaseline: CGFloat = 44.9
+        /// Yope · chat.thread · top of the quoted name's capitals below the top of the lime block · SOURCED
+        /// token: `chat.thread.dimension.replyNameCapTop`
+        public static let chatThreadDimensionReplyNameCapTop: CGFloat = 18.9
+        /// Yope · chat.thread · width of the black quote bar inside the lime block · SOURCED
+        /// token: `chat.thread.dimension.replyQuoteBar`
+        public static let chatThreadDimensionReplyQuoteBar: CGFloat = 1.5
+        /// Yope · chat.thread · quote bar left edge from the bubble's left edge · SOURCED
+        /// token: `chat.thread.dimension.replyQuoteBarInset`
+        public static let chatThreadDimensionReplyQuoteBarInset: CGFloat = 16
+        /// Yope · chat.thread · height of the lime quote part of a reply · SOURCED
+        /// token: `chat.thread.dimension.replyQuoteHeight`
+        public static let chatThreadDimensionReplyQuoteHeight: CGFloat = 64
+        /// Yope · chat.thread · quoted name / 'pic' text left edge from the bubble's left edge · SOURCED
+        /// token: `chat.thread.dimension.replyTextInset`
+        public static let chatThreadDimensionReplyTextInset: CGFloat = 29
+        /// Yope · chat.thread · square photo thumbnail at the right of the reply quote · SOURCED
+        /// token: `chat.thread.dimension.replyThumb`
+        public static let chatThreadDimensionReplyThumb: CGFloat = 41.7
+        /// Yope · chat.thread · thumbnail top below the lime block top · SOURCED
+        /// token: `chat.thread.dimension.replyThumbInsetTop`
+        public static let chatThreadDimensionReplyThumbInsetTop: CGFloat = 12.2
+        /// Yope · chat.thread · thumbnail right edge to the bubble's right edge · SOURCED
+        /// token: `chat.thread.dimension.replyThumbInsetTrailing`
+        public static let chatThreadDimensionReplyThumbInsetTrailing: CGFloat = 14.5
+        /// Yope · chat.thread · reply-to-a-photo bubble width (quote part and text part share it) · SOURCED
+        /// token: `chat.thread.dimension.replyWidth`
+        public static let chatThreadDimensionReplyWidth: CGFloat = 142
+        /// Yope · chat.voice · tallest waveform bar · SOURCED
+        /// token: `chat.voice.dimension.barMaxHeight`
+        public static let chatVoiceDimensionBarMaxHeight: CGFloat = 31.5
+        /// Yope · chat.voice · shortest waveform bar observed · SOURCED
+        /// token: `chat.voice.dimension.barMinHeight`
+        public static let chatVoiceDimensionBarMinHeight: CGFloat = 9.3
+        /// Yope · chat.voice · waveform bar pitch (≈3 pt gap) · SOURCED
+        /// token: `chat.voice.dimension.barPitch`
+        public static let chatVoiceDimensionBarPitch: CGFloat = 6.1
+        /// Yope · chat.voice · waveform bar width (rounded ends) · SOURCED
+        /// token: `chat.voice.dimension.barWidth`
+        public static let chatVoiceDimensionBarWidth: CGFloat = 3.1
+        /// Yope · chat.voice · duration text to the bubble's right edge · SOURCED
+        /// token: `chat.voice.dimension.durationTrailing`
+        public static let chatVoiceDimensionDurationTrailing: CGFloat = 9.7
+        /// Yope · chat.voice · voice bubble height · SOURCED
+        /// token: `chat.voice.dimension.height`
+        public static let chatVoiceDimensionHeight: CGFloat = 44.9
+        /// Yope · chat.voice · play circle diameter (vertically centred: 6.7 pt top inset) · SOURCED
+        /// token: `chat.voice.dimension.playButton`
+        public static let chatVoiceDimensionPlayButton: CGFloat = 31.5
+        /// Yope · chat.voice · play triangle width (white) · SOURCED
+        /// token: `chat.voice.dimension.playGlyph`
+        public static let chatVoiceDimensionPlayGlyph: CGFloat = 11.5
+        /// Yope · chat.voice · bubble left edge to the play circle · SOURCED
+        /// token: `chat.voice.dimension.playInsetLeading`
+        public static let chatVoiceDimensionPlayInsetLeading: CGFloat = 8
+        /// Yope · chat.voice · play circle right edge to the first waveform bar · SOURCED
+        /// token: `chat.voice.dimension.playToWaveform`
+        public static let chatVoiceDimensionPlayToWaveform: CGFloat = 7.8
+        /// Yope · chat.voice · last bar to the duration text · SOURCED
+        /// token: `chat.voice.dimension.waveformToDuration`
+        public static let chatVoiceDimensionWaveformToDuration: CGFloat = 8.9
+        /// Yope · chat.voice · voice bubble width (observed for a 0:38 message) · SOURCED
+        /// token: `chat.voice.dimension.width`
+        public static let chatVoiceDimensionWidth: CGFloat = 271.8
+        /// BeReal · daily.capture · spinner shown between the two captures (platform progress indicator), centred in the viewfinder · SOURCED
+        /// token: `daily.capture.size.progress`
+        public static let dailyCaptureSizeProgress: CGFloat = 34.7
+        /// Apple HIG · daily.liveactivity · Lock Screen presentation margin · VERIFIED
+        /// token: `daily.liveactivity.size.lockScreenMargin`
+        public static let dailyLiveactivitySizeLockScreenMargin: CGFloat = 14
+        /// Tribute · birthday.contribute · last field bottom to the button · VERIFIED
+        /// token: `dimension.birthday.contribute.button.gap`
+        public static let birthdayContributeButtonGap: CGFloat = 24
+        /// Tribute · birthday.contribute · step button height ('Submit', 'Done') · VERIFIED
+        /// token: `dimension.birthday.contribute.button.height`
+        public static let birthdayContributeButtonHeight: CGFloat = 50
+        /// Tribute · birthday.contribute · field bottom to the next label · VERIFIED
+        /// token: `dimension.birthday.contribute.group.gap`
+        public static let birthdayContributeGroupGap: CGFloat = 16
+        /// Tribute · birthday.contribute · step captions bottom to step heading top · VERIFIED
+        /// token: `dimension.birthday.contribute.heading.gap`
+        public static let birthdayContributeHeadingGap: CGFloat = 107
+        /// Tribute · birthday.contribute · one-line field height · VERIFIED
+        /// token: `dimension.birthday.contribute.input.height`
+        public static let birthdayContributeInputHeight: CGFloat = 46
+        /// Tribute · birthday.contribute · label bottom to field top · VERIFIED
+        /// token: `dimension.birthday.contribute.label.gap`
+        public static let birthdayContributeLabelGap: CGFloat = 10
+        /// Tribute · birthday.contribute · side margin of every step · VERIFIED
+        /// token: `dimension.birthday.contribute.margin`
+        public static let birthdayContributeMargin: CGFloat = 20
+        /// Tribute · birthday.contribute · step circle diameter · VERIFIED
+        /// token: `dimension.birthday.contribute.stepper.circle`
+        public static let birthdayContributeStepperCircle: CGFloat = 40
+        /// Tribute · birthday.contribute · heading bottom to sub-heading · VERIFIED
+        /// token: `dimension.birthday.contribute.subheading.gap`
+        public static let birthdayContributeSubheadingGap: CGFloat = 12
+        /// Tribute · birthday.request · hero bottom to primary button · VERIFIED
+        /// token: `dimension.birthday.request.cta.gap`
+        public static let birthdayRequestCtaGap: CGFloat = 15
+        /// Tribute · birthday.request · primary button height ('Add Your Photo') · VERIFIED
+        /// token: `dimension.birthday.request.cta.height`
+        public static let birthdayRequestCtaHeight: CGFloat = 62
+        /// Tribute · birthday.request · hero (photo band) height · VERIFIED
+        /// token: `dimension.birthday.request.hero.height`
+        public static let birthdayRequestHeroHeight: CGFloat = 365.8
+        /// Tribute · birthday.request · side margin of title, message, button and prompts · VERIFIED
+        /// token: `dimension.birthday.request.margin`
+        public static let birthdayRequestMargin: CGFloat = 15
+        /// Tribute · birthday.request · title bottom to message top · VERIFIED
+        /// token: `dimension.birthday.request.message.gap`
+        public static let birthdayRequestMessageGap: CGFloat = 20.8
+        /// Tribute · birthday.request · gap between prompts · VERIFIED
+        /// token: `dimension.birthday.request.prompt.gap`
+        public static let birthdayRequestPromptGap: CGFloat = 19.9
+        /// Tribute · birthday.request · block left edge to prompt text (bullet in between) · VERIFIED
+        /// token: `dimension.birthday.request.prompt.indent`
+        public static let birthdayRequestPromptIndent: CGFloat = 39
+        /// Tribute · birthday.request · header bar bottom to first prompt · VERIFIED
+        /// token: `dimension.birthday.request.prompt.top`
+        public static let birthdayRequestPromptTop: CGFloat = 24
+        /// Tribute · birthday.request · space above the Message Ideas block · VERIFIED
+        /// token: `dimension.birthday.request.prompts.gap`
+        public static let birthdayRequestPromptsGap: CGFloat = 20
+        /// Tribute · birthday.request · header bar height · VERIFIED
+        /// token: `dimension.birthday.request.prompts.headerHeight`
+        public static let birthdayRequestPromptsHeaderHeight: CGFloat = 42
+        /// Tribute · birthday.request · header bar horizontal padding · VERIFIED
+        /// token: `dimension.birthday.request.prompts.headerPadding`
+        public static let birthdayRequestPromptsHeaderPadding: CGFloat = 24
+        /// Tribute · birthday.request · hero top to title top · VERIFIED
+        /// token: `dimension.birthday.request.title.top`
+        public static let birthdayRequestTitleTop: CGFloat = 84
+        /// Tribute · birthday.tribute · gap between stacked secondary buttons · VERIFIED
+        /// token: `dimension.birthday.tribute.button.gap`
+        public static let birthdayTributeButtonGap: CGFloat = 10
+        /// Tribute · birthday.tribute · secondary button height ('Download', 'Share') · VERIFIED
+        /// token: `dimension.birthday.tribute.button.height`
+        public static let birthdayTributeButtonHeight: CGFloat = 44
+        /// Timehop · onthisday · banner bottom edge measured from the screen top (the banner runs behind the status bar) · SOURCED
+        /// token: `dimension.onthisday.banner.height`
+        public static let onthisdayBannerHeight: CGFloat = 96.8
+        /// Timehop · onthisday · label baseline to banner bottom edge · SOURCED
+        /// token: `dimension.onthisday.banner.labelBaseline`
+        public static let onthisdayBannerLabelBaseline: CGFloat = 25.4
+        /// Timehop · onthisday · gap between grid photos (columns and rows) · SOURCED
+        /// token: `dimension.onthisday.grid.gutter`
+        public static let onthisdayGridGutter: CGFloat = 4.2
+        /// Timehop · onthisday · grid outer margin (left / right) · SOURCED
+        /// token: `dimension.onthisday.grid.margin`
+        public static let onthisdayGridMargin: CGFloat = 3.8
+        /// Timehop · onthisday · gap between banner bottom and the first grid row · SOURCED
+        /// token: `dimension.onthisday.grid.top`
+        public static let onthisdayGridTop: CGFloat = 5.5
+        /// Timehop · onthisday · meta row leading circle (Timehop's source icon; here the poster's avatar) · SOURCED
+        /// token: `dimension.onthisday.meta.avatar`
+        public static let onthisdayMetaAvatar: CGFloat = 19
+        /// Timehop · onthisday · banner bottom edge to the meta row's vertical centre · SOURCED
+        /// token: `dimension.onthisday.meta.centerY`
+        public static let onthisdayMetaCenterY: CGFloat = 25.7
+        /// Timehop · onthisday · leading circle to weekday text · SOURCED
+        /// token: `dimension.onthisday.meta.gap`
+        public static let onthisdayMetaGap: CGFloat = 11.5
+        /// Timehop · onthisday · screen edge to the meta row's leading circle · SOURCED
+        /// token: `dimension.onthisday.meta.inset`
+        public static let onthisdayMetaInset: CGFloat = 16.2
+        /// Timehop · onthisday · progress bar thickness · SOURCED
+        /// token: `dimension.onthisday.progress.height`
+        public static let onthisdayProgressHeight: CGFloat = 4.3
+        /// Spotify Wrapped · year.story · pause / close circle diameter (visual; hit area extends to size.global.minTouchTarget) · SOURCED
+        /// token: `dimension.year.story.chrome.button`
+        public static let yearStoryChromeButton: CGFloat = 29.6
+        /// Spotify Wrapped · year.story · canvas top to the chrome row's centre · SOURCED
+        /// token: `dimension.year.story.chrome.centerY`
+        public static let yearStoryChromeCenterY: CGFloat = 48.3
+        /// Spotify Wrapped · year.story · pause / close glyph height · SOURCED
+        /// token: `dimension.year.story.chrome.glyph`
+        public static let yearStoryChromeGlyph: CGFloat = 14.9
+        /// Spotify Wrapped · year.story · canvas right edge to the close circle · SOURCED
+        /// token: `dimension.year.story.chrome.insetRight`
+        public static let yearStoryChromeInsetRight: CGFloat = 10.5
+        /// Spotify Wrapped · year.story · centre-to-centre distance of the chrome circles · SOURCED
+        /// token: `dimension.year.story.chrome.pitch`
+        public static let yearStoryChromePitch: CGFloat = 45.9
+        /// Spotify Wrapped · year.story · gap between progress segments · SOURCED
+        /// token: `dimension.year.story.progress.gap`
+        public static let yearStoryProgressGap: CGFloat = 3.6
+        /// Spotify Wrapped · year.story · progress segment thickness · SOURCED
+        /// token: `dimension.year.story.progress.height`
+        public static let yearStoryProgressHeight: CGFloat = 1.8
+        /// Spotify Wrapped · year.story · progress bar side inset · SOURCED
+        /// token: `dimension.year.story.progress.inset`
+        public static let yearStoryProgressInset: CGFloat = 11
+        /// Spotify Wrapped · year.story · canvas top to progress bar · SOURCED
+        /// token: `dimension.year.story.progress.top`
+        public static let yearStoryProgressTop: CGFloat = 8
+        /// Spotify Wrapped · year.story · distance the headline moves up · SOURCED
+        /// token: `dimension.year.story.reveal.headlineShift`
+        public static let yearStoryRevealHeadlineShift: CGFloat = 18.2
+        /// Spotify Wrapped · year.story · subline start offset below its final position · SOURCED
+        /// token: `dimension.year.story.reveal.sublineOffset`
+        public static let yearStoryRevealSublineOffset: CGFloat = 25
+        /// Spotify Wrapped · year.story · share row bottom to canvas bottom · SOURCED
+        /// token: `dimension.year.story.share.bottomInset`
+        public static let yearStoryShareBottomInset: CGFloat = 29
+        /// Spotify Wrapped · year.story · share glyph to label · SOURCED
+        /// token: `dimension.year.story.share.glyphGap`
+        public static let yearStoryShareGlyphGap: CGFloat = 15.5
+        /// Spotify Wrapped · year.story · share row height (= glyph height) · SOURCED
+        /// token: `dimension.year.story.share.rowHeight`
+        public static let yearStoryShareRowHeight: CGFloat = 18.6
+        /// Spotify Wrapped · year.story · summary 'Share' pill height · SOURCED
+        /// token: `dimension.year.story.summary.shareHeight`
+        public static let yearStorySummaryShareHeight: CGFloat = 50
+        /// Spotify Wrapped · year.story · summary 'Share' pill width · SOURCED
+        /// token: `dimension.year.story.summary.shareWidth`
+        public static let yearStorySummaryShareWidth: CGFloat = 148
+        /// Spotify Wrapped · year.story · widest line of card text (text block width) · SOURCED
+        /// token: `dimension.year.story.text.maxWidth`
+        public static let yearStoryTextMaxWidth: CGFloat = 274
+        /// Yope · groups.create · cover-photo placeholder height · SOURCED
+        /// token: `groups.create.size.cover.height`
+        public static let groupsCreateSizeCoverHeight: CGFloat = 221
+        /// Yope · groups.create · cover-photo placeholder width (centred) · SOURCED
+        /// token: `groups.create.size.cover.width`
+        public static let groupsCreateSizeCoverWidth: CGFloat = 330
+        /// Yope · groups.create · camera glyph (icon.global.camera, white) centred in the cover placeholder: glyph height · SOURCED
+        /// token: `groups.create.size.coverGlyph`
+        public static let groupsCreateSizeCoverGlyph: CGFloat = 21
+        /// Yope · groups.create · form field bottom to the primary button top · SOURCED
+        /// token: `groups.create.size.fieldToButton`
+        public static let groupsCreateSizeFieldToButton: CGFloat = 18
+        /// Yope · groups.create · Loading HUD square side · SOURCED
+        /// token: `groups.create.size.hud`
+        public static let groupsCreateSizeHud: CGFloat = 100
+        /// Yope · groups.create · cover placeholder bottom to the name field top · SOURCED
+        /// token: `groups.create.size.mediaToField`
+        public static let groupsCreateSizeMediaToField: CGFloat = 23
+        /// Yope · groups.create · sheet top edge to the title's cap top (also the safe-area top to the title on full-screen onboarding steps) · SOURCED
+        /// token: `groups.create.size.sheetTopToTitle`
+        public static let groupsCreateSizeSheetTopToTitle: CGFloat = 71
+        /// Yope · groups.create · title text bottom (descender) to the first content element · SOURCED
+        /// token: `groups.create.size.titleToContent`
+        public static let groupsCreateSizeTitleToContent: CGFloat = 34
+        /// Yope · groups.invite · contact row pitch (avatar 40, bold name, trailing action) · SOURCED
+        /// token: `groups.invite.size.pickerRowPitch`
+        public static let groupsInviteSizePickerRowPitch: CGFloat = 54.5
+        /// Yope · groups.list · avatar left inset inside the card (and its vertical centring) · SOURCED
+        /// token: `groups.list.size.avatarInset`
+        public static let groupsListSizeAvatarInset: CGFloat = 16
+        /// Yope · groups.list · trailing camera glyph on a card (opens the camera for that group) · SOURCED
+        /// token: `groups.list.size.cameraGlyph`
+        public static let groupsListSizeCameraGlyph: CGFloat = 16
+        /// Yope · groups.list · group card height · SOURCED
+        /// token: `groups.list.size.cardHeight`
+        public static let groupsListSizeCardHeight: CGFloat = 100
+        /// Yope · groups.list · home cover header (newest photo across groups, full-bleed from the top edge) height · SOURCED
+        /// token: `groups.list.size.coverHeight`
+        public static let groupsListSizeCoverHeight: CGFloat = 205
+        /// Yope · groups.screen · vertical gap between photo cards · SOURCED
+        /// token: `groups.screen.size.cardGap`
+        public static let groupsScreenSizeCardGap: CGFloat = 8.5
+        /// Yope · groups.screen · photo card height on the group screen (one card per post, photo cropped to fill) · SOURCED
+        /// token: `groups.screen.size.cardHeight`
+        public static let groupsScreenSizeCardHeight: CGFloat = 152
+        /// Yope · groups.screen · photo card side margin · SOURCED
+        /// token: `groups.screen.size.cardMarginH`
+        public static let groupsScreenSizeCardMarginH: CGFloat = 7.6
+        /// Yope · groups.screen · floating 'chat' pill height · SOURCED
+        /// token: `groups.screen.size.chatPillHeight`
+        public static let groupsScreenSizeChatPillHeight: CGFloat = 51
+        /// Yope · groups.screen · floating 'chat' pill width (bottom centre) · SOURCED
+        /// token: `groups.screen.size.chatPillWidth`
+        public static let groupsScreenSizeChatPillWidth: CGFloat = 88
+        /// Yope · groups.screen · white secondary pill height ('invite more friends', 205 pt wide = hug + leading icon.global.link) · SOURCED
+        /// token: `groups.screen.size.lightPillHeight`
+        public static let groupsScreenSizeLightPillHeight: CGFloat = 45
+        /// Yope · groups.screen · group avatar on the group profile page · SOURCED
+        /// token: `groups.screen.size.profileAvatar`
+        public static let groupsScreenSizeProfileAvatar: CGFloat = 92
+        /// Yope · groups.screen · segmented control track height ('pics | wall | recaps'); also the group-type picker in groups.create · SOURCED
+        /// token: `groups.screen.size.segmentHeight`
+        public static let groupsScreenSizeSegmentHeight: CGFloat = 41.5
+        /// Yope · groups.screen · inset of the selected pill inside the track (selected pill height 33.5 pt) · SOURCED
+        /// token: `groups.screen.size.segmentInset`
+        public static let groupsScreenSizeSegmentInset: CGFloat = 4
+        /// Yope · groups.screen · segmented control side margin · SOURCED
+        /// token: `groups.screen.size.segmentMarginH`
+        public static let groupsScreenSizeSegmentMarginH: CGFloat = 6
         /// Partiful · invite.web · member avatar (row and list) · VERIFIED
         /// token: `invite.web.dimension.avatar`
         public static let inviteWebDimensionAvatar: CGFloat = 48
@@ -856,6 +3225,117 @@ public enum Tokens {
         /// Partiful · invite.web · member row vertical padding in the expanded list · VERIFIED
         /// token: `invite.web.dimension.userRow.paddingV`
         public static let inviteWebDimensionUserRowPaddingV: CGFloat = 12
+        /// Yope · onboarding.permission.contacts · white 'enable' button height · SOURCED
+        /// token: `onboarding.permission.contacts.size.cardButtonHeight`
+        public static let onboardingPermissionContactsSizeCardButtonHeight: CGFloat = 37
+        /// Yope · onboarding.permission.contacts · white 'enable' button width (color.global.surfaceLight, label color.global.onSurfaceLight) · SOURCED
+        /// token: `onboarding.permission.contacts.size.cardButtonWidth`
+        public static let onboardingPermissionContactsSizeCardButtonWidth: CGFloat = 91
+        /// Yope · onboarding.permission.contacts · inline permission card height · SOURCED
+        /// token: `onboarding.permission.contacts.size.cardHeight`
+        public static let onboardingPermissionContactsSizeCardHeight: CGFloat = 101
+        /// Yope · onboarding.permission.contacts · inline permission card side margin · SOURCED
+        /// token: `onboarding.permission.contacts.size.cardMarginH`
+        public static let onboardingPermissionContactsSizeCardMarginH: CGFloat = 18
+        /// Locket · onboarding.widget · content-width yellow capsule CTA height · SOURCED
+        /// token: `onboarding.widget.size.ctaHeight`
+        public static let onboardingWidgetSizeCtaHeight: CGFloat = 54
+        /// Locket · paywall · primary CTA capsule height (full width, margins paywall.size.perkMarginH) · SOURCED
+        /// token: `paywall.size.ctaHeight`
+        public static let paywallSizeCtaHeight: CGFloat = 56
+        /// Locket · paywall · app-icon tile at the top (rounded square) · SOURCED
+        /// token: `paywall.size.iconTile`
+        public static let paywallSizeIconTile: CGFloat = 76
+        /// Locket · paywall · gap between perk cards · SOURCED
+        /// token: `paywall.size.perkGap`
+        public static let paywallSizePerkGap: CGFloat = 4
+        /// Locket · paywall · perk card height · SOURCED
+        /// token: `paywall.size.perkHeight`
+        public static let paywallSizePerkHeight: CGFloat = 78
+        /// Locket · paywall · perk emoji size (centre 39 pt from the card's leading edge) · SOURCED
+        /// token: `paywall.size.perkIcon`
+        public static let paywallSizePerkIcon: CGFloat = 30
+        /// Locket · paywall · perk card side margin (card width 353 pt on 393) · SOURCED
+        /// token: `paywall.size.perkMarginH`
+        public static let paywallSizePerkMarginH: CGFloat = 20
+        /// Locket · paywall · perk text leading inset from the card edge · SOURCED
+        /// token: `paywall.size.perkTextInset`
+        public static let paywallSizePerkTextInset: CGFloat = 73
+        /// Locket · paywall · selected plan card border width (paywall.color.planBorder) · SOURCED
+        /// token: `paywall.size.planBorder`
+        public static let paywallSizePlanBorder: CGFloat = 3
+        /// Locket · paywall · plan card height without a detail line · SOURCED
+        /// token: `paywall.size.planHeight`
+        public static let paywallSizePlanHeight: CGFloat = 58
+        /// Locket · paywall · plan card side margin (370 pt wide on a 402-pt screen) · SOURCED
+        /// token: `paywall.size.planMarginH`
+        public static let paywallSizePlanMarginH: CGFloat = 16
+        /// Locket · paywall · plan card height with a detail line (selected plan) · SOURCED
+        /// token: `paywall.size.planSelectedHeight`
+        public static let paywallSizePlanSelectedHeight: CGFloat = 81
+        /// Locket · paywall · 'Subscribe' capsule height on the plan sheet (margins paywall.size.planMarginH) · SOURCED
+        /// token: `paywall.size.subscribeHeight`
+        public static let paywallSizeSubscribeHeight: CGFloat = 58
+        /// Yope · photo.viewer · ✕ glyph centre from the left screen edge (bare glyph, no circle) · SOURCED
+        /// token: `photo.viewer.dimension.closeCenterX`
+        public static let photoViewerDimensionCloseCenterX: CGFloat = 39
+        /// Yope · photo.viewer · ✕ glyph height · SOURCED
+        /// token: `photo.viewer.dimension.closeGlyph`
+        public static let photoViewerDimensionCloseGlyph: CGFloat = 14.1
+        /// Yope · photo.viewer · vertical centre of the header row (✕, two-line title, •••) below the top safe-area inset · SOURCED
+        /// token: `photo.viewer.dimension.headerCenterY`
+        public static let photoViewerDimensionHeaderCenterY: CGFloat = 20
+        /// Yope · photo.viewer · ••• glyph centre from the right screen edge (bare glyph, no circle) · SOURCED
+        /// token: `photo.viewer.dimension.moreCenterTrailing`
+        public static let photoViewerDimensionMoreCenterTrailing: CGFloat = 36
+        /// Yope · photo.viewer · ••• glyph width · SOURCED
+        /// token: `photo.viewer.dimension.moreGlyphWidth`
+        public static let photoViewerDimensionMoreGlyphWidth: CGFloat = 25.3
+        /// Yope · photo.viewer · photo top edge below the top safe-area inset (59 pt status bar on the recorded device) · SOURCED
+        /// token: `photo.viewer.dimension.photoTop`
+        public static let photoViewerDimensionPhotoTop: CGFloat = 107
+        /// Yope · photo.viewer · sender avatar on the photo, top-left · SOURCED
+        /// token: `photo.viewer.dimension.senderAvatar`
+        public static let photoViewerDimensionSenderAvatar: CGFloat = 38.7
+        /// Yope · photo.viewer · sender avatar left edge to the photo's left edge · SOURCED
+        /// token: `photo.viewer.dimension.senderInsetLeading`
+        public static let photoViewerDimensionSenderInsetLeading: CGFloat = 13.8
+        /// Yope · photo.viewer · sender avatar top to the photo's top edge · SOURCED
+        /// token: `photo.viewer.dimension.senderInsetTop`
+        public static let photoViewerDimensionSenderInsetTop: CGFloat = 12.3
+        /// Yope · photo.viewer · avatar right edge to the sender name ink · SOURCED
+        /// token: `photo.viewer.dimension.senderNameGap`
+        public static let photoViewerDimensionSenderNameGap: CGFloat = 13
+        /// Yope · photo.viewer · baseline of the title line to the baseline of the date line · SOURCED
+        /// token: `photo.viewer.dimension.titleToDate`
+        public static let photoViewerDimensionTitleToDate: CGFloat = 20.9
+        /// Material 3 · settings.root · M3 list divider thickness · VERIFIED
+        /// token: `settings.root.size.divider.android`
+        public static let settingsRootSizeDividerAndroid: CGFloat = 1
+        /// Material 3 · settings.root · M3 list item leading avatar size (blocked people, members) · VERIFIED
+        /// token: `settings.root.size.listItemAvatar.android`
+        public static let settingsRootSizeListItemAvatarAndroid: CGFloat = 40
+        /// Material 3 · settings.root · M3 space between list item slots · VERIFIED
+        /// token: `settings.root.size.listItemGap.android`
+        public static let settingsRootSizeListItemGapAndroid: CGFloat = 12
+        /// Material 3 · settings.root · M3 list item leading icon size · VERIFIED
+        /// token: `settings.root.size.listItemIcon.android`
+        public static let settingsRootSizeListItemIconAndroid: CGFloat = 24
+        /// Material 3 · settings.root · M3 one-line list item height · VERIFIED
+        /// token: `settings.root.size.listItemOneLine.android`
+        public static let settingsRootSizeListItemOneLineAndroid: CGFloat = 56
+        /// Material 3 · settings.root · M3 list item leading and trailing space · VERIFIED
+        /// token: `settings.root.size.listItemPaddingH.android`
+        public static let settingsRootSizeListItemPaddingHAndroid: CGFloat = 16
+        /// Material 3 · settings.root · M3 list item top and bottom space · VERIFIED
+        /// token: `settings.root.size.listItemPaddingV.android`
+        public static let settingsRootSizeListItemPaddingVAndroid: CGFloat = 10
+        /// Material 3 · settings.root · M3 three-line list item height · VERIFIED
+        /// token: `settings.root.size.listItemThreeLine.android`
+        public static let settingsRootSizeListItemThreeLineAndroid: CGFloat = 88
+        /// Material 3 · settings.root · M3 two-line list item height · VERIFIED
+        /// token: `settings.root.size.listItemTwoLine.android`
+        public static let settingsRootSizeListItemTwoLineAndroid: CGFloat = 72
         /// Yope · global · group avatar inside the header capsule · SOURCED
         /// token: `size.global.avatarHeader`
         public static let globalAvatarHeader: CGFloat = 28
@@ -934,8 +3414,149 @@ public enum Tokens {
         /// Yope · global · floating tab-bar capsule width · SOURCED
         /// token: `size.global.tabBarWidth`
         public static let globalTabBarWidth: CGFloat = 344
+        /// Yope · walls.browse · person circle in the 'me & friends' row · SOURCED
+        /// token: `walls.browse.dimension.avatar`
+        public static let wallsBrowseDimensionAvatar: CGFloat = 60
+        /// Yope · walls.browse · centre-to-centre pitch of the person circles · SOURCED
+        /// token: `walls.browse.dimension.avatarPitch`
+        public static let wallsBrowseDimensionAvatarPitch: CGFloat = 77.7
+        /// Yope · walls.browse · circle bottom to the first-name label baseline · SOURCED
+        /// token: `walls.browse.dimension.labelBaselineGap`
+        public static let wallsBrowseDimensionLabelBaselineGap: CGFloat = 22
+        /// Yope · walls.browse · person-row centre below the top safe-area inset · SOURCED
+        /// token: `walls.browse.dimension.rowCenter`
+        public static let wallsBrowseDimensionRowCenter: CGFloat = 93.5
+        /// Yope · walls.browse · screen edge to the first circle · SOURCED
+        /// token: `walls.browse.dimension.rowInset`
+        public static let wallsBrowseDimensionRowInset: CGFloat = 19.7
+        /// Yope · walls.browse · 'me & friends' title baseline below the top safe-area inset · SOURCED
+        /// token: `walls.browse.dimension.titleBaseline`
+        public static let wallsBrowseDimensionTitleBaseline: CGFloat = 23.6
+        /// Yope · walls.browse · top of the selected person's wall below the top safe-area inset · SOURCED
+        /// token: `walls.browse.dimension.wallTop`
+        public static let wallsBrowseDimensionWallTop: CGFloat = 173
+        /// Yope · walls.mine · gap between wall grid tiles, both directions · SOURCED
+        /// token: `walls.mine.dimension.gridGap`
+        public static let wallsMineDimensionGridGap: CGFloat = 4
+        /// Yope · walls.mine · wall grid side inset · SOURCED
+        /// token: `walls.mine.dimension.gridInset`
+        public static let wallsMineDimensionGridInset: CGFloat = 24
+        /// Retro · week.history · '+' glyph size in the add tile (centred) · SOURCED
+        /// token: `week.history.dimension.addGlyph`
+        public static let weekHistoryDimensionAddGlyph: CGFloat = 20
+        /// Retro · week.history · week header baseline to the strip top · SOURCED
+        /// token: `week.history.dimension.headerToStrip`
+        public static let weekHistoryDimensionHeaderToStrip: CGFloat = 11.7
+        /// Retro · week.history · leading inset of the week header and the strip (the strip has no trailing inset; it scrolls and clips at the screen edge) · SOURCED
+        /// token: `week.history.dimension.inset`
+        public static let weekHistoryDimensionInset: CGFloat = 20
+        /// Retro · week.history · '•••' right ink edge to the screen edge; vertically centred on the header text · SOURCED
+        /// token: `week.history.dimension.moreTrailing`
+        public static let weekHistoryDimensionMoreTrailing: CGFloat = 22
+        /// Retro · week.history · ink gap between 'Week N' and the date range · SOURCED
+        /// token: `week.history.dimension.rangeGap`
+        public static let weekHistoryDimensionRangeGap: CGFloat = 7.5
+        /// Retro · week.history · strip bottom to the next week header's cap top · SOURCED
+        /// token: `week.history.dimension.sectionGap`
+        public static let weekHistoryDimensionSectionGap: CGFloat = 36.4
+        /// Retro · week.history · gap between adjacent tiles in a strip (the background shows through) · SOURCED
+        /// token: `week.history.dimension.tileGap`
+        public static let weekHistoryDimensionTileGap: CGFloat = 2
+        /// Retro · week.history · day tile height · SOURCED
+        /// token: `week.history.dimension.tileHeight`
+        public static let weekHistoryDimensionTileHeight: CGFloat = 112
+        /// Retro · week.history · day tile width (photo, add and empty-day tiles) · SOURCED
+        /// token: `week.history.dimension.tileWidth`
+        public static let weekHistoryDimensionTileWidth: CGFloat = 84.5
+        /// Retro · week.history · left ink inset of the display title · SOURCED
+        /// token: `week.history.dimension.titleInset`
+        public static let weekHistoryDimensionTitleInset: CGFloat = 16
+        /// Retro · week.history · display title baseline to the first strip top · SOURCED
+        /// token: `week.history.dimension.titleToStrip`
+        public static let weekHistoryDimensionTitleToStrip: CGFloat = 17.6
+        /// Retro · week.history · weekday label baseline above the tile bottom · SOURCED
+        /// token: `week.history.dimension.weekdayBaseline`
+        public static let weekHistoryDimensionWeekdayBaseline: CGFloat = 13.4
+        /// Yope · week.recap · card bottom to the top of the page dots · CAPTURED
+        /// token: `week.recap.dimension.cardToDots`
+        public static let weekRecapDimensionCardToDots: CGFloat = 20.9
+        /// Yope · week.recap · recap card width, centred · CAPTURED
+        /// token: `week.recap.dimension.cardWidth`
+        public static let weekRecapDimensionCardWidth: CGFloat = 334
+        /// Yope · week.recap · page dots bottom to the pics grid top · CAPTURED
+        /// token: `week.recap.dimension.dotsToPics`
+        public static let weekRecapDimensionDotsToPics: CGFloat = 40
+        /// Yope · week.recap · gap between recap card tiles (they touch, no border) · CAPTURED
+        /// token: `week.recap.dimension.gridGap`
+        public static let weekRecapDimensionGridGap: CGFloat = 0
+        /// Yope · week.recap · label baseline to the card bottom · CAPTURED
+        /// token: `week.recap.dimension.labelBaselineBottom`
+        public static let weekRecapDimensionLabelBaselineBottom: CGFloat = 27.5
+        /// Yope · week.recap · card left edge to the label · CAPTURED
+        /// token: `week.recap.dimension.labelInsetLeading`
+        public static let weekRecapDimensionLabelInsetLeading: CGFloat = 25.3
+        /// Yope · week.recap · page dot diameter under the card · CAPTURED
+        /// token: `week.recap.dimension.pageDot`
+        public static let weekRecapDimensionPageDot: CGFloat = 8
+        /// Yope · week.recap · page dot centre pitch · CAPTURED
+        /// token: `week.recap.dimension.pageDotPitch`
+        public static let weekRecapDimensionPageDotPitch: CGFloat = 17.3
+        /// Yope · week.recap · gap between pics-grid tiles, both directions · CAPTURED
+        /// token: `week.recap.dimension.picsGap`
+        public static let weekRecapDimensionPicsGap: CGFloat = 1
+        /// Yope · week.recap · capsule bottom above the screen bottom · CAPTURED
+        /// token: `week.recap.dimension.segmentedBottom`
+        public static let weekRecapDimensionSegmentedBottom: CGFloat = 42.6
+        /// Yope · week.recap · floating capsule height · CAPTURED
+        /// token: `week.recap.dimension.segmentedHeight`
+        public static let weekRecapDimensionSegmentedHeight: CGFloat = 47.5
+        /// Yope · week.recap · pill inset inside the capsule · CAPTURED
+        /// token: `week.recap.dimension.segmentedInset`
+        public static let weekRecapDimensionSegmentedInset: CGFloat = 3.5
+        /// Yope · week.recap · selected segment pill height · CAPTURED
+        /// token: `week.recap.dimension.segmentedPillHeight`
+        public static let weekRecapDimensionSegmentedPillHeight: CGFloat = 40.4
+        /// Yope · week.recap · selected segment pill width (white) · CAPTURED
+        /// token: `week.recap.dimension.segmentedPillWidth`
+        public static let weekRecapDimensionSegmentedPillWidth: CGFloat = 83
+        /// Yope · week.recap · floating 'recap | pics' capsule width · CAPTURED
+        /// token: `week.recap.dimension.segmentedWidth`
+        public static let weekRecapDimensionSegmentedWidth: CGFloat = 160
+        /// Locket · widget.android · sender avatar diameter · SOURCED
+        /// token: `widget.android.size.avatar`
+        public static let widgetAndroidSizeAvatar: CGFloat = 32
+        /// Locket · widget.android · avatar → caption gap · SOURCED
+        /// token: `widget.android.size.captionGap`
+        public static let widgetAndroidSizeCaptionGap: CGFloat = 6
+        /// Locket · widget.android · minWidth and minHeight · SOURCED
+        /// token: `widget.android.size.minSize`
+        public static let widgetAndroidSizeMinSize: CGFloat = 110
+        /// Locket · widget.android · avatar start / bottom margin; caption bottom and end margins · SOURCED
+        /// token: `widget.android.size.overlayMargin`
+        public static let widgetAndroidSizeOverlayMargin: CGFloat = 8
+        /// Locket · widget.home.small · sender avatar circle, bottom-leading corner of the photo · SOURCED
+        /// token: `widget.home.small.size.avatar`
+        public static let widgetHomeSmallSizeAvatar: CGFloat = 24
+        /// Locket · widget.home.small · avatar inset from the widget's leading and bottom edges · SOURCED
+        /// token: `widget.home.small.size.avatarInset`
+        public static let widgetHomeSmallSizeAvatarInset: CGFloat = 6
+        /// Locket · widget.home.small · ring around the avatar · SOURCED
+        /// token: `widget.home.small.size.avatarRing`
+        public static let widgetHomeSmallSizeAvatarRing: CGFloat = 1
+        /// Locket · widget.home.small · avatar → caption pill gap · SOURCED
+        /// token: `widget.home.small.size.captionGap`
+        public static let widgetHomeSmallSizeCaptionGap: CGFloat = 5
+        /// Locket · widget.home.small · caption pill height (pill right of the avatar, vertically centred on it) · SOURCED
+        /// token: `widget.home.small.size.captionHeight`
+        public static let widgetHomeSmallSizeCaptionHeight: CGFloat = 23
+        /// Locket · widget.home.small · caption pill horizontal padding · SOURCED
+        /// token: `widget.home.small.size.captionPadding`
+        public static let widgetHomeSmallSizeCaptionPadding: CGFloat = 7
     }
     public enum Springs {
+        /// Locket · camera.capture · shutter press: scale to camera.capture.layout.shutterPress.scale and dim the disc · SOURCED
+        /// token: `camera.capture.spring.shutterPress`
+        public static let cameraCaptureSpringShutterPress: DSSpring = DSSpring(response: 0.233, dampingFraction: 1)
         /// Material 3 · global · Android default spring (Compose spring() defaults) for custom motion whose Yope curve was not measurable · PLATFORM
         /// token: `spring.global.platformDefault.android`
         public static let globalPlatformDefaultAndroid: DSSpring = DSSpring(response: 0.1622, dampingFraction: 1)

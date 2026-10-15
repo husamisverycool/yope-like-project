@@ -52,9 +52,10 @@ describe("designToken", () => {
   });
 
   it("test overrides layer over the real sources; null reads as missing", () => {
+    const real = designToken("duration.birthday.tribute.titleHold");
     setTokenOverrides({ "duration.birthday.tribute.photoHold": 2500, "dimension.collage.share.storyCanvas": null });
     expect(designToken("duration.birthday.tribute.photoHold")).toBe(2500);
     expect(() => designToken("dimension.collage.share.storyCanvas")).toThrow(MissingTokenError);
-    expect(designToken("duration.birthday.tribute.titleHold")).toBe(1300);
+    expect(designToken("duration.birthday.tribute.titleHold")).toBe(real); // not overridden: the real value
   });
 });

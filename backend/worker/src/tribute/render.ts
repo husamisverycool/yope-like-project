@@ -201,9 +201,14 @@ export async function renderTribute(cards: TributeCardInput[], texts: TributeTex
     const s = (ms: number) => (ms / 1000).toFixed(3);
     const inDur = (i: number) => (i > 0 ? (trans[i - 1] as number) : 0) + (holds[i] as number) + (i < trans.length ? (trans[i] as number) : 0);
     const args: string[] = ["-y"];
-    files.forEach((f, i) => args.push("-loop", "1", "-framerate", String(tk.video.fps), "-t", s(inDur(i)), "-i", f));
+    files.forEach((f) => args.push("-i", f));
+    // each card is decoded and converted once, then repeated for its duration (no per-frame PNG decode)
+    const fps = tk.video.fps;
     const filters: string[] = [];
-    files.forEach((_f, i) => filters.push(`[${i}:v]format=yuv420p,setsar=1[v${i}]`));
+    files.forEach((_f, i) => {
+      const frames = Math.max(1, Math.round((inDur(i) / 1000) * fps));
+      filters.push(`[${i}:v]format=yuv420p,setsar=1,loop=loop=${frames - 1}:size=1:start=0,setpts=N/${fps}/TB,fps=${fps}[v${i}]`);
+    });
     let prev = "v0";
     let chainMs = inDur(0);
     for (let i = 1; i < files.length; i++) {

@@ -138,7 +138,38 @@ export function widgetNested(w: WidgetFields): Record<string, unknown> {
 export type ApnsDraft = Omit<ApnsNotification, "token">;
 export type FcmDraft = Omit<FcmMessage, "token">;
 
+/** FCM: "The maximum payload for both message types is 4096 bytes" (data map). */
+export const FCM_MAX_DATA_BYTES = 4096;
+
+/** Shortens text (at a word boundary when one is close) until `size(text)` fits `max`. */
+export function shortenToFit(text: string, size: (t: string) => number, max: number): string {
+  let t = text;
+  while (size(t) > max && t.length > 0) {
+    const over = size(t) - max;
+    let cut = Math.max(0, t.length - Math.max(1, over));
+    const space = t.lastIndexOf(" ", cut);
+    if (space > cut * 0.8) cut = space;
+    t = t.slice(0, cut).trimEnd();
+  }
+  return t;
+}
+
+/** A widget payload whose caption (user text, ≤ 1000 chars) would overflow the push limit gets a shorter caption. */
+function fitWidgetCaption<T>(w: WidgetFields, build: (w: WidgetFields) => T, size: (d: T) => number, max: number): T {
+  const d = build(w);
+  if (size(d) <= max || !w.caption) return d;
+  const caption = shortenToFit(w.caption, (c) => size(build({ ...w, caption: c })), max);
+  return build({ ...w, caption: caption || null });
+}
+
+const dataBytes = (d: FcmDraft) => Buffer.byteLength(JSON.stringify(d.data));
+
 export function apnsAlert(spec: AlertSpec): ApnsDraft {
+  if (spec.widget) return fitWidgetCaption(spec.widget, (w) => buildApnsAlert({ ...spec, widget: w }), payloadBytes, APNS_MAX_PAYLOAD_BYTES);
+  return buildApnsAlert(spec);
+}
+
+function buildApnsAlert(spec: AlertSpec): ApnsDraft {
   const aps: Record<string, unknown> = {
     alert: { title: spec.title, body: spec.body },
     category: spec.type,
@@ -170,6 +201,10 @@ export function fcmAlert(spec: AlertSpec, now: Date): FcmDraft {
 
 /** Silent push for iOS < 26 / members without alerts for the group (flat widget keys). */
 export function apnsWidgetBackground(w: WidgetFields, now: Date): ApnsDraft {
+  return fitWidgetCaption(w, (x) => buildWidgetBackground(x, now), payloadBytes, APNS_MAX_PAYLOAD_BYTES);
+}
+
+function buildWidgetBackground(w: WidgetFields, now: Date): ApnsDraft {
   return {
     pushType: "background",
     // "Using priority 10 is an error" for background pushes [APNS]
@@ -191,6 +226,10 @@ export function apnsWidgetKit(now: Date): ApnsDraft {
 }
 
 export function fcmWidget(w: WidgetFields): FcmDraft {
+  return fitWidgetCaption(w, buildFcmWidget, dataBytes, FCM_MAX_DATA_BYTES);
+}
+
+function buildFcmWidget(w: WidgetFields): FcmDraft {
   return {
     data: widgetFlat(w),
     priority: "normal",
@@ -302,15 +341,6 @@ export function payloadBytes(d: ApnsDraft): number {
  * replies). `build(text)` rebuilds the draft from the shortened text.
  */
 export function fitText(text: string, build: (t: string) => ApnsDraft): { draft: ApnsDraft; text: string } {
-  let t = text;
-  let d = build(t);
-  while (payloadBytes(d) > APNS_MAX_PAYLOAD_BYTES && t.length > 0) {
-    const over = payloadBytes(d) - APNS_MAX_PAYLOAD_BYTES;
-    let cut = Math.max(1, t.length - Math.max(1, over));
-    const space = t.lastIndexOf(" ", cut);
-    if (space > cut * 0.8) cut = space;
-    t = t.slice(0, cut).trimEnd();
-    d = build(t);
-  }
-  return { draft: d, text: t };
+  const t = shortenToFit(text, (x) => payloadBytes(build(x)), APNS_MAX_PAYLOAD_BYTES);
+  return { draft: build(t), text: t };
 }

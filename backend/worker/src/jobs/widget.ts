@@ -104,9 +104,10 @@ export async function widgetRefresh(ctx: JobContext): Promise<void> {
 
   // posts whose new-post alert (with the widget fields, for the Notification Service Extension)
   // is queued, running or sent: members who get that alert need no background push for it
+  const recentIds = posts.slice(0, 8).map((p) => p.id);
   const alerted = new Set(
-    (must(
-      await ctx.db.from("jobs").select("payload").eq("kind", "push.new_post").in("status", ["queued", "running", "done"]).in("payload->>post_id", posts.slice(0, 8).map((p) => p.id)),
+    !recentIds.length ? [] : (must(
+      await ctx.db.from("jobs").select("payload").eq("kind", "push.new_post").in("status", ["queued", "running", "done"]).in("payload->>post_id", recentIds),
       "new-post jobs",
     ) as Array<{ payload: { post_id?: string } }>).map((j) => j.payload.post_id),
   );

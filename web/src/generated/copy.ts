@@ -2,6 +2,208 @@
 // Every string below is traced in design/COPY.md.
 
 const table = {
+  "albums.list.empty.action": "view recap", // Yope · albums.list · SOURCED
+  "albums.list.empty.detail": "save a recap, or any pics from it, as an album", // Yope · albums.list · SOURCED
+  "albums.list.empty.title": "no memory albums yet", // Yope · albums.list · SOURCED
+  "albums.list.row.subtitle": "saved by {name}", // Yope · albums.list · SOURCED
+  "albums.list.title": "memory albums", // Yope · albums.list · SOURCED
+  "albums.view.delete.confirm": "delete", // Yope · albums.view · SOURCED
+  "albums.view.delete.message": "the pics stay in your group — only the album goes away.", // Yope · albums.view · SOURCED
+  "albums.view.delete.title": "delete this album?", // Yope · albums.view · SOURCED
+  "albums.view.empty.detail": "pics taken down by the people who shared them leave albums too", // Yope · albums.view · SOURCED
+  "albums.view.empty.title": "nothing left in this album", // Yope · albums.view · SOURCED
+  "albums.view.menu.delete": "delete album", // Yope · albums.view · SOURCED
+  "albums.view.menu.rename": "rename", // Yope · albums.view · SOURCED
+  "albums.view.rename.title": "rename album", // Yope · albums.view · SOURCED
+  "albums.view.toast.deleted": "album deleted", // Yope · albums.view · SOURCED
+  "albums.view.toast.renamed": "album renamed", // Yope · albums.view · SOURCED
+  "birthday.add.added": "birthday added", // Yope · birthday.add · SOURCED
+  "birthday.add.confirm": "add my birthday", // Yope · birthday.add · SOURCED
+  "birthday.add.detail": "a week before your birthday, your groups get asked for a pic & a line. on the day, you get the video", // Yope · birthday.add · SOURCED
+  "birthday.add.error.detail": "try again in a moment", // Yope · birthday.add · SOURCED
+  "birthday.add.error.retry": "try again", // Yope · birthday.add · SOURCED
+  "birthday.add.error.title": "couldn't save your birthday", // Yope · birthday.add · SOURCED
+  "birthday.add.invalid": "that date doesn't look right", // Yope · birthday.add · SOURCED
+  "birthday.add.later": "maybe later", // Yope · birthday.add · SOURCED
+  "birthday.add.manage.remove": "remove my birthday", // Yope · birthday.add · SOURCED
+  "birthday.add.manage.title": "your birthday", // Yope · birthday.add · SOURCED
+  "birthday.add.offline": "you're offline — connect to add your birthday", // Yope · birthday.add · SOURCED
+  "birthday.add.privacy": "only the day & month are shared, never your age", // Yope · birthday.add · SOURCED
+  "birthday.add.removed": "birthday removed", // Yope · birthday.add · SOURCED
+  "birthday.add.title": "want a birthday video?", // Yope · birthday.add · SOURCED
+  "birthday.contribute.a11y.close": "Close", // Apple HIG / Material 3 · birthday.contribute · PLATFORM
+  "birthday.contribute.a11y.photo": "Photo from {date}", // Apple HIG / Material 3 · birthday.contribute · PLATFORM
+  "birthday.contribute.closed": "this request has closed — {name}'s video is on its way", // Yope · birthday.contribute · SOURCED
+  "birthday.contribute.done.button": "Done", // Tribute · birthday.contribute · VERIFIED
+  "birthday.contribute.done.title": "Photo Upload Complete!", // Tribute · birthday.contribute · SOURCED
+  "birthday.contribute.error.detail": "try again in a moment", // Yope · birthday.contribute · SOURCED
+  "birthday.contribute.error.retry": "try again", // Yope · birthday.contribute · SOURCED
+  "birthday.contribute.error.title": "couldn't send your photo", // Yope · birthday.contribute · SOURCED
+  "birthday.contribute.greeting": "Let's add a photo for {name}!", // Tribute · birthday.contribute · VERIFIED
+  "birthday.contribute.line.label": "Your Message", // Tribute · birthday.contribute · VERIFIED
+  "birthday.contribute.loading": "Loading", // Yope · birthday.contribute · SOURCED
+  "birthday.contribute.notEligible": "you can only pick pics you posted or are in", // Yope · birthday.contribute · SOURCED
+  "birthday.contribute.offline": "you're offline — connect to send your photo", // Yope · birthday.contribute · SOURCED
+  "birthday.contribute.picker.empty.action": "open group", // Yope · birthday.contribute · SOURCED
+  "birthday.contribute.picker.empty.detail": "tap “i'm in this” on a pic you're in, or share a new one", // Yope · birthday.contribute · SOURCED
+  "birthday.contribute.picker.empty.title": "no pics with you in {group} yet", // Yope · birthday.contribute · SOURCED
+  "birthday.contribute.review.retake": "Retake", // Tribute · birthday.contribute · SOURCED
+  "birthday.contribute.review.use": "Use Photo", // VidDay · birthday.contribute · SOURCED
+  "birthday.contribute.step.done": "Done", // Tribute · birthday.contribute · VERIFIED
+  "birthday.contribute.step.message": "Message", // Tribute · birthday.contribute · SOURCED
+  "birthday.contribute.step.photo": "Photo", // Tribute · birthday.contribute · VERIFIED
+  "birthday.contribute.submit": "Submit", // Tribute · birthday.contribute · SOURCED
+  "birthday.contribute.thanks": "Thank you for taking the time to participate!", // Tribute · birthday.contribute · VERIFIED
+  "birthday.request.a11y.close": "Close", // Apple HIG / Material 3 · birthday.request · PLATFORM
+  "birthday.request.body": "You're invited to submit a photo and join in on the fun of making a birthday video for {name}.", // VidDay · birthday.request · SOURCED
+  "birthday.request.closed.detail": "{name}'s video is on its way", // Yope · birthday.request · SOURCED
+  "birthday.request.closed.title": "this request has closed", // Yope · birthday.request · SOURCED
+  "birthday.request.contributed.change": "Retake", // Tribute · birthday.request · SOURCED
+  "birthday.request.contributed.remove": "Remove", // Tribute · birthday.request · SOURCED
+  "birthday.request.contributed.title": "Your Photo", // Tribute · birthday.request · VERIFIED
+  "birthday.request.cta": "Add Your Photo", // Tribute · birthday.request · VERIFIED
+  "birthday.request.due": "Submit by {date}", // Tribute · birthday.request · SOURCED
+  "birthday.request.ease": "It's quick and easy.", // VidDay · birthday.request · SOURCED
+  "birthday.request.error.detail": "try again in a moment", // Yope · birthday.request · SOURCED
+  "birthday.request.error.retry": "try again", // Yope · birthday.request · SOURCED
+  "birthday.request.error.title": "couldn't load this request", // Yope · birthday.request · SOURCED
+  "birthday.request.loading": "Loading", // Yope · birthday.request · SOURCED
+  "birthday.request.notFound.detail": "your memories are waiting", // Yope · birthday.request · SOURCED
+  "birthday.request.notFound.title": "this request isn't available anymore", // Yope · birthday.request · SOURCED
+  "birthday.request.offline": "you're offline — connect to see this request", // Yope · birthday.request · SOURCED
+  "birthday.request.prompt.appreciate": "What do you appreciate most about {name}?", // VidDay · birthday.request · SOURCED
+  "birthday.request.prompt.impact": "How has {name} impacted your life?", // VidDay · birthday.request · SOURCED
+  "birthday.request.prompts.title": "Message Ideas", // VidDay · birthday.request · SOURCED
+  "birthday.request.push.body": "You're invited to submit a photo and a line. It's quick and easy.", // VidDay · birthday.request · SOURCED
+  "birthday.request.push.title": "Birthday video for {name}", // VidDay · birthday.request · SOURCED
+  "birthday.request.thanks": "Thank you!", // VidDay · birthday.request · SOURCED
+  "birthday.request.title": "Birthday Video for {name}!", // Tribute · birthday.request · SOURCED
+  "birthday.tribute.a11y.close": "Close", // Apple HIG / Material 3 · birthday.tribute · PLATFORM
+  "birthday.tribute.download": "Download", // VidDay · birthday.tribute · SOURCED
+  "birthday.tribute.error.detail": "try again in a moment", // Yope · birthday.tribute · SOURCED
+  "birthday.tribute.error.retry": "try again", // Yope · birthday.tribute · SOURCED
+  "birthday.tribute.error.title": "couldn't load your video", // Yope · birthday.tribute · SOURCED
+  "birthday.tribute.loading": "Loading", // Yope · birthday.tribute · SOURCED
+  "birthday.tribute.notFound.detail": "your memories are waiting", // Yope · birthday.tribute · SOURCED
+  "birthday.tribute.notFound.title": "this video isn't here anymore", // Yope · birthday.tribute · SOURCED
+  "birthday.tribute.offline": "you're offline — connect to watch your video", // Yope · birthday.tribute · SOURCED
+  "birthday.tribute.push.body": "A collection of photos from {group}, brought together in a video as a gift.", // VidDay · birthday.tribute · SOURCED
+  "birthday.tribute.push.title": "Happy birthday!", // VidDay · birthday.tribute · SOURCED
+  "birthday.tribute.saved": "saved to your photos", // Yope · birthday.tribute · SOURCED
+  "birthday.tribute.saveFailed": "couldn't save the video — try again in a moment", // Yope · birthday.tribute · SOURCED
+  "birthday.tribute.share": "Share", // VidDay · birthday.tribute · SOURCED
+  "birthday.tribute.title": "Birthday Video", // VidDay · birthday.tribute · SOURCED
+  "birthday.tribute.titleCard": "Happy birthday, {name}!", // VidDay · birthday.tribute · SOURCED
+  "camera.capture.a11y.close": "close", // Yope · camera.capture · SOURCED
+  "camera.capture.a11y.flash": "flash", // Yope · camera.capture · SOURCED
+  "camera.capture.a11y.flashOff": "off", // Yope · camera.capture · SOURCED
+  "camera.capture.a11y.flashOn": "on", // Yope · camera.capture · SOURCED
+  "camera.capture.a11y.flip": "flip camera", // Yope · camera.capture · SOURCED
+  "camera.capture.a11y.library": "choose from library", // Yope · camera.capture · SOURCED
+  "camera.capture.a11y.recording": "recording", // Yope · camera.capture · SOURCED
+  "camera.capture.a11y.recordVideo": "record a video", // Yope · camera.capture · SOURCED
+  "camera.capture.a11y.shutter": "take a pic", // Yope · camera.capture · SOURCED
+  "camera.capture.coach.holdToRecord": "hold down to record", // Yope · camera.capture · SOURCED
+  "camera.capture.denied.button": "open settings", // Yope · camera.capture · SOURCED
+  "camera.capture.denied.detail": "enable camera access in settings", // Yope · camera.capture · SOURCED
+  "camera.capture.denied.title": "can’t take pics?", // Yope · camera.capture · SOURCED
+  "camera.capture.hourOverlay": "{time}", // Yope · camera.capture · SOURCED
+  "camera.capture.unavailable.button": "try again", // Yope · camera.capture · SOURCED
+  "camera.capture.unavailable.detail": "try again in a moment", // Yope · camera.capture · SOURCED
+  "camera.capture.unavailable.title": "camera isn’t available right now", // Yope · camera.capture · SOURCED
+  "camera.sendto.a11y.close": "close", // Yope · camera.sendto · SOURCED
+  "camera.sendto.a11y.save": "save", // Yope · camera.sendto · SOURCED
+  "camera.sendto.a11y.voice": "add a voice memo", // Yope · camera.sendto · SOURCED
+  "camera.sendto.caption.placeholder": "add a message", // Yope · camera.sendto · SOURCED
+  "camera.sendto.coach.voice": "add a voice memo on this pic", // Yope · camera.sendto · SOURCED
+  "camera.sendto.empty.button": "create group", // Yope · camera.sendto · SOURCED
+  "camera.sendto.empty.detail": "start one and share this pic with your people", // Yope · camera.sendto · SOURCED
+  "camera.sendto.empty.title": "no groups yet", // Yope · camera.sendto · SOURCED
+  "camera.sendto.error.offline": "you’re offline", // Yope · camera.sendto · SOURCED
+  "camera.sendto.error.retry": "try again", // Yope · camera.sendto · SOURCED
+  "camera.sendto.error.sendFailed": "your pic didn’t send", // Yope · camera.sendto · SOURCED
+  "camera.sendto.send": "send", // Yope · camera.sendto · SOURCED
+  "camera.sendto.title": "send to...", // Yope · camera.sendto · SOURCED
+  "camera.sendto.toast.postedMany": "posted in your groups", // Yope · camera.sendto · SOURCED
+  "camera.sendto.toast.postedOne": "posted in {group}", // Yope · camera.sendto · SOURCED
+  "camera.sendto.toast.saved": "saved to your library", // Yope · camera.sendto · SOURCED
+  "chat.composer.a11y.camera": "send a pic", // Yope · chat.composer · SOURCED
+  "chat.composer.a11y.field": "message", // Yope · chat.composer · SOURCED
+  "chat.composer.a11y.mic": "record a voice message", // Yope · chat.composer · SOURCED
+  "chat.composer.a11y.send": "send", // Yope · chat.composer · SOURCED
+  "chat.composer.placeholder": "start typing...", // Yope · chat.composer · SOURCED
+  "chat.reactions.a11y.add": "Add reaction", // Locket · chat.reactions · SOURCED
+  "chat.reactions.a11y.cluster": "Reactions: {emoji_names}", // Locket · chat.reactions · SOURCED
+  "chat.reactions.a11y.quick": "React with {emoji_name}", // Locket · chat.reactions · SOURCED
+  "chat.reactions.activity.row": "{name} sent {emoji}", // Locket · chat.reactions · SOURCED
+  "chat.reactions.activity.rowMine": "You reacted {emoji} to {name}’s pic", // Locket · chat.reactions · SOURCED
+  "chat.reactions.activity.title": "Activity", // Locket · chat.reactions · SOURCED
+  "chat.reactions.empty": "No reactions yet", // Locket · chat.reactions · SOURCED
+  "chat.reactions.error": "Couldn’t send your reaction", // Locket · chat.reactions · SOURCED
+  "chat.reactions.picker.all": "All", // Locket · chat.reactions · SOURCED
+  "chat.reactions.picker.frequent": "Frequently Used", // Locket · chat.reactions · SOURCED
+  "chat.reactions.picker.popular": "Popular", // Locket · chat.reactions · SOURCED
+  "chat.reactions.picker.search": "Search", // Locket · chat.reactions · SOURCED
+  "chat.reactions.push.body": "{name} reacted {emoji} to your pic", // Locket · chat.reactions · SOURCED
+  "chat.thread.a11y.back": "back", // Yope · chat.thread · SOURCED
+  "chat.thread.a11y.caption": "caption: {caption}", // Yope · chat.thread · SOURCED
+  "chat.thread.a11y.groupCapsule": "{group_name}, group info", // Yope · chat.thread · SOURCED
+  "chat.thread.a11y.photo": "{name}’s pic, {time}", // Yope · chat.thread · SOURCED
+  "chat.thread.a11y.photoMine": "your pic, {time}", // Yope · chat.thread · SOURCED
+  "chat.thread.a11y.recap": "view recap", // Yope · chat.thread · SOURCED
+  "chat.thread.a11y.replyQuote": "reply to {name}’s pic", // Yope · chat.thread · SOURCED
+  "chat.thread.deleteMessage.message": "it’s removed from the chat for everyone.", // Yope · chat.thread · SOURCED
+  "chat.thread.deleteMessage.title": "delete this message?", // Yope · chat.thread · SOURCED
+  "chat.thread.empty.detail": "and added {names}", // Yope · chat.thread · SOURCED
+  "chat.thread.empty.invite": "invite more friends", // Yope · chat.thread · SOURCED
+  "chat.thread.empty.titleCreator": "you created group", // Yope · chat.thread · SOURCED
+  "chat.thread.empty.titleMember": "{name} created group", // Yope · chat.thread · SOURCED
+  "chat.thread.error.detail": "check your connection and try again — your pics are safe", // Yope · chat.thread · SOURCED
+  "chat.thread.error.retry": "try again", // Yope · chat.thread · SOURCED
+  "chat.thread.error.title": "couldn’t load this chat", // Yope · chat.thread · SOURCED
+  "chat.thread.loading": "Loading", // Yope · chat.thread · SOURCED
+  "chat.thread.menu.delete": "delete", // Yope · chat.thread · SOURCED
+  "chat.thread.menu.report": "report", // Yope · chat.thread · SOURCED
+  "chat.thread.offline.detail": "your group’s pics will be right here when you’re back", // Yope · chat.thread · SOURCED
+  "chat.thread.offline.title": "you’re offline", // Yope · chat.thread · SOURCED
+  "chat.thread.push.reply": "{name} replied to your pic", // Yope · chat.thread · SOURCED
+  "chat.thread.reply.photoLabel": "pic", // Yope · chat.thread · SOURCED
+  "chat.thread.sendFailed": "couldn’t send — tap to try again", // Yope · chat.thread · SOURCED
+  "chat.voice.a11y.message": "{name}’s voice message, {duration}", // Yope · chat.voice · SOURCED
+  "chat.voice.a11y.messageMine": "your voice message, {duration}", // Yope · chat.voice · SOURCED
+  "chat.voice.a11y.pause": "pause", // Yope · chat.voice · SOURCED
+  "chat.voice.a11y.play": "play voice message, {duration}", // Yope · chat.voice · SOURCED
+  "chat.voice.error.play": "couldn’t play this voice message", // Yope · chat.voice · SOURCED
+  "chat.voice.error.record": "couldn’t record — try again", // Yope · chat.voice · SOURCED
+  "chat.voice.permission.button": "enable", // Yope · chat.voice · SOURCED
+  "chat.voice.permission.detail": "enable your mic", // Yope · chat.voice · SOURCED
+  "chat.voice.permission.title": "can’t send voice messages?", // Yope · chat.voice · SOURCED
+  "collage.share.button": "share", // Yope · collage.share · SOURCED
+  "collage.share.sheetTitle": "share with friends", // Yope · collage.share · SOURCED
+  "collage.view.a11y.back": "back", // Yope · collage.view · SOURCED
+  "collage.view.a11y.collage": "photos from {group}, {date}", // Yope · collage.view · SOURCED
+  "collage.view.a11y.page": "page {page} of {pages}", // Yope · collage.view · SOURCED
+  "collage.view.empty.button": "open camera", // Yope · collage.view · SOURCED
+  "collage.view.empty.detail": "share one with {group} anytime", // Yope · collage.view · SOURCED
+  "collage.view.empty.title": "no photos from this moment", // Yope · collage.view · SOURCED
+  "collage.view.error.button": "try again", // Yope · collage.view · SOURCED
+  "collage.view.error.title": "these photos didn’t load", // Yope · collage.view · SOURCED
+  "collage.view.loading": "Loading", // Yope · collage.view · SOURCED
+  "collage.view.offline.title": "you’re offline", // Yope · collage.view · SOURCED
+  "collage.view.title": "{date}", // Yope · collage.view · SOURCED
+  "daily.capture.a11y.dismiss": "Close", // BeReal · daily.capture · SOURCED
+  "daily.capture.a11y.flash": "Flash", // BeReal · daily.capture · SOURCED
+  "daily.capture.a11y.flashOff": "Off", // BeReal · daily.capture · SOURCED
+  "daily.capture.a11y.flashOn": "On", // BeReal · daily.capture · SOURCED
+  "daily.capture.a11y.flip": "Flip camera", // BeReal · daily.capture · SOURCED
+  "daily.capture.a11y.retake": "Retake", // BeReal · daily.capture · SOURCED
+  "daily.capture.a11y.send": "Send", // BeReal · daily.capture · SOURCED
+  "daily.capture.a11y.shutter": "Take photo", // BeReal · daily.capture · SOURCED
+  "daily.capture.audience": "{group} only", // BeReal · daily.capture · SOURCED
+  "daily.capture.countdown": "{mm}:{ss}", // BeReal · daily.capture · SOURCED
+  "daily.capture.prompt": "Getting both sides", // BeReal · daily.capture · SOURCED
+  "daily.capture.send": "SEND", // BeReal · daily.capture · SOURCED
+  "daily.dualimage.a11y.label": "Back and front photos from {name}", // BeReal · daily.dualimage · SOURCED
   "invite.appclip.card.action": "View", // Partiful · invite.appclip · SOURCED
   "invite.appclip.card.subtitle": "Make memories", // Partiful · invite.appclip · SOURCED
   "invite.appclip.full.body": "Group is full", // Partiful · invite.appclip · VERIFIED
@@ -32,6 +234,174 @@ const table = {
   "invite.web.state.glyphLabel": "Grimace face", // Partiful · invite.web · VERIFIED
   "invite.web.unavailable.body": "Ask a member for another link", // Partiful · invite.web · VERIFIED
   "invite.web.unavailable.title": "This link no longer works", // Partiful · invite.web · VERIFIED
+  "notifications.push.birthdayRequest.body": "You’re invited to add a photo and a line for {name}’s birthday. It’s quick and easy.", // VidDay · notifications.push · SOURCED
+  "notifications.push.birthdayRequest.title": "{group}", // VidDay · notifications.push · SOURCED
+  "notifications.push.channel.birthdayRequest.description": "Notifications when you’re invited to add to a birthday video", // VidDay · notifications.push · SOURCED
+  "notifications.push.channel.birthdayRequest.name": "Birthday Requests", // VidDay · notifications.push · SOURCED
+  "notifications.push.channel.dailyInvitation.description": "Notifications when your group’s daily photo invitation starts", // BeReal · daily.notification · SOURCED
+  "notifications.push.channel.dailyInvitation.name": "Daily Invitation", // BeReal · daily.notification · SOURCED
+  "notifications.push.channel.newPost.description": "Notifications when your groups post new photos", // Locket · notifications.push · SOURCED
+  "notifications.push.channel.newPost.name": "New Photos", // Locket · notifications.push · SOURCED
+  "notifications.push.channel.reactionsReplies.description": "Notifications for reactions and replies to you in groups", // Locket · notifications.push · SOURCED
+  "notifications.push.channel.reactionsReplies.name": "Reactions and Replies", // Locket · notifications.push · SOURCED
+  "notifications.push.channel.recap.description": "Notifications when your group’s weekly recap is ready", // Yope · notifications.push · SOURCED
+  "notifications.push.channel.recap.name": "Weekly Recaps", // Yope · notifications.push · SOURCED
+  "notifications.push.channel.tribute.description": "Notifications when your group made a birthday video for you", // Tribute · notifications.push · SOURCED
+  "notifications.push.channel.tribute.name": "Birthday Videos", // Tribute · notifications.push · SOURCED
+  "notifications.push.dailyInvitation.body": "Capture a photo and see what {group} is up to!", // BeReal · daily.notification · SOURCED
+  "notifications.push.dailyInvitation.title": "Time to share a photo.", // BeReal · daily.notification · SOURCED
+  "notifications.push.newPost.body": "{name} sent you a photo!", // Locket · notifications.push · SOURCED
+  "notifications.push.newPost.title": "{group}", // Locket · notifications.push · SOURCED
+  "notifications.push.reaction.body": "{name} reacted {emoji} to your photo", // Locket · notifications.push · SOURCED
+  "notifications.push.reaction.title": "{group}", // Locket · notifications.push · SOURCED
+  "notifications.push.recapReady.body": "new recap added", // Yope · notifications.push · SOURCED
+  "notifications.push.recapReady.title": "{group}", // Yope · notifications.push · SOURCED
+  "notifications.push.reply.body.photo": "{name} replied with a pic", // Yope · notifications.push · SOURCED
+  "notifications.push.reply.body.text": "{name} replied · {message}", // Yope · notifications.push · SOURCED
+  "notifications.push.reply.body.voice": "{name} replied with a voice message", // Yope · notifications.push · SOURCED
+  "notifications.push.reply.title": "{group}", // Yope · notifications.push · SOURCED
+  "notifications.push.tribute.body": "{group} made you a birthday video.", // Tribute · notifications.push · SOURCED
+  "notifications.push.tribute.title": "Happy birthday!", // VidDay · notifications.push · SOURCED
+  "onthisday.a11y.close": "Close", // Apple HIG / Material 3 · onthisday · PLATFORM
+  "onthisday.a11y.next": "Older", // Timehop · onthisday · SOURCED
+  "onthisday.a11y.photo": "Photo by {name}, {weekday} {time}", // Apple HIG / Material 3 · onthisday · PLATFORM
+  "onthisday.a11y.previous": "Back", // Timehop · onthisday · SOURCED
+  "onthisday.banner.yearsAgo.one": "1 YEAR AGO", // Timehop · onthisday · SOURCED
+  "onthisday.banner.yearsAgo.other": "{count} YEARS AGO", // Timehop · onthisday · SOURCED
+  "onthisday.entry.title": "{group}'s Day in History", // Timehop · onthisday · SOURCED
+  "onthisday.error.detail": "try again in a moment — your memories are waiting", // Yope · onthisday · SOURCED
+  "onthisday.error.retry": "try again", // Yope · onthisday · SOURCED
+  "onthisday.error.title": "Time Travel Failed", // Timehop · onthisday · SOURCED
+  "onthisday.loading": "Collecting Memories", // Timehop · onthisday · SOURCED
+  "onthisday.memory.meta": "{weekday} {time}", // Timehop · onthisday · SOURCED
+  "onthisday.offline.detail": "connect to see this day — your memories are waiting", // Yope · onthisday · SOURCED
+  "onthisday.offline.title": "you're offline", // Yope · onthisday · SOURCED
+  "photo.viewer.a11y.close": "close", // Yope · photo.viewer · SOURCED
+  "photo.viewer.a11y.more": "more", // Yope · photo.viewer · SOURCED
+  "photo.viewer.a11y.photo": "{name}’s pic, {date}", // Yope · photo.viewer · SOURCED
+  "photo.viewer.a11y.photoMine": "your pic, {date}", // Yope · photo.viewer · SOURCED
+  "photo.viewer.delete.cancel": "cancel", // Yope · photo.viewer · SOURCED
+  "photo.viewer.delete.confirm": "delete", // Yope · photo.viewer · SOURCED
+  "photo.viewer.delete.message": "it’ll be gone everywhere — from every group you sent it to, and from chats, walls, recaps & albums.", // Yope · photo.viewer · SOURCED
+  "photo.viewer.delete.title": "delete this pic?", // Yope · photo.viewer · SOURCED
+  "photo.viewer.error.delete": "couldn’t delete this pic — try again", // Yope · photo.viewer · SOURCED
+  "photo.viewer.error.save": "couldn’t save this pic", // Yope · photo.viewer · SOURCED
+  "photo.viewer.gone.detail": "the person who shared it took it down", // Yope · photo.viewer · SOURCED
+  "photo.viewer.gone.title": "this pic isn’t here anymore", // Yope · photo.viewer · SOURCED
+  "photo.viewer.menu.block": "block {name}", // Yope · photo.viewer · SOURCED
+  "photo.viewer.menu.delete": "delete", // Yope · photo.viewer · SOURCED
+  "photo.viewer.menu.report": "report", // Yope · photo.viewer · SOURCED
+  "photo.viewer.menu.save": "save", // Yope · photo.viewer · SOURCED
+  "photo.viewer.permission.button": "enable", // Yope · photo.viewer · SOURCED
+  "photo.viewer.permission.detail": "enable photos", // Yope · photo.viewer · SOURCED
+  "photo.viewer.permission.title": "can’t save your pics?", // Yope · photo.viewer · SOURCED
+  "photo.viewer.reply.placeholder": "message to {group_name}...", // Yope · photo.viewer · SOURCED
+  "photo.viewer.tag.toggle": "i’m in this", // Yope · photo.viewer · SOURCED
+  "photo.viewer.title.sentTo": "sent to", // Yope · photo.viewer · SOURCED
+  "photo.viewer.title.you": "you", // Yope · photo.viewer · SOURCED
+  "photo.viewer.toast.deleted": "pic deleted", // Yope · photo.viewer · SOURCED
+  "photo.viewer.toast.saved": "pic saved", // Yope · photo.viewer · SOURCED
+  "tagging.coach": "tap if you're in this pic", // Yope · tagging · SOURCED
+  "tagging.error": "couldn't save that — try again in a moment", // Yope · tagging · SOURCED
+  "tagging.notFound": "this pic isn't here anymore", // Yope · tagging · SOURCED
+  "tagging.offline": "you're offline — try again when you're connected", // Yope · tagging · SOURCED
+  "tagging.toggle": "i'm in this", // Yope · tagging · SOURCED
+  "walls.browse.a11y.collage": "collage, {date}", // Yope · walls.browse · SOURCED
+  "walls.browse.empty.action": "create group", // Yope · walls.browse · SOURCED
+  "walls.browse.empty.detail": "create a group and everyone’s pics show up here", // Yope · walls.browse · SOURCED
+  "walls.browse.empty.title": "no walls here yet", // Yope · walls.browse · SOURCED
+  "walls.browse.me": "me", // Yope · walls.browse · SOURCED
+  "walls.browse.title": "me & friends", // Yope · walls.browse · SOURCED
+  "walls.member.a11y.wall": "{name}’s wall", // Yope · walls.member · SOURCED
+  "walls.member.empty.detail": "you’ll see the pics {name} sends to groups you’re both in", // Yope · walls.member · SOURCED
+  "walls.member.empty.title": "no pics from {name} yet", // Yope · walls.member · SOURCED
+  "walls.mine.empty.action": "share a pic", // Yope · walls.mine · SOURCED
+  "walls.mine.empty.detail": "pics you send to your groups show up here", // Yope · walls.mine · SOURCED
+  "walls.mine.empty.title": "nothing on your wall yet", // Yope · walls.mine · SOURCED
+  "walls.mine.title": "my wall", // Yope · walls.mine · SOURCED
+  "week.edit.a11y.close": "close", // Yope · week.edit · SOURCED
+  "week.edit.a11y.inRecap": "in recap", // Yope · week.edit · SOURCED
+  "week.edit.a11y.notInRecap": "not in recap", // Yope · week.edit · SOURCED
+  "week.edit.album.namePlaceholder": "name album", // Yope · week.edit · SOURCED
+  "week.edit.album.title": "new album", // Yope · week.edit · SOURCED
+  "week.edit.error.albumName": "give your album a name", // Yope · week.edit · SOURCED
+  "week.edit.error.notReady": "this recap is still being made", // Yope · week.edit · SOURCED
+  "week.edit.error.save": "couldn’t save your changes — try again", // Yope · week.edit · SOURCED
+  "week.edit.save": "save", // Yope · week.edit · SOURCED
+  "week.edit.saveAsAlbum": "save as album", // Yope · week.edit · SOURCED
+  "week.edit.textPlaceholder": "add a message", // Yope · week.edit · SOURCED
+  "week.edit.title": "edit recap", // Yope · week.edit · SOURCED
+  "week.edit.toast.albumSaved": "album saved", // Yope · week.edit · SOURCED
+  "week.edit.toast.saved": "recap saved", // Yope · week.edit · SOURCED
+  "week.history.a11y.add": "Add Photos", // Retro · week.history · SOURCED
+  "week.history.a11y.emptyDay": "{weekday}, {date}, no photos", // Retro · week.history · SOURCED
+  "week.history.a11y.more": "More", // Retro · week.history · SOURCED
+  "week.history.a11y.tile": "{weekday}, {date}, {name}’s photo", // Retro · week.history · SOURCED
+  "week.history.empty": "Photos shared in {group_name} collect here, week by week.", // Retro · week.history · SOURCED
+  "week.history.error": "Couldn’t load your group’s weeks. Pull down to try again.", // Retro · week.history · SOURCED
+  "week.history.header.title": "Week {week_number}", // Retro · week.history · SOURCED
+  "week.history.menu.saveAsAlbum": "Save as album", // Retro · week.history · SOURCED
+  "week.history.menu.viewRecap": "View recap", // Retro · week.history · SOURCED
+  "week.history.offline": "You’re offline. Weeks you’ve already opened are still here.", // Retro · week.history · SOURCED
+  "week.recap.a11y.card": "recap of {week_label}", // Yope · week.recap · SOURCED
+  "week.recap.a11y.edit": "edit", // Yope · week.recap · SOURCED
+  "week.recap.empty.action": "share a pic", // Yope · week.recap · SOURCED
+  "week.recap.empty.detail": "it’s made from the pics your group shares this week", // Yope · week.recap · SOURCED
+  "week.recap.empty.title": "your first recap shows up on sunday", // Yope · week.recap · SOURCED
+  "week.recap.open": "view recap", // Yope · week.recap · SOURCED
+  "week.recap.pending": "your recap is on its way", // Yope · week.recap · SOURCED
+  "week.recap.push.body": "new recap added", // Yope · week.recap · SOURCED
+  "week.recap.segment.pics": "pics", // Yope · week.recap · CAPTURED
+  "week.recap.segment.recap": "recap", // Yope · week.recap · CAPTURED
+  "widget.android.configure.empty": "Once you join a group, you can add it to a widget.", // Locket · widget.android · SOURCED
+  "widget.android.description": "Live pics from your group, on your home screen", // Locket · widget.android · SOURCED
+  "widget.arrival.android.refreshChannelDescription": "Shown briefly while the home screen widget refreshes", // Locket · widget.arrival · SOURCED
+  "widget.arrival.android.refreshChannelName": "Widget Updating", // Locket · widget.arrival · SOURCED
+  "widget.arrival.android.refreshTitle": "Updating widget...", // Locket · widget.arrival · SOURCED
+  "widget.arrival.help.delay": "When someone in your group sends a photo, it will appear on your Home Screen, but there may be a slight delay of up to a few minutes. This delay helps conserve your phone’s battery.", // Locket · widget.arrival · SOURCED
+  "widget.home.small.a11y.collage": "Photos from {group}, {date}", // Locket · widget.home.small · SOURCED
+  "widget.home.small.a11y.photo": "{name}’s photo in {group}", // Locket · widget.home.small · SOURCED
+  "widget.home.small.a11y.photoWithCaption": "{name}’s photo in {group}, {caption}", // Locket · widget.home.small · SOURCED
+  "widget.home.small.configuration.group": "Group", // Locket · widget.home.small · SOURCED
+  "widget.home.small.configuration.groupType": "Group", // Locket · widget.home.small · SOURCED
+  "widget.home.small.configuration.title": "Customize the widget", // Locket · widget.home.small · SOURCED
+  "widget.home.small.empty.noPhotos": "No pics yet", // Locket · widget.home.small · SOURCED
+  "widget.home.small.empty.setUp": "Tap to set up", // Locket · widget.home.small · SOURCED
+  "widget.home.small.gallery.description": "See live pics from your group right on your Home Screen", // Locket · widget.home.small · SOURCED
+  "widget.lock.rect.gallery.description": "See who shared the newest pic in your group", // Locket · widget.lock.rect · SOURCED
+  "year.story.a11y.close": "Close", // Apple HIG / Material 3 · year.story · PLATFORM
+  "year.story.a11y.collage": "Collage from {date}", // Apple HIG / Material 3 · year.story · PLATFORM
+  "year.story.a11y.next": "Next", // Apple HIG / Material 3 · year.story · PLATFORM
+  "year.story.a11y.pause": "Pause", // Apple HIG / Material 3 · year.story · PLATFORM
+  "year.story.a11y.play": "Play", // Apple HIG / Material 3 · year.story · PLATFORM
+  "year.story.a11y.previous": "Previous", // Apple HIG / Material 3 · year.story · PLATFORM
+  "year.story.busiestMonth.aside": "Life moves fast", // Spotify Wrapped · year.story · SOURCED
+  "year.story.busiestMonth.title": "{month} was your busiest month", // Spotify Wrapped · year.story · SOURCED
+  "year.story.entry.button": "Let's go", // Spotify Wrapped · year.story · SOURCED
+  "year.story.entry.subtitle": "We can't wait to show it to you.", // Spotify Wrapped · year.story · SOURCED
+  "year.story.entry.title": "It's time for your {year} story", // Spotify Wrapped · year.story · SOURCED
+  "year.story.error.detail": "try again in a moment — your memories are waiting", // Yope · year.story · SOURCED
+  "year.story.error.retry": "try again", // Yope · year.story · SOURCED
+  "year.story.error.title": "couldn't load your year", // Yope · year.story · SOURCED
+  "year.story.intro.subtitle": "Come on down.", // Spotify Wrapped · year.story · SOURCED
+  "year.story.intro.title": "We're ready for you.", // Spotify Wrapped · year.story · SOURCED
+  "year.story.loading": "Loading", // Yope · year.story · SOURCED
+  "year.story.moments.aside": "Long live the moment.", // Spotify Wrapped · year.story · SOURCED
+  "year.story.moments.count": "{group} shared {count} moments this year.", // Spotify Wrapped · year.story · SOURCED
+  "year.story.moments.title": "You shared. We saved.", // Spotify Wrapped · year.story · SOURCED
+  "year.story.mostReacted.aside": "And these were extra special.", // Spotify Wrapped · year.story · SOURCED
+  "year.story.mostReacted.photo": "{name} shared this on {date}", // Spotify Wrapped · year.story · SOURCED
+  "year.story.mostReacted.title": "Your most-reacted moments", // Spotify Wrapped · year.story · SOURCED
+  "year.story.offline.detail": "connect to see your year — your memories are waiting", // Yope · year.story · SOURCED
+  "year.story.offline.title": "you're offline", // Yope · year.story · SOURCED
+  "year.story.outro.subtitle": "Until we meet again...", // Spotify Wrapped · year.story · SOURCED
+  "year.story.outro.teaser": "One more thing...", // Spotify Wrapped · year.story · SOURCED
+  "year.story.outro.title": "Thanks for coming along for the ride", // Spotify Wrapped · year.story · SOURCED
+  "year.story.share": "Share this story", // Spotify Wrapped · year.story · SOURCED
+  "year.story.summary.replay": "Replay from beginning", // Spotify Wrapped · year.story · SOURCED
+  "year.story.summary.share": "Share", // Spotify Wrapped · year.story · SOURCED
+  "year.story.together.aside": "Luckily, we took notes.", // Spotify Wrapped · year.story · SOURCED
+  "year.story.together.title": "Some days, everyone was there.", // Spotify Wrapped · year.story · SOURCED
 } as const;
 
 export type CopyKey = keyof typeof table;

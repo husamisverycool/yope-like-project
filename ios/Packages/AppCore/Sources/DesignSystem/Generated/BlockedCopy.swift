@@ -5,7 +5,15 @@ import Foundation
 
 /// BLOCKED strings: DEBUG builds only.
 public enum BlockedCopy {
+    /// "From {group}" — VidDay · birthday.tribute · adapted · BLOCKED
+    public static func birthdayTributeEndCard(group: String) -> String { CopyLookup.format("birthday.tribute.endCard", default: "From {group}", ["group": group]) }
     /// "{title} | {app_name}" — Partiful · invite.web · adapted · VERIFIED
     public static func inviteWebDocumentTitle(title: String, appName: String) -> String { CopyLookup.format("invite.web.documentTitle", default: "{title} | {app_name}", ["title": title, "app_name": appName]) }
+    /// "{app_name}" — Locket · widget.android · adapted · SOURCED
+    public static func widgetAndroidLabel(appName: String) -> String { CopyLookup.format("widget.android.label", default: "{app_name}", ["app_name": appName]) }
+    /// "{app_name} Widget" — Locket · widget.home.small · adapted · SOURCED
+    public static func widgetHomeSmallGalleryName(appName: String) -> String { CopyLookup.format("widget.home.small.gallery.name", default: "{app_name} Widget", ["app_name": appName]) }
+    /// "{app_name} Widget" — Locket · widget.lock.rect · adapted · SOURCED
+    public static func widgetLockRectGalleryName(appName: String) -> String { CopyLookup.format("widget.lock.rect.gallery.name", default: "{app_name} Widget", ["app_name": appName]) }
 }
 #endif

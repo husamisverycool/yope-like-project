@@ -132,7 +132,12 @@ export async function collageCompose(ctx: JobContext): Promise<void> {
     return;
   }
   const wait = new Date(inv.closes_at).getTime() + COMMIT_ALLOWANCE_MS - ctx.now().getTime();
-  if (wait > 0) await new Promise((r) => setTimeout(r, Math.min(wait, 60_000)));
+  if (wait > 60_000) {
+    // run early (e.g. re-enqueued by hand): the window is still open, come back at closes_at
+    await enqueue(ctx.db, "collage.compose", { invitation_id: inv.id, group_id: inv.group_id }, { runAt: new Date(inv.closes_at), dedupeKey: `collage.compose:${inv.id}` });
+    return;
+  }
+  if (wait > 0) await new Promise((r) => setTimeout(r, wait));
 
   const closeInvitation = async () => {
     must(await ctx.db.from("daily_invitations").update({ status: "closed" }).eq("id", inv.id).in("status", ["scheduled", "fired"]), "close invitation");

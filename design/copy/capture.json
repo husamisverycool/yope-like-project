@@ -1,0 +1,1030 @@
+{
+  "$comment": "Capture group strings (camera.*, widget.*, daily.*, collage.*, notifications.push). Push keys follow backend/worker/COPY_KEYS.md exactly. Consolidated 2026-10-15; see design/MERGE_DECISIONS.md 'Capture'.",
+  "strings": {
+    "camera.capture.hourOverlay": {
+      "text": "{time}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) ('5:00 PM'); references/auto/yope/store/yope-store-05.png ('10:00 PM')",
+      "pattern": "yope.voice.formats — time 'h:mm AM/PM', no leading zero ('5:00 PM', '10:00 PM')",
+      "level": "SOURCED",
+      "notes": "{time} = the start of the current hour, formatted with the device's short-time style (en-US renders '5:00 PM' as in Yope); minutes are always :00."
+    },
+    "camera.capture.coach.holdToRecord": {
+      "text": "hold down to record",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30); references/auto/yope/frames/a-alexaa-7684388619099933966-t5.23-camera-hold-to-record-tabbar.png (@5.23 s, 2026-09-11)",
+      "level": "SOURCED",
+      "notes": "First-use coach tooltip pointing at the shutter (yope.voice.coach). Shown once, and only when video is available to the member (premium)."
+    },
+    "camera.capture.a11y.shutter": {
+      "text": "take a pic",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/frames/a-virgi-7686278541255642390-t35.23-camera-permission-alert.png ('Allow camera access. So you can take and share pics with friends')",
+      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong); noun 'pic' as in Yope's camera purpose string",
+      "level": "SOURCED",
+      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
+    },
+    "camera.capture.a11y.recordVideo": {
+      "text": "record a video",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) ('hold down to record')",
+      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
+      "level": "SOURCED",
+      "notes": "Accessibility custom action on the shutter (VoiceOver / TalkBack users cannot discover the long press). Premium only. Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
+    },
+    "camera.capture.a11y.flip": {
+      "text": "flip camera",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) (flip circle)",
+      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
+      "level": "SOURCED",
+      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
+    },
+    "camera.capture.a11y.flash": {
+      "text": "flash",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) (flash-off glyph)",
+      "pattern": "yope.voice.lowercase — 1-word control name",
+      "level": "SOURCED",
+      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button'). Paired with camera.capture.a11y.flashOn / .flashOff as the value (iOS accessibilityValue, Android stateDescription)."
+    },
+    "camera.capture.a11y.flashOn": {
+      "text": "on",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30)",
+      "pattern": "yope.voice.lowercase",
+      "level": "SOURCED",
+      "notes": "Value of the flash control."
+    },
+    "camera.capture.a11y.flashOff": {
+      "text": "off",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30)",
+      "pattern": "yope.voice.lowercase",
+      "level": "SOURCED",
+      "notes": "Value of the flash control."
+    },
+    "camera.capture.a11y.library": {
+      "text": "choose from library",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/frames/a-yrrah-7454430216123862280-t21.23-photos-permission-alert-2024.png ('This lets you share memories from your library.')",
+      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong); noun 'library' from Yope's photo-library purpose string",
+      "level": "SOURCED",
+      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
+    },
+    "camera.capture.a11y.close": {
+      "text": "close",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) (✕ on the coach tooltip)",
+      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
+      "level": "SOURCED",
+      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button'). Shared by every coach-tooltip ✕ in this group."
+    },
+    "camera.capture.a11y.recording": {
+      "text": "recording",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "https://help.locket.com/en/articles/7915017 ('indicates that capture is in progress')",
+      "pattern": "yope.voice.lowercase",
+      "level": "SOURCED",
+      "notes": "Announced when a hold-to-record starts (HIG: inform VoiceOver of visible changes; the recording outline is visual only)."
+    },
+    "camera.capture.denied.title": {
+      "text": "can’t take pics?",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png ('can’t see your friends?' / 'enable contacts' / 'enable')",
+      "pattern": "yope.voice.permission — a question about the benefit + plain action ('can’t see your friends?' / 'enable contacts' / 'enable')",
+      "level": "SOURCED",
+      "notes": "Camera permission denied. Bold title of the empty-state layout inside the viewfinder."
+    },
+    "camera.capture.denied.detail": {
+      "text": "enable camera access in settings",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png ('can’t see your friends?' / 'enable contacts' / 'enable')",
+      "pattern": "yope.voice.permission ('enable contacts')",
+      "level": "SOURCED"
+    },
+    "camera.capture.denied.button": {
+      "text": "open settings",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png ('can’t see your friends?' / 'enable contacts' / 'enable')",
+      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
+      "level": "SOURCED",
+      "notes": "Opens the app's page in the system Settings (iOS UIApplication.openSettingsURLString; Android ACTION_APPLICATION_DETAILS_SETTINGS)."
+    },
+    "camera.capture.unavailable.title": {
+      "text": "camera isn’t available right now",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
+      "pattern": "yope.voice.error — calm, blame-free, names the next step ('This invite has expired' / 'Ask your friend to send you a new link.')",
+      "level": "SOURCED",
+      "notes": "Capture session interrupted or failed (another app is using the camera, system pressure)."
+    },
+    "camera.capture.unavailable.detail": {
+      "text": "try again in a moment",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
+      "pattern": "yope.voice.error",
+      "level": "SOURCED"
+    },
+    "camera.capture.unavailable.button": {
+      "text": "try again",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
+      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
+      "level": "SOURCED"
+    },
+    "camera.sendto.title": {
+      "text": "send to...",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t5.73-sendto-caption-keyboard.png (@5.73 s, 2026-09-09); references/auto/yope/frames/a-jacob-7691153057177931039-t4.73-sendto-voice-tooltip.png (@4.73 s, 2026-09-30)",
+      "level": "SOURCED",
+      "notes": "Three periods, no space (yope.voice.title)."
+    },
+    "camera.sendto.caption.placeholder": {
+      "text": "add a message",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10); references/auto/yope/frames/a-jacob-7691153057177931039-t4.73-sendto-voice-tooltip.png (@4.73 s, 2026-09-30)",
+      "level": "SOURCED",
+      "notes": "Field on the preview card; the typed caption renders on the photo under the hour overlay."
+    },
+    "camera.sendto.coach.voice": {
+      "text": "add a voice memo on this pic",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10); references/auto/yope/frames/a-jacob-7691153057177931039-t4.73-sendto-voice-tooltip.png (@4.73 s, 2026-09-30)",
+      "level": "SOURCED",
+      "notes": "First-use coach tooltip pointing at the mic (yope.voice.coach)."
+    },
+    "camera.sendto.send": {
+      "text": "send",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t3.73-sendto-more-friends.png",
+      "level": "SOURCED",
+      "notes": "Followed by the count disc (number of selected groups — a selection count, not a social count)."
+    },
+    "camera.sendto.toast.postedOne": {
+      "text": "posted in {group}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (@7.73 s, 2026-10-10) ('posted in the wall')",
+      "pattern": "yope.voice.confirmation — past-tense statement, lowercase, no exclamation",
+      "level": "SOURCED",
+      "notes": "Noun swap: 'the wall' → {group} (the one group the photo went to). {group} keeps its own case."
+    },
+    "camera.sendto.toast.postedMany": {
+      "text": "posted in your groups",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (@7.73 s, 2026-10-10) ('posted in the wall')",
+      "pattern": "yope.voice.confirmation",
+      "level": "SOURCED",
+      "notes": "Noun swap: 'the wall' → 'your groups' (sent to two or more groups)."
+    },
+    "camera.sendto.toast.saved": {
+      "text": "saved to your library",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (@7.73 s, 2026-10-10); references/auto/yope/frames/a-yrrah-7454430216123862280-t21.23-photos-permission-alert-2024.png ('This lets you share memories from your library.')",
+      "pattern": "yope.voice.confirmation ('posted in the wall'); noun 'library' from Yope's purpose string",
+      "level": "SOURCED",
+      "notes": "After the download circle saved the photo (add-only access: NSPhotoLibraryAddUsageDescription, owned by system.permissions)."
+    },
+    "camera.sendto.error.sendFailed": {
+      "text": "your pic didn’t send",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
+      "pattern": "yope.voice.error — calm, blame-free; the next step is the retry action",
+      "level": "SOURCED",
+      "notes": "Shown in the toast layout with camera.sendto.error.retry; the captured photo, caption and voice note stay until sent or discarded (docs/API.md recipe 9.4)."
+    },
+    "camera.sendto.error.offline": {
+      "text": "you’re offline",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
+      "pattern": "yope.voice.error",
+      "level": "SOURCED",
+      "notes": "Send attempted without a connection; shown with camera.sendto.error.retry."
+    },
+    "camera.sendto.error.retry": {
+      "text": "try again",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
+      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
+      "level": "SOURCED"
+    },
+    "camera.sendto.empty.title": {
+      "text": "no groups yet",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (@51.23 s, 2026-05-28) ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "pattern": "yope.voice.empty-state — bold statement + gray detail naming people + one light pill",
+      "level": "SOURCED"
+    },
+    "camera.sendto.empty.detail": {
+      "text": "start one and share this pic with your people",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (@51.23 s, 2026-05-28); references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
+      "pattern": "yope.voice.empty-state (detail names people; 'your people' from 'Life’s better with your people.')",
+      "level": "SOURCED"
+    },
+    "camera.sendto.empty.button": {
+      "text": "create group",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png (@49.23 s, 2026-05-28)",
+      "level": "SOURCED",
+      "notes": "Opens groups.create; the captured photo stays in send-to."
+    },
+    "camera.sendto.a11y.close": {
+      "text": "close",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10) (✕ header circle)",
+      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
+      "level": "SOURCED",
+      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button'). Discards the capture and returns to the camera."
+    },
+    "camera.sendto.a11y.save": {
+      "text": "save",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t66.00-share-with-friends.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847 @66.00 s; 'share with friends', 'share', 'save') (blue 'save' share target)",
+      "level": "SOURCED",
+      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button'). Label of the download circle."
+    },
+    "camera.sendto.a11y.voice": {
+      "text": "add a voice memo",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10) ('add a voice memo on this pic')",
+      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
+      "level": "SOURCED",
+      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button'). Label of the mic circle."
+    },
+    "widget.home.small.gallery.name": {
+      "text": "{app_name} Widget",
+      "origin": "adapted",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/frames/locket-tt-7168613044728155438-11.900s-widget-gallery-card.jpg (iOS widget gallery, 2022-11-21) ('Locket Widget'); references/auto/locket/frames/locket-tt-7532209311150329102-13.750s-gallery-locket-widget-3-friends.jpg",
+      "pattern": "locket.voice.title-case-names — '<Name> Widget'",
+      "level": "SOURCED",
+      "notes": "Trademark → {app_name}. Widget kind name (configurationDisplayName) shared by small, medium, large and xl. BLOCKED until the app has a name."
+    },
+    "widget.home.small.gallery.description": {
+      "text": "See live pics from your group right on your Home Screen",
+      "origin": "adapted",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/locket/frames/locket-tt-7168613044728155438-11.900s-widget-gallery-card.jpg (iOS widget gallery, 2022-11-21) ('See live pics from all your friends right on your Home Screen')",
+      "pattern": "locket.widget.gallery; also platform.widgetDescription (begins with a verb)",
+      "level": "SOURCED",
+      "notes": "Noun swap: 'all your friends' → 'your group'. One description for every home size (HIG)."
+    },
+    "widget.home.small.empty.noPhotos": {
+      "text": "No pics yet",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) string no_pics_yet",
+      "level": "SOURCED",
+      "notes": "locket.widget.empty. Configured widget whose group has no photo yet."
+    },
+    "widget.home.small.empty.setUp": {
+      "text": "Tap to set up",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) string tap_to_set_up",
+      "level": "SOURCED",
+      "notes": "locket.widget.empty. Widget with no group chosen (or the group is gone / left)."
+    },
+    "widget.home.small.a11y.photo": {
+      "text": "{name}’s photo in {group}",
+      "origin": "new",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/voiceover ('Provide alternative labels for all key interface elements'; design/research/platform.md §Accessibility)",
+      "pattern": "locket.voice.sentence-case; HIG: describe who and where, not visual details",
+      "level": "SOURCED",
+      "notes": "VoiceOver / TalkBack label of the widget when the newest item is a photo without a caption."
+    },
+    "widget.home.small.a11y.photoWithCaption": {
+      "text": "{name}’s photo in {group}, {caption}",
+      "origin": "new",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/voiceover ('Provide alternative labels for all key interface elements'; design/research/platform.md §Accessibility)",
+      "pattern": "locket.voice.sentence-case; HIG: group an image with its caption so VoiceOver reads them together",
+      "level": "SOURCED"
+    },
+    "widget.home.small.a11y.collage": {
+      "text": "Photos from {group}, {date}",
+      "origin": "new",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/voiceover ('Provide alternative labels for all key interface elements'; design/research/platform.md §Accessibility)",
+      "pattern": "locket.voice.sentence-case",
+      "level": "SOURCED",
+      "notes": "When the widget shows a same-moment collage. {date} = the invitation's local date, platform medium date style."
+    },
+    "widget.home.small.configuration.title": {
+      "text": "Customize the widget",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) Hermes string 'Customize the widget'",
+      "level": "SOURCED",
+      "notes": "iOS WidgetConfigurationIntent title (code key 'widget.configuration.title' in ios/Widgets/Sources/GroupSelection.swift) and Android WidgetConfigureActivity title."
+    },
+    "widget.home.small.configuration.group": {
+      "text": "Group",
+      "origin": "new",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) ('Everyone' / 'Edit' / 'Create' widget rows, references/auto/locket/lazyweb/locket-lazyweb-20260803-autocap-21.png)",
+      "pattern": "locket.voice.sentence-case",
+      "level": "SOURCED",
+      "notes": "Parameter title of the widget's group choice (code key 'widget.configuration.group')."
+    },
+    "widget.home.small.configuration.groupType": {
+      "text": "Group",
+      "origin": "new",
+      "source_app": "Locket",
+      "surface": "widget.home.small",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md)",
+      "pattern": "locket.voice.sentence-case",
+      "level": "SOURCED",
+      "notes": "App Intents TypeDisplayRepresentation of a group (code key 'widget.configuration.group.type')."
+    },
+    "widget.lock.rect.gallery.name": {
+      "text": "{app_name} Widget",
+      "origin": "adapted",
+      "source_app": "Locket",
+      "surface": "widget.lock.rect",
+      "evidence": "references/auto/locket/frames/locket-tt-7168613044728155438-11.900s-widget-gallery-card.jpg (iOS widget gallery, 2022-11-21) ('Locket Widget')",
+      "pattern": "locket.voice.title-case-names — '<Name> Widget'",
+      "level": "SOURCED",
+      "notes": "Kind name of the Lock Screen widget (accessoryCircular, accessoryRectangular, accessoryInline). BLOCKED until the app has a name."
+    },
+    "widget.lock.rect.gallery.description": {
+      "text": "See who shared the newest pic in your group",
+      "origin": "new",
+      "source_app": "Locket",
+      "surface": "widget.lock.rect",
+      "evidence": "references/auto/locket/frames/locket-tt-7168613044728155438-11.900s-widget-gallery-card.jpg (iOS widget gallery, 2022-11-21); https://developer.apple.com/design/human-interface-guidelines/widgets ('Begin a description with an action verb')",
+      "pattern": "locket.widget.gallery + platform.widgetDescription (begins with a verb, sentence case, no 'This widget shows…')",
+      "level": "SOURCED",
+      "notes": "One description for the three Lock Screen sizes."
+    },
+    "widget.arrival.help.delay": {
+      "text": "When someone in your group sends a photo, it will appear on your Home Screen, but there may be a slight delay of up to a few minutes. This delay helps conserve your phone’s battery.",
+      "origin": "new",
+      "source_app": "Locket",
+      "surface": "widget.arrival",
+      "evidence": "https://help.locket.com/en/articles/5859739-why-isn-t-my-locket-widget-updating (updated 2026-05-05): 'When a friend sends you a photo on Locket, it will appear on your Home Screen, but there may be a slight delay of up to 5 minutes. This delay helps conserve your phone’s battery.'",
+      "pattern": "locket.voice.second-person",
+      "level": "SOURCED",
+      "notes": "'a friend … on Locket' → 'someone in your group'; '5 minutes' → 'a few minutes' (our budget differs, docs/PLATFORM_CONSTRAINTS.md §1). Help / FAQ text; never 'instantly'."
+    },
+    "widget.arrival.android.refreshTitle": {
+      "text": "Updating widget...",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.arrival",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) notification_widget_refresh_title",
+      "level": "SOURCED",
+      "notes": "locket.voice.ellipsis. Android only, while a refresh runs as a foreground job (expedited WorkManager on Android 11 and lower)."
+    },
+    "widget.arrival.android.refreshChannelName": {
+      "text": "Widget Updating",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.arrival",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) notification_channel_widget_refresh_name",
+      "level": "SOURCED",
+      "notes": "locket.push.channel."
+    },
+    "widget.arrival.android.refreshChannelDescription": {
+      "text": "Shown briefly while the home screen widget refreshes",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "widget.arrival",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) notification_channel_widget_refresh_description",
+      "level": "SOURCED",
+      "notes": "locket.push.channel."
+    },
+    "widget.android.label": {
+      "text": "{app_name}",
+      "origin": "adapted",
+      "source_app": "Locket",
+      "surface": "widget.android",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) widget receiver label = the app name",
+      "pattern": "locket.voice.title-case-names (trademark → {app_name})",
+      "level": "SOURCED",
+      "notes": "android:label of the widget receiver (picker title). BLOCKED until the app has a name."
+    },
+    "widget.android.description": {
+      "text": "Live pics from your group, on your home screen",
+      "origin": "adapted",
+      "source_app": "Locket",
+      "surface": "widget.android",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) app_widget_description ('Live pics from your friends, on your home screen')",
+      "pattern": "locket.widget.gallery",
+      "level": "SOURCED",
+      "notes": "Noun swap: 'your friends' → 'your group'. android:description in widget_info.xml (Tier 1 quality: a description is required)."
+    },
+    "widget.android.configure.empty": {
+      "text": "Once you join a group, you can add it to a widget.",
+      "origin": "new",
+      "source_app": "Locket",
+      "surface": "widget.android",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) Hermes 'Once a friend accepts your friend request, you can add them to a widget.'",
+      "pattern": "locket.voice.second-person (sentence with a period, as in the source)",
+      "level": "SOURCED",
+      "notes": "Configure screen when the member has no group yet."
+    },
+    "notifications.push.dailyInvitation.title": {
+      "text": "Time to share a photo.",
+      "origin": "adapted",
+      "source_app": "BeReal",
+      "surface": "daily.notification",
+      "evidence": "references/auto/bereal/help/help-21089073691933_time-to-bereal-push.png; references/auto/bereal/frames/appstore-preview-2026_t0.30s_notification.png ('⚠️ Time to BeReal. ⚠️' / '2 min left to capture a BeReal and see what your friends are up to!')",
+      "pattern": "bereal.voice.push with the mandatory tenet-5 adaptation (design/copy-patterns.md 'BeReal → daily invitation')",
+      "level": "SOURCED",
+      "notes": "⚠️ markers dropped; brand verb ('BeReal') → a plain verb of sharing a photo; Sentence case and the trailing period kept. Worker key (backend/worker/COPY_KEYS.md): iOS Live Activity start alert, iOS alert, Android countdown notification title."
+    },
+    "notifications.push.dailyInvitation.body": {
+      "text": "Capture a photo and see what {group} is up to!",
+      "origin": "adapted",
+      "source_app": "BeReal",
+      "surface": "daily.notification",
+      "evidence": "references/auto/bereal/help/help-21089073691933_time-to-bereal-push.png; references/auto/bereal/frames/appstore-preview-2026_t0.30s_notification.png ('⚠️ Time to BeReal. ⚠️' / '2 min left to capture a BeReal and see what your friends are up to!')",
+      "pattern": "bereal.voice.push with the tenet-5 adaptation ('see what your group is up to', noun swap)",
+      "level": "SOURCED",
+      "notes": "'2 min left to' deadline dropped; 'a BeReal' → 'a photo'; 'your friends' → {group}. No time, no 'late', no follow-up message."
+    },
+    "notifications.push.channel.dailyInvitation.name": {
+      "text": "Daily Invitation",
+      "origin": "new",
+      "source_app": "BeReal",
+      "surface": "daily.notification",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channel names ('New Lockets', 'Groups', 'Widget Updating')",
+      "pattern": "locket.push.channel — 1–3 words, Title Case, ≤ 40 characters",
+      "level": "SOURCED",
+      "notes": "Android channel daily_invitation. Locket's 'Daily Reminders' is do-not-copy (nag)."
+    },
+    "notifications.push.channel.dailyInvitation.description": {
+      "text": "Notifications when your group’s daily photo invitation starts",
+      "origin": "new",
+      "source_app": "BeReal",
+      "surface": "daily.notification",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) ('Notifications when friends post new Lockets')",
+      "pattern": "locket.push.channel — one Sentence-case line, no period, ≤ 300 characters",
+      "level": "SOURCED"
+    },
+    "daily.capture.countdown": {
+      "text": "{mm}:{ss}",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png ('01:28'); references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t17.63s_black-spinner-prompt.png ('00:59')",
+      "level": "SOURCED",
+      "notes": "bereal.format.countdown: both fields zero-padded, no label. Shown only while the window is open; hidden at closes_at (no 'late', SPEC_FLAGS T4)."
+    },
+    "daily.capture.send": {
+      "text": "SEND",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (2024: 'My friends only', 'Off', 'SEND'); references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png",
+      "level": "SOURCED",
+      "notes": "bereal.voice.capture-labels (capitals). Followed by the triangle glyph."
+    },
+    "daily.capture.audience": {
+      "text": "{group} only",
+      "origin": "adapted",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (2024: 'My friends only', 'Off', 'SEND')",
+      "pattern": "bereal.voice.capture-labels — chip in Sentence case, 1–3 words ('My friends only')",
+      "level": "SOURCED",
+      "notes": "Noun swap: 'My friends' → {group}. Non-interactive: the answer goes to the invitation's group."
+    },
+    "daily.capture.prompt": {
+      "text": "Getting both sides",
+      "origin": "new",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t17.63s_black-spinner-prompt.png (layout: spinner + one centred line)",
+      "pattern": "bereal.voice.capture-prompt — one short line, Sentence case, no final period; smile directives are do-not-copy",
+      "level": "SOURCED",
+      "notes": "Under the spinner while the back and front photos are taken."
+    },
+    "daily.capture.a11y.dismiss": {
+      "text": "Close",
+      "origin": "new",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (down chevron)",
+      "pattern": "bereal.voice.capture-labels (Sentence case, 1–3 words)",
+      "level": "SOURCED",
+      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
+    },
+    "daily.capture.a11y.shutter": {
+      "text": "Take photo",
+      "origin": "new",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (shutter)",
+      "pattern": "bereal.voice.capture-labels",
+      "level": "SOURCED",
+      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
+    },
+    "daily.capture.a11y.flash": {
+      "text": "Flash",
+      "origin": "new",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (flash-off glyph)",
+      "pattern": "bereal.voice.capture-labels",
+      "level": "SOURCED",
+      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button'). Value: daily.capture.a11y.flashOn / .flashOff."
+    },
+    "daily.capture.a11y.flashOn": {
+      "text": "On",
+      "origin": "new",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (2024: 'My friends only', 'Off', 'SEND') ('Off' chip)",
+      "pattern": "bereal.voice.capture-labels ('Off')",
+      "level": "SOURCED"
+    },
+    "daily.capture.a11y.flashOff": {
+      "text": "Off",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (2024: 'My friends only', 'Off', 'SEND') ('Off' chip)",
+      "level": "SOURCED",
+      "notes": "Value of the flash control."
+    },
+    "daily.capture.a11y.flip": {
+      "text": "Flip camera",
+      "origin": "new",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (flip glyph)",
+      "pattern": "bereal.voice.capture-labels",
+      "level": "SOURCED",
+      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
+    },
+    "daily.capture.a11y.retake": {
+      "text": "Retake",
+      "origin": "new",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (✕ retake circle); help 7350386715165 ('You can retake …')",
+      "pattern": "bereal.voice.capture-labels",
+      "level": "SOURCED",
+      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
+    },
+    "daily.capture.a11y.send": {
+      "text": "Send",
+      "origin": "new",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (2024: 'My friends only', 'Off', 'SEND') ('SEND')",
+      "pattern": "bereal.voice.capture-labels",
+      "level": "SOURCED",
+      "notes": "Spoken label of the SEND control (avoids the all-capitals visible text being read letter by letter)."
+    },
+    "daily.dualimage.a11y.label": {
+      "text": "Back and front photos from {name}",
+      "origin": "new",
+      "source_app": "BeReal",
+      "surface": "daily.dualimage",
+      "evidence": "references/auto/bereal/help/help-21083730354333_feed-bonus-3x.png (main + inset); https://developer.apple.com/design/human-interface-guidelines/voiceover ('Provide alternative labels for all key interface elements'; design/research/platform.md §Accessibility)",
+      "pattern": "bereal.voice.capture-labels (Sentence case)",
+      "level": "SOURCED",
+      "notes": "One combined label for the main image and its inset. A single-camera answer uses widget.home.small.a11y.photo wording instead (owner of that surface's copy is this group)."
+    },
+    "collage.view.title": {
+      "text": "{date}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "collage.view",
+      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png ('26 May', 2026-06-17)",
+      "pattern": "yope.voice.formats — day title 'd Month' ('26 May')",
+      "level": "SOURCED",
+      "notes": "{date} = the invitation's group-local date; en renders '26 May'."
+    },
+    "collage.view.loading": {
+      "text": "Loading",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "collage.view",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png (@50.60 s, 2026-05-28)",
+      "level": "SOURCED",
+      "notes": "Yope's HUD word (a documented exception to lowercase, yope.voice.lowercase). Shown while the collage is composing (status pending)."
+    },
+    "collage.view.empty.title": {
+      "text": "no photos from this moment",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "collage.view",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (@51.23 s, 2026-05-28)",
+      "pattern": "yope.voice.empty-state — bold statement + gray detail naming people + one light pill",
+      "level": "SOURCED",
+      "notes": "The window closed with no answer, so no collage exists. No guilt, no 'missed'."
+    },
+    "collage.view.empty.detail": {
+      "text": "share one with {group} anytime",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "collage.view",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (@51.23 s, 2026-05-28)",
+      "pattern": "yope.voice.empty-state (detail names the people: {group})",
+      "level": "SOURCED",
+      "notes": "Answers after the window post normally (SPEC_FLAGS T4)."
+    },
+    "collage.view.empty.button": {
+      "text": "open camera",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "collage.view",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (@51.23 s, 2026-05-28) ('invite more friends' pill)",
+      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
+      "level": "SOURCED"
+    },
+    "collage.view.error.title": {
+      "text": "these photos didn’t load",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "collage.view",
+      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
+      "pattern": "yope.voice.error",
+      "level": "SOURCED",
+      "notes": "Collage status failed, or the image could not be downloaded."
+    },
+    "collage.view.error.button": {
+      "text": "try again",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "collage.view",
+      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
+      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
+      "level": "SOURCED"
+    },
+    "collage.view.offline.title": {
+      "text": "you’re offline",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "collage.view",
+      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
+      "pattern": "yope.voice.error",
+      "level": "SOURCED",
+      "notes": "Shown with collage.view.error.button."
+    },
+    "collage.view.a11y.back": {
+      "text": "back",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "collage.view",
+      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png ('26 May', 2026-06-17) (back circle)",
+      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
+      "level": "SOURCED",
+      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
+    },
+    "collage.view.a11y.page": {
+      "text": "page {page} of {pages}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "collage.view",
+      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png ('26 May', 2026-06-17) (page dots)",
+      "pattern": "yope.voice.lowercase",
+      "level": "SOURCED",
+      "notes": "Android page-dot indicator (iOS's native page control speaks its own value). Page numbers, not a social count."
+    },
+    "collage.view.a11y.collage": {
+      "text": "photos from {group}, {date}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "collage.view",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/voiceover ('Provide alternative labels for all key interface elements'; design/research/platform.md §Accessibility)",
+      "pattern": "yope.voice.lowercase",
+      "level": "SOURCED",
+      "notes": "Label of one collage page."
+    },
+    "collage.share.button": {
+      "text": "share",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "collage.share",
+      "evidence": "references/auto/yope/store/yope-store-04.png ('share' pill); references/auto/yope/frames/b-yopeapp-7591560669967682847-t66.00-share-with-friends.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847 @66.00 s; 'share with friends', 'share', 'save')",
+      "level": "SOURCED",
+      "notes": "Label of the share pill (yope.voice.button)."
+    },
+    "collage.share.sheetTitle": {
+      "text": "share with friends",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "collage.share",
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t66.00-share-with-friends.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847 @66.00 s; 'share with friends', 'share', 'save')",
+      "level": "SOURCED",
+      "notes": "Title of the share preview (iOS SharePreview title, Android Intent.EXTRA_TITLE). 'friends' kept: it names who the person shares with outside the app."
+    },
+    "notifications.push.newPost.title": {
+      "text": "{group}",
+      "origin": "new",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) moment_notif_body_one_user_one_moment 'Sent you a Locket!', moment_notif_body_two_users '%1$s and %2$s sent you Lockets!'",
+      "pattern": "locket.push.newPost",
+      "level": "SOURCED",
+      "notes": "The group name is the title so a member of several groups knows where it happened (Locket's title is not observed; its 'Groups' channel groups by conversation). Worker key (backend/worker/COPY_KEYS.md)."
+    },
+    "notifications.push.newPost.body": {
+      "text": "{name} sent you a photo!",
+      "origin": "adapted",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) moment_notif_body_one_user_one_moment 'Sent you a Locket!', moment_notif_body_two_users '%1$s and %2$s sent you Lockets!'",
+      "pattern": "locket.push.newPost — names who sent, one exclamation mark",
+      "level": "SOURCED",
+      "notes": "Single-sender form of '{name1} and {name2} sent you Lockets!'; noun swap 'Lockets' → 'a photo'. No '{n} other friends'."
+    },
+    "notifications.push.reaction.title": {
+      "text": "{group}",
+      "origin": "new",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) Hermes '{{contactName}} reacted {{emoji}} to your Locket'",
+      "pattern": "locket.push.reaction",
+      "level": "SOURCED",
+      "notes": "The group name is the title so a member of several groups knows where it happened (Locket's title is not observed; its 'Groups' channel groups by conversation). Worker key (backend/worker/COPY_KEYS.md)."
+    },
+    "notifications.push.reaction.body": {
+      "text": "{name} reacted {emoji} to your photo",
+      "origin": "adapted",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) Hermes '{{contactName}} reacted {{emoji}} to your Locket'",
+      "pattern": "locket.push.reaction — emoji inline, no count, no period",
+      "level": "SOURCED",
+      "notes": "Noun swap: 'your Locket' → 'your photo'. Repeated reactions to one photo replace each other on the device (worker); never a number."
+    },
+    "notifications.push.reply.title": {
+      "text": "{group}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "notifications.push",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-* t6.73 ('new pic added · 9:43 AM', design/research/yope-a.md §3.2)",
+      "pattern": "yope.voice.confirmation",
+      "level": "SOURCED",
+      "notes": "The group name is the title so a member of several groups knows where it happened (Locket's title is not observed; its 'Groups' channel groups by conversation). Worker key (backend/worker/COPY_KEYS.md)."
+    },
+    "notifications.push.reply.body.text": {
+      "text": "{name} replied · {message}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "notifications.push",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-* t6.73 ('new pic added · 9:43 AM', design/research/yope-a.md §3.2); references/auto/yope/frames/b-yrrah-7673901254787009810-t11.30-sent-to-wall.png ('yrrah sent a pic to the wall · 9:00 PM')",
+      "pattern": "yope.voice.confirmation — past tense, lowercase, no exclamation; ' · ' separator (yope.voice.punctuation)",
+      "level": "SOURCED",
+      "notes": "{message} = the reply text (user content, shortened by the worker only over the push size limit)."
+    },
+    "notifications.push.reply.body.voice": {
+      "text": "{name} replied with a voice message",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "notifications.push",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-* t6.73 ('new pic added · 9:43 AM', design/research/yope-a.md §3.2); App Store release notes 1.210.0 ('send voice messages in chat')",
+      "pattern": "yope.voice.confirmation",
+      "level": "SOURCED"
+    },
+    "notifications.push.reply.body.photo": {
+      "text": "{name} replied with a pic",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "notifications.push",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-* t6.73 ('new pic added · 9:43 AM', design/research/yope-a.md §3.2) ('new pic added')",
+      "pattern": "yope.voice.confirmation",
+      "level": "SOURCED"
+    },
+    "notifications.push.recapReady.title": {
+      "text": "{group}",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "notifications.push",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-* t6.73 ('new pic added · 9:43 AM', design/research/yope-a.md §3.2)",
+      "pattern": "yope.voice.confirmation",
+      "level": "SOURCED",
+      "notes": "The group name is the title so a member of several groups knows where it happened (Locket's title is not observed; its 'Groups' channel groups by conversation). Worker key (backend/worker/COPY_KEYS.md)."
+    },
+    "notifications.push.recapReady.body": {
+      "text": "new recap added",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "notifications.push",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-* t6.73 ('new pic added · 9:43 AM', design/research/yope-a.md §3.2) ('new pic added')",
+      "pattern": "yope.voice.confirmation",
+      "level": "SOURCED",
+      "notes": "Noun swap: 'pic' → 'recap'. Sent once, when the recap is ready."
+    },
+    "notifications.push.birthdayRequest.title": {
+      "text": "{group}",
+      "origin": "new",
+      "source_app": "VidDay",
+      "surface": "notifications.push",
+      "evidence": "design/research/wrapped-tribute-partiful.md §3 (VidDay V3)",
+      "pattern": "P-BR-1",
+      "level": "SOURCED",
+      "notes": "The group name is the title so a member of several groups knows where it happened (Locket's title is not observed; its 'Groups' channel groups by conversation). Worker key (backend/worker/COPY_KEYS.md). Never sent to {name}."
+    },
+    "notifications.push.birthdayRequest.body": {
+      "text": "You’re invited to add a photo and a line for {name}’s birthday. It’s quick and easy.",
+      "origin": "new",
+      "source_app": "VidDay",
+      "surface": "notifications.push",
+      "evidence": "design/research/wrapped-tribute-partiful.md §3.5 (VidDay V3: 'Hi everyone! You're invited to submit a video message and join in on the fun of making a personalized video for Amelia. It's quick and easy.')",
+      "pattern": "P-BR-1 — 'You're invited to {action} for {name}.' + a bar-lowering line",
+      "level": "SOURCED",
+      "notes": "Noun swap 'video message' → 'a photo and a line'. One request, no reminders, no countdown (SPEC_FLAGS T5)."
+    },
+    "notifications.push.tribute.title": {
+      "text": "Happy birthday!",
+      "origin": "new",
+      "source_app": "VidDay",
+      "surface": "notifications.push",
+      "evidence": "design/research/wrapped-tribute-partiful.md §4 (VidDay V7 'HAPPY BIRTHDAY, AMELIA!')",
+      "pattern": "P-BT-1 — 'Happy birthday, {name}!' (case normalised)",
+      "level": "SOURCED",
+      "notes": "Addressed to the birthday person, so the name is left out (the worker provides only {group})."
+    },
+    "notifications.push.tribute.body": {
+      "text": "{group} made you a birthday video.",
+      "origin": "new",
+      "source_app": "Tribute",
+      "surface": "notifications.push",
+      "evidence": "design/research/wrapped-tribute-partiful.md §4.4–4.5 (the 'video is ready' text was not found)",
+      "pattern": "P-BT-1 (Tribute / VidDay general voice: warm, second person, full sentences end with a period, no emoji)",
+      "level": "SOURCED",
+      "notes": "No number of contributors."
+    },
+    "notifications.push.channel.newPost.name": {
+      "text": "New Photos",
+      "origin": "adapted",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
+      "pattern": "locket.push.channel",
+      "level": "SOURCED",
+      "notes": "Noun swap 'Lockets' → 'Photos'. Channel new_post."
+    },
+    "notifications.push.channel.newPost.description": {
+      "text": "Notifications when your groups post new photos",
+      "origin": "adapted",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
+      "pattern": "locket.push.channel",
+      "level": "SOURCED",
+      "notes": "Noun swaps: 'friends' → 'your groups', 'Lockets' → 'photos'."
+    },
+    "notifications.push.channel.reactionsReplies.name": {
+      "text": "Reactions and Replies",
+      "origin": "new",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
+      "pattern": "locket.push.channel — 1–3 words, Title Case",
+      "level": "SOURCED",
+      "notes": "Channel reactions_replies."
+    },
+    "notifications.push.channel.reactionsReplies.description": {
+      "text": "Notifications for reactions and replies to you in groups",
+      "origin": "adapted",
+      "source_app": "Locket",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
+      "pattern": "locket.push.channel",
+      "level": "SOURCED",
+      "notes": "From 'Notifications for new messages and reactions in groups': 'new messages and reactions' → 'reactions and replies to you' (only those are sent)."
+    },
+    "notifications.push.channel.recap.name": {
+      "text": "Weekly Recaps",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
+      "pattern": "locket.push.channel",
+      "level": "SOURCED",
+      "notes": "Channel recap."
+    },
+    "notifications.push.channel.recap.description": {
+      "text": "Notifications when your group’s weekly recap is ready",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
+      "pattern": "locket.push.channel",
+      "level": "SOURCED"
+    },
+    "notifications.push.channel.birthdayRequest.name": {
+      "text": "Birthday Requests",
+      "origin": "new",
+      "source_app": "VidDay",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
+      "pattern": "locket.push.channel",
+      "level": "SOURCED",
+      "notes": "Channel birthday_request."
+    },
+    "notifications.push.channel.birthdayRequest.description": {
+      "text": "Notifications when you’re invited to add to a birthday video",
+      "origin": "new",
+      "source_app": "VidDay",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
+      "pattern": "locket.push.channel",
+      "level": "SOURCED"
+    },
+    "notifications.push.channel.tribute.name": {
+      "text": "Birthday Videos",
+      "origin": "new",
+      "source_app": "Tribute",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
+      "pattern": "locket.push.channel",
+      "level": "SOURCED",
+      "notes": "Channel tribute."
+    },
+    "notifications.push.channel.tribute.description": {
+      "text": "Notifications when your group made a birthday video for you",
+      "origin": "new",
+      "source_app": "Tribute",
+      "surface": "notifications.push",
+      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
+      "pattern": "locket.push.channel",
+      "level": "SOURCED"
+    }
+  }
+}

@@ -1,3 +1,6 @@
+import java.net.HttpURLConnection
+import java.net.URI
+
 // Data layer: supabase-kt client (auth, PostgREST, storage, realtime), typed repositories for every
 // client-facing operation of docs/API.md, WorkManager media uploads, signed-URL cache, offline page
 // cache, connectivity, and the session glue (push token, billing identity, widgets). No UI, no copy:
@@ -68,7 +71,7 @@ tasks.withType<Test>().configureEach {
     }
     doFirst {
         val reachable = try {
-            val connection = java.net.URI("$url/auth/v1/health").toURL().openConnection() as java.net.HttpURLConnection
+            val connection = URI("$url/auth/v1/health").toURL().openConnection() as HttpURLConnection
             connection.connectTimeout = 1500
             connection.readTimeout = 1500
             val code = connection.responseCode

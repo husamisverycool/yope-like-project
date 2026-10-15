@@ -75,19 +75,22 @@ proposal values). A missing token fails the job with `missing design token <name
 
 ### Tribute video (`src/tribute/render.ts`)
 
-| token | shape | status today |
+| token | shape | status (latest `designgen`, 2026-10-15) |
 |---|---|---|
-| `layout.birthday.tribute.video` | `{ "width": px, "height": px, "fps": n }` | missing |
-| `duration.birthday.tribute.titleHold` | ms | proposal 1300 (VidDay, lower bound) |
-| `duration.birthday.tribute.titleCrossfade` | ms | proposal 600 (VidDay) |
-| `duration.birthday.tribute.photoHold` | ms | BLOCKED (not found) |
-| `duration.birthday.tribute.clipTransition` | ms, 0 = hard cut | proposal 0 (Tribute) |
-| `duration.birthday.tribute.endTransition` | ms, 0 = hard cut | missing |
-| `duration.birthday.tribute.endHold` | ms | missing |
-| `color.birthday.tribute.pillarbox` | `#RRGGBB` | proposal `#000000` (Tribute) |
-| `layout.birthday.tribute.titleCard` | `{ background, textColor, fontWeight, fontSizeRatio, maxWidthRatio, centerYRatio }` (ratios of video height/width) | missing |
-| `layout.birthday.tribute.endCard` | same as titleCard | missing |
-| `layout.birthday.tribute.caption` | `{ textColor, nameFontWeight, nameFontSizeRatio, lineFontWeight, lineFontSizeRatio, leftRatio, bottomRatio, maxWidthRatio, gapRatio, scrim? }` | missing (research §4.5: "per-contribution layout with name + one line over a photo" not found) |
+| `layout.birthday.tribute.video` | `{ "width": px, "height": px, "fps": n }` | canonical: 1920×1080 @ 29.97 |
+| `duration.birthday.tribute.titleHold` | ms | canonical: 1167 |
+| `duration.birthday.tribute.titleCrossfade` | ms | canonical: 600 |
+| `duration.birthday.tribute.photoHold` | ms | **missing** (BLOCKED: "a set number of seconds", value not found) |
+| `duration.birthday.tribute.clipTransition` | ms, 0 = hard cut | canonical: 0 |
+| `duration.birthday.tribute.endTransition` | ms, 0 = hard cut | canonical: 0 |
+| `duration.birthday.tribute.endHold` | ms | canonical: 10003 |
+| `color.birthday.tribute.pillarbox` | `#RRGGBB` | canonical: `#000000` |
+| `layout.birthday.tribute.titleCard` | `{ background, textColor, fontWeight, fontSizeRatio, maxWidthRatio, centerYRatio }` (ratios of video height/width) | canonical |
+| `layout.birthday.tribute.endCard` | same as titleCard | **missing** |
+| `layout.birthday.tribute.caption` | `{ textColor, nameFontWeight, nameFontSizeRatio, lineFontWeight, lineFontSizeRatio, leftRatio, bottomRatio, maxWidthRatio, gapRatio, scrim? }` | **missing** (research §4.5: "per-contribution layout with name + one line over a photo" not found) |
+
+Until the three missing tokens exist, `tribute.render` fails with `missing design token …` and is
+retried; no tribute is delivered.
 
 The font is Roboto (vendored in `fonts/`, Apache 2.0, level PLATFORM); weights map to the
 nearest of Thin/Light/Regular/Medium/Bold/Black.

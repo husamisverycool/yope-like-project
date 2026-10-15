@@ -158,6 +158,16 @@ describe("APNs payloads", () => {
     expect(d.collapseId).toBe("daily:i");
   });
 
+  it("a long caption is shortened so alert, background and FCM widget payloads stay within 4 KB", () => {
+    const long = { ...widget, caption: "🎉 ".repeat(1000).trim() }; // 1000 chars, ~5 KB in UTF-8
+    const alert = apnsAlert({ type: "new_post", groupId: "g", ids: { post_id: "p" }, title: "T", body: "B", collapseKey: "post:p", quiet: false, widget: long });
+    expect(payloadBytes(alert)).toBeLessThanOrEqual(APNS_MAX_PAYLOAD_BYTES);
+    expect((alert.payload.widget as any).caption.length).toBeGreaterThan(100);
+    expect(payloadBytes(apnsWidgetBackground(long, now))).toBeLessThanOrEqual(APNS_MAX_PAYLOAD_BYTES);
+    expect(Buffer.byteLength(JSON.stringify(fcmWidget(long).data))).toBeLessThanOrEqual(4096);
+    expect(apnsAlert({ type: "new_post", groupId: "g", ids: {}, title: "T", body: "B", collapseKey: "c", quiet: false, widget }).payload.widget).toMatchObject({ caption: "sunday" });
+  });
+
   it("long reply text is shortened to fit the 4 KB APNs limit", () => {
     const long = "word ".repeat(2000);
     const r = fitText(long, (t) => apnsAlert({ type: "reply", groupId: "g", ids: { message_id: "m" }, title: "T", body: t, collapseKey: "c", quiet: false }));
