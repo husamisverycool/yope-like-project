@@ -23,6 +23,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.core.app.NotificationCompat
 import app.feature.capture.camera.CameraControllers
+import app.feature.capture.camera.CameraScreen
+import app.feature.capture.camera.CameraViewModel
 import app.feature.capture.data.CaptureDataProvider
 import app.feature.capture.data.CaptureHandoff
 import app.feature.capture.data.CaptureServices
@@ -151,6 +153,21 @@ class FlowTests {
         compose.onNode(androidx.compose.ui.test.hasText("open camera")).performClick()
         compose.waitForIdle()
         assertTrue(nav.currentDestination!!.hasRoute<AppRoute.Camera>())
+    }
+
+    /** Before the permission answer the viewfinder stays black: no denied / unavailable flash. */
+    @Test fun cameraDoesNotFlashTheDeniedStateWhileChecking() {
+        compose.setContent {
+            CameraScreen(
+                state = CameraViewModel.UiState(),
+                viewfinder = {}, hourText = "5:00 PM",
+                onShutterTap = {}, onShutterLongPress = {}, onShutterRelease = {}, onFlash = {}, onFlip = {}, onLibrary = {},
+                onCoachClose = {}, onOpenSettings = {}, onRetry = {},
+            )
+        }
+        assertTrue(compose.onAllNodes(androidx.compose.ui.test.hasText("can’t take pics?")).fetchSemanticsNodes().isEmpty())
+        assertTrue(compose.onAllNodes(androidx.compose.ui.test.hasText("camera isn’t available right now")).fetchSemanticsNodes().isEmpty())
+        assertTrue(compose.onAllNodes(hasTestTag("camera.shutter")).fetchSemanticsNodes().isEmpty())
     }
 
     class Host : Activity()

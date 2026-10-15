@@ -50,6 +50,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import app.designsystem.R
 import app.designsystem.generated.Tokens
+import app.feature.memory.common.GlyphIcon
 import app.feature.memory.common.MemoryFormats
 import app.feature.memory.common.MemoryImage
 import app.feature.memory.common.MessageBlock
@@ -206,11 +207,11 @@ private fun PhotoCell(photo: EligiblePhoto, selected: Boolean, onClick: () -> Un
             .testTag(ContributeTags.cell(photo.postId)),
     ) {
         MemoryImage(photo.thumbUrl, null, Modifier.fillMaxSize(), ContentScale.Crop)
-        Icon(
+        GlyphIcon(
             if (selected) Tokens.Icons.globalCheck else Tokens.Icons.globalUncheck,
-            contentDescription = null,
-            tint = if (selected) Tokens.Colors.globalSelection else Tokens.Colors.globalTextPrimary,
-            modifier = Modifier.align(Alignment.TopEnd).padding(Tokens.Sizes.wallsMineDimensionGridGap).size(Tokens.Sizes.globalCheckCircle),
+            Tokens.Sizes.globalCheckCircle,
+            if (selected) Tokens.Colors.globalSelection else Tokens.Colors.globalTextPrimary,
+            Modifier.align(Alignment.TopEnd).padding(Tokens.Sizes.wallsMineDimensionGridGap),
         )
     }
 }

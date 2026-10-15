@@ -40,6 +40,7 @@ import app.feature.account.LocalAccountEnvironment
 import app.feature.account.common.AccountViewModel
 import app.feature.account.common.CollectEvents
 import app.feature.account.common.SignUpLayout
+import app.feature.account.common.SignUpStack
 import app.feature.account.common.dataError
 import app.feature.account.shell.AccountFlow
 import app.media.PhotoImport
@@ -151,7 +152,7 @@ fun ProfileScreen(
     if (field.text != state.name) field = TextFieldValue(state.name, TextRange(state.name.length))
     val avatarLabel = stringResource(if (avatarImage == null) R.string.auth_profile_avatar_accessibilitylabel else R.string.auth_profile_avatar_changeaccessibilitylabel)
     SignUpLayout(overlay = { HudOverlay(state.saving, stringResource(R.string.groups_create_hud_loading)) }) {
-        OnboardingTitle(stringResource(R.string.auth_profile_title))
+        OnboardingTitle(stringResource(R.string.auth_profile_title), capTop = SignUpStack.titleCapTop)
         Text(stringResource(R.string.auth_profile_subtitle), style = TextRoles.onboardingSubtitle, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeTitleToContent))
         Avatar(

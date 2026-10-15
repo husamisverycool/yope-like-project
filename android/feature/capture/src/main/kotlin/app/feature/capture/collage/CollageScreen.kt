@@ -269,8 +269,8 @@ private fun SharePill(onShare: () -> Unit, sharing: Boolean, modifier: Modifier)
             .clip(shape)
             .then(Blocked.sharePillFill?.let { Modifier.background(it) } ?: Modifier)
             .clickable(enabled = !sharing, onClick = onShare)
-            .clearAndSetSemantics { contentDescription = label; role = Role.Button; traversalIndex = 4f }
-            .testTag("collage.share"),
+            .testTag("collage.share")
+            .clearAndSetSemantics { contentDescription = label; role = Role.Button; traversalIndex = 4f },
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {

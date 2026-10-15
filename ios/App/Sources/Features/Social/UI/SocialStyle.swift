@@ -15,8 +15,6 @@ enum SocialText {
         DSTextStyle(family: Tokens.Fonts.globalFamily, size: size, weight: weight, relativeTo: Font.TextStyle(tokenName: textStyle))
     }
 
-    /// Composer / reply placeholder (`fontSize.global.placeholder`; weight not measured → platform regular).
-    static let placeholder = role(Tokens.FontSizes.globalPlaceholder, Font.Weight.regular, Tokens.Layouts.GlobalTextStyleMap.placeholder)
     /// Quoted poster's first name on the lime reply quote.
     static let replyName = role(Tokens.FontSizes.chatThreadFontSizeReplyName, Tokens.FontWeights.chatThreadFontWeightReplyName, Tokens.Layouts.ChatThreadLayoutTextStyleMap.replyName)
     /// "pic" under the quoted name.
@@ -42,8 +40,6 @@ enum SocialText {
     static let historyHeaderRange = role(Tokens.FontSizes.weekHistoryFontSizeHeader, Tokens.FontWeights.weekHistoryFontWeightHeaderRange, Tokens.Layouts.WeekHistoryLayoutTextStyleMap.header)
     /// Weekday on a strip tile.
     static let historyWeekday = role(Tokens.FontSizes.weekHistoryFontSizeWeekday, Tokens.FontWeights.weekHistoryFontWeightWeekday, Tokens.Layouts.WeekHistoryLayoutTextStyleMap.weekday)
-    /// The foundations coach tooltip (`camera.capture.layout.coach`), used by `tagging.coach`.
-    static let coach = role(Tokens.FontSizes.cameraCaptureFontSizeCoach, Tokens.FontWeights.cameraCaptureFontWeightCoach, Tokens.Layouts.CameraCaptureLayoutTextStyleMap.coach)
     /// Album name sheet title (`groups.create.fontSize.title` / `.fontWeight.title`; Dynamic Type of the sheet title).
     static let albumSheetTitle = role(Tokens.FontSizes.groupsCreateFontSizeTitle, Tokens.FontWeights.groupsCreateFontWeightTitle, Tokens.Layouts.GlobalTextStyleMap.sheetTitle)
 }

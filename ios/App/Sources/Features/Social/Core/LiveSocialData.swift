@@ -82,11 +82,11 @@ struct LiveSocialData: SocialDataSource {
         return posts
     }
 
-    func cachedPosts(ids: [PostID], groupID: GroupID) async -> [PostWithMedia] {
+    func cachedPosts(ids: [PostID], groupID: GroupID?) async -> [PostWithMedia] {
         let known = memo.posts(ids)
         let missing = ids.filter { known[$0] == nil }
         var found = known
-        if !missing.isEmpty {
+        if !missing.isEmpty, let groupID {
             for post in await cachedPosts(groupID: groupID) where missing.contains(post.id) { found[post.id] = post }
         }
         return ids.compactMap { found[$0] }
@@ -238,7 +238,7 @@ struct UnconfiguredSocialData: SocialDataSource {
     func deleteMessage(id: MessageID, groupID: GroupID) async throws { try fail() as Void }
     func posts(ids: [PostID]) async throws -> [PostWithMedia] { try fail() }
     func cachedPosts(groupID: GroupID) async -> [PostWithMedia] { [] }
-    func cachedPosts(ids: [PostID], groupID: GroupID) async -> [PostWithMedia] { [] }
+    func cachedPosts(ids: [PostID], groupID: GroupID?) async -> [PostWithMedia] { [] }
     func deleteMedia(id: MediaID) async throws { try fail() as Void }
     func reactions(postIDs: [PostID]) async throws -> [Reaction] { try fail() }
     func react(postID: PostID, emoji: String) async throws -> Reaction { try fail() }

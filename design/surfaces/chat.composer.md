@@ -24,8 +24,9 @@ Copy: `design/copy/social.json` (`chat.composer.*`). Decisions: `design/MERGE_DE
 5. **Mic circle** (`chat.composer.dimension.sideButton`, 39.5) at `chat.composer.dimension.insetTrailing` (23.4) from the
    right edge.
 
-The sticker circle between the field and the mic is removed (stickers are do-not-build). The row's distance to the bottom
-safe area / keyboard is **BLOCKED** (`chat.composer.dimension.bottomInset`). The field grows with multi-line text (line
+The sticker circle between the field and the mic is removed (stickers are do-not-build). The row's bottom sits
+`chat.composer.dimension.bottomInset` (8 pt; WhatsApp + Instagram, Gap fill G-5) above the bottom safe area, and the same
+distance above the keyboard when it is up. The field grows with multi-line text (line
 height not measured → platform default leading, `design/tokens/README.md`).
 
 ## Elements
@@ -34,7 +35,7 @@ height not measured → platform default leading, `design/tokens/README.md`).
 |---|---|---|---|
 | camera circle | `chat.composer.dimension.cameraButton`, `color.global.accent`, `icon.global.camera` in `color.global.onAccent` sized `chat.composer.dimension.cameraGlyph` | `chat.composer.a11y.camera` | opens `camera.capture` with this group preselected (`DeepLink.camera(groupID:)`); the photo is sent with `create_post` to this group only and appears as a photo message |
 | text field | `chat.composer.dimension.fieldHeight`, `color.global.control`, rim tokens, `radius.global.capsule`, `chat.composer.dimension.fieldPaddingLeading`; typed text: text role `body` in `color.global.textPrimary`; placeholder: `fontSize.global.placeholder` in `color.global.textSecondary` | placeholder `chat.composer.placeholder` ("start typing..."); `chat.composer.a11y.field` | multi-line; `invalid_body` limit 4000 characters is an integrity bound, the UI limit is not sourced |
-| send control | **BLOCKED** `chat.composer.layout.typingState` (what replaces / joins the mic when the field has text) | `chat.composer.a11y.send` ("send") | sends `send_message(p_kind: text)`; until captured, the keyboard's return key sends (approximation, Gaps) |
+| send control | `chat.composer.layout.typingState`: while the field holds text the mic circle is replaced in place by a send circle (`chat.composer.dimension.sideButton`, `color.global.accent`, `icon.global.send` in `color.global.onAccent`); empty field → mic again (Apple Messages, G-6) | `chat.composer.a11y.send` ("send") | sends `send_message(p_kind: text)`; the field clears |
 | mic circle | `chat.composer.dimension.sideButton`, `color.global.controlRaised` (lossless median #414141, S-2), `icon.global.mic` in `color.global.textPrimary` sized `chat.composer.dimension.micGlyph` | `chat.composer.a11y.mic` | starts voice recording (`chat.voice.md`; recording UI **BLOCKED**); first use asks for the microphone (system prompt, `system.permissions`) |
 
 ## States
@@ -42,7 +43,7 @@ height not measured → platform default leading, `design/tokens/README.md`).
 | state | what shows | tokens / copy | source |
 |---|---|---|---|
 | idle | row as above | — | S1 |
-| typing | **BLOCKED** (`chat.composer.layout.typingState`) | — | yope-b §2 "Not found: typing state" |
+| typing | mic circle → lime send circle (`chat.composer.layout.typingState`) | `chat.composer.a11y.send` | Apple Messages empty vs filled composer (G-6); not observed in Yope |
 | sending | the message appears in the thread; failure → `chat.thread.sendFailed` | `haptic.global.send` / `haptic.global.error` | — |
 | offline | the field stays editable; send fails as above | `chat.thread.sendFailed` | `yope.voice.error` |
 | loading / empty / error | not applicable (the composer has no content of its own) | — | — |
@@ -112,6 +113,6 @@ Reduce Motion: system.
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `chat.composer.layout.typingState` (send control) | BLOCKED; approximation: the keyboard return key sends | one screenshot of a Yope group chat with text typed in the field |
-| `chat.composer.dimension.bottomInset` | BLOCKED (S1 is a marketing mock: 21.3 pt to the screen bottom, no home indicator) | one device screenshot of a Yope group chat, keyboard down and up |
+| `chat.composer.layout.typingState` (send control) | **SOURCED (gap fill)**: the mic circle swaps in place to a lime send circle while the field has text — Apple Messages (Google Photos panels 13 / 14 + iOS 27 guide glyphs), WhatsApp mic-beside-field (G-6) | a Yope screenshot with typed text would supersede |
+| `chat.composer.dimension.bottomInset` | **SOURCED (gap fill)**: 8 pt above the bottom safe area — WhatsApp (42.0 pt to the screen bottom) and Instagram (42.3 pt) minus the 34-pt safe area (G-5). Keyboard-up gap not measured: same value against the keyboard (flagged) | one device screenshot of a Yope group chat, keyboard down and up |
 | multi-line field behaviour (max lines) | not observed | same screenshot with a long text |

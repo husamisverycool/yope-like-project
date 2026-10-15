@@ -157,20 +157,25 @@ struct WallHeader<Leading: View, Trailing: View>: View {
 
 // MARK: - walls.mine
 
-/// "my wall": settings circle top-right, title, my wall items; the tab bar floats over the bottom.
+/// "my wall": settings circle top-right, title, my wall items; the tab bar floats over the bottom (tab root). Opened
+/// from elsewhere (the viewer's "you"), a back circle takes the empty leading slot instead.
 struct WallMineScreen: View {
     @State private var model: WallModel
     @State private var viewer: PhotoViewerContext?
+    @Environment(\.dismiss) private var dismiss
 
     init(model: WallModel? = nil) {
         _model = State(initialValue: model ?? WallModel(owner: .me, data: SocialServices.shared.data))
     }
 
     var body: some View {
+        let isTabRoot = SocialTabRoot.isRoot(.wallMine)
         ScrollView {
             VStack(spacing: 0) {
                 WallHeader(title: Copy.wallsMineTitle) {
-                    EmptyView()
+                    if !isTabRoot {
+                        HeaderCircleButton(icon: Tokens.Icons.globalBack, accessibilityLabel: Copy.chatThreadA11yBack, fill: .onDeep) { dismiss() }
+                    }
                 } trailing: {
                     HeaderCircleButton(icon: Tokens.Icons.globalSettings, accessibilityLabel: Copy.wallsMineA11ySettings, fill: .onDeep) {
                         SocialNav.push(.account(.settings))
@@ -178,10 +183,10 @@ struct WallMineScreen: View {
                 }
                 WallContent(model: model) { viewer = $0 }
             }
-            .padding(.bottom, Tokens.Sizes.globalTabBarHeight)
         }
         .scrollBounceBehavior(.basedOnSize)
         .background(Tokens.Colors.globalBackgroundDeep.ignoresSafeArea())
+        .modifier(SocialTabBar(tab: .me, isTabRoot: isTabRoot, avatarPath: model.profile?.avatarPath))
         .socialHidesNavigationBar()
         .task {
             if model.phase == .loading { await model.load() }
@@ -231,11 +236,13 @@ struct WallMemberScreen: View {
 
 // MARK: - walls.browse
 
-/// "me & friends": title, the row of person circles (me first), the selected person's wall; everything scrolls.
+/// "me & friends": title, the row of person circles (me first), the selected person's wall; everything scrolls. The
+/// walls tab root shows the tab bar; opened from a group profile ("wall" segment), a back circle instead.
 struct WallsBrowseScreen: View {
     let groupID: String?
     @State private var model: WallsBrowseModel
     @State private var viewer: PhotoViewerContext?
+    @Environment(\.dismiss) private var dismiss
 
     init(groupID: String?, model: WallsBrowseModel? = nil) {
         self.groupID = groupID
@@ -243,6 +250,7 @@ struct WallsBrowseScreen: View {
     }
 
     var body: some View {
+        let isTabRoot = SocialTabRoot.isRoot(.wallsBrowse(groupID: groupID))
         ScrollView {
             VStack(spacing: 0) {
                 ZStack(alignment: .top) {
@@ -252,6 +260,12 @@ struct WallsBrowseScreen: View {
                         .foregroundStyle(Tokens.Colors.globalTextPrimary)
                         .accessibilityAddTraits(.isHeader)
                         .alignmentGuide(.top) { $0[.firstTextBaseline] - Tokens.Sizes.wallsBrowseDimensionTitleBaseline }
+                    if !isTabRoot {
+                        HeaderCircleButton(icon: Tokens.Icons.globalBack, accessibilityLabel: Copy.chatThreadA11yBack, fill: .onDeep) { dismiss() }
+                            .padding(.leading, Tokens.Sizes.globalHeaderInset)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .offset(y: Tokens.Sizes.wallsBrowseDimensionTitleBaseline - SocialMetrics.capHeight(TextRole.sheetTitle) / 2 - Tokens.Sizes.globalHeaderButton / 2)
+                    }
                     if model.phase == .ready {
                         personRow
                             .padding(.top, Tokens.Sizes.wallsBrowseDimensionRowCenter - Tokens.Sizes.wallsBrowseDimensionAvatar / 2)
@@ -259,10 +273,10 @@ struct WallsBrowseScreen: View {
                 }
                 content
             }
-            .padding(.bottom, Tokens.Sizes.globalTabBarHeight)
         }
         .scrollBounceBehavior(.basedOnSize)
         .background(Tokens.Colors.globalBackgroundDeep.ignoresSafeArea())
+        .modifier(SocialTabBar(tab: .walls, isTabRoot: isTabRoot, avatarPath: model.people.first?.profile?.avatarPath))
         .socialHidesNavigationBar()
         .socialFeedback(model.signals.feedback)
         .task {
@@ -333,6 +347,46 @@ struct WallsBrowseScreen: View {
                 }
             }
             .padding(.leading, Tokens.Sizes.wallsBrowseDimensionRowInset - (pitch - avatar) / 2)
+        }
+    }
+}
+
+// MARK: - Tab roots
+
+/// walls.mine and walls.browse are the "me" and "walls" tabs (`groups.list.layout.tabBar`): the shell pushes them as
+/// the only route on the groups stack.
+@MainActor
+enum SocialTabRoot {
+    #if DEBUG
+    /// Snapshot tests draw the walls as tab roots.
+    static var treatsEveryWallAsRoot = false
+    #endif
+
+    static func isRoot(_ route: SocialRoute) -> Bool {
+        #if DEBUG
+        if treatsEveryWallAsRoot { return true }
+        #endif
+        let path = SocialNav.router.path
+        return path.count == 1 && path.first == .social(route)
+    }
+}
+
+/// The account group's floating tab bar on a tab root (needs the account dependencies for the shell).
+struct SocialTabBar: ViewModifier {
+    let tab: AppTab
+    let isTabRoot: Bool
+    let avatarPath: String?
+    @Environment(AccountDependencies.self) private var account: AccountDependencies?
+
+    func body(content: Content) -> some View {
+        if isTabRoot, let account {
+            content.safeAreaInset(edge: .bottom) {
+                FloatingTabBar(selected: tab, avatarPath: avatarPath) { selected in
+                    ShellNavigation.select(selected, router: account.router, shell: account.shell)
+                }
+            }
+        } else {
+            content
         }
     }
 }

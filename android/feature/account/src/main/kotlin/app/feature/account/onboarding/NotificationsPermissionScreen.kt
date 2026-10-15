@@ -70,8 +70,7 @@ fun NotificationsPermissionScreen(showSkip: Boolean, onContinue: () -> Unit, onS
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalButtonMarginH)) {
-            Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeSheetTopToTitle))
-            OnboardingTitle(stringResource(R.string.onboarding_permission_notifications_title))
+            OnboardingTitle(stringResource(R.string.onboarding_permission_notifications_title), capTop = Tokens.Sizes.groupsCreateSizeSheetTopToTitle)
             Text(stringResource(R.string.onboarding_permission_notifications_detail), style = TextRoles.onboardingSubtitle, modifier = Modifier.fillMaxWidth())
         }
         // Flexible space: Yope's illustration area (its art is do-not-copy; none sourced).

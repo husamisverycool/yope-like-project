@@ -177,6 +177,9 @@ final class SocialSnapshotTests: XCTestCase {
     // MARK: walls
 
     func testWalls() async {
+        // The "me" and "walls" tab roots (no back circle; the shell's tab bar is not part of these snapshots).
+        SocialTabRoot.treatsEveryWallAsRoot = true
+        defer { SocialTabRoot.treatsEveryWallAsRoot = false }
         let mine = WallModel(owner: .me, data: data)
         await mine.load()
         record(WallMineScreen(model: mine), "walls.mine", "ready")
@@ -199,7 +202,9 @@ final class SocialSnapshotTests: XCTestCase {
         let heldPeople = SocialDemo.makeData()
         heldPeople.update { $0.holds.insert("myGroups") }
         let loadingBrowse = WallsBrowseModel(data: heldPeople)
+        let browseTask = await startHeld({ await loadingBrowse.load() }, until: { loadingBrowse.showsLoading })
         record(WallsBrowseScreen(groupID: nil, model: loadingBrowse), "walls.browse", "loading")
+        browseTask.cancel()
 
         let emptyData = SocialDemo.makeEmptyData()
         let emptyMine = WallModel(owner: .me, data: emptyData)
@@ -255,8 +260,12 @@ final class SocialSnapshotTests: XCTestCase {
         await empty.load()
         record(WeekRecapView(model: empty), "week.recap", "empty")
 
-        let loading = WeekRecapModel(groupID: SocialDemo.groupID, recapID: SocialDemo.recapID, data: data)
+        let heldRecap = SocialDemo.makeData()
+        heldRecap.update { $0.holds.insert("recap") }
+        let loading = WeekRecapModel(groupID: SocialDemo.groupID, recapID: SocialDemo.recapID, data: heldRecap)
+        let recapTask = await startHeld({ await loading.load() }, until: { loading.showsLoading })
         record(WeekRecapView(model: loading), "week.recap", "loading")
+        recapTask.cancel()
 
         let failing = SocialDemo.makeData()
         failing.update { $0.mode = .failing }
@@ -307,8 +316,12 @@ final class SocialSnapshotTests: XCTestCase {
         await ready.load()
         record(WeekHistoryScreen(model: ready), "week.history", "ready")
 
-        let loading = WeekHistoryModel(groupID: SocialDemo.groupID, data: data, now: now)
+        let held = SocialDemo.makeData()
+        held.update { $0.holds.insert("historyWeeks") }
+        let loading = WeekHistoryModel(groupID: SocialDemo.groupID, data: held, now: now)
+        let task = await startHeld({ await loading.load() }, until: { loading.showsLoading })
         record(WeekHistoryScreen(model: loading), "week.history", "loading")
+        task.cancel()
 
         let empty = WeekHistoryModel(groupID: SocialDemo.groupID, data: SocialDemo.makeEmptyData(), now: now)
         await empty.load()

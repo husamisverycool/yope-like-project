@@ -75,6 +75,12 @@ final class WeekRecapModel {
     /// The pencil opens `week.edit` only for a ready recap.
     var canEdit: Bool { recap?.status == .ready }
 
+    /// The editor starts from what this screen shows.
+    var editSeed: WeekEditModel.Seed? {
+        guard phase == .ready, let recap else { return nil }
+        return WeekEditModel.Seed(recap: recap, cardPosts: cardPosts, weekPosts: weekPosts, profiles: profiles, me: me)
+    }
+
     /// The on-device copy was looked at: only then may the loading HUD show (none over cached content).
     private(set) var hasCheckedCache = false
     /// Showing the on-device copy because the server could not be reached.
@@ -212,11 +218,30 @@ final class WeekEditModel {
     private(set) var profiles: [UserID: Profile] = [:]
     private(set) var me: UserID?
 
-    init(groupID: GroupID, mode: Mode, data: any SocialDataSource) {
+    /// What `week.recap` already shows: the editor opens on it at once (no loading HUD).
+    struct Seed {
+        let recap: WeeklyRecap
+        let cardPosts: [PostWithMedia]
+        let weekPosts: [PostWithMedia]
+        let profiles: [UserID: Profile]
+        let me: UserID?
+    }
+
+    init(groupID: GroupID, mode: Mode, data: any SocialDataSource, seed: Seed? = nil) {
         self.groupID = groupID
         self.mode = mode
         self.data = data
         if case .album = mode { isAlbumSheetPresented = true }
+        if case let .recap(recapID) = mode, let seed, seed.recap.id == recapID, seed.recap.status == .ready {
+            recap = seed.recap
+            text = seed.recap.text ?? ""
+            let inRecap = Set(seed.cardPosts.map(\.id))
+            gridPosts = seed.cardPosts + seed.weekPosts.filter { !inRecap.contains($0.id) }
+            checked = inRecap
+            profiles = seed.profiles
+            me = seed.me
+            phase = .ready
+        }
     }
 
     /// Checked photos in grid order (what `update_recap` / `save_album` receive).
@@ -358,6 +383,10 @@ final class WeekHistoryModel {
     @ObservationIgnored private let now: @Sendable () -> Date
 
     private(set) var isLoading = true
+    /// The cached weeks were looked at: only then may the indicator show (none before cached content).
+    private(set) var hasCheckedCache = false
+
+    var showsLoading: Bool { isLoading && hasCheckedCache }
     private(set) var group: PhotoGroup?
     private(set) var weeks: [Week] = []
     private(set) var posts: [PostID: PostWithMedia] = [:]
@@ -382,11 +411,14 @@ final class WeekHistoryModel {
     func load() async {
         if group == nil { group = await data.cachedGroup(id: groupID) }
         // Cached weeks first (no indicator when there are some), refreshed in place.
+        var showsCached = !weeks.isEmpty
         if weeks.isEmpty, let cached = await data.cachedHistoryWeeks(groupID: groupID), !cached.isEmpty {
             apply(cached, replacing: true)
             isLoading = false
+            showsCached = true
             await loadDetails()
         }
+        hasCheckedCache = true
         if let fresh = try? await data.group(id: groupID) { group = fresh }
         do {
             let fetched = try await data.historyWeeks(groupID: groupID, beforeWeek: nil)
@@ -403,7 +435,8 @@ final class WeekHistoryModel {
                 line = .offline
                 await loadDetails()
             } else {
-                apply([], replacing: true)
+                // Weeks already on screen stay; the line explains.
+                if !showsCached { apply([], replacing: true) }
                 isOffline = failure == .offline
                 line = isOffline ? .offline : .error
             }

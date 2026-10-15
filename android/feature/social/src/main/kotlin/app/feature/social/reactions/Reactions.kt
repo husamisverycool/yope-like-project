@@ -70,6 +70,9 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
 
+/** The x positions' source (tests make it deterministic). */
+val LocalRainRandom = androidx.compose.runtime.staticCompositionLocalOf<Random> { Random.Default }
+
 /** Size of the text used to measure an emoji's rendered width (a measuring reference, not a drawn size). */
 private const val MEASURE_REFERENCE_SP = 100f
 
@@ -147,12 +150,10 @@ fun ReactionCluster(entries: List<ReactionEntry>, onClick: (() -> Unit)?, modifi
     Box(
         modifier
             .let { if (onClick != null) it.clickable(role = Role.Button, onClick = onClick) else it }
-            // Without a tap action the cluster is read as part of its photo's label (chat.thread a11y).
+            // Without a tap action the cluster merges into its photo's element (chat.thread a11y: grouped with the photo).
             .clearAndSetSemantics {
-                if (onClick != null) {
-                    contentDescription = label
-                    role = Role.Button
-                }
+                contentDescription = label
+                if (onClick != null) role = Role.Button
             },
     ) {
         emoji.forEachIndexed { i, e ->
@@ -256,7 +257,8 @@ fun EmojiRain(emoji: String, key: Any, onFinished: () -> Unit, modifier: Modifie
     val spawn = Tokens.Durations.chatReactionsDurationRainSpawnInterval
     val travel = Tokens.Durations.chatReactionsDurationRainTravel
     val total = Tokens.Durations.chatReactionsDurationRainTotal
-    val xs = remember(key) { List(copies) { Random.nextFloat() } }
+    val random = LocalRainRandom.current
+    val xs = remember(key) { List(copies) { random.nextFloat() } }
     var elapsed by remember(key) { mutableLongStateOf(0L) }
     LaunchedEffect(key) {
         val start = withFrameMillis { it }

@@ -18,12 +18,9 @@ internal object Blocked {
      */
     val countdownWeight: FontWeight? = FontWeight.Bold
 
-    /**
-     * `chat.voice.layout.recording` (BLOCKED): the voice-note recorder's presentation. Debug
-     * builds show the mic so the voice-note flow (one note on every chosen group's post) can be
-     * exercised; the mic draws no recording state. Release builds hide the mic and its coach.
-     */
+    /** `chat.voice.layout.recording` is SOURCED since the gap-fill pass: the voice-note recorder ships. */
     const val voiceNoteRecorder: Boolean = true
+
 
     /** `camera.sendto.color.messageField` (BLOCKED): message field and mic circle drawn without a fill. */
     val messageFieldFill: Color? = null

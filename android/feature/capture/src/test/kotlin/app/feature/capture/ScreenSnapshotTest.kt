@@ -2,6 +2,7 @@ package app.feature.capture
 
 import android.content.Context
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -170,11 +171,11 @@ class ScreenSnapshotTest {
     @Test fun dailyUnavailable() = daily("unavailable", dailyLive.copy(session = DailyCaptureViewModel.Session.Unavailable), live = false)
 
     @Test fun dualImage() = snap("daily.dualimage_component") {
-        Box(Modifier.fillMaxSize().padding(top = 124.dp)) { DualImage(photo, front, "Back and front photos from Ana", Modifier.fillMaxWidth()) }
+        Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep).padding(top = 124.dp)) { DualImage(photo, front, "Back and front photos from Ana", Modifier.fillMaxWidth()) }
     }
 
     @Test fun dualImageLoading() = snap("daily.dualimage_loading") {
-        Box(Modifier.fillMaxSize().padding(top = 124.dp)) { DualImage(null, null, null, Modifier.fillMaxWidth()) }
+        Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep).padding(top = 124.dp)) { DualImage(null, null, null, Modifier.fillMaxWidth()) }
     }
 
     // ---- collage.view / collage.share ------------------------------------------------------------

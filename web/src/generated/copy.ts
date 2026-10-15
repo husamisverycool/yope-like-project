@@ -228,6 +228,7 @@ const table = {
   "chat.voice.permission.button": "enable", // Yope · chat.voice · SOURCED
   "chat.voice.permission.detail": "enable your mic", // Yope · chat.voice · SOURCED
   "chat.voice.permission.title": "can’t send voice messages?", // Yope · chat.voice · SOURCED
+  "chat.voice.recording.slideToCancel": "slide to cancel", // WhatsApp · chat.voice · SOURCED
   "collage.share.button": "share", // Yope · collage.share · SOURCED
   "collage.share.sheetTitle": "share with friends", // Yope · collage.share · SOURCED
   "collage.view.a11y.back": "back", // Yope · collage.view · SOURCED

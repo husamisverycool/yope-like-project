@@ -122,7 +122,6 @@ import app.feature.social.reactions.ActivitySheet
 import app.feature.social.reactions.EmojiRain
 import app.feature.social.reactions.ReactionCluster
 import app.feature.social.reactions.ReactionPickerSheet
-import app.feature.social.reactions.clusterLabel
 import app.media.MediaPermission
 import app.media.MediaPermissions
 import app.media.PermissionState
@@ -809,8 +808,6 @@ private fun PhotoMessage(
     val shape = RoundedCornerShape(Tokens.Radii.globalPhoto)
     val caption = row.post?.caption?.takeIf { it.isNotBlank() }
     val captionLabel = caption?.let { stringRes(R.string.chat_thread_a11y_caption, it) }
-    val cluster = if (row.reactions.isNotEmpty()) clusterLabel(row.reactions) else null
-    val description = listOfNotNull(label, captionLabel, cluster).joinToString(", ")
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val height = maxWidth * (Tokens.Sizes.chatThreadDimensionPhotoHeight / Tokens.Sizes.chatThreadDimensionPhotoWidth)
         Box(
@@ -819,14 +816,14 @@ private fun PhotoMessage(
                 .height(height)
                 .clip(shape)
                 .combinedClickable(onClick = onOpen, onLongClick = onLongPress)
-                .semantics {
-                    contentDescription = description
+                // One element (the platform merge): photo label, then caption, then the cluster's emoji names.
+                .semantics(mergeDescendants = true) {
                     role = Role.Button
                     customActions = listOf(CustomAccessibilityAction(reactLabel) { onLongPress(); true })
                 },
         ) {
             val media = row.media
-            RemotePhoto(media?.imagePath(Media.Rendition.Display), null, Modifier.fillMaxSize(), ContentScale.Crop, fallbackPath = media?.imagePath(Media.Rendition.Thumb))
+            RemotePhoto(media?.imagePath(Media.Rendition.Display), label, Modifier.fillMaxSize(), ContentScale.Crop, fallbackPath = media?.imagePath(Media.Rendition.Thumb))
             Line(Formats.overlayTime(row.message.createdAt), Type.overlayTime(), Tokens.Colors.globalTextPrimary, Modifier.align(Alignment.Center).clearAndSetSemantics { })
             if (caption != null) {
                 val scrim = SocialBlocked.scrim
@@ -842,7 +839,7 @@ private fun PhotoMessage(
                         .heightIn(min = Tokens.Sizes.chatThreadDimensionCaptionHeight)
                         .let { if (scrim != null) it.background(scrim, RoundedCornerShape(Tokens.Radii.chatThreadRadiusCaption)) else it }
                         .padding(horizontal = Tokens.Sizes.chatThreadDimensionCaptionPaddingH)
-                        .clearAndSetSemantics { },
+                        .clearAndSetSemantics { if (captionLabel != null) contentDescription = captionLabel },
                     contentAlignment = Alignment.Center,
                 ) {
                     Line(caption, Type.style(Tokens.FontSizes.chatThreadFontSizeCaption, Tokens.FontWeights.chatThreadFontWeightCaption), Tokens.Colors.globalTextPrimary)

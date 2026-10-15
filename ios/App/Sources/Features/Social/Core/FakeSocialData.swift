@@ -234,9 +234,9 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
 
     func cachedPosts(groupID: GroupID) async -> [PostWithMedia] { read { $0.cachedFeeds[groupID] ?? [] } }
 
-    func cachedPosts(ids: [PostID], groupID: GroupID) async -> [PostWithMedia] {
+    func cachedPosts(ids: [PostID], groupID: GroupID?) async -> [PostWithMedia] {
         read { state in
-            let feed = state.cachedFeeds[groupID] ?? []
+            let feed = groupID.flatMap { state.cachedFeeds[$0] } ?? state.cachedFeeds.values.flatMap { $0 }
             return ids.compactMap { id in feed.first { $0.id == id } }
         }
     }

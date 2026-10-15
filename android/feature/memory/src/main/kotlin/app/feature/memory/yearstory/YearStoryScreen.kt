@@ -73,6 +73,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.designsystem.R
 import app.designsystem.generated.Tokens
+import app.feature.memory.common.GlyphIcon
 import app.designsystem.scaledDp
 import app.feature.memory.common.HeaderCircleButton
 import app.feature.memory.common.MemoryBlocked
@@ -306,7 +307,7 @@ private fun androidx.compose.foundation.layout.BoxScope.ShareRow(enabled: Boolea
             .testTag(YearStoryTags.SHARE_ROW),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(Tokens.Icons.yearStoryShare, contentDescription = null, tint = Tokens.Colors.globalTextPrimary, modifier = Modifier.size(row))
+        GlyphIcon(Tokens.Icons.yearStoryShare, row, Tokens.Colors.globalTextPrimary)
         Spacer(Modifier.size(Tokens.Sizes.yearStoryShareGlyphGap))
         BasicText(
             stringResource(R.string.year_story_share),

@@ -30,7 +30,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.VectorGroup
+import androidx.compose.ui.graphics.vector.VectorPath
+import androidx.compose.ui.graphics.vector.toPath
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.Constraints
+import kotlin.math.roundToInt
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
@@ -67,6 +74,45 @@ fun roleStyle(
     family: DSFontFamily = Tokens.Fonts.globalFamily,
 ): TextStyle = dsTextStyle(size, weight, family, lineHeight)
 
+/** The union of an icon's path bounds, in viewport units (where its glyph is drawn inside its box). */
+fun ImageVector.glyphBounds(): Rect {
+    var bounds: Rect? = null
+    fun visit(group: VectorGroup) {
+        for (node in group) when (node) {
+            is VectorGroup -> visit(node)
+            is VectorPath -> {
+                val b = node.pathData.toPath().getBounds()
+                bounds = bounds?.let { Rect(minOf(it.left, b.left), minOf(it.top, b.top), maxOf(it.right, b.right), maxOf(it.bottom, b.bottom)) } ?: b
+            }
+        }
+    }
+    visit(root)
+    return bounds ?: Rect(0f, 0f, viewportWidth, viewportHeight)
+}
+
+/**
+ * An icon whose drawn glyph is [glyphHeight] tall — glyph-size tokens (`dimension.year.story.chrome.glyph`,
+ * `dimension.year.story.share.rowHeight`, `size.global.checkCircle`, toast / coach glyphs) are measured on
+ * the glyph, while a Material icon draws its glyph inside a padded viewport. The layout takes exactly
+ * the glyph's bounds, so gap tokens measure from the glyph's edge.
+ */
+@Composable
+fun GlyphIcon(icon: ImageVector, glyphHeight: Dp, tint: Color, modifier: Modifier = Modifier) {
+    val bounds = remember(icon) { icon.glyphBounds() }
+    Icon(
+        icon,
+        contentDescription = null,
+        tint = tint,
+        modifier = modifier.layout { measurable, _ ->
+            val unit = glyphHeight.toPx() / bounds.height
+            val box = measurable.measure(Constraints.fixed((icon.viewportWidth * unit).roundToInt(), (icon.viewportHeight * unit).roundToInt()))
+            layout((bounds.width * unit).roundToInt(), glyphHeight.roundToPx()) {
+                box.place(-(bounds.left * unit).roundToInt(), -(bounds.top * unit).roundToInt())
+            }
+        },
+    )
+}
+
 /** Distance to move a [visual]-sized control so its larger touch box keeps the visual position. */
 fun touchOutset(visual: Dp): Dp = (max(visual, Tokens.Sizes.globalMinTouchTargetAndroid) - visual) / 2
 
@@ -95,7 +141,7 @@ fun HeaderCircleButton(
         contentAlignment = Alignment.Center,
     ) {
         Box(Modifier.size(diameter).clip(CircleShape).background(fill), contentAlignment = Alignment.Center) {
-            Icon(icon, contentDescription = null, tint = tint, modifier = if (glyph != null) Modifier.size(glyph) else Modifier)
+            if (glyph != null) GlyphIcon(icon, glyph, tint) else Icon(icon, contentDescription = null, tint = tint)
         }
     }
 }

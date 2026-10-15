@@ -38,6 +38,7 @@ import app.feature.account.LocalAccountEnvironment
 import app.feature.account.common.AccountViewModel
 import app.feature.account.common.CollectEvents
 import app.feature.account.common.SignUpLayout
+import app.feature.account.common.SignUpStack
 import app.feature.account.common.dataError
 import app.feature.account.shell.AccountFlow
 import app.ui.components.FormTextField
@@ -211,7 +212,7 @@ fun CodeScreen(
         },
         overlay = { HudOverlay(state.verifying, stringResource(R.string.groups_create_hud_loading)) },
     ) {
-        OnboardingTitle(stringResource(R.string.auth_code_title))
+        OnboardingTitle(stringResource(R.string.auth_code_title), capTop = SignUpStack.titleCapTop)
         Text(stringResource(R.string.auth_code_subtitle, state.phoneDisplay), style = TextRoles.onboardingSubtitle, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeTitleToContent))
         FormTextField(

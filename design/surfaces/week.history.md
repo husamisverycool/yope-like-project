@@ -5,7 +5,7 @@ Reference app: **Retro** (profile week sections) (`docs/SURFACES.md`). Research:
 (`week.history.*`), Retro voice (`retro.voice.*`: Title Case nav, Sentence-case menu labels, terse numbers).
 Retro is light-mode in every measured image; this app is **dark only** (`layout.global.appearance`, F-1). Retro's geometry,
 type sizes and voice are used; text and background colours come from the global dark tokens; the empty-day / add tile
-fills have no dark-mode measurement and are **BLOCKED** (S-16).
+fills are now measured on Retro's own dark appearance (three lossless Lazyweb captures; Gap fill G-15).
 
 Stripped Retro items (do-not-copy): key holders / "Key holders only" gate (every member sees the group's whole history),
 "Post to see" lock, "Weeks Posted: N", "N new" / "Seen" pills, the "Getting Started" progress ring.
@@ -47,12 +47,12 @@ Background `color.global.backgroundDeep` (Retro's dark mode shows a black backgr
      Photo tiles: the photo (aspect fill, `thumb_path`) with the weekday ("Mon") bottom-centred, baseline
      `week.history.dimension.weekdayBaseline` above the tile bottom, `week.history.fontSize.weekday` /
      `.fontWeight.weekday`, `color.global.textPrimary`.
-   - **Current week only**: after the photo tiles, the **add tile** (fill `week.history.color.emptyTile` **BLOCKED**,
-     "+" `week.history.icon.add` sized `week.history.dimension.addGlyph` in `week.history.color.emptyTileText` **BLOCKED**,
-     centred), then one **empty-day tile** per day of the week without a photo: three centred lines — month (`MMM`), day
-     number, weekday (`EEE`) — in `week.history.fontSize.emptyDayLabel` / `week.history.fontSize.emptyDay` (bold) /
-     `week.history.fontSize.emptyDayLabel`, colour `week.history.color.emptyTileText` (**BLOCKED**), fill
-     `week.history.color.emptyTile` (**BLOCKED**).
+   - **Current week only**: after the photo tiles, the **add tile** (fill `week.history.color.emptyTile` #262626,
+     "+" `week.history.icon.add` sized `week.history.dimension.addGlyph` in `color.global.textPrimary` — #FFFFFF in Retro
+     dark — centred), then one **empty-day tile** per day of the week without a photo: three centred lines — month
+     (`MMM`), day number, weekday (`EEE`) — in `week.history.fontSize.emptyDayLabel` / `week.history.fontSize.emptyDay`
+     (bold) / `week.history.fontSize.emptyDayLabel`, colour `week.history.color.emptyTileText` (#515151), fill
+     `week.history.color.emptyTile` (#262626).
    - Next section: next header's cap top `week.history.dimension.sectionGap` below the strip bottom.
 4. Pagination: more weeks load at the end (pages of 8). If `free_history_days` limits browsing (T1, owner), the list simply
    ends — no gate, no message.
@@ -66,8 +66,8 @@ Background `color.global.backgroundDeep` (Retro's dark mode shows a black backgr
 | week header | `week.history.fontSize.header`, `.fontWeight.headerTitle`, `.fontWeight.headerRange`, `.dimension.rangeGap`, `.dimension.inset`, `color.global.textPrimary` / `.textSecondary` | `week.history.header.title`; range (data, locale formatter) | — |
 | ••• | `icon.global.more`, `week.history.dimension.moreTrailing`; Retro's menu contents **BLOCKED** (`week.history.layout.weekMenu`) | `week.history.a11y.more`; items `week.history.menu.viewRecap` (when the week has a ready recap), `week.history.menu.saveAsAlbum` | native menu (`photo.viewer.layout.menu` component); View recap → `week.recap`; Save as album → `week.edit` album sheet with that week's photos |
 | photo tile | tile / strip tokens, `week.history.fontSize.weekday`, `.fontWeight.weekday`, `.dimension.weekdayBaseline` | weekday (data); `week.history.a11y.tile` | tap → `photo.viewer` (context = that week's photos) |
-| add tile | tile tokens, `week.history.icon.add`, `.dimension.addGlyph`, colours BLOCKED | `week.history.a11y.add` | opens `camera.capture` for this group (`DeepLink.camera(groupID:)`) |
-| empty-day tile | tile tokens, `week.history.fontSize.emptyDay` / `.emptyDayLabel`, colours BLOCKED | month / day / weekday (data); `week.history.a11y.emptyDay` | not interactive |
+| add tile | tile tokens, `week.history.icon.add`, `.dimension.addGlyph`, fill `week.history.color.emptyTile`, "+" `color.global.textPrimary` | `week.history.a11y.add` | opens `camera.capture` for this group (`DeepLink.camera(groupID:)`) |
+| empty-day tile | tile tokens, `week.history.fontSize.emptyDay` / `.emptyDayLabel`, `week.history.color.emptyTile` / `.emptyTileText` | month / day / weekday (data); `week.history.a11y.emptyDay` | not interactive |
 
 ## States
 
@@ -107,7 +107,10 @@ No Retro motion was measurable (no video). Scrolling (vertical list, horizontal 
 | `color.global.textPrimary` #FFFFFF | `color.global.backgroundDeep` #000000 | text | 21.00:1 | pass | 'Week N' 15 semibold, title, ••• |
 | `color.global.textSecondary` #969696 | `color.global.backgroundDeep` #000000 | text | 7.10:1 | pass | date range 15 regular |
 
-  Weekday labels sit on photos (no fixed backdrop; Retro's scrim not found): not computable. Empty-tile pairs: BLOCKED colours.
+  Weekday labels sit on photos (no fixed backdrop; Retro's scrim not found): not computable. Empty-day labels
+  `week.history.color.emptyTileText` #515151 on `week.history.color.emptyTile` #262626: **1.92:1 — FAIL** (text; reported,
+  not adjusted — Retro's light pair fails too; `week.history.a11y.emptyDay` carries the date). "+" #FFFFFF on #262626:
+  15.1:1 pass. Tile #262626 on #000000: 1.38:1 (boundary only).
 
 ## Data & actions
 
@@ -137,8 +140,8 @@ No Retro motion was measurable (no video). Scrolling (vertical list, horizontal 
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `week.history.color.emptyTile`, `week.history.color.emptyTileText` (dark mode) | BLOCKED | one screenshot of Retro's profile in dark mode |
-| `week.history.layout.weekMenu` (Retro's own ••• contents) | BLOCKED; our two items are product actions | one screenshot of Retro's week ••• menu |
+| `week.history.color.emptyTile`, `week.history.color.emptyTileText` (dark mode) | **SOURCED (gap fill)**: #262626 / #515151 ("+" #FFFFFF → `color.global.textPrimary`) from Retro's dark appearance, 3 lossless captures 2025-10 / 2026-05 (G-15). `emptyTileText` now covers the labels only | — |
+| `week.history.layout.weekMenu` (Retro's own ••• contents) | BLOCKED; our two items are product actions (gap fill: the public Retro screens show no menu) | one screenshot of Retro's week ••• menu |
 | empty-day text sizes | ratio estimates (±2 pt) | one raw screenshot of a Retro current week with empty days |
 | weekday label scrim on photos | not found | same screenshot |
 | motion | not measured | one screen recording of scrolling Retro's profile |

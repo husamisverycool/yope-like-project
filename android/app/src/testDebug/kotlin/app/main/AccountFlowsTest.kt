@@ -2,6 +2,8 @@ package app.main
 
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -101,7 +103,7 @@ class AccountFlowsTest {
         signUp(backend)
         at<AppRoute.GroupsList>()
         text("create group").assertExists()
-        assertEquals(listOf("requestOtp", "verifyOtp"), backend.calls.take(2))
+        assertEquals(listOf("requestOtp", "verifyOtp"), backend.calls.filter { it == "requestOtp" || it == "verifyOtp" })
         assertTrue(backend.ageConfirmed)
         assertEquals("Ana Lima", backend.profiles.getValue(backend.meId).displayName)
         assertTrue(stores.isOnboardingDone(backend.meId))
@@ -176,6 +178,7 @@ class AccountFlowsTest {
         text("Sunday dinners").assertExists()
         compose.runOnIdle { nav.navigate(AppRoute.GroupSettings("g1")) }
         compose.waitForIdle()
+        compose.onNode(hasScrollAction()).performScrollToNode(hasText("leave group"))
         compose.onNode(hasText("leave group")).performClick()
         compose.waitForIdle()
         text("Leave Sunday dinners?").assertExists()

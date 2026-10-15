@@ -7,6 +7,7 @@ export const tokens = {
   "albums.list.dimension.coverInset": 16, // Yope · albums.list · SOURCED
   "albums.list.dimension.coverToTitle": 15, // Yope · albums.list · SOURCED
   "albums.list.layout.composition": {"basis":"Yope home list card: cover circle (size.global.avatarList) at coverInset, name (text role listTitle), subtitle (text role listSubtitle, color.global.textSecondary)","list":"cards stacked with size.global.listGap, side margin size.global.screenMargin, corners radius.global.card, on color.global.backgroundDeep","cover":"the album's first photo (thumb_path), aspect fill in the circle"}, // Yope · albums.list · SOURCED
+  "albums.list.layout.yopeAlbums": {"format":"grid of album covers (Apple Photos \"Album Cover\" format)","columns":2,"coverAspect":1,"coverWidth":168,"gap":12.4,"marginH":23,"coverRadius":18.5,"cover":"the album’s first photo (thumb_path), aspect fill","title":"album name over the cover’s bottom-leading corner, one line, tail truncation, color.global.textPrimary","titleInsetLeading":14,"titleBaselineBottom":17,"titleFontSize":15,"titleWeight":"not measured (platform default)","subtitle":"not shown on the cover (the reference shows the name only); albums.list.row.subtitle joins the accessibility label","background":"color.global.backgroundDeep"}, // Apple Photos · albums.list · SOURCED
   "auth.agegate.layout.dateEntry": {"control":"the Yope form field (groups.create.color.field, size.global.fieldHeight, radius.global.field, groups.create.fontSize.fieldText) with a numeric keyboard","format":"the device locale's numeric short-date order (DateFormatter.dateFormat(fromTemplate: \"MMddyyyy\", options: 0, locale: .current) / DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, null, IsoChronology.INSTANCE, locale)), shown in the placeholder","default":"empty: no pre-filled date, no default year, no age options","threshold":"the minimum age is never shown before the person submits"}, // FTC COPPA FAQ · auth.agegate · VERIFIED
   "auth.agegate.layout.optIn": {"control":"row with icon.global.uncheck / icon.global.check (color.global.selection) at size.global.checkCircle, trailing, as in Yope's pickers","default":"unchecked (opt-in)","label":"fontSize.global.listSubtitle (14 pt) regular, color.global.textPrimary","detail":"fontSize.global.listSubtitle, color.global.textSecondary"}, // Yope · auth.agegate · SOURCED
   "auth.code.duration.resendLock": 60000, // Supabase Auth documentation · auth.code · VERIFIED
@@ -59,6 +60,7 @@ export const tokens = {
   "camera.sendto.size.sendButtonBottom": 41.5, // Yope · camera.sendto · SOURCED
   "chat.composer.color.fieldRimBottom": "#474747", // Yope · chat.composer · SOURCED
   "chat.composer.color.fieldRimTop": "#4B4B4B", // Yope · chat.composer · SOURCED
+  "chat.composer.dimension.bottomInset": 8, // WhatsApp + Instagram · chat.composer · SOURCED
   "chat.composer.dimension.cameraButton": 40.6, // Yope · chat.composer · SOURCED
   "chat.composer.dimension.cameraGlyph": 19.5, // Yope · chat.composer · SOURCED
   "chat.composer.dimension.fieldHeight": 39.5, // Yope · chat.composer · SOURCED
@@ -70,6 +72,7 @@ export const tokens = {
   "chat.composer.dimension.insetTrailing": 23.4, // Yope · chat.composer · SOURCED
   "chat.composer.dimension.micGlyph": 21.8, // Yope · chat.composer · SOURCED
   "chat.composer.dimension.sideButton": 39.5, // Yope · chat.composer · SOURCED
+  "chat.composer.layout.typingState": {"rule":"while the field holds text, the mic circle is replaced in place by a send circle; when the field is empty again the mic circle returns","sendCircleSize":"chat.composer.dimension.sideButton","sendCircleFill":"color.global.accent","sendGlyph":"icon.global.send","sendGlyphColor":"color.global.onAccent","action":"tap → send_message(p_kind text); the field clears and the mic circle returns","transition":"none observed (instant swap); Reduce Motion: same","a11yLabel":"chat.composer.a11y.send"}, // Apple Messages (iMessage); WhatsApp (idle mic beside the field) · chat.composer · SOURCED
   "chat.reactions.color.clusterOutline": "#FFFFFF", // Locket · chat.reactions · SOURCED
   "chat.reactions.count.pickerColumns": 6, // Locket · chat.reactions · SOURCED
   "chat.reactions.count.rainCopies": 18, // Locket · chat.reactions · SOURCED
@@ -80,30 +83,36 @@ export const tokens = {
   "chat.reactions.dimension.clusterStep": 27, // Locket · chat.reactions · SOURCED
   "chat.reactions.dimension.pickerEmoji": 40, // Locket · chat.reactions · SOURCED
   "chat.reactions.dimension.rainEmoji": 52, // Locket · chat.reactions · SOURCED
+  "chat.reactions.duration.flyToCluster": 300, // Locket · chat.reactions · SOURCED
   "chat.reactions.duration.rainSpawnInterval": 125, // Locket · chat.reactions · SOURCED
   "chat.reactions.duration.rainTotal": 2940, // Locket · chat.reactions · SOURCED
   "chat.reactions.duration.rainTravel": 770, // Locket · chat.reactions · SOURCED
+  "chat.reactions.easing.rain": "easeInOut", // Locket · chat.reactions · SOURCED
   "chat.reactions.fontSize.pickerSection": 13, // Locket · chat.reactions · SOURCED
   "chat.reactions.fontWeight.pickerSection": "semibold", // Locket · chat.reactions · SOURCED
   "chat.reactions.icon.add": {"ios":"face.smiling","android":"Rounded.AddReaction"}, // Locket · chat.reactions · PLATFORM
   "chat.reactions.layout.cluster": {"content":"one sticker per distinct emoji that anyone reacted with","arrangement":"horizontal row, each sticker overlapping the previous one by the step","numbers":"none anywhere (no counts, no '+N')","position":"bottom-left corner of the photo"}, // Locket · chat.reactions · SOURCED
+  "chat.reactions.layout.clusterOrder": {"order":"newest distinct emoji first: a newly added emoji enters at the leading end of the cluster and the stickers already there shift one step (chat.reactions.dimension.clusterStep) toward the trailing side","repeatEmoji":"a reaction with an emoji already in the cluster adds no sticker (chat.reactions.layout.cluster); its position change was not observed","observed":"before: ✌️ alone at the leading position; after 😍 lands: 😍 leading, ✌️ one step trailing"}, // Locket · chat.reactions · SOURCED
   "chat.reactions.layout.picker": {"presentation":"bottom sheet with a grabber over the photo","top":"search field ('Search')","sections":"Frequently Used, Popular, All","selection":"any emoji; tapping one sends the reaction and closes the sheet"}, // Locket · chat.reactions · SOURCED
   "chat.reactions.layout.pickerPopular": {"row1":"💛 🫶 😍 🔥 🤣","row2":"😭 😋 🥹 🥰 🥲","row3":"😂 😱 😎 🤭 😯 🫠","row4":"❤️‍🔥 💕 💘 ❤️ 💖 💋","row5":"🤍 💚 💙 💜 🧡 🖤","hidden":"row 1 and row 2 have a sixth cell hidden by a finger in the frame; they are left out"}, // Locket · chat.reactions · SOURCED
   "chat.reactions.layout.quickReactions": {"emoji":"🔥 💖","then":"add-reaction button (chat.reactions.icon.add)","place":"inside the right end of the reply field, after the text"}, // Locket · chat.reactions · SOURCED
   "chat.reactions.layout.rainPath": {"direction":"upward","start":"just below the bottom screen edge","end":"just above the top screen edge","x":"random across the full screen width, one x per copy","emoji":"the one emoji just sent, every copy","layer":"behind the photo, in front of the background (2022 History screen = viewer)","trigger":"on the reacting person's screen, when the reaction is sent"}, // Locket · chat.reactions · SOURCED
   "chat.reactions.layout.reduceMotion": {"rain":"not played (automatic, repeating, peripheral motion is dropped)","cluster":"the new sticker appears in place","haptics":"unchanged"}, // Apple HIG / Material 3 · chat.reactions · PLATFORM
   "chat.reactions.layout.textStyleMap": {"pickerSection":"footnote"}, // Apple HIG · chat.reactions · PLATFORM
+  "chat.reactions.layout.unreact": {"where":"in the reaction picker (long press on the photo, or the add-reaction glyph): every emoji you already reacted with on this photo is highlighted","highlight":"a filled circle behind the emoji in color.global.selection","remove":"tap a highlighted emoji: unreact(p_post_id, p_emoji); the highlight goes and the sticker leaves the cluster when nobody else used that emoji","a11y":"highlighted cells carry the platform selected trait","haptic":"none (as reacting)"}, // Apple Messages (iMessage) + WhatsApp · chat.reactions · SOURCED
   "chat.thread.color.bubbleMine": "#232323", // Yope · chat.thread · SOURCED
   "chat.thread.color.bubbleRimMineBottom": "#343434", // Yope · chat.thread · SOURCED
   "chat.thread.color.bubbleRimMineTop": "#393939", // Yope · chat.thread · SOURCED
   "chat.thread.color.bubbleRimTheirsBottom": "#363636", // Yope · chat.thread · SOURCED
   "chat.thread.color.bubbleRimTheirsTop": "#414141", // Yope · chat.thread · SOURCED
   "chat.thread.color.bubbleTheirs": "#2B2B2B", // Yope · chat.thread · SOURCED
+  "chat.thread.count.emojiOnlyMax": 3, // Apple Messages (iMessage) + WhatsApp (rule); Yope (consistent) · chat.thread · SOURCED
   "chat.thread.dimension.avatarGap": 6.7, // Yope · chat.thread · SOURCED
   "chat.thread.dimension.avatarInset": 11.2, // Yope · chat.thread · SOURCED
   "chat.thread.dimension.bubbleHeight": 35.6, // Yope · chat.thread · SOURCED
   "chat.thread.dimension.bubbleInsetMine": 23, // Yope · chat.thread · SOURCED
   "chat.thread.dimension.bubbleInsetTheirs": 50.5, // Yope · chat.thread · SOURCED
+  "chat.thread.dimension.bubbleMaxWidth": 256, // Apple Messages (iMessage) · chat.thread · SOURCED
   "chat.thread.dimension.bubblePaddingH": 11.5, // Yope · chat.thread · SOURCED
   "chat.thread.dimension.bubbleRim": 0.44, // Yope · chat.thread · SOURCED
   "chat.thread.dimension.captionHeight": 45.8, // Yope · chat.thread · SOURCED
@@ -134,17 +143,21 @@ export const tokens = {
   "chat.thread.fontWeight.caption": "bold", // Yope · chat.thread · SOURCED
   "chat.thread.fontWeight.replyLabel": "regular", // Yope · chat.thread · SOURCED
   "chat.thread.fontWeight.replyName": "bold", // Yope · chat.thread · SOURCED
+  "chat.thread.layout.failedMessage": {"indicator":"outlined exclamation-mark circle beside the bubble on its trailing side, vertically centred on the bubble","indicatorIconIos":"exclamationmark.circle","indicatorIconAndroid":"Rounded.ErrorOutline","indicatorSize":22,"indicatorGap":14,"indicatorColor":"color.global.destructive","indicatorPosition":"the indicator takes the trailing inset slot (chat.thread.dimension.bubbleInsetMine); the bubble moves toward the leading side by indicatorSize + indicatorGap","label":"copy chat.thread.sendFailed under the bubble, trailing-aligned with the message column","labelGap":2,"labelTextRole":"caption","labelColor":"color.global.destructive","retry":"tap the indicator, the label or the bubble: the message is sent again (the label says so); on success the indicator and label go away","haptic":"haptic.global.error when a send fails","appliesTo":"my text and voice messages"}, // Apple Messages (iMessage) · chat.thread · SOURCED
   "chat.thread.layout.photoFit": {"content":"aspect fill, centred","frameWidthPt":323,"frameHeightPt":174,"timeOverlay":"centred on the photo (text role overlayTime)"}, // Yope · chat.thread · SOURCED
   "chat.thread.layout.textStyleMap": {"replyName":"subheadline","replyLabel":"footnote","caption":"title2","emojiOnly":"largeTitle"}, // Apple HIG · chat.thread · PLATFORM
   "chat.thread.layout.timeFormat": {"pattern":"h:mm a","example":"10:00 PM","locale":"device locale short time"}, // Yope · chat.thread · SOURCED
   "chat.thread.radius.bubble": 16, // Yope · chat.thread · SOURCED
   "chat.thread.radius.caption": 13, // Yope · chat.thread · SOURCED
+  "chat.thread.radius.loadingHud": 10.5, // Yope · chat.thread · SOURCED
   "chat.thread.radius.replyQuote": 18.2, // Yope · chat.thread · SOURCED
   "chat.thread.radius.replyThumb": 7, // Yope · chat.thread · SOURCED
   "chat.voice.color.bubble": "#262626", // Yope · chat.voice · SOURCED
+  "chat.voice.color.bubbleTheirs": "#2B2B2B", // Yope (value) · Telegram (rule) · chat.voice · SOURCED
   "chat.voice.color.duration": "#929292", // Yope · chat.voice · SOURCED
   "chat.voice.color.playButton": "#333333", // Yope · chat.voice · SOURCED
   "chat.voice.color.waveform": "#919191", // Yope · chat.voice · SOURCED
+  "chat.voice.color.waveformPlayed": "#FFFFFF", // Telegram (rule) · Yope (colour) · chat.voice · SOURCED
   "chat.voice.dimension.barMaxHeight": 31.5, // Yope · chat.voice · SOURCED
   "chat.voice.dimension.barMinHeight": 9.3, // Yope · chat.voice · SOURCED
   "chat.voice.dimension.barPitch": 6.1, // Yope · chat.voice · SOURCED
@@ -157,7 +170,9 @@ export const tokens = {
   "chat.voice.dimension.playToWaveform": 7.8, // Yope · chat.voice · SOURCED
   "chat.voice.dimension.waveformToDuration": 8.9, // Yope · chat.voice · SOURCED
   "chat.voice.dimension.width": 271.8, // Yope · chat.voice · SOURCED
+  "chat.voice.icon.pause": {"ios":"pause.fill","android":"Rounded.Pause"}, // Apple Messages (iMessage) / WhatsApp / Telegram (glyph) · chat.voice · PLATFORM
   "chat.voice.layout.durationFormat": {"pattern":"mm:ss","example":"00:38"}, // Yope · chat.voice · SOURCED
+  "chat.voice.layout.recording": {"start":"press and hold the mic circle: recording runs while the finger is down","send":"lift the finger: the message is sent","cancel":"slide left while holding: the recording is discarded and nothing is sent","lock":"slide up onto the lock shown above the mic circle: recording continues hands-free","locked":"while locked: chat.voice.icon.pause pauses and lets you play the draft; the mic circle shows icon.global.send and sends","row":"while recording, the composer row shows leading → trailing: red recording dot, elapsed time, the centred hint (‹ slide to cancel); the mic circle stays at the trailing end under the finger","dotColor":"color.global.destructive","timerFormat":"chat.voice.layout.durationFormat","timerColor":"color.global.textPrimary","hintGlyph":"icon.global.back","hintColor":"color.global.textSecondary","hintCopy":"chat.voice.recording.slideToCancel","lockGlyph":"icon.global.lock","lockHintGlyphIos":"chevron.up","lockHintGlyphAndroid":"Rounded.ExpandLess","haptic":"none (HIG: haptics must not disrupt the microphone)"}, // WhatsApp (gesture, documented) + Telegram (row, 2026 panel) · chat.voice · SOURCED
   "chat.voice.radius.bubble": 14, // Yope · chat.voice · SOURCED
   "collage.share.fontSize.label": 18, // Yope · collage.share · SOURCED
   "collage.share.fontWeight.label": "bold", // Yope · collage.share · SOURCED
@@ -722,6 +737,7 @@ export const tokens = {
   "photo.viewer.dimension.headerCenterY": 20, // Yope · photo.viewer · SOURCED
   "photo.viewer.dimension.moreCenterTrailing": 36, // Yope · photo.viewer · SOURCED
   "photo.viewer.dimension.moreGlyphWidth": 25.3, // Yope · photo.viewer · SOURCED
+  "photo.viewer.dimension.pageGap": 0, // Yope · photo.viewer · SOURCED
   "photo.viewer.dimension.photoTop": 107, // Yope · photo.viewer · SOURCED
   "photo.viewer.dimension.senderAvatar": 38.7, // Yope · photo.viewer · SOURCED
   "photo.viewer.dimension.senderInsetLeading": 13.8, // Yope · photo.viewer · SOURCED
@@ -809,7 +825,10 @@ export const tokens = {
   "week.edit.haptic.dragAlign": {"ios":"sensoryFeedback(.alignment) (iOS 17)","android":"SEGMENT_TICK"}, // Apple HIG / Material 3 · week.edit · PLATFORM
   "week.edit.haptic.dragStart": {"ios":"system (List / drag reordering plays its own feedback; no custom generator)","android":"DRAG_START"}, // Apple HIG / Material 3 · week.edit · PLATFORM
   "week.edit.layout.composition": {"header":"close circle (icon.global.close, size.global.headerButton) at the left, sheet title centred (text role sheetTitle)","body":"the week's photos in the pics grid (week.recap.count.picsColumns, .picsGap, .picsTile) with a check circle on each tile","check":"icon.global.check (selected) / icon.global.uncheck, size.global.checkCircle, color.global.selection","footer":"lime primary button at the sheet bottom (size.global.buttonHeightSheet, size.global.buttonMarginHSheet, radius.global.button)"}, // Yope · week.edit · SOURCED
+  "week.edit.layout.reorder": {"gesture":"touch and hold a checked tile, then drag it into a new position; release to drop it there","scope":"the checked tiles (the recap’s items); their order becomes p_items’ order","during":"the dragged tile follows the finger; the platform drag-and-drop moves the other checked tiles to show the drop position","haptics":"week.edit.haptic.dragStart on pick-up, week.edit.haptic.dragAlign on each slot change","reduceMotion":"the drag tracks the finger (allowed by layout.global.reduceMotion)"}, // Apple Photos + Google Photos · week.edit · SOURCED
   "week.history.aspectRatio.tile": {"width":3,"height":4}, // Retro · week.history · SOURCED
+  "week.history.color.emptyTile": "#262626", // Retro · week.history · SOURCED
+  "week.history.color.emptyTileText": "#515151", // Retro · week.history · SOURCED
   "week.history.dimension.addGlyph": 20, // Retro · week.history · SOURCED
   "week.history.dimension.headerToStrip": 11.7, // Retro · week.history · SOURCED
   "week.history.dimension.inset": 20, // Retro · week.history · SOURCED

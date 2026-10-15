@@ -411,6 +411,3 @@ internal fun TimeDialog(title: String, initial: LocalTime?, onCancel: () -> Unit
         dismissButton = { TextButton(onClick = onCancel) { Text(stringResource(android.R.string.cancel)) } },
     )
 }
-
-/** Navigates home after leaving (used by tests of the leave flow). */
-internal fun NavController.homeAfterLeave() = navigateAccount(AccountEvent.Navigate(AppRoute.GroupsList, clearStack = true))

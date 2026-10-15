@@ -97,6 +97,9 @@ class FakeCaptureData : CaptureData {
     }
     override suspend fun newestForWidget(groupId: String): NewestForWidget? = newest
     override suspend fun members(groupId: String): List<Member> = members
+    var myName: String? = "Ana"
+    override suspend fun myFirstName(): String? = myName
+
     override suspend fun download(url: String, target: File) {
         downloadError?.let { throw DataException(it) }
         downloads += url

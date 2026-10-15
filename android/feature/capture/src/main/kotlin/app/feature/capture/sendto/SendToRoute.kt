@@ -107,7 +107,7 @@ fun SendToRoute(
             continueLabel = stringResource(R.string.system_permissions_rationale_continue),
             openSettings = stringResource(R.string.system_permissions_opensettings),
         ),
-        onResult = { granted -> if (granted) startVoice(context, recorder, vm) },
+        onResult = { },
     )
     val storage = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) media?.let { scope.launch { if (saveToLibrary(context, it)) view.haptic(Tokens.Haptics.globalSuccess) } }
@@ -145,20 +145,34 @@ fun SendToRoute(
         onClose = vm::close,
         onSave = vm::save,
         onCaption = vm::onCaption,
-        onMic = {
-            if (recorder.isRecording) {
-                val note = recorder.stop()
-                vm.onVoiceNote(note?.let { VoiceNoteFile(it.file, it.durationMs.toInt()) }?.takeIf { it.durationMs > 0 })
-            } else {
-                microphone.launch()
-            }
-        },
+        onMic = { finishVoice(recorder, vm) },
         onVoiceCoachClose = vm::dismissVoiceCoach,
         onToggle = vm::toggle,
         onSend = vm::send,
         onCreateGroup = vm::createGroup,
         onRetryGroups = vm::loadGroups,
         videoPreview = media?.takeIf { it.kind == MediaKind.Video }?.let { m -> { VideoLoop(m.file) } },
+        voiceGestures = remember(recorder, vm) {
+            object : VoiceGestures {
+                override fun down() {
+                    // The first use asks for the microphone; recording starts on the next hold.
+                    if (androidx.core.content.ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        startVoice(context, recorder, vm)
+                    } else {
+                        microphone.launch()
+                    }
+                }
+
+                override fun release() = finishVoice(recorder, vm)
+
+                override fun cancel() {
+                    recorder.cancel()
+                    vm.onVoiceRecording(false)
+                }
+
+                override fun lock() = vm.onVoiceLocked()
+            }
+        },
     )
 }
 
@@ -167,11 +181,21 @@ private fun startVoice(context: Context, recorder: VoiceRecorder, vm: SendToView
     val file = File(CaptureHandoff.dir(context), "voice-${System.currentTimeMillis()}.m4a")
     try {
         recorder.start(file, samplingIntervalMs = VOICE_LEVEL_SAMPLING_MS)
-        vm.onVoiceRecording(true)
+        vm.onVoiceRecording(true, startedAt = android.os.SystemClock.elapsedRealtime())
     } catch (_: Exception) {
         file.delete()
         vm.onVoiceRecording(false)
     }
+}
+
+/** Stops the recording and keeps the note for the post (replacing an earlier one). */
+private fun finishVoice(recorder: VoiceRecorder, vm: SendToViewModel) {
+    if (!recorder.isRecording) {
+        vm.onVoiceRecording(false)
+        return
+    }
+    val note = recorder.stop()
+    vm.onVoiceNote(note?.let { VoiceNoteFile(it.file, it.durationMs.toInt()) }?.takeIf { it.durationMs > 0 })
 }
 
 /** Waveform resolution of core:voice (no waveform is drawn here; transport value, not design). */

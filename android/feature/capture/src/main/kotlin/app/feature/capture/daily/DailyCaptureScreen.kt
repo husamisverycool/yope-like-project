@@ -160,7 +160,7 @@ fun DailyCaptureRoute(groupId: String, invitationId: String, onDismiss: () -> Un
         insets?.hide(WindowInsetsCompat.Type.statusBars())
         onDispose {
             insets?.show(WindowInsetsCompat.Type.statusBars())
-            scope.launch { runCatching { controller.unbind() } }
+            kotlinx.coroutines.MainScope().launch { runCatching { controller.unbind() } }
         }
     }
     BackHandler { vm.discard(); onDismiss() }
@@ -175,7 +175,7 @@ fun DailyCaptureRoute(groupId: String, invitationId: String, onDismiss: () -> Un
         viewfinder = { preview?.let { CameraXViewfinder(surfaceRequest = it, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop) } },
         mainImage = mainImage,
         insetImage = insetImage,
-        posterName = null,
+        posterName = state.myName,
         onDismiss = { vm.discard(); onDismiss() },
         onFlash = vm::toggleFlash,
         onFlip = vm::flip,
@@ -486,13 +486,13 @@ private fun SendLabel(onSend: () -> Unit, modifier: Modifier) {
         Row(
             Modifier
                 .clickable(onClick = onSend)
+                .testTag("daily.send")
                 .clearAndSetSemantics {
                     contentDescription = a11y
                     role = Role.Button
                     traversalIndex = 5f
                     onClick { onSend(); true }
-                }
-                .testTag("daily.send"),
+                },
             verticalAlignment = Alignment.CenterVertically,
         ) {
             BasicText(

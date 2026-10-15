@@ -1,0 +1,10 @@
+# telegram references (SOURCED)
+
+Added by the social gap-fill pass (design/MERGE_DECISIONS.md → Gap fill (social)). Internal reference only.
+
+| file | source URL | accessed | what it shows | version/date |
+|---|---|---|---|---|
+| `store/telegram-store-03.png` | https://apps.apple.com/us/app/id686449807 (screenshot; mzstatic /9999x0w.png) | 2026-10-15 | Gap fill (social): dark group chat: incoming poll bubble and incoming voice bubble both #2D2135; bottom row RECORDING state: red dot, "0:03", "‹ Slide to cancel", enlarged mic circle, lock capsule (lock + chevron up) above it | listing version 13.0 |
+| `blog/tg-blog-power-saving-playback-speed-t02.png` | https://telegram.org/file/464001491/11652/7uIF2ltk9ok.1793981.mp4/027ba657c3ac463d1b (video "Flexible Playback Speed" in https://telegram.org/blog/power-saving) @ 2.0 s | 2026-10-15 | Gap fill (social): voice message PLAYING: pause glyph in the play circle; played bars full-strength accent, unplayed bars the same hue at ≈30 % opacity; elapsed time counts up (0:02 → 0:06 → 0:08) | blog post 2023-02 (older than 12 months) |
+| `blog/tg-blog-power-saving-playback-speed-t04.png` | https://telegram.org/file/464001491/11652/7uIF2ltk9ok.1793981.mp4/027ba657c3ac463d1b (video "Flexible Playback Speed" in https://telegram.org/blog/power-saving) @ 4.0 s | 2026-10-15 | Gap fill (social): voice message PLAYING: pause glyph in the play circle; played bars full-strength accent, unplayed bars the same hue at ≈30 % opacity; elapsed time counts up (0:02 → 0:06 → 0:08) | blog post 2023-02 (older than 12 months) |
+| `blog/tg-blog-power-saving-playback-speed-t06.png` | https://telegram.org/file/464001491/11652/7uIF2ltk9ok.1793981.mp4/027ba657c3ac463d1b (video "Flexible Playback Speed" in https://telegram.org/blog/power-saving) @ 6.0 s | 2026-10-15 | Gap fill (social): voice message PLAYING: pause glyph in the play circle; played bars full-strength accent, unplayed bars the same hue at ≈30 % opacity; elapsed time counts up (0:02 → 0:06 → 0:08) | blog post 2023-02 (older than 12 months) |

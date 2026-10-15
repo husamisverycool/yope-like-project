@@ -103,12 +103,16 @@ object Tokens {
         val chatThreadColorBubbleTheirs: Color = Color(0xFF2B2B2B)
         /** Yope · chat.voice · voice message bubble fill (mine) · SOURCED — token `chat.voice.color.bubble` */
         val chatVoiceColorBubble: Color = Color(0xFF262626)
+        /** Yope (value) · Telegram (rule) · chat.voice · another member's voice bubble fill · SOURCED — token `chat.voice.color.bubbleTheirs` */
+        val chatVoiceColorBubbleTheirs: Color = Color(0xFF2B2B2B)
         /** Yope · chat.voice · duration text ('00:38') · SOURCED — token `chat.voice.color.duration` */
         val chatVoiceColorDuration: Color = Color(0xFF929292)
         /** Yope · chat.voice · play circle fill (vertical gradient #2F2F2F top → #373737 bottom, light rim) · SOURCED — token `chat.voice.color.playButton` */
         val chatVoiceColorPlayButton: Color = Color(0xFF333333)
         /** Yope · chat.voice · waveform bars · SOURCED — token `chat.voice.color.waveform` */
         val chatVoiceColorWaveform: Color = Color(0xFF919191)
+        /** Telegram (rule) · Yope (colour) · chat.voice · colour of the played part of the waveform during playback · SOURCED — token `chat.voice.color.waveformPlayed` */
+        val chatVoiceColorWaveformPlayed: Color = Color(0xFFFFFFFF)
         /** Yope · collage.view · loading HUD fill · SOURCED — token `collage.view.color.hud` */
         val collageViewColorHud: Color = Color(0xFF0C0C0C)
         /** Yope · collage.view · active page dot (Android) · SOURCED — token `collage.view.color.pageDotActive` */
@@ -283,6 +287,10 @@ object Tokens {
         val paywallColorTitle: Color = Color(0xFFFDEAB8)
         /** Yope · photo.viewer · viewer background behind the photo and header · SOURCED — token `photo.viewer.color.background` */
         val photoViewerColorBackground: Color = Color(0xFF1C191D)
+        /** Retro · week.history · empty-day tile and add tile fill in the dark appearance · SOURCED — token `week.history.color.emptyTile` */
+        val weekHistoryColorEmptyTile: Color = Color(0xFF262626)
+        /** Retro · week.history · empty-day tile labels (month, day number, weekday) in the dark appearance · SOURCED — token `week.history.color.emptyTileText` */
+        val weekHistoryColorEmptyTileText: Color = Color(0xFF515151)
         /** Locket · widget.android · avatar placeholder gradient end · SOURCED — token `widget.android.color.avatarPlaceholderBottom` */
         val widgetAndroidColorAvatarPlaceholderBottom: Color = Color(0xF5828282)
         /** Locket · widget.android · avatar placeholder (sender has no avatar), gradient start (angle 270) · SOURCED — token `widget.android.color.avatarPlaceholderTop` */
@@ -309,6 +317,8 @@ object Tokens {
         val chatReactionsCountPickerColumns: Int = 6
         /** Locket · chat.reactions · copies of the chosen emoji in one emoji-rain burst · SOURCED — token `chat.reactions.count.rainCopies` */
         val chatReactionsCountRainCopies: Int = 18
+        /** Apple Messages (iMessage) + WhatsApp (rule); Yope (consistent) · chat.thread · how many emoji a message may contain and still render large without a bubble · SOURCED — token `chat.thread.count.emojiOnlyMax` */
+        val chatThreadCountEmojiOnlyMax: Int = 3
         /** Spotify Wrapped · year.story · most photos one list shows (most-reacted, everyone-answered days) · SOURCED — token `count.year.story.listLength` */
         val yearStoryListLength: Int = 5
         /** Partiful · invite.web · title: most lines allowed before the size shrinks · VERIFIED — token `invite.web.count.title.maxLines` */
@@ -325,6 +335,8 @@ object Tokens {
         val authCodeDurationResendLock: Int = 60000
         /** Locket · camera.capture · maximum length of a hold-to-record video (premium) · SOURCED — token `camera.capture.duration.videoMax` */
         val cameraCaptureDurationVideoMax: Int = 10000
+        /** Locket · chat.reactions · flight of the chosen emoji into the cluster after the picker closes · SOURCED — token `chat.reactions.duration.flyToCluster` */
+        val chatReactionsDurationFlyToCluster: Int = 300
         /** Locket · chat.reactions · interval between consecutive copies entering · SOURCED — token `chat.reactions.duration.rainSpawnInterval` */
         val chatReactionsDurationRainSpawnInterval: Int = 125
         /** Locket · chat.reactions · whole emoji-rain effect, first entry to last exit · SOURCED — token `chat.reactions.duration.rainTotal` */
@@ -367,6 +379,8 @@ object Tokens {
         val widgetArrivalDurationTransition: Int = 0
     }
     object Easings {
+        /** Locket · chat.reactions · speed curve of each rain copy · SOURCED — token `chat.reactions.easing.rain` */
+        val chatReactionsEasingRain: Easing = FastOutSlowInEasing
         /** Material 3 · global.system · M3 standard easing for custom transitions on Android system surfaces · PLATFORM — token `easing.global.system.standard` */
         val globalSystemStandard: Easing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
         /** Spotify Wrapped · year.story · current segment fill over time · SOURCED — token `easing.year.story.progress.fill` */
@@ -719,6 +733,8 @@ object Tokens {
         val cameraCaptureIconRecordHint: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedVideocam
         /** Locket · chat.reactions · add-reaction button (smiley with a plus) · PLATFORM — token `chat.reactions.icon.add` */
         val chatReactionsIconAdd: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedAddReaction
+        /** Apple Messages (iMessage) / WhatsApp / Telegram (glyph) · chat.voice · glyph shown in the play circle while a voice message plays · PLATFORM — token `chat.voice.icon.pause` */
+        val chatVoiceIconPause: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedPause
         /** Yope · collage.share · filled share glyph (box + up arrow) in the pill · PLATFORM — token `collage.share.icon.share` */
         val collageShareIconShare: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedIosShare
         /** Yope · global · add (+ in a header circle) · PLATFORM — token `icon.global.add` */
@@ -812,6 +828,24 @@ object Tokens {
             const val basis: String = "Yope home list card: cover circle (size.global.avatarList) at coverInset, name (text role listTitle), subtitle (text role listSubtitle, color.global.textSecondary)"
             const val list: String = "cards stacked with size.global.listGap, side margin size.global.screenMargin, corners radius.global.card, on color.global.backgroundDeep"
             const val cover: String = "the album's first photo (thumb_path), aspect fill in the circle"
+        }
+        /** Apple Photos · albums.list · album list layout (Yope’s own album list was not observed; Apple Photos’ Albums collection fills it) · SOURCED — token `albums.list.layout.yopeAlbums` */
+        object AlbumsListLayoutYopeAlbums {
+            const val format: String = "grid of album covers (Apple Photos \"Album Cover\" format)"
+            const val columns: Float = 2f
+            const val coverAspect: Float = 1f
+            const val coverWidth: Float = 168f
+            const val gap: Float = 12.4f
+            const val marginH: Float = 23f
+            const val coverRadius: Float = 18.5f
+            const val cover: String = "the album’s first photo (thumb_path), aspect fill"
+            const val title: String = "album name over the cover’s bottom-leading corner, one line, tail truncation, color.global.textPrimary"
+            const val titleInsetLeading: Float = 14f
+            const val titleBaselineBottom: Float = 17f
+            const val titleFontSize: Float = 15f
+            const val titleWeight: String = "not measured (platform default)"
+            const val subtitle: String = "not shown on the cover (the reference shows the name only); albums.list.row.subtitle joins the accessibility label"
+            const val background: String = "color.global.backgroundDeep"
         }
         /** FTC COPPA FAQ · auth.agegate · birthday entry (neutral age screen) · VERIFIED — token `auth.agegate.layout.dateEntry` */
         object AuthAgegateLayoutDateEntry {
@@ -937,12 +971,29 @@ object Tokens {
             const val glyphInset: Float = 19.5f
             const val glyphToText: Float = 11f
         }
+        /** Apple Messages (iMessage); WhatsApp (idle mic beside the field) · chat.composer · what replaces / joins the mic when the field has text (send control) · SOURCED — token `chat.composer.layout.typingState` */
+        object ChatComposerLayoutTypingState {
+            const val rule: String = "while the field holds text, the mic circle is replaced in place by a send circle; when the field is empty again the mic circle returns"
+            const val sendCircleSize: String = "chat.composer.dimension.sideButton"
+            const val sendCircleFill: String = "color.global.accent"
+            const val sendGlyph: String = "icon.global.send"
+            const val sendGlyphColor: String = "color.global.onAccent"
+            const val action: String = "tap → send_message(p_kind text); the field clears and the mic circle returns"
+            const val transition: String = "none observed (instant swap); Reduce Motion: same"
+            const val a11yLabel: String = "chat.composer.a11y.send"
+        }
         /** Locket · chat.reactions · how reactions are shown on a photo · SOURCED — token `chat.reactions.layout.cluster` */
         object ChatReactionsLayoutCluster {
             const val content: String = "one sticker per distinct emoji that anyone reacted with"
             const val arrangement: String = "horizontal row, each sticker overlapping the previous one by the step"
             const val numbers: String = "none anywhere (no counts, no '+N')"
             const val position: String = "bottom-left corner of the photo"
+        }
+        /** Locket · chat.reactions · order of the stickers in the cluster (first reacted, last reacted, …) · SOURCED — token `chat.reactions.layout.clusterOrder` */
+        object ChatReactionsLayoutClusterOrder {
+            const val order: String = "newest distinct emoji first: a newly added emoji enters at the leading end of the cluster and the stickers already there shift one step (chat.reactions.dimension.clusterStep) toward the trailing side"
+            const val repeatEmoji: String = "a reaction with an emoji already in the cluster adds no sticker (chat.reactions.layout.cluster); its position change was not observed"
+            const val observed: String = "before: ✌️ alone at the leading position; after 😍 lands: 😍 leading, ✌️ one step trailing"
         }
         /** Locket · chat.reactions · emoji picker sheet · SOURCED — token `chat.reactions.layout.picker` */
         object ChatReactionsLayoutPicker {
@@ -986,6 +1037,31 @@ object Tokens {
         object ChatReactionsLayoutTextStyleMap {
             const val pickerSection: String = "footnote"
         }
+        /** Apple Messages (iMessage) + WhatsApp · chat.reactions · how you take back a reaction · SOURCED — token `chat.reactions.layout.unreact` */
+        object ChatReactionsLayoutUnreact {
+            const val where: String = "in the reaction picker (long press on the photo, or the add-reaction glyph): every emoji you already reacted with on this photo is highlighted"
+            const val highlight: String = "a filled circle behind the emoji in color.global.selection"
+            const val remove: String = "tap a highlighted emoji: unreact(p_post_id, p_emoji); the highlight goes and the sticker leaves the cluster when nobody else used that emoji"
+            const val a11y: String = "highlighted cells carry the platform selected trait"
+            const val haptic: String = "none (as reacting)"
+        }
+        /** Apple Messages (iMessage) · chat.thread · how a message that failed to send is drawn and retried · SOURCED — token `chat.thread.layout.failedMessage` */
+        object ChatThreadLayoutFailedMessage {
+            const val indicator: String = "outlined exclamation-mark circle beside the bubble on its trailing side, vertically centred on the bubble"
+            const val indicatorIconIos: String = "exclamationmark.circle"
+            const val indicatorIconAndroid: String = "Rounded.ErrorOutline"
+            const val indicatorSize: Float = 22f
+            const val indicatorGap: Float = 14f
+            const val indicatorColor: String = "color.global.destructive"
+            const val indicatorPosition: String = "the indicator takes the trailing inset slot (chat.thread.dimension.bubbleInsetMine); the bubble moves toward the leading side by indicatorSize + indicatorGap"
+            const val label: String = "copy chat.thread.sendFailed under the bubble, trailing-aligned with the message column"
+            const val labelGap: Float = 2f
+            const val labelTextRole: String = "caption"
+            const val labelColor: String = "color.global.destructive"
+            const val retry: String = "tap the indicator, the label or the bubble: the message is sent again (the label says so); on success the indicator and label go away"
+            const val haptic: String = "haptic.global.error when a send fails"
+            const val appliesTo: String = "my text and voice messages"
+        }
         /** Yope · chat.thread · how a photo fills the photo-message frame · SOURCED — token `chat.thread.layout.photoFit` */
         object ChatThreadLayoutPhotoFit {
             const val content: String = "aspect fill, centred"
@@ -1010,6 +1086,25 @@ object Tokens {
         object ChatVoiceLayoutDurationFormat {
             const val pattern: String = "mm:ss"
             const val example: String = "00:38"
+        }
+        /** WhatsApp (gesture, documented) + Telegram (row, 2026 panel) · chat.voice · voice recording UI: hold vs tap, lock, cancel, live waveform, timer · SOURCED — token `chat.voice.layout.recording` */
+        object ChatVoiceLayoutRecording {
+            const val start: String = "press and hold the mic circle: recording runs while the finger is down"
+            const val send: String = "lift the finger: the message is sent"
+            const val cancel: String = "slide left while holding: the recording is discarded and nothing is sent"
+            const val lock: String = "slide up onto the lock shown above the mic circle: recording continues hands-free"
+            const val locked: String = "while locked: chat.voice.icon.pause pauses and lets you play the draft; the mic circle shows icon.global.send and sends"
+            const val row: String = "while recording, the composer row shows leading → trailing: red recording dot, elapsed time, the centred hint (‹ slide to cancel); the mic circle stays at the trailing end under the finger"
+            const val dotColor: String = "color.global.destructive"
+            const val timerFormat: String = "chat.voice.layout.durationFormat"
+            const val timerColor: String = "color.global.textPrimary"
+            const val hintGlyph: String = "icon.global.back"
+            const val hintColor: String = "color.global.textSecondary"
+            const val hintCopy: String = "chat.voice.recording.slideToCancel"
+            const val lockGlyph: String = "icon.global.lock"
+            const val lockHintGlyphIos: String = "chevron.up"
+            const val lockHintGlyphAndroid: String = "Rounded.ExpandLess"
+            const val haptic: String = "none (HIG: haptics must not disrupt the microphone)"
         }
         /** Meta developer docs (standards: accessibility thresholds, share-image specs) · collage.share · the image handed to the share sheet · VERIFIED — token `collage.share.layout.export` */
         object CollageShareLayoutExport {
@@ -1831,6 +1926,14 @@ object Tokens {
             const val check: String = "icon.global.check (selected) / icon.global.uncheck, size.global.checkCircle, color.global.selection"
             const val footer: String = "lime primary button at the sheet bottom (size.global.buttonHeightSheet, size.global.buttonMarginHSheet, radius.global.button)"
         }
+        /** Apple Photos + Google Photos · week.edit · how a recap is reordered (gesture, handles, layout while dragging) · SOURCED — token `week.edit.layout.reorder` */
+        object WeekEditLayoutReorder {
+            const val gesture: String = "touch and hold a checked tile, then drag it into a new position; release to drop it there"
+            const val scope: String = "the checked tiles (the recap’s items); their order becomes p_items’ order"
+            const val during: String = "the dragged tile follows the finger; the platform drag-and-drop moves the other checked tiles to show the drop position"
+            const val haptics: String = "week.edit.haptic.dragStart on pick-up, week.edit.haptic.dragAlign on each slot change"
+            const val reduceMotion: String = "the drag tracks the finger (allowed by layout.global.reduceMotion)"
+        }
         /** Apple HIG · week.history · iOS Dynamic Type style for week.history text roles · PLATFORM — token `week.history.layout.textStyleMap` */
         object WeekHistoryLayoutTextStyleMap {
             const val header: String = "subheadline"
@@ -2074,6 +2177,8 @@ object Tokens {
         val chatThreadRadiusBubble: Dp = 16.dp
         /** Yope · chat.thread · caption box corner radius · SOURCED — token `chat.thread.radius.caption` */
         val chatThreadRadiusCaption: Dp = 13.dp
+        /** Yope · chat.thread · loading HUD corner radius (the HUD's other values are groups.create.color.hud / .size.hud / .fontSize.hudLabel) · SOURCED — token `chat.thread.radius.loadingHud` */
+        val chatThreadRadiusLoadingHud: Dp = 10.5.dp
         /** Yope · chat.thread · corner radius of the lime quote part (top corners; the text part overlaps its bottom) · SOURCED — token `chat.thread.radius.replyQuote` */
         val chatThreadRadiusReplyQuote: Dp = 18.2.dp
         /** Yope · chat.thread · reply thumbnail corner radius · SOURCED — token `chat.thread.radius.replyThumb` */
@@ -2166,6 +2271,8 @@ object Tokens {
         val cameraSendtoSizeCountDiscGap: Dp = 7.dp
         /** Yope · camera.sendto · send button bottom edge → screen bottom · SOURCED — token `camera.sendto.size.sendButtonBottom` */
         val cameraSendtoSizeSendButtonBottom: Dp = 41.5.dp
+        /** WhatsApp + Instagram · chat.composer · distance from the composer row to the bottom safe area / keyboard · SOURCED — token `chat.composer.dimension.bottomInset` */
+        val chatComposerDimensionBottomInset: Dp = 8.dp
         /** Yope · chat.composer · lime camera circle at the left of the composer · SOURCED — token `chat.composer.dimension.cameraButton` */
         val chatComposerDimensionCameraButton: Dp = 40.6.dp
         /** Yope · chat.composer · camera glyph height on the lime circle (glyph 24 pt wide) · SOURCED — token `chat.composer.dimension.cameraGlyph` */
@@ -2212,6 +2319,8 @@ object Tokens {
         val chatThreadDimensionBubbleInsetMine: Dp = 23.dp
         /** Yope · chat.thread · another member's bubble left edge to the screen edge (= avatarInset + size.global.avatarSmall + avatarGap) · SOURCED — token `chat.thread.dimension.bubbleInsetTheirs` */
         val chatThreadDimensionBubbleInsetTheirs: Dp = 50.5.dp
+        /** Apple Messages (iMessage) · chat.thread · maximum text bubble width before wrapping · SOURCED — token `chat.thread.dimension.bubbleMaxWidth` */
+        val chatThreadDimensionBubbleMaxWidth: Dp = 256.dp
         /** Yope · chat.thread · horizontal padding from the bubble edge to the text ink · SOURCED — token `chat.thread.dimension.bubblePaddingH` */
         val chatThreadDimensionBubblePaddingH: Dp = 11.5.dp
         /** Yope · chat.thread · rim stroke width of text bubbles (one pixel of the reference) · SOURCED — token `chat.thread.dimension.bubbleRim` */
@@ -2554,6 +2663,8 @@ object Tokens {
         val photoViewerDimensionMoreCenterTrailing: Dp = 36.dp
         /** Yope · photo.viewer · ••• glyph width · SOURCED — token `photo.viewer.dimension.moreGlyphWidth` */
         val photoViewerDimensionMoreGlyphWidth: Dp = 25.3.dp
+        /** Yope · photo.viewer · gap between two photos while swiping · SOURCED — token `photo.viewer.dimension.pageGap` */
+        val photoViewerDimensionPageGap: Dp = 0.dp
         /** Yope · photo.viewer · photo top edge below the top safe-area inset (59 pt status bar on the recorded device) · SOURCED — token `photo.viewer.dimension.photoTop` */
         val photoViewerDimensionPhotoTop: Dp = 107.dp
         /** Yope · photo.viewer · sender avatar on the photo, top-left · SOURCED — token `photo.viewer.dimension.senderAvatar` */

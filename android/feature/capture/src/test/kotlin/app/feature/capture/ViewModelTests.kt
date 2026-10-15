@@ -386,6 +386,18 @@ class ViewModelTests {
         assertTrue(data.downloads.any { it.endsWith("display-2.jpg") })
     }
 
+    @Test fun collageShowsCachedPagesFirstAndKeepsThemOffline() {
+        data.invitation = invitation()
+        data.collage = collage(pages = 2)
+        val cache = File(dir, "collage-cache")
+        CollageViewModel(data, "g1", "inv1", cache, now = { T0.plusSeconds(600) })
+        data.collageError = DataError.Network
+        val offline = CollageViewModel(data, "g1", "inv1", cache, now = { T0.plusSeconds(600) })
+        // Cached pages render from the first frame (no loading flash) and stay when the network fails.
+        val content = offline.ui.value.content as CollageViewModel.Content.Ready
+        assertEquals(2, content.pages.size)
+    }
+
     @Test fun collageStates() {
         data.invitation = invitation()
         data.collage = null

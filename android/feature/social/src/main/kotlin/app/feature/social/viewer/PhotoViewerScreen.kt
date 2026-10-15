@@ -107,7 +107,6 @@ import app.feature.social.reactions.EmojiGlyph
 import app.feature.social.reactions.EmojiRain
 import app.feature.social.reactions.ReactionCluster
 import app.feature.social.reactions.ReactionPickerSheet
-import app.feature.social.reactions.clusterLabel
 import app.ui.components.PermissionCard
 import coil3.SingletonImageLoader
 import coil3.request.ImageRequest
@@ -401,12 +400,12 @@ private fun ViewerTitle(sender: String, group: String, date: String, modifier: M
         append(' ')
         withStyle(SpanStyle(color = Tokens.Colors.globalTextPrimary)) { append(group) }
     }
-    val spoken = "$sender $sentTo $group, $date"
     val gap = Tokens.Sizes.photoViewerDimensionTitleToDate
     val titleStyle = Type.headerTitle()
     val dateStyle = Type.listSubtitle()
     Layout(
-        modifier = modifier.clearAndSetSemantics { contentDescription = spoken; heading() },
+        // Read as one header element (the platform merge of both lines).
+        modifier = modifier.semantics(mergeDescendants = true) { heading() },
         content = {
             BasicText(line1, style = titleStyle, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             Line(date, dateStyle, Tokens.Colors.globalTextSecondary)
@@ -538,11 +537,8 @@ private fun PhotoFrame(
     val name = if (mine) stringRes(R.string.photo_viewer_title_you) else photo.author?.firstName.orEmpty()
     val date = post?.let { Formats.viewerDate(it.createdAt) }.orEmpty()
     val caption = post?.caption?.takeIf { it.isNotBlank() }
-    val label = listOfNotNull(
-        if (mine) stringRes(R.string.photo_viewer_a11y_photomine, date) else stringRes(R.string.photo_viewer_a11y_photo, name, date),
-        caption?.let { stringRes(R.string.chat_thread_a11y_caption, it) },
-        if (photo.reactions.isNotEmpty()) clusterLabel(photo.reactions) else null,
-    ).joinToString(", ")
+    val label = if (mine) stringRes(R.string.photo_viewer_a11y_photomine, date) else stringRes(R.string.photo_viewer_a11y_photo, name, date)
+    val captionLabel = caption?.let { stringRes(R.string.chat_thread_a11y_caption, it) }
     val actions = buildList {
         add(CustomAccessibilityAction(stringRes(R.string.photo_viewer_menu_save)) { onSave(); true })
         if (mine) add(CustomAccessibilityAction(stringRes(R.string.photo_viewer_menu_delete)) { ui.confirmDelete = true; true })
@@ -555,9 +551,10 @@ private fun PhotoFrame(
         Modifier
             .size(width, height)
             .clip(RoundedCornerShape(Tokens.Radii.globalPhoto))
-            .semantics { contentDescription = label; customActions = actions },
+            // The photo, its caption and its reactions are one element (platform merge); sender and toggle stay separate controls.
+            .semantics(mergeDescendants = true) { customActions = actions },
     ) {
-        RemotePhoto(media?.imagePath(Media.Rendition.Display), null, Modifier.fillMaxSize(), scale, fallbackPath = media?.imagePath(Media.Rendition.Thumb))
+        RemotePhoto(media?.imagePath(Media.Rendition.Display), label, Modifier.fillMaxSize(), scale, fallbackPath = media?.imagePath(Media.Rendition.Thumb))
         if (photo.loadFailed) {
             Box(Modifier.fillMaxSize().clickable(onClick = onRetry), contentAlignment = Alignment.Center) {
                 Line(stringRes(R.string.photo_viewer_error_load), Type.style(Tokens.FontSizes.globalEmptyDetail), Tokens.Colors.globalTextSecondary)
@@ -632,7 +629,7 @@ private fun PhotoFrame(
                     .heightIn(min = Tokens.Sizes.chatThreadDimensionCaptionHeight)
                     .let { if (scrim != null) it.background(scrim, RoundedCornerShape(Tokens.Radii.chatThreadRadiusCaption)) else it }
                     .padding(horizontal = Tokens.Sizes.chatThreadDimensionCaptionPaddingH)
-                    .clearAndSetSemantics { },
+                    .clearAndSetSemantics { if (captionLabel != null) contentDescription = captionLabel },
                 contentAlignment = Alignment.Center,
             ) {
                 Line(

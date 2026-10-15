@@ -50,6 +50,7 @@ import androidx.compose.ui.window.PopupPositionProvider
 import app.designsystem.Haptics
 import app.designsystem.R
 import app.designsystem.generated.Tokens
+import app.feature.memory.common.GlyphIcon
 import app.feature.memory.common.Failure
 import app.feature.memory.common.MemoryBackend
 import app.feature.memory.common.MemoryToast
@@ -229,11 +230,10 @@ fun SelfTagToggle(
                 .padding(contentPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
+            GlyphIcon(
                 if (tagged) Tokens.Icons.globalCheck else Tokens.Icons.globalUncheck,
-                contentDescription = null,
-                tint = if (tagged) Tokens.Colors.globalSelection else Tokens.Colors.globalOnSurfaceLight,
-                modifier = Modifier.size(Tokens.Sizes.globalCheckCircle),
+                Tokens.Sizes.globalCheckCircle,
+                if (tagged) Tokens.Colors.globalSelection else Tokens.Colors.globalOnSurfaceLight,
             )
             Spacer(Modifier.size(Tokens.Sizes.globalHeaderGap))
             BasicText(label, style = roleStyle(Tokens.FontSizes.globalButton, Tokens.FontWeights.fontWeightGlobalButton).copy(color = Tokens.Colors.globalOnSurfaceLight))
@@ -241,7 +241,7 @@ fun SelfTagToggle(
         if (coach) Popup(popupPositionProvider = AboveAnchor) { Coach(onDismiss = dismissCoach) }
     }
     controller.message?.let { message ->
-        Popup(alignment = Alignment.TopCenter) {
+        Popup(popupPositionProvider = WindowTop) {
             MemoryToast(
                 message = stringResource(
                     when (message) {
@@ -255,6 +255,11 @@ fun SelfTagToggle(
             )
         }
     }
+}
+
+/** The toast sits at the top of the window (under the status bar), whatever the toggle's position. */
+private object WindowTop : PopupPositionProvider {
+    override fun calculatePosition(anchorBounds: IntRect, windowSize: IntSize, layoutDirection: LayoutDirection, popupContentSize: IntSize): IntOffset = IntOffset.Zero
 }
 
 /** Places the coach centred above the toggle, its pointer `pointerToTarget` from the toggle's top. */
@@ -294,7 +299,7 @@ private fun Coach(onDismiss: () -> Unit) {
                 style = roleStyle(Tokens.FontSizes.cameraCaptureFontSizeCoach, Tokens.FontWeights.cameraCaptureFontWeightCoach).copy(color = Tokens.Colors.globalOnAccent),
             )
             Spacer(Modifier.size(coach.textToCloseGap.dp))
-            Icon(Tokens.Icons.globalClose, contentDescription = null, tint = Tokens.Colors.globalOnAccent, modifier = Modifier.size(coach.closeGlyph.dp))
+            GlyphIcon(Tokens.Icons.globalClose, coach.closeGlyph.dp, Tokens.Colors.globalOnAccent)
         }
         Box(Modifier.size(coach.pointerWidth.dp, coach.pointerHeight.dp).background(Tokens.Colors.globalAccent, pointer))
     }

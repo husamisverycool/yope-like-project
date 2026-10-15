@@ -100,8 +100,8 @@ Reduce Motion: system.
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `walls.browse.layout.selection` | BLOCKED | one screenshot of the row after tapping a person |
-| `walls.browse.layout.rowOrder` | BLOCKED; approximation: newest wall item first | one screenshot of the row before and after a friend posts |
+| `walls.browse.layout.selection` | BLOCKED (gap fill: no comparable person row with a visible selected state found) | one screenshot of the row after tapping a person |
+| `walls.browse.layout.rowOrder` | BLOCKED; approximation: newest wall item first (gap fill: no documented order in a comparable row) | one screenshot of the row before and after a friend posts |
 | combined "friends wall" | not built (no API) | owner decision |
 | title noun "friends" for family / roommates groups | verbatim kept (S-12) | owner decision |
 | measurements from one Dec 2025 video frame | ±1.5–2 pt | 20-s recording (yope-b §14 capture 3) |

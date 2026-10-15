@@ -53,6 +53,8 @@ class DailyCaptureViewModel(
         /** Open while the window is; null before the invitation loads and once it closed. */
         val countdown: CountdownState.Open? = null,
         val groupName: String? = null,
+        /** The member's first name for the dual image's label. */
+        val myName: String? = null,
         val mainLens: Lens = Lens.Back,
         val flashOn: Boolean = false,
         val hasFlash: Boolean = false,
@@ -85,7 +87,8 @@ class DailyCaptureViewModel(
         }
         viewModelScope.launch {
             val name = runCatching { data.group(groupId)?.name }.getOrNull()
-            state.update { it.copy(groupName = name) }
+            val me = runCatching { data.myFirstName() }.getOrNull()
+            state.update { it.copy(groupName = name, myName = me) }
         }
     }
 

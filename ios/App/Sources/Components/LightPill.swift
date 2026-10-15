@@ -34,13 +34,31 @@ struct LightPill: View {
 
     var body: some View {
         Button(action: action) {
-            label
-                .foregroundStyle(Tokens.Colors.globalOnSurfaceLight)
-                .background(Tokens.Colors.globalSurfaceLight, in: shape)
-                .contentShape(shape)
+            LightPillLabel(title, icon: icon, metrics: metrics)
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
+    }
+}
+
+/// The light pill's look without the button, for a pill inside a larger tappable row (the year-story entry's
+/// "let's go" on groups.screen). Same tokens as `LightPill`.
+struct LightPillLabel: View {
+    let title: String
+    var icon: String?
+    var metrics: LightPill.Metrics = .standard
+
+    init(_ title: String, icon: String? = nil, metrics: LightPill.Metrics = .standard) {
+        self.title = title
+        self.icon = icon
+        self.metrics = metrics
+    }
+
+    var body: some View {
+        label
+            .foregroundStyle(Tokens.Colors.globalOnSurfaceLight)
+            .background(Tokens.Colors.globalSurfaceLight, in: shape)
+            .contentShape(shape)
     }
 
     @ViewBuilder

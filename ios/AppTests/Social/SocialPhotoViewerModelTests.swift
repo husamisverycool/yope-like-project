@@ -36,6 +36,28 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         XCTAssertTrue(model.coachVisible, "first photo someone else posted: the coach shows")
     }
 
+    func testPhotosOnTheDeviceShowWithoutABlankFrameThenRefresh() async {
+        let data = SocialDemo.makeData()
+        data.update { state in
+            state.cachedFeeds[SocialDemo.groupID] = state.posts.filter { [SocialDemo.p1, SocialDemo.p2, SocialDemo.p3].contains($0.id) }
+            state.holds.insert("posts")
+        }
+        let model = makeModel(data)
+        let task = Task { await model.load() }
+        let shown = await socialEventually { model.phase == .ready }
+        XCTAssertTrue(shown, "the cached photo shows while the server is asked")
+        XCTAssertEqual(model.current?.id, SocialDemo.p2)
+
+        // p3 was deleted meanwhile: the refresh marks it gone in place.
+        data.update { state in
+            state.posts.removeAll { $0.id == SocialDemo.p3 }
+            state.holds.remove("posts")
+        }
+        await task.value
+        XCTAssertTrue(model.gone.contains(SocialDemo.p3))
+        XCTAssertEqual(model.current?.id, SocialDemo.p2)
+    }
+
     func testCoachShowsOncePerAccountAndNeverOnOwnPhotos() async {
         let flags = socialTestFlags()
         let own = makeModel(start: SocialDemo.p3, flags: flags)

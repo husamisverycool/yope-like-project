@@ -188,19 +188,22 @@ final class ChatThreadModel {
         latestRecapID = recaps.first { $0.status == .ready }?.id
     }
 
+    private func loadPosts(_ wanted: [PostID]) async {
+        guard !wanted.isEmpty else { return }
+        if let found = try? await data.posts(ids: wanted) {
+            for post in found { posts[post.id] = post }
+        } else {
+            for post in await data.cachedPosts(ids: wanted, groupID: groupID) { posts[post.id] = post }
+        }
+    }
+
     /// Posts (photo messages and reply targets), their reactions, and authors' profiles.
     private func loadDetails(for batch: [Message]) async {
         let photoIDs = batch.compactMap(\.postID)
         let wanted = (photoIDs + batch.compactMap(\.replyToPostID)).socialUnique().filter { posts[$0] == nil }
-        if !wanted.isEmpty {
-            if let found = try? await data.posts(ids: wanted) {
-                for post in found { posts[post.id] = post }
-            } else {
-                for post in await data.cachedPosts(groupID: groupID) where wanted.contains(post.id) {
-                    posts[post.id] = post
-                }
-            }
-        }
+        await loadPosts(wanted)
+        // Photo replies to a photo (`posts.reply_to_post_id`): their quoted photo too.
+        await loadPosts(photoIDs.compactMap { posts[$0]?.post.replyToPostID }.socialUnique().filter { posts[$0] == nil })
         if !photoIDs.isEmpty, let rows = try? await data.reactions(postIDs: photoIDs) {
             let summaries = ReactionSummary.byPost(rows)
             for id in photoIDs.socialUnique() {
@@ -288,6 +291,9 @@ final class ChatThreadModel {
         messages.removeAll { $0.kind == .photo && $0.postID == postID }
         for index in messages.indices where messages[index].replyToPostID == postID {
             messages[index].replyToPostID = nil
+        }
+        for id in posts.keys where posts[id]?.post.replyToPostID == postID {
+            posts[id]?.post.replyToPostID = nil
         }
         posts[postID] = nil
         reactions[postID] = nil

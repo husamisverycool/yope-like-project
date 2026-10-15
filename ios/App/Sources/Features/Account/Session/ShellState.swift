@@ -12,7 +12,12 @@ final class ShellState {
     /// The group preselected in send-to when the camera was opened for one (camera.fromwidget, a group card's camera).
     private(set) var cameraGroupID: String?
 
-    /// The shell on screen (the paywall entry closes the camera before prompting).
+    /// A route whose spec presents it modally when it arrives as a push from a link (`AppRouter` pushes every link
+    /// route): birthday.request is a sheet, birthday.tribute is full screen. `MainShell` presents it.
+    var presentedRoute: PresentedRoute?
+
+    /// The shell on screen (the paywall entry closes the camera before prompting): the latest one created, and the
+    /// one `MainShell` shows.
     static weak var active: ShellState?
 
     /// Starts the capture session ahead of the camera (`CameraScreen.prewarm` in the app; nothing in tests).
@@ -21,6 +26,7 @@ final class ShellState {
     init(tab: AppTab = .groups, prewarm: @escaping @MainActor () -> Void = {}) {
         self.tab = tab
         self.prewarm = prewarm
+        Self.active = self
     }
 
     /// Shows the camera tab (prewarming the capture session first), optionally for a group.
@@ -38,5 +44,53 @@ final class ShellState {
     /// Leaves the camera (a premium prompt never shows during capture, `SessionPromptGate.Blocker.capture`).
     func leaveCamera() {
         if tab == .camera { showGroups() }
+    }
+}
+
+/// A pushed route shown as a sheet or full screen instead (`ShellState.presentedRoute`).
+struct PresentedRoute: Identifiable, Hashable {
+    enum Style: Hashable {
+        case sheet
+        case fullScreen
+    }
+
+    let route: AppRoute
+    let style: Style
+
+    var id: AppRoute { route }
+
+    /// How `route` is presented when its spec asks for a modal; nil for routes that are pushed.
+    /// - year.story is not here: it is `AppModal.memory(.yearStory)` (full screen), see `MainShell`.
+    static func modal(for route: AppRoute) -> PresentedRoute? {
+        switch route {
+        case .birthdayRequest:
+            // birthday.request.md platform notes: `.sheet` with `.presentationDetents([.large])`.
+            return PresentedRoute(route: route, style: .sheet)
+        case .tribute:
+            // birthday.tribute.md structure: full screen.
+            return PresentedRoute(route: route, style: .fullScreen)
+        default:
+            return nil
+        }
+    }
+}
+
+extension ShellState {
+    /// Takes a link-pushed route whose spec presents it modally off the stack: year.story becomes
+    /// `AppModal.memory(.yearStory)` (full screen, year.story.md platform notes), birthday.request and birthday.tribute
+    /// become `presentedRoute`. Returns true when it moved one.
+    @discardableResult
+    func presentModalRoute(router: AppRouter) -> Bool {
+        guard let last = router.path.last else { return false }
+        if case let .yearStory(groupID, year) = last {
+            router.path.removeLast()
+            router.modal = .memory(.yearStory(groupID: groupID, year: year))
+            return true
+        }
+        guard let presented = PresentedRoute.modal(for: last) else { return false }
+        router.path.removeLast()
+        router.modal = nil
+        presentedRoute = presented
+        return true
     }
 }

@@ -187,31 +187,7 @@ struct PhotoViewerView: View {
     /// Native pull-down menu (`photo.viewer.layout.menu`): save; delete (mine) or report and block (others').
     private var menu: some View {
         Menu {
-            Button { Task { await model.saveCurrent(using: SocialServices.shared.saver) } } label: {
-                Label(Copy.photoViewerMenuSave, systemImage: Tokens.Icons.globalDownload)
-            }
-            if model.isCurrentOwn {
-                Button(role: .destructive) { confirmingDelete = true } label: {
-                    Label(Copy.photoViewerMenuDelete, systemImage: Tokens.Icons.photoViewerIconDelete)
-                }
-            } else if let post = model.current {
-                let firstName = model.author(of: post)?.socialFirstName ?? ""
-                if account != nil {
-                    Button(role: .destructive) {
-                        reportTarget = ReportTarget(
-                            kind: .post, id: post.id.rawValue, name: nil,
-                            person: BlockTarget(userID: post.post.authorID.rawValue, firstName: firstName)
-                        )
-                    } label: {
-                        Label(Copy.photoViewerMenuReport, systemImage: Tokens.Icons.globalReport)
-                    }
-                }
-                Button(role: .destructive) {
-                    blockTarget = BlockTarget(userID: post.post.authorID.rawValue, firstName: firstName)
-                } label: {
-                    Text(Copy.photoViewerMenuBlock(name: firstName))
-                }
-            }
+            menuItems
         } label: {
             Image(systemName: Tokens.Icons.globalMore)
                 .resizable()
@@ -223,6 +199,36 @@ struct PhotoViewerView: View {
         }
         .accessibilityLabel(Text(Copy.photoViewerA11yMore))
         .disabled(model.current == nil || model.isCurrentGone)
+    }
+
+    /// The menu's items, also exposed as accessibility actions on the photo.
+    @ViewBuilder
+    private var menuItems: some View {
+        Button { Task { await model.saveCurrent(using: SocialServices.shared.saver) } } label: {
+            Label(Copy.photoViewerMenuSave, systemImage: Tokens.Icons.globalDownload)
+        }
+        if model.isCurrentOwn {
+            Button(role: .destructive) { confirmingDelete = true } label: {
+                Label(Copy.photoViewerMenuDelete, systemImage: Tokens.Icons.photoViewerIconDelete)
+            }
+        } else if let post = model.current {
+            let firstName = model.author(of: post)?.socialFirstName ?? ""
+            if account != nil {
+                Button(role: .destructive) {
+                    reportTarget = ReportTarget(
+                        kind: .post, id: post.id.rawValue, name: nil,
+                        person: BlockTarget(userID: post.post.authorID.rawValue, firstName: firstName)
+                    )
+                } label: {
+                    Label(Copy.photoViewerMenuReport, systemImage: Tokens.Icons.globalReport)
+                }
+            }
+            Button(role: .destructive) {
+                blockTarget = BlockTarget(userID: post.post.authorID.rawValue, firstName: firstName)
+            } label: {
+                Text(Copy.photoViewerMenuBlock(name: firstName))
+            }
+        }
     }
 
     // MARK: Pages
@@ -265,7 +271,8 @@ struct PhotoViewerView: View {
                     post: post,
                     model: model,
                     maxPixel: screenPixels,
-                    openActivity: { activityOpen = true }
+                    openActivity: { activityOpen = true },
+                    menuActions: AnyView(menuItems)
                 )
                 if let voicePath = post.post.voicePath, let duration = post.post.voiceDurationMs {
                     // Position BLOCKED (`photo.viewer.layout.voiceNote`): the spec's approximation, under the photo.
@@ -341,6 +348,8 @@ struct ViewerPhoto: View {
     let model: PhotoViewerModel
     let maxPixel: Int?
     let openActivity: () -> Void
+    /// The ••• menu's items, exposed as accessibility actions on the photo.
+    var menuActions = AnyView(EmptyView())
 
     private var aspectRatio: CGFloat? {
         guard let media = post.media, let width = media.width, let height = media.height, width > 0, height > 0 else { return nil }
@@ -350,6 +359,7 @@ struct ViewerPhoto: View {
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: Tokens.Radii.globalPhoto)
         ViewerMedia(post: post, maxPixel: maxPixel, accessibilityLabel: label)
+            .accessibilityActions { menuActions }
             .aspectRatio(aspectRatio, contentMode: .fit)
             .frame(maxWidth: .infinity)
             .clipShape(shape)
@@ -400,17 +410,19 @@ struct ViewerPhoto: View {
         .accessibilityLabel(Text(own ? Copy.photoViewerTitleYou : (model.author(of: post)?.socialFirstName ?? "")))
     }
 
+    /// The memory group's "i'm in this" control (`tagging`), drawn from this model's state: optimistic toggle,
+    /// first-use coach, toasts and haptics come from `PhotoViewerModel`. Its centre sits
+    /// `photo.viewer.dimension.actionCenterTop` below the photo's top, `.actionTrailing` from its right edge.
     private var tagging: some View {
-        VStack(alignment: .trailing, spacing: 0) {
-            TagToggle(isOn: model.tagged[post.id] ?? false, isPending: model.tagPending.contains(post.id)) {
-                Task { await model.toggleTag() }
-            }
-            if model.coachVisible, model.selection == post.id {
-                CoachTooltip(text: Copy.taggingCoach) { model.dismissCoach() }
-            }
-        }
+        SelfTagToggleControl(
+            isOn: model.tagged[post.id] ?? false,
+            isPending: model.tagPending.contains(post.id),
+            showsCoach: model.coachVisible && model.selection == post.id,
+            onToggle: { Task { await model.toggleTag() } },
+            onDismissCoach: { model.dismissCoach() }
+        )
         .padding(.trailing, Tokens.Sizes.photoViewerDimensionActionTrailing)
-        .padding(.top, Tokens.Sizes.photoViewerDimensionActionCenterTop - Tokens.Sizes.globalMinTouchTargetIos / 2)
+        .padding(.top, Tokens.Sizes.photoViewerDimensionActionCenterTop - max(Tokens.Sizes.globalButtonHeight, Tokens.Sizes.globalMinTouchTargetIos) / 2)
     }
 }
 

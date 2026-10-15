@@ -41,6 +41,50 @@ final class SocialWeekModelTests: XCTestCase {
         XCTAssertEqual(failing.phase, .failed)
     }
 
+    func testReopenedRecapShowsAtOnceThenRefreshesInPlace() async {
+        let data = SocialDemo.makeData()
+        let recap = data.read { $0.recaps.first { $0.id == SocialDemo.recapID } }
+        data.update { state in
+            state.cachedRecaps[SocialDemo.recapID] = recap
+            state.cachedFeeds[SocialDemo.groupID] = state.posts.filter { $0.post.groupID == SocialDemo.groupID }
+            state.holds.insert("recap")
+        }
+        let model = WeekRecapModel(groupID: SocialDemo.groupID, recapID: SocialDemo.recapID, data: data)
+        let task = Task { await model.load() }
+        let shown = await socialEventually { model.phase == .ready }
+        XCTAssertTrue(shown, "the recap fetched earlier shows while the server is asked")
+        XCTAssertFalse(model.showsLoading, "no HUD over cached content")
+        XCTAssertEqual(model.cardPosts.map(\.id), [SocialDemo.p6, SocialDemo.p5])
+
+        data.update { $0.holds.remove("recap") }
+        await task.value
+        XCTAssertEqual(model.phase, .ready)
+        XCTAssertEqual(model.weekPosts.map(\.id), [SocialDemo.p5, SocialDemo.p6])
+
+        // Offline after the cached copy showed: the copy stays.
+        let offline = SocialDemo.makeData()
+        offline.update { state in
+            state.cachedRecaps[SocialDemo.recapID] = recap
+            state.cachedFeeds[SocialDemo.groupID] = state.posts.filter { $0.post.groupID == SocialDemo.groupID }
+            state.mode = .offline
+        }
+        let fromCache = WeekRecapModel(groupID: SocialDemo.groupID, recapID: SocialDemo.recapID, data: offline)
+        await fromCache.load()
+        XCTAssertEqual(fromCache.phase, .ready)
+        XCTAssertTrue(fromCache.isOffline)
+    }
+
+    func testEditorOpensOnWhatTheRecapShows() async {
+        let data = SocialDemo.makeData()
+        let recap = WeekRecapModel(groupID: SocialDemo.groupID, recapID: SocialDemo.recapID, data: data)
+        await recap.load()
+        let editor = WeekEditModel(groupID: SocialDemo.groupID, mode: .recap(SocialDemo.recapID), data: data, seed: recap.editSeed)
+        XCTAssertEqual(editor.phase, .ready, "no loading state when opened from the recap")
+        XCTAssertEqual(editor.gridPosts.map(\.id), [SocialDemo.p6, SocialDemo.p5])
+        XCTAssertEqual(editor.checked, [SocialDemo.p6, SocialDemo.p5])
+        XCTAssertEqual(data.read { $0.calls.filter { $0 == "recap" }.count }, 1, "the editor fetched nothing")
+    }
+
     func testSegmentAndDeletion() async {
         let model = WeekRecapModel(groupID: SocialDemo.groupID, recapID: SocialDemo.recapID, data: SocialDemo.makeData())
         await model.load()
@@ -224,5 +268,40 @@ final class SocialWeekModelTests: XCTestCase {
         let failing = historyModel(failingData)
         await failing.load()
         XCTAssertEqual(failing.line, .error)
+    }
+
+    func testHistoryIndicatorNeverCoversCachedWeeks() async {
+        let held = SocialDemo.makeData()
+        held.update { $0.holds.insert("historyWeeks") }
+        let empty = historyModel(held)
+        XCTAssertFalse(empty.showsLoading, "nothing drawn before the cache was looked at")
+        let task = Task { await empty.load() }
+        let shown = await socialEventually { empty.showsLoading }
+        XCTAssertTrue(shown, "nothing cached: the indicator shows")
+        task.cancel()
+
+        let cached = SocialDemo.makeData()
+        cached.update { state in
+            state.holds.insert("historyWeeks")
+            state.cachedHistory[SocialDemo.groupID] = [HistoryWeek(weekStart: SocialDemo.lastWeek, postIDs: [SocialDemo.p5])]
+        }
+        let fromCache = historyModel(cached)
+        let second = Task { await fromCache.load() }
+        let ready = await socialEventually { !fromCache.weeks.isEmpty }
+        XCTAssertTrue(ready)
+        XCTAssertFalse(fromCache.showsLoading)
+        second.cancel()
+        _ = await second.value
+
+        // A server error after the cached weeks showed keeps them.
+        let failing = SocialDemo.makeData()
+        failing.update { state in
+            state.mode = .failing
+            state.cachedHistory[SocialDemo.groupID] = [HistoryWeek(weekStart: SocialDemo.lastWeek, postIDs: [SocialDemo.p5])]
+        }
+        let kept = historyModel(failing)
+        await kept.load()
+        XCTAssertEqual(kept.line, .error)
+        XCTAssertTrue(kept.weeks.contains { $0.weekStart == SocialDemo.lastWeek })
     }
 }

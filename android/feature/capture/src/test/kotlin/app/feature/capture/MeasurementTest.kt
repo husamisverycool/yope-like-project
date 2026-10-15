@@ -30,6 +30,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import java.io.File
 import java.time.Duration
 import java.time.LocalDate
@@ -40,6 +41,7 @@ import java.time.LocalDate
  * design/verification/<surface>.md (tools: feature/capture/verification/checklists.py).
  */
 @RunWith(AndroidJUnit4::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE) // real text metrics, as in the snapshots
 @Config(qualifiers = "w393dp-h852dp-xxhdpi")
 class MeasurementTest {
     @get:Rule val compose = createComposeRule()

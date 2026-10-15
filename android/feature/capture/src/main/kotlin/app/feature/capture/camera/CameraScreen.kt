@@ -158,7 +158,8 @@ fun CameraRoute(
         }
     }
     DisposableEffect(controller) {
-        onDispose { scope.launch { runCatching { controller.unbind() } } }
+        // The screen's scope is already cancelled here; CameraX also closes with the entry's lifecycle.
+        onDispose { kotlinx.coroutines.MainScope().launch { runCatching { controller.unbind() } } }
     }
     val preview by controller.preview.collectAsStateWithLifecycle()
 

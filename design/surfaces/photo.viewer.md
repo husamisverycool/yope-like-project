@@ -59,7 +59,7 @@ Full-screen, background `photo.viewer.color.background`. Presented over the scre
    `photo.viewer.reply.placeholder`; inside the field's right end the quick reactions 🔥 💖 and the add-reaction glyph
    (`chat.reactions.layout.quickReactions`); gap `chat.composer.dimension.gapFieldButton`; camera circle
    (`chat.composer.dimension.sideButton`, `color.global.controlRaised`, `icon.global.camera` in `color.global.textPrimary`) at
-   `chat.composer.dimension.insetTrailing`. Distance to the bottom safe area: **BLOCKED** (`chat.composer.dimension.bottomInset`).
+   `chat.composer.dimension.insetTrailing`. Distance to the bottom safe area: `chat.composer.dimension.bottomInset` (8 pt).
 5. **Emoji rain** layer (behind the photo, in front of the background) — `chat.reactions.md` §4.
 
 ## Elements
@@ -70,13 +70,13 @@ Full-screen, background `photo.viewer.color.background`. Presented over the scre
 | title | text roles `headerTitle`, `listSubtitle`; `color.global.textPrimary` / `.textSecondary`; `photo.viewer.dimension.titleToDate`; `photo.viewer.layout.dateFormat` | `photo.viewer.title.you`, `photo.viewer.title.sentTo`, names (data), date (data) | — |
 | ••• | `icon.global.more`, `photo.viewer.dimension.moreGlyphWidth`, `.moreCenterTrailing` | `photo.viewer.a11y.more` | opens the menu below |
 | menu | `photo.viewer.layout.menu` (native pull-down) | see Menu | — |
-| photo | `photo.viewer.layout.photo`, `photo.viewer.dimension.photoTop`, `radius.global.photo`, swipe `duration.global.photoSwipe` + `easing.global.photoSwipe`, page gap **BLOCKED** (`photo.viewer.dimension.pageGap`) | `photo.viewer.a11y.photo` / `.photoMine` (+ `chat.thread.a11y.caption`) | horizontal swipe to the previous / next photo of the context it was opened from |
+| photo | `photo.viewer.layout.photo`, `photo.viewer.dimension.photoTop`, `radius.global.photo`, swipe `duration.global.photoSwipe` + `easing.global.photoSwipe`, page gap `photo.viewer.dimension.pageGap` (0: pages touch; Yope frames, Gap fill G-14) | `photo.viewer.a11y.photo` / `.photoMine` (+ `chat.thread.a11y.caption`) | horizontal swipe to the previous / next photo of the context it was opened from |
 | "i'm in this" toggle | `tagging.md` tokens; position `photo.viewer.dimension.actionTrailing`, `.actionCenterTop` | `tagging.toggle`, `tagging.coach` | `tag_self` / `untag_self` (optimistic; `tagging.md`) |
 | sender overlay | `photo.viewer.dimension.senderAvatar`, `.senderInsetLeading`, `.senderInsetTop`, `.senderNameGap`, text role `headerTitle` | name (data) / `photo.viewer.title.you` | tap → `walls.member` (or `walls.mine`) |
 | caption box | caption tokens above | caption (data) | — |
 | reaction cluster | `chat.reactions.*` | `chat.reactions.a11y.cluster` | tap → Activity sheet |
 | voice note | `chat.voice.*`; position **BLOCKED** | `chat.voice.a11y.*` | plays the post's voice note |
-| reply field | composer field tokens above | `photo.viewer.reply.placeholder` | typing + send (**BLOCKED** send control, `chat.composer.layout.typingState`; approximation: return key) → `send_message(text, p_reply_to_post_id)`; the reply appears in `chat.thread` |
+| reply field | composer field tokens above | `photo.viewer.reply.placeholder` | typing + send (`chat.composer.layout.typingState`: the camera circle's slot shows the lime send circle while the field has text) → `send_message(text, p_reply_to_post_id)`; the reply appears in `chat.thread` |
 | quick reactions | `chat.reactions.layout.quickReactions`, `chat.reactions.icon.add` | `chat.reactions.a11y.quick`, `chat.reactions.a11y.add` | 🔥 / 💖 react at once; the glyph opens the picker |
 | camera circle | `chat.composer.dimension.sideButton`, `color.global.controlRaised`, `icon.global.camera` | `chat.composer.a11y.camera` | opens `camera.capture`; the photo is sent with `create_post(p_group_ids: [this group], p_reply_to_post_id)` (reply to a photo with a photo) |
 | toast | `camera.sendto.layout.toast` (lime bar under the status bar: `color.global.accent`, `icon.global.check`, text role `button` in `color.global.onAccent`), dwell **BLOCKED** (`camera.sendto.duration.toastVisible`) | `photo.viewer.toast.saved`, `photo.viewer.toast.deleted` | after save / delete |
@@ -194,10 +194,10 @@ closes when none), toast `photo.viewer.toast.deleted`.
 | item | status | smallest owner capture |
 |---|---|---|
 | Yope viewer beyond one frame (open / close motion, ••• contents, save, caption, ♡) | approximations above; one frame only | one 10-s recording: tap a photo in a Yope group chat, swipe to the next, open •••, close (yope-b §14 capture 2) |
-| `photo.viewer.dimension.pageGap` | BLOCKED | same recording |
+| `photo.viewer.dimension.pageGap` | **SOURCED (gap fill)**: 0 pt — on three Yope mid-swipe frames the straight edges touch (≤1 px); the dark gap is the rounded corners (G-14) | — |
 | tagging toggle position | Yope's top-right chip slot reused (S-19) | — |
-| `photo.viewer.layout.voiceNote` | BLOCKED; approximation under the photo | one recording opening a photo with a voice memo |
-| `chat.composer.dimension.bottomInset`, `chat.composer.layout.typingState` | BLOCKED (shared with the composer) | see `chat.composer.md` |
+| `photo.viewer.layout.voiceNote` | BLOCKED; approximation under the photo (gap fill found no app that attaches a voice note to a photo in a viewer) | one recording opening a photo with a voice memo |
+| `chat.composer.dimension.bottomInset`, `chat.composer.layout.typingState` | **SOURCED (gap fill)** (shared with the composer: 8 pt; mic/camera slot → send circle, see `chat.composer.md`) | — |
 | caption box fill (`color.global.scrim`) | BLOCKED | see `chat.thread.md` |
 | tall photos (taller than the free space) | approximation: fit | same recording with a 9:16 photo |
 | caption + cluster overlap | not observed | — |

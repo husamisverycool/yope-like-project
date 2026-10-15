@@ -422,22 +422,36 @@ struct ChatMessageRow: View {
 
     /// From `chat.thread.dimension.bubbleInsetTheirs` to `chat.thread.dimension.photoInsetTrailing`, shape
     /// `chat.thread.dimension.photoWidth` × `.photoHeight`, `radius.global.photo`, aspect fill.
+    /// A photo replying to a photo (S-7, approximation): the quote part attached above the photo message, the photo
+    /// overlapping its bottom like the text part of a text reply.
     private var photoRow: some View {
-        HStack(alignment: .bottom, spacing: 0) {
+        let post = message.postID.flatMap { model.posts[$0] }
+        let quotedID = post?.post.replyToPostID
+        let quoted = quotedID.flatMap { model.posts[$0] }
+        return HStack(alignment: .bottom, spacing: 0) {
             if row.isMine {
                 Color.clear.frame(width: Tokens.Sizes.chatThreadDimensionBubbleInsetTheirs, height: 0)
             } else {
                 avatarColumn
             }
-            ChatPhotoMessage(
-                post: message.postID.flatMap { model.posts[$0] },
-                reactions: message.postID.flatMap { model.reactions[$0] } ?? ReactionSummary(),
-                isMine: row.isMine,
-                authorName: authorName,
-                open: { if let id = message.postID { openPhoto(id) } },
-                react: { if let id = message.postID { react(id) } },
-                showReactions: { if let id = message.postID { showReactions(id) } }
-            )
+            VStack(alignment: row.isMine ? .trailing : .leading, spacing: 0) {
+                if let quotedID, let quoted {
+                    ReplyQuote(
+                        posterFirstName: model.profile(quoted.post.authorID)?.socialFirstName ?? "",
+                        thumbPath: quoted.media?.gridPath
+                    ) { openPhoto(quotedID) }
+                }
+                ChatPhotoMessage(
+                    post: post,
+                    reactions: message.postID.flatMap { model.reactions[$0] } ?? ReactionSummary(),
+                    isMine: row.isMine,
+                    authorName: authorName,
+                    open: { if let id = message.postID { openPhoto(id) } },
+                    react: { if let id = message.postID { react(id) } },
+                    showReactions: { if let id = message.postID { showReactions(id) } }
+                )
+                .padding(.top, quoted == nil ? 0 : -Tokens.Radii.globalPhoto)
+            }
             .padding(.trailing, Tokens.Sizes.chatThreadDimensionPhotoInsetTrailing)
         }
     }

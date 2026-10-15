@@ -17,6 +17,7 @@ import app.feature.memory.MemoryTestContent
 import app.feature.memory.Scenario
 import app.feature.memory.SnapshotTest
 import app.feature.memory.TestImages
+import app.feature.memory.resetFileProviderCache
 import app.feature.memory.share.MemoryFiles
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull

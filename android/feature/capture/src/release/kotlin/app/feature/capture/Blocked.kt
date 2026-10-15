@@ -12,8 +12,9 @@ internal object Blocked {
     /** `daily.capture.fontWeight.countdown` is BLOCKED: the countdown is not drawn. */
     val countdownWeight: FontWeight? = null
 
-    /** `chat.voice.layout.recording` is BLOCKED: no voice-note recorder (mic and coach hidden). */
-    const val voiceNoteRecorder: Boolean = false
+    /** `chat.voice.layout.recording` is SOURCED since the gap-fill pass: the voice-note recorder ships. */
+    const val voiceNoteRecorder: Boolean = true
+
 
     /** `camera.sendto.color.messageField` (BLOCKED): message field and mic circle drawn without a fill. */
     val messageFieldFill: Color? = null

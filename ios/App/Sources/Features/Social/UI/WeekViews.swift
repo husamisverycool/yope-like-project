@@ -172,7 +172,10 @@ struct WeekRecapView: View {
         .toastHost(toasts)
         .socialPhotoViewer($viewer)
         .sheet(isPresented: $editing, onDismiss: { Task { await model.load() } }) {
-            WeekEditView(groupID: model.groupID, mode: .recap(model.recapID), toasts: toasts)
+            WeekEditView(
+                model: WeekEditModel(groupID: model.groupID, mode: .recap(model.recapID), data: SocialServices.shared.data, seed: model.editSeed),
+                toasts: toasts
+            )
         }
         .accessibilityIdentifier("week.recap") // provenance-ok: accessibility identifier for UI tests
     }
@@ -579,7 +582,7 @@ struct WeekHistoryScreen: View {
                     .accessibilityAddTraits(.isHeader)
                 if model.line == .offline { line(Copy.weekHistoryOffline) }
                 if model.isLoading {
-                    ProgressView().frame(maxWidth: .infinity)
+                    if model.showsLoading { ProgressView().frame(maxWidth: .infinity) }
                 } else {
                     ForEach(Array(model.weeks.enumerated()), id: \.element.id) { index, week in
                         WeekSection(model: model, week: week, open: open, saveAsAlbum: { albumWeek = week.weekStart })
@@ -650,23 +653,25 @@ struct WeekSection: View {
 
     private var header: some View {
         let number = String(SocialCalendar.weekNumber(of: week.weekStart, in: model.timeZone))
-        return HStack(alignment: .firstTextBaseline, spacing: Tokens.Sizes.weekHistoryDimensionRangeGap) {
-            Text(Copy.weekHistoryHeaderTitle(weekNumber: number))
-                .dsTextStyle(SocialText.historyHeaderTitle)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-            if let range {
-                Text(range)
-                    .dsTextStyle(SocialText.historyHeaderRange)
-                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
+        return HStack(alignment: .firstTextBaseline, spacing: 0) {
+            HStack(alignment: .firstTextBaseline, spacing: Tokens.Sizes.weekHistoryDimensionRangeGap) {
+                Text(Copy.weekHistoryHeaderTitle(weekNumber: number))
+                    .dsTextStyle(SocialText.historyHeaderTitle)
+                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                if let range {
+                    Text(range)
+                        .dsTextStyle(SocialText.historyHeaderRange)
+                        .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                }
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text([Copy.weekHistoryHeaderTitle(weekNumber: number), range].compactMap { $0 }.joined(separator: ", ")))
+            .accessibilityAddTraits(.isHeader)
             Spacer(minLength: 0)
             menu
         }
         .padding(.leading, Tokens.Sizes.weekHistoryDimensionInset)
         .padding(.trailing, Tokens.Sizes.weekHistoryDimensionMoreTrailing - (Tokens.Sizes.globalMinTouchTargetIos - Tokens.Sizes.photoViewerDimensionMoreGlyphWidth) / 2)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(Text([Copy.weekHistoryHeaderTitle(weekNumber: number), range].compactMap { $0 }.joined(separator: ", ")))
-        .accessibilityAddTraits(.isHeader)
     }
 
     /// Our two product items (Retro's own menu is BLOCKED, `week.history.layout.weekMenu`).

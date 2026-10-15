@@ -72,6 +72,9 @@ interface CaptureData {
 
     /** Downloads a signed URL into [target] (atomic). */
     suspend fun download(url: String, target: File)
+
+    /** The signed-in member's first name (for "Back and front photos from {name}"); null when unknown. */
+    suspend fun myFirstName(): String?
 }
 
 /** The app's [CaptureData] over the process-wide [DataGraph]. */
@@ -124,6 +127,8 @@ class GraphCaptureData(private val graph: DataGraph) : CaptureData {
     override suspend fun members(groupId: String): List<Member> = graph.groups.members(groupId)
 
     override suspend fun download(url: String, target: File) = downloadTo(url, target)
+
+    override suspend fun myFirstName(): String? = runCatching { graph.profiles.me().firstName }.getOrNull()
 }
 
 /** Used while config/app.json has no Supabase project: nothing loads, nothing sends. */
@@ -143,6 +148,7 @@ object UnconfiguredCaptureData : CaptureData {
     override suspend fun newestForWidget(groupId: String): NewestForWidget? = null
     override suspend fun members(groupId: String): List<Member> = emptyList()
     override suspend fun download(url: String, target: File) = throw DataException(DataError.NotConfigured)
+    override suspend fun myFirstName(): String? = null
 }
 
 /** Supplies the process's [CaptureData]; tests set [override]. */

@@ -31,21 +31,28 @@ fill `chat.voice.color.bubble`, right edge at `chat.thread.dimension.bubbleInset
    the right edge.
 
 Another member's voice message: left-aligned at `chat.thread.dimension.bubbleInsetTheirs` with the avatar rule of
-`chat.thread`; its fill is **BLOCKED** (`chat.voice.color.bubbleTheirs`). Width for other durations: **BLOCKED**
-(`chat.voice.layout.widthRule`); the observed width is used for all (Gaps).
+`chat.thread`; its fill is `chat.voice.color.bubbleTheirs` (#2B2B2B = their text-bubble fill; Telegram rule, Gap fill G-7).
+Width for other durations: **BLOCKED** (`chat.voice.layout.widthRule`); the observed width is used for all (Gaps).
+
+**Playing**: ▶ becomes `chat.voice.icon.pause` (`pause.fill` / `Rounded.Pause`); the bars from the leading end up to the
+playhead draw in `chat.voice.color.waveformPlayed` (#FFFFFF), the rest stay `chat.voice.color.waveform` (Telegram rule, G-8).
 
 ## Structure — recording
 
-**BLOCKED** (`chat.voice.layout.recording`): hold vs tap, lock, cancel, live waveform and timer were not observed. The mic
-circle (`chat.composer.md`) is the entry. Upload format: AAC in `.m4a` (`audio/m4a`, docs/API.md §7).
+`chat.voice.layout.recording` (WhatsApp documented gestures + WhatsApp / Telegram 2026 panels; Gap fill G-9): press and
+hold the mic circle to record; lift to send; slide left to cancel; slide up onto the lock shown above the mic to keep
+recording hands-free (then pause previews, send sends). While recording, the composer row shows a red recording dot
+(`color.global.destructive`), the elapsed time (`chat.voice.layout.durationFormat`, `color.global.textPrimary`) and the
+centred hint `icon.global.back` + `chat.voice.recording.slideToCancel` (`color.global.textSecondary`, verbatim
+WhatsApp "slide to cancel"); the mic circle stays under the finger. Live waveform while recording: not observed. Upload format: AAC in `.m4a` (`audio/m4a`, docs/API.md §7).
 
 ## Elements
 
 | element | tokens | copy | behaviour |
 |---|---|---|---|
-| bubble | `chat.voice.dimension.width`, `.height`, `chat.voice.radius.bubble`, `chat.voice.color.bubble` (theirs **BLOCKED**) | `chat.voice.a11y.messageMine` / `chat.voice.a11y.message` | long press → context menu (`chat.thread.menu.delete` own / `chat.thread.menu.report` others) |
-| play circle | `chat.voice.dimension.playButton`, `.playInsetLeading`, `chat.voice.color.playButton`, `icon.global.play`, `chat.voice.dimension.playGlyph`; playing glyph **BLOCKED** (`chat.voice.icon.pause`) | `chat.voice.a11y.play` / `chat.voice.a11y.pause` | tap plays from the start / pauses; one voice message plays at a time |
-| waveform | `chat.voice.dimension.barWidth`, `.barPitch`, `.barMinHeight`, `.barMaxHeight`, `chat.voice.color.waveform`; played part **BLOCKED** (`chat.voice.color.waveformPlayed`) | — (decorative) | — |
+| bubble | `chat.voice.dimension.width`, `.height`, `chat.voice.radius.bubble`, `chat.voice.color.bubble` (theirs `chat.voice.color.bubbleTheirs`) | `chat.voice.a11y.messageMine` / `chat.voice.a11y.message` | long press → context menu (`chat.thread.menu.delete` own / `chat.thread.menu.report` others) |
+| play circle | `chat.voice.dimension.playButton`, `.playInsetLeading`, `chat.voice.color.playButton`, `icon.global.play`, `chat.voice.dimension.playGlyph`; playing glyph `chat.voice.icon.pause` | `chat.voice.a11y.play` / `chat.voice.a11y.pause` | tap plays from the start / pauses; one voice message plays at a time |
+| waveform | `chat.voice.dimension.barWidth`, `.barPitch`, `.barMinHeight`, `.barMaxHeight`, `chat.voice.color.waveform`; played part `chat.voice.color.waveformPlayed` | — (decorative) | — |
 | duration | text role `caption`, `chat.voice.color.duration`, `chat.voice.layout.durationFormat` | duration (data) | shows the total length (counting down during playback not observed) |
 | permission card | Yope's inline permission card, same tokens as the contacts card: `onboarding.permission.contacts.color.card`, `.size.cardHeight`, `.size.cardMarginH`, `.fontSize.cardTitle` / `.fontWeight.cardTitle` (`color.global.textPrimary`), `.fontSize.cardDetail` (`color.global.textSecondary`), white button `.size.cardButtonWidth` / `.cardButtonHeight` in `color.global.surfaceLight` / `color.global.onSurfaceLight`, `onboarding.permission.contacts.layout.card`, corners `radius.global.card` | `chat.voice.permission.title`, `.detail`, `.button` | see States |
 
@@ -54,7 +61,7 @@ circle (`chat.composer.md`) is the entry. Upload format: AAC in `.m4a` (`audio/m
 | state | what shows | tokens / copy | source |
 |---|---|---|---|
 | loading (file) | the bubble draws at once from the message row; playback starts once the signed URL loads (platform buffering) | — | — |
-| playing | **BLOCKED** (pause glyph, progress colour) | `chat.voice.icon.pause`, `chat.voice.color.waveformPlayed` | yope-b §3 |
+| playing | pause glyph in the play circle; played bars white up to the playhead | `chat.voice.icon.pause`, `chat.voice.color.waveformPlayed` | Telegram / Messages / WhatsApp (G-8); not observed in Yope |
 | error (play) | the bubble stays; a failed-state visual was not observed → **BLOCKED** (same capture as the playing state); the string is announced to VoiceOver / TalkBack | `chat.voice.error.play` | `yope.voice.error` |
 | error (record / upload) | message not sent: `chat.voice.error.record`; failed send as `chat.thread.sendFailed` | `haptic.global.error` | `yope.voice.error` |
 | offline | recording works; sending fails as above | `chat.thread.sendFailed` | — |
@@ -63,8 +70,9 @@ circle (`chat.composer.md`) is the entry. Upload format: AAC in `.m4a` (`audio/m
 
 ## Motion
 
-None measured (yope-b §10 "Not found: voice record/playback"). Playback progress motion **BLOCKED** with the playing state.
-Reduce Motion: no custom motion to substitute.
+None measured in Yope (yope-b §10 "Not found: voice record/playback"). Playback progress: the played/unplayed split moves
+bar by bar with the playback position (`chat.voice.color.waveformPlayed`, Telegram frames; no easing). Recording: the row
+swap and the finger-tracked slide / lock follow the finger (allowed under Reduce Motion, `layout.global.reduceMotion`).
 
 ## Haptics
 
@@ -73,7 +81,7 @@ Reduce Motion: no custom motion to substitute.
 | voice message sent | `haptic.global.send` |
 | send failed | `haptic.global.error` |
 | long press (context menu) | `haptic.global.longPressStart` |
-| recording start / stop | none (HIG: haptics must not disrupt the microphone; recording UI BLOCKED) |
+| recording start / stop | none (HIG: haptics must not disrupt the microphone; `chat.voice.layout.recording.haptic`) |
 
 ## Accessibility
 
@@ -122,8 +130,8 @@ Reduce Motion: no custom motion to substitute.
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `chat.voice.layout.recording` | BLOCKED | 15-s screen recording of recording, sending and playing a voice message in a Yope group chat (yope-b §3) |
-| `chat.voice.icon.pause`, `chat.voice.color.waveformPlayed` | BLOCKED | same recording |
-| `chat.voice.color.bubbleTheirs` | BLOCKED | one screenshot of another member's voice message |
-| `chat.voice.layout.widthRule` | BLOCKED; approximation: fixed observed width | one screenshot with two voice messages of different lengths |
-| failed playback visual | BLOCKED (string ready) | same recording with airplane mode |
+| `chat.voice.layout.recording` | **SOURCED (gap fill)**: WhatsApp gestures (Help Center) + WhatsApp / Telegram recording rows (G-9). Hint copy `chat.voice.recording.slideToCancel` (WhatsApp, verbatim); live waveform while recording not observed | a Yope 15-s recording (yope-b §3) would supersede |
+| `chat.voice.icon.pause`, `chat.voice.color.waveformPlayed` | **SOURCED (gap fill)**: `pause.fill` / `Rounded.Pause`; #FFFFFF (Telegram played-vs-unplayed rule applied to Yope's 49 %-white bars) — G-8 | same recording |
+| `chat.voice.color.bubbleTheirs` | **SOURCED (gap fill)**: #2B2B2B = their text-bubble fill (Telegram rule) — G-7 | one screenshot of another member's voice message |
+| `chat.voice.layout.widthRule` | BLOCKED; approximation: fixed observed width (no reachable image shows two voice messages) | one screenshot with two voice messages of different lengths |
+| failed playback visual | not observed (string ready) | same recording with airplane mode |

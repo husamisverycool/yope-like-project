@@ -381,3 +381,73 @@ voice duration #929292 on #262626 4.86:1.
 
 S-6, S-7, S-11, S-12, S-13, S-14, S-16, S-22 and the 33 BLOCKED tokens in `design/tokens/social.json` (each names its
 smallest capture in `notes`; summary in the surface specs' Gaps sections).
+
+---
+
+## Gap fill (social)
+
+Pass: social gap fill, 2026-10-15, under the owner decision of the same day (`docs/OWNER_DECISIONS.md`: any successful app
+may be a reference; each surface keeps its primary reference; every value still traces to evidence). Scope: the 33 BLOCKED
+tokens of `design/tokens/social.json`. Result: **19 filled** (edited in place, same keys and types), **14 still BLOCKED**
+with what was tried in each token's `notes`. Evidence files and their `INDEX.md` rows: `references/auto/{imessage,
+apple-photos,google-photos,whatsapp,telegram,instagram}/` (new) and appended rows in `references/auto/{retro,yope,locket}/`.
+
+Adaptation rules applied to every cross-app value: sizes are converted to a 393-pt screen (`pt = px ÷ display px × 393`;
+mockups whose device is 402 pt say so); a colour is taken from another app only when the element's role matches, and then
+mapped onto Yope's own global colour for that role (accent, selection, destructive, text); otherwise only layout, size or
+timing is taken. Tenets: no counts are carried over (reaction counts, "Seen by", "N reactions" seen in the sources are
+do-not-copy); no logos, names or glyph art were copied (glyphs are SF Symbols / Material icons matched to the reference).
+
+### Evidence gathered in this pass
+
+| what | source | used for |
+|---|---|---|
+| Retro dark appearance, raw @3x | Lazyweb public company page (3 of its 5 public Retro screens, 2025-10-20 and 2026-05-28): add tile and empty-day tiles all #262626, labels #515151, "+" #FFFFFF, background #000000 (lossless, std 0) | G-15 |
+| Apple iPhone User Guide (iOS 27) + support article 118433 | Tapbacks (stack, attribution, remove by tapping the same Tapback; highlighted state in the image), audio messages (record / pause / send glyphs, record glyph inside the field), "Not Delivered" (red "!" + label, Try Again), Photos albums (custom order: touch and hold, drag; Albums grid image) | G-1, G-4, G-6, G-8, G-13, G-16, G-17 |
+| WhatsApp Help Center (iOS, rendered) | react / remove reaction; send voice message (press and hold, release to send, slide to cancel, hands-free); play voice message | G-9, G-13 |
+| App Store panels (2026 listings) | WhatsApp 26.40.77 (recording row; idle dark composer), Telegram 13.0 (recording row with lock; incoming text = incoming voice fill), Instagram 451.0.0 (composer inset), Google Photos 7.96.0 (renders Messages: empty vs filled field, wrapped bubbles) | G-1, G-5, G-6, G-7, G-9 |
+| Telegram blog video "Flexible Playback Speed" | played vs unplayed bars, pause glyph, elapsed time while playing | G-8 |
+| Locket TikToks (re-downloaded) | 2022 raw screen recording: 28 rain copies tracked in three path segments; 2025 filmed video: fly-to-cluster frames, cluster before / after | G-10, G-11, G-12 |
+| Yope TikToks (re-downloaded) | HUD corner fit on 3 frames; viewer swipe boundary on 3 frames | G-3, G-14 |
+| Press descriptions of emoji-only sizing | SlashGear 2023 (Messages: up to three), Xataka (WhatsApp: four or more = normal size) | G-2 |
+| Yope press-kit profile (re-measured) | "pics" grid row 2 has two tiles under row 1's three | `walls.mine.layout.mosaic` notes (still BLOCKED) |
+
+### Cross-app choices
+
+| # | token | value | model app — why it is the right model | adaptation |
+|---|---|---|---|---|
+| G-1 | `chat.thread.dimension.bubbleMaxWidth` | 256 pt (0.652 × screen width) | Apple Messages: its iOS 27 group conversation has the same structure as Yope's thread (avatar column beside incoming runs, tail-less multi-line bubbles). Two images wrap at 64.7 % and 65.2 % of the display | % of display × 393; lower bound (+0/+11 %) |
+| G-2 | `chat.thread.count.emojiOnlyMax` | 3 | Messages and WhatsApp agree (1–3 emoji enlarged, 4+ normal); Yope's own S1 shows the 3-emoji case enlarged | none (count) |
+| G-3 | `chat.thread.radius.loadingHud` | 10.5 pt | Yope itself (3 video frames), not another app | px ÷ 1.181 (same scale as `groups.create.size.hud`) |
+| G-4 | `chat.thread.layout.failedMessage` | trailing red "!" circle 22 pt, 14 pt from the bubble; red label under it; tap retries | Messages: Apple documents the state and its retry; Yope has no observed failed state | sizes ÷ 1.468 px/pt (402-pt device); red = `color.global.destructive` (same systemRed, error role); label = existing copy `chat.thread.sendFailed`, text role `caption` (12 pt vs 11 ± 1 measured); one-tap retry instead of Messages' two-item menu because the existing copy names one action |
+| G-5 | `chat.composer.dimension.bottomInset` | 8 pt above the bottom safe area | WhatsApp (round controls beside the field, as in Yope) and Instagram agree within 0.3 pt; Messages iOS 26/27 sits inside the safe area (26 pt from the screen bottom) and was not used | (px ÷ display px × 393) − 34 pt; keyboard-up gap not measured: the same value is used against the keyboard (platform safe area), flagged |
+| G-6 | `chat.composer.layout.typingState` | mic circle swaps in place to a send circle while the field has text | Messages (empty vs filled states of the same composer, same slot and diameter); WhatsApp documents the idle mic beside the field | fill = `color.global.accent` + `color.global.onAccent` (the references fill send with their accent; Yope's composer camera circle already uses this pair); glyph `icon.global.send` |
+| G-7 | `chat.voice.color.bubbleTheirs` | #2B2B2B | Telegram (incoming poll and incoming voice bubble both #2D2135) and Yope's own pair (voice #262626 vs text #232323) show the rule "voice bubble = sender's text bubble" | value = Yope's `chat.thread.color.bubbleTheirs`; no Telegram colour used |
+| G-8 | `chat.voice.color.waveformPlayed`, `chat.voice.icon.pause` | #FFFFFF; `pause.fill` / `Rounded.Pause` | Telegram's playback (played = full-opacity colour, unplayed = same colour at ≈30 %); Messages / WhatsApp / Telegram all show a pause glyph in the play circle while playing | Yope's unplayed bars are white at 49 % over the bubble, so full opacity = #FFFFFF; glyph = SF Symbol / Material match (filled, as `icon.global.play`) |
+| G-9 | `chat.voice.layout.recording` | hold to record, release to send, slide left to cancel, slide up to lock; row: red dot · timer · hint, mic under the finger | WhatsApp (documented gestures) + Telegram (same row in its 2026 panel): the two most used voice-message composers, both with Yope's mic-beside-field structure | red dot = `color.global.destructive`; timer = `chat.voice.layout.durationFormat` (Yope's own format) in `textPrimary`; hint in `textSecondary`; **hint string missing from design/copy** (verbatim reference "slide to cancel") — this pass may not add copy |
+| G-10 | `chat.reactions.layout.clusterOrder` | newest distinct emoji first; earlier ones shift one step trailing | Locket itself (the surface's reference), 2025 video | none |
+| G-11 | `chat.reactions.easing.rain` | easeInOut | Locket itself, 2022 raw recording: 49.8 → 74.6 → 52–56 px/frame across three segments (28 copies) | preset with the measured slow–fast–slow shape; control points not fitted |
+| G-12 | `chat.reactions.duration.flyToCluster` | 300 ms | Locket itself, 2025 video (9 frames at 30 fps, decelerating) | none |
+| G-13 | `chat.reactions.layout.unreact` | your reactions are highlighted in the picker; tap one to remove it | Messages and WhatsApp document the same rule in first-party help | highlight = `color.global.selection` (Messages' selected Tapback circle is its system blue; Yope's selection colour is iOS system blue — same role); several highlights because this product allows several emoji per person |
+| G-14 | `photo.viewer.dimension.pageGap` | 0 pt | Yope itself: on three mid-swipe frames the straight edges touch (≤1 px); the "thin dark gap" was the rounded corners | none |
+| G-15 | `week.history.color.emptyTile`, `.emptyTileText` | #262626, #515151 | Retro itself (the surface's reference) in its dark appearance, three lossless captures | `emptyTileText` now covers the labels only; the "+" uses `color.global.textPrimary` (#FFFFFF in Retro dark). Contrast 1.92:1 for the labels — reported, not adjusted (Retro's light pair also fails) |
+| G-16 | `week.edit.layout.reorder` | touch and hold a checked tile, drag to a new position | Apple Photos (custom-order albums) and Google Photos (albums: "re-order … by dragging") — the two photo apps with user-ordered photo sets | haptics = existing `week.edit.haptic.*` |
+| G-17 | `albums.list.layout.yopeAlbums` | 2-column grid of square covers (168 pt, gap 12.4, margins 23, corners 18.5), name over the bottom-leading corner (15 pt, inset 14 / baseline 17) | Apple Photos' Albums collection (iOS 27): the most used album list; Yope shows no album screen | sizes ÷ 1.132 px/pt; name in `color.global.textPrimary`, background `color.global.backgroundDeep`; subtitle moves to the accessibility label (the reference shows the name only); name legibility treatment not measurable (flagged) |
+
+### Problems found (for other passes)
+
+- **Account group, HUD fill.** On the HUD frames (t50.40–50.60) the HUD interior reads ≈#0C0C0C over black;
+  `groups.create.color.hud` (#262626) was sampled on a box that includes the spinner and the "Loading" label. Not changed
+  here (not this group's token).
+- **Copy owner.** `chat.voice.layout.recording` needs a hint string (verbatim reference: WhatsApp "slide to cancel");
+  `chat.reactions.layout.unreact` and `week.edit.layout.reorder` need no new strings.
+- **Contrast.** `week.history.color.emptyTileText` on `week.history.color.emptyTile` is 1.92:1 (text) — reported per the
+  Foundations rule (a sourced value is not adjusted). Album names on cover photos (G-17) have no fixed backdrop.
+
+### Still BLOCKED (14)
+
+`chat.voice.layout.widthRule`, `chat.reactions.count.clusterMaxVisible`, `chat.reactions.layout.activitySheet`,
+`photo.viewer.layout.voiceNote`, `walls.mine.layout.mosaic` (narrowed: row 2 has two tiles), `walls.mine.layout.freeformWall`,
+`walls.browse.layout.rowOrder`, `walls.browse.layout.selection`, `week.recap.layout.shortRowSplit`,
+`week.recap.dimension.shortRowHeight`, `week.recap.layout.scrim`, `week.recap.layout.page2`, `week.edit.layout.recapText`,
+`week.history.layout.weekMenu`. Each token's `notes` says what was tried and the smallest capture that closes it.

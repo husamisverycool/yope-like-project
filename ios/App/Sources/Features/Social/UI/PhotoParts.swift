@@ -1,5 +1,5 @@
-// Social group — parts drawn on photos: the caption box (chat.thread, photo.viewer), the "i'm in this" toggle and
-// its coach (design/surfaces/tagging.md; placed by photo.viewer), and the grid tiles of walls / week / albums.
+// Social group — parts drawn on photos: the caption box (chat.thread, photo.viewer) and the grid tiles of walls /
+// week / albums. The "i'm in this" toggle is the memory group's `SelfTagToggleControl` (design/surfaces/tagging.md).
 import AppData
 import AppModels
 import DesignSystem
@@ -29,93 +29,6 @@ struct PhotoCaption: View {
                 }
             }
             .accessibilityHidden(true)
-    }
-}
-
-/// "i'm in this" (`tagging`): white capsule (`color.global.surfaceLight`), state glyph `size.global.checkCircle`
-/// (off `icon.global.uncheck` in `color.global.onSurfaceLight`, on `icon.global.check` in `color.global.selection`),
-/// gap `size.global.headerGap`, label `tagging.toggle` in text role `button`, `color.global.onSurfaceLight`. Height
-/// `size.global.minTouchTarget.ios` (the touch target); the glyph sits centred in a touch-target circle at the
-/// capsule's start and the label ends the same distance from the trailing edge (the inner padding was not measured).
-/// Glyph swap without animation; `haptic.global.select` comes from the model.
-struct TagToggle: View {
-    let isOn: Bool
-    let isPending: Bool
-    let action: () -> Void
-
-    private var inset: CGFloat { (Tokens.Sizes.globalMinTouchTargetIos - Tokens.Sizes.globalCheckCircle) / 2 }
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: Tokens.Sizes.globalHeaderGap) {
-                Image(systemName: isOn ? Tokens.Icons.globalCheck : Tokens.Icons.globalUncheck)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: Tokens.Sizes.globalCheckCircle, height: Tokens.Sizes.globalCheckCircle)
-                    .foregroundStyle(isOn ? Tokens.Colors.globalSelection : Tokens.Colors.globalOnSurfaceLight)
-                Text(Copy.taggingToggle)
-                    .dsTextStyle(TextRole.button)
-                    .foregroundStyle(Tokens.Colors.globalOnSurfaceLight)
-            }
-            .padding(.horizontal, inset)
-            .frame(minHeight: Tokens.Sizes.globalMinTouchTargetIos)
-            .background(Tokens.Colors.globalSurfaceLight, in: Capsule())
-            .contentShape(Capsule())
-        }
-        .buttonStyle(.plain)
-        .allowsHitTesting(!isPending)
-        .accessibilityLabel(Text(Copy.taggingToggle))
-        .accessibilityAddTraits(isOn ? .isSelected : [])
-        .accessibilityIdentifier("tagging.toggle") // provenance-ok: accessibility identifier for UI tests
-    }
-}
-
-/// The foundations coach tooltip (`camera.capture.layout.coach`): lime pill (`color.global.accent`) with its pointer
-/// up towards the target, text in `color.global.onAccent` (`camera.capture.fontSize.coach`), ✕ dismisses for good.
-struct CoachTooltip: View {
-    let text: String
-    let onClose: () -> Void
-
-    private typealias Coach = Tokens.Layouts.CameraCaptureLayoutCoach
-
-    var body: some View {
-        VStack(alignment: .trailing, spacing: 0) {
-            PointerUp()
-                .fill(Tokens.Colors.globalAccent)
-                .frame(width: Coach.pointerWidth, height: Coach.pointerHeight)
-                .padding(.trailing, Coach.paddingHorizontal)
-            HStack(spacing: Coach.textToCloseGap) {
-                Text(text)
-                    .dsTextStyle(SocialText.coach)
-                Button(action: onClose) {
-                    Image(systemName: Tokens.Icons.globalClose)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: Coach.closeGlyph, height: Coach.closeGlyph)
-                        .socialMinimumHitArea()
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text(Copy.cameraCaptureA11yClose))
-            }
-            .foregroundStyle(Tokens.Colors.globalOnAccent)
-            .padding(.leading, Coach.paddingHorizontal)
-            .frame(minHeight: Coach.height)
-            .background(Tokens.Colors.globalAccent, in: RoundedRectangle(cornerRadius: Coach.cornerRadius))
-        }
-        .padding(.top, Coach.pointerToTarget)
-        .accessibilityElement(children: .contain)
-    }
-}
-
-/// The coach's pointer triangle (apex up).
-struct PointerUp: Shape {
-    func path(in rect: CGRect) -> Path {
-        Path { path in
-            path.move(to: CGPoint(x: rect.midX, y: rect.minY))
-            path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-            path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-            path.closeSubpath()
-        }
     }
 }
 

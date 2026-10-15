@@ -161,6 +161,22 @@ final class SocialChatThreadModelTests: XCTestCase {
         XCTAssertNil(model.reactions[SocialDemo.p2])
     }
 
+    func testPhotoReplyToAPhotoLoadsItsQuoteAndLosesItWhenTheQuotedPhotoGoes() async {
+        let data = SocialDemo.makeData()
+        let reply = PostID("00000000-0000-4000-8000-00000000c009")
+        data.update { state in
+            state.posts.append(SocialDemo.post(reply, by: SocialDemo.ben, at: SocialDemo.monday.addingTimeInterval(3 * SocialDemo.day), replyTo: SocialDemo.p1))
+            state.messages.append(SocialDemo.message(90, by: SocialDemo.ben, at: SocialDemo.monday.addingTimeInterval(3 * SocialDemo.day), post: reply))
+        }
+        let model = makeModel(data)
+        await model.load()
+        XCTAssertEqual(model.posts[reply]?.post.replyToPostID, SocialDemo.p1)
+        XCTAssertNotNil(model.posts[SocialDemo.p1], "the quoted photo is loaded for the quote part")
+        await model.handle(.postDeleted(postID: SocialDemo.p1, mediaID: nil))
+        XCTAssertNotNil(model.posts[reply], "the reply photo stays")
+        XCTAssertNil(model.posts[reply]?.post.replyToPostID, "without its quote")
+    }
+
     func testReactionInsertIsDedupedAndChangesRefetch() async {
         let data = SocialDemo.makeData()
         let model = makeModel(data)

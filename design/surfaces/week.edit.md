@@ -28,9 +28,10 @@ Full-height sheet over `week.recap` (Yope's "new group" / "send to..." sheets), 
    `icon.global.check` in `color.global.selection` = in the recap / in the selection; `icon.global.uncheck` in
    `color.global.textPrimary` = not. Circle position on a photo tile is not observed: top-right corner, inset
    `size.global.listGap` (approximation, Gaps). Tap toggles.
-   **Reorder**: **BLOCKED** (`week.edit.layout.reorder`) — no Yope reorder gesture was observed. Approximation for
-   development builds only: long-press a checked tile and drag it to a new place among the checked tiles, with
-   `week.edit.haptic.dragStart` on pick-up and `week.edit.haptic.dragAlign` on each slot change.
+   **Reorder** (`week.edit.layout.reorder`, Apple Photos custom-order albums + Google Photos albums; Gap fill G-16): touch
+   and hold a checked tile, then drag it into a new position among the checked tiles; release to drop. The platform
+   drag-and-drop shows the drop position; `week.edit.haptic.dragStart` on pick-up and `week.edit.haptic.dragAlign` on
+   each slot change. No Yope reorder gesture was observed.
 3. **Recap text** (`weekly_recaps.text`, ≤ 2000): position **BLOCKED** (`week.edit.layout.recapText`) — approximation
    under the grid: multi-line field `groups.create.color.field`, `radius.global.field`, min height `size.global.fieldHeight`,
    side margin `size.global.buttonMarginH`, text role `body`, placeholder `week.edit.textPlaceholder` ("add a message") in
@@ -55,7 +56,7 @@ and `groups.create.size.fieldToButton`. The album gets the **checked** photos in
 |---|---|---|---|
 | ✕ circle | `size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.close` | `week.edit.a11y.close` | closes without saving |
 | title | text role `sheetTitle`, `color.global.textPrimary` | `week.edit.title` | — |
-| photo tile | week pics grid tokens; `size.global.checkCircle`, `icon.global.check` / `icon.global.uncheck`, `color.global.selection` | `photo.viewer.a11y.photo` + value `week.edit.a11y.inRecap` / `.notInRecap` | tap toggles; reorder BLOCKED |
+| photo tile | week pics grid tokens; `size.global.checkCircle`, `icon.global.check` / `icon.global.uncheck`, `color.global.selection` | `photo.viewer.a11y.photo` + value `week.edit.a11y.inRecap` / `.notInRecap` | tap toggles; touch and hold + drag reorders (`week.edit.layout.reorder`) |
 | recap text field | `groups.create.color.field`, `radius.global.field`, `size.global.fieldHeight`; position BLOCKED | `week.edit.textPlaceholder` | edits `text` |
 | save | primary button tokens above | `week.edit.save` | `update_recap(p_recap_id, p_items: checked ids in order, p_text)` → toast `week.edit.toast.saved`, closes |
 | save as album | dark secondary button (`camera.sendto` pair tokens) | `week.edit.saveAsAlbum` | opens the album sheet |
@@ -80,14 +81,14 @@ and `groups.create.size.fieldToButton`. The album gets the **checked** photos in
 |---|---|---|
 | sheet in / out | Yope sheet: `duration.global.sheetPresent`, `spring.global.sheetPresentObserved` (spring itself BLOCKED, `spring.global.sheetPresent`) → native sheet (`easing.global.native.sheet`) until captured | system |
 | check toggle | none observed | — |
-| reorder drag | BLOCKED with the gesture | drag tracks the finger (allowed) |
+| reorder drag | platform drag-and-drop (`week.edit.layout.reorder`) | drag tracks the finger (allowed) |
 
 ## Haptics
 
 | interaction | token |
 |---|---|
 | tile checked / unchecked | `haptic.global.select` |
-| drag start / slot change (reorder, BLOCKED gesture) | `week.edit.haptic.dragStart` / `week.edit.haptic.dragAlign` |
+| drag start / slot change (reorder) | `week.edit.haptic.dragStart` / `week.edit.haptic.dragAlign` |
 | saved | `haptic.global.success` |
 | save failed | `haptic.global.error` |
 
@@ -132,8 +133,8 @@ and `groups.create.size.fieldToButton`. The album gets the **checked** photos in
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `week.edit.layout.reorder` | BLOCKED (dev-only approximation above) | 20-s recording: open a Yope weekly recap, swipe pages, toggle recap/pics, tap edit/remix, save (yope-b §14 capture 4) |
-| `week.edit.layout.recapText` | BLOCKED | same recording |
+| `week.edit.layout.reorder` | **SOURCED (gap fill)**: touch and hold, drag — Apple Photos ("Sort by Custom Order, touch and hold … drag it into a new position") + Google Photos ("re-order … by dragging") — G-16 | 20-s recording: open a Yope weekly recap, swipe pages, toggle recap/pics, tap edit/remix, save (yope-b §14 capture 4) would supersede |
+| `week.edit.layout.recapText` | BLOCKED (gap fill: Google Photos keeps album text as a draggable box among the photos, but where a new box goes is not documented) | same recording |
 | whole-screen composition | built from Yope components (S-13) | same recording |
 | check-circle inset on tiles | approximation `size.global.listGap` | same recording |
 | unsaved-changes prompt on ✕ | not observed: none | same recording |

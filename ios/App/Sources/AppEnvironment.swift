@@ -135,7 +135,29 @@ final class AppEnvironment {
         let account = accountDependencies
         account.network.follow(account.data.networkUpdates())
         account.session.start(handoff: InviteHandoff.take(from: InviteHandoff.defaults()))
+
+        #if DEBUG
+        applyUITestLaunchArguments()
+        #endif
     }
+
+    #if DEBUG
+    /// UI-test launch arguments of the other screen passes; nothing happens without them. Each opens its screen once
+    /// the person is home (with `-account-ui-test-scenario signed-in`):
+    /// `-SocialFakes -SocialOpen <screen>` (ios/AppUITests/Social), `-MemoryFixtures -MemoryOpen <screen>`
+    /// (ios/AppUITests/Memory).
+    private func applyUITestLaunchArguments() {
+        let router = self.router
+        SocialLaunch.apply(to: router)
+        guard MemoryLaunch.usesFixtures, MemoryLaunch.openArgument != nil else { return }
+        Task { @MainActor in
+            while !router.isReady {
+                try? await Task.sleep(for: .milliseconds(50)) // provenance-ok: UI-test launch polling, not motion
+            }
+            MemoryLaunch.apply(to: router)
+        }
+    }
+    #endif
 
     func scenePhaseChanged(_ phase: ScenePhase) {
         switch phase {

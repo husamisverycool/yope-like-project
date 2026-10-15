@@ -40,7 +40,7 @@ protocol SocialDataSource: Sendable {
     func cachedPosts(groupID: GroupID) async -> [PostWithMedia]
     /// Posts among `ids` already on the device (fetched this session, or in the group's offline feed), in the order
     /// of `ids`; missing ones are left out.
-    func cachedPosts(ids: [PostID], groupID: GroupID) async -> [PostWithMedia]
+    func cachedPosts(ids: [PostID], groupID: GroupID?) async -> [PostWithMedia]
     /// `delete_media`: removes the photo everywhere (owner only).
     func deleteMedia(id: MediaID) async throws
 

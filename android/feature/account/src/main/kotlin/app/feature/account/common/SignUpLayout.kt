@@ -7,11 +7,9 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -27,8 +25,9 @@ import app.designsystem.generated.Tokens
 
 /**
  * The sign-up / onboarding form stack (Yope sign-in screen + onboarding form, auth.phone Structure):
- * background `color.global.backgroundDeep`; content inside the safe area; the stack's first element
- * (the title) starts `groups.create.size.sheetTopToTitle` below the safe-area top; content side
+ * background `color.global.backgroundDeep`; content inside the safe area, starting at the safe-area
+ * top — the title places itself by cap top (`OnboardingTitle(capTop = SignUpStack.titleCapTop)`,
+ * `groups.create.size.sheetTopToTitle` below the safe-area top); content side
  * margins `size.global.buttonMarginH` (the form column); the stack stays top-aligned above the
  * keyboard and scrolls when it no longer fits (large text). [footer] sits at the bottom (it moves up
  * with the stack while the keyboard is shown — approximation, auth.phone Gaps). [header] is drawn
@@ -42,7 +41,6 @@ fun SignUpLayout(
     header: (@Composable BoxScope.() -> Unit)? = null,
     footer: (@Composable ColumnScope.() -> Unit)? = null,
     overlay: @Composable BoxScope.() -> Unit = {},
-    contentTop: androidx.compose.ui.unit.Dp = Tokens.Sizes.groupsCreateSizeSheetTopToTitle,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Box(modifier.fillMaxSize().background(background)) {
@@ -56,10 +54,8 @@ fun SignUpLayout(
                     Column(
                         Modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalButtonMarginH),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Spacer(Modifier.height(contentTop))
-                        content()
-                    }
+                        content = content,
+                    )
                     if (footer != null) {
                         Column(
                             Modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalScreenMargin),
@@ -75,6 +71,12 @@ fun SignUpLayout(
         }
         overlay()
     }
+}
+
+/** Constants of the sign-up stack. */
+object SignUpStack {
+    /** Safe-area top to the title's cap top (`groups.create.size.sheetTopToTitle`; auth.phone Structure 3). */
+    val titleCapTop: androidx.compose.ui.unit.Dp get() = Tokens.Sizes.groupsCreateSizeSheetTopToTitle
 }
 
 /** A full-screen, centred Yope empty-state replacing the stack (offline, not configured, under age). */

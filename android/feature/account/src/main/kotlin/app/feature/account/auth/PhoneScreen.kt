@@ -57,6 +57,7 @@ import app.feature.account.common.AccountViewModel
 import app.feature.account.common.CenteredState
 import app.feature.account.common.CollectEvents
 import app.feature.account.common.SignUpLayout
+import app.feature.account.common.SignUpStack
 import app.feature.account.common.dataError
 import app.feature.account.platform.ExternalActions
 import app.model.AppRoute
@@ -189,7 +190,7 @@ fun PhoneScreen(
         footer = { LegalFooter(onTerms, onPrivacy) },
         overlay = { HudOverlay(state.sending, stringResource(R.string.groups_create_hud_loading)) },
     ) {
-        OnboardingTitle(stringResource(R.string.auth_phone_title))
+        OnboardingTitle(stringResource(R.string.auth_phone_title), capTop = SignUpStack.titleCapTop)
         Text(stringResource(R.string.auth_phone_subtitle), style = TextRoles.onboardingSubtitle, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeTitleToContent))
         FormTextField(

@@ -1,8 +1,9 @@
 # `albums.list` — a group's saved albums
 
 Reference app: **Yope** (`docs/SURFACES.md`). **No Yope album screen was found**: only the release note "make your own
-memory albums" (v1.214.0, yope-b §7). Per the brief the screen is **built from documented Yope components** (the home list
-card, header, empty state; S-14); Yope's own album list stays **BLOCKED** (`albums.list.layout.yopeAlbums`) until captured.
+memory albums" (v1.214.0, yope-b §7). Under the owner decision of 2026-10-15 (any successful app may fill a gap) the album
+list itself now follows **Apple Photos' Albums collection** (`albums.list.layout.yopeAlbums`, iOS 27 guide image; Gap fill
+G-17); header, states and colours stay Yope's. Yope's own album screens (yope-b §14 capture 5) would supersede it.
 Tokens: `design/tokens/social.json` (`albums.list.*`) + `global.*`. Copy: `design/copy/social.json` (`albums.list.*`).
 
 ## References
@@ -21,12 +22,13 @@ Background `color.global.backgroundDeep`.
 1. **Header**: ‹ circle (`size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.back`,
    `size.global.headerInset`); title `albums.list.title` ("memory albums") centred, `week.recap.fontSize.title` /
    `.fontWeight.title`, `color.global.textPrimary`.
-2. **Album cards** (`albums.list.layout.composition`), stacked with `size.global.listGap`, side margins
-   `size.global.screenMargin`, newest album first (`albums.created_at`): card `albums.list.dimension.cardHeight`,
-   `albums.list.color.card`, `radius.global.card`. Inside, vertically centred: cover circle `size.global.avatarList` (64) at
-   `albums.list.dimension.coverInset` (16) — the album's first photo (`thumb_path`), aspect fill; then, after
-   `albums.list.dimension.coverToTitle` (15), the album name (text role `listTitle`, `color.global.textPrimary`, one line)
-   over the subtitle `albums.list.row.subtitle` ("saved by {name}", text role `listSubtitle`, `color.global.textSecondary`).
+2. **Album covers** (`albums.list.layout.yopeAlbums`): a grid of 2 columns (`columns`), side margins `marginH` (23), gap
+   `gap` (12.4) both ways, newest album first (`albums.created_at`). Each cover is square (`coverAspect` 1, ≈168 pt wide on a
+   393-pt screen), corners `coverRadius` (18.5), the album's first photo (`thumb_path`), aspect fill. Over its bottom-leading
+   corner: the album name, one line, tail truncation, `titleFontSize` 15 (weight not measured: platform default),
+   `color.global.textPrimary`, ink `titleInsetLeading` (14) from the cover's leading edge, baseline `titleBaselineBottom`
+   (17) above its bottom. The subtitle `albums.list.row.subtitle` is not drawn (the reference shows the name only); it joins
+   the accessibility label. The home-card composition (`albums.list.layout.composition`, S-14) is superseded.
 
 ## Elements
 
@@ -34,8 +36,8 @@ Background `color.global.backgroundDeep`.
 |---|---|---|---|
 | ‹ circle | `size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.back` | `chat.thread.a11y.back` | pops |
 | title | `week.recap.fontSize.title`, `.fontWeight.title` | `albums.list.title` | header trait |
-| album card | `albums.list.color.card`, `.dimension.cardHeight`, `radius.global.card`, `size.global.screenMargin`, `size.global.listGap` | album name (data), `albums.list.row.subtitle` | tap → `albums.view` |
-| cover | `size.global.avatarList`, `albums.list.dimension.coverInset`, `.coverToTitle` | decorative | — |
+| album cover | `albums.list.layout.yopeAlbums` (columns, marginH, gap, coverAspect, coverRadius) | album name (data) on the cover; label "{album name}, {subtitle}" with `albums.list.row.subtitle` | tap → `albums.view` |
+| album name | `albums.list.layout.yopeAlbums` (titleFontSize, titleInsetLeading, titleBaselineBottom), `color.global.textPrimary` | album name (data) | — |
 
 ## States
 
@@ -57,16 +59,11 @@ None.
 
 ## Accessibility
 
-- Card: one button, label "{album name}, {subtitle}" (name data + `albums.list.row.subtitle`); cover decorative.
-- Dynamic Type: name → `layout.global.textStyleMap.listTitle`; subtitle → `.listSubtitle`; title →
-  `week.recap.layout.textStyleMap.title`. Cards grow in height with the text (100 pt minimum).
-- Contrast (`node tools/contrast.mjs`):
-
-| foreground | background | kind | ratio | result | pair |
-|---|---|---|---|---|---|
-| `color.global.textPrimary` #FFFFFF | `albums.list.color.card` #181818 | text | 17.76:1 | pass | album name 17.5 bold |
-| `color.global.textSecondary` #969696 | `albums.list.color.card` #181818 | text | 6.00:1 | pass | 'saved by {name}' 14 regular |
-| `albums.list.color.card` #181818 | `color.global.backgroundDeep` #000000 | nontext | 1.18:1 | **FAIL** | card against black (the card is not the only cue: its text identifies it) |
+- Cover: one button, label "{album name}, {subtitle}" (name data + `albums.list.row.subtitle`); the photo is decorative.
+- Dynamic Type: the name on the cover scales with `layout.global.textStyleMap.listSubtitle` (subheadline, nearest style to
+  15 pt) and stays one line (tail truncation); covers keep their size. Header title → `week.recap.layout.textStyleMap.title`.
+- Contrast: the album name sits on photo content (no fixed backdrop; the reference's treatment under it is not measurable):
+  not computable — flagged (MERGE_DECISIONS Gap fill G-17). Header title #FFFFFF on #000000: 21.00:1 pass.
 
 ## Data & actions
 
@@ -88,5 +85,6 @@ Streak pills, unread badges, presence dots and the camera glyph of Yope's home c
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `albums.list.layout.yopeAlbums` (Yope's own album list) | BLOCKED; composition from the home card (S-14) | two screenshots: Yope's album list and one open album (yope-b §14 capture 5) |
+| `albums.list.layout.yopeAlbums` | **SOURCED (gap fill)**: Apple Photos Albums collection, iOS 27 guide image (2 columns, square covers, name over the bottom-leading corner; ±1 pt) — G-17 | two screenshots: Yope's album list and one open album (yope-b §14 capture 5) would supersede |
+| album name legibility on covers | not measurable (Apple's treatment under the name sits on photo content); contrast not computable | same capture |
 | album order | approximation: newest first | same |

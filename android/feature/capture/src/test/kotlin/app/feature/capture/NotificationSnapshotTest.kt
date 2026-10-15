@@ -48,6 +48,8 @@ class NotificationSnapshotTest {
             override val smallIcon = android.R.drawable.ic_dialog_info // test-only stand-in: the owner's icon is BLOCKED
         }
         ChannelCopy.registerAll(app)
+        // The shade's clock: the chronometer and timestamps read the device time.
+        android.os.SystemClock.setCurrentTimeMillis(now.toEpochMilli())
     }
 
     @After fun tearDown() {
@@ -65,7 +67,7 @@ class NotificationSnapshotTest {
         view.layout(0, 0, view.measuredWidth, view.measuredHeight)
         val bitmap = Bitmap.createBitmap(view.measuredWidth, view.measuredHeight.coerceAtLeast(1), Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        canvas.drawColor(0xFF2B2930.toInt()) // test backdrop: the dark shade surface, not app UI
+        canvas.drawColor(0xFFFFFFFF.toInt()) // test backdrop behind the platform's (light) template, not app UI
         view.draw(canvas)
         return bitmap
     }
@@ -77,13 +79,13 @@ class NotificationSnapshotTest {
                 "title" to "Time to share a photo.", "body" to "Capture a photo and see what Sunday dinners is up to!",
             ),
         )
-        render(shadowOf(manager).allNotifications.single(), expanded = false).captureRoboImage("src/test/snapshots/daily.ongoing_notification.png")
+        render(shadowOf(manager).allNotifications.single(), expanded = true).captureRoboImage("src/test/snapshots/daily.ongoing_notification.png")
     }
 
     @Test fun newPostAlert() {
         PushHandler(app, DeepLinkCodec(null)) { now }.handle(
             mapOf("type" to "new_post", "group_id" to "g1", "post_id" to "p1", "title" to "Sunday dinners", "body" to "Ana sent you a photo!"),
         )
-        render(shadowOf(manager).allNotifications.single(), expanded = false).captureRoboImage("src/test/snapshots/notifications.push_new-post.png")
+        render(shadowOf(manager).allNotifications.single(), expanded = true).captureRoboImage("src/test/snapshots/notifications.push_new-post.png")
     }
 }

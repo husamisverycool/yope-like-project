@@ -119,13 +119,14 @@ struct AccountModalDestination: View {
 /// (reported to the lead).
 enum CrossGroupRoutes {
     /// `walls.browse` (tab bar "walls"; `groups.screen` profile "wall" segment scoped to a group).
-    static func wallsBrowse(groupID: String?) -> AppRoute? { nil }
+    static func wallsBrowse(groupID: String?) -> AppRoute? { .social(.wallsBrowse(groupID: groupID)) }
     /// `walls.mine` (tab bar "me").
     static var wallsMine: AppRoute? { .social(.wallMine) }
     /// `walls.member` (member row in groups.settings).
-    static func wallMember(userID: String) -> AppRoute? { nil }
+    static func wallMember(userID: String) -> AppRoute? { .social(.wallMember(userID: userID)) }
     /// `week.history` (group header calendar circle, profile "recaps" segment).
-    static func weekHistory(groupID: String) -> AppRoute? { nil }
-    /// `birthday.add` (settings.account "Birthday").
-    static var birthdayAdd: AppRoute? { nil }
+    static func weekHistory(groupID: String) -> AppRoute? { .social(.weekHistory(groupID: groupID)) }
+    /// `birthday.add` (settings.account "birthday" row, birthday.add.md B). Built by `RouteDestination` with the
+    /// "birthday added" toast.
+    static var birthdayAdd: AppRoute? { .memory(.birthdayAdd) }
 }

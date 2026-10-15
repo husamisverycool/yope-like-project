@@ -146,13 +146,16 @@
     },
     "chat.thread.dimension.bubbleMaxWidth": {
       "type": "dimension",
-      "value": null,
-      "source_app": "Yope",
+      "value": 256,
+      "unit": "pt",
+      "source_app": "Apple Messages (iMessage)",
       "surface": "chat.thread",
       "element": "maximum text bubble width before wrapping",
-      "evidence": "design/research/yope-b.md §1 'Not found: max bubble width (only one-line bubbles seen; widest 210.7 pt)'",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screenshot of a Yope group chat with a two-line text message (yope-b §14 capture 1: 30-s recording that includes a two-line text). Widest observed single-line bubble: 210.7 pt ('strictly vibes only tonight')."
+      "evidence": "references/auto/imessage/apple-support/messages-tapbacks-ios27.png (iOS 27 guide): 3-line incoming bubble body x 84–371 on display x 22–467 (445 px) = 64.7 %; references/auto/google-photos/store/googlephotos-store-13.png (Messages rendered in Google Photos’ App Store panel): 2-line incoming bubble body x 137–832 on display x 88–1154 (1066 px) = 65.2 %",
+      "method": "bubble-body width ÷ display width (fill-colour mask, rows 575–630 and 900–1040), × 393 pt. The widest line of a wrapped bubble bounds the maximum from below; the next word that did not fit bounds it from above",
+      "level": "SOURCED",
+      "precision": "lower bound: +0 / +11 % of the screen width (+0 / +43 pt) — tapback image: the next word \"good\" would have fitted below 76 %",
+      "notes": "= 0.652 × screen width: scale with the screen (256 pt at 393 pt). Two different texts wrap at 64.7 % and 65.2 % of the display, so the cap sits just above 65 %. Model: iMessage’s group conversation (avatar column beside incoming bubbles, tail-less multi-line bubbles in iOS 27), the closest widely used match for Yope’s group thread (design/MERGE_DECISIONS.md → Gap fill (social) G-1). Yope’s widest single-line bubble (210.7 pt) stays below it. A Yope two-line capture (yope-b §14 capture 1) would supersede this."
     },
     "chat.thread.dimension.gapSameSender": {
       "type": "dimension",
@@ -294,13 +297,15 @@
     },
     "chat.thread.count.emojiOnlyMax": {
       "type": "count",
-      "value": null,
-      "source_app": "Yope",
+      "value": 3,
+      "source_app": "Apple Messages (iMessage) + WhatsApp (rule); Yope (consistent)",
       "surface": "chat.thread",
       "element": "how many emoji a message may contain and still render large without a bubble",
-      "evidence": "references/auto/yope/store/yope-store-05.png (App Store screenshot 5, group chat, listing 1.229.0); pixel coordinates in references/auto/yope/frames/b-derot-store-05-rot-1.68.png (S1r) (only a 3-emoji message is visible)",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screenshot of a Yope group chat with a 1-emoji and a 4-emoji message."
+      "evidence": "references/auto/imessage/web/slashgear-2023-09-imessage-big-emoji.png (https://www.slashgear.com/1390078/iphone-imessage-app-emoji-feature/, 2023-09-10): \"Insert an emoji, or up to three different ones (the effect doesn't work with more than three)\"; references/auto/whatsapp/web/xataka-whatsapp-emojis-gigantes.png (WhatsApp): \"A partir de cuatro emojis, el tamaño es igual al que teníamos antes\"; references/auto/yope/store/yope-store-05.png: a 3-emoji message renders large without a bubble",
+      "method": "documented threshold in two independent sources for two apps (1–3 emoji enlarged, 4+ normal); Yope S1 shows the 3-emoji case enlarged, consistent with it",
+      "level": "SOURCED",
+      "precision": "exact (count); both rule sources are press descriptions, not first-party documentation",
+      "notes": "A message made only of 1–3 emoji renders at chat.thread.dimension.emojiOnlyGlyph without a bubble; 4 or more emoji (or any text) render as a normal text bubble. A Yope screenshot with a 4-emoji message would confirm Yope’s own threshold (G-2)."
     },
     "chat.thread.dimension.replyWidth": {
       "type": "dimension",
@@ -562,13 +567,16 @@
     },
     "chat.thread.radius.loadingHud": {
       "type": "radius",
-      "value": null,
+      "value": 10.5,
+      "unit": "pt",
       "source_app": "Yope",
       "surface": "chat.thread",
       "element": "loading HUD corner radius (the HUD's other values are groups.create.color.hud / .size.hud / .fontSize.hudLabel)",
-      "evidence": "design/research/yope-a.md §1.8 (HUD measured as a dark rounded square; radius not measured); design/surfaces/groups.create.md Gaps ('HUD corner radius: not measured')",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: one lossless screenshot of Yope's 'Loading' HUD."
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.40-loading-hud.png, …-t50.53-loading-hud.png, …-t50.60-loading-hud.png (TikTok 7644974799302823175, 30 fps): HUD sides x 228.4–346.8, y 466.4–584.4; corner fits TL/TR/BL/BR 12.0/12.8/12.9/13.8, 11.8/12.2/12.6/12.6 and 12.0/12.2/12.7/12.7 px (medians 12.85, 12.45, 12.45 px)",
+      "method": "per row / column, the 50 % crossing between the HUD fill (≈12/255) and the black background; insets near each corner least-squares fitted to a circular arc; 12.4 px ÷ 1.181 px/pt (creator template: screen x56–519 = 464 px = 393 pt, the same scale as groups.create.size.hud)",
+      "level": "SOURCED",
+      "precision": "±1.5 pt (H.264 blur rounds convex corners outward; device width assumed 393 pt)",
+      "notes": "Same frames give the HUD side as 118.4 px = 100.2 pt, matching groups.create.size.hud (100). Observed HUD fill on these frames is ≈#0C0C0C over black, not groups.create.color.hud #262626 — reported to the account group, not changed here (Gap fill G-3)."
     },
     "chat.thread.dimension.headerCapsuleHeight": {
       "type": "dimension",
@@ -599,13 +607,30 @@
     },
     "chat.thread.layout.failedMessage": {
       "type": "layout",
-      "value": null,
-      "source_app": "Yope",
+      "value": {
+        "indicator": "outlined exclamation-mark circle beside the bubble on its trailing side, vertically centred on the bubble",
+        "indicatorIconIos": "exclamationmark.circle",
+        "indicatorIconAndroid": "Rounded.ErrorOutline",
+        "indicatorSize": 22,
+        "indicatorGap": 14,
+        "indicatorColor": "color.global.destructive",
+        "indicatorPosition": "the indicator takes the trailing inset slot (chat.thread.dimension.bubbleInsetMine); the bubble moves toward the leading side by indicatorSize + indicatorGap",
+        "label": "copy chat.thread.sendFailed under the bubble, trailing-aligned with the message column",
+        "labelGap": 2,
+        "labelTextRole": "caption",
+        "labelColor": "color.global.destructive",
+        "retry": "tap the indicator, the label or the bubble: the message is sent again (the label says so); on success the indicator and label go away",
+        "haptic": "haptic.global.error when a send fails",
+        "appliesTo": "my text and voice messages"
+      },
+      "source_app": "Apple Messages (iMessage)",
       "surface": "chat.thread",
       "element": "how a message that failed to send is drawn and retried",
-      "evidence": "design/research/yope-b.md §1 'Not found: message status (sent/read), long-press menu, failed-send state'",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screenshot of a Yope chat message that failed to send (airplane mode)."
+      "evidence": "references/auto/imessage/apple-support/messages-not-delivered.png (support article 118433, iPhone 16 Pro, display x 85–675 = 590 px = 402 pt, 1.468 px/pt): red \"!\" circle x 617–648 / y 398–430, bubble body x 493–596 / y 384–445, label \"Not Delivered\" x 511–619 / y 457–468; references/auto/imessage/apple-support/messages-not-delivered-prompt.png (tap → \"Try Again\"); references/auto/imessage/apple-support/page-118433-not-delivered.png: \"Tap the red exclamation point, then tap Try Again.\"",
+      "method": "colour masks (red R>180,G<110,B<110; bubble blue) and bounding boxes; px ÷ 1.468; label size from cap height 12 px ≈ 8 pt ÷ 0.705 ≈ 11 pt",
+      "level": "SOURCED",
+      "precision": "±1 pt (device mockup at 1.468 px/pt)",
+      "notes": "Indicator 31–33 px = 22 pt; bubble body → indicator 21 px = 14 pt; bubble → label 3 px = 2 pt; label ≈11 pt, so the 12-pt caption role (text role caption) is used (within ±1 pt). Red: iMessage’s system red = color.global.destructive (same iOS systemRed; role: error state). Messages opens a two-item menu on tap; this product has a single action, which the existing copy (\"couldn’t send — tap to try again\") already names, so tap retries directly (Gap fill G-4)."
     },
     "chat.thread.layout.textStyleMap": {
       "type": "layout",
@@ -782,23 +807,37 @@
     },
     "chat.composer.dimension.bottomInset": {
       "type": "dimension",
-      "value": null,
-      "source_app": "Yope",
+      "value": 8,
+      "unit": "pt",
+      "source_app": "WhatsApp + Instagram",
       "surface": "chat.composer",
       "element": "distance from the composer row to the bottom safe area / keyboard",
-      "evidence": "references/auto/yope/store/yope-store-05.png (App Store screenshot 5, group chat, listing 1.229.0); pixel coordinates in references/auto/yope/frames/b-derot-store-05-rot-1.68.png (S1r) (field bottom 21.3 pt above the screen bottom in a marketing mock with no home indicator)",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: one device screenshot of a Yope group chat with the keyboard down and one with it up (yope-b §14 capture 1)."
+      "evidence": "references/auto/whatsapp/store/whatsapp-store-04.png (group chat, dark): field y 2440–2513, display bottom y 2611, display x 186–1104 (918 px) → 98 px = 42.0 pt; references/auto/instagram/store/instagram-store-05.png (group DM): field y 2377–2476, display bottom y 2575, display x 182–1101 (919 px) → 99 px = 42.3 pt",
+      "method": "(display bottom − field bottom) ÷ display width × 393 pt, minus the 34-pt bottom safe-area inset of Face ID iPhones (home indicator)",
+      "level": "SOURCED",
+      "precision": "±1 pt (2.3 px/pt renders); if the panels’ devices are 402 / 430 pt wide the result is 8.9 / 11.9 pt",
+      "notes": "Distance from the bottom of the composer row (field and circles) to the bottom safe area. The two apps agree within 0.3 pt. Above the keyboard: not measured in these images; the platforms report the keyboard top as the bottom safe-area edge, so the same 8 pt applies (flagged, Gap fill G-5). iMessage on iOS 26/27 places its field 26 pt above the screen bottom, inside the safe area (references/auto/imessage/apple-support/messages-audio-message-ios27.png: field bottom y 954, display bottom y 984, 447 px wide) — not used: WhatsApp’s composer (round controls beside the field, fully above the home indicator) is the structural match for Yope’s."
     },
     "chat.composer.layout.typingState": {
       "type": "layout",
-      "value": null,
-      "source_app": "Yope",
+      "value": {
+        "rule": "while the field holds text, the mic circle is replaced in place by a send circle; when the field is empty again the mic circle returns",
+        "sendCircleSize": "chat.composer.dimension.sideButton",
+        "sendCircleFill": "color.global.accent",
+        "sendGlyph": "icon.global.send",
+        "sendGlyphColor": "color.global.onAccent",
+        "action": "tap → send_message(p_kind text); the field clears and the mic circle returns",
+        "transition": "none observed (instant swap); Reduce Motion: same",
+        "a11yLabel": "chat.composer.a11y.send"
+      },
+      "source_app": "Apple Messages (iMessage); WhatsApp (idle mic beside the field)",
       "surface": "chat.composer",
       "element": "what replaces / joins the mic when the field has text (send control)",
-      "evidence": "design/research/yope-b.md §2 'Not found: typing state (send button replacing mic?)'",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screenshot of a Yope group chat with text typed in the field."
+      "evidence": "references/auto/google-photos/store/googlephotos-store-13.png (Messages, empty field: record-audio circle at the field’s trailing end, x 1028–1103 / y 1460–1500) vs …-14.png (field with content: blue ↑ send circle in the same slot, x 1029–1104); references/auto/imessage/apple-support/messages-glyph-record-audio.png and messages-glyph-send.png (\"the Send button\": arrow in a filled circle); references/auto/imessage/apple-support/page-audio-messages.png (\"touching and holding [Record Audio] in the text field\"); references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png (\"Press and hold [mic] next to the text field\")",
+      "method": "visual comparison of the empty and filled states of the same composer; slot position and diameter measured on the two panels (75 px both)",
+      "level": "SOURCED",
+      "precision": "layout rule; slot equal within 1 px",
+      "notes": "Fill: the references fill the send circle with the app’s accent (Messages: its tint), so Yope’s accent lime with onAccent glyph is used — the same pair as Yope’s own composer camera circle. Glyph: Yope’s paper plane (icon.global.send). Gap fill G-6."
     },
     "chat.voice.color.bubble": {
       "type": "color",
@@ -814,13 +853,15 @@
     },
     "chat.voice.color.bubbleTheirs": {
       "type": "color",
-      "value": null,
-      "source_app": "Yope",
+      "value": "#2B2B2B",
+      "source_app": "Yope (value) · Telegram (rule)",
       "surface": "chat.voice",
       "element": "another member's voice bubble fill",
-      "evidence": "design/research/yope-b.md §3 'Not found: … theirs voice bubble'",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screenshot of a voice message from another member in a Yope group chat."
+      "evidence": "references/auto/telegram/store/telegram-store-03.png: incoming poll bubble box x760–840 / y1650–1720 = #2D2135 (std 0) and incoming voice bubble box x300–330 / y2050–2080 = #2C2135 / #2D2135; references/auto/yope/store/yope-store-05.png (S1): my voice bubble #262626 vs my text bubble #232323; value = chat.thread.color.bubbleTheirs (#2B2B2B, S1 lossless)",
+      "method": "rule: a voice bubble takes the sender’s text-bubble fill (Telegram: identical medians; Yope’s own pair within 3/255); applied to Yope’s measured their-text fill",
+      "level": "SOURCED",
+      "precision": "±2/255 (the their-text measurement)",
+      "notes": "Another member’s voice bubble = chat.thread.color.bubbleTheirs. Contrast as the their-text bubble (1.27:1 against #171717, boundary only). Gap fill G-7."
     },
     "chat.voice.color.playButton": {
       "type": "color",
@@ -846,13 +887,15 @@
     },
     "chat.voice.color.waveformPlayed": {
       "type": "color",
-      "value": null,
-      "source_app": "Yope",
+      "value": "#FFFFFF",
+      "source_app": "Telegram (rule) · Yope (colour)",
       "surface": "chat.voice",
       "element": "colour of the played part of the waveform during playback",
-      "evidence": "design/research/yope-b.md §3 'Not found: playback progress colour, playing state'",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: 15-s screen recording of playing a voice message in a Yope group chat (yope-b §3)."
+      "evidence": "references/auto/telegram/blog/tg-blog-power-saving-playback-speed-t02.png, -t04.png, -t06.png (Telegram blog video \"Flexible Playback Speed\"): during playback the bars before the playhead are the full-strength accent and the bars after it are the same hue at ≈30 % opacity over the bubble (played ≈#9A55BE vs unplayed ≈#E0C5EE on #FFFFFF); Yope S1 (references/auto/yope/store/yope-store-05.png): unplayed bars #919191 on the voice bubble #262626",
+      "method": "rule: played part = the waveform colour at full opacity. Yope’s bars are white at (145−38)/(255−38) = 0.49 opacity over the bubble, so the full-opacity colour is #FFFFFF (= color.global.textPrimary)",
+      "level": "SOURCED",
+      "precision": "rule-derived; Yope opacity ±0.01",
+      "notes": "During playback the bars from the leading end up to the playhead draw in #FFFFFF, the rest stay chat.voice.color.waveform; the split moves bar by bar with the playback position (Telegram frames 0:02 → 0:06 → 0:08). Contrast #FFFFFF on #262626: 15.1:1. Gap fill G-8."
     },
     "chat.voice.color.duration": {
       "type": "color",
@@ -898,7 +941,7 @@
       "element": "whether and how the voice bubble width depends on the duration",
       "evidence": "references/auto/yope/store/yope-store-05.png (App Store screenshot 5, group chat, listing 1.229.0); pixel coordinates in references/auto/yope/frames/b-derot-store-05-rot-1.68.png (S1r) (one voice message only)",
       "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screenshot of two voice messages of different lengths in a Yope chat."
+      "notes": "Still BLOCKED after the gap-fill pass: every reachable image shows a single voice message per chat (WhatsApp, Telegram App Store panels 2026; Apple Messages guide image; Telegram blog video), so no width-vs-duration rule is observable. Smallest owner capture: one screenshot of two voice messages of different lengths in a Yope chat (or in WhatsApp / Messages)."
     },
     "chat.voice.radius.bubble": {
       "type": "radius",
@@ -1047,23 +1090,47 @@
     },
     "chat.voice.icon.pause": {
       "type": "icon",
-      "value": null,
-      "source_app": "Yope",
+      "value": {
+        "ios": "pause.fill",
+        "android": "Rounded.Pause"
+      },
+      "source_app": "Apple Messages (iMessage) / WhatsApp / Telegram (glyph)",
       "surface": "chat.voice",
       "element": "glyph shown in the play circle while a voice message plays",
-      "evidence": "design/research/yope-b.md §3 'Not found: playing state (pause glyph)'",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: 15-s screen recording of playing a voice message in a Yope group chat."
+      "evidence": "references/auto/imessage/apple-support/messages-glyph-pause.png (\"the Pause button\": two rounded vertical bars in a circle); references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png (icon alt \"Pause (two parallel vertical lines within circle)\"); references/auto/telegram/blog/tg-blog-power-saving-playback-speed-t02.png (pause glyph in the play circle while playing)",
+      "method": "glyph match (filled variant, as icon.global.play = play.fill)",
+      "level": "PLATFORM",
+      "precision": "—",
+      "notes": "Shown in the play circle in place of ▶ while the message plays; label chat.voice.a11y.pause. Gap fill G-8."
     },
     "chat.voice.layout.recording": {
       "type": "layout",
-      "value": null,
-      "source_app": "Yope",
+      "value": {
+        "start": "press and hold the mic circle: recording runs while the finger is down",
+        "send": "lift the finger: the message is sent",
+        "cancel": "slide left while holding: the recording is discarded and nothing is sent",
+        "lock": "slide up onto the lock shown above the mic circle: recording continues hands-free",
+        "locked": "while locked: chat.voice.icon.pause pauses and lets you play the draft; the mic circle shows icon.global.send and sends",
+        "row": "while recording, the composer row shows leading → trailing: red recording dot, elapsed time, the centred hint (‹ slide to cancel); the mic circle stays at the trailing end under the finger",
+        "dotColor": "color.global.destructive",
+        "timerFormat": "chat.voice.layout.durationFormat",
+        "timerColor": "color.global.textPrimary",
+        "hintGlyph": "icon.global.back",
+        "hintColor": "color.global.textSecondary",
+        "hintCopy": "chat.voice.recording.slideToCancel",
+        "lockGlyph": "icon.global.lock",
+        "lockHintGlyphIos": "chevron.up",
+        "lockHintGlyphAndroid": "Rounded.ExpandLess",
+        "haptic": "none (HIG: haptics must not disrupt the microphone)"
+      },
+      "source_app": "WhatsApp (gesture, documented) + Telegram (row, 2026 panel)",
       "surface": "chat.voice",
       "element": "voice recording UI: hold vs tap, lock, cancel, live waveform, timer",
-      "evidence": "design/research/yope-b.md §3 'Not found: recording UI (hold-to-record vs tap, lock, cancel, live waveform, timer)'",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: 15-s screen recording of recording, sending and playing a voice message in a Yope group chat (yope-b §3)."
+      "evidence": "references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png (verbatim: \"Press and hold [mic] next to the text field, then start speaking.\" / \"remove your finger … to automatically send your message. Or, if you’re recording hands-free, tap [pause] to pause recording and preview a draft…\" / \"slide [‹] to cancel and delete your voice message\"); references/auto/whatsapp/store/whatsapp-store-02.png (row: red mic, \"0:01\", \"slide to cancel ‹\", mic; lock above); references/auto/telegram/store/telegram-store-03.png (row: red dot, \"0:03\", \"‹ Slide to cancel\", enlarged mic circle, lock capsule with chevron up above it)",
+      "method": "documented gestures (WhatsApp Help Center, iOS) + element order read from two 2026 App Store panels of two apps",
+      "level": "SOURCED",
+      "precision": "layout rule; sizes not measured (marketing renders)",
+      "notes": "The two apps agree on hold-to-record, release-to-send, slide-left-to-cancel and a lock above the mic. Red recording dot = color.global.destructive (systemRed, the red both apps use for the recording indicator). Timer and hint text sizes not measured: they take the text role of the field they replace (body). Hint string: copy key chat.voice.recording.slideToCancel (added by the lead after gap fill G-9)."
     },
     "chat.reactions.dimension.clusterEmoji": {
       "type": "dimension",
@@ -1153,13 +1220,19 @@
     },
     "chat.reactions.layout.clusterOrder": {
       "type": "layout",
-      "value": null,
+      "value": {
+        "order": "newest distinct emoji first: a newly added emoji enters at the leading end of the cluster and the stickers already there shift one step (chat.reactions.dimension.clusterStep) toward the trailing side",
+        "repeatEmoji": "a reaction with an emoji already in the cluster adds no sticker (chat.reactions.layout.cluster); its position change was not observed",
+        "observed": "before: ✌️ alone at the leading position; after 😍 lands: 😍 leading, ✌️ one step trailing"
+      },
       "source_app": "Locket",
       "surface": "chat.reactions",
       "element": "order of the stickers in the cluster (first reacted, last reacted, …)",
-      "evidence": "references/auto/locket/store/locket-store-04.png (Locket App Store panel 4, listing 2.68.0) (three stickers, order of reacting unknown)",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screenshot of a Locket photo after three people reacted in a known order."
+      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-16.267s-gapfill-fly.png (before) and …-16.767s-gapfill-fly.png (after) (TikTok 7460656081153445163, 2025-01-16)",
+      "method": "visual, zoomed crops x330–560 / y1180–1380 of frames 16.267–17.1 s",
+      "level": "SOURCED",
+      "precision": "one observation (two distinct emoji)",
+      "notes": "Locket itself (the surface’s reference), 2025 build. Which sticker is drawn on top is not resolvable in this filmed video; chat.reactions.layout.cluster keeps its rule. Gap fill G-10."
     },
     "chat.reactions.count.clusterMaxVisible": {
       "type": "count",
@@ -1169,7 +1242,7 @@
       "element": "how many distinct emoji the cluster shows before it stops growing",
       "evidence": "references/auto/locket/store/locket-store-04.png (Locket App Store panel 4, listing 2.68.0) (three stickers seen)",
       "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screenshot of a Locket photo with six or more different reactions."
+      "notes": "Still BLOCKED after the gap-fill pass: Locket 2025 video shows two stickers; Apple’s guide says only \"they appear in a stack\" (no maximum); WhatsApp’s FAQ states no cap and its panels show counts (do-not-copy). Smallest owner capture: one screenshot of a Locket photo with six or more different reactions."
     },
     "chat.reactions.count.rainCopies": {
       "type": "count",
@@ -1256,23 +1329,28 @@
     },
     "chat.reactions.easing.rain": {
       "type": "easing",
-      "value": null,
+      "value": "easeInOut",
       "source_app": "Locket",
       "surface": "chat.reactions",
       "element": "speed curve of each rain copy",
-      "evidence": "references/auto/locket/frames/locket-tt-7147749171762908462-05.300s-emoji-rain-rising-behind-photo.jpg, …-05.667s-emoji-rain-exit-top.jpg (raw iOS screen recording https://www.tiktok.com/@locketcamera/video/7147749171762908462, posted 2022-09-26, 29.97 fps) (design/research/locket.md §7 'Curve: not measurable')",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: one 60-fps screen recording of Locket's emoji rain (current build)."
+      "evidence": "references/auto/locket/frames/locket-tt-7147749171762908462-04.968s-emoji-rain-gapfill.png (lower band) and …-05.702s-emoji-rain-gapfill.png (upper band) (raw iOS screen recording, 1080×1920, 29.97 fps, 2022-09-26); 28 copies tracked over frames 4.0–10.0 s",
+      "method": "per copy, speed in three path segments: lower band (top edge y 1640 → 1245, between reply bar and photo card) median 49.8 px/frame; behind the card (top edge 1236 → bottom edge re-appearing above y 141) median 74.6 px/frame; upper band (bottom edge 141 → 0) 52–56 px/frame (5 clean pairs). Slow → fast → slow",
+      "level": "SOURCED",
+      "precision": "shape only; control points not fitted (copies are hidden behind the card mid-path; the recording repeats frames irregularly, so speeds are averaged over ≥4 frames)",
+      "notes": "easeInOut is the generator preset with this slow–fast–slow shape. 2022 build (the current build was not recordable). Reduce Motion: chat.reactions.layout.reduceMotion (rain not played). Gap fill G-11."
     },
     "chat.reactions.duration.flyToCluster": {
       "type": "duration",
-      "value": null,
+      "value": 300,
+      "unit": "ms",
       "source_app": "Locket",
       "surface": "chat.reactions",
       "element": "flight of the chosen emoji into the cluster after the picker closes",
-      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-16.534s-reaction-fly-to-cluster.jpg (design/research/locket.md §7: start hidden by a video cut; 'Duration not measurable')",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screen recording (not filmed) of reacting to a Locket Rollcall photo."
+      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-16.367s-gapfill-fly.png (last frame at the start position), …-16.400s-, …-16.533s-, …-16.667s-gapfill-fly.png (landed) (TikTok 7460656081153445163, phone filmed at 30 fps, 2025-01-16)",
+      "method": "disc centre per frame, progress along the start → cluster path: f018 0.04, f019 0, f020 0.21, f021 0.44, f022 0.64, f023 0.76, f024 0.87, f025 0.93, f026 0.97, f027 1.0 (frames at 15.8 s + (k−1)/30); duration = last frame at rest → first frame landed = 9 frames",
+      "level": "SOURCED",
+      "precision": "±33 ms (±1 frame); the TikTok’s text overlay ends at f018/f019 but the disc position is continuous across it",
+      "notes": "Speed falls toward the cluster (≈0.21 of the path in the first frame, 0.03 in the last): a decelerating curve, not fitted. The disc shrinks from the picker-tap size to chat.reactions.dimension.clusterEmoji as it lands. Reduce Motion: chat.reactions.layout.reduceMotion (the sticker appears in place). Gap fill G-12."
     },
     "chat.reactions.layout.reduceMotion": {
       "type": "layout",
@@ -1402,17 +1480,25 @@
       "element": "list of who reacted with what on one photo (row layout, order)",
       "evidence": "design/research/locket.md §7 (APK strings 'Activity', '{{name}} sent {{emoji}}', 'No reactions yet' only)",
       "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screenshot of Locket's reaction list for one of your photos."
+      "notes": "Still BLOCKED after the gap-fill pass: Apple Messages lists senders grouped per Tapback at the top of the screen (references/auto/imessage/apple-support/messages-tapbacks-ios27.png; \"Senders and their tapbacks appear near the top of the screen\"), which does not fit Locket’s per-person row strings (\"{name} sent {emoji}\"); WhatsApp’s reaction sheet (\"view all reactions … by tapping the emoji below the message\") was not reachable as an image (third-party guides behind bot checks). Smallest owner capture: one screenshot of Locket’s reaction list for one of your photos."
     },
     "chat.reactions.layout.unreact": {
       "type": "layout",
-      "value": null,
-      "source_app": "Locket",
+      "value": {
+        "where": "in the reaction picker (long press on the photo, or the add-reaction glyph): every emoji you already reacted with on this photo is highlighted",
+        "highlight": "a filled circle behind the emoji in color.global.selection",
+        "remove": "tap a highlighted emoji: unreact(p_post_id, p_emoji); the highlight goes and the sticker leaves the cluster when nobody else used that emoji",
+        "a11y": "highlighted cells carry the platform selected trait",
+        "haptic": "none (as reacting)"
+      },
+      "source_app": "Apple Messages (iMessage) + WhatsApp",
       "surface": "chat.reactions",
       "element": "how you take back a reaction",
-      "evidence": "design/research/locket.md §7 (not observed)",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screen recording of removing a reaction in Locket (or confirmation that Locket has none)."
+      "evidence": "references/auto/imessage/apple-support/page-react-with-tapbacks.png (verbatim: \"Tap your Tapback, then … Remove the Tapback: Tap the same Tapback you used (so it’s not highlighted).\") and references/auto/imessage/apple-support/messages-tapbacks-ios27.png (the Tapback already sent, 😂, sits in a filled blue circle in the menu); references/auto/whatsapp/help/faq-424198503229937-react-iphone.png (verbatim: \"Tap and hold a message, photo, gif, or video you reacted to. … Tap your reaction to remove it.\")",
+      "method": "documented behaviour in two apps’ first-party help + the highlighted state in Apple’s image",
+      "level": "SOURCED",
+      "precision": "layout rule",
+      "notes": "Both references allow one reaction per person; this product allows several (react is per emoji), so each of your emoji is highlighted. Highlight colour: Messages uses its system blue for the selected Tapback; Yope draws selected states in iOS system blue (color.global.selection), same role. Gap fill G-13."
     },
     "chat.reactions.layout.textStyleMap": {
       "type": "layout",
@@ -1613,13 +1699,16 @@
     },
     "photo.viewer.dimension.pageGap": {
       "type": "dimension",
-      "value": null,
+      "value": 0,
+      "unit": "pt",
       "source_app": "Yope",
       "surface": "photo.viewer",
       "element": "gap between two photos while swiping",
-      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.30-viewer-swipe-mid.png ('pages separated by a thin dark gap', yope-b §10; not measurable over photo content)",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: one 10-s screen recording: tap a photo in a Yope group chat, swipe to the next, open •••, close (yope-b §14 capture 2)."
+      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.27-viewer-swipe.png (boundary x≈263), …-t57.30-viewer-swipe-mid.png (x≈421), …-t57.33-viewer-swipe.png (x≈553) (TikTok 7591560669967682847, 30 fps; photo 528 px = 393 pt, 1.344 px/pt)",
+      "method": "luminance profiles across the page boundary at rows 340–940 of the three mid-swipe frames: where both pages are lighter than the viewer background (#1C191D ≈ 26/255), the boundary dips ≤10 levels in one column — under 20 % coverage of a 1-px column; a background strip would read ≈26",
+      "level": "SOURCED",
+      "precision": "+0.75 pt (a strip narrower than 1 px at 1.344 px/pt would not show)",
+      "notes": "Pages touch; the \"thin dark gap\" seen in yope-b §10 is the pages’ rounded corners (radius.global.photo) meeting at the top and bottom. One source (Yope’s own viewer, Dec 2025 build); no second Yope recording exists. Gap fill G-14."
     },
     "photo.viewer.layout.dateFormat": {
       "type": "layout",
@@ -1685,7 +1774,7 @@
       "element": "where a photo's voice note plays in the viewer",
       "evidence": "design/research/yope-b.md §3 'Not found: voice note attached to a photo'; §4 'Not found: caption display in the viewer'",
       "level": "BLOCKED",
-      "notes": "Smallest owner capture: one Yope screen recording opening a photo that has a voice memo."
+      "notes": "Still BLOCKED after the gap-fill pass: no widely used app found that attaches a voice note to a photo and plays it in a full-screen viewer (Messages shows audio as separate thread messages). Smallest owner capture: one Yope screen recording opening a photo that has a voice memo."
     },
     "walls.mine.count.gridColumns": {
       "type": "count",
@@ -1783,7 +1872,7 @@
       "element": "whether rows after the first change tile count or width (mosaic) on the profile grid",
       "evidence": "references/auto/yope/frames/b-presskit-profile.png (Yope press kit profile, 402×874 pt @2x, files dated 2026-07-22) (row 2 partly hidden by the tab bar)",
       "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screenshot of a Yope 2026 profile 'pics' grid scrolled to show three rows."
+      "notes": "Still BLOCKED, narrowed by the gap-fill pass: the press-kit profile does change rows — row 1 has 3 tiles (x 48–282, 290–522, 530–756 @2x = 117 / 116 / 113 pt, y 1374–1684), row 2 has 2 tiles (x 48–402, 410–756 = 177 / 173 pt, from y 1692; 4-pt gaps) — but rows 3+ are not visible, so the repeating rule is unknown. Instagram / Apple Photos / Google Photos grids are uniform and do not explain it. Smallest owner capture: one screenshot of a Yope 2026 profile \"pics\" grid scrolled to show rows 3–5."
     },
     "walls.mine.layout.freeformWall": {
       "type": "layout",
@@ -1793,7 +1882,7 @@
       "element": "Yope's free-form wall canvas (9:16, photos of mixed sizes, overlap, rotation)",
       "evidence": "references/auto/yope/frames/b-presskit-wall.png; references/auto/yope/frames/b-yopeapp-7591560669967682847-t52.00-1on1-wall.png (design/research/yope-b.md §5, §8 C5: free-form, no grid rule; 'Not found: how wall tiles are ordered')",
       "level": "BLOCKED",
-      "notes": "Smallest owner capture: 20-s recording: own wall, a friend's wall, the 'me & friends' row, tap shuffle once, tap edit (yope-b §14 capture 3). Until closed, walls use the grid above (MERGE_DECISIONS Social S-11)."
+      "notes": "Still BLOCKED after the gap-fill pass (yope.app’s web demo renders a stylised profile, not the wall; no other app has this canvas). Smallest owner capture: 20-s recording: own wall, a friend’s wall, the 'me & friends' row, tap shuffle once, tap edit (yope-b §14 capture 3). Until closed, walls use the grid above (MERGE_DECISIONS Social S-11)."
     },
     "walls.browse.dimension.avatar": {
       "type": "dimension",
@@ -1887,7 +1976,7 @@
       "element": "order of the people after 'me' in the row",
       "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t116.00-me-and-friends.png (same video @ 116.00 s) (Meera, Our ban…, María, Maddi: order rule not visible)",
       "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screenshot of Yope's 'me & friends' row before and after one friend posts."
+      "notes": "Still BLOCKED after the gap-fill pass: Yope’s row shows \"new\" dots on every circle (no order cue); no comparable person-row with a documented order was found. Smallest owner capture: one screenshot of Yope’s 'me & friends' row before and after one friend posts."
     },
     "walls.browse.layout.selection": {
       "type": "layout",
@@ -1897,7 +1986,7 @@
       "element": "how the selected person's circle is marked in the row",
       "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t116.00-me-and-friends.png (same video @ 116.00 s) (selection state not visible; red 'new' dots are do-not-copy)",
       "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screenshot of Yope's 'me & friends' row after tapping a person."
+      "notes": "Still BLOCKED after the gap-fill pass: no comparable person-row with a visible selected state was found in reachable images. Smallest owner capture: one screenshot of Yope’s 'me & friends' row after tapping a person."
     },
     "week.recap.dimension.cardWidth": {
       "type": "dimension",
@@ -1984,7 +2073,7 @@
       "element": "how the short row splits its width between its tiles",
       "evidence": "references/owner/yope-week-recap.jpg (owner TikTok frame, week recap, ≈Dec 2025/Jan 2026) (one example: unequal 61/39 split)",
       "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screen recording of a Yope weekly recap card for a week with only 2–5 photos (the capture named in design/collage-options/README.md)."
+      "notes": "Still BLOCKED after the gap-fill pass: the leftover-row split is specific to Yope’s recap card; no other app shows this card. Smallest owner capture: one screen recording of a Yope weekly recap card for a week with only 2–5 photos (the capture named in design/collage-options/README.md)."
     },
     "week.recap.dimension.shortRowHeight": {
       "type": "dimension",
@@ -1994,7 +2083,7 @@
       "element": "height of the short first row",
       "evidence": "references/owner/yope-week-recap.jpg (owner TikTok frame, week recap, ≈Dec 2025/Jan 2026) (row 1 is cut off under the header)",
       "level": "BLOCKED",
-      "notes": "Smallest owner capture: same capture as week.recap.layout.shortRowSplit."
+      "notes": "Still BLOCKED after the gap-fill pass (same reason as week.recap.layout.shortRowSplit). Smallest owner capture: same capture as week.recap.layout.shortRowSplit."
     },
     "week.recap.layout.scrim": {
       "type": "layout",
@@ -2004,7 +2093,7 @@
       "element": "dark gradient at the card bottom under the label (colours, height)",
       "evidence": "references/owner/yope-week-recap.jpg (owner TikTok frame, week recap, ≈Dec 2025/Jan 2026) (JPEG; gradient over photo content)",
       "level": "BLOCKED",
-      "notes": "Smallest owner capture: one lossless export of a Yope recap card."
+      "notes": "Still BLOCKED after the gap-fill pass: Apple Photos album covers and Google Photos memories also put a title over the photo, but their gradients sit on photo content and cannot be separated from it (no flat-backdrop image found). Smallest owner capture: one lossless export of a Yope recap card."
     },
     "week.recap.fontSize.label": {
       "type": "fontSize",
@@ -2118,7 +2207,7 @@
       "element": "content of the recap card's second page (two page dots are shown)",
       "evidence": "references/owner/yope-week-recap.jpg (owner TikTok frame, week recap, ≈Dec 2025/Jan 2026) (page 2 not shown)",
       "level": "BLOCKED",
-      "notes": "Smallest owner capture: 20-s recording: open a Yope weekly recap, swipe the recap pages, toggle recap/pics, tap edit/remix, save (yope-b §14 capture 4). Where the recap text (weekly_recaps.text) is displayed depends on this capture."
+      "notes": "Still BLOCKED after the gap-fill pass: page 2 is Yope-specific content. Smallest owner capture: 20-s recording: open a Yope weekly recap, swipe the recap pages, toggle recap/pics, tap edit/remix, save (yope-b §14 capture 4). Where the recap text (weekly_recaps.text) is displayed depends on this capture."
     },
     "week.recap.count.picsColumns": {
       "type": "count",
@@ -2319,13 +2408,21 @@
     },
     "week.edit.layout.reorder": {
       "type": "layout",
-      "value": null,
-      "source_app": "Yope",
+      "value": {
+        "gesture": "touch and hold a checked tile, then drag it into a new position; release to drop it there",
+        "scope": "the checked tiles (the recap’s items); their order becomes p_items’ order",
+        "during": "the dragged tile follows the finger; the platform drag-and-drop moves the other checked tiles to show the drop position",
+        "haptics": "week.edit.haptic.dragStart on pick-up, week.edit.haptic.dragAlign on each slot change",
+        "reduceMotion": "the drag tracks the finger (allowed by layout.global.reduceMotion)"
+      },
+      "source_app": "Apple Photos + Google Photos",
       "surface": "week.edit",
       "element": "how a recap is reordered (gesture, handles, layout while dragging)",
-      "evidence": "design/research/yope-b.md §6 'No reorder/remove UI, no save-as-album flow found'",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: 20-s recording: open a Yope weekly recap, tap edit/remix, save (yope-b §14 capture 4)."
+      "evidence": "references/auto/apple-photos/apple-support/page-filter-sort-albums.png (verbatim: \"If you choose Sort by Custom Order, touch and hold the photo or video thumbnail, then drag it into a new position.\"); references/auto/apple-photos/apple-support/page-organize-albums.png (albums: \"touch and hold an album, then drag it to a new position\"); references/auto/google-photos/help/page-create-edit-albums-ios.png (verbatim: \"You can re-order photos, videos, text, and locations by dragging them.\")",
+      "method": "documented gesture in two apps’ first-party help (iOS 27 guide; Google Photos Help, iOS)",
+      "level": "SOURCED",
+      "precision": "layout rule",
+      "notes": "Replaces the development-only approximation; same gesture as the spec’s approximation. Gap fill G-16."
     },
     "week.edit.layout.recapText": {
       "type": "layout",
@@ -2335,7 +2432,7 @@
       "element": "where the recap text is shown and edited",
       "evidence": "design/research/yope-b.md §6 (text location not observed)",
       "level": "BLOCKED",
-      "notes": "Smallest owner capture: same capture as week.edit.layout.reorder."
+      "notes": "Still BLOCKED after the gap-fill pass: Google Photos albums hold text as a box among the photos, edited by tapping it in Edit and moved by dragging (references/auto/google-photos/help/page-create-edit-albums-ios.png), but where a new text box is placed is not documented; Apple Photos edits only the album title in place. Smallest owner capture: same capture as week.edit.layout.reorder (Yope recap edit/remix)."
     },
     "week.edit.layout.composition": {
       "type": "layout",
@@ -2671,23 +2768,27 @@
     },
     "week.history.color.emptyTile": {
       "type": "color",
-      "value": null,
+      "value": "#262626",
       "source_app": "Retro",
       "surface": "week.history",
       "element": "empty-day tile and add tile fill in the dark appearance",
-      "evidence": "references/auto/retro/press/engadget-2026-08-home-dark.jpg (dark-gray empty tiles, low-res photo, not sampled); light mode #F1F1F1 (references/auto/retro/store/retro-store-02.png (Retro App Store panel 2, profile with week sections, listing v124.0))",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screenshot of Retro's profile in dark mode. Retro's dark-mode colours were not measured (design/research/retro-timehop.md §week.history 'Not found: Dark-mode colours'); the app is dark only (layout.global.appearance, F-1)."
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png, …-20260528-week22-dark-a.png, …-20260528-week22-dark-b.png (raw iOS screenshots 1206×2622 @3x, Retro dark appearance): add tile box (70–120, 520–580), empty-day tile boxes (230–280, 700–760), (330–360, 500–520), (330–360, 760–800)",
+      "method": "box medians on the lossless PNGs: every pixel (38,38,38), std 0, in all three captures",
+      "level": "SOURCED",
+      "precision": "±0/255 (lossless, three captures from two dates)",
+      "notes": "Add tile and empty-day tiles share this fill in Retro’s dark appearance; the screen background is #000000 (= color.global.backgroundDeep). Against #000000: 1.38:1 as a boundary (the tile’s content identifies it). Gap fill G-15."
     },
     "week.history.color.emptyTileText": {
       "type": "color",
-      "value": null,
+      "value": "#515151",
       "source_app": "Retro",
       "surface": "week.history",
-      "element": "empty-day tile text and '+' glyph colour in the dark appearance",
-      "evidence": "light mode #D9D9D9 text / #000000 '+' (design/research/retro-timehop.md §week.history)",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screenshot of Retro's profile in dark mode. Retro's dark-mode colours were not measured (design/research/retro-timehop.md §week.history 'Not found: Dark-mode colours'); the app is dark only (layout.global.appearance, F-1)."
+      "element": "empty-day tile labels (month, day number, weekday) in the dark appearance",
+      "evidence": "same three captures: month (\"May\" x 393–472 / y 539–576; \"Oct\"), day (\"25\" x 382–479 / y 605–666; \"20\"), weekday (\"Mon\" y 703–733) glyph plateau #515151 (800–2700 px per label); the add tile’s \"+\" (x 139–207 / y 601–669) plateau #FFFFFF",
+      "method": "glyph plateau (most extreme colour within 6 levels) of the ink pixels differing from the tile fill by >12, per label",
+      "level": "SOURCED",
+      "precision": "±0/255 (lossless)",
+      "notes": "Covers the empty-day labels only. The add tile’s \"+\" is #FFFFFF in Retro dark → draw it in color.global.textPrimary (in light mode the \"+\" #000000 and the labels #D9D9D9 were already different colours). Contrast #515151 on #262626: 1.92:1 — fails 4.5:1; Retro’s light pair (#D9D9D9 on #F1F1F1) fails too: reported, not adjusted (the labels repeat the weekday shown in the header range; a11y label week.history.a11y.emptyDay carries the date). Gap fill G-15."
     },
     "week.history.layout.weekMenu": {
       "type": "layout",
@@ -2697,7 +2798,7 @@
       "element": "contents of the per-week '•••' menu",
       "evidence": "design/research/retro-timehop.md §week.history 'Not found: Contents of the per-week \"•••\" menu'",
       "level": "BLOCKED",
-      "notes": "Smallest owner capture: one screenshot of Retro's week '•••' menu opened."
+      "notes": "Still BLOCKED after the gap-fill pass: the five public Lazyweb Retro screens (2025-10, 2026-05) show the dark home weeks without the menu; App Store / Play panels, press and the Apptisan interview mention postcards and recaps only. Smallest owner capture: one screenshot of Retro’s week '•••' menu opened."
     },
     "week.history.layout.textStyleMap": {
       "type": "layout",
@@ -2779,13 +2880,31 @@
     },
     "albums.list.layout.yopeAlbums": {
       "type": "layout",
-      "value": null,
-      "source_app": "Yope",
+      "value": {
+        "format": "grid of album covers (Apple Photos \"Album Cover\" format)",
+        "columns": 2,
+        "coverAspect": 1,
+        "coverWidth": 168,
+        "gap": 12.4,
+        "marginH": 23,
+        "coverRadius": 18.5,
+        "cover": "the album’s first photo (thumb_path), aspect fill",
+        "title": "album name over the cover’s bottom-leading corner, one line, tail truncation, color.global.textPrimary",
+        "titleInsetLeading": 14,
+        "titleBaselineBottom": 17,
+        "titleFontSize": 15,
+        "titleWeight": "not measured (platform default)",
+        "subtitle": "not shown on the cover (the reference shows the name only); albums.list.row.subtitle joins the accessibility label",
+        "background": "color.global.backgroundDeep"
+      },
+      "source_app": "Apple Photos",
       "surface": "albums.list",
-      "element": "Yope's own album list and album screen",
-      "evidence": "design/research/yope-b.md §7 ('make your own memory albums' release note only)",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: two screenshots: Yope's album list and one open album (yope-b §14 capture 5)."
+      "element": "album list layout (Yope’s own album list was not observed; Apple Photos’ Albums collection fills it)",
+      "evidence": "references/auto/apple-photos/apple-support/photos-albums-ios27.png (iOS 27 guide; display x 22–467 = 445 px): covers x 48–238 and 252–441, rows y 228–418 / 432–618 / 636–818, corner fit 20.9 / 20.5 / 20.8 / 21.5 px (right cover of row 1), \"Top Moments\" cap 12 px, ink 16 px from the cover’s leading edge, baseline 19 px above its bottom; references/auto/apple-photos/apple-support/page-organize-albums.png (\"tap [More], then tap List View or Album Cover\")",
+      "method": "edge transitions and corner fit (50 % crossing, least squares) on the guide image; px ÷ 1.132 (445 px = 393 pt)",
+      "level": "SOURCED",
+      "precision": "±1 pt (1.13 px/pt mockup; device width assumed 393 pt)",
+      "notes": "Cover width follows from columns, margins and gap ((393 − 2 × 23 − 12.4) / 2 = 167.3 pt). The title sits on photo content: Apple’s legibility treatment under it is not measurable on this image, so the contrast is not computable (flagged). Order: newest first, unchanged. Yope’s own album screens (yope-b §14 capture 5) would supersede this. Gap fill G-17."
     }
   }
 }

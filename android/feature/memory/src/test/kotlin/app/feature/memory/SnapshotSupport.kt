@@ -114,6 +114,11 @@ abstract class SnapshotTest {
         compose.mainClock.autoAdvance = false
         compose.setContent { MemoryTestContent(backend, reviewToasts, coach, content) }
         compose.mainClock.advanceTimeBy(settleMillis)
+        if (screen) {
+            // Popups (coach, toasts) are separate windows: let them attach and lay out.
+            compose.mainClock.autoAdvance = true
+            compose.waitForIdle()
+        }
         val path = "src/test/snapshots/$surface/$state.png"
         if (screen) captureScreenRoboImage(path) else compose.onRoot().captureRoboImage(path)
     }

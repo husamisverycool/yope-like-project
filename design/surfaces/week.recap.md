@@ -71,7 +71,7 @@ Background `color.global.background` (O3 JPEG #121011, within ±6).
 
 | state | what shows | tokens / copy | source |
 |---|---|---|---|
-| loading | Yope loading HUD centred | `groups.create.size.hud`, `groups.create.color.hud`, `groups.create.fontSize.hudLabel`, `chat.thread.radius.loadingHud` (BLOCKED); `groups.create.hud.loading` | yope-a §1.8 |
+| loading | Yope loading HUD centred | `groups.create.size.hud`, `groups.create.color.hud`, `groups.create.fontSize.hudLabel`, `chat.thread.radius.loadingHud` (10.5); `groups.create.hud.loading` | yope-a §1.8 |
 | pending (`status = pending`) | centred bold line, no pill | text role `emptyTitle`; `week.recap.pending` | `yope.voice.confirmation` |
 | empty (no ready recap yet) | centred bold title, gray detail, white pill | `week.recap.empty.title`, `.empty.detail`, `.empty.action` ("share a pic" → `camera.capture`); text roles `emptyTitle` / `emptyDetail`; pill `color.global.surfaceLight` / `.onSurfaceLight`, `groups.screen.size.lightPillHeight`, `groups.screen.radius.lightPill` | `yope.voice.empty-state` (Yope's "Add 20 pics more to get a recap" is a progress count: do-not-copy) |
 | error | same layout as empty, retry pill | `week.recap.error.title`, `chat.thread.error.detail`, pill `chat.thread.error.retry` | `yope.voice.error` |
@@ -145,9 +145,9 @@ Background `color.global.background` (O3 JPEG #121011, within ±6).
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `week.recap.layout.shortRowSplit`, `week.recap.dimension.shortRowHeight` | BLOCKED | one screen recording of a Yope weekly recap card for a week with only 2–5 photos (also closes collage Option A) |
-| `week.recap.layout.page2` (+ where the recap text shows) | BLOCKED | 20-s recording: open a weekly recap, swipe pages, toggle recap/pics, tap edit/remix, save (yope-b §14 capture 4) |
-| `week.recap.layout.scrim` | BLOCKED | one lossless export of a Yope recap card |
+| `week.recap.layout.shortRowSplit`, `week.recap.dimension.shortRowHeight` | BLOCKED (gap fill: Yope-specific card; no other app shows it) | one screen recording of a Yope weekly recap card for a week with only 2–5 photos (also closes collage Option A) |
+| `week.recap.layout.page2` (+ where the recap text shows) | BLOCKED (Yope-specific content) | 20-s recording: open a weekly recap, swipe pages, toggle recap/pics, tap edit/remix, save (yope-b §14 capture 4) |
+| `week.recap.layout.scrim` | BLOCKED (gap fill: Apple Photos / Google Photos title gradients sit on photo content and cannot be separated) | one lossless export of a Yope recap card |
 | segmented behaviour (scroll vs filter) and its motion | approximation | same 20-s recording |
 | pencil entry to edit | composition from the send-to header (S-13) | same recording |
 | 2026 wall-style recaps | not built (free-form; S-15) | same recording |

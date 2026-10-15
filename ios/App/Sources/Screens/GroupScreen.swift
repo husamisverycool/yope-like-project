@@ -148,25 +148,43 @@ struct GroupFeedView: View {
         let pixels = Int((max(cardWidth, Tokens.Sizes.groupsScreenSizeCardHeight) * displayScale).rounded(.up))
         let items = model.items
         return ScrollView {
-            LazyVStack(spacing: Tokens.Sizes.groupsScreenSizeCardGap) {
-                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                    feedItem(item)
-                        .dsTransition(.move(edge: .top).combined(with: .opacity))
-                        .onAppear {
-                            if index >= items.count - 3 {
-                                Task {
-                                    await model.loadMore()
-                                    await model.prefetchImages(after: index, pixels: pixels)
-                                }
-                            }
-                        }
-                }
+            VStack(spacing: 0) {
+                memoryEntries
+                cards(items: items, pixels: pixels)
             }
             .padding(.horizontal, Tokens.Sizes.groupsScreenSizeCardMarginH)
             .padding(.bottom, Tokens.Sizes.groupsScreenSizeChatPillHeight + Tokens.Sizes.groupsScreenSizeCardGap)
-            .dsAnimation(.spring(Tokens.Springs.globalPlatformDefaultIos), value: model.posts.map(\.id))
         }
         .refreshable { await model.refresh() }
+    }
+
+    /// The memory surfaces' entry rows (birthday.request, onthisday, year.story "Entry … placed by groups.screen"), above
+    /// the newest card. Each is zero-height while it has nothing to show; a tap opens its screen (sheet / full screen).
+    private var memoryEntries: some View {
+        let group = model.groupID.rawValue
+        return VStack(spacing: 0) {
+            BirthdayRequestsEntry(groupID: group) { MemoryEntryCard(content: $0) }
+            OnThisDayEntry(groupID: group) { MemoryEntryCard(content: $0) }
+            YearStoryEntry(groupID: group) { MemoryEntryCard(content: $0) }
+        }
+    }
+
+    private func cards(items: [FeedItem], pixels: Int) -> some View {
+        LazyVStack(spacing: Tokens.Sizes.groupsScreenSizeCardGap) {
+            ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                feedItem(item)
+                    .dsTransition(.move(edge: .top).combined(with: .opacity))
+                    .onAppear {
+                        if index >= items.count - 3 {
+                            Task {
+                                await model.loadMore()
+                                await model.prefetchImages(after: index, pixels: pixels)
+                            }
+                        }
+                    }
+            }
+        }
+        .dsAnimation(.spring(Tokens.Springs.globalPlatformDefaultIos), value: model.posts.map(\.id))
     }
 
     @ViewBuilder
@@ -378,6 +396,38 @@ struct PhotoCard: View {
                 .contentShape(Rectangle())
         }
         .accessibilityLabel(Text(Copy.groupsScreenPhotoMoreAccessibilityLabel))
+    }
+}
+
+/// A memory entry row on the feed (`MemoryEntryContent`). No entry row was observed in Yope, so it takes the groups.list
+/// card's look — **approximation**: fill `groups.list.color.card`, corners `radius.global.card`, min height
+/// `groups.list.size.cardHeight`, insets `groups.list.size.avatarInset`, title `listTitle` / `color.global.textPrimary`,
+/// subtitle `listSubtitle` / `color.global.textSecondary`; the year story's `year.story.entry.button` is a light pill label
+/// (`.card` metrics). `groups.screen.size.cardGap` below it, so a hidden entry leaves no gap.
+struct MemoryEntryCard: View {
+    let content: MemoryEntryContent
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading) {
+                Text(content.title)
+                    .dsTextStyle(TextRole.listTitle)
+                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                Text(content.subtitle)
+                    .dsTextStyle(TextRole.listSubtitle)
+                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
+            }
+            Spacer(minLength: 0)
+            if let button = content.buttonTitle {
+                LightPillLabel(button, metrics: .card)
+            }
+        }
+        .padding(.horizontal, Tokens.Sizes.groupsListSizeAvatarInset)
+        .frame(minHeight: Tokens.Sizes.groupsListSizeCardHeight)
+        .background(Tokens.Colors.groupsListColorCard, in: RoundedRectangle(cornerRadius: Tokens.Radii.globalCard))
+        .contentShape(RoundedRectangle(cornerRadius: Tokens.Radii.globalCard))
+        .accessibilityElement(children: .combine)
+        .padding(.bottom, Tokens.Sizes.groupsScreenSizeCardGap)
     }
 }
 

@@ -1,3 +1,4 @@
+import DesignSystem
 import SwiftUI
 
 /// The window's content: the sign-up / onboarding stack until the person is home, then the main navigation stack
@@ -68,26 +69,61 @@ struct MainShell: View {
         }
         .sheet(item: sheetModal) { modal in
             ModalDestination(modal: modal)
-                .environment(dependencies)
-                .environment(\.storageURLResolver, dependencies.storageURLResolver)
-                .toastHost(dependencies.toasts)
+                .modifier(PresentedContent(dependencies: dependencies))
         }
         .background {
-            Color.clear
-                .fullScreenCover(item: coverModal) { modal in
-                    ModalDestination(modal: modal)
-                        .environment(dependencies)
-                        .environment(\.storageURLResolver, dependencies.storageURLResolver)
-                        .toastHost(dependencies.toasts)
-                }
+            // One presentation per anchor view: the full-screen modal slot, and the link routes whose specs present
+            // them modally (`ShellState.presentedRoute`).
+            ZStack {
+                Color.clear
+                    .fullScreenCover(item: coverModal) { modal in
+                        ModalDestination(modal: modal)
+                            .modifier(PresentedContent(dependencies: dependencies))
+                    }
+                Color.clear
+                    .sheet(item: routeSheet) { presented in
+                        RouteDestination(route: presented.route)
+                            .presentationDetents([.large])
+                            .modifier(PresentedContent(dependencies: dependencies))
+                    }
+                Color.clear
+                    .fullScreenCover(item: routeCover) { presented in
+                        RouteDestination(route: presented.route)
+                            .modifier(PresentedContent(dependencies: dependencies))
+                    }
+            }
         }
         .captureSendStatus(CaptureEnvironment.shared.sendCenter)
         .onChange(of: router.modal) { _, modal in openCameraTabIfNeeded(modal) }
-        .onAppear { openCameraTabIfNeeded(router.modal) }
-        .onChange(of: router.path) { _, path in
-            // A route pushed from anywhere (notification, link) shows the groups stack.
-            if !path.isEmpty { shell.showGroups() }
+        .onAppear {
+            ShellState.active = shell
+            openCameraTabIfNeeded(router.modal)
+            routePathChanged(router.path)
         }
+        .onChange(of: router.path) { _, path in routePathChanged(path) }
+    }
+
+    /// A route pushed from anywhere (notification, link) shows the groups stack, except the routes whose specs present
+    /// them modally (year.story, birthday.request, birthday.tribute), which move off the stack.
+    private func routePathChanged(_ path: [AppRoute]) {
+        if shell.presentModalRoute(router: router) { return }
+        if !path.isEmpty { shell.showGroups() }
+    }
+
+    /// `shell.presentedRoute` when it is a sheet.
+    private var routeSheet: Binding<PresentedRoute?> {
+        Binding(
+            get: { shell.presentedRoute.flatMap { $0.style == .sheet ? $0 : nil } },
+            set: { if $0 == nil, shell.presentedRoute?.style == .sheet { shell.presentedRoute = nil } }
+        )
+    }
+
+    /// `shell.presentedRoute` when it is full screen.
+    private var routeCover: Binding<PresentedRoute?> {
+        Binding(
+            get: { shell.presentedRoute.flatMap { $0.style == .fullScreen ? $0 : nil } },
+            set: { if $0 == nil, shell.presentedRoute?.style == .fullScreen { shell.presentedRoute = nil } }
+        )
     }
 
     /// `router.modal = .camera(groupID, nil)` → the camera tab for that group.
@@ -123,6 +159,18 @@ struct MainShell: View {
                 }
             }
         )
+    }
+}
+
+/// What every presented screen gets: the account dependencies, the storage URL resolver and the toast host.
+private struct PresentedContent: ViewModifier {
+    let dependencies: AccountDependencies
+
+    func body(content: Content) -> some View {
+        content
+            .environment(dependencies)
+            .environment(\.storageURLResolver, dependencies.storageURLResolver)
+            .toastHost(dependencies.toasts)
     }
 }
 
@@ -204,8 +252,22 @@ struct RouteDestination: View {
             CaptureDestination(route: route)
         case let .social(route):
             SocialDestination(route: route)
+        case .memory(.birthdayAdd):
+            BirthdayAddRoute()
         case let .memory(route):
             MemoryDestination(route: route)
+        }
+    }
+}
+
+/// `birthday.add` pushed from the settings.account "birthday" row; shows `birthday.add.added` as a toast after adding
+/// (shown once the toast dwell time is unblocked, `DesignGaps.toastDwell`; announced to VoiceOver meanwhile).
+struct BirthdayAddRoute: View {
+    @Environment(AccountDependencies.self) private var dependencies
+
+    var body: some View {
+        BirthdayAddScreen { outcome in
+            if outcome == .added { dependencies.toasts.show(Copy.birthdayAddAdded) }
         }
     }
 }

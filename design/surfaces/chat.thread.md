@@ -39,8 +39,8 @@ at the bottom, just above the composer.
 
 | item | left edge | right edge | height | corners | fill |
 |---|---|---|---|---|---|
-| their text bubble | `chat.thread.dimension.bubbleInsetTheirs` (50.5) | hugs text: `chat.thread.dimension.bubblePaddingH` each side; max **BLOCKED** (`chat.thread.dimension.bubbleMaxWidth`) | `chat.thread.dimension.bubbleHeight` (35.6) per single line | `chat.thread.radius.bubble` (16) all four, no tail | `chat.thread.color.bubbleTheirs` + hairline rim (`chat.thread.dimension.bubbleRim`) shading from `chat.thread.color.bubbleRimTheirsTop` at the top to `…BubbleRimTheirsBottom` at the bottom |
-| my text bubble | hugs text | `chat.thread.dimension.bubbleInsetMine` (23) | same | same | `chat.thread.color.bubbleMine` + rim `…bubbleRimMineTop` → `…bubbleRimMineBottom` |
+| their text bubble | `chat.thread.dimension.bubbleInsetTheirs` (50.5) | hugs text: `chat.thread.dimension.bubblePaddingH` each side; max `chat.thread.dimension.bubbleMaxWidth` (256 = 0.652 × screen width, iMessage; Gap fill G-1) | `chat.thread.dimension.bubbleHeight` (35.6) per single line | `chat.thread.radius.bubble` (16) all four, no tail | `chat.thread.color.bubbleTheirs` + hairline rim (`chat.thread.dimension.bubbleRim`) shading from `chat.thread.color.bubbleRimTheirsTop` at the top to `…BubbleRimTheirsBottom` at the bottom |
+| my text bubble | hugs text, max `chat.thread.dimension.bubbleMaxWidth` | `chat.thread.dimension.bubbleInsetMine` (23) | same | same | `chat.thread.color.bubbleMine` + rim `…bubbleRimMineTop` → `…bubbleRimMineBottom` |
 | avatar | `chat.thread.dimension.avatarInset` (11.2) | `+ size.global.avatarSmall` (32.6, circle) | — | circle | photo / `icon.global.person` |
 | avatar → bubble | `chat.thread.dimension.avatarGap` (6.7) | | | | |
 | emoji-only message | as a bubble of that sender | | emoji rendered `chat.thread.dimension.emojiOnlyGlyph` (47.5) wide, no bubble | — | — |
@@ -91,7 +91,7 @@ When the quoted photo is deleted (`reply_to_post_id` becomes null), the quote pa
 | group capsule | `chat.thread.dimension.headerCapsuleHeight`, `color.global.control`, `radius.global.capsule`, `size.global.avatarHeader`, text role `headerTitle`, `icon.global.chevron` in `color.global.textSecondary`; insides as the group header in `design/surfaces/groups.screen.md` | group name (data); `chat.thread.a11y.groupCapsule` | opens the group profile / `groups.settings` |
 | film-strip circle | `size.global.headerButton`, `color.global.control`, `icon.global.recap` | `chat.thread.a11y.recap` | opens `week.recap` (latest ready recap); hidden while the group has none |
 | text bubble | table above; text role `body` (`fontSize.global.body` 17 regular) in `color.global.textPrimary` | message text (data); `chat.thread.a11y.message` / `.messageMine` | long press → native context menu (see Data & actions) |
-| emoji-only message | `chat.thread.dimension.emojiOnlyGlyph`; threshold `chat.thread.count.emojiOnlyMax` **BLOCKED** | emoji (data) | as a text bubble |
+| emoji-only message | `chat.thread.dimension.emojiOnlyGlyph`; threshold `chat.thread.count.emojiOnlyMax` (3: a message of only 1–3 emoji renders large without a bubble; 4+ as a text bubble — Messages / WhatsApp rule, G-2) | emoji (data) | as a text bubble |
 | sender avatar | `size.global.avatarSmall`, `chat.thread.dimension.avatarInset`, `.avatarGap` | decorative (the message label carries the name) | tap → `walls.member` |
 | photo message | table above; `radius.global.photo`; `chat.thread.layout.photoFit` | `chat.thread.a11y.photo` / `.photoMine` + `chat.thread.a11y.caption` | tap → `photo.viewer` (this thread's photos, chronological); long press → `chat.reactions` picker |
 | time on photo | text role `overlayTime`, `color.global.textPrimary`, `chat.thread.layout.timeFormat` | time (data) | — |
@@ -105,12 +105,12 @@ When the quoted photo is deleted (`reply_to_post_id` becomes null), the quote pa
 
 | state | what shows | tokens / copy | source |
 |---|---|---|---|
-| loading (first page) | centred HUD: platform activity indicator over "Loading" | `groups.create.size.hud`, `groups.create.color.hud`, `groups.create.fontSize.hudLabel`, `chat.thread.radius.loadingHud` (**BLOCKED**), `easing.global.native.activityIndicator`; `groups.create.hud.loading` | V-mthu t50.60 (yope-a §1.8); HUD shared with the groups surfaces (account group) |
+| loading (first page) | centred HUD: platform activity indicator over "Loading" | `groups.create.size.hud`, `groups.create.color.hud`, `groups.create.fontSize.hudLabel`, `chat.thread.radius.loadingHud` (10.5, Yope frames, G-3), `easing.global.native.activityIndicator`; `groups.create.hud.loading` | V-mthu t50.60 (yope-a §1.8); HUD shared with the groups surfaces (account group) |
 | loading older messages | platform activity indicator at the top of the list | `easing.global.native.activityIndicator` | PLATFORM |
 | empty (no messages yet) | centred: bold title, italic gray detail, white pill with leading link glyph; composer stays | text roles `emptyTitle` (`color.global.textPrimary`) and `emptyDetail` (italic, `color.global.textSecondary`); pill `color.global.surfaceLight` / `color.global.onSurfaceLight`, `groups.screen.size.lightPillHeight`, `groups.screen.radius.lightPill`, text role `button`, `icon.global.link`; `chat.thread.empty.titleCreator` or `.titleMember`, `chat.thread.empty.detail`, `chat.thread.empty.invite` | V-mthu t51.23 (`yope.voice.empty-state`); pill opens `groups.invite` |
 | error (load failed) | same layout as empty | `chat.thread.error.title`, `.error.detail`, pill `chat.thread.error.retry` (reloads) | `yope.voice.error` (no Yope error observed) |
 | offline, nothing cached | same layout as empty, no pill | `chat.thread.offline.title`, `.offline.detail` | `yope.voice.error` |
-| offline with cached messages / send failed | cached messages stay; a failed message shows `chat.thread.sendFailed`, tap retries | layout **BLOCKED** (`chat.thread.layout.failedMessage`); haptic `haptic.global.error` | not observed (yope-b §1) |
+| offline with cached messages / send failed | cached messages stay; a failed message of mine gets a red outlined "!" circle (22 pt) on its trailing side, 14 pt from the bubble, and `chat.thread.sendFailed` in red under it (text role `caption`); tapping the circle, label or bubble sends it again | `chat.thread.layout.failedMessage` (`exclamationmark.circle` / `Rounded.ErrorOutline`, `color.global.destructive`); haptic `haptic.global.error` | Apple Messages "Not Delivered" state (support article 118433; Gap fill G-4) — not observed in Yope |
 | photo deleted while open | `post_deleted` broadcast removes the photo message; replies lose their quote part | — | docs/API.md §8.2 |
 | permission-denied | none on this surface (camera → `camera.capture`, microphone → `chat.voice.md`) | — | — |
 
@@ -213,10 +213,10 @@ When the quoted photo is deleted (`reply_to_post_id` becomes null), the quote pa
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `chat.thread.dimension.bubbleMaxWidth`, multi-line bubble layout and line height | BLOCKED | one 30-s screen recording in a Yope group chat: type and send a two-line text, send a photo, reply to a photo, hold the mic to record, play it (yope-b §14 capture 1) |
-| `chat.thread.count.emojiOnlyMax` | BLOCKED | one screenshot with a 1-emoji and a 4-emoji message |
-| `chat.thread.layout.failedMessage` | BLOCKED | one screenshot of a message that failed to send |
-| `chat.thread.radius.loadingHud` | BLOCKED | one lossless screenshot of Yope's "Loading" HUD |
+| `chat.thread.dimension.bubbleMaxWidth` | **SOURCED (gap fill)**: 256 pt = 0.652 × screen width, from Apple Messages (iOS 27 guide image + Messages render in Google Photos' App Store panel; lower bound +0/+11 %) — MERGE_DECISIONS Gap fill G-1. Multi-line line height: still platform default leading | a Yope two-line text (yope-b §14 capture 1) would supersede |
+| `chat.thread.count.emojiOnlyMax` | **SOURCED (gap fill)**: 3 (Messages + WhatsApp rule; Yope S1's 3-emoji message is consistent) — G-2 | one Yope screenshot with a 4-emoji message would confirm |
+| `chat.thread.layout.failedMessage` | **SOURCED (gap fill)**: Apple Messages' "Not Delivered" layout (red "!" circle + red label, tap retries) — G-4 | one Yope screenshot of a failed message would supersede |
+| `chat.thread.radius.loadingHud` | **SOURCED (gap fill)**: 10.5 pt, Yope's own HUD on 3 video frames (±1.5 pt) — G-3 | a lossless Yope HUD screenshot would tighten it |
 | `color.global.scrim` (caption box fill) | BLOCKED (foundations) | one lossless screenshot of a captioned photo card |
 | portrait photos in the group chat | approximation: the 323 × 174 landscape frame, aspect fill | same recording as above (send a portrait photo) |
 | gap between a photo and a bubble | approximation: `chat.thread.dimension.photoGap` | same recording |

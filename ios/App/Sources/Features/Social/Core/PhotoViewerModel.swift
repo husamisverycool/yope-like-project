@@ -126,10 +126,14 @@ final class PhotoViewerModel {
 
     // MARK: Loading
 
+    /// The photos already on the device first (no blank frame), then the server's, replaced in place.
     func load() async {
         if me == nil { me = await data.currentUserID() }
+        if phase == .loading, posts.isEmpty { await showCached() }
         do {
             let found = try await data.posts(ids: postIDs)
+            let foundIDs = Set(found.map(\.id))
+            for id in postIDs where !foundIDs.contains(id) { posts[id] = nil }
             for post in found { posts[post.id] = post }
             isOffline = false
         } catch {
@@ -149,6 +153,19 @@ final class PhotoViewerModel {
         await loadDetails()
         await loadTag(for: selection)
         updateCoach()
+    }
+
+    private func showCached() async {
+        let cached = await data.cachedPosts(ids: postIDs, groupID: contextGroupID)
+        guard cached.contains(where: { $0.id == selection }) else { return }
+        for post in cached { posts[post.id] = post }
+        if let groups = await data.cachedGroups() {
+            for group in groups { self.groups[group.id] = group }
+        }
+        if let groupID = contextGroupID, let members = await data.cachedMembers(groupID: groupID) {
+            for member in members { if let profile = member.profile { profiles[profile.id] = profile } }
+        }
+        phase = .ready
     }
 
     private func loadDetails() async {

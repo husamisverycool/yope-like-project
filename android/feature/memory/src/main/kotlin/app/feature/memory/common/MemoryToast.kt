@@ -65,7 +65,7 @@ fun MemoryToast(message: String?, onDismiss: () -> Unit, modifier: Modifier = Mo
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(layout.glyphToText.dp),
         ) {
-            if (success) Icon(Tokens.Icons.globalCheckmark, contentDescription = null, tint = Tokens.Colors.globalOnAccent, modifier = Modifier.size(layout.glyph.dp))
+            if (success) GlyphIcon(Tokens.Icons.globalCheckmark, layout.glyph.dp, Tokens.Colors.globalOnAccent)
             BasicText(message, style = roleStyle(Tokens.FontSizes.globalButton, Tokens.FontWeights.fontWeightGlobalButton).copy(color = Tokens.Colors.globalOnAccent))
         }
     }

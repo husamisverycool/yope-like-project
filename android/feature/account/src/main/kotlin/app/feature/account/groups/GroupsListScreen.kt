@@ -50,6 +50,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -158,6 +159,13 @@ class GroupsListViewModel(private val env: AccountEnvironment) : AccountViewMode
 
     fun refresh() = load()
 
+    private var resumedOnce = false
+
+    /** Back on screen (from a group, after creating or leaving one, app foreground): refetch in place (§8.3). */
+    fun onResume() {
+        if (resumedOnce) load() else resumedOnce = true
+    }
+
     private fun load() {
         viewModelScope.launch {
             env.backend.observeMyGroups().collect { page -> apply(page) }
@@ -240,6 +248,10 @@ fun GroupsListRoute(nav: NavController) {
     val vm = viewModel { GroupsListViewModel(env) }
     val state by vm.state.collectAsStateWithLifecycle()
     CollectEvents(vm.events, nav)
+    LifecycleResumeEffect(vm) {
+        vm.onResume()
+        onPauseOrDispose { }
+    }
     GroupsListScreen(
         state = state,
         zone = env.zone(),

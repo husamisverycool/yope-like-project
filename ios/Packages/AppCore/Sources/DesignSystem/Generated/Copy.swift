@@ -455,6 +455,8 @@ public enum Copy {
     public static var chatVoicePermissionDetail: String { CopyLookup.string("chat.voice.permission.detail", default: "enable your mic") }
     /// "can’t send voice messages?" — Yope · chat.voice · new · SOURCED
     public static var chatVoicePermissionTitle: String { CopyLookup.string("chat.voice.permission.title", default: "can’t send voice messages?") }
+    /// "slide to cancel" — WhatsApp · chat.voice · verbatim · SOURCED
+    public static var chatVoiceRecordingSlideToCancel: String { CopyLookup.string("chat.voice.recording.slideToCancel", default: "slide to cancel") }
     /// "share" — Yope · collage.share · verbatim · SOURCED
     public static var collageShareButton: String { CopyLookup.string("collage.share.button", default: "share") }
     /// "share with friends" — Yope · collage.share · verbatim · SOURCED

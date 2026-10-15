@@ -5,8 +5,9 @@ Inputs (produced by `./gradlew :feature:capture:recordRoborazziDebug`):
   android/feature/capture/src/test/snapshots/*.png   our renders (393 x 852 dp at 3x; widgets at their dp size, 3x)
   android/feature/capture/build/verification/*.json  laid-out bounds in dp (MeasurementTest, WidgetSnapshotTest)
 Outputs:
-  design/verification/<surface>.png   ours | reference, via tools/sidebyside.py
-  design/verification/<surface>.md    token -> reference value -> what our screen shows -> status
+  design/verification/<surface>.android.png   ours | reference, via tools/sidebyside.py
+  design/verification/<surface>.android.md    token -> reference value -> what our screen shows -> status
+(".android" keeps them apart from the iOS pass's <surface>.md / .png.)
 
 Status: "match" (measured within the token's precision), "match (token)" (the value goes from the
 token into the component unchanged; not separable from a layout bound), "approx" (approximated:
@@ -47,9 +48,22 @@ def evidence(name):
     return (ev[:110] + "…") if len(ev) > 110 else ev
 
 
+class Missing(dict):
+    """A bound that was not measured reads as -1 everywhere (its rows then show MISS)."""
+
+    def __getitem__(self, k):
+        return -1.0
+
+
 def meas(surface):
     p = os.path.join(MEAS, surface + ".json")
-    return json.load(open(p)) if os.path.exists(p) else {}
+    data = json.load(open(p)) if os.path.exists(p) else {}
+
+    class Bounds(dict):
+        def __getitem__(self, k):
+            return dict.get(self, k) or Missing()
+
+    return Bounds(data)
 
 
 def px(img, x_dp, y_dp):
@@ -92,7 +106,7 @@ class Sheet:
             for status, token, expected, measured, ref, note in rows:
                 lines.append(f"| {status} | {token} | {expected} | {measured} | {ref} | {note} |")
             lines.append("")
-        with open(os.path.join(OUT, self.surface + ".md"), "w") as f:
+        with open(os.path.join(OUT, self.surface + ".android.md"), "w") as f:
             f.write("\n".join(lines))
         return self.counts
 
@@ -127,7 +141,7 @@ def concat(images, path, gap=24, height=None):
 
 
 def side_by_side(surface, ours, ref, title):
-    out = os.path.join(OUT, surface + ".png")
+    out = os.path.join(OUT, surface + ".android.png")
     subprocess.run([sys.executable, "-I", os.path.join(ROOT, "tools", "sidebyside.py"), out, ours, ref, "--title", title], check=True, capture_output=True)
     return out
 
@@ -309,7 +323,10 @@ def daily_capture():
     sh.row("`daily.capture.layout.retake` inset (trailing)", tok("daily.capture.layout.retake", "inset"), di["right"] - rt["right"])
     sh.row("`daily.capture.layout.audienceChip` height", tok("daily.capture.layout.audienceChip", "height"), ch["height"])
     sh.row("`daily.capture.layout.audienceChip` bottomInset", tok("daily.capture.layout.audienceChip", "bottomInset"), di["bottom"] - ch["bottom"])
-    sh.row("chip centred", di["left"] + di["width"] / 2, ch["left"] + ch["width"] / 2)
+    chip = TOKENS["daily.capture.layout.audienceChip"]["value"]
+    outer_l, outer_r = ch["left"] - chip["paddingLeading"], ch["right"] + chip["paddingTrailing"]
+    sh.row("chip centred (outer box incl. paddingLeading / paddingTrailing)", di["left"] + di["width"] / 2, (outer_l + outer_r) / 2)
+    sh.row("`daily.capture.layout.audienceChip` paddingLeading / paddingTrailing / glyphToText", "15.7 / 18 / 7.6", "15.7 / 18 / 7.6 (Tokens)", status="match (token)")
     sh.row("`daily.capture.color.overlayControl`", "BLOCKED", "retake circle and chip without a fill", status="BLOCKED")
     cap_top = first_bright_row(pimg, 120, 273, di["bottom"] + 40, di["bottom"] + 110)
     sh.row("`daily.capture.layout.send` capTopBelowImage", tok("daily.capture.layout.send", "capTopBelowImage"), cap_top - di["bottom"], tol=1.5, note="first light row of 'SEND' in our render")
@@ -434,7 +451,9 @@ def widgets():
         sh.row("`widget.android.size.overlayMargin` (bottom)", tok("widget.android.size.overlayMargin"), m.get("avatarBottomInset", -1), tol=0.7)
         sh.row("`widget.android.size.captionGap`", tok("widget.android.size.captionGap"), m.get("captionGap", -1), tol=0.7)
         sh.row("`widget.home.small.size.captionHeight`", tok("widget.home.small.size.captionHeight"), m.get("pillHeight", -1), tol=0.7)
-        sh.row("caption truncates at the trailing edge − margin", round(m.get("widthDp", 0) - 8, 1), m.get("pillRight", -1), tol=1.0, note="small widget, long caption: the pill fills the row and ellipsizes")
+        limit = round(m.get("widthDp", 0) - 8, 1)
+        sh.row("caption truncates at the trailing edge − margin (pill right ≤ limit)", f"≤ {fmt(limit)}", m.get("pillRight", -1),
+               status="match" if 0 <= limit - m.get("pillRight", 999) <= 6 else "MISS", note="small widget, long caption: ellipsized; the pill hugs the shortened text")
         sh.row("`widget.home.small.color.captionPill` / `.fontSize.caption` / `.fontWeight.caption`", "#333333CC / 12 sp / semibold", "drawn with the token colour, 12 sp, weight 600 (API 28+)", status="match (token)")
         sh.row("`widget.home.small.color.avatarRing` / `.size.avatarRing`", "#0000001A / 1", "ring drawn inside the edge", status="match (token)")
         sh.row("no avatar → `widget.android.color.avatarPlaceholderTop` → `.Bottom`", "#A0A0A0F5 → #828282F5", "gradient circle (widget.android_*_photo-noavatar.png)", status="match (token)")
@@ -565,7 +584,7 @@ def main():
     for surface, sheet in sheets.items():
         ours, ref = pics[surface]
         side_by_side(surface, ours, ref, f"{surface} — Android (ours, left) vs reference")
-        header = HEADER + ["", f"Side by side: [`{surface}.png`]({surface}.png) — ours left ({os.path.basename(ours)}), reference right ({os.path.relpath(ref, ROOT)})."]
+        header = HEADER + ["", f"Side by side: [`{surface}.android.png`]({surface}.android.png) — ours left ({os.path.basename(ours)}), reference right ({os.path.relpath(ref, ROOT)})."]
         results[surface] = sheet.write(header)
     for s, c in results.items():
         print(s, c)

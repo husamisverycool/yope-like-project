@@ -65,6 +65,9 @@ public enum Tokens {
         /// Yope · chat.voice · voice message bubble fill (mine) · SOURCED
         /// token: `chat.voice.color.bubble`
         public static let chatVoiceColorBubble: Color = Color(.sRGB, red: 0.149, green: 0.149, blue: 0.149, opacity: 1)
+        /// Yope (value) · Telegram (rule) · chat.voice · another member's voice bubble fill · SOURCED
+        /// token: `chat.voice.color.bubbleTheirs`
+        public static let chatVoiceColorBubbleTheirs: Color = Color(.sRGB, red: 0.1686, green: 0.1686, blue: 0.1686, opacity: 1)
         /// Yope · chat.voice · duration text ('00:38') · SOURCED
         /// token: `chat.voice.color.duration`
         public static let chatVoiceColorDuration: Color = Color(.sRGB, red: 0.5725, green: 0.5725, blue: 0.5725, opacity: 1)
@@ -74,6 +77,9 @@ public enum Tokens {
         /// Yope · chat.voice · waveform bars · SOURCED
         /// token: `chat.voice.color.waveform`
         public static let chatVoiceColorWaveform: Color = Color(.sRGB, red: 0.5686, green: 0.5686, blue: 0.5686, opacity: 1)
+        /// Telegram (rule) · Yope (colour) · chat.voice · colour of the played part of the waveform during playback · SOURCED
+        /// token: `chat.voice.color.waveformPlayed`
+        public static let chatVoiceColorWaveformPlayed: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
         /// Yope · collage.view · loading HUD fill · SOURCED
         /// token: `collage.view.color.hud`
         public static let collageViewColorHud: Color = Color(.sRGB, red: 0.0471, green: 0.0471, blue: 0.0471, opacity: 1)
@@ -335,6 +341,12 @@ public enum Tokens {
         /// Yope · photo.viewer · viewer background behind the photo and header · SOURCED
         /// token: `photo.viewer.color.background`
         public static let photoViewerColorBackground: Color = Color(.sRGB, red: 0.1098, green: 0.098, blue: 0.1137, opacity: 1)
+        /// Retro · week.history · empty-day tile and add tile fill in the dark appearance · SOURCED
+        /// token: `week.history.color.emptyTile`
+        public static let weekHistoryColorEmptyTile: Color = Color(.sRGB, red: 0.149, green: 0.149, blue: 0.149, opacity: 1)
+        /// Retro · week.history · empty-day tile labels (month, day number, weekday) in the dark appearance · SOURCED
+        /// token: `week.history.color.emptyTileText`
+        public static let weekHistoryColorEmptyTileText: Color = Color(.sRGB, red: 0.3176, green: 0.3176, blue: 0.3176, opacity: 1)
         /// Locket · widget.android · avatar placeholder gradient end · SOURCED
         /// token: `widget.android.color.avatarPlaceholderBottom`
         public static let widgetAndroidColorAvatarPlaceholderBottom: Color = Color(.sRGB, red: 0.5098, green: 0.5098, blue: 0.5098, opacity: 0.9608)
@@ -373,6 +385,9 @@ public enum Tokens {
         /// Locket · chat.reactions · copies of the chosen emoji in one emoji-rain burst · SOURCED
         /// token: `chat.reactions.count.rainCopies`
         public static let chatReactionsCountRainCopies: CGFloat = 18
+        /// Apple Messages (iMessage) + WhatsApp (rule); Yope (consistent) · chat.thread · how many emoji a message may contain and still render large without a bubble · SOURCED
+        /// token: `chat.thread.count.emojiOnlyMax`
+        public static let chatThreadCountEmojiOnlyMax: CGFloat = 3
         /// Spotify Wrapped · year.story · most photos one list shows (most-reacted, everyone-answered days) · SOURCED
         /// token: `count.year.story.listLength`
         public static let yearStoryListLength: CGFloat = 5
@@ -396,6 +411,9 @@ public enum Tokens {
         /// Locket · camera.capture · maximum length of a hold-to-record video (premium) · SOURCED
         /// token: `camera.capture.duration.videoMax`
         public static let cameraCaptureDurationVideoMax: TimeInterval = 10
+        /// Locket · chat.reactions · flight of the chosen emoji into the cluster after the picker closes · SOURCED
+        /// token: `chat.reactions.duration.flyToCluster`
+        public static let chatReactionsDurationFlyToCluster: TimeInterval = 0.3
         /// Locket · chat.reactions · interval between consecutive copies entering · SOURCED
         /// token: `chat.reactions.duration.rainSpawnInterval`
         public static let chatReactionsDurationRainSpawnInterval: TimeInterval = 0.125
@@ -458,6 +476,9 @@ public enum Tokens {
         public static let widgetArrivalDurationTransition: TimeInterval = 0
     }
     public enum Easings {
+        /// Locket · chat.reactions · speed curve of each rain copy · SOURCED
+        /// token: `chat.reactions.easing.rain`
+        public static let chatReactionsEasingRain: DSEasing = .easeInOut
         /// Material 3 · global.system · M3 standard easing for custom transitions on Android system surfaces · PLATFORM
         /// token: `easing.global.system.standard`
         public static let globalSystemStandard: DSEasing = .cubicBezier(0.2, 0, 0, 1)
@@ -981,6 +1002,9 @@ public enum Tokens {
         /// Locket · chat.reactions · add-reaction button (smiley with a plus) · PLATFORM
         /// token: `chat.reactions.icon.add`
         public static let chatReactionsIconAdd: String = "face.smiling"
+        /// Apple Messages (iMessage) / WhatsApp / Telegram (glyph) · chat.voice · glyph shown in the play circle while a voice message plays · PLATFORM
+        /// token: `chat.voice.icon.pause`
+        public static let chatVoiceIconPause: String = "pause.fill"
         /// Yope · collage.share · filled share glyph (box + up arrow) in the pill · PLATFORM
         /// token: `collage.share.icon.share`
         public static let collageShareIconShare: String = "square.and.arrow.up.fill"
@@ -1118,6 +1142,25 @@ public enum Tokens {
             public static let basis: String = "Yope home list card: cover circle (size.global.avatarList) at coverInset, name (text role listTitle), subtitle (text role listSubtitle, color.global.textSecondary)"
             public static let list: String = "cards stacked with size.global.listGap, side margin size.global.screenMargin, corners radius.global.card, on color.global.backgroundDeep"
             public static let cover: String = "the album's first photo (thumb_path), aspect fill in the circle"
+        }
+        /// Apple Photos · albums.list · album list layout (Yope’s own album list was not observed; Apple Photos’ Albums collection fills it) · SOURCED
+        /// token: `albums.list.layout.yopeAlbums`
+        public enum AlbumsListLayoutYopeAlbums {
+            public static let format: String = "grid of album covers (Apple Photos \"Album Cover\" format)"
+            public static let columns: CGFloat = 2
+            public static let coverAspect: CGFloat = 1
+            public static let coverWidth: CGFloat = 168
+            public static let gap: CGFloat = 12.4
+            public static let marginH: CGFloat = 23
+            public static let coverRadius: CGFloat = 18.5
+            public static let cover: String = "the album’s first photo (thumb_path), aspect fill"
+            public static let title: String = "album name over the cover’s bottom-leading corner, one line, tail truncation, color.global.textPrimary"
+            public static let titleInsetLeading: CGFloat = 14
+            public static let titleBaselineBottom: CGFloat = 17
+            public static let titleFontSize: CGFloat = 15
+            public static let titleWeight: String = "not measured (platform default)"
+            public static let subtitle: String = "not shown on the cover (the reference shows the name only); albums.list.row.subtitle joins the accessibility label"
+            public static let background: String = "color.global.backgroundDeep"
         }
         /// FTC COPPA FAQ · auth.agegate · birthday entry (neutral age screen) · VERIFIED
         /// token: `auth.agegate.layout.dateEntry`
@@ -1261,6 +1304,18 @@ public enum Tokens {
             public static let glyphInset: CGFloat = 19.5
             public static let glyphToText: CGFloat = 11
         }
+        /// Apple Messages (iMessage); WhatsApp (idle mic beside the field) · chat.composer · what replaces / joins the mic when the field has text (send control) · SOURCED
+        /// token: `chat.composer.layout.typingState`
+        public enum ChatComposerLayoutTypingState {
+            public static let rule: String = "while the field holds text, the mic circle is replaced in place by a send circle; when the field is empty again the mic circle returns"
+            public static let sendCircleSize: String = "chat.composer.dimension.sideButton"
+            public static let sendCircleFill: String = "color.global.accent"
+            public static let sendGlyph: String = "icon.global.send"
+            public static let sendGlyphColor: String = "color.global.onAccent"
+            public static let action: String = "tap → send_message(p_kind text); the field clears and the mic circle returns"
+            public static let transition: String = "none observed (instant swap); Reduce Motion: same"
+            public static let a11yLabel: String = "chat.composer.a11y.send"
+        }
         /// Locket · chat.reactions · how reactions are shown on a photo · SOURCED
         /// token: `chat.reactions.layout.cluster`
         public enum ChatReactionsLayoutCluster {
@@ -1268,6 +1323,13 @@ public enum Tokens {
             public static let arrangement: String = "horizontal row, each sticker overlapping the previous one by the step"
             public static let numbers: String = "none anywhere (no counts, no '+N')"
             public static let position: String = "bottom-left corner of the photo"
+        }
+        /// Locket · chat.reactions · order of the stickers in the cluster (first reacted, last reacted, …) · SOURCED
+        /// token: `chat.reactions.layout.clusterOrder`
+        public enum ChatReactionsLayoutClusterOrder {
+            public static let order: String = "newest distinct emoji first: a newly added emoji enters at the leading end of the cluster and the stickers already there shift one step (chat.reactions.dimension.clusterStep) toward the trailing side"
+            public static let repeatEmoji: String = "a reaction with an emoji already in the cluster adds no sticker (chat.reactions.layout.cluster); its position change was not observed"
+            public static let observed: String = "before: ✌️ alone at the leading position; after 😍 lands: 😍 leading, ✌️ one step trailing"
         }
         /// Locket · chat.reactions · emoji picker sheet · SOURCED
         /// token: `chat.reactions.layout.picker`
@@ -1317,6 +1379,33 @@ public enum Tokens {
         public enum ChatReactionsLayoutTextStyleMap {
             public static let pickerSection: String = "footnote"
         }
+        /// Apple Messages (iMessage) + WhatsApp · chat.reactions · how you take back a reaction · SOURCED
+        /// token: `chat.reactions.layout.unreact`
+        public enum ChatReactionsLayoutUnreact {
+            public static let `where`: String = "in the reaction picker (long press on the photo, or the add-reaction glyph): every emoji you already reacted with on this photo is highlighted"
+            public static let highlight: String = "a filled circle behind the emoji in color.global.selection"
+            public static let remove: String = "tap a highlighted emoji: unreact(p_post_id, p_emoji); the highlight goes and the sticker leaves the cluster when nobody else used that emoji"
+            public static let a11y: String = "highlighted cells carry the platform selected trait"
+            public static let haptic: String = "none (as reacting)"
+        }
+        /// Apple Messages (iMessage) · chat.thread · how a message that failed to send is drawn and retried · SOURCED
+        /// token: `chat.thread.layout.failedMessage`
+        public enum ChatThreadLayoutFailedMessage {
+            public static let indicator: String = "outlined exclamation-mark circle beside the bubble on its trailing side, vertically centred on the bubble"
+            public static let indicatorIconIos: String = "exclamationmark.circle"
+            public static let indicatorIconAndroid: String = "Rounded.ErrorOutline"
+            public static let indicatorSize: CGFloat = 22
+            public static let indicatorGap: CGFloat = 14
+            public static let indicatorColor: String = "color.global.destructive"
+            public static let indicatorPosition: String = "the indicator takes the trailing inset slot (chat.thread.dimension.bubbleInsetMine); the bubble moves toward the leading side by indicatorSize + indicatorGap"
+            public static let label: String = "copy chat.thread.sendFailed under the bubble, trailing-aligned with the message column"
+            public static let labelGap: CGFloat = 2
+            public static let labelTextRole: String = "caption"
+            public static let labelColor: String = "color.global.destructive"
+            public static let retry: String = "tap the indicator, the label or the bubble: the message is sent again (the label says so); on success the indicator and label go away"
+            public static let haptic: String = "haptic.global.error when a send fails"
+            public static let appliesTo: String = "my text and voice messages"
+        }
         /// Yope · chat.thread · how a photo fills the photo-message frame · SOURCED
         /// token: `chat.thread.layout.photoFit`
         public enum ChatThreadLayoutPhotoFit {
@@ -1345,6 +1434,26 @@ public enum Tokens {
         public enum ChatVoiceLayoutDurationFormat {
             public static let pattern: String = "mm:ss"
             public static let example: String = "00:38"
+        }
+        /// WhatsApp (gesture, documented) + Telegram (row, 2026 panel) · chat.voice · voice recording UI: hold vs tap, lock, cancel, live waveform, timer · SOURCED
+        /// token: `chat.voice.layout.recording`
+        public enum ChatVoiceLayoutRecording {
+            public static let start: String = "press and hold the mic circle: recording runs while the finger is down"
+            public static let send: String = "lift the finger: the message is sent"
+            public static let cancel: String = "slide left while holding: the recording is discarded and nothing is sent"
+            public static let lock: String = "slide up onto the lock shown above the mic circle: recording continues hands-free"
+            public static let locked: String = "while locked: chat.voice.icon.pause pauses and lets you play the draft; the mic circle shows icon.global.send and sends"
+            public static let row: String = "while recording, the composer row shows leading → trailing: red recording dot, elapsed time, the centred hint (‹ slide to cancel); the mic circle stays at the trailing end under the finger"
+            public static let dotColor: String = "color.global.destructive"
+            public static let timerFormat: String = "chat.voice.layout.durationFormat"
+            public static let timerColor: String = "color.global.textPrimary"
+            public static let hintGlyph: String = "icon.global.back"
+            public static let hintColor: String = "color.global.textSecondary"
+            public static let hintCopy: String = "chat.voice.recording.slideToCancel"
+            public static let lockGlyph: String = "icon.global.lock"
+            public static let lockHintGlyphIos: String = "chevron.up"
+            public static let lockHintGlyphAndroid: String = "Rounded.ExpandLess"
+            public static let haptic: String = "none (HIG: haptics must not disrupt the microphone)"
         }
         /// Meta developer docs (standards: accessibility thresholds, share-image specs) · collage.share · the image handed to the share sheet · VERIFIED
         /// token: `collage.share.layout.export`
@@ -2289,6 +2398,15 @@ public enum Tokens {
             public static let check: String = "icon.global.check (selected) / icon.global.uncheck, size.global.checkCircle, color.global.selection"
             public static let footer: String = "lime primary button at the sheet bottom (size.global.buttonHeightSheet, size.global.buttonMarginHSheet, radius.global.button)"
         }
+        /// Apple Photos + Google Photos · week.edit · how a recap is reordered (gesture, handles, layout while dragging) · SOURCED
+        /// token: `week.edit.layout.reorder`
+        public enum WeekEditLayoutReorder {
+            public static let gesture: String = "touch and hold a checked tile, then drag it into a new position; release to drop it there"
+            public static let scope: String = "the checked tiles (the recap’s items); their order becomes p_items’ order"
+            public static let during: String = "the dragged tile follows the finger; the platform drag-and-drop moves the other checked tiles to show the drop position"
+            public static let haptics: String = "week.edit.haptic.dragStart on pick-up, week.edit.haptic.dragAlign on each slot change"
+            public static let reduceMotion: String = "the drag tracks the finger (allowed by layout.global.reduceMotion)"
+        }
         /// Apple HIG · week.history · iOS Dynamic Type style for week.history text roles · PLATFORM
         /// token: `week.history.layout.textStyleMap`
         public enum WeekHistoryLayoutTextStyleMap {
@@ -2588,6 +2706,9 @@ public enum Tokens {
         /// Yope · chat.thread · caption box corner radius · SOURCED
         /// token: `chat.thread.radius.caption`
         public static let chatThreadRadiusCaption: CGFloat = 13
+        /// Yope · chat.thread · loading HUD corner radius (the HUD's other values are groups.create.color.hud / .size.hud / .fontSize.hudLabel) · SOURCED
+        /// token: `chat.thread.radius.loadingHud`
+        public static let chatThreadRadiusLoadingHud: CGFloat = 10.5
         /// Yope · chat.thread · corner radius of the lime quote part (top corners; the text part overlaps its bottom) · SOURCED
         /// token: `chat.thread.radius.replyQuote`
         public static let chatThreadRadiusReplyQuote: CGFloat = 18.2
@@ -2725,6 +2846,9 @@ public enum Tokens {
         /// Yope · camera.sendto · send button bottom edge → screen bottom · SOURCED
         /// token: `camera.sendto.size.sendButtonBottom`
         public static let cameraSendtoSizeSendButtonBottom: CGFloat = 41.5
+        /// WhatsApp + Instagram · chat.composer · distance from the composer row to the bottom safe area / keyboard · SOURCED
+        /// token: `chat.composer.dimension.bottomInset`
+        public static let chatComposerDimensionBottomInset: CGFloat = 8
         /// Yope · chat.composer · lime camera circle at the left of the composer · SOURCED
         /// token: `chat.composer.dimension.cameraButton`
         public static let chatComposerDimensionCameraButton: CGFloat = 40.6
@@ -2794,6 +2918,9 @@ public enum Tokens {
         /// Yope · chat.thread · another member's bubble left edge to the screen edge (= avatarInset + size.global.avatarSmall + avatarGap) · SOURCED
         /// token: `chat.thread.dimension.bubbleInsetTheirs`
         public static let chatThreadDimensionBubbleInsetTheirs: CGFloat = 50.5
+        /// Apple Messages (iMessage) · chat.thread · maximum text bubble width before wrapping · SOURCED
+        /// token: `chat.thread.dimension.bubbleMaxWidth`
+        public static let chatThreadDimensionBubbleMaxWidth: CGFloat = 256
         /// Yope · chat.thread · horizontal padding from the bubble edge to the text ink · SOURCED
         /// token: `chat.thread.dimension.bubblePaddingH`
         public static let chatThreadDimensionBubblePaddingH: CGFloat = 11.5
@@ -3307,6 +3434,9 @@ public enum Tokens {
         /// Yope · photo.viewer · ••• glyph width · SOURCED
         /// token: `photo.viewer.dimension.moreGlyphWidth`
         public static let photoViewerDimensionMoreGlyphWidth: CGFloat = 25.3
+        /// Yope · photo.viewer · gap between two photos while swiping · SOURCED
+        /// token: `photo.viewer.dimension.pageGap`
+        public static let photoViewerDimensionPageGap: CGFloat = 0
         /// Yope · photo.viewer · photo top edge below the top safe-area inset (59 pt status bar on the recorded device) · SOURCED
         /// token: `photo.viewer.dimension.photoTop`
         public static let photoViewerDimensionPhotoTop: CGFloat = 107

@@ -113,7 +113,7 @@ None (no haptic event on this surface; HIG "Avoid overusing haptics").
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `walls.mine.layout.freeformWall` (Yope's 9:16 wall canvas) | BLOCKED; grid built instead (S-11) | 20-s recording: own wall, a friend's wall, the "me & friends" row, tap shuffle once, tap edit (yope-b §14 capture 3) |
-| `walls.mine.layout.mosaic` (row 2 of the press-kit grid looks different) | BLOCKED; uniform rows built | one screenshot of a 2026 Yope profile pics grid scrolled to three rows |
+| `walls.mine.layout.freeformWall` (Yope's 9:16 wall canvas) | BLOCKED (gap fill: no other app has this canvas; yope.app's demo is not the wall); grid built instead (S-11) | 20-s recording: own wall, a friend's wall, the "me & friends" row, tap shuffle once, tap edit (yope-b §14 capture 3) |
+| `walls.mine.layout.mosaic` | BLOCKED, narrowed by the gap fill: the press-kit grid's row 2 has **two** tiles (177 / 173 pt) under row 1's three (117 / 116 / 113 pt); rows 3+ unseen, so the repeating rule is unknown; uniform rows still built | one screenshot of a 2026 Yope profile pics grid scrolled to rows 3–5 |
 | wall loading / error visuals | not observed: platform indicator; error uses the shared empty-state layout | same recording in airplane mode |
 | collage tiles cropped into the 0.73 tile | approximation (aspect fill) | — |

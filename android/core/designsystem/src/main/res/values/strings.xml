@@ -453,6 +453,8 @@
     <string name="chat_voice_permission_detail" formatted="false">enable your mic</string>
     <!-- Yope · chat.voice · new · SOURCED -->
     <string name="chat_voice_permission_title" formatted="false">can’t send voice messages?</string>
+    <!-- WhatsApp · chat.voice · verbatim · SOURCED -->
+    <string name="chat_voice_recording_slidetocancel" formatted="false">slide to cancel</string>
     <!-- Yope · collage.share · verbatim · SOURCED -->
     <string name="collage_share_button" formatted="false">share</string>
     <!-- Yope · collage.share · verbatim · SOURCED -->

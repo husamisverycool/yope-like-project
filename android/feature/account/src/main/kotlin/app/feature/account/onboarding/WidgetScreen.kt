@@ -47,6 +47,8 @@ import app.feature.account.blocked.BlockedCopy
 import app.feature.account.common.AccountEvent
 import app.feature.account.common.navigateAccount
 import app.feature.account.shell.AccountFlow
+import app.ui.text.CapTop
+import app.ui.text.capTopAt
 
 @Composable
 fun WidgetRoute(nav: NavController) {
@@ -83,13 +85,14 @@ fun WidgetScreen(steps: List<String>, onContinue: () -> Unit) {
             Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = Tokens.Sizes.paywallSizePerkMarginH),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeSheetTopToTitle))
+            val titleStyle = dsTextStyle(Tokens.FontSizes.onboardingWidgetFontSizeTitle, Tokens.FontWeights.onboardingWidgetFontWeightTitle)
             Text(
                 stringResource(R.string.onboarding_widget_title),
-                style = dsTextStyle(Tokens.FontSizes.onboardingWidgetFontSizeTitle, Tokens.FontWeights.onboardingWidgetFontWeightTitle),
+                style = titleStyle,
                 color = Tokens.Colors.onboardingWidgetColorTitle,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.semantics { heading() },
+                // Cap top `groups.create.size.sheetTopToTitle` below the safe area (Structure 2).
+                modifier = Modifier.capTopAt(Tokens.Sizes.groupsCreateSizeSheetTopToTitle, CapTop.height(titleStyle)).semantics { heading() },
             )
             Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeTitleToContent))
             Column(verticalArrangement = Arrangement.spacedBy(with(androidx.compose.ui.platform.LocalDensity.current) { Tokens.LineHeights.onboardingWidgetLineHeightStep.toDp() })) {

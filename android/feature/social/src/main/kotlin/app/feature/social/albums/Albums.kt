@@ -205,7 +205,6 @@ private fun Centered(content: @Composable () -> Unit) = Box(Modifier.fillMaxSize
 @Composable
 private fun AlbumCardRow(card: AlbumCard, onClick: () -> Unit) {
     val subtitle = stringRes(R.string.albums_list_row_subtitle, card.savedBy.orEmpty())
-    val label = "${card.album.name}, $subtitle"
     Row(
         Modifier
             .fillMaxWidth()
@@ -213,7 +212,8 @@ private fun AlbumCardRow(card: AlbumCard, onClick: () -> Unit) {
             .clip(RoundedCornerShape(Tokens.Radii.globalCard))
             .background(Tokens.Colors.albumsListColorCard)
             .clickable(role = Role.Button, onClick = onClick)
-            .clearAndSetSemantics { contentDescription = label; role = Role.Button }
+            // One button read as name then subtitle (the platform merge); the cover is decorative.
+            .semantics(mergeDescendants = true) { role = Role.Button }
             .padding(start = Tokens.Sizes.albumsListDimensionCoverInset),
         verticalAlignment = Alignment.CenterVertically,
     ) {

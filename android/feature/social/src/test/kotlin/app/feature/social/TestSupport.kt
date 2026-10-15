@@ -128,10 +128,13 @@ fun TestScreen(
         LocalSocialServices provides services,
         LocalApproximations provides approximations,
         LocalReduceMotionOverride provides false,
+        app.feature.social.reactions.LocalRainRandom provides kotlin.random.Random(RAIN_SEED),
     ) {
         SocialRoot(content)
     }
 }
+
+private const val RAIN_SEED = 7
 
 /** Ensures [StateFlow] values are read after the view model settled. */
 fun <T> StateFlow<T>.now(): T = value

@@ -59,6 +59,10 @@ class SendToViewModel(
         val caption: String = "",
         val voice: VoiceNoteFile? = null,
         val recordingVoice: Boolean = false,
+        /** Slid up onto the lock: recording continues hands-free (`chat.voice.layout.recording` lock). */
+        val voiceLocked: Boolean = false,
+        /** When the current recording started (device elapsed clock), for the timer. */
+        val recordingStartedAt: Long? = null,
         val voiceCoachVisible: Boolean = false,
         val premium: Boolean = false,
         /** A reply to a photo: exactly the replied post's group. */
@@ -165,14 +169,16 @@ class SendToViewModel(
         state.update { it.copy(voiceCoachVisible = false) }
     }
 
-    fun onVoiceRecording(recording: Boolean) {
+    fun onVoiceRecording(recording: Boolean, startedAt: Long? = null) {
         if (recording) dismissVoiceCoach()
-        state.update { it.copy(recordingVoice = recording) }
+        state.update { it.copy(recordingVoice = recording, voiceLocked = false, recordingStartedAt = if (recording) startedAt else null) }
     }
+
+    fun onVoiceLocked() = state.update { if (it.recordingVoice) it.copy(voiceLocked = true) else it }
 
     fun onVoiceNote(note: VoiceNoteFile?) {
         state.value.voice?.file?.takeIf { it != note?.file }?.delete()
-        state.update { it.copy(voice = note, recordingVoice = false) }
+        state.update { it.copy(voice = note, recordingVoice = false, voiceLocked = false, recordingStartedAt = null) }
     }
 
     /** ✕: discards the capture, caption and voice note (no confirmation observed). */

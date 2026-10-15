@@ -39,6 +39,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.icons.rounded.ExpandLess
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.onClick
+import app.feature.capture.ui.glyphTopToBaseline
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -110,6 +119,8 @@ fun SendToScreen(
     onRetryGroups: () -> Unit,
     modifier: Modifier = Modifier,
     videoPreview: (@Composable () -> Unit)? = null,
+    voiceGestures: VoiceGestures = VoiceGestures.None,
+    now: () -> Long = android.os.SystemClock::elapsedRealtime,
 ) = MinTouchTargets {
     val view = LocalView.current
     var captionFocused by remember { mutableStateOf(false) }
@@ -178,10 +189,11 @@ fun SendToScreen(
             // Bottom row: message field + mic (fill camera.sendto.color.messageField is BLOCKED: no fill).
             if (!captionFocused) {
                 MessageRow(
-                    showMic = state.micAvailable,
-                    recording = state.recordingVoice,
+                    state = state,
                     onField = { captionFocus.requestFocus() },
-                    onMic = onMic,
+                    onLockedFinish = onMic,
+                    gestures = voiceGestures,
+                    now = now,
                 )
             }
         }
@@ -288,10 +300,38 @@ private fun CaptionOverlay(
     }
 }
 
+/**
+ * The voice-note gestures of the mic circle (`chat.voice.layout.recording`): press and hold
+ * records, lifting the finger keeps the note for the post, sliding left cancels, sliding up onto
+ * the lock continues hands-free.
+ */
+interface VoiceGestures {
+    fun down()
+    fun release()
+    fun cancel()
+    fun lock()
+
+    companion object {
+        val None = object : VoiceGestures {
+            override fun down() = Unit
+            override fun release() = Unit
+            override fun cancel() = Unit
+            override fun lock() = Unit
+        }
+    }
+}
+
 @Composable
-private fun MessageRow(showMic: Boolean, recording: Boolean, onField: () -> Unit, onMic: () -> Unit) {
+private fun MessageRow(
+    state: SendToViewModel.UiState,
+    onField: () -> Unit,
+    onLockedFinish: () -> Unit,
+    gestures: VoiceGestures,
+    now: () -> Long,
+) {
     val f = Tokens.Layouts.CameraSendtoLayoutMessageField
     val placeholder = stringResource(R.string.camera_sendto_caption_placeholder)
+    val fieldText = CaptureText.style(Tokens.FontSizes.cameraSendtoFontSizeMessagePlaceholder, null).merge(TextStyle(color = Tokens.Colors.globalTextPrimary))
     Box(Modifier.fillMaxSize()) {
         Row(
             Modifier
@@ -305,34 +345,132 @@ private fun MessageRow(showMic: Boolean, recording: Boolean, onField: () -> Unit
                     .height(f.height.dp)
                     .clip(CapsuleShape)
                     .then(Blocked.messageFieldFill?.let { Modifier.background(it) } ?: Modifier)
-                    .clickable(onClick = onField)
+                    .clickable(enabled = !state.recordingVoice, onClick = onField)
                     .semantics { role = Role.Button; contentDescription = placeholder; traversalIndex = 3f }
                     .padding(horizontal = f.height.dp / 2)
                     .testTag("sendto.field"),
                 contentAlignment = Alignment.CenterStart,
             ) {
-                BasicText(
-                    placeholder,
-                    style = CaptureText.style(Tokens.FontSizes.cameraSendtoFontSizeMessagePlaceholder, null).merge(TextStyle(color = Tokens.Colors.globalTextPrimary)),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                when {
+                    state.recordingVoice -> RecordingRow(state.recordingStartedAt, fieldText, now)
+                    state.voice != null -> BasicText(
+                        voiceDuration(state.voice.durationMs.toLong()),
+                        style = CaptureText.style(Tokens.FontSizes.globalCaption, Tokens.FontWeights.fontWeightGlobalCaption).merge(TextStyle(color = Tokens.Colors.chatVoiceColorDuration)),
+                        modifier = Modifier.testTag("sendto.voice.attached"),
+                    )
+                    else -> BasicText(placeholder, style = fieldText, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
             }
             Spacer(Modifier.width(f.gapToMic.dp))
-            if (showMic) {
-                CircleIconButton(
-                    icon = Tokens.Icons.globalMic,
-                    contentDescription = stringResource(R.string.camera_sendto_a11y_voice),
-                    diameter = f.micDiameter.dp,
-                    fill = Blocked.messageFieldFill,
-                    tint = Tokens.Colors.globalTextPrimary,
-                    onClick = onMic,
-                    modifier = Modifier.semantics { traversalIndex = 4f }.testTag(if (recording) "sendto.mic.recording" else "sendto.mic"),
-                )
+            if (state.micAvailable) {
+                VoiceMic(state, gestures, onLockedFinish)
             } else {
-                // Recorder BLOCKED (release): the mic's slot keeps the field's measured width.
                 Spacer(Modifier.width(f.micDiameter.dp))
             }
+        }
+    }
+}
+
+/** While recording: red dot, elapsed time, and the slide-to-cancel glyph centred (its copy does not exist yet). */
+@Composable
+private fun RecordingRow(startedAt: Long?, style: TextStyle, now: () -> Long) {
+    var elapsed by remember(startedAt) { mutableStateOf(0L) }
+    LaunchedEffect(startedAt) {
+        val start = startedAt ?: return@LaunchedEffect
+        while (true) {
+            elapsed = (now() - start).coerceAtLeast(0)
+            kotlinx.coroutines.delay(VOICE_TIMER_TICK_MS)
+        }
+    }
+    // The dot takes the timer's digit height (its size was not measured).
+    val dot = glyphTopToBaseline(Tokens.FontSizes.cameraSendtoFontSizeMessagePlaceholder, null, "0")
+    Row(Modifier.fillMaxWidth().testTag("sendto.voice.recording"), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(dot).clip(CircleShape).background(Tokens.Colors.globalDestructive))
+        Spacer(Modifier.width(dot / 2))
+        BasicText(voiceDuration(elapsed), style = style)
+        Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+            Glyph(Tokens.Icons.globalBack, Tokens.Colors.globalTextSecondary, null)
+        }
+    }
+}
+
+/** `chat.voice.layout.durationFormat` (mm:ss). */
+private fun voiceDuration(ms: Long): String {
+    val seconds = ms / MILLIS_PER_SECOND
+    return String.format(java.util.Locale.ROOT, VOICE_DURATION_FORMAT, seconds / SECONDS_PER_MINUTE, seconds % SECONDS_PER_MINUTE)
+}
+
+private const val MILLIS_PER_SECOND = 1000L // provenance-ok: unit conversion
+private const val SECONDS_PER_MINUTE = 60L // provenance-ok: unit conversion
+private const val VOICE_DURATION_FORMAT = "%02d:%02d" // provenance-ok: chat.voice.layout.durationFormat pattern mm:ss
+private const val VOICE_TIMER_TICK_MS = 1000L // provenance-ok: the timer shows whole seconds
+
+@Composable
+private fun VoiceMic(state: SendToViewModel.UiState, gestures: VoiceGestures, onLockedFinish: () -> Unit) {
+    val f = Tokens.Layouts.CameraSendtoLayoutMessageField
+    val mic = f.micDiameter.dp
+    val label = stringResource(R.string.camera_sendto_a11y_voice)
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    // A slide counts once it travels one mic diameter (gesture threshold, not a drawn size).
+    val threshold = with(density) { mic.toPx() }
+    val locked = state.voiceLocked
+    Box(contentAlignment = Alignment.Center) {
+        if (state.recordingVoice && !locked) {
+            // The lock above the mic: chevron up over the lock glyph (capsule size not measured).
+            Column(
+                Modifier.align(Alignment.BottomCenter).offset(y = -mic).testTag("sendto.voice.lock"),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Glyph(androidx.compose.material.icons.Icons.Rounded.ExpandLess, Tokens.Colors.globalTextSecondary, null)
+                Glyph(Tokens.Icons.globalLock, Tokens.Colors.globalTextSecondary, null)
+            }
+        }
+        Box(
+            Modifier
+                .size(mic)
+                .clip(CircleShape)
+                .then(Blocked.messageFieldFill?.let { Modifier.background(it) } ?: Modifier)
+                .pointerInput(locked) {
+                    awaitEachGesture {
+                        val down = awaitFirstDown()
+                        if (locked) {
+                            if (waitForUpOrCancellation() != null) onLockedFinish()
+                            return@awaitEachGesture
+                        }
+                        gestures.down()
+                        var settled = false
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                            change.consume()
+                            if (!settled) {
+                                val d = change.position - down.position
+                                when {
+                                    d.x < -threshold -> { gestures.cancel(); settled = true }
+                                    d.y < -threshold -> { gestures.lock(); settled = true }
+                                }
+                            }
+                            if (!change.pressed) {
+                                if (!settled) gestures.release()
+                                break
+                            }
+                        }
+                    }
+                }
+                .semantics {
+                    contentDescription = label
+                    role = Role.Button
+                    traversalIndex = 4f
+                    // TalkBack cannot hold: activating starts hands-free (locked) and again finishes.
+                    onClick {
+                        if (locked) onLockedFinish() else { gestures.down(); gestures.lock() }
+                        true
+                    }
+                }
+                .testTag(if (state.recordingVoice) "sendto.mic.recording" else "sendto.mic"),
+            contentAlignment = Alignment.Center,
+        ) {
+            Glyph(if (locked) Tokens.Icons.globalSend else Tokens.Icons.globalMic, Tokens.Colors.globalTextPrimary, null)
         }
     }
 }
@@ -410,7 +548,7 @@ private fun SendButton(count: Int, onClick: () -> Unit, modifier: Modifier) {
         Spacer(Modifier.width(Tokens.Sizes.cameraSendtoSizeCountDiscGap))
         // The count disc is hidden from accessibility (the rows expose their selected state).
         Box(
-            Modifier.size(disc).clip(CircleShape).background(Tokens.Colors.globalOnAccent).clearAndSetSemantics { }.testTag("sendto.count"),
+            Modifier.size(disc).clip(CircleShape).background(Tokens.Colors.globalOnAccent).testTag("sendto.count").clearAndSetSemantics { },
             contentAlignment = Alignment.Center,
         ) {
             BasicText(

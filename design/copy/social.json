@@ -305,6 +305,16 @@
       "pattern": "yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
       "level": "SOURCED"
     },
+    "chat.voice.recording.slideToCancel": {
+      "text": "slide to cancel",
+      "origin": "verbatim",
+      "source_app": "WhatsApp",
+      "surface": "chat.voice",
+      "evidence": "references/auto/whatsapp/store/whatsapp-store-02.png (App Store panel 2, listing 26.40.77: recording row 'slide to cancel ‹'); references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png ('While recording you can slide [‹] to cancel and delete your voice message.'); references/auto/telegram/store/telegram-store-03.png ('‹ Slide to cancel', same hint in a second app)",
+      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED",
+      "notes": "Hint in the voice recording row (chat.voice.layout.recording → hintCopy). Generic instruction text, no brand term."
+    },
     "chat.voice.permission.title": {
       "text": "can’t send voice messages?",
       "origin": "new",

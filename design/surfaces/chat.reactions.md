@@ -26,7 +26,8 @@ Bottom-left corner of the photo: `chat.reactions.dimension.clusterInsetLeading` 
 (`chat.reactions.layout.cluster`): the emoji at `chat.reactions.dimension.clusterEmoji` (39, outline included) with a
 `chat.reactions.dimension.clusterOutline` (2) outline in `chat.reactions.color.clusterOutline`, each next sticker
 `chat.reactions.dimension.clusterStep` (27) further right, drawn over the previous one. No numbers, no avatars, no "+N".
-Order: **BLOCKED** (`chat.reactions.layout.clusterOrder`); maximum visible: **BLOCKED** (`chat.reactions.count.clusterMaxVisible`).
+Order: `chat.reactions.layout.clusterOrder` — newest distinct emoji first at the leading end, earlier ones shift one step
+trailing (Locket 2025 video, Gap fill G-10); maximum visible: **BLOCKED** (`chat.reactions.count.clusterMaxVisible`).
 Hidden when nobody reacted.
 
 ### 2. Picker (bottom sheet)
@@ -58,7 +59,7 @@ from just below the bottom edge at random x positions across the full width, one
 `chat.reactions.duration.rainSpawnInterval` (125 ms); each rises to just past the top edge in
 `chat.reactions.duration.rainTravel` (770 ms); the whole effect lasts `chat.reactions.duration.rainTotal` (2940 ms). The copies
 pass **behind the photo** and in front of the background (2022 History screen, the viewer's counterpart; S-9). Speed curve:
-**BLOCKED** (`chat.reactions.easing.rain`). **Measured on Locket's 2022 build**; the current build was not recordable.
+`chat.reactions.easing.rain` = easeInOut (slow–fast–slow measured on 28 copies, G-11). **Measured on Locket's 2022 build**; the current build was not recordable.
 In the thread (photo message long press) the rain plays over the whole thread screen behind the photo message.
 
 ### 5. Reactions list ("Activity" sheet)
@@ -66,7 +67,9 @@ In the thread (photo message long press) the rain plays over the whole thread sc
 Tap on a cluster → native sheet titled `chat.reactions.activity.title`; one row per reaction:
 `chat.reactions.activity.row` ("{name} sent {emoji}") or, for yours, `chat.reactions.activity.rowMine`. No counts, no totals.
 Row layout and order: **BLOCKED** (`chat.reactions.layout.activitySheet`). Empty: `chat.reactions.empty`.
-Taking back a reaction (`unreact`): **BLOCKED** (`chat.reactions.layout.unreact`).
+Taking back a reaction (`chat.reactions.layout.unreact`, Apple Messages + WhatsApp help, G-13): in the picker every emoji
+you already reacted with on this photo sits on a filled `color.global.selection` circle (selected trait); tapping it calls
+`unreact` and the sticker leaves the cluster when nobody else used that emoji.
 
 ## Elements
 
@@ -79,7 +82,7 @@ Taking back a reaction (`unreact`): **BLOCKED** (`chat.reactions.layout.unreact`
 | emoji cell | `chat.reactions.count.pickerColumns`, `chat.reactions.dimension.pickerEmoji` | emoji system name (platform) | tap → `react(post, emoji)`, sheet closes, rain plays |
 | quick reaction | `chat.reactions.layout.quickReactions` | `chat.reactions.a11y.quick` | tap → `react` |
 | add-reaction glyph | `chat.reactions.icon.add` in `color.global.textSecondary` | `chat.reactions.a11y.add` | opens the picker |
-| emoji rain | `chat.reactions.count.rainCopies`, `.duration.rainSpawnInterval`, `.duration.rainTravel`, `.duration.rainTotal`, `.dimension.rainEmoji`, `.layout.rainPath`; curve **BLOCKED** | — (decorative, hidden from accessibility) | not interactive; does not block touches |
+| emoji rain | `chat.reactions.count.rainCopies`, `.duration.rainSpawnInterval`, `.duration.rainTravel`, `.duration.rainTotal`, `.dimension.rainEmoji`, `.layout.rainPath`, `.easing.rain` | — (decorative, hidden from accessibility) | not interactive; does not block touches |
 | Activity sheet | layout **BLOCKED** | `chat.reactions.activity.title`, `.row`, `.rowMine`, `chat.reactions.empty` | — |
 
 ## States
@@ -96,8 +99,8 @@ Taking back a reaction (`unreact`): **BLOCKED** (`chat.reactions.layout.unreact`
 | motion | tokens | Reduce Motion |
 |---|---|---|
 | picker sheet in / out | `easing.global.native.sheet` | system |
-| emoji rain | `chat.reactions.duration.rainSpawnInterval`, `.rainTravel`, `.rainTotal`, `.layout.rainPath`; curve **BLOCKED** | `chat.reactions.layout.reduceMotion`: rain not played; the sticker appears in place |
-| new sticker joining the cluster | **BLOCKED** (`chat.reactions.duration.flyToCluster`; Locket 2025 flies it in, duration not measurable): inserted without animation until captured | inserted without animation |
+| emoji rain | `chat.reactions.duration.rainSpawnInterval`, `.rainTravel`, `.rainTotal`, `.layout.rainPath`, `chat.reactions.easing.rain` (easeInOut) | `chat.reactions.layout.reduceMotion`: rain not played; the sticker appears in place |
+| new sticker joining the cluster | the chosen emoji flies from where it was picked to the cluster's leading end in `chat.reactions.duration.flyToCluster` (300 ms, decelerating; Locket 2025, G-12), shrinking to `chat.reactions.dimension.clusterEmoji` | inserted without animation |
 
 ## Haptics
 
@@ -123,8 +126,8 @@ Taking back a reaction (`unreact`): **BLOCKED** (`chat.reactions.layout.unreact`
 
 - **Reads**: `reactions` (docs/API.md §5.10) for the post — rows `(user_id, emoji)`, never a count; distinct emoji for the
   cluster; `profiles` for names in the Activity sheet.
-- **RPCs**: `react(p_post_id, p_emoji)` (idempotent; a person may add several emoji); `unreact(p_post_id, p_emoji)` (UI
-  BLOCKED). Errors `post_not_found`, `invalid_emoji`. Job `push.reaction` → push text `notifications.push.reaction.title` /
+- **RPCs**: `react(p_post_id, p_emoji)` (idempotent; a person may add several emoji); `unreact(p_post_id, p_emoji)` (from the
+  picker's highlighted emoji, `chat.reactions.layout.unreact`). Errors `post_not_found`, `invalid_emoji`. Job `push.reaction` → push text `notifications.push.reaction.title` /
   `.body` (design/copy/capture.json).
 - **Realtime**: `reactions` INSERT on the group channel; `reactions_changed` broadcast → refetch that post's reactions
   (§8.1–8.2).
@@ -152,10 +155,11 @@ Taking back a reaction (`unreact`): **BLOCKED** (`chat.reactions.layout.unreact`
 
 | item | status | smallest owner capture |
 |---|---|---|
-| emoji rain on the current build (count, timing, curve) | values from 2022; `chat.reactions.easing.rain` BLOCKED | one 8-s iPhone screen recording of tapping a quick reaction in Locket's History |
-| `chat.reactions.duration.flyToCluster` | BLOCKED | one screen recording (not filmed) of reacting to a Locket Rollcall photo |
-| `chat.reactions.layout.clusterOrder`, `chat.reactions.count.clusterMaxVisible` | BLOCKED | one screenshot of a Locket photo with six or more reactions added in a known order |
-| `chat.reactions.layout.activitySheet` | BLOCKED | one screenshot of Locket's reaction list for one of your photos |
-| `chat.reactions.layout.unreact` | BLOCKED | one recording of removing a reaction in Locket |
+| emoji rain on the current build (count, timing, curve) | values from 2022; `chat.reactions.easing.rain` **SOURCED (gap fill)**: easeInOut from the same 2022 recording (G-11) | one 8-s iPhone screen recording of tapping a quick reaction in Locket's History |
+| `chat.reactions.duration.flyToCluster` | **SOURCED (gap fill)**: 300 ms ±33, Locket 2025 video (G-12) | a screen recording (not filmed) would tighten it |
+| `chat.reactions.layout.clusterOrder` | **SOURCED (gap fill)**: newest first, Locket 2025 video (one observation, G-10) | — |
+| `chat.reactions.count.clusterMaxVisible` | BLOCKED (no app documents a cap; counts seen elsewhere are do-not-copy) | one screenshot of a Locket photo with six or more reactions |
+| `chat.reactions.layout.activitySheet` | BLOCKED (Messages groups senders per Tapback, which does not fit Locket's per-person strings; WhatsApp's sheet not reachable as an image) | one screenshot of Locket's reaction list for one of your photos |
+| `chat.reactions.layout.unreact` | **SOURCED (gap fill)**: highlighted in the picker, tap to remove — Apple Messages + WhatsApp help (G-13) | one Locket recording would supersede |
 | picker metrics (`pickerEmoji`, `pickerSection`) | approximate (phone filmed at an angle) | one screenshot of Locket's emoji sheet |
 | two Popular cells hidden by a finger | left out | same screenshot |

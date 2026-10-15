@@ -9,12 +9,6 @@ public enum BlockedTokens {
         /// Yope · camera.sendto · translucent fill of the 'add a message' capsule and the mic circle · BLOCKED
         /// token: `camera.sendto.color.messageField`
         public static var cameraSendtoColorMessageField: Never { fatalError("BLOCKED token camera.sendto.color.messageField") }
-        /// Yope · chat.voice · another member's voice bubble fill · BLOCKED
-        /// token: `chat.voice.color.bubbleTheirs`
-        public static var chatVoiceColorBubbleTheirs: Never { fatalError("BLOCKED token chat.voice.color.bubbleTheirs") }
-        /// Yope · chat.voice · colour of the played part of the waveform during playback · BLOCKED
-        /// token: `chat.voice.color.waveformPlayed`
-        public static var chatVoiceColorWaveformPlayed: Never { fatalError("BLOCKED token chat.voice.color.waveformPlayed") }
         /// Yope · collage.share · frosted, backdrop-dependent pill fill with a light rim · BLOCKED
         /// token: `collage.share.color.pill`
         public static var collageShareColorPill: Never { fatalError("BLOCKED token collage.share.color.pill") }
@@ -30,12 +24,6 @@ public enum BlockedTokens {
         /// Yope · groups.list · translucent dark fill of the header circles drawn over the cover photo · BLOCKED
         /// token: `groups.list.color.headerCircleOverPhoto`
         public static var groupsListColorHeaderCircleOverPhoto: Never { fatalError("BLOCKED token groups.list.color.headerCircleOverPhoto") }
-        /// Retro · week.history · empty-day tile and add tile fill in the dark appearance · BLOCKED
-        /// token: `week.history.color.emptyTile`
-        public static var weekHistoryColorEmptyTile: Never { fatalError("BLOCKED token week.history.color.emptyTile") }
-        /// Retro · week.history · empty-day tile text and '+' glyph colour in the dark appearance · BLOCKED
-        /// token: `week.history.color.emptyTileText`
-        public static var weekHistoryColorEmptyTileText: Never { fatalError("BLOCKED token week.history.color.emptyTileText") }
         /// Locket · widget.home.small · empty-state label color · BLOCKED
         /// token: `widget.home.small.color.emptyLabel`
         public static var widgetHomeSmallColorEmptyLabel: Never { fatalError("BLOCKED token widget.home.small.color.emptyLabel") }
@@ -47,17 +35,11 @@ public enum BlockedTokens {
         /// Locket · chat.reactions · how many distinct emoji the cluster shows before it stops growing · BLOCKED
         /// token: `chat.reactions.count.clusterMaxVisible`
         public static var chatReactionsCountClusterMaxVisible: Never { fatalError("BLOCKED token chat.reactions.count.clusterMaxVisible") }
-        /// Yope · chat.thread · how many emoji a message may contain and still render large without a bubble · BLOCKED
-        /// token: `chat.thread.count.emojiOnlyMax`
-        public static var chatThreadCountEmojiOnlyMax: Never { fatalError("BLOCKED token chat.thread.count.emojiOnlyMax") }
     }
     public enum Durations {
         /// Yope · camera.sendto · how long the confirmation toast stays, and its entrance / exit motion · BLOCKED
         /// token: `camera.sendto.duration.toastVisible`
         public static var cameraSendtoDurationToastVisible: Never { fatalError("BLOCKED token camera.sendto.duration.toastVisible") }
-        /// Locket · chat.reactions · flight of the chosen emoji into the cluster after the picker closes · BLOCKED
-        /// token: `chat.reactions.duration.flyToCluster`
-        public static var chatReactionsDurationFlyToCluster: Never { fatalError("BLOCKED token chat.reactions.duration.flyToCluster") }
         /// Tribute + VidDay · birthday.tribute · time each contribution card stays on screen (read by the worker) · BLOCKED
         /// token: `duration.birthday.tribute.photoHold`
         public static var birthdayTributePhotoHold: Never { fatalError("BLOCKED token duration.birthday.tribute.photoHold") }
@@ -72,9 +54,6 @@ public enum BlockedTokens {
         public static var safetyBlockDurationToast: Never { fatalError("BLOCKED token safety.block.duration.toast") }
     }
     public enum Easings {
-        /// Locket · chat.reactions · speed curve of each rain copy · BLOCKED
-        /// token: `chat.reactions.easing.rain`
-        public static var chatReactionsEasingRain: Never { fatalError("BLOCKED token chat.reactions.easing.rain") }
         /// Spotify Wrapped · year.story · curve of the headline / subline reveal · BLOCKED
         /// token: `easing.year.story.reveal`
         public static var yearStoryReveal: Never { fatalError("BLOCKED token easing.year.story.reveal") }
@@ -84,39 +63,16 @@ public enum BlockedTokens {
         /// token: `daily.capture.fontWeight.countdown`
         public static var dailyCaptureFontWeightCountdown: Never { fatalError("BLOCKED token daily.capture.fontWeight.countdown") }
     }
-    public enum Icons {
-        /// Yope · chat.voice · glyph shown in the play circle while a voice message plays · BLOCKED
-        /// token: `chat.voice.icon.pause`
-        public static var chatVoiceIconPause: Never { fatalError("BLOCKED token chat.voice.icon.pause") }
-    }
     public enum Layouts {
-        /// Yope · albums.list · Yope's own album list and album screen · BLOCKED
-        /// token: `albums.list.layout.yopeAlbums`
-        public static var albumsListLayoutYopeAlbums: Never { fatalError("BLOCKED token albums.list.layout.yopeAlbums") }
         /// Yope · auth.phone · country calling-code selector of the phone field · BLOCKED
         /// token: `auth.phone.layout.countryCode`
         public static var authPhoneLayoutCountryCode: Never { fatalError("BLOCKED token auth.phone.layout.countryCode") }
         /// Yope · auth.phone · how a field-level error (wrong number, wrong or expired code, invalid date) is presented on the sign-up screens · BLOCKED
         /// token: `auth.phone.layout.inlineError`
         public static var authPhoneLayoutInlineError: Never { fatalError("BLOCKED token auth.phone.layout.inlineError") }
-        /// Yope · chat.composer · what replaces / joins the mic when the field has text (send control) · BLOCKED
-        /// token: `chat.composer.layout.typingState`
-        public static var chatComposerLayoutTypingState: Never { fatalError("BLOCKED token chat.composer.layout.typingState") }
         /// Locket · chat.reactions · list of who reacted with what on one photo (row layout, order) · BLOCKED
         /// token: `chat.reactions.layout.activitySheet`
         public static var chatReactionsLayoutActivitySheet: Never { fatalError("BLOCKED token chat.reactions.layout.activitySheet") }
-        /// Locket · chat.reactions · order of the stickers in the cluster (first reacted, last reacted, …) · BLOCKED
-        /// token: `chat.reactions.layout.clusterOrder`
-        public static var chatReactionsLayoutClusterOrder: Never { fatalError("BLOCKED token chat.reactions.layout.clusterOrder") }
-        /// Locket · chat.reactions · how you take back a reaction · BLOCKED
-        /// token: `chat.reactions.layout.unreact`
-        public static var chatReactionsLayoutUnreact: Never { fatalError("BLOCKED token chat.reactions.layout.unreact") }
-        /// Yope · chat.thread · how a message that failed to send is drawn and retried · BLOCKED
-        /// token: `chat.thread.layout.failedMessage`
-        public static var chatThreadLayoutFailedMessage: Never { fatalError("BLOCKED token chat.thread.layout.failedMessage") }
-        /// Yope · chat.voice · voice recording UI: hold vs tap, lock, cancel, live waveform, timer · BLOCKED
-        /// token: `chat.voice.layout.recording`
-        public static var chatVoiceLayoutRecording: Never { fatalError("BLOCKED token chat.voice.layout.recording") }
         /// Yope · chat.voice · whether and how the voice bubble width depends on the duration · BLOCKED
         /// token: `chat.voice.layout.widthRule`
         public static var chatVoiceLayoutWidthRule: Never { fatalError("BLOCKED token chat.voice.layout.widthRule") }
@@ -156,9 +112,6 @@ public enum BlockedTokens {
         /// Yope · week.edit · where the recap text is shown and edited · BLOCKED
         /// token: `week.edit.layout.recapText`
         public static var weekEditLayoutRecapText: Never { fatalError("BLOCKED token week.edit.layout.recapText") }
-        /// Yope · week.edit · how a recap is reordered (gesture, handles, layout while dragging) · BLOCKED
-        /// token: `week.edit.layout.reorder`
-        public static var weekEditLayoutReorder: Never { fatalError("BLOCKED token week.edit.layout.reorder") }
         /// Retro · week.history · contents of the per-week '•••' menu · BLOCKED
         /// token: `week.history.layout.weekMenu`
         public static var weekHistoryLayoutWeekMenu: Never { fatalError("BLOCKED token week.history.layout.weekMenu") }
@@ -175,24 +128,10 @@ public enum BlockedTokens {
         /// token: `widget.lock.rect.layout.content`
         public static var widgetLockRectLayoutContent: Never { fatalError("BLOCKED token widget.lock.rect.layout.content") }
     }
-    public enum Radii {
-        /// Yope · chat.thread · loading HUD corner radius (the HUD's other values are groups.create.color.hud / .size.hud / .fontSize.hudLabel) · BLOCKED
-        /// token: `chat.thread.radius.loadingHud`
-        public static var chatThreadRadiusLoadingHud: Never { fatalError("BLOCKED token chat.thread.radius.loadingHud") }
-    }
     public enum Sizes {
         /// Locket · camera.capture · outline drawn around the viewfinder while a video records (color.global.accent) · BLOCKED
         /// token: `camera.capture.size.recordingOutline`
         public static var cameraCaptureSizeRecordingOutline: Never { fatalError("BLOCKED token camera.capture.size.recordingOutline") }
-        /// Yope · chat.composer · distance from the composer row to the bottom safe area / keyboard · BLOCKED
-        /// token: `chat.composer.dimension.bottomInset`
-        public static var chatComposerDimensionBottomInset: Never { fatalError("BLOCKED token chat.composer.dimension.bottomInset") }
-        /// Yope · chat.thread · maximum text bubble width before wrapping · BLOCKED
-        /// token: `chat.thread.dimension.bubbleMaxWidth`
-        public static var chatThreadDimensionBubbleMaxWidth: Never { fatalError("BLOCKED token chat.thread.dimension.bubbleMaxWidth") }
-        /// Yope · photo.viewer · gap between two photos while swiping · BLOCKED
-        /// token: `photo.viewer.dimension.pageGap`
-        public static var photoViewerDimensionPageGap: Never { fatalError("BLOCKED token photo.viewer.dimension.pageGap") }
         /// Yope · week.recap · height of the short first row · BLOCKED
         /// token: `week.recap.dimension.shortRowHeight`
         public static var weekRecapDimensionShortRowHeight: Never { fatalError("BLOCKED token week.recap.dimension.shortRowHeight") }
