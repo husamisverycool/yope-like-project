@@ -53,7 +53,10 @@ struct MessageComposeView: UIViewControllerRepresentable {
 
     func updateUIViewController(_ controller: MFMessageComposeViewController, context: Context) {}
 
-    final class Coordinator: NSObject, MFMessageComposeViewControllerDelegate {
+    /// UIKit calls the delegate on the main thread; the conformance is main-actor isolated (`@preconcurrency` keeps it
+    /// valid on SDKs where the protocol is not annotated yet).
+    @MainActor
+    final class Coordinator: NSObject, @preconcurrency MFMessageComposeViewControllerDelegate {
         let onFinish: (Bool) -> Void
 
         init(onFinish: @escaping (Bool) -> Void) {
@@ -61,8 +64,7 @@ struct MessageComposeView: UIViewControllerRepresentable {
         }
 
         func messageComposeViewController(_ controller: MFMessageComposeViewController, didFinishWith result: MessageComposeResult) {
-            let sent = result == .sent
-            MainActor.assumeIsolated { onFinish(sent) }
+            onFinish(result == .sent)
         }
     }
 }
@@ -85,10 +87,14 @@ struct ContactPickerPresenter: UIViewControllerRepresentable {
         picker.delegate = context.coordinator
         picker.displayedPropertyKeys = [CNContactPhoneNumbersKey]
         picker.predicateForEnablingContact = NSPredicate(format: "phoneNumbers.@count > 0") // provenance-ok: Contacts predicate, not user-facing
+        // Presented on the next run-loop turn: UIKit cannot present during a SwiftUI view update.
         Task { @MainActor in host.present(picker, animated: true) }
     }
 
-    final class Coordinator: NSObject, CNContactPickerDelegate {
+    /// UIKit calls the delegate on the main thread; the conformance is main-actor isolated (`@preconcurrency` keeps it
+    /// valid on SDKs where the protocol is not annotated yet).
+    @MainActor
+    final class Coordinator: NSObject, @preconcurrency CNContactPickerDelegate {
         var parent: ContactPickerPresenter
         var isPresenting = false
 
@@ -99,17 +105,16 @@ struct ContactPickerPresenter: UIViewControllerRepresentable {
         func contactPicker(_ picker: CNContactPickerViewController, didSelect contact: CNContact) {
             let numbers = contact.phoneNumbers.compactMap { PhoneNumber($0.value.stringValue) }
             let name = CNContactFormatter.string(from: contact, style: .fullName) ?? ""
-            let picked = LocalContact(id: contact.identifier, displayName: name, phoneNumbers: numbers)
             isPresenting = false
-            MainActor.assumeIsolated {
-                parent.isPresented = false
-                if !numbers.isEmpty { parent.onPick(picked) }
+            parent.isPresented = false
+            if !numbers.isEmpty {
+                parent.onPick(LocalContact(id: contact.identifier, displayName: name, phoneNumbers: numbers))
             }
         }
 
         func contactPickerDidCancel(_ picker: CNContactPickerViewController) {
             isPresenting = false
-            MainActor.assumeIsolated { parent.isPresented = false }
+            parent.isPresented = false
         }
     }
 }

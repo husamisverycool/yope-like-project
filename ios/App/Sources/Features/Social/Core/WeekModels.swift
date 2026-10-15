@@ -126,8 +126,7 @@ final class WeekRecapModel {
         let card = await data.cachedPosts(ids: cached.items, groupID: groupID)
         guard !card.isEmpty else { return }
         let weekIDs = await data.cachedHistoryWeeks(groupID: groupID)?.first { $0.weekStart == cached.weekStart }?.postIDs
-        let week = weekIDs.map { _ in [PostWithMedia]() } ?? []
-        var weekPosts = week
+        var weekPosts: [PostWithMedia] = []
         if let weekIDs { weekPosts = await data.cachedPosts(ids: weekIDs, groupID: groupID) }
         if weekPosts.isEmpty { weekPosts = card.sorted { $0.post.createdAt < $1.post.createdAt } }
         if group == nil { group = await data.cachedGroup(id: groupID) }

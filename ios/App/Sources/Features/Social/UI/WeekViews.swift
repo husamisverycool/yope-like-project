@@ -185,7 +185,7 @@ struct WeekRecapView: View {
     private var content: some View {
         switch model.phase {
         case .loading:
-            LoadingHUD()
+            if model.showsLoading { LoadingHUD() }
         case .pending:
             Text(Copy.weekRecapPending)
                 .dsTextStyle(TextRole.emptyTitle)
