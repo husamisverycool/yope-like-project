@@ -1080,3 +1080,23 @@ described here and is easy to change.
   (`avatars/<uid>/…`). That id is opaque and grants nothing on its own.
 - Phone OTP cannot be exercised locally without Twilio credentials. The tests create
   users with the admin API and sign their own JWTs with the local secret.
+
+## 13. Observed behaviour (verified by the iOS data-layer integration tests, 2026-10-15)
+
+Where this section and an earlier one differ, this section describes what the database actually does.
+
+1. **Signed-out RPC calls**: RPCs are granted only to `authenticated`; an anonymous call fails with
+   Postgres `42501 permission denied for function …`, not `not_authenticated`. Clients map `42501` on
+   an RPC to "not authenticated".
+2. **`untag_self`** never raises `post_not_found`; untagging a post you aren't tagged in is a no-op.
+3. **`save_album`** with an empty `post_ids` list raises `invalid_items`.
+4. **`create_post`** stores an empty caption as NULL.
+5. **`set_quiet_hours(null, null)`** keeps the row with null times; null start/end means "no quiet hours".
+6. Direct table writes by clients: six tables, as listed in §5.0 (§1's "five" is out of date).
+7. **`collages.page_count`** (migration 0015) is the last physical column; page files are
+   `display-<n>.jpg`, `share-<n>.jpg`, `master-<n>.png` for n = 1…page_count, plus `widget.jpg`.
+8. **Storage**: the resumable (TUS) upload endpoint works under the same policies (hosted projects
+   require 6 MiB chunks); a duplicate upload answers HTTP 400 with body status `"409"`; an
+   unreadable object answers 400 with `"404 Object not found"`.
+9. **Private `group:<id>` topic**: a non-member's join is refused server-side, but supabase-swift
+   2.55.4 surfaces no error — the join times out. Clients treat a join timeout as "not subscribed".
