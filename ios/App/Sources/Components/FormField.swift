@@ -54,6 +54,9 @@ struct FormField<Leading: View>: View {
                         .multilineTextAlignment(.leading)
                         .padding(.trailing, trailingInset)
                 }
+                // The accessory may fill the field's height (the flag's hit area); the row keeps the field's height
+                // instead of growing into the space it is offered.
+                .fixedSize(horizontal: false, vertical: true)
             } else {
                 field
                     .multilineTextAlignment(.center)
