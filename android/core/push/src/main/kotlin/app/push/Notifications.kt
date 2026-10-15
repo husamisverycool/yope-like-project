@@ -150,10 +150,14 @@ object DailyInvitationNotifier {
             .setChronometerCountDown(true)
             .setTimeoutAfter(state.remaining.toMillis())
             .setContentIntent(DeepLinkIntents.pendingIntent(context, message.link))
-            .setRequestPromotedOngoing(true)
             .applyAppearance()
             // Promoted notifications must not be colorized; an accent color alone is allowed.
             .setColorized(false)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+            // Android 16 Live Update: the system promotes it (status-bar chip with the countdown)
+            // if the person allows it; see PromotedNotifications.
+            builder.setRequestPromotedOngoing(true)
+        }
         NotificationManagerCompat.from(context).notifyChecked(context, tag(message.groupId), ID, builder)
         return true
     }
@@ -161,6 +165,22 @@ object DailyInvitationNotifier {
     fun cancel(context: Context, groupId: String) {
         NotificationManagerCompat.from(context).cancel(tag(groupId), ID)
     }
+}
+
+/** Android 16+ promoted ongoing notifications (Live Updates), which the person can turn off per app. */
+object PromotedNotifications {
+    fun isAllowed(context: Context): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA &&
+            context.getSystemService(NotificationManager::class.java).canPostPromotedNotifications()
+
+    /** Opens the system screen where the person can allow them; null before Android 16. */
+    fun settingsIntent(context: Context): android.content.Intent? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+            android.content.Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_PROMOTION_SETTINGS)
+                .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)
+        } else {
+            null
+        }
 }
 
 /** Alerts (surface `notifications.push`): text comes rendered from the server. */

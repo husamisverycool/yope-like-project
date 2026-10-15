@@ -27,6 +27,7 @@ import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
+import androidx.glance.appwidget.updateAll
 import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.background
@@ -94,6 +95,11 @@ object WidgetBinding {
     suspend fun boundGroups(context: Context): Set<String> {
         val manager = GlanceAppWidgetManager(context)
         return WidgetLayouts.all.flatMap { manager.getGlanceIds(it.widgetClass) }.mapNotNull { groupOf(context, it) }.toSet()
+    }
+
+    /** Re-renders every placed widget of every layout (e.g. after sign-out or leaving groups). */
+    suspend fun refreshAll(context: Context) {
+        WidgetLayouts.all.forEach { it.create().updateAll(context) }
     }
 
     /** Re-renders every widget showing [groupId]. */
