@@ -28,6 +28,23 @@ public struct DataConfiguration: Hashable, Sendable {
     var storageURL: URL { url.appendingPathComponent("storage/v1") }
 }
 
+/// Realtime socket tuning. A join the server refuses (the private `group:<id>` topic for a
+/// non-member) gets no error callback from supabase-swift: it times out and is retried, so
+/// `timeout × maxJoinAttempts` bounds how long a refused subscription takes to report failure.
+public struct RealtimeTuning: Hashable, Sendable {
+    /// Base delay before reconnecting a dropped socket; supabase-swift backs off exponentially (≤ 30 s).
+    public var reconnectDelay: TimeInterval
+    /// Seconds to wait for a server reply (join, heartbeat).
+    public var timeout: TimeInterval
+    public var maxJoinAttempts: Int
+
+    public init(reconnectDelay: TimeInterval = 2, timeout: TimeInterval = 10, maxJoinAttempts: Int = 3) {
+        self.reconnectDelay = reconnectDelay
+        self.timeout = timeout
+        self.maxJoinAttempts = maxJoinAttempts
+    }
+}
+
 /// The configured `SupabaseClient` plus the JSON conventions, error mapping and identity helpers
 /// every repository uses. One instance per process.
 ///
@@ -50,7 +67,8 @@ public final class DataClient: Sendable {
         configuration: DataConfiguration,
         sessionStorage: (any AuthLocalStorage)? = nil,
         storageKey: String? = nil,
-        urlSession: URLSession = .shared
+        urlSession: URLSession = .shared,
+        realtime: RealtimeTuning = RealtimeTuning()
     ) {
         self.configuration = configuration
         self.externalToken = nil
@@ -67,7 +85,7 @@ public final class DataClient: Sendable {
         supabase = SupabaseClient(
             supabaseURL: configuration.url,
             supabaseKey: configuration.anonKey,
-            options: Self.options(auth: auth, urlSession: urlSession)
+            options: Self.options(auth: auth, urlSession: urlSession, realtime: realtime)
         )
     }
 
@@ -75,6 +93,7 @@ public final class DataClient: Sendable {
     public init(
         configuration: DataConfiguration,
         urlSession: URLSession = .shared,
+        realtime: RealtimeTuning = RealtimeTuning(),
         accessToken: @escaping @Sendable () async throws -> String?
     ) {
         self.configuration = configuration
@@ -87,18 +106,23 @@ public final class DataClient: Sendable {
         supabase = SupabaseClient(
             supabaseURL: configuration.url,
             supabaseKey: configuration.anonKey,
-            options: Self.options(auth: auth, urlSession: urlSession)
+            options: Self.options(auth: auth, urlSession: urlSession, realtime: realtime)
         )
     }
 
-    private static func options(auth: SupabaseClientOptions.AuthOptions, urlSession: URLSession) -> SupabaseClientOptions {
+    private static func options(
+        auth: SupabaseClientOptions.AuthOptions,
+        urlSession: URLSession,
+        realtime: RealtimeTuning
+    ) -> SupabaseClientOptions {
         SupabaseClientOptions(
             db: .init(encoder: DataCoding.makeEncoder(), decoder: DataCoding.makeDecoder()),
             auth: auth,
             global: .init(session: urlSession),
             realtime: RealtimeClientOptions(
-                // Exponential back-off from this base after a dropped socket (supabase-swift caps it at 30 s).
-                reconnectDelay: 2
+                reconnectDelay: realtime.reconnectDelay,
+                timeoutInterval: realtime.timeout,
+                maxRetryAttempts: realtime.maxJoinAttempts
             )
         )
     }
