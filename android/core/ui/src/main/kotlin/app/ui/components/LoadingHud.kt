@@ -32,7 +32,8 @@ import app.designsystem.generated.Tokens
  * label `groups.create.fontSize.hudLabel` in `color.global.textPrimary` (copy
  * `groups.create.hud.loading`). The HUD corner radius is not measured (groups.create Gaps), so the
  * default [shape] is square; a surface with a measured HUD radius passes its own shape. No scrim
- * (`color.global.scrim` BLOCKED). [HudOverlay] also blocks input underneath while it shows.
+ * (Yope's HUD does not dim the screen; `color.global.scrim` is for sheets). [HudOverlay] also blocks
+ * input underneath while it shows.
  */
 @Composable
 fun LoadingHud(label: String, modifier: Modifier = Modifier, shape: Shape = RectangleShape) {

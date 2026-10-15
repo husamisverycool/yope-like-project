@@ -321,9 +321,8 @@ private fun GroupsListContent(
  * The cover header: newest photo across groups, full-bleed from the top edge, height
  * `groups.list.size.coverHeight`, `scaledToFill`; square bottom corners (radius not measured); ⌄
  * (`icon.global.chevronDown`, white) under it, `size.global.listGap` above the first card. The "+"
- * circle's fill over a photo is BLOCKED (`groups.list.color.headerCircleOverPhoto`): it is omitted
- * while a cover photo shows; with no photo the header sits on black and uses the black-screen circle
- * fill `color.global.controlOnDeep`.
+ * circle (`size.global.headerButton`, `icon.global.add`) sits over the cover at the trailing
+ * `size.global.headerInset`, filled `groups.list.color.headerCircleOverPhoto`.
  */
 @Composable
 private fun CoverHeader(cover: CoverPhoto?, onCreate: () -> Unit, onCover: (CoverPhoto) -> Unit) {

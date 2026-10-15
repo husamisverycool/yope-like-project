@@ -191,12 +191,15 @@ def widget():
     cta = extent(im, near(t("onboarding.widget.color.cta"), 3), (0, 700, 393, 852))
     mid = (cta[1] + cta[3]) / 2
     label = extent(im, lambda p: max(p[:3]) < 120, (cta[0] + 3, mid - 8, cta[0] + 95, mid + 8))
+    dark_cols = [x / M.SCALE for x in range(int((cta[0] + 3) * M.SCALE), int((cta[2] - 3) * M.SCALE)) if any(max(im.getpixel((x, y))[:3]) < 120 for y in range(int((mid - 8) * M.SCALE), int((mid + 8) * M.SCALE)))]
+    gaps = [(b - a, a) for a, b in zip(dark_cols, dark_cols[1:])]
+    label_end = max(gaps)[1] + 1 / M.SCALE
     runs = row_runs(im, (cta[1] + cta[3]) / 2, near(t("onboarding.widget.color.cta"), 3), cta[0], cta[2])
     rows += [("CTA height", "onboarding.widget.size.ctaHeight", t("onboarding.widget.size.ctaHeight"), cta[3] - cta[1]),
              ("CTA fill", "onboarding.widget.color.cta", t("onboarding.widget.color.cta"), color_at(im, cta[0] + 8, (cta[1] + cta[3]) / 2)),
              ("CTA padding → label", "onboarding.widget.size.ctaPaddingH", t("onboarding.widget.size.ctaPaddingH"), label[0] - cta[0], {"tol": 1.0, "note": "to the label's first glyph"}),
              ("CTA centred", "onboarding.widget.size.ctaHeight", M.W / 2, (cta[0] + cta[2]) / 2, {"tol": 1.0}),
-             ("arrow box end → CTA end", "onboarding.widget.size.ctaPaddingH", t("onboarding.widget.size.ctaPaddingH"), cta[2] - runs[-1][0] - (t("onboarding.widget.size.ctaArrow") - (runs[-1][0] - runs[-2][1])) / 2 - (runs[-1][0] - runs[-2][1]), {"status": "approx", "note": "Material arrow glyph is narrower than its 17 dp box; box geometry from the label end: label end + 17 gap + 17 box + 18 = CTA end"}),
+             ("label end → CTA end = arrow gap + arrow + padding", "onboarding.widget.size.ctaArrowGap", t("onboarding.widget.size.ctaArrowGap") + t("onboarding.widget.size.ctaArrow") + t("onboarding.widget.size.ctaPaddingH"), cta[2] - label_end, {"tol": 1.5, "note": "17 + 17 + 18; the Material arrow glyph is narrower than its 17 dp box"}),
              ("step colour", "onboarding.widget.color.step", t("onboarding.widget.color.step"), max((M.hexof(im.getpixel((x, 2 * 190))) for x in range(200, 600)), key=lambda h: int(h[1:3], 16)))]
     steps = [r for r in col_runs(im, 196, lambda p: max(p) > 120, 150, 520)]
     return [("Layout (onboarding.widget/default)", rows)]
@@ -252,7 +255,7 @@ def groups_create():
     rows += frows
     tr = extent(im, near(t("groups.screen.color.segmentTrack"), 2), (0, 400, 393, 470))
     track = first(col_runs(im, 295, near(t("groups.screen.color.segmentTrack"), 2), 400, 470))
-    pcol = first(col_runs(im, 120, near(t("color.global.surfaceLight"), 3), 400, 470))
+    pcol = first(col_runs(im, 156, near(t("color.global.surfaceLight"), 3), 400, 470))
     pill = (None, pcol[0])
     rows += [("segment track height", "groups.screen.size.segmentHeight", t("groups.screen.size.segmentHeight"), span(track), {"tol": 1.0, "note": "exact-colour rows (anti-aliased edges excluded)"}),
              ("selected pill inset", "groups.screen.size.segmentInset", t("groups.screen.size.segmentInset"), pill[1] - track[0], {"tol": 1.0}),
@@ -274,7 +277,7 @@ def groups_invite():
             ("✕ inset", "size.global.headerInset", t("size.global.headerInset"), x[0])]
     title = extent(im, bright(140), (0, 45, 393, 150))
     label = extent(im, bright(60), (0, title[3] + 1, 393, title[3] + 60))
-    rows.append(("title bottom → link label (text)", "groups.create.size.titleToContent", t("groups.create.size.titleToContent"), label[1] - title[3], {"status": "approx", "note": "ink to ink; the spec gap is to the label's text box"}))
+    rows.append(("title bottom → link label (text)", "groups.create.size.titleToContent", t("groups.create.size.titleToContent"), label[1] - title[3], {"status": "approx", "note": "ink to ink: + ascender space of the 16 sp label (~3) + the label row centres its text on the taller link icon (~2.5) + 'y' descender vs text bottom (~1.5)"}))
     pill = extent(im, near(t("color.global.surfaceLight"), 3), (100, label[3], 300, label[3] + 80))
     rows += [("share pill height", "groups.screen.size.lightPillHeight", t("groups.screen.size.lightPillHeight"), pill[3] - pill[1]),
              ("share pill centred", "groups.screen.size.lightPillHeight", M.W / 2, (pill[0] + pill[2]) / 2, {"tol": 1.0}),

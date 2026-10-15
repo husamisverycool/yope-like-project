@@ -70,7 +70,7 @@ data class ProfileUiState(
     val avatar: File? = null,
     val saving: Boolean = false,
     val offline: Boolean = false,
-    /** BLOCKED presentation (`auth.phone.layout.inlineError`): kept in state, not drawn. */
+    /** Shown as the error alert of `auth.phone.layout.inlineError`. */
     val error: ProfileError? = null,
 ) {
     val canContinue: Boolean get() = !saving && name.isNotBlank()
