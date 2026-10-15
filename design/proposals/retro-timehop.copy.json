@@ -1,0 +1,292 @@
+{
+  "strings": {
+    "week.history.header.title": {
+      "text": "Week {week_number}",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/store/retro-store-02.png (\"Week 27\",\"Week 26\",\"Week 25\"); references/auto/retro/press/jeddacp-2024-05-home-profile-journals.png (\"Week 19\",\"Week 18\",\"Week 17\"); references/auto/retro/press/engadget-2026-08-profile.jpg (\"Week 33\",\"Week 32\")",
+      "level": "SOURCED",
+      "notes": "{week_number} = ISO-8601 week number of a Monday-start week (verified on 4 dated examples). Same string is the serif display title on the home screen."
+    },
+    "week.history.header.range": {
+      "text": "{date_range}",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/press/jeddacp-2024-05-home-profile-journals.png (\"Apr 29 – May 5\", \"Apr 22 – 28\", en-US); references/auto/retro/press/engadget-2026-08-profile.jpg (\"10–16 Aug\", \"3–9 Aug\", en-AU); store mockups references/auto/retro/store/retro-store-02.png (\"Jul 3 - 9\", \"Jun 26 - Jul 2\")",
+      "level": "SOURCED",
+      "notes": "Locale-formatted Monday–Sunday interval, month shown once when both ends share it. Real app uses an en dash (spaced in en-US); store mockups use a spaced hyphen. Omitted when the current week has no photos (jedda 2024 \"Week 19\")."
+    },
+    "week.history.tile.weekday": {
+      "text": "{weekday_short}",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/store/retro-store-02.png (\"Mon\",\"Tue\",\"Wed\",\"Thu\"); references/auto/retro/press/jeddacp-2024-05-home-profile-journals.png; references/auto/retro/press/engadget-2026-08-profile.jpg (\"Mon\",\"Mon\")",
+      "level": "SOURCED",
+      "notes": "Locale 3-letter weekday of the photo. 2023 builds used \"Tues\"/\"Thurs\" ({PR23}); 2024+ use 3 letters."
+    },
+    "week.history.tile.empty.month": {
+      "text": "{month_short}",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/press/jeddacp-2024-05-home-profile-journals.png (\"May\"); references/auto/retro/press/tc-2023-07-retro-2b.jpg (\"Jul\")",
+      "level": "SOURCED",
+      "notes": "Top line of an empty-day placeholder tile."
+    },
+    "week.history.tile.empty.day": {
+      "text": "{day}",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/press/jeddacp-2024-05-home-profile-journals.png (\"6\",\"7\",\"8\",\"9\"); references/auto/retro/press/tc-2023-07-retro-2b.jpg (\"10\",\"11\",\"12\")",
+      "level": "SOURCED",
+      "notes": "Middle line, large bold day number."
+    },
+    "week.history.tile.empty.weekday": {
+      "text": "{weekday_short}",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/press/jeddacp-2024-05-home-profile-journals.png (\"Mon\",\"Tue\",\"Wed\",\"Thu\"); references/auto/retro/press/tc-2023-07-retro-2b.jpg (\"Mon\",\"Tues\",\"Wed\")",
+      "level": "SOURCED",
+      "notes": "Bottom line of an empty-day placeholder tile."
+    },
+    "week.history.lastWeek": {
+      "text": "Last Week",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/press/jeddacp-2024-05-home-profile-journals.png (home \"Week 18\" + capsule); references/auto/retro/press/engadget-2026-08-home-dark.jpg (home \"Week 32\" + capsule)",
+      "level": "SOURCED",
+      "notes": "Gray capsule beside the home title while the previous week is still shown early in a new week. Exact trigger not confirmed."
+    },
+    "week.history.onThisWeek.subtitle": {
+      "text": "On this week",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/store/retro-store-05.png; references/auto/retro/press/tc-2025-12-rewind-panels.png",
+      "level": "SOURCED",
+      "notes": "Small subtitle under the large serif date on the Rewind (\"this week in past years\") screen."
+    },
+    "week.history.onThisWeek.date": {
+      "text": "{date}",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/store/retro-store-05.png (\"July 5, 2021\"); references/auto/retro/press/tc-2025-12-rewind-device-a.png (\"May 1, 2019\"); references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (\"Jul 22, 2022\")",
+      "level": "SOURCED",
+      "notes": "Both long-month (marketing) and abbreviated-month (real device, Dec 2025) date styles observed; the real-device style is \"Jul 22, 2022\"."
+    },
+    "week.history.menu.addToAlbum": {
+      "text": "Add to Album",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-panels.png",
+      "level": "SOURCED",
+      "notes": "Rewind \"•••\" menu item."
+    },
+    "week.history.menu.hidePhoto": {
+      "text": "Hide photo",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-panels.png",
+      "level": "SOURCED",
+      "notes": "Rewind \"•••\" menu item (sentence case in source)."
+    },
+    "week.history.menu.shareToWeek": {
+      "text": "Share to my week",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-panels.png",
+      "level": "SOURCED",
+      "notes": "Rewind \"•••\" menu item; in a group product the target noun may need adapting (record substitution if so)."
+    },
+    "week.history.empty.label": {
+      "text": "Getting Started:",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/press/engadget-2026-08-profile.jpg",
+      "level": "SOURCED",
+      "notes": "Gray label of the profile onboarding card shown above the week list while history is short."
+    },
+    "week.history.empty.body": {
+      "text": "{app_name} is a weekly photo album. Try adding photos to 3 different weeks below.",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/press/engadget-2026-08-profile.jpg (\"Retro is a weekly photo album. Try adding photos to 3 different weeks below.\")",
+      "level": "SOURCED",
+      "notes": "Substitution: app name \"Retro\" -> {app_name}. The accompanying progress ring (\"2\") is a count/gamification element: do not copy."
+    },
+    "onthisday.banner.yearsAgo.one": {
+      "text": "1 YEAR AGO",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/help/th-help-2024-02-panel-share-1-year-ago.png (card banner \"1 YEAR AGO\"); references/auto/timehop/help/th-help-2024-02-panel-best-photos.png (\"TUESDAY  1 YEAR AGO  AUG 30\"); help 795 prose \"1 Year Ago\"",
+      "level": "SOURCED",
+      "notes": "Rendered uppercase in the banner; singular form."
+    },
+    "onthisday.banner.yearsAgo.other": {
+      "text": "{count} YEARS AGO",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/store/timehop-store-01.png \"3 YEARS AGO\"; references/auto/timehop/store/timehop-store-02.png \"8 YEARS AGO\"; references/auto/timehop/store/timehop-store-05.png \"2 YEARS AGO\"; references/auto/timehop/help/th-help-2025-06-share-full-43-years-ago.png \"43 YEARS AGO\"; references/auto/timehop/help/th-help-2025-06-share-banner-colors.png \"7 YEARS AGO\"",
+      "level": "SOURCED",
+      "notes": "Digits, uppercase, centred in a full-width colour banner."
+    },
+    "onthisday.thenNow.now": {
+      "text": "AND NOW",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/store/timehop-store-03.png; references/auto/timehop/play/timehop-play-03.png",
+      "level": "SOURCED",
+      "notes": "Right-half banner of the then/now pair; left half carries the years-ago label."
+    },
+    "onthisday.thenNow.title": {
+      "text": "Then & Now",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "App Store listing v5.0.4 (\"Then & Now • Compare the old with the new!\"); https://help.timehop.com/article/752-how-to-create-a-then-now-image-in-timehop (\"Tap Then & Now on the bottom of the screen\")",
+      "level": "SOURCED",
+      "notes": "Button / feature name."
+    },
+    "onthisday.intro.title": {
+      "text": "{name}'s Day in History",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/help/th-help-2024-03-intro-day-in-history.jpg (\"VERONICA'S DAY IN HISTORY\"); https://help.timehop.com/article/774-can-i-view-a-previous-day-in-timehop (\"[Your Name]'s Yesterday in History\")",
+      "level": "SOURCED",
+      "notes": "Rendered uppercase on the intro card, above the large date. In a group context {name} could become the group name (would be an adapted string)."
+    },
+    "onthisday.intro.date": {
+      "text": "{month_short} {day}",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/help/th-help-2024-03-intro-day-in-history.jpg (\"Sep 2\")",
+      "level": "SOURCED",
+      "notes": "Large date on the intro card."
+    },
+    "onthisday.loading": {
+      "text": "Collecting Memories",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "https://help.timehop.com/article/812-my-app-wont-load-collecting-memories- ; https://help.timehop.com/article/774-can-i-view-a-previous-day-in-timehop",
+      "level": "SOURCED",
+      "notes": "Loading state while the day is assembled."
+    },
+    "onthisday.error.title": {
+      "text": "Time Travel Failed",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "https://help.timehop.com/article/767-im-getting-time-travel-failed (title \"Time Travel Failed Error\")",
+      "level": "SOURCED",
+      "notes": "Error state title as named by the help center; on-screen body copy not found."
+    },
+    "onthisday.memory.meta": {
+      "text": "{weekday_short_upper} {time}",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (\"TUE  10:34 PM\")",
+      "level": "SOURCED",
+      "notes": "Meta row overlaid at top-left of the memory, after the source icon."
+    },
+    "onthisday.memory.hide": {
+      "text": "HIDE FROM {app_name}",
+      "origin": "adapted",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (\"HIDE FROM TIMEHOP\")",
+      "level": "SOURCED",
+      "notes": "Substitution: app name -> {app_name}. Uppercase capsule button. Help 755 calls the feature \"Hide-a-Memory\"."
+    },
+    "onthisday.share.tab.square": {
+      "text": "SQUARE",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/help/th-help-2025-06-share-full-43-years-ago.png",
+      "level": "SOURCED",
+      "notes": "Share screen crop tab."
+    },
+    "onthisday.share.tab.full": {
+      "text": "FULL",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/help/th-help-2025-06-share-full-43-years-ago.png",
+      "level": "SOURCED",
+      "notes": "Share screen crop tab (selected in source)."
+    },
+    "onthisday.share.tab.thenNow": {
+      "text": "THEN & NOW",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/help/th-help-2024-02-panel-share-1-year-ago.png",
+      "level": "SOURCED",
+      "notes": "Third share tab in the older UI; absent from the Jun 2025 screenshot."
+    },
+    "onthisday.share.save": {
+      "text": "Save",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/help/th-help-2025-06-share-full-43-years-ago.png",
+      "level": "SOURCED",
+      "notes": "First share target (download glyph)."
+    },
+    "onthisday.settings.dailyReminder": {
+      "text": "Daily Reminder",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/help/th-help-2024-02-settings-hidden-memory.jpg; references/auto/timehop/help/th-help-2024-03-settings-daily-reminder.jpg",
+      "level": "SOURCED",
+      "notes": "Toggle label for the once-a-day on-this-day reminder (8 am per help 751)."
+    },
+    "onthisday.settings.privacyNote": {
+      "text": "Your private content remains private.",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "references/auto/timehop/help/th-help-2024-02-settings-hidden-memory.jpg; references/auto/timehop/help/th-help-2024-03-settings-daily-reminder.jpg",
+      "level": "SOURCED",
+      "notes": "Small gray note with lock glyph under the connected sources."
+    },
+    "onthisday.empty.title": {
+      "text": "",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "NOT FOUND: help center (56 articles), store/Play text, reviews, web/Reddit searches",
+      "level": "BLOCKED",
+      "notes": "Empty state (\"no memories today\") wording not found. Owner capture: 10 s recording of Timehop with Photos access \"None\" and no connected services."
+    },
+    "onthisday.notification.daily": {
+      "text": "",
+      "origin": "verbatim",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "NOT FOUND verbatim; only timing/description: https://help.timehop.com/article/751-how-to-manage-timehop-notifications (\"a gentle reminder every morning at 8 am to check your Timehop and take a stroll down memory lane\")",
+      "level": "BLOCKED",
+      "notes": "Owner capture: one lock-screen screenshot of the 8 am Timehop push."
+    }
+  }
+}
