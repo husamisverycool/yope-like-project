@@ -80,6 +80,7 @@ class YearStorySnapshotTest : SnapshotTest() {
 /** Share images: each fact card rendered off screen at 1080 × 1920 (`layout.year.story.shareCard`). */
 class YearStoryShareImageTest : SnapshotTest() {
     @Test fun factCardsRenderToShareImages() {
+        resetFileProviderCache()
         val exporter = ShareCardExporter()
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val facts = sampleCards.filter { it.shareable }
@@ -107,6 +108,7 @@ class YearStoryShareImageTest : SnapshotTest() {
 /** Robolectric flow: tap through the story (both directions), share a card, replay from the summary. */
 class YearStoryFlowTest : SnapshotTest() {
     @Test fun tapThroughShareAndReplay() {
+        resetFileProviderCache()
         val backend = Scenario.backend()
         compose.setContent {
             MemoryTestContent(backend) {
@@ -140,7 +142,7 @@ class YearStoryFlowTest : SnapshotTest() {
         assertEquals("content", stream.scheme)
 
         // Most-reacted photos: names and dates only, in order; to the summary; replay.
-        repeat(2) { canvas.performTouchInput { click(centerRight) } }
+        repeat(3) { canvas.performTouchInput { click(centerRight) } }
         compose.onNodeWithText("Ana shared this on February 25").assertExists()
         repeat(20) { canvas.performTouchInput { click(centerRight) } }
         compose.onNodeWithTag(YearStoryTags.REPLAY).performClick()

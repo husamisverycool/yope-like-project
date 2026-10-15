@@ -116,7 +116,7 @@ enum InviteTitleFit {
     static func size(for title: String, width: CGFloat) -> CGFloat {
         let minimum = Tokens.FontSizes.inviteWebFontSizeTitleMin
         let base = Tokens.FontSizes.inviteWebFontSizeTitleBase
-        let words = title.split(whereSeparator: { $0.isWhitespace }).map(String.init)
+        let words = title.split(whereSeparator: { $0.isWhitespace }).map { String($0) }
         guard !words.isEmpty else { return minimum }
         let overflows = estimateWidth(title, size: base) > width
         let maxLines = overflows ? Int(Tokens.Counts.inviteWebCountTitleMaxLines) : 1

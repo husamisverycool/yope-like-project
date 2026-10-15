@@ -67,7 +67,7 @@ struct TwoToneTitle: View {
             let first = after.isEmpty ? before : [before, after].filter { !$0.isEmpty }.joined(separator: " ")
             return (first, accent)
         }
-        let words = text.split(separator: " ").map(String.init)
+        let words = text.split(separator: " ").map { String($0) }
         guard words.count > 1 else { return ("", text) }
         let half = words.count / 2
         return (words[..<half].joined(separator: " "), words[half...].joined(separator: " "))

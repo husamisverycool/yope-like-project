@@ -12,7 +12,7 @@ enum PhoneNumberInput {
 
     /// The digits of `text` (formatting and the leading "+" dropped).
     static func digits(of text: String) -> String {
-        String(text.unicodeScalars.filter { CharacterSet.decimalDigits.contains($0) && $0.isASCII }.map(Character.init))
+        String(text.unicodeScalars.filter { CharacterSet.decimalDigits.contains($0) && $0.isASCII }.map { Character($0) })
     }
 
     /// The country calling code `text` starts with (ITU-T E.164 codes are prefix-free), if any.

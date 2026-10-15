@@ -24,6 +24,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.core.app.NotificationCompat
 import app.feature.capture.camera.CameraControllers
 import app.feature.capture.data.CaptureDataProvider
+import app.feature.capture.data.CaptureHandoff
 import app.feature.capture.data.CaptureServices
 import app.feature.capture.data.SendTracker
 import app.links.DeepLinkIntents
@@ -74,7 +75,7 @@ class FlowTests {
     @After fun tearDown() {
         CaptureDataProvider.override = null
         CaptureServices.overrideTracker(null)
-        app.feature.capture.data.CaptureHandoff.process.clear()
+        CaptureHandoff.process.clear()
     }
 
     private fun host(start: AppRoute): NavHostController {

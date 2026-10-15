@@ -17,7 +17,7 @@ struct GroupCreateScreen: View {
     @Environment(AccountDependencies.self) private var dependencies
 
     var body: some View {
-        GroupCreateView(model: GroupCreateModel(data: dependencies.data, editingGroupID: editingGroupID.map(GroupID.init)))
+        GroupCreateView(model: GroupCreateModel(data: dependencies.data, editingGroupID: editingGroupID.map { GroupID($0) }))
     }
 }
 

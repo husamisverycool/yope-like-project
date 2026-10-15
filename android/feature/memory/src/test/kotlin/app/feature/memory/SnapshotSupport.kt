@@ -118,3 +118,13 @@ abstract class SnapshotTest {
         if (screen) captureScreenRoboImage(path) else compose.onRoot().captureRoboImage(path)
     }
 }
+
+/**
+ * androidx FileProvider caches each authority's paths in a static map; Robolectric gives every test a
+ * new data directory in the same class loader, so a cached entry would point at an earlier test's.
+ */
+fun resetFileProviderCache() {
+    val field = androidx.core.content.FileProvider::class.java.getDeclaredField("sCache")
+    field.isAccessible = true
+    (field.get(null) as MutableMap<*, *>).clear()
+}

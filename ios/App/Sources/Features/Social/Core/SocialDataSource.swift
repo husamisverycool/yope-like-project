@@ -38,6 +38,9 @@ protocol SocialDataSource: Sendable {
     func posts(ids: [PostID]) async throws -> [PostWithMedia]
     /// The offline copy of a group's feed (first page).
     func cachedPosts(groupID: GroupID) async -> [PostWithMedia]
+    /// Posts among `ids` already on the device (fetched this session, or in the group's offline feed), in the order
+    /// of `ids`; missing ones are left out.
+    func cachedPosts(ids: [PostID], groupID: GroupID) async -> [PostWithMedia]
     /// `delete_media`: removes the photo everywhere (owner only).
     func deleteMedia(id: MediaID) async throws
 
@@ -61,6 +64,8 @@ protocol SocialDataSource: Sendable {
     /// Newest week first.
     func recaps(groupID: GroupID) async throws -> [WeeklyRecap]
     func recap(id: RecapID) async throws -> WeeklyRecap?
+    /// The recap as last fetched this session (AppData keeps no offline copy of recaps).
+    func cachedRecap(id: RecapID) async -> WeeklyRecap?
     func updateRecap(id: RecapID, items: [PostID], text: String) async throws -> WeeklyRecap
     /// Weeks with posts, newest first, pages of 8; `beforeWeek` is exclusive.
     func historyWeeks(groupID: GroupID, beforeWeek: LocalDate?) async throws -> [HistoryWeek]

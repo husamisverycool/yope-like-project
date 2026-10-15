@@ -7,6 +7,7 @@ package app.feature.account.onboarding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -96,13 +97,17 @@ fun WidgetScreen(steps: List<String>, onContinue: () -> Unit) {
                     val number = (index + 1).toString()
                     val label = stringResource(R.string.onboarding_widget_stepnumber_accessibilitylabel, number)
                     val numbered = numberedStep(number, step)
-                    Text(
-                        numbered,
-                        style = stepStyle,
-                        color = Tokens.Colors.onboardingWidgetColorStep,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = "$label, $step" },
-                    )
+                    // TalkBack: "step {number}" then the text, as one element (platform merge).
+                    Box(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}) {
+                        Box(Modifier.matchParentSize().semantics { contentDescription = label })
+                        Text(
+                            numbered,
+                            style = stepStyle,
+                            color = Tokens.Colors.onboardingWidgetColorStep,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = step },
+                        )
+                    }
                 }
                 Text(
                     stringResource(R.string.onboarding_widget_done),

@@ -59,7 +59,7 @@ struct GroupInviteView: View {
                 case .full:
                     EmptyStateView(
                         title: Copy.groupsInviteFullTitle(groupName: model.group?.name ?? ""),
-                        detail: Copy.groupsInviteFullDetail(maxMembers: model.maxMembers.map(String.init) ?? "")
+                        detail: Copy.groupsInviteFullDetail(maxMembers: model.maxMembers.map { String($0) } ?? "")
                     )
                     .padding(.top, Tokens.Sizes.groupsCreateSizeTitleToContent)
                 case .error:

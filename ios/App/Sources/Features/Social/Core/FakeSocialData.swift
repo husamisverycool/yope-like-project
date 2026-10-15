@@ -51,6 +51,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         var cachedGroups: [PhotoGroup]?
         var cachedMembers: [GroupID: [MemberProfile]] = [:]
         var cachedFeeds: [GroupID: [PostWithMedia]] = [:]
+        var cachedRecaps: [RecapID: WeeklyRecap] = [:]
         var blocked: [UserID] = []
         var deletedMedia: [MediaID] = []
         var sentVoice: [(URL, Int)] = []
@@ -233,6 +234,13 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
 
     func cachedPosts(groupID: GroupID) async -> [PostWithMedia] { read { $0.cachedFeeds[groupID] ?? [] } }
 
+    func cachedPosts(ids: [PostID], groupID: GroupID) async -> [PostWithMedia] {
+        read { state in
+            let feed = state.cachedFeeds[groupID] ?? []
+            return ids.compactMap { id in feed.first { $0.id == id } }
+        }
+    }
+
     func deleteMedia(id: MediaID) async throws {
         try call("deleteMedia")
         update { state in
@@ -326,6 +334,8 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         try call("recap")
         return read { $0.recaps.first { $0.id == id } }
     }
+
+    func cachedRecap(id: RecapID) async -> WeeklyRecap? { read { $0.cachedRecaps[id] } }
 
     func updateRecap(id: RecapID, items: [PostID], text: String) async throws -> WeeklyRecap {
         try call("updateRecap")

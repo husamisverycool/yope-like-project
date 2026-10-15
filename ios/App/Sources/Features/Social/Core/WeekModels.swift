@@ -75,7 +75,18 @@ final class WeekRecapModel {
     /// The pencil opens `week.edit` only for a ready recap.
     var canEdit: Bool { recap?.status == .ready }
 
+    /// The on-device copy was looked at: only then may the loading HUD show (none over cached content).
+    private(set) var hasCheckedCache = false
+    /// Showing the on-device copy because the server could not be reached.
+    private(set) var isOffline = false
+
+    var showsLoading: Bool { phase == .loading && hasCheckedCache }
+
+    /// The recap as fetched earlier this session, with its photos from the device, first; then the server's,
+    /// replaced in place.
     func load() async {
+        if phase == .loading { await showCached() }
+        hasCheckedCache = true
         do {
             if group == nil { group = try await data.group(id: groupID) }
             guard let recap = try await data.recap(id: recapID) else {
@@ -87,19 +98,44 @@ final class WeekRecapModel {
                 phase = recap.status == .pending ? .pending : .empty
                 return
             }
-            cardPosts = try await data.posts(ids: recap.items)
+            let card = try await data.posts(ids: recap.items)
             let weekIDs = try await WeekPosts.ids(of: recap.weekStart, groupID: groupID, data: data)
-            weekPosts = try await data.posts(ids: weekIDs)
+            let week = try await data.posts(ids: weekIDs)
             me = await data.currentUserID()
-            profiles = await SocialPeople.profiles(of: cardPosts + weekPosts, known: profiles, data: data)
+            profiles = await SocialPeople.profiles(of: card + week, known: profiles, data: data)
+            cardPosts = card
+            weekPosts = week
+            isOffline = false
             phase = .ready
         } catch {
-            switch SocialFailure(error) {
+            let failure = SocialFailure(error)
+            if phase == .ready, failure != .notFound {
+                isOffline = failure == .offline
+                return
+            }
+            switch failure {
             case .offline: phase = .offline
             case .notFound: phase = .empty
             default: phase = .failed
             }
         }
+    }
+
+    private func showCached() async {
+        guard let cached = await data.cachedRecap(id: recapID), cached.status == .ready else { return }
+        let card = await data.cachedPosts(ids: cached.items, groupID: groupID)
+        guard !card.isEmpty else { return }
+        let weekIDs = await data.cachedHistoryWeeks(groupID: groupID)?.first { $0.weekStart == cached.weekStart }?.postIDs
+        let week = weekIDs.map { _ in [PostWithMedia]() } ?? []
+        var weekPosts = week
+        if let weekIDs { weekPosts = await data.cachedPosts(ids: weekIDs, groupID: groupID) }
+        if weekPosts.isEmpty { weekPosts = card.sorted { $0.post.createdAt < $1.post.createdAt } }
+        if group == nil { group = await data.cachedGroup(id: groupID) }
+        recap = cached
+        cardPosts = card
+        self.weekPosts = weekPosts
+        me = await data.currentUserID()
+        phase = .ready
     }
 
     func retry() async {

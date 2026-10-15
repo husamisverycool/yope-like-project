@@ -16,7 +16,7 @@ enum AccountBlockedCopy {
     /// `auth.agegate.underAge.title` ({min_age}, {app_name}).
     static func ageGateUnderAgeTitle(minAge: Int?) -> String? {
         #if DEBUG
-        return BlockedCopy.authAgegateUnderAgeTitle(minAge: minAge.map(String.init) ?? "{min_age}", appName: appName) // provenance-ok: BLOCKED placeholder
+        return BlockedCopy.authAgegateUnderAgeTitle(minAge: minAge.map { String($0) } ?? "{min_age}", appName: appName) // provenance-ok: BLOCKED placeholder
         #else
         return nil
         #endif

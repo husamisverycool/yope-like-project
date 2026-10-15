@@ -6,6 +6,8 @@ import Foundation
 /// The production data source: AppData repositories, offline cache, signed URLs, realtime and reachability.
 struct LiveSocialData: SocialDataSource {
     let environment: DataEnvironment
+    /// Recaps and posts fetched this session (first paint of a reopened recap).
+    private let memo = SocialMemo()
 
     init(environment: DataEnvironment) {
         self.environment = environment
@@ -75,8 +77,19 @@ struct LiveSocialData: SocialDataSource {
     // MARK: Posts
 
     func posts(ids: [PostID]) async throws -> [PostWithMedia] {
-        let posts = try await environment.posts.posts(ids: ids)
-        return try await environment.posts.withMedia(posts)
+        let posts = try await environment.posts.withMedia(environment.posts.posts(ids: ids))
+        memo.store(posts: posts, asked: ids)
+        return posts
+    }
+
+    func cachedPosts(ids: [PostID], groupID: GroupID) async -> [PostWithMedia] {
+        let known = memo.posts(ids)
+        let missing = ids.filter { known[$0] == nil }
+        var found = known
+        if !missing.isEmpty {
+            for post in await cachedPosts(groupID: groupID) where missing.contains(post.id) { found[post.id] = post }
+        }
+        return ids.compactMap { found[$0] }
     }
 
     func cachedPosts(groupID: GroupID) async -> [PostWithMedia] {
@@ -85,6 +98,7 @@ struct LiveSocialData: SocialDataSource {
 
     func deleteMedia(id: MediaID) async throws {
         try await environment.posts.deleteMedia(id: id)
+        memo.forget(mediaID: id)
         await environment.signedURLs.invalidate(mediaID: id)
     }
 
@@ -137,15 +151,25 @@ struct LiveSocialData: SocialDataSource {
     // MARK: Weeks and albums
 
     func recaps(groupID: GroupID) async throws -> [WeeklyRecap] {
-        try await environment.memories.recaps(groupID: groupID)
+        let recaps = try await environment.memories.recaps(groupID: groupID)
+        memo.store(recaps: recaps)
+        return recaps
     }
 
     func recap(id: RecapID) async throws -> WeeklyRecap? {
-        try await environment.memories.recap(id: id)
+        let recap = try await environment.memories.recap(id: id)
+        if let recap { memo.store(recaps: [recap]) }
+        return recap
+    }
+
+    func cachedRecap(id: RecapID) async -> WeeklyRecap? {
+        memo.recap(id)
     }
 
     func updateRecap(id: RecapID, items: [PostID], text: String) async throws -> WeeklyRecap {
-        try await environment.memories.updateRecap(id: id, items: items, text: text)
+        let recap = try await environment.memories.updateRecap(id: id, items: items, text: text)
+        memo.store(recaps: [recap])
+        return recap
     }
 
     func historyWeeks(groupID: GroupID, beforeWeek: LocalDate?) async throws -> [HistoryWeek] {
@@ -214,6 +238,7 @@ struct UnconfiguredSocialData: SocialDataSource {
     func deleteMessage(id: MessageID, groupID: GroupID) async throws { try fail() as Void }
     func posts(ids: [PostID]) async throws -> [PostWithMedia] { try fail() }
     func cachedPosts(groupID: GroupID) async -> [PostWithMedia] { [] }
+    func cachedPosts(ids: [PostID], groupID: GroupID) async -> [PostWithMedia] { [] }
     func deleteMedia(id: MediaID) async throws { try fail() as Void }
     func reactions(postIDs: [PostID]) async throws -> [Reaction] { try fail() }
     func react(postID: PostID, emoji: String) async throws -> Reaction { try fail() }
@@ -225,6 +250,7 @@ struct UnconfiguredSocialData: SocialDataSource {
     func collages(ids: [CollageID]) async throws -> [Collage] { try fail() }
     func recaps(groupID: GroupID) async throws -> [WeeklyRecap] { try fail() }
     func recap(id: RecapID) async throws -> WeeklyRecap? { try fail() }
+    func cachedRecap(id: RecapID) async -> WeeklyRecap? { nil }
     func updateRecap(id: RecapID, items: [PostID], text: String) async throws -> WeeklyRecap { try fail() }
     func historyWeeks(groupID: GroupID, beforeWeek: LocalDate?) async throws -> [HistoryWeek] { try fail() }
     func cachedHistoryWeeks(groupID: GroupID) async -> [HistoryWeek]? { nil }
@@ -244,5 +270,46 @@ struct UnconfiguredSocialData: SocialDataSource {
             continuation.yield(.unknown)
             continuation.finish()
         }
+    }
+}
+
+/// Recaps and posts fetched this session, in memory only (no image data; deleted photos are dropped).
+final class SocialMemo: @unchecked Sendable {
+    private let lock = NSLock()
+    private var recaps: [RecapID: WeeklyRecap] = [:]
+    private var posts: [PostID: PostWithMedia] = [:]
+
+    func store(recaps new: [WeeklyRecap]) {
+        lock.lock()
+        defer { lock.unlock() }
+        for recap in new { recaps[recap.id] = recap }
+    }
+
+    /// Keeps `found`; ids that were asked for and not returned are gone (deleted or hidden).
+    func store(posts found: [PostWithMedia], asked: [PostID]) {
+        lock.lock()
+        defer { lock.unlock() }
+        for id in asked { posts[id] = nil }
+        for post in found { posts[post.id] = post }
+    }
+
+    func forget(mediaID: MediaID) {
+        lock.lock()
+        defer { lock.unlock() }
+        posts = posts.filter { $0.value.post.mediaID != mediaID }
+    }
+
+    func recap(_ id: RecapID) -> WeeklyRecap? {
+        lock.lock()
+        defer { lock.unlock() }
+        return recaps[id]
+    }
+
+    func posts(_ ids: [PostID]) -> [PostID: PostWithMedia] {
+        lock.lock()
+        defer { lock.unlock() }
+        var result: [PostID: PostWithMedia] = [:]
+        for id in ids { result[id] = posts[id] }
+        return result
     }
 }

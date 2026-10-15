@@ -225,8 +225,8 @@ class GroupsListViewModel(private val env: AccountEnvironment) : AccountViewMode
         mutable.update { it.copy(rows = rows, cover = cover, refreshing = refreshing, error = error) }
     }
 
-    /** Known activity per group, kept for the process so coming back to the list never reorders or flashes. */
-    internal object Details {
+    /** Known activity per group, kept for the process so coming back to the list never reorders or flashes (tests clear it). */
+    object Details {
         val byGroup = ConcurrentHashMap<String, RowDetail>()
     }
 }
