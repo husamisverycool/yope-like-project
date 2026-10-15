@@ -1,0 +1,37 @@
+# Fit of the blurred fill behind the letterboxed poster in references/auto/partiful/og/pf-og-public-crawler-1200x630.jpg.
+# Candidate fill = references/auto/partiful/og/pf-og-public-browser-834x666.jpg (same poster) resized to 1200x630 (fit = fill: stretched; cover: aspect kept, centre crop), then sharp 0.35.5 Gaussian blur with sigma (px at 1200x630).
+# rmse over both fill bands (x 0-194 and 1005-1199, all rows, RGB, 8-bit). Run by the invite.web build pass, 2026-10-15. ms = local compute time.
+fit,sigma_px_at_1200x630,rmse_8bit,ms
+fill,100,24.95,326
+fill,120,22.19,353
+fill,140,20.16,429
+fill,160,18.33,383
+fill,180,16.99,442
+fill,200,15.83,546
+fill,220,15.04,591
+fill,240,14.18,590
+fill,260,14.04,590
+fill,280,14.01,757
+fill,300,14.26,12131
+fill,320,14.60,11857
+fill,340,14.98,13263
+fill,360,15.38,13824
+fill,380,15.79,15181
+fill,400,16.21,15546
+cover,100,28.51,244
+cover,120,25.85,312
+cover,140,24.13,344
+cover,160,22.52,390
+cover,180,21.18,439
+cover,200,19.74,451
+cover,220,18.48,548
+cover,240,16.80,627
+cover,260,15.86,564
+cover,280,14.90,589
+cover,300,14.41,11428
+cover,320,14.00,12181
+cover,340,13.80,13089
+cover,360,13.75,14254
+cover,380,13.81,15829
+cover,400,13.91,15530
+fill-downscaled-1/8,260,14.19,135

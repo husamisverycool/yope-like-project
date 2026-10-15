@@ -3,4 +3,943 @@
 import SwiftUI
 
 public enum Tokens {
+    public enum Blurs {
+        /// Partiful · invite.web · outlined button backdrop blur radius · VERIFIED
+        /// token: `invite.web.blur.button.outlined`
+        public static let inviteWebBlurButtonOutlined: CGFloat = 40
+        /// Partiful · invite.web · Gaussian sigma of the blurred fill, in px of the 1200×630 image · SOURCED
+        /// token: `invite.web.blur.ogImage.fill`
+        public static let inviteWebBlurOgImageFill: CGFloat = 360
+    }
+    public enum Colors {
+        /// Yope · global · brand lime: composer camera button, primary buttons, coach tooltips, toasts, shutter ring, 'today' bar · SOURCED
+        /// token: `color.global.accent`
+        public static let globalAccent: Color = Color(.sRGB, red: 0.8039, green: 0.9922, blue: 0.0275, opacity: 1)
+        /// Yope · global · pink: profile card outline and name sticker · SOURCED
+        /// token: `color.global.accentSecondary`
+        public static let globalAccentSecondary: Color = Color(.sRGB, red: 0.9961, green: 0.1216, blue: 0.5176, opacity: 1)
+        /// Yope · global · screen background of group, chat and profile-grid screens (dark gray, not black) · SOURCED
+        /// token: `color.global.background`
+        public static let globalBackground: Color = Color(.sRGB, red: 0.0902, green: 0.0902, blue: 0.0902, opacity: 1)
+        /// Yope · global · screen background of the home list, sheets ('new group', 'send to...'), camera, sign-up, profile 'pics' grid, group photo cards (2026) · SOURCED
+        /// token: `color.global.backgroundDeep`
+        public static let globalBackgroundDeep: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
+        /// Yope · global · control fill on #171717: header circle buttons, header title capsule, floating tab-bar capsule, composer text field · SOURCED
+        /// token: `color.global.control`
+        public static let globalControl: Color = Color(.sRGB, red: 0.1804, green: 0.1804, blue: 0.1804, opacity: 1)
+        /// Yope · global · header circle icon buttons on black screens and sheets (✕, download) · SOURCED
+        /// token: `color.global.controlOnDeep`
+        public static let globalControlOnDeep: Color = Color(.sRGB, red: 0.0627, green: 0.0627, blue: 0.0627, opacity: 1)
+        /// Yope · global · raised fill: selected tab pill, inner pill inside the header capsule, inactive page dots · SOURCED
+        /// token: `color.global.controlRaised`
+        public static let globalControlRaised: Color = Color(.sRGB, red: 0.2627, green: 0.2627, blue: 0.2627, opacity: 1)
+        /// Apple HIG · global.system · destructive actions on system surfaces (delete account, block, leave, report) — iOS systemRed via Button(role: .destructive) · PLATFORM
+        /// token: `color.global.destructive`
+        public static let globalDestructive: Color = Color(.sRGB, red: 1, green: 0.2588, blue: 0.2706, opacity: 1)
+        /// Yope · global · text and glyphs on lime: camera glyph on the composer button, primary button labels, tooltip text · SOURCED
+        /// token: `color.global.onAccent`
+        public static let globalOnAccent: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
+        /// Yope · global · label on the light pill (secondary buttons, selected segment, 'today') · SOURCED
+        /// token: `color.global.onSurfaceLight`
+        public static let globalOnSurfaceLight: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
+        /// Apple HIG · global · filled check circle on selected people / groups (Yope draws it in iOS system blue) · PLATFORM
+        /// token: `color.global.selection`
+        public static let globalSelection: Color = Color(.sRGB, red: 0, green: 0.5686, blue: 1, opacity: 1)
+        /// Yope · global · light pill fill: secondary buttons ('invite more friends', 'enable', 'new recap'), selected segment pill, 'today' pill · SOURCED
+        /// token: `color.global.surfaceLight`
+        public static let globalSurfaceLight: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
+        /// Material 3 · global.system · error / destructive text and icons (role md.sys.color.error, baseline dark scheme) · PLATFORM
+        /// token: `color.global.system.error`
+        public static let globalSystemError: Color = Color(.sRGB, red: 0.949, green: 0.7216, blue: 0.7098, opacity: 1)
+        /// Material 3 · global.system · list item label, dialog headline (role md.sys.color.on-surface, baseline dark scheme) · PLATFORM
+        /// token: `color.global.system.onSurface`
+        public static let globalSystemOnSurface: Color = Color(.sRGB, red: 0.902, green: 0.8784, blue: 0.9137, opacity: 1)
+        /// Material 3 · global.system · supporting text, leading icons, drag handle (role md.sys.color.on-surface-variant, baseline dark scheme) · PLATFORM
+        /// token: `color.global.system.onSurfaceVariant`
+        public static let globalSystemOnSurfaceVariant: Color = Color(.sRGB, red: 0.7922, green: 0.7686, blue: 0.8157, opacity: 1)
+        /// Material 3 · global.system · list divider (1 dp) (role md.sys.color.outline, baseline dark scheme) · PLATFORM
+        /// token: `color.global.system.outline`
+        public static let globalSystemOutline: Color = Color(.sRGB, red: 0.5765, green: 0.5608, blue: 0.6, opacity: 1)
+        /// Material 3 · global.system · dialog action labels, switches, selected controls (role md.sys.color.primary, baseline dark scheme) · PLATFORM
+        /// token: `color.global.system.primary`
+        public static let globalSystemPrimary: Color = Color(.sRGB, red: 0.8157, green: 0.7373, blue: 1, opacity: 1)
+        /// Material 3 · global.system · page / list container on Android system surfaces (role md.sys.color.surface, baseline dark scheme) · PLATFORM
+        /// token: `color.global.system.surface`
+        public static let globalSystemSurface: Color = Color(.sRGB, red: 0.0784, green: 0.0706, blue: 0.0941, opacity: 1)
+        /// Material 3 · global.system · M3 dialog container (role md.sys.color.surface-container-high, baseline dark scheme) · PLATFORM
+        /// token: `color.global.system.surfaceContainerHigh`
+        public static let globalSystemSurfaceContainerHigh: Color = Color(.sRGB, red: 0.1686, green: 0.1608, blue: 0.1882, opacity: 1)
+        /// Material 3 · global.system · M3 modal bottom sheet container (role md.sys.color.surface-container-low, baseline dark scheme) · PLATFORM
+        /// token: `color.global.system.surfaceContainerLow`
+        public static let globalSystemSurfaceContainerLow: Color = Color(.sRGB, red: 0.1137, green: 0.1059, blue: 0.1255, opacity: 1)
+        /// Yope · global · primary text and glyphs · SOURCED
+        /// token: `color.global.textPrimary`
+        public static let globalTextPrimary: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
+        /// Yope · global · secondary text, placeholders ('start typing...'), inactive tab-bar glyphs, chevrons inside capsules · SOURCED
+        /// token: `color.global.textSecondary`
+        public static let globalTextSecondary: Color = Color(.sRGB, red: 0.5882, green: 0.5882, blue: 0.5882, opacity: 1)
+        /// Partiful · invite.web · filled button fill on dark themes · VERIFIED
+        /// token: `invite.web.color.button.filled.fill.dark`
+        public static let inviteWebColorButtonFilledFillDark: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
+        /// Partiful · invite.web · filled button fill on light themes · VERIFIED
+        /// token: `invite.web.color.button.filled.fill.light`
+        public static let inviteWebColorButtonFilledFillLight: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
+        /// Partiful · invite.web · filled button label on dark themes · VERIFIED
+        /// token: `invite.web.color.button.filled.label.dark`
+        public static let inviteWebColorButtonFilledLabelDark: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
+        /// Partiful · invite.web · filled button label on light themes · VERIFIED
+        /// token: `invite.web.color.button.filled.label.light`
+        public static let inviteWebColorButtonFilledLabelLight: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
+        /// Partiful · invite.web · members-only card fill colour on dark themes (alpha below) · VERIFIED
+        /// token: `invite.web.color.gateCard.dark`
+        public static let inviteWebColorGateCardDark: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
+        /// Partiful · invite.web · members-only card fill colour on light themes (alpha below) · VERIFIED
+        /// token: `invite.web.color.gateCard.light`
+        public static let inviteWebColorGateCardLight: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
+        /// Partiful · invite.web · text, icons and focus ring on dark themes (.ptf-dark) · VERIFIED
+        /// token: `invite.web.color.text.dark`
+        public static let inviteWebColorTextDark: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
+        /// Partiful · invite.web · text, icons and focus ring on light themes (.ptf-light) · VERIFIED
+        /// token: `invite.web.color.text.light`
+        public static let inviteWebColorTextLight: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
+        /// Partiful · invite.web · theme colour when the group has no cover, and on every non-ideal state (not found, link no longer works, error) · VERIFIED
+        /// token: `invite.web.color.theme.default`
+        public static let inviteWebColorThemeDefault: Color = Color(.sRGB, red: 0.0667, green: 0.0667, blue: 0.0667, opacity: 1)
+    }
+    public enum Counts {
+        /// Partiful · invite.web · title: most lines allowed before the size shrinks · VERIFIED
+        /// token: `invite.web.count.title.maxLines`
+        public static let inviteWebCountTitleMaxLines: CGFloat = 3
+    }
+    public enum Durations {
+        /// Yope · global · horizontal push to the next screen ('new group' → new group chat after create) · SOURCED
+        /// token: `duration.global.navigationPush`
+        public static let globalNavigationPush: TimeInterval = 0.1
+        /// Yope · global · horizontal swipe to the adjacent photo in the viewer, first movement to settled (gesture-driven) · SOURCED
+        /// token: `duration.global.photoSwipe`
+        public static let globalPhotoSwipe: TimeInterval = 0.167
+        /// Yope · global · bottom-sheet presentation, first movement to rest (rise ≈ 100 ms to an overshoot ≈ 16 pt past rest, settle ≈ 100 ms) · SOURCED
+        /// token: `duration.global.sheetPresent`
+        public static let globalSheetPresent: TimeInterval = 0.215
+        /// Partiful · invite.web · button/link background-colour and colour transition · VERIFIED
+        /// token: `invite.web.duration.button.colour`
+        public static let inviteWebDurationButtonColour: TimeInterval = 0.2
+        /// Partiful · invite.web · button opacity transition (press feedback) · VERIFIED
+        /// token: `invite.web.duration.button.opacity`
+        public static let inviteWebDurationButtonOpacity: TimeInterval = 0.1
+    }
+    public enum Easings {
+        /// Material 3 · global.system · M3 standard easing for custom transitions on Android system surfaces · PLATFORM
+        /// token: `easing.global.system.standard`
+        public static let globalSystemStandard: DSEasing = .cubicBezier(0.2, 0, 0, 1)
+        /// Partiful · invite.web · button/link transitions · VERIFIED
+        /// token: `invite.web.easing.button`
+        public static let inviteWebEasingButton: DSEasing = .easeOut
+    }
+    public enum FontSizes {
+        /// Yope · global · chat message text in bubbles (body text) · SOURCED
+        /// token: `fontSize.global.body`
+        public static let globalBody: CGFloat = 17
+        /// Yope · global · primary button label ('create group', 'send') · SOURCED
+        /// token: `fontSize.global.button`
+        public static let globalButton: CGFloat = 15
+        /// Yope · global · small meta text: voice-message duration ('00:38'), legal footer under sign-up · SOURCED
+        /// token: `fontSize.global.caption`
+        public static let globalCaption: CGFloat = 12
+        /// Yope · global · empty-state detail line ('and added mẹ, Anh'), italic · SOURCED
+        /// token: `fontSize.global.emptyDetail`
+        public static let globalEmptyDetail: CGFloat = 14
+        /// Yope · global · empty-state title ('you created group') · SOURCED
+        /// token: `fontSize.global.emptyTitle`
+        public static let globalEmptyTitle: CGFloat = 16
+        /// Yope · global · group name in the header capsule · SOURCED
+        /// token: `fontSize.global.headerTitle`
+        public static let globalHeaderTitle: CGFloat = 15
+        /// Yope · global · row subtitle ('new pic added · 9:43 AM'), secondary color · SOURCED
+        /// token: `fontSize.global.listSubtitle`
+        public static let globalListSubtitle: CGFloat = 14
+        /// Yope · global · row / card name on the home list ('kylee') · SOURCED
+        /// token: `fontSize.global.listTitle`
+        public static let globalListTitle: CGFloat = 17.5
+        /// Yope · global · onboarding / sign-up big title ('registrarse') · SOURCED
+        /// token: `fontSize.global.onboardingTitle`
+        public static let globalOnboardingTitle: CGFloat = 40
+        /// Yope · global · hour / time overlay centred on a photo in the chat ('10:00 PM') · SOURCED
+        /// token: `fontSize.global.overlayTime`
+        public static let globalOverlayTime: CGFloat = 21
+        /// Yope · global · hour overlay on the camera viewfinder and the send-to preview ('5:00 PM') · SOURCED
+        /// token: `fontSize.global.overlayTimeCamera`
+        public static let globalOverlayTimeCamera: CGFloat = 26
+        /// Yope · global · text-field placeholder ('start typing...') · SOURCED
+        /// token: `fontSize.global.placeholder`
+        public static let globalPlaceholder: CGFloat = 17
+        /// Yope · global · section label ('suggested friends'), secondary color · SOURCED
+        /// token: `fontSize.global.sectionLabel`
+        public static let globalSectionLabel: CGFloat = 16
+        /// Yope · global · sheet title centred between header circles ('send to...') · SOURCED
+        /// token: `fontSize.global.sheetTitle`
+        public static let globalSheetTitle: CGFloat = 19.5
+        /// Partiful · invite.appclip · join sheet helper line ('Just for group updates. No spam.') · VERIFIED
+        /// token: `invite.appclip.fontSize.sheetHelper`
+        public static let inviteAppclipFontSizeSheetHelper: CGFloat = 14.4
+        /// Partiful · invite.appclip · join sheet text input value and placeholder · VERIFIED
+        /// token: `invite.appclip.fontSize.sheetInput`
+        public static let inviteAppclipFontSizeSheetInput: CGFloat = 24
+        /// Partiful · invite.web · body text ('Invited by' row, initials, names, footer link, large button label) · VERIFIED
+        /// token: `invite.web.fontSize.body`
+        public static let inviteWebFontSizeBody: CGFloat = 16
+        /// Partiful · invite.web · medium button label · VERIFIED
+        /// token: `invite.web.fontSize.button.medium`
+        public static let inviteWebFontSizeButtonMedium: CGFloat = 14
+        /// Partiful · invite.web · card body / state body text · VERIFIED
+        /// token: `invite.web.fontSize.detail`
+        public static let inviteWebFontSizeDetail: CGFloat = 14
+        /// Partiful · invite.web · section header ('Member List', 'Restricted Access') · VERIFIED
+        /// token: `invite.web.fontSize.sectionHeader`
+        public static let inviteWebFontSizeSectionHeader: CGFloat = 18
+        /// Partiful · invite.web · emoji glyph on state pages · VERIFIED
+        /// token: `invite.web.fontSize.state.glyph`
+        public static let inviteWebFontSizeStateGlyph: CGFloat = 50
+        /// Partiful · invite.web · state title · VERIFIED
+        /// token: `invite.web.fontSize.state.title`
+        public static let inviteWebFontSizeStateTitle: CGFloat = 24
+        /// Partiful · invite.web · title: starting size for multi-line titles on phones (largest size tried is 39) · VERIFIED
+        /// token: `invite.web.fontSize.title.base`
+        public static let inviteWebFontSizeTitleBase: CGFloat = 40
+        /// Partiful · invite.web · title: smallest size · VERIFIED
+        /// token: `invite.web.fontSize.title.min`
+        public static let inviteWebFontSizeTitleMin: CGFloat = 25
+        /// Partiful · invite.web · title: upper bound for titles that fit on one line at the base size (largest size tried 47) · VERIFIED
+        /// token: `invite.web.fontSize.title.singleLineMax`
+        public static let inviteWebFontSizeTitleSingleLineMax: CGFloat = 48
+    }
+    public enum FontWeights {
+        /// Yope · global · chat message text · SOURCED
+        /// token: `fontWeight.global.body`
+        public static let fontWeightGlobalBody: Font.Weight = .regular
+        /// Yope · global · primary button label · SOURCED
+        /// token: `fontWeight.global.button`
+        public static let fontWeightGlobalButton: Font.Weight = .semibold
+        /// Yope · global · voice-message duration ('00:38') · SOURCED
+        /// token: `fontWeight.global.caption`
+        public static let fontWeightGlobalCaption: Font.Weight = .semibold
+        /// Yope · global · empty-state title · SOURCED
+        /// token: `fontWeight.global.emptyTitle`
+        public static let fontWeightGlobalEmptyTitle: Font.Weight = .bold
+        /// Yope · global · group name in the header capsule · SOURCED
+        /// token: `fontWeight.global.headerTitle`
+        public static let fontWeightGlobalHeaderTitle: Font.Weight = .bold
+        /// Yope · global · row subtitle · SOURCED
+        /// token: `fontWeight.global.listSubtitle`
+        public static let fontWeightGlobalListSubtitle: Font.Weight = .regular
+        /// Yope · global · row / card name on the home list · SOURCED
+        /// token: `fontWeight.global.listTitle`
+        public static let fontWeightGlobalListTitle: Font.Weight = .bold
+        /// Yope · global · onboarding / sign-up big title · SOURCED
+        /// token: `fontWeight.global.onboardingTitle`
+        public static let fontWeightGlobalOnboardingTitle: Font.Weight = .heavy
+        /// Yope · global · time overlay on a photo · SOURCED
+        /// token: `fontWeight.global.overlayTime`
+        public static let fontWeightGlobalOverlayTime: Font.Weight = .heavy
+        /// Yope · global · hour overlay on the viewfinder · SOURCED
+        /// token: `fontWeight.global.overlayTimeCamera`
+        public static let fontWeightGlobalOverlayTimeCamera: Font.Weight = .heavy
+        /// Yope · global · section label · SOURCED
+        /// token: `fontWeight.global.sectionLabel`
+        public static let fontWeightGlobalSectionLabel: Font.Weight = .semibold
+        /// Yope · global · sheet title ('send to...') · SOURCED
+        /// token: `fontWeight.global.sheetTitle`
+        public static let fontWeightGlobalSheetTitle: Font.Weight = .bold
+        /// Partiful · invite.web · body text weight (400) · VERIFIED
+        /// token: `invite.web.fontWeight.body`
+        public static let inviteWebFontWeightBody: Font.Weight = .regular
+        /// Partiful · invite.web · button and link labels (600) · VERIFIED
+        /// token: `invite.web.fontWeight.button`
+        public static let inviteWebFontWeightButton: Font.Weight = .semibold
+        /// Partiful · invite.web · section header weight (700) · VERIFIED
+        /// token: `invite.web.fontWeight.sectionHeader`
+        public static let inviteWebFontWeightSectionHeader: Font.Weight = .bold
+        /// Partiful · invite.web · state title weight (700) · VERIFIED
+        /// token: `invite.web.fontWeight.state.title`
+        public static let inviteWebFontWeightStateTitle: Font.Weight = .bold
+        /// Partiful · invite.web · title weight (700) · VERIFIED
+        /// token: `invite.web.fontWeight.title`
+        public static let inviteWebFontWeightTitle: Font.Weight = .bold
+        /// Partiful · invite.web · member first name in a row (600) · VERIFIED
+        /// token: `invite.web.fontWeight.userRow.name`
+        public static let inviteWebFontWeightUserRowName: Font.Weight = .semibold
+    }
+    public enum Fonts {
+        /// Yope · global · typeface of all text (SF Pro on iOS, Roboto on Android) · PLATFORM
+        /// token: `font.global.family`
+        public static let globalFamily: DSFontFamily = .system
+        /// Partiful · invite.web · all page text · PLATFORM
+        /// token: `invite.web.font`
+        public static let inviteWebFont: DSFontFamily = .system
+    }
+    public enum Haptics {
+        /// Apple HIG / Material 3 · global · a task failed (send failed) · PLATFORM
+        /// token: `haptic.global.error`
+        public static let globalError: DSHaptic = .notificationError
+        /// Apple HIG / Material 3 · global · a recipient / group toggled, a segmented choice, picker scrubbing · PLATFORM
+        /// token: `haptic.global.select`
+        public static let globalSelect: DSHaptic = .selection
+        /// Apple HIG / Material 3 · global · confirm / send: a photo or message was sent · PLATFORM
+        /// token: `haptic.global.send`
+        public static let globalSend: DSHaptic = .notificationSuccess
+        /// Apple HIG / Material 3 · global · any task completed successfully (same generator as send) · PLATFORM
+        /// token: `haptic.global.success`
+        public static let globalSuccess: DSHaptic = .notificationSuccess
+        /// Apple HIG / Material 3 · global · a destructive action was confirmed (delete account, block, leave) · PLATFORM
+        /// token: `haptic.global.warning`
+        public static let globalWarning: DSHaptic = .notificationWarning
+    }
+    public enum Icons {
+        /// Yope · global · add (+ in a header circle) · PLATFORM
+        /// token: `icon.global.add`
+        public static let globalAdd: String = "plus"
+        /// Yope · global · back (‹ in a header circle) · PLATFORM
+        /// token: `icon.global.back`
+        public static let globalBack: String = "chevron.left"
+        /// Yope · global · calendar circle in the group header · PLATFORM
+        /// token: `icon.global.calendar`
+        public static let globalCalendar: String = "calendar"
+        /// Yope · global · camera (composer button, row quick-camera, camera tab) · PLATFORM
+        /// token: `icon.global.camera`
+        public static let globalCamera: String = "camera.fill"
+        /// Yope · global · chats tab (two overlapping bubbles) · PLATFORM
+        /// token: `icon.global.chats`
+        public static let globalChats: String = "bubble.left.and.bubble.right.fill"
+        /// Yope · global · selected (filled check circle, color.global.selection) · PLATFORM
+        /// token: `icon.global.check`
+        public static let globalCheck: String = "checkmark.circle.fill"
+        /// Yope · global · done / posted (bare check, e.g. in the 'posted in the wall' toast) · PLATFORM
+        /// token: `icon.global.checkmark`
+        public static let globalCheckmark: String = "checkmark"
+        /// Yope · global · disclosure / forward (› at the end of the header capsule) · PLATFORM
+        /// token: `icon.global.chevron`
+        public static let globalChevron: String = "chevron.right"
+        /// Yope · global · expand / dismiss down (⌄) · PLATFORM
+        /// token: `icon.global.chevronDown`
+        public static let globalChevronDown: String = "chevron.down"
+        /// Yope · global · close / dismiss (✕ in a header circle on sheets) · PLATFORM
+        /// token: `icon.global.close`
+        public static let globalClose: String = "xmark"
+        /// Yope · global · download / save (arrow down to a line in a header circle) · PLATFORM
+        /// token: `icon.global.download`
+        public static let globalDownload: String = "arrow.down.to.line"
+        /// Yope · global · edit (pencil in a header circle) · PLATFORM
+        /// token: `icon.global.edit`
+        public static let globalEdit: String = "pencil"
+        /// Yope · global · flash off (slashed bolt on the viewfinder) · PLATFORM
+        /// token: `icon.global.flashOff`
+        public static let globalFlashOff: String = "bolt.slash.fill"
+        /// Locket · global · flash on (bolt) · PLATFORM
+        /// token: `icon.global.flashOn`
+        public static let globalFlashOn: String = "bolt"
+        /// Yope · global · flip camera (two circular arrows in a circle) · PLATFORM
+        /// token: `icon.global.flip`
+        public static let globalFlip: String = "arrow.triangle.2.circlepath"
+        /// Yope · global · photo library (camera, when no thumbnail) · PLATFORM
+        /// token: `icon.global.gallery`
+        public static let globalGallery: String = "photo.on.rectangle"
+        /// Locket · global · grid view (2×2 rounded squares) · PLATFORM
+        /// token: `icon.global.grid`
+        public static let globalGrid: String = "square.grid.2x2"
+        /// Yope · global · group / people · PLATFORM
+        /// token: `icon.global.group`
+        public static let globalGroup: String = "person.2.fill"
+        /// Yope · global · leave group (menu item, destructive color) · PLATFORM
+        /// token: `icon.global.leave`
+        public static let globalLeave: String = "rectangle.portrait.and.arrow.right"
+        /// Yope · global · invite link · PLATFORM
+        /// token: `icon.global.link`
+        public static let globalLink: String = "link"
+        /// Partiful · global · private / restricted · PLATFORM
+        /// token: `icon.global.lock`
+        public static let globalLock: String = "lock.fill"
+        /// Yope · global · microphone (voice memo, voice message) · PLATFORM
+        /// token: `icon.global.mic`
+        public static let globalMic: String = "mic.fill"
+        /// Yope · global · more (•••) · PLATFORM
+        /// token: `icon.global.more`
+        public static let globalMore: String = "ellipsis"
+        /// Yope · global · default avatar silhouette · PLATFORM
+        /// token: `icon.global.person`
+        public static let globalPerson: String = "person.fill"
+        /// Yope · global · play (voice message) · PLATFORM
+        /// token: `icon.global.play`
+        public static let globalPlay: String = "play.fill"
+        /// Yope · global · recap entry in a header circle (film frame with stacked lines, outline) · PLATFORM
+        /// token: `icon.global.recap`
+        public static let globalRecap: String = "film.stack"
+        /// Yope · global · report (menu item, destructive color) · PLATFORM
+        /// token: `icon.global.report`
+        public static let globalReport: String = "flag.fill"
+        /// Yope · global · search (home header circle) · PLATFORM
+        /// token: `icon.global.search`
+        public static let globalSearch: String = "magnifyingglass"
+        /// Locket · global · send (paper plane in a circle) · PLATFORM
+        /// token: `icon.global.send`
+        public static let globalSend: String = "paperplane"
+        /// Apple HIG / Material 3 · global · settings entry · PLATFORM
+        /// token: `icon.global.settings`
+        public static let globalSettings: String = "gearshape"
+        /// Yope · global · share (square + up arrow) · PLATFORM
+        /// token: `icon.global.share`
+        public static let globalShare: String = "square.and.arrow.up"
+        /// Yope · global · not selected (empty ring) · PLATFORM
+        /// token: `icon.global.uncheck`
+        public static let globalUncheck: String = "circle"
+        /// Yope · global · walls / recaps tab (film frame with stacked lines, filled) · PLATFORM
+        /// token: `icon.global.wall`
+        public static let globalWall: String = "film.stack.fill"
+        /// Partiful · invite.web · arrow after 'Get the app' (web: Material Icons 'north_east', Apache-2.0) · PLATFORM
+        /// token: `invite.web.icon.getApp`
+        public static let inviteWebIconGetApp: String = "arrow.up.right"
+        /// Partiful · invite.web · lock glyph on the members-only card (web: Material Icons 'lock', Apache-2.0) · PLATFORM
+        /// token: `invite.web.icon.lock`
+        public static let inviteWebIconLock: String = "lock.fill"
+    }
+    public enum Layouts {
+        /// Apple HIG · global.system · semantic colors of native inset-grouped lists, alerts and sheets on system surfaces (settings.*, safety.*, system.permissions), iOS · PLATFORM
+        /// token: `color.global.system.ios`
+        public enum GlobalSystemIos {
+            public static let groupedBackground: String = "systemGroupedBackground"
+            public static let cell: String = "secondarySystemGroupedBackground"
+            public static let label: String = "label"
+            public static let secondaryLabel: String = "secondaryLabel"
+            public static let placeholder: String = "placeholderText"
+            public static let separator: String = "separator"
+            public static let tint: String = "systemBlue"
+            public static let destructive: String = "systemRed"
+        }
+        /// Material 3 · global.system · M3 duration scale (ms) for custom transitions on Android system surfaces · PLATFORM
+        /// token: `duration.global.system.scale`
+        public enum GlobalSystemScale {
+            public static let short1: CGFloat = 50
+            public static let short2: CGFloat = 100
+            public static let short3: CGFloat = 150
+            public static let short4: CGFloat = 200
+            public static let medium1: CGFloat = 250
+            public static let medium2: CGFloat = 300
+            public static let medium3: CGFloat = 350
+            public static let medium4: CGFloat = 400
+            public static let long1: CGFloat = 450
+            public static let long2: CGFloat = 500
+            public static let long3: CGFloat = 550
+            public static let long4: CGFloat = 600
+            public static let extraLong1: CGFloat = 700
+            public static let extraLong2: CGFloat = 800
+            public static let extraLong3: CGFloat = 900
+            public static let extraLong4: CGFloat = 1000
+        }
+        /// Yope · global · motion of native components Yope uses; their curves and durations are the platform's · PLATFORM
+        /// token: `easing.global.native`
+        public enum GlobalNative {
+            public static let keyboard: String = "system"
+            public static let alert: String = "system"
+            public static let activityIndicator: String = "system (ProgressView / CircularProgressIndicator)"
+            public static let scrollIndicator: String = "system"
+            public static let navigationPush: String = "system (NavigationStack / Compose Navigation default)"
+            public static let sheet: String = "system (.sheet / ModalBottomSheet)"
+        }
+        /// Yope · global · settle curve of the photo swipe after the finger lifts · PLATFORM
+        /// token: `easing.global.photoSwipe`
+        public enum GlobalPhotoSwipe {
+            public static let ios: String = "system paging scroll physics"
+            public static let android: String = "Compose HorizontalPager default fling"
+        }
+        /// Apple HIG / Material 3 · global · a long press starts (context menu) · PLATFORM
+        /// token: `haptic.global.longPressStart`
+        public enum GlobalLongPressStart {
+            public static let ios: String = "system (context menu plays its own haptic; no custom generator)"
+            public static let android: String = "LONG_PRESS"
+        }
+        /// Apple HIG / Material 3 · global · the long press that opens the reaction picker on a photo · PLATFORM
+        /// token: `haptic.global.reaction`
+        public enum GlobalReaction {
+            public static let ios: String = "system (context menu plays its own haptic; no custom generator)"
+            public static let android: String = "LONG_PRESS"
+        }
+        /// Apple HIG / Material 3 · global · shutter press (photo / video capture) · PLATFORM
+        /// token: `haptic.global.shutter`
+        public enum GlobalShutter {
+            public static let ios: String = "none"
+            public static let android: String = "none"
+        }
+        /// Apple HIG · global · which SF Symbol variant a context uses · PLATFORM
+        /// token: `icon.global.variantRule`
+        public enum GlobalVariantRule {
+            public static let tabBar: String = "fill variant"
+            public static let header: String = "outline variant unless the reference glyph is filled"
+        }
+        /// Partiful · invite.appclip · App Clip / universal link / App Link association · VERIFIED
+        /// token: `invite.appclip.layout.association`
+        public enum InviteAppclipLayoutAssociation {
+            public static let aasaAppClips: String = "appclips.apps = [TEAM_ID.BUNDLE_ID.Clip]"
+            public static let aasaAppLinks: String = "applinks.details[0].components: exclude /i/*/* (page sub-resources), then /i/*"
+            public static let banner: String = "<meta name=apple-itunes-app content='app-id=…, app-clip-bundle-id=…, app-clip-display=card'>"
+            public static let android: String = "assetlinks.json delegate_permission/common.handle_all_urls for the application id"
+        }
+        /// Apple HIG · invite.appclip · App Clip card metadata limits (App Store Connect) · PLATFORM
+        /// token: `invite.appclip.layout.cardLimits`
+        public enum InviteAppclipLayoutCardLimits {
+            public static let headerImage: String = "1800×1200 px, no transparency, no text"
+            public static let titleMaxCharacters: CGFloat = 30
+            public static let subtitleMaxCharacters: CGFloat = 56
+        }
+        /// Partiful · invite.appclip · App Clip card in Messages (drawn by iOS) · SOURCED
+        /// token: `invite.appclip.layout.messagesCard`
+        public enum InviteAppclipLayoutMessagesCard {
+            public static let header: String = "cover on a blurred backdrop with a domain chip"
+            public static let footer: String = "clip icon, title, subtitle, action button"
+        }
+        /// Partiful · invite.web · cover image · VERIFIED
+        /// token: `invite.web.layout.cover`
+        public enum InviteWebLayoutCover {
+            public static let width: String = "full column width"
+            public static let aspect: String = "own (intrinsic)"
+        }
+        /// Partiful · invite.web · text links ('Get the app' in the footer) · VERIFIED
+        /// token: `invite.web.layout.link`
+        public enum InviteWebLayoutLink {
+            public static let textDecoration: String = "none"
+            public static let footerLinkTarget: String = "new tab (target _blank, rel noopener noreferrer)"
+        }
+        /// Partiful · invite.web · link preview tags · VERIFIED
+        /// token: `invite.web.layout.linkPreview`
+        public enum InviteWebLayoutLinkPreview {
+            public static let titleTags: String = "<title>, og:title, twitter:title = copy invite.web.documentTitle"
+            public static let imageAlt: String = "copy invite.web.cover.alt"
+            public static let twitterCard: String = "summary_large_image"
+            public static let robots: String = "noindex, nofollow"
+            public static let description: String = "omitted (Partiful uses the event description; groups have none)"
+        }
+        /// Partiful · invite.web · link preview image (og:image / twitter:image) · VERIFIED
+        /// token: `invite.web.layout.ogImage`
+        public enum InviteWebLayoutOgImage {
+            public static let width: CGFloat = 1200
+            public static let height: CGFloat = 630
+            public static let foreground: String = "cover fitted inside the frame (contain), centred"
+            public static let background: String = "cover scaled to cover the frame (aspect kept, centre crop), Gaussian-blurred"
+            public static let format: String = "JPEG"
+        }
+        /// Partiful · invite.web · not found / link no longer works / error page layout · VERIFIED
+        /// token: `invite.web.layout.state`
+        public enum InviteWebLayoutState {
+            public static let page: String = "column at least the viewport height"
+            public static let content: String = "vertically centred: equal auto margins above the content, below it, and above the footer"
+            public static let align: String = "center"
+        }
+        /// Partiful · invite.web · state title case and alignment · VERIFIED
+        /// token: `invite.web.layout.state.title`
+        public enum InviteWebLayoutStateTitle {
+            public static let textTransform: String = "uppercase"
+            public static let textAlign: String = "center"
+        }
+        /// Partiful · invite.web · text rendering · VERIFIED
+        /// token: `invite.web.layout.text`
+        public enum InviteWebLayoutText {
+            public static let fontSmoothing: String = "antialiased"
+        }
+        /// Partiful · invite.web · page background (the per-invite theme) · SOURCED
+        /// token: `invite.web.layout.theme`
+        public enum InviteWebLayoutTheme {
+            public static let source: String = "group cover"
+            public static let colour: String = "mean sRGB colour of the cover image (solid page background)"
+            public static let fallback: String = "invite.web.color.theme.default"
+        }
+        /// W3C WCAG 2.2 · invite.web · choice of light (.ptf-light) or dark (.ptf-dark) text set for a theme · PLATFORM
+        /// token: `invite.web.layout.themeTextColour`
+        public enum InviteWebLayoutThemeTextColour {
+            public static let rule: String = "text colour is whichever of invite.web.color.text.light / .dark has the higher contrast ratio against the theme colour"
+            public static let formula: String = "WCAG 2.2 relative luminance and contrast ratio"
+        }
+        /// Partiful · invite.web · title alignment · VERIFIED
+        /// token: `invite.web.layout.title`
+        public enum InviteWebLayoutTitle {
+            public static let textAlign: String = "center"
+        }
+        /// Partiful · invite.web · title auto-fit: estimated text width = size × (0.9 × wide + 0.7 × normal + 0.4 × thin characters); line count by greedy wrap; widest word must fit · VERIFIED
+        /// token: `invite.web.layout.title.fit`
+        public enum InviteWebLayoutTitleFit {
+            public static let widthWide: CGFloat = 0.9
+            public static let widthNormal: CGFloat = 0.7
+            public static let widthThin: CGFloat = 0.4
+            public static let thinCharacters: String = " litjr.',!:;I"
+            public static let normalCharacters: String = "abcdefghknopqsuvxyz/\"-"
+            public static let words: String = "split on whitespace"
+            public static let search: String = "integer binary search; returns the lower bound"
+        }
+        /// Yope · global · appearance of every surface (app and system) · PLATFORM
+        /// token: `layout.global.appearance`
+        public enum GlobalAppearance {
+            public static let mode: String = "dark only"
+            public static let ios: String = "Info.plist UIUserInterfaceStyle = Dark"
+            public static let android: String = "dark color scheme only"
+        }
+        /// W3C WCAG 2.2 · global · minimum contrast ratio: text 18 pt and larger, or bold at any size · VERIFIED
+        /// token: `layout.global.contrast.largeText`
+        public enum GlobalContrastLargeText {
+            public static let ratio: CGFloat = 3
+            public static let rule: String = "text 18 pt and larger, or bold at any size"
+        }
+        /// W3C WCAG 2.2 · global · minimum contrast ratio: UI components and graphical objects against adjacent colors · VERIFIED
+        /// token: `layout.global.contrast.nonText`
+        public enum GlobalContrastNonText {
+            public static let ratio: CGFloat = 3
+            public static let rule: String = "UI components and graphical objects against adjacent colors"
+        }
+        /// W3C WCAG 2.2 · global · minimum contrast ratio: text up to 17 pt (iOS) / below 18 sp (Android), not bold · VERIFIED
+        /// token: `layout.global.contrast.text`
+        public enum GlobalContrastText {
+            public static let ratio: CGFloat = 4.5
+            public static let rule: String = "text up to 17 pt (iOS) / below 18 sp (Android), not bold"
+        }
+        /// Apple HIG / Material 3 · global · Reduce Motion substitution rule for every token animation (implemented by DSAnimation.reducedMotion / dsMotion / dsTransition and Motion.kt dsMotionSpec) · PLATFORM
+        /// token: `layout.global.reduceMotion`
+        public enum GlobalReduceMotion {
+            public static let ios: String = "UIAccessibility.isReduceMotionEnabled / @Environment(\\.accessibilityReduceMotion)"
+            public static let android: String = "Settings.Global.ANIMATOR_DURATION_SCALE == 0 or ValueAnimator.areAnimatorsEnabled() == false (Accessibility > Remove animations)"
+            public static let substitute: String = "replace x/y/z movement with a cross-fade of the same token duration; springs lose their bounce (dampingFraction 1); drop zoom, scale, peripheral and automatic repeating animation; never animate into or out of blur; motion that tracks the finger stays"
+        }
+        /// Apple HIG / Material 3 · global.system · text styles on system surfaces · PLATFORM
+        /// token: `layout.global.system.typography`
+        public enum GlobalSystemTypography {
+            public static let ios: String = "built-in text styles (Font.TextStyle) on native lists, alerts and sheets"
+            public static let android: String = "MaterialTheme.typography (M3 baseline type scale: list label bodyLarge, supporting bodyMedium, dialog headline headlineSmall, actions labelLarge)"
+        }
+        /// Apple HIG · global · iOS Dynamic Type text style each fontSize.global.<role> scales with (SwiftUI Font.TextStyle case; DSTextStyle.relativeTo) · PLATFORM
+        /// token: `layout.global.textStyleMap`
+        public enum GlobalTextStyleMap {
+            public static let onboardingTitle: String = "largeTitle"
+            public static let sheetTitle: String = "title3"
+            public static let headerTitle: String = "subheadline"
+            public static let listTitle: String = "headline"
+            public static let listSubtitle: String = "subheadline"
+            public static let body: String = "body"
+            public static let button: String = "subheadline"
+            public static let caption: String = "caption"
+            public static let overlayTime: String = "title2"
+            public static let overlayTimeCamera: String = "title"
+            public static let placeholder: String = "body"
+            public static let sectionLabel: String = "callout"
+            public static let emptyTitle: String = "callout"
+            public static let emptyDetail: String = "subheadline"
+        }
+        /// Yope · global · full pill: header title capsule, composer text field, chat bubbles, tab-bar capsule, tooltip ends, white secondary pills · SOURCED
+        /// token: `radius.global.capsule`
+        public enum GlobalCapsule {
+            public static let shape: String = "capsule"
+            public static let radius: String = "height / 2"
+        }
+        /// Apple HIG / Material 3 · global · sheet top corners (Yope's sheet radius was not measured) · PLATFORM
+        /// token: `radius.global.sheet`
+        public enum GlobalSheet {
+            public static let ios: String = "system"
+            public static let android: CGFloat = 28
+        }
+        /// Yope · global · observed shape of the sheet presentation: overshoot past rest, time to the peak, time from the peak to rest · SOURCED
+        /// token: `spring.global.sheetPresentObserved`
+        public enum GlobalSheetPresentObserved {
+            public static let overshootPt: CGFloat = 16
+            public static let timeToPeakMs: CGFloat = 100
+            public static let settleMs: CGFloat = 100
+        }
+    }
+    public enum LineHeights {
+        /// Partiful · invite.web · default line height (× font size) for all text except the title · VERIFIED
+        /// token: `invite.web.lineHeight.default`
+        public static let inviteWebLineHeightDefault: CGFloat = 1.4
+        /// Partiful · invite.web · title line height (× size) · VERIFIED
+        /// token: `invite.web.lineHeight.title`
+        public static let inviteWebLineHeightTitle: CGFloat = 1.2
+        /// Yope · global · line pitch of the 3-line legal footer under sign-up (12 pt text) · SOURCED
+        /// token: `lineHeight.global.caption`
+        public static let globalCaption: CGFloat = 15.2
+    }
+    public enum Opacities {
+        /// Partiful · invite.appclip · join sheet helper alpha on dark themes · VERIFIED
+        /// token: `invite.appclip.opacity.sheetHelper.dark`
+        public static let inviteAppclipOpacitySheetHelperDark: Double = 0.4
+        /// Partiful · invite.appclip · join sheet helper alpha on light themes · VERIFIED
+        /// token: `invite.appclip.opacity.sheetHelper.light`
+        public static let inviteAppclipOpacitySheetHelperLight: Double = 0.3
+        /// Partiful · invite.appclip · join sheet placeholder alpha on dark themes · VERIFIED
+        /// token: `invite.appclip.opacity.sheetPlaceholder.dark`
+        public static let inviteAppclipOpacitySheetPlaceholderDark: Double = 0.4
+        /// Partiful · invite.appclip · join sheet placeholder alpha on light themes · VERIFIED
+        /// token: `invite.appclip.opacity.sheetPlaceholder.light`
+        public static let inviteAppclipOpacitySheetPlaceholderLight: Double = 0.3
+        /// Partiful · invite.web · initials disc fill alpha (white) on dark themes · VERIFIED
+        /// token: `invite.web.opacity.avatar.minimal.fill.dark`
+        public static let inviteWebOpacityAvatarMinimalFillDark: Double = 0.25
+        /// Partiful · invite.web · initials disc fill alpha (black) on light themes — member without a photo · VERIFIED
+        /// token: `invite.web.opacity.avatar.minimal.fill.light`
+        public static let inviteWebOpacityAvatarMinimalFillLight: Double = 0.1
+        /// Partiful · invite.web · initials text alpha · VERIFIED
+        /// token: `invite.web.opacity.avatar.minimal.text`
+        public static let inviteWebOpacityAvatarMinimalText: Double = 0.8
+        /// Partiful · invite.web · every button: opacity while pressed · VERIFIED
+        /// token: `invite.web.opacity.button.active`
+        public static let inviteWebOpacityButtonActive: Double = 0.4
+        /// Partiful · invite.web · every button: opacity on hover (devices that hover) · VERIFIED
+        /// token: `invite.web.opacity.button.hover`
+        public static let inviteWebOpacityButtonHover: Double = 0.6
+        /// Partiful · invite.web · outlined button border alpha while pressed · VERIFIED
+        /// token: `invite.web.opacity.button.outlined.active.border`
+        public static let inviteWebOpacityButtonOutlinedActiveBorder: Double = 0.4
+        /// Partiful · invite.web · outlined button fill alpha while pressed · VERIFIED
+        /// token: `invite.web.opacity.button.outlined.active.fill`
+        public static let inviteWebOpacityButtonOutlinedActiveFill: Double = 0.25
+        /// Partiful · invite.web · outlined button border alpha on dark themes · VERIFIED
+        /// token: `invite.web.opacity.button.outlined.border.dark`
+        public static let inviteWebOpacityButtonOutlinedBorderDark: Double = 0.4
+        /// Partiful · invite.web · outlined button border alpha on light themes · VERIFIED
+        /// token: `invite.web.opacity.button.outlined.border.light`
+        public static let inviteWebOpacityButtonOutlinedBorderLight: Double = 0.25
+        /// Partiful · invite.web · outlined button fill alpha (text colour) · VERIFIED
+        /// token: `invite.web.opacity.button.outlined.fill`
+        public static let inviteWebOpacityButtonOutlinedFill: Double = 0.05
+        /// Partiful · invite.web · outlined button fill alpha on hover · VERIFIED
+        /// token: `invite.web.opacity.button.outlined.hover.fill`
+        public static let inviteWebOpacityButtonOutlinedHoverFill: Double = 0.1
+        /// Partiful · invite.web · arrow glyph alpha · VERIFIED
+        /// token: `invite.web.opacity.footer.arrow`
+        public static let inviteWebOpacityFooterArrow: Double = 0.8
+        /// Partiful · invite.web · footer divider alpha (text colour, 1 pt) · VERIFIED
+        /// token: `invite.web.opacity.footer.divider`
+        public static let inviteWebOpacityFooterDivider: Double = 0.1
+        /// Partiful · invite.web · members-only card fill alpha on dark themes · VERIFIED
+        /// token: `invite.web.opacity.gateCard.dark`
+        public static let inviteWebOpacityGateCardDark: Double = 0.8
+        /// Partiful · invite.web · members-only card fill alpha on light themes · VERIFIED
+        /// token: `invite.web.opacity.gateCard.light`
+        public static let inviteWebOpacityGateCardLight: Double = 0.7
+        /// Partiful · invite.web · body text alpha ('Invited by' row, gate card body, initials) · VERIFIED
+        /// token: `invite.web.opacity.text.body`
+        public static let inviteWebOpacityTextBody: Double = 0.8
+    }
+    public enum Radii {
+        /// Partiful · invite.web · avatar corners (circle) · VERIFIED
+        /// token: `invite.web.radius.avatar`
+        public static let inviteWebRadiusAvatar: CGFloat = 800
+        /// Partiful · invite.web · large button corners · VERIFIED
+        /// token: `invite.web.radius.button.large`
+        public static let inviteWebRadiusButtonLarge: CGFloat = 4
+        /// Partiful · invite.web · medium button corners (pill) · VERIFIED
+        /// token: `invite.web.radius.button.medium`
+        public static let inviteWebRadiusButtonMedium: CGFloat = 800
+        /// Partiful · invite.web · cover image corners · VERIFIED
+        /// token: `invite.web.radius.cover`
+        public static let inviteWebRadiusCover: CGFloat = 0
+        /// Partiful · invite.web · members-only card corners · VERIFIED
+        /// token: `invite.web.radius.gateCard`
+        public static let inviteWebRadiusGateCard: CGFloat = 4
+        /// Yope · global · primary (lime) button corners — not a full pill · SOURCED
+        /// token: `radius.global.button`
+        public static let globalButton: CGFloat = 14
+        /// Yope · global · list card corners (home conversation / group cards, inline permission card) · SOURCED
+        /// token: `radius.global.card`
+        public static let globalCard: CGFloat = 17
+        /// Yope · global · single-line form text field corners ('name group (optional)') · SOURCED
+        /// token: `radius.global.field`
+        public static let globalField: CGFloat = 12
+        /// Yope · global · photo corners in the thread and in grids of walls · SOURCED
+        /// token: `radius.global.photo`
+        public static let globalPhoto: CGFloat = 15
+        /// Yope · global · camera viewfinder corners (full-width viewfinder) · SOURCED
+        /// token: `radius.global.viewfinder`
+        public static let globalViewfinder: CGFloat = 18.5
+    }
+    public enum Sizes {
+        /// Partiful · invite.web · member avatar (row and list) · VERIFIED
+        /// token: `invite.web.dimension.avatar`
+        public static let inviteWebDimensionAvatar: CGFloat = 48
+        /// Partiful · invite.web · gap between avatars (also between wrapped rows) · VERIFIED
+        /// token: `invite.web.dimension.avatarGap`
+        public static let inviteWebDimensionAvatarGap: CGFloat = 4
+        /// Partiful · invite.web · gap between a button's icon and label · VERIFIED
+        /// token: `invite.web.dimension.button.gap`
+        public static let inviteWebDimensionButtonGap: CGFloat = 4
+        /// Partiful · invite.web · large button height (gate card action, error retry) · VERIFIED
+        /// token: `invite.web.dimension.button.large.height`
+        public static let inviteWebDimensionButtonLargeHeight: CGFloat = 48
+        /// Partiful · invite.web · large button horizontal padding · VERIFIED
+        /// token: `invite.web.dimension.button.large.paddingH`
+        public static let inviteWebDimensionButtonLargePaddingH: CGFloat = 24
+        /// Partiful · invite.web · medium (pill) button height ('View all') · VERIFIED
+        /// token: `invite.web.dimension.button.medium.height`
+        public static let inviteWebDimensionButtonMediumHeight: CGFloat = 36
+        /// Partiful · invite.web · medium button horizontal padding (outlined: minus the 1-pt border) · VERIFIED
+        /// token: `invite.web.dimension.button.medium.paddingH`
+        public static let inviteWebDimensionButtonMediumPaddingH: CGFloat = 16
+        /// Partiful · invite.web · outlined button border width; also the footer divider and the focus ring width · VERIFIED
+        /// token: `invite.web.dimension.button.outlined.border`
+        public static let inviteWebDimensionButtonOutlinedBorder: CGFloat = 1
+        /// Partiful · invite.web · widest viewport the mobile layout is used for; the page column stops growing here · VERIFIED
+        /// token: `invite.web.dimension.columnMaxWidth`
+        public static let inviteWebDimensionColumnMaxWidth: CGFloat = 720
+        /// Partiful · invite.web · cover bottom → next element · VERIFIED
+        /// token: `invite.web.dimension.coverToNext`
+        public static let inviteWebDimensionCoverToNext: CGFloat = 16
+        /// Partiful · invite.web · vertical padding of an event-field row ('Invited by') · VERIFIED
+        /// token: `invite.web.dimension.fieldRow.paddingV`
+        public static let inviteWebDimensionFieldRowPaddingV: CGFloat = 4
+        /// Partiful · invite.web · focus ring offset (ring = 1-pt outline in the text colour) · VERIFIED
+        /// token: `invite.web.dimension.focus.offset`
+        public static let inviteWebDimensionFocusOffset: CGFloat = 2
+        /// Partiful · invite.web · arrow glyph after 'Get the app' · VERIFIED
+        /// token: `invite.web.dimension.footer.arrow`
+        public static let inviteWebDimensionFooterArrow: CGFloat = 16
+        /// Partiful · invite.web · footer content padding above and below · VERIFIED
+        /// token: `invite.web.dimension.footer.contentPaddingV`
+        public static let inviteWebDimensionFooterContentPaddingV: CGFloat = 40
+        /// Partiful · invite.web · 'Get the app' label → arrow glyph · VERIFIED
+        /// token: `invite.web.dimension.footer.linkGap`
+        public static let inviteWebDimensionFooterLinkGap: CGFloat = 2
+        /// Partiful · invite.web · space above the footer divider · VERIFIED
+        /// token: `invite.web.dimension.footer.paddingTop`
+        public static let inviteWebDimensionFooterPaddingTop: CGFloat = 24
+        /// Partiful · invite.web · card body → button · VERIFIED
+        /// token: `invite.web.dimension.gateCard.bodyToButton`
+        public static let inviteWebDimensionGateCardBodyToButton: CGFloat = 16
+        /// Partiful · invite.web · lock glyph size · VERIFIED
+        /// token: `invite.web.dimension.gateCard.glyph`
+        public static let inviteWebDimensionGateCardGlyph: CGFloat = 64
+        /// Partiful · invite.web · lock glyph → card title · VERIFIED
+        /// token: `invite.web.dimension.gateCard.glyphToTitle`
+        public static let inviteWebDimensionGateCardGlyphToTitle: CGFloat = 8
+        /// Partiful · invite.web · members-only card padding · VERIFIED
+        /// token: `invite.web.dimension.gateCard.padding`
+        public static let inviteWebDimensionGateCardPadding: CGFloat = 24
+        /// Partiful · invite.web · card title → body; also state title → body · VERIFIED
+        /// token: `invite.web.dimension.gateCard.titleToBody`
+        public static let inviteWebDimensionGateCardTitleToBody: CGFloat = 4
+        /// Partiful · invite.web · members header row bottom → avatar row · VERIFIED
+        /// token: `invite.web.dimension.headerToAvatars`
+        public static let inviteWebDimensionHeaderToAvatars: CGFloat = 8
+        /// Partiful · invite.web · screen side margin (column padding) · VERIFIED
+        /// token: `invite.web.dimension.margin`
+        public static let inviteWebDimensionMargin: CGFloat = 16
+        /// Partiful · invite.web · gap between page sections · VERIFIED
+        /// token: `invite.web.dimension.sectionGap`
+        public static let inviteWebDimensionSectionGap: CGFloat = 24
+        /// Partiful · invite.web · state body → action button · VERIFIED
+        /// token: `invite.web.dimension.state.bodyToAction`
+        public static let inviteWebDimensionStateBodyToAction: CGFloat = 24
+        /// Partiful · invite.web · emoji → state title · VERIFIED
+        /// token: `invite.web.dimension.state.glyphToTitle`
+        public static let inviteWebDimensionStateGlyphToTitle: CGFloat = 20
+        /// Partiful · invite.web · space at the top of a state page (where Partiful's header row is) · VERIFIED
+        /// token: `invite.web.dimension.state.headerSpace`
+        public static let inviteWebDimensionStateHeaderSpace: CGFloat = 60
+        /// Partiful · invite.web · title block bottom → cover top · VERIFIED
+        /// token: `invite.web.dimension.titleToCover`
+        public static let inviteWebDimensionTitleToCover: CGFloat = 25.8
+        /// Partiful · invite.web · top of the title block from the top of the page · VERIFIED
+        /// token: `invite.web.dimension.titleTop`
+        public static let inviteWebDimensionTitleTop: CGFloat = 109.1
+        /// Partiful · invite.web · avatar → name gap in a member row · VERIFIED
+        /// token: `invite.web.dimension.userRow.columnGap`
+        public static let inviteWebDimensionUserRowColumnGap: CGFloat = 12
+        /// Partiful · invite.web · gap between member rows · VERIFIED
+        /// token: `invite.web.dimension.userRow.listGap`
+        public static let inviteWebDimensionUserRowListGap: CGFloat = 4
+        /// Partiful · invite.web · member row vertical padding in the expanded list · VERIFIED
+        /// token: `invite.web.dimension.userRow.paddingV`
+        public static let inviteWebDimensionUserRowPaddingV: CGFloat = 12
+        /// Yope · global · group avatar inside the header capsule · SOURCED
+        /// token: `size.global.avatarHeader`
+        public static let globalAvatarHeader: CGFloat = 28
+        /// Yope · global · avatar in a home list card · SOURCED
+        /// token: `size.global.avatarList`
+        public static let globalAvatarList: CGFloat = 64
+        /// Yope · global · avatar in a people-picker row · SOURCED
+        /// token: `size.global.avatarPicker`
+        public static let globalAvatarPicker: CGFloat = 40
+        /// Yope · global · small avatar: chat sender, send-to recipient row · SOURCED
+        /// token: `size.global.avatarSmall`
+        public static let globalAvatarSmall: CGFloat = 32.6
+        /// Yope · global · full-width primary button in a form ('create group') · SOURCED
+        /// token: `size.global.buttonHeight`
+        public static let globalButtonHeight: CGFloat = 45
+        /// Yope · global · primary action button at the bottom of a sheet ('send ⓝ') · SOURCED
+        /// token: `size.global.buttonHeightSheet`
+        public static let globalButtonHeightSheet: CGFloat = 47
+        /// Yope · global · side margin of the form primary button · SOURCED
+        /// token: `size.global.buttonMarginH`
+        public static let globalButtonMarginH: CGFloat = 19
+        /// Yope · global · side margin of the sheet-bottom primary button · SOURCED
+        /// token: `size.global.buttonMarginHSheet`
+        public static let globalButtonMarginHSheet: CGFloat = 27
+        /// Yope · global · selection circle (empty ring / filled check) in pickers and recipient rows · SOURCED
+        /// token: `size.global.checkCircle`
+        public static let globalCheckCircle: CGFloat = 24
+        /// Yope · global · single-line form text field height · SOURCED
+        /// token: `size.global.fieldHeight`
+        public static let globalFieldHeight: CGFloat = 44
+        /// Yope · global · circle icon buttons in headers (back, close, download, film-strip, search) · SOURCED
+        /// token: `size.global.headerButton`
+        public static let globalHeaderButton: CGFloat = 44
+        /// Yope · global · gap between the back circle and the header title capsule · SOURCED
+        /// token: `size.global.headerGap`
+        public static let globalHeaderGap: CGFloat = 7.3
+        /// Yope · global · screen edge to the first / last header circle · SOURCED
+        /// token: `size.global.headerInset`
+        public static let globalHeaderInset: CGFloat = 11.5
+        /// Yope · global · vertical gap between stacked list cards · SOURCED
+        /// token: `size.global.listGap`
+        public static let globalListGap: CGFloat = 7.5
+        /// Material 3 · global · minimum touch target, Android · VERIFIED
+        /// token: `size.global.minTouchTarget.android`
+        public static let globalMinTouchTargetAndroid: CGFloat = 48
+        /// Material 3 · global · spacing between touch targets, Android · VERIFIED
+        /// token: `size.global.minTouchTarget.androidSpacing`
+        public static let globalMinTouchTargetAndroidSpacing: CGFloat = 8
+        /// Apple HIG · global · minimum hit area of any control, iOS (default control size) · VERIFIED
+        /// token: `size.global.minTouchTarget.ios`
+        public static let globalMinTouchTargetIos: CGFloat = 44
+        /// Apple HIG · global · absolute minimum control size, iOS · VERIFIED
+        /// token: `size.global.minTouchTarget.iosMinimum`
+        public static let globalMinTouchTargetIosMinimum: CGFloat = 28
+        /// Yope · global · side margin of full-width content (home list cards); edge elements sit at the same inset · SOURCED
+        /// token: `size.global.screenMargin`
+        public static let globalScreenMargin: CGFloat = 12
+        /// Yope · global · 'me' tab avatar · SOURCED
+        /// token: `size.global.tabBarAvatar`
+        public static let globalTabBarAvatar: CGFloat = 34
+        /// Yope · global · floating tab-bar capsule height · SOURCED
+        /// token: `size.global.tabBarHeight`
+        public static let globalTabBarHeight: CGFloat = 58
+        /// Yope · global · tab glyph size (20-23 pt measured) · SOURCED
+        /// token: `size.global.tabBarIcon`
+        public static let globalTabBarIcon: CGFloat = 21
+        /// Yope · global · tab-bar side inset from the screen edges · SOURCED
+        /// token: `size.global.tabBarInset`
+        public static let globalTabBarInset: CGFloat = 22
+        /// Yope · global · selected-tab pill height · SOURCED
+        /// token: `size.global.tabBarSelectedHeight`
+        public static let globalTabBarSelectedHeight: CGFloat = 48
+        /// Yope · global · selected-tab pill width (fill color.global.controlRaised) · SOURCED
+        /// token: `size.global.tabBarSelectedWidth`
+        public static let globalTabBarSelectedWidth: CGFloat = 74
+        /// Yope · global · floating tab-bar capsule width · SOURCED
+        /// token: `size.global.tabBarWidth`
+        public static let globalTabBarWidth: CGFloat = 344
+    }
+    public enum Springs {
+        /// Material 3 · global · Android default spring (Compose spring() defaults) for custom motion whose Yope curve was not measurable · PLATFORM
+        /// token: `spring.global.platformDefault.android`
+        public static let globalPlatformDefaultAndroid: DSSpring = DSSpring(response: 0.1622, dampingFraction: 1)
+        /// Apple HIG · global · iOS default animation (SwiftUI Animation.default) for custom motion whose Yope curve was not measurable · PLATFORM
+        /// token: `spring.global.platformDefault.ios`
+        public static let globalPlatformDefaultIos: DSSpring = DSSpring(response: 0.55, dampingFraction: 1)
+    }
+    public enum Tracking {
+        /// Partiful · invite.web · title tracking · VERIFIED
+        /// token: `invite.web.letterSpacing.title`
+        public static let inviteWebLetterSpacingTitle: CGFloat = -0.02
+    }
 }

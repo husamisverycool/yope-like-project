@@ -5,5 +5,18 @@ import SwiftUI
 
 /// BLOCKED values: available in DEBUG builds only, so a release build that uses one fails to compile.
 public enum BlockedTokens {
+    public enum Colors {
+        /// Yope · global · dimming layer behind sheets / over photos under text on app surfaces · BLOCKED
+        /// token: `color.global.scrim`
+        public static var globalScrim: Never { fatalError("BLOCKED token color.global.scrim") }
+        /// Yope · global · hairline between rows on app (Yope-referenced) surfaces · BLOCKED
+        /// token: `color.global.separator`
+        public static var globalSeparator: Never { fatalError("BLOCKED token color.global.separator") }
+    }
+    public enum Springs {
+        /// Yope · global · sheet presentation spring (response, dampingFraction) · BLOCKED
+        /// token: `spring.global.sheetPresent`
+        public static var globalSheetPresent: Never { fatalError("BLOCKED token spring.global.sheetPresent") }
+    }
 }
 #endif

@@ -29,12 +29,12 @@ export function decodeJwt(jwt: string): { header: Record<string, unknown>; claim
   };
 }
 
-export function verifyEs256(jwt: string, publicKey: crypto.KeyLike): boolean {
+export function verifyEs256(jwt: string, publicKey: crypto.KeyObject): boolean {
   const i = jwt.lastIndexOf(".");
   return crypto.verify("sha256", Buffer.from(jwt.slice(0, i)), { key: publicKey, dsaEncoding: "ieee-p1363" }, Buffer.from(jwt.slice(i + 1), "base64url"));
 }
 
-export function verifyRs256(jwt: string, publicKey: crypto.KeyLike): boolean {
+export function verifyRs256(jwt: string, publicKey: crypto.KeyObject): boolean {
   const i = jwt.lastIndexOf(".");
   return crypto.verify("sha256", Buffer.from(jwt.slice(0, i)), publicKey, Buffer.from(jwt.slice(i + 1), "base64url"));
 }

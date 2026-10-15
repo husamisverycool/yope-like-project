@@ -20,7 +20,7 @@ export interface LaneSpec {
 
 interface LaneState {
   spec: LaneSpec;
-  inflight: Set<Promise<void>>;
+  inflight: Set<Promise<unknown>>;
   wake: (() => void) | null;
   timers: Set<NodeJS.Timeout>;
   loop: Promise<void> | null;

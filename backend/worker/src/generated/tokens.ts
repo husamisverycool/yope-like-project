@@ -2,6 +2,258 @@
 // Every value below is traced in design/SOURCES.md. Units: pt for sizes (1 pt = 1 px at @1x), ms for durations.
 
 export const tokens = {
+  "color.global.accent": "#CDFD07", // Yope · global · SOURCED
+  "color.global.accentSecondary": "#FE1F84", // Yope · global · SOURCED
+  "color.global.background": "#171717", // Yope · global · SOURCED
+  "color.global.backgroundDeep": "#000000", // Yope · global · SOURCED
+  "color.global.control": "#2E2E2E", // Yope · global · SOURCED
+  "color.global.controlOnDeep": "#101010", // Yope · global · SOURCED
+  "color.global.controlRaised": "#434343", // Yope · global · SOURCED
+  "color.global.destructive": "#FF4245", // Apple HIG · global.system · PLATFORM
+  "color.global.onAccent": "#000000", // Yope · global · SOURCED
+  "color.global.onSurfaceLight": "#000000", // Yope · global · SOURCED
+  "color.global.selection": "#0091FF", // Apple HIG · global · PLATFORM
+  "color.global.surfaceLight": "#FFFFFF", // Yope · global · SOURCED
+  "color.global.system.error": "#F2B8B5", // Material 3 · global.system · PLATFORM
+  "color.global.system.ios": {"groupedBackground":"systemGroupedBackground","cell":"secondarySystemGroupedBackground","label":"label","secondaryLabel":"secondaryLabel","placeholder":"placeholderText","separator":"separator","tint":"systemBlue","destructive":"systemRed"}, // Apple HIG · global.system · PLATFORM
+  "color.global.system.onSurface": "#E6E0E9", // Material 3 · global.system · PLATFORM
+  "color.global.system.onSurfaceVariant": "#CAC4D0", // Material 3 · global.system · PLATFORM
+  "color.global.system.outline": "#938F99", // Material 3 · global.system · PLATFORM
+  "color.global.system.primary": "#D0BCFF", // Material 3 · global.system · PLATFORM
+  "color.global.system.surface": "#141218", // Material 3 · global.system · PLATFORM
+  "color.global.system.surfaceContainerHigh": "#2B2930", // Material 3 · global.system · PLATFORM
+  "color.global.system.surfaceContainerLow": "#1D1B20", // Material 3 · global.system · PLATFORM
+  "color.global.textPrimary": "#FFFFFF", // Yope · global · SOURCED
+  "color.global.textSecondary": "#969696", // Yope · global · SOURCED
+  "duration.global.navigationPush": 100, // Yope · global · SOURCED
+  "duration.global.photoSwipe": 167, // Yope · global · SOURCED
+  "duration.global.sheetPresent": 215, // Yope · global · SOURCED
+  "duration.global.system.scale": {"short1":50,"short2":100,"short3":150,"short4":200,"medium1":250,"medium2":300,"medium3":350,"medium4":400,"long1":450,"long2":500,"long3":550,"long4":600,"extraLong1":700,"extraLong2":800,"extraLong3":900,"extraLong4":1000}, // Material 3 · global.system · PLATFORM
+  "easing.global.native": {"keyboard":"system","alert":"system","activityIndicator":"system (ProgressView / CircularProgressIndicator)","scrollIndicator":"system","navigationPush":"system (NavigationStack / Compose Navigation default)","sheet":"system (.sheet / ModalBottomSheet)"}, // Yope · global · PLATFORM
+  "easing.global.photoSwipe": {"ios":"system paging scroll physics","android":"Compose HorizontalPager default fling"}, // Yope · global · PLATFORM
+  "easing.global.system.standard": {"x1":0.2,"y1":0,"x2":0,"y2":1}, // Material 3 · global.system · PLATFORM
+  "font.global.family": {"ios":"system","android":"system"}, // Yope · global · PLATFORM
+  "fontSize.global.body": 17, // Yope · global · SOURCED
+  "fontSize.global.button": 15, // Yope · global · SOURCED
+  "fontSize.global.caption": 12, // Yope · global · SOURCED
+  "fontSize.global.emptyDetail": 14, // Yope · global · SOURCED
+  "fontSize.global.emptyTitle": 16, // Yope · global · SOURCED
+  "fontSize.global.headerTitle": 15, // Yope · global · SOURCED
+  "fontSize.global.listSubtitle": 14, // Yope · global · SOURCED
+  "fontSize.global.listTitle": 17.5, // Yope · global · SOURCED
+  "fontSize.global.onboardingTitle": 40, // Yope · global · SOURCED
+  "fontSize.global.overlayTime": 21, // Yope · global · SOURCED
+  "fontSize.global.overlayTimeCamera": 26, // Yope · global · SOURCED
+  "fontSize.global.placeholder": 17, // Yope · global · SOURCED
+  "fontSize.global.sectionLabel": 16, // Yope · global · SOURCED
+  "fontSize.global.sheetTitle": 19.5, // Yope · global · SOURCED
+  "fontWeight.global.body": "regular", // Yope · global · SOURCED
+  "fontWeight.global.button": "semibold", // Yope · global · SOURCED
+  "fontWeight.global.caption": "semibold", // Yope · global · SOURCED
+  "fontWeight.global.emptyTitle": "bold", // Yope · global · SOURCED
+  "fontWeight.global.headerTitle": "bold", // Yope · global · SOURCED
+  "fontWeight.global.listSubtitle": "regular", // Yope · global · SOURCED
+  "fontWeight.global.listTitle": "bold", // Yope · global · SOURCED
+  "fontWeight.global.onboardingTitle": "heavy", // Yope · global · SOURCED
+  "fontWeight.global.overlayTime": "heavy", // Yope · global · SOURCED
+  "fontWeight.global.overlayTimeCamera": "heavy", // Yope · global · SOURCED
+  "fontWeight.global.sectionLabel": "semibold", // Yope · global · SOURCED
+  "fontWeight.global.sheetTitle": "bold", // Yope · global · SOURCED
+  "haptic.global.error": {"ios":"notification.error","android":"REJECT"}, // Apple HIG / Material 3 · global · PLATFORM
+  "haptic.global.longPressStart": {"ios":"system (context menu plays its own haptic; no custom generator)","android":"LONG_PRESS"}, // Apple HIG / Material 3 · global · PLATFORM
+  "haptic.global.reaction": {"ios":"system (context menu plays its own haptic; no custom generator)","android":"LONG_PRESS"}, // Apple HIG / Material 3 · global · PLATFORM
+  "haptic.global.select": {"ios":"selection","android":"SEGMENT_TICK"}, // Apple HIG / Material 3 · global · PLATFORM
+  "haptic.global.send": {"ios":"notification.success","android":"CONFIRM"}, // Apple HIG / Material 3 · global · PLATFORM
+  "haptic.global.shutter": {"ios":"none","android":"none"}, // Apple HIG / Material 3 · global · PLATFORM
+  "haptic.global.success": {"ios":"notification.success","android":"CONFIRM"}, // Apple HIG / Material 3 · global · PLATFORM
+  "haptic.global.warning": {"ios":"notification.warning","android":"CONFIRM"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.add": {"ios":"plus","android":"Rounded.Add"}, // Yope · global · PLATFORM
+  "icon.global.back": {"ios":"chevron.left","android":"AutoMirrored.Rounded.KeyboardArrowLeft"}, // Yope · global · PLATFORM
+  "icon.global.calendar": {"ios":"calendar","android":"Rounded.CalendarMonth"}, // Yope · global · PLATFORM
+  "icon.global.camera": {"ios":"camera.fill","android":"Rounded.PhotoCamera"}, // Yope · global · PLATFORM
+  "icon.global.chats": {"ios":"bubble.left.and.bubble.right.fill","android":"Rounded.Forum"}, // Yope · global · PLATFORM
+  "icon.global.check": {"ios":"checkmark.circle.fill","android":"Rounded.CheckCircle"}, // Yope · global · PLATFORM
+  "icon.global.checkmark": {"ios":"checkmark","android":"Rounded.Check"}, // Yope · global · PLATFORM
+  "icon.global.chevron": {"ios":"chevron.right","android":"AutoMirrored.Rounded.KeyboardArrowRight"}, // Yope · global · PLATFORM
+  "icon.global.chevronDown": {"ios":"chevron.down","android":"Rounded.ExpandMore"}, // Yope · global · PLATFORM
+  "icon.global.close": {"ios":"xmark","android":"Rounded.Close"}, // Yope · global · PLATFORM
+  "icon.global.download": {"ios":"arrow.down.to.line","android":"Rounded.Download"}, // Yope · global · PLATFORM
+  "icon.global.edit": {"ios":"pencil","android":"Rounded.Edit"}, // Yope · global · PLATFORM
+  "icon.global.flashOff": {"ios":"bolt.slash.fill","android":"Rounded.FlashOff"}, // Yope · global · PLATFORM
+  "icon.global.flashOn": {"ios":"bolt","android":"Rounded.FlashOn"}, // Locket · global · PLATFORM
+  "icon.global.flip": {"ios":"arrow.triangle.2.circlepath","android":"Rounded.Sync"}, // Yope · global · PLATFORM
+  "icon.global.gallery": {"ios":"photo.on.rectangle","android":"Rounded.PhotoLibrary"}, // Yope · global · PLATFORM
+  "icon.global.grid": {"ios":"square.grid.2x2","android":"Rounded.GridView"}, // Locket · global · PLATFORM
+  "icon.global.group": {"ios":"person.2.fill","android":"Rounded.Group"}, // Yope · global · PLATFORM
+  "icon.global.leave": {"ios":"rectangle.portrait.and.arrow.right","android":"AutoMirrored.Rounded.Logout"}, // Yope · global · PLATFORM
+  "icon.global.link": {"ios":"link","android":"Rounded.Link"}, // Yope · global · PLATFORM
+  "icon.global.lock": {"ios":"lock.fill","android":"Rounded.Lock"}, // Partiful · global · PLATFORM
+  "icon.global.mic": {"ios":"mic.fill","android":"Rounded.Mic"}, // Yope · global · PLATFORM
+  "icon.global.more": {"ios":"ellipsis","android":"Rounded.MoreHoriz"}, // Yope · global · PLATFORM
+  "icon.global.person": {"ios":"person.fill","android":"Rounded.Person"}, // Yope · global · PLATFORM
+  "icon.global.play": {"ios":"play.fill","android":"Rounded.PlayArrow"}, // Yope · global · PLATFORM
+  "icon.global.recap": {"ios":"film.stack","android":"Rounded.VideoLibrary"}, // Yope · global · PLATFORM
+  "icon.global.report": {"ios":"flag.fill","android":"Rounded.Flag"}, // Yope · global · PLATFORM
+  "icon.global.search": {"ios":"magnifyingglass","android":"Rounded.Search"}, // Yope · global · PLATFORM
+  "icon.global.send": {"ios":"paperplane","android":"AutoMirrored.Rounded.Send"}, // Locket · global · PLATFORM
+  "icon.global.settings": {"ios":"gearshape","android":"Rounded.Settings"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.share": {"ios":"square.and.arrow.up","android":"Rounded.IosShare"}, // Yope · global · PLATFORM
+  "icon.global.uncheck": {"ios":"circle","android":"Rounded.RadioButtonUnchecked"}, // Yope · global · PLATFORM
+  "icon.global.variantRule": {"tabBar":"fill variant","header":"outline variant unless the reference glyph is filled"}, // Apple HIG · global · PLATFORM
+  "icon.global.wall": {"ios":"film.stack.fill","android":"Rounded.VideoLibrary"}, // Yope · global · PLATFORM
+  "invite.appclip.fontSize.sheetHelper": 14.4, // Partiful · invite.appclip · VERIFIED
+  "invite.appclip.fontSize.sheetInput": 24, // Partiful · invite.appclip · VERIFIED
+  "invite.appclip.layout.association": {"aasaAppClips":"appclips.apps = [TEAM_ID.BUNDLE_ID.Clip]","aasaAppLinks":"applinks.details[0].components: exclude /i/*/* (page sub-resources), then /i/*","banner":"<meta name=apple-itunes-app content='app-id=…, app-clip-bundle-id=…, app-clip-display=card'>","android":"assetlinks.json delegate_permission/common.handle_all_urls for the application id"}, // Partiful · invite.appclip · VERIFIED
+  "invite.appclip.layout.cardLimits": {"headerImage":"1800×1200 px, no transparency, no text","titleMaxCharacters":30,"subtitleMaxCharacters":56}, // Apple HIG · invite.appclip · PLATFORM
+  "invite.appclip.layout.messagesCard": {"header":"cover on a blurred backdrop with a domain chip","footer":"clip icon, title, subtitle, action button"}, // Partiful · invite.appclip · SOURCED
+  "invite.appclip.opacity.sheetHelper.dark": 0.4, // Partiful · invite.appclip · VERIFIED
+  "invite.appclip.opacity.sheetHelper.light": 0.3, // Partiful · invite.appclip · VERIFIED
+  "invite.appclip.opacity.sheetPlaceholder.dark": 0.4, // Partiful · invite.appclip · VERIFIED
+  "invite.appclip.opacity.sheetPlaceholder.light": 0.3, // Partiful · invite.appclip · VERIFIED
+  "invite.web.blur.button.outlined": 40, // Partiful · invite.web · VERIFIED
+  "invite.web.blur.ogImage.fill": 360, // Partiful · invite.web · SOURCED
+  "invite.web.color.button.filled.fill.dark": "#FFFFFF", // Partiful · invite.web · VERIFIED
+  "invite.web.color.button.filled.fill.light": "#000000", // Partiful · invite.web · VERIFIED
+  "invite.web.color.button.filled.label.dark": "#000000", // Partiful · invite.web · VERIFIED
+  "invite.web.color.button.filled.label.light": "#FFFFFF", // Partiful · invite.web · VERIFIED
+  "invite.web.color.gateCard.dark": "#000000", // Partiful · invite.web · VERIFIED
+  "invite.web.color.gateCard.light": "#FFFFFF", // Partiful · invite.web · VERIFIED
+  "invite.web.color.text.dark": "#FFFFFF", // Partiful · invite.web · VERIFIED
+  "invite.web.color.text.light": "#000000", // Partiful · invite.web · VERIFIED
+  "invite.web.color.theme.default": "#111111", // Partiful · invite.web · VERIFIED
+  "invite.web.count.title.maxLines": 3, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.avatar": 48, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.avatarGap": 4, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.button.gap": 4, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.button.large.height": 48, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.button.large.paddingH": 24, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.button.medium.height": 36, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.button.medium.paddingH": 16, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.button.outlined.border": 1, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.columnMaxWidth": 720, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.coverToNext": 16, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.fieldRow.paddingV": 4, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.focus.offset": 2, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.footer.arrow": 16, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.footer.contentPaddingV": 40, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.footer.linkGap": 2, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.footer.paddingTop": 24, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.gateCard.bodyToButton": 16, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.gateCard.glyph": 64, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.gateCard.glyphToTitle": 8, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.gateCard.padding": 24, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.gateCard.titleToBody": 4, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.headerToAvatars": 8, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.margin": 16, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.sectionGap": 24, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.state.bodyToAction": 24, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.state.glyphToTitle": 20, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.state.headerSpace": 60, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.titleToCover": 25.8, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.titleTop": 109.1, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.userRow.columnGap": 12, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.userRow.listGap": 4, // Partiful · invite.web · VERIFIED
+  "invite.web.dimension.userRow.paddingV": 12, // Partiful · invite.web · VERIFIED
+  "invite.web.duration.button.colour": 200, // Partiful · invite.web · VERIFIED
+  "invite.web.duration.button.opacity": 100, // Partiful · invite.web · VERIFIED
+  "invite.web.easing.button": "easeOut", // Partiful · invite.web · VERIFIED
+  "invite.web.font": {"ios":"system","android":"system"}, // Partiful · invite.web · PLATFORM
+  "invite.web.fontSize.body": 16, // Partiful · invite.web · VERIFIED
+  "invite.web.fontSize.button.medium": 14, // Partiful · invite.web · VERIFIED
+  "invite.web.fontSize.detail": 14, // Partiful · invite.web · VERIFIED
+  "invite.web.fontSize.sectionHeader": 18, // Partiful · invite.web · VERIFIED
+  "invite.web.fontSize.state.glyph": 50, // Partiful · invite.web · VERIFIED
+  "invite.web.fontSize.state.title": 24, // Partiful · invite.web · VERIFIED
+  "invite.web.fontSize.title.base": 40, // Partiful · invite.web · VERIFIED
+  "invite.web.fontSize.title.min": 25, // Partiful · invite.web · VERIFIED
+  "invite.web.fontSize.title.singleLineMax": 48, // Partiful · invite.web · VERIFIED
+  "invite.web.fontWeight.body": "regular", // Partiful · invite.web · VERIFIED
+  "invite.web.fontWeight.button": "semibold", // Partiful · invite.web · VERIFIED
+  "invite.web.fontWeight.sectionHeader": "bold", // Partiful · invite.web · VERIFIED
+  "invite.web.fontWeight.state.title": "bold", // Partiful · invite.web · VERIFIED
+  "invite.web.fontWeight.title": "bold", // Partiful · invite.web · VERIFIED
+  "invite.web.fontWeight.userRow.name": "semibold", // Partiful · invite.web · VERIFIED
+  "invite.web.icon.getApp": {"ios":"arrow.up.right","android":"Filled.NorthEast"}, // Partiful · invite.web · PLATFORM
+  "invite.web.icon.lock": {"ios":"lock.fill","android":"Filled.Lock"}, // Partiful · invite.web · PLATFORM
+  "invite.web.layout.cover": {"width":"full column width","aspect":"own (intrinsic)"}, // Partiful · invite.web · VERIFIED
+  "invite.web.layout.link": {"textDecoration":"none","footerLinkTarget":"new tab (target _blank, rel noopener noreferrer)"}, // Partiful · invite.web · VERIFIED
+  "invite.web.layout.linkPreview": {"titleTags":"<title>, og:title, twitter:title = copy invite.web.documentTitle","imageAlt":"copy invite.web.cover.alt","twitterCard":"summary_large_image","robots":"noindex, nofollow","description":"omitted (Partiful uses the event description; groups have none)"}, // Partiful · invite.web · VERIFIED
+  "invite.web.layout.ogImage": {"width":1200,"height":630,"foreground":"cover fitted inside the frame (contain), centred","background":"cover scaled to cover the frame (aspect kept, centre crop), Gaussian-blurred","format":"JPEG"}, // Partiful · invite.web · VERIFIED
+  "invite.web.layout.state": {"page":"column at least the viewport height","content":"vertically centred: equal auto margins above the content, below it, and above the footer","align":"center"}, // Partiful · invite.web · VERIFIED
+  "invite.web.layout.state.title": {"textTransform":"uppercase","textAlign":"center"}, // Partiful · invite.web · VERIFIED
+  "invite.web.layout.text": {"fontSmoothing":"antialiased"}, // Partiful · invite.web · VERIFIED
+  "invite.web.layout.theme": {"source":"group cover","colour":"mean sRGB colour of the cover image (solid page background)","fallback":"invite.web.color.theme.default"}, // Partiful · invite.web · SOURCED
+  "invite.web.layout.themeTextColour": {"rule":"text colour is whichever of invite.web.color.text.light / .dark has the higher contrast ratio against the theme colour","formula":"WCAG 2.2 relative luminance and contrast ratio"}, // W3C WCAG 2.2 · invite.web · PLATFORM
+  "invite.web.layout.title": {"textAlign":"center"}, // Partiful · invite.web · VERIFIED
+  "invite.web.layout.title.fit": {"widthWide":0.9,"widthNormal":0.7,"widthThin":0.4,"thinCharacters":" litjr.',!:;I","normalCharacters":"abcdefghknopqsuvxyz/\"-","words":"split on whitespace","search":"integer binary search; returns the lower bound"}, // Partiful · invite.web · VERIFIED
+  "invite.web.letterSpacing.title": -0.02, // Partiful · invite.web · VERIFIED
+  "invite.web.lineHeight.default": 1.4, // Partiful · invite.web · VERIFIED
+  "invite.web.lineHeight.title": 1.2, // Partiful · invite.web · VERIFIED
+  "invite.web.opacity.avatar.minimal.fill.dark": 0.25, // Partiful · invite.web · VERIFIED
+  "invite.web.opacity.avatar.minimal.fill.light": 0.1, // Partiful · invite.web · VERIFIED
+  "invite.web.opacity.avatar.minimal.text": 0.8, // Partiful · invite.web · VERIFIED
+  "invite.web.opacity.button.active": 0.4, // Partiful · invite.web · VERIFIED
+  "invite.web.opacity.button.hover": 0.6, // Partiful · invite.web · VERIFIED
+  "invite.web.opacity.button.outlined.active.border": 0.4, // Partiful · invite.web · VERIFIED
+  "invite.web.opacity.button.outlined.active.fill": 0.25, // Partiful · invite.web · VERIFIED
+  "invite.web.opacity.button.outlined.border.dark": 0.4, // Partiful · invite.web · VERIFIED
+  "invite.web.opacity.button.outlined.border.light": 0.25, // Partiful · invite.web · VERIFIED
+  "invite.web.opacity.button.outlined.fill": 0.05, // Partiful · invite.web · VERIFIED
+  "invite.web.opacity.button.outlined.hover.fill": 0.1, // Partiful · invite.web · VERIFIED
+  "invite.web.opacity.footer.arrow": 0.8, // Partiful · invite.web · VERIFIED
+  "invite.web.opacity.footer.divider": 0.1, // Partiful · invite.web · VERIFIED
+  "invite.web.opacity.gateCard.dark": 0.8, // Partiful · invite.web · VERIFIED
+  "invite.web.opacity.gateCard.light": 0.7, // Partiful · invite.web · VERIFIED
+  "invite.web.opacity.text.body": 0.8, // Partiful · invite.web · VERIFIED
+  "invite.web.radius.avatar": 800, // Partiful · invite.web · VERIFIED
+  "invite.web.radius.button.large": 4, // Partiful · invite.web · VERIFIED
+  "invite.web.radius.button.medium": 800, // Partiful · invite.web · VERIFIED
+  "invite.web.radius.cover": 0, // Partiful · invite.web · VERIFIED
+  "invite.web.radius.gateCard": 4, // Partiful · invite.web · VERIFIED
+  "layout.global.appearance": {"mode":"dark only","ios":"Info.plist UIUserInterfaceStyle = Dark","android":"dark color scheme only"}, // Yope · global · PLATFORM
+  "layout.global.contrast.largeText": {"ratio":3,"rule":"text 18 pt and larger, or bold at any size"}, // W3C WCAG 2.2 · global · VERIFIED
+  "layout.global.contrast.nonText": {"ratio":3,"rule":"UI components and graphical objects against adjacent colors"}, // W3C WCAG 2.2 · global · VERIFIED
+  "layout.global.contrast.text": {"ratio":4.5,"rule":"text up to 17 pt (iOS) / below 18 sp (Android), not bold"}, // W3C WCAG 2.2 · global · VERIFIED
+  "layout.global.reduceMotion": {"ios":"UIAccessibility.isReduceMotionEnabled / @Environment(\\.accessibilityReduceMotion)","android":"Settings.Global.ANIMATOR_DURATION_SCALE == 0 or ValueAnimator.areAnimatorsEnabled() == false (Accessibility > Remove animations)","substitute":"replace x/y/z movement with a cross-fade of the same token duration; springs lose their bounce (dampingFraction 1); drop zoom, scale, peripheral and automatic repeating animation; never animate into or out of blur; motion that tracks the finger stays"}, // Apple HIG / Material 3 · global · PLATFORM
+  "layout.global.system.typography": {"ios":"built-in text styles (Font.TextStyle) on native lists, alerts and sheets","android":"MaterialTheme.typography (M3 baseline type scale: list label bodyLarge, supporting bodyMedium, dialog headline headlineSmall, actions labelLarge)"}, // Apple HIG / Material 3 · global.system · PLATFORM
+  "layout.global.textStyleMap": {"onboardingTitle":"largeTitle","sheetTitle":"title3","headerTitle":"subheadline","listTitle":"headline","listSubtitle":"subheadline","body":"body","button":"subheadline","caption":"caption","overlayTime":"title2","overlayTimeCamera":"title","placeholder":"body","sectionLabel":"callout","emptyTitle":"callout","emptyDetail":"subheadline"}, // Apple HIG · global · PLATFORM
+  "lineHeight.global.caption": 15.2, // Yope · global · SOURCED
+  "radius.global.button": 14, // Yope · global · SOURCED
+  "radius.global.capsule": {"shape":"capsule","radius":"height / 2"}, // Yope · global · SOURCED
+  "radius.global.card": 17, // Yope · global · SOURCED
+  "radius.global.field": 12, // Yope · global · SOURCED
+  "radius.global.photo": 15, // Yope · global · SOURCED
+  "radius.global.sheet": {"ios":"system","android":28}, // Apple HIG / Material 3 · global · PLATFORM
+  "radius.global.viewfinder": 18.5, // Yope · global · SOURCED
+  "size.global.avatarHeader": 28, // Yope · global · SOURCED
+  "size.global.avatarList": 64, // Yope · global · SOURCED
+  "size.global.avatarPicker": 40, // Yope · global · SOURCED
+  "size.global.avatarSmall": 32.6, // Yope · global · SOURCED
+  "size.global.buttonHeight": 45, // Yope · global · SOURCED
+  "size.global.buttonHeightSheet": 47, // Yope · global · SOURCED
+  "size.global.buttonMarginH": 19, // Yope · global · SOURCED
+  "size.global.buttonMarginHSheet": 27, // Yope · global · SOURCED
+  "size.global.checkCircle": 24, // Yope · global · SOURCED
+  "size.global.fieldHeight": 44, // Yope · global · SOURCED
+  "size.global.headerButton": 44, // Yope · global · SOURCED
+  "size.global.headerGap": 7.3, // Yope · global · SOURCED
+  "size.global.headerInset": 11.5, // Yope · global · SOURCED
+  "size.global.listGap": 7.5, // Yope · global · SOURCED
+  "size.global.minTouchTarget.android": 48, // Material 3 · global · VERIFIED
+  "size.global.minTouchTarget.androidSpacing": 8, // Material 3 · global · VERIFIED
+  "size.global.minTouchTarget.ios": 44, // Apple HIG · global · VERIFIED
+  "size.global.minTouchTarget.iosMinimum": 28, // Apple HIG · global · VERIFIED
+  "size.global.screenMargin": 12, // Yope · global · SOURCED
+  "size.global.tabBarAvatar": 34, // Yope · global · SOURCED
+  "size.global.tabBarHeight": 58, // Yope · global · SOURCED
+  "size.global.tabBarIcon": 21, // Yope · global · SOURCED
+  "size.global.tabBarInset": 22, // Yope · global · SOURCED
+  "size.global.tabBarSelectedHeight": 48, // Yope · global · SOURCED
+  "size.global.tabBarSelectedWidth": 74, // Yope · global · SOURCED
+  "size.global.tabBarWidth": 344, // Yope · global · SOURCED
+  "spring.global.platformDefault.android": {"response":0.16223,"dampingFraction":1}, // Material 3 · global · PLATFORM
+  "spring.global.platformDefault.ios": {"response":0.55,"dampingFraction":1}, // Apple HIG · global · PLATFORM
+  "spring.global.sheetPresentObserved": {"overshootPt":16,"timeToPeakMs":100,"settleMs":100}, // Yope · global · SOURCED
 } as const;
 
 export type TokenName = keyof typeof tokens;

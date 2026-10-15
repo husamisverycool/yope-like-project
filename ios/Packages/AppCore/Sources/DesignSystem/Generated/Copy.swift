@@ -3,4 +3,52 @@
 import Foundation
 
 public enum Copy {
+    /// "View" — Partiful · invite.appclip · verbatim · SOURCED
+    public static var inviteAppclipCardAction: String { CopyLookup.string("invite.appclip.card.action", default: "View") }
+    /// "Make memories" — Partiful · invite.appclip · verbatim · SOURCED
+    public static var inviteAppclipCardSubtitle: String { CopyLookup.string("invite.appclip.card.subtitle", default: "Make memories") }
+    /// "Cancel" — Partiful · invite.appclip · verbatim · VERIFIED
+    public static var inviteAppclipSheetCancel: String { CopyLookup.string("invite.appclip.sheet.cancel", default: "Cancel") }
+    /// "Continue" — Partiful · invite.appclip · verbatim · VERIFIED
+    public static var inviteAppclipSheetContinue: String { CopyLookup.string("invite.appclip.sheet.continue", default: "Continue") }
+    /// "Just for group updates. No spam." — Partiful · invite.appclip · adapted · VERIFIED
+    public static var inviteAppclipSheetHelper: String { CopyLookup.string("invite.appclip.sheet.helper", default: "Just for group updates. No spam.") }
+    /// "Your Name" — Partiful · invite.appclip · verbatim · VERIFIED
+    public static var inviteAppclipSheetName: String { CopyLookup.string("invite.appclip.sheet.name", default: "Your Name") }
+    /// "Phone Number" — Partiful · invite.appclip · verbatim · VERIFIED
+    public static var inviteAppclipSheetPhone: String { CopyLookup.string("invite.appclip.sheet.phone", default: "Phone Number") }
+    /// "{group_name} Group Cover Image" — Partiful · invite.web · adapted · VERIFIED
+    public static func inviteWebCoverAlt(groupName: String) -> String { CopyLookup.format("invite.web.cover.alt", default: "{group_name} Group Cover Image", ["group_name": groupName]) }
+    /// "Please try again." — Partiful · invite.web · verbatim · VERIFIED
+    public static var inviteWebErrorBody: String { CopyLookup.string("invite.web.error.body", default: "Please try again.") }
+    /// "Try again" — Partiful · invite.web · verbatim · VERIFIED
+    public static var inviteWebErrorRetry: String { CopyLookup.string("invite.web.error.retry", default: "Try again") }
+    /// "Something went wrong" — Partiful · invite.web · verbatim · VERIFIED
+    public static var inviteWebErrorTitle: String { CopyLookup.string("invite.web.error.title", default: "Something went wrong") }
+    /// "Verify your phone number to view the group's photos" — Partiful · invite.web · adapted · VERIFIED
+    public static var inviteWebGateBody: String { CopyLookup.string("invite.web.gate.body", default: "Verify your phone number to view the group's photos") }
+    /// "Restricted Access" — Partiful · invite.web · verbatim · VERIFIED
+    public static var inviteWebGateTitle: String { CopyLookup.string("invite.web.gate.title", default: "Restricted Access") }
+    /// "Get the app" — Partiful · invite.web · verbatim · VERIFIED
+    public static var inviteWebGetApp: String { CopyLookup.string("invite.web.getApp", default: "Get the app") }
+    /// "Invited by {first_name}" — Partiful · invite.web · new · VERIFIED
+    public static func inviteWebInvitedBy(firstName: String) -> String { CopyLookup.format("invite.web.invitedBy", default: "Invited by {first_name}", ["first_name": firstName]) }
+    /// "Member List" — Partiful · invite.web · adapted · VERIFIED
+    public static var inviteWebMembersTitle: String { CopyLookup.string("invite.web.members.title", default: "Member List") }
+    /// "View all" — Partiful · invite.web · verbatim · VERIFIED
+    public static var inviteWebMembersViewAll: String { CopyLookup.string("invite.web.members.viewAll", default: "View all") }
+    /// "Not Found" — Partiful · invite.web · verbatim · VERIFIED
+    public static var inviteWebNotFoundDocumentTitle: String { CopyLookup.string("invite.web.notFound.documentTitle", default: "Not Found") }
+    /// "Invite not found" — Partiful · invite.web · adapted · VERIFIED
+    public static var inviteWebNotFoundTitle: String { CopyLookup.string("invite.web.notFound.title", default: "Invite not found") }
+    /// "You've tried too many times - please try again later" — Partiful · invite.web · verbatim · VERIFIED
+    public static var inviteWebRateLimitedBody: String { CopyLookup.string("invite.web.rateLimited.body", default: "You've tried too many times - please try again later") }
+    /// "😬" — Partiful · invite.web · verbatim · VERIFIED
+    public static var inviteWebStateGlyph: String { CopyLookup.string("invite.web.state.glyph", default: "😬") }
+    /// "Grimace face" — Partiful · invite.web · verbatim · VERIFIED
+    public static var inviteWebStateGlyphLabel: String { CopyLookup.string("invite.web.state.glyphLabel", default: "Grimace face") }
+    /// "Ask a member for another link" — Partiful · invite.web · new · VERIFIED
+    public static var inviteWebUnavailableBody: String { CopyLookup.string("invite.web.unavailable.body", default: "Ask a member for another link") }
+    /// "This link no longer works" — Partiful · invite.web · new · VERIFIED
+    public static var inviteWebUnavailableTitle: String { CopyLookup.string("invite.web.unavailable.title", default: "This link no longer works") }
 }

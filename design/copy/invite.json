@@ -1,0 +1,229 @@
+{
+  "strings": {
+    "invite.web.documentTitle": {
+      "text": "{title} | {app_name}",
+      "origin": "adapted",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "https://partiful.com/e/egrwj3biCR6g5MLJ0dbv page HTML (design/research/wrapped-tribute-partiful.md §5.4): <title>/og:title 'Tompkins Square Dog Parade | Partiful'; references/auto/partiful/web/pf-web-notfound-01.png + pf-web-notfound.computed-styles.json (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA): <title> 'Not Found | Partiful'",
+      "pattern": "P-IW-T document title '{Event title} | Partiful' (examples 'Tompkins Square Dog Parade | Partiful', 'Not Found | Partiful'); the brand is replaced by {app_name}",
+      "level": "VERIFIED",
+      "notes": "{title} = the group name (valid invite) or the state's short title. Used for <title>, og:title and twitter:title. BLOCKED while the app has no name."
+    },
+    "invite.web.cover.alt": {
+      "text": "{group_name} Group Cover Image",
+      "origin": "adapted",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "https://partiful.com/e/egrwj3biCR6g5MLJ0dbv page HTML (design/research/wrapped-tribute-partiful.md §5.4): og:image:alt 'Tompkins Square Dog Parade Event Cover Image'",
+      "pattern": "P-IW-A image alt '{Event title} Event Cover Image'; noun swap Event → Group",
+      "level": "VERIFIED",
+      "notes": "Cover <img alt> and og:image:alt."
+    },
+    "invite.web.invitedBy": {
+      "text": "Invited by {first_name}",
+      "origin": "new",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-02.png and pf-web-public-light.computed-styles.json ('Hosted by New York Dog Parade', one 16/400 row)",
+      "pattern": "P-IW-4 event-field row '{Participle} by {name}' (example 'Hosted by New York Dog Parade'); the inviter is not a host, so 'Hosted' becomes 'Invited'",
+      "level": "VERIFIED",
+      "notes": "{first_name} = invite_preview.inviter_first_name. The row is left out when it is null."
+    },
+    "invite.web.members.title": {
+      "text": "Member List",
+      "origin": "adapted",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-private-past-02.png (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) ('Guest List')",
+      "pattern": "P-IW-5 section label in Title Case; noun swap Guest → Member ('Guest List')",
+      "level": "VERIFIED",
+      "notes": "The reference's count line ('11 Went · 4 Maybe') and '+N' disc are do-not-copy (tenet 2)."
+    },
+    "invite.web.members.viewAll": {
+      "text": "View all",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-private-past-02.png (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z)",
+      "level": "VERIFIED"
+    },
+    "invite.web.gate.title": {
+      "text": "Restricted Access",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-private-past-02.png (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z)",
+      "level": "VERIFIED"
+    },
+    "invite.web.gate.body": {
+      "text": "Verify your phone number to view the group's photos",
+      "origin": "adapted",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-private-past-02.png (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) ('Verify your phone number to view event details and activity')",
+      "pattern": "P-IW-1 gate explanation 'Verify your phone number to view {things}'; noun phrase swap 'event details and activity' → 'the group's photos'",
+      "level": "VERIFIED",
+      "notes": "No final period, as in the reference. Members are not named in the swap because first names and avatars are already shown."
+    },
+    "invite.web.getApp": {
+      "text": "Get the app",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-private-past-02.png (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) footer 'Get the app ↗'; references/auto/partiful/web/pf-web-notfound-01.png + pf-web-notfound.computed-styles.json (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) footer",
+      "level": "VERIFIED",
+      "notes": "Members-only card button and footer link (both open the store / App Clip)."
+    },
+    "invite.web.state.glyph": {
+      "text": "😬",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-notfound-01.png + pf-web-notfound.computed-styles.json (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) DIV.__404_visual; references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [B] children:'\\uD83D\\uDE2C'",
+      "level": "VERIFIED",
+      "notes": "Emoji glyph of every non-ideal state (U+1F62C)."
+    },
+    "invite.web.state.glyphLabel": {
+      "text": "Grimace face",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [B] role='img' aria-label g('Grimace face')",
+      "level": "VERIFIED",
+      "notes": "Accessible name of the glyph."
+    },
+    "invite.web.notFound.title": {
+      "text": "Invite not found",
+      "origin": "adapted",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [C] tO.default({message:e3('Event not found')}) — the event page's not-found message passed to the 404 component",
+      "pattern": "P-IW-6 not-found message '{Noun} not found' (examples 'Event not found', 'Page Not Found'); noun swap Event → Invite",
+      "level": "VERIFIED",
+      "notes": "Shown in uppercase (layout token invite.web.layout.state.title)."
+    },
+    "invite.web.notFound.documentTitle": {
+      "text": "Not Found",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/web/pf-web-notfound-01.png + pf-web-notfound.computed-styles.json (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) <title> 'Not Found | Partiful'; references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [B] g('Not Found')",
+      "level": "VERIFIED"
+    },
+    "invite.web.unavailable.title": {
+      "text": "This link no longer works",
+      "origin": "new",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [D] 'The existing link will no longer work.'; [H] 'This link won't work once disabled.'",
+      "pattern": "P-IW-7 link status statement (examples 'The existing link will no longer work.', 'This link won't work once disabled.'); present tense because the link has already expired or been revoked; no period, as a state title",
+      "level": "VERIFIED",
+      "notes": "Expired and revoked invites share this state, so the page does not reveal which."
+    },
+    "invite.web.unavailable.body": {
+      "text": "Ask a member for another link",
+      "origin": "new",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [C] 'Could not add as check-in staff. Try again, or ask the host for another link'",
+      "pattern": "P-IW-8 recovery hint '…ask the host for another link' (Partiful); noun swap host → member; 'Try again, or' dropped because retrying an expired or revoked link cannot succeed",
+      "level": "VERIFIED"
+    },
+    "invite.web.error.title": {
+      "text": "Something went wrong",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [C] 'Something went wrong. Please try again.'; [E] title 'Something went wrong \\uD83D\\uDE2C'",
+      "level": "VERIFIED",
+      "notes": "The emoji is the state glyph above."
+    },
+    "invite.web.error.body": {
+      "text": "Please try again.",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [G] description:I('Please try again.')",
+      "level": "VERIFIED"
+    },
+    "invite.web.error.retry": {
+      "text": "Try again",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [D] 'Try again'; [C] NonIdealState action {text:u('Try again')}",
+      "level": "VERIFIED"
+    },
+    "invite.web.rateLimited.body": {
+      "text": "You've tried too many times - please try again later",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [F]",
+      "level": "VERIFIED",
+      "notes": "Body of the error state when the per-address limit is reached (HTTP 429)."
+    },
+    "invite.appclip.card.action": {
+      "text": "View",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/store/partiful-store-04.png (App Clip card action)",
+      "level": "SOURCED",
+      "notes": "One of Apple's preset App Clip actions; chosen in App Store Connect (default and advanced experience), not in code."
+    },
+    "invite.appclip.card.subtitle": {
+      "text": "Make memories",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/store/partiful-store-04.png (App Clip card subtitle under 'Book Club')",
+      "level": "SOURCED",
+      "notes": "Entered in App Store Connect (≤56 characters, Apple HIG). docs/OWNER_SETUP.md §1.5 lets the owner replace it."
+    },
+    "invite.appclip.sheet.name": {
+      "text": "Your Name",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv)",
+      "level": "VERIFIED",
+      "notes": "Join sheet: name field placeholder."
+    },
+    "invite.appclip.sheet.phone": {
+      "text": "Phone Number",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv)",
+      "level": "VERIFIED",
+      "notes": "Join sheet: phone field placeholder."
+    },
+    "invite.appclip.sheet.helper": {
+      "text": "Just for group updates. No spam.",
+      "origin": "adapted",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) ('Just for event updates. No spam.')",
+      "pattern": "P-IW-2 reassurance 'Just for {purpose}. No spam.'; noun swap event → group",
+      "level": "VERIFIED"
+    },
+    "invite.appclip.sheet.cancel": {
+      "text": "Cancel",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv)",
+      "level": "VERIFIED"
+    },
+    "invite.appclip.sheet.continue": {
+      "text": "Continue",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv)",
+      "level": "VERIFIED"
+    }
+  }
+}

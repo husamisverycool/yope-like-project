@@ -5,5 +5,7 @@ import Foundation
 
 /// BLOCKED strings: DEBUG builds only.
 public enum BlockedCopy {
+    /// "{title} | {app_name}" — Partiful · invite.web · adapted · VERIFIED
+    public static func inviteWebDocumentTitle(title: String, appName: String) -> String { CopyLookup.format("invite.web.documentTitle", default: "{title} | {app_name}", ["title": title, "app_name": appName]) }
 }
 #endif

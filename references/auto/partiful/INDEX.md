@@ -36,3 +36,17 @@ Person avatars (guest list, hosts, activity) are blurred in every saved screensh
 | `css/partiful-web-css-excerpt-2026-10-15.css` | https://partiful.com/_next/static/css/6c6472b16cd85517.css and …/30e76274b56216f0.css | 2026-10-15 | text excerpt: mobile `:root` tokens (type scale, spacing, radii, animation durations), `.ptf-light` / `.ptf-dark` semantic colors, font-family names (no font files), RSVP component rules | same |
 
 Other evidence (not images): `https://partiful.com/.well-known/apple-app-site-association` (appclips: `Z9A649Q6W9.com.partiful.partiful.Clip`; applinks `/e/*`), `https://partiful.com/.well-known/assetlinks.json` (Android `com.partiful.partiful`), page `<meta name="apple-itunes-app" content="app-id=1662982304, app-clip-bundle-id=com.partiful.partiful.Clip">` — all fetched 2026-10-15.
+
+## Added by the invite.web build pass (2026-10-15)
+
+States and rules the research pass did not cover (not-found page, title auto-fit rule, state strings, button/footer CSS,
+link-preview blur). Captured with Playwright Chromium 141 (`/opt/pw-browsers`), iPhone UA, 390×844 CSS px @3x, from build
+`dpl_34dEa26xPvnBTQKEVMeQ7k1GubPM` (a later deploy than the research captures; the `:root` tokens checked are unchanged).
+
+| file | source URL | accessed | what it shows | version/date |
+|---|---|---|---|---|
+| `web/pf-web-notfound-01.png` | https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA (unknown event id; HTTP 404) | 2026-10-15 | not-found page, default theme (`html.ptf-dark`, body `#111111`): header, 😬 (role img, aria-label "Grimace face"), "PAGE NOT FOUND" (24/700, uppercase), footer with "Get the app ↗" | dpl_34dEa26xPvnBTQKEVMeQ7k1GubPM |
+| `web/pf-web-notfound.computed-styles.json` | same | 2026-10-15 | `rows`: computed styles of visible elements; `geometry`: header, 404 content, footer (padding, margin, gap) | same |
+| `js/partiful-web-js-excerpt-2026-10-15.txt` | chunks under https://partiful.com/_next/static/chunks/ (URL per block) | 2026-10-15 | verbatim minified excerpts: event-title auto-fit function (sizes 40/48/25, max 3 lines, SSR width heuristic), not-found component, state strings ("Event not found", "Something went wrong", "Please try again.", "Try again", "…ask the host for another link", "The existing link will no longer work.", "You've tried too many times - please try again later") | same |
+| `css/partiful-web-css-excerpt-states-2026-10-15.css` | https://partiful.com/_next/static/css/6c6472b16cd85517.css and …/8d225d9249227430.css (`?dpl=dpl_34dEa26xPvnBTQKEVMeQ7k1GubPM`) | 2026-10-15 | button hover/active/transition rules, outlined button, minimal link, focused ring outline, divider, footer layout, not-found page rules | same |
+| `og/pf-og-blur-fit.csv` | derived from `og/pf-og-public-crawler-1200x630.jpg` and `og/pf-og-public-browser-834x666.jpg` | 2026-10-15 | least-squares fit of the Gaussian blur sigma of the link-preview fill (fit fill/cover × sigma 100–400) | — |

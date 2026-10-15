@@ -44,6 +44,22 @@ async function cleanupIfGone(svc: Services, media: MediaRow, written: string[]):
  */
 export async function ensureImageRenditions(svc: Services, media: MediaRow, originalBytes?: Buffer): Promise<MediaRow> {
   if (imageReady(media)) return media;
+  // one rendition pass per media at a time in this process (a push, a collage and the
+  // media.renditions job can all need the same photo at once)
+  const running = inflight.get(media.id);
+  if (running) return running;
+  const p = renderImages(svc, media, originalBytes).finally(() => inflight.delete(media.id));
+  inflight.set(media.id, p);
+  return p;
+}
+
+const inflight = new Map<string, Promise<MediaRow>>();
+
+async function renderImages(svc: Services, media: MediaRow, originalBytes?: Buffer): Promise<MediaRow> {
+  const fresh = await loadMedia(svc.db, media.id);
+  if (!fresh) return media;
+  if (imageReady(fresh)) return fresh;
+  media = fresh;
   const written: string[] = [];
   const update: Partial<MediaRow> = {};
   if (!media.display_path || !media.thumb_path || !media.widget_path) {

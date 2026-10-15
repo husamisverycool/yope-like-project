@@ -1,0 +1,1228 @@
+{
+  "tokens": {
+    "invite.web.dimension.margin": {
+      "type": "dimension",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "screen side margin (column padding)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --spacing-screen-margin-horizontal:16px; references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) title/poster/date x 16",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.columnMaxWidth": {
+      "type": "dimension",
+      "value": 720,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "widest viewport the mobile layout is used for; the page column stops growing here",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css '(2) >=721px overrides': @media screen and (min-width:721px) switches every size token to the desktop set",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED",
+      "notes": "Partiful's desktop layout (>=721 px) was not researched, so the mobile layout is kept and the column is capped at the breakpoint."
+    },
+    "invite.web.color.text.light": {
+      "type": "color",
+      "value": "#000000",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "text, icons and focus ring on light themes (.ptf-light)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css .ptf-light --text-color:#000, --shared-primary-color:#000; references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) title rgb(0,0,0)",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.color.text.dark": {
+      "type": "color",
+      "value": "#FFFFFF",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "text, icons and focus ring on dark themes (.ptf-dark)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css .ptf-dark --text-color:#fff, --shared-primary-color:#fff; references/auto/partiful/web/pf-web-public-dark.computed-styles.json (https://partiful.com/e/tdWKXXnFRQqtuxOcPz5e) title rgb(255,255,255)",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.color.theme.default": {
+      "type": "color",
+      "value": "#111111",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "theme colour when the group has no cover, and on every non-ideal state (not found, link no longer works, error)",
+      "evidence": "references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) body background rgb(17,17,17), html.ptf-dark; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --theme-colors-background-color:#111",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED",
+      "notes": "Partiful's default theme; it is a dark theme (white text)."
+    },
+    "invite.web.layout.theme": {
+      "type": "layout",
+      "value": {
+        "source": "group cover",
+        "colour": "mean sRGB colour of the cover image (solid page background)",
+        "fallback": "invite.web.color.theme.default"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "page background (the per-invite theme)",
+      "evidence": "references/auto/partiful/og/pf-og-public-crawler-1200x630.jpg (poster on a blurred fill of itself, imgix fit=fill&fill=blur); references/auto/partiful/store/partiful-store-04.png (App Clip card: poster on blurred backdrop); design/research/wrapped-tribute-partiful.md §5.2 (every invite page has its own theme colour behind all content)",
+      "method": "Partiful pairs each invite's image with a backdrop made from that image; a fully blurred fill converges to the image's mean colour, which becomes the solid theme colour",
+      "level": "SOURCED",
+      "notes": "Partiful hosts pick a theme (colour + video); groups have no theme, so the cover supplies it. Theme videos are do-not-copy."
+    },
+    "invite.web.layout.themeTextColour": {
+      "type": "layout",
+      "value": {
+        "rule": "text colour is whichever of invite.web.color.text.light / .dark has the higher contrast ratio against the theme colour",
+        "formula": "WCAG 2.2 relative luminance and contrast ratio"
+      },
+      "source_app": "W3C WCAG 2.2",
+      "surface": "invite.web",
+      "element": "choice of light (.ptf-light) or dark (.ptf-dark) text set for a theme",
+      "evidence": "https://www.w3.org/TR/WCAG22/#dfn-contrast-ratio ; https://www.w3.org/TR/WCAG22/#dfn-relative-luminance",
+      "method": "W3C definition",
+      "level": "PLATFORM",
+      "notes": "Partiful fixes the light/dark class per theme; text then uses fixed alphas (body 0.8, detail 0.6) whatever the theme colour, so some theme colours fail AA (see design/verification/invite.web.md)."
+    },
+    "invite.web.font": {
+      "type": "font",
+      "value": {
+        "ios": "system",
+        "android": "system"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "all page text",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css font-family:Lausanne (TWK Lausanne) and PartifulGrotesk title font — proprietary",
+      "method": "font-family names; web uses the CSS generic family system-ui",
+      "level": "PLATFORM"
+    },
+    "invite.web.lineHeight.default": {
+      "type": "lineHeight",
+      "value": 1.4,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "default line height (× font size) for all text except the title",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --shared-line-height:1.4; references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) 22.4/16, 19.6/14, 25.2/18",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.opacity.text.body": {
+      "type": "opacity",
+      "value": 0.8,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "body text alpha ('Invited by' row, gate card body, initials)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-body-color:rgba(0,0,0,.8) / hsla(0,0%,100%,.8); references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) 'Hosted by' rgba(0,0,0,0.8)",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.layout.text": {
+      "type": "layout",
+      "value": {
+        "fontSmoothing": "antialiased"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "text rendering",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css (1) :root -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.layout.link": {
+      "type": "layout",
+      "value": {
+        "textDecoration": "none",
+        "footerLinkTarget": "new tab (target _blank, rel noopener noreferrer)"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "text links ('Get the app' in the footer)",
+      "evidence": "references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) links[]: 'Get the app' text-decoration-line none, target _BLANK, rel 'noopener noreferrer'",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.titleTop": {
+      "type": "dimension",
+      "value": 109.1,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "top of the title block from the top of the page",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) span.summary y 173.0, line-height 46.8, font-size 39 → h1 block top 169.1; minus the acquisition banner (header Login pill y 68 on P3 vs y 8 on references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA))",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED",
+      "precision": "±0.2 pt",
+      "notes": "Includes the 60-pt header row (logo + Login). This page has no header (no brand mark exists yet and there is no web sign-in); its space is kept so everything below matches the reference geometry."
+    },
+    "invite.web.fontSize.title.base": {
+      "type": "fontSize",
+      "value": 40,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "title: starting size for multi-line titles on phones (largest size tried is 39)",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [A] p=40 (used when the mobile flag is set); references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z)/references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) 39 px titles",
+      "method": "production JS constant (minified source, block [A]); binary search returns lo, so the largest multi-line result is 39",
+      "level": "VERIFIED"
+    },
+    "invite.web.fontSize.title.singleLineMax": {
+      "type": "fontSize",
+      "value": 48,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "title: upper bound for titles that fit on one line at the base size (largest size tried 47)",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [A] I=48",
+      "method": "production JS constant (minified source, block [A])",
+      "level": "VERIFIED"
+    },
+    "invite.web.fontSize.title.min": {
+      "type": "fontSize",
+      "value": 25,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "title: smallest size",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [A] A=25; design/research/wrapped-tribute-partiful.md §5.3 (smallest of 9 pages: 25)",
+      "method": "production JS constant (minified source, block [A])",
+      "level": "VERIFIED"
+    },
+    "invite.web.count.title.maxLines": {
+      "type": "count",
+      "value": 3,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "title: most lines allowed before the size shrinks",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [A] C=3",
+      "method": "production JS constant (minified source, block [A])",
+      "level": "VERIFIED"
+    },
+    "invite.web.layout.title.fit": {
+      "type": "layout",
+      "value": {
+        "widthWide": 0.9,
+        "widthNormal": 0.7,
+        "widthThin": 0.4,
+        "thinCharacters": " litjr.',!:;I",
+        "normalCharacters": "abcdefghknopqsuvxyz/\"-",
+        "words": "split on whitespace",
+        "search": "integer binary search; returns the lower bound"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "title auto-fit: estimated text width = size × (0.9 × wide + 0.7 × normal + 0.4 × thin characters); line count by greedy wrap; widest word must fit",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [A] function f() server-side branch, function T(), function O()",
+      "method": "production JS (the server-rendered estimate; the browser re-measures with canvas)",
+      "level": "VERIFIED",
+      "notes": "This page is server-rendered without client script, so Partiful's server-side estimate is used for every column width (see web/src/titleFit.ts)."
+    },
+    "invite.web.fontWeight.title": {
+      "type": "fontWeight",
+      "value": "bold",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "title weight (700)",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) span.summary font-weight 700; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-display-font-weight:700",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.lineHeight.title": {
+      "type": "lineHeight",
+      "value": 1.2,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "title line height (× size)",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) 46.8/39",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.letterSpacing.title": {
+      "type": "letterSpacing",
+      "value": -0.02,
+      "unit": "em",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "title tracking",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) letter-spacing −0.78 px at 39 px",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.layout.title": {
+      "type": "layout",
+      "value": {
+        "textAlign": "center"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "title alignment",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) span.summary x 39.5 w 311 (centre 195 = column centre)",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.titleToCover": {
+      "type": "dimension",
+      "value": 25.8,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "title block bottom → cover top",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) h1 bottom 262.7 → img y 288.6 (25.9); references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) 319.3 → 345.0 (25.7)",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED",
+      "precision": "±0.1 pt"
+    },
+    "invite.web.radius.cover": {
+      "type": "radius",
+      "value": 0,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "cover image corners",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) img border-radius 0px",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.layout.cover": {
+      "type": "layout",
+      "value": {
+        "width": "full column width",
+        "aspect": "own (intrinsic)"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "cover image",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) img x 16 w 358 h 358 (square poster); references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) 358×286",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.coverToNext": {
+      "type": "dimension",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "cover bottom → next element",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) poster bottom 646.6 → date block 662.6",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.fontSize.body": {
+      "type": "fontSize",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "body text ('Invited by' row, initials, names, footer link, large button label)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-large-size:16px; references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) 'Hosted by' 16px",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.fontWeight.body": {
+      "type": "fontWeight",
+      "value": "regular",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "body text weight (400)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-body-font-weight:400; references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) 'Hosted by' 400",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.fieldRow.paddingV": {
+      "type": "dimension",
+      "value": 4,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "vertical padding of an event-field row ('Invited by')",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --editable-event-field-padding-vertical:4px; references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) 'Hosted by New York Dog Parade' row padding 4px 0",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.sectionGap": {
+      "type": "dimension",
+      "value": 24,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "gap between page sections",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) '…' button bottom 873.8 → 'Hosted by' row top 897.8 (label 901.8 − row padding 4); references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --spacing-x-large:24px",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.fontSize.sectionHeader": {
+      "type": "fontSize",
+      "value": 18,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "section header ('Member List', 'Restricted Access')",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) H3 'Guest List' 18px, 'Restricted Access' 18px; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-header-2-font-size",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.fontWeight.sectionHeader": {
+      "type": "fontWeight",
+      "value": "bold",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "section header weight (700)",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) H3 700; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-header-font-weight:700",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.headerToAvatars": {
+      "type": "dimension",
+      "value": 8,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "members header row bottom → avatar row",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) count line bottom 1174.1 → avatars 1182.1 (the count line itself is do-not-copy)",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.avatar": {
+      "type": "dimension",
+      "value": 48,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "member avatar (row and list)",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) IMG 48×48; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --avatar-medium-size:48px",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.avatarGap": {
+      "type": "dimension",
+      "value": 4,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "gap between avatars (also between wrapped rows)",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) avatars x 16, 68, 120 …; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --avatar-group-gap:4px",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED",
+      "notes": "Partiful shows one row plus a '+N' overflow disc (a count, do-not-copy). Every member is shown instead and the row wraps; the same gap is used between rows."
+    },
+    "invite.web.radius.avatar": {
+      "type": "radius",
+      "value": 800,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "avatar corners (circle)",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) IMG border-radius 800px; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --avatar-border-radius:800px",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.opacity.avatar.minimal.fill.light": {
+      "type": "opacity",
+      "value": 0.1,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "initials disc fill alpha (black) on light themes — member without a photo",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css .ptf-light --avatar-minimal-background-color:rgba(0,0,0,.1); references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) disc rgba(0,0,0,0.1)",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.opacity.avatar.minimal.fill.dark": {
+      "type": "opacity",
+      "value": 0.25,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "initials disc fill alpha (white) on dark themes",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css .ptf-dark --avatar-minimal-background-color:hsla(0,0%,100%,.25)",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.opacity.avatar.minimal.text": {
+      "type": "opacity",
+      "value": 0.8,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "initials text alpha",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --avatar-minimal-text-color rgba(0,0,0,.8) / hsla(0,0%,100%,.8); references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) 'XX' rgba(0,0,0,0.8) 16px/400",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.fontWeight.button": {
+      "type": "fontWeight",
+      "value": "semibold",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "button and link labels (600)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-font-weight:600, --link-font-weight:600; references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) 'View all' / 'Sign in' 600",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.button.gap": {
+      "type": "dimension",
+      "value": 4,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "gap between a button's icon and label",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-gap:4px",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.button.medium.height": {
+      "type": "dimension",
+      "value": 36,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "medium (pill) button height ('View all')",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) 'View all' 81.6×36; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-medium-height:36px",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.button.medium.paddingH": {
+      "type": "dimension",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "medium button horizontal padding (outlined: minus the 1-pt border)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-medium-horizontal-padding:16px; references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .ptf-2k952 padding calc(… − border); references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) padding 0 15px + 1px border",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.radius.button.medium": {
+      "type": "radius",
+      "value": 800,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "medium button corners (pill)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-medium-border-radius:800px; references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) 800px",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.fontSize.button.medium": {
+      "type": "fontSize",
+      "value": 14,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "medium button label",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-medium-font-size (14px); references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) 'View all' 14px",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.button.outlined.border": {
+      "type": "dimension",
+      "value": 1,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "outlined button border width; also the footer divider and the focus ring width",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --shared-border-width:1px, --button-outlined-border-width; references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) 1px solid",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.opacity.button.outlined.fill": {
+      "type": "opacity",
+      "value": 0.05,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "outlined button fill alpha (text colour)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-outlined-background-color rgba(0,0,0,.05) / hsla(0,0%,100%,.05); references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) rgba(0,0,0,0.05)",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.opacity.button.outlined.border.light": {
+      "type": "opacity",
+      "value": 0.25,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "outlined button border alpha on light themes",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css .ptf-light --button-outlined-border-color:rgba(0,0,0,.25); references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) rgba(0,0,0,0.25)",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.opacity.button.outlined.border.dark": {
+      "type": "opacity",
+      "value": 0.4,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "outlined button border alpha on dark themes",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css .ptf-dark --button-outlined-border-color:hsla(0,0%,100%,.4); references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) footer pill border rgba(255,255,255,0.4)",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.opacity.button.outlined.hover.fill": {
+      "type": "opacity",
+      "value": 0.1,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "outlined button fill alpha on hover",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-outlined-hover-background-color rgba(0,0,0,.1) / hsla(0,0%,100%,.1); references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .ptf-2k952:hover",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.opacity.button.outlined.active.fill": {
+      "type": "opacity",
+      "value": 0.25,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "outlined button fill alpha while pressed",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-outlined-active-background-color rgba(0,0,0,.25) / hsla(0,0%,100%,.25); references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .ptf-2k952:active",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.opacity.button.outlined.active.border": {
+      "type": "opacity",
+      "value": 0.4,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "outlined button border alpha while pressed",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-outlined-active-border-color rgba(0,0,0,.4) / hsla(0,0%,100%,.4)",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.blur.button.outlined": {
+      "type": "blur",
+      "value": 40,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "outlined button backdrop blur radius",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .ptf-2k952 backdrop-filter:blur(40px); references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) 'View all' backdrop-filter blur(40px)",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.button.large.height": {
+      "type": "dimension",
+      "value": 48,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "large button height (gate card action, error retry)",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) 'Sign in' 310×48; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-large-height:48px",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.button.large.paddingH": {
+      "type": "dimension",
+      "value": 24,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "large button horizontal padding",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-large-horizontal-padding:24px; references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) padding 0 24px",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.radius.button.large": {
+      "type": "radius",
+      "value": 4,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "large button corners",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-large-border-radius:4px; references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) 4px",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.color.button.filled.fill.light": {
+      "type": "color",
+      "value": "#000000",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "filled button fill on light themes",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css .ptf-light --button-filled-background-color:#000; references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) 'Sign in' rgb(0,0,0)",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.color.button.filled.label.light": {
+      "type": "color",
+      "value": "#FFFFFF",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "filled button label on light themes",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css .ptf-light --button-filled-label-color:#fff; references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) rgb(255,255,255)",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.color.button.filled.fill.dark": {
+      "type": "color",
+      "value": "#FFFFFF",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "filled button fill on dark themes",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css .ptf-dark --button-filled-background-color:#fff; references/auto/partiful/web/pf-web-public-dark.computed-styles.json (https://partiful.com/e/tdWKXXnFRQqtuxOcPz5e) 'RSVP' (restricted card) label rgb(0,0,0) on white",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.color.button.filled.label.dark": {
+      "type": "color",
+      "value": "#000000",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "filled button label on dark themes",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css .ptf-dark --button-filled-label-color:#000",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.opacity.button.hover": {
+      "type": "opacity",
+      "value": 0.6,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "every button: opacity on hover (devices that hover)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .ptf-PM45p:hover opacity:var(--button-hover-opacity); references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-hover-opacity:var(--shared-active-opacity) = 0.6",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED",
+      "notes": "Outlined buttons override this with opacity 1 and the hover fill/border alphas."
+    },
+    "invite.web.opacity.button.active": {
+      "type": "opacity",
+      "value": 0.4,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "every button: opacity while pressed",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .ptf-PM45p:active opacity:var(--button-active-opacity); references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-active-opacity:var(--shared-disabled-opacity) = 0.4",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.duration.button.colour": {
+      "type": "duration",
+      "value": 200,
+      "unit": "ms",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "button/link background-colour and colour transition",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .ptf-PM45p transition background-color/color var(--animation-duration-theme); references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --animation-duration-theme:200ms",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.duration.button.opacity": {
+      "type": "duration",
+      "value": 100,
+      "unit": "ms",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "button opacity transition (press feedback)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .ptf-PM45p transition opacity var(--animation-duration-interaction); references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --animation-duration-interaction:100ms",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.easing.button": {
+      "type": "easing",
+      "value": "easeOut",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "button/link transitions",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .ptf-PM45p and .ptf-5a8R- transitions 'ease-out'",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.focus.offset": {
+      "type": "dimension",
+      "value": 2,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "focus ring offset (ring = 1-pt outline in the text colour)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .BottomNav_focusedProfileImageContainer outline:var(--shared-border-width) solid var(--shared-primary-color); outline-offset:var(--nav-button-profile-image-padding); references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --nav-button-profile-image-padding:var(--spacing-xx-small) = 2px",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED",
+      "notes": "Partiful defines no :focus-visible style for buttons or links (browser default); this is the only ring it draws for a focused control. Width = invite.web.dimension.button.outlined.border, colour = the theme's text colour."
+    },
+    "invite.web.dimension.userRow.paddingV": {
+      "type": "dimension",
+      "value": 12,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "member row vertical padding in the expanded list",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --user-row-padding-vertical:12px",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED",
+      "notes": "Partiful's 'View all' list itself was not captured (it opens after sign-in); these are its user-row component tokens."
+    },
+    "invite.web.dimension.userRow.columnGap": {
+      "type": "dimension",
+      "value": 12,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "avatar → name gap in a member row",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --user-row-column-gap:12px",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.userRow.listGap": {
+      "type": "dimension",
+      "value": 4,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "gap between member rows",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --user-list-gap:var(--spacing-x-small) = 4px",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.fontWeight.userRow.name": {
+      "type": "fontWeight",
+      "value": "semibold",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "member first name in a row (600)",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) activity row name 16px/600; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-subheader-font-weight:600",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.color.gateCard.light": {
+      "type": "color",
+      "value": "#FFFFFF",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "members-only card fill colour on light themes (alpha below)",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) RestrictedContent_accessPrompt bg rgba(255,255,255,0.7); references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --inverse-text-color-70 (light) hsla(0,0%,100%,.7)",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.opacity.gateCard.light": {
+      "type": "opacity",
+      "value": 0.7,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "members-only card fill alpha on light themes",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) rgba(255,255,255,0.7)",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.color.gateCard.dark": {
+      "type": "color",
+      "value": "#000000",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "members-only card fill colour on dark themes (alpha below)",
+      "evidence": "references/auto/partiful/web/pf-web-public-dark.computed-styles.json (https://partiful.com/e/tdWKXXnFRQqtuxOcPz5e) RestrictedContent_accessPrompt bg rgba(0,0,0,0.8); references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --inverse-text-color-70 (dark) rgba(0,0,0,.8)",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.opacity.gateCard.dark": {
+      "type": "opacity",
+      "value": 0.8,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "members-only card fill alpha on dark themes",
+      "evidence": "references/auto/partiful/web/pf-web-public-dark.computed-styles.json (https://partiful.com/e/tdWKXXnFRQqtuxOcPz5e) rgba(0,0,0,0.8)",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.radius.gateCard": {
+      "type": "radius",
+      "value": 4,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "members-only card corners",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) border-radius 4px",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.gateCard.padding": {
+      "type": "dimension",
+      "value": 24,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "members-only card padding",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) padding 24px (card x 16 → content x 40)",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.gateCard.glyph": {
+      "type": "dimension",
+      "value": 64,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "lock glyph size",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) svg 64×64 at y 1364.1; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --non-ideal-state-glyph-size:var(--icon-xxx-large-size) = 64px",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.gateCard.glyphToTitle": {
+      "type": "dimension",
+      "value": 8,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "lock glyph → card title",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) glyph bottom 1428.1 → title 1436.1; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --non-ideal-state-glyph-margin-bottom:8px",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.gateCard.titleToBody": {
+      "type": "dimension",
+      "value": 4,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "card title → body; also state title → body",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) title bottom 1461.3 → body 1465.3; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --non-ideal-state-description-margin-top:4px",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.gateCard.bodyToButton": {
+      "type": "dimension",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "card body → button",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) body bottom 1504.5 → 'Sign in' 1520.5",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.fontSize.detail": {
+      "type": "fontSize",
+      "value": 14,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "card body / state body text",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) 'Verify your phone number…' 14px/400, centred; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-detail-1-font-size",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.icon.lock": {
+      "type": "icon",
+      "value": {
+        "ios": "lock.fill",
+        "android": "Filled.Lock"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "lock glyph on the members-only card (web: Material Icons 'lock', Apache-2.0)",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) svg lock glyph 64 px (pf-web-private-past-02.png); https://github.com/google/material-design-icons/blob/master/src/action/lock/materialicons/24px.svg",
+      "method": "matched glyph: solid padlock",
+      "level": "PLATFORM"
+    },
+    "invite.web.dimension.footer.paddingTop": {
+      "type": "dimension",
+      "value": 24,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "space above the footer divider",
+      "evidence": "references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) geometry FOOTER padding 24px 0 0; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --app-footer-padding-top:24px",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.opacity.footer.divider": {
+      "type": "opacity",
+      "value": 0.1,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "footer divider alpha (text colour, 1 pt)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .ptf-yvzzJ border-bottom var(--divider-border-color); references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --divider-border-color rgba(0,0,0,.1) / hsla(0,0%,100%,.1); references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) divider y 505.3 h 1",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.footer.contentPaddingV": {
+      "type": "dimension",
+      "value": 40,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "footer content padding above and below",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .AppFooter_content padding: var(--spacing-xx-large) … calc(var(--spacing-xx-large) + var(--page-margin-bottom) + var(--bottom-nav-inset)); references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) 40 above the first footer item",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED",
+      "notes": "No bottom navigation on this page, so the bottom inset term is 0 (page-margin-bottom is 0px)."
+    },
+    "invite.web.dimension.footer.linkGap": {
+      "type": "dimension",
+      "value": 2,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "'Get the app' label → arrow glyph",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .AppFooter_getAppLink gap:var(--spacing-xx-small); references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) span gap 2px",
+      "method": "production CSS variable / rule; getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.footer.arrow": {
+      "type": "dimension",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "arrow glyph after 'Get the app'",
+      "evidence": "references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) svg 16×16 at x 231.4 y 679.9",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.web.opacity.footer.arrow": {
+      "type": "opacity",
+      "value": 0.8,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "arrow glyph alpha",
+      "evidence": "references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) svg colour rgba(255,255,255,0.8); references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) rgba(0,0,0,0.8); references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-right-glyph-opacity:0.8",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.icon.getApp": {
+      "type": "icon",
+      "value": {
+        "ios": "arrow.up.right",
+        "android": "Filled.NorthEast"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "arrow after 'Get the app' (web: Material Icons 'north_east', Apache-2.0)",
+      "evidence": "references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) 'Get the app ↗' glyph; https://github.com/google/material-design-icons/blob/master/src/navigation/north_east/materialicons/24px.svg",
+      "method": "matched glyph: arrow up-right",
+      "level": "PLATFORM"
+    },
+    "invite.web.dimension.state.headerSpace": {
+      "type": "dimension",
+      "value": 60,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "space at the top of a state page (where Partiful's header row is)",
+      "evidence": "references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) geometry NAV height 60 (padding 8 16 16 + 36-pt Login pill)",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED",
+      "notes": "The header itself is not rendered (no brand mark, no web sign-in)."
+    },
+    "invite.web.layout.state": {
+      "type": "layout",
+      "value": {
+        "page": "column at least the viewport height",
+        "content": "vertically centred: equal auto margins above the content, below it, and above the footer",
+        "align": "center"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "not found / link no longer works / error page layout",
+      "evidence": "references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) geometry: 404 content margin 99.25 px auto, FOOTER margin-top 99.25 px (three equal shares); references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .__404_content margin:auto; .AppFooter_root margin-top:auto",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.fontSize.state.glyph": {
+      "type": "fontSize",
+      "value": 50,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "emoji glyph on state pages",
+      "evidence": "references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) DIV.__404_visual 50px, line-height 70 (= 1.4); references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .__404_visual font-size:50px",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.state.glyphToTitle": {
+      "type": "dimension",
+      "value": 20,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "emoji → state title",
+      "evidence": "references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) visual margin-bottom 20px; references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .__404_visual margin-bottom:20px",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.fontSize.state.title": {
+      "type": "fontSize",
+      "value": 24,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "state title",
+      "evidence": "references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) H2 24px/700, line-height 33.6; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-header-1-font-size (24px)",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.fontWeight.state.title": {
+      "type": "fontWeight",
+      "value": "bold",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "state title weight (700)",
+      "evidence": "references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) H2 font-weight 700; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-header-font-weight:700",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.layout.state.title": {
+      "type": "layout",
+      "value": {
+        "textTransform": "uppercase",
+        "textAlign": "center"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "state title case and alignment",
+      "evidence": "references/auto/partiful/web/pf-web-notfound.computed-styles.json + pf-web-notfound-01.png (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) H2 text-transform uppercase, text-align center; references/auto/partiful/css/partiful-web-css-excerpt-states-2026-10-15.css .__404_text",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport); production CSS variable / rule",
+      "level": "VERIFIED"
+    },
+    "invite.web.dimension.state.bodyToAction": {
+      "type": "dimension",
+      "value": 24,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "state body → action button",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --non-ideal-state-button-margin-top:24px",
+      "method": "production CSS variable / rule",
+      "level": "VERIFIED",
+      "notes": "Partiful's not-found page has no body or button; the description and action slots follow its NonIdealState component tokens (design/research §5 + JS excerpt [C] glyph/title/description/action)."
+    },
+    "invite.web.layout.ogImage": {
+      "type": "layout",
+      "value": {
+        "width": 1200,
+        "height": 630,
+        "foreground": "cover fitted inside the frame (contain), centred",
+        "background": "cover scaled to cover the frame (aspect kept, centre crop), Gaussian-blurred",
+        "format": "JPEG"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "link preview image (og:image / twitter:image)",
+      "evidence": "references/auto/partiful/og/pf-og-public-crawler-1200x630.jpg (served to facebookexternalhit/Apple Messages; https://partiful.imgix.net/…?w=1200&h=630&fit=fill&fill=blur)",
+      "method": "image file + its URL parameters; background mode chosen by least RMSE (references/auto/partiful/og/pf-og-blur-fit.csv)",
+      "level": "VERIFIED"
+    },
+    "invite.web.blur.ogImage.fill": {
+      "type": "blur",
+      "value": 360,
+      "unit": "px",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "Gaussian sigma of the blurred fill, in px of the 1200×630 image",
+      "evidence": "references/auto/partiful/og/pf-og-blur-fit.csv (minimum RMSE 13.75/255 at sigma 360, cover mode; fill mode minimum 14.01 at 280)",
+      "method": "least-squares fit of sharp Gaussian blur over the two fill bands, sigma 100–400 in steps of 20",
+      "level": "SOURCED",
+      "precision": "±40 px (RMSE within 0.1/255 from 320 to 400)"
+    },
+    "invite.web.layout.linkPreview": {
+      "type": "layout",
+      "value": {
+        "titleTags": "<title>, og:title, twitter:title = copy invite.web.documentTitle",
+        "imageAlt": "copy invite.web.cover.alt",
+        "twitterCard": "summary_large_image",
+        "robots": "noindex, nofollow",
+        "description": "omitted (Partiful uses the event description; groups have none)"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "link preview tags",
+      "evidence": "design/research/wrapped-tribute-partiful.md §5.4 (P1/P3 page HTML: title format, og:image:alt, twitter:card, robots noindex+nofollow on the link-only event)",
+      "method": "page HTML",
+      "level": "VERIFIED"
+    },
+    "invite.appclip.layout.association": {
+      "type": "layout",
+      "value": {
+        "aasaAppClips": "appclips.apps = [TEAM_ID.BUNDLE_ID.Clip]",
+        "aasaAppLinks": "applinks.details[0].components: exclude /i/*/* (page sub-resources), then /i/*",
+        "banner": "<meta name=apple-itunes-app content='app-id=…, app-clip-bundle-id=…, app-clip-display=card'>",
+        "android": "assetlinks.json delegate_permission/common.handle_all_urls for the application id"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "element": "App Clip / universal link / App Link association",
+      "evidence": "https://partiful.com/.well-known/apple-app-site-association (appclips.apps, applinks components with an exclude rule), https://partiful.com/.well-known/assetlinks.json, P1–P3 page meta apple-itunes-app (fetched 2026-10-15); app-clip-display=card: docs/PLATFORM_CONSTRAINTS.md §3 (Apple)",
+      "method": "fetched JSON / page HTML",
+      "level": "VERIFIED"
+    },
+    "invite.appclip.layout.messagesCard": {
+      "type": "layout",
+      "value": {
+        "header": "cover on a blurred backdrop with a domain chip",
+        "footer": "clip icon, title, subtitle, action button"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "element": "App Clip card in Messages (drawn by iOS)",
+      "evidence": "references/auto/partiful/store/partiful-store-04.png (crop y 1400–2688)",
+      "method": "visual inspection",
+      "level": "SOURCED"
+    },
+    "invite.appclip.layout.cardLimits": {
+      "type": "layout",
+      "value": {
+        "headerImage": "1800×1200 px, no transparency, no text",
+        "titleMaxCharacters": 30,
+        "subtitleMaxCharacters": 56
+      },
+      "source_app": "Apple HIG",
+      "surface": "invite.appclip",
+      "element": "App Clip card metadata limits (App Store Connect)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/app-clips (docs/PLATFORM_CONSTRAINTS.md §3)",
+      "method": "Apple HIG",
+      "level": "PLATFORM"
+    },
+    "invite.appclip.fontSize.sheetInput": {
+      "type": "fontSize",
+      "value": 24,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "element": "join sheet text input value and placeholder",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv, RSVP sheet) INPUT/LABEL 'Your Name', 'Phone Number' 24px/400",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.appclip.opacity.sheetPlaceholder.light": {
+      "type": "opacity",
+      "value": 0.3,
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "element": "join sheet placeholder alpha on light themes",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv, RSVP sheet) LABEL rgba(0,0,0,0.3)",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.appclip.opacity.sheetPlaceholder.dark": {
+      "type": "opacity",
+      "value": 0.4,
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "element": "join sheet placeholder alpha on dark themes",
+      "evidence": "references/auto/partiful/web/pf-web-public-dark-rsvp-sheet.computed-styles.json (https://partiful.com/e/tdWKXXnFRQqtuxOcPz5e, RSVP sheet) LABEL 'Your Name' rgba(255,255,255,0.4)",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.appclip.fontSize.sheetHelper": {
+      "type": "fontSize",
+      "value": 14.4,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "element": "join sheet helper line ('Just for group updates. No spam.')",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv, RSVP sheet) DIV 14.4px/400 rgba(0,0,0,0.3) at y 302",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.appclip.opacity.sheetHelper.light": {
+      "type": "opacity",
+      "value": 0.3,
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "element": "join sheet helper alpha on light themes",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv, RSVP sheet) rgba(0,0,0,0.3)",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    },
+    "invite.appclip.opacity.sheetHelper.dark": {
+      "type": "opacity",
+      "value": 0.4,
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "element": "join sheet helper alpha on dark themes",
+      "evidence": "references/auto/partiful/web/pf-web-public-dark-rsvp-sheet.computed-styles.json (https://partiful.com/e/tdWKXXnFRQqtuxOcPz5e, RSVP sheet) DIV 'Just for event updates. No spam.' rgba(255,255,255,0.4)",
+      "method": "getComputedStyle / getBoundingClientRect at 390×844 CSS px (CSS px = pt at this viewport)",
+      "level": "VERIFIED"
+    }
+  }
+}

@@ -2,6 +2,30 @@
 // Every string below is traced in design/COPY.md.
 
 const table = {
+  "invite.appclip.card.action": "View", // Partiful · invite.appclip · SOURCED
+  "invite.appclip.card.subtitle": "Make memories", // Partiful · invite.appclip · SOURCED
+  "invite.appclip.sheet.cancel": "Cancel", // Partiful · invite.appclip · VERIFIED
+  "invite.appclip.sheet.continue": "Continue", // Partiful · invite.appclip · VERIFIED
+  "invite.appclip.sheet.helper": "Just for group updates. No spam.", // Partiful · invite.appclip · VERIFIED
+  "invite.appclip.sheet.name": "Your Name", // Partiful · invite.appclip · VERIFIED
+  "invite.appclip.sheet.phone": "Phone Number", // Partiful · invite.appclip · VERIFIED
+  "invite.web.cover.alt": "{group_name} Group Cover Image", // Partiful · invite.web · VERIFIED
+  "invite.web.error.body": "Please try again.", // Partiful · invite.web · VERIFIED
+  "invite.web.error.retry": "Try again", // Partiful · invite.web · VERIFIED
+  "invite.web.error.title": "Something went wrong", // Partiful · invite.web · VERIFIED
+  "invite.web.gate.body": "Verify your phone number to view the group's photos", // Partiful · invite.web · VERIFIED
+  "invite.web.gate.title": "Restricted Access", // Partiful · invite.web · VERIFIED
+  "invite.web.getApp": "Get the app", // Partiful · invite.web · VERIFIED
+  "invite.web.invitedBy": "Invited by {first_name}", // Partiful · invite.web · VERIFIED
+  "invite.web.members.title": "Member List", // Partiful · invite.web · VERIFIED
+  "invite.web.members.viewAll": "View all", // Partiful · invite.web · VERIFIED
+  "invite.web.notFound.documentTitle": "Not Found", // Partiful · invite.web · VERIFIED
+  "invite.web.notFound.title": "Invite not found", // Partiful · invite.web · VERIFIED
+  "invite.web.rateLimited.body": "You've tried too many times - please try again later", // Partiful · invite.web · VERIFIED
+  "invite.web.state.glyph": "😬", // Partiful · invite.web · VERIFIED
+  "invite.web.state.glyphLabel": "Grimace face", // Partiful · invite.web · VERIFIED
+  "invite.web.unavailable.body": "Ask a member for another link", // Partiful · invite.web · VERIFIED
+  "invite.web.unavailable.title": "This link no longer works", // Partiful · invite.web · VERIFIED
 } as const;
 
 export type CopyKey = keyof typeof table;

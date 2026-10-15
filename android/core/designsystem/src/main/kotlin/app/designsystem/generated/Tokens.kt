@@ -16,7 +16,727 @@ import androidx.compose.ui.unit.sp
 import app.designsystem.DSFontFamily
 import app.designsystem.DSShadow
 import app.designsystem.DSSpring
-
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft as AutoMirroredRoundedKeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight as AutoMirroredRoundedKeyboardArrowRight
+import androidx.compose.material.icons.automirrored.rounded.Logout as AutoMirroredRoundedLogout
+import androidx.compose.material.icons.automirrored.rounded.Send as AutoMirroredRoundedSend
+import androidx.compose.material.icons.filled.Lock as FilledLock
+import androidx.compose.material.icons.filled.NorthEast as FilledNorthEast
+import androidx.compose.material.icons.rounded.Add as RoundedAdd
+import androidx.compose.material.icons.rounded.CalendarMonth as RoundedCalendarMonth
+import androidx.compose.material.icons.rounded.Check as RoundedCheck
+import androidx.compose.material.icons.rounded.CheckCircle as RoundedCheckCircle
+import androidx.compose.material.icons.rounded.Close as RoundedClose
+import androidx.compose.material.icons.rounded.Download as RoundedDownload
+import androidx.compose.material.icons.rounded.Edit as RoundedEdit
+import androidx.compose.material.icons.rounded.ExpandMore as RoundedExpandMore
+import androidx.compose.material.icons.rounded.Flag as RoundedFlag
+import androidx.compose.material.icons.rounded.FlashOff as RoundedFlashOff
+import androidx.compose.material.icons.rounded.FlashOn as RoundedFlashOn
+import androidx.compose.material.icons.rounded.Forum as RoundedForum
+import androidx.compose.material.icons.rounded.GridView as RoundedGridView
+import androidx.compose.material.icons.rounded.Group as RoundedGroup
+import androidx.compose.material.icons.rounded.IosShare as RoundedIosShare
+import androidx.compose.material.icons.rounded.Link as RoundedLink
+import androidx.compose.material.icons.rounded.Lock as RoundedLock
+import androidx.compose.material.icons.rounded.Mic as RoundedMic
+import androidx.compose.material.icons.rounded.MoreHoriz as RoundedMoreHoriz
+import androidx.compose.material.icons.rounded.Person as RoundedPerson
+import androidx.compose.material.icons.rounded.PhotoCamera as RoundedPhotoCamera
+import androidx.compose.material.icons.rounded.PhotoLibrary as RoundedPhotoLibrary
+import androidx.compose.material.icons.rounded.PlayArrow as RoundedPlayArrow
+import androidx.compose.material.icons.rounded.RadioButtonUnchecked as RoundedRadioButtonUnchecked
+import androidx.compose.material.icons.rounded.Search as RoundedSearch
+import androidx.compose.material.icons.rounded.Settings as RoundedSettings
+import androidx.compose.material.icons.rounded.Sync as RoundedSync
+import androidx.compose.material.icons.rounded.VideoLibrary as RoundedVideoLibrary
 
 object Tokens {
+    object Blurs {
+        /** Partiful · invite.web · outlined button backdrop blur radius · VERIFIED — token `invite.web.blur.button.outlined` */
+        val inviteWebBlurButtonOutlined: Dp = 40.dp
+        /** Partiful · invite.web · Gaussian sigma of the blurred fill, in px of the 1200×630 image · SOURCED — token `invite.web.blur.ogImage.fill` */
+        val inviteWebBlurOgImageFill: Dp = 360.dp
+    }
+    object Colors {
+        /** Yope · global · brand lime: composer camera button, primary buttons, coach tooltips, toasts, shutter ring, 'today' bar · SOURCED — token `color.global.accent` */
+        val globalAccent: Color = Color(0xFFCDFD07)
+        /** Yope · global · pink: profile card outline and name sticker · SOURCED — token `color.global.accentSecondary` */
+        val globalAccentSecondary: Color = Color(0xFFFE1F84)
+        /** Yope · global · screen background of group, chat and profile-grid screens (dark gray, not black) · SOURCED — token `color.global.background` */
+        val globalBackground: Color = Color(0xFF171717)
+        /** Yope · global · screen background of the home list, sheets ('new group', 'send to...'), camera, sign-up, profile 'pics' grid, group photo cards (2026) · SOURCED — token `color.global.backgroundDeep` */
+        val globalBackgroundDeep: Color = Color(0xFF000000)
+        /** Yope · global · control fill on #171717: header circle buttons, header title capsule, floating tab-bar capsule, composer text field · SOURCED — token `color.global.control` */
+        val globalControl: Color = Color(0xFF2E2E2E)
+        /** Yope · global · header circle icon buttons on black screens and sheets (✕, download) · SOURCED — token `color.global.controlOnDeep` */
+        val globalControlOnDeep: Color = Color(0xFF101010)
+        /** Yope · global · raised fill: selected tab pill, inner pill inside the header capsule, inactive page dots · SOURCED — token `color.global.controlRaised` */
+        val globalControlRaised: Color = Color(0xFF434343)
+        /** Apple HIG · global.system · destructive actions on system surfaces (delete account, block, leave, report) — iOS systemRed via Button(role: .destructive) · PLATFORM — token `color.global.destructive` */
+        val globalDestructive: Color = Color(0xFFFF4245)
+        /** Yope · global · text and glyphs on lime: camera glyph on the composer button, primary button labels, tooltip text · SOURCED — token `color.global.onAccent` */
+        val globalOnAccent: Color = Color(0xFF000000)
+        /** Yope · global · label on the light pill (secondary buttons, selected segment, 'today') · SOURCED — token `color.global.onSurfaceLight` */
+        val globalOnSurfaceLight: Color = Color(0xFF000000)
+        /** Apple HIG · global · filled check circle on selected people / groups (Yope draws it in iOS system blue) · PLATFORM — token `color.global.selection` */
+        val globalSelection: Color = Color(0xFF0091FF)
+        /** Yope · global · light pill fill: secondary buttons ('invite more friends', 'enable', 'new recap'), selected segment pill, 'today' pill · SOURCED — token `color.global.surfaceLight` */
+        val globalSurfaceLight: Color = Color(0xFFFFFFFF)
+        /** Material 3 · global.system · error / destructive text and icons (role md.sys.color.error, baseline dark scheme) · PLATFORM — token `color.global.system.error` */
+        val globalSystemError: Color = Color(0xFFF2B8B5)
+        /** Material 3 · global.system · list item label, dialog headline (role md.sys.color.on-surface, baseline dark scheme) · PLATFORM — token `color.global.system.onSurface` */
+        val globalSystemOnSurface: Color = Color(0xFFE6E0E9)
+        /** Material 3 · global.system · supporting text, leading icons, drag handle (role md.sys.color.on-surface-variant, baseline dark scheme) · PLATFORM — token `color.global.system.onSurfaceVariant` */
+        val globalSystemOnSurfaceVariant: Color = Color(0xFFCAC4D0)
+        /** Material 3 · global.system · list divider (1 dp) (role md.sys.color.outline, baseline dark scheme) · PLATFORM — token `color.global.system.outline` */
+        val globalSystemOutline: Color = Color(0xFF938F99)
+        /** Material 3 · global.system · dialog action labels, switches, selected controls (role md.sys.color.primary, baseline dark scheme) · PLATFORM — token `color.global.system.primary` */
+        val globalSystemPrimary: Color = Color(0xFFD0BCFF)
+        /** Material 3 · global.system · page / list container on Android system surfaces (role md.sys.color.surface, baseline dark scheme) · PLATFORM — token `color.global.system.surface` */
+        val globalSystemSurface: Color = Color(0xFF141218)
+        /** Material 3 · global.system · M3 dialog container (role md.sys.color.surface-container-high, baseline dark scheme) · PLATFORM — token `color.global.system.surfaceContainerHigh` */
+        val globalSystemSurfaceContainerHigh: Color = Color(0xFF2B2930)
+        /** Material 3 · global.system · M3 modal bottom sheet container (role md.sys.color.surface-container-low, baseline dark scheme) · PLATFORM — token `color.global.system.surfaceContainerLow` */
+        val globalSystemSurfaceContainerLow: Color = Color(0xFF1D1B20)
+        /** Yope · global · primary text and glyphs · SOURCED — token `color.global.textPrimary` */
+        val globalTextPrimary: Color = Color(0xFFFFFFFF)
+        /** Yope · global · secondary text, placeholders ('start typing...'), inactive tab-bar glyphs, chevrons inside capsules · SOURCED — token `color.global.textSecondary` */
+        val globalTextSecondary: Color = Color(0xFF969696)
+        /** Partiful · invite.web · filled button fill on dark themes · VERIFIED — token `invite.web.color.button.filled.fill.dark` */
+        val inviteWebColorButtonFilledFillDark: Color = Color(0xFFFFFFFF)
+        /** Partiful · invite.web · filled button fill on light themes · VERIFIED — token `invite.web.color.button.filled.fill.light` */
+        val inviteWebColorButtonFilledFillLight: Color = Color(0xFF000000)
+        /** Partiful · invite.web · filled button label on dark themes · VERIFIED — token `invite.web.color.button.filled.label.dark` */
+        val inviteWebColorButtonFilledLabelDark: Color = Color(0xFF000000)
+        /** Partiful · invite.web · filled button label on light themes · VERIFIED — token `invite.web.color.button.filled.label.light` */
+        val inviteWebColorButtonFilledLabelLight: Color = Color(0xFFFFFFFF)
+        /** Partiful · invite.web · members-only card fill colour on dark themes (alpha below) · VERIFIED — token `invite.web.color.gateCard.dark` */
+        val inviteWebColorGateCardDark: Color = Color(0xFF000000)
+        /** Partiful · invite.web · members-only card fill colour on light themes (alpha below) · VERIFIED — token `invite.web.color.gateCard.light` */
+        val inviteWebColorGateCardLight: Color = Color(0xFFFFFFFF)
+        /** Partiful · invite.web · text, icons and focus ring on dark themes (.ptf-dark) · VERIFIED — token `invite.web.color.text.dark` */
+        val inviteWebColorTextDark: Color = Color(0xFFFFFFFF)
+        /** Partiful · invite.web · text, icons and focus ring on light themes (.ptf-light) · VERIFIED — token `invite.web.color.text.light` */
+        val inviteWebColorTextLight: Color = Color(0xFF000000)
+        /** Partiful · invite.web · theme colour when the group has no cover, and on every non-ideal state (not found, link no longer works, error) · VERIFIED — token `invite.web.color.theme.default` */
+        val inviteWebColorThemeDefault: Color = Color(0xFF111111)
+    }
+    object Counts {
+        /** Partiful · invite.web · title: most lines allowed before the size shrinks · VERIFIED — token `invite.web.count.title.maxLines` */
+        val inviteWebCountTitleMaxLines: Int = 3
+    }
+    object Durations {
+        /** Yope · global · horizontal push to the next screen ('new group' → new group chat after create) · SOURCED — token `duration.global.navigationPush` */
+        val globalNavigationPush: Int = 100
+        /** Yope · global · horizontal swipe to the adjacent photo in the viewer, first movement to settled (gesture-driven) · SOURCED — token `duration.global.photoSwipe` */
+        val globalPhotoSwipe: Int = 167
+        /** Yope · global · bottom-sheet presentation, first movement to rest (rise ≈ 100 ms to an overshoot ≈ 16 pt past rest, settle ≈ 100 ms) · SOURCED — token `duration.global.sheetPresent` */
+        val globalSheetPresent: Int = 215
+        /** Partiful · invite.web · button/link background-colour and colour transition · VERIFIED — token `invite.web.duration.button.colour` */
+        val inviteWebDurationButtonColour: Int = 200
+        /** Partiful · invite.web · button opacity transition (press feedback) · VERIFIED — token `invite.web.duration.button.opacity` */
+        val inviteWebDurationButtonOpacity: Int = 100
+    }
+    object Easings {
+        /** Material 3 · global.system · M3 standard easing for custom transitions on Android system surfaces · PLATFORM — token `easing.global.system.standard` */
+        val globalSystemStandard: Easing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
+        /** Partiful · invite.web · button/link transitions · VERIFIED — token `invite.web.easing.button` */
+        val inviteWebEasingButton: Easing = LinearOutSlowInEasing
+    }
+    object FontSizes {
+        /** Yope · global · chat message text in bubbles (body text) · SOURCED — token `fontSize.global.body` */
+        val globalBody: TextUnit = 17.sp
+        /** Yope · global · primary button label ('create group', 'send') · SOURCED — token `fontSize.global.button` */
+        val globalButton: TextUnit = 15.sp
+        /** Yope · global · small meta text: voice-message duration ('00:38'), legal footer under sign-up · SOURCED — token `fontSize.global.caption` */
+        val globalCaption: TextUnit = 12.sp
+        /** Yope · global · empty-state detail line ('and added mẹ, Anh'), italic · SOURCED — token `fontSize.global.emptyDetail` */
+        val globalEmptyDetail: TextUnit = 14.sp
+        /** Yope · global · empty-state title ('you created group') · SOURCED — token `fontSize.global.emptyTitle` */
+        val globalEmptyTitle: TextUnit = 16.sp
+        /** Yope · global · group name in the header capsule · SOURCED — token `fontSize.global.headerTitle` */
+        val globalHeaderTitle: TextUnit = 15.sp
+        /** Yope · global · row subtitle ('new pic added · 9:43 AM'), secondary color · SOURCED — token `fontSize.global.listSubtitle` */
+        val globalListSubtitle: TextUnit = 14.sp
+        /** Yope · global · row / card name on the home list ('kylee') · SOURCED — token `fontSize.global.listTitle` */
+        val globalListTitle: TextUnit = 17.5.sp
+        /** Yope · global · onboarding / sign-up big title ('registrarse') · SOURCED — token `fontSize.global.onboardingTitle` */
+        val globalOnboardingTitle: TextUnit = 40.sp
+        /** Yope · global · hour / time overlay centred on a photo in the chat ('10:00 PM') · SOURCED — token `fontSize.global.overlayTime` */
+        val globalOverlayTime: TextUnit = 21.sp
+        /** Yope · global · hour overlay on the camera viewfinder and the send-to preview ('5:00 PM') · SOURCED — token `fontSize.global.overlayTimeCamera` */
+        val globalOverlayTimeCamera: TextUnit = 26.sp
+        /** Yope · global · text-field placeholder ('start typing...') · SOURCED — token `fontSize.global.placeholder` */
+        val globalPlaceholder: TextUnit = 17.sp
+        /** Yope · global · section label ('suggested friends'), secondary color · SOURCED — token `fontSize.global.sectionLabel` */
+        val globalSectionLabel: TextUnit = 16.sp
+        /** Yope · global · sheet title centred between header circles ('send to...') · SOURCED — token `fontSize.global.sheetTitle` */
+        val globalSheetTitle: TextUnit = 19.5.sp
+        /** Partiful · invite.appclip · join sheet helper line ('Just for group updates. No spam.') · VERIFIED — token `invite.appclip.fontSize.sheetHelper` */
+        val inviteAppclipFontSizeSheetHelper: TextUnit = 14.4.sp
+        /** Partiful · invite.appclip · join sheet text input value and placeholder · VERIFIED — token `invite.appclip.fontSize.sheetInput` */
+        val inviteAppclipFontSizeSheetInput: TextUnit = 24.sp
+        /** Partiful · invite.web · body text ('Invited by' row, initials, names, footer link, large button label) · VERIFIED — token `invite.web.fontSize.body` */
+        val inviteWebFontSizeBody: TextUnit = 16.sp
+        /** Partiful · invite.web · medium button label · VERIFIED — token `invite.web.fontSize.button.medium` */
+        val inviteWebFontSizeButtonMedium: TextUnit = 14.sp
+        /** Partiful · invite.web · card body / state body text · VERIFIED — token `invite.web.fontSize.detail` */
+        val inviteWebFontSizeDetail: TextUnit = 14.sp
+        /** Partiful · invite.web · section header ('Member List', 'Restricted Access') · VERIFIED — token `invite.web.fontSize.sectionHeader` */
+        val inviteWebFontSizeSectionHeader: TextUnit = 18.sp
+        /** Partiful · invite.web · emoji glyph on state pages · VERIFIED — token `invite.web.fontSize.state.glyph` */
+        val inviteWebFontSizeStateGlyph: TextUnit = 50.sp
+        /** Partiful · invite.web · state title · VERIFIED — token `invite.web.fontSize.state.title` */
+        val inviteWebFontSizeStateTitle: TextUnit = 24.sp
+        /** Partiful · invite.web · title: starting size for multi-line titles on phones (largest size tried is 39) · VERIFIED — token `invite.web.fontSize.title.base` */
+        val inviteWebFontSizeTitleBase: TextUnit = 40.sp
+        /** Partiful · invite.web · title: smallest size · VERIFIED — token `invite.web.fontSize.title.min` */
+        val inviteWebFontSizeTitleMin: TextUnit = 25.sp
+        /** Partiful · invite.web · title: upper bound for titles that fit on one line at the base size (largest size tried 47) · VERIFIED — token `invite.web.fontSize.title.singleLineMax` */
+        val inviteWebFontSizeTitleSingleLineMax: TextUnit = 48.sp
+    }
+    object FontWeights {
+        /** Yope · global · chat message text · SOURCED — token `fontWeight.global.body` */
+        val fontWeightGlobalBody: FontWeight = FontWeight(400)
+        /** Yope · global · primary button label · SOURCED — token `fontWeight.global.button` */
+        val fontWeightGlobalButton: FontWeight = FontWeight(600)
+        /** Yope · global · voice-message duration ('00:38') · SOURCED — token `fontWeight.global.caption` */
+        val fontWeightGlobalCaption: FontWeight = FontWeight(600)
+        /** Yope · global · empty-state title · SOURCED — token `fontWeight.global.emptyTitle` */
+        val fontWeightGlobalEmptyTitle: FontWeight = FontWeight(700)
+        /** Yope · global · group name in the header capsule · SOURCED — token `fontWeight.global.headerTitle` */
+        val fontWeightGlobalHeaderTitle: FontWeight = FontWeight(700)
+        /** Yope · global · row subtitle · SOURCED — token `fontWeight.global.listSubtitle` */
+        val fontWeightGlobalListSubtitle: FontWeight = FontWeight(400)
+        /** Yope · global · row / card name on the home list · SOURCED — token `fontWeight.global.listTitle` */
+        val fontWeightGlobalListTitle: FontWeight = FontWeight(700)
+        /** Yope · global · onboarding / sign-up big title · SOURCED — token `fontWeight.global.onboardingTitle` */
+        val fontWeightGlobalOnboardingTitle: FontWeight = FontWeight(800)
+        /** Yope · global · time overlay on a photo · SOURCED — token `fontWeight.global.overlayTime` */
+        val fontWeightGlobalOverlayTime: FontWeight = FontWeight(800)
+        /** Yope · global · hour overlay on the viewfinder · SOURCED — token `fontWeight.global.overlayTimeCamera` */
+        val fontWeightGlobalOverlayTimeCamera: FontWeight = FontWeight(800)
+        /** Yope · global · section label · SOURCED — token `fontWeight.global.sectionLabel` */
+        val fontWeightGlobalSectionLabel: FontWeight = FontWeight(600)
+        /** Yope · global · sheet title ('send to...') · SOURCED — token `fontWeight.global.sheetTitle` */
+        val fontWeightGlobalSheetTitle: FontWeight = FontWeight(700)
+        /** Partiful · invite.web · body text weight (400) · VERIFIED — token `invite.web.fontWeight.body` */
+        val inviteWebFontWeightBody: FontWeight = FontWeight(400)
+        /** Partiful · invite.web · button and link labels (600) · VERIFIED — token `invite.web.fontWeight.button` */
+        val inviteWebFontWeightButton: FontWeight = FontWeight(600)
+        /** Partiful · invite.web · section header weight (700) · VERIFIED — token `invite.web.fontWeight.sectionHeader` */
+        val inviteWebFontWeightSectionHeader: FontWeight = FontWeight(700)
+        /** Partiful · invite.web · state title weight (700) · VERIFIED — token `invite.web.fontWeight.state.title` */
+        val inviteWebFontWeightStateTitle: FontWeight = FontWeight(700)
+        /** Partiful · invite.web · title weight (700) · VERIFIED — token `invite.web.fontWeight.title` */
+        val inviteWebFontWeightTitle: FontWeight = FontWeight(700)
+        /** Partiful · invite.web · member first name in a row (600) · VERIFIED — token `invite.web.fontWeight.userRow.name` */
+        val inviteWebFontWeightUserRowName: FontWeight = FontWeight(600)
+    }
+    object Fonts {
+        /** Yope · global · typeface of all text (SF Pro on iOS, Roboto on Android) · PLATFORM — token `font.global.family` */
+        val globalFamily: DSFontFamily = DSFontFamily.System
+        /** Partiful · invite.web · all page text · PLATFORM — token `invite.web.font` */
+        val inviteWebFont: DSFontFamily = DSFontFamily.System
+    }
+    object Haptics {
+        /** Apple HIG / Material 3 · global · a task failed (send failed) · PLATFORM — token `haptic.global.error` */
+        val globalError: Int = HapticFeedbackConstants.REJECT
+        /** Apple HIG / Material 3 · global · a recipient / group toggled, a segmented choice, picker scrubbing · PLATFORM — token `haptic.global.select` */
+        val globalSelect: Int = HapticFeedbackConstants.SEGMENT_TICK
+        /** Apple HIG / Material 3 · global · confirm / send: a photo or message was sent · PLATFORM — token `haptic.global.send` */
+        val globalSend: Int = HapticFeedbackConstants.CONFIRM
+        /** Apple HIG / Material 3 · global · any task completed successfully (same generator as send) · PLATFORM — token `haptic.global.success` */
+        val globalSuccess: Int = HapticFeedbackConstants.CONFIRM
+        /** Apple HIG / Material 3 · global · a destructive action was confirmed (delete account, block, leave) · PLATFORM — token `haptic.global.warning` */
+        val globalWarning: Int = HapticFeedbackConstants.CONFIRM
+    }
+    object Icons {
+        /** Yope · global · add (+ in a header circle) · PLATFORM — token `icon.global.add` */
+        val globalAdd: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedAdd
+        /** Yope · global · back (‹ in a header circle) · PLATFORM — token `icon.global.back` */
+        val globalBack: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Rounded.AutoMirroredRoundedKeyboardArrowLeft
+        /** Yope · global · calendar circle in the group header · PLATFORM — token `icon.global.calendar` */
+        val globalCalendar: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedCalendarMonth
+        /** Yope · global · camera (composer button, row quick-camera, camera tab) · PLATFORM — token `icon.global.camera` */
+        val globalCamera: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedPhotoCamera
+        /** Yope · global · chats tab (two overlapping bubbles) · PLATFORM — token `icon.global.chats` */
+        val globalChats: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedForum
+        /** Yope · global · selected (filled check circle, color.global.selection) · PLATFORM — token `icon.global.check` */
+        val globalCheck: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedCheckCircle
+        /** Yope · global · done / posted (bare check, e.g. in the 'posted in the wall' toast) · PLATFORM — token `icon.global.checkmark` */
+        val globalCheckmark: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedCheck
+        /** Yope · global · disclosure / forward (› at the end of the header capsule) · PLATFORM — token `icon.global.chevron` */
+        val globalChevron: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Rounded.AutoMirroredRoundedKeyboardArrowRight
+        /** Yope · global · expand / dismiss down (⌄) · PLATFORM — token `icon.global.chevronDown` */
+        val globalChevronDown: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedExpandMore
+        /** Yope · global · close / dismiss (✕ in a header circle on sheets) · PLATFORM — token `icon.global.close` */
+        val globalClose: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedClose
+        /** Yope · global · download / save (arrow down to a line in a header circle) · PLATFORM — token `icon.global.download` */
+        val globalDownload: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedDownload
+        /** Yope · global · edit (pencil in a header circle) · PLATFORM — token `icon.global.edit` */
+        val globalEdit: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedEdit
+        /** Yope · global · flash off (slashed bolt on the viewfinder) · PLATFORM — token `icon.global.flashOff` */
+        val globalFlashOff: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedFlashOff
+        /** Locket · global · flash on (bolt) · PLATFORM — token `icon.global.flashOn` */
+        val globalFlashOn: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedFlashOn
+        /** Yope · global · flip camera (two circular arrows in a circle) · PLATFORM — token `icon.global.flip` */
+        val globalFlip: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedSync
+        /** Yope · global · photo library (camera, when no thumbnail) · PLATFORM — token `icon.global.gallery` */
+        val globalGallery: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedPhotoLibrary
+        /** Locket · global · grid view (2×2 rounded squares) · PLATFORM — token `icon.global.grid` */
+        val globalGrid: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedGridView
+        /** Yope · global · group / people · PLATFORM — token `icon.global.group` */
+        val globalGroup: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedGroup
+        /** Yope · global · leave group (menu item, destructive color) · PLATFORM — token `icon.global.leave` */
+        val globalLeave: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Rounded.AutoMirroredRoundedLogout
+        /** Yope · global · invite link · PLATFORM — token `icon.global.link` */
+        val globalLink: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedLink
+        /** Partiful · global · private / restricted · PLATFORM — token `icon.global.lock` */
+        val globalLock: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedLock
+        /** Yope · global · microphone (voice memo, voice message) · PLATFORM — token `icon.global.mic` */
+        val globalMic: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedMic
+        /** Yope · global · more (•••) · PLATFORM — token `icon.global.more` */
+        val globalMore: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedMoreHoriz
+        /** Yope · global · default avatar silhouette · PLATFORM — token `icon.global.person` */
+        val globalPerson: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedPerson
+        /** Yope · global · play (voice message) · PLATFORM — token `icon.global.play` */
+        val globalPlay: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedPlayArrow
+        /** Yope · global · recap entry in a header circle (film frame with stacked lines, outline) · PLATFORM — token `icon.global.recap` */
+        val globalRecap: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedVideoLibrary
+        /** Yope · global · report (menu item, destructive color) · PLATFORM — token `icon.global.report` */
+        val globalReport: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedFlag
+        /** Yope · global · search (home header circle) · PLATFORM — token `icon.global.search` */
+        val globalSearch: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedSearch
+        /** Locket · global · send (paper plane in a circle) · PLATFORM — token `icon.global.send` */
+        val globalSend: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Rounded.AutoMirroredRoundedSend
+        /** Apple HIG / Material 3 · global · settings entry · PLATFORM — token `icon.global.settings` */
+        val globalSettings: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedSettings
+        /** Yope · global · share (square + up arrow) · PLATFORM — token `icon.global.share` */
+        val globalShare: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedIosShare
+        /** Yope · global · not selected (empty ring) · PLATFORM — token `icon.global.uncheck` */
+        val globalUncheck: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedRadioButtonUnchecked
+        /** Yope · global · walls / recaps tab (film frame with stacked lines, filled) · PLATFORM — token `icon.global.wall` */
+        val globalWall: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedVideoLibrary
+        /** Partiful · invite.web · arrow after 'Get the app' (web: Material Icons 'north_east', Apache-2.0) · PLATFORM — token `invite.web.icon.getApp` */
+        val inviteWebIconGetApp: ImageVector get() = androidx.compose.material.icons.Icons.Filled.FilledNorthEast
+        /** Partiful · invite.web · lock glyph on the members-only card (web: Material Icons 'lock', Apache-2.0) · PLATFORM — token `invite.web.icon.lock` */
+        val inviteWebIconLock: ImageVector get() = androidx.compose.material.icons.Icons.Filled.FilledLock
+    }
+    object Layouts {
+        /** Apple HIG · global.system · semantic colors of native inset-grouped lists, alerts and sheets on system surfaces (settings.*, safety.*, system.permissions), iOS · PLATFORM — token `color.global.system.ios` */
+        object GlobalSystemIos {
+            const val groupedBackground: String = "systemGroupedBackground"
+            const val cell: String = "secondarySystemGroupedBackground"
+            const val label: String = "label"
+            const val secondaryLabel: String = "secondaryLabel"
+            const val placeholder: String = "placeholderText"
+            const val separator: String = "separator"
+            const val tint: String = "systemBlue"
+            const val destructive: String = "systemRed"
+        }
+        /** Material 3 · global.system · M3 duration scale (ms) for custom transitions on Android system surfaces · PLATFORM — token `duration.global.system.scale` */
+        object GlobalSystemScale {
+            const val short1: Float = 50f
+            const val short2: Float = 100f
+            const val short3: Float = 150f
+            const val short4: Float = 200f
+            const val medium1: Float = 250f
+            const val medium2: Float = 300f
+            const val medium3: Float = 350f
+            const val medium4: Float = 400f
+            const val long1: Float = 450f
+            const val long2: Float = 500f
+            const val long3: Float = 550f
+            const val long4: Float = 600f
+            const val extraLong1: Float = 700f
+            const val extraLong2: Float = 800f
+            const val extraLong3: Float = 900f
+            const val extraLong4: Float = 1000f
+        }
+        /** Yope · global · motion of native components Yope uses; their curves and durations are the platform's · PLATFORM — token `easing.global.native` */
+        object GlobalNative {
+            const val keyboard: String = "system"
+            const val alert: String = "system"
+            const val activityIndicator: String = "system (ProgressView / CircularProgressIndicator)"
+            const val scrollIndicator: String = "system"
+            const val navigationPush: String = "system (NavigationStack / Compose Navigation default)"
+            const val sheet: String = "system (.sheet / ModalBottomSheet)"
+        }
+        /** Yope · global · settle curve of the photo swipe after the finger lifts · PLATFORM — token `easing.global.photoSwipe` */
+        object GlobalPhotoSwipe {
+            const val ios: String = "system paging scroll physics"
+            const val android: String = "Compose HorizontalPager default fling"
+        }
+        /** Apple HIG / Material 3 · global · a long press starts (context menu) · PLATFORM — token `haptic.global.longPressStart` */
+        object GlobalLongPressStart {
+            const val ios: String = "system (context menu plays its own haptic; no custom generator)"
+            const val android: String = "LONG_PRESS"
+        }
+        /** Apple HIG / Material 3 · global · the long press that opens the reaction picker on a photo · PLATFORM — token `haptic.global.reaction` */
+        object GlobalReaction {
+            const val ios: String = "system (context menu plays its own haptic; no custom generator)"
+            const val android: String = "LONG_PRESS"
+        }
+        /** Apple HIG / Material 3 · global · shutter press (photo / video capture) · PLATFORM — token `haptic.global.shutter` */
+        object GlobalShutter {
+            const val ios: String = "none"
+            const val android: String = "none"
+        }
+        /** Apple HIG · global · which SF Symbol variant a context uses · PLATFORM — token `icon.global.variantRule` */
+        object GlobalVariantRule {
+            const val tabBar: String = "fill variant"
+            const val header: String = "outline variant unless the reference glyph is filled"
+        }
+        /** Partiful · invite.appclip · App Clip / universal link / App Link association · VERIFIED — token `invite.appclip.layout.association` */
+        object InviteAppclipLayoutAssociation {
+            const val aasaAppClips: String = "appclips.apps = [TEAM_ID.BUNDLE_ID.Clip]"
+            const val aasaAppLinks: String = "applinks.details[0].components: exclude /i/*/* (page sub-resources), then /i/*"
+            const val banner: String = "<meta name=apple-itunes-app content='app-id=…, app-clip-bundle-id=…, app-clip-display=card'>"
+            const val android: String = "assetlinks.json delegate_permission/common.handle_all_urls for the application id"
+        }
+        /** Apple HIG · invite.appclip · App Clip card metadata limits (App Store Connect) · PLATFORM — token `invite.appclip.layout.cardLimits` */
+        object InviteAppclipLayoutCardLimits {
+            const val headerImage: String = "1800×1200 px, no transparency, no text"
+            const val titleMaxCharacters: Float = 30f
+            const val subtitleMaxCharacters: Float = 56f
+        }
+        /** Partiful · invite.appclip · App Clip card in Messages (drawn by iOS) · SOURCED — token `invite.appclip.layout.messagesCard` */
+        object InviteAppclipLayoutMessagesCard {
+            const val header: String = "cover on a blurred backdrop with a domain chip"
+            const val footer: String = "clip icon, title, subtitle, action button"
+        }
+        /** Partiful · invite.web · cover image · VERIFIED — token `invite.web.layout.cover` */
+        object InviteWebLayoutCover {
+            const val width: String = "full column width"
+            const val aspect: String = "own (intrinsic)"
+        }
+        /** Partiful · invite.web · text links ('Get the app' in the footer) · VERIFIED — token `invite.web.layout.link` */
+        object InviteWebLayoutLink {
+            const val textDecoration: String = "none"
+            const val footerLinkTarget: String = "new tab (target _blank, rel noopener noreferrer)"
+        }
+        /** Partiful · invite.web · link preview tags · VERIFIED — token `invite.web.layout.linkPreview` */
+        object InviteWebLayoutLinkPreview {
+            const val titleTags: String = "<title>, og:title, twitter:title = copy invite.web.documentTitle"
+            const val imageAlt: String = "copy invite.web.cover.alt"
+            const val twitterCard: String = "summary_large_image"
+            const val robots: String = "noindex, nofollow"
+            const val description: String = "omitted (Partiful uses the event description; groups have none)"
+        }
+        /** Partiful · invite.web · link preview image (og:image / twitter:image) · VERIFIED — token `invite.web.layout.ogImage` */
+        object InviteWebLayoutOgImage {
+            const val width: Float = 1200f
+            const val height: Float = 630f
+            const val foreground: String = "cover fitted inside the frame (contain), centred"
+            const val background: String = "cover scaled to cover the frame (aspect kept, centre crop), Gaussian-blurred"
+            const val format: String = "JPEG"
+        }
+        /** Partiful · invite.web · not found / link no longer works / error page layout · VERIFIED — token `invite.web.layout.state` */
+        object InviteWebLayoutState {
+            const val page: String = "column at least the viewport height"
+            const val content: String = "vertically centred: equal auto margins above the content, below it, and above the footer"
+            const val align: String = "center"
+        }
+        /** Partiful · invite.web · state title case and alignment · VERIFIED — token `invite.web.layout.state.title` */
+        object InviteWebLayoutStateTitle {
+            const val textTransform: String = "uppercase"
+            const val textAlign: String = "center"
+        }
+        /** Partiful · invite.web · text rendering · VERIFIED — token `invite.web.layout.text` */
+        object InviteWebLayoutText {
+            const val fontSmoothing: String = "antialiased"
+        }
+        /** Partiful · invite.web · page background (the per-invite theme) · SOURCED — token `invite.web.layout.theme` */
+        object InviteWebLayoutTheme {
+            const val source: String = "group cover"
+            const val colour: String = "mean sRGB colour of the cover image (solid page background)"
+            const val fallback: String = "invite.web.color.theme.default"
+        }
+        /** W3C WCAG 2.2 · invite.web · choice of light (.ptf-light) or dark (.ptf-dark) text set for a theme · PLATFORM — token `invite.web.layout.themeTextColour` */
+        object InviteWebLayoutThemeTextColour {
+            const val rule: String = "text colour is whichever of invite.web.color.text.light / .dark has the higher contrast ratio against the theme colour"
+            const val formula: String = "WCAG 2.2 relative luminance and contrast ratio"
+        }
+        /** Partiful · invite.web · title alignment · VERIFIED — token `invite.web.layout.title` */
+        object InviteWebLayoutTitle {
+            const val textAlign: String = "center"
+        }
+        /** Partiful · invite.web · title auto-fit: estimated text width = size × (0.9 × wide + 0.7 × normal + 0.4 × thin characters); line count by greedy wrap; widest word must fit · VERIFIED — token `invite.web.layout.title.fit` */
+        object InviteWebLayoutTitleFit {
+            const val widthWide: Float = 0.9f
+            const val widthNormal: Float = 0.7f
+            const val widthThin: Float = 0.4f
+            const val thinCharacters: String = " litjr.',!:;I"
+            const val normalCharacters: String = "abcdefghknopqsuvxyz/\"-"
+            const val words: String = "split on whitespace"
+            const val search: String = "integer binary search; returns the lower bound"
+        }
+        /** Yope · global · appearance of every surface (app and system) · PLATFORM — token `layout.global.appearance` */
+        object GlobalAppearance {
+            const val mode: String = "dark only"
+            const val ios: String = "Info.plist UIUserInterfaceStyle = Dark"
+            const val android: String = "dark color scheme only"
+        }
+        /** W3C WCAG 2.2 · global · minimum contrast ratio: text 18 pt and larger, or bold at any size · VERIFIED — token `layout.global.contrast.largeText` */
+        object GlobalContrastLargeText {
+            const val ratio: Float = 3f
+            const val rule: String = "text 18 pt and larger, or bold at any size"
+        }
+        /** W3C WCAG 2.2 · global · minimum contrast ratio: UI components and graphical objects against adjacent colors · VERIFIED — token `layout.global.contrast.nonText` */
+        object GlobalContrastNonText {
+            const val ratio: Float = 3f
+            const val rule: String = "UI components and graphical objects against adjacent colors"
+        }
+        /** W3C WCAG 2.2 · global · minimum contrast ratio: text up to 17 pt (iOS) / below 18 sp (Android), not bold · VERIFIED — token `layout.global.contrast.text` */
+        object GlobalContrastText {
+            const val ratio: Float = 4.5f
+            const val rule: String = "text up to 17 pt (iOS) / below 18 sp (Android), not bold"
+        }
+        /** Apple HIG / Material 3 · global · Reduce Motion substitution rule for every token animation (implemented by DSAnimation.reducedMotion / dsMotion / dsTransition and Motion.kt dsMotionSpec) · PLATFORM — token `layout.global.reduceMotion` */
+        object GlobalReduceMotion {
+            const val ios: String = "UIAccessibility.isReduceMotionEnabled / @Environment(\\.accessibilityReduceMotion)"
+            const val android: String = "Settings.Global.ANIMATOR_DURATION_SCALE == 0 or ValueAnimator.areAnimatorsEnabled() == false (Accessibility > Remove animations)"
+            const val substitute: String = "replace x/y/z movement with a cross-fade of the same token duration; springs lose their bounce (dampingFraction 1); drop zoom, scale, peripheral and automatic repeating animation; never animate into or out of blur; motion that tracks the finger stays"
+        }
+        /** Apple HIG / Material 3 · global.system · text styles on system surfaces · PLATFORM — token `layout.global.system.typography` */
+        object GlobalSystemTypography {
+            const val ios: String = "built-in text styles (Font.TextStyle) on native lists, alerts and sheets"
+            const val android: String = "MaterialTheme.typography (M3 baseline type scale: list label bodyLarge, supporting bodyMedium, dialog headline headlineSmall, actions labelLarge)"
+        }
+        /** Apple HIG · global · iOS Dynamic Type text style each fontSize.global.<role> scales with (SwiftUI Font.TextStyle case; DSTextStyle.relativeTo) · PLATFORM — token `layout.global.textStyleMap` */
+        object GlobalTextStyleMap {
+            const val onboardingTitle: String = "largeTitle"
+            const val sheetTitle: String = "title3"
+            const val headerTitle: String = "subheadline"
+            const val listTitle: String = "headline"
+            const val listSubtitle: String = "subheadline"
+            const val body: String = "body"
+            const val button: String = "subheadline"
+            const val caption: String = "caption"
+            const val overlayTime: String = "title2"
+            const val overlayTimeCamera: String = "title"
+            const val placeholder: String = "body"
+            const val sectionLabel: String = "callout"
+            const val emptyTitle: String = "callout"
+            const val emptyDetail: String = "subheadline"
+        }
+        /** Yope · global · full pill: header title capsule, composer text field, chat bubbles, tab-bar capsule, tooltip ends, white secondary pills · SOURCED — token `radius.global.capsule` */
+        object GlobalCapsule {
+            const val shape: String = "capsule"
+            const val radius: String = "height / 2"
+        }
+        /** Apple HIG / Material 3 · global · sheet top corners (Yope's sheet radius was not measured) · PLATFORM — token `radius.global.sheet` */
+        object GlobalSheet {
+            const val ios: String = "system"
+            const val android: Float = 28f
+        }
+        /** Yope · global · observed shape of the sheet presentation: overshoot past rest, time to the peak, time from the peak to rest · SOURCED — token `spring.global.sheetPresentObserved` */
+        object GlobalSheetPresentObserved {
+            const val overshootPt: Float = 16f
+            const val timeToPeakMs: Float = 100f
+            const val settleMs: Float = 100f
+        }
+    }
+    object LineHeights {
+        /** Partiful · invite.web · default line height (× font size) for all text except the title · VERIFIED — token `invite.web.lineHeight.default` */
+        val inviteWebLineHeightDefault: TextUnit = 1.4.sp
+        /** Partiful · invite.web · title line height (× size) · VERIFIED — token `invite.web.lineHeight.title` */
+        val inviteWebLineHeightTitle: TextUnit = 1.2.sp
+        /** Yope · global · line pitch of the 3-line legal footer under sign-up (12 pt text) · SOURCED — token `lineHeight.global.caption` */
+        val globalCaption: TextUnit = 15.2.sp
+    }
+    object Opacities {
+        /** Partiful · invite.appclip · join sheet helper alpha on dark themes · VERIFIED — token `invite.appclip.opacity.sheetHelper.dark` */
+        val inviteAppclipOpacitySheetHelperDark: Float = 0.4f
+        /** Partiful · invite.appclip · join sheet helper alpha on light themes · VERIFIED — token `invite.appclip.opacity.sheetHelper.light` */
+        val inviteAppclipOpacitySheetHelperLight: Float = 0.3f
+        /** Partiful · invite.appclip · join sheet placeholder alpha on dark themes · VERIFIED — token `invite.appclip.opacity.sheetPlaceholder.dark` */
+        val inviteAppclipOpacitySheetPlaceholderDark: Float = 0.4f
+        /** Partiful · invite.appclip · join sheet placeholder alpha on light themes · VERIFIED — token `invite.appclip.opacity.sheetPlaceholder.light` */
+        val inviteAppclipOpacitySheetPlaceholderLight: Float = 0.3f
+        /** Partiful · invite.web · initials disc fill alpha (white) on dark themes · VERIFIED — token `invite.web.opacity.avatar.minimal.fill.dark` */
+        val inviteWebOpacityAvatarMinimalFillDark: Float = 0.25f
+        /** Partiful · invite.web · initials disc fill alpha (black) on light themes — member without a photo · VERIFIED — token `invite.web.opacity.avatar.minimal.fill.light` */
+        val inviteWebOpacityAvatarMinimalFillLight: Float = 0.1f
+        /** Partiful · invite.web · initials text alpha · VERIFIED — token `invite.web.opacity.avatar.minimal.text` */
+        val inviteWebOpacityAvatarMinimalText: Float = 0.8f
+        /** Partiful · invite.web · every button: opacity while pressed · VERIFIED — token `invite.web.opacity.button.active` */
+        val inviteWebOpacityButtonActive: Float = 0.4f
+        /** Partiful · invite.web · every button: opacity on hover (devices that hover) · VERIFIED — token `invite.web.opacity.button.hover` */
+        val inviteWebOpacityButtonHover: Float = 0.6f
+        /** Partiful · invite.web · outlined button border alpha while pressed · VERIFIED — token `invite.web.opacity.button.outlined.active.border` */
+        val inviteWebOpacityButtonOutlinedActiveBorder: Float = 0.4f
+        /** Partiful · invite.web · outlined button fill alpha while pressed · VERIFIED — token `invite.web.opacity.button.outlined.active.fill` */
+        val inviteWebOpacityButtonOutlinedActiveFill: Float = 0.25f
+        /** Partiful · invite.web · outlined button border alpha on dark themes · VERIFIED — token `invite.web.opacity.button.outlined.border.dark` */
+        val inviteWebOpacityButtonOutlinedBorderDark: Float = 0.4f
+        /** Partiful · invite.web · outlined button border alpha on light themes · VERIFIED — token `invite.web.opacity.button.outlined.border.light` */
+        val inviteWebOpacityButtonOutlinedBorderLight: Float = 0.25f
+        /** Partiful · invite.web · outlined button fill alpha (text colour) · VERIFIED — token `invite.web.opacity.button.outlined.fill` */
+        val inviteWebOpacityButtonOutlinedFill: Float = 0.05f
+        /** Partiful · invite.web · outlined button fill alpha on hover · VERIFIED — token `invite.web.opacity.button.outlined.hover.fill` */
+        val inviteWebOpacityButtonOutlinedHoverFill: Float = 0.1f
+        /** Partiful · invite.web · arrow glyph alpha · VERIFIED — token `invite.web.opacity.footer.arrow` */
+        val inviteWebOpacityFooterArrow: Float = 0.8f
+        /** Partiful · invite.web · footer divider alpha (text colour, 1 pt) · VERIFIED — token `invite.web.opacity.footer.divider` */
+        val inviteWebOpacityFooterDivider: Float = 0.1f
+        /** Partiful · invite.web · members-only card fill alpha on dark themes · VERIFIED — token `invite.web.opacity.gateCard.dark` */
+        val inviteWebOpacityGateCardDark: Float = 0.8f
+        /** Partiful · invite.web · members-only card fill alpha on light themes · VERIFIED — token `invite.web.opacity.gateCard.light` */
+        val inviteWebOpacityGateCardLight: Float = 0.7f
+        /** Partiful · invite.web · body text alpha ('Invited by' row, gate card body, initials) · VERIFIED — token `invite.web.opacity.text.body` */
+        val inviteWebOpacityTextBody: Float = 0.8f
+    }
+    object Radii {
+        /** Partiful · invite.web · avatar corners (circle) · VERIFIED — token `invite.web.radius.avatar` */
+        val inviteWebRadiusAvatar: Dp = 800.dp
+        /** Partiful · invite.web · large button corners · VERIFIED — token `invite.web.radius.button.large` */
+        val inviteWebRadiusButtonLarge: Dp = 4.dp
+        /** Partiful · invite.web · medium button corners (pill) · VERIFIED — token `invite.web.radius.button.medium` */
+        val inviteWebRadiusButtonMedium: Dp = 800.dp
+        /** Partiful · invite.web · cover image corners · VERIFIED — token `invite.web.radius.cover` */
+        val inviteWebRadiusCover: Dp = 0.dp
+        /** Partiful · invite.web · members-only card corners · VERIFIED — token `invite.web.radius.gateCard` */
+        val inviteWebRadiusGateCard: Dp = 4.dp
+        /** Yope · global · primary (lime) button corners — not a full pill · SOURCED — token `radius.global.button` */
+        val globalButton: Dp = 14.dp
+        /** Yope · global · list card corners (home conversation / group cards, inline permission card) · SOURCED — token `radius.global.card` */
+        val globalCard: Dp = 17.dp
+        /** Yope · global · single-line form text field corners ('name group (optional)') · SOURCED — token `radius.global.field` */
+        val globalField: Dp = 12.dp
+        /** Yope · global · photo corners in the thread and in grids of walls · SOURCED — token `radius.global.photo` */
+        val globalPhoto: Dp = 15.dp
+        /** Yope · global · camera viewfinder corners (full-width viewfinder) · SOURCED — token `radius.global.viewfinder` */
+        val globalViewfinder: Dp = 18.5.dp
+    }
+    object Sizes {
+        /** Partiful · invite.web · member avatar (row and list) · VERIFIED — token `invite.web.dimension.avatar` */
+        val inviteWebDimensionAvatar: Dp = 48.dp
+        /** Partiful · invite.web · gap between avatars (also between wrapped rows) · VERIFIED — token `invite.web.dimension.avatarGap` */
+        val inviteWebDimensionAvatarGap: Dp = 4.dp
+        /** Partiful · invite.web · gap between a button's icon and label · VERIFIED — token `invite.web.dimension.button.gap` */
+        val inviteWebDimensionButtonGap: Dp = 4.dp
+        /** Partiful · invite.web · large button height (gate card action, error retry) · VERIFIED — token `invite.web.dimension.button.large.height` */
+        val inviteWebDimensionButtonLargeHeight: Dp = 48.dp
+        /** Partiful · invite.web · large button horizontal padding · VERIFIED — token `invite.web.dimension.button.large.paddingH` */
+        val inviteWebDimensionButtonLargePaddingH: Dp = 24.dp
+        /** Partiful · invite.web · medium (pill) button height ('View all') · VERIFIED — token `invite.web.dimension.button.medium.height` */
+        val inviteWebDimensionButtonMediumHeight: Dp = 36.dp
+        /** Partiful · invite.web · medium button horizontal padding (outlined: minus the 1-pt border) · VERIFIED — token `invite.web.dimension.button.medium.paddingH` */
+        val inviteWebDimensionButtonMediumPaddingH: Dp = 16.dp
+        /** Partiful · invite.web · outlined button border width; also the footer divider and the focus ring width · VERIFIED — token `invite.web.dimension.button.outlined.border` */
+        val inviteWebDimensionButtonOutlinedBorder: Dp = 1.dp
+        /** Partiful · invite.web · widest viewport the mobile layout is used for; the page column stops growing here · VERIFIED — token `invite.web.dimension.columnMaxWidth` */
+        val inviteWebDimensionColumnMaxWidth: Dp = 720.dp
+        /** Partiful · invite.web · cover bottom → next element · VERIFIED — token `invite.web.dimension.coverToNext` */
+        val inviteWebDimensionCoverToNext: Dp = 16.dp
+        /** Partiful · invite.web · vertical padding of an event-field row ('Invited by') · VERIFIED — token `invite.web.dimension.fieldRow.paddingV` */
+        val inviteWebDimensionFieldRowPaddingV: Dp = 4.dp
+        /** Partiful · invite.web · focus ring offset (ring = 1-pt outline in the text colour) · VERIFIED — token `invite.web.dimension.focus.offset` */
+        val inviteWebDimensionFocusOffset: Dp = 2.dp
+        /** Partiful · invite.web · arrow glyph after 'Get the app' · VERIFIED — token `invite.web.dimension.footer.arrow` */
+        val inviteWebDimensionFooterArrow: Dp = 16.dp
+        /** Partiful · invite.web · footer content padding above and below · VERIFIED — token `invite.web.dimension.footer.contentPaddingV` */
+        val inviteWebDimensionFooterContentPaddingV: Dp = 40.dp
+        /** Partiful · invite.web · 'Get the app' label → arrow glyph · VERIFIED — token `invite.web.dimension.footer.linkGap` */
+        val inviteWebDimensionFooterLinkGap: Dp = 2.dp
+        /** Partiful · invite.web · space above the footer divider · VERIFIED — token `invite.web.dimension.footer.paddingTop` */
+        val inviteWebDimensionFooterPaddingTop: Dp = 24.dp
+        /** Partiful · invite.web · card body → button · VERIFIED — token `invite.web.dimension.gateCard.bodyToButton` */
+        val inviteWebDimensionGateCardBodyToButton: Dp = 16.dp
+        /** Partiful · invite.web · lock glyph size · VERIFIED — token `invite.web.dimension.gateCard.glyph` */
+        val inviteWebDimensionGateCardGlyph: Dp = 64.dp
+        /** Partiful · invite.web · lock glyph → card title · VERIFIED — token `invite.web.dimension.gateCard.glyphToTitle` */
+        val inviteWebDimensionGateCardGlyphToTitle: Dp = 8.dp
+        /** Partiful · invite.web · members-only card padding · VERIFIED — token `invite.web.dimension.gateCard.padding` */
+        val inviteWebDimensionGateCardPadding: Dp = 24.dp
+        /** Partiful · invite.web · card title → body; also state title → body · VERIFIED — token `invite.web.dimension.gateCard.titleToBody` */
+        val inviteWebDimensionGateCardTitleToBody: Dp = 4.dp
+        /** Partiful · invite.web · members header row bottom → avatar row · VERIFIED — token `invite.web.dimension.headerToAvatars` */
+        val inviteWebDimensionHeaderToAvatars: Dp = 8.dp
+        /** Partiful · invite.web · screen side margin (column padding) · VERIFIED — token `invite.web.dimension.margin` */
+        val inviteWebDimensionMargin: Dp = 16.dp
+        /** Partiful · invite.web · gap between page sections · VERIFIED — token `invite.web.dimension.sectionGap` */
+        val inviteWebDimensionSectionGap: Dp = 24.dp
+        /** Partiful · invite.web · state body → action button · VERIFIED — token `invite.web.dimension.state.bodyToAction` */
+        val inviteWebDimensionStateBodyToAction: Dp = 24.dp
+        /** Partiful · invite.web · emoji → state title · VERIFIED — token `invite.web.dimension.state.glyphToTitle` */
+        val inviteWebDimensionStateGlyphToTitle: Dp = 20.dp
+        /** Partiful · invite.web · space at the top of a state page (where Partiful's header row is) · VERIFIED — token `invite.web.dimension.state.headerSpace` */
+        val inviteWebDimensionStateHeaderSpace: Dp = 60.dp
+        /** Partiful · invite.web · title block bottom → cover top · VERIFIED — token `invite.web.dimension.titleToCover` */
+        val inviteWebDimensionTitleToCover: Dp = 25.8.dp
+        /** Partiful · invite.web · top of the title block from the top of the page · VERIFIED — token `invite.web.dimension.titleTop` */
+        val inviteWebDimensionTitleTop: Dp = 109.1.dp
+        /** Partiful · invite.web · avatar → name gap in a member row · VERIFIED — token `invite.web.dimension.userRow.columnGap` */
+        val inviteWebDimensionUserRowColumnGap: Dp = 12.dp
+        /** Partiful · invite.web · gap between member rows · VERIFIED — token `invite.web.dimension.userRow.listGap` */
+        val inviteWebDimensionUserRowListGap: Dp = 4.dp
+        /** Partiful · invite.web · member row vertical padding in the expanded list · VERIFIED — token `invite.web.dimension.userRow.paddingV` */
+        val inviteWebDimensionUserRowPaddingV: Dp = 12.dp
+        /** Yope · global · group avatar inside the header capsule · SOURCED — token `size.global.avatarHeader` */
+        val globalAvatarHeader: Dp = 28.dp
+        /** Yope · global · avatar in a home list card · SOURCED — token `size.global.avatarList` */
+        val globalAvatarList: Dp = 64.dp
+        /** Yope · global · avatar in a people-picker row · SOURCED — token `size.global.avatarPicker` */
+        val globalAvatarPicker: Dp = 40.dp
+        /** Yope · global · small avatar: chat sender, send-to recipient row · SOURCED — token `size.global.avatarSmall` */
+        val globalAvatarSmall: Dp = 32.6.dp
+        /** Yope · global · full-width primary button in a form ('create group') · SOURCED — token `size.global.buttonHeight` */
+        val globalButtonHeight: Dp = 45.dp
+        /** Yope · global · primary action button at the bottom of a sheet ('send ⓝ') · SOURCED — token `size.global.buttonHeightSheet` */
+        val globalButtonHeightSheet: Dp = 47.dp
+        /** Yope · global · side margin of the form primary button · SOURCED — token `size.global.buttonMarginH` */
+        val globalButtonMarginH: Dp = 19.dp
+        /** Yope · global · side margin of the sheet-bottom primary button · SOURCED — token `size.global.buttonMarginHSheet` */
+        val globalButtonMarginHSheet: Dp = 27.dp
+        /** Yope · global · selection circle (empty ring / filled check) in pickers and recipient rows · SOURCED — token `size.global.checkCircle` */
+        val globalCheckCircle: Dp = 24.dp
+        /** Yope · global · single-line form text field height · SOURCED — token `size.global.fieldHeight` */
+        val globalFieldHeight: Dp = 44.dp
+        /** Yope · global · circle icon buttons in headers (back, close, download, film-strip, search) · SOURCED — token `size.global.headerButton` */
+        val globalHeaderButton: Dp = 44.dp
+        /** Yope · global · gap between the back circle and the header title capsule · SOURCED — token `size.global.headerGap` */
+        val globalHeaderGap: Dp = 7.3.dp
+        /** Yope · global · screen edge to the first / last header circle · SOURCED — token `size.global.headerInset` */
+        val globalHeaderInset: Dp = 11.5.dp
+        /** Yope · global · vertical gap between stacked list cards · SOURCED — token `size.global.listGap` */
+        val globalListGap: Dp = 7.5.dp
+        /** Material 3 · global · minimum touch target, Android · VERIFIED — token `size.global.minTouchTarget.android` */
+        val globalMinTouchTargetAndroid: Dp = 48.dp
+        /** Material 3 · global · spacing between touch targets, Android · VERIFIED — token `size.global.minTouchTarget.androidSpacing` */
+        val globalMinTouchTargetAndroidSpacing: Dp = 8.dp
+        /** Apple HIG · global · minimum hit area of any control, iOS (default control size) · VERIFIED — token `size.global.minTouchTarget.ios` */
+        val globalMinTouchTargetIos: Dp = 44.dp
+        /** Apple HIG · global · absolute minimum control size, iOS · VERIFIED — token `size.global.minTouchTarget.iosMinimum` */
+        val globalMinTouchTargetIosMinimum: Dp = 28.dp
+        /** Yope · global · side margin of full-width content (home list cards); edge elements sit at the same inset · SOURCED — token `size.global.screenMargin` */
+        val globalScreenMargin: Dp = 12.dp
+        /** Yope · global · 'me' tab avatar · SOURCED — token `size.global.tabBarAvatar` */
+        val globalTabBarAvatar: Dp = 34.dp
+        /** Yope · global · floating tab-bar capsule height · SOURCED — token `size.global.tabBarHeight` */
+        val globalTabBarHeight: Dp = 58.dp
+        /** Yope · global · tab glyph size (20-23 pt measured) · SOURCED — token `size.global.tabBarIcon` */
+        val globalTabBarIcon: Dp = 21.dp
+        /** Yope · global · tab-bar side inset from the screen edges · SOURCED — token `size.global.tabBarInset` */
+        val globalTabBarInset: Dp = 22.dp
+        /** Yope · global · selected-tab pill height · SOURCED — token `size.global.tabBarSelectedHeight` */
+        val globalTabBarSelectedHeight: Dp = 48.dp
+        /** Yope · global · selected-tab pill width (fill color.global.controlRaised) · SOURCED — token `size.global.tabBarSelectedWidth` */
+        val globalTabBarSelectedWidth: Dp = 74.dp
+        /** Yope · global · floating tab-bar capsule width · SOURCED — token `size.global.tabBarWidth` */
+        val globalTabBarWidth: Dp = 344.dp
+    }
+    object Springs {
+        /** Material 3 · global · Android default spring (Compose spring() defaults) for custom motion whose Yope curve was not measurable · PLATFORM — token `spring.global.platformDefault.android` */
+        val globalPlatformDefaultAndroid: DSSpring = DSSpring(dampingRatio = 1f, stiffness = 1500.0212f)
+        /** Apple HIG · global · iOS default animation (SwiftUI Animation.default) for custom motion whose Yope curve was not measurable · PLATFORM — token `spring.global.platformDefault.ios` */
+        val globalPlatformDefaultIos: DSSpring = DSSpring(dampingRatio = 1f, stiffness = 130.5072f)
+    }
+    object Tracking {
+        /** Partiful · invite.web · title tracking · VERIFIED — token `invite.web.letterSpacing.title` */
+        val inviteWebLetterSpacingTitle: TextUnit = -0.02.sp
+    }
 }

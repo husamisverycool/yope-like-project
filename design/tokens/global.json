@@ -1,0 +1,1845 @@
+{
+  "$comment": "App-wide foundations (surfaces 'global' and 'global.system'). Consolidated from design/research/*.md and design/proposals/*.json; decisions and conflicts in design/MERGE_DECISIONS.md (Foundations); naming map in design/tokens/README.md; contrast in design/CONTRAST.md.",
+  "tokens": {
+    "color.global.background": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "color",
+      "value": "#171717",
+      "element": "screen background of group, chat and profile-grid screens (dark gray, not black)",
+      "evidence": "references/auto/yope/store/yope-store-05.png (600,1700) and (600,2250),(800,2150),(400,2000); references/auto/yope/store/yope-store-01.png row 720 x125-148; references/auto/yope/store/yope-store-02.png (300,2500); references/auto/yope/frames/b-derot-play-05-rot+3.3.png row 1300 x925-937 (L 23) — design/research/yope-a.md §1.1, design/research/yope-b.md §1, §5",
+      "method": "median of 9×9 / 15×15 boxes in lossless App Store / Play PNGs, std 0; both research passes agree",
+      "precision": "±1/255",
+      "notes": "H.264 videos render this surface #101010 (yope-a §0.3) — the lossless value is used. Screens drawn on pure black use color.global.backgroundDeep (MERGE_DECISIONS F-2)."
+    },
+    "color.global.backgroundDeep": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "color",
+      "value": "#000000",
+      "element": "screen background of the home list, sheets ('new group', 'send to...'), camera, sign-up, profile 'pics' grid, group photo cards (2026)",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png col 400; references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png row 282 x126-469; references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png; references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (design/research/yope-a.md §1.1); references/auto/yope/frames/b-presskit-profile.png (30,1500),(780,1500),(400,1300) exact (0,0,0) (design/research/yope-b.md §5); references/auto/yope/frames/b-alexaa-7652512140875566349-t5.83-group-chat-pill.png group photo cards on black (design/research/yope-b.md §13)",
+      "method": "flat runs in video frames; box medians in the press-kit PNG (exact)",
+      "precision": "exact (press-kit PNG); ±3/255 (videos)"
+    },
+    "color.global.control": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "color",
+      "value": "#2E2E2E",
+      "element": "control fill on #171717: header circle buttons, header title capsule, floating tab-bar capsule, composer text field",
+      "evidence": "references/auto/yope/store/yope-store-01.png bbox x149-257 y664-772 (median); references/auto/yope/store/yope-store-02.png (640,2380) 5×5; references/auto/yope/store/yope-store-05.png field bbox x361-822 y2391-2489 (design/research/yope-a.md §1.1); references/auto/yope/frames/b-derot-store-05-rot-1.68.png (700,2405/2440/2475) (design/research/yope-b.md §2); re-checked this pass: references/auto/yope/store/yope-store-05.png box x395-580 y2415-2465 background median (46,46,46)",
+      "method": "bbox / 5×5 box medians in lossless PNGs (three images, two research passes)",
+      "precision": "±2/255"
+    },
+    "color.global.controlRaised": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "color",
+      "value": "#434343",
+      "element": "raised fill: selected tab pill, inner pill inside the header capsule, inactive page dots",
+      "evidence": "references/auto/yope/store/yope-store-02.png (480,2370) #424242; references/auto/yope/store/yope-store-01.png bbox x630-779 y689-770; references/auto/yope/store/yope-store-01.png row 832 x506-524 (design/research/yope-a.md §1.1)",
+      "method": "box / bbox medians in lossless PNGs",
+      "precision": "±2/255",
+      "notes": "The composer's sticker / mic circles measure #3F3F3F (yope-b §2): a chat.composer value, left to that surface."
+    },
+    "color.global.controlOnDeep": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "color",
+      "value": "#101010",
+      "element": "header circle icon buttons on black screens and sheets (✕, download)",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png row 97 x73-125; references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png row 88 x75-126 (design/research/yope-a.md §1.1); conflicting: references/auto/yope/frames/b-alexaa-7652512140875566349-t5.83-group-chat-pill.png (100,110),(140,135) #131313 (design/research/yope-b.md §1)",
+      "method": "runs (yope-a) / 5×5 median (yope-b) on H.264 video frames",
+      "precision": "±8/255 (video)",
+      "notes": "Video-only evidence. Two videos (2026-05, 2026-10 newest) give #101010, one (2026-06) #131313. H.264 renders the lossless #171717 as #101010 in these recordings (yope-a §0.3), so the true fill may be lighter — MERGE_DECISIONS F-5 (unresolved; needs one lossless screenshot of a black sheet header)."
+    },
+    "color.global.textPrimary": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "color",
+      "value": "#FFFFFF",
+      "element": "primary text and glyphs",
+      "evidence": "references/auto/yope/store/yope-store-01.png row 720 x192-197 (chevron) (design/research/yope-a.md §1.1); references/auto/yope/frames/b-derot-store-05-rot-1.68.png glyph cores of 'valid' col 370 y1586-1595 = 255 (design/research/yope-b.md §1)",
+      "method": "runs / column profile of glyph cores in lossless PNGs",
+      "precision": "exact"
+    },
+    "color.global.textSecondary": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "color",
+      "value": "#969696",
+      "element": "secondary text, placeholders ('start typing...'), inactive tab-bar glyphs, chevrons inside capsules",
+      "evidence": "references/auto/yope/store/yope-store-02.png row 2412 x319-337 (tab icon); references/auto/yope/store/yope-store-01.png row 720 x796-799 (capsule chevron); references/auto/yope/store/yope-store-05.png placeholder x395-580 y2415-2465 (design/research/yope-a.md §1.1); re-measured this pass on the original references/auto/yope/store/yope-store-05.png: 279 glyph px exactly (150,150,150), brightest glyph px 151, plateau mode of the top 30 %",
+      "method": "runs / plateau mode of anti-aliased glyph pixels in lossless PNGs (three elements, two images)",
+      "precision": "±1/255",
+      "notes": "yope-b reported #A3A3A3 for the placeholder, sampled on the bicubic-rotated derivative b-derot-store-05-rot-1.68.png; the original PNG has no glyph pixel above 151 in that box, so #A3A3A3 is interpolation overshoot (MERGE_DECISIONS F-3)."
+    },
+    "color.global.accent": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "color",
+      "value": "#CDFD07",
+      "element": "brand lime: composer camera button, primary buttons, coach tooltips, toasts, shutter ring, 'today' bar",
+      "evidence": "references/auto/yope/store/yope-store-05.png lime mask bbox x256-342 y2406-2492 n=2859 p10=p90=(205,253,7) (design/research/yope-a.md §1.1); same disc re-measured this pass n=4065 median (205,253,7); references/auto/yope/frames/b-derot-store-05-rot-1.68.png (240,2420),(300,2460) (design/research/yope-b.md §2); references/auto/yope/store/yope-store-04.png bbox x998-1016 y996-1108 #CCFD07; references/auto/yope/frames/b-presskit-wall.png lime px median #CDFE08 (design/research/yope-b.md §5)",
+      "method": "5×5-eroded mask median in lossless PNGs",
+      "precision": "±2/255 (three lossless images within ±1/255)",
+      "notes": "Not the website lime #C8FF2E (yope.app / yope.tv CSS, web only). Video values (#D1FF17, #D2FC09) are lossy and not used."
+    },
+    "color.global.onAccent": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "color",
+      "value": "#000000",
+      "element": "text and glyphs on lime: camera glyph on the composer button, primary button labels, tooltip text",
+      "evidence": "measured this pass in references/auto/yope/store/yope-store-05.png inside the lime disc (x256-342, y2406-2492): 1318 non-lime px with luminance < 4, darkest 50 % of non-lime px all exactly (0,0,0); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png label 'create group' x234-341 y946-961 darkest 15 % #000900 (design/research/yope-a.md §1.1)",
+      "method": "luminance-sorted median of the non-lime pixels inside the disc (lossless PNG); percentile median on video",
+      "precision": "exact (PNG)"
+    },
+    "color.global.accentSecondary": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "color",
+      "value": "#FE1F84",
+      "element": "pink: profile card outline and name sticker",
+      "evidence": "references/auto/yope/store/yope-store-02.png interior n=41,703 in x180-1100 y1000-2320, p10=p90=(254,31,132) (design/research/yope-a.md §1.1)",
+      "method": "7×7-eroded mask median in a lossless PNG",
+      "precision": "±1/255",
+      "notes": "Only evidence is the 'find friends like you' stranger-profile panel (a do-not-copy discovery surface, yope-a §5). yope.app's profile demo offers a per-profile 'vibe color' (yope-a §2.4), so this pink may be a user-chosen profile color, not an app accent — MERGE_DECISIONS F-7 (unresolved)."
+    },
+    "color.global.surfaceLight": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "color",
+      "value": "#FFFFFF",
+      "element": "light pill fill: secondary buttons ('invite more friends', 'enable', 'new recap'), selected segment pill, 'today' pill",
+      "evidence": "references/auto/yope/store/yope-store-04.png 'today' pill bbox x783-985 y991-1119, 17,794 px with luminance > 250 (measured this pass); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png row 418 x168-408 (#FDFDFD); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png 'enable' (design/research/yope-a.md §1.1, §1.4); owner yope-week-recap.jpg selected segment (design/research/yope-b.md §6)",
+      "method": "pixel count inside the pill bbox (lossless PNG); runs on video",
+      "precision": "exact (PNG); ±3/255 (video)"
+    },
+    "color.global.onSurfaceLight": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "color",
+      "value": "#000000",
+      "element": "label on the light pill (secondary buttons, selected segment, 'today')",
+      "evidence": "references/auto/yope/store/yope-store-04.png 'today' text inside the pill bbox x783-985 y991-1119: 1687 of 1987 dark px exactly (0,0,0) (measured this pass); yope-a §1.4 'white fill, black label' (references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png, references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png)",
+      "method": "mode of glyph pixels inside the pill (lossless PNG)",
+      "precision": "exact (PNG)"
+    },
+    "color.global.selection": {
+      "type": "color",
+      "value": "#0091FF",
+      "source_app": "Apple HIG",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "filled check circle on selected people / groups (Yope draws it in iOS system blue)",
+      "evidence": "Yope: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png row 282 x474-495 ≈#166AFA; references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png #1868FC / #1169F9 (design/research/yope-a.md §1.1, video) = iOS systemBlue. Value: https://developer.apple.com/design/human-interface-guidelines/color (system colors table; DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/color.json fetched 2026-10-15, page change log 2025-06-09 'Updated system color values', 2025-12-16 latest), row 'Blue' Default (dark) R-0,G-145,B-255",
+      "method": "system color named by the reference; hex from the HIG system-colors table, dark variant (the app is dark-only: layout.global.appearance)",
+      "notes": "Light variant R-0,G-136,B-255 (#0088FF). HIG: 'Avoid hard-coding system color values in your app … Use APIs like Color to apply system colors' — conflict with the token-only rule (MERGE_DECISIONS F-9). Android has no system blue; the hex carries Yope's check color there."
+    },
+    "color.global.separator": {
+      "type": "color",
+      "value": null,
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "BLOCKED",
+      "element": "hairline between rows on app (Yope-referenced) surfaces",
+      "evidence": "Not observed: Yope separates stacked items with gaps (size.global.listGap; design/research/yope-a.md §2.9) and draws 1-px rims on controls (design/research/yope-b.md §1-2); no separator line is measured in any Yope source.",
+      "notes": "Smallest capture: one screenshot of a Yope list with row dividers (e.g. the 2026 group ••• menu or members list, yope-a §2.13). System surfaces use the platform separator (color.global.system.ios.separator / color.global.system.outline)."
+    },
+    "color.global.scrim": {
+      "type": "color",
+      "value": null,
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "BLOCKED",
+      "element": "dimming layer behind sheets / over photos under text on app surfaces",
+      "evidence": "Not measured: the recap card's bottom gradient scrim is on a JPEG owner frame, alpha not solvable (design/research/yope-b.md §6); the header circles over photos are translucent but their alpha was not solved (design/research/yope-b.md §1); the share pill is a backdrop blur (design/research/yope-b.md §9).",
+      "notes": "System sheets supply their own dimming (PLATFORM). Smallest capture: one lossless screenshot of a Yope sheet over a known background."
+    },
+    "color.global.destructive": {
+      "type": "color",
+      "value": "#FF4245",
+      "source_app": "Apple HIG",
+      "surface": "global.system",
+      "level": "PLATFORM",
+      "element": "destructive actions on system surfaces (delete account, block, leave, report) — iOS systemRed via Button(role: .destructive)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/color (system colors table; DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/color.json fetched 2026-10-15, page change log 2025-06-09 'Updated system color values', 2025-12-16 latest), row 'Red' Default (dark) R-255,G-66,B-69; design/research/platform.md settings.account (systemRed via Button(role: .destructive)); Yope's 2024 menu draws 'leave group' / 'report' in red (design/research/yope-a.md §2.13, not measured)",
+      "method": "HIG system-colors table, dark variant (dark-only app)",
+      "notes": "Light R-255,G-56,B-60 (#FF383C). On Android system surfaces use color.global.system.error (Material 3)."
+    },
+    "color.global.system.ios": {
+      "type": "layout",
+      "source_app": "Apple HIG",
+      "surface": "global.system",
+      "level": "PLATFORM",
+      "value": {
+        "groupedBackground": "systemGroupedBackground",
+        "cell": "secondarySystemGroupedBackground",
+        "label": "label",
+        "secondaryLabel": "secondaryLabel",
+        "placeholder": "placeholderText",
+        "separator": "separator",
+        "tint": "systemBlue",
+        "destructive": "systemRed"
+      },
+      "element": "semantic colors of native inset-grouped lists, alerts and sheets on system surfaces (settings.*, safety.*, system.permissions), iOS",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/color 'dynamic system colors' (grouped background set; Label, Secondary label, Placeholder text, Separator rows); https://developer.apple.com/documentation/uikit/uicolor/systemgroupedbackground ; design/research/platform.md settings (color.settings.background.ios / color.settings.cell.ios)",
+      "method": "API names of the semantic colors the native components use",
+      "notes": "HIG publishes no hex values for the dynamic background / label / separator colors (only for system colors and grays), so these resolve at runtime; with layout.global.appearance (dark only) they resolve to their dark variants. Their contrast is the platform's and is not computed in design/CONTRAST.md."
+    },
+    "color.global.system.surface": {
+      "type": "color",
+      "value": "#141218",
+      "source_app": "Material 3",
+      "surface": "global.system",
+      "level": "PLATFORM",
+      "element": "page / list container on Android system surfaces (role md.sys.color.surface, baseline dark scheme)",
+      "evidence": "androidx.compose.material3 ColorDarkTokens.kt (VERSION v0_210) + PaletteTokens.kt, https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ColorDarkTokens.kt (fetched 2026-10-15) — the baseline dark scheme darkColorScheme() uses: Surface = Neutral6 (20,18,24); role usage design/research/platform.md (settings lists, dialogs, bottom sheets)",
+      "method": "token resolved through PaletteTokens to its RGB value",
+      "notes": "Role value of the static baseline scheme. With dynamic color (dynamicDarkColorScheme, Android 12+) the system supplies the role values instead — open choice, MERGE_DECISIONS F-12."
+    },
+    "color.global.system.surfaceContainerHigh": {
+      "type": "color",
+      "value": "#2B2930",
+      "source_app": "Material 3",
+      "surface": "global.system",
+      "level": "PLATFORM",
+      "element": "M3 dialog container (role md.sys.color.surface-container-high, baseline dark scheme)",
+      "evidence": "androidx.compose.material3 ColorDarkTokens.kt (VERSION v0_210) + PaletteTokens.kt, https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ColorDarkTokens.kt (fetched 2026-10-15) — the baseline dark scheme darkColorScheme() uses: SurfaceContainerHigh = Neutral17 (43,41,48); role usage design/research/platform.md (settings lists, dialogs, bottom sheets)",
+      "method": "token resolved through PaletteTokens to its RGB value",
+      "notes": "Role value of the static baseline scheme. With dynamic color (dynamicDarkColorScheme, Android 12+) the system supplies the role values instead — open choice, MERGE_DECISIONS F-12."
+    },
+    "color.global.system.surfaceContainerLow": {
+      "type": "color",
+      "value": "#1D1B20",
+      "source_app": "Material 3",
+      "surface": "global.system",
+      "level": "PLATFORM",
+      "element": "M3 modal bottom sheet container (role md.sys.color.surface-container-low, baseline dark scheme)",
+      "evidence": "androidx.compose.material3 ColorDarkTokens.kt (VERSION v0_210) + PaletteTokens.kt, https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ColorDarkTokens.kt (fetched 2026-10-15) — the baseline dark scheme darkColorScheme() uses: SurfaceContainerLow = Neutral10 (29,27,32); role usage design/research/platform.md (settings lists, dialogs, bottom sheets)",
+      "method": "token resolved through PaletteTokens to its RGB value",
+      "notes": "Role value of the static baseline scheme. With dynamic color (dynamicDarkColorScheme, Android 12+) the system supplies the role values instead — open choice, MERGE_DECISIONS F-12."
+    },
+    "color.global.system.onSurface": {
+      "type": "color",
+      "value": "#E6E0E9",
+      "source_app": "Material 3",
+      "surface": "global.system",
+      "level": "PLATFORM",
+      "element": "list item label, dialog headline (role md.sys.color.on-surface, baseline dark scheme)",
+      "evidence": "androidx.compose.material3 ColorDarkTokens.kt (VERSION v0_210) + PaletteTokens.kt, https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ColorDarkTokens.kt (fetched 2026-10-15) — the baseline dark scheme darkColorScheme() uses: OnSurface = Neutral90 (230,224,233); role usage design/research/platform.md (settings lists, dialogs, bottom sheets)",
+      "method": "token resolved through PaletteTokens to its RGB value",
+      "notes": "Role value of the static baseline scheme. With dynamic color (dynamicDarkColorScheme, Android 12+) the system supplies the role values instead — open choice, MERGE_DECISIONS F-12."
+    },
+    "color.global.system.onSurfaceVariant": {
+      "type": "color",
+      "value": "#CAC4D0",
+      "source_app": "Material 3",
+      "surface": "global.system",
+      "level": "PLATFORM",
+      "element": "supporting text, leading icons, drag handle (role md.sys.color.on-surface-variant, baseline dark scheme)",
+      "evidence": "androidx.compose.material3 ColorDarkTokens.kt (VERSION v0_210) + PaletteTokens.kt, https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ColorDarkTokens.kt (fetched 2026-10-15) — the baseline dark scheme darkColorScheme() uses: OnSurfaceVariant = NeutralVariant80 (202,196,208); role usage design/research/platform.md (settings lists, dialogs, bottom sheets)",
+      "method": "token resolved through PaletteTokens to its RGB value",
+      "notes": "Role value of the static baseline scheme. With dynamic color (dynamicDarkColorScheme, Android 12+) the system supplies the role values instead — open choice, MERGE_DECISIONS F-12."
+    },
+    "color.global.system.outline": {
+      "type": "color",
+      "value": "#938F99",
+      "source_app": "Material 3",
+      "surface": "global.system",
+      "level": "PLATFORM",
+      "element": "list divider (1 dp) (role md.sys.color.outline, baseline dark scheme)",
+      "evidence": "androidx.compose.material3 ColorDarkTokens.kt (VERSION v0_210) + PaletteTokens.kt, https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ColorDarkTokens.kt (fetched 2026-10-15) — the baseline dark scheme darkColorScheme() uses: Outline = NeutralVariant60 (147,143,153); role usage design/research/platform.md (settings lists, dialogs, bottom sheets)",
+      "method": "token resolved through PaletteTokens to its RGB value",
+      "notes": "Role value of the static baseline scheme. With dynamic color (dynamicDarkColorScheme, Android 12+) the system supplies the role values instead — open choice, MERGE_DECISIONS F-12."
+    },
+    "color.global.system.error": {
+      "type": "color",
+      "value": "#F2B8B5",
+      "source_app": "Material 3",
+      "surface": "global.system",
+      "level": "PLATFORM",
+      "element": "error / destructive text and icons (role md.sys.color.error, baseline dark scheme)",
+      "evidence": "androidx.compose.material3 ColorDarkTokens.kt (VERSION v0_210) + PaletteTokens.kt, https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ColorDarkTokens.kt (fetched 2026-10-15) — the baseline dark scheme darkColorScheme() uses: Error = Error80 (242,184,181); role usage design/research/platform.md (settings lists, dialogs, bottom sheets)",
+      "method": "token resolved through PaletteTokens to its RGB value",
+      "notes": "Role value of the static baseline scheme. With dynamic color (dynamicDarkColorScheme, Android 12+) the system supplies the role values instead — open choice, MERGE_DECISIONS F-12."
+    },
+    "color.global.system.primary": {
+      "type": "color",
+      "value": "#D0BCFF",
+      "source_app": "Material 3",
+      "surface": "global.system",
+      "level": "PLATFORM",
+      "element": "dialog action labels, switches, selected controls (role md.sys.color.primary, baseline dark scheme)",
+      "evidence": "androidx.compose.material3 ColorDarkTokens.kt (VERSION v0_210) + PaletteTokens.kt, https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ColorDarkTokens.kt (fetched 2026-10-15) — the baseline dark scheme darkColorScheme() uses: Primary = Primary80 (208,188,255); role usage design/research/platform.md (settings lists, dialogs, bottom sheets)",
+      "method": "token resolved through PaletteTokens to its RGB value",
+      "notes": "Role value of the static baseline scheme. With dynamic color (dynamicDarkColorScheme, Android 12+) the system supplies the role values instead — open choice, MERGE_DECISIONS F-12."
+    },
+    "layout.global.appearance": {
+      "type": "layout",
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "value": {
+        "mode": "dark only",
+        "ios": "Info.plist UIUserInterfaceStyle = Dark",
+        "android": "dark color scheme only"
+      },
+      "element": "appearance of every surface (app and system)",
+      "evidence": "Yope is dark in every source: neither research pass records a light-appearance Yope screen in the 7 App Store PNGs and 5 Play PNGs (2026), the press kit (Jul 2026) or the 14 TikTok screen recordings (2024-2026) (design/research/yope-a.md §0.1, design/research/yope-b.md §0). references/auto/yope/frames/a-yrrah-7454430216123862280-t21.23-photos-permission-alert-2024.png: the iOS system alert renders in light appearance over Yope's dark group screen, i.e. the device was in light mode and Yope still drew dark. HIG Dark Mode (https://developer.apple.com/design/human-interface-guidelines/dark-mode, change log 2024-08-06): 'In rare cases, consider using only a dark appearance in the interface. For example, it can make sense for an app that supports immersive media viewing to use a permanently dark appearance'. Apple: UIUserInterfaceStyle 'Set this value to force the dark user interface style, even when the systemwide style is set to light' (https://developer.apple.com/documentation/bundleresources/information-property-list/uiuserinterfacestyle).",
+      "method": "reference observation + HIG allowance; mechanism from Apple documentation",
+      "notes": "In 2024 Yope let system alerts follow the device (light); the 2026 videos show dark alerts (cause not determinable). Forcing dark app-wide follows the HIG mechanism for system surfaces — MERGE_DECISIONS F-1 (owner confirm)."
+    },
+    "font.global.family": {
+      "type": "font",
+      "value": {
+        "ios": "system",
+        "android": "system"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "typeface of all text (SF Pro on iOS, Roboto on Android)",
+      "evidence": "No source names Yope's in-app typeface (design/research/yope-a.md §1.2, design/research/yope-b.md §12). yope.app loads Unbounded + Space Grotesk and the yope.tv invite page Poppins + Raleway — website only. The 'YOPE' logotype is a wordmark (do-not-copy).",
+      "method": "source search (site CSS, press kit, store listings)",
+      "notes": "Sizes below are SF-equivalent sizes derived from measured glyph heights."
+    },
+    "fontSize.global.onboardingTitle": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontSize",
+      "value": 40,
+      "unit": "pt",
+      "element": "onboarding / sign-up big title ('registrarse')",
+      "evidence": "references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png bbox x148-427 y438-484 (47 px ascender+descender) (design/research/yope-a.md §1.2)",
+      "method": "(ascender+descender ≈ 0.95 em) ÷ 1.181 px/pt",
+      "precision": "±3 pt"
+    },
+    "fontWeight.global.onboardingTitle": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontWeight",
+      "value": "heavy",
+      "element": "onboarding / sign-up big title",
+      "evidence": "references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png (design/research/yope-a.md §1.2)",
+      "method": "visual weight on the video frame"
+    },
+    "fontSize.global.sheetTitle": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontSize",
+      "value": 19.5,
+      "unit": "pt",
+      "element": "sheet title centred between header circles ('send to...')",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png bbox x236-339 y85/90-106, 'd' ascender 17 px (design/research/yope-a.md §1.2); this pass: x-height rows 94-106",
+      "method": "ascender ÷ 0.74 ÷ 1.181 px/pt",
+      "precision": "±2 pt",
+      "notes": "The 'new group' sheet title measures ≈14.5 pt medium (x-height 9 px vs 13 px here, same 1.181 px/pt template, 2026-05 vs 2026-10) — a second treatment, kept on groups.create; MERGE_DECISIONS F-6."
+    },
+    "fontWeight.global.sheetTitle": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontWeight",
+      "value": "bold",
+      "element": "sheet title ('send to...')",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (design/research/yope-a.md §1.2)",
+      "method": "visual weight on the video frame"
+    },
+    "fontSize.global.headerTitle": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontSize",
+      "value": 15,
+      "unit": "pt",
+      "element": "group name in the header capsule",
+      "evidence": "references/auto/yope/store/yope-store-01.png 's' x-height 21 px (y712-732), 'd' ascender 28 px (y705-732) (design/research/yope-a.md §1.2)",
+      "method": "em ≈ 37.5 px ÷ 2.511 px/pt (lossless PNG)",
+      "precision": "±1 pt"
+    },
+    "fontWeight.global.headerTitle": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontWeight",
+      "value": "bold",
+      "element": "group name in the header capsule",
+      "evidence": "references/auto/yope/store/yope-store-01.png (design/research/yope-a.md §1.2)",
+      "method": "visual weight on the lossless PNG"
+    },
+    "fontSize.global.listTitle": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontSize",
+      "value": 17.5,
+      "unit": "pt",
+      "element": "row / card name on the home list ('kylee')",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png 'k' ascender 19 px (y869-887) (design/research/yope-a.md §1.2)",
+      "method": "ascender ÷ 0.74 ÷ 1.466 px/pt",
+      "precision": "±1.5 pt"
+    },
+    "fontWeight.global.listTitle": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontWeight",
+      "value": "bold",
+      "element": "row / card name on the home list",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png (design/research/yope-a.md §1.2)",
+      "method": "visual weight on the video frame"
+    },
+    "fontSize.global.listSubtitle": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontSize",
+      "value": 14,
+      "unit": "pt",
+      "element": "row subtitle ('new pic added · 9:43 AM'), secondary color",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png 'd' ascender 15 px (y908-922) (design/research/yope-a.md §1.2)",
+      "method": "ascender ÷ 0.74 ÷ 1.466 px/pt",
+      "precision": "±1.5 pt"
+    },
+    "fontWeight.global.listSubtitle": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontWeight",
+      "value": "regular",
+      "element": "row subtitle",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png (design/research/yope-a.md §1.2)",
+      "method": "visual weight on the video frame"
+    },
+    "fontSize.global.body": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontSize",
+      "value": 17,
+      "unit": "pt",
+      "element": "chat message text in bubbles (body text)",
+      "evidence": "references/auto/yope/frames/b-derot-store-05-rot-1.68.png x-height 20 px on 'no way' rows 1841-1860 and 'valid' rows 1581-1600 (design/research/yope-b.md §1); references/auto/yope/store/yope-store-05.png 'valid' ascender 27 px (design/research/yope-a.md §1.2)",
+      "method": "x-height 8.9 pt ÷ 0.526 (SF Pro x-height ratio), lossless PNG",
+      "precision": "±1 pt",
+      "notes": "yope-a reads 16 pt from the ascender with a generic 0.74 ratio; the x-height method uses SF Pro's own ratio and agrees with the composer placeholder (17 pt, same method) — MERGE_DECISIONS F-4."
+    },
+    "fontWeight.global.body": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontWeight",
+      "value": "regular",
+      "element": "chat message text",
+      "evidence": "references/auto/yope/frames/b-derot-store-05-rot-1.68.png (design/research/yope-b.md §1)",
+      "method": "visual weight on the lossless PNG"
+    },
+    "fontSize.global.button": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontSize",
+      "value": 15,
+      "unit": "pt",
+      "element": "primary button label ('create group', 'send')",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png 's' x-height 10 px, 'd' ascender 13 px; references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png 'create' x-height 9 px (design/research/yope-a.md §1.2)",
+      "method": "x-height ÷ 0.54 and ascender ÷ 0.74 ÷ 1.181 px/pt",
+      "precision": "±1.5 pt"
+    },
+    "fontWeight.global.button": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontWeight",
+      "value": "semibold",
+      "element": "primary button label",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png; references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png (design/research/yope-a.md §1.2)",
+      "method": "visual weight on the video frames"
+    },
+    "fontSize.global.caption": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontSize",
+      "value": 12,
+      "unit": "pt",
+      "element": "small meta text: voice-message duration ('00:38'), legal footer under sign-up",
+      "evidence": "references/auto/yope/frames/b-derot-store-05-rot-1.68.png '00:38' digits 18.5 px rows 1938-1957 (design/research/yope-b.md §3); references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png 3 lines y918-973 (design/research/yope-a.md §1.2)",
+      "method": "digit height 8.3 pt ÷ 0.705 (lossless PNG); line pitch ÷ 1.25 ÷ 1.181 (video)",
+      "precision": "±1 pt (PNG), ±2 pt (video)"
+    },
+    "fontWeight.global.caption": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontWeight",
+      "value": "semibold",
+      "element": "voice-message duration ('00:38')",
+      "evidence": "references/auto/yope/frames/b-derot-store-05-rot-1.68.png rows 1938-1957 (design/research/yope-b.md §3)",
+      "method": "visual weight on the lossless PNG",
+      "notes": "The legal footer's weight was not measured (bold links inside regular text, yope-a §2.1)."
+    },
+    "lineHeight.global.caption": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "lineHeight",
+      "value": 15.2,
+      "unit": "pt",
+      "element": "line pitch of the 3-line legal footer under sign-up (12 pt text)",
+      "evidence": "references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png 3 lines y918-973, pitch ≈ 18 px (design/research/yope-a.md §1.2)",
+      "method": "line pitch 18 px ÷ 1.181 px/pt",
+      "precision": "±1 pt"
+    },
+    "fontSize.global.overlayTime": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontSize",
+      "value": 21,
+      "unit": "pt",
+      "element": "hour / time overlay centred on a photo in the chat ('10:00 PM')",
+      "evidence": "references/auto/yope/frames/b-derot-store-05-rot-1.68.png cap height 33.5 px rows 1143-1176 (design/research/yope-b.md §1); references/auto/yope/store/yope-store-05.png bbox y1139-1179 minus 7 px tilt (design/research/yope-a.md §1.2)",
+      "method": "cap height 14.9 pt ÷ 0.705 (lossless PNG); both passes agree",
+      "precision": "±1 pt"
+    },
+    "fontWeight.global.overlayTime": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontWeight",
+      "value": "heavy",
+      "element": "time overlay on a photo",
+      "evidence": "references/auto/yope/store/yope-store-05.png, references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png, references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (design/research/yope-a.md §1.2 'heavy' on all three); references/auto/yope/frames/b-derot-store-05-rot-1.68.png stem/cap ≈ 0.24 (design/research/yope-b.md §1 'bold/heavy', token 'bold')",
+      "method": "visual weight; stem/cap ratio (yope-b)",
+      "notes": "Bold vs heavy is unresolved without an SF Pro stem reference — MERGE_DECISIONS F-8; check in side-by-side verification."
+    },
+    "fontSize.global.overlayTimeCamera": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontSize",
+      "value": 26,
+      "unit": "pt",
+      "element": "hour overlay on the camera viewfinder and the send-to preview ('5:00 PM')",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png digits 27 px (y531-557); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png digits 23 px → 27 pt (design/research/yope-a.md §1.2)",
+      "method": "digit height ÷ 0.72 ÷ scale (1.466 / 1.181 px/pt)",
+      "precision": "±2 pt",
+      "notes": "A separate role from overlayTime: same overlay at a larger size on the full-width viewfinder."
+    },
+    "fontWeight.global.overlayTimeCamera": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontWeight",
+      "value": "heavy",
+      "element": "hour overlay on the viewfinder",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png; references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (design/research/yope-a.md §1.2)",
+      "method": "visual weight on the video frames"
+    },
+    "fontSize.global.placeholder": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontSize",
+      "value": 17,
+      "unit": "pt",
+      "element": "text-field placeholder ('start typing...')",
+      "evidence": "references/auto/yope/frames/b-derot-store-05-rot-1.68.png x-height 20 px rows 2432-2451 (design/research/yope-b.md §2)",
+      "method": "x-height 8.9 pt ÷ 0.526, lossless PNG",
+      "precision": "±1 pt",
+      "notes": "Weight not measured. Color: color.global.textSecondary."
+    },
+    "fontSize.global.sectionLabel": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontSize",
+      "value": 16,
+      "unit": "pt",
+      "element": "section label ('suggested friends'), secondary color",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png bbox y561-578 (18 px ascender+descender) (design/research/yope-a.md §1.2)",
+      "method": "÷ 0.95 ÷ 1.181 px/pt",
+      "precision": "±2 pt"
+    },
+    "fontWeight.global.sectionLabel": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontWeight",
+      "value": "semibold",
+      "element": "section label",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (design/research/yope-a.md §1.2)",
+      "method": "visual weight on the video frame"
+    },
+    "fontSize.global.emptyTitle": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontSize",
+      "value": 16,
+      "unit": "pt",
+      "element": "empty-state title ('you created group')",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png 'd' ascender 14 px (design/research/yope-a.md §1.2)",
+      "method": "ascender ÷ 0.74 ÷ 1.181 px/pt",
+      "precision": "±2 pt"
+    },
+    "fontWeight.global.emptyTitle": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontWeight",
+      "value": "bold",
+      "element": "empty-state title",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (design/research/yope-a.md §1.2)",
+      "method": "visual weight on the video frame"
+    },
+    "fontSize.global.emptyDetail": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "fontSize",
+      "value": 14,
+      "unit": "pt",
+      "element": "empty-state detail line ('and added mẹ, Anh'), italic",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png detail bbox 16 px (design/research/yope-a.md §1.2)",
+      "method": "bbox ÷ 0.95 ÷ 1.181 px/pt",
+      "precision": "±2 pt",
+      "notes": "Rendered italic in the reference; weight not measured."
+    },
+    "layout.global.textStyleMap": {
+      "type": "layout",
+      "source_app": "Apple HIG",
+      "surface": "global",
+      "level": "PLATFORM",
+      "value": {
+        "onboardingTitle": "largeTitle",
+        "sheetTitle": "title3",
+        "headerTitle": "subheadline",
+        "listTitle": "headline",
+        "listSubtitle": "subheadline",
+        "body": "body",
+        "button": "subheadline",
+        "caption": "caption",
+        "overlayTime": "title2",
+        "overlayTimeCamera": "title",
+        "placeholder": "body",
+        "sectionLabel": "callout",
+        "emptyTitle": "callout",
+        "emptyDetail": "subheadline"
+      },
+      "element": "iOS Dynamic Type text style each fontSize.global.<role> scales with (SwiftUI Font.TextStyle case; DSTextStyle.relativeTo)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography §Specifications, iOS Dynamic Type sizes 'Large (default)': Large Title 34, Title 1 28, Title 2 22, Title 3 20, Headline 17 semibold, Body 17, Callout 16, Subhead 15, Footnote 13, Caption 1 12, Caption 2 11 (change log 2025-12-16; references/auto/platform/hig-typography-dynamic-type-large.png); HIG: 'Text styles also allow text to scale proportionately when people change the system's text size'",
+      "method": "nearest Large (default) size to the role's measured size; tie → the style whose default/emphasized weight matches the role's weight; still tied → the larger style (listSubtitle, emptyDetail 14 → subheadline; overlayTime 21 → title2, emphasized bold nearer heavy)",
+      "notes": "Android: sizes are sp and scale with the system font scale; no per-style map. The tie rule is a method choice, logged in MERGE_DECISIONS F-13."
+    },
+    "layout.global.system.typography": {
+      "type": "layout",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global.system",
+      "level": "PLATFORM",
+      "value": {
+        "ios": "built-in text styles (Font.TextStyle) on native lists, alerts and sheets",
+        "android": "MaterialTheme.typography (M3 baseline type scale: list label bodyLarge, supporting bodyMedium, dialog headline headlineSmall, actions labelLarge)"
+      },
+      "element": "text styles on system surfaces",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography 'Consider using the built-in text styles' (2025-12-16); design/research/platform.md §settings and §Accessibility (M3 type scale, list and dialog text roles, VERIFIED values in design/proposals/platform.tokens.json)",
+      "method": "native component defaults"
+    },
+    "radius.global.capsule": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "layout",
+      "value": {
+        "shape": "capsule",
+        "radius": "height / 2"
+      },
+      "element": "full pill: header title capsule, composer text field, chat bubbles, tab-bar capsule, tooltip ends, white secondary pills",
+      "evidence": "references/auto/yope/store/yope-store-01.png, references/auto/yope/store/yope-store-02.png, references/auto/yope/store/yope-store-05.png: straight sides + semicircular ends (design/research/yope-a.md §1.3); tab bar 58 pt tall, radius 29 (design/research/yope-a.md §1.5); composer field 39.5 pt tall, corner fit 19 pt (design/research/yope-b.md §2); bubble 35.6 pt tall, corner fit 16 pt ≈ capsule (design/research/yope-b.md §1)",
+      "method": "geometry of lossless PNGs; circle fits ≈ height / 2"
+    },
+    "radius.global.card": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "radius",
+      "value": 17,
+      "unit": "pt",
+      "element": "list card corners (home conversation / group cards, inline permission card)",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png top-left corner of the card at y823, fits r ≈ 25 px (design/research/yope-a.md §1.3, §2.9)",
+      "method": "circle fit ÷ 1.466 px/pt",
+      "precision": "±2 pt"
+    },
+    "radius.global.button": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "radius",
+      "value": 14,
+      "unit": "pt",
+      "element": "primary (lime) button corners — not a full pill",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png button top y925, fits r ≈ 16-17 px (design/research/yope-a.md §1.3)",
+      "method": "circle fit ÷ 1.181 px/pt",
+      "precision": "±2 pt"
+    },
+    "radius.global.field": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "radius",
+      "value": 12,
+      "unit": "pt",
+      "element": "single-line form text field corners ('name group (optional)')",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png field top y143, fits r ≈ 14 px (design/research/yope-a.md §1.3)",
+      "method": "circle fit ÷ 1.181 px/pt",
+      "precision": "±2 pt",
+      "notes": "The chat composer field is a capsule (radius.global.capsule), a different role."
+    },
+    "radius.global.photo": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "radius",
+      "value": 15,
+      "unit": "pt",
+      "element": "photo corners in the thread and in grids of walls",
+      "evidence": "references/auto/yope/frames/b-derot-store-05-rot-1.68.png photo message BR (1012.5,1355.5), TR (1012.5,963.5), 33-34.5 px (design/research/yope-b.md §1); references/auto/yope/frames/b-derot-play-05-rot+3.3.png wall thumbnails ≈ 15 pt (design/research/yope-b.md §5)",
+      "method": "circle fit ÷ 2.252 px/pt (lossless de-rotated PNG)",
+      "precision": "±1 pt",
+      "notes": "Other measurements: 16.5 pt (1:1 space, video), 19 pt (owner JPEG), ≈16 pt send-to preview (±3) — lossless PNG preferred, MERGE_DECISIONS F-10."
+    },
+    "radius.global.viewfinder": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "radius",
+      "value": 18.5,
+      "unit": "pt",
+      "element": "camera viewfinder corners (full-width viewfinder)",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png top y150, inset 21 → 0 at d = 16, fits r ≈ 26-28 px (design/research/yope-a.md §1.3)",
+      "method": "circle fit ÷ 1.466 px/pt",
+      "precision": "±2 pt"
+    },
+    "radius.global.sheet": {
+      "type": "layout",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global",
+      "level": "PLATFORM",
+      "value": {
+        "ios": "system",
+        "android": 28
+      },
+      "element": "sheet top corners (Yope's sheet radius was not measured)",
+      "evidence": "Yope: not measured (design/research/yope-b.md §10 records only the sheet's motion). iOS: https://developer.apple.com/design/human-interface-guidelines/sheets (change log 2026-03-24) publishes no corner radius — the system sheet draws its own. Android: M3 bottom sheet top corners 28 dp, md.comp.sheet.bottom.docked.container.shape → md.sys.shape.corner.extra-large.top (design/research/platform.md §safety.report; token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.75e530a1014802b3.json)",
+      "method": "native component default (iOS); M3 token (Android)"
+    },
+    "size.global.headerButton": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 44,
+      "unit": "pt",
+      "element": "circle icon buttons in headers (back, close, download, film-strip, search)",
+      "evidence": "references/auto/yope/store/yope-store-01.png bbox 109×109 px → 43.4; references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png row 97 x73-125 → 44.9; references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png row 88 x75-126 → 43.2 (design/research/yope-a.md §1.3); references/auto/yope/frames/b-derot-store-05-rot-1.68.png x195.5-293.5 → 43.5; references/auto/yope/frames/b-alexaa-7652512140875566349-t5.83-group-chat-pill.png x89-153 → 44.3 (design/research/yope-b.md §1)",
+      "method": "bbox / runs ÷ scale; five measurements in two PNGs and three videos",
+      "precision": "±1 pt"
+    },
+    "size.global.headerInset": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 11.5,
+      "unit": "pt",
+      "element": "screen edge to the first / last header circle",
+      "evidence": "references/auto/yope/frames/b-derot-store-05-rot-1.68.png 195.5 − 169.7 px = 11.5 pt, right 26.1 px = 11.6 pt (design/research/yope-b.md §1); references/auto/yope/frames/b-alexaa-7652512140875566349-t5.83-group-chat-pill.png (89 − 72) px × 0.682 = 11.6 pt; conflicting: references/auto/yope/store/yope-store-01.png 12.3 / 13.1 pt, references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png 14.4 pt (design/research/yope-a.md §1.3)",
+      "method": "subpixel edge crossings on the de-rotated lossless PNG",
+      "precision": "±0.5 pt",
+      "notes": "Lossless subpixel measurement and an independent 2026 device recording agree on 11.5-11.6; yope-a's 13 comes from the marketing scale-up panel store-01 and one video — MERGE_DECISIONS F-14."
+    },
+    "size.global.headerGap": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 7.3,
+      "unit": "pt",
+      "element": "gap between the back circle and the header title capsule",
+      "evidence": "references/auto/yope/frames/b-derot-store-05-rot-1.68.png 293.5 → 310 px (design/research/yope-b.md §1)",
+      "method": "edge difference ÷ 2.252 px/pt",
+      "precision": "±0.5 pt"
+    },
+    "size.global.screenMargin": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 12,
+      "unit": "pt",
+      "element": "side margin of full-width content (home list cards); edge elements sit at the same inset",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png card x90 vs screen x72 = 18 px (design/research/yope-a.md §2.9); agrees with the header inset 11.5 (references/auto/yope/frames/b-derot-store-05-rot-1.68.png) and the chat avatar inset 11.2 (references/auto/yope/frames/b-derot-store-05-rot-1.68.png, design/research/yope-b.md §1)",
+      "method": "difference ÷ 1.466 px/pt",
+      "precision": "±1 pt",
+      "notes": "Surfaces with their own measured margins keep them (composer row 23, primary button 19, send button 27, tab bar 22, recap card 30)."
+    },
+    "size.global.listGap": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 7.5,
+      "unit": "pt",
+      "element": "vertical gap between stacked list cards",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png gaps 11 px; references/auto/yope/frames/a-virgi-7686278541255642390-t40.23-home-list-es.png 8-9 px → 7 pt (design/research/yope-a.md §2.9)",
+      "method": "dark-gap runs ÷ scale",
+      "precision": "±1 pt"
+    },
+    "size.global.buttonHeight": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 45,
+      "unit": "pt",
+      "element": "full-width primary button in a form ('create group')",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png x81-495, y925-977 → 350 × 44.9 pt (design/research/yope-a.md §1.4, §2.10)",
+      "method": "runs ÷ 1.181 px/pt",
+      "precision": "±1 pt"
+    },
+    "size.global.buttonHeightSheet": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 47,
+      "unit": "pt",
+      "element": "primary action button at the bottom of a sheet ('send ⓝ')",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png x88-487, y914-969 → 338 × 47 pt (design/research/yope-a.md §1.4, §2.15)",
+      "method": "runs ÷ 1.181 px/pt",
+      "precision": "±1 pt",
+      "notes": "Two button sizes observed (44.9 / 47) in two different roles; both kept (yope-a §1.4)."
+    },
+    "size.global.buttonMarginH": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 19,
+      "unit": "pt",
+      "element": "side margin of the form primary button",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png 22-23 px (design/research/yope-a.md §2.10)",
+      "method": "runs ÷ 1.181 px/pt",
+      "precision": "±1 pt"
+    },
+    "size.global.buttonMarginHSheet": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 27,
+      "unit": "pt",
+      "element": "side margin of the sheet-bottom primary button",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (design/research/yope-a.md §1.4)",
+      "method": "runs ÷ 1.181 px/pt",
+      "precision": "±1 pt"
+    },
+    "size.global.fieldHeight": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 44,
+      "unit": "pt",
+      "element": "single-line form text field height",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png col 150 y142-194 (design/research/yope-a.md §2.10)",
+      "method": "runs ÷ 1.181 px/pt",
+      "precision": "±1 pt"
+    },
+    "size.global.avatarList": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 64,
+      "unit": "pt",
+      "element": "avatar in a home list card",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png col 160 y848-941 (94 px) (design/research/yope-a.md §1.6)",
+      "method": "runs ÷ 1.466 px/pt",
+      "precision": "±2 pt"
+    },
+    "size.global.avatarPicker": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 40,
+      "unit": "pt",
+      "element": "avatar in a people-picker row",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png 47.5 px (design/research/yope-a.md §1.6)",
+      "method": "runs ÷ 1.181 px/pt",
+      "precision": "±1 pt"
+    },
+    "size.global.avatarSmall": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 32.6,
+      "unit": "pt",
+      "element": "small avatar: chat sender, send-to recipient row",
+      "evidence": "references/auto/yope/frames/b-derot-store-05-rot-1.68.png x195-268, y1556-1628 (73.5 px) (design/research/yope-b.md §1); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png ≈ 38 px → 32 pt (design/research/yope-a.md §1.6)",
+      "method": "row / column scan ÷ 2.252 px/pt (lossless PNG)",
+      "precision": "±0.5 pt",
+      "notes": "Lossless value preferred over the video's 32 pt (within its ±1.5 pt)."
+    },
+    "size.global.avatarHeader": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 28,
+      "unit": "pt",
+      "element": "group avatar inside the header capsule",
+      "evidence": "references/auto/yope/store/yope-store-01.png 2× crop 140 px → 70 px (design/research/yope-a.md §1.3)",
+      "method": "crop ÷ 2.511 px/pt",
+      "precision": "±1 pt"
+    },
+    "size.global.checkCircle": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 24,
+      "unit": "pt",
+      "element": "selection circle (empty ring / filled check) in pickers and recipient rows",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png 27.5 px; references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png 30 px (design/research/yope-a.md §2.10)",
+      "method": "runs ÷ 1.181 px/pt",
+      "precision": "±1.5 pt"
+    },
+    "size.global.tabBarWidth": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 344,
+      "unit": "pt",
+      "element": "floating tab-bar capsule width",
+      "evidence": "references/auto/yope/store/yope-store-02.png row 2412 x251-1026 (design/research/yope-a.md §1.5)",
+      "method": "runs ÷ 2.254 px/pt",
+      "precision": "±1 pt"
+    },
+    "size.global.tabBarHeight": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 58,
+      "unit": "pt",
+      "element": "floating tab-bar capsule height",
+      "evidence": "references/auto/yope/store/yope-store-02.png col 900 y2336-2466 (design/research/yope-a.md §1.5)",
+      "method": "runs ÷ 2.254 px/pt (tilt-corrected)",
+      "precision": "±1 pt"
+    },
+    "size.global.tabBarInset": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 22,
+      "unit": "pt",
+      "element": "tab-bar side inset from the screen edges",
+      "evidence": "references/auto/yope/store/yope-store-02.png (design/research/yope-a.md §1.5)",
+      "method": "difference ÷ 2.254 px/pt",
+      "precision": "±1 pt"
+    },
+    "size.global.tabBarSelectedWidth": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 74,
+      "unit": "pt",
+      "element": "selected-tab pill width (fill color.global.controlRaised)",
+      "evidence": "references/auto/yope/store/yope-store-02.png (design/research/yope-a.md §1.5)",
+      "method": "runs ÷ 2.254 px/pt",
+      "precision": "±1 pt"
+    },
+    "size.global.tabBarSelectedHeight": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 48,
+      "unit": "pt",
+      "element": "selected-tab pill height",
+      "evidence": "references/auto/yope/store/yope-store-02.png (design/research/yope-a.md §1.5)",
+      "method": "runs ÷ 2.254 px/pt",
+      "precision": "±2 pt"
+    },
+    "size.global.tabBarIcon": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 21,
+      "unit": "pt",
+      "element": "tab glyph size (20-23 pt measured)",
+      "evidence": "references/auto/yope/store/yope-store-02.png (design/research/yope-a.md §1.5)",
+      "method": "glyph extents ÷ 2.254 px/pt",
+      "precision": "±1.5 pt"
+    },
+    "size.global.tabBarAvatar": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "dimension",
+      "value": 34,
+      "unit": "pt",
+      "element": "'me' tab avatar",
+      "evidence": "references/auto/yope/store/yope-store-02.png col 945 y2363-2438 (design/research/yope-a.md §1.6)",
+      "method": "runs ÷ 2.254 px/pt",
+      "precision": "±1 pt"
+    },
+    "size.global.minTouchTarget.ios": {
+      "type": "dimension",
+      "value": 44,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "global",
+      "element": "minimum hit area of any control, iOS (default control size)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/accessibility#Mobility (table 'Default control size' iOS, iPadOS 44x44 pt; change log 2025-06-09); design/research/platform.md §Accessibility",
+      "method": "HIG table row iOS, iPadOS: 44x44 pt",
+      "level": "VERIFIED"
+    },
+    "size.global.minTouchTarget.iosMinimum": {
+      "type": "dimension",
+      "value": 28,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "global",
+      "element": "absolute minimum control size, iOS",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/accessibility#Mobility (28x28 pt minimum)",
+      "method": "HIG table row iOS, iPadOS: 28x28 pt",
+      "level": "VERIFIED"
+    },
+    "size.global.minTouchTarget.android": {
+      "type": "dimension",
+      "value": 48,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "global",
+      "element": "minimum touch target, Android",
+      "evidence": "https://developer.android.com/guide/topics/ui/accessibility/apps (last updated 2026-09-22) ; https://support.google.com/accessibility/android/answer/7101858",
+      "method": "'touch target size, of at least 48dp x 48dp'",
+      "level": "VERIFIED"
+    },
+    "size.global.minTouchTarget.androidSpacing": {
+      "type": "dimension",
+      "value": 8,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "global",
+      "element": "spacing between touch targets, Android",
+      "evidence": "https://support.google.com/accessibility/android/answer/7101858",
+      "method": "'at least 48x48dp, separated by 8dp of space or more'",
+      "level": "VERIFIED"
+    },
+    "duration.global.sheetPresent": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "duration",
+      "value": 215,
+      "unit": "ms",
+      "element": "bottom-sheet presentation, first movement to rest (rise ≈ 100 ms to an overshoot ≈ 16 pt past rest, settle ≈ 100 ms)",
+      "evidence": "TikTok @yopeapp https://www.tiktok.com/@yopeapp/video/7591560669967682847 57.97-58.20 s, 30 fps: references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.97-sheet-before.png, references/auto/yope/frames/b-yopeapp-7591560669967682847-t58.10-sheet-overshoot.png, references/auto/yope/frames/b-yopeapp-7591560669967682847-t58.20-sheet-settled.png; lime button top y 1144 → 1066 → 1064 (peak) → 1074 → 1084 → 1086 over f1741-f1746 (design/research/yope-b.md §10)",
+      "method": "first / last changed frame (≈ 200-230 ms, 6-7 frames); midpoint",
+      "precision": "±33 ms (1 frame; screen-recording frame rate unknown)",
+      "notes": "Measured on Yope's sticker-options sheet (the feature is do-not-build; the sheet is Yope's generic sheet). Curve: spring.global.sheetPresent (BLOCKED)."
+    },
+    "spring.global.sheetPresentObserved": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "layout",
+      "value": {
+        "overshootPt": 16,
+        "timeToPeakMs": 100,
+        "settleMs": 100
+      },
+      "element": "observed shape of the sheet presentation: overshoot past rest, time to the peak, time from the peak to rest",
+      "evidence": "design/research/yope-b.md §10 (frames above): peak at f1743, rest at f1746; overshoot 22 px × 0.744 pt/px",
+      "method": "per-frame position of the sheet's lime button top edge",
+      "precision": "±1 frame (33 ms); ±1.5 pt"
+    },
+    "spring.global.sheetPresent": {
+      "type": "spring",
+      "value": null,
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "BLOCKED",
+      "element": "sheet presentation spring (response, dampingFraction)",
+      "evidence": "design/research/yope-b.md §10: 5 position samples, 'curve not fittable'; observed shape in spring.global.sheetPresentObserved",
+      "notes": "Not fitted here: a fit from 5 samples would be a decision, not a measurement. Either a 60 fps screen recording of a Yope sheet opening (smallest capture) or the native sheet (easing.global.native) — MERGE_DECISIONS F-15."
+    },
+    "duration.global.photoSwipe": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "duration",
+      "value": 167,
+      "unit": "ms",
+      "element": "horizontal swipe to the adjacent photo in the viewer, first movement to settled (gesture-driven)",
+      "evidence": "TikTok @yopeapp 7591560669967682847 57.20-57.40 s, 30 fps: references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.20-viewer-swipe-start.png → references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.40-viewer-swipe-end.png, first movement f1717, settled f1722 (design/research/yope-b.md §10)",
+      "method": "first / last changed frame (5 frames)",
+      "precision": "±33 ms",
+      "notes": "Finger-driven; the curve follows the gesture and the platform's paging physics (easing.global.photoSwipe)."
+    },
+    "easing.global.photoSwipe": {
+      "type": "layout",
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "value": {
+        "ios": "system paging scroll physics",
+        "android": "Compose HorizontalPager default fling"
+      },
+      "element": "settle curve of the photo swipe after the finger lifts",
+      "evidence": "design/research/yope-b.md §10: 'not measurable (finger-driven; incoming photo enters from the left; pages separated by a thin dark gap)'; HIG Accessibility: 'Tracking animations directly with people's gestures' (https://developer.apple.com/design/human-interface-guidelines/accessibility)",
+      "method": "curve not measurable → native paging component"
+    },
+    "duration.global.navigationPush": {
+      "level": "SOURCED",
+      "source_app": "Yope",
+      "surface": "global",
+      "type": "duration",
+      "value": 100,
+      "unit": "ms",
+      "element": "horizontal push to the next screen ('new group' → new group chat after create)",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png → references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png: content leaves to the left between 50.667 and 50.767 s, 2 intermediate frames at 30 fps (design/research/yope-a.md §2.10)",
+      "method": "first / last changed frame",
+      "precision": "±33 ms; low confidence (screen recordings can drop frames)",
+      "notes": "Native NavigationStack / Compose Navigation pushes run the system transition, whose duration is not configurable or published (easing.global.native) — MERGE_DECISIONS F-11."
+    },
+    "easing.global.native": {
+      "type": "layout",
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "value": {
+        "keyboard": "system",
+        "alert": "system",
+        "activityIndicator": "system (ProgressView / CircularProgressIndicator)",
+        "scrollIndicator": "system",
+        "navigationPush": "system (NavigationStack / Compose Navigation default)",
+        "sheet": "system (.sheet / ModalBottomSheet)"
+      },
+      "element": "motion of native components Yope uses; their curves and durations are the platform's",
+      "evidence": "Yope uses the native keyboard (design/research/yope-a.md §2.10 'keyboard = PLATFORM'), the platform activity indicator in its loading HUD (design/research/yope-a.md §1.8, references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png), iOS system alerts (references/auto/yope/frames/a-virgi-7686278541255642390-t9.23-notif-system-alert-es.png, references/auto/yope/frames/a-virgi-7686278541255642390-t35.23-camera-permission-alert.png), the iOS scroll indicator (design/research/yope-b.md §6). HIG Motion (https://developer.apple.com/design/human-interface-guidelines/motion, 2025-09-09): 'Many system components automatically include motion … The system already provides subtle animations for interactions with standard interface elements.'",
+      "method": "native component (PLATFORM)"
+    },
+    "spring.global.platformDefault.ios": {
+      "type": "spring",
+      "value": {
+        "response": 0.55,
+        "dampingFraction": 1
+      },
+      "source_app": "Apple HIG",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "iOS default animation (SwiftUI Animation.default) for custom motion whose Yope curve was not measurable",
+      "evidence": "https://developer.apple.com/documentation/swiftui/animation/default (DocC JSON fetched 2026-10-15): 'The default animation is spring(response:dampingFraction:blendDuration:) with response equal to 0.55, dampingFraction equal to 1.0, blendDuration equal to 0.0' (iOS 17+)",
+      "method": "documented default parameters",
+      "notes": "Kotlin output converts this to stiffness ≈ 130.5; Android code uses spring.global.platformDefault.android instead."
+    },
+    "spring.global.platformDefault.android": {
+      "type": "spring",
+      "value": {
+        "response": 0.16223,
+        "dampingFraction": 1
+      },
+      "source_app": "Material 3",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "Android default spring (Compose spring() defaults) for custom motion whose Yope curve was not measurable",
+      "evidence": "https://developer.android.com/reference/kotlin/androidx/compose/animation/core/Spring (last updated 2026-06-24): StiffnessMedium = 1500.0f, DampingRatioNoBouncy = 1.0f; spring() defaults dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium (androidx AnimationSpec.kt)",
+      "method": "response = 2π / √stiffness = 2π / √1500 = 0.16223 s, the inverse of tools/designgen.mjs's stiffness = (2π / response)² (Kotlin output: stiffness 1500.0, dampingRatio 1)"
+    },
+    "easing.global.system.standard": {
+      "type": "easing",
+      "value": {
+        "x1": 0.2,
+        "y1": 0,
+        "x2": 0,
+        "y2": 1
+      },
+      "source_app": "Material 3",
+      "surface": "global.system",
+      "level": "PLATFORM",
+      "element": "M3 standard easing for custom transitions on Android system surfaces",
+      "evidence": "androidx.compose.material3 tokens MotionTokens.kt (VERSION v0_103), EasingStandardCubicBezier = CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f), https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/MotionTokens.kt (fetched 2026-10-15)",
+      "method": "documented token value"
+    },
+    "duration.global.system.scale": {
+      "type": "layout",
+      "source_app": "Material 3",
+      "surface": "global.system",
+      "level": "PLATFORM",
+      "value": {
+        "short1": 50,
+        "short2": 100,
+        "short3": 150,
+        "short4": 200,
+        "medium1": 250,
+        "medium2": 300,
+        "medium3": 350,
+        "medium4": 400,
+        "long1": 450,
+        "long2": 500,
+        "long3": 550,
+        "long4": 600,
+        "extraLong1": 700,
+        "extraLong2": 800,
+        "extraLong3": 900,
+        "extraLong4": 1000
+      },
+      "element": "M3 duration scale (ms) for custom transitions on Android system surfaces",
+      "evidence": "androidx.compose.material3 tokens MotionTokens.kt (VERSION v0_103), DurationShort1..DurationExtraLong4 (same URL as easing.global.system.standard)",
+      "method": "documented token values"
+    },
+    "layout.global.reduceMotion": {
+      "type": "layout",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global",
+      "level": "PLATFORM",
+      "value": {
+        "ios": "UIAccessibility.isReduceMotionEnabled / @Environment(\\.accessibilityReduceMotion)",
+        "android": "Settings.Global.ANIMATOR_DURATION_SCALE == 0 or ValueAnimator.areAnimatorsEnabled() == false (Accessibility > Remove animations)",
+        "substitute": "replace x/y/z movement with a cross-fade of the same token duration; springs lose their bounce (dampingFraction 1); drop zoom, scale, peripheral and automatic repeating animation; never animate into or out of blur; motion that tracks the finger stays"
+      },
+      "element": "Reduce Motion substitution rule for every token animation (implemented by DSAnimation.reducedMotion / dsMotion / dsTransition and Motion.kt dsMotionSpec)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/accessibility (Reduce Motion: 'reducing automatic and repetitive animations, including zooming, scaling, and peripheral motion … Tightening animation springs to reduce bounce effects; Tracking animations directly with people's gestures; Avoiding animating depth changes in z-axis layers; Replacing transitions in x-, y-, and z-axes with fades; Avoiding animating into and out of blurs'); https://developer.android.com/reference/android/animation/ValueAnimator#areAnimatorsEnabled() ; AOSP DisableAnimationsPreferenceController.java (Remove animations sets WINDOW_, TRANSITION_ and ANIMATOR_DURATION_SCALE to 0); design/research/platform.md §Accessibility",
+      "method": "platform rule (PLATFORM)"
+    },
+    "haptic.global.select": {
+      "type": "haptic",
+      "value": {
+        "ios": "selection",
+        "android": "SEGMENT_TICK"
+      },
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "a recipient / group toggled, a segmented choice, picker scrubbing",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback ; design/research/platform.md §Haptics",
+      "method": "HIG 'Selection haptics provide feedback while the values of a UI element are changing'; Android SEGMENT_TICK 'switching between a series of potential choices' (platform.md haptic.groups.select)",
+      "notes": "SEGMENT_TICK is API 34; Haptics.kt maps it to CONTEXT_CLICK below API 34."
+    },
+    "haptic.global.send": {
+      "type": "haptic",
+      "value": {
+        "ios": "notification.success",
+        "android": "CONFIRM"
+      },
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "confirm / send: a photo or message was sent",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback ; design/research/platform.md §Haptics",
+      "method": "HIG Notification 'feedback about the outcome of a task or action'; Success; Android CONFIRM 'signal the confirmation or successful completion of a user interaction' (platform.md haptic.camera.sendSuccess)"
+    },
+    "haptic.global.success": {
+      "type": "haptic",
+      "value": {
+        "ios": "notification.success",
+        "android": "CONFIRM"
+      },
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "any task completed successfully (same generator as send)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback ; design/research/platform.md §Haptics",
+      "method": "HIG 'Success. Indicates that a task or action has completed.'; Android CONFIRM"
+    },
+    "haptic.global.warning": {
+      "type": "haptic",
+      "value": {
+        "ios": "notification.warning",
+        "android": "CONFIRM"
+      },
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "a destructive action was confirmed (delete account, block, leave)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback ; design/research/platform.md §Haptics",
+      "method": "HIG 'Warning. Indicates that a task or action has produced a warning of some kind.' (platform.md haptic.settings.destructiveConfirmed)",
+      "notes": "Android documents no warning constant; platform.md maps it to CONFIRM."
+    },
+    "haptic.global.error": {
+      "type": "haptic",
+      "value": {
+        "ios": "notification.error",
+        "android": "REJECT"
+      },
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "a task failed (send failed)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback ; design/research/platform.md §Haptics",
+      "method": "HIG 'Error. Indicates that an error has occurred.'; Android REJECT 'signal the rejection or failure of a user interaction' (platform.md haptic.camera.sendFailure)"
+    },
+    "haptic.global.longPressStart": {
+      "type": "layout",
+      "value": {
+        "ios": "system (context menu plays its own haptic; no custom generator)",
+        "android": "LONG_PRESS"
+      },
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "a long press starts (context menu)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback ; design/research/platform.md §Haptics",
+      "method": "iOS: system context-menu haptic; Android LONG_PRESS 'performed a long press on an object that is resulting in an action being performed' (platform.md haptic.photo.longPress)",
+      "notes": "Layout token because iOS uses the system's own haptic (no generator to name)."
+    },
+    "haptic.global.reaction": {
+      "type": "layout",
+      "value": {
+        "ios": "system (context menu plays its own haptic; no custom generator)",
+        "android": "LONG_PRESS"
+      },
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "the long press that opens the reaction picker on a photo",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback ; design/research/platform.md §Haptics",
+      "method": "platform.md haptic.photo.longPress (surface chat.reactions)",
+      "notes": "Sending a reaction has no haptic in the research; HIG: 'Avoid overusing haptics'."
+    },
+    "haptic.global.shutter": {
+      "type": "layout",
+      "value": {
+        "ios": "none",
+        "android": "none"
+      },
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "shutter press (photo / video capture)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback ; design/research/platform.md §Haptics",
+      "method": "HIG: 'Ensure that haptic vibrations don't disrupt experiences involving device features like the camera, gyroscope, or microphone'; platform.md: no documented iOS shutter haptic, none proposed",
+      "notes": "Also no haptics while recording voice or video (platform.md)."
+    },
+    "icon.global.back": {
+      "type": "icon",
+      "value": {
+        "ios": "chevron.left",
+        "android": "AutoMirrored.Rounded.KeyboardArrowLeft"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "back (‹ in a header circle)",
+      "evidence": "Yope ‹ in a circle on group / chat headers: references/auto/yope/store/yope-store-05.png, references/auto/yope/store/yope-store-01.png, references/auto/yope/frames/b-alexaa-7652512140875566349-t5.83-group-chat-pill.png (design/research/yope-a.md §1.7 'exact'); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'chevron.left', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (AutoMirrored.Rounded.KeyboardArrowLeft)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector",
+      "notes": "Compose has no AutoMirrored ChevronLeft in 1.7.8; Material Icons Round chevron_left and keyboard_arrow_left share the same outline (fonts.gstatic.com materialiconsround v1 24px.svg paths), and KeyboardArrowLeft mirrors in right-to-left layouts."
+    },
+    "icon.global.close": {
+      "type": "icon",
+      "value": {
+        "ios": "xmark",
+        "android": "Rounded.Close"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "close / dismiss (✕ in a header circle on sheets)",
+      "evidence": "Yope ✕ on 'new group' / 'send to...' sheets: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png, references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (design/research/yope-a.md §1.7 'exact'); HIG Icons standard table: Cancel / Close → xmark (https://developer.apple.com/design/human-interface-guidelines/icons, 2025-06-09); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'xmark', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.Close)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.more": {
+      "type": "icon",
+      "value": {
+        "ios": "ellipsis",
+        "android": "Rounded.MoreHoriz"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "more (•••)",
+      "evidence": "Yope ••• on group profile and member rows (design/research/yope-a.md §1.7 'exact'); HIG Icons: More → ellipsis; SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'ellipsis', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.MoreHoriz)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.share": {
+      "type": "icon",
+      "value": {
+        "ios": "square.and.arrow.up",
+        "android": "Rounded.IosShare"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "share (square + up arrow)",
+      "evidence": "Yope members list / 'share invite' (design/research/yope-a.md §1.7 'exact'); HIG Icons: Share → square.and.arrow.up; SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'square.and.arrow.up', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.IosShare)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.camera": {
+      "type": "icon",
+      "value": {
+        "ios": "camera.fill",
+        "android": "Rounded.PhotoCamera"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "camera (composer button, row quick-camera, camera tab)",
+      "evidence": "references/auto/yope/store/yope-store-05.png composer, references/auto/yope/store/yope-store-02.png tab bar (design/research/yope-a.md §1.7, design/research/yope-b.md §2); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'camera.fill', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.PhotoCamera)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.flip": {
+      "type": "icon",
+      "value": {
+        "ios": "arrow.triangle.2.circlepath",
+        "android": "Rounded.Sync"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "flip camera (two circular arrows in a circle)",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png flip button: two circular arrows with triangle heads, no camera body (checked this pass) (design/research/yope-a.md §1.7); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+2.0.swift, 'arrow.triangle.2.circlepath', SF Symbols 2.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.Sync)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector",
+      "notes": "yope-a mapped Android to cameraswitch (a camera body with arrows); the glyph has no camera body, and the BeReal / Locket passes map the same SF Symbol to sync — MERGE_DECISIONS F-16."
+    },
+    "icon.global.flashOff": {
+      "type": "icon",
+      "value": {
+        "ios": "bolt.slash.fill",
+        "android": "Rounded.FlashOff"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "flash off (slashed bolt on the viewfinder)",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (design/research/yope-a.md §1.7 'exact'); BeReal capture uses the same glyph (design/research/bereal.md §2); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'bolt.slash.fill', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.FlashOff)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.flashOn": {
+      "type": "icon",
+      "value": {
+        "ios": "bolt",
+        "android": "Rounded.FlashOn"
+      },
+      "source_app": "Locket",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "flash on (bolt)",
+      "evidence": "Yope's flash-on state was not observed; Locket camera (camera.capture is Yope + Locket): references/auto/locket/store/locket-store-07.png flash glyph 23 × 36 pt (design/research/locket.md §5; design/proposals/locket.tokens.json icon.camera.capture.flash); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'bolt', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.FlashOn)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector",
+      "notes": "Outline (Locket) while Yope's off-state glyph is filled — check in verification."
+    },
+    "icon.global.mic": {
+      "type": "icon",
+      "value": {
+        "ios": "mic.fill",
+        "android": "Rounded.Mic"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "microphone (voice memo, voice message)",
+      "evidence": "Yope send-to caption field and composer mic circles: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png, references/auto/yope/store/yope-store-05.png (design/research/yope-a.md §1.7 'exact', design/research/yope-b.md §2); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'mic.fill', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.Mic)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.send": {
+      "type": "icon",
+      "value": {
+        "ios": "paperplane",
+        "android": "AutoMirrored.Rounded.Send"
+      },
+      "source_app": "Locket",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "send (paper plane in a circle)",
+      "evidence": "Yope sends with a text button ('send ⓝ', design/research/yope-a.md §2.15) and has no send glyph; Locket send button: references/owner/locket-review-sendto.jpg x213-327 y772-880 — outline paper plane (checked this pass) (design/research/locket.md §6); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'paperplane', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (AutoMirrored.Rounded.Send)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector",
+      "notes": "AutoMirrored: points the other way in right-to-left layouts."
+    },
+    "icon.global.download": {
+      "type": "icon",
+      "value": {
+        "ios": "arrow.down.to.line",
+        "android": "Rounded.Download"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "download / save (arrow down to a line in a header circle)",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png send-to header (design/research/yope-a.md §1.7 'exact'); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'arrow.down.to.line', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.Download)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.add": {
+      "type": "icon",
+      "value": {
+        "ios": "plus",
+        "android": "Rounded.Add"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "add (+ in a header circle)",
+      "evidence": "Yope home header (Sep 2026) (design/research/yope-a.md §1.7 'exact'); HIG Icons: Add → plus; SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'plus', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.Add)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.check": {
+      "type": "icon",
+      "value": {
+        "ios": "checkmark.circle.fill",
+        "android": "Rounded.CheckCircle"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "selected (filled check circle, color.global.selection)",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png, references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png pickers (design/research/yope-a.md §1.7 'exact'); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'checkmark.circle.fill', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.CheckCircle)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.uncheck": {
+      "type": "icon",
+      "value": {
+        "ios": "circle",
+        "android": "Rounded.RadioButtonUnchecked"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "not selected (empty ring)",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png pickers (design/research/yope-a.md §1.7 'exact'); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'circle', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.RadioButtonUnchecked)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.checkmark": {
+      "type": "icon",
+      "value": {
+        "ios": "checkmark",
+        "android": "Rounded.Check"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "done / posted (bare check, e.g. in the 'posted in the wall' toast)",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png lime toast with a check glyph (design/research/yope-a.md §1.4); Locket sent state ✓ (design/research/locket.md §6); HIG Icons: Done → checkmark; SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'checkmark', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.Check)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.chevron": {
+      "type": "icon",
+      "value": {
+        "ios": "chevron.right",
+        "android": "AutoMirrored.Rounded.KeyboardArrowRight"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "disclosure / forward (› at the end of the header capsule)",
+      "evidence": "references/auto/yope/store/yope-store-01.png header capsule (design/research/yope-a.md §1.7 'exact'); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'chevron.right', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (AutoMirrored.Rounded.KeyboardArrowRight)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector",
+      "notes": "Same outline as Material chevron_right; AutoMirrored for right-to-left."
+    },
+    "icon.global.chevronDown": {
+      "type": "icon",
+      "value": {
+        "ios": "chevron.down",
+        "android": "Rounded.ExpandMore"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "expand / dismiss down (⌄)",
+      "evidence": "Yope ⌄ under the home cover photo (design/research/yope-a.md §1.7 'exact'); BeReal capture dismiss uses the same glyph; SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'chevron.down', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.ExpandMore)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.settings": {
+      "type": "icon",
+      "value": {
+        "ios": "gearshape",
+        "android": "Rounded.Settings"
+      },
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "settings entry",
+      "evidence": "No Yope settings glyph was observed (design/research/yope-a.md §6); settings.* surfaces follow Apple HIG / Material 3. The only reference-app settings glyph seen is Timehop's gear labelled 'SETTINGS' (design/research/retro-timehop.md §onthisday, references/auto/timehop/help/th-help-2024-03-intro-day-in-history.jpg). HIG Icons' standard table has no settings row (https://developer.apple.com/design/human-interface-guidelines/icons); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+2.0.swift, 'gearshape', SF Symbols 2.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.Settings)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector",
+      "notes": "Platform catalog names for 'settings' (SF Symbols gearshape, Material 'settings')."
+    },
+    "icon.global.group": {
+      "type": "icon",
+      "value": {
+        "ios": "person.2.fill",
+        "android": "Rounded.Group"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "group / people",
+      "evidence": "Yope two-people glyph on the home header (May 2026, with a + badge) (design/research/yope-a.md §1.7); Locket friends pill glyph (design/research/locket.md §5; locket.tokens.json icon.camera.capture.friends); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'person.2.fill', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.Group)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector",
+      "notes": "The badged form person.2.badge.plus needs SF Symbols 6 (iOS 18); the deployment target is iOS 17.2 (config/app.json) — finding for groups.list."
+    },
+    "icon.global.wall": {
+      "type": "icon",
+      "value": {
+        "ios": "film.stack.fill",
+        "android": "Rounded.VideoLibrary"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "walls / recaps tab (film frame with stacked lines, filled)",
+      "evidence": "references/auto/yope/store/yope-store-02.png tab bar, 4th item: filled film frame with a dark middle band and cut-out perforations (checked this pass) (design/research/yope-a.md §1.5, §1.7 'close'); walls.browse labels use the same stack glyph (design/research/yope-b.md §5); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+4.0.swift, 'film.stack.fill', SF Symbols 4.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.VideoLibrary)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector",
+      "notes": "Yope uses one stack glyph for walls and recaps (recaps became walls in v1.214, yope-b §5). HIG SF Symbols: 'an iOS tab bar prefers the fill variant'."
+    },
+    "icon.global.grid": {
+      "type": "icon",
+      "value": {
+        "ios": "square.grid.2x2",
+        "android": "Rounded.GridView"
+      },
+      "source_app": "Locket",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "grid view (2×2 rounded squares)",
+      "evidence": "Locket History bottom bar, left button: references/auto/locket/store/locket-store-08.png four outlined rounded squares (checked this pass) (design/research/locket.md §7); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'square.grid.2x2', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.GridView)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector",
+      "notes": "No grid glyph in Yope. The Rounded Material family is filled; the Locket glyph is outlined."
+    },
+    "icon.global.recap": {
+      "type": "icon",
+      "value": {
+        "ios": "film.stack",
+        "android": "Rounded.VideoLibrary"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "recap entry in a header circle (film frame with stacked lines, outline)",
+      "evidence": "references/auto/yope/store/yope-store-05.png right header circle: outlined film frame with open frame windows and two stack lines (checked this pass) (design/research/yope-a.md §1.7 'close', design/research/yope-b.md §1); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+4.0.swift, 'film.stack', SF Symbols 4.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.VideoLibrary)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector",
+      "notes": "yope-b proposed film.stack.fill for this circle; the lossless crop shows the outline variant (HIG: toolbars take the outline variant) — MERGE_DECISIONS F-17."
+    },
+    "icon.global.lock": {
+      "type": "icon",
+      "value": {
+        "ios": "lock.fill",
+        "android": "Rounded.Lock"
+      },
+      "source_app": "Partiful",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "private / restricted",
+      "evidence": "Partiful 'Restricted Access' card lock (64) on the invite page (design/research/wrapped-tribute-partiful.md §5.2; icon.invite.web.lock); BeReal audience chip 'My Friends' with a lock glyph (design/research/bereal.md §2); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'lock.fill', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.Lock)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.search": {
+      "type": "icon",
+      "value": {
+        "ios": "magnifyingglass",
+        "android": "Rounded.Search"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "search (home header circle)",
+      "evidence": "Yope home header (design/research/yope-a.md §1.7 'exact'); HIG Icons: Search → magnifyingglass; SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'magnifyingglass', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.Search)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.edit": {
+      "type": "icon",
+      "value": {
+        "ios": "pencil",
+        "android": "Rounded.Edit"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "edit (pencil in a header circle)",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png send-to header (design/research/yope-a.md §1.7 'exact'); HIG Icons: Rename → pencil; SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'pencil', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.Edit)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.link": {
+      "type": "icon",
+      "value": {
+        "ios": "link",
+        "android": "Rounded.Link"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "invite link",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png 'invite more friends' pill (design/research/yope-a.md §1.7 'exact'); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'link', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.Link)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.report": {
+      "type": "icon",
+      "value": {
+        "ios": "flag.fill",
+        "android": "Rounded.Flag"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "report (menu item, destructive color)",
+      "evidence": "Yope 2024 group menu 'report' (design/research/yope-a.md §2.13, §1.7 'exact'); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'flag.fill', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.Flag)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.person": {
+      "type": "icon",
+      "value": {
+        "ios": "person.fill",
+        "android": "Rounded.Person"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "default avatar silhouette",
+      "evidence": "Yope members list (design/research/yope-a.md §1.7 'exact'); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'person.fill', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.Person)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.play": {
+      "type": "icon",
+      "value": {
+        "ios": "play.fill",
+        "android": "Rounded.PlayArrow"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "play (voice message)",
+      "evidence": "references/auto/yope/frames/b-derot-store-05-rot-1.68.png voice bubble ▶ (design/research/yope-b.md §3); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'play.fill', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.PlayArrow)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.gallery": {
+      "type": "icon",
+      "value": {
+        "ios": "photo.on.rectangle",
+        "android": "Rounded.PhotoLibrary"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "photo library (camera, when no thumbnail)",
+      "evidence": "Yope camera gallery glyph (es build) (design/research/yope-a.md §1.7 'close'); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'photo.on.rectangle', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.PhotoLibrary)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.chats": {
+      "type": "icon",
+      "value": {
+        "ios": "bubble.left.and.bubble.right.fill",
+        "android": "Rounded.Forum"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "chats tab (two overlapping bubbles)",
+      "evidence": "references/auto/yope/store/yope-store-02.png tab bar, 1st item (design/research/yope-a.md §1.7 'close'); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'bubble.left.and.bubble.right.fill', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.Forum)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.calendar": {
+      "type": "icon",
+      "value": {
+        "ios": "calendar",
+        "android": "Rounded.CalendarMonth"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "calendar circle in the group header",
+      "evidence": "Yope group header (design/research/yope-a.md §1.7 'exact'); HIG Icons: Calendar → calendar; SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+1.0.swift, 'calendar', SF Symbols 1.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (Rounded.CalendarMonth)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.leave": {
+      "type": "icon",
+      "value": {
+        "ios": "rectangle.portrait.and.arrow.right",
+        "android": "AutoMirrored.Rounded.Logout"
+      },
+      "source_app": "Yope",
+      "surface": "global",
+      "level": "PLATFORM",
+      "element": "leave group (menu item, destructive color)",
+      "evidence": "Yope 2024 group menu 'leave group' (design/research/yope-a.md §2.13, §1.7 'close'); SF Symbols name verified in SFSafeSymbols (https://raw.githubusercontent.com/SFSafeSymbols/SFSafeSymbols/stable/Sources/SFSafeSymbols/Symbols/SFSymbol+3.0.swift, 'rectangle.portrait.and.arrow.right', SF Symbols 3.0); Compose icon verified in androidx.compose.material:material-icons-extended-android:1.7.8 classes.jar (AutoMirrored.Rounded.Logout)",
+      "method": "reference glyph matched to the SF Symbol and the Compose material-icons vector"
+    },
+    "icon.global.variantRule": {
+      "type": "layout",
+      "source_app": "Apple HIG",
+      "surface": "global",
+      "level": "PLATFORM",
+      "value": {
+        "tabBar": "fill variant",
+        "header": "outline variant unless the reference glyph is filled"
+      },
+      "element": "which SF Symbol variant a context uses",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/sf-symbols 'an iOS tab bar prefers the fill variant, whereas a toolbar takes the outline variant'; Yope: tab-bar glyphs filled (references/auto/yope/store/yope-store-02.png), header film-strip glyph outline (references/auto/yope/store/yope-store-05.png), checked this pass",
+      "method": "HIG rule, consistent with the reference"
+    },
+    "layout.global.contrast.text": {
+      "type": "layout",
+      "value": {
+        "ratio": 4.5,
+        "rule": "text up to 17 pt (iOS) / below 18 sp (Android), not bold"
+      },
+      "source_app": "W3C WCAG 2.2",
+      "surface": "global",
+      "level": "VERIFIED",
+      "element": "minimum contrast ratio: text up to 17 pt (iOS) / below 18 sp (Android), not bold",
+      "evidence": "https://www.w3.org/TR/WCAG22/ (W3C Recommendation 2024-12-12, fetched 2026-10-15) SC 1.4.3 Contrast (Minimum) / SC 1.4.11 Non-text Contrast; https://developer.apple.com/design/human-interface-guidelines/accessibility contrast table ('Up to 17 pts / All / 4.5:1', '18 pts / All / 3:1', 'All / Bold / 3:1'); https://developer.android.com/guide/topics/ui/accessibility/apps",
+      "method": "WCAG 2.2 SC 1.4.3: 'a contrast ratio of at least 4.5:1'; HIG table row 'Up to 17 pts / All'"
+    },
+    "layout.global.contrast.largeText": {
+      "type": "layout",
+      "value": {
+        "ratio": 3,
+        "rule": "text 18 pt and larger, or bold at any size"
+      },
+      "source_app": "W3C WCAG 2.2",
+      "surface": "global",
+      "level": "VERIFIED",
+      "element": "minimum contrast ratio: text 18 pt and larger, or bold at any size",
+      "evidence": "https://www.w3.org/TR/WCAG22/ (W3C Recommendation 2024-12-12, fetched 2026-10-15) SC 1.4.3 Contrast (Minimum) / SC 1.4.11 Non-text Contrast; https://developer.apple.com/design/human-interface-guidelines/accessibility contrast table ('Up to 17 pts / All / 4.5:1', '18 pts / All / 3:1', 'All / Bold / 3:1'); https://developer.android.com/guide/topics/ui/accessibility/apps",
+      "method": "WCAG 2.2 SC 1.4.3 'Large-scale text … at least 3:1'; HIG rows '18 pts / All / 3:1' and 'All / Bold / 3:1'"
+    },
+    "layout.global.contrast.nonText": {
+      "type": "layout",
+      "value": {
+        "ratio": 3,
+        "rule": "UI components and graphical objects against adjacent colors"
+      },
+      "source_app": "W3C WCAG 2.2",
+      "surface": "global",
+      "level": "VERIFIED",
+      "element": "minimum contrast ratio: UI components and graphical objects against adjacent colors",
+      "evidence": "https://www.w3.org/TR/WCAG22/ (W3C Recommendation 2024-12-12, fetched 2026-10-15) SC 1.4.3 Contrast (Minimum) / SC 1.4.11 Non-text Contrast; https://developer.apple.com/design/human-interface-guidelines/accessibility contrast table ('Up to 17 pts / All / 4.5:1', '18 pts / All / 3:1', 'All / Bold / 3:1'); https://developer.android.com/guide/topics/ui/accessibility/apps",
+      "method": "WCAG 2.2 SC 1.4.11: 'a contrast ratio of at least 3:1 against adjacent color(s)'"
+    }
+  }
+}

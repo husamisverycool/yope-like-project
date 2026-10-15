@@ -99,6 +99,23 @@ for (const [name, t] of Object.entries(tokens)) {
   if (t.type === "icon" && t.value && (!t.value.ios || !t.value.android)) problem(`token ${name}: icon needs {ios, android}`);
   if (t.type === "haptic" && t.value && (!t.value.ios || !t.value.android)) problem(`token ${name}: haptic needs {ios, android}`);
   if (["SOURCED", "CAPTURED"].includes(t.level) && !["icon", "font", "haptic"].includes(t.type) && !t.method) problem(`token ${name}: ${t.level} needs method`);
+  // value shapes the code generators can emit (a value that passes here always compiles)
+  const v = t.value;
+  if (v !== null && v !== undefined) {
+    const numeric = ["dimension", "radius", "fontSize", "lineHeight", "letterSpacing", "blur", "opacity", "duration", "count"];
+    if (numeric.includes(t.type) && (typeof v !== "number" || !Number.isFinite(v))) problem(`token ${name}: ${t.type} value must be a number (use type "layout" for objects)`);
+    if (t.type === "aspectRatio" && !(typeof v === "number" || (typeof v === "object" && typeof v.width === "number" && typeof v.height === "number"))) problem(`token ${name}: aspectRatio must be a number or {width, height}`);
+    if (t.type === "fontWeight" && !(String(v).toLowerCase() in NUM_WEIGHTS)) problem(`token ${name}: fontWeight must be one of ${Object.keys(NUM_WEIGHTS).join(", ")}`);
+    if (t.type === "easing" && !(["linear", "easeIn", "easeOut", "easeInOut"].includes(v) || (typeof v === "object" && ["x1", "y1", "x2", "y2"].every((k) => typeof v[k] === "number")))) problem(`token ${name}: easing must be linear|easeIn|easeOut|easeInOut or {x1,y1,x2,y2}`);
+    if (t.type === "spring" && !(typeof v === "object" && typeof v.response === "number" && typeof v.dampingFraction === "number")) problem(`token ${name}: spring must be {response, dampingFraction}`);
+    if (t.type === "shadow" && !(typeof v === "object" && /^#[0-9a-fA-F]{6}$/.test(v.color ?? "") && typeof v.blur === "number")) problem(`token ${name}: shadow must be {color:#RRGGBB, blur, x?, y?, opacity?}`);
+    if (t.type === "icon" && v.android && !/^(AutoMirrored\.)?(Filled|Outlined|Rounded|Sharp|TwoTone)\.[A-Z][A-Za-z0-9]*$/.test(v.android)) problem(`token ${name}: icon android must be a Compose material-icons reference like Rounded.Mic or AutoMirrored.Rounded.Send (got ${v.android})`);
+    if (t.type === "icon" && v.ios && !/^[a-z0-9]+(\.[a-z0-9]+)*$/.test(v.ios)) problem(`token ${name}: icon ios must be an SF Symbol name (got ${v.ios})`);
+    if (t.type === "haptic" && v.ios && !/^(impact\.(light|medium|heavy|soft|rigid)|selection|notification\.(success|warning|error))$/.test(v.ios)) problem(`token ${name}: haptic ios must be impact.light|medium|heavy|soft|rigid, selection, notification.success|warning|error, or none (got ${v.ios})`);
+    if (t.type === "haptic" && v.android && !/^[A-Z][A-Z0-9_]*$/.test(v.android)) problem(`token ${name}: haptic android must be a HapticFeedbackConstants name (got ${v.android})`);
+    if (t.type === "font" && !(typeof v === "object" && v.ios && v.android)) problem(`token ${name}: font must be {ios, android}`);
+    if (t.type === "layout" && (typeof v !== "object" || Array.isArray(v))) problem(`token ${name}: layout must be an object of named values`);
+  }
 }
 for (const [key, s] of Object.entries(strings)) {
   for (const f of ["text", "origin", "source_app", "surface", "evidence", "level"]) if (s[f] === undefined || s[f] === "") problem(`copy ${key}: missing ${f}`);

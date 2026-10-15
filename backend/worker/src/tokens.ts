@@ -18,7 +18,10 @@ type TokenMap = Record<string, unknown>;
 let overrides: TokenMap | null = null;
 let proposals: Map<string, { value: unknown; files: string[]; conflict: boolean }> | null = null;
 
-/** Tests replace the token source entirely; null restores generated + proposals. */
+/**
+ * Tests layer values over the real sources (a name mapped to null reads as missing);
+ * null removes the layer.
+ */
 export function setTokenOverrides(t: TokenMap | null): void {
   overrides = t;
 }
@@ -49,7 +52,7 @@ function loadProposals(): Map<string, { value: unknown; files: string[]; conflic
 }
 
 export function tokenSource(name: string): "override" | "canonical" | "proposal" | null {
-  if (overrides) return name in overrides ? "override" : null;
+  if (overrides && name in overrides) return overrides[name] === null ? null : "override";
   if (name in (generatedTokens as TokenMap)) return "canonical";
   const p = loadProposals().get(name);
   return p && !p.conflict ? "proposal" : null;
@@ -57,8 +60,8 @@ export function tokenSource(name: string): "override" | "canonical" | "proposal"
 
 /** The value of design token `name`, or MissingTokenError. */
 export function designToken<T>(name: string): T {
-  if (overrides) {
-    if (!(name in overrides) || overrides[name] === null || overrides[name] === undefined) throw new MissingTokenError(name);
+  if (overrides && name in overrides) {
+    if (overrides[name] === null || overrides[name] === undefined) throw new MissingTokenError(name);
     return overrides[name] as T;
   }
   const canonical = generatedTokens as TokenMap;

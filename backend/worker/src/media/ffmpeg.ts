@@ -47,7 +47,8 @@ export function run(bin: string, args: string[], opts: { timeoutMs?: number; cwd
 }
 
 export function ffmpeg(args: string[], opts?: { timeoutMs?: number; cwd?: string }): Promise<RunResult> {
-  return run("ffmpeg", ["-hide_banner", "-nostdin", "-loglevel", "error", "-benchmark", ...args], opts);
+  // -benchmark reports CPU time at the info level; -nostats keeps progress lines out of stderr
+  return run("ffmpeg", ["-hide_banner", "-nostdin", "-nostats", "-loglevel", "info", "-benchmark", ...args], opts);
 }
 
 export interface ProbeStream {

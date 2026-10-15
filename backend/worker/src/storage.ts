@@ -28,10 +28,16 @@ export class Storage {
     return this.db.storage.from(this.bucket);
   }
 
+  /** Retries server errors (an object being replaced at that moment can answer 5xx). */
   async download(path: string): Promise<Buffer> {
-    const { data, error } = await this.api.download(path);
-    if (error || !data) throw new StorageError(`download ${path}: ${error?.message ?? "no data"}`, statusOf(error));
-    return Buffer.from(await data.arrayBuffer());
+    for (let attempt = 1; ; attempt++) {
+      const { data, error } = await this.api.download(path);
+      if (!error && data) return Buffer.from(await data.arrayBuffer());
+      const status = statusOf(error);
+      const transient = status === undefined || status >= 500;
+      if (!transient || attempt >= 3) throw new StorageError(`download ${path}: ${error?.message ?? "no data"}`, status);
+      await new Promise((r) => setTimeout(r, 250 * attempt));
+    }
   }
 
   /** Writes (or overwrites) an object. Worker paths are deterministic, so a re-run writes the same bytes. */
