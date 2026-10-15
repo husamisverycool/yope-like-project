@@ -25,9 +25,10 @@ import app.feature.capture.data.SendTracker
 
 /**
  * The send toast at `camera.sendto.layout.toast.top`. A failed or offline send shows
- * `camera.sendto.error.sendFailed` / `.offline` with "try again" until it is sent; a successful
- * send plays `haptic.global.send` (failure `haptic.global.error`). The "posted in …" toast is not
- * shown: its visible duration `camera.sendto.duration.toastVisible` is BLOCKED.
+ * `camera.sendto.error.sendFailed` / `.offline` with "try again" until it is sent, with
+ * `haptic.global.error` (the send haptic plays optimistically when the post is queued). The
+ * "posted in …" toast is not shown: its visible duration `camera.sendto.duration.toastVisible`
+ * is BLOCKED.
  *
  * Placed by every capture screen; the app shell may place it over its own screens too
  * (`groups.list` is where Yope shows it).
@@ -36,9 +37,6 @@ import app.feature.capture.data.SendTracker
 fun CaptureToastHost(tracker: SendTracker = CaptureServices.tracker(LocalContext.current)) {
     val failure by tracker.failure.collectAsStateWithLifecycle()
     val view = LocalView.current
-    LaunchedEffect(tracker) {
-        tracker.sent.collect { view.haptic(Tokens.Haptics.globalSend) }
-    }
     LaunchedEffect(failure?.draftId, failure is SendTracker.Failure.SendFailed) {
         if (failure is SendTracker.Failure.SendFailed) view.haptic(Tokens.Haptics.globalError)
     }

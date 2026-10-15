@@ -108,7 +108,6 @@ import app.push.InvitationClock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 
 /** The daily-capture destination (full-screen cover, status bar hidden). */
 @Composable
@@ -203,7 +202,6 @@ fun DailyCaptureScreen(
 ) = MinTouchTargets {
     val text = Tokens.Colors.dailyCaptureColorText
     val vf = Tokens.Layouts.DailyCaptureLayoutViewfinder
-    val seq = Tokens.Layouts.DailyCaptureLayoutCaptureSequence
     val capturing = state.phase == DailyCaptureViewModel.Phase.Capturing
     val previewing = state.phase == DailyCaptureViewModel.Phase.Preview
 
@@ -282,8 +280,6 @@ fun DailyCaptureScreen(
             }
         }
         CaptureToastHost()
-        // Unused when no capture runs; keeps the sequence tokens referenced in one place.
-        check(seq.betweenShots >= 0f)
     }
 }
 
@@ -474,21 +470,24 @@ private fun SendLabel(onSend: () -> Unit, modifier: Modifier) {
     val s = Tokens.Layouts.DailyCaptureLayoutSend
     val text = Tokens.Colors.dailyCaptureColorText
     val label = stringResource(R.string.daily_capture_send)
+    val a11y = stringResource(R.string.daily_capture_a11y_send)
     val toBaseline = glyphTopToBaseline(Tokens.FontSizes.dailyCaptureFontSizeSend, Tokens.FontWeights.dailyCaptureFontWeightSend, label)
     val view = LocalView.current
     Box(modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
         Row(
             Modifier
                 .clickable {
-                    onSend()
+                    // Optimistic: the post is queued (it sends in the background); a failure shows the
+                    // error toast with haptic.global.error.
                     view.haptic(Tokens.Haptics.globalSend)
+                    onSend()
                 }
-                .semantics(mergeDescendants = true) {
-                    contentDescription = ""
+                .clearAndSetSemantics {
+                    contentDescription = a11y
                     role = Role.Button
                     traversalIndex = 5f
+                    onClick { view.haptic(Tokens.Haptics.globalSend); onSend(); true }
                 }
-                .clearAndSetSemantics { }
                 .testTag("daily.send"),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -505,5 +504,3 @@ private fun SendLabel(onSend: () -> Unit, modifier: Modifier) {
 
 /** Digit used to place the countdown by its digit top. */
 private const val DIGIT_SAMPLE = "0" // provenance-ok: glyph sample for measuring digit height
-
-@Suppress("unused") private fun unusedFile(f: File) = f
