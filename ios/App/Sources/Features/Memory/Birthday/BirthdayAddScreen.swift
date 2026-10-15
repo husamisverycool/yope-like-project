@@ -10,8 +10,10 @@ import SwiftUI
 /// (`MemoryRoute.birthdayAdd`); never shown by the app on its own.
 ///
 /// - Parameter onFinish: called once when the screen closes after adding (`.added`) or with
-///   "maybe later" / ✕ (`.dismissed`). The spec's "added" toast cannot be shown here before the
-///   screen closes (the toast dwell time is BLOCKED), so a presenter may show it.
+///   "maybe later" / ✕ (`.dismissed`). The spec's "added" toast outlives this screen, so the
+///   presenter shows it in its window's toast (`ToastCenter.show(Copy.birthdayAddAdded)`, which also
+///   announces it and stays for `Tokens.Durations.safetyBlockDurationToast`), as `BirthdayAddRoute`
+///   does. Without a presenter the text is only announced.
 @MainActor
 struct BirthdayAddScreen: View {
     @State private var model: BirthdayAddModel
@@ -41,10 +43,11 @@ struct BirthdayAddScreen: View {
         .task { await model.loadIfNeeded() }
         .onChange(of: model.outcome) { _, outcome in
             guard let outcome else { return }
-            if outcome == .added {
+            if let onFinish {
+                onFinish(outcome)
+            } else if outcome == .added {
                 AccessibilityNotification.Announcement(Copy.birthdayAddAdded).post()
             }
-            onFinish?(outcome)
             dismiss()
         }
         .accessibilityElement(children: .contain)

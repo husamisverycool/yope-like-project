@@ -61,7 +61,7 @@ struct CameraCaptureView: View {
         .onChange(of: model.isRecording) { _, recording in
             recordingProgress = 0
             guard recording else { return }
-            withDSAnimation(.timing(duration: Tokens.Durations.cameraCaptureDurationVideoMax, easing: .linear)) {
+            withDSAnimation(.timing(duration: Tokens.Durations.cameraCaptureDurationVideoMax, easing: .linear)) { // provenance-ok: linear fill per camera.capture.size.recordingOutline notes (Locket)
                 recordingProgress = 1
             }
         }

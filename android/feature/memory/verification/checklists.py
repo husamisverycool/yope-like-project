@@ -390,8 +390,9 @@ def year_story():
     s.from_token("layout.year.story.summary", "pager of share cards at 0.6 × canvas, Share pill 148 × 50 capsule white / black 17.7 sp 700, Replay row")
     s.add("approx", "summary page spacing / pill → replay gap", "not measured", "photoCard textGap (24.6 dp); 24.6 dp also measured between carousel cards on the press image", "carousel → dots → pill spacing comes from the dots token")
     sm = img("year.story/card-11-summary.png")
-    grey = bbox(sm, lambda q: q == (0x66, 0x66, 0x66))
-    cyd = (grey[1] + grey[3]) // 2
+    # the dots row: the band of rows holding many #666666 pixels (stray anti-aliased greys elsewhere are single pixels)
+    band = [yy for yy in range(sm.height) if sum(1 for xx in range(sm.width) if sm.getpixel((xx, yy)) == (0x66, 0x66, 0x66)) >= 10]
+    cyd = (band[0] + band[-1]) // 2
     segs, start = [], None
     for x in range(sm.width):
         on = sm.getpixel((x, cyd)) != BLACK
