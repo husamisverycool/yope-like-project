@@ -271,7 +271,7 @@ Localisation (ST jp/kr/de): the display role keeps Latin/digits in the serif and
 | Tile pitch | 86 | H43 48 → 306 → 564 (258 px) | ±0.3 | strip scrolls; no trailing inset when it overflows |
 | Strip → first friend row (home) | ≈ 70–80 to the avatar row | ST-01 strip bottom 1135 → avatar top 1331 (196 px → 82) | ±2 | render |
 | Friend card | **240 × 361** (2:3); gap **16** between cards (next card peeks) | ST-01 x 209–782, y 1417–2278; gap x 784–820 (37 px → 15.5); ED-A 1353 → 2766 = 363 | ±1 | |
-| Friend avatar → name → card | avatar **26.5** circle; name 15 semibold at avatar right + ≈7; avatar bottom → card top ≈ 10 | ST-01 avatar col x=264 y 1331–1393 (63 px → 26.4); ED-A y 1213–1315 (103 px → 26.5) | ±0.5 | |
+| Friend avatar → name → card | avatar **26.5** circle; name 15 semibold starting ≈ 11 after the avatar; avatar bottom → card top ≈ 10 | ST-01 avatar col x=264 y 1331–1393 (63 px → 26.4), avatar right x≈288 → name ink 316 (11.7); ED-A y 1213–1315 (103 px → 26.5), name ink 418 (10.8) | ±0.5 | |
 | "N new" badge position | 12 from card top and right | ED-A badge (947–1138, 1402–1495) vs card (243–1183, 1353) | ±0.5 | |
 | Profile week section | header baseline → strip 11.7; strip → next header cap 36.4; pitch 170 | ST-02 (`retro-timehop.md`) | ±0.5 | render |
 | Profile header | avatar **64** at right margin; info rows pitch **29**, icon 14; buttons row h **37**, gap **8.8**, gear capsule 49 wide | ST-02 avatar 919–1072; rows y 911/978/1048; icons 33 px; buttons y 1129–1217, Recaps 209–561, Share 582–933, gear 954–1071 | ±0.5 | |
@@ -373,7 +373,7 @@ the icon set is drawn per platform to match.
 | Journal / album detail | 3-column square-ish grid | 0 | 2 pt | date headers between groups |
 | Composer picker | 4-column grid (FRAME) | 0 | ≈1–2 pt | — |
 | Album list thumbnail | 3:4 cover with title in a display/script face on the photo | ≈ 4 | — | cover title (user-styled) |
-| Recap collage card | white card, 3–4 col grid, footer "2023" serif + name + "retro.app" | card ≈ 12 | 1–2 pt | — |
+| Recap collage card | white card, 3–4 col grid, footer "2023" serif + name + "retro.app" | ≈ 4.5–5 % of card width (TC-H inset profile, gradient backdrop prevents a fit) | 1–2 pt | — |
 | Widget | full-bleed | 22 dp | — | name + location white text stack bottom-right (other file) |
 
 ---
@@ -384,8 +384,8 @@ Values in pt; L = light, D = dark. "Fill" = #F1F1F1 (L) / #262626 (D).
 
 1. **Screen title header (display).** Serif title (cap 30.5) at the 16 margin, baseline 126 on a 402×874 device (64
    below safe-area top). Trailing glyphs 24-ish pt, 2 pt stroke, centred on the title's cap middle, 48 apart, last one
-   at the 16 margin (H22). Optional grey capsule next to the title: "Last Week" (#999999 fill, white 11–12 pt text,
-   ≈24 high; JED, ENG-D). Pushed screens put a `chevron.left` before the serif title (ED-W3, ENG-M). Content starts 30
+   at the 16 margin (H22). Optional grey capsule next to the title: "Last Week" (#999999 fill, small white semibold text,
+   ≈ 24 high — JED col x=305 y 111–132 at ≈0.93 px/pt; also ENG-D in dark). Pushed screens put a `chevron.left` before the serif title (ED-W3, ENG-M). Content starts 30
    below the title baseline.
 2. **Week strip.** Horizontal scroller at the 16 margin; tiles 84 × 112, 2 apart; outer corners 18 continuous; tiles:
    - *photo tile* — aspect-fill, bottom scrim, weekday label (13 semibold white, centred, baseline 13.4 above bottom);
@@ -402,7 +402,7 @@ Values in pt; L = light, D = dark. "Fill" = #F1F1F1 (L) / #262626 (D).
    5 below the glyph. Over photos (Rewind): white / white 60 % on a bottom scrim.
 6. **Buttons.**
    - *Primary bottom capsule:* 60 high, full width − 2×20; L: #000 fill, #FFF 17 semibold; D: #FFF fill, #000 label
-     (LAND "Get started", ST-03 "Send Postcard", PAY "Claim"). Disabled (2023 TC-R3): #3A3A3A-ish grey fill, grey label.
+     (LAND "Get started", ST-03 "Send Postcard", PAY "Claim"). Disabled (2023 dark, TC-R3 phone 2): #4D4D4D fill (= APK dark container #4D4D4D) with a dimmed label (box 1150–1200, 1490–1500).
    - *Medium capsule pair (actions):* 36–37 high; primary black fill / white label, secondary outline 1 pt black /
      black label; 15 semibold; equal widths with 8–9 gap (TC-1B Accept / Decide Later; ST-02 Recaps / Share Profile +
      49-wide gear capsule).
@@ -430,15 +430,17 @@ Values in pt; L = light, D = dark. "Fill" = #F1F1F1 (L) / #262626 (D).
     the title; 3 info rows (14 icon + 15 regular text, pitch 29); action row (37-high outline capsules). Section list
     follows (no divider in 2026 renders; 2023/2024 show a full-width hairline under the buttons).
 13. **Empty state.** Centred: 22 pt outline glyph → 26 → 20 pt semibold title → 25 → outline CTA capsule (H43). Variant
-    with grey explanation and avatars (Key holders only gate, TC-2B): glyph, 17 semibold title, 13–15 grey two-line
-    body, avatar stack, outline capsule "Manage Key Holders".
+    with grey explanation and avatars (Key holders only gate, TC-2B phone 3): glyph, ≈18 semibold title (cap 29 px →
+    13.2), 14 regular #A4A4A4 two-line body (cap 22 px), avatar stack, 36-high outline capsule "Manage Key Holders"
+    (col x=2800 y 1492–1572).
 14. **Modal / sheet header.** Centred 17 semibold title; trailing close circle (36 #262626 on dark; on light sheets an
     "×" in a #F1F1F1 circle, VID-SET); or iOS nav pattern Cancel / Title / Update (system blue) (VID-COMP).
-15. **Media viewer chrome (2023).** Black page; header row: avatar 36 with ring + name 15 semibold + "Week 28" 15 #999999,
+15. **Media viewer chrome (2023).** Black page; header row: avatar ≈ 39 including a white ring with a gap (TC-2B box 1345–1440, 279–368 at 2.298 px/pt) + name 15 semibold + "Week 28" 15 #999999,
     trailing "3 of 4" pill + close circle; footer: location 15 semibold + date 15 #999999, trailing reaction glyph;
     hairline #333; comment row (avatar 36, "name 2h", text 15); bottom field: #262626, 48 high, rounded, own avatar
     leading, "Add a comment…" #8B8B8B, `ellipsis` trailing.
-16. **Bottom sheet (feature intro).** Light rounded sheet over a dimmed screen: 64-ish app-style icon tile, 17 semibold
+16. **Bottom sheet (feature intro).** Light rounded sheet floating ≈ 12 pt in from the screen edges (TC-R3 phone 1 row
+    y=1300: screen 195–862, sheet 215–842 at 1.70 px/pt) over a dimmed screen: 64-ish app-style icon tile, 17 semibold
     title ("New! Photo Postcards"), 2 rows of 15 regular grey text each with a leading 20 outline glyph, full-width black
     capsule (TC-R3).
 17. **Grouped settings list (sheet).** White sheet; profile card (name, @handle, location chip, avatar) in a Fill group;
@@ -449,14 +451,14 @@ Values in pt; L = light, D = dark. "Fill" = #F1F1F1 (L) / #262626 (D).
     week-strip tile style with grey placeholders; "Camera Roll ⌄" + grey "Photos taken since Sep 9" + camera glyph;
     4-column square grid below (VID-COMP).
 19. **Rewind player.** Full-bleed photo; display date 30.5 cap at 16 margin + optional `chevron.down`; subtitle "On
-    this week" 17 regular white 60–70 %; top-right "•••" 40 glass; bottom dial 150 Ø (≈45 ticks, long 18 / short 11)
+    this week" ≈17 regular, white at reduced opacity (not measurable over photo); top-right "•••" 40 glass; bottom dial 150 Ø (≈45 ticks, long 18 / short 11)
     with play/pause, flanked by 64 glass circles; tab bar over scrim.
 20. **Segmented control, context menu, share sheet, keyboard, alerts.** Native (PLATFORM): TC-REC, TC-RWP, TC-R3.
     Destructive menu items in #EA3337 ("Delete from Photos", "Make journal private").
 21. **Page dots.** 5 pt dots, 12 pitch, selected #000, others ≈#DDDDDD (TC-1B); white/grey on dark (TC-REC).
 22. **Divider.** 1 device px, #CCCCCC (L, APK) / #4D4D4D (D, APK); images read lighter at 1 px. Used sparingly:
     between profile header and weeks (2023–24), above "Friend Requests", between footer and comments, above "Total".
-23. **Recap card.** White card (≈12 corners) on a blurred photo backdrop; photo grid; footer: serif year + right-aligned
+23. **Recap card.** White card (corners ≈ 5 % of its width) on a blurred photo backdrop; photo grid; footer: serif year + right-aligned
     name (semibold) over "retro.app" (grey) (TC-H, TC-REC); polaroid variant: square photo in an off-white frame with
     a meta line ("August 2025 · Barcelona, Spain · @cindyttt · 2:06am · retro.app") (ST-04).
 24. **Album detail header.** Book-like cover (photo + display title) with drop shadow centred; serif title; "6 members ·
