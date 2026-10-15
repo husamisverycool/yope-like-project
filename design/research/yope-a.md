@@ -160,8 +160,9 @@ secondary text #969696 from three different elements (tab icon, capsule chevron,
   Measured on S2: capsule **344 × 58 pt** (row 2412 x251–1026; col 900 y2336–2466), fill #2E2E2E with 1-px lighter rim,
   side insets 22 pt; selected item = #434343 pill **74 × ~48 pt**; icons ≈20–23 pt glyphs (#969696 inactive, #FFFFFF
   selected); avatar ≈34 pt. Badges: red numeric badges on chats and me (V-sav) → do-not-copy (counts).
-  Variant: some builds show only 4 items (camera, chats, wall, me; V-chuong t4.73) and on the camera screen the capsule
-  fill is absent (icons on black, V-jacob t3.73) — version differences, not resolved.
+  Variants (version/experiment differences, not resolved): 5 items in capsule (S2; V-alexaa t5.23 camera selected,
+  2026-09; V-virgi 2026-09), 4 items (camera, chats, wall, me; V-chuong t4.73, 2026-10), 3 items (chats, camera, me;
+  V-arkadeep t32.73, 2026-05); on V-jacob's camera (2026-09) the capsule fill is absent (icons on black).
 - **Camera is a tab**, and also opens from the composer's lime camera button and from each home row's camera glyph.
 - Sheets: "new group" and "send to..." are full-height screens with ✕ (left) and title (centre); `duration.sheet.present`
   is measured by yope-b.
