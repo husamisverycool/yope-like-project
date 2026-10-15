@@ -50,10 +50,16 @@ a network:
 | Module | Where |
 |---|---|
 | `:core:ui` | `ComponentSnapshotTest` avatars and tab-bar avatar |
-| `:feature:social` | `TestPhotos` (`TestSupport.kt`) behind `LocalPhotoOverride`: posts by media id, avatars by user, the group cover, wall collages |
+| `:feature:social` | `TestPhotos` (`TestSupport.kt`) behind `LocalPhotoOverride`: posts by media id, avatars by user, the group cover, wall collages; every painter keeps the generated image's intrinsic size (120 × 160 px) |
 | `:feature:capture` | `Images` (`Fakes.kt`), `CollagePage`: viewfinder, stills, selfie inset, send-to covers, collage pages, widget renditions, collages and avatars |
-| `:feature:memory` | `TestImages` (`SnapshotSupport.kt`) behind `LocalMemoryImages`, cropped to the shape each URL names |
+| `:feature:memory` | `TestImages` (`SnapshotSupport.kt`) behind `LocalMemoryImages`, cropped to the shape each URL names, keeping the generated images' intrinsic size (w × 120 by h × 120 px) |
 | `:feature:account` | `ScreenSnapshotTest`: storage URLs are `SamplePhotos.url(…)`, answered by `SamplePhotos.imageLoader` installed with `SingletonImageLoader.setUnsafe` |
+
+Layouts do not depend on which photo is shown: where a screen sizes an image by its intrinsic size, the painters
+report the size of the generated images they replaced (`SamplePhotos.painter(name, w, h, intrinsicWidth,
+intrinsicHeight)`) and draw the photo sharp at whatever size they get. One measured fixture depends on the picture:
+`android/feature/memory/verification/checklists.py` finds the birthday.tribute player box by colour, so the tribute
+poster (`baby-bow-blanket-4x5`, on both platforms) is colourful to its edges and has no pure-white pixels.
 
 Re-record after changing photos: `./gradlew <module>:testDebugUnitTest -Proborazzi.test.verify=false -Proborazzi.test.record=true`
 (Android); the iOS snapshots are recorded by CI on every run.

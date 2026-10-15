@@ -8,18 +8,18 @@ Side by side: [`birthday.tribute.android.png`](birthday.tribute.android.png) —
 
 Renders: `birthday.tribute/ready.png`, `loading.png`, `rendering.png`, `saving.png`, `offline.png`, `not-found.png`, `error.png`, `toast-saved.png`, `toast-save-failed.png`
 
-**Result: 18 checks — 8 match, 4 match (token), 2 not matched, 4 worker.**
+**Result: 18 checks — 10 match, 4 match (token), 4 worker.**
 
 ## Layout
 
 | status | token | expected (token) | ours | reference evidence | note |
 |---|---|---|---|---|---|
 | match (token) | `fontSize.birthday.request.title` | 24 | 24 sp / 600 / 28.8 sp `Birthday Video`; group 16 sp textSecondary | references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribut | group line keeps its height while loading (no jump) |
-| match | `layout.birthday.tribute.video (16:9 width / height)` | 1.778 | 1.589 | https://website.tribute.co/6KY_IZ1tLME.mp4 ('Birthday Tribute for Tess', 640x360, 30000/1001 fps); frames refe | player box, full content width |
-| not matched | `dimension.birthday.request.margin` | 15 | 36 | references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribut |  |
+| match | `layout.birthday.tribute.video (16:9 width / height)` | 1.778 | 1.779 | https://website.tribute.co/6KY_IZ1tLME.mp4 ('Birthday Tribute for Tess', 640x360, 30000/1001 fps); frames refe | player box, full content width |
+| match | `dimension.birthday.request.margin` | 15 | 15 | references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribut |  |
 | match | `dimension.birthday.tribute.button.height` | 44 | 44 | references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribut | Download |
 | match | `dimension.birthday.tribute.button.gap` | 10 | 10 | references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribut |  |
-| not matched | `dimension.birthday.request.cta.gap` | 15 | 17 | references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribut | player → Download |
+| match | `dimension.birthday.request.cta.gap` | 15 | 15 | references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribut | player → Download |
 | match (token) | `color.birthday.tribute.button.label` | #292D34 | #292D34 label and glyph on color.global.surfaceLight, 14 sp / 600, radius 8 | references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribut |  |
 | match (token) | `icon.global.download / icon.global.share` | ? | Rounded.Download / Rounded.IosShare, glyph `size.global.headerGap` before the label (approximation) | references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png send-to header ( |  |
 

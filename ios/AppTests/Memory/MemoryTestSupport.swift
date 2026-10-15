@@ -204,6 +204,6 @@ enum MemorySamplePhotos {
 
     /// The tribute video's poster (16:9).
     static var poster: UIImage {
-        SamplePhotos.photo(named: "grandma-hug-4x3", size: CGSize(width: 1280, height: 720))
+        SamplePhotos.photo(named: "baby-bow-blanket-4x5", size: CGSize(width: 1280, height: 720))
     }
 }

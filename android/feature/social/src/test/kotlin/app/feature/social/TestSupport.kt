@@ -3,8 +3,6 @@ package app.feature.social
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
 import app.designsystem.LocalReduceMotionOverride
 import app.feature.social.common.LocalApproximations
@@ -47,16 +45,21 @@ object TestPhotos {
         "u-x0" to "avatar-05", "u-x1" to "avatar-04", "u-x2" to "avatar-09", "u-x3" to "avatar-10",
     )
 
+    /** Every image keeps the intrinsic size of the generated ones it replaces (3:4, 120 × 160 px), so layouts match. */
     fun painter(path: String): Painter = cache.getOrPut(path) {
         val parts = path.split('/')
         when {
-            parts[0] == "avatars" -> SamplePhotos.painter(people[parts[1]] ?: SamplePhotos.avatarForKey(parts[1]))
-            "covers" in parts -> SamplePhotos.painter("dinner-long-table-3x4", 1, 1)
-            "collages" in parts -> BitmapPainter(SamplePhotos.collage(COLLAGE_W, COLLAGE_H, (0 until 4).map { SamplePhotos.pick(it + 9) }, columns = 2).asImageBitmap())
-            parts[0] == "u" && parts.size >= 3 -> SamplePhotos.painter(photoFor(parts[2]), 3, 4)
-            else -> SamplePhotos.painter(SamplePhotos.forKey(path), 3, 4)
+            parts[0] == "avatars" -> sized(people[parts[1]] ?: SamplePhotos.avatarForKey(parts[1]))
+            "covers" in parts -> sized("dinner-long-table-3x4")
+            "collages" in parts -> SamplePhotos.painter(
+                SamplePhotos.collage(COLLAGE_W, COLLAGE_H, (0 until 4).map { SamplePhotos.pick(it + 9) }, columns = 2), WIDTH, HEIGHT,
+            )
+            parts[0] == "u" && parts.size >= 3 -> sized(photoFor(parts[2]))
+            else -> sized(SamplePhotos.forKey(path))
         }
     }
+
+    private fun sized(name: String) = SamplePhotos.painter(name, 3, 4, WIDTH, HEIGHT)
 
     private fun photoFor(media: String): String {
         named[media]?.let { return it }
@@ -64,6 +67,8 @@ object TestPhotos {
         return SamplePhotos.pick(Math.floorMod(media.substringBeforeLast('-').hashCode(), PORTRAIT_OFFSETS) + number)
     }
 
+    private const val WIDTH = 120f
+    private const val HEIGHT = 160f
     private const val COLLAGE_W = 900
     private const val COLLAGE_H = 1200
     private const val PORTRAIT_OFFSETS = 7

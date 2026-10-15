@@ -6,9 +6,14 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.unit.IntSize
 import coil3.ImageLoader
 import coil3.asImage
 import coil3.decode.DataSource
@@ -134,6 +139,29 @@ object SamplePhotos {
     fun painter(name: String, aspectWidth: Int, aspectHeight: Int): Painter = synchronized(painters) {
         painters.getOrPut("$name@$aspectWidth:$aspectHeight") {
             BitmapPainter(bitmapWithAspect(name, aspectWidth, aspectHeight).asImageBitmap())
+        }
+    }
+
+    /**
+     * A painter of the photo centre-cropped to [aspectWidth] : [aspectHeight] that reports [intrinsicWidth] ×
+     * [intrinsicHeight] pixels as its intrinsic size and draws the photo sharp at whatever size it is given: a
+     * drop-in for a generated test image of that size, so layouts that size an image by its intrinsic size
+     * (e.g. `ContentScale.Fit` without a fill modifier) stay exactly as they were.
+     */
+    fun painter(name: String, aspectWidth: Int, aspectHeight: Int, intrinsicWidth: Float, intrinsicHeight: Float): Painter =
+        synchronized(painters) {
+            painters.getOrPut("$name@$aspectWidth:$aspectHeight@${intrinsicWidth}x$intrinsicHeight") {
+                SizedPainter(bitmapWithAspect(name, aspectWidth, aspectHeight).asImageBitmap(), Size(intrinsicWidth, intrinsicHeight))
+            }
+        }
+
+    /** [image] (e.g. a collage) as a painter reporting [intrinsicWidth] × [intrinsicHeight]; give it the same shape. */
+    fun painter(image: Bitmap, intrinsicWidth: Float, intrinsicHeight: Float): Painter =
+        SizedPainter(image.asImageBitmap(), Size(intrinsicWidth, intrinsicHeight))
+
+    private class SizedPainter(private val image: ImageBitmap, override val intrinsicSize: Size) : Painter() {
+        override fun DrawScope.onDraw() {
+            drawImage(image, dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()), filterQuality = FilterQuality.High)
         }
     }
 

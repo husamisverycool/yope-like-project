@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -41,11 +39,12 @@ object TestImages {
 
     /** The fixtures' photos by name (what the screens' sample data says they show). */
     private val photos = mapOf(
-        // birthday.contribute: eligible photos of the honoree, and the tribute poster
+        // birthday.contribute: eligible photos of the honoree; the tribute poster (colourful to its edges: the
+        // memory verification checklists find the player box by colour)
         "p1" to "friends-beach-hug-4x5", "p2" to "family-dinner-4x3", "p3" to "beach-sunset-wade-9x16",
-        "p4" to "selfie-two-friends-1x1", "p5" to "friends-stairs-laughing-3x4", "poster" to "grandma-hug-4x3",
+        "p4" to "selfie-two-friends-1x1", "p5" to "friends-stairs-laughing-3x4", "poster" to "baby-bow-blanket-4x5",
         // onthisday: a day one and three years ago
-        "a" to "birthday-cake-candles-3x4", "b" to "campfire-friends-3x2", "c" to "snow-forest-walk-3x4",
+        "a" to "concert-confetti-3x4", "b" to "campfire-friends-3x2", "c" to "snow-forest-walk-3x4",
         "d" to "autumn-bike-9x16", "e" to "snow-friends-beanies-1x1", "f" to "road-trip-window-3x2",
         // year.story: most reacted photos; tagging: the viewer's photo
         "r1" to "dinner-toast-candles-3x4", "r2" to "beach-friends-run-4x3", "viewer-photo" to "hike-mountain-friends-3x4",
@@ -61,21 +60,25 @@ object TestImages {
         val h = uri.getQueryParameter("h")?.toIntOrNull() ?: 4
         val name = uri.lastPathSegment.orEmpty()
         val key = RENDITION.replace(name, "")
+        // Every image keeps the intrinsic size of the generated one it replaces (w × 120 by h × 120 px).
+        val width = w * INTRINSIC_UNIT
+        val height = h * INTRINSIC_UNIT
         when {
             key.endsWith("-avatar") -> {
                 val person = key.removeSuffix("-avatar").lowercase()
-                SamplePhotos.painter(people[person] ?: SamplePhotos.avatarForKey(person), w, h)
+                SamplePhotos.painter(people[person] ?: SamplePhotos.avatarForKey(person), w, h, width, height)
             }
             key.startsWith("collage") -> {
                 val tiles = (0 until COLLAGE_TILES).map { SamplePhotos.pick(it + (key.hashCode() and 0xFF)) }
-                BitmapPainter(SamplePhotos.collage(w * COLLAGE_UNIT, h * COLLAGE_UNIT, tiles, columns = 2, gap = COLLAGE_GAP).asImageBitmap())
+                SamplePhotos.painter(SamplePhotos.collage(w * COLLAGE_UNIT, h * COLLAGE_UNIT, tiles, columns = 2, gap = COLLAGE_GAP), width, height)
             }
-            else -> SamplePhotos.painter(photos[key] ?: SamplePhotos.forKey(key, w.toFloat() / h), w, h)
+            else -> SamplePhotos.painter(photos[key] ?: SamplePhotos.forKey(key, w.toFloat() / h), w, h, width, height)
         }
     }
 
     /** Rendition suffixes: every rendition of a photo is the same picture. */
     private val RENDITION = Regex("-(d|display|thumb)$")
+    private const val INTRINSIC_UNIT = 120f
     private const val COLLAGE_TILES = 4
     private const val COLLAGE_UNIT = 200
     private const val COLLAGE_GAP = 6
