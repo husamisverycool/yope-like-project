@@ -11,10 +11,15 @@ import app.data.media.upload.NewPost
 import app.data.media.upload.UploadOutcome
 import app.data.media.upload.UploadProgress
 import app.data.media.upload.UploadWorker
+import app.data.model.DevicePlatform
+import app.data.model.Group
 import app.data.model.GroupKind
+import app.data.model.Media
 import app.data.model.MediaKind
 import app.data.model.MemberRole
+import app.data.model.Message
 import app.data.model.MessageKind
+import app.data.model.Post
 import app.data.model.ReportTargetKind
 import app.data.model.WallItemKind
 import app.data.repo.AuthState
@@ -83,36 +88,86 @@ class ScenarioIntegrationTest {
         admin.close()
     }
 
+    // Shared state of the phases below (one scenario, split so no method exceeds the JVM limit).
+    private lateinit var tag: String
+    private lateinit var files: File
+    private val paris: ZoneId = ZoneId.of("Europe/Paris")
+    private lateinit var today: LocalDate
+    private lateinit var ana: TestAccount
+    private lateinit var rui: TestAccount
+    private lateinit var olga: TestAccount
+    private lateinit var a: DataGraph
+    private lateinit var b: DataGraph
+    private lateinit var c: DataGraph
+    private lateinit var signedOut: DataGraph
+    private lateinit var g1: Group
+    private lateinit var g2: Group
+    private lateinit var p1: Post
+    private lateinit var p1g2: Post
+    private lateinit var p2: Post
+    private lateinit var pVideo: Post
+    private lateinit var pOld: String
+    private lateinit var m1: Media
+    private lateinit var photo: File
+    private lateinit var voice: File
+    private lateinit var reply: Message
+    private lateinit var voiceMessage: Message
+    private lateinit var photoReply: Post
+    private lateinit var albumId: String
+    private lateinit var recapId: String
+    private lateinit var collageId: String
+    private lateinit var requestId: String
+
     @Test fun membersShareGroupsPhotosChatAndMemoriesAndDeletionReachesEverything() = runBlocking {
-        val tag = uniqueTag()
-        val files = tmp.newFolder("files")
-        val paris = ZoneId.of("Europe/Paris")
-        val ana = admin.createUser("Ana Lima $tag")
-        val rui = admin.createUser("Rui Costa $tag")
-        val olga = admin.createUser("Olga Outsider $tag")
-        val a = graphs.signIn(ana).also(signedIn::add)
-        val b = graphs.signIn(rui).also(signedIn::add)
-        val c = graphs.signIn(olga).also(signedIn::add)
+        tag = uniqueTag()
+        files = tmp.newFolder("files")
+        today = LocalDate.now(paris)
+        ana = admin.createUser("Ana Lima $tag")
+        rui = admin.createUser("Rui Costa $tag")
+        olga = admin.createUser("Olga Outsider $tag")
+        a = graphs.signIn(ana).also(signedIn::add)
+        b = graphs.signIn(rui).also(signedIn::add)
+        c = graphs.signIn(olga).also(signedIn::add)
+        signedOut = graphs.create("anon-$tag")
         assertEquals(AuthState.SignedIn(ana.id), a.auth.authState.value)
 
-        // --- Profile ---------------------------------------------------------------------------
+        profile()
+        groupsAndInvites()
+        uploadAndList()
+        reactions()
+        chat()
+        tags()
+        browse()
+        albums()
+        recap()
+        invitationAndCollage()
+        birthdays()
+        yearStory()
+        settings()
+        safety()
+        deleteMediaEverywhere()
+        deletePostsMembersAndLeave()
+        accountDeletion()
+    }
+
+    private suspend fun profile() {
         assertEquals("Ana Lima $tag", a.profiles.me().displayName)
         assertEquals("Ana Lima", a.profiles.updateProfile(displayName = "Ana Lima").displayName)
         val withAvatar = a.profiles.setAvatar(tinyJpegFile(files, "avatar.jpg"))
         assertTrue(withAvatar.avatarPath!!.startsWith("avatars/${ana.id}/"))
         assertTrue(a.profiles.setBirthday(LocalDate.of(1990, 5, 17), optIn = true).birthdayOptIn)
+    }
 
-        // --- Groups, invites, joining ----------------------------------------------------------
+    private suspend fun groupsAndInvites() {
         val cover = a.groups.uploadCover(tinyJpegFile(files, "cover.jpg"))
-        val g1 = a.groups.createGroup("it-$tag one", GroupKind.Family, "Europe/Paris", coverPath = cover)
-        val g2 = a.groups.createGroup("it-$tag two", GroupKind.Friends, "Europe/Paris")
+        g1 = a.groups.createGroup("it-$tag one", GroupKind.Family, "Europe/Paris", coverPath = cover)
+        g2 = a.groups.createGroup("it-$tag two", GroupKind.Friends, "Europe/Paris")
         assertEquals(cover, g1.coverPath)
         assertEquals(listOf(g1.id, g2.id), a.groups.myGroups().map { it.id })
         assertEquals(setOf(g1.id, g2.id), a.groups.myGroupIds.value)
         assertEquals("it-$tag family", a.groups.updateGroup(g1.id, name = "it-$tag family").name)
 
         val invite = a.groups.createInvite(g1.id)
-        val signedOut = graphs.create("anon-$tag")
         val preview = signedOut.groups.invitePreview(invite.token)
         assertEquals("it-$tag family", preview.groupName)
         assertEquals(GroupKind.Family, preview.groupKind)
@@ -131,11 +186,13 @@ class ScenarioIntegrationTest {
         expectApi(ApiError.InviteRevoked) { c.groups.joinGroup(spare.token) }
         expectApi(ApiError.InviteNotFound) { c.groups.joinGroup("no-such-token-$tag-xxxxxxxx") }
         expectApi(ApiError.InviteRevoked) { signedOut.groups.invitePreview(spare.token) }
+    }
 
-        // --- Upload (WorkManager) + create_post to two groups ----------------------------------
+    private suspend fun uploadAndList() {
+        // The WorkManager path: enqueue, constraints met, the worker uploads and posts to two groups.
         DataGraph.override(a)
-        val photo = tinyJpegFile(files, "photo.jpg", padTo = 256 * 1024)
-        val voice = File(files, "note.m4a").apply { writeBytes(ByteArray(2048) { it.toByte() }) }
+        photo = tinyJpegFile(files, "photo.jpg", padTo = 256 * 1024)
+        voice = File(files, "note.m4a").apply { writeBytes(ByteArray(2048) { it.toByte() }) }
         val draftId = a.uploads.enqueue(
             NewPost(
                 kind = MediaKind.Photo, original = photo, width = 1, height = 1,
@@ -150,18 +207,18 @@ class ScenarioIntegrationTest {
         assertTrue("$progress", progress is UploadProgress.Done)
         val firstPostIds = (progress as UploadProgress.Done).postIds
         assertEquals(2, firstPostIds.size)
-        val p1 = b.posts.posts(firstPostIds).single { it.groupId == g1.id }
-        val p1g2 = b.posts.posts(firstPostIds).single { it.groupId == g2.id }
+        p1 = b.posts.posts(firstPostIds).single { it.groupId == g1.id }
+        p1g2 = b.posts.posts(firstPostIds).single { it.groupId == g2.id }
         assertEquals("first light $tag", p1.caption)
         assertEquals(1200, p1.voiceDurationMs)
         assertEquals(p1.mediaId, p1g2.mediaId)
         assertFalse(p1.inWindow)
 
-        val m1 = b.posts.mediaOf(p1)!!
+        m1 = b.posts.mediaOf(p1)!!
         assertEquals(MediaKind.Photo, m1.kind)
         assertEquals("u/${ana.id}/${m1.id}/original.jpg", m1.originalPath)
         assertEquals("u/${ana.id}/${m1.id}/front.jpg", m1.frontOriginalPath)
-        assertEquals(m1.originalPath, m1.imagePath(app.data.model.Media.Rendition.Display)) // no renditions yet
+        assertEquals(m1.originalPath, m1.imagePath(Media.Rendition.Display)) // no renditions yet
 
         // Signed URLs: members read, cached until expiry; outsiders get nothing.
         val url = b.signedUrls.url(m1.originalPath)!!
@@ -170,9 +227,9 @@ class ScenarioIntegrationTest {
         assertNotNull(b.signedUrls.url(p1.voicePath!!))
         assertNull(c.signedUrls.url(m1.originalPath))
 
-        // A second photo straight through the uploader, then a page of two.
+        // A second photo straight through the uploader, then a page of one and the next page.
         val draft2 = a.uploads.enqueue(NewPost(kind = MediaKind.Photo, original = tinyJpegFile(files, "p2.jpg"), groupIds = listOf(g1.id)))
-        val p2 = b.posts.post((a.uploader.run(draft2) as UploadOutcome.Done).postIds.single())!!
+        p2 = b.posts.post((a.uploader.run(draft2) as UploadOutcome.Done).postIds.single())!!
         val page = b.posts.feed(g1.id, limit = 1)
         assertEquals(listOf(p2.id), page.map { it.id })
         assertEquals(listOf(p1.id), b.posts.feed(g1.id, before = page.last().createdAt, limit = 1).map { it.id })
@@ -185,10 +242,11 @@ class ScenarioIntegrationTest {
         assertFalse(b.entitlements.isPremium())
         admin.upsert("entitlements", buildJsonObject { put("user_id", rui.id); put("entitlement", "premium"); put("source", "test") }, "user_id,entitlement")
         assertTrue(b.entitlements.isPremium())
-        val pVideo = b.posts.post((b.uploader.run(videoDraft) as UploadOutcome.Done).postIds.single())!!
+        pVideo = b.posts.post((b.uploader.run(videoDraft) as UploadOutcome.Done).postIds.single())!!
         assertEquals(MediaKind.Video, b.posts.mediaOf(pVideo)!!.kind)
+    }
 
-        // --- Reactions: rows (user, emoji), never counts -----------------------------------------
+    private suspend fun reactions() {
         b.reactions.react(p1.id, "🌅")
         b.reactions.react(p1.id, "🌅") // idempotent
         b.reactions.react(p1.id, "👍🏽")
@@ -196,39 +254,41 @@ class ScenarioIntegrationTest {
         b.reactions.unreact(p1.id, "👍🏽")
         assertEquals(mapOf(p1.id to listOf(ReactionEntry(rui.id, "🌅"))), a.reactions.reactionsFor(listOf(p1.id, p2.id)))
         expectApi(ApiError.InvalidEmoji) { b.reactions.react(p1.id, "abc") }
+    }
 
-        // --- Chat: photo messages, reply to a photo, voice, replies to messages -------------------
+    private suspend fun chat() {
         val thread = b.chat.messages(g1.id)
         assertTrue(thread.any { it.kind == MessageKind.Photo && it.postId == p1.id })
-        val reply = b.chat.replyToPhoto(g1.id, p1.id, "so good")
+        reply = b.chat.replyToPhoto(g1.id, p1.id, "so good")
         assertEquals(p1.id, reply.replyToPostId)
         val answer = a.chat.sendText(g1.id, "thanks", replyToMessageId = reply.id)
         assertEquals(reply.id, answer.replyToMessageId)
-        val voiceMessage = b.chat.sendVoice(g1.id, voice, 900)
+        voiceMessage = b.chat.sendVoice(g1.id, voice, 900)
         assertEquals(MessageKind.Voice, voiceMessage.kind)
         assertTrue(voiceMessage.voicePath!!.startsWith("u/${rui.id}/voice/"))
         assertNotNull(a.signedUrls.url(voiceMessage.voicePath!!))
         expectApi(ApiError.MessageNotFound) { a.chat.deleteMessage(reply.id) }
         expectApi(ApiError.InvalidBody) { b.chat.sendText(g1.id, "   ") }
         val photoReplyDraft = b.uploads.enqueue(NewPost(kind = MediaKind.Photo, original = tinyJpegFile(files, "reply.jpg"), groupIds = listOf(g1.id), replyToPostId = p1.id))
-        val photoReply = b.posts.post((b.uploader.run(photoReplyDraft) as UploadOutcome.Done).postIds.single())!!
+        photoReply = b.posts.post((b.uploader.run(photoReplyDraft) as UploadOutcome.Done).postIds.single())!!
         assertEquals(p1.id, photoReply.replyToPostId)
         assertEquals(listOf(photoReply.id), a.posts.replies(p1.id).map { it.id })
         expectApi(ApiError.ReplyGroupMismatch) {
-            b.posts.createPost(b.posts.mediaOf(pVideo)!!.id, listOf(g2.id), PostOptions(replyToPostId = p1.id))
+            b.posts.createPost(pVideo.mediaId, listOf(g2.id), PostOptions(replyToPostId = p1.id))
         }
+    }
 
-        // --- Tags ---------------------------------------------------------------------------------
+    private suspend fun tags() {
         b.tags.tagSelf(p1.id)
         assertEquals(listOf(rui.id), a.tags.tags(p1.id).map { it.userId })
         b.tags.untagSelf(p1.id)
         assertTrue(a.tags.tags(p1.id).isEmpty())
         b.tags.tagSelf(p1.id)
         assertEquals(listOf(p1.id), b.tags.myTags(g1.id).map { it.postId })
+    }
 
-        // --- Wall, history weeks, on this day ------------------------------------------------------
-        val wall = b.browse.wall(ana.id)
-        val wallEntry = wall.single { it.mediaId == m1.id }
+    private suspend fun browse() {
+        val wallEntry = b.browse.wall(ana.id).single { it.mediaId == m1.id }
         assertEquals(WallItemKind.Post, wallEntry.itemKind)
         assertEquals(setOf(g1.id, g2.id), wallEntry.groupIds.toSet())
         assertTrue(a.browse.wall(ana.id).any { it.mediaId == m1.id })
@@ -236,27 +296,30 @@ class ScenarioIntegrationTest {
         assertTrue(weeks.first().postIds.containsAll(listOf(p1.id, p2.id)))
 
         val oldDraft = a.uploads.enqueue(NewPost(kind = MediaKind.Photo, original = tinyJpegFile(files, "old.jpg"), groupIds = listOf(g1.id)))
-        val pOld = (a.uploader.run(oldDraft) as UploadOutcome.Done).postIds.single()
+        pOld = (a.uploader.run(oldDraft) as UploadOutcome.Done).postIds.single()
         val lastYear = ZonedDateTime.now(paris).minusYears(1)
         admin.update("posts", "id=eq.$pOld", buildJsonObject { put("created_at", lastYear.toInstant().toString()) })
-        val today = LocalDate.now(paris)
         val memories = b.browse.onThisDay(g1.id, today)
         assertEquals(1, memories.single { it.postId == pOld }.yearsAgo)
+    }
 
-        // --- Albums -------------------------------------------------------------------------------------
+    private suspend fun albums() {
         val album = b.albums.saveAlbum(g1.id, "Summer $tag", listOf(p2.id, p1.id))
+        albumId = album.id
         assertEquals(listOf(p2.id, p1.id), a.albums.items(album.id).map { it.postId })
         assertEquals("Summer!", a.albums.renameAlbum(album.id, "Summer!").name)
         assertTrue(a.albums.albums(g1.id).any { it.id == album.id })
         expectApi(ApiError.AlbumNotFound) { c.albums.renameAlbum(album.id, "nope") }
+    }
 
-        // --- Weekly recap (row written by the worker; here by the service role) -----------------------
+    private suspend fun recap() {
+        // The row is written by the worker; here by the service role.
         val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
         val recapRow = admin.insert("weekly_recaps", buildJsonObject {
             put("group_id", g1.id); put("week_start", weekStart.toString()); put("status", "ready"); put("text", "A week")
             put("items", JsonArray(listOf(JsonPrimitive(p1.id), JsonPrimitive(p2.id)))); put("generated_at", Instant.now().toString())
         })
-        val recapId = recapRow["id"]!!.jsonPrimitive.content
+        recapId = recapRow["id"]!!.jsonPrimitive.content
         assertTrue(b.recaps.recaps(g1.id).any { it.id == recapId })
         val edited = b.recaps.updateRecap(recapId, items = listOf(p2.id, p1.id), text = "Edited")
         assertEquals(listOf(p2.id, p1.id), edited.items)
@@ -265,16 +328,16 @@ class ScenarioIntegrationTest {
         assertEquals(recapId, a.recaps.recapForWeek(g1.id, weekStart)?.id)
         val pendingRecap = admin.insert("weekly_recaps", buildJsonObject { put("group_id", g1.id); put("week_start", weekStart.minusWeeks(1).toString()) })
         expectApi(ApiError.RecapNotReady) { b.recaps.updateRecap(pendingRecap["id"]!!.jsonPrimitive.content, text = "x") }
+    }
 
-        // --- Daily invitation, my answer, collage -------------------------------------------------------
+    private suspend fun invitationAndCollage() {
         val now = Instant.now()
         val invitationRow = admin.upsert("daily_invitations", buildJsonObject {
             put("group_id", g1.id); put("local_date", today.toString()); put("status", "fired")
             put("fires_at", now.minusSeconds(5).toString()); put("closes_at", now.plusSeconds(115).toString())
         }, "group_id,local_date")
         val invitationId = invitationRow["id"]!!.jsonPrimitive.content
-        val open = b.invitations.currentInvitation(g1.id)
-        assertEquals(invitationId, open?.id)
+        assertEquals(invitationId, b.invitations.currentInvitation(g1.id)?.id)
         val answerDraft = b.uploads.enqueue(NewPost(kind = MediaKind.Photo, original = tinyJpegFile(files, "now.jpg"), groupIds = listOf(g1.id), invitationId = invitationId))
         val answerPost = b.posts.post((b.uploader.run(answerDraft) as UploadOutcome.Done).postIds.single())!!
         assertTrue(answerPost.inWindow)
@@ -284,16 +347,19 @@ class ScenarioIntegrationTest {
             put("group_id", g1.id); put("invitation_id", invitationId); put("option", "B"); put("status", "ready")
             put("post_ids", JsonArray(listOf(JsonPrimitive(answerPost.id), JsonPrimitive(p1.id)))); put("composed_at", now.toString())
         })
-        val collageId = collageRow["id"]!!.jsonPrimitive.content
+        collageId = collageRow["id"]!!.jsonPrimitive.content
         assertEquals(collageId, a.invitations.collageForInvitation(invitationId)?.id)
         assertTrue(a.invitations.collages(g1.id).any { it.id == collageId })
+    }
 
-        // --- Birthdays: request (not for the honoree), contribution (own only), tribute for me -------
+    private suspend fun birthdays() {
+        // Request (never shown to the honoree), contribution (own only), tribute for me.
+        val now = Instant.now()
         val request = admin.insert("tribute_requests", buildJsonObject {
             put("group_id", g1.id); put("honoree_id", ana.id); put("birthday_date", today.plusDays(7).toString())
             put("due_at", now.plusSeconds(7 * 86_400L).toString())
         })
-        val requestId = request["id"]!!.jsonPrimitive.content
+        requestId = request["id"]!!.jsonPrimitive.content
         assertTrue(b.birthdays.openRequests().any { it.id == requestId })
         assertFalse(a.birthdays.openRequests().any { it.id == requestId })
         expectApi(ApiError.PostNotEligible) { b.birthdays.contribute(requestId, pOld, "Happy birthday") }
@@ -309,18 +375,21 @@ class ScenarioIntegrationTest {
         })
         assertEquals(listOf(tribute["id"]!!.jsonPrimitive.content), a.birthdays.tributesForMe().map { it.id })
         assertTrue(b.birthdays.tributes(g1.id).isNotEmpty())
+    }
 
-        // --- Year story ---------------------------------------------------------------------------------
-        val year = today.year
+    private suspend fun yearStory() {
         admin.insert("year_stories", buildJsonObject {
-            put("group_id", g1.id); put("year", year); put("status", "ready"); putJsonObject("data") { put("pages", JsonArray(emptyList())) }
-            put("post_ids", JsonArray(listOf(JsonPrimitive(p1.id)))); put("generated_at", now.toString())
+            put("group_id", g1.id); put("year", today.year); put("status", "ready"); putJsonObject("data") { put("pages", JsonArray(emptyList())) }
+            put("post_ids", JsonArray(listOf(JsonPrimitive(p1.id)))); put("generated_at", Instant.now().toString())
         })
-        val story = b.yearStories.yearStory(g1.id, year)!!
+        val story = b.yearStories.yearStory(g1.id, today.year)!!
         assertEquals(listOf(p1.id), story.postIds)
         assertNotNull(story.data)
+        assertTrue(b.yearStories.yearStories(g1.id).isNotEmpty())
+    }
 
-        // --- Settings: mute, invitation hours / pause, quiet hours, devices, config --------------------
+    private suspend fun settings() {
+        // Mute, invitation hours / pause, quiet hours, devices, public config.
         b.groups.setMuted(g1.id, true)
         assertTrue(a.groups.members(g1.id).single { it.member.userId == rui.id }.member.muted)
         assertEquals(LocalTime.of(9, 0), a.groups.setInvitationHours(g1.id, LocalTime.of(9, 0), LocalTime.of(21, 0)).wakingStart)
@@ -334,15 +403,16 @@ class ScenarioIntegrationTest {
         b.settings.clearQuietHours()
         assertNull(b.settings.quietHours.value)
         val token = "it-fcm-$tag-${uniqueTag()}"
-        assertEquals(app.data.model.DevicePlatform.Android, b.devices.register(token).platform)
+        assertEquals(DevicePlatform.Android, b.devices.register(token).platform)
         assertTrue(b.devices.devices().any { it.pushToken == token })
         b.devices.unregister(token)
         assertFalse(b.devices.devices().any { it.pushToken == token })
         val config = signedOut.appConfig.publicConfig()
         assertEquals(120, config.invitationWindowSeconds)
         assertEquals(30, config.maxGroupMembers)
+    }
 
-        // --- Safety: report, block hides content both ways, unblock --------------------------------------
+    private suspend fun safety() {
         assertTrue(b.safety.report(ReportTargetKind.Post, p1.id, "test report $tag").isNotBlank())
         b.safety.block(ana.id)
         assertEquals(listOf(ana.id), b.safety.blocked().map { it.blockedId })
@@ -351,8 +421,9 @@ class ScenarioIntegrationTest {
         b.safety.unblock(ana.id)
         assertTrue(b.posts.feed(g1.id).any { it.id == p1.id })
         expectApi(ApiError.CannotTargetSelf) { b.safety.block(rui.id) }
+    }
 
-        // --- Delete the photo everywhere ------------------------------------------------------------------
+    private suspend fun deleteMediaEverywhere() {
         expectApi(ApiError.MediaNotFound) { b.posts.deleteMedia(m1.id) }
         a.posts.deleteMedia(m1.id)
         assertNull(b.posts.post(p1.id))
@@ -369,15 +440,16 @@ class ScenarioIntegrationTest {
         assertTrue(a.tags.tags(p1.id).isEmpty())
         assertTrue(b.browse.wall(ana.id).none { it.mediaId == m1.id })
         assertTrue(b.browse.historyWeeks(g1.id).none { p1.id in it.postIds })
-        assertEquals(listOf(p2.id), a.albums.items(album.id).map { it.postId })
+        assertEquals(listOf(p2.id), a.albums.items(albumId).map { it.postId })
         assertFalse(p1.id in b.recaps.recap(recapId)!!.items)
         assertNull(b.birthdays.myContribution(requestId))
         assertFalse(p1.id in a.invitations.collage(collageId)!!.postIds)
-        assertFalse(p1.id in b.yearStories.yearStory(g1.id, year)!!.postIds)
+        assertFalse(p1.id in b.yearStories.yearStory(g1.id, today.year)!!.postIds)
         assertTrue(b.storage.sign(listOf(m1.originalPath, p1.voicePath!!), 60.seconds).isEmpty())
         assertTrue(c.storage.sign(listOf(m1.originalPath), 60.seconds).isEmpty())
+    }
 
-        // --- Delete a post, a message; remove a member; leave ------------------------------------------------
+    private suspend fun deletePostsMembersAndLeave() {
         expectApi(ApiError.PostNotFound) { a.posts.deletePost(photoReply.id) }
         b.posts.deletePost(photoReply.id)
         assertNull(a.posts.post(photoReply.id))
@@ -393,8 +465,9 @@ class ScenarioIntegrationTest {
         assertEquals(emptySet<String>(), b.groups.myGroupIds.value)
         assertTrue(b.posts.feed(g1.id).isEmpty())
         expectApi(ApiError.NotGroupMember) { b.browse.historyWeeks(g1.id) }
+    }
 
-        // --- Account deletion: the session stops working ---------------------------------------------------
+    private suspend fun accountDeletion() {
         c.account.deleteAccount()
         eventually { c.auth.authState.value == AuthState.SignedOut }
         assertEquals(DataError.NotSignedIn, expectDataError { c.profiles.me() })

@@ -31,6 +31,114 @@
     <string name="albums_view_toast_deleted" formatted="false">album deleted</string>
     <!-- Yope · albums.view · new · SOURCED -->
     <string name="albums_view_toast_renamed" formatted="false">album renamed</string>
+    <!-- Yope · auth.agegate · verbatim · SOURCED -->
+    <string name="auth_agegate_continue" formatted="false">continue</string>
+    <!-- Yope · auth.agegate · new · SOURCED -->
+    <string name="auth_agegate_error_invaliddate" formatted="false">check the date and try again</string>
+    <!-- Yope · auth.agegate · new · SOURCED -->
+    <string name="auth_agegate_field_accessibilitylabel" formatted="false">birthday</string>
+    <!-- Yope · auth.agegate · new · SOURCED · args: date_format -->
+    <string name="auth_agegate_field_placeholder">birthday (%1$s)</string>
+    <!-- Yope · auth.agegate · new · SOURCED -->
+    <string name="auth_agegate_notconfigured_detail" formatted="false">try again soon. your next memories are waiting.</string>
+    <!-- Yope · auth.agegate · new · SOURCED -->
+    <string name="auth_agegate_notconfigured_retry" formatted="false">try again</string>
+    <!-- Yope · auth.agegate · new · SOURCED -->
+    <string name="auth_agegate_notconfigured_title" formatted="false">sign-up isn’t open yet</string>
+    <!-- Yope · auth.agegate · new · SOURCED -->
+    <string name="auth_agegate_offline_detail" formatted="false">connect to the internet to keep going. your next memories are waiting.</string>
+    <!-- Yope · auth.agegate · new · SOURCED -->
+    <string name="auth_agegate_optin_accessibilitylabel" formatted="false">tell my groups when it’s my birthday</string>
+    <!-- Yope · auth.agegate · new · SOURCED -->
+    <string name="auth_agegate_optin_detail" formatted="false">we’ll save your birthday for this</string>
+    <!-- Yope · auth.agegate · new · SOURCED -->
+    <string name="auth_agegate_optin_label" formatted="false">tell my groups when it’s my birthday</string>
+    <!-- Yope · auth.agegate · new · SOURCED -->
+    <string name="auth_agegate_subtitle" formatted="false">we use it to check your age. we don’t save it.</string>
+    <!-- Yope · auth.agegate · new · SOURCED -->
+    <string name="auth_agegate_title" formatted="false">when’s your birthday?</string>
+    <!-- Yope · auth.agegate · new · SOURCED -->
+    <string name="auth_agegate_underage_detail" formatted="false">we didn’t save your birthday or your number.</string>
+    <!-- Yope · auth.code · new · SOURCED -->
+    <string name="auth_code_back_accessibilitylabel" formatted="false">change number</string>
+    <!-- Yope · auth.code · verbatim · SOURCED -->
+    <string name="auth_code_continue" formatted="false">continue</string>
+    <!-- Yope · auth.code · new · SOURCED -->
+    <string name="auth_code_error_expired" formatted="false">that code expired. send a new one and try again.</string>
+    <!-- Yope · auth.code · new · SOURCED -->
+    <string name="auth_code_error_toomany" formatted="false">too many tries. wait a minute, then send a new code.</string>
+    <!-- Yope · auth.code · new · SOURCED -->
+    <string name="auth_code_error_wrong" formatted="false">that code didn’t work. check it and try again.</string>
+    <!-- Yope · auth.code · new · SOURCED -->
+    <string name="auth_code_field_accessibilitylabel" formatted="false">verification code</string>
+    <!-- Yope · auth.code · new · SOURCED -->
+    <string name="auth_code_field_placeholder" formatted="false">code</string>
+    <!-- Yope · auth.code · new · SOURCED -->
+    <string name="auth_code_offline_detail" formatted="false">connect to the internet to check your code. your next memories are waiting.</string>
+    <!-- Yope · auth.code · new · SOURCED -->
+    <string name="auth_code_resend" formatted="false">send new code</string>
+    <!-- Yope · auth.code · new · SOURCED · args: phone -->
+    <string name="auth_code_subtitle">we sent it to %1$s</string>
+    <!-- Yope · auth.code · new · SOURCED -->
+    <string name="auth_code_title" formatted="false">enter the code</string>
+    <!-- Yope · auth.code · new · SOURCED -->
+    <string name="auth_code_toast_resent" formatted="false">new code sent</string>
+    <!-- Yope · auth.phone · verbatim · SOURCED -->
+    <string name="auth_phone_continue" formatted="false">continue</string>
+    <!-- Yope · auth.phone · new · SOURCED -->
+    <string name="auth_phone_error_invalidnumber" formatted="false">check your number and try again</string>
+    <!-- Yope · auth.phone · new · SOURCED -->
+    <string name="auth_phone_error_ratelimited" formatted="false">you can ask for a new code in a minute</string>
+    <!-- Yope · auth.phone · new · SOURCED -->
+    <string name="auth_phone_error_sendfailed" formatted="false">we couldn’t send your code. try again in a moment.</string>
+    <!-- Yope · auth.phone · new · SOURCED -->
+    <string name="auth_phone_field_accessibilitylabel" formatted="false">phone number</string>
+    <!-- Yope · auth.phone · new · SOURCED -->
+    <string name="auth_phone_field_placeholder" formatted="false">phone number</string>
+    <!-- Yope · auth.phone · verbatim · SOURCED -->
+    <string name="auth_phone_legal_privacy" formatted="false">Privacy Policy</string>
+    <!-- Yope · auth.phone · verbatim · SOURCED -->
+    <string name="auth_phone_legal_terms" formatted="false">Terms of Use</string>
+    <!-- Yope · auth.phone · verbatim · SOURCED -->
+    <string name="auth_phone_legal_text" formatted="false">by continuing you agree to our Terms of Use and Privacy Policy</string>
+    <!-- Yope · auth.phone · new · SOURCED -->
+    <string name="auth_phone_offline_detail" formatted="false">connect to the internet to sign up. your next memories are waiting.</string>
+    <!-- Yope · auth.phone · new · SOURCED -->
+    <string name="auth_phone_offline_retry" formatted="false">try again</string>
+    <!-- Yope · auth.phone · new · SOURCED -->
+    <string name="auth_phone_offline_title" formatted="false">you’re offline</string>
+    <!-- Yope · auth.phone · adapted · SOURCED -->
+    <string name="auth_phone_subtitle" formatted="false">to join or create your groups</string>
+    <!-- Yope · auth.phone · verbatim · SOURCED -->
+    <string name="auth_phone_title" formatted="false">sign up or log in</string>
+    <!-- Yope · auth.phone · new · SOURCED -->
+    <string name="auth_phone_toast_codesent" formatted="false">code sent</string>
+    <!-- Yope · auth.profile · new · SOURCED -->
+    <string name="auth_profile_avatar_accessibilitylabel" formatted="false">add a photo</string>
+    <!-- Yope · auth.profile · new · SOURCED -->
+    <string name="auth_profile_avatar_add" formatted="false">add a photo (optional)</string>
+    <!-- Yope · auth.profile · new · SOURCED -->
+    <string name="auth_profile_avatar_changeaccessibilitylabel" formatted="false">change photo</string>
+    <!-- Yope · auth.profile · verbatim · SOURCED -->
+    <string name="auth_profile_continue" formatted="false">continue</string>
+    <!-- Yope · auth.profile · new · SOURCED -->
+    <string name="auth_profile_error_save" formatted="false">your name didn’t save. try again in a moment.</string>
+    <!-- Yope · auth.profile · new · SOURCED -->
+    <string name="auth_profile_error_upload" formatted="false">your photo didn’t upload. try again, or keep going without it.</string>
+    <!-- Yope · auth.profile · new · SOURCED -->
+    <string name="auth_profile_field_accessibilitylabel" formatted="false">your name</string>
+    <!-- Yope · auth.profile · new · SOURCED -->
+    <string name="auth_profile_field_note" formatted="false">your first name shows on the invite links you share</string>
+    <!-- Yope · auth.profile · new · SOURCED -->
+    <string name="auth_profile_field_placeholder" formatted="false">your name</string>
+    <!-- Yope · auth.profile · new · SOURCED -->
+    <string name="auth_profile_offline_detail" formatted="false">connect to the internet to finish. your next memories are waiting.</string>
+    <!-- Yope · auth.profile · new · SOURCED -->
+    <string name="auth_profile_subtitle" formatted="false">people in your groups see your name &amp; photo</string>
+    <!-- Yope · auth.profile · new · SOURCED -->
+    <string name="auth_profile_title" formatted="false">what’s your name?</string>
+    <!-- Apple HIG / Material 3 · birthday.add · new · PLATFORM -->
+    <string name="birthday_add_a11y_close" formatted="false">Close</string>
     <!-- Yope · birthday.add · new · SOURCED -->
     <string name="birthday_add_added" formatted="false">birthday added</string>
     <!-- Yope · birthday.add · new · SOURCED -->
@@ -285,14 +393,16 @@
     <string name="chat_reactions_picker_popular" formatted="false">Popular</string>
     <!-- Locket · chat.reactions · verbatim · SOURCED -->
     <string name="chat_reactions_picker_search" formatted="false">Search</string>
-    <!-- Locket · chat.reactions · adapted · SOURCED · args: name, emoji -->
-    <string name="chat_reactions_push_body">%1$s reacted %2$s to your pic</string>
     <!-- Yope · chat.thread · new · SOURCED -->
     <string name="chat_thread_a11y_back" formatted="false">back</string>
     <!-- Yope · chat.thread · new · SOURCED · args: caption -->
     <string name="chat_thread_a11y_caption">caption: %1$s</string>
     <!-- Yope · chat.thread · new · SOURCED · args: group_name -->
     <string name="chat_thread_a11y_groupcapsule">%1$s, group info</string>
+    <!-- Yope · chat.thread · new · SOURCED · args: name, message -->
+    <string name="chat_thread_a11y_message">%1$s, %2$s</string>
+    <!-- Yope · chat.thread · new · SOURCED · args: message -->
+    <string name="chat_thread_a11y_messagemine">you, %1$s</string>
     <!-- Yope · chat.thread · new · SOURCED · args: name, time -->
     <string name="chat_thread_a11y_photo">%1$s’s pic, %2$s</string>
     <!-- Yope · chat.thread · new · SOURCED · args: time -->
@@ -329,8 +439,6 @@
     <string name="chat_thread_offline_detail" formatted="false">your group’s pics will be right here when you’re back</string>
     <!-- Yope · chat.thread · new · SOURCED -->
     <string name="chat_thread_offline_title" formatted="false">you’re offline</string>
-    <!-- Yope · chat.thread · new · SOURCED · args: name -->
-    <string name="chat_thread_push_reply">%1$s replied to your pic</string>
     <!-- Yope · chat.thread · verbatim · SOURCED -->
     <string name="chat_thread_reply_photolabel" formatted="false">pic</string>
     <!-- Yope · chat.thread · new · SOURCED -->
@@ -405,6 +513,272 @@
     <string name="daily_capture_send" formatted="false">SEND</string>
     <!-- BeReal · daily.dualimage · new · SOURCED · args: name -->
     <string name="daily_dualimage_a11y_label">Back and front photos from %1$s</string>
+    <!-- Yope · groups.create · new · SOURCED -->
+    <string name="groups_create_close_accessibilitylabel" formatted="false">close</string>
+    <!-- Yope · groups.create · new · SOURCED -->
+    <string name="groups_create_cover_accessibilitylabel" formatted="false">add a cover photo</string>
+    <!-- Yope · groups.create · new · SOURCED -->
+    <string name="groups_create_cover_changeaccessibilitylabel" formatted="false">change cover photo</string>
+    <!-- Yope · groups.create · verbatim · SOURCED -->
+    <string name="groups_create_cta" formatted="false">create group</string>
+    <!-- Yope · groups.create · new · SOURCED -->
+    <string name="groups_create_error_cover" formatted="false">your cover didn’t upload. try again, or create the group without it.</string>
+    <!-- Yope · groups.create · new · SOURCED -->
+    <string name="groups_create_error_failed" formatted="false">your group wasn’t created. try again in a moment.</string>
+    <!-- Yope · groups.create · new · SOURCED -->
+    <string name="groups_create_error_savefailed" formatted="false">your changes didn’t save. try again in a moment.</string>
+    <!-- Yope · groups.create · verbatim · SOURCED -->
+    <string name="groups_create_hud_loading" formatted="false">Loading</string>
+    <!-- Yope · groups.create · verbatim · SOURCED -->
+    <string name="groups_create_name_accessibilitylabel" formatted="false">group name</string>
+    <!-- Yope · groups.create · adapted · SOURCED -->
+    <string name="groups_create_name_placeholder" formatted="false">name group</string>
+    <!-- Yope · groups.create · new · SOURCED -->
+    <string name="groups_create_offline" formatted="false">you’re offline. connect to the internet and try again.</string>
+    <!-- Yope · groups.create · new · SOURCED -->
+    <string name="groups_create_save" formatted="false">save</string>
+    <!-- Yope · groups.create · verbatim · SOURCED -->
+    <string name="groups_create_title" formatted="false">new group</string>
+    <!-- Yope · groups.create · new · SOURCED -->
+    <string name="groups_create_titleedit" formatted="false">edit group</string>
+    <!-- Yope · groups.create · new · SOURCED -->
+    <string name="groups_create_type_custom" formatted="false">custom</string>
+    <!-- Yope · groups.create · new · SOURCED -->
+    <string name="groups_create_type_family" formatted="false">family</string>
+    <!-- Yope · groups.create · new · SOURCED -->
+    <string name="groups_create_type_friends" formatted="false">friends</string>
+    <!-- Yope · groups.create · new · SOURCED -->
+    <string name="groups_create_type_label" formatted="false">what kind of group?</string>
+    <!-- Yope · groups.create · new · SOURCED -->
+    <string name="groups_create_type_roommates" formatted="false">roommates</string>
+    <!-- Yope · groups.invite · new · SOURCED -->
+    <string name="groups_invite_close_accessibilitylabel" formatted="false">close</string>
+    <!-- Yope · groups.invite · new · SOURCED -->
+    <string name="groups_invite_contacts_invite" formatted="false">invite</string>
+    <!-- Yope · groups.invite · new · SOURCED -->
+    <string name="groups_invite_contacts_invited" formatted="false">invited</string>
+    <!-- Yope · groups.invite · new · SOURCED -->
+    <string name="groups_invite_contacts_label" formatted="false">from your contacts</string>
+    <!-- Yope · groups.invite · new · SOURCED -->
+    <string name="groups_invite_error_detail" formatted="false">check your connection and try again</string>
+    <!-- Yope · groups.invite · new · SOURCED -->
+    <string name="groups_invite_error_retry" formatted="false">try again</string>
+    <!-- Yope · groups.invite · new · SOURCED -->
+    <string name="groups_invite_error_title" formatted="false">the invite link didn’t load</string>
+    <!-- Yope · groups.invite · new · SOURCED · args: max_members -->
+    <string name="groups_invite_full_detail">groups can have up to %1$s people</string>
+    <!-- Yope · groups.invite · new · SOURCED · args: group_name -->
+    <string name="groups_invite_full_title">%1$s is full</string>
+    <!-- Yope · groups.invite · new · SOURCED · args: date -->
+    <string name="groups_invite_link_expiry">this link works until %1$s</string>
+    <!-- Yope · groups.invite · adapted · SOURCED -->
+    <string name="groups_invite_link_label" formatted="false">share this group link to invite</string>
+    <!-- Yope · groups.invite · verbatim · SOURCED -->
+    <string name="groups_invite_link_share" formatted="false">share invite</string>
+    <!-- Yope · groups.invite · new · SOURCED -->
+    <string name="groups_invite_link_turnedoff" formatted="false">link turned off</string>
+    <!-- Yope · groups.invite · new · SOURCED -->
+    <string name="groups_invite_link_turnoff" formatted="false">turn off link</string>
+    <!-- Apple HIG · groups.invite · verbatim · VERIFIED -->
+    <string name="groups_invite_link_turnoff_cancel" formatted="false">Cancel</string>
+    <!-- Apple HIG · groups.invite · new · VERIFIED -->
+    <string name="groups_invite_link_turnoff_confirm" formatted="false">Turn Off</string>
+    <!-- Apple HIG · groups.invite · new · VERIFIED -->
+    <string name="groups_invite_link_turnoff_message" formatted="false">People who have it won’t be able to join with it. You can share a new link anytime.</string>
+    <!-- Apple HIG · groups.invite · new · VERIFIED -->
+    <string name="groups_invite_link_turnoff_title" formatted="false">Turn off this link?</string>
+    <!-- Yope · groups.invite · adapted · SOURCED · args: group_name -->
+    <string name="groups_invite_title_custom">add people to %1$s</string>
+    <!-- Yope · groups.invite · adapted · SOURCED · args: group_name -->
+    <string name="groups_invite_title_family">add family to %1$s</string>
+    <!-- Yope · groups.invite · adapted · SOURCED · args: group_name -->
+    <string name="groups_invite_title_friends">add friends to %1$s</string>
+    <!-- Yope · groups.invite · adapted · SOURCED · args: group_name -->
+    <string name="groups_invite_title_roommates">add roommates to %1$s</string>
+    <!-- Yope · groups.list · new · SOURCED · args: first_name, group_name -->
+    <string name="groups_list_cover_accessibilitylabel">newest pic, from %1$s in %2$s</string>
+    <!-- Yope · groups.list · verbatim · SOURCED -->
+    <string name="groups_list_empty_button" formatted="false">create group</string>
+    <!-- Yope · groups.list · verbatim · SOURCED -->
+    <string name="groups_list_empty_detail" formatted="false">to share pics daily and get recaps on your memories</string>
+    <!-- Yope · groups.list · verbatim · SOURCED -->
+    <string name="groups_list_empty_title" formatted="false">create your first group</string>
+    <!-- Yope · groups.list · new · SOURCED -->
+    <string name="groups_list_error_detail" formatted="false">check your connection and try again</string>
+    <!-- Yope · groups.list · new · SOURCED -->
+    <string name="groups_list_error_retry" formatted="false">try again</string>
+    <!-- Yope · groups.list · new · SOURCED -->
+    <string name="groups_list_error_title" formatted="false">your groups didn’t load</string>
+    <!-- Yope · groups.list · verbatim · SOURCED -->
+    <string name="groups_list_header_add_accessibilitylabel" formatted="false">new group</string>
+    <!-- Yope · groups.list · new · SOURCED -->
+    <string name="groups_list_offline_detail" formatted="false">your groups will be here when you’re back online</string>
+    <!-- Yope · groups.list · new · SOURCED -->
+    <string name="groups_list_offline_title" formatted="false">you’re offline</string>
+    <!-- Yope · groups.list · new · SOURCED · args: group_name, subtitle -->
+    <string name="groups_list_row_accessibilitylabel">%1$s, %2$s</string>
+    <!-- Yope · groups.list · new · SOURCED · args: group_name -->
+    <string name="groups_list_row_camera_accessibilitylabel">take a pic for %1$s</string>
+    <!-- Yope · groups.list · adapted · SOURCED · args: time -->
+    <string name="groups_list_row_newpic">new pic added · %1$s</string>
+    <!-- Yope · groups.list · new · SOURCED -->
+    <string name="groups_list_row_nopics" formatted="false">new group!✨ share a pic?</string>
+    <!-- Yope · groups.list · adapted · SOURCED · args: first_name, time -->
+    <string name="groups_list_row_sentpic">%1$s sent a pic · %2$s</string>
+    <!-- Yope · groups.list · new · SOURCED -->
+    <string name="groups_list_tab_camera_accessibilitylabel" formatted="false">camera</string>
+    <!-- Yope · groups.list · new · SOURCED -->
+    <string name="groups_list_tab_groups_accessibilitylabel" formatted="false">groups</string>
+    <!-- Yope · groups.list · new · SOURCED -->
+    <string name="groups_list_tab_me_accessibilitylabel" formatted="false">me</string>
+    <!-- Yope · groups.list · new · SOURCED -->
+    <string name="groups_list_tab_walls_accessibilitylabel" formatted="false">walls</string>
+    <!-- Yope · groups.screen · new · SOURCED -->
+    <string name="groups_screen_back_accessibilitylabel" formatted="false">back</string>
+    <!-- Yope · groups.screen · verbatim · SOURCED -->
+    <string name="groups_screen_chat" formatted="false">chat</string>
+    <!-- Yope · groups.screen · adapted · SOURCED · args: names -->
+    <string name="groups_screen_created_detail">and added %1$s</string>
+    <!-- Yope · groups.screen · adapted · SOURCED -->
+    <string name="groups_screen_created_invite_custom" formatted="false">invite more people</string>
+    <!-- Yope · groups.screen · adapted · SOURCED -->
+    <string name="groups_screen_created_invite_family" formatted="false">invite more family</string>
+    <!-- Yope · groups.screen · verbatim · SOURCED -->
+    <string name="groups_screen_created_invite_friends" formatted="false">invite more friends</string>
+    <!-- Yope · groups.screen · adapted · SOURCED -->
+    <string name="groups_screen_created_invite_roommates" formatted="false">invite more roommates</string>
+    <!-- Yope · groups.screen · verbatim · SOURCED -->
+    <string name="groups_screen_created_title" formatted="false">you created group</string>
+    <!-- Yope · groups.screen · new · SOURCED -->
+    <string name="groups_screen_empty_button" formatted="false">take a pic</string>
+    <!-- Yope · groups.screen · new · SOURCED -->
+    <string name="groups_screen_empty_detail" formatted="false">share the first one</string>
+    <!-- Yope · groups.screen · new · SOURCED -->
+    <string name="groups_screen_empty_title" formatted="false">no pics yet</string>
+    <!-- Yope · groups.screen · new · SOURCED -->
+    <string name="groups_screen_error_detail" formatted="false">check your connection and try again</string>
+    <!-- Yope · groups.screen · new · SOURCED -->
+    <string name="groups_screen_error_retry" formatted="false">try again</string>
+    <!-- Yope · groups.screen · new · SOURCED -->
+    <string name="groups_screen_error_title" formatted="false">this group didn’t load</string>
+    <!-- Yope · groups.screen · new · SOURCED · args: group_name -->
+    <string name="groups_screen_header_accessibilitylabel">%1$s, group info</string>
+    <!-- Yope · groups.screen · adapted · SOURCED · args: first_name -->
+    <string name="groups_screen_memberjoined">%1$s joined</string>
+    <!-- Yope · groups.screen · verbatim · SOURCED -->
+    <string name="groups_screen_menu_leave" formatted="false">leave group</string>
+    <!-- Yope · groups.screen · verbatim · SOURCED -->
+    <string name="groups_screen_menu_report" formatted="false">report</string>
+    <!-- Yope · groups.screen · new · SOURCED -->
+    <string name="groups_screen_menu_settings" formatted="false">group settings</string>
+    <!-- Yope · groups.screen · verbatim · SOURCED -->
+    <string name="groups_screen_menu_shareinvite" formatted="false">share invite</string>
+    <!-- Yope · groups.screen · new · SOURCED -->
+    <string name="groups_screen_offline_detail" formatted="false">new pics will show up when you’re back online</string>
+    <!-- Yope · groups.screen · new · SOURCED -->
+    <string name="groups_screen_offline_title" formatted="false">you’re offline</string>
+    <!-- Yope · groups.screen · new · SOURCED · args: first_name, time -->
+    <string name="groups_screen_photo_accessibilitylabel">pic from %1$s, %2$s</string>
+    <!-- Apple HIG · groups.screen · new · VERIFIED · args: first_name -->
+    <string name="groups_screen_photo_menu_block">Block %1$s</string>
+    <!-- Apple HIG · groups.screen · new · VERIFIED -->
+    <string name="groups_screen_photo_menu_open" formatted="false">Open</string>
+    <!-- Apple HIG · groups.screen · verbatim · VERIFIED -->
+    <string name="groups_screen_photo_menu_report" formatted="false">Report…</string>
+    <!-- Yope · groups.screen · new · SOURCED -->
+    <string name="groups_screen_photo_more_accessibilitylabel" formatted="false">more</string>
+    <!-- Yope · groups.screen · new · SOURCED -->
+    <string name="groups_screen_profile_more_accessibilitylabel" formatted="false">group options</string>
+    <!-- Yope · groups.screen · verbatim · SOURCED -->
+    <string name="groups_screen_profile_segment_pics" formatted="false">pics</string>
+    <!-- Yope · groups.screen · verbatim · SOURCED -->
+    <string name="groups_screen_profile_segment_recaps" formatted="false">recaps</string>
+    <!-- Yope · groups.screen · verbatim · SOURCED -->
+    <string name="groups_screen_profile_segment_wall" formatted="false">wall</string>
+    <!-- Yope · groups.screen · verbatim · SOURCED -->
+    <string name="groups_screen_recap_accessibilitylabel" formatted="false">recaps</string>
+    <!-- Yope · groups.screen · adapted · SOURCED -->
+    <string name="groups_screen_removed_detail" formatted="false">ask someone in it to send you a new link</string>
+    <!-- Yope · groups.screen · new · SOURCED -->
+    <string name="groups_screen_removed_title" formatted="false">you’re not in this group anymore</string>
+    <!-- Yope · groups.screen · new · SOURCED -->
+    <string name="groups_screen_weeks_accessibilitylabel" formatted="false">past weeks</string>
+    <!-- Apple HIG · groups.settings · verbatim · VERIFIED -->
+    <string name="groups_settings_alert_cancel" formatted="false">Cancel</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_error_generic" formatted="false">that didn’t work. check your connection and try again.</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_group_edit" formatted="false">edit group</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_group_header" formatted="false">group</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_invitation_adminonly" formatted="false">only admins can change these.</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_invitation_default" formatted="false">default hours</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_invitation_footer" formatted="false">everyone gets the invitation at the same moment, once a day, sometime between these hours.</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_invitation_header" formatted="false">daily invitation</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_invitation_hours" formatted="false">invitation hours</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_invitation_invalid" formatted="false">pick hours that are further apart</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_invitation_pause" formatted="false">pause invitations</string>
+    <!-- Yope · groups.settings · new · SOURCED · args: start, end -->
+    <string name="groups_settings_invitation_range">%1$s-%2$s</string>
+    <!-- Yope · groups.settings · verbatim · SOURCED -->
+    <string name="groups_settings_leave" formatted="false">leave group</string>
+    <!-- Apple HIG · groups.settings · new · VERIFIED -->
+    <string name="groups_settings_leave_confirm" formatted="false">Leave</string>
+    <!-- Apple HIG · groups.settings · new · VERIFIED -->
+    <string name="groups_settings_leave_message" formatted="false">Your photos stay in the group. Delete them first if you want them gone.</string>
+    <!-- Apple HIG · groups.settings · new · VERIFIED -->
+    <string name="groups_settings_leave_messagelast" formatted="false">You’re the last member, so leaving deletes the group and everything in it.</string>
+    <!-- Apple HIG · groups.settings · new · VERIFIED · args: group_name -->
+    <string name="groups_settings_leave_title">Leave %1$s?</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_members_admin" formatted="false">admin</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_members_header" formatted="false">members</string>
+    <!-- Yope · groups.settings · adapted · SOURCED -->
+    <string name="groups_settings_members_invite_custom" formatted="false">invite more people</string>
+    <!-- Yope · groups.settings · adapted · SOURCED -->
+    <string name="groups_settings_members_invite_family" formatted="false">invite more family</string>
+    <!-- Yope · groups.settings · verbatim · SOURCED -->
+    <string name="groups_settings_members_invite_friends" formatted="false">invite more friends</string>
+    <!-- Yope · groups.settings · adapted · SOURCED -->
+    <string name="groups_settings_members_invite_roommates" formatted="false">invite more roommates</string>
+    <!-- Apple HIG · groups.settings · verbatim · VERIFIED -->
+    <string name="groups_settings_members_menu_block" formatted="false">Block</string>
+    <!-- Apple HIG · groups.settings · new · VERIFIED -->
+    <string name="groups_settings_members_menu_remove" formatted="false">Remove from Group</string>
+    <!-- Apple HIG · groups.settings · verbatim · VERIFIED -->
+    <string name="groups_settings_members_menu_report" formatted="false">Report…</string>
+    <!-- Yope · groups.settings · new · SOURCED · args: first_name -->
+    <string name="groups_settings_members_more_accessibilitylabel">options for %1$s</string>
+    <!-- Yope · groups.settings · verbatim · SOURCED -->
+    <string name="groups_settings_members_you" formatted="false">you</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_notifications_footer" formatted="false">muted groups don’t send you notifications. their pics still reach your widgets.</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_notifications_header" formatted="false">notifications</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_notifications_mute" formatted="false">mute this group</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_notifications_quiethours" formatted="false">quiet hours</string>
+    <!-- Apple HIG · groups.settings · new · VERIFIED -->
+    <string name="groups_settings_remove_confirm" formatted="false">Remove</string>
+    <!-- Apple HIG · groups.settings · new · VERIFIED -->
+    <string name="groups_settings_remove_message" formatted="false">Their photos stay in the group, and invite links they shared stop working.</string>
+    <!-- Apple HIG · groups.settings · new · VERIFIED · args: first_name -->
+    <string name="groups_settings_remove_title">Remove %1$s?</string>
+    <!-- Yope · groups.settings · verbatim · SOURCED -->
+    <string name="groups_settings_report" formatted="false">report</string>
+    <!-- Yope · groups.settings · verbatim · SOURCED -->
+    <string name="groups_settings_shareinvite" formatted="false">share invite</string>
+    <!-- Yope · groups.settings · new · SOURCED -->
+    <string name="groups_settings_title" formatted="false">group settings</string>
     <!-- Partiful · invite.appclip · verbatim · SOURCED -->
     <string name="invite_appclip_card_action" formatted="false">View</string>
     <!-- Partiful · invite.appclip · verbatim · SOURCED -->
@@ -521,6 +895,64 @@
     <string name="notifications_push_tribute_body">%1$s made you a birthday video.</string>
     <!-- VidDay · notifications.push · new · SOURCED -->
     <string name="notifications_push_tribute_title" formatted="false">Happy birthday!</string>
+    <!-- Yope · onboarding.permission.camera · verbatim · SOURCED -->
+    <string name="onboarding_permission_camera_denied_button" formatted="false">enable</string>
+    <!-- Yope · onboarding.permission.camera · adapted · SOURCED -->
+    <string name="onboarding_permission_camera_denied_detail" formatted="false">enable camera</string>
+    <!-- Yope · onboarding.permission.camera · new · SOURCED -->
+    <string name="onboarding_permission_camera_denied_title" formatted="false">can’t take pics?</string>
+    <!-- Yope · onboarding.permission.contacts · verbatim · SOURCED -->
+    <string name="onboarding_permission_contacts_card_button" formatted="false">enable</string>
+    <!-- Yope · onboarding.permission.contacts · verbatim · SOURCED -->
+    <string name="onboarding_permission_contacts_card_detail" formatted="false">enable contacts</string>
+    <!-- Yope · onboarding.permission.contacts · new · SOURCED -->
+    <string name="onboarding_permission_contacts_card_dismissaccessibilitylabel" formatted="false">dismiss</string>
+    <!-- Yope · onboarding.permission.contacts · adapted · SOURCED -->
+    <string name="onboarding_permission_contacts_card_title_custom" formatted="false">can’t see your people?</string>
+    <!-- Yope · onboarding.permission.contacts · adapted · SOURCED -->
+    <string name="onboarding_permission_contacts_card_title_family" formatted="false">can’t see your family?</string>
+    <!-- Yope · onboarding.permission.contacts · verbatim · SOURCED -->
+    <string name="onboarding_permission_contacts_card_title_friends" formatted="false">can’t see your friends?</string>
+    <!-- Yope · onboarding.permission.contacts · adapted · SOURCED -->
+    <string name="onboarding_permission_contacts_card_title_roommates" formatted="false">can’t see your roommates?</string>
+    <!-- Yope · onboarding.permission.contacts · new · SOURCED -->
+    <string name="onboarding_permission_contacts_choose" formatted="false">choose contacts</string>
+    <!-- Yope · onboarding.permission.contacts · new · SOURCED -->
+    <string name="onboarding_permission_contacts_search_placeholder" formatted="false">search contacts</string>
+    <!-- Yope · onboarding.permission.notifications · verbatim · SOURCED -->
+    <string name="onboarding_permission_notifications_continue" formatted="false">continue</string>
+    <!-- Yope · onboarding.permission.notifications · adapted · SOURCED -->
+    <string name="onboarding_permission_notifications_detail" formatted="false">enable notifications</string>
+    <!-- Yope · onboarding.permission.notifications · verbatim · SOURCED -->
+    <string name="onboarding_permission_notifications_skip" formatted="false">maybe later</string>
+    <!-- Yope · onboarding.permission.notifications · new · SOURCED -->
+    <string name="onboarding_permission_notifications_title" formatted="false">want to know when your groups post?</string>
+    <!-- Yope · onboarding.permission.photos · verbatim · SOURCED -->
+    <string name="onboarding_permission_photos_denied_button" formatted="false">enable</string>
+    <!-- Yope · onboarding.permission.photos · adapted · SOURCED -->
+    <string name="onboarding_permission_photos_denied_detail" formatted="false">enable photos</string>
+    <!-- Yope · onboarding.permission.photos · new · SOURCED -->
+    <string name="onboarding_permission_photos_denied_title" formatted="false">can’t save pics?</string>
+    <!-- Locket · onboarding.widget · verbatim · SOURCED -->
+    <string name="onboarding_widget_continue" formatted="false">Continue</string>
+    <!-- Locket · onboarding.widget · verbatim · SOURCED -->
+    <string name="onboarding_widget_done" formatted="false">You\'re done!</string>
+    <!-- Locket · onboarding.widget · verbatim · SOURCED -->
+    <string name="onboarding_widget_step_android_1" formatted="false">Hold down on an empty\nspace on your Home Screen</string>
+    <!-- Locket · onboarding.widget · verbatim · SOURCED -->
+    <string name="onboarding_widget_step_android_2" formatted="false">Tap the “Widgets” button\nto add a new widget</string>
+    <!-- Locket · onboarding.widget · verbatim · SOURCED -->
+    <string name="onboarding_widget_step_ios_1" formatted="false">From your Home Screen, touch and hold a widget or empty area until the apps jiggle.</string>
+    <!-- Locket · onboarding.widget · verbatim · SOURCED -->
+    <string name="onboarding_widget_step_ios_2" formatted="false">Tap Edit in the upper-left corner.</string>
+    <!-- Locket · onboarding.widget · verbatim · SOURCED -->
+    <string name="onboarding_widget_step_ios_3" formatted="false">Tap Add Widget.</string>
+    <!-- Locket · onboarding.widget · verbatim · SOURCED -->
+    <string name="onboarding_widget_step_ios_5" formatted="false">Select a widget size, then tap Add Widget.</string>
+    <!-- Locket · onboarding.widget · new · SOURCED · args: number -->
+    <string name="onboarding_widget_stepnumber_accessibilitylabel">step %1$s</string>
+    <!-- Locket · onboarding.widget · verbatim · SOURCED -->
+    <string name="onboarding_widget_title" formatted="false">Add the widget\nto your home screen</string>
     <!-- Apple HIG / Material 3 · onthisday · new · PLATFORM -->
     <string name="onthisday_a11y_close" formatted="false">Close</string>
     <!-- Timehop · onthisday · adapted · SOURCED -->
@@ -549,6 +981,78 @@
     <string name="onthisday_offline_detail" formatted="false">connect to see this day — your memories are waiting</string>
     <!-- Yope · onthisday · new · SOURCED -->
     <string name="onthisday_offline_title" formatted="false">you\'re offline</string>
+    <!-- Locket · paywall · verbatim · SOURCED -->
+    <string name="paywall_dismiss" formatted="false">No thanks!</string>
+    <!-- Locket · paywall · new · SOURCED -->
+    <string name="paywall_error_products" formatted="false">Plans aren’t available right now. Try again in a moment.</string>
+    <!-- Locket · paywall · new · SOURCED -->
+    <string name="paywall_error_purchase" formatted="false">Your purchase didn’t go through. Try again in a moment.</string>
+    <!-- Material 3 · paywall · new · VERIFIED · args: price, period -->
+    <string name="paywall_legal_billing_android">%1$s per %2$s. Renews automatically until you cancel. Cancel anytime in your subscription settings.</string>
+    <!-- Apple HIG · paywall · adapted · VERIFIED · args: price, period -->
+    <string name="paywall_legal_billing_ios">%1$s per %2$s. Plan automatically renews until canceled. Cancel anytime in Settings at least a day before each renewal date.</string>
+    <!-- Locket · paywall · verbatim · SOURCED -->
+    <string name="paywall_legal_renews" formatted="false">Subscription renews automatically. Cancel anytime.</string>
+    <!-- Locket · paywall · verbatim · SOURCED · args: price, per_frequency, renewal_date -->
+    <string name="paywall_legal_trial">After your trial ends, you will be charged %1$s %2$s starting %3$s. You can cancel any time before this date.</string>
+    <!-- Locket · paywall · adapted · SOURCED -->
+    <string name="paywall_locked_badge" formatted="false">Premium</string>
+    <!-- Locket · paywall · new · SOURCED -->
+    <string name="paywall_offline" formatted="false">You’re offline. Connect to the internet to see plans.</string>
+    <!-- Apple HIG · paywall · new · VERIFIED -->
+    <string name="paywall_pending" formatted="false">Your purchase is waiting for approval.</string>
+    <!-- Locket · paywall · adapted · SOURCED -->
+    <string name="paywall_perk_export_emoji" formatted="false">🖼️</string>
+    <!-- Locket · paywall · new · SOURCED -->
+    <string name="paywall_perk_export_subtitle" formatted="false">Save your albums in full quality!</string>
+    <!-- Locket · paywall · new · SOURCED -->
+    <string name="paywall_perk_export_title" formatted="false">Full-quality album export</string>
+    <!-- Locket · paywall · new · SOURCED -->
+    <string name="paywall_perk_history_subtitle" formatted="false">Look back as far as you’d like!</string>
+    <!-- Locket · paywall · new · SOURCED -->
+    <string name="paywall_perk_history_title" formatted="false">Unlimited history</string>
+    <!-- Locket · paywall · verbatim · SOURCED -->
+    <string name="paywall_perk_video_emoji" formatted="false">🎥</string>
+    <!-- Locket · paywall · verbatim · SOURCED -->
+    <string name="paywall_perk_video_subtitle" formatted="false">Record short video clips!</string>
+    <!-- Locket · paywall · adapted · SOURCED -->
+    <string name="paywall_perk_video_title" formatted="false">Video posts</string>
+    <!-- Locket · paywall · verbatim · SOURCED -->
+    <string name="paywall_perk_widgets_emoji" formatted="false">🎨</string>
+    <!-- Locket · paywall · verbatim · SOURCED -->
+    <string name="paywall_perk_widgets_subtitle" formatted="false">Personalize your widgets</string>
+    <!-- Locket · paywall · adapted · SOURCED -->
+    <string name="paywall_perk_widgets_title" formatted="false">Widget styles</string>
+    <!-- Locket · paywall · verbatim · SOURCED · args: monthly_price -->
+    <string name="paywall_plans_monthly_price">%1$s/mo</string>
+    <!-- Locket · paywall · verbatim · SOURCED -->
+    <string name="paywall_plans_monthly_title" formatted="false">1 Month</string>
+    <!-- Apple HIG · paywall · new · VERIFIED -->
+    <string name="paywall_plans_selected_accessibilitylabel" formatted="false">selected</string>
+    <!-- Locket · paywall · verbatim · SOURCED -->
+    <string name="paywall_plans_subscribe" formatted="false">Subscribe</string>
+    <!-- Locket · paywall · new · SOURCED · args: monthly_equivalent -->
+    <string name="paywall_plans_yearly_detail">12 mo • %1$s/mo</string>
+    <!-- Locket · paywall · new · SOURCED · args: yearly_price -->
+    <string name="paywall_plans_yearly_price">%1$s/yr</string>
+    <!-- Locket · paywall · verbatim · SOURCED -->
+    <string name="paywall_plans_yearly_title" formatted="false">1 Year</string>
+    <!-- Apple HIG · paywall · verbatim · VERIFIED -->
+    <string name="paywall_privacy" formatted="false">Privacy Policy</string>
+    <!-- Apple HIG · paywall · adapted · VERIFIED -->
+    <string name="paywall_restore" formatted="false">Restore Purchases</string>
+    <!-- Locket · paywall · new · SOURCED -->
+    <string name="paywall_restore_done" formatted="false">Your subscription is back!</string>
+    <!-- Locket · paywall · new · SOURCED -->
+    <string name="paywall_restore_none" formatted="false">We couldn’t find a subscription to restore.</string>
+    <!-- Apple HIG · paywall · new · VERIFIED -->
+    <string name="paywall_retry" formatted="false">Try Again</string>
+    <!-- Apple HIG · paywall · verbatim · VERIFIED -->
+    <string name="paywall_terms" formatted="false">Terms of Use</string>
+    <!-- Locket · paywall · verbatim · SOURCED -->
+    <string name="paywall_welcome_done" formatted="false">Done</string>
+    <!-- Locket · paywall · adapted · SOURCED -->
+    <string name="paywall_welcome_title" formatted="false">Welcome to Premium!</string>
     <!-- Yope · photo.viewer · new · SOURCED -->
     <string name="photo_viewer_a11y_close" formatted="false">close</string>
     <!-- Yope · photo.viewer · new · SOURCED -->
@@ -567,6 +1071,8 @@
     <string name="photo_viewer_delete_title" formatted="false">delete this pic?</string>
     <!-- Yope · photo.viewer · new · SOURCED -->
     <string name="photo_viewer_error_delete" formatted="false">couldn’t delete this pic — try again</string>
+    <!-- Yope · photo.viewer · new · SOURCED -->
+    <string name="photo_viewer_error_load" formatted="false">couldn’t load this pic</string>
     <!-- Yope · photo.viewer · new · SOURCED -->
     <string name="photo_viewer_error_save" formatted="false">couldn’t save this pic</string>
     <!-- Yope · photo.viewer · new · SOURCED -->
@@ -589,8 +1095,6 @@
     <string name="photo_viewer_permission_title" formatted="false">can’t save your pics?</string>
     <!-- Yope · photo.viewer · adapted · SOURCED · args: group_name -->
     <string name="photo_viewer_reply_placeholder">message to %1$s...</string>
-    <!-- Yope · photo.viewer · new · SOURCED -->
-    <string name="photo_viewer_tag_toggle" formatted="false">i’m in this</string>
     <!-- Yope · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_title_sentto" formatted="false">sent to</string>
     <!-- Yope · photo.viewer · verbatim · SOURCED -->
@@ -599,6 +1103,196 @@
     <string name="photo_viewer_toast_deleted" formatted="false">pic deleted</string>
     <!-- Yope · photo.viewer · new · SOURCED -->
     <string name="photo_viewer_toast_saved" formatted="false">pic saved</string>
+    <!-- Apple HIG · safety.block · verbatim · VERIFIED -->
+    <string name="safety_block_cancel" formatted="false">Cancel</string>
+    <!-- Apple HIG · safety.block · new · VERIFIED -->
+    <string name="safety_block_confirm" formatted="false">Block</string>
+    <!-- Yope · safety.block · new · SOURCED · args: first_name -->
+    <string name="safety_block_done">you blocked %1$s</string>
+    <!-- Yope · safety.block · new · SOURCED -->
+    <string name="safety_block_error" formatted="false">that didn’t work. check your connection and try again.</string>
+    <!-- Apple HIG · safety.block · verbatim · VERIFIED -->
+    <string name="safety_block_menuitem" formatted="false">Block</string>
+    <!-- Apple HIG · safety.block · new · VERIFIED · args: first_name -->
+    <string name="safety_block_menuitemnamed">Block %1$s</string>
+    <!-- Yope · safety.block · new · SOURCED · args: first_name -->
+    <string name="safety_block_message">you won’t see each other’s pics, messages or reactions in any group you share. %1$s won’t be notified.</string>
+    <!-- Yope · safety.block · new · SOURCED · args: first_name -->
+    <string name="safety_block_title">block %1$s?</string>
+    <!-- Yope · safety.block · new · SOURCED · args: first_name -->
+    <string name="safety_block_undone">you unblocked %1$s</string>
+    <!-- Apple HIG · safety.report · verbatim · VERIFIED -->
+    <string name="safety_report_cancel" formatted="false">Cancel</string>
+    <!-- Yope · safety.report · new · SOURCED -->
+    <string name="safety_report_details_placeholder" formatted="false">add details (optional)</string>
+    <!-- Yope · safety.report · new · SOURCED -->
+    <string name="safety_report_error_detail" formatted="false">check your connection and try again. your details are still here.</string>
+    <!-- Yope · safety.report · new · SOURCED -->
+    <string name="safety_report_error_notfound" formatted="false">this is no longer here, so there’s nothing to report.</string>
+    <!-- Yope · safety.report · new · SOURCED -->
+    <string name="safety_report_error_title" formatted="false">your report didn’t send</string>
+    <!-- Apple HIG · safety.report · verbatim · VERIFIED -->
+    <string name="safety_report_menuitem" formatted="false">Report…</string>
+    <!-- Apple HIG · safety.report · verbatim · VERIFIED -->
+    <string name="safety_report_sent_block" formatted="false">Block</string>
+    <!-- Apple HIG · safety.report · new · VERIFIED -->
+    <string name="safety_report_sent_done" formatted="false">Done</string>
+    <!-- Yope · safety.report · new · SOURCED · args: first_name -->
+    <string name="safety_report_sent_message">thanks for telling us. you can also block %1$s so you don’t see each other’s pics or messages.</string>
+    <!-- Yope · safety.report · new · SOURCED -->
+    <string name="safety_report_sent_messagegroup" formatted="false">thanks for telling us.</string>
+    <!-- Yope · safety.report · new · SOURCED -->
+    <string name="safety_report_sent_title" formatted="false">report sent</string>
+    <!-- Apple HIG · safety.report · new · VERIFIED -->
+    <string name="safety_report_submit" formatted="false">Report</string>
+    <!-- Yope · safety.report · new · SOURCED · args: group_name -->
+    <string name="safety_report_title_group">report %1$s</string>
+    <!-- Yope · safety.report · new · SOURCED -->
+    <string name="safety_report_title_message" formatted="false">report this message</string>
+    <!-- Yope · safety.report · new · SOURCED -->
+    <string name="safety_report_title_post" formatted="false">report this pic</string>
+    <!-- Yope · safety.report · new · SOURCED · args: first_name -->
+    <string name="safety_report_title_user">report %1$s</string>
+    <!-- Apple HIG · settings.account · verbatim · VERIFIED -->
+    <string name="settings_account_alert_cancel" formatted="false">Cancel</string>
+    <!-- Apple HIG · settings.account · new · VERIFIED -->
+    <string name="settings_account_birthday" formatted="false">Birthday</string>
+    <!-- Apple HIG · settings.account · new · VERIFIED -->
+    <string name="settings_account_delete" formatted="false">Delete Account</string>
+    <!-- Apple HIG · settings.account · verbatim · VERIFIED -->
+    <string name="settings_account_delete_confirm" formatted="false">Delete</string>
+    <!-- Apple HIG · settings.account · new · VERIFIED -->
+    <string name="settings_account_delete_error" formatted="false">Your account wasn’t deleted. Check your connection and try again.</string>
+    <!-- Apple HIG · settings.account · new · VERIFIED -->
+    <string name="settings_account_delete_footer" formatted="false">Deleting your account removes your photos, voice notes and messages from every group.</string>
+    <!-- Apple HIG · settings.account · new · VERIFIED -->
+    <string name="settings_account_delete_message" formatted="false">This deletes your account and everything you shared with your groups, including photos, voice notes and messages. It can’t be undone.</string>
+    <!-- Apple HIG · settings.account · new · VERIFIED -->
+    <string name="settings_account_delete_subscriptionnote" formatted="false">Your subscription keeps renewing until you cancel it in your subscription settings.</string>
+    <!-- Apple HIG · settings.account · new · VERIFIED -->
+    <string name="settings_account_delete_title" formatted="false">Delete your account?</string>
+    <!-- Yope · settings.account · new · SOURCED -->
+    <string name="settings_account_deleted_toast" formatted="false">your account was deleted</string>
+    <!-- Apple HIG · settings.account · new · VERIFIED -->
+    <string name="settings_account_name" formatted="false">Name</string>
+    <!-- Apple HIG · settings.account · new · VERIFIED -->
+    <string name="settings_account_name_error" formatted="false">Your name didn’t save. Check your connection and try again.</string>
+    <!-- Apple HIG · settings.account · new · VERIFIED -->
+    <string name="settings_account_phone" formatted="false">Phone Number</string>
+    <!-- Apple HIG · settings.account · new · VERIFIED -->
+    <string name="settings_account_photo" formatted="false">Photo</string>
+    <!-- Apple HIG · settings.account · new · VERIFIED -->
+    <string name="settings_account_title" formatted="false">Account</string>
+    <!-- Apple HIG · settings.blocked · new · VERIFIED -->
+    <string name="settings_blocked_empty_message" formatted="false">When you block someone, you won’t see each other’s photos, messages or reactions in any group you share.</string>
+    <!-- Apple HIG · settings.blocked · new · VERIFIED -->
+    <string name="settings_blocked_empty_title" formatted="false">No Blocked People</string>
+    <!-- Apple HIG · settings.blocked · new · VERIFIED -->
+    <string name="settings_blocked_error" formatted="false">The list didn’t load. Check your connection and try again.</string>
+    <!-- Apple HIG · settings.blocked · new · VERIFIED -->
+    <string name="settings_blocked_retry" formatted="false">Try Again</string>
+    <!-- Apple HIG · settings.blocked · new · VERIFIED -->
+    <string name="settings_blocked_title" formatted="false">Blocked People</string>
+    <!-- Apple HIG · settings.blocked · new · VERIFIED -->
+    <string name="settings_blocked_unblock" formatted="false">Unblock</string>
+    <!-- Apple HIG · settings.blocked · new · VERIFIED -->
+    <string name="settings_blocked_unknown" formatted="false">Someone you blocked</string>
+    <!-- Apple HIG · settings.notifications · new · VERIFIED -->
+    <string name="settings_notifications_categories" formatted="false">Notification Categories</string>
+    <!-- Locket · settings.notifications · new · SOURCED -->
+    <string name="settings_notifications_channel_birthdayrequest_description" formatted="false">Private requests to add a photo to a birthday tribute</string>
+    <!-- Locket · settings.notifications · new · SOURCED -->
+    <string name="settings_notifications_channel_birthdayrequest_name" formatted="false">Birthday Requests</string>
+    <!-- Locket · settings.notifications · new · SOURCED -->
+    <string name="settings_notifications_channel_dailyinvitation_description" formatted="false">The once-a-day invitation to share a photo with your group at the same moment</string>
+    <!-- Locket · settings.notifications · new · SOURCED -->
+    <string name="settings_notifications_channel_dailyinvitation_name" formatted="false">Daily Invitation</string>
+    <!-- Locket · settings.notifications · adapted · SOURCED -->
+    <string name="settings_notifications_channel_newpost_description" formatted="false">Notifications when group members post new photos</string>
+    <!-- Locket · settings.notifications · adapted · SOURCED -->
+    <string name="settings_notifications_channel_newpost_name" formatted="false">New Photos</string>
+    <!-- Locket · settings.notifications · verbatim · SOURCED -->
+    <string name="settings_notifications_channel_reactionsreplies_description" formatted="false">Notifications for new messages and reactions in groups</string>
+    <!-- Locket · settings.notifications · new · SOURCED -->
+    <string name="settings_notifications_channel_reactionsreplies_name" formatted="false">Reactions &amp; Replies</string>
+    <!-- Locket · settings.notifications · new · SOURCED -->
+    <string name="settings_notifications_channel_recap_description" formatted="false">Notifications when your group’s week is ready</string>
+    <!-- Locket · settings.notifications · new · SOURCED -->
+    <string name="settings_notifications_channel_recap_name" formatted="false">Weekly Recaps</string>
+    <!-- Locket · settings.notifications · new · SOURCED -->
+    <string name="settings_notifications_channel_tribute_description" formatted="false">Notifications when your group makes you a birthday tribute</string>
+    <!-- Locket · settings.notifications · new · SOURCED -->
+    <string name="settings_notifications_channel_tribute_name" formatted="false">Birthday Tributes</string>
+    <!-- Locket · settings.notifications · new · SOURCED -->
+    <string name="settings_notifications_channel_yearstory_description" formatted="false">Notifications when your group’s year story is ready</string>
+    <!-- Locket · settings.notifications · new · SOURCED -->
+    <string name="settings_notifications_channel_yearstory_name" formatted="false">Year Story</string>
+    <!-- Apple HIG · settings.notifications · new · VERIFIED -->
+    <string name="settings_notifications_error" formatted="false">Your change didn’t save. Check your connection and try again.</string>
+    <!-- Apple HIG · settings.notifications · new · VERIFIED -->
+    <string name="settings_notifications_groups_footer" formatted="false">Turn a group off to mute it. Its photos still reach your widgets.</string>
+    <!-- Apple HIG · settings.notifications · new · VERIFIED -->
+    <string name="settings_notifications_groups_header" formatted="false">Groups</string>
+    <!-- Apple HIG · settings.notifications · new · VERIFIED -->
+    <string name="settings_notifications_liveactivity" formatted="false">Live Activity</string>
+    <!-- Apple HIG · settings.notifications · new · VERIFIED -->
+    <string name="settings_notifications_liveactivity_footer" formatted="false">Shows the daily invitation on your Lock Screen while it’s open.</string>
+    <!-- Apple HIG · settings.notifications · new · VERIFIED -->
+    <string name="settings_notifications_opensettings" formatted="false">Open Settings</string>
+    <!-- Apple HIG · settings.notifications · new · VERIFIED -->
+    <string name="settings_notifications_quiethours" formatted="false">Quiet Hours</string>
+    <!-- Apple HIG · settings.notifications · new · VERIFIED -->
+    <string name="settings_notifications_quiethours_end" formatted="false">End</string>
+    <!-- Apple HIG · settings.notifications · new · VERIFIED -->
+    <string name="settings_notifications_quiethours_footer" formatted="false">Notifications arrive silently between these times.</string>
+    <!-- Apple HIG · settings.notifications · new · VERIFIED -->
+    <string name="settings_notifications_quiethours_start" formatted="false">Start</string>
+    <!-- Apple HIG · settings.notifications · new · VERIFIED -->
+    <string name="settings_notifications_title" formatted="false">Notifications</string>
+    <!-- Apple HIG · settings.root · new · VERIFIED -->
+    <string name="settings_root_account" formatted="false">Account</string>
+    <!-- Apple HIG · settings.root · new · VERIFIED -->
+    <string name="settings_root_blocked" formatted="false">Blocked People</string>
+    <!-- Apple HIG · settings.root · new · VERIFIED -->
+    <string name="settings_root_contact" formatted="false">Contact Us</string>
+    <!-- Yope · settings.root · new · SOURCED -->
+    <string name="settings_root_entry_accessibilitylabel" formatted="false">settings</string>
+    <!-- Apple HIG · settings.root · new · VERIFIED -->
+    <string name="settings_root_managesubscription" formatted="false">Manage Subscription</string>
+    <!-- Apple HIG · settings.root · new · VERIFIED -->
+    <string name="settings_root_notifications" formatted="false">Notifications</string>
+    <!-- Apple HIG · settings.root · verbatim · VERIFIED -->
+    <string name="settings_root_privacy" formatted="false">Privacy Policy</string>
+    <!-- Apple HIG · settings.root · new · VERIFIED -->
+    <string name="settings_root_signout" formatted="false">Sign Out</string>
+    <!-- Apple HIG · settings.root · verbatim · VERIFIED -->
+    <string name="settings_root_terms" formatted="false">Terms of Use</string>
+    <!-- Apple HIG · settings.root · new · VERIFIED -->
+    <string name="settings_root_title" formatted="false">Settings</string>
+    <!-- Apple HIG · system.permissions · new · VERIFIED -->
+    <string name="system_permissions_camera_purpose" formatted="false">The app uses your camera to take the photos you send to your groups.</string>
+    <!-- Apple HIG · system.permissions · new · VERIFIED -->
+    <string name="system_permissions_contacts_purpose" formatted="false">The app uses the contacts you choose to invite people to your groups.</string>
+    <!-- Apple HIG · system.permissions · new · VERIFIED -->
+    <string name="system_permissions_microphone_purpose" formatted="false">The app uses your microphone to record voice notes and the sound in videos you send to your groups.</string>
+    <!-- Apple HIG · system.permissions · new · VERIFIED -->
+    <string name="system_permissions_opensettings" formatted="false">Open Settings</string>
+    <!-- Apple HIG · system.permissions · new · VERIFIED -->
+    <string name="system_permissions_photosadd_purpose" formatted="false">The app saves photos from your groups to your library when you tap Save.</string>
+    <!-- Apple HIG · system.permissions · new · VERIFIED -->
+    <string name="system_permissions_photosread_purpose" formatted="false">The app shows the photos you select so you can send them to your groups.</string>
+    <!-- Yope · system.permissions · new · SOURCED -->
+    <string name="system_permissions_rationale_camera_title" formatted="false">want to share pics with your groups?</string>
+    <!-- Yope · system.permissions · verbatim · SOURCED -->
+    <string name="system_permissions_rationale_contacts_title" formatted="false">can’t see your friends?</string>
+    <!-- Apple HIG · system.permissions · verbatim · VERIFIED -->
+    <string name="system_permissions_rationale_continue" formatted="false">Continue</string>
+    <!-- Yope · system.permissions · new · SOURCED -->
+    <string name="system_permissions_rationale_microphone_title" formatted="false">want to add your voice?</string>
+    <!-- Yope · system.permissions · new · SOURCED -->
+    <string name="system_permissions_rationale_notifications_title" formatted="false">want to know when your groups post?</string>
+    <!-- Apple HIG · system.permissions · new · VERIFIED -->
+    <string name="system_permissions_rationale_notnow" formatted="false">Not Now</string>
     <!-- Yope · tagging · new · SOURCED -->
     <string name="tagging_coach" formatted="false">tap if you\'re in this pic</string>
     <!-- Yope · tagging · new · SOURCED -->
@@ -627,12 +1321,16 @@
     <string name="walls_member_empty_detail">you’ll see the pics %1$s sends to groups you’re both in</string>
     <!-- Yope · walls.member · new · SOURCED · args: name -->
     <string name="walls_member_empty_title">no pics from %1$s yet</string>
+    <!-- Yope · walls.mine · new · SOURCED -->
+    <string name="walls_mine_a11y_settings" formatted="false">settings</string>
     <!-- Yope · walls.mine · adapted · SOURCED -->
     <string name="walls_mine_empty_action" formatted="false">share a pic</string>
     <!-- Yope · walls.mine · new · SOURCED -->
     <string name="walls_mine_empty_detail" formatted="false">pics you send to your groups show up here</string>
     <!-- Yope · walls.mine · new · SOURCED -->
     <string name="walls_mine_empty_title" formatted="false">nothing on your wall yet</string>
+    <!-- Yope · walls.mine · new · SOURCED -->
+    <string name="walls_mine_error_title" formatted="false">couldn’t load this wall</string>
     <!-- Yope · walls.mine · verbatim · SOURCED -->
     <string name="walls_mine_title" formatted="false">my wall</string>
     <!-- Yope · week.edit · new · SOURCED -->
@@ -693,12 +1391,12 @@
     <string name="week_recap_empty_detail" formatted="false">it’s made from the pics your group shares this week</string>
     <!-- Yope · week.recap · new · SOURCED -->
     <string name="week_recap_empty_title" formatted="false">your first recap shows up on sunday</string>
+    <!-- Yope · week.recap · new · SOURCED -->
+    <string name="week_recap_error_title" formatted="false">couldn’t load this recap</string>
     <!-- Yope · week.recap · verbatim · SOURCED -->
     <string name="week_recap_open" formatted="false">view recap</string>
     <!-- Yope · week.recap · new · SOURCED -->
     <string name="week_recap_pending" formatted="false">your recap is on its way</string>
-    <!-- Yope · week.recap · adapted · SOURCED -->
-    <string name="week_recap_push_body" formatted="false">new recap added</string>
     <!-- Yope · week.recap · verbatim · CAPTURED -->
     <string name="week_recap_segment_pics" formatted="false">pics</string>
     <!-- Yope · week.recap · verbatim · CAPTURED -->

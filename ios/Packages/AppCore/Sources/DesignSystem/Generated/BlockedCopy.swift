@@ -5,10 +5,48 @@ import Foundation
 
 /// BLOCKED strings: DEBUG builds only.
 public enum BlockedCopy {
+    /// "you need to be {min_age} or older to use {app_name}" — Yope · auth.agegate · new · SOURCED
+    public static func authAgegateUnderAgeTitle(minAge: String, appName: String) -> String { CopyLookup.format("auth.agegate.underAge.title", default: "you need to be {min_age} or older to use {app_name}", ["min_age": minAge, "app_name": appName]) }
     /// "From {group}" — VidDay · birthday.tribute · adapted · BLOCKED
     public static func birthdayTributeEndCard(group: String) -> String { CopyLookup.format("birthday.tribute.endCard", default: "From {group}", ["group": group]) }
+    /// "join {group_name} on {app_name} {link}" — Yope · groups.invite · new · SOURCED
+    public static func groupsInviteLinkMessage(groupName: String, appName: String, link: String) -> String { CopyLookup.format("groups.invite.link.message", default: "join {group_name} on {app_name} {link}", ["group_name": groupName, "app_name": appName, "link": link]) }
     /// "{title} | {app_name}" — Partiful · invite.web · adapted · VERIFIED
     public static func inviteWebDocumentTitle(title: String, appName: String) -> String { CopyLookup.format("invite.web.documentTitle", default: "{title} | {app_name}", ["title": title, "app_name": appName]) }
+    /// "Search for {app_name} and\nadd the widget" — Locket · onboarding.widget · adapted · SOURCED
+    public static func onboardingWidgetStepAndroid3(appName: String) -> String { CopyLookup.format("onboarding.widget.step.android.3", default: "Search for {app_name} and\nadd the widget", ["app_name": appName]) }
+    /// "Search for “{app_name}”, then tap on it." — Locket · onboarding.widget · adapted · SOURCED
+    public static func onboardingWidgetStepIos4(appName: String) -> String { CopyLookup.format("onboarding.widget.step.ios.4", default: "Search for “{app_name}”, then tap on it.", ["app_name": appName]) }
+    /// "Upgrade your {app_name}" — Locket · paywall · adapted · SOURCED
+    public static func paywallCta(appName: String) -> String { CopyLookup.format("paywall.cta", default: "Upgrade your {app_name}", ["app_name": appName]) }
+    /// "You don’t need a subscription to use {app_name}." — Locket · paywall · new · VERIFIED
+    public static func paywallLegalOptional(appName: String) -> String { CopyLookup.format("paywall.legal.optional", default: "You don’t need a subscription to use {app_name}.", ["app_name": appName]) }
+    /// "{history_emoji}" — Locket · paywall · new · BLOCKED
+    public static func paywallPerkHistoryEmoji(historyEmoji: String) -> String { CopyLookup.format("paywall.perk.history.emoji", default: "{history_emoji}", ["history_emoji": historyEmoji]) }
+    /// "Subscribe to\n{app_name} Premium" — Locket · paywall · adapted · SOURCED
+    public static func paywallPlansTitle(appName: String) -> String { CopyLookup.format("paywall.plans.title", default: "Subscribe to\n{app_name} Premium", ["app_name": appName]) }
+    /// "Members have so much\nmore fun on {app_name}!" — Locket · paywall · adapted · SOURCED
+    public static func paywallSubtitle(appName: String) -> String { CopyLookup.format("paywall.subtitle", default: "Members have so much\nmore fun on {app_name}!", ["app_name": appName]) }
+    /// "{app_name} Premium" — Locket · paywall · adapted · SOURCED
+    public static func paywallTitle(appName: String) -> String { CopyLookup.format("paywall.title", default: "{app_name} Premium", ["app_name": appName]) }
+    /// "You now have access to all {app_name} Premium features." — Locket · paywall · adapted · SOURCED
+    public static func paywallWelcomeBody(appName: String) -> String { CopyLookup.format("paywall.welcome.body", default: "You now have access to all {app_name} Premium features.", ["app_name": appName]) }
+    /// "reports go to the {app_name} team, not to the person you report." — Yope · safety.report · new · SOURCED
+    public static func safetyReportExplanation(appName: String) -> String { CopyLookup.format("safety.report.explanation", default: "reports go to the {app_name} team, not to the person you report.", ["app_name": appName]) }
+    /// "Notifications are off for {app_name}. You can turn them on in Settings." — Apple HIG · settings.notifications · new · VERIFIED
+    public static func settingsNotificationsOffFooter(appName: String) -> String { CopyLookup.format("settings.notifications.off.footer", default: "Notifications are off for {app_name}. You can turn them on in Settings.", ["app_name": appName]) }
+    /// "Unlock the best of {app_name}" — Locket · settings.root · adapted · SOURCED
+    public static func settingsRootPremiumSubtitle(appName: String) -> String { CopyLookup.format("settings.root.premium.subtitle", default: "Unlock the best of {app_name}", ["app_name": appName]) }
+    /// "{app_name} Premium" — Locket · settings.root · adapted · SOURCED
+    public static func settingsRootPremiumTitle(appName: String) -> String { CopyLookup.format("settings.root.premium.title", default: "{app_name} Premium", ["app_name": appName]) }
+    /// "{app_name} uses your camera to take the pics you share." — Yope · system.permissions · new · SOURCED
+    public static func systemPermissionsRationaleCameraMessage(appName: String) -> String { CopyLookup.format("system.permissions.rationale.camera.message", default: "{app_name} uses your camera to take the pics you share.", ["app_name": appName]) }
+    /// "{app_name} uses the contacts you choose to invite people to your groups." — Yope · system.permissions · new · SOURCED
+    public static func systemPermissionsRationaleContactsMessage(appName: String) -> String { CopyLookup.format("system.permissions.rationale.contacts.message", default: "{app_name} uses the contacts you choose to invite people to your groups.", ["app_name": appName]) }
+    /// "{app_name} uses your mic to record voice notes and video sound." — Yope · system.permissions · new · SOURCED
+    public static func systemPermissionsRationaleMicrophoneMessage(appName: String) -> String { CopyLookup.format("system.permissions.rationale.microphone.message", default: "{app_name} uses your mic to record voice notes and video sound.", ["app_name": appName]) }
+    /// "{app_name} lets you know about new pics, replies and your daily invitation." — Yope · system.permissions · new · SOURCED
+    public static func systemPermissionsRationaleNotificationsMessage(appName: String) -> String { CopyLookup.format("system.permissions.rationale.notifications.message", default: "{app_name} lets you know about new pics, replies and your daily invitation.", ["app_name": appName]) }
     /// "{app_name}" — Locket · widget.android · adapted · SOURCED
     public static func widgetAndroidLabel(appName: String) -> String { CopyLookup.format("widget.android.label", default: "{app_name}", ["app_name": appName]) }
     /// "{app_name} Widget" — Locket · widget.home.small · adapted · SOURCED

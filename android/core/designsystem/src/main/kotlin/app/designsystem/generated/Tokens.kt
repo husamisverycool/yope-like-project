@@ -57,6 +57,7 @@ import androidx.compose.material.icons.rounded.Settings as RoundedSettings
 import androidx.compose.material.icons.rounded.Share as RoundedShare
 import androidx.compose.material.icons.rounded.Sync as RoundedSync
 import androidx.compose.material.icons.rounded.VideoLibrary as RoundedVideoLibrary
+import androidx.compose.material.icons.rounded.Videocam as RoundedVideocam
 
 object Tokens {
     object AspectRatios {
@@ -716,6 +717,8 @@ object Tokens {
         val globalWarning: Int = HapticFeedbackConstants.CONFIRM
     }
     object Icons {
+        /** Yope · camera.capture · video-camera glyph leading the 'hold down to record' coach tooltip · PLATFORM — token `camera.capture.icon.recordHint` */
+        val cameraCaptureIconRecordHint: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedVideocam
         /** Locket · chat.reactions · add-reaction button (smiley with a plus) · PLATFORM — token `chat.reactions.icon.add` */
         val chatReactionsIconAdd: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedAddReaction
         /** Yope · collage.share · filled share glyph (box + up arrow) in the pill · PLATFORM — token `collage.share.icon.share` */
@@ -1594,6 +1597,7 @@ object Tokens {
             const val box: String = "square"
             const val boxWidthRatio: Float = 0.66f
             const val boxCenterYRatio: Float = 0.412f
+            const val cornerRadius: Float = 0f
             const val textGap: Float = 24.6f
             const val text: String = "headline below the box, centred"
             const val photoFit: String = "fill the square"
@@ -1727,7 +1731,7 @@ object Tokens {
         object PhotoViewerLayoutMenu {
             const val ios: String = "Menu (pull-down) from the ••• glyph, items with trailing SF Symbols, destructive items in the system red"
             const val android: String = "DropdownMenu anchored to the ••• glyph"
-            const val order: String = "save, i'm in this, then destructive: delete (own) or report, block (others)"
+            const val order: String = "save, then destructive: delete (own) or report, block (others)"
         }
         /** Yope · photo.viewer · photo frame in the viewer · SOURCED — token `photo.viewer.layout.photo` */
         object PhotoViewerLayoutPhoto {
@@ -1866,7 +1870,7 @@ object Tokens {
         }
         /** Material 3 · widget.android · handheld size ranges the same layout must fill edge to edge · VERIFIED — token `widget.android.layout.sizes` */
         object WidgetAndroidLayoutSizes {
-            const val default: String = "2x2 (minWidth/minHeight 110 dp)"
+            const val defaultSize: String = "2x2 (minWidth/minHeight 110 dp)"
             const val range2x2: String = "109-306 x 115-276 dp"
             const val range4x2: String = "245-624 x 115-276 dp"
             const val range4x3: String = "245-624 x 185-422 dp"
@@ -2506,8 +2510,16 @@ object Tokens {
         val onboardingPermissionContactsSizeCardHeight: Dp = 101.dp
         /** Yope · onboarding.permission.contacts · inline permission card side margin · SOURCED — token `onboarding.permission.contacts.size.cardMarginH` */
         val onboardingPermissionContactsSizeCardMarginH: Dp = 18.dp
+        /** Yope · onboarding.permission.notifications · vertical gap between the stacked dark and lime buttons (Android) · SOURCED — token `onboarding.permission.notifications.size.buttonGap` */
+        val onboardingPermissionNotificationsSizeButtonGap: Dp = 8.dp
+        /** Locket · onboarding.widget · CTA arrow glyph width · SOURCED — token `onboarding.widget.size.ctaArrow` */
+        val onboardingWidgetSizeCtaArrow: Dp = 17.dp
+        /** Locket · onboarding.widget · gap between the CTA label and the arrow · SOURCED — token `onboarding.widget.size.ctaArrowGap` */
+        val onboardingWidgetSizeCtaArrowGap: Dp = 17.dp
         /** Locket · onboarding.widget · content-width yellow capsule CTA height · SOURCED — token `onboarding.widget.size.ctaHeight` */
         val onboardingWidgetSizeCtaHeight: Dp = 54.dp
+        /** Locket · onboarding.widget · CTA horizontal padding (capsule edge to label / to arrow) · SOURCED — token `onboarding.widget.size.ctaPaddingH` */
+        val onboardingWidgetSizeCtaPaddingH: Dp = 18.dp
         /** Locket · paywall · primary CTA capsule height (full width, margins paywall.size.perkMarginH) · SOURCED — token `paywall.size.ctaHeight` */
         val paywallSizeCtaHeight: Dp = 56.dp
         /** Locket · paywall · app-icon tile at the top (rounded square) · SOURCED — token `paywall.size.iconTile` */
@@ -2532,6 +2544,10 @@ object Tokens {
         val paywallSizePlanSelectedHeight: Dp = 81.dp
         /** Locket · paywall · 'Subscribe' capsule height on the plan sheet (margins paywall.size.planMarginH) · SOURCED — token `paywall.size.subscribeHeight` */
         val paywallSizeSubscribeHeight: Dp = 58.dp
+        /** Yope · photo.viewer · vertical centre of the top-right action chip below the photo's top edge (level with the sender avatar's centre, 31.6) · SOURCED — token `photo.viewer.dimension.actionCenterTop` */
+        val photoViewerDimensionActionCenterTop: Dp = 33.1.dp
+        /** Yope · photo.viewer · right edge of the action chip at the photo's top-right (Yope's chip slot; holds the 'i'm in this' toggle) to the photo's right edge · SOURCED — token `photo.viewer.dimension.actionTrailing` */
+        val photoViewerDimensionActionTrailing: Dp = 23.8.dp
         /** Yope · photo.viewer · ✕ glyph centre from the left screen edge (bare glyph, no circle) · SOURCED — token `photo.viewer.dimension.closeCenterX` */
         val photoViewerDimensionCloseCenterX: Dp = 39.dp
         /** Yope · photo.viewer · ✕ glyph height · SOURCED — token `photo.viewer.dimension.closeGlyph` */
@@ -2642,6 +2658,8 @@ object Tokens {
         val wallsMineDimensionGridGap: Dp = 4.dp
         /** Yope · walls.mine · wall grid side inset · SOURCED — token `walls.mine.dimension.gridInset` */
         val wallsMineDimensionGridInset: Dp = 24.dp
+        /** Yope · walls.mine · title baseline to the top of the wall grid · SOURCED — token `walls.mine.dimension.titleToGrid` */
+        val wallsMineDimensionTitleToGrid: Dp = 23.5.dp
         /** Retro · week.history · '+' glyph size in the add tile (centred) · SOURCED — token `week.history.dimension.addGlyph` */
         val weekHistoryDimensionAddGlyph: Dp = 20.dp
         /** Retro · week.history · week header baseline to the strip top · SOURCED — token `week.history.dimension.headerToStrip` */

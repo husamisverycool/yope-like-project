@@ -978,6 +978,9 @@ public enum Tokens {
         public static let globalWarning: DSHaptic = .notificationWarning
     }
     public enum Icons {
+        /// Yope · camera.capture · video-camera glyph leading the 'hold down to record' coach tooltip · PLATFORM
+        /// token: `camera.capture.icon.recordHint`
+        public static let cameraCaptureIconRecordHint: String = "video.fill"
         /// Locket · chat.reactions · add-reaction button (smiley with a plus) · PLATFORM
         /// token: `chat.reactions.icon.add`
         public static let chatReactionsIconAdd: String = "face.smiling"
@@ -2016,6 +2019,7 @@ public enum Tokens {
             public static let box: String = "square"
             public static let boxWidthRatio: CGFloat = 0.66
             public static let boxCenterYRatio: CGFloat = 0.412
+            public static let cornerRadius: CGFloat = 0
             public static let textGap: CGFloat = 24.6
             public static let text: String = "headline below the box, centred"
             public static let photoFit: String = "fill the square"
@@ -2169,7 +2173,7 @@ public enum Tokens {
         public enum PhotoViewerLayoutMenu {
             public static let ios: String = "Menu (pull-down) from the ••• glyph, items with trailing SF Symbols, destructive items in the system red"
             public static let android: String = "DropdownMenu anchored to the ••• glyph"
-            public static let order: String = "save, i'm in this, then destructive: delete (own) or report, block (others)"
+            public static let order: String = "save, then destructive: delete (own) or report, block (others)"
         }
         /// Yope · photo.viewer · photo frame in the viewer · SOURCED
         /// token: `photo.viewer.layout.photo`
@@ -2331,7 +2335,7 @@ public enum Tokens {
         /// Material 3 · widget.android · handheld size ranges the same layout must fill edge to edge · VERIFIED
         /// token: `widget.android.layout.sizes`
         public enum WidgetAndroidLayoutSizes {
-            public static let default: String = "2x2 (minWidth/minHeight 110 dp)"
+            public static let defaultSize: String = "2x2 (minWidth/minHeight 110 dp)"
             public static let range2x2: String = "109-306 x 115-276 dp"
             public static let range4x2: String = "245-624 x 115-276 dp"
             public static let range4x3: String = "245-624 x 185-422 dp"
@@ -3237,9 +3241,21 @@ public enum Tokens {
         /// Yope · onboarding.permission.contacts · inline permission card side margin · SOURCED
         /// token: `onboarding.permission.contacts.size.cardMarginH`
         public static let onboardingPermissionContactsSizeCardMarginH: CGFloat = 18
+        /// Yope · onboarding.permission.notifications · vertical gap between the stacked dark and lime buttons (Android) · SOURCED
+        /// token: `onboarding.permission.notifications.size.buttonGap`
+        public static let onboardingPermissionNotificationsSizeButtonGap: CGFloat = 8
+        /// Locket · onboarding.widget · CTA arrow glyph width · SOURCED
+        /// token: `onboarding.widget.size.ctaArrow`
+        public static let onboardingWidgetSizeCtaArrow: CGFloat = 17
+        /// Locket · onboarding.widget · gap between the CTA label and the arrow · SOURCED
+        /// token: `onboarding.widget.size.ctaArrowGap`
+        public static let onboardingWidgetSizeCtaArrowGap: CGFloat = 17
         /// Locket · onboarding.widget · content-width yellow capsule CTA height · SOURCED
         /// token: `onboarding.widget.size.ctaHeight`
         public static let onboardingWidgetSizeCtaHeight: CGFloat = 54
+        /// Locket · onboarding.widget · CTA horizontal padding (capsule edge to label / to arrow) · SOURCED
+        /// token: `onboarding.widget.size.ctaPaddingH`
+        public static let onboardingWidgetSizeCtaPaddingH: CGFloat = 18
         /// Locket · paywall · primary CTA capsule height (full width, margins paywall.size.perkMarginH) · SOURCED
         /// token: `paywall.size.ctaHeight`
         public static let paywallSizeCtaHeight: CGFloat = 56
@@ -3276,6 +3292,12 @@ public enum Tokens {
         /// Locket · paywall · 'Subscribe' capsule height on the plan sheet (margins paywall.size.planMarginH) · SOURCED
         /// token: `paywall.size.subscribeHeight`
         public static let paywallSizeSubscribeHeight: CGFloat = 58
+        /// Yope · photo.viewer · vertical centre of the top-right action chip below the photo's top edge (level with the sender avatar's centre, 31.6) · SOURCED
+        /// token: `photo.viewer.dimension.actionCenterTop`
+        public static let photoViewerDimensionActionCenterTop: CGFloat = 33.1
+        /// Yope · photo.viewer · right edge of the action chip at the photo's top-right (Yope's chip slot; holds the 'i'm in this' toggle) to the photo's right edge · SOURCED
+        /// token: `photo.viewer.dimension.actionTrailing`
+        public static let photoViewerDimensionActionTrailing: CGFloat = 23.8
         /// Yope · photo.viewer · ✕ glyph centre from the left screen edge (bare glyph, no circle) · SOURCED
         /// token: `photo.viewer.dimension.closeCenterX`
         public static let photoViewerDimensionCloseCenterX: CGFloat = 39
@@ -3441,6 +3463,9 @@ public enum Tokens {
         /// Yope · walls.mine · wall grid side inset · SOURCED
         /// token: `walls.mine.dimension.gridInset`
         public static let wallsMineDimensionGridInset: CGFloat = 24
+        /// Yope · walls.mine · title baseline to the top of the wall grid · SOURCED
+        /// token: `walls.mine.dimension.titleToGrid`
+        public static let wallsMineDimensionTitleToGrid: CGFloat = 23.5
         /// Retro · week.history · '+' glyph size in the add tile (centred) · SOURCED
         /// token: `week.history.dimension.addGlyph`
         public static let weekHistoryDimensionAddGlyph: CGFloat = 20

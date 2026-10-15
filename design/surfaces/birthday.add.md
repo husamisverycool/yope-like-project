@@ -22,40 +22,45 @@ always possible and deletes requests about them that are not yet due (docs/API.m
 
 ## Structure
 
-Two entry points, one screen layout (`color.global.backgroundDeep`, Yope onboarding step):
+Two entry points:
 
-**A. Onboarding step — right after `auth.agegate` succeeds** (`confirm_age` ok). The birthdate entered there is not
-stored by the server, so this step must come immediately after it and reuses that date (docs/API.md §2).
-Top to bottom:
-1. Safe-area top, then `size.global.headerInset`.
+**A. During sign-up — owned by `auth.agegate`.** The age gate carries the opt-in as a row under its birthday field
+(`auth.agegate.layout.optIn`, `auth.agegate.optIn.*`; unchecked by default) and calls `set_birthday(date, true)` after
+`confirm_age` when it is checked (`design/surfaces/auth.agegate.md`). The server does not store the birthdate from
+`confirm_age`, so sign-up has no separate birthday step (MERGE memory M-31).
+
+**B. Later — this screen**, opened from the "birthday" row the `settings.account` pass places (and from nowhere else;
+the app never asks again on its own). Full screen on `color.global.backgroundDeep`, Yope onboarding-step layout:
+
+*Not opted in:*
+1. Safe-area top; close circle top-left (`size.global.headerButton`, `size.global.headerInset`,
+   `color.global.controlOnDeep`, `icon.global.close`).
 2. Title `birthday.add.title` — text role `onboardingTitle` (`fontSize.global.onboardingTitle`,
    `fontWeight.global.onboardingTitle`), `color.global.textPrimary`, centred, side margins `size.global.buttonMarginH`.
-3. `size.global.listGap` below: detail `birthday.add.detail` — text role `listSubtitle`, `color.global.textSecondary`,
-   centred, same margins.
+3. `size.global.listGap` below: `birthday.add.detail` — text role `listSubtitle`, `color.global.textSecondary`, centred.
 4. `size.global.listGap` below: `birthday.add.privacy` — same role and colour.
-5. Bottom (safe-area bottom + `size.global.buttonMarginH`): primary button `birthday.add.confirm` — `color.global.accent`
-   fill, `color.global.onAccent` label, text role `button`, `size.global.buttonHeight`, margins
-   `size.global.buttonMarginH`, `radius.global.button`.
-6. `size.global.listGap` below it: secondary pill `birthday.add.later` — `color.global.surfaceLight`,
-   `color.global.onSurfaceLight`, `radius.global.capsule`, height `size.global.buttonHeight`, same margins.
+5. The **`auth.agegate` birthday field** (`auth.agegate.layout.dateEntry`, owned by the auth pass: neutral free entry,
+   no default year), `size.global.buttonMarginH` margins.
+6. Pinned to the bottom (safe area + `size.global.buttonMarginH`): primary `birthday.add.confirm` —
+   `color.global.accent`, `color.global.onAccent`, text role `button`, `size.global.buttonHeight`,
+   `radius.global.button`; disabled until the field holds a complete date.
+7. `size.global.listGap` below it: secondary pill `birthday.add.later` — `color.global.surfaceLight`,
+   `color.global.onSurfaceLight`, `radius.global.capsule`, height `size.global.buttonHeight` → closes.
 
-**B. Later, from settings** (the `settings.account` pass places a "birthday" row that opens this screen):
-- Not opted in: same as A, but the date is entered first with the **`auth.agegate` date field component** (owned by
-  the auth pass; neutral free-entry field per docs/PLATFORM_CONSTRAINTS.md §9) placed between 4 and 5; the primary
-  button is disabled until a valid date is entered.
-- Opted in (**manage**): title `birthday.add.manage.title` (text role `sheetTitle`), the saved day and month in
-  `layout.birthday.add.dateFormat` ("26 May", text role `listTitle`, `color.global.textPrimary`), `birthday.add.detail`,
-  and at the bottom the secondary pill `birthday.add.manage.remove`. The birth year is never shown.
+*Opted in (manage):* title `birthday.add.manage.title` (text role `sheetTitle`); the saved day and month in
+`layout.birthday.add.dateFormat` ("26 May", text role `listTitle`, `color.global.textPrimary`); `birthday.add.detail`;
+at the bottom the secondary pill `birthday.add.manage.remove`. The birth year is never shown.
 
 ## Elements
 
 | element | tokens | copy keys | behaviour |
 |---|---|---|---|
+| close | `size.global.headerButton`, `size.global.headerInset`, `color.global.controlOnDeep`, `icon.global.close` | `birthday.add.a11y.close` | close |
 | title | `fontSize.global.onboardingTitle`, `fontWeight.global.onboardingTitle`, `color.global.textPrimary` (manage: `fontSize/fontWeight.global.sheetTitle`) | `birthday.add.title` / `birthday.add.manage.title` | — |
 | detail, privacy line | `fontSize.global.listSubtitle`, `fontWeight.global.listSubtitle`, `color.global.textSecondary` | `birthday.add.detail`, `birthday.add.privacy` | — |
 | date (manage) | `fontSize.global.listTitle`, `fontWeight.global.listTitle`, `layout.birthday.add.dateFormat` | — (formatted data) | day + month only |
-| add | `color.global.accent`, `color.global.onAccent`, `size.global.buttonHeight`, `size.global.buttonMarginH`, `radius.global.button`, `fontSize/fontWeight.global.button` | `birthday.add.confirm` | `set_birthday(date, true)` → toast `birthday.add.added` → continue onboarding / close |
-| maybe later | `color.global.surfaceLight`, `color.global.onSurfaceLight`, `radius.global.capsule`, `size.global.buttonHeight` | `birthday.add.later` | no call; continue onboarding / close. Never asked again automatically (settings only) |
+| add | `color.global.accent`, `color.global.onAccent`, `size.global.buttonHeight`, `size.global.buttonMarginH`, `radius.global.button`, `fontSize/fontWeight.global.button` | `birthday.add.confirm` | `set_birthday(date, true)` → toast `birthday.add.added` → close |
+| maybe later | `color.global.surfaceLight`, `color.global.onSurfaceLight`, `radius.global.capsule`, `size.global.buttonHeight` | `birthday.add.later` | no call; close. Never asked again automatically |
 | remove (manage) | same as maybe later | `birthday.add.manage.remove` | `set_birthday(savedDate, false)` → toast `birthday.add.removed` |
 | toast | the foundations toast (lime pill, `color.global.accent` / `color.global.onAccent`, `icon.global.checkmark`) | `birthday.add.added`, `birthday.add.removed` | — |
 
@@ -84,7 +89,7 @@ Add / remove succeeded → `haptic.global.success`. Error → `haptic.global.err
 - Dynamic Type: roles map through `layout.global.textStyleMap` (onboardingTitle → largeTitle, listSubtitle →
   subheadline, button → subheadline, sheetTitle → title3, listTitle → headline). The content scrolls when the title
   wraps at accessibility sizes; buttons stay pinned to the bottom.
-- Focus order: title → detail → privacy → (date) → primary → secondary.
+- Focus order: close → title → detail → privacy → date field → primary → secondary.
 - Contrast (foundations, `design/CONTRAST.md`): `textPrimary` on `backgroundDeep` 21.00 pass; `textSecondary` #969696
   on #000000 7.10 pass; `onAccent` on `accent` 17.65 pass; `onSurfaceLight` on `surfaceLight` 21.00 pass;
   `surfaceLight` pill vs `backgroundDeep` 21.00 pass.
@@ -93,13 +98,13 @@ Add / remove succeeded → `haptic.global.success`. Error → `haptic.global.err
 
 - `rpc("set_birthday", p_birthday: date, p_opt_in: true | false)` → `profile_private`. Errors `invalid_birthday`,
   `invalid_argument`. Manage state reads `from("profile_private").select("birthday, birthday_opt_in").single()`.
-- Onboarding: recipe 9.1 step 2 (`confirm_age` → optionally `set_birthday` with the same date).
-- **Navigation in:** onboarding after `auth.agegate`; settings row (settings pass). **Out:** onboarding continues to
-  `auth.profile`; from settings, back. No deep link, no push.
+- Sign-up path (on `auth.agegate`): recipe 9.1 step 2 (`confirm_age` → optionally `set_birthday` with the same date).
+- **Navigation in:** the settings row (settings pass). Sign-up opt-in lives on `auth.agegate`. **Out:** close / back to
+  settings. No deep link, no push.
 
 ## Platform notes
 
-- iOS: plain SwiftUI screen in the onboarding `NavigationStack`; Android: Compose destination in the onboarding graph.
+- iOS: SwiftUI screen pushed from settings (or `.sheet`); Android: Compose destination in the settings graph.
 - Date entry is the `auth.agegate` component; this surface adds no date picker of its own.
 - Apple privacy label: "Other Data > Other Data Types (birthday)" applies (docs/PLATFORM_CONSTRAINTS.md §9).
 

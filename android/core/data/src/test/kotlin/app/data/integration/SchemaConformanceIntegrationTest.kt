@@ -47,10 +47,21 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class SchemaConformanceIntegrationTest {
     private lateinit var openApi: JsonObject
+    private lateinit var clientOpenApi: JsonObject
 
     @Before fun setUp() {
         LocalStack.assumeReachable()
-        openApi = runBlocking { Admin().use { it.openApi() } }
+        runBlocking {
+            Admin().use { admin ->
+                openApi = admin.openApi()
+                val account = admin.createUser("Schema ${uniqueTag()}")
+                try {
+                    clientOpenApi = admin.openApi(bearer = admin.accessToken(account), apiKey = LocalStack.anonKey)
+                } finally {
+                    admin.deleteUser(account.id)
+                }
+            }
+        }
     }
 
     private val models: Map<String, SerialDescriptor> = mapOf(
@@ -127,14 +138,11 @@ class SchemaConformanceIntegrationTest {
             if (params != rpc.parameters) problems += "${rpc.function}: spec ${rpc.parameters.sorted()} vs db ${params.sorted()}"
             if (required != rpc.required) problems += "${rpc.function}: required ${rpc.required.sorted()} vs db ${required.sorted()}"
         }
-        // Client-callable functions the app has no spec for (worker / service-role ones are not exposed to clients).
-        val workerOnly = setOf(
-            "claim_jobs", "complete_job", "fail_job", "enqueue_job", "schedule_daily_invitations", "due_weekly_recaps",
-            "due_birthday_requests", "due_tributes", "due_year_stories", "apply_revenuecat_event",
-        )
+        // What a signed-in client may execute must be exactly what the app has specs for.
+        val clientCallable = clientOpenApi["paths"]!!.jsonObject.keys.filter { it.startsWith("/rpc/") }.map { it.removePrefix("/rpc/") }.toSet()
         val known = Rpc.entries.map { it.function }.toSet()
-        val unknown = paths.keys.filter { it.startsWith("/rpc/") }.map { it.removePrefix("/rpc/") }.filter { it !in known && it !in workerOnly }
-        if (unknown.isNotEmpty()) problems += "functions without a client spec: $unknown"
+        if (clientCallable - known != emptySet<String>()) problems += "client-callable functions without a spec: ${(clientCallable - known).sorted()}"
+        if (known - clientCallable != emptySet<String>()) problems += "specs for functions a client cannot call: ${(known - clientCallable).sorted()}"
         assertTrue(problems.joinToString("\n"), problems.isEmpty())
     }
 }

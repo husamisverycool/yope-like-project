@@ -2,7 +2,8 @@
 // after a deletion. Only on-time answers (posts.in_window) are composed; one tile per member (their
 // first on-time post: docs/API.md §12.15 leaves this to the worker). Files:
 //   g/<group>/collages/<collage>/<version>/{master-<n>.png, display-<n>.jpg, share-<n>.jpg, widget.jpg}
-// where <version> hashes the option, width and posts, so a recompose writes new names.
+// where <version> hashes the option, width and posts, so a recompose writes new names, and
+// n = 1 … collages.page_count (image_path / share_path point at page 1; docs/API.md §5.13).
 
 import { createHash } from "node:crypto";
 import { DbError, maybe, must, selectIn, type Db } from "../db.js";
@@ -96,6 +97,7 @@ async function render(ctx: JobContext, collage: CollageRow, option: CollageOptio
       .update({
         option,
         post_ids: postIds,
+        page_count: files.masters.length,
         image_path: `${dir}/display-1.jpg`,
         widget_path: `${dir}/widget.jpg`,
         share_path: files.shares ? `${dir}/share-1.jpg` : null,

@@ -1839,7 +1839,7 @@
       "evidence": "design/copy-patterns.md (Yope rows) and the examples' sources in design/research/yope-a.md §3-4",
       "pattern": "yope.voice.title — short lowercase phrase; examples 'new group', 'send to...', 'suggested friends' (yope-a §3.2)",
       "level": "SOURCED",
-      "notes": "Value text = '{start}-{end}' (yope.voice.punctuation: bare hyphen), e.g. '9:00 AM-9:00 PM'; or groups.settings.invitation.notSet."
+      "notes": "Value text = '{start}-{end}' (yope.voice.punctuation: bare hyphen), e.g. '9:00 AM-9:00 PM'; or groups.settings.invitation.default."
     },
     "groups.settings.invitation.range": {
       "text": "{start}-{end}",
@@ -1850,14 +1850,15 @@
       "pattern": "yope.voice.punctuation — ranges with a bare hyphen, no spaces; example '21-27 dec'",
       "level": "SOURCED"
     },
-    "groups.settings.invitation.notSet": {
-      "text": "not set",
+    "groups.settings.invitation.default": {
+      "text": "default hours",
       "origin": "new",
       "source_app": "Yope",
       "surface": "groups.settings",
-      "evidence": "design/copy-patterns.md (Yope rows) and the examples' sources in design/research/yope-a.md §3-4; docs/API.md §11 (default_waking_* NULL → no invitation)",
+      "evidence": "design/copy-patterns.md (Yope rows) and the examples' sources in design/research/yope-a.md §3-4; docs/API.md §5.3 (waking_start/end null = the default window), §11 (default_waking_* not public)",
       "pattern": "yope.voice.title — short lowercase phrase; examples 'new group', 'send to...', 'suggested friends' (yope-a §3.2)",
-      "level": "SOURCED"
+      "level": "SOURCED",
+      "notes": "Value text when the group has no own hours; the default window itself is not readable by clients."
     },
     "groups.settings.invitation.pause": {
       "text": "pause invitations",

@@ -1060,7 +1060,7 @@
     "widget.android.layout.sizes": {
       "type": "layout",
       "value": {
-        "default": "2x2 (minWidth/minHeight 110 dp)",
+        "defaultSize": "2x2 (minWidth/minHeight 110 dp)",
         "range2x2": "109-306 x 115-276 dp",
         "range4x2": "245-624 x 115-276 dp",
         "range4x3": "245-624 x 185-422 dp",

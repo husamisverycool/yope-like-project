@@ -105,7 +105,7 @@ When the quoted photo is deleted (`reply_to_post_id` becomes null), the quote pa
 
 | state | what shows | tokens / copy | source |
 |---|---|---|---|
-| loading (first page) | centred HUD: platform activity indicator over "Loading" | `chat.thread.dimension.loadingHud`, `chat.thread.color.loadingHud`, `chat.thread.radius.loadingHud` (**BLOCKED**), `easing.global.native.activityIndicator`; `chat.thread.loading` | V-mthu t50.60 (yope-a §1.8); HUD text size not measured (same capture as the radius) |
+| loading (first page) | centred HUD: platform activity indicator over "Loading" | `groups.create.size.hud`, `groups.create.color.hud`, `groups.create.fontSize.hudLabel`, `chat.thread.radius.loadingHud` (**BLOCKED**), `easing.global.native.activityIndicator`; `groups.create.hud.loading` | V-mthu t50.60 (yope-a §1.8); HUD shared with the groups surfaces (account group) |
 | loading older messages | platform activity indicator at the top of the list | `easing.global.native.activityIndicator` | PLATFORM |
 | empty (no messages yet) | centred: bold title, italic gray detail, white pill with leading link glyph; composer stays | text roles `emptyTitle` (`color.global.textPrimary`) and `emptyDetail` (italic, `color.global.textSecondary`); pill `color.global.surfaceLight` / `color.global.onSurfaceLight`, `groups.screen.size.lightPillHeight`, `groups.screen.radius.lightPill`, text role `button`, `icon.global.link`; `chat.thread.empty.titleCreator` or `.titleMember`, `chat.thread.empty.detail`, `chat.thread.empty.invite` | V-mthu t51.23 (`yope.voice.empty-state`); pill opens `groups.invite` |
 | error (load failed) | same layout as empty | `chat.thread.error.title`, `.error.detail`, pill `chat.thread.error.retry` (reloads) | `yope.voice.error` (no Yope error observed) |
@@ -159,8 +159,8 @@ When the quoted photo is deleted (`reply_to_post_id` becomes null), the quote pa
 | `color.global.onAccent` #000000 | `color.global.accent` #CDFD07 | text | 17.65:1 | pass | quoted name / 'pic' on the lime quote |
 | `color.global.onAccent` #000000 | `color.global.accent` #CDFD07 | nontext | 17.65:1 | pass | quote bar on lime |
 | `color.global.accent` #CDFD07 | `color.global.background` #171717 | nontext | 15.07:1 | pass | lime quote block against the background |
-| `color.global.textPrimary` #FFFFFF | `chat.thread.color.loadingHud` #262626 | text | 15.13:1 | pass | 'Loading' on the HUD |
-| `chat.thread.color.loadingHud` #262626 | `color.global.background` #171717 | nontext | 1.18:1 | **FAIL** | HUD against the background |
+| `color.global.textPrimary` #FFFFFF | `groups.create.color.hud` #262626 | text | 15.13:1 | pass | 'Loading' on the HUD |
+| `groups.create.color.hud` #262626 | `color.global.background` #171717 | nontext | 1.18:1 | **FAIL** | HUD against the background |
 | `color.global.textPrimary` #FFFFFF | `color.global.background` #171717 | text | 17.93:1 | pass | empty-state title |
 | `color.global.textSecondary` #969696 | `color.global.background` #171717 | text | 6.06:1 | pass | empty-state detail |
 | `color.global.onSurfaceLight` #000000 | `color.global.surfaceLight` #FFFFFF | text | 21.00:1 | pass | 'invite more friends' pill label |
@@ -216,7 +216,7 @@ When the quoted photo is deleted (`reply_to_post_id` becomes null), the quote pa
 | `chat.thread.dimension.bubbleMaxWidth`, multi-line bubble layout and line height | BLOCKED | one 30-s screen recording in a Yope group chat: type and send a two-line text, send a photo, reply to a photo, hold the mic to record, play it (yope-b §14 capture 1) |
 | `chat.thread.count.emojiOnlyMax` | BLOCKED | one screenshot with a 1-emoji and a 4-emoji message |
 | `chat.thread.layout.failedMessage` | BLOCKED | one screenshot of a message that failed to send |
-| `chat.thread.radius.loadingHud` (+ HUD text size) | BLOCKED | one lossless screenshot of Yope's "Loading" HUD |
+| `chat.thread.radius.loadingHud` | BLOCKED | one lossless screenshot of Yope's "Loading" HUD |
 | `color.global.scrim` (caption box fill) | BLOCKED (foundations) | one lossless screenshot of a captioned photo card |
 | portrait photos in the group chat | approximation: the 323 × 174 landscape frame, aspect fill | same recording as above (send a portrait photo) |
 | gap between a photo and a bubble | approximation: `chat.thread.dimension.photoGap` | same recording |

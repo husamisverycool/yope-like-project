@@ -7,8 +7,8 @@ import {
   createGroup,
   createUsers,
   rpc,
+  inRolledBackTransaction,
   select,
-  setConfig,
   sql,
   type TestGroup,
   type TestUser,
@@ -196,23 +196,30 @@ describe('schedule_daily_invitations', () => {
   });
 
   it('skips paused groups and groups without a known waking window; uses the default window once sourced', async () => {
+    // "no known window": the defaults are NULL only inside a transaction that is rolled back,
+    // so the shared app_config never changes (other suites run against the same stack)
+    await inRolledBackTransaction(async (q) => {
+      await q(`update public.app_config set value = null where key in ('default_waking_start', 'default_waking_end')`);
+      const rows = await q(`select * from public.schedule_daily_invitations('2026-12-01')`);
+      expect(mine(rows, paused)).toBeUndefined();
+      expect(mine(rows, noWindow).skipped_reason).toBe('waking_window_not_set');
+      expect(mine(rows, noWindow).invitation_id).toBeNull();
+    });
+    // the sourced default window (migration 0012) applies to groups without their own hours
+    const [d] = await sql<{ s: string; e: string }>(
+      `select (select value #>> '{}' from public.app_config where key = 'default_waking_start') as s,
+              (select value #>> '{}' from public.app_config where key = 'default_waking_end') as e`,
+    );
+    expect(d.s).not.toBeNull();
     const rows = await schedule('2026-12-01');
     expect(mine(rows, paused)).toBeUndefined();
-    expect(mine(rows, noWindow).skipped_reason).toBe('waking_window_not_set');
-    expect(mine(rows, noWindow).invitation_id).toBeNull();
-    try {
-      await setConfig('default_waking_start', '10:00');
-      await setConfig('default_waking_end', '18:00');
-      const r = mine(await schedule('2026-12-01'), noWindow);
-      expect(r.created).toBe(true);
-      const [t] = await sql<{ t: string }>(`select to_char($1::timestamptz at time zone 'Asia/Tokyo', 'HH24:MI') as t`, [
-        r.fires_at,
-      ]);
-      expect(t.t >= '10:00' && t.t < '18:00').toBe(true);
-    } finally {
-      await setConfig('default_waking_start', null);
-      await setConfig('default_waking_end', null);
-    }
+    const r = mine(rows, noWindow);
+    expect(r.created).toBe(true);
+    const [t] = await sql<{ f: string; c: string }>(
+      `select to_char($1::timestamptz at time zone 'Asia/Tokyo', 'HH24:MI') as f, to_char($2::timestamptz at time zone 'Asia/Tokyo', 'HH24:MI') as c`,
+      [r.fires_at, r.closes_at],
+    );
+    expect(t.f >= d.s && t.c <= d.e, `${t.f}-${t.c} within ${d.s}-${d.e}`).toBe(true);
   });
 
   it('never schedules an instant in the past', async () => {

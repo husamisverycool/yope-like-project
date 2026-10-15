@@ -47,6 +47,9 @@ Contents
 - **No counts.** No column, view or RPC returns a number of reactions, views, posts or
   anything else. Reactions are rows `(user_id, emoji)`. Never request
   `Prefer: count=…` and never display a total (tenet: no counts, no streaks, no "late").
+  The one integer of this kind is layout metadata: `collages.page_count`, the number of
+  image files of one collage, used only to build file paths and never shown
+  ([5.13](#513-collages)).
 - **Files** are private. Read them through short-lived signed URLs
   (`storage.from("media").createSignedURL(path, expiresIn: 3600)`), never public URLs.
 
@@ -351,10 +354,24 @@ The same-moment collage of a daily invitation, made by the worker. Read: members
 | `invitation_id` | uuid? | one collage per invitation |
 | `option` | text | the layout option used (chosen by the owner, `design/collage-options/`) |
 | `post_ids` | uuid[] | the posts composed |
-| `image_path`, `widget_path`, `share_path` | text? | `g/<group_id>/collages/<id>/…`; null while (re)composing |
+| `page_count` | int | number of pages (≥ 1). Option B puts at most 12 answers on a 9:16 page and continues on further pages; options A and C are one page |
+| `image_path`, `widget_path`, `share_path` | text? | page 1 / the widget image / the 9:16 share image of page 1, all under `g/<group_id>/collages/<id>/<version>/`; null while (re)composing. `share_path` is null for options A and C (share layout not decided) |
 | `status` | render_status | show only when `ready` |
 | `composed_at` | timestamptz? | |
 | `created_at` | timestamptz | |
+
+Files of a composed collage, in the folder of `image_path`
+(`g/<group_id>/collages/<collage_id>/<version>/`; `<version>` changes on every recompose, so
+cached files never go stale):
+
+| File | What |
+|---|---|
+| `display-<n>.jpg` | page n (n = 1 … `page_count`), JPEG on the matte color; `image_path` = `display-1.jpg` |
+| `share-<n>.jpg` | page n as a 9:16 Stories image (1080×1920), option B only; `share_path` = `share-1.jpg` |
+| `master-<n>.png` | page n lossless, transparent outside the rounded corners |
+| `widget.jpg` | the widget image (`widget_path`) |
+
+Build page n's path by replacing `display-1.jpg` in `image_path` with `display-<n>.jpg`.
 
 ### 5.14 `weekly_recaps`
 
@@ -828,7 +845,7 @@ One **private** bucket, `media`: max 100 MiB per object. Allowed types: `image/j
 | `u/<uid>/voice/<uuid>.m4a` (chat voice) | owner | members of the message's group (minus blocks), once the message exists |
 | `u/<uid>/covers/<uuid>.jpg` (group cover) | owner | members of any group using it as `cover_path` |
 | `avatars/<uid>/<uuid>.jpg` | owner (and owner may delete) | the user and everyone sharing a group with them |
-| `g/<group_id>/collages/<collage_id>/…` | worker | members |
+| `g/<group_id>/collages/<collage_id>/<version>/…` (files: [5.13](#513-collages)) | worker | members |
 | `g/<group_id>/tributes/<tribute_id>/…` | worker | members except the honoree, who can read once the tribute is delivered |
 | `g/<group_id>/year/<year>/…`, `g/<group_id>/recaps/…` | worker | members |
 
@@ -945,10 +962,12 @@ whose target no longer exists must be completed as a no-op.
 | `fail_job(p_job_id bigint, p_worker_id text, p_error text, p_retry boolean = true) → jobs` | Requeue at `now + min(max, base·2^(attempts−1))` (30 s, 60 s, … ≤ 1 h), or `failed` when out of attempts or `p_retry = false`. If a newer queued duplicate (same dedupe key) exists it becomes `cancelled`. Error `job_not_found`. |
 | `enqueue_job(p_kind text, p_payload jsonb = {}, p_run_at timestamptz = null, p_max_attempts int = 5, p_dedupe_key text = null) → bigint` | Same-key queued jobs are merged. Errors `invalid_kind`, `invalid_argument`. |
 | `schedule_daily_invitations(p_for_utc_date date) → table(group_id, local_date, invitation_id, fires_at, closes_at, created, skipped_reason)` | Call hourly for today and tomorrow (UTC). Treats the date as each group's local date. `fires_at` is a deterministic instant (seeded by md5(group, date)) inside the waking window, DST-safe, with `closes_at` inside it too. Idempotent. Skips paused/empty groups; reports `waking_window_not_set`, `window_too_short`, `window_passed`. Enqueues `invitation.fire` (run_at = fires_at) and `collage.compose` (run_at = closes_at). Error `config_missing`. |
-| `due_weekly_recaps(p_now timestamptz = now()) → setof weekly_recaps` | Call every few minutes. Creates the recap of the week that ended by the latest recap moment (`weekly_recap_isodow` at `weekly_recap_local_time`, group-local) for groups that posted that week. Enqueues `recap.generate`. Returns only rows it created. Error `config_missing` (503) while the time is null. |
+| `due_weekly_recaps(p_now timestamptz = now()) → setof weekly_recaps` | Call every few minutes. Creates the recap of the week that ended by the latest recap moment for groups that posted that week. The recap moment is `weekly_recap_isodow` (Sunday) at the **end of the group's waking window** (its own hours, else `default_waking_end`; a window that wraps past midnight ends early on Monday): the last waking moment of its week, group-local and DST-safe. `weekly_recap_local_time`, when set, overrides that time for every group. A group with no known window and no override gets no recap. Enqueues `recap.generate`. Returns only rows it created. |
 | `due_birthday_requests(p_now) → setof tribute_requests` | Creates requests `birthday_request_lead_days` (7) before an opted-in member's birthday (group-local; Feb 29 → Feb 28 in common years), in groups with another member. Enqueues `push.birthday_request`. |
 | `due_tributes(p_now) → setof tributes` | Closes due requests; creates a tribute (+ `tribute.render`) only if someone contributed. |
 | `due_year_stories(p_now) → setof year_stories` | From `year_story_release_month_day` (12-01) local, once per group that posted that year. Enqueues `year.compute`. |
+| `release_job(p_job_id bigint, p_worker_id text) → boolean` | A stopping worker hands a running job back: `queued`, runnable now, the attempt not counted (or `cancelled` if a newer queued duplicate exists). false if not locked by this worker. |
+| `apply_revenuecat_event(p_event_id text, p_user_id uuid, p_event_type text, p_event_at timestamptz, p_expires_at timestamptz, p_change boolean = true) → text` | RevenueCat webhook (worker `POST /webhooks/revenuecat`): upserts the `premium` entitlement once per event id; an event older than the newest applied one for that user is recorded but not applied. Returns `applied`, `duplicate`, `stale` or `ignored`. |
 
 Job kinds and payloads:
 
@@ -969,6 +988,12 @@ Job kinds and payloads:
 | `storage.delete` | `{bucket, paths[], prefixes[]}` | — | delete the exact paths and everything under each prefix through the Storage API |
 | `auth.delete_user` | `{user_id}` | `auth.delete_user:<id>` | `auth.admin.deleteUser(user_id)` |
 | `moderation.report` | `{report_id}` | — | route to moderation |
+| `invitation.end` | `{invitation_id, group_id, channel_id, apns_env}` | `invitation.end:<id>` | enqueued by `invitation.fire` at `closes_at`: Live Activity end (broadcast channel) + Android `daily_invitation_ended` |
+| `push.recap_ready` | `{recap_id, group_id}` | `push.recap_ready:<id>` | enqueued by `recap.generate` once the recap is ready |
+| `push.tribute` | `{tribute_id, group_id}` | `push.tribute:<id>` | enqueued by `tribute.render` after the tribute is rendered and delivered: notify the honoree |
+
+The worker's push payloads, rendition sizes and widget refresh rules are in
+`docs/WIDGET_REFRESH.md` and `backend/worker/` (`src/push/payloads.ts`).
 
 When the target is deleted, queued `push.new_post`, `push.reaction`,
 `push.new_message` and `media.renditions` jobs are cancelled. When a group is deleted,
@@ -976,13 +1001,15 @@ all its queued jobs except `storage.delete` are cancelled.
 
 ## 11. Tunables (`app_config`)
 
-A NULL value means "not sourced yet", and the dependent feature fails closed.
+A NULL value means "not sourced yet", and the dependent feature fails closed (except
+`weekly_recap_local_time`, an optional override).
 
 | Key | Value | Public | Used by |
 |---|---|---|---|
 | `invitation_window_seconds` | 120 | yes | invitation length |
-| `default_waking_start` / `default_waking_end` | NULL ("HH:MM"; from `design/research/bereal.md`) | no | groups without their own hours get **no** invitation until set |
-| `weekly_recap_local_time` | NULL ("HH:MM") | no | recaps are not generated until set |
+| `default_waking_start` / `default_waking_end` | "09:48" / "21:12" (BeReal sample, `design/research/bereal.md` §1; migration 0012) | no | the waking window of groups without their own hours |
+| `weekly_recap_local_time` | NULL ("HH:MM") | no | optional override of the recap moment; NULL = the end of each group's waking window on the recap day (migration 0014) |
+| `collage_option` | "B" (pending the owner, `design/collage-options/README.md`) | no | layout of new collages; existing ones keep theirs |
 | `weekly_recap_isodow` | 7 (Sunday) | no | recap day |
 | `week_start_isodow` | 1 (Monday) | yes | history weeks, recap weeks |
 | `free_history_days` | NULL (unlimited) | yes | `group_history_weeks` for non-premium |
@@ -1014,9 +1041,10 @@ described here and is easy to change.
    rating). Until it is set, nobody can pass `confirm_age`. The server does **not**
    require `age_confirmed_at` for other RPCs. Decide whether `create_group` /
    `join_group` / `create_post` should require it.
-7. **Default waking window** (`default_waking_*`) and **weekly recap time** are NULL
-   until research provides them. Until then only groups with their own hours get
-   invitations, and recaps are off.
+7. **Default waking window** (`default_waking_*` = 09:48–21:12, the only observed BeReal
+   sample; BeReal publishes no hours) and **weekly recap time**: recaps are assembled at the
+   end of each group's waking window on Sunday, the last waking moment of its week. The
+   owner may set an explicit time (`weekly_recap_local_time`) or change the default window.
 8. **Week start** (`week_start_isodow` = Monday) and recap day (Sunday), pending research.
 9. **Year story release day**: December 1 (`year_story_release_month_day`).
 10. **Tribute delivery time**: requests close at 00:00 group-local on the birthday, and

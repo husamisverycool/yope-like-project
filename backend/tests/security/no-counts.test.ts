@@ -18,6 +18,12 @@ afterAll(closeDb);
 
 const COUNTISH = /count|total|tally|score|num_|_num|likes|streak/i;
 
+// Layout metadata, not a social count: how many image files one composed collage has
+// (display-1.jpg … display-<n>.jpg, docs/API.md section 5.13). Clients use it to build file
+// paths and never show it as a number. Requested by the lead (collages.page_count, migration
+// 0015); this exact table.column pair is the only exception.
+const LAYOUT_COLUMNS = new Set(['collages.page_count']);
+
 describe('no counts anywhere in the API', () => {
   it('no client-visible table or view column looks like a count', async () => {
     const cols = await sql<{ table_name: string; column_name: string }>(
@@ -26,7 +32,9 @@ describe('no counts anywhere in the API', () => {
           and has_table_privilege('authenticated', format('%I.%I', c.table_schema, c.table_name), 'SELECT')`,
     );
     expect(cols.length).toBeGreaterThan(50);
-    expect(cols.filter((c) => COUNTISH.test(c.column_name))).toEqual([]);
+    expect(
+      cols.filter((c) => COUNTISH.test(c.column_name) && !LAYOUT_COLUMNS.has(`${c.table_name}.${c.column_name}`)),
+    ).toEqual([]);
   });
 
   it('no client-callable RPC returns a count-like column or a number', async () => {

@@ -141,6 +141,9 @@ public enum BlockedTokens {
         /// Apple HIG · safety.report · list of report reasons shown before the details field · BLOCKED
         /// token: `safety.report.layout.reasons`
         public static var safetyReportLayoutReasons: Never { fatalError("BLOCKED token safety.report.layout.reasons") }
+        /// Yope · walls.browse · order of the people after 'me' in the row · BLOCKED
+        /// token: `walls.browse.layout.rowOrder`
+        public static var wallsBrowseLayoutRowOrder: Never { fatalError("BLOCKED token walls.browse.layout.rowOrder") }
         /// Yope · walls.browse · how the selected person's circle is marked in the row · BLOCKED
         /// token: `walls.browse.layout.selection`
         public static var wallsBrowseLayoutSelection: Never { fatalError("BLOCKED token walls.browse.layout.selection") }
@@ -168,7 +171,7 @@ public enum BlockedTokens {
         /// Yope · week.recap · how the short row splits its width between its tiles · BLOCKED
         /// token: `week.recap.layout.shortRowSplit`
         public static var weekRecapLayoutShortRowSplit: Never { fatalError("BLOCKED token week.recap.layout.shortRowSplit") }
-        /// Locket · widget.lock.rect · what the rectangular / inline Lock Screen widget shows when the newest photo has no caption · BLOCKED
+        /// Locket · widget.lock.rect · what the Lock Screen widgets show in the two cases Locket's small-widget anatomy cannot fill: the newest photo has no caption (rectangular, inline) and the newest item is a collage (all three) · BLOCKED
         /// token: `widget.lock.rect.layout.content`
         public static var widgetLockRectLayoutContent: Never { fatalError("BLOCKED token widget.lock.rect.layout.content") }
     }

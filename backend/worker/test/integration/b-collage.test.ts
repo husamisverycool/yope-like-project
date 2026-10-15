@@ -59,6 +59,7 @@ describe("same-moment collage", () => {
     expect(col.status).toBe("ready");
     expect(col.option).toBe("B");
     expect(col.post_ids).toEqual([a.post.id, b.post.id, c.post.id]);
+    expect(col.page_count).toBe(1);
     const dir = `g/${g.id}/collages/${col.id}/`;
     expect(col.image_path).toMatch(new RegExp(`^${dir}[0-9a-f]{16}/display-1\\.jpg$`));
     expect(col.widget_path).toMatch(/\/widget\.jpg$/);
@@ -102,6 +103,7 @@ describe("30 answers", () => {
     const [col] = await sql(`select * from public.collages where invitation_id = $1`, [inv.id]);
     expect(col.status).toBe("ready");
     expect([...col.post_ids].sort()).toEqual([...posts].sort());
+    expect(col.page_count).toBe(3);
     const names = (await objectsUnder(`g/${g.id}/collages/${col.id}/`)).map((f) => f.split("/").pop()).sort();
     expect(names).toEqual(["display-1.jpg", "display-2.jpg", "display-3.jpg", "master-1.png", "master-2.png", "master-3.png", "share-1.jpg", "share-2.jpg", "share-3.jpg", "widget.jpg"]);
   }, 300_000);

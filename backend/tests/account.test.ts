@@ -183,10 +183,17 @@ describe('app_config / public_app_config', () => {
     expect((svc.data ?? []).length).toBeGreaterThan(10);
   });
 
-  it('documents the unsourced tunables as NULL', async () => {
-    for (const k of ['default_waking_start', 'default_waking_end', 'weekly_recap_local_time', 'free_history_days', 'min_age_years']) {
+  it('documents the sourced defaults and leaves the unsourced tunables NULL', async () => {
+    // migration 0012: default waking window (BeReal sample, design/research/bereal.md §1) and the
+    // fallback collage option pending the owner's choice (design/collage-options/README.md)
+    expect(await getConfig('default_waking_start')).toBe('09:48');
+    expect(await getConfig('default_waking_end')).toBe('21:12');
+    expect(await getConfig('collage_option')).toBe('B');
+    for (const k of ['free_history_days', 'min_age_years']) {
       expect(await getConfig(k), k).toBeNull();
     }
+    // an optional owner override; NULL = the end of each group's waking window (migration 0014)
+    expect(await getConfig('weekly_recap_local_time')).toBeNull();
     expect(await getConfig('invitation_window_seconds')).toBe(120);
     expect(await getConfig('max_group_members')).toBe(30);
     expect(await getConfig('week_start_isodow')).toBe(1);

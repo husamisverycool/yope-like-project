@@ -191,28 +191,33 @@ final class TestUsers: @unchecked Sendable {
             hooks: hooks
         )
         let user = TestUser(id: UserID(id), name: name, phone: phone, password: password, data: data)
-        lock.lock()
-        users.append(user)
-        directories.append(root)
-        lock.unlock()
+        register(user, directory: root)
         return user
     }
 
-    /// Registers an auth user created elsewhere (password sign-in tests) for cleanup.
-    func track(authUserID: String, environment: DataEnvironment?) {
-        guard let environment else { return }
+    private func register(_ user: TestUser, directory: URL?) {
         lock.lock()
-        users.append(TestUser(id: UserID(authUserID), name: "", phone: "", password: "", data: environment))
-        lock.unlock()
+        defer { lock.unlock() }
+        users.append(user)
+        if let directory { directories.append(directory) }
+    }
+
+    private func takeAll() -> ([TestUser], [URL]) {
+        lock.lock()
+        defer { lock.unlock() }
+        let result = (users, directories)
+        users.removeAll()
+        directories.removeAll()
+        return result
+    }
+
+    /// Registers an auth user created elsewhere (password sign-in tests) for cleanup.
+    func track(authUserID: String, environment: DataEnvironment, directory: URL? = nil) {
+        register(TestUser(id: UserID(authUserID), name: "", phone: "", password: "", data: environment), directory: directory)
     }
 
     func cleanUp() async {
-        lock.lock()
-        let all = users
-        let folders = directories
-        users.removeAll()
-        directories.removeAll()
-        lock.unlock()
+        let (all, folders) = takeAll()
         for user in all {
             await user.data.realtime.stopAll()
             try? await user.data.account.deleteAccount()

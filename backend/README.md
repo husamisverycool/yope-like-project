@@ -58,5 +58,6 @@ postgres-meta and supavisor. The tests don't need them; drop the `-x` list if yo
 - Leave `pg_graphql` disabled on the hosted project. The apps use PostgREST only. It
   would respect RLS anyway.
 - The worker must call the scheduler helpers periodically (see docs/API.md, "Worker
-  contract"). `app_config` keys that are still NULL (waking window defaults, weekly
-  recap time, minimum age) keep those features off until their values are sourced.
+  contract"). `app_config` keys that are still NULL keep their features off until sourced
+  (minimum age); `weekly_recap_local_time` is an optional override (NULL = the end of each
+  group's waking window).

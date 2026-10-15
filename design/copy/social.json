@@ -132,14 +132,6 @@
       "level": "SOURCED",
       "notes": "Opens groups.invite. 'friends' kept verbatim; the owner may want the group's member noun for family / roommates groups."
     },
-    "chat.thread.loading": {
-      "text": "Loading",
-      "origin": "verbatim",
-      "source_app": "Yope",
-      "surface": "chat.thread",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png (V-mthu, 2026-05) (HUD text; the only capitalised in-app word, yope.voice.lowercase exceptions)",
-      "level": "SOURCED"
-    },
     "chat.thread.error.title": {
       "text": "couldn’t load this chat",
       "origin": "new",
@@ -585,6 +577,15 @@
       "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall') ('new pic added')",
       "level": "SOURCED"
     },
+    "photo.viewer.error.load": {
+      "text": "couldn’t load this pic",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "photo.viewer",
+      "evidence": "no Yope load error observed; pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.')",
+      "level": "SOURCED"
+    },
     "photo.viewer.error.save": {
       "text": "couldn’t save this pic",
       "origin": "new",
@@ -722,6 +723,24 @@
       "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
       "level": "SOURCED",
       "notes": "The action fragment of the verbatim line, without the question mark and emoji (buttons carry none). Opens camera.capture."
+    },
+    "walls.mine.error.title": {
+      "text": "couldn’t load this wall",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "walls.mine",
+      "evidence": "no Yope wall error observed (yope-b §5); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.')",
+      "level": "SOURCED"
+    },
+    "walls.mine.a11y.settings": {
+      "text": "settings",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "walls.mine",
+      "evidence": "references/auto/yope/frames/b-presskit-profile.png (gear circle); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
+      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "level": "SOURCED"
     },
     "walls.member.empty.title": {
       "text": "no pics from {name} yet",
@@ -878,6 +897,15 @@
       "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
       "level": "SOURCED",
       "notes": "Action fragment of the verbatim line. Opens camera.capture for this group."
+    },
+    "week.recap.error.title": {
+      "text": "couldn’t load this recap",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "week.recap",
+      "evidence": "no Yope recap error observed (yope-b §6); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
+      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.')",
+      "level": "SOURCED"
     },
     "week.recap.pending": {
       "text": "your recap is on its way",

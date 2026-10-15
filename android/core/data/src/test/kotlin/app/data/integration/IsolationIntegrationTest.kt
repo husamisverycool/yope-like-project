@@ -113,8 +113,10 @@ class IsolationIntegrationTest {
         expectApi(ApiError.PostNotFound) { s.reactions.react(post.id, "🔥") }
         expectApi(ApiError.PostNotFound) { s.tags.tagSelf(post.id) }
         expectApi(ApiError.NotGroupMember) { s.albums.saveAlbum(group.id, "x", listOf(post.id)) }
-        // Posting someone else's media, or into a foreign group, fails typed.
-        expectApi(ApiError.MediaNotFound) { s.posts.createPost(media.id, listOf(group.id)) }
+        // Posting into a foreign group, or someone else's media into your own group, fails typed.
+        expectApi(ApiError.NotGroupMember) { s.posts.createPost(media.id, listOf(group.id)) }
+        val strangersGroup = s.groups.createGroup("it-$tag mine", GroupKind.Custom, "UTC")
+        expectApi(ApiError.MediaNotFound) { s.posts.createPost(media.id, listOf(strangersGroup.id)) }
         val own = s.uploads.enqueue(NewPost(kind = MediaKind.Photo, original = tinyJpegFile(files, "s.jpg"), groupIds = listOf(group.id)))
         val refused = s.uploader.run(own) as UploadOutcome.Failed
         assertEquals(ApiError.NotGroupMember, (refused.error as app.data.error.DataError.Api).code)

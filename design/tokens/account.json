@@ -1176,6 +1176,42 @@
       "level": "SOURCED",
       "precision": "±1 pt"
     },
+    "onboarding.widget.size.ctaPaddingH": {
+      "type": "dimension",
+      "value": 18,
+      "unit": "pt",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "element": "CTA horizontal padding (capsule edge to label / to arrow)",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260821-cap-welcome.png (raw iOS screenshot 1206x2622 @3x, pt = px/3; Lazyweb 2026-08-21) capsule x282-923; label x334-766; arrow x816-867",
+      "method": "leading 52 px = 17.3 pt, trailing 56 px = 18.7 pt; mean; this pass",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "onboarding.widget.size.ctaArrowGap": {
+      "type": "dimension",
+      "value": 17,
+      "unit": "pt",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "element": "gap between the CTA label and the arrow",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260821-cap-welcome.png (raw iOS screenshot 1206x2622 @3x, pt = px/3; Lazyweb 2026-08-21) label end x766, arrow start x816",
+      "method": "50 px / 3; this pass",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "onboarding.widget.size.ctaArrow": {
+      "type": "dimension",
+      "value": 17,
+      "unit": "pt",
+      "source_app": "Locket",
+      "surface": "onboarding.widget",
+      "element": "CTA arrow glyph width",
+      "evidence": "references/auto/locket/lazyweb/locket-lazyweb-20260821-cap-welcome.png (raw iOS screenshot 1206x2622 @3x, pt = px/3; Lazyweb 2026-08-21) arrow x816-867",
+      "method": "51 px / 3; this pass",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
     "onboarding.widget.icon.ctaArrow": {
       "type": "icon",
       "value": {

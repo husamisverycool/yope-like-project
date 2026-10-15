@@ -14,8 +14,10 @@ every migration, including the worker's:
   RevenueCat event ledger + `apply_revenuecat_event`;
 - `20261015000013_worker_release_job.sql`: `release_job` (graceful shutdown hands jobs back).
 
-`weekly_recap_local_time` is still NULL: weekly recaps stay off until it is set
-(`update app_config set value = '"HH:MM"' where key = 'weekly_recap_local_time'`).
+- `20261015000014_recap_time.sql`: weekly recaps run at the end of each group's waking window on
+  Sunday (its own hours, else the default window). `weekly_recap_local_time` (NULL) is an optional
+  override: `update app_config set value = '"HH:MM"' where key = 'weekly_recap_local_time'`;
+- `20261015000015_collage_pages.sql`: `collages.page_count`.
 
 ## 2. Build the worker image
 
@@ -117,6 +119,6 @@ Events are applied once per event id; an older event never overwrites a newer on
 
 1. `curl https://<worker-host>/healthz` → 200.
 2. Logs show `runner started` and a `scheduler tick` every minute (`invitations.created` on the
-   first tick of a day; `recaps: "config_missing"` until the recap time is set).
+   first tick of a day; `recaps` > 0 on Sunday evenings, group-local).
 3. Post a photo from a test account: logs show `push batch` for `new_post` and `widget.refresh`.
 4. RevenueCat dashboard → "Send test event": the worker answers 200 `ignored` (TEST events change nothing).

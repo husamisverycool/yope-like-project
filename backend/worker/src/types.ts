@@ -93,6 +93,7 @@ export interface CollageRow {
   invitation_id: string | null;
   option: string;
   post_ids: string[];
+  page_count?: number;
   image_path: string | null;
   widget_path: string | null;
   share_path: string | null;

@@ -210,7 +210,19 @@ data class Collage(
     val status: RenderStatus,
     @SerialName("composed_at") val composedAt: Instant?,
     @SerialName("created_at") val createdAt: Instant,
-)
+    /**
+     * Pages of the composed collage (migration 0015; not yet in docs/API.md §5.13). Page 1 is
+     * [imagePath]; page n is `display-<n>.jpg` in the same folder.
+     */
+    @SerialName("page_count") val pageCount: Int = 1,
+) {
+    /** Storage paths of every page, in order; empty while (re)composing. */
+    fun pagePaths(): List<String> {
+        val first = imagePath ?: return emptyList()
+        val folder = first.substringBeforeLast('/', missingDelimiterValue = "")
+        return listOf(first) + (2..pageCount).map { n -> if (folder.isEmpty()) "display-$n.jpg" else "$folder/display-$n.jpg" }
+    }
+}
 
 /** §5.14 `weekly_recaps` */
 @Serializable

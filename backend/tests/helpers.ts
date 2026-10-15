@@ -30,6 +30,24 @@ export async function sql<T = any>(text: string, params: unknown[] = []): Promis
   const res = await db().query(text, params);
   return res.rows as T[];
 }
+/**
+ * Runs `fn` on one connection inside a transaction that is always rolled back. Use it for
+ * cases that need a different app_config: the change is never visible to other sessions
+ * (the local stack is shared by several test suites) and never outlives the test.
+ */
+export async function inRolledBackTransaction<T>(
+  fn: (q: <R = any>(text: string, params?: unknown[]) => Promise<R[]>) => Promise<T>,
+): Promise<T> {
+  const client = await db().connect();
+  try {
+    await client.query('begin');
+    return await fn(async (text, params = []) => (await client.query(text, params)).rows);
+  } finally {
+    await client.query('rollback');
+    client.release();
+  }
+}
+
 export async function closeDb() {
   if (pool) {
     await pool.end();

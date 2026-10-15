@@ -24,6 +24,7 @@ export const tokens = {
   "camera.capture.duration.videoMax": 10000, // Locket · camera.capture · SOURCED
   "camera.capture.fontSize.coach": 11, // Yope · camera.capture · SOURCED
   "camera.capture.fontWeight.coach": "semibold", // Yope · camera.capture · SOURCED
+  "camera.capture.icon.recordHint": {"ios":"video.fill","android":"Rounded.Videocam"}, // Yope · camera.capture · PLATFORM
   "camera.capture.layout.coach": {"height":34,"cornerRadius":8,"paddingHorizontal":13.6,"textToCloseGap":13.6,"closeGlyph":9.5,"pointerWidth":13.6,"pointerHeight":6.8,"pointerToTarget":2}, // Yope · camera.capture · SOURCED
   "camera.capture.layout.flashGlyph": {"centerFromLeading":28.3,"centerFromBottom":33,"glyphHeight":15}, // Yope · camera.capture · SOURCED
   "camera.capture.layout.shutterPress": {"scale":0.85}, // Locket · camera.capture · SOURCED
@@ -611,7 +612,7 @@ export const tokens = {
   "layout.year.story.dateFormat": {"pattern":"MMMM d","example":"February 25"}, // Spotify Wrapped · year.story · SOURCED
   "layout.year.story.monthFormat": {"pattern":"MMMM","example":"January"}, // Spotify Wrapped · year.story · SOURCED
   "layout.year.story.navigation": {"next":"tap the right half of the canvas","previous":"tap the left half","hold":"none","model":"2024 tap-through (one card per fact)"}, // Spotify Wrapped · year.story · SOURCED
-  "layout.year.story.photoCard": {"box":"square","boxWidthRatio":0.66,"boxCenterYRatio":0.412,"textGap":24.6,"text":"headline below the box, centred","photoFit":"fill the square","collageFit":"fit inside the square on the canvas colour"}, // Spotify Wrapped · year.story · SOURCED
+  "layout.year.story.photoCard": {"box":"square","boxWidthRatio":0.66,"boxCenterYRatio":0.412,"cornerRadius":0,"textGap":24.6,"text":"headline below the box, centred","photoFit":"fill the square","collageFit":"fit inside the square on the canvas colour"}, // Spotify Wrapped · year.story · SOURCED
   "layout.year.story.progress": {"segments":"one per card","completed":"filled (color.year.story.progress.fill)","current":"fills left to right over duration.year.story.card","upcoming":"track (white at opacity.year.story.progress.track)"}, // Spotify Wrapped · year.story · SOURCED
   "layout.year.story.reveal.samples": {"t25":0.125,"t50":0.725,"t75":0.925}, // Spotify Wrapped · year.story · SOURCED
   "layout.year.story.share": {"align":"centre of the canvas","content":"share glyph, then label","shownOn":"every card that states a fact (not the intro, teaser or outro cards)"}, // Spotify Wrapped · year.story · SOURCED
@@ -640,6 +641,7 @@ export const tokens = {
   "onboarding.permission.contacts.size.cardMarginH": 18, // Yope · onboarding.permission.contacts · SOURCED
   "onboarding.permission.notifications.color.secondaryButton": "#171717", // Yope · onboarding.permission.notifications · SOURCED
   "onboarding.permission.notifications.layout.preAlert": {"ios":"one button ('continue') that triggers UNUserNotificationCenter.requestAuthorization; no close, skip or back on this screen","android":"API 33+: same screen, plus a dark secondary button ('maybe later') under the lime one; then the POST_NOTIFICATIONS runtime dialog; API ≤ 32: screen skipped (no runtime permission)","structure":"title (fontSize.global.onboardingTitle, centred, near the top as in Yope's notifications pre-prompt) · detail · primary button pinned to the bottom (size.global.buttonHeightSheet, size.global.buttonMarginHSheet)"}, // Apple HIG · onboarding.permission.notifications · VERIFIED
+  "onboarding.permission.notifications.size.buttonGap": 8, // Yope · onboarding.permission.notifications · SOURCED
   "onboarding.permission.photos.layout.request": {"ios":"no screen: PhotosPicker / PHPickerViewController need no permission; saving asks add-only access (PHPhotoLibrary.requestAuthorization(for: .addOnly)) at the first save, alert text NSPhotoLibraryAddUsageDescription","android":"no screen: Photo Picker (PickVisualMedia); no READ_MEDIA_* permission; saving through MediaStore needs no permission on API 29+","limited":"only if PhotoKit reading is ever added: handle .limited with PHPhotoLibraryPreventAutomaticLimitedAccessAlert = YES and presentLimitedLibraryPicker from an in-app control"}, // Apple HIG · onboarding.permission.photos · VERIFIED
   "onboarding.widget.color.backgroundBottom": "#0B090B", // Locket · onboarding.widget · SOURCED
   "onboarding.widget.color.backgroundTop": "#0E0A07", // Locket · onboarding.widget · SOURCED
@@ -654,7 +656,10 @@ export const tokens = {
   "onboarding.widget.fontWeight.title": "bold", // Locket · onboarding.widget · SOURCED
   "onboarding.widget.icon.ctaArrow": {"ios":"arrow.right","android":"AutoMirrored.Rounded.ArrowForward"}, // Locket · onboarding.widget · PLATFORM
   "onboarding.widget.lineHeight.step": 32, // Locket · onboarding.widget · SOURCED
+  "onboarding.widget.size.ctaArrow": 17, // Locket · onboarding.widget · SOURCED
+  "onboarding.widget.size.ctaArrowGap": 17, // Locket · onboarding.widget · SOURCED
   "onboarding.widget.size.ctaHeight": 54, // Locket · onboarding.widget · SOURCED
+  "onboarding.widget.size.ctaPaddingH": 18, // Locket · onboarding.widget · SOURCED
   "opacity.birthday.contribute.subheading": 0.72, // Tribute · birthday.contribute · VERIFIED
   "opacity.birthday.request.hero.image": 0.7, // Tribute · birthday.request · VERIFIED
   "opacity.birthday.request.message": 0.9, // Tribute · birthday.request · VERIFIED
@@ -712,6 +717,8 @@ export const tokens = {
   "paywall.size.planSelectedHeight": 81, // Locket · paywall · SOURCED
   "paywall.size.subscribeHeight": 58, // Locket · paywall · SOURCED
   "photo.viewer.color.background": "#1C191D", // Yope · photo.viewer · SOURCED
+  "photo.viewer.dimension.actionCenterTop": 33.1, // Yope · photo.viewer · SOURCED
+  "photo.viewer.dimension.actionTrailing": 23.8, // Yope · photo.viewer · SOURCED
   "photo.viewer.dimension.closeCenterX": 39, // Yope · photo.viewer · SOURCED
   "photo.viewer.dimension.closeGlyph": 14.1, // Yope · photo.viewer · SOURCED
   "photo.viewer.dimension.headerCenterY": 20, // Yope · photo.viewer · SOURCED
@@ -726,7 +733,7 @@ export const tokens = {
   "photo.viewer.icon.delete": {"ios":"trash","android":"Rounded.Delete"}, // Apple HIG / Material 3 · photo.viewer · PLATFORM
   "photo.viewer.layout.dateFormat": {"pattern":"MMM d yyyy","example":"Oct 30 2025"}, // Yope · photo.viewer · SOURCED
   "photo.viewer.layout.deleteConfirm": {"ios":"confirmationDialog (action sheet): title, message, destructive button, Cancel at the bottom","android":"M3 AlertDialog: title, text, dismiss + confirm buttons"}, // Apple HIG / Material 3 · photo.viewer · PLATFORM
-  "photo.viewer.layout.menu": {"ios":"Menu (pull-down) from the ••• glyph, items with trailing SF Symbols, destructive items in the system red","android":"DropdownMenu anchored to the ••• glyph","order":"save, i'm in this, then destructive: delete (own) or report, block (others)"}, // Yope + Apple HIG / Material 3 · photo.viewer · PLATFORM
+  "photo.viewer.layout.menu": {"ios":"Menu (pull-down) from the ••• glyph, items with trailing SF Symbols, destructive items in the system red","android":"DropdownMenu anchored to the ••• glyph","order":"save, then destructive: delete (own) or report, block (others)"}, // Yope + Apple HIG / Material 3 · photo.viewer · PLATFORM
   "photo.viewer.layout.photo": {"width":"full screen width","height":"the photo's own aspect (3:4 observed)","corners":"radius.global.photo on all four corners","swipe":"horizontal paging to the adjacent photo"}, // Yope · photo.viewer · SOURCED
   "radius.birthday.contribute.button": 8, // Tribute · birthday.contribute · VERIFIED
   "radius.birthday.contribute.input": 8, // Tribute · birthday.contribute · VERIFIED
@@ -798,6 +805,7 @@ export const tokens = {
   "walls.mine.count.gridColumns": 3, // Yope · walls.mine · SOURCED
   "walls.mine.dimension.gridGap": 4, // Yope · walls.mine · SOURCED
   "walls.mine.dimension.gridInset": 24, // Yope · walls.mine · SOURCED
+  "walls.mine.dimension.titleToGrid": 23.5, // Yope · walls.mine · SOURCED
   "walls.mine.layout.gridOrder": {"order":"wall() items newest first, filled left to right, row by row","items":"photos and same-moment collages, each in one tile, aspect fill","rows":"every row has gridColumns tiles; the last row keeps tile size"}, // Yope · walls.mine · SOURCED
   "walls.mine.radius.gridTile": 6.5, // Yope · walls.mine · SOURCED
   "week.edit.haptic.dragAlign": {"ios":"sensoryFeedback(.alignment) (iOS 17)","android":"SEGMENT_TICK"}, // Apple HIG / Material 3 · week.edit · PLATFORM
@@ -862,7 +870,7 @@ export const tokens = {
   "widget.android.color.avatarPlaceholderBottom": "#828282F5", // Locket · widget.android · SOURCED
   "widget.android.color.avatarPlaceholderTop": "#A0A0A0F5", // Locket · widget.android · SOURCED
   "widget.android.duration.updatePeriod": 86400000, // Locket · widget.android · SOURCED
-  "widget.android.layout.sizes": {"default":"2x2 (minWidth/minHeight 110 dp)","range2x2":"109-306 x 115-276 dp","range4x2":"245-624 x 115-276 dp","range4x3":"245-624 x 185-422 dp","lockScreenHub":"about 4x3 cells"}, // Material 3 · widget.android · VERIFIED
+  "widget.android.layout.sizes": {"defaultSize":"2x2 (minWidth/minHeight 110 dp)","range2x2":"109-306 x 115-276 dp","range4x2":"245-624 x 115-276 dp","range4x3":"245-624 x 185-422 dp","lockScreenHub":"about 4x3 cells"}, // Material 3 · widget.android · VERIFIED
   "widget.android.radius.fallback": 8, // Locket · widget.android · SOURCED
   "widget.android.size.avatar": 32, // Locket · widget.android · SOURCED
   "widget.android.size.captionGap": 6, // Locket · widget.android · SOURCED

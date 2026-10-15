@@ -15,7 +15,7 @@ Generated. These may not ship; release builds fail to compile if code uses any o
 | token `camera.sendto.duration.toastVisible` | camera.sendto | Smallest capture: a 5-second screen recording of Yope right after tapping send (toast in → out). |
 | token `camera.sendto.size.captionMaxLength` | camera.sendto | Not observed. docs/API.md §12.18: the server bound (1000) is integrity only; UI limits come from the design. Smallest capture: type a long caption in Yope's send-to. |
 | token `widget.home.small.color.emptyLabel` | widget.home.small | Smallest capture: one screenshot of a just-added, empty Locket Android widget. |
-| token `widget.lock.rect.layout.content` | widget.lock.rect | Composed part (avatar + caption) is specified in design/surfaces/widget.lock.rect.md; the no-caption case has nothing in Locket's anatomy to show. Smallest capture: one screenshot of the iOS Lock Screen 'Add Widgets' sheet after searching 'Locket' (locket.md §3), or an owner decision. |
+| token `widget.lock.rect.layout.content` | widget.lock.rect | Composed parts (circular = sender avatar; rectangular = avatar + caption; inline = caption) are specified in design/surfaces/widget.lock.*.md. Smallest capture: one screenshot of the iOS Lock Screen 'Add Widgets' sheet after searching 'Locket' (locket.md §3); otherwise an owner decision. |
 | token `daily.capture.fontWeight.countdown` | daily.capture | Not measurable as a weight. Closing step (no owner capture): render the platform font's digits at 23 pt in each weight and pick the one whose stem ÷ digit height is 0.19–0.20. |
 | token `daily.capture.color.overlayControl` | daily.capture | Translucent; one image cannot solve the alpha. Smallest capture: one lossless screenshot of a BeReal post preview over a flat light photo. |
 | token `collage.share.color.pill` | collage.share | Material, not a solid color. Smallest capture: one lossless screenshot of Yope's 'share' pill over a flat white and a flat black area. |
@@ -51,6 +51,7 @@ Generated. These may not ship; release builds fail to compile if code uses any o
 | token `photo.viewer.layout.voiceNote` | photo.viewer | Smallest owner capture: one Yope screen recording opening a photo that has a voice memo. |
 | token `walls.mine.layout.mosaic` | walls.mine | Smallest owner capture: one screenshot of a Yope 2026 profile 'pics' grid scrolled to show three rows. |
 | token `walls.mine.layout.freeformWall` | walls.mine | Smallest owner capture: 20-s recording: own wall, a friend's wall, the 'me & friends' row, tap shuffle once, tap edit (yope-b §14 capture 3). Until closed, walls use the grid above (MERGE_DECISIONS Social S-11). |
+| token `walls.browse.layout.rowOrder` | walls.browse | Smallest owner capture: one screenshot of Yope's 'me & friends' row before and after one friend posts. |
 | token `walls.browse.layout.selection` | walls.browse | Smallest owner capture: one screenshot of Yope's 'me & friends' row after tapping a person. |
 | token `week.recap.layout.shortRowSplit` | week.recap | Smallest owner capture: one screen recording of a Yope weekly recap card for a week with only 2–5 photos (the capture named in design/collage-options/README.md). |
 | token `week.recap.dimension.shortRowHeight` | week.recap | Smallest owner capture: same capture as week.recap.layout.shortRowSplit. |
@@ -62,6 +63,25 @@ Generated. These may not ship; release builds fail to compile if code uses any o
 | token `week.history.color.emptyTileText` | week.history | Smallest owner capture: one screenshot of Retro's profile in dark mode. Retro's dark-mode colours were not measured (design/research/retro-timehop.md §week.history 'Not found: Dark-mode colours'); the app is dark only (layout.global.appearance, F-1). |
 | token `week.history.layout.weekMenu` | week.history | Smallest owner capture: one screenshot of Retro's week '•••' menu opened. |
 | token `albums.list.layout.yopeAlbums` | albums.list | Smallest owner capture: two screenshots: Yope's album list and one open album (yope-b §14 capture 5). |
+| copy `auth.agegate.underAge.title` | auth.agegate | uses {app_name}; owner has not named the app |
+| copy `onboarding.widget.step.ios.4` | onboarding.widget | uses {app_name}; owner has not named the app |
+| copy `onboarding.widget.step.android.3` | onboarding.widget | uses {app_name}; owner has not named the app |
+| copy `groups.invite.link.message` | groups.invite | uses {app_name}; owner has not named the app |
+| copy `settings.root.premium.title` | settings.root | uses {app_name}; owner has not named the app |
+| copy `settings.root.premium.subtitle` | settings.root | uses {app_name}; owner has not named the app |
+| copy `settings.notifications.off.footer` | settings.notifications | uses {app_name}; owner has not named the app |
+| copy `safety.report.explanation` | safety.report | uses {app_name}; owner has not named the app |
+| copy `system.permissions.rationale.camera.message` | system.permissions | uses {app_name}; owner has not named the app |
+| copy `system.permissions.rationale.microphone.message` | system.permissions | uses {app_name}; owner has not named the app |
+| copy `system.permissions.rationale.notifications.message` | system.permissions | uses {app_name}; owner has not named the app |
+| copy `system.permissions.rationale.contacts.message` | system.permissions | uses {app_name}; owner has not named the app |
+| copy `paywall.title` | paywall | uses {app_name}; owner has not named the app |
+| copy `paywall.subtitle` | paywall | uses {app_name}; owner has not named the app |
+| copy `paywall.perk.history.emoji` | paywall | BLOCKED: no sourced emoji for this perk (Locket's 'Unlimited friends' icon is a heart on fire, close to streak imagery). Smallest owner input: pick one emoji, or drop the icon for this perk. The perk itself is hidden while history is unlimited. |
+| copy `paywall.cta` | paywall | uses {app_name}; owner has not named the app |
+| copy `paywall.plans.title` | paywall | uses {app_name}; owner has not named the app |
+| copy `paywall.legal.optional` | paywall | uses {app_name}; owner has not named the app |
+| copy `paywall.welcome.body` | paywall | uses {app_name}; owner has not named the app |
 | copy `widget.home.small.gallery.name` | widget.home.small | uses {app_name}; owner has not named the app |
 | copy `widget.lock.rect.gallery.name` | widget.lock.rect | uses {app_name}; owner has not named the app |
 | copy `widget.android.label` | widget.android | uses {app_name}; owner has not named the app |

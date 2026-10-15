@@ -39,7 +39,7 @@ text block + content-width yellow capsule) — an approximation noted in Gaps.
 | background | `onboarding.widget.color.backgroundTop`, `.backgroundBottom` (linear, top → bottom) | — | — |
 | title | `onboarding.widget.fontSize.title`, `.fontWeight.title`, `.color.title` | `onboarding.widget.title` | static |
 | steps | `onboarding.widget.fontSize.step`, `.fontWeight.step`, `.lineHeight.step`, `.color.step` | step keys above | static text; the numerals are part of the rendered text |
-| CTA | height `onboarding.widget.size.ctaHeight`, fill `.color.cta`, label `.fontSize.ctaLabel` bold in `.color.ctaLabel`, arrow `.icon.ctaArrow` in `.color.ctaLabel`, shape `radius.global.capsule`, horizontal padding = (214 − label − arrow) / 2 as in LW (label-to-arrow gap ≈ 12 pt in LW, not tokenised: see Gaps) | `onboarding.widget.continue` | always enabled; moves on whether or not a widget was added (no check, no gate) |
+| CTA | height `onboarding.widget.size.ctaHeight`, fill `.color.cta`, label `.fontSize.ctaLabel` bold in `.color.ctaLabel`, arrow `.icon.ctaArrow` (width `.size.ctaArrow`) in `.color.ctaLabel` after `.size.ctaArrowGap`, padding `.size.ctaPaddingH` on both sides, shape `radius.global.capsule` | `onboarding.widget.continue` | always enabled; moves on whether or not a widget was added (no check, no gate) |
 
 ## States
 
@@ -88,5 +88,4 @@ otherwise `groups.list` (whose empty state offers `groups.create`).
 | item | status | smallest capture |
 |---|---|---|
 | tutorial screen layout (title size, step style, illustration) | approximation from the welcome screen of the same flow | screenshots (or a 30-s recording) of Locket's in-app Settings → "Widget Tutorial" on an iPhone |
-| CTA inner spacing (label ↔ arrow, side padding) | measured only as the total 214 pt for another label | same capture |
 | illustration | none (Locket's art is do-not-copy) | owner art, optional |

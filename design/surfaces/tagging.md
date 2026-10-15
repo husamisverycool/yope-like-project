@@ -16,8 +16,8 @@ this surface shows only your own state.
 |---|---|
 | `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png` | white secondary pill ("enable") on black; toast style |
 | `references/auto/yope/store/yope-store-04.png` | white pill with black label (`color.global.surfaceLight` / `onSurfaceLight`) |
-| `references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-*.png` | coach tooltip ("hold down to record"): lime, ≤ 6 words, ✕ |
-| send-to rows in `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-*.png` | the selection check (empty ring / filled check in system blue) |
+| `references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png` | coach tooltip ("hold down to record"): lime, ≤ 6 words, ✕ |
+| send-to rows in `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png` | the selection check (empty ring / filled check in system blue) |
 
 ## Structure
 

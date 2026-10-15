@@ -33,6 +33,114 @@ public enum Copy {
     public static var albumsViewToastDeleted: String { CopyLookup.string("albums.view.toast.deleted", default: "album deleted") }
     /// "album renamed" — Yope · albums.view · new · SOURCED
     public static var albumsViewToastRenamed: String { CopyLookup.string("albums.view.toast.renamed", default: "album renamed") }
+    /// "continue" — Yope · auth.agegate · verbatim · SOURCED
+    public static var authAgegateContinue: String { CopyLookup.string("auth.agegate.continue", default: "continue") }
+    /// "check the date and try again" — Yope · auth.agegate · new · SOURCED
+    public static var authAgegateErrorInvalidDate: String { CopyLookup.string("auth.agegate.error.invalidDate", default: "check the date and try again") }
+    /// "birthday" — Yope · auth.agegate · new · SOURCED
+    public static var authAgegateFieldAccessibilityLabel: String { CopyLookup.string("auth.agegate.field.accessibilityLabel", default: "birthday") }
+    /// "birthday ({date_format})" — Yope · auth.agegate · new · SOURCED
+    public static func authAgegateFieldPlaceholder(dateFormat: String) -> String { CopyLookup.format("auth.agegate.field.placeholder", default: "birthday ({date_format})", ["date_format": dateFormat]) }
+    /// "try again soon. your next memories are waiting." — Yope · auth.agegate · new · SOURCED
+    public static var authAgegateNotConfiguredDetail: String { CopyLookup.string("auth.agegate.notConfigured.detail", default: "try again soon. your next memories are waiting.") }
+    /// "try again" — Yope · auth.agegate · new · SOURCED
+    public static var authAgegateNotConfiguredRetry: String { CopyLookup.string("auth.agegate.notConfigured.retry", default: "try again") }
+    /// "sign-up isn’t open yet" — Yope · auth.agegate · new · SOURCED
+    public static var authAgegateNotConfiguredTitle: String { CopyLookup.string("auth.agegate.notConfigured.title", default: "sign-up isn’t open yet") }
+    /// "connect to the internet to keep going. your next memories are waiting." — Yope · auth.agegate · new · SOURCED
+    public static var authAgegateOfflineDetail: String { CopyLookup.string("auth.agegate.offline.detail", default: "connect to the internet to keep going. your next memories are waiting.") }
+    /// "tell my groups when it’s my birthday" — Yope · auth.agegate · new · SOURCED
+    public static var authAgegateOptInAccessibilityLabel: String { CopyLookup.string("auth.agegate.optIn.accessibilityLabel", default: "tell my groups when it’s my birthday") }
+    /// "we’ll save your birthday for this" — Yope · auth.agegate · new · SOURCED
+    public static var authAgegateOptInDetail: String { CopyLookup.string("auth.agegate.optIn.detail", default: "we’ll save your birthday for this") }
+    /// "tell my groups when it’s my birthday" — Yope · auth.agegate · new · SOURCED
+    public static var authAgegateOptInLabel: String { CopyLookup.string("auth.agegate.optIn.label", default: "tell my groups when it’s my birthday") }
+    /// "we use it to check your age. we don’t save it." — Yope · auth.agegate · new · SOURCED
+    public static var authAgegateSubtitle: String { CopyLookup.string("auth.agegate.subtitle", default: "we use it to check your age. we don’t save it.") }
+    /// "when’s your birthday?" — Yope · auth.agegate · new · SOURCED
+    public static var authAgegateTitle: String { CopyLookup.string("auth.agegate.title", default: "when’s your birthday?") }
+    /// "we didn’t save your birthday or your number." — Yope · auth.agegate · new · SOURCED
+    public static var authAgegateUnderAgeDetail: String { CopyLookup.string("auth.agegate.underAge.detail", default: "we didn’t save your birthday or your number.") }
+    /// "change number" — Yope · auth.code · new · SOURCED
+    public static var authCodeBackAccessibilityLabel: String { CopyLookup.string("auth.code.back.accessibilityLabel", default: "change number") }
+    /// "continue" — Yope · auth.code · verbatim · SOURCED
+    public static var authCodeContinue: String { CopyLookup.string("auth.code.continue", default: "continue") }
+    /// "that code expired. send a new one and try again." — Yope · auth.code · new · SOURCED
+    public static var authCodeErrorExpired: String { CopyLookup.string("auth.code.error.expired", default: "that code expired. send a new one and try again.") }
+    /// "too many tries. wait a minute, then send a new code." — Yope · auth.code · new · SOURCED
+    public static var authCodeErrorTooMany: String { CopyLookup.string("auth.code.error.tooMany", default: "too many tries. wait a minute, then send a new code.") }
+    /// "that code didn’t work. check it and try again." — Yope · auth.code · new · SOURCED
+    public static var authCodeErrorWrong: String { CopyLookup.string("auth.code.error.wrong", default: "that code didn’t work. check it and try again.") }
+    /// "verification code" — Yope · auth.code · new · SOURCED
+    public static var authCodeFieldAccessibilityLabel: String { CopyLookup.string("auth.code.field.accessibilityLabel", default: "verification code") }
+    /// "code" — Yope · auth.code · new · SOURCED
+    public static var authCodeFieldPlaceholder: String { CopyLookup.string("auth.code.field.placeholder", default: "code") }
+    /// "connect to the internet to check your code. your next memories are waiting." — Yope · auth.code · new · SOURCED
+    public static var authCodeOfflineDetail: String { CopyLookup.string("auth.code.offline.detail", default: "connect to the internet to check your code. your next memories are waiting.") }
+    /// "send new code" — Yope · auth.code · new · SOURCED
+    public static var authCodeResend: String { CopyLookup.string("auth.code.resend", default: "send new code") }
+    /// "we sent it to {phone}" — Yope · auth.code · new · SOURCED
+    public static func authCodeSubtitle(phone: String) -> String { CopyLookup.format("auth.code.subtitle", default: "we sent it to {phone}", ["phone": phone]) }
+    /// "enter the code" — Yope · auth.code · new · SOURCED
+    public static var authCodeTitle: String { CopyLookup.string("auth.code.title", default: "enter the code") }
+    /// "new code sent" — Yope · auth.code · new · SOURCED
+    public static var authCodeToastResent: String { CopyLookup.string("auth.code.toast.resent", default: "new code sent") }
+    /// "continue" — Yope · auth.phone · verbatim · SOURCED
+    public static var authPhoneContinue: String { CopyLookup.string("auth.phone.continue", default: "continue") }
+    /// "check your number and try again" — Yope · auth.phone · new · SOURCED
+    public static var authPhoneErrorInvalidNumber: String { CopyLookup.string("auth.phone.error.invalidNumber", default: "check your number and try again") }
+    /// "you can ask for a new code in a minute" — Yope · auth.phone · new · SOURCED
+    public static var authPhoneErrorRateLimited: String { CopyLookup.string("auth.phone.error.rateLimited", default: "you can ask for a new code in a minute") }
+    /// "we couldn’t send your code. try again in a moment." — Yope · auth.phone · new · SOURCED
+    public static var authPhoneErrorSendFailed: String { CopyLookup.string("auth.phone.error.sendFailed", default: "we couldn’t send your code. try again in a moment.") }
+    /// "phone number" — Yope · auth.phone · new · SOURCED
+    public static var authPhoneFieldAccessibilityLabel: String { CopyLookup.string("auth.phone.field.accessibilityLabel", default: "phone number") }
+    /// "phone number" — Yope · auth.phone · new · SOURCED
+    public static var authPhoneFieldPlaceholder: String { CopyLookup.string("auth.phone.field.placeholder", default: "phone number") }
+    /// "Privacy Policy" — Yope · auth.phone · verbatim · SOURCED
+    public static var authPhoneLegalPrivacy: String { CopyLookup.string("auth.phone.legal.privacy", default: "Privacy Policy") }
+    /// "Terms of Use" — Yope · auth.phone · verbatim · SOURCED
+    public static var authPhoneLegalTerms: String { CopyLookup.string("auth.phone.legal.terms", default: "Terms of Use") }
+    /// "by continuing you agree to our Terms of Use and Privacy Policy" — Yope · auth.phone · verbatim · SOURCED
+    public static var authPhoneLegalText: String { CopyLookup.string("auth.phone.legal.text", default: "by continuing you agree to our Terms of Use and Privacy Policy") }
+    /// "connect to the internet to sign up. your next memories are waiting." — Yope · auth.phone · new · SOURCED
+    public static var authPhoneOfflineDetail: String { CopyLookup.string("auth.phone.offline.detail", default: "connect to the internet to sign up. your next memories are waiting.") }
+    /// "try again" — Yope · auth.phone · new · SOURCED
+    public static var authPhoneOfflineRetry: String { CopyLookup.string("auth.phone.offline.retry", default: "try again") }
+    /// "you’re offline" — Yope · auth.phone · new · SOURCED
+    public static var authPhoneOfflineTitle: String { CopyLookup.string("auth.phone.offline.title", default: "you’re offline") }
+    /// "to join or create your groups" — Yope · auth.phone · adapted · SOURCED
+    public static var authPhoneSubtitle: String { CopyLookup.string("auth.phone.subtitle", default: "to join or create your groups") }
+    /// "sign up or log in" — Yope · auth.phone · verbatim · SOURCED
+    public static var authPhoneTitle: String { CopyLookup.string("auth.phone.title", default: "sign up or log in") }
+    /// "code sent" — Yope · auth.phone · new · SOURCED
+    public static var authPhoneToastCodeSent: String { CopyLookup.string("auth.phone.toast.codeSent", default: "code sent") }
+    /// "add a photo" — Yope · auth.profile · new · SOURCED
+    public static var authProfileAvatarAccessibilityLabel: String { CopyLookup.string("auth.profile.avatar.accessibilityLabel", default: "add a photo") }
+    /// "add a photo (optional)" — Yope · auth.profile · new · SOURCED
+    public static var authProfileAvatarAdd: String { CopyLookup.string("auth.profile.avatar.add", default: "add a photo (optional)") }
+    /// "change photo" — Yope · auth.profile · new · SOURCED
+    public static var authProfileAvatarChangeAccessibilityLabel: String { CopyLookup.string("auth.profile.avatar.changeAccessibilityLabel", default: "change photo") }
+    /// "continue" — Yope · auth.profile · verbatim · SOURCED
+    public static var authProfileContinue: String { CopyLookup.string("auth.profile.continue", default: "continue") }
+    /// "your name didn’t save. try again in a moment." — Yope · auth.profile · new · SOURCED
+    public static var authProfileErrorSave: String { CopyLookup.string("auth.profile.error.save", default: "your name didn’t save. try again in a moment.") }
+    /// "your photo didn’t upload. try again, or keep going without it." — Yope · auth.profile · new · SOURCED
+    public static var authProfileErrorUpload: String { CopyLookup.string("auth.profile.error.upload", default: "your photo didn’t upload. try again, or keep going without it.") }
+    /// "your name" — Yope · auth.profile · new · SOURCED
+    public static var authProfileFieldAccessibilityLabel: String { CopyLookup.string("auth.profile.field.accessibilityLabel", default: "your name") }
+    /// "your first name shows on the invite links you share" — Yope · auth.profile · new · SOURCED
+    public static var authProfileFieldNote: String { CopyLookup.string("auth.profile.field.note", default: "your first name shows on the invite links you share") }
+    /// "your name" — Yope · auth.profile · new · SOURCED
+    public static var authProfileFieldPlaceholder: String { CopyLookup.string("auth.profile.field.placeholder", default: "your name") }
+    /// "connect to the internet to finish. your next memories are waiting." — Yope · auth.profile · new · SOURCED
+    public static var authProfileOfflineDetail: String { CopyLookup.string("auth.profile.offline.detail", default: "connect to the internet to finish. your next memories are waiting.") }
+    /// "people in your groups see your name & photo" — Yope · auth.profile · new · SOURCED
+    public static var authProfileSubtitle: String { CopyLookup.string("auth.profile.subtitle", default: "people in your groups see your name & photo") }
+    /// "what’s your name?" — Yope · auth.profile · new · SOURCED
+    public static var authProfileTitle: String { CopyLookup.string("auth.profile.title", default: "what’s your name?") }
+    /// "Close" — Apple HIG / Material 3 · birthday.add · new · PLATFORM
+    public static var birthdayAddA11yClose: String { CopyLookup.string("birthday.add.a11y.close", default: "Close") }
     /// "birthday added" — Yope · birthday.add · new · SOURCED
     public static var birthdayAddAdded: String { CopyLookup.string("birthday.add.added", default: "birthday added") }
     /// "add my birthday" — Yope · birthday.add · new · SOURCED
@@ -287,14 +395,16 @@ public enum Copy {
     public static var chatReactionsPickerPopular: String { CopyLookup.string("chat.reactions.picker.popular", default: "Popular") }
     /// "Search" — Locket · chat.reactions · verbatim · SOURCED
     public static var chatReactionsPickerSearch: String { CopyLookup.string("chat.reactions.picker.search", default: "Search") }
-    /// "{name} reacted {emoji} to your pic" — Locket · chat.reactions · adapted · SOURCED
-    public static func chatReactionsPushBody(name: String, emoji: String) -> String { CopyLookup.format("chat.reactions.push.body", default: "{name} reacted {emoji} to your pic", ["name": name, "emoji": emoji]) }
     /// "back" — Yope · chat.thread · new · SOURCED
     public static var chatThreadA11yBack: String { CopyLookup.string("chat.thread.a11y.back", default: "back") }
     /// "caption: {caption}" — Yope · chat.thread · new · SOURCED
     public static func chatThreadA11yCaption(caption: String) -> String { CopyLookup.format("chat.thread.a11y.caption", default: "caption: {caption}", ["caption": caption]) }
     /// "{group_name}, group info" — Yope · chat.thread · new · SOURCED
     public static func chatThreadA11yGroupCapsule(groupName: String) -> String { CopyLookup.format("chat.thread.a11y.groupCapsule", default: "{group_name}, group info", ["group_name": groupName]) }
+    /// "{name}, {message}" — Yope · chat.thread · new · SOURCED
+    public static func chatThreadA11yMessage(name: String, message: String) -> String { CopyLookup.format("chat.thread.a11y.message", default: "{name}, {message}", ["name": name, "message": message]) }
+    /// "you, {message}" — Yope · chat.thread · new · SOURCED
+    public static func chatThreadA11yMessageMine(message: String) -> String { CopyLookup.format("chat.thread.a11y.messageMine", default: "you, {message}", ["message": message]) }
     /// "{name}’s pic, {time}" — Yope · chat.thread · new · SOURCED
     public static func chatThreadA11yPhoto(name: String, time: String) -> String { CopyLookup.format("chat.thread.a11y.photo", default: "{name}’s pic, {time}", ["name": name, "time": time]) }
     /// "your pic, {time}" — Yope · chat.thread · new · SOURCED
@@ -331,8 +441,6 @@ public enum Copy {
     public static var chatThreadOfflineDetail: String { CopyLookup.string("chat.thread.offline.detail", default: "your group’s pics will be right here when you’re back") }
     /// "you’re offline" — Yope · chat.thread · new · SOURCED
     public static var chatThreadOfflineTitle: String { CopyLookup.string("chat.thread.offline.title", default: "you’re offline") }
-    /// "{name} replied to your pic" — Yope · chat.thread · new · SOURCED
-    public static func chatThreadPushReply(name: String) -> String { CopyLookup.format("chat.thread.push.reply", default: "{name} replied to your pic", ["name": name]) }
     /// "pic" — Yope · chat.thread · verbatim · SOURCED
     public static var chatThreadReplyPhotoLabel: String { CopyLookup.string("chat.thread.reply.photoLabel", default: "pic") }
     /// "couldn’t send — tap to try again" — Yope · chat.thread · new · SOURCED
@@ -407,6 +515,272 @@ public enum Copy {
     public static var dailyCaptureSend: String { CopyLookup.string("daily.capture.send", default: "SEND") }
     /// "Back and front photos from {name}" — BeReal · daily.dualimage · new · SOURCED
     public static func dailyDualimageA11yLabel(name: String) -> String { CopyLookup.format("daily.dualimage.a11y.label", default: "Back and front photos from {name}", ["name": name]) }
+    /// "close" — Yope · groups.create · new · SOURCED
+    public static var groupsCreateCloseAccessibilityLabel: String { CopyLookup.string("groups.create.close.accessibilityLabel", default: "close") }
+    /// "add a cover photo" — Yope · groups.create · new · SOURCED
+    public static var groupsCreateCoverAccessibilityLabel: String { CopyLookup.string("groups.create.cover.accessibilityLabel", default: "add a cover photo") }
+    /// "change cover photo" — Yope · groups.create · new · SOURCED
+    public static var groupsCreateCoverChangeAccessibilityLabel: String { CopyLookup.string("groups.create.cover.changeAccessibilityLabel", default: "change cover photo") }
+    /// "create group" — Yope · groups.create · verbatim · SOURCED
+    public static var groupsCreateCta: String { CopyLookup.string("groups.create.cta", default: "create group") }
+    /// "your cover didn’t upload. try again, or create the group without it." — Yope · groups.create · new · SOURCED
+    public static var groupsCreateErrorCover: String { CopyLookup.string("groups.create.error.cover", default: "your cover didn’t upload. try again, or create the group without it.") }
+    /// "your group wasn’t created. try again in a moment." — Yope · groups.create · new · SOURCED
+    public static var groupsCreateErrorFailed: String { CopyLookup.string("groups.create.error.failed", default: "your group wasn’t created. try again in a moment.") }
+    /// "your changes didn’t save. try again in a moment." — Yope · groups.create · new · SOURCED
+    public static var groupsCreateErrorSaveFailed: String { CopyLookup.string("groups.create.error.saveFailed", default: "your changes didn’t save. try again in a moment.") }
+    /// "Loading" — Yope · groups.create · verbatim · SOURCED
+    public static var groupsCreateHudLoading: String { CopyLookup.string("groups.create.hud.loading", default: "Loading") }
+    /// "group name" — Yope · groups.create · verbatim · SOURCED
+    public static var groupsCreateNameAccessibilityLabel: String { CopyLookup.string("groups.create.name.accessibilityLabel", default: "group name") }
+    /// "name group" — Yope · groups.create · adapted · SOURCED
+    public static var groupsCreateNamePlaceholder: String { CopyLookup.string("groups.create.name.placeholder", default: "name group") }
+    /// "you’re offline. connect to the internet and try again." — Yope · groups.create · new · SOURCED
+    public static var groupsCreateOffline: String { CopyLookup.string("groups.create.offline", default: "you’re offline. connect to the internet and try again.") }
+    /// "save" — Yope · groups.create · new · SOURCED
+    public static var groupsCreateSave: String { CopyLookup.string("groups.create.save", default: "save") }
+    /// "new group" — Yope · groups.create · verbatim · SOURCED
+    public static var groupsCreateTitle: String { CopyLookup.string("groups.create.title", default: "new group") }
+    /// "edit group" — Yope · groups.create · new · SOURCED
+    public static var groupsCreateTitleEdit: String { CopyLookup.string("groups.create.titleEdit", default: "edit group") }
+    /// "custom" — Yope · groups.create · new · SOURCED
+    public static var groupsCreateTypeCustom: String { CopyLookup.string("groups.create.type.custom", default: "custom") }
+    /// "family" — Yope · groups.create · new · SOURCED
+    public static var groupsCreateTypeFamily: String { CopyLookup.string("groups.create.type.family", default: "family") }
+    /// "friends" — Yope · groups.create · new · SOURCED
+    public static var groupsCreateTypeFriends: String { CopyLookup.string("groups.create.type.friends", default: "friends") }
+    /// "what kind of group?" — Yope · groups.create · new · SOURCED
+    public static var groupsCreateTypeLabel: String { CopyLookup.string("groups.create.type.label", default: "what kind of group?") }
+    /// "roommates" — Yope · groups.create · new · SOURCED
+    public static var groupsCreateTypeRoommates: String { CopyLookup.string("groups.create.type.roommates", default: "roommates") }
+    /// "close" — Yope · groups.invite · new · SOURCED
+    public static var groupsInviteCloseAccessibilityLabel: String { CopyLookup.string("groups.invite.close.accessibilityLabel", default: "close") }
+    /// "invite" — Yope · groups.invite · new · SOURCED
+    public static var groupsInviteContactsInvite: String { CopyLookup.string("groups.invite.contacts.invite", default: "invite") }
+    /// "invited" — Yope · groups.invite · new · SOURCED
+    public static var groupsInviteContactsInvited: String { CopyLookup.string("groups.invite.contacts.invited", default: "invited") }
+    /// "from your contacts" — Yope · groups.invite · new · SOURCED
+    public static var groupsInviteContactsLabel: String { CopyLookup.string("groups.invite.contacts.label", default: "from your contacts") }
+    /// "check your connection and try again" — Yope · groups.invite · new · SOURCED
+    public static var groupsInviteErrorDetail: String { CopyLookup.string("groups.invite.error.detail", default: "check your connection and try again") }
+    /// "try again" — Yope · groups.invite · new · SOURCED
+    public static var groupsInviteErrorRetry: String { CopyLookup.string("groups.invite.error.retry", default: "try again") }
+    /// "the invite link didn’t load" — Yope · groups.invite · new · SOURCED
+    public static var groupsInviteErrorTitle: String { CopyLookup.string("groups.invite.error.title", default: "the invite link didn’t load") }
+    /// "groups can have up to {max_members} people" — Yope · groups.invite · new · SOURCED
+    public static func groupsInviteFullDetail(maxMembers: String) -> String { CopyLookup.format("groups.invite.full.detail", default: "groups can have up to {max_members} people", ["max_members": maxMembers]) }
+    /// "{group_name} is full" — Yope · groups.invite · new · SOURCED
+    public static func groupsInviteFullTitle(groupName: String) -> String { CopyLookup.format("groups.invite.full.title", default: "{group_name} is full", ["group_name": groupName]) }
+    /// "this link works until {date}" — Yope · groups.invite · new · SOURCED
+    public static func groupsInviteLinkExpiry(date: String) -> String { CopyLookup.format("groups.invite.link.expiry", default: "this link works until {date}", ["date": date]) }
+    /// "share this group link to invite" — Yope · groups.invite · adapted · SOURCED
+    public static var groupsInviteLinkLabel: String { CopyLookup.string("groups.invite.link.label", default: "share this group link to invite") }
+    /// "share invite" — Yope · groups.invite · verbatim · SOURCED
+    public static var groupsInviteLinkShare: String { CopyLookup.string("groups.invite.link.share", default: "share invite") }
+    /// "link turned off" — Yope · groups.invite · new · SOURCED
+    public static var groupsInviteLinkTurnedOff: String { CopyLookup.string("groups.invite.link.turnedOff", default: "link turned off") }
+    /// "turn off link" — Yope · groups.invite · new · SOURCED
+    public static var groupsInviteLinkTurnOff: String { CopyLookup.string("groups.invite.link.turnOff", default: "turn off link") }
+    /// "Cancel" — Apple HIG · groups.invite · verbatim · VERIFIED
+    public static var groupsInviteLinkTurnOffCancel: String { CopyLookup.string("groups.invite.link.turnOff.cancel", default: "Cancel") }
+    /// "Turn Off" — Apple HIG · groups.invite · new · VERIFIED
+    public static var groupsInviteLinkTurnOffConfirm: String { CopyLookup.string("groups.invite.link.turnOff.confirm", default: "Turn Off") }
+    /// "People who have it won’t be able to join with it. You can share a new link anytime." — Apple HIG · groups.invite · new · VERIFIED
+    public static var groupsInviteLinkTurnOffMessage: String { CopyLookup.string("groups.invite.link.turnOff.message", default: "People who have it won’t be able to join with it. You can share a new link anytime.") }
+    /// "Turn off this link?" — Apple HIG · groups.invite · new · VERIFIED
+    public static var groupsInviteLinkTurnOffTitle: String { CopyLookup.string("groups.invite.link.turnOff.title", default: "Turn off this link?") }
+    /// "add people to {group_name}" — Yope · groups.invite · adapted · SOURCED
+    public static func groupsInviteTitleCustom(groupName: String) -> String { CopyLookup.format("groups.invite.title.custom", default: "add people to {group_name}", ["group_name": groupName]) }
+    /// "add family to {group_name}" — Yope · groups.invite · adapted · SOURCED
+    public static func groupsInviteTitleFamily(groupName: String) -> String { CopyLookup.format("groups.invite.title.family", default: "add family to {group_name}", ["group_name": groupName]) }
+    /// "add friends to {group_name}" — Yope · groups.invite · adapted · SOURCED
+    public static func groupsInviteTitleFriends(groupName: String) -> String { CopyLookup.format("groups.invite.title.friends", default: "add friends to {group_name}", ["group_name": groupName]) }
+    /// "add roommates to {group_name}" — Yope · groups.invite · adapted · SOURCED
+    public static func groupsInviteTitleRoommates(groupName: String) -> String { CopyLookup.format("groups.invite.title.roommates", default: "add roommates to {group_name}", ["group_name": groupName]) }
+    /// "newest pic, from {first_name} in {group_name}" — Yope · groups.list · new · SOURCED
+    public static func groupsListCoverAccessibilityLabel(firstName: String, groupName: String) -> String { CopyLookup.format("groups.list.cover.accessibilityLabel", default: "newest pic, from {first_name} in {group_name}", ["first_name": firstName, "group_name": groupName]) }
+    /// "create group" — Yope · groups.list · verbatim · SOURCED
+    public static var groupsListEmptyButton: String { CopyLookup.string("groups.list.empty.button", default: "create group") }
+    /// "to share pics daily and get recaps on your memories" — Yope · groups.list · verbatim · SOURCED
+    public static var groupsListEmptyDetail: String { CopyLookup.string("groups.list.empty.detail", default: "to share pics daily and get recaps on your memories") }
+    /// "create your first group" — Yope · groups.list · verbatim · SOURCED
+    public static var groupsListEmptyTitle: String { CopyLookup.string("groups.list.empty.title", default: "create your first group") }
+    /// "check your connection and try again" — Yope · groups.list · new · SOURCED
+    public static var groupsListErrorDetail: String { CopyLookup.string("groups.list.error.detail", default: "check your connection and try again") }
+    /// "try again" — Yope · groups.list · new · SOURCED
+    public static var groupsListErrorRetry: String { CopyLookup.string("groups.list.error.retry", default: "try again") }
+    /// "your groups didn’t load" — Yope · groups.list · new · SOURCED
+    public static var groupsListErrorTitle: String { CopyLookup.string("groups.list.error.title", default: "your groups didn’t load") }
+    /// "new group" — Yope · groups.list · verbatim · SOURCED
+    public static var groupsListHeaderAddAccessibilityLabel: String { CopyLookup.string("groups.list.header.add.accessibilityLabel", default: "new group") }
+    /// "your groups will be here when you’re back online" — Yope · groups.list · new · SOURCED
+    public static var groupsListOfflineDetail: String { CopyLookup.string("groups.list.offline.detail", default: "your groups will be here when you’re back online") }
+    /// "you’re offline" — Yope · groups.list · new · SOURCED
+    public static var groupsListOfflineTitle: String { CopyLookup.string("groups.list.offline.title", default: "you’re offline") }
+    /// "{group_name}, {subtitle}" — Yope · groups.list · new · SOURCED
+    public static func groupsListRowAccessibilityLabel(groupName: String, subtitle: String) -> String { CopyLookup.format("groups.list.row.accessibilityLabel", default: "{group_name}, {subtitle}", ["group_name": groupName, "subtitle": subtitle]) }
+    /// "take a pic for {group_name}" — Yope · groups.list · new · SOURCED
+    public static func groupsListRowCameraAccessibilityLabel(groupName: String) -> String { CopyLookup.format("groups.list.row.camera.accessibilityLabel", default: "take a pic for {group_name}", ["group_name": groupName]) }
+    /// "new pic added · {time}" — Yope · groups.list · adapted · SOURCED
+    public static func groupsListRowNewPic(time: String) -> String { CopyLookup.format("groups.list.row.newPic", default: "new pic added · {time}", ["time": time]) }
+    /// "new group!✨ share a pic?" — Yope · groups.list · new · SOURCED
+    public static var groupsListRowNoPics: String { CopyLookup.string("groups.list.row.noPics", default: "new group!✨ share a pic?") }
+    /// "{first_name} sent a pic · {time}" — Yope · groups.list · adapted · SOURCED
+    public static func groupsListRowSentPic(firstName: String, time: String) -> String { CopyLookup.format("groups.list.row.sentPic", default: "{first_name} sent a pic · {time}", ["first_name": firstName, "time": time]) }
+    /// "camera" — Yope · groups.list · new · SOURCED
+    public static var groupsListTabCameraAccessibilityLabel: String { CopyLookup.string("groups.list.tab.camera.accessibilityLabel", default: "camera") }
+    /// "groups" — Yope · groups.list · new · SOURCED
+    public static var groupsListTabGroupsAccessibilityLabel: String { CopyLookup.string("groups.list.tab.groups.accessibilityLabel", default: "groups") }
+    /// "me" — Yope · groups.list · new · SOURCED
+    public static var groupsListTabMeAccessibilityLabel: String { CopyLookup.string("groups.list.tab.me.accessibilityLabel", default: "me") }
+    /// "walls" — Yope · groups.list · new · SOURCED
+    public static var groupsListTabWallsAccessibilityLabel: String { CopyLookup.string("groups.list.tab.walls.accessibilityLabel", default: "walls") }
+    /// "back" — Yope · groups.screen · new · SOURCED
+    public static var groupsScreenBackAccessibilityLabel: String { CopyLookup.string("groups.screen.back.accessibilityLabel", default: "back") }
+    /// "chat" — Yope · groups.screen · verbatim · SOURCED
+    public static var groupsScreenChat: String { CopyLookup.string("groups.screen.chat", default: "chat") }
+    /// "and added {names}" — Yope · groups.screen · adapted · SOURCED
+    public static func groupsScreenCreatedDetail(names: String) -> String { CopyLookup.format("groups.screen.created.detail", default: "and added {names}", ["names": names]) }
+    /// "invite more people" — Yope · groups.screen · adapted · SOURCED
+    public static var groupsScreenCreatedInviteCustom: String { CopyLookup.string("groups.screen.created.invite.custom", default: "invite more people") }
+    /// "invite more family" — Yope · groups.screen · adapted · SOURCED
+    public static var groupsScreenCreatedInviteFamily: String { CopyLookup.string("groups.screen.created.invite.family", default: "invite more family") }
+    /// "invite more friends" — Yope · groups.screen · verbatim · SOURCED
+    public static var groupsScreenCreatedInviteFriends: String { CopyLookup.string("groups.screen.created.invite.friends", default: "invite more friends") }
+    /// "invite more roommates" — Yope · groups.screen · adapted · SOURCED
+    public static var groupsScreenCreatedInviteRoommates: String { CopyLookup.string("groups.screen.created.invite.roommates", default: "invite more roommates") }
+    /// "you created group" — Yope · groups.screen · verbatim · SOURCED
+    public static var groupsScreenCreatedTitle: String { CopyLookup.string("groups.screen.created.title", default: "you created group") }
+    /// "take a pic" — Yope · groups.screen · new · SOURCED
+    public static var groupsScreenEmptyButton: String { CopyLookup.string("groups.screen.empty.button", default: "take a pic") }
+    /// "share the first one" — Yope · groups.screen · new · SOURCED
+    public static var groupsScreenEmptyDetail: String { CopyLookup.string("groups.screen.empty.detail", default: "share the first one") }
+    /// "no pics yet" — Yope · groups.screen · new · SOURCED
+    public static var groupsScreenEmptyTitle: String { CopyLookup.string("groups.screen.empty.title", default: "no pics yet") }
+    /// "check your connection and try again" — Yope · groups.screen · new · SOURCED
+    public static var groupsScreenErrorDetail: String { CopyLookup.string("groups.screen.error.detail", default: "check your connection and try again") }
+    /// "try again" — Yope · groups.screen · new · SOURCED
+    public static var groupsScreenErrorRetry: String { CopyLookup.string("groups.screen.error.retry", default: "try again") }
+    /// "this group didn’t load" — Yope · groups.screen · new · SOURCED
+    public static var groupsScreenErrorTitle: String { CopyLookup.string("groups.screen.error.title", default: "this group didn’t load") }
+    /// "{group_name}, group info" — Yope · groups.screen · new · SOURCED
+    public static func groupsScreenHeaderAccessibilityLabel(groupName: String) -> String { CopyLookup.format("groups.screen.header.accessibilityLabel", default: "{group_name}, group info", ["group_name": groupName]) }
+    /// "{first_name} joined" — Yope · groups.screen · adapted · SOURCED
+    public static func groupsScreenMemberJoined(firstName: String) -> String { CopyLookup.format("groups.screen.memberJoined", default: "{first_name} joined", ["first_name": firstName]) }
+    /// "leave group" — Yope · groups.screen · verbatim · SOURCED
+    public static var groupsScreenMenuLeave: String { CopyLookup.string("groups.screen.menu.leave", default: "leave group") }
+    /// "report" — Yope · groups.screen · verbatim · SOURCED
+    public static var groupsScreenMenuReport: String { CopyLookup.string("groups.screen.menu.report", default: "report") }
+    /// "group settings" — Yope · groups.screen · new · SOURCED
+    public static var groupsScreenMenuSettings: String { CopyLookup.string("groups.screen.menu.settings", default: "group settings") }
+    /// "share invite" — Yope · groups.screen · verbatim · SOURCED
+    public static var groupsScreenMenuShareInvite: String { CopyLookup.string("groups.screen.menu.shareInvite", default: "share invite") }
+    /// "new pics will show up when you’re back online" — Yope · groups.screen · new · SOURCED
+    public static var groupsScreenOfflineDetail: String { CopyLookup.string("groups.screen.offline.detail", default: "new pics will show up when you’re back online") }
+    /// "you’re offline" — Yope · groups.screen · new · SOURCED
+    public static var groupsScreenOfflineTitle: String { CopyLookup.string("groups.screen.offline.title", default: "you’re offline") }
+    /// "pic from {first_name}, {time}" — Yope · groups.screen · new · SOURCED
+    public static func groupsScreenPhotoAccessibilityLabel(firstName: String, time: String) -> String { CopyLookup.format("groups.screen.photo.accessibilityLabel", default: "pic from {first_name}, {time}", ["first_name": firstName, "time": time]) }
+    /// "Block {first_name}" — Apple HIG · groups.screen · new · VERIFIED
+    public static func groupsScreenPhotoMenuBlock(firstName: String) -> String { CopyLookup.format("groups.screen.photo.menu.block", default: "Block {first_name}", ["first_name": firstName]) }
+    /// "Open" — Apple HIG · groups.screen · new · VERIFIED
+    public static var groupsScreenPhotoMenuOpen: String { CopyLookup.string("groups.screen.photo.menu.open", default: "Open") }
+    /// "Report…" — Apple HIG · groups.screen · verbatim · VERIFIED
+    public static var groupsScreenPhotoMenuReport: String { CopyLookup.string("groups.screen.photo.menu.report", default: "Report…") }
+    /// "more" — Yope · groups.screen · new · SOURCED
+    public static var groupsScreenPhotoMoreAccessibilityLabel: String { CopyLookup.string("groups.screen.photo.more.accessibilityLabel", default: "more") }
+    /// "group options" — Yope · groups.screen · new · SOURCED
+    public static var groupsScreenProfileMoreAccessibilityLabel: String { CopyLookup.string("groups.screen.profile.more.accessibilityLabel", default: "group options") }
+    /// "pics" — Yope · groups.screen · verbatim · SOURCED
+    public static var groupsScreenProfileSegmentPics: String { CopyLookup.string("groups.screen.profile.segment.pics", default: "pics") }
+    /// "recaps" — Yope · groups.screen · verbatim · SOURCED
+    public static var groupsScreenProfileSegmentRecaps: String { CopyLookup.string("groups.screen.profile.segment.recaps", default: "recaps") }
+    /// "wall" — Yope · groups.screen · verbatim · SOURCED
+    public static var groupsScreenProfileSegmentWall: String { CopyLookup.string("groups.screen.profile.segment.wall", default: "wall") }
+    /// "recaps" — Yope · groups.screen · verbatim · SOURCED
+    public static var groupsScreenRecapAccessibilityLabel: String { CopyLookup.string("groups.screen.recap.accessibilityLabel", default: "recaps") }
+    /// "ask someone in it to send you a new link" — Yope · groups.screen · adapted · SOURCED
+    public static var groupsScreenRemovedDetail: String { CopyLookup.string("groups.screen.removed.detail", default: "ask someone in it to send you a new link") }
+    /// "you’re not in this group anymore" — Yope · groups.screen · new · SOURCED
+    public static var groupsScreenRemovedTitle: String { CopyLookup.string("groups.screen.removed.title", default: "you’re not in this group anymore") }
+    /// "past weeks" — Yope · groups.screen · new · SOURCED
+    public static var groupsScreenWeeksAccessibilityLabel: String { CopyLookup.string("groups.screen.weeks.accessibilityLabel", default: "past weeks") }
+    /// "Cancel" — Apple HIG · groups.settings · verbatim · VERIFIED
+    public static var groupsSettingsAlertCancel: String { CopyLookup.string("groups.settings.alert.cancel", default: "Cancel") }
+    /// "that didn’t work. check your connection and try again." — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsErrorGeneric: String { CopyLookup.string("groups.settings.error.generic", default: "that didn’t work. check your connection and try again.") }
+    /// "edit group" — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsGroupEdit: String { CopyLookup.string("groups.settings.group.edit", default: "edit group") }
+    /// "group" — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsGroupHeader: String { CopyLookup.string("groups.settings.group.header", default: "group") }
+    /// "only admins can change these." — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsInvitationAdminOnly: String { CopyLookup.string("groups.settings.invitation.adminOnly", default: "only admins can change these.") }
+    /// "default hours" — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsInvitationDefault: String { CopyLookup.string("groups.settings.invitation.default", default: "default hours") }
+    /// "everyone gets the invitation at the same moment, once a day, sometime between these hours." — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsInvitationFooter: String { CopyLookup.string("groups.settings.invitation.footer", default: "everyone gets the invitation at the same moment, once a day, sometime between these hours.") }
+    /// "daily invitation" — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsInvitationHeader: String { CopyLookup.string("groups.settings.invitation.header", default: "daily invitation") }
+    /// "invitation hours" — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsInvitationHours: String { CopyLookup.string("groups.settings.invitation.hours", default: "invitation hours") }
+    /// "pick hours that are further apart" — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsInvitationInvalid: String { CopyLookup.string("groups.settings.invitation.invalid", default: "pick hours that are further apart") }
+    /// "pause invitations" — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsInvitationPause: String { CopyLookup.string("groups.settings.invitation.pause", default: "pause invitations") }
+    /// "{start}-{end}" — Yope · groups.settings · new · SOURCED
+    public static func groupsSettingsInvitationRange(start: String, end: String) -> String { CopyLookup.format("groups.settings.invitation.range", default: "{start}-{end}", ["start": start, "end": end]) }
+    /// "leave group" — Yope · groups.settings · verbatim · SOURCED
+    public static var groupsSettingsLeave: String { CopyLookup.string("groups.settings.leave", default: "leave group") }
+    /// "Leave" — Apple HIG · groups.settings · new · VERIFIED
+    public static var groupsSettingsLeaveConfirm: String { CopyLookup.string("groups.settings.leave.confirm", default: "Leave") }
+    /// "Your photos stay in the group. Delete them first if you want them gone." — Apple HIG · groups.settings · new · VERIFIED
+    public static var groupsSettingsLeaveMessage: String { CopyLookup.string("groups.settings.leave.message", default: "Your photos stay in the group. Delete them first if you want them gone.") }
+    /// "You’re the last member, so leaving deletes the group and everything in it." — Apple HIG · groups.settings · new · VERIFIED
+    public static var groupsSettingsLeaveMessageLast: String { CopyLookup.string("groups.settings.leave.messageLast", default: "You’re the last member, so leaving deletes the group and everything in it.") }
+    /// "Leave {group_name}?" — Apple HIG · groups.settings · new · VERIFIED
+    public static func groupsSettingsLeaveTitle(groupName: String) -> String { CopyLookup.format("groups.settings.leave.title", default: "Leave {group_name}?", ["group_name": groupName]) }
+    /// "admin" — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsMembersAdmin: String { CopyLookup.string("groups.settings.members.admin", default: "admin") }
+    /// "members" — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsMembersHeader: String { CopyLookup.string("groups.settings.members.header", default: "members") }
+    /// "invite more people" — Yope · groups.settings · adapted · SOURCED
+    public static var groupsSettingsMembersInviteCustom: String { CopyLookup.string("groups.settings.members.invite.custom", default: "invite more people") }
+    /// "invite more family" — Yope · groups.settings · adapted · SOURCED
+    public static var groupsSettingsMembersInviteFamily: String { CopyLookup.string("groups.settings.members.invite.family", default: "invite more family") }
+    /// "invite more friends" — Yope · groups.settings · verbatim · SOURCED
+    public static var groupsSettingsMembersInviteFriends: String { CopyLookup.string("groups.settings.members.invite.friends", default: "invite more friends") }
+    /// "invite more roommates" — Yope · groups.settings · adapted · SOURCED
+    public static var groupsSettingsMembersInviteRoommates: String { CopyLookup.string("groups.settings.members.invite.roommates", default: "invite more roommates") }
+    /// "Block" — Apple HIG · groups.settings · verbatim · VERIFIED
+    public static var groupsSettingsMembersMenuBlock: String { CopyLookup.string("groups.settings.members.menu.block", default: "Block") }
+    /// "Remove from Group" — Apple HIG · groups.settings · new · VERIFIED
+    public static var groupsSettingsMembersMenuRemove: String { CopyLookup.string("groups.settings.members.menu.remove", default: "Remove from Group") }
+    /// "Report…" — Apple HIG · groups.settings · verbatim · VERIFIED
+    public static var groupsSettingsMembersMenuReport: String { CopyLookup.string("groups.settings.members.menu.report", default: "Report…") }
+    /// "options for {first_name}" — Yope · groups.settings · new · SOURCED
+    public static func groupsSettingsMembersMoreAccessibilityLabel(firstName: String) -> String { CopyLookup.format("groups.settings.members.more.accessibilityLabel", default: "options for {first_name}", ["first_name": firstName]) }
+    /// "you" — Yope · groups.settings · verbatim · SOURCED
+    public static var groupsSettingsMembersYou: String { CopyLookup.string("groups.settings.members.you", default: "you") }
+    /// "muted groups don’t send you notifications. their pics still reach your widgets." — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsNotificationsFooter: String { CopyLookup.string("groups.settings.notifications.footer", default: "muted groups don’t send you notifications. their pics still reach your widgets.") }
+    /// "notifications" — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsNotificationsHeader: String { CopyLookup.string("groups.settings.notifications.header", default: "notifications") }
+    /// "mute this group" — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsNotificationsMute: String { CopyLookup.string("groups.settings.notifications.mute", default: "mute this group") }
+    /// "quiet hours" — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsNotificationsQuietHours: String { CopyLookup.string("groups.settings.notifications.quietHours", default: "quiet hours") }
+    /// "Remove" — Apple HIG · groups.settings · new · VERIFIED
+    public static var groupsSettingsRemoveConfirm: String { CopyLookup.string("groups.settings.remove.confirm", default: "Remove") }
+    /// "Their photos stay in the group, and invite links they shared stop working." — Apple HIG · groups.settings · new · VERIFIED
+    public static var groupsSettingsRemoveMessage: String { CopyLookup.string("groups.settings.remove.message", default: "Their photos stay in the group, and invite links they shared stop working.") }
+    /// "Remove {first_name}?" — Apple HIG · groups.settings · new · VERIFIED
+    public static func groupsSettingsRemoveTitle(firstName: String) -> String { CopyLookup.format("groups.settings.remove.title", default: "Remove {first_name}?", ["first_name": firstName]) }
+    /// "report" — Yope · groups.settings · verbatim · SOURCED
+    public static var groupsSettingsReport: String { CopyLookup.string("groups.settings.report", default: "report") }
+    /// "share invite" — Yope · groups.settings · verbatim · SOURCED
+    public static var groupsSettingsShareInvite: String { CopyLookup.string("groups.settings.shareInvite", default: "share invite") }
+    /// "group settings" — Yope · groups.settings · new · SOURCED
+    public static var groupsSettingsTitle: String { CopyLookup.string("groups.settings.title", default: "group settings") }
     /// "View" — Partiful · invite.appclip · verbatim · SOURCED
     public static var inviteAppclipCardAction: String { CopyLookup.string("invite.appclip.card.action", default: "View") }
     /// "Make memories" — Partiful · invite.appclip · verbatim · SOURCED
@@ -523,6 +897,64 @@ public enum Copy {
     public static func notificationsPushTributeBody(group: String) -> String { CopyLookup.format("notifications.push.tribute.body", default: "{group} made you a birthday video.", ["group": group]) }
     /// "Happy birthday!" — VidDay · notifications.push · new · SOURCED
     public static var notificationsPushTributeTitle: String { CopyLookup.string("notifications.push.tribute.title", default: "Happy birthday!") }
+    /// "enable" — Yope · onboarding.permission.camera · verbatim · SOURCED
+    public static var onboardingPermissionCameraDeniedButton: String { CopyLookup.string("onboarding.permission.camera.denied.button", default: "enable") }
+    /// "enable camera" — Yope · onboarding.permission.camera · adapted · SOURCED
+    public static var onboardingPermissionCameraDeniedDetail: String { CopyLookup.string("onboarding.permission.camera.denied.detail", default: "enable camera") }
+    /// "can’t take pics?" — Yope · onboarding.permission.camera · new · SOURCED
+    public static var onboardingPermissionCameraDeniedTitle: String { CopyLookup.string("onboarding.permission.camera.denied.title", default: "can’t take pics?") }
+    /// "enable" — Yope · onboarding.permission.contacts · verbatim · SOURCED
+    public static var onboardingPermissionContactsCardButton: String { CopyLookup.string("onboarding.permission.contacts.card.button", default: "enable") }
+    /// "enable contacts" — Yope · onboarding.permission.contacts · verbatim · SOURCED
+    public static var onboardingPermissionContactsCardDetail: String { CopyLookup.string("onboarding.permission.contacts.card.detail", default: "enable contacts") }
+    /// "dismiss" — Yope · onboarding.permission.contacts · new · SOURCED
+    public static var onboardingPermissionContactsCardDismissAccessibilityLabel: String { CopyLookup.string("onboarding.permission.contacts.card.dismissAccessibilityLabel", default: "dismiss") }
+    /// "can’t see your people?" — Yope · onboarding.permission.contacts · adapted · SOURCED
+    public static var onboardingPermissionContactsCardTitleCustom: String { CopyLookup.string("onboarding.permission.contacts.card.title.custom", default: "can’t see your people?") }
+    /// "can’t see your family?" — Yope · onboarding.permission.contacts · adapted · SOURCED
+    public static var onboardingPermissionContactsCardTitleFamily: String { CopyLookup.string("onboarding.permission.contacts.card.title.family", default: "can’t see your family?") }
+    /// "can’t see your friends?" — Yope · onboarding.permission.contacts · verbatim · SOURCED
+    public static var onboardingPermissionContactsCardTitleFriends: String { CopyLookup.string("onboarding.permission.contacts.card.title.friends", default: "can’t see your friends?") }
+    /// "can’t see your roommates?" — Yope · onboarding.permission.contacts · adapted · SOURCED
+    public static var onboardingPermissionContactsCardTitleRoommates: String { CopyLookup.string("onboarding.permission.contacts.card.title.roommates", default: "can’t see your roommates?") }
+    /// "choose contacts" — Yope · onboarding.permission.contacts · new · SOURCED
+    public static var onboardingPermissionContactsChoose: String { CopyLookup.string("onboarding.permission.contacts.choose", default: "choose contacts") }
+    /// "search contacts" — Yope · onboarding.permission.contacts · new · SOURCED
+    public static var onboardingPermissionContactsSearchPlaceholder: String { CopyLookup.string("onboarding.permission.contacts.search.placeholder", default: "search contacts") }
+    /// "continue" — Yope · onboarding.permission.notifications · verbatim · SOURCED
+    public static var onboardingPermissionNotificationsContinue: String { CopyLookup.string("onboarding.permission.notifications.continue", default: "continue") }
+    /// "enable notifications" — Yope · onboarding.permission.notifications · adapted · SOURCED
+    public static var onboardingPermissionNotificationsDetail: String { CopyLookup.string("onboarding.permission.notifications.detail", default: "enable notifications") }
+    /// "maybe later" — Yope · onboarding.permission.notifications · verbatim · SOURCED
+    public static var onboardingPermissionNotificationsSkip: String { CopyLookup.string("onboarding.permission.notifications.skip", default: "maybe later") }
+    /// "want to know when your groups post?" — Yope · onboarding.permission.notifications · new · SOURCED
+    public static var onboardingPermissionNotificationsTitle: String { CopyLookup.string("onboarding.permission.notifications.title", default: "want to know when your groups post?") }
+    /// "enable" — Yope · onboarding.permission.photos · verbatim · SOURCED
+    public static var onboardingPermissionPhotosDeniedButton: String { CopyLookup.string("onboarding.permission.photos.denied.button", default: "enable") }
+    /// "enable photos" — Yope · onboarding.permission.photos · adapted · SOURCED
+    public static var onboardingPermissionPhotosDeniedDetail: String { CopyLookup.string("onboarding.permission.photos.denied.detail", default: "enable photos") }
+    /// "can’t save pics?" — Yope · onboarding.permission.photos · new · SOURCED
+    public static var onboardingPermissionPhotosDeniedTitle: String { CopyLookup.string("onboarding.permission.photos.denied.title", default: "can’t save pics?") }
+    /// "Continue" — Locket · onboarding.widget · verbatim · SOURCED
+    public static var onboardingWidgetContinue: String { CopyLookup.string("onboarding.widget.continue", default: "Continue") }
+    /// "You're done!" — Locket · onboarding.widget · verbatim · SOURCED
+    public static var onboardingWidgetDone: String { CopyLookup.string("onboarding.widget.done", default: "You're done!") }
+    /// "Hold down on an empty\nspace on your Home Screen" — Locket · onboarding.widget · verbatim · SOURCED
+    public static var onboardingWidgetStepAndroid1: String { CopyLookup.string("onboarding.widget.step.android.1", default: "Hold down on an empty\nspace on your Home Screen") }
+    /// "Tap the “Widgets” button\nto add a new widget" — Locket · onboarding.widget · verbatim · SOURCED
+    public static var onboardingWidgetStepAndroid2: String { CopyLookup.string("onboarding.widget.step.android.2", default: "Tap the “Widgets” button\nto add a new widget") }
+    /// "From your Home Screen, touch and hold a widget or empty area until the apps jiggle." — Locket · onboarding.widget · verbatim · SOURCED
+    public static var onboardingWidgetStepIos1: String { CopyLookup.string("onboarding.widget.step.ios.1", default: "From your Home Screen, touch and hold a widget or empty area until the apps jiggle.") }
+    /// "Tap Edit in the upper-left corner." — Locket · onboarding.widget · verbatim · SOURCED
+    public static var onboardingWidgetStepIos2: String { CopyLookup.string("onboarding.widget.step.ios.2", default: "Tap Edit in the upper-left corner.") }
+    /// "Tap Add Widget." — Locket · onboarding.widget · verbatim · SOURCED
+    public static var onboardingWidgetStepIos3: String { CopyLookup.string("onboarding.widget.step.ios.3", default: "Tap Add Widget.") }
+    /// "Select a widget size, then tap Add Widget." — Locket · onboarding.widget · verbatim · SOURCED
+    public static var onboardingWidgetStepIos5: String { CopyLookup.string("onboarding.widget.step.ios.5", default: "Select a widget size, then tap Add Widget.") }
+    /// "step {number}" — Locket · onboarding.widget · new · SOURCED
+    public static func onboardingWidgetStepNumberAccessibilityLabel(number: String) -> String { CopyLookup.format("onboarding.widget.stepNumber.accessibilityLabel", default: "step {number}", ["number": number]) }
+    /// "Add the widget\nto your home screen" — Locket · onboarding.widget · verbatim · SOURCED
+    public static var onboardingWidgetTitle: String { CopyLookup.string("onboarding.widget.title", default: "Add the widget\nto your home screen") }
     /// "Close" — Apple HIG / Material 3 · onthisday · new · PLATFORM
     public static var onthisdayA11yClose: String { CopyLookup.string("onthisday.a11y.close", default: "Close") }
     /// "Older" — Timehop · onthisday · adapted · SOURCED
@@ -551,6 +983,78 @@ public enum Copy {
     public static var onthisdayOfflineDetail: String { CopyLookup.string("onthisday.offline.detail", default: "connect to see this day — your memories are waiting") }
     /// "you're offline" — Yope · onthisday · new · SOURCED
     public static var onthisdayOfflineTitle: String { CopyLookup.string("onthisday.offline.title", default: "you're offline") }
+    /// "No thanks!" — Locket · paywall · verbatim · SOURCED
+    public static var paywallDismiss: String { CopyLookup.string("paywall.dismiss", default: "No thanks!") }
+    /// "Plans aren’t available right now. Try again in a moment." — Locket · paywall · new · SOURCED
+    public static var paywallErrorProducts: String { CopyLookup.string("paywall.error.products", default: "Plans aren’t available right now. Try again in a moment.") }
+    /// "Your purchase didn’t go through. Try again in a moment." — Locket · paywall · new · SOURCED
+    public static var paywallErrorPurchase: String { CopyLookup.string("paywall.error.purchase", default: "Your purchase didn’t go through. Try again in a moment.") }
+    /// "{price} per {period}. Renews automatically until you cancel. Cancel anytime in your subscription settings." — Material 3 · paywall · new · VERIFIED
+    public static func paywallLegalBillingAndroid(price: String, period: String) -> String { CopyLookup.format("paywall.legal.billing.android", default: "{price} per {period}. Renews automatically until you cancel. Cancel anytime in your subscription settings.", ["price": price, "period": period]) }
+    /// "{price} per {period}. Plan automatically renews until canceled. Cancel anytime in Settings at least a day before each renewal date." — Apple HIG · paywall · adapted · VERIFIED
+    public static func paywallLegalBillingIos(price: String, period: String) -> String { CopyLookup.format("paywall.legal.billing.ios", default: "{price} per {period}. Plan automatically renews until canceled. Cancel anytime in Settings at least a day before each renewal date.", ["price": price, "period": period]) }
+    /// "Subscription renews automatically. Cancel anytime." — Locket · paywall · verbatim · SOURCED
+    public static var paywallLegalRenews: String { CopyLookup.string("paywall.legal.renews", default: "Subscription renews automatically. Cancel anytime.") }
+    /// "After your trial ends, you will be charged {price} {per_frequency} starting {renewal_date}. You can cancel any time before this date." — Locket · paywall · verbatim · SOURCED
+    public static func paywallLegalTrial(price: String, perFrequency: String, renewalDate: String) -> String { CopyLookup.format("paywall.legal.trial", default: "After your trial ends, you will be charged {price} {per_frequency} starting {renewal_date}. You can cancel any time before this date.", ["price": price, "per_frequency": perFrequency, "renewal_date": renewalDate]) }
+    /// "Premium" — Locket · paywall · adapted · SOURCED
+    public static var paywallLockedBadge: String { CopyLookup.string("paywall.locked.badge", default: "Premium") }
+    /// "You’re offline. Connect to the internet to see plans." — Locket · paywall · new · SOURCED
+    public static var paywallOffline: String { CopyLookup.string("paywall.offline", default: "You’re offline. Connect to the internet to see plans.") }
+    /// "Your purchase is waiting for approval." — Apple HIG · paywall · new · VERIFIED
+    public static var paywallPending: String { CopyLookup.string("paywall.pending", default: "Your purchase is waiting for approval.") }
+    /// "🖼️" — Locket · paywall · adapted · SOURCED
+    public static var paywallPerkExportEmoji: String { CopyLookup.string("paywall.perk.export.emoji", default: "🖼️") }
+    /// "Save your albums in full quality!" — Locket · paywall · new · SOURCED
+    public static var paywallPerkExportSubtitle: String { CopyLookup.string("paywall.perk.export.subtitle", default: "Save your albums in full quality!") }
+    /// "Full-quality album export" — Locket · paywall · new · SOURCED
+    public static var paywallPerkExportTitle: String { CopyLookup.string("paywall.perk.export.title", default: "Full-quality album export") }
+    /// "Look back as far as you’d like!" — Locket · paywall · new · SOURCED
+    public static var paywallPerkHistorySubtitle: String { CopyLookup.string("paywall.perk.history.subtitle", default: "Look back as far as you’d like!") }
+    /// "Unlimited history" — Locket · paywall · new · SOURCED
+    public static var paywallPerkHistoryTitle: String { CopyLookup.string("paywall.perk.history.title", default: "Unlimited history") }
+    /// "🎥" — Locket · paywall · verbatim · SOURCED
+    public static var paywallPerkVideoEmoji: String { CopyLookup.string("paywall.perk.video.emoji", default: "🎥") }
+    /// "Record short video clips!" — Locket · paywall · verbatim · SOURCED
+    public static var paywallPerkVideoSubtitle: String { CopyLookup.string("paywall.perk.video.subtitle", default: "Record short video clips!") }
+    /// "Video posts" — Locket · paywall · adapted · SOURCED
+    public static var paywallPerkVideoTitle: String { CopyLookup.string("paywall.perk.video.title", default: "Video posts") }
+    /// "🎨" — Locket · paywall · verbatim · SOURCED
+    public static var paywallPerkWidgetsEmoji: String { CopyLookup.string("paywall.perk.widgets.emoji", default: "🎨") }
+    /// "Personalize your widgets" — Locket · paywall · verbatim · SOURCED
+    public static var paywallPerkWidgetsSubtitle: String { CopyLookup.string("paywall.perk.widgets.subtitle", default: "Personalize your widgets") }
+    /// "Widget styles" — Locket · paywall · adapted · SOURCED
+    public static var paywallPerkWidgetsTitle: String { CopyLookup.string("paywall.perk.widgets.title", default: "Widget styles") }
+    /// "{monthly_price}/mo" — Locket · paywall · verbatim · SOURCED
+    public static func paywallPlansMonthlyPrice(monthlyPrice: String) -> String { CopyLookup.format("paywall.plans.monthly.price", default: "{monthly_price}/mo", ["monthly_price": monthlyPrice]) }
+    /// "1 Month" — Locket · paywall · verbatim · SOURCED
+    public static var paywallPlansMonthlyTitle: String { CopyLookup.string("paywall.plans.monthly.title", default: "1 Month") }
+    /// "selected" — Apple HIG · paywall · new · VERIFIED
+    public static var paywallPlansSelectedAccessibilityLabel: String { CopyLookup.string("paywall.plans.selected.accessibilityLabel", default: "selected") }
+    /// "Subscribe" — Locket · paywall · verbatim · SOURCED
+    public static var paywallPlansSubscribe: String { CopyLookup.string("paywall.plans.subscribe", default: "Subscribe") }
+    /// "12 mo • {monthly_equivalent}/mo" — Locket · paywall · new · SOURCED
+    public static func paywallPlansYearlyDetail(monthlyEquivalent: String) -> String { CopyLookup.format("paywall.plans.yearly.detail", default: "12 mo • {monthly_equivalent}/mo", ["monthly_equivalent": monthlyEquivalent]) }
+    /// "{yearly_price}/yr" — Locket · paywall · new · SOURCED
+    public static func paywallPlansYearlyPrice(yearlyPrice: String) -> String { CopyLookup.format("paywall.plans.yearly.price", default: "{yearly_price}/yr", ["yearly_price": yearlyPrice]) }
+    /// "1 Year" — Locket · paywall · verbatim · SOURCED
+    public static var paywallPlansYearlyTitle: String { CopyLookup.string("paywall.plans.yearly.title", default: "1 Year") }
+    /// "Privacy Policy" — Apple HIG · paywall · verbatim · VERIFIED
+    public static var paywallPrivacy: String { CopyLookup.string("paywall.privacy", default: "Privacy Policy") }
+    /// "Restore Purchases" — Apple HIG · paywall · adapted · VERIFIED
+    public static var paywallRestore: String { CopyLookup.string("paywall.restore", default: "Restore Purchases") }
+    /// "Your subscription is back!" — Locket · paywall · new · SOURCED
+    public static var paywallRestoreDone: String { CopyLookup.string("paywall.restore.done", default: "Your subscription is back!") }
+    /// "We couldn’t find a subscription to restore." — Locket · paywall · new · SOURCED
+    public static var paywallRestoreNone: String { CopyLookup.string("paywall.restore.none", default: "We couldn’t find a subscription to restore.") }
+    /// "Try Again" — Apple HIG · paywall · new · VERIFIED
+    public static var paywallRetry: String { CopyLookup.string("paywall.retry", default: "Try Again") }
+    /// "Terms of Use" — Apple HIG · paywall · verbatim · VERIFIED
+    public static var paywallTerms: String { CopyLookup.string("paywall.terms", default: "Terms of Use") }
+    /// "Done" — Locket · paywall · verbatim · SOURCED
+    public static var paywallWelcomeDone: String { CopyLookup.string("paywall.welcome.done", default: "Done") }
+    /// "Welcome to Premium!" — Locket · paywall · adapted · SOURCED
+    public static var paywallWelcomeTitle: String { CopyLookup.string("paywall.welcome.title", default: "Welcome to Premium!") }
     /// "close" — Yope · photo.viewer · new · SOURCED
     public static var photoViewerA11yClose: String { CopyLookup.string("photo.viewer.a11y.close", default: "close") }
     /// "more" — Yope · photo.viewer · new · SOURCED
@@ -569,6 +1073,8 @@ public enum Copy {
     public static var photoViewerDeleteTitle: String { CopyLookup.string("photo.viewer.delete.title", default: "delete this pic?") }
     /// "couldn’t delete this pic — try again" — Yope · photo.viewer · new · SOURCED
     public static var photoViewerErrorDelete: String { CopyLookup.string("photo.viewer.error.delete", default: "couldn’t delete this pic — try again") }
+    /// "couldn’t load this pic" — Yope · photo.viewer · new · SOURCED
+    public static var photoViewerErrorLoad: String { CopyLookup.string("photo.viewer.error.load", default: "couldn’t load this pic") }
     /// "couldn’t save this pic" — Yope · photo.viewer · new · SOURCED
     public static var photoViewerErrorSave: String { CopyLookup.string("photo.viewer.error.save", default: "couldn’t save this pic") }
     /// "the person who shared it took it down" — Yope · photo.viewer · new · SOURCED
@@ -591,8 +1097,6 @@ public enum Copy {
     public static var photoViewerPermissionTitle: String { CopyLookup.string("photo.viewer.permission.title", default: "can’t save your pics?") }
     /// "message to {group_name}..." — Yope · photo.viewer · adapted · SOURCED
     public static func photoViewerReplyPlaceholder(groupName: String) -> String { CopyLookup.format("photo.viewer.reply.placeholder", default: "message to {group_name}...", ["group_name": groupName]) }
-    /// "i’m in this" — Yope · photo.viewer · new · SOURCED
-    public static var photoViewerTagToggle: String { CopyLookup.string("photo.viewer.tag.toggle", default: "i’m in this") }
     /// "sent to" — Yope · photo.viewer · verbatim · SOURCED
     public static var photoViewerTitleSentTo: String { CopyLookup.string("photo.viewer.title.sentTo", default: "sent to") }
     /// "you" — Yope · photo.viewer · verbatim · SOURCED
@@ -601,6 +1105,196 @@ public enum Copy {
     public static var photoViewerToastDeleted: String { CopyLookup.string("photo.viewer.toast.deleted", default: "pic deleted") }
     /// "pic saved" — Yope · photo.viewer · new · SOURCED
     public static var photoViewerToastSaved: String { CopyLookup.string("photo.viewer.toast.saved", default: "pic saved") }
+    /// "Cancel" — Apple HIG · safety.block · verbatim · VERIFIED
+    public static var safetyBlockCancel: String { CopyLookup.string("safety.block.cancel", default: "Cancel") }
+    /// "Block" — Apple HIG · safety.block · new · VERIFIED
+    public static var safetyBlockConfirm: String { CopyLookup.string("safety.block.confirm", default: "Block") }
+    /// "you blocked {first_name}" — Yope · safety.block · new · SOURCED
+    public static func safetyBlockDone(firstName: String) -> String { CopyLookup.format("safety.block.done", default: "you blocked {first_name}", ["first_name": firstName]) }
+    /// "that didn’t work. check your connection and try again." — Yope · safety.block · new · SOURCED
+    public static var safetyBlockError: String { CopyLookup.string("safety.block.error", default: "that didn’t work. check your connection and try again.") }
+    /// "Block" — Apple HIG · safety.block · verbatim · VERIFIED
+    public static var safetyBlockMenuItem: String { CopyLookup.string("safety.block.menuItem", default: "Block") }
+    /// "Block {first_name}" — Apple HIG · safety.block · new · VERIFIED
+    public static func safetyBlockMenuItemNamed(firstName: String) -> String { CopyLookup.format("safety.block.menuItemNamed", default: "Block {first_name}", ["first_name": firstName]) }
+    /// "you won’t see each other’s pics, messages or reactions in any group you share. {first_name} won’t be notified." — Yope · safety.block · new · SOURCED
+    public static func safetyBlockMessage(firstName: String) -> String { CopyLookup.format("safety.block.message", default: "you won’t see each other’s pics, messages or reactions in any group you share. {first_name} won’t be notified.", ["first_name": firstName]) }
+    /// "block {first_name}?" — Yope · safety.block · new · SOURCED
+    public static func safetyBlockTitle(firstName: String) -> String { CopyLookup.format("safety.block.title", default: "block {first_name}?", ["first_name": firstName]) }
+    /// "you unblocked {first_name}" — Yope · safety.block · new · SOURCED
+    public static func safetyBlockUndone(firstName: String) -> String { CopyLookup.format("safety.block.undone", default: "you unblocked {first_name}", ["first_name": firstName]) }
+    /// "Cancel" — Apple HIG · safety.report · verbatim · VERIFIED
+    public static var safetyReportCancel: String { CopyLookup.string("safety.report.cancel", default: "Cancel") }
+    /// "add details (optional)" — Yope · safety.report · new · SOURCED
+    public static var safetyReportDetailsPlaceholder: String { CopyLookup.string("safety.report.details.placeholder", default: "add details (optional)") }
+    /// "check your connection and try again. your details are still here." — Yope · safety.report · new · SOURCED
+    public static var safetyReportErrorDetail: String { CopyLookup.string("safety.report.error.detail", default: "check your connection and try again. your details are still here.") }
+    /// "this is no longer here, so there’s nothing to report." — Yope · safety.report · new · SOURCED
+    public static var safetyReportErrorNotFound: String { CopyLookup.string("safety.report.error.notFound", default: "this is no longer here, so there’s nothing to report.") }
+    /// "your report didn’t send" — Yope · safety.report · new · SOURCED
+    public static var safetyReportErrorTitle: String { CopyLookup.string("safety.report.error.title", default: "your report didn’t send") }
+    /// "Report…" — Apple HIG · safety.report · verbatim · VERIFIED
+    public static var safetyReportMenuItem: String { CopyLookup.string("safety.report.menuItem", default: "Report…") }
+    /// "Block" — Apple HIG · safety.report · verbatim · VERIFIED
+    public static var safetyReportSentBlock: String { CopyLookup.string("safety.report.sent.block", default: "Block") }
+    /// "Done" — Apple HIG · safety.report · new · VERIFIED
+    public static var safetyReportSentDone: String { CopyLookup.string("safety.report.sent.done", default: "Done") }
+    /// "thanks for telling us. you can also block {first_name} so you don’t see each other’s pics or messages." — Yope · safety.report · new · SOURCED
+    public static func safetyReportSentMessage(firstName: String) -> String { CopyLookup.format("safety.report.sent.message", default: "thanks for telling us. you can also block {first_name} so you don’t see each other’s pics or messages.", ["first_name": firstName]) }
+    /// "thanks for telling us." — Yope · safety.report · new · SOURCED
+    public static var safetyReportSentMessageGroup: String { CopyLookup.string("safety.report.sent.messageGroup", default: "thanks for telling us.") }
+    /// "report sent" — Yope · safety.report · new · SOURCED
+    public static var safetyReportSentTitle: String { CopyLookup.string("safety.report.sent.title", default: "report sent") }
+    /// "Report" — Apple HIG · safety.report · new · VERIFIED
+    public static var safetyReportSubmit: String { CopyLookup.string("safety.report.submit", default: "Report") }
+    /// "report {group_name}" — Yope · safety.report · new · SOURCED
+    public static func safetyReportTitleGroup(groupName: String) -> String { CopyLookup.format("safety.report.title.group", default: "report {group_name}", ["group_name": groupName]) }
+    /// "report this message" — Yope · safety.report · new · SOURCED
+    public static var safetyReportTitleMessage: String { CopyLookup.string("safety.report.title.message", default: "report this message") }
+    /// "report this pic" — Yope · safety.report · new · SOURCED
+    public static var safetyReportTitlePost: String { CopyLookup.string("safety.report.title.post", default: "report this pic") }
+    /// "report {first_name}" — Yope · safety.report · new · SOURCED
+    public static func safetyReportTitleUser(firstName: String) -> String { CopyLookup.format("safety.report.title.user", default: "report {first_name}", ["first_name": firstName]) }
+    /// "Cancel" — Apple HIG · settings.account · verbatim · VERIFIED
+    public static var settingsAccountAlertCancel: String { CopyLookup.string("settings.account.alert.cancel", default: "Cancel") }
+    /// "Birthday" — Apple HIG · settings.account · new · VERIFIED
+    public static var settingsAccountBirthday: String { CopyLookup.string("settings.account.birthday", default: "Birthday") }
+    /// "Delete Account" — Apple HIG · settings.account · new · VERIFIED
+    public static var settingsAccountDelete: String { CopyLookup.string("settings.account.delete", default: "Delete Account") }
+    /// "Delete" — Apple HIG · settings.account · verbatim · VERIFIED
+    public static var settingsAccountDeleteConfirm: String { CopyLookup.string("settings.account.delete.confirm", default: "Delete") }
+    /// "Your account wasn’t deleted. Check your connection and try again." — Apple HIG · settings.account · new · VERIFIED
+    public static var settingsAccountDeleteError: String { CopyLookup.string("settings.account.delete.error", default: "Your account wasn’t deleted. Check your connection and try again.") }
+    /// "Deleting your account removes your photos, voice notes and messages from every group." — Apple HIG · settings.account · new · VERIFIED
+    public static var settingsAccountDeleteFooter: String { CopyLookup.string("settings.account.delete.footer", default: "Deleting your account removes your photos, voice notes and messages from every group.") }
+    /// "This deletes your account and everything you shared with your groups, including photos, voice notes and messages. It can’t be undone." — Apple HIG · settings.account · new · VERIFIED
+    public static var settingsAccountDeleteMessage: String { CopyLookup.string("settings.account.delete.message", default: "This deletes your account and everything you shared with your groups, including photos, voice notes and messages. It can’t be undone.") }
+    /// "Your subscription keeps renewing until you cancel it in your subscription settings." — Apple HIG · settings.account · new · VERIFIED
+    public static var settingsAccountDeleteSubscriptionNote: String { CopyLookup.string("settings.account.delete.subscriptionNote", default: "Your subscription keeps renewing until you cancel it in your subscription settings.") }
+    /// "Delete your account?" — Apple HIG · settings.account · new · VERIFIED
+    public static var settingsAccountDeleteTitle: String { CopyLookup.string("settings.account.delete.title", default: "Delete your account?") }
+    /// "your account was deleted" — Yope · settings.account · new · SOURCED
+    public static var settingsAccountDeletedToast: String { CopyLookup.string("settings.account.deleted.toast", default: "your account was deleted") }
+    /// "Name" — Apple HIG · settings.account · new · VERIFIED
+    public static var settingsAccountName: String { CopyLookup.string("settings.account.name", default: "Name") }
+    /// "Your name didn’t save. Check your connection and try again." — Apple HIG · settings.account · new · VERIFIED
+    public static var settingsAccountNameError: String { CopyLookup.string("settings.account.name.error", default: "Your name didn’t save. Check your connection and try again.") }
+    /// "Phone Number" — Apple HIG · settings.account · new · VERIFIED
+    public static var settingsAccountPhone: String { CopyLookup.string("settings.account.phone", default: "Phone Number") }
+    /// "Photo" — Apple HIG · settings.account · new · VERIFIED
+    public static var settingsAccountPhoto: String { CopyLookup.string("settings.account.photo", default: "Photo") }
+    /// "Account" — Apple HIG · settings.account · new · VERIFIED
+    public static var settingsAccountTitle: String { CopyLookup.string("settings.account.title", default: "Account") }
+    /// "When you block someone, you won’t see each other’s photos, messages or reactions in any group you share." — Apple HIG · settings.blocked · new · VERIFIED
+    public static var settingsBlockedEmptyMessage: String { CopyLookup.string("settings.blocked.empty.message", default: "When you block someone, you won’t see each other’s photos, messages or reactions in any group you share.") }
+    /// "No Blocked People" — Apple HIG · settings.blocked · new · VERIFIED
+    public static var settingsBlockedEmptyTitle: String { CopyLookup.string("settings.blocked.empty.title", default: "No Blocked People") }
+    /// "The list didn’t load. Check your connection and try again." — Apple HIG · settings.blocked · new · VERIFIED
+    public static var settingsBlockedError: String { CopyLookup.string("settings.blocked.error", default: "The list didn’t load. Check your connection and try again.") }
+    /// "Try Again" — Apple HIG · settings.blocked · new · VERIFIED
+    public static var settingsBlockedRetry: String { CopyLookup.string("settings.blocked.retry", default: "Try Again") }
+    /// "Blocked People" — Apple HIG · settings.blocked · new · VERIFIED
+    public static var settingsBlockedTitle: String { CopyLookup.string("settings.blocked.title", default: "Blocked People") }
+    /// "Unblock" — Apple HIG · settings.blocked · new · VERIFIED
+    public static var settingsBlockedUnblock: String { CopyLookup.string("settings.blocked.unblock", default: "Unblock") }
+    /// "Someone you blocked" — Apple HIG · settings.blocked · new · VERIFIED
+    public static var settingsBlockedUnknown: String { CopyLookup.string("settings.blocked.unknown", default: "Someone you blocked") }
+    /// "Notification Categories" — Apple HIG · settings.notifications · new · VERIFIED
+    public static var settingsNotificationsCategories: String { CopyLookup.string("settings.notifications.categories", default: "Notification Categories") }
+    /// "Private requests to add a photo to a birthday tribute" — Locket · settings.notifications · new · SOURCED
+    public static var settingsNotificationsChannelBirthdayRequestDescription: String { CopyLookup.string("settings.notifications.channel.birthdayRequest.description", default: "Private requests to add a photo to a birthday tribute") }
+    /// "Birthday Requests" — Locket · settings.notifications · new · SOURCED
+    public static var settingsNotificationsChannelBirthdayRequestName: String { CopyLookup.string("settings.notifications.channel.birthdayRequest.name", default: "Birthday Requests") }
+    /// "The once-a-day invitation to share a photo with your group at the same moment" — Locket · settings.notifications · new · SOURCED
+    public static var settingsNotificationsChannelDailyInvitationDescription: String { CopyLookup.string("settings.notifications.channel.dailyInvitation.description", default: "The once-a-day invitation to share a photo with your group at the same moment") }
+    /// "Daily Invitation" — Locket · settings.notifications · new · SOURCED
+    public static var settingsNotificationsChannelDailyInvitationName: String { CopyLookup.string("settings.notifications.channel.dailyInvitation.name", default: "Daily Invitation") }
+    /// "Notifications when group members post new photos" — Locket · settings.notifications · adapted · SOURCED
+    public static var settingsNotificationsChannelNewPostDescription: String { CopyLookup.string("settings.notifications.channel.newPost.description", default: "Notifications when group members post new photos") }
+    /// "New Photos" — Locket · settings.notifications · adapted · SOURCED
+    public static var settingsNotificationsChannelNewPostName: String { CopyLookup.string("settings.notifications.channel.newPost.name", default: "New Photos") }
+    /// "Notifications for new messages and reactions in groups" — Locket · settings.notifications · verbatim · SOURCED
+    public static var settingsNotificationsChannelReactionsRepliesDescription: String { CopyLookup.string("settings.notifications.channel.reactionsReplies.description", default: "Notifications for new messages and reactions in groups") }
+    /// "Reactions & Replies" — Locket · settings.notifications · new · SOURCED
+    public static var settingsNotificationsChannelReactionsRepliesName: String { CopyLookup.string("settings.notifications.channel.reactionsReplies.name", default: "Reactions & Replies") }
+    /// "Notifications when your group’s week is ready" — Locket · settings.notifications · new · SOURCED
+    public static var settingsNotificationsChannelRecapDescription: String { CopyLookup.string("settings.notifications.channel.recap.description", default: "Notifications when your group’s week is ready") }
+    /// "Weekly Recaps" — Locket · settings.notifications · new · SOURCED
+    public static var settingsNotificationsChannelRecapName: String { CopyLookup.string("settings.notifications.channel.recap.name", default: "Weekly Recaps") }
+    /// "Notifications when your group makes you a birthday tribute" — Locket · settings.notifications · new · SOURCED
+    public static var settingsNotificationsChannelTributeDescription: String { CopyLookup.string("settings.notifications.channel.tribute.description", default: "Notifications when your group makes you a birthday tribute") }
+    /// "Birthday Tributes" — Locket · settings.notifications · new · SOURCED
+    public static var settingsNotificationsChannelTributeName: String { CopyLookup.string("settings.notifications.channel.tribute.name", default: "Birthday Tributes") }
+    /// "Notifications when your group’s year story is ready" — Locket · settings.notifications · new · SOURCED
+    public static var settingsNotificationsChannelYearStoryDescription: String { CopyLookup.string("settings.notifications.channel.yearStory.description", default: "Notifications when your group’s year story is ready") }
+    /// "Year Story" — Locket · settings.notifications · new · SOURCED
+    public static var settingsNotificationsChannelYearStoryName: String { CopyLookup.string("settings.notifications.channel.yearStory.name", default: "Year Story") }
+    /// "Your change didn’t save. Check your connection and try again." — Apple HIG · settings.notifications · new · VERIFIED
+    public static var settingsNotificationsError: String { CopyLookup.string("settings.notifications.error", default: "Your change didn’t save. Check your connection and try again.") }
+    /// "Turn a group off to mute it. Its photos still reach your widgets." — Apple HIG · settings.notifications · new · VERIFIED
+    public static var settingsNotificationsGroupsFooter: String { CopyLookup.string("settings.notifications.groups.footer", default: "Turn a group off to mute it. Its photos still reach your widgets.") }
+    /// "Groups" — Apple HIG · settings.notifications · new · VERIFIED
+    public static var settingsNotificationsGroupsHeader: String { CopyLookup.string("settings.notifications.groups.header", default: "Groups") }
+    /// "Live Activity" — Apple HIG · settings.notifications · new · VERIFIED
+    public static var settingsNotificationsLiveActivity: String { CopyLookup.string("settings.notifications.liveActivity", default: "Live Activity") }
+    /// "Shows the daily invitation on your Lock Screen while it’s open." — Apple HIG · settings.notifications · new · VERIFIED
+    public static var settingsNotificationsLiveActivityFooter: String { CopyLookup.string("settings.notifications.liveActivity.footer", default: "Shows the daily invitation on your Lock Screen while it’s open.") }
+    /// "Open Settings" — Apple HIG · settings.notifications · new · VERIFIED
+    public static var settingsNotificationsOpenSettings: String { CopyLookup.string("settings.notifications.openSettings", default: "Open Settings") }
+    /// "Quiet Hours" — Apple HIG · settings.notifications · new · VERIFIED
+    public static var settingsNotificationsQuietHours: String { CopyLookup.string("settings.notifications.quietHours", default: "Quiet Hours") }
+    /// "End" — Apple HIG · settings.notifications · new · VERIFIED
+    public static var settingsNotificationsQuietHoursEnd: String { CopyLookup.string("settings.notifications.quietHours.end", default: "End") }
+    /// "Notifications arrive silently between these times." — Apple HIG · settings.notifications · new · VERIFIED
+    public static var settingsNotificationsQuietHoursFooter: String { CopyLookup.string("settings.notifications.quietHours.footer", default: "Notifications arrive silently between these times.") }
+    /// "Start" — Apple HIG · settings.notifications · new · VERIFIED
+    public static var settingsNotificationsQuietHoursStart: String { CopyLookup.string("settings.notifications.quietHours.start", default: "Start") }
+    /// "Notifications" — Apple HIG · settings.notifications · new · VERIFIED
+    public static var settingsNotificationsTitle: String { CopyLookup.string("settings.notifications.title", default: "Notifications") }
+    /// "Account" — Apple HIG · settings.root · new · VERIFIED
+    public static var settingsRootAccount: String { CopyLookup.string("settings.root.account", default: "Account") }
+    /// "Blocked People" — Apple HIG · settings.root · new · VERIFIED
+    public static var settingsRootBlocked: String { CopyLookup.string("settings.root.blocked", default: "Blocked People") }
+    /// "Contact Us" — Apple HIG · settings.root · new · VERIFIED
+    public static var settingsRootContact: String { CopyLookup.string("settings.root.contact", default: "Contact Us") }
+    /// "settings" — Yope · settings.root · new · SOURCED
+    public static var settingsRootEntryAccessibilityLabel: String { CopyLookup.string("settings.root.entry.accessibilityLabel", default: "settings") }
+    /// "Manage Subscription" — Apple HIG · settings.root · new · VERIFIED
+    public static var settingsRootManageSubscription: String { CopyLookup.string("settings.root.manageSubscription", default: "Manage Subscription") }
+    /// "Notifications" — Apple HIG · settings.root · new · VERIFIED
+    public static var settingsRootNotifications: String { CopyLookup.string("settings.root.notifications", default: "Notifications") }
+    /// "Privacy Policy" — Apple HIG · settings.root · verbatim · VERIFIED
+    public static var settingsRootPrivacy: String { CopyLookup.string("settings.root.privacy", default: "Privacy Policy") }
+    /// "Sign Out" — Apple HIG · settings.root · new · VERIFIED
+    public static var settingsRootSignOut: String { CopyLookup.string("settings.root.signOut", default: "Sign Out") }
+    /// "Terms of Use" — Apple HIG · settings.root · verbatim · VERIFIED
+    public static var settingsRootTerms: String { CopyLookup.string("settings.root.terms", default: "Terms of Use") }
+    /// "Settings" — Apple HIG · settings.root · new · VERIFIED
+    public static var settingsRootTitle: String { CopyLookup.string("settings.root.title", default: "Settings") }
+    /// "The app uses your camera to take the photos you send to your groups." — Apple HIG · system.permissions · new · VERIFIED
+    public static var systemPermissionsCameraPurpose: String { CopyLookup.string("system.permissions.camera.purpose", default: "The app uses your camera to take the photos you send to your groups.") }
+    /// "The app uses the contacts you choose to invite people to your groups." — Apple HIG · system.permissions · new · VERIFIED
+    public static var systemPermissionsContactsPurpose: String { CopyLookup.string("system.permissions.contacts.purpose", default: "The app uses the contacts you choose to invite people to your groups.") }
+    /// "The app uses your microphone to record voice notes and the sound in videos you send to your groups." — Apple HIG · system.permissions · new · VERIFIED
+    public static var systemPermissionsMicrophonePurpose: String { CopyLookup.string("system.permissions.microphone.purpose", default: "The app uses your microphone to record voice notes and the sound in videos you send to your groups.") }
+    /// "Open Settings" — Apple HIG · system.permissions · new · VERIFIED
+    public static var systemPermissionsOpenSettings: String { CopyLookup.string("system.permissions.openSettings", default: "Open Settings") }
+    /// "The app saves photos from your groups to your library when you tap Save." — Apple HIG · system.permissions · new · VERIFIED
+    public static var systemPermissionsPhotosAddPurpose: String { CopyLookup.string("system.permissions.photosAdd.purpose", default: "The app saves photos from your groups to your library when you tap Save.") }
+    /// "The app shows the photos you select so you can send them to your groups." — Apple HIG · system.permissions · new · VERIFIED
+    public static var systemPermissionsPhotosReadPurpose: String { CopyLookup.string("system.permissions.photosRead.purpose", default: "The app shows the photos you select so you can send them to your groups.") }
+    /// "want to share pics with your groups?" — Yope · system.permissions · new · SOURCED
+    public static var systemPermissionsRationaleCameraTitle: String { CopyLookup.string("system.permissions.rationale.camera.title", default: "want to share pics with your groups?") }
+    /// "can’t see your friends?" — Yope · system.permissions · verbatim · SOURCED
+    public static var systemPermissionsRationaleContactsTitle: String { CopyLookup.string("system.permissions.rationale.contacts.title", default: "can’t see your friends?") }
+    /// "Continue" — Apple HIG · system.permissions · verbatim · VERIFIED
+    public static var systemPermissionsRationaleContinue: String { CopyLookup.string("system.permissions.rationale.continue", default: "Continue") }
+    /// "want to add your voice?" — Yope · system.permissions · new · SOURCED
+    public static var systemPermissionsRationaleMicrophoneTitle: String { CopyLookup.string("system.permissions.rationale.microphone.title", default: "want to add your voice?") }
+    /// "want to know when your groups post?" — Yope · system.permissions · new · SOURCED
+    public static var systemPermissionsRationaleNotificationsTitle: String { CopyLookup.string("system.permissions.rationale.notifications.title", default: "want to know when your groups post?") }
+    /// "Not Now" — Apple HIG · system.permissions · new · VERIFIED
+    public static var systemPermissionsRationaleNotNow: String { CopyLookup.string("system.permissions.rationale.notNow", default: "Not Now") }
     /// "tap if you're in this pic" — Yope · tagging · new · SOURCED
     public static var taggingCoach: String { CopyLookup.string("tagging.coach", default: "tap if you're in this pic") }
     /// "couldn't save that — try again in a moment" — Yope · tagging · new · SOURCED
@@ -629,12 +1323,16 @@ public enum Copy {
     public static func wallsMemberEmptyDetail(name: String) -> String { CopyLookup.format("walls.member.empty.detail", default: "you’ll see the pics {name} sends to groups you’re both in", ["name": name]) }
     /// "no pics from {name} yet" — Yope · walls.member · new · SOURCED
     public static func wallsMemberEmptyTitle(name: String) -> String { CopyLookup.format("walls.member.empty.title", default: "no pics from {name} yet", ["name": name]) }
+    /// "settings" — Yope · walls.mine · new · SOURCED
+    public static var wallsMineA11ySettings: String { CopyLookup.string("walls.mine.a11y.settings", default: "settings") }
     /// "share a pic" — Yope · walls.mine · adapted · SOURCED
     public static var wallsMineEmptyAction: String { CopyLookup.string("walls.mine.empty.action", default: "share a pic") }
     /// "pics you send to your groups show up here" — Yope · walls.mine · new · SOURCED
     public static var wallsMineEmptyDetail: String { CopyLookup.string("walls.mine.empty.detail", default: "pics you send to your groups show up here") }
     /// "nothing on your wall yet" — Yope · walls.mine · new · SOURCED
     public static var wallsMineEmptyTitle: String { CopyLookup.string("walls.mine.empty.title", default: "nothing on your wall yet") }
+    /// "couldn’t load this wall" — Yope · walls.mine · new · SOURCED
+    public static var wallsMineErrorTitle: String { CopyLookup.string("walls.mine.error.title", default: "couldn’t load this wall") }
     /// "my wall" — Yope · walls.mine · verbatim · SOURCED
     public static var wallsMineTitle: String { CopyLookup.string("walls.mine.title", default: "my wall") }
     /// "close" — Yope · week.edit · new · SOURCED
@@ -695,12 +1393,12 @@ public enum Copy {
     public static var weekRecapEmptyDetail: String { CopyLookup.string("week.recap.empty.detail", default: "it’s made from the pics your group shares this week") }
     /// "your first recap shows up on sunday" — Yope · week.recap · new · SOURCED
     public static var weekRecapEmptyTitle: String { CopyLookup.string("week.recap.empty.title", default: "your first recap shows up on sunday") }
+    /// "couldn’t load this recap" — Yope · week.recap · new · SOURCED
+    public static var weekRecapErrorTitle: String { CopyLookup.string("week.recap.error.title", default: "couldn’t load this recap") }
     /// "view recap" — Yope · week.recap · verbatim · SOURCED
     public static var weekRecapOpen: String { CopyLookup.string("week.recap.open", default: "view recap") }
     /// "your recap is on its way" — Yope · week.recap · new · SOURCED
     public static var weekRecapPending: String { CopyLookup.string("week.recap.pending", default: "your recap is on its way") }
-    /// "new recap added" — Yope · week.recap · adapted · SOURCED
-    public static var weekRecapPushBody: String { CopyLookup.string("week.recap.push.body", default: "new recap added") }
     /// "pics" — Yope · week.recap · verbatim · CAPTURED
     public static var weekRecapSegmentPics: String { CopyLookup.string("week.recap.segment.pics", default: "pics") }
     /// "recap" — Yope · week.recap · verbatim · CAPTURED

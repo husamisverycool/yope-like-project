@@ -17,6 +17,60 @@ const table = {
   "albums.view.rename.title": "rename album", // Yope · albums.view · SOURCED
   "albums.view.toast.deleted": "album deleted", // Yope · albums.view · SOURCED
   "albums.view.toast.renamed": "album renamed", // Yope · albums.view · SOURCED
+  "auth.agegate.continue": "continue", // Yope · auth.agegate · SOURCED
+  "auth.agegate.error.invalidDate": "check the date and try again", // Yope · auth.agegate · SOURCED
+  "auth.agegate.field.accessibilityLabel": "birthday", // Yope · auth.agegate · SOURCED
+  "auth.agegate.field.placeholder": "birthday ({date_format})", // Yope · auth.agegate · SOURCED
+  "auth.agegate.notConfigured.detail": "try again soon. your next memories are waiting.", // Yope · auth.agegate · SOURCED
+  "auth.agegate.notConfigured.retry": "try again", // Yope · auth.agegate · SOURCED
+  "auth.agegate.notConfigured.title": "sign-up isn’t open yet", // Yope · auth.agegate · SOURCED
+  "auth.agegate.offline.detail": "connect to the internet to keep going. your next memories are waiting.", // Yope · auth.agegate · SOURCED
+  "auth.agegate.optIn.accessibilityLabel": "tell my groups when it’s my birthday", // Yope · auth.agegate · SOURCED
+  "auth.agegate.optIn.detail": "we’ll save your birthday for this", // Yope · auth.agegate · SOURCED
+  "auth.agegate.optIn.label": "tell my groups when it’s my birthday", // Yope · auth.agegate · SOURCED
+  "auth.agegate.subtitle": "we use it to check your age. we don’t save it.", // Yope · auth.agegate · SOURCED
+  "auth.agegate.title": "when’s your birthday?", // Yope · auth.agegate · SOURCED
+  "auth.agegate.underAge.detail": "we didn’t save your birthday or your number.", // Yope · auth.agegate · SOURCED
+  "auth.code.back.accessibilityLabel": "change number", // Yope · auth.code · SOURCED
+  "auth.code.continue": "continue", // Yope · auth.code · SOURCED
+  "auth.code.error.expired": "that code expired. send a new one and try again.", // Yope · auth.code · SOURCED
+  "auth.code.error.tooMany": "too many tries. wait a minute, then send a new code.", // Yope · auth.code · SOURCED
+  "auth.code.error.wrong": "that code didn’t work. check it and try again.", // Yope · auth.code · SOURCED
+  "auth.code.field.accessibilityLabel": "verification code", // Yope · auth.code · SOURCED
+  "auth.code.field.placeholder": "code", // Yope · auth.code · SOURCED
+  "auth.code.offline.detail": "connect to the internet to check your code. your next memories are waiting.", // Yope · auth.code · SOURCED
+  "auth.code.resend": "send new code", // Yope · auth.code · SOURCED
+  "auth.code.subtitle": "we sent it to {phone}", // Yope · auth.code · SOURCED
+  "auth.code.title": "enter the code", // Yope · auth.code · SOURCED
+  "auth.code.toast.resent": "new code sent", // Yope · auth.code · SOURCED
+  "auth.phone.continue": "continue", // Yope · auth.phone · SOURCED
+  "auth.phone.error.invalidNumber": "check your number and try again", // Yope · auth.phone · SOURCED
+  "auth.phone.error.rateLimited": "you can ask for a new code in a minute", // Yope · auth.phone · SOURCED
+  "auth.phone.error.sendFailed": "we couldn’t send your code. try again in a moment.", // Yope · auth.phone · SOURCED
+  "auth.phone.field.accessibilityLabel": "phone number", // Yope · auth.phone · SOURCED
+  "auth.phone.field.placeholder": "phone number", // Yope · auth.phone · SOURCED
+  "auth.phone.legal.privacy": "Privacy Policy", // Yope · auth.phone · SOURCED
+  "auth.phone.legal.terms": "Terms of Use", // Yope · auth.phone · SOURCED
+  "auth.phone.legal.text": "by continuing you agree to our Terms of Use and Privacy Policy", // Yope · auth.phone · SOURCED
+  "auth.phone.offline.detail": "connect to the internet to sign up. your next memories are waiting.", // Yope · auth.phone · SOURCED
+  "auth.phone.offline.retry": "try again", // Yope · auth.phone · SOURCED
+  "auth.phone.offline.title": "you’re offline", // Yope · auth.phone · SOURCED
+  "auth.phone.subtitle": "to join or create your groups", // Yope · auth.phone · SOURCED
+  "auth.phone.title": "sign up or log in", // Yope · auth.phone · SOURCED
+  "auth.phone.toast.codeSent": "code sent", // Yope · auth.phone · SOURCED
+  "auth.profile.avatar.accessibilityLabel": "add a photo", // Yope · auth.profile · SOURCED
+  "auth.profile.avatar.add": "add a photo (optional)", // Yope · auth.profile · SOURCED
+  "auth.profile.avatar.changeAccessibilityLabel": "change photo", // Yope · auth.profile · SOURCED
+  "auth.profile.continue": "continue", // Yope · auth.profile · SOURCED
+  "auth.profile.error.save": "your name didn’t save. try again in a moment.", // Yope · auth.profile · SOURCED
+  "auth.profile.error.upload": "your photo didn’t upload. try again, or keep going without it.", // Yope · auth.profile · SOURCED
+  "auth.profile.field.accessibilityLabel": "your name", // Yope · auth.profile · SOURCED
+  "auth.profile.field.note": "your first name shows on the invite links you share", // Yope · auth.profile · SOURCED
+  "auth.profile.field.placeholder": "your name", // Yope · auth.profile · SOURCED
+  "auth.profile.offline.detail": "connect to the internet to finish. your next memories are waiting.", // Yope · auth.profile · SOURCED
+  "auth.profile.subtitle": "people in your groups see your name & photo", // Yope · auth.profile · SOURCED
+  "auth.profile.title": "what’s your name?", // Yope · auth.profile · SOURCED
+  "birthday.add.a11y.close": "Close", // Apple HIG / Material 3 · birthday.add · PLATFORM
   "birthday.add.added": "birthday added", // Yope · birthday.add · SOURCED
   "birthday.add.confirm": "add my birthday", // Yope · birthday.add · SOURCED
   "birthday.add.detail": "a week before your birthday, your groups get asked for a pic & a line. on the day, you get the video", // Yope · birthday.add · SOURCED
@@ -144,10 +198,11 @@ const table = {
   "chat.reactions.picker.frequent": "Frequently Used", // Locket · chat.reactions · SOURCED
   "chat.reactions.picker.popular": "Popular", // Locket · chat.reactions · SOURCED
   "chat.reactions.picker.search": "Search", // Locket · chat.reactions · SOURCED
-  "chat.reactions.push.body": "{name} reacted {emoji} to your pic", // Locket · chat.reactions · SOURCED
   "chat.thread.a11y.back": "back", // Yope · chat.thread · SOURCED
   "chat.thread.a11y.caption": "caption: {caption}", // Yope · chat.thread · SOURCED
   "chat.thread.a11y.groupCapsule": "{group_name}, group info", // Yope · chat.thread · SOURCED
+  "chat.thread.a11y.message": "{name}, {message}", // Yope · chat.thread · SOURCED
+  "chat.thread.a11y.messageMine": "you, {message}", // Yope · chat.thread · SOURCED
   "chat.thread.a11y.photo": "{name}’s pic, {time}", // Yope · chat.thread · SOURCED
   "chat.thread.a11y.photoMine": "your pic, {time}", // Yope · chat.thread · SOURCED
   "chat.thread.a11y.recap": "view recap", // Yope · chat.thread · SOURCED
@@ -166,7 +221,6 @@ const table = {
   "chat.thread.menu.report": "report", // Yope · chat.thread · SOURCED
   "chat.thread.offline.detail": "your group’s pics will be right here when you’re back", // Yope · chat.thread · SOURCED
   "chat.thread.offline.title": "you’re offline", // Yope · chat.thread · SOURCED
-  "chat.thread.push.reply": "{name} replied to your pic", // Yope · chat.thread · SOURCED
   "chat.thread.reply.photoLabel": "pic", // Yope · chat.thread · SOURCED
   "chat.thread.sendFailed": "couldn’t send — tap to try again", // Yope · chat.thread · SOURCED
   "chat.voice.a11y.message": "{name}’s voice message, {duration}", // Yope · chat.voice · SOURCED
@@ -204,6 +258,139 @@ const table = {
   "daily.capture.prompt": "Getting both sides", // BeReal · daily.capture · SOURCED
   "daily.capture.send": "SEND", // BeReal · daily.capture · SOURCED
   "daily.dualimage.a11y.label": "Back and front photos from {name}", // BeReal · daily.dualimage · SOURCED
+  "groups.create.close.accessibilityLabel": "close", // Yope · groups.create · SOURCED
+  "groups.create.cover.accessibilityLabel": "add a cover photo", // Yope · groups.create · SOURCED
+  "groups.create.cover.changeAccessibilityLabel": "change cover photo", // Yope · groups.create · SOURCED
+  "groups.create.cta": "create group", // Yope · groups.create · SOURCED
+  "groups.create.error.cover": "your cover didn’t upload. try again, or create the group without it.", // Yope · groups.create · SOURCED
+  "groups.create.error.failed": "your group wasn’t created. try again in a moment.", // Yope · groups.create · SOURCED
+  "groups.create.error.saveFailed": "your changes didn’t save. try again in a moment.", // Yope · groups.create · SOURCED
+  "groups.create.hud.loading": "Loading", // Yope · groups.create · SOURCED
+  "groups.create.name.accessibilityLabel": "group name", // Yope · groups.create · SOURCED
+  "groups.create.name.placeholder": "name group", // Yope · groups.create · SOURCED
+  "groups.create.offline": "you’re offline. connect to the internet and try again.", // Yope · groups.create · SOURCED
+  "groups.create.save": "save", // Yope · groups.create · SOURCED
+  "groups.create.title": "new group", // Yope · groups.create · SOURCED
+  "groups.create.titleEdit": "edit group", // Yope · groups.create · SOURCED
+  "groups.create.type.custom": "custom", // Yope · groups.create · SOURCED
+  "groups.create.type.family": "family", // Yope · groups.create · SOURCED
+  "groups.create.type.friends": "friends", // Yope · groups.create · SOURCED
+  "groups.create.type.label": "what kind of group?", // Yope · groups.create · SOURCED
+  "groups.create.type.roommates": "roommates", // Yope · groups.create · SOURCED
+  "groups.invite.close.accessibilityLabel": "close", // Yope · groups.invite · SOURCED
+  "groups.invite.contacts.invite": "invite", // Yope · groups.invite · SOURCED
+  "groups.invite.contacts.invited": "invited", // Yope · groups.invite · SOURCED
+  "groups.invite.contacts.label": "from your contacts", // Yope · groups.invite · SOURCED
+  "groups.invite.error.detail": "check your connection and try again", // Yope · groups.invite · SOURCED
+  "groups.invite.error.retry": "try again", // Yope · groups.invite · SOURCED
+  "groups.invite.error.title": "the invite link didn’t load", // Yope · groups.invite · SOURCED
+  "groups.invite.full.detail": "groups can have up to {max_members} people", // Yope · groups.invite · SOURCED
+  "groups.invite.full.title": "{group_name} is full", // Yope · groups.invite · SOURCED
+  "groups.invite.link.expiry": "this link works until {date}", // Yope · groups.invite · SOURCED
+  "groups.invite.link.label": "share this group link to invite", // Yope · groups.invite · SOURCED
+  "groups.invite.link.share": "share invite", // Yope · groups.invite · SOURCED
+  "groups.invite.link.turnedOff": "link turned off", // Yope · groups.invite · SOURCED
+  "groups.invite.link.turnOff": "turn off link", // Yope · groups.invite · SOURCED
+  "groups.invite.link.turnOff.cancel": "Cancel", // Apple HIG · groups.invite · VERIFIED
+  "groups.invite.link.turnOff.confirm": "Turn Off", // Apple HIG · groups.invite · VERIFIED
+  "groups.invite.link.turnOff.message": "People who have it won’t be able to join with it. You can share a new link anytime.", // Apple HIG · groups.invite · VERIFIED
+  "groups.invite.link.turnOff.title": "Turn off this link?", // Apple HIG · groups.invite · VERIFIED
+  "groups.invite.title.custom": "add people to {group_name}", // Yope · groups.invite · SOURCED
+  "groups.invite.title.family": "add family to {group_name}", // Yope · groups.invite · SOURCED
+  "groups.invite.title.friends": "add friends to {group_name}", // Yope · groups.invite · SOURCED
+  "groups.invite.title.roommates": "add roommates to {group_name}", // Yope · groups.invite · SOURCED
+  "groups.list.cover.accessibilityLabel": "newest pic, from {first_name} in {group_name}", // Yope · groups.list · SOURCED
+  "groups.list.empty.button": "create group", // Yope · groups.list · SOURCED
+  "groups.list.empty.detail": "to share pics daily and get recaps on your memories", // Yope · groups.list · SOURCED
+  "groups.list.empty.title": "create your first group", // Yope · groups.list · SOURCED
+  "groups.list.error.detail": "check your connection and try again", // Yope · groups.list · SOURCED
+  "groups.list.error.retry": "try again", // Yope · groups.list · SOURCED
+  "groups.list.error.title": "your groups didn’t load", // Yope · groups.list · SOURCED
+  "groups.list.header.add.accessibilityLabel": "new group", // Yope · groups.list · SOURCED
+  "groups.list.offline.detail": "your groups will be here when you’re back online", // Yope · groups.list · SOURCED
+  "groups.list.offline.title": "you’re offline", // Yope · groups.list · SOURCED
+  "groups.list.row.accessibilityLabel": "{group_name}, {subtitle}", // Yope · groups.list · SOURCED
+  "groups.list.row.camera.accessibilityLabel": "take a pic for {group_name}", // Yope · groups.list · SOURCED
+  "groups.list.row.newPic": "new pic added · {time}", // Yope · groups.list · SOURCED
+  "groups.list.row.noPics": "new group!✨ share a pic?", // Yope · groups.list · SOURCED
+  "groups.list.row.sentPic": "{first_name} sent a pic · {time}", // Yope · groups.list · SOURCED
+  "groups.list.tab.camera.accessibilityLabel": "camera", // Yope · groups.list · SOURCED
+  "groups.list.tab.groups.accessibilityLabel": "groups", // Yope · groups.list · SOURCED
+  "groups.list.tab.me.accessibilityLabel": "me", // Yope · groups.list · SOURCED
+  "groups.list.tab.walls.accessibilityLabel": "walls", // Yope · groups.list · SOURCED
+  "groups.screen.back.accessibilityLabel": "back", // Yope · groups.screen · SOURCED
+  "groups.screen.chat": "chat", // Yope · groups.screen · SOURCED
+  "groups.screen.created.detail": "and added {names}", // Yope · groups.screen · SOURCED
+  "groups.screen.created.invite.custom": "invite more people", // Yope · groups.screen · SOURCED
+  "groups.screen.created.invite.family": "invite more family", // Yope · groups.screen · SOURCED
+  "groups.screen.created.invite.friends": "invite more friends", // Yope · groups.screen · SOURCED
+  "groups.screen.created.invite.roommates": "invite more roommates", // Yope · groups.screen · SOURCED
+  "groups.screen.created.title": "you created group", // Yope · groups.screen · SOURCED
+  "groups.screen.empty.button": "take a pic", // Yope · groups.screen · SOURCED
+  "groups.screen.empty.detail": "share the first one", // Yope · groups.screen · SOURCED
+  "groups.screen.empty.title": "no pics yet", // Yope · groups.screen · SOURCED
+  "groups.screen.error.detail": "check your connection and try again", // Yope · groups.screen · SOURCED
+  "groups.screen.error.retry": "try again", // Yope · groups.screen · SOURCED
+  "groups.screen.error.title": "this group didn’t load", // Yope · groups.screen · SOURCED
+  "groups.screen.header.accessibilityLabel": "{group_name}, group info", // Yope · groups.screen · SOURCED
+  "groups.screen.memberJoined": "{first_name} joined", // Yope · groups.screen · SOURCED
+  "groups.screen.menu.leave": "leave group", // Yope · groups.screen · SOURCED
+  "groups.screen.menu.report": "report", // Yope · groups.screen · SOURCED
+  "groups.screen.menu.settings": "group settings", // Yope · groups.screen · SOURCED
+  "groups.screen.menu.shareInvite": "share invite", // Yope · groups.screen · SOURCED
+  "groups.screen.offline.detail": "new pics will show up when you’re back online", // Yope · groups.screen · SOURCED
+  "groups.screen.offline.title": "you’re offline", // Yope · groups.screen · SOURCED
+  "groups.screen.photo.accessibilityLabel": "pic from {first_name}, {time}", // Yope · groups.screen · SOURCED
+  "groups.screen.photo.menu.block": "Block {first_name}", // Apple HIG · groups.screen · VERIFIED
+  "groups.screen.photo.menu.open": "Open", // Apple HIG · groups.screen · VERIFIED
+  "groups.screen.photo.menu.report": "Report…", // Apple HIG · groups.screen · VERIFIED
+  "groups.screen.photo.more.accessibilityLabel": "more", // Yope · groups.screen · SOURCED
+  "groups.screen.profile.more.accessibilityLabel": "group options", // Yope · groups.screen · SOURCED
+  "groups.screen.profile.segment.pics": "pics", // Yope · groups.screen · SOURCED
+  "groups.screen.profile.segment.recaps": "recaps", // Yope · groups.screen · SOURCED
+  "groups.screen.profile.segment.wall": "wall", // Yope · groups.screen · SOURCED
+  "groups.screen.recap.accessibilityLabel": "recaps", // Yope · groups.screen · SOURCED
+  "groups.screen.removed.detail": "ask someone in it to send you a new link", // Yope · groups.screen · SOURCED
+  "groups.screen.removed.title": "you’re not in this group anymore", // Yope · groups.screen · SOURCED
+  "groups.screen.weeks.accessibilityLabel": "past weeks", // Yope · groups.screen · SOURCED
+  "groups.settings.alert.cancel": "Cancel", // Apple HIG · groups.settings · VERIFIED
+  "groups.settings.error.generic": "that didn’t work. check your connection and try again.", // Yope · groups.settings · SOURCED
+  "groups.settings.group.edit": "edit group", // Yope · groups.settings · SOURCED
+  "groups.settings.group.header": "group", // Yope · groups.settings · SOURCED
+  "groups.settings.invitation.adminOnly": "only admins can change these.", // Yope · groups.settings · SOURCED
+  "groups.settings.invitation.default": "default hours", // Yope · groups.settings · SOURCED
+  "groups.settings.invitation.footer": "everyone gets the invitation at the same moment, once a day, sometime between these hours.", // Yope · groups.settings · SOURCED
+  "groups.settings.invitation.header": "daily invitation", // Yope · groups.settings · SOURCED
+  "groups.settings.invitation.hours": "invitation hours", // Yope · groups.settings · SOURCED
+  "groups.settings.invitation.invalid": "pick hours that are further apart", // Yope · groups.settings · SOURCED
+  "groups.settings.invitation.pause": "pause invitations", // Yope · groups.settings · SOURCED
+  "groups.settings.invitation.range": "{start}-{end}", // Yope · groups.settings · SOURCED
+  "groups.settings.leave": "leave group", // Yope · groups.settings · SOURCED
+  "groups.settings.leave.confirm": "Leave", // Apple HIG · groups.settings · VERIFIED
+  "groups.settings.leave.message": "Your photos stay in the group. Delete them first if you want them gone.", // Apple HIG · groups.settings · VERIFIED
+  "groups.settings.leave.messageLast": "You’re the last member, so leaving deletes the group and everything in it.", // Apple HIG · groups.settings · VERIFIED
+  "groups.settings.leave.title": "Leave {group_name}?", // Apple HIG · groups.settings · VERIFIED
+  "groups.settings.members.admin": "admin", // Yope · groups.settings · SOURCED
+  "groups.settings.members.header": "members", // Yope · groups.settings · SOURCED
+  "groups.settings.members.invite.custom": "invite more people", // Yope · groups.settings · SOURCED
+  "groups.settings.members.invite.family": "invite more family", // Yope · groups.settings · SOURCED
+  "groups.settings.members.invite.friends": "invite more friends", // Yope · groups.settings · SOURCED
+  "groups.settings.members.invite.roommates": "invite more roommates", // Yope · groups.settings · SOURCED
+  "groups.settings.members.menu.block": "Block", // Apple HIG · groups.settings · VERIFIED
+  "groups.settings.members.menu.remove": "Remove from Group", // Apple HIG · groups.settings · VERIFIED
+  "groups.settings.members.menu.report": "Report…", // Apple HIG · groups.settings · VERIFIED
+  "groups.settings.members.more.accessibilityLabel": "options for {first_name}", // Yope · groups.settings · SOURCED
+  "groups.settings.members.you": "you", // Yope · groups.settings · SOURCED
+  "groups.settings.notifications.footer": "muted groups don’t send you notifications. their pics still reach your widgets.", // Yope · groups.settings · SOURCED
+  "groups.settings.notifications.header": "notifications", // Yope · groups.settings · SOURCED
+  "groups.settings.notifications.mute": "mute this group", // Yope · groups.settings · SOURCED
+  "groups.settings.notifications.quietHours": "quiet hours", // Yope · groups.settings · SOURCED
+  "groups.settings.remove.confirm": "Remove", // Apple HIG · groups.settings · VERIFIED
+  "groups.settings.remove.message": "Their photos stay in the group, and invite links they shared stop working.", // Apple HIG · groups.settings · VERIFIED
+  "groups.settings.remove.title": "Remove {first_name}?", // Apple HIG · groups.settings · VERIFIED
+  "groups.settings.report": "report", // Yope · groups.settings · SOURCED
+  "groups.settings.shareInvite": "share invite", // Yope · groups.settings · SOURCED
+  "groups.settings.title": "group settings", // Yope · groups.settings · SOURCED
   "invite.appclip.card.action": "View", // Partiful · invite.appclip · SOURCED
   "invite.appclip.card.subtitle": "Make memories", // Partiful · invite.appclip · SOURCED
   "invite.appclip.full.body": "Group is full", // Partiful · invite.appclip · VERIFIED
@@ -262,6 +449,35 @@ const table = {
   "notifications.push.reply.title": "{group}", // Yope · notifications.push · SOURCED
   "notifications.push.tribute.body": "{group} made you a birthday video.", // Tribute · notifications.push · SOURCED
   "notifications.push.tribute.title": "Happy birthday!", // VidDay · notifications.push · SOURCED
+  "onboarding.permission.camera.denied.button": "enable", // Yope · onboarding.permission.camera · SOURCED
+  "onboarding.permission.camera.denied.detail": "enable camera", // Yope · onboarding.permission.camera · SOURCED
+  "onboarding.permission.camera.denied.title": "can’t take pics?", // Yope · onboarding.permission.camera · SOURCED
+  "onboarding.permission.contacts.card.button": "enable", // Yope · onboarding.permission.contacts · SOURCED
+  "onboarding.permission.contacts.card.detail": "enable contacts", // Yope · onboarding.permission.contacts · SOURCED
+  "onboarding.permission.contacts.card.dismissAccessibilityLabel": "dismiss", // Yope · onboarding.permission.contacts · SOURCED
+  "onboarding.permission.contacts.card.title.custom": "can’t see your people?", // Yope · onboarding.permission.contacts · SOURCED
+  "onboarding.permission.contacts.card.title.family": "can’t see your family?", // Yope · onboarding.permission.contacts · SOURCED
+  "onboarding.permission.contacts.card.title.friends": "can’t see your friends?", // Yope · onboarding.permission.contacts · SOURCED
+  "onboarding.permission.contacts.card.title.roommates": "can’t see your roommates?", // Yope · onboarding.permission.contacts · SOURCED
+  "onboarding.permission.contacts.choose": "choose contacts", // Yope · onboarding.permission.contacts · SOURCED
+  "onboarding.permission.contacts.search.placeholder": "search contacts", // Yope · onboarding.permission.contacts · SOURCED
+  "onboarding.permission.notifications.continue": "continue", // Yope · onboarding.permission.notifications · SOURCED
+  "onboarding.permission.notifications.detail": "enable notifications", // Yope · onboarding.permission.notifications · SOURCED
+  "onboarding.permission.notifications.skip": "maybe later", // Yope · onboarding.permission.notifications · SOURCED
+  "onboarding.permission.notifications.title": "want to know when your groups post?", // Yope · onboarding.permission.notifications · SOURCED
+  "onboarding.permission.photos.denied.button": "enable", // Yope · onboarding.permission.photos · SOURCED
+  "onboarding.permission.photos.denied.detail": "enable photos", // Yope · onboarding.permission.photos · SOURCED
+  "onboarding.permission.photos.denied.title": "can’t save pics?", // Yope · onboarding.permission.photos · SOURCED
+  "onboarding.widget.continue": "Continue", // Locket · onboarding.widget · SOURCED
+  "onboarding.widget.done": "You're done!", // Locket · onboarding.widget · SOURCED
+  "onboarding.widget.step.android.1": "Hold down on an empty\nspace on your Home Screen", // Locket · onboarding.widget · SOURCED
+  "onboarding.widget.step.android.2": "Tap the “Widgets” button\nto add a new widget", // Locket · onboarding.widget · SOURCED
+  "onboarding.widget.step.ios.1": "From your Home Screen, touch and hold a widget or empty area until the apps jiggle.", // Locket · onboarding.widget · SOURCED
+  "onboarding.widget.step.ios.2": "Tap Edit in the upper-left corner.", // Locket · onboarding.widget · SOURCED
+  "onboarding.widget.step.ios.3": "Tap Add Widget.", // Locket · onboarding.widget · SOURCED
+  "onboarding.widget.step.ios.5": "Select a widget size, then tap Add Widget.", // Locket · onboarding.widget · SOURCED
+  "onboarding.widget.stepNumber.accessibilityLabel": "step {number}", // Locket · onboarding.widget · SOURCED
+  "onboarding.widget.title": "Add the widget\nto your home screen", // Locket · onboarding.widget · SOURCED
   "onthisday.a11y.close": "Close", // Apple HIG / Material 3 · onthisday · PLATFORM
   "onthisday.a11y.next": "Older", // Timehop · onthisday · SOURCED
   "onthisday.a11y.photo": "Photo by {name}, {weekday} {time}", // Apple HIG / Material 3 · onthisday · PLATFORM
@@ -276,6 +492,42 @@ const table = {
   "onthisday.memory.meta": "{weekday} {time}", // Timehop · onthisday · SOURCED
   "onthisday.offline.detail": "connect to see this day — your memories are waiting", // Yope · onthisday · SOURCED
   "onthisday.offline.title": "you're offline", // Yope · onthisday · SOURCED
+  "paywall.dismiss": "No thanks!", // Locket · paywall · SOURCED
+  "paywall.error.products": "Plans aren’t available right now. Try again in a moment.", // Locket · paywall · SOURCED
+  "paywall.error.purchase": "Your purchase didn’t go through. Try again in a moment.", // Locket · paywall · SOURCED
+  "paywall.legal.billing.android": "{price} per {period}. Renews automatically until you cancel. Cancel anytime in your subscription settings.", // Material 3 · paywall · VERIFIED
+  "paywall.legal.billing.ios": "{price} per {period}. Plan automatically renews until canceled. Cancel anytime in Settings at least a day before each renewal date.", // Apple HIG · paywall · VERIFIED
+  "paywall.legal.renews": "Subscription renews automatically. Cancel anytime.", // Locket · paywall · SOURCED
+  "paywall.legal.trial": "After your trial ends, you will be charged {price} {per_frequency} starting {renewal_date}. You can cancel any time before this date.", // Locket · paywall · SOURCED
+  "paywall.locked.badge": "Premium", // Locket · paywall · SOURCED
+  "paywall.offline": "You’re offline. Connect to the internet to see plans.", // Locket · paywall · SOURCED
+  "paywall.pending": "Your purchase is waiting for approval.", // Apple HIG · paywall · VERIFIED
+  "paywall.perk.export.emoji": "🖼️", // Locket · paywall · SOURCED
+  "paywall.perk.export.subtitle": "Save your albums in full quality!", // Locket · paywall · SOURCED
+  "paywall.perk.export.title": "Full-quality album export", // Locket · paywall · SOURCED
+  "paywall.perk.history.subtitle": "Look back as far as you’d like!", // Locket · paywall · SOURCED
+  "paywall.perk.history.title": "Unlimited history", // Locket · paywall · SOURCED
+  "paywall.perk.video.emoji": "🎥", // Locket · paywall · SOURCED
+  "paywall.perk.video.subtitle": "Record short video clips!", // Locket · paywall · SOURCED
+  "paywall.perk.video.title": "Video posts", // Locket · paywall · SOURCED
+  "paywall.perk.widgets.emoji": "🎨", // Locket · paywall · SOURCED
+  "paywall.perk.widgets.subtitle": "Personalize your widgets", // Locket · paywall · SOURCED
+  "paywall.perk.widgets.title": "Widget styles", // Locket · paywall · SOURCED
+  "paywall.plans.monthly.price": "{monthly_price}/mo", // Locket · paywall · SOURCED
+  "paywall.plans.monthly.title": "1 Month", // Locket · paywall · SOURCED
+  "paywall.plans.selected.accessibilityLabel": "selected", // Apple HIG · paywall · VERIFIED
+  "paywall.plans.subscribe": "Subscribe", // Locket · paywall · SOURCED
+  "paywall.plans.yearly.detail": "12 mo • {monthly_equivalent}/mo", // Locket · paywall · SOURCED
+  "paywall.plans.yearly.price": "{yearly_price}/yr", // Locket · paywall · SOURCED
+  "paywall.plans.yearly.title": "1 Year", // Locket · paywall · SOURCED
+  "paywall.privacy": "Privacy Policy", // Apple HIG · paywall · VERIFIED
+  "paywall.restore": "Restore Purchases", // Apple HIG · paywall · VERIFIED
+  "paywall.restore.done": "Your subscription is back!", // Locket · paywall · SOURCED
+  "paywall.restore.none": "We couldn’t find a subscription to restore.", // Locket · paywall · SOURCED
+  "paywall.retry": "Try Again", // Apple HIG · paywall · VERIFIED
+  "paywall.terms": "Terms of Use", // Apple HIG · paywall · VERIFIED
+  "paywall.welcome.done": "Done", // Locket · paywall · SOURCED
+  "paywall.welcome.title": "Welcome to Premium!", // Locket · paywall · SOURCED
   "photo.viewer.a11y.close": "close", // Yope · photo.viewer · SOURCED
   "photo.viewer.a11y.more": "more", // Yope · photo.viewer · SOURCED
   "photo.viewer.a11y.photo": "{name}’s pic, {date}", // Yope · photo.viewer · SOURCED
@@ -285,6 +537,7 @@ const table = {
   "photo.viewer.delete.message": "it’ll be gone everywhere — from every group you sent it to, and from chats, walls, recaps & albums.", // Yope · photo.viewer · SOURCED
   "photo.viewer.delete.title": "delete this pic?", // Yope · photo.viewer · SOURCED
   "photo.viewer.error.delete": "couldn’t delete this pic — try again", // Yope · photo.viewer · SOURCED
+  "photo.viewer.error.load": "couldn’t load this pic", // Yope · photo.viewer · SOURCED
   "photo.viewer.error.save": "couldn’t save this pic", // Yope · photo.viewer · SOURCED
   "photo.viewer.gone.detail": "the person who shared it took it down", // Yope · photo.viewer · SOURCED
   "photo.viewer.gone.title": "this pic isn’t here anymore", // Yope · photo.viewer · SOURCED
@@ -296,11 +549,105 @@ const table = {
   "photo.viewer.permission.detail": "enable photos", // Yope · photo.viewer · SOURCED
   "photo.viewer.permission.title": "can’t save your pics?", // Yope · photo.viewer · SOURCED
   "photo.viewer.reply.placeholder": "message to {group_name}...", // Yope · photo.viewer · SOURCED
-  "photo.viewer.tag.toggle": "i’m in this", // Yope · photo.viewer · SOURCED
   "photo.viewer.title.sentTo": "sent to", // Yope · photo.viewer · SOURCED
   "photo.viewer.title.you": "you", // Yope · photo.viewer · SOURCED
   "photo.viewer.toast.deleted": "pic deleted", // Yope · photo.viewer · SOURCED
   "photo.viewer.toast.saved": "pic saved", // Yope · photo.viewer · SOURCED
+  "safety.block.cancel": "Cancel", // Apple HIG · safety.block · VERIFIED
+  "safety.block.confirm": "Block", // Apple HIG · safety.block · VERIFIED
+  "safety.block.done": "you blocked {first_name}", // Yope · safety.block · SOURCED
+  "safety.block.error": "that didn’t work. check your connection and try again.", // Yope · safety.block · SOURCED
+  "safety.block.menuItem": "Block", // Apple HIG · safety.block · VERIFIED
+  "safety.block.menuItemNamed": "Block {first_name}", // Apple HIG · safety.block · VERIFIED
+  "safety.block.message": "you won’t see each other’s pics, messages or reactions in any group you share. {first_name} won’t be notified.", // Yope · safety.block · SOURCED
+  "safety.block.title": "block {first_name}?", // Yope · safety.block · SOURCED
+  "safety.block.undone": "you unblocked {first_name}", // Yope · safety.block · SOURCED
+  "safety.report.cancel": "Cancel", // Apple HIG · safety.report · VERIFIED
+  "safety.report.details.placeholder": "add details (optional)", // Yope · safety.report · SOURCED
+  "safety.report.error.detail": "check your connection and try again. your details are still here.", // Yope · safety.report · SOURCED
+  "safety.report.error.notFound": "this is no longer here, so there’s nothing to report.", // Yope · safety.report · SOURCED
+  "safety.report.error.title": "your report didn’t send", // Yope · safety.report · SOURCED
+  "safety.report.menuItem": "Report…", // Apple HIG · safety.report · VERIFIED
+  "safety.report.sent.block": "Block", // Apple HIG · safety.report · VERIFIED
+  "safety.report.sent.done": "Done", // Apple HIG · safety.report · VERIFIED
+  "safety.report.sent.message": "thanks for telling us. you can also block {first_name} so you don’t see each other’s pics or messages.", // Yope · safety.report · SOURCED
+  "safety.report.sent.messageGroup": "thanks for telling us.", // Yope · safety.report · SOURCED
+  "safety.report.sent.title": "report sent", // Yope · safety.report · SOURCED
+  "safety.report.submit": "Report", // Apple HIG · safety.report · VERIFIED
+  "safety.report.title.group": "report {group_name}", // Yope · safety.report · SOURCED
+  "safety.report.title.message": "report this message", // Yope · safety.report · SOURCED
+  "safety.report.title.post": "report this pic", // Yope · safety.report · SOURCED
+  "safety.report.title.user": "report {first_name}", // Yope · safety.report · SOURCED
+  "settings.account.alert.cancel": "Cancel", // Apple HIG · settings.account · VERIFIED
+  "settings.account.birthday": "Birthday", // Apple HIG · settings.account · VERIFIED
+  "settings.account.delete": "Delete Account", // Apple HIG · settings.account · VERIFIED
+  "settings.account.delete.confirm": "Delete", // Apple HIG · settings.account · VERIFIED
+  "settings.account.delete.error": "Your account wasn’t deleted. Check your connection and try again.", // Apple HIG · settings.account · VERIFIED
+  "settings.account.delete.footer": "Deleting your account removes your photos, voice notes and messages from every group.", // Apple HIG · settings.account · VERIFIED
+  "settings.account.delete.message": "This deletes your account and everything you shared with your groups, including photos, voice notes and messages. It can’t be undone.", // Apple HIG · settings.account · VERIFIED
+  "settings.account.delete.subscriptionNote": "Your subscription keeps renewing until you cancel it in your subscription settings.", // Apple HIG · settings.account · VERIFIED
+  "settings.account.delete.title": "Delete your account?", // Apple HIG · settings.account · VERIFIED
+  "settings.account.deleted.toast": "your account was deleted", // Yope · settings.account · SOURCED
+  "settings.account.name": "Name", // Apple HIG · settings.account · VERIFIED
+  "settings.account.name.error": "Your name didn’t save. Check your connection and try again.", // Apple HIG · settings.account · VERIFIED
+  "settings.account.phone": "Phone Number", // Apple HIG · settings.account · VERIFIED
+  "settings.account.photo": "Photo", // Apple HIG · settings.account · VERIFIED
+  "settings.account.title": "Account", // Apple HIG · settings.account · VERIFIED
+  "settings.blocked.empty.message": "When you block someone, you won’t see each other’s photos, messages or reactions in any group you share.", // Apple HIG · settings.blocked · VERIFIED
+  "settings.blocked.empty.title": "No Blocked People", // Apple HIG · settings.blocked · VERIFIED
+  "settings.blocked.error": "The list didn’t load. Check your connection and try again.", // Apple HIG · settings.blocked · VERIFIED
+  "settings.blocked.retry": "Try Again", // Apple HIG · settings.blocked · VERIFIED
+  "settings.blocked.title": "Blocked People", // Apple HIG · settings.blocked · VERIFIED
+  "settings.blocked.unblock": "Unblock", // Apple HIG · settings.blocked · VERIFIED
+  "settings.blocked.unknown": "Someone you blocked", // Apple HIG · settings.blocked · VERIFIED
+  "settings.notifications.categories": "Notification Categories", // Apple HIG · settings.notifications · VERIFIED
+  "settings.notifications.channel.birthdayRequest.description": "Private requests to add a photo to a birthday tribute", // Locket · settings.notifications · SOURCED
+  "settings.notifications.channel.birthdayRequest.name": "Birthday Requests", // Locket · settings.notifications · SOURCED
+  "settings.notifications.channel.dailyInvitation.description": "The once-a-day invitation to share a photo with your group at the same moment", // Locket · settings.notifications · SOURCED
+  "settings.notifications.channel.dailyInvitation.name": "Daily Invitation", // Locket · settings.notifications · SOURCED
+  "settings.notifications.channel.newPost.description": "Notifications when group members post new photos", // Locket · settings.notifications · SOURCED
+  "settings.notifications.channel.newPost.name": "New Photos", // Locket · settings.notifications · SOURCED
+  "settings.notifications.channel.reactionsReplies.description": "Notifications for new messages and reactions in groups", // Locket · settings.notifications · SOURCED
+  "settings.notifications.channel.reactionsReplies.name": "Reactions & Replies", // Locket · settings.notifications · SOURCED
+  "settings.notifications.channel.recap.description": "Notifications when your group’s week is ready", // Locket · settings.notifications · SOURCED
+  "settings.notifications.channel.recap.name": "Weekly Recaps", // Locket · settings.notifications · SOURCED
+  "settings.notifications.channel.tribute.description": "Notifications when your group makes you a birthday tribute", // Locket · settings.notifications · SOURCED
+  "settings.notifications.channel.tribute.name": "Birthday Tributes", // Locket · settings.notifications · SOURCED
+  "settings.notifications.channel.yearStory.description": "Notifications when your group’s year story is ready", // Locket · settings.notifications · SOURCED
+  "settings.notifications.channel.yearStory.name": "Year Story", // Locket · settings.notifications · SOURCED
+  "settings.notifications.error": "Your change didn’t save. Check your connection and try again.", // Apple HIG · settings.notifications · VERIFIED
+  "settings.notifications.groups.footer": "Turn a group off to mute it. Its photos still reach your widgets.", // Apple HIG · settings.notifications · VERIFIED
+  "settings.notifications.groups.header": "Groups", // Apple HIG · settings.notifications · VERIFIED
+  "settings.notifications.liveActivity": "Live Activity", // Apple HIG · settings.notifications · VERIFIED
+  "settings.notifications.liveActivity.footer": "Shows the daily invitation on your Lock Screen while it’s open.", // Apple HIG · settings.notifications · VERIFIED
+  "settings.notifications.openSettings": "Open Settings", // Apple HIG · settings.notifications · VERIFIED
+  "settings.notifications.quietHours": "Quiet Hours", // Apple HIG · settings.notifications · VERIFIED
+  "settings.notifications.quietHours.end": "End", // Apple HIG · settings.notifications · VERIFIED
+  "settings.notifications.quietHours.footer": "Notifications arrive silently between these times.", // Apple HIG · settings.notifications · VERIFIED
+  "settings.notifications.quietHours.start": "Start", // Apple HIG · settings.notifications · VERIFIED
+  "settings.notifications.title": "Notifications", // Apple HIG · settings.notifications · VERIFIED
+  "settings.root.account": "Account", // Apple HIG · settings.root · VERIFIED
+  "settings.root.blocked": "Blocked People", // Apple HIG · settings.root · VERIFIED
+  "settings.root.contact": "Contact Us", // Apple HIG · settings.root · VERIFIED
+  "settings.root.entry.accessibilityLabel": "settings", // Yope · settings.root · SOURCED
+  "settings.root.manageSubscription": "Manage Subscription", // Apple HIG · settings.root · VERIFIED
+  "settings.root.notifications": "Notifications", // Apple HIG · settings.root · VERIFIED
+  "settings.root.privacy": "Privacy Policy", // Apple HIG · settings.root · VERIFIED
+  "settings.root.signOut": "Sign Out", // Apple HIG · settings.root · VERIFIED
+  "settings.root.terms": "Terms of Use", // Apple HIG · settings.root · VERIFIED
+  "settings.root.title": "Settings", // Apple HIG · settings.root · VERIFIED
+  "system.permissions.camera.purpose": "The app uses your camera to take the photos you send to your groups.", // Apple HIG · system.permissions · VERIFIED
+  "system.permissions.contacts.purpose": "The app uses the contacts you choose to invite people to your groups.", // Apple HIG · system.permissions · VERIFIED
+  "system.permissions.microphone.purpose": "The app uses your microphone to record voice notes and the sound in videos you send to your groups.", // Apple HIG · system.permissions · VERIFIED
+  "system.permissions.openSettings": "Open Settings", // Apple HIG · system.permissions · VERIFIED
+  "system.permissions.photosAdd.purpose": "The app saves photos from your groups to your library when you tap Save.", // Apple HIG · system.permissions · VERIFIED
+  "system.permissions.photosRead.purpose": "The app shows the photos you select so you can send them to your groups.", // Apple HIG · system.permissions · VERIFIED
+  "system.permissions.rationale.camera.title": "want to share pics with your groups?", // Yope · system.permissions · SOURCED
+  "system.permissions.rationale.contacts.title": "can’t see your friends?", // Yope · system.permissions · SOURCED
+  "system.permissions.rationale.continue": "Continue", // Apple HIG · system.permissions · VERIFIED
+  "system.permissions.rationale.microphone.title": "want to add your voice?", // Yope · system.permissions · SOURCED
+  "system.permissions.rationale.notifications.title": "want to know when your groups post?", // Yope · system.permissions · SOURCED
+  "system.permissions.rationale.notNow": "Not Now", // Apple HIG · system.permissions · VERIFIED
   "tagging.coach": "tap if you're in this pic", // Yope · tagging · SOURCED
   "tagging.error": "couldn't save that — try again in a moment", // Yope · tagging · SOURCED
   "tagging.notFound": "this pic isn't here anymore", // Yope · tagging · SOURCED
@@ -315,9 +662,11 @@ const table = {
   "walls.member.a11y.wall": "{name}’s wall", // Yope · walls.member · SOURCED
   "walls.member.empty.detail": "you’ll see the pics {name} sends to groups you’re both in", // Yope · walls.member · SOURCED
   "walls.member.empty.title": "no pics from {name} yet", // Yope · walls.member · SOURCED
+  "walls.mine.a11y.settings": "settings", // Yope · walls.mine · SOURCED
   "walls.mine.empty.action": "share a pic", // Yope · walls.mine · SOURCED
   "walls.mine.empty.detail": "pics you send to your groups show up here", // Yope · walls.mine · SOURCED
   "walls.mine.empty.title": "nothing on your wall yet", // Yope · walls.mine · SOURCED
+  "walls.mine.error.title": "couldn’t load this wall", // Yope · walls.mine · SOURCED
   "walls.mine.title": "my wall", // Yope · walls.mine · SOURCED
   "week.edit.a11y.close": "close", // Yope · week.edit · SOURCED
   "week.edit.a11y.inRecap": "in recap", // Yope · week.edit · SOURCED
@@ -348,9 +697,9 @@ const table = {
   "week.recap.empty.action": "share a pic", // Yope · week.recap · SOURCED
   "week.recap.empty.detail": "it’s made from the pics your group shares this week", // Yope · week.recap · SOURCED
   "week.recap.empty.title": "your first recap shows up on sunday", // Yope · week.recap · SOURCED
+  "week.recap.error.title": "couldn’t load this recap", // Yope · week.recap · SOURCED
   "week.recap.open": "view recap", // Yope · week.recap · SOURCED
   "week.recap.pending": "your recap is on its way", // Yope · week.recap · SOURCED
-  "week.recap.push.body": "new recap added", // Yope · week.recap · SOURCED
   "week.recap.segment.pics": "pics", // Yope · week.recap · CAPTURED
   "week.recap.segment.recap": "recap", // Yope · week.recap · CAPTURED
   "widget.android.configure.empty": "Once you join a group, you can add it to a widget.", // Locket · widget.android · SOURCED

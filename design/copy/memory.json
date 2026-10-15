@@ -570,6 +570,15 @@
       "level": "SOURCED",
       "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface')."
     },
+    "birthday.add.a11y.close": {
+      "text": "Close",
+      "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "birthday.add",
+      "evidence": "design/research/platform.md 'VoiceOver / TalkBack labeling' (HIG VoiceOver 'Provide alternative labels for all key interface elements'; Android 'make the button's description Submit, not Submit button')",
+      "pattern": "platform.alertButton (one- or two-word verb, title-style capitalization) + design/research/platform.md 'VoiceOver / TalkBack labeling' (purpose of the control, never 'button')",
+      "level": "PLATFORM"
+    },
     "birthday.request.title": {
       "text": "Birthday Video for {name}!",
       "origin": "adapted",

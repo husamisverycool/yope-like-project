@@ -14,6 +14,7 @@ import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.serializer.KotlinXSerializer
 import io.github.jan.supabase.storage.Storage
+import io.github.jan.supabase.storage.resumable.MemoryResumableCache
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.okhttp.OkHttp
 import kotlin.time.Duration
@@ -71,7 +72,11 @@ object SupabaseSetup {
                 enableLifecycleCallbacks = options.lifecycleCallbacks
             }
             install(Postgrest)
-            install(Storage)
+            install(Storage) {
+                // Uploads are single requests driven by WorkManager; the resumable (TUS) URL cache
+                // would otherwise default to multiplatform-settings storage.
+                resumable { cache = MemoryResumableCache() }
+            }
             install(Realtime) {
                 reconnectDelay = options.realtimeReconnectDelay
                 rejoinDelay = 2.seconds

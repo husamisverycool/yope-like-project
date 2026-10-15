@@ -8,7 +8,7 @@ import {
   expectRpcError,
   postPhoto,
   rpc,
-  setConfig,
+  inRolledBackTransaction,
   sql,
   type TestUser,
 } from './helpers';
@@ -128,34 +128,102 @@ describe('job queue', () => {
 });
 
 describe('due_weekly_recaps', () => {
-  it('fails closed until weekly_recap_local_time is sourced', async () => {
-    await expectRpcError(rpc(admin, 'due_weekly_recaps', {}), 'config_missing', 503);
+  // Every call runs in a transaction that is rolled back: the config each case needs is set
+  // only there, and the recaps it creates never become visible to other suites.
+  type Recap = { group_id: string; week_start: string };
+  const due = (q: (t: string, p?: unknown[]) => Promise<any[]>, at: string) =>
+    q(`select group_id, week_start::text as week_start from public.due_weekly_recaps($1::timestamptz)`, [at]) as Promise<Recap[]>;
+  const setIn = (q: (t: string, p?: unknown[]) => Promise<any[]>, key: string, value: string | null) =>
+    q(`update public.app_config set value = $2::jsonb where key = $1`, [key, value === null ? null : JSON.stringify(value)]);
+  /** default window 09:48-21:12 and no override, whatever the shared config holds */
+  const sourcedDefaults = async (q: (t: string, p?: unknown[]) => Promise<any[]>) => {
+    await setIn(q, 'default_waking_start', '09:48');
+    await setIn(q, 'default_waking_end', '21:12');
+    await setIn(q, 'weekly_recap_local_time', null);
+  };
+  async function groupWithPostAt(iso: string, opts: Parameters<typeof createGroup>[2]) {
+    const g = await createGroup(u[0], [u[1]], opts);
+    const p = await postPhoto(u[1], [g.id]);
+    await sql(`update public.posts set created_at = $2 where id = $1`, [p.posts[0].id, iso]);
+    return g;
+  }
+
+  it('without a recap time: at the end of the default waking window on Sunday, group time zone', async () => {
+    const g = await groupWithPostAt('2026-11-04T10:00:00Z', { tz: 'Europe/Paris' }); // Wed
+    const quiet = await createGroup(u[2], [], { tz: 'Europe/Paris' });
+    await inRolledBackTransaction(async (q) => {
+      await sourcedDefaults(q);
+      // Sunday 2026-11-08, Paris = UTC+1: 21:11 not yet, 21:13 yes
+      expect((await due(q, '2026-11-08T20:11:00Z')).filter((r) => r.group_id === g.id)).toEqual([]);
+      const rows = await due(q, '2026-11-08T20:13:00Z');
+      expect(rows.filter((r) => r.group_id === g.id)).toEqual([{ group_id: g.id, week_start: '2026-11-02' }]);
+      expect(rows.filter((r) => r.group_id === quiet.id)).toEqual([]); // no posts that week
+      const [recap] = await q(`select id, status, items from public.weekly_recaps where group_id = $1`, [g.id]);
+      expect(recap).toMatchObject({ status: 'pending', items: [] });
+      expect(await q(`select 1 from public.jobs where kind = 'recap.generate' and payload ->> 'recap_id' = $1`, [recap.id])).toHaveLength(1);
+      // idempotent, also on the following days (catch-up)
+      expect((await due(q, '2026-11-10T09:00:00Z')).filter((r) => r.group_id === g.id)).toEqual([]);
+    });
   });
 
-  it('creates one recap per group for the week ending on the recap day, if the group posted', async () => {
-    const g = await createGroup(u[0], [u[1]], { tz: 'Europe/Paris' });
-    const quiet = await createGroup(u[2], [], { tz: 'Europe/Paris' });
-    const p = await postPhoto(u[1], [g.id]);
-    await sql(`update public.posts set created_at = '2026-11-04T10:00:00Z' where id = $1`, [p.posts[0].id]); // Wed
-    try {
-      await setConfig('weekly_recap_local_time', '18:00');
-      // Sunday 2026-11-08 17:59 Paris: not yet
-      let rows = await rpc<any[]>(admin, 'due_weekly_recaps', { p_now: '2026-11-08T16:59:00Z' });
-      expect(rows.filter((r) => r.group_id === g.id)).toEqual([]);
-      // 18:01 Paris
-      rows = await rpc<any[]>(admin, 'due_weekly_recaps', { p_now: '2026-11-08T17:01:00Z' });
-      const mine = rows.filter((r) => r.group_id === g.id);
-      expect(mine).toHaveLength(1);
-      expect(mine[0]).toMatchObject({ week_start: '2026-11-02', status: 'pending', items: [] });
-      expect(rows.filter((r) => r.group_id === quiet.id)).toEqual([]);
-      const jobs = await sql(`select 1 from public.jobs where kind = 'recap.generate' and payload ->> 'recap_id' = $1`, [mine[0].id]);
-      expect(jobs).toHaveLength(1);
-      // idempotent, also on the following days (catch-up)
-      rows = await rpc<any[]>(admin, 'due_weekly_recaps', { p_now: '2026-11-10T09:00:00Z' });
-      expect(rows.filter((r) => r.group_id === g.id)).toEqual([]);
-    } finally {
-      await setConfig('weekly_recap_local_time', null);
-    }
+  it("uses the group's own waking-window end", async () => {
+    const g = await groupWithPostAt('2026-11-04T15:00:00Z', { tz: 'America/New_York', start: '08:00', end: '20:00' });
+    await inRolledBackTransaction(async (q) => {
+      await sourcedDefaults(q);
+      // Sunday 2026-11-08 20:00 EST = Monday 01:00Z
+      expect((await due(q, '2026-11-09T00:59:00Z')).filter((r) => r.group_id === g.id)).toEqual([]);
+      expect((await due(q, '2026-11-09T01:01:00Z')).filter((r) => r.group_id === g.id)).toEqual([{ group_id: g.id, week_start: '2026-11-02' }]);
+    });
+  });
+
+  it('is DST-safe: the same local time on the Sundays clocks change (both directions)', async () => {
+    // Europe/Paris falls back on Sunday 2026-10-25 (21:00 CET = 20:00Z) …
+    const fall = await groupWithPostAt('2026-10-21T12:00:00Z', { tz: 'Europe/Paris', start: '09:00', end: '21:00' });
+    // … and springs forward on Sunday 2027-03-28 (21:00 CEST = 19:00Z)
+    const spring = await groupWithPostAt('2027-03-24T12:00:00Z', { tz: 'Europe/Paris', start: '09:00', end: '21:00' });
+    // New York falls back on Sunday 2026-11-01 (23:30 EST = Monday 04:30Z)
+    const ny = await groupWithPostAt('2026-10-28T12:00:00Z', { tz: 'America/New_York', start: '07:00', end: '23:30' });
+    await inRolledBackTransaction(async (q) => {
+      await sourcedDefaults(q);
+      const mine = (rows: Recap[], g: { id: string }) => rows.filter((r) => r.group_id === g.id);
+      expect(mine(await due(q, '2026-10-25T19:59:00Z'), fall)).toEqual([]);
+      expect(mine(await due(q, '2026-10-25T20:01:00Z'), fall)).toEqual([{ group_id: fall.id, week_start: '2026-10-19' }]);
+      expect(mine(await due(q, '2027-03-28T18:59:00Z'), spring)).toEqual([]);
+      expect(mine(await due(q, '2027-03-28T19:01:00Z'), spring)).toEqual([{ group_id: spring.id, week_start: '2027-03-22' }]);
+      expect(mine(await due(q, '2026-11-02T04:29:00Z'), ny)).toEqual([]);
+      expect(mine(await due(q, '2026-11-02T04:31:00Z'), ny)).toEqual([{ group_id: ny.id, week_start: '2026-10-26' }]);
+    });
+  });
+
+  it("a window that wraps past midnight ends early on Monday: still that week's recap", async () => {
+    const g = await groupWithPostAt('2026-11-04T12:00:00Z', { tz: 'Europe/Berlin', start: '22:00', end: '02:00' });
+    await inRolledBackTransaction(async (q) => {
+      await sourcedDefaults(q);
+      // Sunday 2026-11-08 22:00 → Monday 02:00 CET = 01:00Z
+      expect((await due(q, '2026-11-08T21:30:00Z')).filter((r) => r.group_id === g.id)).toEqual([]);
+      expect((await due(q, '2026-11-09T00:59:00Z')).filter((r) => r.group_id === g.id)).toEqual([]);
+      expect((await due(q, '2026-11-09T01:01:00Z')).filter((r) => r.group_id === g.id)).toEqual([{ group_id: g.id, week_start: '2026-11-02' }]);
+    });
+  });
+
+  it('weekly_recap_local_time overrides the waking-window end', async () => {
+    const g = await groupWithPostAt('2026-11-04T10:00:00Z', { tz: 'Europe/Paris', start: '08:00', end: '23:00' });
+    await inRolledBackTransaction(async (q) => {
+      await sourcedDefaults(q);
+      await setIn(q, 'weekly_recap_local_time', '18:00');
+      expect((await due(q, '2026-11-08T16:59:00Z')).filter((r) => r.group_id === g.id)).toEqual([]);
+      expect((await due(q, '2026-11-08T17:01:00Z')).filter((r) => r.group_id === g.id)).toEqual([{ group_id: g.id, week_start: '2026-11-02' }]);
+    });
+  });
+
+  it('a group with no known waking window (no own hours, no default, no override) gets no recap', async () => {
+    const g = await groupWithPostAt('2026-11-04T10:00:00Z', { tz: 'Asia/Tokyo' });
+    await inRolledBackTransaction(async (q) => {
+      await setIn(q, 'default_waking_start', null);
+      await setIn(q, 'default_waking_end', null);
+      await setIn(q, 'weekly_recap_local_time', null);
+      expect((await due(q, '2026-11-15T12:00:00Z')).filter((r) => r.group_id === g.id)).toEqual([]);
+    });
   });
 });
 

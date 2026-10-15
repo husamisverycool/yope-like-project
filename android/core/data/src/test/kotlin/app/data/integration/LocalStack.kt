@@ -161,15 +161,30 @@ class Admin : AutoCloseable {
         call(HttpMethod.Delete, "/rest/v1/$table?$filter")
     }
 
-    /** PostgREST's OpenAPI description (tables, columns, enums, RPC parameters). */
-    suspend fun openApi(): JsonObject {
+    /**
+     * PostgREST's OpenAPI description (tables, columns, enums, RPC parameters). It follows the
+     * privileges of the caller: the service role sees everything, [bearer] = a user's access
+     * token shows exactly what a signed-in client may call.
+     */
+    suspend fun openApi(bearer: String = LocalStack.serviceKey, apiKey: String = LocalStack.serviceKey): JsonObject {
         val response = http.request("${LocalStack.url}/rest/v1/") {
             method = HttpMethod.Get
-            header("apikey", LocalStack.serviceKey)
-            header("Authorization", "Bearer ${LocalStack.serviceKey}")
+            header("apikey", apiKey)
+            header("Authorization", "Bearer $bearer")
             header("Accept", "application/openapi+json")
         }
         return json.parseToJsonElement(response.bodyAsText()).jsonObject
+    }
+
+    /** A user's access token (GoTrue password grant). */
+    suspend fun accessToken(account: TestAccount): String {
+        val response = http.request("${LocalStack.url}/auth/v1/token?grant_type=password") {
+            method = HttpMethod.Post
+            header("apikey", LocalStack.anonKey)
+            contentType(ContentType.Application.Json)
+            setBody(buildJsonObject { put("phone", account.phone); put("password", account.password) }.toString())
+        }
+        return json.parseToJsonElement(response.bodyAsText()).jsonObject["access_token"]!!.jsonPrimitive.content
     }
 
     override fun close() = http.close()
