@@ -45,3 +45,8 @@ references/**/*.mp4
 references/**/*.html
 design/verification/**/*.png
 design/verification/**/*.jpg
+references/**/*.css
+references/**/*.js
+references/**/*.pdf
+references/**/*.json
+!references/**/INDEX.json
