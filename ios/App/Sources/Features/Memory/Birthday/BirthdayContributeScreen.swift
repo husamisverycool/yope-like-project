@@ -56,6 +56,7 @@ struct BirthdayContributeScreen: View {
             }
             dismiss()
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("birthday.contribute")
     }
 }
@@ -164,9 +165,12 @@ private struct ContributePhotoStep: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 0) {
+                    // The greeting keeps its place while the name loads (no jump, no "for !").
                     Text(Copy.birthdayContributeGreeting(name: model.honoreeName))
                         .dsTextStyle(BirthdayType.contributeHeading)
                         .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                        .opacity(model.honoreeName.isEmpty ? 0 : 1)
+                        .accessibilityHidden(model.honoreeName.isEmpty)
                         .accessibilityAddTraits(.isHeader)
                         .padding(.top, Tokens.Sizes.birthdayContributeHeadingGap)
                     Text(Copy.birthdayContributeThanks)

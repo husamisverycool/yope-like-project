@@ -29,6 +29,8 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         var failOnce: Set<String> = []
         /// Names of calls that fail once with `post_not_found`.
         var notFoundOnce: Set<String> = []
+        /// Names of calls that never answer (loading-state snapshots); they return once the caller is cancelled.
+        var holds: Set<String> = []
         var network: NetworkStatus = .unknown
         var groups: [PhotoGroup] = []
         var members: [GroupID: [MemberProfile]] = [:]
@@ -117,6 +119,13 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         if notFound { throw DataError.api(.postNotFound) }
     }
 
+    /// Waits while `name` is held (until the calling task is cancelled).
+    private func hold(_ name: String) async {
+        while read({ $0.holds.contains(name) }), !Task.isCancelled {
+            try? await Task.sleep(nanoseconds: 50_000_000)
+        }
+    }
+
     private func nextID() -> String {
         lock.lock()
         state.idCounter += 1
@@ -147,6 +156,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
     }
 
     func myGroups() async throws -> [PhotoGroup] {
+        await hold("myGroups")
         try call("myGroups")
         return read { $0.groups }
     }
@@ -171,6 +181,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
     }
 
     func messages(groupID: GroupID, before: Date?) async throws -> Page<Message> {
+        await hold("messages")
         try call("messages")
         return read { state in
             let all = state.messages
@@ -214,6 +225,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
     }
 
     func posts(ids: [PostID]) async throws -> [PostWithMedia] {
+        await hold("posts")
         try call("posts")
         return read { state in ids.compactMap { id in state.posts.first { $0.id == id } } }
     }
@@ -272,6 +284,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
     }
 
     func wall(userID: UserID, before: Date?, limit: Int) async throws -> Page<WallItem> {
+        await hold("wall")
         try call("wall")
         return read { state in
             let all = (state.walls[userID] ?? Self.derivedWall(userID: userID, state: state))
@@ -308,6 +321,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
     }
 
     func recap(id: RecapID) async throws -> WeeklyRecap? {
+        await hold("recap")
         try call("recap")
         return read { $0.recaps.first { $0.id == id } }
     }
@@ -327,6 +341,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
     }
 
     func historyWeeks(groupID: GroupID, beforeWeek: LocalDate?) async throws -> [HistoryWeek] {
+        await hold("historyWeeks")
         try call("historyWeeks")
         return read { state in
             let zone = state.groups.first { $0.id == groupID }?.resolvedTimeZone ?? TimeZone(identifier: "UTC")!
@@ -346,6 +361,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
     func cachedHistoryWeeks(groupID: GroupID) async -> [HistoryWeek]? { read { $0.cachedHistory[groupID] } }
 
     func albums(groupID: GroupID) async throws -> [AlbumWithItems] {
+        await hold("albums")
         try call("albums")
         return read { $0.albums.filter { $0.album.groupID == groupID }.sorted { $0.album.createdAt > $1.album.createdAt } }
     }

@@ -263,6 +263,8 @@ class AlbumViewModel(private val data: SocialData, private val groupId: String, 
     val state: StateFlow<AlbumViewState> = _state.asStateFlow()
     private val _effects = MutableSharedFlow<AlbumEffect>(extraBufferCapacity = 8, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val effects: SharedFlow<AlbumEffect> = _effects.asSharedFlow()
+    private var payload: AlbumPayload? = null
+    private val removed = HashSet<String>()
 
     init {
         load()
@@ -304,9 +306,6 @@ class AlbumViewModel(private val data: SocialData, private val groupId: String, 
         val admin = runCatching { data.members(groupId) }.getOrDefault(emptyList()).any { it.member.userId == me && it.member.role == MemberRole.Admin }
         return AlbumPayload(album, posts, media, profiles, canDelete = admin || (me != null && album.createdBy == me))
     }
-
-    private var payload: AlbumPayload? = null
-    private val removed = HashSet<String>()
 
     private fun publish(p: AlbumPayload, offline: Boolean) {
         payload = p

@@ -2,7 +2,7 @@ import SwiftUI
 
 /// The window's content: the sign-up / onboarding stack until the person is home, then the main navigation stack
 /// (groups.list at its root) driven by `AppRouter.path`, with one modal slot presented as a sheet or a full-screen
-/// cover depending on the surface spec (`AppModal.presentsAsSheet`).
+/// cover depending on the surface spec (`AppModal.presentation`); the camera is a tab with the tab bar under it.
 ///
 /// Every screen below gets the account dependencies (`.environment(AccountDependencies)`), the storage URL resolver
 /// for `StorageImage` and the toast host. The appearance is dark only (`layout.global.appearance`).
@@ -37,17 +37,34 @@ struct RootView: View {
     }
 }
 
-/// Home and everything pushed or presented from it.
+/// Home and everything pushed or presented from it: the camera tab (camera.capture, tab bar under it) or the groups
+/// stack (groups.list at its root). A camera link without an invitation (widget, group card, capture's own
+/// "open camera") opens the camera tab, so the tab bar is always there to leave it; the daily capture stays full screen.
 struct MainShell: View {
     @Bindable var router: AppRouter
     let dependencies: AccountDependencies
 
+    private var shell: ShellState { dependencies.shell }
+
     var body: some View {
-        NavigationStack(path: $router.path) {
-            GroupsHomeScreen()
-                .navigationDestination(for: AppRoute.self) { route in
-                    RouteDestination(route: route)
+        ZStack {
+            switch shell.tab {
+            case .camera:
+                CameraScreen(groupID: shell.cameraGroupID, invitationID: nil)
+                    .id(shell.cameraGroupID)
+                    .safeAreaInset(edge: .bottom, spacing: 0) {
+                        FloatingTabBar(selected: .camera, avatarPath: nil) { tab in
+                            ShellNavigation.select(tab, router: router, shell: shell)
+                        }
+                    }
+            default:
+                NavigationStack(path: $router.path) {
+                    GroupsHomeScreen()
+                        .navigationDestination(for: AppRoute.self) { route in
+                            RouteDestination(route: route)
+                        }
                 }
+            }
         }
         .sheet(item: sheetModal) { modal in
             ModalDestination(modal: modal)
@@ -64,16 +81,30 @@ struct MainShell: View {
                         .toastHost(dependencies.toasts)
                 }
         }
+        .captureSendStatus(CaptureEnvironment.shared.sendCenter)
+        .onChange(of: router.modal) { _, modal in openCameraTabIfNeeded(modal) }
+        .onAppear { openCameraTabIfNeeded(router.modal) }
+        .onChange(of: router.path) { _, path in
+            // A route pushed from anywhere (notification, link) shows the groups stack.
+            if !path.isEmpty { shell.showGroups() }
+        }
+    }
+
+    /// `router.modal = .camera(groupID, nil)` → the camera tab for that group.
+    private func openCameraTabIfNeeded(_ modal: AppModal?) {
+        guard case let .camera(groupID, nil)? = modal else { return }
+        router.modal = nil
+        shell.showCamera(groupID: groupID)
     }
 
     /// `router.modal` when it is presented as a sheet.
     private var sheetModal: Binding<AppModal?> {
         Binding(
-            get: { router.modal.flatMap { $0.presentsAsSheet ? $0 : nil } },
+            get: { router.modal.flatMap { $0.presentation == .sheet ? $0 : nil } },
             set: { newValue in
                 if let newValue {
                     router.modal = newValue
-                } else if router.modal?.presentsAsSheet == true {
+                } else if router.modal?.presentation == .sheet {
                     router.modal = nil
                 }
             }
@@ -83,11 +114,11 @@ struct MainShell: View {
     /// `router.modal` when it is presented full screen.
     private var coverModal: Binding<AppModal?> {
         Binding(
-            get: { router.modal.flatMap { $0.presentsAsSheet ? nil : $0 } },
+            get: { router.modal.flatMap { $0.presentation == .fullScreen ? $0 : nil } },
             set: { newValue in
                 if let newValue {
                     router.modal = newValue
-                } else if router.modal?.presentsAsSheet == false {
+                } else if router.modal?.presentation == .fullScreen {
                     router.modal = nil
                 }
             }
@@ -95,15 +126,48 @@ struct MainShell: View {
     }
 }
 
+/// What the tab bar items do (groups.list.layout.tabBar): camera and groups switch tabs; walls and me push their
+/// screens on the groups stack (`CrossGroupRoutes`).
+enum ShellNavigation {
+    @MainActor
+    static func select(_ tab: AppTab, router: AppRouter, shell: ShellState) {
+        switch tab {
+        case .camera:
+            shell.showCamera()
+        case .groups:
+            router.path = []
+            shell.showGroups()
+        case .walls:
+            if let route = CrossGroupRoutes.wallsBrowse(groupID: nil) {
+                shell.showGroups()
+                router.path = [route]
+            }
+        case .me:
+            if let route = CrossGroupRoutes.wallsMine {
+                shell.showGroups()
+                router.path = [route]
+            }
+        }
+    }
+}
+
 extension AppModal {
-    /// Sheet (native `.sheet`) or full-screen cover. Account surfaces follow their specs (groups.create /
-    /// groups.invite / safety.report: sheets; paywall: full screen); the in-app invite preview is a sheet so it can
-    /// be swiped away. Other groups' modals stay full screen.
-    var presentsAsSheet: Bool {
+    enum Presentation: Equatable {
+        case sheet
+        case fullScreen
+        /// The camera tab (`MainShell`), not a modal.
+        case tab
+    }
+
+    /// Account surfaces follow their specs (groups.create / groups.invite / safety.report: sheets; paywall: full
+    /// screen); the in-app invite preview is a sheet so it can be swiped away; the camera without an invitation is
+    /// the camera tab (camera.capture structure item 6). Other groups' modals stay full screen.
+    var presentation: Presentation {
         switch self {
-        case .invite: return true
-        case let .account(modal): return modal.presentsAsSheet
-        default: return false
+        case .camera(_, nil): return .tab
+        case .invite: return .sheet
+        case let .account(modal): return modal.presentsAsSheet ? .sheet : .fullScreen
+        default: return .fullScreen
         }
     }
 }

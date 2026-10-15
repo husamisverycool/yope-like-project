@@ -255,21 +255,30 @@ enum SocialLaunch {
         return arguments[index + 1]
     }
 
-    /// Opens the screen named by `-SocialOpen` on the demo group. Call once after launch (AppEnvironment
-    /// `didFinishLaunching`, DEBUG) — see the social pass report.
+    /// Opens the screen named by `-SocialOpen` on the demo group once the person is home (`router.isReady`).
+    /// Call once after launch (AppEnvironment `didFinishLaunching`, DEBUG) — see the social pass report.
     @MainActor
     static func apply(to router: AppRouter) {
         guard usesFakes, let screen = openArgument else { return }
+        Task { @MainActor in
+            while !router.isReady {
+                try? await Task.sleep(for: .milliseconds(50)) // provenance-ok: UI-test launch polling, not motion
+            }
+            router.path = routes(for: screen)
+        }
+    }
+
+    static func routes(for screen: String) -> [AppRoute] {
         let group = SocialDemo.groupID.rawValue
         switch screen {
-        case "chat": router.path = [.group(id: group), .chat(groupID: group, messageID: nil)]
-        case "viewer": router.path = [.group(id: group), .post(groupID: group, postID: SocialDemo.p2.rawValue)]
-        case "wallMine": router.path = [.social(.wallMine)]
-        case "walls": router.path = [.social(.wallsBrowse)]
-        case "recap": router.path = [.group(id: group), .recap(groupID: group, recapID: SocialDemo.recapID.rawValue)]
-        case "history": router.path = [.group(id: group), .social(.weekHistory(groupID: group))]
-        case "albums": router.path = [.group(id: group), .social(.albums(groupID: group))]
-        default: break
+        case "chat": return [.group(id: group), .chat(groupID: group, messageID: nil)]
+        case "viewer": return [.group(id: group), .post(groupID: group, postID: SocialDemo.p2.rawValue)]
+        case "wallMine": return [.social(.wallMine)]
+        case "walls": return [.social(.wallsBrowse(groupID: nil))]
+        case "recap": return [.group(id: group), .recap(groupID: group, recapID: SocialDemo.recapID.rawValue)]
+        case "history": return [.group(id: group), .social(.weekHistory(groupID: group))]
+        case "albums": return [.group(id: group), .social(.albums(groupID: group))]
+        default: return []
         }
     }
 }

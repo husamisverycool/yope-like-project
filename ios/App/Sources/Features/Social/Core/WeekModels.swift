@@ -5,6 +5,18 @@ import AppModels
 import Foundation
 import Observation
 
+/// Authors' profiles for photo labels.
+enum SocialPeople {
+    static func profiles(of posts: [PostWithMedia], known: [UserID: Profile], data: any SocialDataSource) async -> [UserID: Profile] {
+        var result = known
+        let wanted = posts.map(\.post.authorID).socialUnique().filter { result[$0] == nil }
+        if !wanted.isEmpty, let found = try? await data.profiles(ids: wanted) {
+            for profile in found { result[profile.id] = profile }
+        }
+        return result
+    }
+}
+
 /// Loads the posts of one group-local week (`group_history_weeks`, chronological).
 enum WeekPosts {
     static func ids(of weekStart: LocalDate, groupID: GroupID, data: any SocialDataSource) async throws -> [PostID] {
@@ -48,6 +60,9 @@ final class WeekRecapModel {
     private(set) var weekPosts: [PostWithMedia] = []
     private(set) var segment: Segment = .recap
     private(set) var signals = SocialSignals()
+    /// Authors of the shown posts (tile labels) and the viewer.
+    private(set) var profiles: [UserID: Profile] = [:]
+    private(set) var me: UserID?
 
     init(groupID: GroupID, recapID: RecapID, data: any SocialDataSource) {
         self.groupID = groupID
@@ -75,6 +90,8 @@ final class WeekRecapModel {
             cardPosts = try await data.posts(ids: recap.items)
             let weekIDs = try await WeekPosts.ids(of: recap.weekStart, groupID: groupID, data: data)
             weekPosts = try await data.posts(ids: weekIDs)
+            me = await data.currentUserID()
+            profiles = await SocialPeople.profiles(of: cardPosts + weekPosts, known: profiles, data: data)
             phase = .ready
         } catch {
             switch SocialFailure(error) {
@@ -157,6 +174,8 @@ final class WeekEditModel {
     private(set) var albumError: SocialFailure?
     private(set) var savedAlbum: Album?
     private(set) var signals = SocialSignals()
+    private(set) var profiles: [UserID: Profile] = [:]
+    private(set) var me: UserID?
 
     init(groupID: GroupID, mode: Mode, data: any SocialDataSource) {
         self.groupID = groupID
@@ -198,6 +217,8 @@ final class WeekEditModel {
                 gridPosts = try await data.posts(ids: weekIDs)
                 checked = Set(gridPosts.map(\.id))
             }
+            me = await data.currentUserID()
+            profiles = await SocialPeople.profiles(of: gridPosts, known: profiles, data: data)
             phase = .ready
         } catch {
             switch SocialFailure(error) {

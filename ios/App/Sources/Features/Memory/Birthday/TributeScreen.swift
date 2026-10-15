@@ -62,6 +62,7 @@ struct TributeScreen: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { Task { await model.refreshIfRendering() } }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("birthday.tribute")
     }
 

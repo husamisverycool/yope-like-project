@@ -17,6 +17,8 @@ final class AccountDependencies {
     let notifications: NotificationAuthorizing
     let purchases: PurchasesProviding
     let liveActivity: LiveActivityPreference
+    /// The home shell's tabs (camera / groups).
+    var shell: ShellState { session.shell }
     /// The signed-in person's phone number (settings.account, read-only); nil when unknown.
     let currentPhone: @MainActor () -> String?
     /// Runs after the Live Activity preference changed (re-registers the device's push tokens).

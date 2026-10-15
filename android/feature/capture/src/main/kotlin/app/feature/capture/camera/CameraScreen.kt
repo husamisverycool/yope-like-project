@@ -35,7 +35,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -61,6 +60,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -88,7 +88,6 @@ import app.media.MediaPermissions
 import app.media.PhotoImport
 import app.model.SessionPromptGate
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -420,16 +419,27 @@ private fun Shutter(
     }
 }
 
-/** `camera.capture.hourOverlay`: the start of the current hour in the device's short time style; updates on the hour. */
+/**
+ * `camera.capture.hourOverlay`: the start of the current hour in the device's short time style.
+ * Updates on the hour from the system's minute tick (and on time / time-zone changes); no timer.
+ */
 @Composable
 fun rememberHourText(now: () -> Long = System::currentTimeMillis): String {
     val context = LocalContext.current
-    val text by produceState(initialValue = hourText(context, now())) {
-        while (true) {
-            val t = now()
-            value = hourText(context, t)
-            delay(HOUR_MS - t % HOUR_MS)
+    var text by remember { mutableStateOf(hourText(context, now())) }
+    DisposableEffect(context) {
+        val receiver = object : android.content.BroadcastReceiver() {
+            override fun onReceive(c: Context, intent: Intent) {
+                text = hourText(context, now())
+            }
         }
+        val filter = android.content.IntentFilter().apply {
+            addAction(Intent.ACTION_TIME_TICK)
+            addAction(Intent.ACTION_TIME_CHANGED)
+            addAction(Intent.ACTION_TIMEZONE_CHANGED)
+        }
+        ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+        onDispose { runCatching { context.unregisterReceiver(receiver) } }
     }
     return text
 }

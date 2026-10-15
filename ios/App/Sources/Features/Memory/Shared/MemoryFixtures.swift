@@ -33,6 +33,8 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
         var failures: [Operation: DataError] = [:]
         /// Every call, in order.
         var calls: [Operation] = []
+        /// Operations that never answer (loading states in snapshots).
+        var suspended: Set<Operation> = []
         var now: Date = Date()
     }
 
@@ -67,12 +69,16 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
         listeners.forEach { $0.yield(postID) }
     }
 
-    private func record(_ operation: Operation) throws -> State {
-        try lock.withLock {
+    private func record(_ operation: Operation) async throws -> State {
+        let current = try lock.withLock { () throws -> State in
             state.calls.append(operation)
             if let error = state.failures[operation] { throw error }
             return state
         }
+        if current.suspended.contains(operation) {
+            try await Task.sleep(nanoseconds: 3_600_000_000_000) // provenance-ok: fixture never answers (one hour)
+        }
+        return current
     }
 
     // MARK: MemoryDataSource
@@ -82,22 +88,22 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
     func networkStatus() async -> NetworkStatus { snapshot.network }
 
     func group(id: GroupID) async throws -> PhotoGroup? {
-        try record(.group).groups.first { $0.id == id }
+        try await record(.group).groups.first { $0.id == id }
     }
 
     func postsWithMedia(ids: [PostID]) async throws -> [PostWithMedia] {
-        let current = try record(.postsWithMedia)
+        let current = try await record(.postsWithMedia)
         let byID = Dictionary(current.posts.map { ($0.post.id, $0) }, uniquingKeysWith: { first, _ in first })
         return ids.compactMap { byID[$0] }
     }
 
     func profiles(ids: [UserID]) async throws -> [Profile] {
         let wanted = Set(ids)
-        return try record(.profiles).profiles.filter { wanted.contains($0.id) }
+        return try await record(.profiles).profiles.filter { wanted.contains($0.id) }
     }
 
     func signedURLs(paths: [String]) async throws -> [String: URL] {
-        _ = try record(.signedURLs)
+        _ = try await record(.signedURLs)
         var result: [String: URL] = [:]
         for path in paths {
             result[path] = URL(string: "fixture://" + path) // provenance-ok: fixture URL scheme
@@ -117,17 +123,17 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
     }
 
     func onThisDay(groupID: GroupID, localDate: LocalDate) async throws -> [OnThisDayItem] {
-        let current = try record(.onThisDay)
+        let current = try await record(.onThisDay)
         let groupPosts = Set(current.posts.filter { $0.post.groupID == groupID }.map(\.post.id))
         return current.onThisDay.filter { groupPosts.contains($0.postID) }
     }
 
     func myPrivateProfile() async throws -> ProfilePrivate? {
-        try record(.myPrivateProfile).privateProfile
+        try await record(.myPrivateProfile).privateProfile
     }
 
     func setBirthday(_ birthday: LocalDate?, optIn: Bool) async throws -> ProfilePrivate {
-        let current = try record(.setBirthday)
+        let current = try await record(.setBirthday)
         guard let me = current.me else { throw DataError.notSignedIn }
         if optIn, birthday == nil { throw DataError.api(.invalidArgument) }
         let row = ProfilePrivate(
@@ -142,22 +148,22 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
     }
 
     func openRequests() async throws -> [TributeRequest] {
-        let current = try record(.openRequests)
+        let current = try await record(.openRequests)
         return current.requests.filter { $0.isOpen(at: current.now) }.sorted { $0.dueAt < $1.dueAt }
     }
 
     func request(id: TributeRequestID) async throws -> TributeRequest? {
-        try record(.request).requests.first { $0.id == id }
+        try await record(.request).requests.first { $0.id == id }
     }
 
     func myContribution(requestID: TributeRequestID) async throws -> TributeContribution? {
-        let current = try record(.myContribution)
+        let current = try await record(.myContribution)
         return current.contributions.first { $0.requestID == requestID && $0.contributorID == current.me }
     }
 
     /// `contribute_tribute` rules (docs/API.md §6.4).
     func contribute(requestID: TributeRequestID, postID: PostID, line: String) async throws -> TributeContribution {
-        let current = try record(.contribute)
+        let current = try await record(.contribute)
         guard let me = current.me else { throw DataError.notSignedIn }
         guard let request = current.requests.first(where: { $0.id == requestID }), request.honoreeID != me else {
             throw DataError.api(.requestNotFound)
@@ -182,7 +188,7 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
     }
 
     func withdraw(requestID: TributeRequestID) async throws {
-        let current = try record(.withdraw)
+        let current = try await record(.withdraw)
         if let request = current.requests.first(where: { $0.id == requestID }), request.dueAt <= current.now {
             throw DataError.api(.tributeClosed)
         }
@@ -192,7 +198,7 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
     /// Own posts of the group, then posts the caller is self-tagged in; newest first, deduplicated
     /// (as `BirthdayRepository.eligiblePostIDs`).
     func eligiblePostIDs(groupID: GroupID) async throws -> [PostID] {
-        let current = try record(.eligiblePostIDs)
+        let current = try await record(.eligiblePostIDs)
         let inGroup = current.posts.filter { $0.post.groupID == groupID }.sorted { $0.post.createdAt > $1.post.createdAt }
         let own = inGroup.filter { $0.post.authorID == current.me }.map(\.post.id)
         let tagged = inGroup.filter { current.myTags.contains($0.post.id) }.map(\.post.id)
@@ -201,37 +207,37 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
     }
 
     func tribute(id: TributeID) async throws -> Tribute? {
-        try record(.tribute).tributes.first { $0.id == id }
+        try await record(.tribute).tributes.first { $0.id == id }
     }
 
     func downloadFile(from url: URL, name: String) async throws -> URL {
-        _ = try record(.downloadFile)
+        _ = try await record(.downloadFile)
         let file = FileManager.default.temporaryDirectory.appendingPathComponent(name)
         try Data().write(to: file)
         return file
     }
 
     func yearStory(groupID: GroupID, year: Int) async throws -> YearStory? {
-        try record(.yearStory).yearStories.first { $0.groupID == groupID && $0.year == year }
+        try await record(.yearStory).yearStories.first { $0.groupID == groupID && $0.year == year }
     }
 
     func collages(ids: [CollageID]) async throws -> [Collage] {
         let wanted = Set(ids)
-        return try record(.collages).collages.filter { wanted.contains($0.id) }
+        return try await record(.collages).collages.filter { wanted.contains($0.id) }
     }
 
     func isTagged(postID: PostID) async throws -> Bool {
-        try record(.isTagged).myTags.contains(postID)
+        try await record(.isTagged).myTags.contains(postID)
     }
 
     func tagSelf(postID: PostID) async throws {
-        let current = try record(.tagSelf)
+        let current = try await record(.tagSelf)
         guard current.posts.contains(where: { $0.post.id == postID }) else { throw DataError.api(.postNotFound) }
         update { _ = $0.myTags.insert(postID) }
     }
 
     func untagSelf(postID: PostID) async throws {
-        _ = try record(.untagSelf)
+        _ = try await record(.untagSelf)
         update { _ = $0.myTags.remove(postID) }
     }
 }
@@ -266,13 +272,13 @@ extension FixtureMemoryData {
         func profile(_ id: UserID, _ name: String) -> Profile {
             Profile(id: id, displayName: name, avatarPath: nil, createdAt: now, updatedAt: now)
         }
-        func post(_ number: Int, author: UserID, at date: Date, width: Int, height: Int) -> PostWithMedia {
+        func post(_ number: Int, author: UserID, at date: Date, shape: (Int, Int)) -> PostWithMedia {
             let mediaID = ids.media(number)
             let base = "u/\(author.rawValue)/\(mediaID.rawValue)/" // provenance-ok: storage path
             let media = Media(
                 id: mediaID, ownerID: author, kind: .photo, originalPath: base + "original.jpg",
                 displayPath: base + "r/display.jpg", thumbPath: base + "r/thumb.jpg", widgetPath: base + "r/widget.jpg",
-                width: width, height: height, renditionsReadyAt: date, createdAt: date
+                width: shape.0, height: shape.1, renditionsReadyAt: date, createdAt: date
             )
             return PostWithMedia(post: Post(id: ids.post(number), mediaID: mediaID, groupID: ids.group, authorID: author, createdAt: date), media: media)
         }
@@ -292,15 +298,15 @@ extension FixtureMemoryData {
         )]
         state.profiles = [profile(ids.me, "Ana Lima"), profile(ids.friend, "Bea Costa"), profile(ids.other, "Caio Dias")] // provenance-ok: fixture data
         state.posts = [
-            post(1, author: ids.me, at: now - 2 * day, width: 3, height: 4),
-            post(2, author: ids.friend, at: now - 3 * day, width: 4, height: 3),
-            post(3, author: ids.other, at: now - 4 * day, width: 3, height: 4),
-            post(4, author: ids.me, at: now - 30 * day, width: 1, height: 1),
-            post(5, author: ids.friend, at: now - 40 * day, width: 3, height: 4),
-            post(6, author: ids.friend, at: yearsAgo(1, hour: 22), width: 3, height: 4),
-            post(7, author: ids.other, at: yearsAgo(3, hour: 18), width: 4, height: 3),
-            post(8, author: ids.me, at: yearsAgo(3, hour: 19), width: 3, height: 4),
-            post(9, author: ids.friend, at: yearsAgo(3, hour: 20), width: 3, height: 5),
+            post(1, author: ids.me, at: now - 2 * day, shape: (3, 4)),
+            post(2, author: ids.friend, at: now - 3 * day, shape: (4, 3)),
+            post(3, author: ids.other, at: now - 4 * day, shape: (3, 4)),
+            post(4, author: ids.me, at: now - 30 * day, shape: (1, 1)),
+            post(5, author: ids.friend, at: now - 40 * day, shape: (3, 4)),
+            post(6, author: ids.friend, at: yearsAgo(1, hour: 22), shape: (3, 4)),
+            post(7, author: ids.other, at: yearsAgo(3, hour: 18), shape: (4, 3)),
+            post(8, author: ids.me, at: yearsAgo(3, hour: 19), shape: (3, 4)),
+            post(9, author: ids.friend, at: yearsAgo(3, hour: 20), shape: (3, 5)),
         ]
         state.myTags = [ids.post(2)]
         state.onThisDay = [

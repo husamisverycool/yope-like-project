@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- onboarding.permission.notifications: Android 13+ runtime permission (asked in context). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- onboarding.permission.contacts / groups.invite (Android card): optional, asked in context. -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+
+    <queries>
+        <!-- groups.invite: SMS compose (ACTION_SENDTO smsto:) and the Sharesheet. -->
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="smsto" />
+        </intent>
+        <!-- Legal links in an in-app browser (Custom Tabs) and the Play Subscription Center. -->
+        <intent>
+            <action android:name="android.support.customtabs.action.CustomTabsService" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <!-- settings.root "Contact Us". -->
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="mailto" />
+        </intent>
+    </queries>
+</manifest>

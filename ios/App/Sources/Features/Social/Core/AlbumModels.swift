@@ -107,6 +107,8 @@ final class AlbumModel {
     /// The album was deleted here: the screen pops.
     private(set) var isDeleted = false
     private(set) var signals = SocialSignals()
+    private(set) var profiles: [UserID: Profile] = [:]
+    private(set) var me: UserID?
 
     init(groupID: GroupID, albumID: AlbumID, data: any SocialDataSource) {
         self.groupID = groupID
@@ -161,6 +163,8 @@ final class AlbumModel {
         }
         album = found.album
         posts = try await data.posts(ids: found.postIDs)
+        if me == nil { me = await data.currentUserID() }
+        profiles = await SocialPeople.profiles(of: posts, known: profiles, data: data)
         phase = posts.isEmpty ? .empty : .ready
     }
 

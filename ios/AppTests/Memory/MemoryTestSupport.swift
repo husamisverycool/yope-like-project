@@ -27,7 +27,7 @@ final class MemoryTestContext {
         defaults = UserDefaults(suiteName: suite) ?? .standard
     }
 
-    static let referenceNow = Date(timeIntervalSince1970: 1_792_065_600) // 2026-10-15T12:00:00Z
+    nonisolated static let referenceNow = Date(timeIntervalSince1970: 1_792_065_600) // 2026-10-15T12:00:00Z
 
     var dependencies: MemoryDependencies {
         let now = self.now

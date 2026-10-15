@@ -1,7 +1,9 @@
-// Controls shared by the memory surfaces, each built only from the tokens its spec names.
-// (The account pass's ios/App/Sources/Components/ did not exist when this pass ran, so the
-// foundations roles are assembled here: header circle, Yope primary / light pill, empty-state
-// layout, toast; plus Tribute's buttons and the Message Ideas block.)
+// Controls shared by the memory surfaces, each built only from the tokens its spec names: the
+// foundations roles (header circle, Yope primary / light pill, empty-state layout, toast) plus
+// Tribute's buttons and the Message Ideas block. Built here because ios/App/Sources/Components/ did
+// not exist when this pass started; they follow the same tokens as the shared components that the
+// account pass added meanwhile (HeaderCircleButton, LightPill, EmptyStateView, ToastView) and can be
+// swapped for them once those are final.
 import AppData
 import DesignSystem
 import SwiftUI

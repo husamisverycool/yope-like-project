@@ -131,4 +131,31 @@ final class SocialWallModelTests: XCTestCase {
         XCTAssertTrue(model.hasNobodyElse)
         XCTAssertEqual(model.people.map(\.id), [SocialDemo.me])
     }
+
+    func testLoadingIndicatorOnlyWithoutACachedCopy() async {
+        let data = SocialDemo.makeData()
+        data.update { $0.holds.insert("wall") }
+        let model = WallModel(owner: .me, data: data)
+        XCTAssertFalse(model.showsLoading)
+        let task = Task { await model.load() }
+        let shown = await socialEventually { model.showsLoading }
+        XCTAssertTrue(shown, "nothing cached: the indicator shows while the wall loads")
+        task.cancel()
+
+        let cached = SocialDemo.makeData()
+        cached.update { state in
+            state.holds.insert("wall")
+            state.cachedWalls[SocialDemo.me] = [
+                WallItem(itemKind: .post, postID: SocialDemo.p6, mediaID: SocialDemo.mediaID(SocialDemo.p6), collageID: nil,
+                         groupIDs: [SocialDemo.groupID], createdAt: SocialDemo.monday),
+            ]
+        }
+        let fromCache = WallModel(owner: .me, data: cached)
+        let second = Task { await fromCache.load() }
+        let ready = await socialEventually { fromCache.phase == .ready }
+        XCTAssertTrue(ready, "the cached grid shows at once")
+        XCTAssertFalse(fromCache.showsLoading, "no indicator flashes before cached content")
+        second.cancel()
+        _ = await second.value
+    }
 }

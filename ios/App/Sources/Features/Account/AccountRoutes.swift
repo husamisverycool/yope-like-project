@@ -64,9 +64,11 @@ extension AppRouter {
     /// export): opens it at most once per session, never during capture or onboarding (`SessionPromptGate`), and
     /// never for premium members. Returns true when it was opened; otherwise the control keeps showing its
     /// "Premium" badge (`paywall.layout.promptRule`).
+    /// The camera tab is left first (the prompt never shows over capture).
     @discardableResult
     func presentPaywallForLockedFeature(isPremium: Bool) -> Bool {
         guard !isPremium, consumePremiumPrompt() else { return false }
+        ShellState.active?.leaveCamera()
         modal = .account(.paywall)
         return true
     }

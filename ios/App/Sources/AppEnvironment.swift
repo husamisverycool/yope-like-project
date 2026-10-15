@@ -96,7 +96,8 @@ final class AppEnvironment {
             purchases: RevenueCatPurchases(service: purchases),
             liveActivity: liveActivityPreference,
             currentPhone: { liveData.currentPhone },
-            liveActivityChanged: { AppEnvironment.shared.syncDeviceTokens() }
+            liveActivityChanged: { AppEnvironment.shared.syncDeviceTokens() },
+            prewarmCamera: { CameraScreen.prewarm() }
         )
     }
 
@@ -203,16 +204,20 @@ extension AccountDependencies {
         refusals: AgeGateRefusalStoring = KeychainAgeGateRefusalStore(),
         onboarding: OnboardingRecord = OnboardingRecord(),
         currentPhone: @escaping @MainActor () -> String? = { nil },
-        liveActivityChanged: @escaping @MainActor () -> Void = {}
+        liveActivityChanged: @escaping @MainActor () -> Void = {},
+        prewarmCamera: @escaping @MainActor () -> Void = {}
     ) -> AccountDependencies {
         let toasts = ToastCenter()
+        let shell = ShellState(prewarm: prewarmCamera)
+        ShellState.active = shell
         let session = AccountSession(
             data: data,
             router: router,
             refusals: refusals,
             onboarding: onboarding,
             notifications: notifications,
-            toasts: toasts
+            toasts: toasts,
+            shell: shell
         )
         return AccountDependencies(
             data: data,

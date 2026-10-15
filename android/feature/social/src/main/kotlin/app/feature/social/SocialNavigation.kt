@@ -1,23 +1,249 @@
 package app.feature.social
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import app.ui.nav.emptyDestination
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.dialog
+import androidx.navigation.toRoute
+import app.feature.social.albums.AlbumViewModel
+import app.feature.social.albums.AlbumViewScreen
+import app.feature.social.albums.AlbumsListScreen
+import app.feature.social.albums.AlbumsViewModel
+import app.feature.social.chat.ChatNav
+import app.feature.social.chat.ChatScreen
+import app.feature.social.chat.ChatViewModel
+import app.feature.social.common.LocalSocialData
+import app.feature.social.common.SocialRoot
+import app.feature.social.data.SocialData
+import app.feature.social.data.socialDataFor
+import app.feature.social.viewer.PhotoViewerScreen
+import app.feature.social.viewer.PhotoViewerViewModel
+import app.feature.social.viewer.ViewerNav
+import app.feature.social.walls.BrowseViewModel
+import app.feature.social.walls.WallMemberScreen
+import app.feature.social.walls.WallMineScreen
+import app.feature.social.walls.WallNav
+import app.feature.social.walls.WallViewModel
+import app.feature.social.walls.WallsBrowseScreen
+import app.feature.social.week.HistoryNav
+import app.feature.social.week.HistoryViewModel
+import app.feature.social.week.RecapNav
+import app.feature.social.week.RecapViewModel
+import app.feature.social.week.WeekEditSheet
+import app.feature.social.week.WeekEditViewModel
+import app.feature.social.week.WeekHistoryScreen
+import app.feature.social.week.WeekRecapScreen
 import app.model.AppRoute
+import app.model.GroupProfileRoute
+import app.model.PhotoContext
+import app.model.PhotoViewerIn
+import app.model.SafetyReportMessageRoute
+import app.model.SocialHandoff
+import app.model.WeekAlbum
+import app.model.WeekRecapLatest
+import java.time.LocalDate
+
+/** Tests (and previews) provide the data here; the app uses the data graph. */
+val LocalSocialDataOverride = staticCompositionLocalOf<SocialData?> { null }
+
+/** The social screens' data and theme around one destination. */
+@Composable
+private fun SocialHost(content: @Composable (SocialData) -> Unit) {
+    val context = LocalContext.current
+    val override = LocalSocialDataOverride.current
+    val data = override ?: remember(context) { socialDataFor(context) }
+    CompositionLocalProvider(LocalSocialData provides data) {
+        SocialRoot { content(data) }
+    }
+}
 
 /**
- * Destinations of the social feature group (surface specs in design/surfaces/). Replace each
- * [emptyDestination] with `composable<AppRoute.X> { … }` as its screen is built.
+ * Destinations of the social feature group (surface specs in design/surfaces/): chat.thread
+ * (+ composer, voice, reactions), photo.viewer, walls.*, week.*, albums.*.
  */
 fun NavGraphBuilder.socialDestinations(navController: NavHostController) {
-    emptyDestination<AppRoute.Chat>()
-    emptyDestination<AppRoute.PhotoViewer>()
-    emptyDestination<AppRoute.WallMine>()
-    emptyDestination<AppRoute.WallMember>()
-    emptyDestination<AppRoute.WallsBrowse>()
-    emptyDestination<AppRoute.WeekRecap>()
-    emptyDestination<AppRoute.WeekEdit>()
-    emptyDestination<AppRoute.WeekHistory>()
-    emptyDestination<AppRoute.AlbumsList>()
-    emptyDestination<AppRoute.AlbumView>()
+    val nav = SocialNavigator(navController)
+
+    composable<AppRoute.Chat> { entry ->
+        val route = entry.toRoute<AppRoute.Chat>()
+        SocialHost { data ->
+            val vm = viewModel(key = "chat:${route.groupId}") { ChatViewModel(data, route.groupId) }
+            ChatScreen(vm, route.focusMessageId, nav.chat(route.groupId, data))
+        }
+    }
+    composable<AppRoute.PhotoViewer> { entry ->
+        val route = entry.toRoute<AppRoute.PhotoViewer>()
+        SocialHost { data ->
+            val vm = viewModel(key = "viewer:${route.postId}") { PhotoViewerViewModel(data, route.groupId, route.postId, PhotoContext.Single, route.postId, null) }
+            PhotoViewerScreen(vm, nav.viewer(data))
+        }
+    }
+    composable<PhotoViewerIn> { entry ->
+        val route = entry.toRoute<PhotoViewerIn>()
+        SocialHost { data ->
+            val vm = viewModel(key = "viewer:${route.context}:${route.contextId}:${route.postId}") {
+                PhotoViewerViewModel(data, route.groupId, route.postId, route.context, route.contextId, route.weekStart?.let(LocalDate::parse))
+            }
+            PhotoViewerScreen(vm, nav.viewer(data))
+        }
+    }
+    composable<AppRoute.WallMine> {
+        SocialHost { data ->
+            val me = data.currentUserId().orEmpty()
+            val vm = viewModel(key = "wall:$me") { WallViewModel(data, me) }
+            WallMineScreen(vm, nav.walls())
+        }
+    }
+    composable<AppRoute.WallMember> { entry ->
+        val route = entry.toRoute<AppRoute.WallMember>()
+        SocialHost { data ->
+            val vm = viewModel(key = "wall:${route.userId}") { WallViewModel(data, route.userId) }
+            WallMemberScreen(vm, nav.walls())
+        }
+    }
+    composable<AppRoute.WallsBrowse> {
+        SocialHost { data ->
+            val vm = viewModel(key = "browse") { BrowseViewModel(data) }
+            WallsBrowseScreen(vm, nav.walls())
+        }
+    }
+    composable<AppRoute.WeekRecap> { entry ->
+        val route = entry.toRoute<AppRoute.WeekRecap>()
+        SocialHost { data ->
+            val vm = viewModel(key = "recap:${route.recapId}") { RecapViewModel(data, route.groupId, route.recapId) }
+            WeekRecapScreen(vm, nav.recap(route.groupId))
+        }
+    }
+    composable<WeekRecapLatest> { entry ->
+        val route = entry.toRoute<WeekRecapLatest>()
+        SocialHost { data ->
+            val vm = viewModel(key = "recap:latest:${route.groupId}") { RecapViewModel(data, route.groupId, null) }
+            WeekRecapScreen(vm, nav.recap(route.groupId))
+        }
+    }
+    dialog<AppRoute.WeekEdit>(dialogProperties = SheetDialog) { entry ->
+        val route = entry.toRoute<AppRoute.WeekEdit>()
+        SheetWindow()
+        SocialHost { data ->
+            val vm = viewModel(key = "edit:${route.recapId}") { WeekEditViewModel(data, route.groupId, route.recapId, null, albumOnly = false) }
+            WeekEditSheet(vm, onClose = { navController.popBackStack() })
+        }
+    }
+    dialog<WeekAlbum>(dialogProperties = SheetDialog) { entry ->
+        val route = entry.toRoute<WeekAlbum>()
+        SheetWindow()
+        SocialHost { data ->
+            val vm = viewModel(key = "album:${route.groupId}:${route.weekStart}") { WeekEditViewModel(data, route.groupId, null, LocalDate.parse(route.weekStart), albumOnly = true) }
+            WeekEditSheet(vm, onClose = { navController.popBackStack() })
+        }
+    }
+    composable<AppRoute.WeekHistory> { entry ->
+        val route = entry.toRoute<AppRoute.WeekHistory>()
+        SocialHost { data ->
+            val vm = viewModel(key = "history:${route.groupId}") { HistoryViewModel(data, route.groupId) }
+            WeekHistoryScreen(vm, nav.history(route.groupId))
+        }
+    }
+    composable<AppRoute.AlbumsList> { entry ->
+        val route = entry.toRoute<AppRoute.AlbumsList>()
+        SocialHost { data ->
+            val vm = viewModel(key = "albums:${route.groupId}") { AlbumsViewModel(data, route.groupId) }
+            AlbumsListScreen(
+                vm,
+                onBack = { navController.popBackStack() },
+                onAlbum = { id -> navController.navigate(AppRoute.AlbumView(route.groupId, id)) },
+                onViewRecap = { navController.navigate(WeekRecapLatest(route.groupId)) },
+            )
+        }
+    }
+    composable<AppRoute.AlbumView> { entry ->
+        val route = entry.toRoute<AppRoute.AlbumView>()
+        SocialHost { data ->
+            val vm = viewModel(key = "album:${route.albumId}") { AlbumViewModel(data, route.groupId, route.albumId) }
+            AlbumViewScreen(
+                vm,
+                onBack = { navController.popBackStack() },
+                onPhoto = { postId -> navController.navigate(PhotoViewerIn(route.groupId, postId, PhotoContext.Album, route.albumId)) },
+            )
+        }
+    }
+}
+
+/** Sheets over the screen below: a full-window dialog destination whose content is the native sheet. */
+private val SheetDialog = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
+
+/** The dialog window itself draws nothing (the native sheet brings its own scrim). */
+@Composable
+private fun SheetWindow() {
+    val window = (LocalView.current.parent as? DialogWindowProvider)?.window
+    SideEffect { window?.setDimAmount(0f) }
+}
+
+/** Builds each screen's navigation callbacks from the routes of every group (docs/SURFACES.md). */
+private class SocialNavigator(private val nav: NavHostController) {
+    private fun back() {
+        nav.popBackStack()
+    }
+
+    private fun person(data: SocialData, userId: String) {
+        nav.navigate(if (userId == data.currentUserId()) AppRoute.WallMine else AppRoute.WallMember(userId))
+    }
+
+    fun chat(groupId: String, data: SocialData) = ChatNav(
+        back = ::back,
+        groupInfo = { nav.navigate(GroupProfileRoute(groupId)) },
+        recap = { id -> nav.navigate(AppRoute.WeekRecap(groupId, id)) },
+        photo = { postId -> nav.navigate(PhotoViewerIn(groupId, postId, PhotoContext.Chat, groupId)) },
+        member = { userId -> person(data, userId) },
+        invite = { nav.navigate(AppRoute.GroupInvite(groupId)) },
+        camera = { nav.navigate(AppRoute.Camera(groupId)) },
+        report = { messageId, authorId -> nav.navigate(SafetyReportMessageRoute(groupId, messageId, authorId)) },
+    )
+
+    fun viewer(data: SocialData) = ViewerNav(
+        close = ::back,
+        person = { userId, _ -> person(data, userId) },
+        replyWithPhoto = { groupId, postId ->
+            // camera.capture has no reply argument: the reply target rides on its entry for create_post's p_reply_to_post_id.
+            nav.navigate(AppRoute.Camera(groupId))
+            nav.currentBackStackEntry?.savedStateHandle?.set(SocialHandoff.REPLY_TO_POST_ID, postId)
+        },
+        report = { groupId, postId -> nav.navigate(AppRoute.SafetyReport(groupId = groupId, postId = postId)) },
+        block = { userId -> nav.navigate(AppRoute.SafetyBlock(userId)) },
+    )
+
+    fun walls() = WallNav(
+        back = ::back,
+        settings = { nav.navigate(AppRoute.Settings) },
+        photo = { wallUserId, groupId, postId -> nav.navigate(PhotoViewerIn(groupId, postId, PhotoContext.Wall, wallUserId)) },
+        collage = { groupId, invitationId -> nav.navigate(AppRoute.Collage(groupId, invitationId)) },
+        camera = { nav.navigate(AppRoute.Camera()) },
+        createGroup = { nav.navigate(AppRoute.GroupCreate) },
+    )
+
+    fun recap(groupId: String) = RecapNav(
+        back = ::back,
+        edit = { recapId -> nav.navigate(AppRoute.WeekEdit(groupId, recapId)) },
+        cardPhoto = { recapId, postId -> nav.navigate(PhotoViewerIn(groupId, postId, PhotoContext.Recap, recapId)) },
+        weekPhoto = { weekStart, postId -> nav.navigate(PhotoViewerIn(groupId, postId, PhotoContext.Week, groupId, weekStart)) },
+        camera = { nav.navigate(AppRoute.Camera(groupId)) },
+    )
+
+    fun history(groupId: String) = HistoryNav(
+        back = ::back,
+        photo = { weekStart, postId -> nav.navigate(PhotoViewerIn(groupId, postId, PhotoContext.Week, groupId, weekStart)) },
+        recap = { recapId -> nav.navigate(AppRoute.WeekRecap(groupId, recapId)) },
+        saveAsAlbum = { weekStart -> nav.navigate(WeekAlbum(groupId, weekStart)) },
+        camera = { nav.navigate(AppRoute.Camera(groupId)) },
+    )
 }

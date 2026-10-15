@@ -275,6 +275,16 @@ fun GroupFeedRoute(nav: NavController, groupId: String) {
     val vm = viewModel(key = "feed:$groupId") { GroupFeedViewModel(env, groupId) }
     val state by vm.state.collectAsStateWithLifecycle()
     CollectEvents(vm.events, nav)
+    // After safety.block returns: refetch (RLS now hides the blocked person's posts).
+    val entry = nav.currentBackStackEntry
+    LaunchedEffect(entry) {
+        entry?.savedStateHandle?.getStateFlow<String?>(app.feature.account.safety.BLOCKED_RESULT_KEY, null)?.collect { blocked ->
+            if (blocked != null) {
+                entry.savedStateHandle.remove<String>(app.feature.account.safety.BLOCKED_RESULT_KEY)
+                vm.load()
+            }
+        }
+    }
     var recapTarget by remember { mutableStateOf<AppRoute?>(null) }
     LaunchedEffect(groupId) {
         recapTarget = runCatching { env.backend.latestRecapId(groupId) }.getOrNull()?.let { AppRoute.WeekRecap(groupId, it) }

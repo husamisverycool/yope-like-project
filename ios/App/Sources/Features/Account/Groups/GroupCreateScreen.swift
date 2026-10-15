@@ -138,9 +138,27 @@ struct GroupCreateView: View {
     @State private var model: GroupCreateModel
     @State private var pickerItem: PhotosPickerItem?
     @Environment(AccountDependencies.self) private var dependencies
+    @Environment(\.dismiss) private var dismiss
 
     init(model: GroupCreateModel) {
         _model = State(initialValue: model)
+    }
+
+    /// True when this sheet is the router's modal; false when another surface hosts it (camera.sendto presents
+    /// `AccountModalDestination(.groupCreate)` over send-to, which must keep the capture).
+    private var isRouterModal: Bool {
+        switch dependencies.router.modal {
+        case .account(.groupCreate)?, .account(.groupEdit)?: return true
+        default: return false
+        }
+    }
+
+    private func close() {
+        if isRouterModal {
+            dependencies.router.modal = nil
+        } else {
+            dismiss()
+        }
     }
 
     private static let titleStyle = DSTextStyle(
@@ -212,7 +230,7 @@ struct GroupCreateView: View {
                 .accessibilityAddTraits(.isHeader)
             HStack {
                 HeaderCircleButton(icon: Tokens.Icons.globalClose, accessibilityLabel: Copy.groupsCreateCloseAccessibilityLabel, fill: .onDeep) {
-                    dependencies.router.modal = nil
+                    close()
                 }
                 .accessibilityIdentifier("groups.create.close")
                 Spacer(minLength: 0)
@@ -249,8 +267,14 @@ struct GroupCreateView: View {
         .accessibilityIdentifier("groups.create.cover")
     }
 
+    /// After create: the sheet closes and the new group is pushed (groups.create Motion); hosted by another surface,
+    /// the sheet only closes (that surface refreshes its groups).
     private func submit() async {
         guard let group = await model.submit() else { return }
+        guard isRouterModal else {
+            dismiss()
+            return
+        }
         let router = dependencies.router
         router.modal = nil
         if !model.isEditing {

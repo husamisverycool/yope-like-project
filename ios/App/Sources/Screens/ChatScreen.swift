@@ -1,14 +1,26 @@
-// Surface: chat.thread — reference app: Yope.
-// Reference images: listed in design/surfaces/chat.thread.md (docs/SURFACES.md).
-// Container only: the screens pass builds this surface from its spec, with Tokens.* / Copy.*.
+// Surface: chat.thread (with chat.composer, chat.voice, chat.reactions) — reference app: Yope (reactions: Locket).
+// Reference images: listed in design/surfaces/chat.thread.md (docs/SURFACES.md); built in
+// Features/Social/UI/ChatThreadView.swift with Tokens.* / Copy.*.
+import AppData
 import SwiftUI
 
-/// Group chat; `messageID` is the message to scroll to.
+/// Group chat; `messageID` is the message to scroll to (`DeepLink.chatMessage`).
 struct ChatScreen: View {
     let groupID: String
     let messageID: String?
+    @State private var model: ChatThreadModel
+
+    init(groupID: String, messageID: String?) {
+        self.groupID = groupID
+        self.messageID = messageID
+        _model = State(initialValue: ChatThreadModel(
+            groupID: GroupID(groupID),
+            focusMessageID: messageID.map { MessageID($0) },
+            data: SocialServices.shared.data
+        ))
+    }
 
     var body: some View {
-        ScreenContainer(surface: "chat.thread")
+        ChatThreadView(model: model)
     }
 }

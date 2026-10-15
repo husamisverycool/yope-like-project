@@ -120,28 +120,32 @@ struct WallContent: View {
 /// below the baseline.
 struct WallHeader<Leading: View, Trailing: View>: View {
     let title: String
+    /// What VoiceOver reads for the title (`walls.member.a11y.wall`); the title itself when nil.
+    var titleAccessibilityLabel: String?
     @ViewBuilder var leading: () -> Leading
     @ViewBuilder var trailing: () -> Trailing
 
     var body: some View {
         ZStack(alignment: .top) {
             Color.clear.frame(height: Tokens.Sizes.wallsBrowseDimensionTitleBaseline + Tokens.Sizes.wallsMineDimensionTitleToGrid)
+            Text(title)
+                .dsTextStyle(TextRole.sheetTitle)
+                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .padding(.horizontal, Tokens.Sizes.globalHeaderInset + Tokens.Sizes.globalHeaderButton + Tokens.Sizes.globalHeaderGap)
+                .accessibilityLabel(Text(titleAccessibilityLabel ?? title))
+                .accessibilityAddTraits(.isHeader)
+                .alignmentGuide(.top) { $0[.firstTextBaseline] - Tokens.Sizes.wallsBrowseDimensionTitleBaseline }
+        }
+        .overlay(alignment: .top) {
             HStack {
                 leading()
                 Spacer(minLength: 0)
                 trailing()
             }
             .padding(.horizontal, Tokens.Sizes.globalHeaderInset)
-            .overlay {
-                Text(title)
-                    .dsTextStyle(TextRole.sheetTitle)
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                    .padding(.horizontal, Tokens.Sizes.globalHeaderInset + Tokens.Sizes.globalHeaderButton + Tokens.Sizes.globalHeaderGap)
-                    .accessibilityAddTraits(.isHeader)
-            }
-            .alignmentGuide(.top) { $0[VerticalAlignment.center] - titleCentre }
+            .offset(y: titleCentre - Tokens.Sizes.globalHeaderButton / 2)
         }
     }
 
@@ -183,10 +187,7 @@ struct WallMineScreen: View {
             if model.phase == .loading { await model.load() }
             await model.run()
         }
-        .fullScreenCover(item: $viewer) { context in
-            PhotoViewerView(context: context, presentation: .cover { target in SocialPendingCamera.target = target })
-        }
-        .socialOpensPendingCamera(after: viewer)
+        .socialPhotoViewer($viewer)
         .accessibilityIdentifier("walls.mine") // provenance-ok: accessibility identifier for UI tests
     }
 }
@@ -208,12 +209,11 @@ struct WallMemberScreen: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                WallHeader(title: model.displayName ?? "") {
+                WallHeader(title: model.displayName ?? "", titleAccessibilityLabel: Copy.wallsMemberA11yWall(name: model.displayName ?? "")) {
                     HeaderCircleButton(icon: Tokens.Icons.globalBack, accessibilityLabel: Copy.chatThreadA11yBack, fill: .onDeep) { dismiss() }
                 } trailing: {
                     EmptyView()
                 }
-                .accessibilityLabel(Text(Copy.wallsMemberA11yWall(name: model.displayName ?? "")))
                 WallContent(model: model) { viewer = $0 }
             }
         }
@@ -224,10 +224,7 @@ struct WallMemberScreen: View {
             if model.phase == .loading { await model.load() }
             await model.run()
         }
-        .fullScreenCover(item: $viewer) { context in
-            PhotoViewerView(context: context, presentation: .cover { target in SocialPendingCamera.target = target })
-        }
-        .socialOpensPendingCamera(after: viewer)
+        .socialPhotoViewer($viewer)
         .accessibilityIdentifier("walls.member") // provenance-ok: accessibility identifier for UI tests
     }
 }
@@ -270,12 +267,11 @@ struct WallsBrowseScreen: View {
         .socialFeedback(model.signals.feedback)
         .task {
             if model.phase == .loading { await model.load() }
+        }
+        .task(id: model.selectedID) {
             await model.selectedWall?.run()
         }
-        .fullScreenCover(item: $viewer) { context in
-            PhotoViewerView(context: context, presentation: .cover { target in SocialPendingCamera.target = target })
-        }
-        .socialOpensPendingCamera(after: viewer)
+        .socialPhotoViewer($viewer)
         .accessibilityIdentifier("walls.browse") // provenance-ok: accessibility identifier for UI tests
     }
 
@@ -341,7 +337,7 @@ struct WallsBrowseScreen: View {
     }
 }
 
-// MARK: - Reply camera after a covered viewer closes
+// MARK: - The viewer over a social screen
 
 /// The camera for a photo reply opens once the covering viewer has gone (two full-screen covers cannot overlap).
 @MainActor
@@ -349,13 +345,16 @@ enum SocialPendingCamera {
     static var target: PhotoReplyHandoff.Target?
 }
 
+@MainActor
 extension View {
-    /// Opens the reply camera when `viewer` (the presented context) closes with a pending reply target.
-    func socialOpensPendingCamera(after viewer: PhotoViewerContext?) -> some View {
-        onChange(of: viewer == nil) { _, closed in
-            guard closed, let target = SocialPendingCamera.target else { return }
+    /// Presents `photo.viewer` full screen for `context`; a reply with a photo opens the camera after it closed.
+    func socialPhotoViewer(_ context: Binding<PhotoViewerContext?>) -> some View {
+        fullScreenCover(item: context, onDismiss: {
+            guard let target = SocialPendingCamera.target else { return }
             SocialPendingCamera.target = nil
             SocialNav.router.presentCameraReplying(toPost: target.postID, groupID: target.groupID)
+        }) { context in
+            PhotoViewerView(context: context, presentation: .cover { SocialPendingCamera.target = $0 })
         }
     }
 }

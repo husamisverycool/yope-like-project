@@ -86,6 +86,7 @@ extension SocialNotice {
     }
 }
 
+@MainActor
 extension View {
     /// Plays each new feedback event's haptic token.
     func socialFeedback(_ feedback: SocialFeedback?) -> some View {
@@ -192,6 +193,7 @@ extension AppRouter {
     }
 }
 
+@MainActor
 extension View {
     /// Forgets the reply target once the camera closes.
     func socialClearsReplyHandoff() -> some View {
@@ -374,6 +376,17 @@ enum SocialFormat {
         var style = Date.FormatStyle.dateTime.month(.wide).day()
         style.timeZone = timeZone
         return date.formatted(style)
+    }
+}
+
+// MARK: - Photo labels (accessibility)
+
+enum SocialA11y {
+    /// `photo.viewer.a11y.photoMine` ("your pic, {date}") / `photo.viewer.a11y.photo` ("{name}’s pic, {date}").
+    static func photo(_ post: PostWithMedia, author: Profile?, me: UserID?) -> String {
+        let date = SocialFormat.spokenDate(post.post.createdAt)
+        if post.post.authorID == me { return Copy.photoViewerA11yPhotoMine(date: date) }
+        return Copy.photoViewerA11yPhoto(name: author?.socialFirstName ?? "", date: date)
     }
 }
 

@@ -18,7 +18,6 @@ struct ChatThreadView: View {
     @State private var pickerTarget: ReactionPickerTarget?
     @State private var activityTarget: ReactionActivityTarget?
     @State private var deleteCandidate: Message?
-    @State private var replyCamera: PhotoReplyHandoff.Target?
     /// The bottom-most visible message (keeps the reading position when older pages load or messages arrive).
     @State private var anchor: MessageID?
     @State private var didScrollToFocus = false
@@ -56,9 +55,7 @@ struct ChatThreadView: View {
         .socialFeedback(model.signals.feedback)
         .socialNotices(model.signals.notice, toasts: toasts)
         .toastHost(toasts)
-        .fullScreenCover(item: $viewer, onDismiss: openReplyCamera) { context in
-            PhotoViewerView(context: context, presentation: .cover { target in replyCamera = target })
-        }
+        .socialPhotoViewer($viewer)
         .sheet(item: $pickerTarget) { target in
             ReactionPicker { emoji in
                 Task { await model.react(postID: target.postID, emoji: emoji) }
@@ -87,13 +84,6 @@ struct ChatThreadView: View {
         }
         .socialClearsReplyHandoff()
         .accessibilityIdentifier("chat.thread") // provenance-ok: accessibility identifier for UI tests
-    }
-
-    /// After the viewer closed for a reply with a photo: the camera opens (`AppModal.camera` at the root).
-    private func openReplyCamera() {
-        guard let target = replyCamera else { return }
-        replyCamera = nil
-        SocialNav.router.presentCameraReplying(toPost: target.postID, groupID: target.groupID)
     }
 
     // MARK: Header
@@ -623,6 +613,7 @@ struct ChatPhotoMessage: View {
         .accessibilityAction(.default, open)
         .accessibilityAction(named: Text(Copy.chatReactionsA11yAdd), react)
         .accessibilityAction(named: Text(Copy.chatReactionsActivityTitle), showReactions)
+        .accessibilityIdentifier("chat.photo." + (post?.id.rawValue ?? "")) // provenance-ok: accessibility identifier for UI tests
     }
 
     private var label: String {

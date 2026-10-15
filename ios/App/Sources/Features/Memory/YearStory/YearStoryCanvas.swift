@@ -137,7 +137,7 @@ struct YearStoryTextBlock: View {
         .foregroundStyle(Tokens.Colors.globalTextPrimary)
         .multilineTextAlignment(.center)
         .fixedSize(horizontal: false, vertical: true)
-        .onAppear(perform: reveal)
+        .onAppear { reveal() }
     }
 
     private func reveal() {

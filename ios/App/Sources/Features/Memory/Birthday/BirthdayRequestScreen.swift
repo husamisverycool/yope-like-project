@@ -76,6 +76,7 @@ struct BirthdayRequestScreen: View {
                 groupToOpen = groupID
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("birthday.request")
     }
 
@@ -99,7 +100,7 @@ struct BirthdayRequestScreen: View {
     /// Its height (`dimension.birthday.request.hero.height`) is a minimum: it grows with the text.
     private func hero(safeTop: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            if model.phase != .loading {
+            if model.phase == .open || model.phase == .closed {
                 Text(model.title)
                     .dsTextStyle(BirthdayType.requestTitle)
                     .foregroundStyle(Tokens.Colors.globalTextPrimary)
@@ -209,6 +210,7 @@ struct BirthdayRequestScreen: View {
                     .foregroundStyle(Tokens.Colors.globalTextSecondary)
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("birthday.request.own")
     }
 }

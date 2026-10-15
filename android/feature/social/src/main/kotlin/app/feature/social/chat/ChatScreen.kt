@@ -833,7 +833,12 @@ private fun PhotoMessage(
                 Box(
                     Modifier
                         .align(Alignment.BottomCenter)
-                        .padding(bottom = Tokens.Sizes.chatThreadDimensionCaptionInsetBottom)
+                        // Centred (S-8); kept clear of the cluster's first sticker on both sides (caption + cluster overlap not observed).
+                        .padding(
+                            bottom = Tokens.Sizes.chatThreadDimensionCaptionInsetBottom,
+                            start = Tokens.Sizes.chatReactionsDimensionClusterInsetLeading + Tokens.Sizes.chatReactionsDimensionClusterEmoji,
+                            end = Tokens.Sizes.chatReactionsDimensionClusterInsetLeading + Tokens.Sizes.chatReactionsDimensionClusterEmoji,
+                        )
                         .heightIn(min = Tokens.Sizes.chatThreadDimensionCaptionHeight)
                         .let { if (scrim != null) it.background(scrim, RoundedCornerShape(Tokens.Radii.chatThreadRadiusCaption)) else it }
                         .padding(horizontal = Tokens.Sizes.chatThreadDimensionCaptionPaddingH)

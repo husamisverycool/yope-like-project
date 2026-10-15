@@ -80,7 +80,7 @@ enum SocialDemo {
             media: Media(
                 id: mediaID, ownerID: author, kind: kind, originalPath: path,
                 motionPath: kind == .livePhoto ? path + ".mov" : nil, displayPath: path, thumbPath: path,
-                width: 1080, height: 1440, renditionsReadyAt: date, createdAt: date
+                width: 1080, height: 1440, renditionsReadyAt: date, createdAt: date // provenance-ok: demo sample data, pixel size of the synthetic photo
             )
         )
     }

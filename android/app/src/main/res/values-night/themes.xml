@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Same as values/: the app is dark only (layout.global.appearance). -->
     <style name="Theme.App" parent="android:Theme.Material.NoActionBar" />
 </resources>

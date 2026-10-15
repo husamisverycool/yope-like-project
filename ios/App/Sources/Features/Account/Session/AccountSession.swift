@@ -60,6 +60,7 @@ final class AccountSession {
     let onboarding: OnboardingRecord
     let notifications: NotificationAuthorizing
     let toasts: ToastCenter
+    let shell: ShellState
 
     init(
         data: AccountDataSource,
@@ -67,7 +68,8 @@ final class AccountSession {
         refusals: AgeGateRefusalStoring,
         onboarding: OnboardingRecord,
         notifications: NotificationAuthorizing,
-        toasts: ToastCenter
+        toasts: ToastCenter,
+        shell: ShellState
     ) {
         self.data = data
         self.router = router
@@ -75,6 +77,7 @@ final class AccountSession {
         self.onboarding = onboarding
         self.notifications = notifications
         self.toasts = toasts
+        self.shell = shell
     }
 
     // MARK: Launch
@@ -96,7 +99,8 @@ final class AccountSession {
         }
         signedInUser = user
         if onboarding.isComplete(for: user.rawValue) {
-            becomeReady(user)
+            // camera.capture "In: app launch (the app opens to the camera)".
+            becomeReady(user, landing: .camera)
         } else {
             phase = .signUp
             Task { await resolve(user) }
@@ -225,11 +229,18 @@ final class AccountSession {
 
     // MARK: Home
 
-    private func becomeReady(_ user: UserID) {
+    /// Home. `landing`: the camera when the app launches with a session (camera.capture "In"), the groups list after
+    /// sign-in or onboarding (auth.code "success (returning)", onboarding.widget "Out"). A pending link wins.
+    private func becomeReady(_ user: UserID, landing: AppTab = .groups) {
         signedInUser = user
         onboarding.markComplete(for: user.rawValue)
         autoJoinToken = router.inviteToken
         path = []
+        if landing == .camera, router.pendingLink == nil {
+            shell.showCamera()
+        } else {
+            shell.showGroups()
+        }
         phase = .ready
         router.setReady(true)
     }

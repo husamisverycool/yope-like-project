@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- PLATFORM window theme following the system light/dark setting; the Compose theme built
-         from tokens is added by the screens pass. -->
-    <style name="Theme.App" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Dark only (layout.global.appearance: "android: dark color scheme only"): the platform's dark
+         window theme in every configuration. The window background and system bars are set from
+         tokens in MainActivity; the Compose theme (app.ui.theme.AppTheme) is built from tokens. -->
+    <style name="Theme.App" parent="android:Theme.Material.NoActionBar" />
 </resources>

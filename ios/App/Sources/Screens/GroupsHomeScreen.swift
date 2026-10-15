@@ -36,7 +36,11 @@ struct GroupsListView: View {
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
-            .task { await model.load() }
+            .task {
+                // The camera is one tap away (tab bar, card glyphs): start its session ahead (capture pass).
+                dependencies.shell.prewarm()
+                await model.load()
+            }
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active { Task { await model.refresh() } }
             }
@@ -159,17 +163,7 @@ struct GroupsListView: View {
     // MARK: Tab bar
 
     private func select(_ tab: AppTab) {
-        let router = dependencies.router
-        switch tab {
-        case .camera:
-            router.modal = .camera(groupID: nil, invitationID: nil)
-        case .groups:
-            router.path = []
-        case .walls:
-            if let route = CrossGroupRoutes.wallsBrowse(groupID: nil) { router.path.append(route) }
-        case .me:
-            if let route = CrossGroupRoutes.wallsMine { router.path.append(route) }
-        }
+        ShellNavigation.select(tab, router: dependencies.router, shell: dependencies.shell)
     }
 }
 

@@ -47,6 +47,7 @@ struct BirthdayAddScreen: View {
             onFinish?(outcome)
             dismiss()
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("birthday.add")
     }
 

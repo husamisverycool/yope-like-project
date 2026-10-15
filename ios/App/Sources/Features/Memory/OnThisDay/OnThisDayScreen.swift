@@ -40,6 +40,7 @@ struct OnThisDayScreen: View {
         .onChange(of: model.index) { _, _ in
             UIAccessibility.post(notification: .screenChanged, argument: nil)
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("onthisday")
     }
 
@@ -48,7 +49,7 @@ struct OnThisDayScreen: View {
     private func banner(safeTop: CGFloat) -> some View {
         OnThisDayBannerLayout(safeTop: safeTop) {
             progressBar
-            Text(model.phase == .loaded ? (model.currentYear.map(model.bannerLabel(for:)) ?? "") : "")
+            Text(model.phase == .loaded ? (model.currentYear.map { model.bannerLabel(for: $0) } ?? "") : "")
                 .dsTextStyle(OnThisDayType.bannerLabel)
                 .foregroundStyle(Tokens.Colors.onthisdayBannerLabel)
                 .multilineTextAlignment(.center)

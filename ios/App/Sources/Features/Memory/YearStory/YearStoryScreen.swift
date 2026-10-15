@@ -55,6 +55,7 @@ struct YearStoryScreen: View {
         .onChange(of: model.index) { _, _ in
             UIAccessibility.post(notification: .screenChanged, argument: nil)
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("year.story")
     }
 
