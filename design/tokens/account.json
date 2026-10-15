@@ -884,6 +884,19 @@
       "precision": "±8/255 (video)",
       "notes": "yope-a proposal color.button.dark.background (sign-in Google / Facebook / 'continue as …'). Height size.global.buttonHeightSheet; label color.global.textPrimary, text role button."
     },
+    "onboarding.permission.notifications.size.buttonGap": {
+      "type": "dimension",
+      "value": 8,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "onboarding.permission.notifications",
+      "element": "vertical gap between the stacked dark and lime buttons (Android)",
+      "evidence": "references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png (https://www.tiktok.com/@virgi.lifestyle/video/7686278541255642390 @31.23 s, posted 2026-09-16) Google/Facebook halves gap x284-294; Apple → Google rows y582 → y594",
+      "method": "10-12 px; video 576 px wide, creator template: screen x56-519 = 464 px; pt = px / 464 * 393 (1.181 px/pt; 393 pt assumed, device width unknown)",
+      "level": "SOURCED",
+      "precision": "±1.5 pt (video)",
+      "notes": "yope-a proposal dimension.signup.providerButton gap (≈8 pt between Yope's sign-in buttons)."
+    },
     "onboarding.permission.photos.layout.request": {
       "type": "layout",
       "value": {

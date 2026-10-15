@@ -929,10 +929,10 @@
       "value": null,
       "source_app": "Locket",
       "surface": "widget.lock.rect",
-      "element": "what the rectangular / inline Lock Screen widget shows when the newest photo has no caption",
+      "element": "what the Lock Screen widgets show in the two cases Locket's small-widget anatomy cannot fill: the newest photo has no caption (rectangular, inline) and the newest item is a collage (all three)",
       "evidence": "design/research/locket.md §3 (no Locket Lock Screen widget exists in any source)",
       "level": "BLOCKED",
-      "notes": "Composed part (avatar + caption) is specified in design/surfaces/widget.lock.rect.md; the no-caption case has nothing in Locket's anatomy to show. Smallest capture: one screenshot of the iOS Lock Screen 'Add Widgets' sheet after searching 'Locket' (locket.md §3), or an owner decision."
+      "notes": "Composed parts (circular = sender avatar; rectangular = avatar + caption; inline = caption) are specified in design/surfaces/widget.lock.*.md. Smallest capture: one screenshot of the iOS Lock Screen 'Add Widgets' sheet after searching 'Locket' (locket.md §3); otherwise an owner decision."
     },
     "widget.arrival.duration.transition": {
       "type": "duration",

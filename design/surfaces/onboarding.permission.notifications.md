@@ -26,8 +26,8 @@ bottom) under Apple's pre-alert rule: **one button, no way to leave without the 
 3. Detail `onboarding.permission.notifications.detail` under it (italic subtitle style).
 4. Flexible space (Yope's illustration area; its art is do-not-copy and none is sourced — empty).
 5. Android API 33+ only: dark secondary button `onboarding.permission.notifications.skip`, full width minus
-   `size.global.buttonMarginHSheet`, `size.global.buttonHeightSheet` tall, 8 pt above the primary button
-   (Yope's dark sign-in buttons sit ≈8 pt apart, yope-a proposal `dimension.signup.providerButton.gap`).
+   `size.global.buttonMarginHSheet`, `size.global.buttonHeightSheet` tall, `onboarding.permission.notifications.size.buttonGap` above the primary button
+   (Yope's stacked sign-in buttons).
 6. Primary button `onboarding.permission.notifications.continue`, full width minus `size.global.buttonMarginHSheet`,
    `size.global.buttonHeightSheet` tall, bottom of the safe area.
 
