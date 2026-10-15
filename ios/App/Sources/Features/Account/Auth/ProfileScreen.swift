@@ -78,10 +78,12 @@ struct ProfileScreen: View {
                 avatarPicker
                     .padding(.top, Tokens.Sizes.groupsCreateSizeTitleToContent)
                 if model.avatarImage == nil {
+                    // The label is built here, on the main actor: PhotosPicker's label closure is nonisolated.
+                    let addLabel = Text(Copy.authProfileAvatarAdd)
+                        .dsTextStyle(TextRole.listSubtitle)
+                        .foregroundStyle(Tokens.Colors.globalTextSecondary)
                     PhotosPicker(selection: $pickerItem, matching: .images, preferredItemEncoding: .compatible) {
-                        Text(Copy.authProfileAvatarAdd)
-                            .dsTextStyle(TextRole.listSubtitle)
-                            .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                        addLabel
                     }
                     .accessibilityHidden(true)
                     .padding(.top, Tokens.Sizes.groupsCreateSizeFieldToButton)

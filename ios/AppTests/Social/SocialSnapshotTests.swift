@@ -4,6 +4,7 @@
 @testable import App
 import AppData
 import AppModels
+import DesignSystem
 import SwiftUI
 import XCTest
 
