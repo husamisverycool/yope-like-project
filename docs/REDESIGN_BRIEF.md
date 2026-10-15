@@ -42,7 +42,11 @@ Retro uses a serif display face for titles ("Week 27", profile names) and a sans
 display role's family token is `{"ios": "system-serif", "android": "serif"}` (PLATFORM: New York /
 Noto Serif) with `notes` naming Retro's face (Roslindale, David Jonathan Ross — commercial licence;
 OWNER_SETUP lists the purchase). Sizes, weights, tracking and line heights are Retro's measured values.
-UI text uses the platform sans (`"system"`) unless the research proves another face.
+UI text follows Retro's package (`design/research/retro-package-copy-motion.md`): SF Pro on iOS
+(`"system"`), **Inter Variable on Android** (SIL OFL — bundle the font file from the official
+rsms/inter release under `android/core/designsystem/src/main/res/font/` with its OFL licence text;
+the font token is `{"ios": "system", "android": "Inter"}`). Never bundle Retro's commercial faces
+(Roslindale, PP Neue Montreal, PP Rader, Mondwest, ED Lavonia …).
 
 ## Pass 1 — Foundations (one agent, before any surface)
 Outputs:
