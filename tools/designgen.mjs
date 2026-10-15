@@ -237,10 +237,12 @@ function ktValue(t, imports) {
     }
     case "shadow": { const { r, g, b } = hexParts(v.color); const argb = ((Math.round((v.opacity ?? 1) * 255) << 24) >>> 0) + (r << 16) + (g << 8) + b; return { type: "DSShadow", expr: `DSShadow(color = Color(0x${argb.toString(16).toUpperCase().padStart(8, "0")}), blur = ${num(v.blur)}.dp, x = ${num(v.x ?? 0)}.dp, y = ${num(v.y ?? 0)}.dp)` }; }
     case "icon": {
-      const [style, nm] = v.android.split(".");
-      const alias = `${style}${nm}`;
-      imports.add(`import androidx.compose.material.icons.${style.toLowerCase()}.${nm} as ${alias}`);
-      return { type: "ImageVector", expr: `androidx.compose.material.icons.Icons.${style}.${alias}`, alias };
+      // "Rounded.Mic" or "AutoMirrored.Outlined.Send" (mirrored in right-to-left layouts)
+      const parts = v.android.split(".");
+      const nm = parts.pop();
+      const alias = parts.join("") + nm;
+      imports.add(`import androidx.compose.material.icons.${parts.map((p) => p.toLowerCase()).join(".")}.${nm} as ${alias}`);
+      return { type: "ImageVector", expr: `androidx.compose.material.icons.Icons.${parts.join(".")}.${alias}`, alias };
     }
     case "haptic": return { type: "Int", expr: `HapticFeedbackConstants.${v.android}` };
     case "font": return { type: "DSFontFamily", expr: v.android === "system" ? "DSFontFamily.System" : `DSFontFamily.Custom(${JSON.stringify(v.android)})` };

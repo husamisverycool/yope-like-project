@@ -56,7 +56,7 @@ Naming: `<category>.<surface-or-component>.<element>[.<state>]`, lowercase, dots
 `color.chat.background`, `radius.chat.bubble`, `font.size.chat.message`, `icon.composer.mic`,
 `duration.widget.photoArrival`, `haptic.capture.shutter`.
 
-Icons: `value` is an object `{ "ios": "<SF Symbol name>", "android": "<Material Symbols name>" }`.
+Icons: `value` is an object `{ "ios": "<SF Symbol name>", "android": "<Compose material-icons reference, e.g. Rounded.Mic or AutoMirrored.Outlined.Send>" }`.
 SF Symbols / Material Symbols are PLATFORM assets; log which reference glyph each one matches.
 
 Fonts: if the reference app's typeface is proprietary or unknown, the token is
