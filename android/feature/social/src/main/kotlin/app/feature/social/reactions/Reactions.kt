@@ -234,6 +234,7 @@ val LocalReactionFlights = androidx.compose.runtime.staticCompositionLocalOf<Rea
 @Composable
 fun FlightLayer(flights: ReactionFlights) {
     val f = flights.flight ?: return
+    println("DEBUGLAYER composed")
     var origin by remember { mutableStateOf<Offset?>(null) }
     val progress = remember(f) { Animatable(0f) }
     LaunchedEffect(f) {
@@ -244,6 +245,7 @@ fun FlightLayer(flights: ReactionFlights) {
     Box(Modifier.fillMaxSize().onGloballyPositioned { origin = it.positionOnScreen() }.clearAndSetSemantics { }) {
         val o = origin ?: return@Box
         val t = progress.value
+        println("DEBUGLAYER o=$o t=$t")
         val left = lerp(f.from.left, f.to.left, t) - o.x
         val top = lerp(f.from.top, f.to.top, t) - o.y
         val width = with(density) { lerp(f.from.width, f.to.width, t).toDp() }

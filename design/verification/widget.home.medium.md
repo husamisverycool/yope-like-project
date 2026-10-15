@@ -8,7 +8,7 @@ Reference image(s): `references/auto/locket/store/locket-store-03.png`, `referen
 
 Snapshots (CI): `widget.home.medium-photo.png`, `widget.home.medium-photo-caption.png`, `widget.home.medium-collage.png`, `widget.home.medium-loading.png`, `widget.home.medium-empty.png`, `widget.home.medium-not-set-up.png`
 
-**Summary: 27 matched · 0 approximated · 2 not matched (BLOCKED or not buildable).**
+**Summary: 28 matched · 0 approximated · 1 not matched (BLOCKED or not buildable).**
 
 ## Values
 
@@ -36,8 +36,8 @@ Snapshots (CI): `widget.home.medium-photo.png`, `widget.home.medium-photo-captio
 | matched | `widget.home.small.layout.empty` | circle: 72; ring: 82; ringStroke: 3; glyphWidth: 32; glyphHeight: 28; label: 19; labelGap: 9 (SOURCED) | md: circle 72, ring 82 / 3, glyph 32 × 28, label 19, gap 9 | WidgetEmptyStack |
 | matched | `widget.home.small.color.emptyCircle` | #FFFFFF3D (SOURCED) | circle fill | Circle fill |
 | matched | `widget.home.small.color.emptyRing` | #FFB800 (SOURCED) | #FFB800 ring | strokeBorder |
-| not matched | `widget.home.small.color.emptyLabel` | None (BLOCKED) | label colour (BLOCKED) | label not drawn until unblocked (WidgetBlocked.emptyLabelColor); text is the accessibility label |
-| matched | `widget.home.small.empty.noPhotos` | “No pics yet” (SOURCED) | empty text | accessibility label (visible once the colour is unblocked) |
+| matched | `widget.home.small.color.emptyLabel` | #969696 (SOURCED) | label #969696 | label 9 pt under the stack at 19 pt (weight not measured: platform regular) |
+| matched | `widget.home.small.empty.noPhotos` | “No pics yet” (SOURCED) | empty text | visible label + accessibility label |
 | matched | `widget.home.small.empty.setUp` | “Tap to set up” (SOURCED) | not-set-up text | same |
 | matched | `widget.home.small.a11y.photoWithCaption` | “{name}’s photo in {group}, {caption}” (SOURCED) | label | one element, button trait |
 | matched | `widget.home.small.a11y.photo` | “{name}’s photo in {group}” (SOURCED) | label | same |

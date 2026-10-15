@@ -191,6 +191,32 @@ final class CaptureWidgetEntryTests: XCTestCase {
         XCTAssertEqual(entry.tapURL?.absoluteString, "app://camera?group=g2")
     }
 
+    func testLockScreenKeepsNewestSinglePhotoWhenACollageIsNewer() throws {
+        try store.syncGroups([WidgetGroup(id: "g1", name: "Family")])
+        try savePhoto(groupID: "g1", caption: "Sundays", avatar: true, at: 1_000)
+        try savePhoto(groupID: "g1", kind: .collage, at: 2_000)
+        let entry = GroupWidgetEntryResolver.lockScreenEntry(configuredGroupID: "g1", store: store, at: Date())
+        XCTAssertEqual(entry.state, .photo, "widget.lock.rect.layout.content: the newest single photo's sender")
+        XCTAssertEqual(entry.snapshot?.caption, "Sundays")
+        XCTAssertNotNil(entry.content.avatar)
+        XCTAssertEqual(GroupWidgetEntryResolver.entry(configuredGroupID: "g1", store: store, at: Date()).state, .collage,
+                       "the Home Screen still shows the collage")
+    }
+
+    func testLockScreenWithoutPhotoIsEmptyAndWithoutGroupNotSetUp() throws {
+        XCTAssertEqual(GroupWidgetEntryResolver.lockScreenEntry(configuredGroupID: nil, store: store, at: Date()).state, .notSetUp)
+        try store.syncGroups([WidgetGroup(id: "g1", name: "Family")])
+        try savePhoto(groupID: "g1", kind: .collage)
+        XCTAssertEqual(GroupWidgetEntryResolver.lockScreenEntry(configuredGroupID: "g1", store: store, at: Date()).state, .empty)
+    }
+
+    func testInlineWithoutCaptionReadsThePhotoSentence() {
+        let content = GroupWidgetContent(state: .photo, groupName: "Family", senderName: "Ana")
+        XCTAssertEqual(WidgetInlineSlot(content: content).line, Copy.widgetHomeSmallA11yPhoto(name: "Ana", group: "Family"))
+        let captioned = GroupWidgetContent(state: .photo, groupName: "Family", senderName: "Ana", caption: "Sundays")
+        XCTAssertEqual(WidgetInlineSlot(content: captioned).line, "Sundays")
+    }
+
     func testNoCountsInAnyLabel() throws {
         try store.syncGroups([WidgetGroup(id: "g1", name: "Family")])
         try savePhoto(groupID: "g1")

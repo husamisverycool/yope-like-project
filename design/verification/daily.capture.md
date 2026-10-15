@@ -8,7 +8,7 @@ Reference image(s): `references/auto/bereal/frames/appstore-preview-2026_t3.50s_
 
 Snapshots (CI): `daily.capture-loading.png`, `daily.capture-live.png`, `daily.capture-capturing.png`, `daily.capture-preview.png`, `daily.capture-preview-single-camera.png`, `daily.capture-window-closed.png`, `daily.capture-permission-denied.png`, `daily.capture-error.png`
 
-**Summary: 28 matched · 5 approximated · 1 not matched (BLOCKED or not buildable).**
+**Summary: 30 matched · 4 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Live
 
@@ -19,7 +19,7 @@ Snapshots (CI): `daily.capture-loading.png`, `daily.capture-live.png`, `daily.ca
 | matched | `daily.capture.color.text` | #FAFAFA (SOURCED) | #FAFAFA text / glyphs | foregroundStyle |
 | matched | `daily.capture.layout.countdown` | digitsTop: 92.3; gapAboveViewfinder: 16.2 (SOURCED) | digits 16.2 above the viewfinder | baseline = viewfinder top − gap |
 | matched | `daily.capture.fontSize.countdown` | 23 pt (SOURCED) | 23 pt, monospaced digits | DSTextStyle (title2) + monospacedDigit |
-| approximated | `daily.capture.fontWeight.countdown` | None (BLOCKED) | weight (BLOCKED) | platform regular until unblocked (CaptureBlocked.countdownWeight) |
+| matched | `daily.capture.fontWeight.countdown` | bold (SOURCED) | bold | DSTextStyle weight (app and Lock Screen Live Activity) |
 | matched | `daily.capture.countdown` | “{mm}:{ss}” (SOURCED) | MM:SS zero-padded | CaptureFormat.countdown |
 | matched | `daily.capture.layout.countdownTick` | tick: 1000; digitOut: 100; digitIn: 300; digitFadeIn: 550; travel: 3 (SOURCED) | tick 1 s; digit out 100 / in 300 / fade 550 ms, travel 3 | TimelineView periodic; per-digit transitions (springs, platform damping); Reduce Motion cross-fade |
 | matched | `daily.capture.layout.viewfinder` | width: 378.7; sideMargin: 7; top: 124.4; aspect: 0.75; cornerRadius: 16 (SOURCED) | 3:4, side 7, top 124.4, r 16 | frame + clip |
@@ -42,7 +42,7 @@ Snapshots (CI): `daily.capture-loading.png`, `daily.capture-live.png`, `daily.ca
 |---|---|---|---|---|
 | matched | `daily.dualimage.layout.composition` | mainAspect: 0.75; mainRadiusRatio: 0.0455; insetWidthRatio: 0.31; insetAspect: 0.75; insetMarginRatio: 0.03; insetBorderRatio: 0.0051; insetOuterRadiusRatio: 0.126 (SOURCED) | dual image ratios | DualImageView |
 | matched | `daily.capture.layout.retake` | diameter: 34; inset: 12; glyph: 14 (SOURCED) | ✕ 34, 12 from top/trailing, glyph 14 | frames + padding; hit area minTouchTarget |
-| not matched | `daily.capture.color.overlayControl` | None (BLOCKED) | retake / chip fill (BLOCKED) | not drawn until unblocked (CaptureBlocked.overlayControlFill) |
+| matched | `daily.capture.color.overlayControl` | #00000075 (SOURCED) | retake circle / chip fill #00000075 | Circle / Capsule fill |
 | matched | `daily.capture.layout.audienceChip` | height: 37.4; paddingLeading: 15.7; paddingTrailing: 18; glyphToText: 7.6; bottomInset: 12.5 (SOURCED) | h 37.4, pad 15.7 / 18, gap 7.6, 12.5 above bottom | HStack paddings |
 | approximated | `daily.capture.fontSize.chip` | 13 pt (SOURCED) | 13 pt | DSTextStyle (footnote), weight not measured |
 | matched | `daily.capture.audience` | “{group} only” (SOURCED) | ‘{group} only’ | Copy |

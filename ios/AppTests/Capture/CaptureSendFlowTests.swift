@@ -112,45 +112,149 @@ final class CaptureSendToModelTests: XCTestCase {
         XCTAssertEqual(draft.original.contentType, ContentType.jpeg)
         XCTAssertNil(draft.invitationID)
         XCTAssertEqual(rig.haptics, [Tokens.Haptics.globalSend])
+        XCTAssertEqual(rig.sendCenter.confirmation, Copy.cameraSendtoToastPostedOne(group: CaptureFakes.groups[0].name),
+                       "the lime toast for camera.sendto.duration.toastVisible")
     }
 
-    func testCloseDiscardsVoiceNote() async throws {
+    func testHoldRecordsAndLiftKeepsTheVoiceNote() async {
+        let rig = CaptureTestRig()
+        let model = rig.sendToModel()
+        await model.load()
+        XCTAssertTrue(model.showsVoiceCoach, "voice coach on first use")
+        let started = await model.beginVoiceRecording()
+        XCTAssertTrue(started)
+        XCTAssertEqual(model.voicePhase, .holding)
+        XCTAssertTrue(model.showsVoiceRow, "the recorder row replaces the field")
+        XCTAssertTrue(rig.coach.isDismissed(.voice))
+        model.keepVoiceRecording()
+        XCTAssertEqual(model.voicePhase, .idle)
+        XCTAssertEqual(model.voiceNote?.durationMs, 1000)
+        XCTAssertTrue(model.showsVoiceRow, "attached: delete · length · play")
+        model.toggleVoicePlayback()
+        XCTAssertTrue(model.isPlayingVoice)
+    }
+
+    func testTooShortRecordingIsNotANote() async {
+        let rig = CaptureTestRig()
+        rig.voice.recordedDurationMs = 400
+        let model = rig.sendToModel()
+        await model.beginVoiceRecording()
+        model.keepVoiceRecording()
+        XCTAssertNil(model.voiceNote, "reads 00:00: not a voice note")
+        XCTAssertFalse(model.showsVoiceRow)
+    }
+
+    func testSlideLeftCancels() async {
+        let rig = CaptureTestRig()
+        let model = rig.sendToModel()
+        await model.beginVoiceRecording()
+        model.cancelVoiceRecording()
+        XCTAssertEqual(model.voicePhase, .idle)
+        XCTAssertNil(model.voiceNote)
+        XCTAssertFalse(rig.voice.isRecording)
+    }
+
+    func testLockPauseThenKeep() async {
+        let rig = CaptureTestRig()
+        let model = rig.sendToModel()
+        await model.beginVoiceRecording()
+        model.lockVoiceRecording()
+        XCTAssertEqual(model.voicePhase, .locked)
+        model.pauseVoiceRecording()
+        XCTAssertEqual(model.voicePhase, .paused)
+        XCTAssertNotNil(model.voiceDraft)
+        model.toggleVoicePlayback()
+        XCTAssertEqual(rig.voice.playedFiles.count, 1, "the draft can be played")
+        model.keepVoiceRecording()
+        XCTAssertEqual(model.voicePhase, .idle)
+        XCTAssertNotNil(model.voiceNote)
+        XCTAssertNil(model.voiceDraft)
+    }
+
+    func testVoiceOverStartsHandsFree() async {
+        let rig = CaptureTestRig()
+        let model = rig.sendToModel()
+        await model.beginVoiceRecording(locked: true)
+        XCTAssertEqual(model.voicePhase, .locked)
+    }
+
+    func testFirstUseAsksMicrophoneAndDoesNotRecord() async {
+        let rig = CaptureTestRig()
+        rig.voice.status = .notDetermined
+        let model = rig.sendToModel()
+        let started = await model.beginVoiceRecording()
+        XCTAssertFalse(started, "the system prompt ends the hold")
+        XCTAssertEqual(model.voicePhase, .idle)
+        XCTAssertEqual(rig.voice.status, .granted)
+    }
+
+    func testCloseDiscardsVoiceNote() async {
         let rig = CaptureTestRig()
         var closed = 0
         let model = rig.sendToModel(onClose: { closed += 1 })
         await model.load()
-        try XCTSkipUnless(model.isVoiceNoteAvailable, "voice note is DEBUG-only (chat.voice.layout.recording BLOCKED)")
-        await model.toggleVoiceRecording()
-        XCTAssertTrue(model.isRecordingVoice)
-        XCTAssertTrue(rig.coach.isDismissed(.voice))
-        await model.toggleVoiceRecording()
+        await model.beginVoiceRecording()
+        model.keepVoiceRecording()
         XCTAssertNotNil(model.voiceNote)
         model.close()
         XCTAssertNil(model.voiceNote)
         XCTAssertEqual(closed, 1)
     }
 
-    func testVoiceNoteGoesOnThePost() async throws {
+    func testVoiceNoteGoesOnThePost() async {
         let rig = CaptureTestRig()
         let model = rig.sendToModel()
         await model.load()
-        try XCTSkipUnless(model.isVoiceNoteAvailable)
-        await model.toggleVoiceRecording()
+        await model.beginVoiceRecording()
         model.send()
         let posted = await captureEventually { rig.posting.published.count == 1 }
         XCTAssertTrue(posted)
         XCTAssertEqual(rig.posting.published.first?.voice?.contentType, ContentType.m4a)
-        XCTAssertEqual(rig.posting.published.first?.voiceDurationMs, 1000)
+        XCTAssertEqual(rig.posting.published.first?.voiceDurationMs, 1000, "a recording in progress is kept on send")
     }
 
-    func testMicrophoneDeniedOpensSettings() async throws {
+    func testMicrophoneDeniedOpensSettings() async {
         let rig = CaptureTestRig()
         rig.voice.status = .denied
         let model = rig.sendToModel()
-        try XCTSkipUnless(model.isVoiceNoteAvailable)
-        await model.toggleVoiceRecording()
+        await model.beginVoiceRecording()
         XCTAssertFalse(model.isRecordingVoice)
         XCTAssertEqual(rig.navigation.settingsOpened, 1)
+    }
+
+    func testCaptionIsLimitedToTheTokenLength() async {
+        let rig = CaptureTestRig()
+        let model = rig.sendToModel()
+        XCTAssertEqual(SendToModel.captionMaxLength, Int(Tokens.Counts.cameraSendtoSizeCaptionMaxLength))
+        model.caption = String(repeating: "a", count: SendToModel.captionMaxLength + 10)
+        model.clampCaption()
+        XCTAssertEqual(model.caption.count, SendToModel.captionMaxLength)
+    }
+
+    func testPhotoReplyCarriesItsTargetToOneGroupOnly() async {
+        let rig = CaptureTestRig()
+        rig.replyTarget = (groupID: "fake-group-1", postID: "post-9")
+        let model = rig.sendToModel(contextGroupID: "fake-group-1")
+        await model.load()
+        XCTAssertEqual(model.replyToPostID, "post-9")
+        model.toggle("fake-group-2")
+        XCTAssertNil(model.replyToPostID, "sent to more groups it is an ordinary post (reply_group_mismatch)")
+        model.toggle("fake-group-2")
+        model.send()
+        let posted = await captureEventually { rig.posting.published.count == 1 }
+        XCTAssertTrue(posted)
+        XCTAssertEqual(rig.posting.published.first?.replyToPostID, PostID("post-9"))
+        XCTAssertEqual(rig.replyClears, 1, "the handoff is cleared once the reply is sent")
+    }
+
+    func testNoReplyWithoutHandoff() async {
+        let rig = CaptureTestRig()
+        let model = rig.sendToModel(contextGroupID: "fake-group-1")
+        await model.load()
+        model.send()
+        let posted = await captureEventually { rig.posting.published.count == 1 }
+        XCTAssertTrue(posted)
+        XCTAssertNil(rig.posting.published.first?.replyToPostID)
     }
 
     func testSaveUsesLibrary() async {

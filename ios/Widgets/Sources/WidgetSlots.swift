@@ -258,15 +258,15 @@ struct WidgetAvatar: View {
 
 // MARK: - Lock Screen (vibrant: the system renders everything in grayscale)
 
-/// `.accessoryRectangular`: avatar + caption in one leading row. No caption, or a collage as the
-/// newest item: `widget.lock.rect.layout.content` is BLOCKED → the avatar alone / nothing.
+/// `.accessoryRectangular`: avatar + caption in one leading row; no caption → the avatar alone in its
+/// slot (`widget.lock.rect.layout.content`; the entry is always the newest single photo).
 struct WidgetRectangularSlot: View {
     let content: GroupWidgetContent
 
     var body: some View {
         HStack(spacing: Tokens.Sizes.widgetHomeSmallSizeCaptionGap) {
             switch content.state {
-            case .photo:
+            case .photo, .collage:
                 WidgetAvatar(image: content.avatar, diameter: Tokens.Sizes.widgetHomeSmallSizeAvatar, ring: false)
                 if content.hasCaption, let caption = content.caption {
                     Text(caption)
@@ -284,8 +284,6 @@ struct WidgetRectangularSlot: View {
                         .dsTextStyle(WidgetType.caption)
                         .foregroundStyle(Tokens.Colors.globalTextPrimary)
                 }
-            case .collage:
-                EmptyView()
             }
             Spacer(minLength: 0)
         }
@@ -296,8 +294,8 @@ struct WidgetRectangularSlot: View {
     }
 }
 
-/// `.accessoryCircular`: the newest photo's sender avatar filling the circle. A collage as the
-/// newest item: `widget.lock.rect.layout.content` is BLOCKED → nothing.
+/// `.accessoryCircular`: the newest single photo's sender avatar filling the circle
+/// (`widget.lock.rect.layout.content`).
 struct WidgetCircularSlot: View {
     let content: GroupWidgetContent
 
@@ -306,13 +304,11 @@ struct WidgetCircularSlot: View {
             let side = min(proxy.size.width, proxy.size.height)
             ZStack {
                 switch content.state {
-                case .photo:
+                case .photo, .collage:
                     WidgetAvatar(image: content.avatar, diameter: side, ring: false)
                 case .loading, .empty, .notSetUp:
                     Image(systemName: Tokens.Icons.globalGallery)
                         .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                case .collage:
-                    EmptyView()
                 }
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
@@ -323,9 +319,9 @@ struct WidgetCircularSlot: View {
     }
 }
 
-/// `.accessoryInline` (one line of text above the clock, styled by the system): the newest
-/// photo's caption; the empty texts. No caption / collage: BLOCKED (`widget.lock.rect.layout.content`)
-/// → an empty line. Loading: an empty line.
+/// `.accessoryInline` (one line of text above the clock, styled by the system): the newest single
+/// photo's caption; without one, the `widget.home.small.a11y.photo` sentence
+/// (`widget.lock.rect.layout.content`); the empty texts. Loading: an empty line.
 struct WidgetInlineSlot: View {
     let content: GroupWidgetContent
 
@@ -334,11 +330,13 @@ struct WidgetInlineSlot: View {
             .accessibilityLabel(content.state == .photo ? content.accessibilityLabel : line)
     }
 
-    private var line: String {
+    var line: String {
         switch content.state {
-        case .photo: return content.hasCaption ? (content.caption ?? "") : ""
+        case .photo, .collage:
+            if content.hasCaption, let caption = content.caption { return caption }
+            return Copy.widgetHomeSmallA11yPhoto(name: content.senderName ?? "", group: content.groupName ?? "")
         case .empty, .notSetUp: return content.emptyText ?? ""
-        case .collage, .loading: return ""
+        case .loading: return ""
         }
     }
 }

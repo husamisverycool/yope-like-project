@@ -8,7 +8,7 @@ Reference image(s): `references/auto/yope/frames/a-chuongxetank-7694968408424582
 
 Snapshots (CI): `camera.sendto-loading.png`, `camera.sendto-loaded.png`, `camera.sendto-nothing-selected.png`, `camera.sendto-voice-coach.png`, `camera.sendto-empty.png`, `camera.sendto-offline.png`, `camera.sendto-error.png`, `camera.sendto-offline-send.png`, `camera.sendto-video-free-member.png`, `camera.sendto-sent-toast.png`
 
-**Summary: 48 matched · 2 approximated · 5 not matched (BLOCKED or not buildable).**
+**Summary: 52 matched · 4 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Header
 
@@ -34,12 +34,13 @@ Snapshots (CI): `camera.sendto-loading.png`, `camera.sendto-loaded.png`, `camera
 | matched | `camera.sendto.fontSize.caption` | 16 pt (SOURCED) | caption 16 | DSTextStyle (callout) |
 | matched | `camera.sendto.fontWeight.caption` | semibold (SOURCED) | caption semibold | DSTextStyle |
 | matched | `camera.sendto.layout.messageField` | height: 37; insetLeading: 10; insetBottom: 14.5; gapToMic: 7.5; micDiameter: 38; insetTrailing: 8.5 (SOURCED) | field h 37, inset 10 / 14.5, mic 38, gap 7.5, trailing 8.5 | HStack paddings / frames |
-| not matched | `camera.sendto.color.messageField` | None (BLOCKED) | field + mic fill (BLOCKED) | no fill drawn until unblocked (CaptureBlocked.messageFieldFill) |
+| approximated | `camera.sendto.color.messageField` | #0000007A (SOURCED) | field + mic fill #0000007A over a backdrop blur | Capsule / Circle fill; the backdrop blur radius was not measured, so the tint is drawn without a blur |
 | approximated | `camera.sendto.fontSize.messagePlaceholder` | 15 pt (SOURCED) | placeholder 15, textPrimary | TextField prompt; weight not measured → platform regular; text inset = h/2 (capsule radius, not measured) |
 | matched | `camera.sendto.caption.placeholder` | “add a message” (SOURCED) | ‘add a message’ | Copy; field label for VoiceOver |
-| not matched | `icon.global.mic` | ios: mic.fill; android: Rounded.Mic (PLATFORM) | mic glyph | Image — DEBUG builds only: the recording interaction `chat.voice.layout.recording` is BLOCKED |
-| not matched | `camera.sendto.coach.voice` | “add a voice memo on this pic” (SOURCED) | voice coach | CaptureCoachTooltip, wraps within the card (DEBUG with the mic) |
-| not matched | `camera.sendto.size.captionMaxLength` | None (BLOCKED) | caption limit (BLOCKED) | no client limit until unblocked (server bound 1000) |
+| matched | `icon.global.mic` | ios: mic.fill; android: Rounded.Mic (PLATFORM) | mic glyph | SendToMicButton (release); the recorder follows chat.voice.layout.recording |
+| approximated | `chat.voice.layout.recording` | start: press and hold the mic circle: recording runs while the finger is down; send: lift the finger: the message is sent; cancel: slide left while holding: the recording is discarded and nothing is sent; lock: slide up onto the lock shown above the mic circle: recording continues hands-free; locked: while locked: chat.voice.icon.pause pauses and lets you play the draft; the mic circle shows icon.global.send and sends; row: while recording, the composer row shows leading → trailing: red recording dot, elapsed time, the centred hint (‹ slide to cancel); the mic circle stays at the trailing end under the finger; dotColor: color.global.destructive; timerFormat: chat.voice.layout.durationFormat; timerColor: color.global.textPrimary; hintGlyph: icon.global.back; hintColor: color.global.textSecondary; hintCopy: chat.voice.recording.slideToCancel; lockGlyph: icon.global.lock; lockHintGlyphIos: chevron.up; lockHintGlyphAndroid: Rounded.ExpandLess; haptic: none (HIG: haptics must not disrupt the microphone) (SOURCED) | hold to record, lift keeps, slide left cancels, slide up locks; row dot · mm:ss · ‹ slide to cancel | SendToVoiceRow / SendToMicButton; cancel at half the field width and lock at one mic diameter of travel (thresholds not measured); attached note shows delete · length · play (no reference for an attached note in send-to) |
+| matched | `camera.sendto.coach.voice` | “add a voice memo on this pic” (SOURCED) | voice coach | CaptureCoachTooltip, wraps within the card, first use |
+| matched | `camera.sendto.size.captionMaxLength` | 36 (SOURCED) | caption limit 36, no counter | SendToModel.clampCaption on every change |
 
 ## Recipient rows
 
@@ -76,11 +77,11 @@ Snapshots (CI): `camera.sendto-loading.png`, `camera.sendto-loaded.png`, `camera
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
 | matched | `camera.sendto.layout.toast` | height: 49; marginHorizontal: 8.5; top: 59; cornerRadius: 20; glyph: 17; glyphInset: 19.5; glyphToText: 11 (SOURCED) | lime bar 49 high, margins 8.5, top 59, r 20, glyph 17 at 19.5, gap 11 | CaptureConfirmationToast / CaptureFailureToast |
-| not matched | `camera.sendto.duration.toastVisible` | None (BLOCKED) | visible time (BLOCKED) | confirmations announced to VoiceOver only; the toast is drawn once unblocked (CaptureBlocked.toastVisible) |
+| matched | `camera.sendto.duration.toastVisible` | 2000 ms (SOURCED) | visible 2000 ms; in ≈117 ms on the platform default spring | confirmation toast shown for the token, also announced; enters / leaves with spring.global.platformDefault.ios + move from top (Reduce Motion cross-fade) |
 | matched | `camera.sendto.toast.postedOne` | “posted in {group}” (SOURCED) | ‘posted in {group}’ | request.confirmation |
 | matched | `camera.sendto.toast.postedMany` | “posted in your groups” (SOURCED) | ‘posted in your groups’ | request.confirmation |
 | matched | `camera.sendto.toast.saved` | “saved to your library” (SOURCED) | ‘saved to your library’ | after save |
-| matched | `camera.sendto.error.sendFailed` | “your pic didn’t send” (SOURCED) | error toast | failure toast with retry (no animation: toast motion BLOCKED) |
+| matched | `camera.sendto.error.sendFailed` | “your pic didn’t send” (SOURCED) | error toast | failure toast with retry, same motion |
 | matched | `camera.sendto.error.offline` | “you’re offline” (SOURCED) | offline toast | failure toast; retried automatically when the network returns |
 | matched | `camera.sendto.error.retry` | “try again” (SOURCED) | retry text button | Button → outbox replay |
 | matched | `camera.sendto.empty.title` | “no groups yet” (SOURCED) | no groups | CaptureEmptyState; button opens AccountModal.groupCreate as a sheet over send-to (capture kept) |
@@ -101,3 +102,4 @@ Snapshots (CI): `camera.sendto-loading.png`, `camera.sendto-loaded.png`, `camera
 - Groups-load failure without a cache (not in the spec's state table): offline → `camera.sendto.error.offline` + retry pill; other errors → the retry pill alone (no copy exists).
 - After editing, the field shows the typed caption (not observed in the reference).
 - The success toast belongs on the screen the member returns to (groups.list): the shell must attach `.captureSendStatus(CaptureEnvironment.shared.sendCenter)` (reported).
+- A photo reply (camera opened from photo.viewer): `PhotoReplyHandoff.replyTarget(for:)` becomes `p_reply_to_post_id` when the post goes to exactly that group; the handoff is cleared after send.

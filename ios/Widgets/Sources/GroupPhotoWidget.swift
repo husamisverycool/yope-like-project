@@ -22,12 +22,15 @@ import WidgetKit
 struct GroupPhotoProvider: AppIntentTimelineProvider {
     static let safetyRefreshSeconds: ClosedRange<TimeInterval> = 15 * 60...60 * 60
 
+    /// The Lock Screen kind resolves the newest single photo (`widget.lock.rect.layout.content`).
+    var lockScreen = false
+
     func placeholder(in context: Context) -> GroupPhotoEntry {
         .loading(at: Date())
     }
 
     func snapshot(for configuration: SelectGroupIntent, in context: Context) async -> GroupPhotoEntry {
-        let entry = Self.entry(for: configuration, store: WidgetStore.forBundle(.main), at: Date())
+        let entry = entry(for: configuration, store: WidgetStore.forBundle(.main), at: Date())
         // The gallery preview with no photo yet shows the loading placeholder.
         if context.isPreview && entry.snapshot == nil { return .loading(at: Date()) }
         return entry
@@ -36,11 +39,14 @@ struct GroupPhotoProvider: AppIntentTimelineProvider {
     func timeline(for configuration: SelectGroupIntent, in context: Context) async -> Timeline<GroupPhotoEntry> {
         let now = Date()
         let refresh = now.addingTimeInterval(TimeInterval.random(in: Self.safetyRefreshSeconds))
-        return Timeline(entries: [Self.entry(for: configuration, store: WidgetStore.forBundle(.main), at: now)], policy: .after(refresh))
+        return Timeline(entries: [entry(for: configuration, store: WidgetStore.forBundle(.main), at: now)], policy: .after(refresh))
     }
 
-    static func entry(for configuration: SelectGroupIntent, store: WidgetStore, at date: Date) -> GroupPhotoEntry {
-        GroupWidgetEntryResolver.entry(configuredGroupID: configuration.group?.id, store: store, at: date)
+    func entry(for configuration: SelectGroupIntent, store: WidgetStore, at date: Date) -> GroupPhotoEntry {
+        let group = configuration.group?.id
+        return lockScreen
+            ? GroupWidgetEntryResolver.lockScreenEntry(configuredGroupID: group, store: store, at: date)
+            : GroupWidgetEntryResolver.entry(configuredGroupID: group, store: store, at: date)
     }
 }
 
@@ -61,7 +67,7 @@ struct GroupPhotoWidget: Widget {
 /// Lock Screen (vibrant): circular = sender avatar, rectangular = avatar + caption, inline = caption.
 struct GroupLockWidget: Widget {
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: GroupWidgetKinds.lockScreen, intent: SelectGroupIntent.self, provider: GroupPhotoProvider()) { entry in
+        AppIntentConfiguration(kind: GroupWidgetKinds.lockScreen, intent: SelectGroupIntent.self, provider: GroupPhotoProvider(lockScreen: true)) { entry in
             GroupLockWidgetView(entry: entry)
         }
         .description(Text(Copy.widgetLockRectGalleryDescription))

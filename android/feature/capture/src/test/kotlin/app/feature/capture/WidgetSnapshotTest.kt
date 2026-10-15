@@ -187,7 +187,9 @@ class WidgetSnapshotTest {
             .put("avatarLeft", dp(overlay.left)).put("avatarBottomInset", dp(h - 1 - overlay.bottom)).put("avatarSize", dp(avatarRight - overlay.left + 1))
             .put("captionGap", dp(pillLeft - avatarRight - 1)).put("pillHeight", dp(pillRows.size)).put("pillRight", dp(overlay.right + 1))
             .put("ringDiameter", dp(ring.width() + 1)).put("ringCenterX", dp(ring.centerX())).put("ringCenterY", dp(ring.centerY()))
-            .put("emptyTop", Integer.toHexString(empty.getPixel(empty.width / 2, 2))).put("emptyBottom", Integer.toHexString(empty.getPixel(empty.width / 2, empty.height - 3)))
+            // Gradient samples beside the stack (the ring now reaches the top edge, the label the bottom).
+            .put("emptyTop", Integer.toHexString(empty.getPixel(Math.round(EDGE_SAMPLE_DP * density), 2)))
+            .put("emptyBottom", Integer.toHexString(empty.getPixel(Math.round(EDGE_SAMPLE_DP * density), empty.height - 3)))
         java.io.File("build/verification").mkdirs()
         java.io.File("build/verification/widget.android.json").writeText(json.toString(2))
     }
@@ -219,3 +221,6 @@ class WidgetSnapshotTest {
     }
 
 }
+
+/** Gradient sample column of the empty widget: inside the launcher corner, beside the centred stack (test geometry). */
+private const val EDGE_SAMPLE_DP = 20f

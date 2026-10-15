@@ -21,6 +21,7 @@ struct YearStoryScreen: View {
     private let revealsImmediately: Bool
     @Environment(\.dismiss) private var dismiss
     @Environment(\.displayScale) private var displayScale
+    @Environment(\.scenePhase) private var scenePhase
 
     init(groupID: String, year: Int, model: YearStoryModel? = nil, revealsImmediately: Bool = false) {
         self.groupID = groupID
@@ -54,6 +55,10 @@ struct YearStoryScreen: View {
         }
         .onChange(of: model.index) { _, _ in
             UIAccessibility.post(notification: .screenChanged, argument: nil)
+        }
+        // The card clock stops while the app is not in the foreground and resumes on return.
+        .onChange(of: scenePhase, initial: true) { _, phase in
+            model.setSuspended(phase != .active)
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("year.story")
@@ -147,7 +152,8 @@ struct YearStoryCanvasView: View {
                     model.previous()
                 }
             }
-            TimelineView(.animation(paused: model.cardDuration == nil || model.isPaused)) { context in
+            // The current segment fills over `duration.year.story.card`; redrawn only while the clock runs.
+            TimelineView(.animation(paused: !model.clockRuns)) { context in
                 YearStoryProgressBar(count: model.cards.count, index: model.index, currentFraction: model.currentFraction(at: context.date))
             }
             .padding(.top, Tokens.Sizes.yearStoryProgressTop)
@@ -167,6 +173,8 @@ struct YearStoryCanvasView: View {
                 YearStoryShareRowLabel()
             }
             .buttonStyle(.plain)
+            // The card stays in view while the share sheet is up (play resumes it).
+            .simultaneousGesture(TapGesture().onEnded { model.pause() })
             .accessibilityIdentifier("year.story.share")
             .accessibilitySortPriority(-1)
         } else {
@@ -178,8 +186,8 @@ struct YearStoryCanvasView: View {
 
     /// Close circle (`dimension.year.story.chrome.*`), centred `chrome.centerY` below the canvas top,
     /// `chrome.insetRight` from its right; hit area `size.global.minTouchTarget.ios`. The pause / play
-    /// circle sits `chrome.pitch` to its left only once the story advances on its own
-    /// (`MemoryBlocked.yearStoryCardDuration`).
+    /// circle sits `chrome.pitch` to its left on every card that advances on its own
+    /// (`duration.year.story.card`; not on the summary, which waits).
     @ViewBuilder
     private var chrome: some View {
         let diameter = Tokens.Sizes.yearStoryChromeButton
@@ -190,7 +198,7 @@ struct YearStoryCanvasView: View {
         .accessibilityIdentifier("year.story.close")
         .accessibilitySortPriority(4)
         .position(x: closeX, y: Tokens.Sizes.yearStoryChromeCenterY)
-        if model.cardDuration != nil, model.phase == .loaded {
+        if model.advancesOnItsOwn {
             chromeCircle(
                 icon: model.isPaused ? Tokens.Icons.globalPlay : Tokens.Icons.yearStoryPause,
                 label: model.isPaused ? Copy.yearStoryA11yPlay : Copy.yearStoryA11yPause
@@ -234,8 +242,8 @@ private struct YearStoryNavigationActions: ViewModifier {
 }
 
 /// C. Summary (`layout.year.story.summary`): a pager of the story's share cards at
-/// `previewWidthRatio` × canvas width, the Share pill for the card in view, then "Replay from
-/// beginning". Page dots are BLOCKED (`layout.year.story.summary.dots`) → none.
+/// `previewWidthRatio` × canvas width, its page dots (`layout.year.story.summary.dots`), the Share
+/// pill for the card in view, then "Replay from beginning".
 struct YearStorySummaryView: View {
     @Bindable var model: YearStoryModel
     let size: CGSize
@@ -244,8 +252,10 @@ struct YearStorySummaryView: View {
         let cards = model.shareableCards
         let previewWidth = size.width * Tokens.Layouts.YearStorySummary.previewWidthRatio
         let previewHeight = previewWidth / YearStoryGeometry.aspect
+        let dots = Tokens.Layouts.YearStorySummaryDots.self
         VStack {
             if !cards.isEmpty {
+                VStack(spacing: 0) {
                 TabView(selection: $model.summaryPage) {
                     ForEach(Array(cards.enumerated()), id: \.element.id) { page, card in
                         preview(card)
@@ -258,7 +268,12 @@ struct YearStorySummaryView: View {
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .frame(width: size.width, height: previewHeight)
                 .accessibilityIdentifier("year.story.summary.pager")
+                // Dot centres `centerBelowCarousel` under the card and `centerAboveShare` over the pill.
+                YearStorySummaryDots(count: cards.count, selected: min(max(model.summaryPage, 0), cards.count - 1))
+                    .padding(.top, dots.centerBelowCarousel - dots.diameter / 2)
+                    .padding(.bottom, dots.centerAboveShare - dots.diameter / 2)
                 sharePill(cards)
+                }
             }
             Button {
                 model.replay()
@@ -307,4 +322,28 @@ struct YearStorySummaryView: View {
                 .accessibilityIdentifier("year.story.summary.share")
         }
     }
+}
+
+/// `layout.year.story.summary.dots`: one dot per share card, `diameter` wide and `pitch` apart
+/// (centre to centre); the card in view in `selectedColor`, the others in `unselectedColor`; no
+/// animation (`animation`: none observed). Hidden from VoiceOver: the pager announces its pages.
+struct YearStorySummaryDots: View {
+    let count: Int
+    let selected: Int
+
+    var body: some View {
+        let dots = Tokens.Layouts.YearStorySummaryDots.self
+        HStack(spacing: dots.pitch - dots.diameter) {
+            ForEach(0..<count, id: \.self) { page in
+                Circle()
+                    .fill(page == selected ? Self.selectedColor : Self.unselectedColor)
+                    .frame(width: dots.diameter, height: dots.diameter)
+            }
+        }
+        .accessibilityHidden(true)
+    }
+
+    /// The token stores its colours as text; both parse (unit-tested), the fallback is never drawn.
+    static let selectedColor = MemoryTokenColor.color(Tokens.Layouts.YearStorySummaryDots.selectedColor) ?? Tokens.Colors.globalTextPrimary
+    static let unselectedColor = MemoryTokenColor.color(Tokens.Layouts.YearStorySummaryDots.unselectedColor) ?? Tokens.Colors.globalTextSecondary
 }

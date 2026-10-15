@@ -322,16 +322,10 @@ private struct ContributeMessageStep: View {
                 .background(Tokens.Colors.birthdayContributeInputFill, in: RoundedRectangle(cornerRadius: Tokens.Radii.birthdayContributeInput))
                 .padding(.top, Tokens.Sizes.birthdayContributeLabelGap)
                 .accessibilityIdentifier("birthday.contribute.line")
-                .onChange(of: model.line) { _, value in
-                    // One line of meaning: the return key ends the entry instead of adding a line.
-                    if value.contains("\n") {
-                        model.line = value.replacingOccurrences(of: "\n", with: "")
-                        fieldFocused = false
-                    }
-                    // UI limit once `layout.birthday.contribute.lineMax` is sourced (no visible counter).
-                    if let limit = MemoryBlocked.contributeLineMax, model.line.count > limit {
-                        model.line = String(model.line.prefix(limit))
-                    }
+                .onChange(of: model.line) { _, _ in
+                    // One line (the return key ends the entry), at most `layout.birthday.contribute.lineMax`
+                    // characters, no visible counter.
+                    if model.normalizeLine() { fieldFocused = false }
                 }
                 MemoryMessageIdeas(honoreeName: model.honoreeName)
                     .padding(.top, Tokens.Sizes.birthdayContributeGroupGap)

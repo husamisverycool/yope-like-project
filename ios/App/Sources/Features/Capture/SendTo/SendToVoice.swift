@@ -35,7 +35,8 @@ struct SendToMicButton: View {
             }
         }
         .contentShape(Circle())
-        .gesture(showsSend ? nil : holdGesture)
+        // Locked / paused: the circle is a send button (tap), not a hold target.
+        .gesture(holdGesture, including: showsSend ? .none : .all)
         .onTapGesture {
             if showsSend { model.keepVoiceRecording() }
         }

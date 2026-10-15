@@ -8,7 +8,7 @@ Reference image(s): `references/auto/yope/frames/a-jacob-7691153057177931039-t3.
 
 Snapshots (CI): `camera.capture-loading.png`, `camera.capture-live.png`, `camera.capture-flash-on.png`, `camera.capture-shutter-pressed.png`, `camera.capture-coach.png`, `camera.capture-recording.png`, `camera.capture-permission-denied.png`, `camera.capture-error.png`
 
-**Summary: 46 matched · 5 approximated · 1 not matched (BLOCKED or not buildable).**
+**Summary: 47 matched · 5 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Layout
 
@@ -82,7 +82,7 @@ Snapshots (CI): `camera.capture-loading.png`, `camera.capture-live.png`, `camera
 | matched | `camera.capture.size.permissionButtonHeight` | 45 pt (SOURCED) | pill height 45 | minHeight |
 | matched | `camera.capture.unavailable.title` | “camera isn’t available right now” (SOURCED) | error / interrupted | same layout; retry restarts the session; AVCaptureSession interruption notifications |
 | matched | `camera.capture.unavailable.button` | “try again” (SOURCED) | retry | CaptureLightPill |
-| not matched | `camera.capture.size.recordingOutline` | None (BLOCKED) | recording outline (BLOCKED) | not drawn until unblocked (CaptureBlocked.recordingOutlineWidth) |
+| matched | `camera.capture.size.recordingOutline` | 6 pt (SOURCED) | recording outline 6 pt, accent, progress stroke | RoundedRectangle(radius.global.viewfinder).inset.trim(0…progress).stroke; progress 0 → 1 linearly over camera.capture.duration.videoMax |
 | matched | `camera.capture.a11y.recording` | “recording” (SOURCED) | announcement on record start | AccessibilityNotification.Announcement |
 
 ## Accessibility

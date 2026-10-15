@@ -65,6 +65,10 @@ final class CaptureTestRig {
         )
     }
 
+    /// The photo-reply handoff seen by send-to (social's `PhotoReplyHandoff` in the app).
+    var replyTarget: (groupID: String, postID: String)?
+    private(set) var replyClears = 0
+
     func sendToModel(
         media: CapturedMedia = .photo(CaptureFakes.still(Tokens.Colors.globalAccent), capturedAt: Date()),
         contextGroupID: String? = nil,
@@ -82,7 +86,15 @@ final class CaptureTestRig {
             sendCenter: sendCenter,
             navigation: navigation,
             onClose: onClose,
-            onSent: onSent
+            onSent: onSent,
+            replyTarget: { [weak self] groupID in
+                guard let target = self?.replyTarget, target.groupID == groupID else { return nil }
+                return target.postID
+            },
+            clearReply: { [weak self] in
+                self?.replyTarget = nil
+                self?.replyClears += 1
+            }
         )
     }
 

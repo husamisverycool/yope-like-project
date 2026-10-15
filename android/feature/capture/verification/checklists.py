@@ -185,7 +185,20 @@ def camera_capture():
     sh.row("`camera.capture.layout.flashGlyph` glyphHeight", tok("camera.capture.layout.flashGlyph", "glyphHeight"), flash["height"])
     sh.row("`icon.global.flashOff` / `.flashOn`", "Rounded.FlashOff / Rounded.FlashOn", "Tokens.Icons.globalFlashOff / On", status="match (token)")
     sh.row("text role `overlayTimeCamera` (`fontSize.global.overlayTimeCamera` / heavy)", f"{tok('fontSize.global.overlayTimeCamera')} sp / heavy", "26 sp / FontWeight(800)", status="match (token)", note="centred on both axes; device short time style")
-    sh.row("`camera.capture.size.recordingOutline`", "BLOCKED", "not drawn (Blocked.recordingOutline = null)", status="BLOCKED")
+    rec = snap("camera.capture_recording")
+    col = int((vf["left"] + 60) * SCALE)
+    run = [y for y in range(int(vf["top"] * SCALE), int((vf["top"] + 20) * SCALE)) if is_accent(rec.getpixel((col, y)))]
+    sh.row("`camera.capture.size.recordingOutline` (stroke, `color.global.accent`)", tok("camera.capture.size.recordingOutline"), round(len(run) / SCALE, 2), tol=0.7,
+           note="accent run across the top edge, 60 dp in; drawn inside the viewfinder edge")
+    # Progress after 1 s of a videoMax recording: the traced length along the inset outline.
+    inset, rad = tok("camera.capture.size.recordingOutline") / 2, tok("radius.global.viewfinder") - tok("camera.capture.size.recordingOutline") / 2
+    perim = 2 * (vf["width"] - 2 * inset - 2 * rad) + 2 * (vf["height"] - 2 * inset - 2 * rad) + 2 * 3.14159265 * rad
+    row_y = int((vf["top"] + inset) * SCALE)
+    xs = [x for x in range(rec.width) if is_accent(rec.getpixel((x, row_y)))]
+    end = round(max(xs) / SCALE, 1) if xs else -1.0
+    frac = 1000 / tok("camera.capture.duration.videoMax")
+    sh.row("progress stroke: linear over `camera.capture.duration.videoMax` (1 s in)", round(vf["left"] + inset + rad + frac * perim, 1), end, tol=4.0,
+           note="starts after the top-leading corner and runs clockwise (start point not specified by the token)")
     sh.section("Control row")
     sh.row("`camera.capture.size.shutterTopGap` (viewfinder bottom → ring top)", tok("camera.capture.size.shutterTopGap"), shutter["top"] - vf["bottom"])
     sh.row("`camera.capture.size.shutterOuter`", tok("camera.capture.size.shutterOuter"), shutter["width"])
@@ -250,7 +263,12 @@ def camera_sendto():
     sh.row("`camera.sendto.layout.messageField` micDiameter", f["micDiameter"], mic["width"])
     sh.row("`camera.sendto.layout.messageField` gapToMic", f["gapToMic"], mic["left"] - field["right"])
     sh.row("`camera.sendto.layout.messageField` insetTrailing", f["insetTrailing"], prev["right"] - mic["right"])
-    sh.row("`camera.sendto.color.messageField`", "BLOCKED", "no fill (Blocked.messageFieldFill = null)", status="BLOCKED")
+    fy = field["top"] + field["height"] / 2
+    a = black_alpha(img, (field["left"] + 6, fy), (field["left"] + 6, field["top"] - 3))
+    sh.row("`camera.sendto.color.messageField` (black alpha, field)", round(0x7A / 255, 3), a, tol=0.03, note="1 − C/B against the photo 3 dp above the field")
+    am = black_alpha(img, (mic["right"] - 4, mic["top"] + mic["height"] / 2), (mic["right"] + 2, mic["top"] + mic["height"] / 2))
+    sh.row("`camera.sendto.color.messageField` (black alpha, mic circle)", round(0x7A / 255, 3), am, tol=0.03, note="against the photo 2 dp beyond the mic's trailing edge")
+    sh.row("backdrop blur under the field", "observed; radius not measured", "not drawn (no radius token)", status="approx")
     sh.row("`camera.sendto.fontSize.messagePlaceholder`", "15 sp", "15 sp, color.global.textPrimary (C-17)", status="match (token)")
     sh.row("`camera.sendto.fontSize.caption` / `.fontWeight.caption`, `.size.captionBaselineOffset`", "16 sp semibold, 31 under the overlay baseline", "16 sp / 600; offset 31 from the overlay line", status="approx", note="offset applied between the centred overlay box and the caption box, not baseline to baseline")
     sh.section("Voice note (`chat.voice.layout.recording`, SOURCED by the gap fill)")
@@ -299,8 +317,11 @@ def camera_sendto():
     sh.row("`camera.sendto.layout.toast` top", tok("camera.sendto.layout.toast", "top"), toast["top"])
     sh.row("`camera.sendto.layout.toast` height", tok("camera.sendto.layout.toast", "height"), toast["height"])
     sh.row("`camera.sendto.layout.toast` marginHorizontal", tok("camera.sendto.layout.toast", "marginHorizontal"), toast["left"])
-    sh.row("`camera.sendto.duration.toastVisible`", "BLOCKED", "posted / saved toasts not shown (Blocked.toastVisibleMillis = null); error toast stays until sent", status="BLOCKED")
-    sh.row("`camera.sendto.size.captionMaxLength`", "BLOCKED", "no UI limit (server bound applies)", status="BLOCKED")
+    sh.row("`camera.sendto.duration.toastVisible`", f"{tok('camera.sendto.duration.toastVisible')} ms", "posted toast shown on upload done, gone after 2000 ms (FlowTests.postedToastShowsWhenSentForTheTokenDwell); saved toast 2000 ms (camera.sendto_saved.png)", status="match")
+    sh.row("toast in / out", "≈117 ms in (`spring.global.platformDefault.*`), out not observed; Reduce Motion cross-fade", "slide down + fade with `spring.global.platformDefault.android`; Reduce Motion fade", status="match (token)")
+    sh.row("`camera.sendto.size.captionMaxLength`", tok("camera.sendto.size.captionMaxLength"), "36 UTF-16 units, an emoji at the limit dropped whole, no counter (ViewModelTests)", status="match")
+    sh.row("capture → send-to: `spring.global.sheetPresent`; Reduce Motion cross-fade `duration.global.sheetPresent`", "sheet rises from the bottom", "slideInVertically(sheetPresent) / slideOut on close; fade 215 ms under Reduce Motion", status="approx",
+           note="token dampingFraction 4.564 runs overdamped in Compose; the RN reference runs every ζ ≥ 1 as critically damped (reported to the lead)")
     sh.section("States, haptics")
     sh.row("loading / empty / offline / error / nothing selected / free-member video", "spec states", "camera.sendto_loading, _empty, _offline, _error, _nothing-selected, _video-free", status="match (token)")
     sh.row("`haptic.global.select` / `.send` / `.error`", "toggle / sent / failed", "row toggle / queued (optimistic) / failure toast", status="match (token)")
@@ -320,7 +341,7 @@ def daily_capture():
     sh.row("`daily.capture.layout.dismiss` centerFromTop", tok("daily.capture.layout.dismiss", "centerFromTop"), d["top"] + d["height"] / 2)
     digit_top = first_bright_row(img, 120, 273, 80, 124)
     sh.row("`daily.capture.layout.countdown` digitsTop", tok("daily.capture.layout.countdown", "digitsTop"), digit_top, tol=1.0, note="first light row of the digits in our render")
-    sh.row("`daily.capture.fontSize.countdown` / `.fontWeight.countdown`", "23 sp / BLOCKED", "release: not drawn; debug: Bold (closing step: Roboto '1' stem ÷ height 0.198)", status="BLOCKED")
+    sh.row("`daily.capture.fontSize.countdown` / `.fontWeight.countdown`", "23 sp / bold", "23 sp / FontWeight(700), tabular digits", status="match (token)")
     sh.row("`daily.capture.layout.viewfinder` sideMargin", vf["sideMargin"], v["left"])
     sh.row("`daily.capture.layout.viewfinder` top", vf["top"], v["top"])
     sh.row("`daily.capture.layout.viewfinder` width (393 − 2 × 7)", SCREEN_W - 2 * vf["sideMargin"], v["width"])
@@ -350,7 +371,12 @@ def daily_capture():
     outer_l, outer_r = ch["left"] - chip["paddingLeading"], ch["right"] + chip["paddingTrailing"]
     sh.row("chip centred (outer box incl. paddingLeading / paddingTrailing)", di["left"] + di["width"] / 2, (outer_l + outer_r) / 2)
     sh.row("`daily.capture.layout.audienceChip` paddingLeading / paddingTrailing / glyphToText", "15.7 / 18 / 7.6", "15.7 / 18 / 7.6 (Tokens)", status="match (token)")
-    sh.row("`daily.capture.color.overlayControl`", "BLOCKED", "retake circle and chip without a fill", status="BLOCKED")
+    target = round(0x75 / 255, 3)
+    sh.row("`daily.capture.color.overlayControl` (black alpha, retake circle)", target,
+           black_alpha(pimg, (rt["left"] + 4, rt["top"] + rt["height"] / 2), (rt["left"] - 3, rt["top"] + rt["height"] / 2)), tol=0.03)
+    sh.row("`daily.capture.color.overlayControl` (black alpha, chip)", target,
+           black_alpha(pimg, (ch["left"] - chip["paddingLeading"] + 4, ch["top"] + ch["height"] / 2), (ch["left"] - chip["paddingLeading"] - 4, ch["top"] + ch["height"] / 2)), tol=0.03)
+    sh.row("backdrop blur under the controls", "observed; radius not measured", "not drawn (no radius token)", status="approx")
     cap_top = first_bright_row(pimg, 120, 273, di["bottom"] + 40, di["bottom"] + 110)
     sh.row("`daily.capture.layout.send` capTopBelowImage", tok("daily.capture.layout.send", "capTopBelowImage"), cap_top - di["bottom"], tol=1.5, note="first light row of 'SEND' in our render")
     sh.row("`daily.capture.fontSize.send` / `.fontWeight.send`, glyph 19.5, gap 11.4", "40.5 sp heavy", "40.5 sp / FontWeight(800); icon.global.play 19.5; gap 11.4", status="match (token)")
@@ -358,6 +384,28 @@ def daily_capture():
     sh.row("window closed / opened after: no countdown, nothing in its place", "removed", "daily.capture_live-closed.png", status="match (token)")
     sh.row("single camera / sequential fallback / denied / unavailable / send failed", "spec states", "_preview-single, flow test, _denied, _unavailable, _send-offline", status="match (token)")
     return sh
+
+
+def black_alpha(img, inside, outside):
+    """Alpha of a black tint: 1 - C/B per channel (C inside the fill, B the photo next to it), mean of R, G, B."""
+    c = img.getpixel((int(inside[0] * SCALE), int(inside[1] * SCALE)))[:3]
+    b = img.getpixel((int(outside[0] * SCALE), int(outside[1] * SCALE)))[:3]
+    return round(sum(1 - ci / bi for ci, bi in zip(c, b) if bi > 0) / 3, 3)
+
+
+def tint_over(img, inside, outside, tint_hex):
+    """Measured colour inside a translucent fill and the colour the tint predicts over the photo beside it."""
+    t = tint_hex.lstrip("#")
+    tr, tg, tb, ta = (int(t[i:i + 2], 16) for i in (0, 2, 4, 6))
+    a = ta / 255
+    b = img.getpixel((int(outside[0] * SCALE), int(outside[1] * SCALE)))[:3]
+    c = img.getpixel((int(inside[0] * SCALE), int(inside[1] * SCALE)))[:3]
+    pred = tuple(round(a * tv + (1 - a) * bv) for tv, bv in zip((tr, tg, tb), b))
+    return "#%02X%02X%02X" % pred, "#%02X%02X%02X" % c
+
+
+def is_accent(p):
+    return abs(p[0] - 0xCD) <= 12 and abs(p[1] - 0xFD) <= 12 and abs(p[2] - 0x07) <= 30
 
 
 def first_bright_row(img, x0, x1, y0_dp, y1_dp, threshold=200):
@@ -453,7 +501,10 @@ def collage_share():
     sh.row("pill centred", SCREEN_W / 2, pill["left"] + pill["width"] / 2)
     sh.row("`collage.share.layout.pill` cornerRadius / glyph", "10 / 25.7", "10 / 25.7 (Tokens)", status="match (token)")
     sh.row("`collage.share.fontSize.label` / `.fontWeight.label`", "18 sp / bold", "18 sp / FontWeight(700)", status="match (token)")
-    sh.row("`collage.share.color.pill`", "BLOCKED", "no fill (Blocked.sharePillFill = null)", status="BLOCKED")
+    cimg = snap("collage.view_ready")
+    pred, got = tint_over(cimg, (pill["left"] + 4, pill["bottom"] - 4), (pill["left"] + 4, pill["bottom"] + 3), tok("collage.share.color.pill"))
+    sh.row("`collage.share.color.pill` (tint over the collage under it)", pred, got, tol=10, note="#9A9489 at 0xA8 over the page 3 dp below the pill (same tile)")
+    sh.row("backdrop blur under the pill", "observed; radius not measured", "not drawn (no radius token)", status="approx")
     sh.row("glyph → label gap", "not tokenized", "none added (the glyph's own side bearing)", status="approx")
     sh.section("Sheet and export")
     sh.row("`collage.share.layout.sheet` android", "createChooser(ACTION_SEND image/jpeg content:// + READ grant, title)", "Intent.createChooser, EXTRA_STREAM via FileProvider, EXTRA_TITLE, ClipData preview", status="match (token)")
@@ -490,7 +541,13 @@ def widgets():
         sh.row("`widget.home.small.color.emptyTop`", tok("widget.home.small.color.emptyTop"), "#" + m.get("emptyTop", "000000")[-6:].upper(), tol=6)
         sh.row("`widget.home.small.color.emptyBottom`", tok("widget.home.small.color.emptyBottom"), "#" + m.get("emptyBottom", "000000")[-6:].upper(), tol=6)
         sh.row("`widget.home.small.layout.empty` circle / ringStroke / glyph", "72 / 3 / 32 × 28", "72 / 3 / icon.global.gallery fitted in 32 × 28 (28 × 28: square viewport)", status="approx", note="Locket's glyph is 32 × 28; the token icon is square")
-        sh.row("`widget.home.small.color.emptyLabel` (label 19 sp, gap 9)", "BLOCKED", "label not drawn; TalkBack reads it", status="BLOCKED")
+        wimg = snap("widget.android_small_empty")
+        lower = [wimg.getpixel((x, y))[:3] for y in range(int(wimg.height * 0.78), wimg.height) for x in range(wimg.width)]
+        greys = [p for p in lower if abs(p[0] - p[1]) < 4 and abs(p[1] - p[2]) < 4]
+        brightest = max(greys, key=sum) if greys else (0, 0, 0)
+        sh.row("`widget.home.small.color.emptyLabel`", tok("widget.home.small.color.emptyLabel"), "#%02X%02X%02X" % brightest, tol=6, note="brightest grey of the label glyphs")
+        sh.row("`widget.home.small.layout.empty` label / labelGap", "19 / 9", "19 sp text, 9 dp below the ring; ring + gap + label centred together", status="match (token)",
+               note="'No pics yet' / 'Tap to set up'; the md stack fills a 117-dp-tall widget exactly")
         sh.row("sm / lg empty variants by size", "rule not observed", "md at every size (widget.android spec)", status="approx")
         sh.row("loading: `widget.home.small.color.placeholderTop/Bottom`, avatars 25 / 2.5 / 6", "gradient + ≤ 3 avatars", "widget.android_*_loading.png", status="match (token)")
         sh.section("Provider, tap, accessibility, arrival")

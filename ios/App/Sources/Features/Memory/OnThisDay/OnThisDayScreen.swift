@@ -14,6 +14,7 @@ import UIKit
 struct OnThisDayScreen: View {
     @State private var model: OnThisDayModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.displayScale) private var displayScale
 
     init(groupID: String, model: OnThisDayModel? = nil) {
         _model = State(initialValue: model ?? OnThisDayModel(groupID: GroupID(groupID), dependencies: .current))
@@ -32,11 +33,12 @@ struct OnThisDayScreen: View {
                     content(width: proxy.size.width)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .clipped()
-                .animation(Self.memoryChange, value: model.currentYear?.id)
+                .animation(Self.memoryChange, value: model.index)
             }
             .background(Tokens.Colors.globalBackground)
             .ignoresSafeArea()
+            .onAppear { updatePixelSize(proxy) }
+            .onChange(of: proxy.size) { _, _ in updatePixelSize(proxy) }
         }
         .toolbar(.hidden, for: .navigationBar)
         .task { await model.loadIfNeeded() }
@@ -49,6 +51,15 @@ struct OnThisDayScreen: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("onthisday")
+    }
+
+    /// The preload size: the screen's longest side in pixels, at least what any photo is shown at.
+    private func updatePixelSize(_ proxy: GeometryProxy) {
+        let height = proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
+        let size = max(proxy.size.width, height) * displayScale
+        guard size > 0, size != model.imagePixelSize else { return }
+        model.imagePixelSize = size
+        model.preloadUpcoming()
     }
 
     /// `duration.onthisday.memoryChange` on the native ease-in-out curve.

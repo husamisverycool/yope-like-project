@@ -372,54 +372,111 @@ final class YearStoryModel {
         isFinished = true
     }
 
-    // MARK: Auto-advance (`MemoryBlocked.yearStoryCardDuration`; tap-only while BLOCKED)
+    // MARK: Auto-advance (`duration.year.story.card`)
 
-    /// Paused with the pause circle (shown only when the story advances on its own).
+    /// Paused with the pause circle (or by sharing); stays paused across taps until play is tapped
+    /// (WCAG 2.2.2 Pause, Stop, Hide).
     private(set) var isPaused = false
-    /// Time already spent on the current card before the last pause.
+    /// The app is not in the foreground: the clock stops and resumes by itself on return.
+    private(set) var isSuspended = false
+    /// Time already spent on the current card while its clock last ran.
     private(set) var elapsedBeforePause: TimeInterval = 0
-    /// When the current card's timer last (re)started.
+    /// When the current card's clock last started; nil while it is stopped.
     private(set) var timerStartedAt: Date?
     private var advanceTask: Task<Void, Never>?
 
-    /// The card duration once it is sourced; nil = tap-only.
-    var cardDuration: TimeInterval? { MemoryBlocked.yearStoryCardDuration }
+    /// Each card's time before the story advances on its own (`duration.year.story.card`).
+    var cardDuration: TimeInterval { Tokens.Durations.yearStoryCard }
 
-    /// Filled fraction of the current progress segment at `date` (1 while tap-only).
-    func currentFraction(at date: Date) -> Double {
-        guard let duration = cardDuration, duration > 0, currentCard != .summary else { return 1 }
-        var elapsed = elapsedBeforePause
-        if !isPaused, let start = timerStartedAt { elapsed += date.timeIntervalSince(start) }
-        return min(max(elapsed / duration, 0), 1)
+    /// Whether the current card advances on its own: every loaded card but the summary.
+    var advancesOnItsOwn: Bool {
+        phase == .loaded && currentCard != nil && currentCard != .summary
     }
 
+    /// Whether the progress bar should be redrawn over time.
+    var clockRuns: Bool { advancesOnItsOwn && !isPaused && !isSuspended }
+
+    /// Elapsed share of the current card's time at `date`, 0…1 (linear; the progress bar maps it
+    /// through `easing.year.story.progress.fill`). The summary, which does not advance, reads 1.
+    func currentFraction(at date: Date) -> Double {
+        guard advancesOnItsOwn, cardDuration > 0 else { return 1 }
+        return min(max(elapsed(at: date) / cardDuration, 0), 1)
+    }
+
+    private func elapsed(at date: Date) -> TimeInterval {
+        elapsedBeforePause + (timerStartedAt.map { date.timeIntervalSince($0) } ?? 0)
+    }
+
+    /// Moves to the next card when the current one's time is up at `date` (clock running, not the
+    /// summary). Returns whether it moved.
+    @discardableResult
+    func advanceIfDue(at date: Date) -> Bool {
+        guard clockRuns, elapsed(at: date) >= cardDuration else { return false }
+        next()
+        return true
+    }
+
+    /// A new card: its clock starts from zero (stopped while paused or suspended).
     func restartCardTimer() {
         advanceTask?.cancel()
         elapsedBeforePause = 0
-        timerStartedAt = dependencies.now()
+        timerStartedAt = clockRuns ? dependencies.now() : nil
         scheduleAdvance()
     }
 
     func togglePause() {
         if isPaused {
             isPaused = false
-            timerStartedAt = dependencies.now()
-            scheduleAdvance()
+            startClock()
         } else {
-            advanceTask?.cancel()
-            if let start = timerStartedAt { elapsedBeforePause += dependencies.now().timeIntervalSince(start) }
-            timerStartedAt = nil
+            stopClock()
             isPaused = true
         }
     }
 
+    /// Pauses (no-op when already paused): sharing a card keeps it in view while the share sheet is up.
+    func pause() {
+        if !isPaused { togglePause() }
+    }
+
+    /// The app left (true) or returned to (false) the foreground.
+    func setSuspended(_ suspended: Bool) {
+        guard suspended != isSuspended else { return }
+        if suspended {
+            stopClock()
+            isSuspended = true
+        } else {
+            isSuspended = false
+            startClock()
+        }
+    }
+
+    private func stopClock() {
+        advanceTask?.cancel()
+        if let start = timerStartedAt { elapsedBeforePause += dependencies.now().timeIntervalSince(start) }
+        timerStartedAt = nil
+    }
+
+    private func startClock() {
+        guard clockRuns, timerStartedAt == nil else { return }
+        timerStartedAt = dependencies.now()
+        scheduleAdvance()
+    }
+
+    /// Sleeps for the rest of the current card's time, then advances (unless the card changed, the
+    /// clock stopped or the story closed meanwhile).
     private func scheduleAdvance() {
-        guard let duration = cardDuration, !isPaused, phase == .loaded, let card = currentCard, card != .summary else { return }
-        let remaining = max(0, duration - elapsedBeforePause)
-        let cardID = card.id
+        advanceTask?.cancel()
+        guard clockRuns, let cardID = currentCard?.id else { return }
+        let remaining = max(0, cardDuration - elapsedBeforePause)
+        let sleep = dependencies.sleep
         advanceTask = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(remaining))
-            guard !Task.isCancelled, let self, self.currentCard?.id == cardID, !self.isPaused else { return }
+            do {
+                try await sleep(remaining)
+            } catch {
+                return
+            }
+            guard !Task.isCancelled, let self, self.currentCard?.id == cardID, self.clockRuns, !self.isFinished else { return }
             self.next()
         }
     }
@@ -447,6 +504,8 @@ final class YearStoryModel {
             index = kept
         } else {
             index = min(index, max(cards.count - 1, 0))
+            // The card in view was dropped: the one now shown gets its full time.
+            restartCardTimer()
         }
         summaryPage = min(summaryPage, max(shareableCards.count - 1, 0))
     }

@@ -72,6 +72,8 @@ struct CaptureSendRequest: Sendable, Identifiable {
     var invitationID: String?
     /// The confirmation toast text ('posted in {group}' / 'posted in your groups').
     var confirmation: String?
+    /// A photo replying to this post (`create_post p_reply_to_post_id`; exactly one group, the post's).
+    var replyToPostID: String?
 
     /// Removes the camera's and the recorder's temporary files once the outbox holds copies.
     func removeTemporaryFiles() {
@@ -106,6 +108,7 @@ enum CaptureDraftBuilder {
         let caption = request.caption.flatMap { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0 }
         let voice = request.voice.map { PostDraft.File(url: $0.fileURL, contentType: ContentType.m4a) }
         let invitationID = request.invitationID.map { InvitationID($0) }
+        let replyTo = request.replyToPostID.map { PostID($0) }
 
         switch request.payload {
         case let .media(media):
@@ -130,7 +133,8 @@ enum CaptureDraftBuilder {
                     voiceDurationMs: request.voice?.durationMs,
                     groupIDs: groupIDs,
                     caption: caption,
-                    invitationID: invitationID
+                    invitationID: invitationID,
+                    replyToPostID: replyTo
                 )
             case .video:
                 guard let video = media.video else { throw CaptureDraftError.missingMedia }
@@ -148,7 +152,8 @@ enum CaptureDraftBuilder {
                     voiceDurationMs: request.voice?.durationMs,
                     groupIDs: groupIDs,
                     caption: caption,
-                    invitationID: invitationID
+                    invitationID: invitationID,
+                    replyToPostID: replyTo
                 )
             }
         case let .daily(answer):

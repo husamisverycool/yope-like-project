@@ -23,8 +23,8 @@ final class CaptureScreenSnapshotTests: XCTestCase {
 
     // MARK: camera.capture
 
-    private func cameraView(_ rig: CaptureTestRig, _ model: CameraCaptureModel) -> some View {
-        CameraCaptureView(model: model, makeSendTo: { rig.sendToModel(media: $0) }, sendCenter: rig.sendCenter)
+    private func cameraView(_ rig: CaptureTestRig, _ model: CameraCaptureModel, recordingProgress: CGFloat = 0) -> some View {
+        CameraCaptureView(model: model, makeSendTo: { rig.sendToModel(media: $0) }, sendCenter: rig.sendCenter, recordingProgress: recordingProgress)
     }
 
     func testCameraCaptureStates() async {
@@ -51,7 +51,7 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         await coach.appear()
         assertRecorded(CaptureSnapshot.record(cameraView(premiumRig, coach), surface: "camera.capture", state: "coach"))
         await coach.startRecording()
-        assertRecorded(CaptureSnapshot.record(cameraView(premiumRig, coach), surface: "camera.capture", state: "recording"))
+        assertRecorded(CaptureSnapshot.record(cameraView(premiumRig, coach, recordingProgress: 0.4), surface: "camera.capture", state: "recording"))
 
         let deniedRig = CaptureTestRig()
         deniedRig.camera.authorizationStatus = .denied
@@ -100,9 +100,18 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         let coachRig = CaptureTestRig()
         let coach = coachRig.sendToModel(media: photoMedia())
         await coach.load()
-        if coach.showsVoiceCoach {
-            assertRecorded(CaptureSnapshot.record(SendToView(model: coach), surface: "camera.sendto", state: "voice-coach"))
-        }
+        assertRecorded(CaptureSnapshot.record(SendToView(model: coach), surface: "camera.sendto", state: "voice-coach"))
+
+        let voiceRig = CaptureTestRig()
+        voiceRig.voice.elapsedMs = 7000
+        let holding = voiceRig.sendToModel(media: photoMedia())
+        await holding.load()
+        await holding.beginVoiceRecording()
+        assertRecorded(CaptureSnapshot.record(SendToView(model: holding), surface: "camera.sendto", state: "voice-recording"))
+        holding.lockVoiceRecording()
+        assertRecorded(CaptureSnapshot.record(SendToView(model: holding), surface: "camera.sendto", state: "voice-locked"))
+        holding.keepVoiceRecording()
+        assertRecorded(CaptureSnapshot.record(SendToView(model: holding), surface: "camera.sendto", state: "voice-attached"))
 
         let emptyRig = CaptureTestRig()
         emptyRig.groups.groups = []
@@ -362,6 +371,7 @@ final class CaptureWidgetSnapshotTests: XCTestCase {
         record(lock(WidgetCircularSlot(content: content(.photo)), size: circle), size: circle, surface: "widget.lock.circular", state: "photo")
         record(lock(WidgetCircularSlot(content: GroupWidgetContent(state: .empty)), size: circle), size: circle, surface: "widget.lock.circular", state: "empty")
         record(lock(WidgetInlineSlot(content: content(.photo, caption: "Sundays at the lake")).foregroundStyle(.white), size: inline), size: inline, surface: "widget.lock.inline", state: "photo-caption")
+        record(lock(WidgetInlineSlot(content: content(.photo)).foregroundStyle(.white), size: inline), size: inline, surface: "widget.lock.inline", state: "photo-no-caption")
         record(lock(WidgetInlineSlot(content: GroupWidgetContent(state: .notSetUp)).foregroundStyle(.white), size: inline), size: inline, surface: "widget.lock.inline", state: "not-set-up")
     }
 

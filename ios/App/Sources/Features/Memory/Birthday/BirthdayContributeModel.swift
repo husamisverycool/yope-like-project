@@ -88,6 +88,23 @@ final class BirthdayContributeModel {
     /// "Submit" is disabled until the line has a non-space character.
     var canSubmit: Bool { !trimmedLine.isEmpty && !isSending && selectedPhoto != nil }
 
+    /// `layout.birthday.contribute.lineMax`: the line stops growing at this many characters, with no
+    /// visible counter (the API's 280-character bound stays the server check).
+    static var lineMax: Int { Int(Tokens.Layouts.BirthdayContributeLineMax.maxCharacters) }
+
+    /// Applies the field rules to `line` after each edit: one line of meaning (a typed return ends the
+    /// entry instead of adding a line, so it is removed) and at most `lineMax` characters (a longer
+    /// paste is cut). Returns whether a return was removed, so the field can end editing.
+    @discardableResult
+    func normalizeLine() -> Bool {
+        var value = line
+        let hadReturn = value.contains("\n")
+        if hadReturn { value = value.replacingOccurrences(of: "\n", with: "") }
+        if value.count > Self.lineMax { value = String(value.prefix(Self.lineMax)) }
+        if value != line { line = value }
+        return hadReturn
+    }
+
     func loadIfNeeded() async {
         guard phase == .idle else { return }
         await load()

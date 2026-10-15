@@ -8,14 +8,14 @@ Reference image(s): `references/auto/yope/store/yope-store-04.png`, `references/
 
 Snapshots (CI): `collage.share-pill.png`
 
-**Summary: 7 matched · 0 approximated · 1 not matched (BLOCKED or not buildable).**
+**Summary: 7 matched · 1 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Values
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
 | matched | `collage.share.layout.pill` | width: 126; height: 58; cornerRadius: 10; bottomFromScreenBottom: 36; glyph: 25.7 (SOURCED) | 126 × 58, r 10, 36 above bottom, glyph 25.7 | frame / padding |
-| not matched | `collage.share.color.pill` | None (BLOCKED) | frosted fill (BLOCKED) | not drawn until unblocked (CaptureBlocked.sharePillFill) |
+| approximated | `collage.share.color.pill` | #9A9489A8 (SOURCED) | frosted tint #9A9489A8 over a backdrop blur | RoundedRectangle fill; the blur radius was not measured, so the tint is drawn without a blur |
 | matched | `collage.share.icon.share` | ios: square.and.arrow.up.fill; android: Rounded.IosShare (PLATFORM) | glyph | Image, hidden from VoiceOver |
 | matched | `collage.share.fontSize.label` | 18 pt (SOURCED) | 18 | DSTextStyle (headline) |
 | matched | `collage.share.fontWeight.label` | bold (SOURCED) | bold | DSTextStyle |

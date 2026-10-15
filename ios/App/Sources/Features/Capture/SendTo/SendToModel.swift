@@ -73,6 +73,10 @@ final class SendToModel: Identifiable {
     private let navigation: CaptureNavigation
     private let onClose: @MainActor () -> Void
     private let onSent: @MainActor () -> Void
+    /// The post being replied to when the camera was opened from `photo.viewer` for a group
+    /// (social's `PhotoReplyHandoff`), and its reset once the reply is sent.
+    private let replyTarget: @MainActor (String?) -> String?
+    private let clearReply: @MainActor () -> Void
     @ObservationIgnored private var didPreselect = false
 
     init(
@@ -86,7 +90,9 @@ final class SendToModel: Identifiable {
         sendCenter: CaptureSendCenter,
         navigation: CaptureNavigation,
         onClose: @escaping @MainActor () -> Void,
-        onSent: @escaping @MainActor () -> Void
+        onSent: @escaping @MainActor () -> Void,
+        replyTarget: @escaping @MainActor (String?) -> String? = { PhotoReplyHandoff.replyTarget(for: $0)?.rawValue },
+        clearReply: @escaping @MainActor () -> Void = { PhotoReplyHandoff.clear() }
     ) {
         self.media = media
         self.contextGroupID = contextGroupID
@@ -99,6 +105,8 @@ final class SendToModel: Identifiable {
         self.navigation = navigation
         self.onClose = onClose
         self.onSent = onSent
+        self.replyTarget = replyTarget
+        self.clearReply = clearReply
     }
 
     // MARK: Derived state
@@ -134,6 +142,13 @@ final class SendToModel: Identifiable {
     var canSend: Bool { !selection.isEmpty && isMediaSendable }
 
     var canCreateGroup: Bool { navigation.canCreateGroup }
+
+    /// A photo reply to a photo carries its target only when it goes to exactly that post's group
+    /// (`create_post`: `reply_group_mismatch` otherwise); sent to more groups it is an ordinary post.
+    var replyToPostID: String? {
+        guard let contextGroupID, selection == [contextGroupID] else { return nil }
+        return replyTarget(contextGroupID)
+    }
 
     /// Where the toasts of this flow are shown (send failures, 'saved to your library').
     var statusCenter: CaptureSendCenter { sendCenter }
@@ -223,9 +238,11 @@ final class SendToModel: Identifiable {
             groupIDs: selection,
             caption: caption,
             voice: voiceNote,
-            confirmation: names.count == 1 ? Copy.cameraSendtoToastPostedOne(group: names[0]) : Copy.cameraSendtoToastPostedMany
+            confirmation: names.count == 1 ? Copy.cameraSendtoToastPostedOne(group: names[0]) : Copy.cameraSendtoToastPostedMany,
+            replyToPostID: replyToPostID
         )
         sendCenter.submit(request)
+        clearReply()
         onSent()
     }
 

@@ -17,7 +17,15 @@ struct CameraCaptureView: View {
 
     @State private var isPickerPresented = false
     /// Recording progress, 0 → 1 linearly over `camera.capture.duration.videoMax`.
-    @State private var recordingProgress: CGFloat = 0
+    @State private var recordingProgress: CGFloat
+
+    /// - Parameter recordingProgress: where the recording outline starts (snapshots of a recording).
+    init(model: CameraCaptureModel, makeSendTo: @escaping (CapturedMedia) -> SendToModel, sendCenter: CaptureSendCenter, recordingProgress: CGFloat = 0) {
+        self.model = model
+        self.makeSendTo = makeSendTo
+        self.sendCenter = sendCenter
+        _recordingProgress = State(initialValue: recordingProgress)
+    }
 
     private typealias Viewfinder = Tokens.Layouts.CameraCaptureLayoutViewfinder
 

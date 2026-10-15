@@ -22,6 +22,8 @@ struct MemoryDependencies {
     var openGroup: @MainActor (String) -> Void
     /// Last content per screen (cache-first loading).
     var cache: MemoryCache
+    /// Waits the given seconds (the year story's auto-advance); tests drive it by hand.
+    var sleep: @Sendable (TimeInterval) async throws -> Void
 
     init(
         data: (any MemoryDataSource)?,
@@ -30,7 +32,8 @@ struct MemoryDependencies {
         haptics: @escaping @MainActor (DSHaptic) -> Void = { $0.play() },
         defaults: UserDefaults = .standard,
         openGroup: @escaping @MainActor (String) -> Void = { AppEnvironment.shared.router.path = [.group(id: $0)] },
-        cache: MemoryCache = .shared
+        cache: MemoryCache = .shared,
+        sleep: @escaping @Sendable (TimeInterval) async throws -> Void = { try await Task.sleep(for: .seconds($0)) }
     ) {
         self.data = data
         self.images = images
@@ -39,6 +42,7 @@ struct MemoryDependencies {
         self.defaults = defaults
         self.openGroup = openGroup
         self.cache = cache
+        self.sleep = sleep
     }
 
     /// The launch argument (`-MemoryFixtures`) that switches the memory screens to fixtures.

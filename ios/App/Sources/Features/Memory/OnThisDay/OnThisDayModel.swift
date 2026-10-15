@@ -139,6 +139,28 @@ final class OnThisDayModel {
             index = 0
         }
         phase = .loaded
+        preloadUpcoming()
+    }
+
+    /// Pixel size of the content area's longest side (set by the screen); photos are decoded at it.
+    /// Nothing is preloaded until it is known.
+    var imagePixelSize: CGFloat?
+
+    /// Decodes the next (older) year's photos before it is tapped to, so the year cross-fade
+    /// (`duration.onthisday.memoryChange`) never fades into an empty frame.
+    func preloadUpcoming() {
+        guard let size = imagePixelSize, years.indices.contains(index + 1) else { return }
+        let photos = years[index + 1].photos
+        let urls = photos.count == 1
+            ? photos.compactMap(\.displayURL) + photos.compactMap(\.avatarURL)
+            : photos.compactMap(\.thumbURL)
+        guard !urls.isEmpty else { return }
+        let images = dependencies.images
+        Task {
+            for url in urls {
+                _ = await images.image(for: url, maxPixelSize: size)
+            }
+        }
     }
 
     static func resolve(rows: [OnThisDayItem], data: any MemoryDataSource) async throws -> [Year] {
@@ -182,6 +204,7 @@ final class OnThisDayModel {
     func next() {
         if index + 1 < years.count {
             index += 1
+            preloadUpcoming()
         } else {
             isFinished = true
         }
