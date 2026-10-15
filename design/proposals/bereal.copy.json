@@ -1,0 +1,301 @@
+{
+  "strings": {
+    "daily.notification.title.reference": {
+      "text": "⚠️ Time to BeReal. ⚠️",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.notification",
+      "evidence": "references/auto/bereal/help/help-21089073691933_time-to-bereal-push.png; references/auto/bereal/frames/appstore-preview-2026_t0.30s_notification.png (AP frame #10, 0.300 s)",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY — not shippable as is: contains the trademark 'BeReal' used as a verb; the ⚠️ hazard framing is urgency (tenet 5, do-not-copy). Help-article titles write it without spaces: '⚠️Time to BeReal.⚠️' (articles 7350386715165, 15416869159197)."
+    },
+    "daily.notification.body.reference": {
+      "text": "2 min left to capture a BeReal and see what your friends are up to!",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.notification",
+      "evidence": "references/auto/bereal/help/help-21089073691933_time-to-bereal-push.png; references/auto/bereal/frames/appstore-preview-2026_t0.30s_notification.png",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY — not shippable as is: trademark 'BeReal'; '2 min left' is deadline framing (do-not-copy, tenet 5). The invitation clause 'see what your friends are up to' carries no urgency."
+    },
+    "daily.notification.interruptionLevel.reference": {
+      "text": "TIME SENSITIVE",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.notification",
+      "evidence": "references/auto/bereal/help/help-21089073691933_time-to-bereal-push.png; references/auto/bereal/frames/appstore-preview-2026_t0.30s_notification.png",
+      "level": "PLATFORM",
+      "notes": "iOS system header rendered for UNNotificationInterruptionLevel.timeSensitive. Do-not-copy: breaks through Focus (urgency, tenet 5)."
+    },
+    "daily.notification.group.title.reference": {
+      "text": "⚠️It’s Time to BeReal.⚠️",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.notification",
+      "evidence": "https://help.bereal.com/hc/en-us/articles/15753219937821 (title; edited 2026-05-19)",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY — not shippable as is: group (RealGroup) variant; trademark + ⚠️ urgency."
+    },
+    "daily.notification.rule.timing.reference": {
+      "text": "Every day, everyone in your time zone receives a notification at the same time (before you ask, we truly do not know when it’s sent). You have 2 minutes to open the app and take your BeReal.",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.notification",
+      "evidence": "https://help.bereal.com/hc/en-us/articles/7350386715165--Time-to-BeReal (edited 2024-01-16)",
+      "level": "SOURCED",
+      "notes": "Behaviour reference, not UI copy. Night hours excluded: 'don’t worry, we won’t crash your beauty sleep in the middle of the night' (article 15416869159197)."
+    },
+    "daily.notification.voice.reference.lateCounts": {
+      "text": "Post on time or post late—it still counts.",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.notification",
+      "evidence": "https://apps.apple.com/us/app/id1459645446 description (listing v4.96.1, 2026)",
+      "level": "SOURCED",
+      "notes": "Voice example; the only non-punitive BeReal line about lateness. Pattern evidence, not UI copy."
+    },
+    "daily.notification.voice.reference.oneDaily": {
+      "text": "One daily notification. Two minutes. Real friends, real moments.",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.notification",
+      "evidence": "https://apps.apple.com/us/app/id1459645446 description (2026)",
+      "level": "SOURCED",
+      "notes": "Voice example (fragments, sentence case, periods)."
+    },
+    "notifications.push.friendsPosted.reference": {
+      "text": "{name} and {count} others posted a BeReal",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "notifications.push",
+      "evidence": "references/auto/bereal/store/bereal-store-03.png (banner x150-1150 y820-1040: 'Claire ✨ and 24 others posted a BeReal'; title line 'BeReal.'); owner references/owner/bereal-03-same-time-feed.webp",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY — not shippable as is: trademark; '{count} others' is a count (tenet: no counts). Name and '{count} others' are bold; no final period. Marketing composite."
+    },
+    "notifications.push.settings.daily.title.reference": {
+      "text": "Daily BeReal",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "notifications.push",
+      "evidence": "references/auto/bereal/help/help-36182541825309_realgroup-notification-settings.png",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY — not shippable as is: trademark. Group setting toggle."
+    },
+    "notifications.push.settings.daily.footer.reference": {
+      "text": "Set up a daily reminder for everyone to post a BeReal together",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "notifications.push",
+      "evidence": "references/auto/bereal/help/help-36182541825309_realgroup-notification-settings.png",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY — not shippable as is: trademark; 'reminder' framing. Footer under the toggle; no final period."
+    },
+    "notifications.push.settings.timeTo.title.reference": {
+      "text": "It's time to BeReal.",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "notifications.push",
+      "evidence": "references/auto/bereal/help/help-36182541825309_realgroup-notification-settings.png",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY — not shippable as is: trademark."
+    },
+    "notifications.push.settings.timeTo.footer.reference": {
+      "text": "Get notified when it's time to BeReal in this conversation",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "notifications.push",
+      "evidence": "references/auto/bereal/help/help-36182541825309_realgroup-notification-settings.png",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY — not shippable as is: trademark."
+    },
+    "notifications.push.settings.messages.title": {
+      "text": "Messages",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "notifications.push",
+      "evidence": "references/auto/bereal/help/help-36182541825309_realgroup-notification-settings.png",
+      "level": "SOURCED",
+      "notes": "Generic word; verbatim usable. The settings surface itself is assigned to Apple HIG / Material 3."
+    },
+    "notifications.push.settings.messages.footer": {
+      "text": "Get notified for new messages",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "notifications.push",
+      "evidence": "references/auto/bereal/help/help-36182541825309_realgroup-notification-settings.png",
+      "level": "SOURCED",
+      "notes": "Generic; verbatim usable. Pattern: 'Get notified for/when …', sentence case, no period."
+    },
+    "daily.capture.countdown.format": {
+      "text": "{mm}:{ss}",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png ('01:28'); references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t16.97s_capture-2024.png ('01:00'); references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t17.63s_black-spinner-prompt.png ('00:59'); references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png ('01:4x')",
+      "level": "SOURCED",
+      "notes": "Both fields zero-padded to 2 digits. Format only; no label text accompanies the countdown."
+    },
+    "daily.capture.send": {
+      "text": "SEND",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png; references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png; references/auto/bereal/store/bereal-store-02.png; help article 15272815079453 ('Tap ‘SEND’')",
+      "level": "SOURCED",
+      "notes": "All caps, followed by a right-pointing triangle glyph (separate icon)."
+    },
+    "daily.capture.audience.chip.reference": {
+      "text": "My friends only",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (2024)",
+      "level": "SOURCED",
+      "notes": "2023 build reads 'My Friends' (references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png; store-02 with lock glyph). Help 'Audience' article lists '1. My friends only'. Adapt by noun swap (friends → group noun) if an audience chip is used."
+    },
+    "daily.capture.location.chip.off": {
+      "text": "Off",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png; references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png; store-02",
+      "level": "SOURCED",
+      "notes": "Location chip off state, with a slashed location-arrow glyph."
+    },
+    "daily.capture.mode.video": {
+      "text": "VIDEO",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (y1450-1470)",
+      "level": "SOURCED",
+      "notes": "2026 build only."
+    },
+    "daily.capture.mode.photo": {
+      "text": "PHOTO",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (y1450-1470)",
+      "level": "SOURCED",
+      "notes": "2026 build only; selected = yellow."
+    },
+    "daily.capture.prompt.during.reference.1": {
+      "text": "Smile now, uh I mean now",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t17.63s_black-spinner-prompt.png and t18.97s_back-photo-prompt.png (frames #526-#601, in-app, 2024); http://www.flowjournal.org/2023/02/smile-directive-happiness-bereal/ (Taylor Annabell, Flow, 2023-02-10)",
+      "level": "SOURCED",
+      "notes": "Shown centred under the arc spinner while captures run. DO-NOT-COPY: smile directive conflicts with 'Real, not performed'. Layout (spinner + one centred line) is reusable."
+    },
+    "daily.capture.prompt.during.reference.2": {
+      "text": "Say cheese!",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "http://www.flowjournal.org/2023/02/smile-directive-happiness-bereal/ (Taylor Annabell, Flow, 2023-02-10)",
+      "level": "SOURCED",
+      "notes": "DO-NOT-COPY (smile directive)."
+    },
+    "daily.capture.prompt.during.reference.3": {
+      "text": "Wait, wait, wait, now smile",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "http://www.flowjournal.org/2023/02/smile-directive-happiness-bereal/ (Taylor Annabell, Flow, 2023-02-10)",
+      "level": "SOURCED",
+      "notes": "DO-NOT-COPY (smile directive)."
+    },
+    "daily.capture.prompt.noface.reference.1": {
+      "text": "Who goes there?",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "http://www.flowjournal.org/2023/02/smile-directive-happiness-bereal/ (Taylor Annabell, Flow, 2023-02-10)",
+      "level": "SOURCED",
+      "notes": "Shown when no face is visible. Recorded; face detection not part of our build."
+    },
+    "daily.capture.prompt.noface.reference.2": {
+      "text": "Umm, anybody here?",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "http://www.flowjournal.org/2023/02/smile-directive-happiness-bereal/ (Taylor Annabell, Flow, 2023-02-10)",
+      "level": "SOURCED",
+      "notes": "As above."
+    },
+    "daily.capture.prompt.noface.reference.3": {
+      "text": "Your friends will definitely prefer to see your face!",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "http://www.flowjournal.org/2023/02/smile-directive-happiness-bereal/ (Taylor Annabell, Flow, 2023-02-10)",
+      "level": "SOURCED",
+      "notes": "DO-NOT-COPY (pressure/guilt)."
+    },
+    "daily.capture.prompt.after.reference.1": {
+      "text": "Keep smiling and don't change a thing",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (frames #600-#681, in-app, 2024); http://www.flowjournal.org/2023/02/smile-directive-happiness-bereal/ (Taylor Annabell, Flow, 2023-02-10)",
+      "level": "SOURCED",
+      "notes": "Shown over the post preview right after capture (≥2.6 s). DO-NOT-COPY (smile directive)."
+    },
+    "daily.capture.prompt.after.reference.2": {
+      "text": "Aye what a smiiile!",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "http://www.flowjournal.org/2023/02/smile-directive-happiness-bereal/ (Taylor Annabell, Flow, 2023-02-10)",
+      "level": "SOURCED",
+      "notes": "DO-NOT-COPY (smile directive)."
+    },
+    "daily.capture.prompt.after.reference.3": {
+      "text": "Bonus point for the smile!",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "http://www.flowjournal.org/2023/02/smile-directive-happiness-bereal/ (Taylor Annabell, Flow, 2023-02-10)",
+      "level": "SOURCED",
+      "notes": "DO-NOT-COPY (smile directive, gamified)."
+    },
+    "daily.capture.help.retake.reference": {
+      "text": "You can retake your BeReal as many times as you want before posting. Just keep an eye on the timer.",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "https://help.bereal.com/hc/en-us/articles/7350386715165--Time-to-BeReal",
+      "level": "SOURCED",
+      "notes": "REFERENCE ONLY — not shippable as is: trademark; 'keep an eye on the timer' = deadline framing. Behaviour: unlimited retakes before posting."
+    },
+    "daily.capture.late.label.reference": {
+      "text": "{n} min late",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/store/bereal-store-05.png ('5 min late'); AP 10.5 s ('5 min late'); references/auto/bereal/frames/appstore-preview-2026_t8.30s_feed-late-label.png ('Paris, 1st Arr • 9m late'); references/auto/bereal/frames/appstore-preview-2026_t6.80s_feed.png ('27 h late')",
+      "level": "SOURCED",
+      "notes": "DO-NOT-COPY ('late' labels). Formats differ: '5 min late', '9m late', '27 h late'."
+    },
+    "daily.capture.retakes.reference": {
+      "text": "{n} retakes",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t16.50s_retakes-chip.png ('2 retakes')",
+      "level": "SOURCED",
+      "notes": "DO-NOT-COPY (retake count)."
+    },
+    "daily.capture.late.bonusLocked.reference": {
+      "text": "Posted late? The option to post Bonus BeReal is locked. No worries! There’s always tomorrow.",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "daily.capture",
+      "evidence": "https://help.bereal.com/hc/en-us/articles/10388190752669-Bonus-BeReal",
+      "level": "SOURCED",
+      "notes": "DO-NOT-COPY (punishes lateness). Voice example: rhetorical question + 'No worries!'."
+    }
+  }
+}
