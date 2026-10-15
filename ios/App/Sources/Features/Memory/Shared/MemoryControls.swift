@@ -228,9 +228,10 @@ extension View {
     /// Shows the foundations toast (lime pill: `color.global.accent` / `color.global.onAccent`,
     /// `icon.global.checkmark`, text role `button`, `radius.global.capsule`, full width minus
     /// `size.global.screenMargin`, top under the status bar; metrics of the measured Yope toast
-    /// `camera.sendto.layout.toast`). Its dwell time is BLOCKED (`safety.block.duration.toast`,
-    /// `camera.sendto.duration.toastVisible`), so it stays until tapped or replaced. VoiceOver
-    /// announces the text.
+    /// `camera.sendto.layout.toast`), as the shared `ToastView` does. Its dwell time is BLOCKED
+    /// (`safety.block.duration.toast`, `camera.sendto.duration.toastVisible`): release builds post the
+    /// text as a VoiceOver announcement only; DEBUG builds also draw the toast until it is tapped or
+    /// replaced, so the layout can be reviewed (same rule as `ToastCenter`).
     func memoryToast(_ message: Binding<MemoryToastMessage?>) -> some View {
         modifier(MemoryToastModifier(message: message))
     }
@@ -242,11 +243,13 @@ private struct MemoryToastModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .overlay(alignment: .top) {
+                #if DEBUG
                 if let message {
                     toast(message)
                         .dsTransition(.move(edge: .top).combined(with: .opacity))
                         .id(message.id)
                 }
+                #endif
             }
             .dsAnimation(.spring(Tokens.Springs.globalPlatformDefaultIos), value: message?.id)
             .onChange(of: message?.id) { _, id in

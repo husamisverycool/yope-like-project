@@ -3,58 +3,36 @@ package app.feature.social.common
 import android.view.HapticFeedbackConstants
 import android.view.View
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.VectorGroup
+import androidx.compose.ui.graphics.vector.VectorNode
+import androidx.compose.ui.graphics.vector.VectorPath
+import androidx.compose.ui.graphics.vector.toPath
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.platform.LocalViewConfiguration
-import androidx.compose.ui.platform.ViewConfiguration
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.BasicText
 import app.designsystem.Haptics
 import app.designsystem.generated.Tokens
@@ -62,6 +40,10 @@ import app.designsystem.toFontFamily
 import app.feature.social.data.SocialData
 import app.feature.social.data.SocialServices
 import app.feature.social.data.UnconfiguredSocialData
+import app.ui.components.EmptyStateAction
+import app.ui.components.HeaderCircleButton
+import app.ui.components.HeaderCircleFill
+import app.ui.theme.AppTheme
 import coil3.compose.AsyncImage
 
 /** The data the social screens use (the app's data graph, or a fake in tests). */
@@ -83,33 +65,12 @@ val LocalPhotoOverride = staticCompositionLocalOf<((String) -> Painter?)?> { nul
 val LocalApproximations = staticCompositionLocalOf { BuildApproximations.ENABLED }
 
 /**
- * Every social screen's root: native components (M3 sheets, menus, dialogs, indicators) get the
- * dark baseline scheme from the `color.global.system.*` tokens (`layout.global.appearance`: dark
- * only), and every pointer target is at least `size.global.minTouchTarget.android`.
+ * Every social screen's root: the app theme (core:ui `AppTheme`: dark only, M3 system roles from
+ * `color.global.system.*`). Compose expands every pointer target to the platform minimum
+ * (`size.global.minTouchTarget.android`, 48 dp) without changing the layout.
  */
 @Composable
-fun SocialRoot(content: @Composable () -> Unit) {
-    val base = LocalViewConfiguration.current
-    val touch = Tokens.Sizes.globalMinTouchTargetAndroid
-    val configuration = remember(base, touch) {
-        object : ViewConfiguration by base {
-            override val minimumTouchTargetSize: DpSize get() = DpSize(touch, touch)
-        }
-    }
-    val scheme = darkColorScheme(
-        primary = Tokens.Colors.globalSystemPrimary,
-        surface = Tokens.Colors.globalSystemSurface,
-        surfaceContainerHigh = Tokens.Colors.globalSystemSurfaceContainerHigh,
-        surfaceContainerLow = Tokens.Colors.globalSystemSurfaceContainerLow,
-        onSurface = Tokens.Colors.globalSystemOnSurface,
-        onSurfaceVariant = Tokens.Colors.globalSystemOnSurfaceVariant,
-        outline = Tokens.Colors.globalSystemOutline,
-        error = Tokens.Colors.globalSystemError,
-    )
-    MaterialTheme(colorScheme = scheme) {
-        CompositionLocalProvider(LocalViewConfiguration provides configuration, content = content)
-    }
-}
+fun SocialRoot(content: @Composable () -> Unit) = AppTheme(content)
 
 /** Text styles from tokens: size and weight tokens; weight null = not measured (platform default). */
 object Type {
@@ -135,7 +96,7 @@ object Type {
     @Composable fun placeholder() = style(Tokens.FontSizes.globalPlaceholder)
 }
 
-/** One line of text in a token style. */
+/** Text in a token style, one line by default, tail-truncated. */
 @Composable
 fun Line(
     text: String,
@@ -154,7 +115,7 @@ fun Line(
     )
 }
 
-/** A glyph from an icon token at the vector's own size unless [size] is given. */
+/** A glyph from an icon token at the vector's own (platform) size unless [size] is given. */
 @Composable
 fun Glyph(icon: ImageVector, tint: Color, modifier: Modifier = Modifier, size: Dp? = null, contentDescription: String? = null) {
     Image(
@@ -165,20 +126,43 @@ fun Glyph(icon: ImageVector, tint: Color, modifier: Modifier = Modifier, size: D
     )
 }
 
-/** Yope's header circle (`size.global.headerButton`) with a glyph in `color.global.textPrimary`. */
+/**
+ * A glyph whose *ink* is [inkHeight] tall (or [inkWidth] wide): the specs measure glyph ink
+ * (e.g. `photo.viewer.dimension.closeGlyph` "✕ glyph height"), while a vector icon has padding
+ * inside its viewport, so the vector is scaled by its path bounds.
+ */
 @Composable
-fun HeaderCircle(icon: ImageVector, label: String, fill: Color, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Box(
-        modifier
-            .size(Tokens.Sizes.globalHeaderButton)
-            .clip(CircleShape)
-            .background(fill)
-            .clickable(role = Role.Button, onClickLabel = null, onClick = onClick)
-            .semantics { contentDescription = label },
-        contentAlignment = Alignment.Center,
-    ) {
-        Glyph(icon, Tokens.Colors.globalTextPrimary)
+fun InkGlyph(icon: ImageVector, tint: Color, modifier: Modifier = Modifier, inkHeight: Dp? = null, inkWidth: Dp? = null) {
+    val bounds = remember(icon) { inkBounds(icon) }
+    val scale = when {
+        inkHeight != null && bounds.height > 0f -> inkHeight / bounds.height
+        inkWidth != null && bounds.width > 0f -> inkWidth / bounds.width
+        else -> null
     }
+    if (scale == null) Glyph(icon, tint, modifier)
+    else Glyph(icon, tint, modifier, size = scale * icon.viewportHeight)
+}
+
+/** Union of the path bounds of [icon], in viewport units. */
+fun inkBounds(icon: ImageVector): Rect {
+    var rect: Rect? = null
+    fun visit(node: VectorNode) {
+        when (node) {
+            is VectorGroup -> node.forEach(::visit)
+            is VectorPath -> {
+                val b = node.pathData.toPath().getBounds()
+                rect = rect?.let { Rect(minOf(it.left, b.left), minOf(it.top, b.top), maxOf(it.right, b.right), maxOf(it.bottom, b.bottom)) } ?: b
+            }
+        }
+    }
+    visit(icon.root)
+    return rect ?: Rect(0f, 0f, icon.viewportWidth, icon.viewportHeight)
+}
+
+/** A header circle (core:ui `HeaderCircleButton`): `size.global.headerButton`, glyph in `color.global.textPrimary`. */
+@Composable
+fun HeaderCircle(icon: ImageVector, label: String, fill: HeaderCircleFill, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    HeaderCircleButton(icon, label, onClick, modifier, fill)
 }
 
 /** The platform activity indicator (`easing.global.native.activityIndicator`). */
@@ -188,90 +172,38 @@ fun ActivityIndicator(modifier: Modifier = Modifier) {
 }
 
 /**
- * Yope's "Loading" HUD (groups.create): `groups.create.size.hud` area with the platform indicator
- * over `groups.create.hud.loading`. The HUD's container shape is BLOCKED
- * (`chat.thread.radius.loadingHud`), so its `groups.create.color.hud` box is not drawn.
+ * Yope's "Loading" HUD centred over the screen (core:ui `LoadingHud`, label
+ * `groups.create.hud.loading`). Its corner radius is BLOCKED (`chat.thread.radius.loadingHud`);
+ * the shared component draws the box square.
  */
 @Composable
 fun LoadingHud(modifier: Modifier = Modifier) {
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(Modifier.size(Tokens.Sizes.groupsCreateSizeHud), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            ActivityIndicator()
-            Line(
-                stringRes(app.designsystem.R.string.groups_create_hud_loading),
-                Type.style(Tokens.FontSizes.groupsCreateFontSizeHudLabel),
-                Tokens.Colors.globalTextPrimary,
-            )
-        }
-    }
-}
-
-/** The white secondary pill of Yope's empty states (`groups.screen.size.lightPillHeight`, `groups.screen.radius.lightPill`). */
-@Composable
-fun LightPill(label: String, icon: ImageVector?, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Row(
-        modifier
-            .height(Tokens.Sizes.groupsScreenSizeLightPillHeight)
-            .clip(RoundedCornerShape(Tokens.Radii.groupsScreenRadiusLightPill))
-            .background(Tokens.Colors.globalSurfaceLight)
-            .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = Tokens.Sizes.globalScreenMargin),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalHeaderGap),
-    ) {
-        if (icon != null) Glyph(icon, Tokens.Colors.globalOnSurfaceLight)
-        Line(label, Type.button(), Tokens.Colors.globalOnSurfaceLight)
+        app.ui.components.LoadingHud(stringRes(app.designsystem.R.string.groups_create_hud_loading))
     }
 }
 
 /** A pill action of an empty state. */
 data class PillAction(val label: String, val icon: ImageVector?, val onClick: () -> Unit)
 
-/** Yope's centred empty state: bold title, gray italic detail, optional white pill (`yope.voice.empty-state`). */
+/** Yope's centred empty state (core:ui `EmptyState`): bold title, gray italic detail, optional white pill. */
 @Composable
 fun EmptyState(title: String, detail: String?, pill: PillAction?, modifier: Modifier = Modifier) {
-    Column(
-        modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalScreenMargin),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalListGap),
-    ) {
-        Line(title, Type.emptyTitle(), Tokens.Colors.globalTextPrimary, maxLines = Int.MAX_VALUE, align = TextAlign.Center, modifier = Modifier.semantics { heading() })
-        if (detail != null) Line(detail, Type.emptyDetail(), Tokens.Colors.globalTextSecondary, maxLines = Int.MAX_VALUE, align = TextAlign.Center)
-        if (pill != null) LightPill(pill.label, pill.icon, pill.onClick)
-    }
+    app.ui.components.EmptyState(title, detail, modifier, pill?.let { EmptyStateAction(it.label, it.onClick, it.icon) })
 }
 
 /**
- * The lime toast (`camera.sendto.layout.toast`) under the status bar. Its dwell is BLOCKED
- * (`camera.sendto.duration.toastVisible`): release builds announce the text instead of drawing it;
- * development builds draw it until it is tapped.
+ * A confirmation that would show as Yope's lime toast. The toast's dwell is BLOCKED
+ * (`camera.sendto.duration.toastVisible`, `safety.block.duration.toast`; core:ui `ToastDwell`):
+ * like every screen of the app, no toast is drawn while it is; the text is announced to TalkBack.
  */
 @Composable
-fun LimeToast(text: String?, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+fun ConfirmationToast(text: String?, onShown: () -> Unit) {
     val view = LocalView.current
-    val approximations = LocalApproximations.current
     if (text == null) return
-    androidx.compose.runtime.LaunchedEffect(text) { announce(view, text) }
-    if (!approximations) {
-        androidx.compose.runtime.LaunchedEffect(text) { onDismiss() }
-        return
-    }
-    val toast = Tokens.Layouts.CameraSendtoLayoutToast
-    Row(
-        modifier
-            .windowInsetsPadding(WindowInsets.statusBars)
-            .padding(horizontal = toast.marginHorizontal.dp)
-            .fillMaxWidth()
-            .height(toast.height.dp)
-            .clip(RoundedCornerShape(toast.cornerRadius.dp))
-            .background(Tokens.Colors.globalAccent)
-            .clickable(onClick = onDismiss)
-            .padding(start = toast.glyphInset.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Glyph(Tokens.Icons.globalCheck, Tokens.Colors.globalOnAccent, size = toast.glyph.dp)
-        Spacer(Modifier.width(toast.glyphToText.dp))
-        Line(text, Type.button(), Tokens.Colors.globalOnAccent)
+    androidx.compose.runtime.LaunchedEffect(text) {
+        announce(view, text)
+        onShown()
     }
 }
 
@@ -300,9 +232,17 @@ fun rememberHaptics(): SocialHaptics {
     return remember(view) { SocialHaptics(view) }
 }
 
-/** `stringResource` that also works with the designsystem module's resources. */
+/** `stringResource` for the generated copy (`app.designsystem.R.string.*`). */
 @Composable
 fun stringRes(id: Int, vararg args: Any): String = androidx.compose.ui.res.stringResource(id, *args)
+
+/** The signed URL of [path] (null while loading or when it cannot be read). */
+@Composable
+fun signedUrl(path: String?): String? {
+    val data = LocalSocialData.current
+    val url by produceState<String?>(null, path) { value = path?.let { p -> runCatching { data.signedUrls(listOf(p))[p] }.getOrNull() } }
+    return url
+}
 
 /**
  * A private photo by storage path: a signed URL loaded with Coil (docs/API.md §7), or the test
@@ -322,9 +262,8 @@ fun RemotePhoto(
         if (painter != null) Image(painter, contentDescription, modifier, contentScale = contentScale) else Box(modifier)
         return
     }
-    val data = LocalSocialData.current
-    val url by produceState<String?>(null, path) { value = path?.let { p -> runCatching { data.signedUrls(listOf(p))[p] }.getOrNull() } }
-    val fallbackUrl by produceState<String?>(null, fallbackPath) { value = fallbackPath?.let { p -> runCatching { data.signedUrls(listOf(p))[p] }.getOrNull() } }
+    val url = signedUrl(path)
+    val fallbackUrl = signedUrl(fallbackPath)
     val context = LocalContext.current
     Box(modifier) {
         if (fallbackUrl != null) AsyncImage(model = fallbackUrl, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = contentScale)
@@ -339,10 +278,10 @@ fun RemotePhoto(
     }
 }
 
-/** A person's avatar circle: the photo, or `icon.global.person` when there is none. */
+/** A person's (or group's) avatar by storage path, through core:ui `Avatar` (fallback glyph when there is none). */
 @Composable
-fun Avatar(path: String?, size: Dp, modifier: Modifier = Modifier) {
-    Box(modifier.size(size).clip(CircleShape), contentAlignment = Alignment.Center) {
-        if (path != null) RemotePhoto(path, null, Modifier.fillMaxSize()) else Glyph(Tokens.Icons.globalPerson, Tokens.Colors.globalTextSecondary)
-    }
+fun Avatar(path: String?, size: Dp, modifier: Modifier = Modifier, fallbackIcon: ImageVector = Tokens.Icons.globalPerson) {
+    val override = LocalPhotoOverride.current
+    val image: Any? = if (override != null) path?.let(override) else signedUrl(path)
+    app.ui.components.Avatar(image, size, modifier, fallbackIcon)
 }
