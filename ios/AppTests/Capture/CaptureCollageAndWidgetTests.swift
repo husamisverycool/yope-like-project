@@ -28,8 +28,8 @@ final class CaptureCollageModelTests: XCTestCase {
         rig.openInvitation(closingIn: -60)
         rig.collages.collage = collage()
         rig.collages.images = [
-            "g/g1/collages/c1/v1/display-1.jpg": CaptureTestImages.photo(hue: 0.1),
-            "g/g1/collages/c1/v1/display-2.jpg": CaptureTestImages.photo(hue: 0.3),
+            "g/g1/collages/c1/v1/display-1.jpg": CaptureTestImages.scene(1),
+            "g/g1/collages/c1/v1/display-2.jpg": CaptureTestImages.scene(2),
         ]
         let model = rig.collageModel()
         XCTAssertEqual(model.state, .idle)
@@ -98,7 +98,7 @@ final class CaptureCollageModelTests: XCTestCase {
     func testRecomposeKeepsPreviousPagesUntilNewOnesArrive() async {
         let rig = CaptureTestRig()
         rig.collages.cached = collage(pages: 1, version: "v1")
-        let old = CaptureTestImages.photo(hue: 0.1)
+        let old = CaptureTestImages.scene(1)
         rig.collages.cachedImages = ["g/g1/collages/c1/v1/display-1.jpg": old]
         rig.collages.collage = collage(pages: 1, status: .pending)
         let model = rig.collageModel()
@@ -106,7 +106,7 @@ final class CaptureCollageModelTests: XCTestCase {
         XCTAssertEqual(model.state, .ready, "recomposing: the previous pages stay")
         XCTAssertTrue(model.pages[1] === old)
 
-        let new = CaptureTestImages.photo(hue: 0.5)
+        let new = CaptureTestImages.scene(4)
         rig.collages.collage = collage(pages: 1, version: "v2")
         rig.collages.images = ["g/g1/collages/c1/v2/display-1.jpg": new]
         await model.reload()
@@ -134,7 +134,7 @@ final class CaptureWidgetEntryTests: XCTestCase {
         var avatarFile: String?
         if avatar {
             avatarFile = "avatar-\(Int(seconds)).jpg"
-            try store.writeFile(CaptureTestImages.jpeg(CGSize(width: 40, height: 40), hue: 0.7), groupID: groupID, fileName: avatarFile!)
+            try store.writeFile(CaptureTestImages.jpeg(CGSize(width: 40, height: 40), named: SamplePhotos.avatarName(index: 0)), groupID: groupID, fileName: avatarFile!)
         }
         try store.save(WidgetSnapshot(groupID: groupID, sourceID: "p\(Int(seconds))", photoFileName: file, senderDisplayName: "Ana",
                                       senderAvatarFileName: avatarFile, caption: caption, kind: kind, postedAt: Date(timeIntervalSince1970: seconds)))

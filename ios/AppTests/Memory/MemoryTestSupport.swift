@@ -173,3 +173,37 @@ enum MemoryIDs {
     static let tribute = MemoryFixtureIDs.tribute
     static func post(_ number: Int) -> PostID { MemoryFixtureIDs.post(number) }
 }
+
+/// Real sample photos (fixtures/photos/, `SamplePhotos`) for the memory fixtures (`FixtureMemoryData.scenario`).
+enum MemorySamplePhotos {
+    /// The scenario's posts in order (shapes 3:4, 4:3, 3:4, 1:1, 3:4 this year; 3:4 a year ago at night; 4:3, 3:4, 3:5
+    /// three years ago in the evening).
+    static let posts = [
+        "dinner-toast-candles-3x4", "family-dinner-4x3", "friends-stairs-laughing-3x4", "kids-bubbles-1x1",
+        "hike-meadow-trail-3x4", "concert-confetti-3x4", "campfire-friends-3x2", "dinner-long-table-3x4", "sunset-sea-9x16",
+    ]
+
+    /// Longest side of the cropped photos, in pixels.
+    static let longSide: CGFloat = 1080
+
+    /// The `index`th post's photo cropped to `width` : `height`.
+    static func photo(index: Int, width: Int, height: Int) -> UIImage {
+        let name = posts.indices.contains(index) ? posts[index] : SamplePhotos.name(index: index)
+        let aspect = CGFloat(max(width, 1)) / CGFloat(max(height, 1))
+        let size = aspect >= 1
+            ? CGSize(width: longSide, height: (longSide / aspect).rounded())
+            : CGSize(width: (longSide * aspect).rounded(), height: longSide)
+        return SamplePhotos.photo(named: name, size: size)
+    }
+
+    /// A square collage of the first photos (at least four, a full grid two across).
+    static func collage(posts count: Int) -> UIImage {
+        let tiles = count <= 4 ? 4 : 6
+        return SamplePhotos.collage(size: CGSize(width: longSide, height: longSide), names: Array(posts.prefix(tiles)), columns: 2, gap: 8)
+    }
+
+    /// The tribute video's poster (16:9).
+    static var poster: UIImage {
+        SamplePhotos.photo(named: "grandma-hug-4x3", size: CGSize(width: 1280, height: 720))
+    }
+}

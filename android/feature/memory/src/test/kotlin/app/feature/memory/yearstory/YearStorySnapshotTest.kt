@@ -28,7 +28,7 @@ import org.robolectric.Shadows.shadowOf
 import java.io.File
 import java.time.LocalDate
 
-/** Every card of a full story, in order (synthetic photos and collages). */
+/** Every card of a full story, in order (sample photos and a collage of them, fixtures/photos/). */
 internal val sampleCards: List<StoryCard> = listOf(
     StoryCard.Intro,
     StoryCard.MomentsSetup,

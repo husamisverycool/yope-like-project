@@ -1,6 +1,6 @@
 // Snapshots of every social screen in every state (docs/SCREENS_BRIEF.md rule 7), on the demo backend
-// (`SocialDemo`): ios/build/snapshots/social/<surface>-<state>.png, recorded by CI (macOS) for the side-by-side
-// verification images in design/verification/.
+// (`SocialDemo`) with real sample photos (`SocialSamplePhotos`): ios/build/snapshots/social/<surface>-<state>.png,
+// recorded by CI (macOS) for the side-by-side verification images in design/verification/.
 @testable import App
 import AppData
 import AppModels
@@ -23,7 +23,7 @@ final class SocialSnapshotTests: XCTestCase {
         let defaults = UserDefaults(suiteName: "social.snapshots")!
         defaults.removePersistentDomain(forName: "social.snapshots")
         SocialServices.shared = SocialServices(
-            data: data, images: .demo(), voiceLevels: .demo(), flags: SocialFlags(defaults: defaults), saver: DemoPhotoSaver()
+            data: data, images: .samplePhotos(), voiceLevels: .demo(), flags: SocialFlags(defaults: defaults), saver: DemoPhotoSaver()
         )
     }
 

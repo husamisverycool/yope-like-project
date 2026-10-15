@@ -128,7 +128,7 @@ class Sheet:
             "off, no system-bar insets) — measured values are dp (±1 dp: pixel rounding and anti-aliasing). Rows marked "
             "*match (token)* are drawn straight from the generated constant (no pixel measurement); rows marked *worker* are "
             "values the worker burns into a video, which the app never draws. Reference values and "
-            "evidence come from `design/tokens/*.json`. Test images are generated gradients (no reference content).",
+            "evidence come from `design/tokens/*.json`. Test images are sample photos (`fixtures/photos/`, Unsplash License; no reference content).",
             "",
             f"Side by side: [`{self.surface}.android.png`]({self.surface}.android.png) — {self.sbs_note}",
             "",

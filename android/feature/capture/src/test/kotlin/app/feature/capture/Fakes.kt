@@ -20,6 +20,7 @@ import app.feature.capture.data.CaptureData
 import app.feature.capture.data.NewestForWidget
 import app.media.DualCaptureMode
 import app.media.Lens
+import app.testing.SamplePhotos
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -162,43 +163,56 @@ class FakeCameraController(
     override suspend fun unbind() = Unit
 }
 
-/** Fixture images (test-only, synthetic). */
+/**
+ * Fixture images: real sample photos (fixtures/photos/, :core:testing `SamplePhotos`) cropped and scaled
+ * to the size each fixture declares, so dimensions in assertions still hold.
+ */
 object Images {
-    fun jpeg(w: Int = 30, h: Int = 40, argb: Int = 0xFF4A6FA5.toInt()): ByteArray {
-        val bitmap = android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888)
-        val canvas = android.graphics.Canvas(bitmap)
-        canvas.drawColor(argb)
-        val out = java.io.ByteArrayOutputStream()
-        bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, out)
-        return out.toByteArray()
+    /** Back-camera scenes and posted photos, by seed. */
+    private val scenes = listOf(
+        "friends-coffee-highfive-3x4",
+        "dinner-pizza-cheers-3x4",
+        "hike-mountain-friends-3x4",
+        "picnic-spread-3x4",
+        "dog-beach-run-3x4",
+        "campfire-woods-3x4",
+        "birthday-cake-candles-3x4",
+        "beach-friends-run-4x3",
+        "family-dinner-4x3",
+        "snow-forest-walk-3x4",
+        "concert-confetti-3x4",
+        "coffee-latte-heart-3x4",
+    )
+
+    /** The front camera (daily inset): a selfie. */
+    const val SELFIE = "selfie-two-friends-1x1"
+
+    /** A camera still of [w] × [h] pixels (the fakes' default is a tiny one). */
+    fun jpeg(w: Int = 30, h: Int = 40, seed: Int = 0): ByteArray = SamplePhotos.jpeg(scene(seed), w, h)
+
+    /** The [seed]th scene cropped to [w] × [h] pixels. */
+    fun photo(w: Int, h: Int, seed: Int = 0): android.graphics.Bitmap = SamplePhotos.bitmap(scene(seed), w, h)
+
+    /** The front-camera selfie cropped to [w] × [h] pixels. */
+    fun selfie(w: Int, h: Int): android.graphics.Bitmap = SamplePhotos.bitmap(SELFIE, w, h)
+
+    /** The [seed]th scene as a JPEG file of [w] × [h] pixels. */
+    fun photoFile(dir: File, name: String, w: Int = 300, h: Int = 400, seed: Int = 0): File =
+        SamplePhotos.writeJpeg(File(dir, name), scene(seed), w, h)
+
+    /** The [seed]th avatar portrait as a square JPEG file of [side] pixels. */
+    fun avatarFile(dir: File, name: String, side: Int, seed: Int = 0): File =
+        SamplePhotos.writeJpeg(File(dir, name), SamplePhotos.avatar(seed), side, side)
+
+    /** A collage rendition: four scenes from the [seed]th in a 2 × 2 grid, as a JPEG file of [w] × [h] pixels. */
+    fun collageFile(dir: File, name: String, w: Int, h: Int, seed: Int = 0): File {
+        val file = File(dir, name).apply { parentFile?.mkdirs() }
+        val grid = SamplePhotos.collage(w, h, (0 until 4).map { scene(seed + it) }, columns = 2, gap = COLLAGE_GAP)
+        file.outputStream().use { grid.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, it) }
+        return file
     }
 
-    /** A synthetic "photo": a diagonal gradient with a few shapes, so crops and overlays read. */
-    fun photo(w: Int, h: Int, seed: Int = 0): android.graphics.Bitmap {
-        val bitmap = android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888)
-        val canvas = android.graphics.Canvas(bitmap)
-        val palettes = listOf(
-            intArrayOf(0xFF6A8CAF.toInt(), 0xFFE0B48A.toInt()),
-            intArrayOf(0xFF3E6B4F.toInt(), 0xFFC9D6A3.toInt()),
-            intArrayOf(0xFF7A4E6E.toInt(), 0xFFF2C6A0.toInt()),
-            intArrayOf(0xFF2F3E5C.toInt(), 0xFF9FB8D8.toInt()),
-        )
-        val p = palettes[seed % palettes.size]
-        val paint = android.graphics.Paint().apply {
-            shader = android.graphics.LinearGradient(0f, 0f, w.toFloat(), h.toFloat(), p[0], p[1], android.graphics.Shader.TileMode.CLAMP)
-        }
-        canvas.drawRect(0f, 0f, w.toFloat(), h.toFloat(), paint)
-        val shape = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply { color = 0x55FFFFFF }
-        canvas.drawCircle(w * 0.3f, h * 0.35f, w * 0.18f, shape)
-        canvas.drawRect(w * 0.55f, h * 0.55f, w * 0.9f, h * 0.85f, shape)
-        return bitmap
-    }
-
-    fun photoFile(dir: File, name: String, w: Int = 300, h: Int = 400, seed: Int = 0): File {
-        dir.mkdirs()
-        val f = File(dir, name)
-        f.outputStream().use { photo(w, h, seed).compress(android.graphics.Bitmap.CompressFormat.JPEG, 92, it) }
-        return f
-    }
+    private fun scene(seed: Int) = scenes[Math.floorMod(seed, scenes.size)]
+    private const val COLLAGE_GAP = 6
 }
 

@@ -66,6 +66,18 @@ class RobolectricOfflineArgs(
     )
 }
 
+/**
+ * Unit tests read the real sample photos in fixtures/photos/ (repository root; sources and licence in
+ * its INDEX.md) through :core:testing's `SamplePhotos`, which takes the directory from this property.
+ */
+class SamplePhotosArg(
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    val dir: File,
+) : CommandLineArgumentProvider {
+    override fun asArguments(): Iterable<String> = listOf("-Dapp.samplePhotos=${dir.absolutePath}")
+}
+
 fun Project.configureAndroidTests() {
     val robolectricSdk = configurations.create("robolectricSdk") {
         isCanBeConsumed = false
@@ -75,6 +87,7 @@ fun Project.configureAndroidTests() {
     dependencies.add(robolectricSdk.name, rootProject.libs.robolectric.androidAll)
     tasks.withType<Test>().configureEach {
         jvmArgumentProviders.add(RobolectricOfflineArgs(robolectricSdk))
+        jvmArgumentProviders.add(SamplePhotosArg(rootDir.resolve("../fixtures/photos").canonicalFile))
         maxHeapSize = "3g"
         // Robolectric's API 36 sandbox reflects into jdk.internal.access on JDK 21.
         jvmArgs("--add-opens=java.base/jdk.internal.access=ALL-UNNAMED")

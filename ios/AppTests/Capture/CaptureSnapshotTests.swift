@@ -7,6 +7,7 @@ import AppModels
 import DesignSystem
 import SnapshotTesting
 import SwiftUI
+import UIKit
 import WidgetKit
 import XCTest
 
@@ -32,7 +33,7 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         assertRecorded(CaptureSnapshot.record(cameraView(loadingRig, loadingRig.cameraModel()), surface: "camera.capture", state: "loading"))
 
         let rig = CaptureTestRig()
-        rig.camera.previewImage = CaptureTestImages.photo()
+        rig.usePhotos()
         let live = rig.cameraModel()
         await live.appear()
         assertRecorded(CaptureSnapshot.record(cameraView(rig, live), surface: "camera.capture", state: "live"))
@@ -46,7 +47,7 @@ final class CaptureScreenSnapshotTests: XCTestCase {
 
         let premiumRig = CaptureTestRig()
         premiumRig.premium.premium = true
-        premiumRig.camera.previewImage = CaptureTestImages.photo(hue: 0.55)
+        premiumRig.usePhotos(scene: 2)
         let coach = premiumRig.cameraModel()
         await coach.appear()
         assertRecorded(CaptureSnapshot.record(cameraView(premiumRig, coach), surface: "camera.capture", state: "coach"))
@@ -72,8 +73,21 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         .photo(CaptureTestImages.still(), capturedAt: Date())
     }
 
-    func testSendToStates() async {
+    /// A rig with photos (`usePhotos`).
+    private func photoRig() -> CaptureTestRig {
         let rig = CaptureTestRig()
+        rig.usePhotos()
+        return rig
+    }
+
+    /// Loads the group list and waits for the covers (fetched in tasks of their own).
+    private func loadWithCovers(_ model: SendToModel) async {
+        await model.load()
+        _ = await captureEventually { !model.covers.isEmpty }
+    }
+
+    func testSendToStates() async {
+        let rig = photoRig()
         rig.coach.dismiss(.voice)
 
         rig.groups.suspendsLoad = true
@@ -85,27 +99,27 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         rig.groups.suspendsLoad = false
 
         let loaded = rig.sendToModel(media: photoMedia())
-        await loaded.load()
+        await loadWithCovers(loaded)
         loaded.caption = "golden hour"
         assertRecorded(CaptureSnapshot.record(SendToView(model: loaded), surface: "camera.sendto", state: "loaded"))
 
         let widget = rig.sendToModel(media: photoMedia(), contextGroupID: "fake-group-2")
-        await widget.load()
+        await loadWithCovers(widget)
         assertRecorded(CaptureSnapshot.record(SendToView(model: widget), surface: "camera.fromwidget", state: "preselected"))
 
         let none = rig.sendToModel(media: photoMedia(), contextGroupID: "left-group")
-        await none.load()
+        await loadWithCovers(none)
         assertRecorded(CaptureSnapshot.record(SendToView(model: none), surface: "camera.sendto", state: "nothing-selected"))
 
-        let coachRig = CaptureTestRig()
+        let coachRig = photoRig()
         let coach = coachRig.sendToModel(media: photoMedia())
-        await coach.load()
+        await loadWithCovers(coach)
         assertRecorded(CaptureSnapshot.record(SendToView(model: coach), surface: "camera.sendto", state: "voice-coach"))
 
-        let voiceRig = CaptureTestRig()
+        let voiceRig = photoRig()
         voiceRig.voice.elapsedMs = 7000
         let holding = voiceRig.sendToModel(media: photoMedia())
-        await holding.load()
+        await loadWithCovers(holding)
         await holding.beginVoiceRecording()
         assertRecorded(CaptureSnapshot.record(SendToView(model: holding), surface: "camera.sendto", state: "voice-recording"))
         holding.lockVoiceRecording()
@@ -125,26 +139,26 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         await offline.load()
         assertRecorded(CaptureSnapshot.record(SendToView(model: offline), surface: "camera.sendto", state: "offline"))
 
-        let failRig = CaptureTestRig()
+        let failRig = photoRig()
         failRig.coach.dismiss(.voice)
         failRig.posting.publishError = .api(.notGroupMember)
         let failing = failRig.sendToModel(media: photoMedia())
-        await failing.load()
+        await loadWithCovers(failing)
         await failRig.sendCenter.send(CaptureSendRequest(payload: .media(photoMedia()), groupIDs: ["fake-group-1"]))
         assertRecorded(CaptureSnapshot.record(SendToView(model: failing), surface: "camera.sendto", state: "error"))
 
-        let offlineSendRig = CaptureTestRig()
+        let offlineSendRig = photoRig()
         offlineSendRig.coach.dismiss(.voice)
         offlineSendRig.posting.publishError = .offline
         let offlineSend = offlineSendRig.sendToModel(media: photoMedia())
-        await offlineSend.load()
+        await loadWithCovers(offlineSend)
         await offlineSendRig.sendCenter.send(CaptureSendRequest(payload: .media(photoMedia()), groupIDs: ["fake-group-1"]))
         assertRecorded(CaptureSnapshot.record(SendToView(model: offlineSend), surface: "camera.sendto", state: "offline-send"))
 
-        let videoRig = CaptureTestRig()
+        let videoRig = photoRig()
         videoRig.coach.dismiss(.voice)
         let video = videoRig.sendToModel(media: .video(CaptureVideo(fileURL: URL(fileURLWithPath: "/dev/null"), durationMs: 1000), capturedAt: Date()))
-        await video.load()
+        await loadWithCovers(video)
         assertRecorded(CaptureSnapshot.record(SendToView(model: video), surface: "camera.sendto", state: "video-free-member"))
     }
 
@@ -170,7 +184,7 @@ final class CaptureScreenSnapshotTests: XCTestCase {
 
         let rig = CaptureTestRig()
         rig.openInvitation(closingIn: 95)
-        rig.dualCamera.previewImage = CaptureTestImages.photo(hue: 0.35)
+        rig.usePhotos(scene: 1)
         let live = rig.dailyModel()
         await live.appear()
         assertRecorded(CaptureSnapshot.record(dailyView(rig, live), surface: "daily.capture", state: "live"))
@@ -184,13 +198,14 @@ final class CaptureScreenSnapshotTests: XCTestCase {
 
         let previewRig = CaptureTestRig()
         previewRig.openInvitation(closingIn: 80)
-        previewRig.dualCamera.previewImage = CaptureTestImages.photo(hue: 0.35)
+        previewRig.usePhotos(scene: 1)
         let preview = previewRig.dailyModel()
         await preview.appear()
         await preview.shutter()
         assertRecorded(CaptureSnapshot.record(dailyView(previewRig, preview), surface: "daily.capture", state: "preview"))
 
         let singleRig = CaptureTestRig()
+        singleRig.usePhotos(scene: 1)
         singleRig.dualCamera.failsDual = true
         let single = singleRig.dailyModel()
         await single.appear()
@@ -199,7 +214,7 @@ final class CaptureScreenSnapshotTests: XCTestCase {
 
         let closedRig = CaptureTestRig()
         closedRig.openInvitation(closingIn: -30)
-        closedRig.dualCamera.previewImage = CaptureTestImages.photo(hue: 0.35)
+        closedRig.usePhotos(scene: 1)
         let closed = closedRig.dailyModel()
         await closed.appear()
         assertRecorded(CaptureSnapshot.record(dailyView(closedRig, closed), surface: "daily.capture", state: "window-closed"))
@@ -221,8 +236,8 @@ final class CaptureScreenSnapshotTests: XCTestCase {
 
     func testDualImageStates() {
         let layout = SwiftUISnapshotLayout.fixed(width: 393, height: 524)
-        let main = CaptureTestImages.photo(CGSize(width: 600, height: 800), hue: 0.1)
-        let inset = CaptureTestImages.photo(CGSize(width: 300, height: 400), hue: 0.6)
+        let main = CaptureTestImages.scene(1, CGSize(width: 600, height: 800))
+        let inset = CaptureTestImages.photo(CGSize(width: 300, height: 400), named: CaptureTestImages.selfie)
         func framed(_ view: DualImageView) -> some View {
             view.background(Tokens.Colors.globalBackgroundDeep)
         }
@@ -244,7 +259,8 @@ final class CaptureScreenSnapshotTests: XCTestCase {
     }
 
     func testCollageStates() async {
-        let page = CaptureTestImages.photo(CGSize(width: 540, height: 960), hue: 0.12)
+        let page = CaptureTestImages.collagePage(CGSize(width: 540, height: 960))
+        let secondPage = CaptureTestImages.collagePage(CGSize(width: 540, height: 960), answers: 5, first: 12)
 
         let loadingRig = CaptureTestRig()
         loadingRig.collages.collage = collage(pages: 1, status: .pending)
@@ -255,7 +271,7 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         let rig = CaptureTestRig()
         rig.openInvitation(closingIn: -60)
         rig.collages.collage = collage(pages: 2)
-        rig.collages.images = ["g/g1/collages/c1/v1/display-1.jpg": page, "g/g1/collages/c1/v1/display-2.jpg": page]
+        rig.collages.images = ["g/g1/collages/c1/v1/display-1.jpg": page, "g/g1/collages/c1/v1/display-2.jpg": secondPage]
         let ready = rig.collageModel()
         await ready.load()
         assertRecorded(CaptureSnapshot.record(CollageView(model: ready), surface: "collage.view", state: "ready"))
@@ -297,11 +313,18 @@ final class CaptureWidgetSnapshotTests: XCTestCase {
         return CGSize(width: parts[0], height: parts[1])
     }
 
-    private func content(_ state: GroupWidgetContent.State, caption: String? = nil, hue: CGFloat = 0.08) -> GroupWidgetContent {
-        GroupWidgetContent(
+    /// The widget rendition (600 × 630): `photo`, or a collage page cropped to that shape; the sender's avatar.
+    private func content(_ state: GroupWidgetContent.State, caption: String? = nil, photo: String = CaptureTestImages.scenes[0]) -> GroupWidgetContent {
+        let size = CGSize(width: 600, height: 630)
+        let rendition: UIImage? = switch state {
+        case .photo: CaptureTestImages.photo(size, named: photo)
+        case .collage: SamplePhotos.cropped(CaptureTestImages.collagePage(CGSize(width: 600, height: 1067)), to: size)
+        default: nil
+        }
+        return GroupWidgetContent(
             state: state, groupName: "Family", senderName: "Ana", caption: caption, postedAt: Date(),
-            photo: state == .photo || state == .collage ? CaptureTestImages.photo(CGSize(width: 600, height: 630), hue: hue) : nil,
-            avatar: CaptureTestImages.photo(CGSize(width: 60, height: 60), hue: 0.75)
+            photo: rendition,
+            avatar: CaptureTestImages.avatar(CGSize(width: 60, height: 60))
         )
     }
 
@@ -354,8 +377,8 @@ final class CaptureWidgetSnapshotTests: XCTestCase {
 
     func testArrivalSwapsInstantly() {
         let small = size(Tokens.Layouts.WidgetHomeSmallLayoutSize.w393h852)
-        record(home(content(.photo, caption: "Sundays", hue: 0.08), family: .systemSmall, size: small), size: small, surface: "widget.arrival", state: "before")
-        record(home(content(.photo, caption: "brunch", hue: 0.55), family: .systemSmall, size: small), size: small, surface: "widget.arrival", state: "after")
+        record(home(content(.photo, caption: "Sundays", photo: CaptureTestImages.scenes[0]), family: .systemSmall, size: small), size: small, surface: "widget.arrival", state: "before")
+        record(home(content(.photo, caption: "brunch", photo: CaptureTestImages.scenes[3]), family: .systemSmall, size: small), size: small, surface: "widget.arrival", state: "after")
         XCTAssertEqual(Tokens.Durations.widgetArrivalDurationTransition, 0, "no transition between entries")
     }
 

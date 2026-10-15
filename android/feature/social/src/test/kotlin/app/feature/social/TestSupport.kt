@@ -1,11 +1,6 @@
 package app.feature.social
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.LinearGradient
-import android.graphics.Paint
-import android.graphics.Shader
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.asImageBitmap
@@ -23,6 +18,7 @@ import app.feature.social.data.SocialData
 import app.feature.social.data.SocialServices
 import app.feature.social.data.VoicePlayback
 import app.feature.social.data.VoiceServices
+import app.testing.SamplePhotos
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
@@ -30,31 +26,47 @@ import java.util.Locale
 import java.util.TimeZone
 
 /**
- * Synthetic photos for snapshots: a two-colour diagonal gradient per storage path (no reference
- * content). Colours are test data, not design values.
+ * Real photos for snapshots (fixtures/photos/, :core:testing `SamplePhotos`), one per storage path:
+ * avatars (`avatars/<user>/…`) from the square portraits, the group cover, collages as a grid of photos, and
+ * every rendition of a media (`u/<owner>/<media>/…`) the same photo, cropped to the fake media's 3:4.
+ * Numbered media (`md-w-3`, `md-wall-u-me-5`) take consecutive photos, so a grid never repeats one.
  */
 object TestPhotos {
     private val cache = HashMap<String, Painter>()
-    private val palettes = listOf(
-        0xFF8E6E53.toInt() to 0xFF2D3A4A.toInt(),
-        0xFFB5838D.toInt() to 0xFF3B2F2F.toInt(),
-        0xFF6D8A96.toInt() to 0xFF1F2A30.toInt(),
-        0xFFA3B18A.toInt() to 0xFF344E41.toInt(),
-        0xFFD4A373.toInt() to 0xFF5E503F.toInt(),
-        0xFF9A8C98.toInt() to 0xFF22223B.toInt(),
+
+    /** Media whose caption names what the picture shows. */
+    private val named = mapOf(
+        "md-p-1" to "friends-coffee-highfive-3x4",
+        "md-v-1" to "sunset-lake-9x16",
+        "md-v-2" to "dinner-pizza-cheers-3x4",
+    )
+
+    /** Me (Sam), Ana, Ben, and the walls browser's Chloe, Dev, "Our band group", Femi. */
+    private val people = mapOf(
+        FakeSocialData.ME to "avatar-02", FakeSocialData.ANA to "avatar-01", FakeSocialData.BEN to "avatar-06",
+        "u-x0" to "avatar-05", "u-x1" to "avatar-04", "u-x2" to "avatar-09", "u-x3" to "avatar-10",
     )
 
     fun painter(path: String): Painter = cache.getOrPut(path) {
-        val (a, b) = palettes[Math.floorMod(path.hashCode(), palettes.size)]
-        val bitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        val paint = Paint().apply { shader = LinearGradient(0f, 0f, WIDTH.toFloat(), HEIGHT.toFloat(), a, b, Shader.TileMode.CLAMP) }
-        canvas.drawRect(0f, 0f, WIDTH.toFloat(), HEIGHT.toFloat(), paint)
-        BitmapPainter(bitmap.asImageBitmap())
+        val parts = path.split('/')
+        when {
+            parts[0] == "avatars" -> SamplePhotos.painter(people[parts[1]] ?: SamplePhotos.avatarForKey(parts[1]))
+            "covers" in parts -> SamplePhotos.painter("dinner-long-table-3x4", 1, 1)
+            "collages" in parts -> BitmapPainter(SamplePhotos.collage(COLLAGE_W, COLLAGE_H, (0 until 4).map { SamplePhotos.pick(it + 9) }, columns = 2).asImageBitmap())
+            parts[0] == "u" && parts.size >= 3 -> SamplePhotos.painter(photoFor(parts[2]), 3, 4)
+            else -> SamplePhotos.painter(SamplePhotos.forKey(path), 3, 4)
+        }
     }
 
-    private const val WIDTH = 120
-    private const val HEIGHT = 160
+    private fun photoFor(media: String): String {
+        named[media]?.let { return it }
+        val number = Regex("(\\d+)$").find(media)?.value?.toIntOrNull() ?: return SamplePhotos.forKey(media)
+        return SamplePhotos.pick(Math.floorMod(media.substringBeforeLast('-').hashCode(), PORTRAIT_OFFSETS) + number)
+    }
+
+    private const val COLLAGE_W = 900
+    private const val COLLAGE_H = 1200
+    private const val PORTRAIT_OFFSETS = 7
 }
 
 /** Voice without hardware: records "levels", plays instantly, synthetic envelopes. */
@@ -113,7 +125,7 @@ fun fixLocale() {
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
 }
 
-/** A social screen as the app shows it, with test data, synthetic photos and fake services. */
+/** A social screen as the app shows it, with test data, sample photos (fixtures/photos/) and fake services. */
 @Composable
 fun TestScreen(
     data: SocialData,

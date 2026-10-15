@@ -62,8 +62,9 @@ class WidgetSnapshotTest {
 
     private fun writePhoto(groupId: String, caption: String?, avatar: Boolean, kind: WidgetSnapshot.Kind = WidgetSnapshot.Kind.Photo, seed: Int = 0) {
         val dir = context.cacheDir
-        val photo = Images.photoFile(dir, "rendition-$seed.jpg", 1092, 1146, seed)
-        val face = Images.photoFile(dir, "avatar.jpg", 120, 120, seed + 2)
+        val collage = kind == WidgetSnapshot.Kind.Collage
+        val photo = if (collage) Images.collageFile(dir, "rendition-$seed.jpg", 1092, 1146, seed) else Images.photoFile(dir, "rendition-$seed.jpg", 1092, 1146, seed)
+        val face = Images.avatarFile(dir, "avatar.jpg", 120, seed + 2)
         store.write(
             WidgetFileStore.Incoming(groupId, "Sunday dinners", kind, Instant.parse("2026-05-26T19:00:00Z"), "p1", if (kind == WidgetSnapshot.Kind.Photo) "Ana Lima" else null, caption),
             writePhoto = { out -> photo.inputStream().use { it.copyTo(out) } },
@@ -127,7 +128,7 @@ class WidgetSnapshotTest {
 
     @Test fun loadingPlaceholderWithMemberAvatars() {
         meta.prepare("g1")
-        val faces = (0..2).map { Images.photoFile(context.cacheDir, "m$it.jpg", 90, 90, it) }
+        val faces = (0..2).map { Images.avatarFile(context.cacheDir, "m$it.jpg", 90, it) }
         meta.setMembers("g1", listOf({ out: java.io.OutputStream -> faces[0].inputStream().use { it.copyTo(out) } }, null, { out -> faces[2].inputStream().use { it.copyTo(out) } }))
         sizes.forEach { (n, s) -> snap("widget.android_$n" + "_loading", render(s, "g1")) }
     }

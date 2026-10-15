@@ -1,6 +1,7 @@
 // One snapshot per account screen per state, recorded into ios/build/snapshots/account/<surface>-<state>.png for the
 // side-by-side verification (design/verification/<surface>.png, made by the lead from the CI artifact). Every screen
-// runs on in-memory data (InMemoryAccountData) with the dark appearance the app forces.
+// runs on in-memory data (InMemoryAccountData) with the dark appearance the app forces; avatars, covers and posts are
+// real sample photos (`AccountSamplePhotos`, fixtures/photos/).
 @testable import App
 import AppData
 import AppModels
@@ -83,6 +84,11 @@ final class AccountSnapshotTests: XCTestCase {
         let task = Task { @MainActor in await work() }
         await waitUntil(inFlight)
         return task
+    }
+
+    /// Avatars, covers and post photos for `data` (default: the fixture's), before the models read it.
+    private func photos(_ data: InMemoryAccountData? = nil) async {
+        await AccountSamplePhotos.prepare(data ?? fixture.data)
     }
 
     // MARK: auth.phone
@@ -168,6 +174,7 @@ final class AccountSnapshotTests: XCTestCase {
         record(ProfileScreen(model: ProfileModel(data: fixture.data)), "auth.profile", "default")
         let filled = ProfileModel(data: fixture.data)
         filled.setName("Ana")
+        filled.setAvatar(imageData: SamplePhotos.data(named: "avatar-01"))
         record(ProfileScreen(model: filled), "auth.profile", "filled")
 
         let saving = ProfileModel(data: fixture.data)
@@ -205,6 +212,7 @@ final class AccountSnapshotTests: XCTestCase {
         record(GroupsListView(model: empty), "groups.list", "empty")
 
         let withGroups = AccountUITestScenario.withGroups.makeData()
+        await photos(withGroups)
         dependencies = makeDependencies(withGroups)
         let loaded = GroupsListModel(data: withGroups)
         await loaded.load()
@@ -229,6 +237,7 @@ final class AccountSnapshotTests: XCTestCase {
         let filled = GroupCreateModel(data: fixture.data)
         filled.setName("Lima family")
         filled.kind = .family
+        filled.setCover(imageData: SamplePhotos.data(named: "grandma-hug-4x3"))
         record(GroupCreateView(model: filled), "groups.create", "filled")
 
         fixture.data.failures["createGroup"] = .http(status: 500)
@@ -237,6 +246,7 @@ final class AccountSnapshotTests: XCTestCase {
         fixture.data.failures = [:]
 
         let group = fixture.familyGroup()
+        await photos()
         let edit = GroupCreateModel(data: fixture.data, editingGroupID: group.id)
         await edit.loadForEdit()
         record(GroupCreateView(model: edit), "groups.create", "edit")
@@ -270,6 +280,7 @@ final class AccountSnapshotTests: XCTestCase {
 
     func testGroupsScreen() async {
         let group = fixture.familyGroup(posts: 4)
+        await photos()
         let loading = GroupFeedModel(groupID: group.id, data: fixture.data)
         record(NavigationStack { GroupFeedView(model: loading) }, "groups.screen", "loading")
 
@@ -279,11 +290,13 @@ final class AccountSnapshotTests: XCTestCase {
         record(NavigationStack { GroupProfileView(model: loaded) }, "groups.screen", "profile")
 
         let fresh = fixture.familyGroup()
+        await photos()
         let created = GroupFeedModel(groupID: fresh.id, data: fixture.data)
         await created.refresh()
         record(NavigationStack { GroupFeedView(model: created) }, "groups.screen", "created")
 
         let theirs = fixture.data.addGroup("Sunday dinners", createdBy: fixture.rui.id, members: [fixture.rui, fixture.me])
+        await photos()
         let empty = GroupFeedModel(groupID: theirs.id, data: fixture.data)
         await empty.refresh()
         record(NavigationStack { GroupFeedView(model: empty) }, "groups.screen", "empty")
@@ -308,11 +321,13 @@ final class AccountSnapshotTests: XCTestCase {
 
     func testGroupsSettings() async {
         let mine = fixture.familyGroup()
+        await photos()
         let admin = GroupSettingsModel(groupID: mine.id, data: fixture.data, notifications: StaticNotificationAuthorizer(status: .granted))
         await admin.load()
         record(NavigationStack { GroupSettingsView(model: admin) }, "groups.settings", "admin")
 
         let theirs = fixture.data.addGroup("Sunday dinners", createdBy: fixture.rui.id, members: [fixture.rui, fixture.me])
+        await photos()
         let member = GroupSettingsModel(groupID: theirs.id, data: fixture.data, notifications: StaticNotificationAuthorizer(status: .denied))
         await member.load()
         record(NavigationStack { GroupSettingsView(model: member) }, "groups.settings", "member-notifications-off")
@@ -348,6 +363,7 @@ final class AccountSnapshotTests: XCTestCase {
     }
 
     func testSettingsAccount() async {
+        await photos()
         let model = SettingsAccountModel(data: fixture.data)
         await model.load(premium: false)
         record(NavigationStack { SettingsAccountView(model: model) }, "settings.account", "default")
@@ -366,6 +382,7 @@ final class AccountSnapshotTests: XCTestCase {
         record(NavigationStack { SettingsBlockedView(model: empty) }, "settings.blocked", "empty")
 
         try? await fixture.data.block(userID: fixture.rui.id)
+        await photos()
         let loaded = SettingsBlockedModel(data: fixture.data)
         await loaded.load()
         record(NavigationStack { SettingsBlockedView(model: loaded) }, "settings.blocked", "loaded")

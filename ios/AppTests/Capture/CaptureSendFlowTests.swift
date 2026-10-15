@@ -269,7 +269,7 @@ final class CaptureSendToModelTests: XCTestCase {
 final class CaptureSendCenterTests: XCTestCase {
     private func request(groups: [String] = ["g1"], invitationID: String? = nil, daily: Bool = false) -> CaptureSendRequest {
         if daily {
-            let answer = DailyAnswer(main: CaptureTestImages.still(), inset: CaptureTestImages.still(hue: 0.6), capturedAt: Date())
+            let answer = DailyAnswer(main: CaptureTestImages.still(), inset: CaptureTestImages.still(named: CaptureTestImages.selfie), capturedAt: Date())
             return CaptureSendRequest(payload: .daily(answer), groupIDs: groups, invitationID: invitationID)
         }
         return CaptureSendRequest(payload: .media(.photo(CaptureTestImages.still(), capturedAt: Date())), groupIDs: groups, caption: "hi")

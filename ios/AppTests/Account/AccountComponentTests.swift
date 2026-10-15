@@ -11,11 +11,9 @@ import XCTest
 
 @MainActor
 final class AccountComponentTests: XCTestCase {
+    /// A picked photo: a sample portrait (fixtures/photos/) as a small JPEG.
     private func jpeg() -> Data {
-        UIGraphicsImageRenderer(size: CGSize(width: 40, height: 40)).image { context in
-            UIColor.gray.setFill()
-            context.fill(CGRect(x: 0, y: 0, width: 40, height: 40))
-        }.jpegData(compressionQuality: 0.8) ?? Data()
+        SamplePhotos.jpeg(named: "avatar-01", size: CGSize(width: 40, height: 40), quality: 0.8)
     }
 
     // MARK: Components

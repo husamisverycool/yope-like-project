@@ -37,6 +37,7 @@ import app.feature.capture.widget.WidgetPickerScreen
 import app.feature.capture.widget.WidgetPickerState
 import app.media.DualCaptureMode
 import app.model.CountdownState
+import app.testing.SamplePhotos
 import app.ui.theme.AppTheme
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onRoot
@@ -83,7 +84,7 @@ class ScreenSnapshotTest {
     }
 
     private val photo get() = Images.photo(900, 1240, 0).asImageBitmap()
-    private val front get() = Images.photo(300, 400, 2).asImageBitmap()
+    private val front get() = Images.selfie(300, 400).asImageBitmap()
 
     // ---- camera.capture ---------------------------------------------------------------------
 
@@ -112,12 +113,14 @@ class ScreenSnapshotTest {
 
     private val media = CapturedMedia(MediaKind.Photo, File(dir, "x.jpg"), 900, 1240, null, false)
     private val groups = listOf(group("g1", "Sunday dinners"), group("g2", "Roommates"), group("g3", "Family"))
+    /** Group covers (the third group has none: the default group look). */
+    private val covers = mapOf("g1" to SamplePhotos.painter("dinner-long-table-3x4", 1, 1), "g2" to SamplePhotos.painter("movie-night-couch-4x3", 1, 1))
     private val loaded = SendToViewModel.UiState(media = media, groups = SendToViewModel.Groups.Loaded(groups), selected = setOf("g1", "g2"), micAvailable = true)
 
     private fun sendTo(name: String, state: SendToViewModel.UiState, saved: Boolean = false) = snap("camera.sendto_$name") {
         SendToScreen(
             state = state,
-            chrome = SendToChrome(preview = photo, hourText = hour),
+            chrome = SendToChrome(preview = photo, hourText = hour, covers = covers),
             onClose = {}, onSave = {}, onCaption = {}, onMic = {}, onVoiceCoachClose = {}, onToggle = {}, onSend = {},
             onCreateGroup = {}, onRetryGroups = {},
             now = { RECORDING_STARTED + 7_000 },
@@ -222,7 +225,7 @@ class ScreenSnapshotTest {
 private const val SETTLE_MS = 1_000L
 private const val RECORDING_STARTED = 1_000_000L
 
-/** A synthetic option-B page (test fixture): 3 × 4 dual tiles on the matte, 9:16. */
+/** An option-B page (test fixture): 3 × 4 dual tiles of sample photos (back scene + selfie inset) on the matte, 9:16. */
 object CollagePage {
     fun render(width: Int, seed: Int): android.graphics.Bitmap {
         val height = width * 16 / 9
@@ -237,7 +240,8 @@ object CollagePage {
             val y = (i / 3) * tileH
             val main = Images.photo(tileW.toInt(), tileH.toInt(), i + seed)
             c.drawBitmap(main, x, y, null)
-            val inset = Images.photo((tileW * 0.31f).toInt(), (tileW * 0.31f * 4 / 3).toInt(), i + seed + 1)
+            val insetW = (tileW * 0.31f).toInt()
+            val inset = SamplePhotos.bitmap(SamplePhotos.avatar(i + seed), insetW, insetW * 4 / 3)
             val m = tileW * 0.03f
             c.drawBitmap(inset, x + m, y + m, null)
         }

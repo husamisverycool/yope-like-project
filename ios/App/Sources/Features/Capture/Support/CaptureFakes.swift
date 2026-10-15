@@ -78,6 +78,9 @@ final class FakeCaptureCamera: CaptureCamera {
     /// Holds `captureDual` until cancelled (the 'capturing' state in snapshots).
     var suspendsCapture = false
     var previewImage: UIImage?
+    /// What the shutter returns (snapshot tests set photos); nil: small stills in token colours.
+    var backStill: CaptureStill?
+    var frontStill: CaptureStill?
     var onInterruption: ((Bool) -> Void)?
 
     private(set) var configuredModes: [CaptureCameraMode] = []
@@ -112,7 +115,7 @@ final class FakeCaptureCamera: CaptureCamera {
 
     func capturePhoto(flash: Bool) async throws -> CaptureStill {
         flashRequests.append(flash)
-        return CaptureFakes.still(Tokens.Colors.globalAccent)
+        return backStill ?? CaptureFakes.still(Tokens.Colors.globalAccent)
     }
 
     func captureDual(flash: Bool) async throws -> CaptureDualStills {
@@ -120,8 +123,8 @@ final class FakeCaptureCamera: CaptureCamera {
         if suspendsCapture { try await Task.sleep(for: .seconds(3600)) }
         if failsDual { throw FakeCaptureError.failed }
         return CaptureDualStills(
-            back: CaptureFakes.still(Tokens.Colors.globalAccent, position: .back),
-            front: hasFrontCamera ? CaptureFakes.still(Tokens.Colors.globalAccentSecondary, position: .front) : nil,
+            back: backStill ?? CaptureFakes.still(Tokens.Colors.globalAccent, position: .back),
+            front: hasFrontCamera ? frontStill ?? CaptureFakes.still(Tokens.Colors.globalAccentSecondary, position: .front) : nil,
             simultaneous: true
         )
     }

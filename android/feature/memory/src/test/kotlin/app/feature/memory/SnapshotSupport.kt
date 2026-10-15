@@ -1,10 +1,5 @@
 package app.feature.memory
 
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.LinearGradient
-import android.graphics.Paint
-import android.graphics.Shader
 import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
@@ -26,6 +21,7 @@ import app.feature.memory.common.MemoryBackend
 import app.feature.memory.common.MemoryImage
 import app.feature.memory.tagging.CoachStore
 import app.feature.memory.tagging.LocalCoachStore
+import app.testing.SamplePhotos
 import app.ui.theme.AppTheme
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.github.takahirom.roborazzi.captureScreenRoboImage
@@ -33,18 +29,29 @@ import org.junit.Rule
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
-import kotlin.math.absoluteValue
 
 /**
- * Generated test images (no reference material): a two-colour diagonal gradient per URL, at the
- * aspect the URL names (`?w=3&h=4`), so photos keep their real proportions in snapshots.
+ * Test images: real sample photos (fixtures/photos/, :core:testing `SamplePhotos`), centre-cropped to the
+ * aspect the URL names (`?w=3&h=4`) so photos keep their real proportions in snapshots. Renditions of one
+ * photo (`p1`, `p1-d`, `a-display`, `a-thumb`) are the same picture; `<name>-avatar` is a portrait;
+ * `collage…` is a grid of photos.
  */
 object TestImages {
     private val cache = mutableMapOf<String, Painter>()
-    private val palette = intArrayOf(
-        0xFF3D5A80.toInt(), 0xFF98C1D9.toInt(), 0xFFEE6C4D.toInt(), 0xFF293241.toInt(), 0xFF6A994E.toInt(),
-        0xFFBC4749.toInt(), 0xFFF2CC8F.toInt(), 0xFF81B29A.toInt(), 0xFF5E548E.toInt(), 0xFFE07A5F.toInt(),
+
+    /** The fixtures' photos by name (what the screens' sample data says they show). */
+    private val photos = mapOf(
+        // birthday.contribute: eligible photos of the honoree, and the tribute poster
+        "p1" to "friends-beach-hug-4x5", "p2" to "family-dinner-4x3", "p3" to "beach-sunset-wade-9x16",
+        "p4" to "selfie-two-friends-1x1", "p5" to "friends-stairs-laughing-3x4", "poster" to "grandma-hug-4x3",
+        // onthisday: a day one and three years ago
+        "a" to "birthday-cake-candles-3x4", "b" to "campfire-friends-3x2", "c" to "snow-forest-walk-3x4",
+        "d" to "autumn-bike-9x16", "e" to "snow-friends-beanies-1x1", "f" to "road-trip-window-3x2",
+        // year.story: most reacted photos; tagging: the viewer's photo
+        "r1" to "dinner-toast-candles-3x4", "r2" to "beach-friends-run-4x3", "viewer-photo" to "hike-mountain-friends-3x4",
     )
+
+    private val people = mapOf("ana" to "avatar-01", "ben" to "avatar-06", "cleo" to "avatar-05", "sam" to "avatar-02")
 
     fun url(name: String, w: Int = 3, h: Int = 4) = "https://img.test/$name?w=$w&h=$h"
 
@@ -52,15 +59,26 @@ object TestImages {
         val uri = Uri.parse(url)
         val w = uri.getQueryParameter("w")?.toIntOrNull() ?: 3
         val h = uri.getQueryParameter("h")?.toIntOrNull() ?: 4
-        val scale = 120
-        val bitmap = Bitmap.createBitmap(w * scale, h * scale, Bitmap.Config.ARGB_8888)
-        val seed = url.hashCode().absoluteValue
-        val paint = Paint().apply {
-            shader = LinearGradient(0f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat(), palette[seed % palette.size], palette[(seed / 7 + 3) % palette.size], Shader.TileMode.CLAMP)
+        val name = uri.lastPathSegment.orEmpty()
+        val key = RENDITION.replace(name, "")
+        when {
+            key.endsWith("-avatar") -> {
+                val person = key.removeSuffix("-avatar").lowercase()
+                SamplePhotos.painter(people[person] ?: SamplePhotos.avatarForKey(person), w, h)
+            }
+            key.startsWith("collage") -> {
+                val tiles = (0 until COLLAGE_TILES).map { SamplePhotos.pick(it + (key.hashCode() and 0xFF)) }
+                BitmapPainter(SamplePhotos.collage(w * COLLAGE_UNIT, h * COLLAGE_UNIT, tiles, columns = 2, gap = COLLAGE_GAP).asImageBitmap())
+            }
+            else -> SamplePhotos.painter(photos[key] ?: SamplePhotos.forKey(key, w.toFloat() / h), w, h)
         }
-        Canvas(bitmap).drawRect(0f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat(), paint)
-        BitmapPainter(bitmap.asImageBitmap())
     }
+
+    /** Rendition suffixes: every rendition of a photo is the same picture. */
+    private val RENDITION = Regex("-(d|display|thumb)$")
+    private const val COLLAGE_TILES = 4
+    private const val COLLAGE_UNIT = 200
+    private const val COLLAGE_GAP = 6
 }
 
 /** A coach store in memory. */

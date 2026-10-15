@@ -38,7 +38,7 @@ import java.time.Instant
 import java.time.LocalDate
 
 /**
- * In-memory [SocialData] for view-model, snapshot and flow tests. Synthetic people and photos only.
+ * In-memory [SocialData] for view-model, snapshot and flow tests. Made-up people; photos are sample photos (TestPhotos).
  * [offline] makes every network call fail with [DataError.Network]; [failNext] makes the named call
  * fail once; [calls] records writes.
  */

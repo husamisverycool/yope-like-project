@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -93,6 +92,10 @@ import app.feature.account.groups.CreateError
 import androidx.compose.runtime.remember
 import app.feature.account.auth.CountryList
 import app.feature.account.groups.GroupEntryCard
+import app.testing.SamplePhotos
+import coil3.SingletonImageLoader
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -120,6 +123,13 @@ class ScreenSnapshotTest {
     private val now = Instant.parse("2026-10-15T17:00:00Z")
     private val legal = LegalLinks("https://example.test/terms", "https://example.test/privacy", null)
     private val noop: () -> Unit = {}
+
+    /** Storage URLs in the fixtures are sample-photo URLs, answered by a Coil loader without network. */
+    @Before fun photos() = SingletonImageLoader.setUnsafe(SamplePhotos.imageLoader(androidx.test.core.app.ApplicationProvider.getApplicationContext()))
+
+    @After fun resetPhotos() = SingletonImageLoader.reset()
+
+    private fun avatar(name: String) = SamplePhotos.url(name)
 
     private fun snap(surface: String, state: String, content: @Composable () -> Unit) {
         compose.mainClock.autoAdvance = false
@@ -168,7 +178,7 @@ class ScreenSnapshotTest {
 
     // auth.profile ----------------------------------------------------------------------------------
     @Test fun profileDefault() = snap("auth.profile", "default") { ProfileScreen(ProfileUiState(), {}, noop, noop, noop) }
-    @Test fun profileFilled() = snap("auth.profile", "filled-photo") { ProfileScreen(ProfileUiState(name = "Ana Lima"), {}, noop, noop, noop, avatarImage = ColorPainter(Tokens.Colors.globalAccentSecondary)) }
+    @Test fun profileFilled() = snap("auth.profile", "filled-photo") { ProfileScreen(ProfileUiState(name = "Ana Lima"), {}, noop, noop, noop, avatarImage = SamplePhotos.painter("avatar-01")) }
     @Test fun profileSaving() = snap("auth.profile", "saving") { ProfileScreen(ProfileUiState(name = "Ana Lima", saving = true), {}, noop, noop, noop) }
     @Test fun profileUploadFailed() = snap("auth.profile", "uploadFailed") { ProfileScreen(ProfileUiState(name = "Ana Lima", error = ProfileError.Upload), {}, noop, noop, noop) }
     @Test fun profileOffline() = snap("auth.profile", "offline") { ProfileScreen(ProfileUiState(offline = true), {}, noop, noop, noop) }
@@ -199,13 +209,13 @@ class ScreenSnapshotTest {
 
     // groups.list -----------------------------------------------------------------------------------
     private val rows = listOf(
-        GroupRow("g1", "Sunday dinners", null, RowSubtitle.SentPic("Sam", now.minusSeconds(7200)), now),
-        GroupRow("g2", "Roomies", null, RowSubtitle.NewPic(now.minusSeconds(18000)), now.minusSeconds(18000)),
+        GroupRow("g1", "Sunday dinners", SamplePhotos.url("dinner-long-table-3x4"), RowSubtitle.SentPic("Sam", now.minusSeconds(7200)), now),
+        GroupRow("g2", "Roomies", SamplePhotos.url("movie-night-couch-4x3"), RowSubtitle.NewPic(now.minusSeconds(18000)), now.minusSeconds(18000)),
         GroupRow("g3", "Lima family", null, RowSubtitle.NoPics, now.minusSeconds(86400)),
     )
     private fun list(state: GroupsListUiState) = @Composable { GroupsListScreen(state, zone, noop, {}, {}, noop, {}) }
     @Test fun listLoading() = snap("groups.list", "loading", list(GroupsListUiState()))
-    @Test fun listRows() = snap("groups.list", "default", list(GroupsListUiState(rows = rows, cover = CoverPhoto("g1", "p1", null, "Sam", "Sunday dinners"), refreshing = false)))
+    @Test fun listRows() = snap("groups.list", "default", list(GroupsListUiState(rows = rows, cover = CoverPhoto("g1", "p1", SamplePhotos.url("dinner-pizza-cheers-3x4"), "Sam", "Sunday dinners"), refreshing = false)))
     @Test fun listRowsNoPhotos() = snap("groups.list", "default-noCoverPhoto", list(GroupsListUiState(rows = rows.drop(2), refreshing = false)))
     @Test fun listEmpty() = snap("groups.list", "empty", list(GroupsListUiState(rows = emptyList(), refreshing = false)))
     @Test fun listError() = snap("groups.list", "error", list(GroupsListUiState(refreshing = false, error = DataError.Unexpected("x"))))
@@ -214,10 +224,10 @@ class ScreenSnapshotTest {
 
     // groups.create ---------------------------------------------------------------------------------
     @Test fun createDefault() = snap("groups.create", "default") { GroupCreateScreen(GroupCreateUiState(), noop, {}, {}, noop, noop) }
-    @Test fun createFilled() = snap("groups.create", "filled") { GroupCreateScreen(GroupCreateUiState(name = "Book club", kind = GroupKind.Family), noop, {}, {}, noop, noop, coverImage = ColorPainter(Tokens.Colors.globalAccentSecondary)) }
+    @Test fun createFilled() = snap("groups.create", "filled") { GroupCreateScreen(GroupCreateUiState(name = "Book club", kind = GroupKind.Family), noop, {}, {}, noop, noop, coverImage = SamplePhotos.painter("friends-coffee-highfive-3x4")) }
     @Test fun createCreating() = snap("groups.create", "creating") { GroupCreateScreen(GroupCreateUiState(name = "Book club", working = true), noop, {}, {}, noop, noop) }
     @Test fun createError() = snap("groups.create", "error") { GroupCreateScreen(GroupCreateUiState(name = "Book club", error = CreateError.Failed), noop, {}, {}, noop, noop) }
-    @Test fun createEdit() = snap("groups.create", "edit") { GroupCreateScreen(GroupCreateUiState(editGroupId = "g1", name = "Sunday dinners", kind = GroupKind.Custom), noop, {}, {}, noop, noop) }
+    @Test fun createEdit() = snap("groups.create", "edit") { GroupCreateScreen(GroupCreateUiState(editGroupId = "g1", name = "Sunday dinners", kind = GroupKind.Custom, currentCoverUrl = SamplePhotos.url("dinner-long-table-3x4")), noop, {}, {}, noop, noop) }
 
     // groups.invite ---------------------------------------------------------------------------------
     private val invite = GroupInviteUiState(groupName = "Sunday dinners", maxMembers = 30)
@@ -234,39 +244,40 @@ class ScreenSnapshotTest {
 
     // groups.screen ---------------------------------------------------------------------------------
     private val group = Group("g1", "Sunday dinners", GroupKind.Friends, null, "UTC", null, null, false, "u-me", now, now)
-    private fun photo(id: String, author: String, mine: Boolean, at: Instant, caption: String? = null) =
-        FeedItem.Photo(Post(id, "m$id", "g1", if (mine) "u-me" else "u-x", caption, null, null, null, false, null, at), null, author, null, mine)
+    private val groupCover = SamplePhotos.url("dinner-long-table-3x4")
+    private fun photo(id: String, author: String, mine: Boolean, at: Instant, caption: String? = null, picture: String, face: String) =
+        FeedItem.Photo(Post(id, "m$id", "g1", if (mine) "u-me" else "u-x", caption, null, null, null, false, null, at), SamplePhotos.url(picture), author, avatar(face), mine)
     private val feedItems = listOf(
-        photo("p1", "Sam", false, now.minusSeconds(3600), "dinner"),
-        FeedItem.Joined("u-sam", "Sam", null, now.minusSeconds(7200)),
-        photo("p2", "Ana", true, now.minusSeconds(10800)),
+        photo("p1", "Sam", false, now.minusSeconds(3600), "dinner", picture = "dinner-pizza-cheers-3x4", face = "avatar-02"),
+        FeedItem.Joined("u-sam", "Sam", avatar("avatar-02"), now.minusSeconds(7200)),
+        photo("p2", "Ana", true, now.minusSeconds(10800), picture = "friends-picnic-blanket-3x4", face = "avatar-01"),
     )
     private fun feed(state: GroupFeedUiState) = @Composable { GroupFeedScreen(state, zone, noop, noop, noop, noop, {}, {}, {}, noop, noop, noop, noop, noop) }
     // The memory entries above the feed (copy is the memory pass's; test strings here).
     @Test fun feedEntries() = snap("groups.screen", "entries") {
-        GroupFeedScreen(GroupFeedUiState(group = group, items = feedItems, isCreator = true), zone, noop, noop, noop, noop, {}, {}, {}, noop, noop, noop, noop, noop) {
+        GroupFeedScreen(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, items = feedItems, isCreator = true), zone, noop, noop, noop, noop, {}, {}, {}, noop, noop, noop, noop, noop) {
             GroupEntryCard("Sunday dinners’s Day in History", "1 year ago", noop)
             GroupEntryCard("It’s time for your 2026 story", "Your year together", noop, button = "Let’s go")
             GroupEntryCard("Sam’s birthday is coming", "due Oct 20", noop)
         }
     }
-    @Test fun feedLoading() = snap("groups.screen", "loading", feed(GroupFeedUiState(group = group)))
-    @Test fun feedDefault() = snap("groups.screen", "default", feed(GroupFeedUiState(group = group, items = feedItems, isCreator = true)))
-    @Test fun feedCreated() = snap("groups.screen", "created", feed(GroupFeedUiState(group = group, items = emptyList(), isCreator = true)))
-    @Test fun feedCreatedNames() = snap("groups.screen", "created-joined", feed(GroupFeedUiState(group = group, items = emptyList(), isCreator = true, otherNames = listOf("Sam", "Rui"))))
-    @Test fun feedEmpty() = snap("groups.screen", "empty", feed(GroupFeedUiState(group = group, items = emptyList(), isCreator = false)))
-    @Test fun feedError() = snap("groups.screen", "error", feed(GroupFeedUiState(group = group, error = DataError.Unexpected("x"))))
-    @Test fun feedOffline() = snap("groups.screen", "offline", feed(GroupFeedUiState(group = group, error = DataError.Network)))
-    @Test fun feedRemoved() = snap("groups.screen", "removed", feed(GroupFeedUiState(group = group, removed = true)))
+    @Test fun feedLoading() = snap("groups.screen", "loading", feed(GroupFeedUiState(group = group, groupAvatarUrl = groupCover)))
+    @Test fun feedDefault() = snap("groups.screen", "default", feed(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, items = feedItems, isCreator = true)))
+    @Test fun feedCreated() = snap("groups.screen", "created", feed(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, items = emptyList(), isCreator = true)))
+    @Test fun feedCreatedNames() = snap("groups.screen", "created-joined", feed(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, items = emptyList(), isCreator = true, otherNames = listOf("Sam", "Rui"))))
+    @Test fun feedEmpty() = snap("groups.screen", "empty", feed(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, items = emptyList(), isCreator = false)))
+    @Test fun feedError() = snap("groups.screen", "error", feed(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, error = DataError.Unexpected("x"))))
+    @Test fun feedOffline() = snap("groups.screen", "offline", feed(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, error = DataError.Network)))
+    @Test fun feedRemoved() = snap("groups.screen", "removed", feed(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, removed = true)))
     @Test fun profilePage() = snap("groups.screen", "profile") {
-        GroupProfileScreen(GroupFeedUiState(group = group, items = feedItems, memberAvatars = listOf(null, null, null)), noop, noop, {}, noop, noop, noop, noop, noop, noop)
+        GroupProfileScreen(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, items = feedItems, memberAvatars = listOf(avatar("avatar-01"), avatar("avatar-02"), null)), noop, noop, {}, noop, noop, noop, noop, noop, noop)
     }
 
     // groups.settings -------------------------------------------------------------------------------
     private val members = listOf(
-        MemberRow("u-me", "Ana Lima", "Ana", null, admin = true, you = true),
-        MemberRow("u-sam", "Sam Lee", "Sam", null, admin = false, you = false),
-        MemberRow("u-rui", "Rui Costa", "Rui", null, admin = true, you = false),
+        MemberRow("u-me", "Ana Lima", "Ana", avatar("avatar-01"), admin = true, you = true),
+        MemberRow("u-sam", "Sam Lee", "Sam", avatar("avatar-02"), admin = false, you = false),
+        MemberRow("u-rui", "Rui Costa", "Rui", avatar("avatar-06"), admin = true, you = false),
     )
     private val settings = GroupSettingsUiState(group = group.copy(wakingStart = LocalTime.of(9, 0), wakingEnd = LocalTime.of(21, 0)), members = members, isAdmin = true)
     @Test fun groupSettingsLoading() = snap("groups.settings", "loading") { GroupSettingsScreen(GroupSettingsUiState(), false, GroupSettingsActions()) }
@@ -294,7 +305,7 @@ class ScreenSnapshotTest {
     @Test fun notificationsError() = snap("settings.notifications", "error", notifications(notif.copy(error = true)))
     @Test fun notificationsOffline() = snap("settings.notifications", "offline", notifications(notif.copy(online = false)))
 
-    private val account = SettingsAccountUiState(name = "Ana Lima", phone = "+14155550100")
+    private val account = SettingsAccountUiState(name = "Ana Lima", phone = "+14155550100", avatar = avatar("avatar-01"))
     private fun accountScreen(state: SettingsAccountUiState) = @Composable { SettingsAccountScreen(state, noop, {}, noop, noop, noop, noop, noop, noop) }
     @Test fun accountDefault() = snap("settings.account", "default", accountScreen(account))
     @Test fun accountPremium() = snap("settings.account", "premiumActive", accountScreen(account.copy(premium = true)))
@@ -307,7 +318,7 @@ class ScreenSnapshotTest {
 
     private fun blocked(state: SettingsBlockedUiState) = @Composable { SettingsBlockedScreen(state, noop, {}, noop) }
     @Test fun blockedLoading() = snap("settings.blocked", "loading", blocked(SettingsBlockedUiState()))
-    @Test fun blockedList() = snap("settings.blocked", "default", blocked(SettingsBlockedUiState(people = listOf(BlockedPerson("u1", "Sam Lee", null), BlockedPerson("u2", null, null)))))
+    @Test fun blockedList() = snap("settings.blocked", "default", blocked(SettingsBlockedUiState(people = listOf(BlockedPerson("u1", "Sam Lee", avatar("avatar-02")), BlockedPerson("u2", null, null)))))
     @Test fun blockedEmpty() = snap("settings.blocked", "empty", blocked(SettingsBlockedUiState(people = emptyList())))
     @Test fun blockedError() = snap("settings.blocked", "error", blocked(SettingsBlockedUiState(error = true)))
 

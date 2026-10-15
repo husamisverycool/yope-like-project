@@ -38,6 +38,8 @@ dependencies {
     debugImplementation(libs.compose.ui.test.manifest)
 
     testImplementation(libs.bundles.robolectric.test)
+    // Real sample photos (fixtures/photos/) for the snapshot fixtures.
+    testImplementation(project(":core:testing"))
     testImplementation(libs.compose.ui.test.junit4)
     testImplementation(libs.roborazzi)
     testImplementation(libs.roborazzi.compose)

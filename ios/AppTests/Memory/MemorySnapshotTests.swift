@@ -1,6 +1,6 @@
 // Snapshot of every memory screen in every state (docs/SCREENS_BRIEF.md rule 7), written to
 // ios/build/snapshots/memory/<surface>-<state>.png for design/verification/<surface>.md.
-// Screens run on the fixture backend; photos are flat test images (no reference content).
+// Screens run on the fixture backend; photos are real sample photos (fixtures/photos/, `MemorySamplePhotos`).
 @testable import App
 import AppData
 import DesignSystem
@@ -13,33 +13,25 @@ import XCTest
 final class MemorySnapshotTests: XCTestCase {
     // MARK: Helpers
 
-    /// Test images for every storage path of the fixtures, at each photo's own shape.
+    /// Real sample photos (fixtures/photos/) for every storage path of the fixtures, cropped to each photo's own shape;
+    /// the collage is a grid of the photos it collects and the tribute poster a 16:9 photo.
     private func fillImages(_ context: MemoryTestContext) {
-        let palette: [UIColor] = [.systemTeal, .systemOrange, .systemIndigo, .systemPink, .systemGreen, .systemBrown, .systemPurple, .systemYellow]
-        func image(index: Int, width: Int, height: Int) -> UIImage {
-            let size = CGSize(width: CGFloat(width) * 120, height: CGFloat(height) * 120)
-            return UIGraphicsImageRenderer(size: size).image { renderer in
-                palette[index % palette.count].setFill()
-                renderer.fill(CGRect(origin: .zero, size: size))
-                UIColor.white.withAlphaComponent(0.25).setFill()
-                renderer.fill(CGRect(x: 0, y: 0, width: size.width, height: size.height / 3))
-            }
-        }
         let state = context.data.snapshot
         for (index, post) in state.posts.enumerated() {
             guard let media = post.media else { continue }
+            let image = MemorySamplePhotos.photo(index: index, width: media.width ?? 1, height: media.height ?? 1)
             for path in [media.originalPath, media.displayPath, media.thumbPath].compactMap({ $0 }) {
-                context.images.images[URL(string: "fixture://" + path)!] = image(index: index, width: media.width ?? 1, height: media.height ?? 1)
+                context.images.images[URL(string: "fixture://" + path)!] = image
             }
         }
         for collage in state.collages {
             if let path = collage.imagePath {
-                context.images.images[URL(string: "fixture://" + path)!] = image(index: 5, width: 1, height: 1)
+                context.images.images[URL(string: "fixture://" + path)!] = MemorySamplePhotos.collage(posts: collage.postIDs.count)
             }
         }
         for tribute in state.tributes {
             if let path = tribute.posterPath {
-                context.images.images[URL(string: "fixture://" + path)!] = image(index: 2, width: 16, height: 9)
+                context.images.images[URL(string: "fixture://" + path)!] = MemorySamplePhotos.poster
             }
         }
     }

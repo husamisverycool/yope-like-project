@@ -10,12 +10,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.designsystem.LocalReduceMotionOverride
 import app.designsystem.generated.Tokens
+import app.testing.SamplePhotos
 import app.ui.components.AccentTitle
 import app.ui.components.AppTab
 import app.ui.components.Avatar
@@ -108,7 +108,7 @@ class ComponentSnapshotTest {
         Row(horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalHeaderGap)) {
             Avatar(null, Tokens.Sizes.globalAvatarList)
             Avatar(null, Tokens.Sizes.globalAvatarList, fallbackIcon = Tokens.Icons.globalGroup)
-            Avatar(ColorPainter(Tokens.Colors.globalAccentSecondary), Tokens.Sizes.globalAvatarList)
+            Avatar(SamplePhotos.painter("avatar-01"), Tokens.Sizes.globalAvatarList)
             Avatar(null, Tokens.Sizes.authProfileSizeAvatar)
         }
     }
@@ -163,7 +163,7 @@ class ComponentSnapshotTest {
         val labels = TabLabels("camera", "groups", "walls", "me")
         Column(verticalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalListGap)) {
             FloatingTabBar(AppTab.Groups, {}, labels, meAvatar = null)
-            FloatingTabBar(AppTab.Me, {}, labels, meAvatar = ColorPainter(Tokens.Colors.globalAccentSecondary))
+            FloatingTabBar(AppTab.Me, {}, labels, meAvatar = SamplePhotos.painter("avatar-01"))
         }
     }
 

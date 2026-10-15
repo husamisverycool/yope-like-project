@@ -114,7 +114,7 @@ class MeasurementTest {
     }
 
     @Test fun dailyPreview() = measure("daily.capture.preview", listOf("daily.dualimage", "daily.retake", "daily.chip", "daily.send")) {
-        DailyCaptureScreen(daily.copy(phase = DailyCaptureViewModel.Phase.Preview), {}, photo, Images.photo(300, 400, 2).asImageBitmap(), "Ana", {}, {}, {}, {}, {}, {}, {}, {})
+        DailyCaptureScreen(daily.copy(phase = DailyCaptureViewModel.Phase.Preview), {}, photo, Images.selfie(300, 400).asImageBitmap(), "Ana", {}, {}, {}, {}, {}, {}, {}, {})
     }
 
     @Test fun collage() = measure("collage.view", listOf("collage.back", "collage.title", "collage.dots", "collage.pager", "collage.share")) {

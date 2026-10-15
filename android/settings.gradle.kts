@@ -28,6 +28,8 @@ include(
     ":core:links",
     ":core:data",
     ":core:ui",
+    // Unit-test helpers only (sample photos from fixtures/photos/); never an app dependency.
+    ":core:testing",
     ":feature:account",
     ":feature:capture",
     ":feature:social",
