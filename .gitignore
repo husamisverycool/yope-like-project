@@ -1,0 +1,47 @@
+# dependencies and build output
+node_modules/
+build/
+.build/
+dist/
+.gradle/
+.kotlin/
+local.properties
+DerivedData/
+*.xcodeproj/
+*.xcworkspace/xcuserdata/
+xcuserdata/
+.swiftpm/
+captures/
+*.apk
+*.aab
+*.ipa
+
+# secrets and owner-provided config
+.env
+.env.*
+!.env.example
+android/app/google-services.json
+ios/Config/Secrets.xcconfig
+*.p8
+*.jks
+*.keystore
+
+# local tooling
+backend/supabase/.temp/
+backend/supabase/.branches/
+.DS_Store
+*.log
+
+# Third-party reference material stays local while the GitHub repo is public (directive: internal
+# reference only, never redistribute). The INDEX.md files with source URLs are committed, and
+# tools/fetch_appstore.py re-downloads store screenshots. Verification side-by-sides contain
+# reference crops, so they are local too.
+references/**/*.png
+references/**/*.jpg
+references/**/*.jpeg
+references/**/*.webp
+references/**/*.gif
+references/**/*.mp4
+references/**/*.html
+design/verification/**/*.png
+design/verification/**/*.jpg

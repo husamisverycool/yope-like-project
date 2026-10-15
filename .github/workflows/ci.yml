@@ -1,0 +1,171 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect:
+    name: detect components
+    runs-on: ubuntu-24.04
+    outputs:
+      backend: ${{ steps.d.outputs.backend }}
+      worker: ${{ steps.d.outputs.worker }}
+      web: ${{ steps.d.outputs.web }}
+      android: ${{ steps.d.outputs.android }}
+      ioscore: ${{ steps.d.outputs.ioscore }}
+      ios: ${{ steps.d.outputs.ios }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: d
+        run: |
+          e() { if [ -f "$2" ]; then echo "$1=true" >> "$GITHUB_OUTPUT"; else echo "$1=false" >> "$GITHUB_OUTPUT"; fi; }
+          e backend backend/package.json
+          e worker backend/worker/package.json
+          e web web/package.json
+          e android android/settings.gradle.kts
+          e ioscore ios/Packages/AppCore/Package.swift
+          e ios ios/project.yml
+
+  design:
+    name: design provenance
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: validate tokens and copy
+        run: node tools/designgen.mjs --check
+      - name: generated files are up to date
+        run: |
+          node tools/designgen.mjs
+          git status --porcelain
+          git diff --exit-code
+      - name: no literal design values or taste-based wording in code
+        run: node tools/provenance-check.mjs
+
+  backend:
+    name: backend (Supabase, RLS, security tests)
+    runs-on: ubuntu-24.04
+    needs: detect
+    if: needs.detect.outputs.backend == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - name: start Supabase and run the suite
+        working-directory: backend
+        run: |
+          npm ci
+          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
+          npm test
+
+  worker:
+    name: worker (jobs, collage, push, video)
+    runs-on: ubuntu-24.04
+    needs: detect
+    if: needs.detect.outputs.worker == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: start Supabase
+        working-directory: backend
+        run: |
+          npm ci
+          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
+      - name: worker tests
+        working-directory: backend/worker
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+
+  web:
+    name: web (invite page, well-known files)
+    runs-on: ubuntu-24.04
+    needs: detect
+    if: needs.detect.outputs.web == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - working-directory: web
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+
+  android:
+    name: android (build, unit, snapshot)
+    runs-on: ubuntu-24.04
+    needs: detect
+    if: needs.detect.outputs.android == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - working-directory: android
+        run: ./gradlew --no-daemon assembleDebug testDebugUnitTest
+
+  ios-core:
+    name: ios AppCore (swift test on Linux)
+    runs-on: ubuntu-24.04
+    needs: detect
+    if: needs.detect.outputs.ioscore == 'true'
+    container: swift:6.1-noble
+    steps:
+      - uses: actions/checkout@v4
+      - working-directory: ios/Packages/AppCore
+        run: swift test
+
+  ios:
+    name: "ios (xcodebuild: app, widgets, notification service, App Clip, tests)"
+    runs-on: macos-15
+    needs: detect
+    if: needs.detect.outputs.ios == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - name: select newest Xcode
+        run: |
+          XC=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XC"
+          xcodebuild -version
+      - run: brew install xcodegen
+      - name: generate project
+        working-directory: ios
+        run: xcodegen generate
+      - name: build and test
+        working-directory: ios
+        run: |
+          SIM=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k,v in sorted(d.items(), reverse=True) if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
+          set -o pipefail
+          xcodebuild -project App.xcodeproj -scheme App -destination "id=$SIM" -derivedDataPath build CODE_SIGNING_ALLOWED=NO test 2>&1 | tee xcodebuild.log | grep -E "error:|Test Suite|Executed|BUILD|\*\*" || true
+          grep -q "\*\* TEST SUCCEEDED \*\*" xcodebuild.log
+      - name: upload logs and snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-results
+          path: |
+            ios/xcodebuild.log
+            ios/build/snapshots
+          if-no-files-found: ignore

@@ -1,0 +1,25 @@
+{
+  "$comment": "Single source of app configuration. Values marked BLOCKED come from the owner (docs/OWNER_SETUP.md). Build tooling refuses release builds while any BLOCKED value remains.",
+  "displayName": { "value": null, "level": "BLOCKED", "notes": "owner decision 0.1" },
+  "domain": { "value": null, "level": "BLOCKED", "notes": "owner step 4.1" },
+  "ios": {
+    "bundleId": "com.example.groupphotos",
+    "teamId": null,
+    "deploymentTarget": "17.2"
+  },
+  "android": {
+    "applicationId": "com.example.groupphotos",
+    "minSdk": 26,
+    "targetSdk": 36,
+    "sha256CertFingerprints": []
+  },
+  "supabase": { "url": null, "anonKey": null },
+  "revenuecat": { "iosApiKey": null, "androidApiKey": null, "entitlement": "premium" },
+  "premium": {
+    "monthlyPriceUSD": 3.99,
+    "yearlyPriceUSD": 35.99,
+    "productIds": { "monthly": "premium_monthly", "yearly": "premium_yearly" },
+    "notes": "Directive Part 6 default (~$3.99/month or ~$36/year). Display prices always come from the store at runtime."
+  },
+  "legal": { "privacyUrl": null, "termsUrl": null }
+}

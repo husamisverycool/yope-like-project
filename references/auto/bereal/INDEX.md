@@ -1,0 +1,12 @@
+# bereal references (SOURCED)
+
+| file | source URL | accessed | what it shows | version/date |
+|---|---|---|---|---|
+| `store/bereal-store-01.png` | https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/0b/b3/2f/0bb32f2a-efbb-aad6-1461-bc7107dc8e07/ASOSep_01_1290x2778.png/9999x0w.png | 2026-10-15 | App Store screenshot 1 of 8 (https://apps.apple.com/us/app/id1459645446) | listing version 4.96.1 |
+| `store/bereal-store-02.png` | https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/12/3e/6a/123e6a71-cb53-6f9b-9f28-d93670d7f328/ASOSep_02_1290x2778.png/9999x0w.png | 2026-10-15 | App Store screenshot 2 of 8 (https://apps.apple.com/us/app/id1459645446) | listing version 4.96.1 |
+| `store/bereal-store-03.png` | https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/91/2a/d9/912ad960-1bda-1f0c-350c-b1356754e2a1/ASOSep_03_1290x2778.png/9999x0w.png | 2026-10-15 | App Store screenshot 3 of 8 (https://apps.apple.com/us/app/id1459645446) | listing version 4.96.1 |
+| `store/bereal-store-04.png` | https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/85/fd/0d/85fd0d0f-aae6-52fa-c2e4-f6d1a3b15172/ASOSep_04_1290x2778.png/9999x0w.png | 2026-10-15 | App Store screenshot 4 of 8 (https://apps.apple.com/us/app/id1459645446) | listing version 4.96.1 |
+| `store/bereal-store-05.png` | https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/f2/13/b1/f213b15f-8c80-03b0-bb19-100be720720a/ASOSep_05_1290x2778.png/9999x0w.png | 2026-10-15 | App Store screenshot 5 of 8 (https://apps.apple.com/us/app/id1459645446) | listing version 4.96.1 |
+| `store/bereal-store-06.png` | https://is1-ssl.mzstatic.com/image/thumb/PurpleVideo221/v4/1e/10/56/1e105647-6063-1d22-3c51-c8e12c7242c6/Joba0f87d54-257f-4443-95a0-21ce7e651062-215796961-PreviewImage_Preview_Image_Intermediate_nonvideo_422352912_2543187885-Time1769799160859.png/9999x0w.png | 2026-10-15 | App Store screenshot 6 of 8 (https://apps.apple.com/us/app/id1459645446) | listing version 4.96.1 |
+| `store/bereal-store-07.png` | https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/41/d8/ef/41d8efca-0025-c7fa-d868-d2be7f8fd713/ASOSep_06_1290x2778.png/9999x0w.png | 2026-10-15 | App Store screenshot 7 of 8 (https://apps.apple.com/us/app/id1459645446) | listing version 4.96.1 |
+| `store/bereal-store-08.png` | https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/24/7b/ec/247bec82-9507-7843-811b-3355d842a707/665f21f2-ac55-40d8-8de5-231ed235e95c_4.png/9999x0w.png | 2026-10-15 | App Store screenshot 8 of 8 (https://apps.apple.com/us/app/id1459645446) | listing version 4.96.1 |
