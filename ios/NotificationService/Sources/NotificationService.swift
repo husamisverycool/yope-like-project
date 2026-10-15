@@ -1,0 +1,81 @@
+import AppModels
+import Foundation
+import UserNotifications
+import WidgetKit
+
+/// Runs for alert pushes with `mutable-content: 1`. When the push carries widget fields
+/// (`WidgetPushPayload`), it downloads the widget rendition from the signed URL into the App
+/// Group, attaches it to the notification and reloads the group photo widget. The system gives
+/// the extension about 30 seconds; the download timeout stays inside that, and when time runs
+/// out (or anything fails) the notification is delivered unchanged.
+final class NotificationService: UNNotificationServiceExtension {
+    /// Request timeout inside the extension's execution window; renditions are small.
+    private static let downloader = HTTPDownloader(timeout: 20, maxBytes: 10 * 1024 * 1024)
+    private static let attachmentIdentifier = "widget-rendition"
+
+    private let lock = NSLock()
+    private var contentHandler: ((UNNotificationContent) -> Void)?
+    private var bestAttempt: UNMutableNotificationContent?
+    private var work: Task<Void, Never>?
+
+    override func didReceive(
+        _ request: UNNotificationRequest,
+        withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void
+    ) {
+        let content = (request.content.mutableCopy() as? UNMutableNotificationContent) ?? UNMutableNotificationContent()
+        lock.lock()
+        self.contentHandler = contentHandler
+        bestAttempt = content
+        lock.unlock()
+
+        guard let payload = WidgetPushPayload(userInfo: request.content.userInfo) else {
+            finish()
+            return
+        }
+        let store = WidgetStore.forBundle(.main)
+        let delivery = WidgetDelivery(store: store, downloader: Self.downloader)
+        work = Task { [weak self] in
+            if let snapshot = try? await delivery.deliver(payload, receivedAt: Date()) {
+                WidgetCenter.shared.reloadTimelines(ofKind: WidgetKind.groupPhoto)
+                if let file = store.photoURL(for: snapshot) {
+                    self?.attach(file)
+                }
+            }
+            self?.finish()
+        }
+    }
+
+    override func serviceExtensionTimeWillExpire() {
+        work?.cancel()
+        finish()
+    }
+
+    /// The system moves attachment files into its own store, so a copy is attached and the
+    /// widget keeps its rendition.
+    private func attach(_ file: URL) {
+        let copy = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension(file.pathExtension)
+        do {
+            try FileManager.default.copyItem(at: file, to: copy)
+            let attachment = try UNNotificationAttachment(identifier: Self.attachmentIdentifier, url: copy, options: nil)
+            lock.lock()
+            bestAttempt?.attachments = [attachment]
+            lock.unlock()
+        } catch {
+            try? FileManager.default.removeItem(at: copy)
+        }
+    }
+
+    /// Delivers the content once, whichever of completion and expiry comes first.
+    private func finish() {
+        lock.lock()
+        let handler = contentHandler
+        let content = bestAttempt
+        contentHandler = nil
+        lock.unlock()
+        if let handler, let content {
+            handler(content)
+        }
+    }
+}

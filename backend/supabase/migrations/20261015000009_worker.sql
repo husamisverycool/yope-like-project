@@ -18,6 +18,12 @@ security definer
 set search_path = ''
 as $$
 begin
+  if p_kind is null or p_kind !~ '^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+$' then
+    raise exception 'invalid_kind' using errcode = 'PT400', detail = 'e.g. "push.new_post"';
+  end if;
+  if coalesce(p_max_attempts, 5) < 1 then
+    raise exception 'invalid_argument' using errcode = 'PT400', detail = 'p_max_attempts';
+  end if;
   return private.enqueue(p_kind, p_payload, p_dedupe_key, coalesce(p_run_at, now()), coalesce(p_max_attempts, 5));
 end;
 $$;

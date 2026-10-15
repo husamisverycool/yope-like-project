@@ -16,8 +16,9 @@ import ActivityKit
 ///       "alert": { … }
 ///     }
 ///
-/// `closes_at` is Unix seconds (not Foundation's default reference-date encoding), and the keys
-/// are snake_case like the rest of the push payloads. The type name is part of the push contract.
+/// `closes_at` is Unix seconds (not Foundation's default reference-date encoding); an ISO 8601
+/// string (the Android payload's form) is accepted too. Keys are snake_case like the rest of the
+/// push payloads. The type name is part of the push contract.
 public struct DailyInvitationAttributes: Codable, Hashable, Sendable {
     public static let attributesTypeName = "DailyInvitationAttributes"
 
@@ -38,7 +39,15 @@ public struct DailyInvitationAttributes: Codable, Hashable, Sendable {
 
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            closesAt = Date(timeIntervalSince1970: try container.decode(Double.self, forKey: .closesAt))
+            if let seconds = try? container.decode(Double.self, forKey: .closesAt) {
+                closesAt = Date(timeIntervalSince1970: seconds)
+            } else {
+                let text = try container.decode(String.self, forKey: .closesAt)
+                guard let date = PayloadValue.iso8601(text) else {
+                    throw DecodingError.dataCorruptedError(forKey: .closesAt, in: container, debugDescription: "closes_at: \(text)")
+                }
+                closesAt = date
+            }
             groupName = try container.decode(String.self, forKey: .groupName)
         }
 

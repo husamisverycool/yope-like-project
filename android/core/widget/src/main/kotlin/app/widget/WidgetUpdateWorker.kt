@@ -77,7 +77,7 @@ data class WidgetUpdateRequest(
             val group = data.getString(K_GROUP)?.takeIf(DeepLinkCodec::isId) ?: return null
             val url = data.getString(K_URL) ?: return null
             val kind = data.getString(K_KIND)?.let { k -> WidgetSnapshot.Kind.entries.firstOrNull { it.name == k } } ?: return null
-            if (!data.hasKeyWithValueOfType(K_POSTED_AT, java.lang.Long::class.java)) return null
+            if (!data.hasKeyWithValueOfType(K_POSTED_AT, Long::class.javaObjectType)) return null
             return WidgetUpdateRequest(
                 groupId = group,
                 groupName = data.getString(K_GROUP_NAME).orEmpty(),

@@ -208,7 +208,7 @@ comment on view public.public_app_config is
 -- ---------------------------------------------------------------------------
 create table public.jobs (
   id           bigint generated always as identity primary key,
-  kind         text not null check (kind ~ '^[a-z_]+(\.[a-z_]+)+$'),
+  kind         text not null check (kind ~ '^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+$'),
   payload      jsonb not null default '{}'::jsonb,
   status       public.job_status not null default 'queued',
   run_at       timestamptz not null default now(),

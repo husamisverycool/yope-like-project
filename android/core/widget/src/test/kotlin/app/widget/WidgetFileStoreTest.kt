@@ -57,7 +57,7 @@ class WidgetFileStoreTest {
     @Test fun failedDownloadLeavesTheStoreUnchanged() {
         val a = store.write(incoming(1_000), bytes("a"))!!
         try {
-            store.write(incoming(2_000)) { it.write(1); throw IOException("network") }
+            store.write(incoming(2_000), writePhoto = { it.write(1); throw IOException("network") })
         } catch (_: IOException) {
         }
         assertEquals(a, store.read("g1"))
@@ -65,11 +65,11 @@ class WidgetFileStoreTest {
     }
 
     @Test(expected = IOException::class) fun emptyRenditionIsRejected() {
-        store.write(incoming(1_000)) { }
+        store.write(incoming(1_000), writePhoto = { })
     }
 
     @Test fun avatarIsOptionalAndItsFailureDoesNotBlockThePhoto() {
-        val s = store.write(incoming(1_000), bytes("p")) { throw IOException("avatar") }!!
+        val s = store.write(incoming(1_000), bytes("p"), writeAvatar = { throw IOException("avatar") })!!
         assertNull(s.senderAvatarFile)
         val t = store.write(incoming(2_000), bytes("p2"), bytes("avatar"))!!
         assertEquals("avatar", store.avatar(t)!!.readText())

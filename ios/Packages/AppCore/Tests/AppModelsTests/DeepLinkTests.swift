@@ -45,9 +45,9 @@ final class DeepLinkTests: XCTestCase {
 
     func testRequiredFields() {
         XCTAssertNil(parser.parse(url("app://post?group=g")))
-        XCTAssertNil(parser.parse(url("app://year_story?group=g&year=abc")))
-        XCTAssertNil(parser.parse(url("app://year_story?group=g&year=0")))
-        XCTAssertEqual(parser.parse(url("app://birthday_request?request=r")), .birthdayRequest(requestID: "r", groupID: nil))
+        XCTAssertNil(parser.parse(url("app://year-story?group=g&year=abc")))
+        XCTAssertNil(parser.parse(url("app://year-story?group=g&year=0")))
+        XCTAssertEqual(parser.parse(url("app://birthday-request?request=r")), .birthdayRequest(requestID: "r", groupID: nil))
     }
 
     static let allLinks: [DeepLink] = [
@@ -71,6 +71,10 @@ final class DeepLinkTests: XCTestCase {
             XCTAssertEqual(parser.parse(built), link, built.absoluteString)
         }
         XCTAssertEqual(parser.url(for: .camera(groupID: "g1"))?.absoluteString, "app://camera?group=g1")
+        // Same link format as Android (android/core/model/.../DeepLink.kt).
+        XCTAssertEqual(parser.url(for: .chatMessage(groupID: "g", messageID: "m"))?.absoluteString, "app://chat?group=g&message=m")
+        XCTAssertEqual(parser.url(for: .dailyInvitation(groupID: "g", invitationID: "i"))?.absoluteString, "app://daily?group=g&invitation=i")
+        XCTAssertEqual(parser.url(for: .yearStory(groupID: "g", year: 2026))?.absoluteString, "app://year-story?group=g&year=2026")
         XCTAssertEqual(parser.url(for: .invite(token: "abc"))?.absoluteString, "https://invite.example.test/i/abc")
     }
 
@@ -78,22 +82,27 @@ final class DeepLinkTests: XCTestCase {
 
     func testNotificationPayloads() {
         let cases: [([AnyHashable: Any], DeepLink)] = [
-            (["route": "post", "group_id": "g", "post_id": "p", "aps": ["alert": "x"]], .post(groupID: "g", postID: "p")),
-            (["route": "chat_message", "group_id": "g", "message_id": "m"], .chatMessage(groupID: "g", messageID: "m")),
-            (["route": "daily_invitation", "group_id": "g", "invitation_id": "i"], .dailyInvitation(groupID: "g", invitationID: "i")),
-            (["route": "recap", "group_id": "g", "recap_id": "r"], .recap(groupID: "g", recapID: "r")),
-            (["route": "birthday_request", "request_id": "b"], .birthdayRequest(requestID: "b", groupID: nil)),
-            (["route": "tribute", "tribute_id": "t", "group_id": "g"], .tribute(tributeID: "t", groupID: "g")),
-            (["route": "year_story", "group_id": "g", "year": 2026], .yearStory(groupID: "g", year: 2026)),
-            (["route": "year_story", "group_id": "g", "year": "2025"], .yearStory(groupID: "g", year: 2025)),
+            (["type": "new_post", "group_id": "g", "post_id": "p", "aps": ["alert": "x"]], .post(groupID: "g", postID: "p")),
+            (["type": "reaction", "group_id": "g", "post_id": "p"], .post(groupID: "g", postID: "p")),
+            (["type": "reply", "group_id": "g", "post_id": "p", "message_id": "m"], .chatMessage(groupID: "g", messageID: "m")),
+            (["type": "reply", "group_id": "g", "post_id": "p"], .post(groupID: "g", postID: "p")),
+            (["type": "daily_invitation", "group_id": "g", "invitation_id": "i"], .dailyInvitation(groupID: "g", invitationID: "i")),
+            (["type": "recap_ready", "group_id": "g", "recap_id": "r"], .recap(groupID: "g", recapID: "r")),
+            (["type": "birthday_request", "request_id": "b"], .birthdayRequest(requestID: "b", groupID: nil)),
+            (["type": "tribute", "tribute_id": "t", "group_id": "g"], .tribute(tributeID: "t", groupID: "g")),
+            (["type": "year_story", "group_id": "g", "year": 2026], .yearStory(groupID: "g", year: 2026)),
+            (["type": "year_story", "group_id": "g", "year": "2025"], .yearStory(groupID: "g", year: 2025)),
+            (["type": "new_post", "group_id": "g", "post_id": "p", "link": "app://chat?group=g&message=m"], .chatMessage(groupID: "g", messageID: "m")),
+            (["link": "app://camera?group=g"], .camera(groupID: "g")),
         ]
         for (payload, expected) in cases {
-            XCTAssertEqual(parser.parse(notificationPayload: payload), expected)
+            XCTAssertEqual(parser.parse(notificationPayload: payload), expected, "\(payload)")
         }
         XCTAssertNil(parser.parse(notificationPayload: [:]))
-        XCTAssertNil(parser.parse(notificationPayload: ["route": "post", "group_id": "g"]))
-        XCTAssertNil(parser.parse(notificationPayload: ["route": "nope"]))
-        XCTAssertNil(parser.parse(notificationPayload: ["route": "post", "group_id": "g/..", "post_id": "p"]))
+        XCTAssertNil(parser.parse(notificationPayload: ["type": "new_post", "group_id": "g"]))
+        XCTAssertNil(parser.parse(notificationPayload: ["type": "streak_reminder"]), "unknown types are ignored")
+        XCTAssertNil(parser.parse(notificationPayload: ["type": "widget", "group_id": "g"]), "widget pushes do not navigate")
+        XCTAssertNil(parser.parse(notificationPayload: ["type": "new_post", "group_id": "g/..", "post_id": "p"]))
     }
 
     func testPayloadRoundTrip() {
@@ -101,6 +110,7 @@ final class DeepLinkTests: XCTestCase {
             let payload: [AnyHashable: Any] = parser.payload(for: link)
             XCTAssertEqual(parser.parse(notificationPayload: payload), link)
         }
+        XCTAssertEqual(parser.payload(for: .post(groupID: "g", postID: "p")), ["type": "new_post", "group_id": "g", "post_id": "p"])
     }
 
     func testGroupID() {

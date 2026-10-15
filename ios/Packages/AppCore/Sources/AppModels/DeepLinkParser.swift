@@ -5,14 +5,13 @@ import Foundation
 /// Accepted forms:
 /// - `https://<domain>/i/<token>` for each configured universal-link host (invites, App Clip).
 /// - `<customScheme>://<route>?<field>=<id>…`, e.g. `app://camera?group=<id>` from widgets.
-/// - Notification `userInfo` with `"route": "<route>"` and `<field>_id` keys (see `DeepLinkField.payloadKey`).
+/// - Notification `userInfo`: a `link` URL, or `type` (`PushType`) with `<field>_id` keys.
 ///
 /// Identifiers are accepted only when they consist of URL-safe characters, so a crafted link
 /// cannot carry path separators or query syntax into the app.
 public struct DeepLinkParser: Sendable {
     public static let defaultCustomScheme = "app"
     public static let invitePathPrefix = "i"
-    public static let routePayloadKey = "route"
 
     public let universalLinkHosts: Set<String>
     public let customScheme: String
@@ -86,25 +85,46 @@ public struct DeepLinkParser: Sendable {
 
     // MARK: Notification payloads
 
-    /// Reads the route of a notification tap. `userInfo` is the APNs payload (top-level keys
-    /// next to `aps`).
+    /// The destination of a notification tap. `userInfo` is the APNs payload (top-level keys
+    /// next to `aps`). A `link` wins; otherwise the `type` and its ids decide.
     public func parse(notificationPayload userInfo: [AnyHashable: Any]) -> DeepLink? {
-        guard let routeName = userInfo[Self.routePayloadKey] as? String,
-              let route = DeepLinkRoute(rawValue: routeName) else { return nil }
-        return Self.make(route: route) { field in
-            switch userInfo[field.payloadKey] {
-            case let string as String: return string
-            case let int as Int: return String(int)
-            case let number as NSNumber: return number.stringValue
-            default: return nil
-            }
+        if let text = PayloadValue.string(userInfo[PushKey.link]), let url = URL(string: text), let link = parse(url) {
+            return link
         }
+        guard let typeName = PayloadValue.string(userInfo[PushKey.type]),
+              let type = PushType(rawValue: typeName) else { return nil }
+        let value: (DeepLinkField) -> String? = { PayloadValue.string(userInfo[$0.payloadKey]) }
+        let route: DeepLinkRoute
+        switch type {
+        case .newPost, .reaction: route = .post
+        case .reply: route = value(.message) != nil ? .chat : .post
+        case .recapReady: route = .recap
+        case .birthdayRequest: route = .birthdayRequest
+        case .tribute: route = .tribute
+        case .yearStory: route = .yearStory
+        case .dailyInvitation: route = .daily
+        case .widget, .dailyInvitationEnded: return nil
+        }
+        return Self.make(route: route, value: value)
     }
 
-    /// The payload dictionary for `link` (used by tests and local notifications).
+    /// A payload that taps through to `link` (tests, local notifications).
     public func payload(for link: DeepLink) -> [String: String] {
-        guard let route = link.route else { return [:] }
-        var payload = [Self.routePayloadKey: route.rawValue]
+        let type: PushType?
+        switch link.route {
+        case .post?: type = .newPost
+        case .chat?: type = .reply
+        case .daily?: type = .dailyInvitation
+        case .recap?: type = .recapReady
+        case .birthdayRequest?: type = .birthdayRequest
+        case .tribute?: type = .tribute
+        case .yearStory?: type = .yearStory
+        case .camera?, nil: type = nil
+        }
+        guard let type else {
+            return url(for: link).map { [PushKey.link: $0.absoluteString] } ?? [:]
+        }
+        var payload = [PushKey.type: type.rawValue]
         for (field, value) in link.fields { payload[field.payloadKey] = value }
         return payload
     }
@@ -123,10 +143,10 @@ public struct DeepLinkParser: Sendable {
         case .post:
             guard let group = id(.group), let post = id(.post) else { return nil }
             return .post(groupID: group, postID: post)
-        case .chatMessage:
+        case .chat:
             guard let group = id(.group), let message = id(.message) else { return nil }
             return .chatMessage(groupID: group, messageID: message)
-        case .dailyInvitation:
+        case .daily:
             guard let group = id(.group), let invitation = id(.invitation) else { return nil }
             return .dailyInvitation(groupID: group, invitationID: invitation)
         case .recap:

@@ -140,6 +140,13 @@ final class DailyInvitationAttributesTests: XCTestCase {
         XCTAssertEqual(reencoded?["closes_at"] as? Double, 1_760_529_720)
     }
 
+    func testContentStateAcceptsISO8601() throws {
+        let json = Data(#"{"closes_at":"2025-10-15T12:02:00Z","group_name":"G"}"#.utf8)
+        let state = try JSONDecoder().decode(DailyInvitationAttributes.ContentState.self, from: json)
+        XCTAssertEqual(state.closesAt, Date(timeIntervalSince1970: 1_760_529_720))
+        XCTAssertThrowsError(try JSONDecoder().decode(DailyInvitationAttributes.ContentState.self, from: Data(#"{"closes_at":"soon","group_name":"G"}"#.utf8)))
+    }
+
     func testAttributesMatchPushPayload() throws {
         let json = Data(#"{"group_id":"g1","invitation_id":"i1"}"#.utf8)
         XCTAssertEqual(try JSONDecoder().decode(DailyInvitationAttributes.self, from: json), DailyInvitationAttributes(groupID: "g1", invitationID: "i1"))

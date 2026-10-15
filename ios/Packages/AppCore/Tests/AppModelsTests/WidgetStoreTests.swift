@@ -21,7 +21,7 @@ final class WidgetStoreTests: XCTestCase {
 
     private func snapshot(group: String = "g1", post: String, kind: WidgetSnapshot.Kind = .photo, at seconds: TimeInterval) -> WidgetSnapshot {
         WidgetSnapshot(
-            groupID: group, groupName: "Name", postID: post, photoFileName: "\(kind.rawValue)-\(post).jpg",
+            groupID: group, groupName: "Name", sourceID: post, photoFileName: "\(kind.rawValue)-\(post).jpg",
             senderDisplayName: "Sender", caption: "caption", kind: kind,
             postedAt: Date(timeIntervalSince1970: seconds)
         )
@@ -51,16 +51,16 @@ final class WidgetStoreTests: XCTestCase {
         let store = self.store
         try put(snapshot(post: "p1", at: 100), in: store)
         try put(snapshot(post: "c1", kind: .collage, at: 200), in: store)
-        XCTAssertEqual(store.latestSnapshot(groupID: "g1")?.postID, "c1")
+        XCTAssertEqual(store.latestSnapshot(groupID: "g1")?.sourceID, "c1")
         try put(snapshot(post: "p2", at: 300), in: store)
-        XCTAssertEqual(store.latestSnapshot(groupID: "g1")?.postID, "p2")
+        XCTAssertEqual(store.latestSnapshot(groupID: "g1")?.sourceID, "p2")
     }
 
     func testSnapshotWithoutFileIsIgnored() throws {
         let store = self.store
         try put(snapshot(post: "p1", at: 100), in: store)
         try store.save(snapshot(post: "c1", kind: .collage, at: 200))
-        XCTAssertEqual(store.latestSnapshot(groupID: "g1")?.postID, "p1")
+        XCTAssertEqual(store.latestSnapshot(groupID: "g1")?.sourceID, "p1")
     }
 
     func testLatestAcrossGroups() throws {
@@ -70,16 +70,16 @@ final class WidgetStoreTests: XCTestCase {
         XCTAssertEqual(store.latestSnapshot()?.groupID, "b")
     }
 
-    func testRemovePost() throws {
+    func testRemoveSource() throws {
         let store = self.store
         let photo = snapshot(post: "p1", at: 100)
         try put(photo, in: store)
         try put(snapshot(post: "c1", kind: .collage, at: 50), in: store)
-        XCTAssertTrue(try store.removePost("p1"))
+        XCTAssertTrue(try store.removeSource("p1"))
         XCTAssertNil(store.snapshot(groupID: "g1", kind: .photo))
         XCTAssertNil(store.photoURL(for: photo))
-        XCTAssertEqual(store.latestSnapshot(groupID: "g1")?.postID, "c1")
-        XCTAssertFalse(try store.removePost("p1"))
+        XCTAssertEqual(store.latestSnapshot(groupID: "g1")?.sourceID, "c1")
+        XCTAssertFalse(try store.removeSource("p1"))
     }
 
     func testSyncGroupsRemovesStaleGroups() throws {
@@ -129,6 +129,6 @@ final class WidgetStoreTests: XCTestCase {
     func testSnapshotJSONShape() throws {
         let data = try WidgetStore.encoder.encode(snapshot(post: "p1", at: 10))
         let object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        XCTAssertEqual(Set(object.keys), ["group_id", "group_name", "post_id", "photo_file", "sender_name", "caption", "kind", "posted_at"])
+        XCTAssertEqual(Set(object.keys), ["group_id", "group_name", "source_id", "photo_file", "sender_name", "caption", "kind", "posted_at"])
     }
 }

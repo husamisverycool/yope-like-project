@@ -23,17 +23,17 @@ public enum DeepLink: Hashable, Sendable {
     case yearStory(groupID: String, year: Int)
 }
 
-/// Route names shared by custom-scheme URLs (`app://<route>?…`) and notification payloads
-/// (`"route": "<route>"`). The worker sends exactly these strings.
+/// Hosts of custom-scheme links (`app://<route>?…`), shared with Android
+/// (`android/core/model/.../DeepLink.kt`) so the worker builds one link format for both.
 public enum DeepLinkRoute: String, CaseIterable, Sendable {
     case camera
     case post
-    case chatMessage = "chat_message"
-    case dailyInvitation = "daily_invitation"
+    case chat
+    case daily
     case recap
-    case birthdayRequest = "birthday_request"
+    case birthdayRequest = "birthday-request"
     case tribute
-    case yearStory = "year_story"
+    case yearStory = "year-story"
 }
 
 /// The identifiers a deep link carries. URLs use `queryName` (`app://camera?group=<id>`);
@@ -61,8 +61,8 @@ extension DeepLink {
         case .invite: return nil
         case .camera: return .camera
         case .post: return .post
-        case .chatMessage: return .chatMessage
-        case .dailyInvitation: return .dailyInvitation
+        case .chatMessage: return .chat
+        case .dailyInvitation: return .daily
         case .recap: return .recap
         case .birthdayRequest: return .birthdayRequest
         case .tribute: return .tribute

@@ -10,8 +10,8 @@ public struct WidgetSnapshot: Codable, Hashable, Sendable {
 
     public var groupID: String
     public var groupName: String?
-    /// The post (or collage) the rendition belongs to; used to remove it when the post is deleted.
-    public var postID: String
+    /// The post or collage the rendition shows; used to remove it when that is deleted.
+    public var sourceID: String?
     /// File name of the widget rendition inside the group's folder in `WidgetStore`.
     public var photoFileName: String
     public var senderDisplayName: String?
@@ -24,7 +24,7 @@ public struct WidgetSnapshot: Codable, Hashable, Sendable {
     public init(
         groupID: String,
         groupName: String? = nil,
-        postID: String,
+        sourceID: String?,
         photoFileName: String,
         senderDisplayName: String? = nil,
         senderAvatarFileName: String? = nil,
@@ -34,7 +34,7 @@ public struct WidgetSnapshot: Codable, Hashable, Sendable {
     ) {
         self.groupID = groupID
         self.groupName = groupName
-        self.postID = postID
+        self.sourceID = sourceID
         self.photoFileName = photoFileName
         self.senderDisplayName = senderDisplayName
         self.senderAvatarFileName = senderAvatarFileName
@@ -46,7 +46,7 @@ public struct WidgetSnapshot: Codable, Hashable, Sendable {
     enum CodingKeys: String, CodingKey {
         case groupID = "group_id"
         case groupName = "group_name"
-        case postID = "post_id"
+        case sourceID = "source_id"
         case photoFileName = "photo_file"
         case senderDisplayName = "sender_name"
         case senderAvatarFileName = "sender_avatar_file"

@@ -137,14 +137,15 @@ public struct WidgetStore: Sendable {
         storedGroupIDs().compactMap { latestSnapshot(groupID: $0) }.max(by: Self.isOlder)
     }
 
-    /// Removes every snapshot that shows `postID`, with its files. Returns whether anything was removed.
-    /// Used when a post is deleted (security invariant 2: a deleted photo leaves the widgets).
+    /// Removes every snapshot that shows the post or collage `sourceID`, with its rendition.
+    /// Returns whether anything was removed. Used when a post is deleted (security invariant 2:
+    /// a deleted photo leaves the widgets).
     @discardableResult
-    public func removePost(_ postID: String) throws -> Bool {
+    public func removeSource(_ sourceID: String) throws -> Bool {
         var removed = false
         for groupID in storedGroupIDs() {
             for kind in WidgetSnapshot.Kind.allCases {
-                guard let snapshot = snapshot(groupID: groupID, kind: kind), snapshot.postID == postID else { continue }
+                guard let snapshot = snapshot(groupID: groupID, kind: kind), snapshot.sourceID == sourceID else { continue }
                 try removeIfPresent(snapshotURL(groupID: groupID, kind: kind))
                 if let url = try? fileURL(groupID: groupID, fileName: snapshot.photoFileName) {
                     try removeIfPresent(url)

@@ -3,29 +3,31 @@ import Foundation
 import FoundationNetworking
 #endif
 
-/// The `widget` object of a new-post / collage push:
+/// Widget fields of a push (new post or same-moment collage). Two shapes are accepted:
 ///
-///     "widget": {
-///       "group_id": "…", "post_id": "…",
-///       "rendition_url": "https://…signed…",
-///       "sender": "Display name" | { "display_name": "…", "avatar_url": "https://…" },
-///       "caption": "…", "kind": "photo" | "collage",
-///       "group_name": "…",            (optional)
-///       "posted_at": 1760000000        (optional; Unix seconds or ISO 8601)
-///     }
+/// - an iOS alert push (`mutable-content: 1`, handled by the Notification Service Extension)
+///   carrying them as one object: `"widget": { "group_id": …, "post_id": …, "rendition_url": …,
+///   "sender": "Name" | { "display_name": …, "avatar_url": … }, "caption": …, "kind": … }`;
+/// - a silent push for muted groups (handled by the app delegate) with the flat keys of the
+///   shared contract: `"type": "widget", "group_id", "post_id" | "collage_id", "rendition_url",
+///   "sender_name", "sender_avatar_url", "caption", "kind", "group_name", "posted_at"`.
 ///
-/// Alert pushes carry it with `mutable-content: 1` (handled by the Notification Service
-/// Extension); muted groups get it in a background push (handled by the app delegate).
+/// Required: `group_id` and an HTTPS `rendition_url`. `kind` defaults to `photo`; `posted_at`
+/// (Unix seconds or milliseconds, or ISO 8601) defaults to the time of receipt.
 public struct WidgetPushPayload: Hashable, Sendable {
-    public static let payloadKey = "widget"
-
     public struct Sender: Hashable, Sendable {
         public var displayName: String?
         public var avatarURL: URL?
+
+        public init(displayName: String?, avatarURL: URL?) {
+            self.displayName = displayName
+            self.avatarURL = avatarURL
+        }
     }
 
     public var groupID: String
-    public var postID: String
+    /// The post, or the collage, the rendition shows.
+    public var sourceID: String?
     public var renditionURL: URL
     public var sender: Sender?
     public var caption: String?
@@ -35,7 +37,7 @@ public struct WidgetPushPayload: Hashable, Sendable {
 
     public init(
         groupID: String,
-        postID: String,
+        sourceID: String?,
         renditionURL: URL,
         sender: Sender? = nil,
         caption: String? = nil,
@@ -44,7 +46,7 @@ public struct WidgetPushPayload: Hashable, Sendable {
         postedAt: Date? = nil
     ) {
         self.groupID = groupID
-        self.postID = postID
+        self.sourceID = sourceID
         self.renditionURL = renditionURL
         self.sender = sender
         self.caption = caption
@@ -53,50 +55,59 @@ public struct WidgetPushPayload: Hashable, Sendable {
         self.postedAt = postedAt
     }
 
-    /// Reads the payload from an APNs `userInfo` dictionary. Returns nil when there is no
-    /// `widget` object or it is malformed (missing ids, non-HTTPS rendition URL, unsafe ids).
+    /// Reads the payload from an APNs `userInfo` dictionary; nil when it has no widget fields or
+    /// they are malformed (missing group, non-HTTPS URL, unsafe ids, unknown kind).
     public init?(userInfo: [AnyHashable: Any]) {
-        guard let widget = userInfo[Self.payloadKey] as? [AnyHashable: Any] else { return nil }
-        self.init(widget: widget)
+        if let nested = userInfo[PushKey.widget] as? [AnyHashable: Any] {
+            self.init(fields: nested)
+        } else if PayloadValue.string(userInfo[PushKey.type]) == PushType.widget.rawValue {
+            self.init(fields: userInfo)
+        } else {
+            return nil
+        }
     }
 
-    init?(widget: [AnyHashable: Any]) {
-        guard let groupID = widget["group_id"] as? String, DeepLinkParser.isValidIdentifier(groupID),
-              let postID = widget["post_id"] as? String, DeepLinkParser.isValidIdentifier(postID),
-              let renditionText = widget["rendition_url"] as? String,
-              let renditionURL = Self.httpsURL(renditionText) else { return nil }
-        self.groupID = groupID
-        self.postID = postID
+    init?(fields: [AnyHashable: Any]) {
+        func text(_ key: String) -> String? { PayloadValue.string(fields[key]) }
+        guard let group = text(PushKey.groupID), DeepLinkParser.isValidIdentifier(group),
+              let renditionText = text(PushKey.renditionURL), let renditionURL = Self.httpsURL(renditionText) else { return nil }
+        let source = text(PushKey.postID) ?? text(PushKey.collageID)
+        if let source, !DeepLinkParser.isValidIdentifier(source) { return nil }
+        groupID = group
+        sourceID = source
         self.renditionURL = renditionURL
-        switch widget["sender"] {
-        case let name as String:
-            sender = Sender(displayName: name, avatarURL: nil)
+
+        switch fields["sender"] {
         case let object as [AnyHashable: Any]:
             sender = Sender(
-                displayName: (object["display_name"] as? String) ?? (object["name"] as? String),
-                avatarURL: (object["avatar_url"] as? String).flatMap(Self.httpsURL)
+                displayName: PayloadValue.string(object["display_name"]) ?? PayloadValue.string(object["name"]),
+                avatarURL: PayloadValue.string(object["avatar_url"]).flatMap(Self.httpsURL)
             )
         default:
-            sender = nil
+            let name = PayloadValue.string(fields["sender"]) ?? text(PushKey.senderName)
+            let avatar = text(PushKey.senderAvatarURL).flatMap(Self.httpsURL)
+            sender = (name == nil && avatar == nil) ? nil : Sender(displayName: name, avatarURL: avatar)
         }
-        caption = (widget["caption"] as? String).flatMap { $0.isEmpty ? nil : $0 }
-        if let kindText = widget["kind"] as? String {
+
+        caption = text(PushKey.caption)
+        if let kindText = text(PushKey.kind) {
             guard let kind = WidgetSnapshot.Kind(rawValue: kindText) else { return nil }
             self.kind = kind
         } else {
             kind = .photo
         }
-        groupName = widget["group_name"] as? String
-        postedAt = Self.date(widget["posted_at"])
+        groupName = text(PushKey.groupName)
+        postedAt = PayloadValue.date(fields[PushKey.postedAt])
     }
 
-    /// File name the rendition is stored under in the group's folder.
-    public var renditionFileName: String {
-        "\(kind.rawValue)-\(postID).\(Self.imageExtension(renditionURL))"
+    /// File name the rendition is stored under in the group's folder (`fallbackID` names it
+    /// when the payload has no post or collage id).
+    public func renditionFileName(fallbackID: String) -> String {
+        "\(kind.rawValue)-\(sourceID ?? fallbackID).\(Self.imageExtension(renditionURL))"
     }
 
-    public var avatarFileName: String? {
-        sender?.avatarURL.map { "avatar-\(postID).\(Self.imageExtension($0))" }
+    public func avatarFileName(fallbackID: String) -> String? {
+        sender?.avatarURL.map { "avatar-\(sourceID ?? fallbackID).\(Self.imageExtension($0))" }
     }
 
     static func httpsURL(_ text: String) -> URL? {
@@ -107,23 +118,6 @@ public struct WidgetPushPayload: Hashable, Sendable {
     static func imageExtension(_ url: URL) -> String {
         let ext = url.pathExtension.lowercased()
         return ["jpg", "jpeg", "png", "heic", "webp"].contains(ext) ? ext : "jpg"
-    }
-
-    static func date(_ value: Any?) -> Date? {
-        switch value {
-        case let seconds as Double: return Date(timeIntervalSince1970: seconds)
-        case let seconds as Int: return Date(timeIntervalSince1970: TimeInterval(seconds))
-        case let number as NSNumber: return Date(timeIntervalSince1970: number.doubleValue)
-        case let text as String:
-            if let seconds = Double(text) { return Date(timeIntervalSince1970: seconds) }
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-            if let date = formatter.date(from: text) { return date }
-            formatter.formatOptions = [.withInternetDateTime]
-            return formatter.date(from: text)
-        default:
-            return nil
-        }
     }
 }
 
@@ -146,12 +140,14 @@ public struct WidgetDelivery: Sendable {
 
     @discardableResult
     public func deliver(_ payload: WidgetPushPayload, receivedAt: Date) async throws -> WidgetSnapshot {
+        let fallbackID = String(Int64((receivedAt.timeIntervalSince1970 * 1000).rounded()))
+        let photoFileName = payload.renditionFileName(fallbackID: fallbackID)
         let photo = try await download(payload.renditionURL)
         try Task.checkCancellation()
-        try store.writeFile(photo, groupID: payload.groupID, fileName: payload.renditionFileName)
+        try store.writeFile(photo, groupID: payload.groupID, fileName: photoFileName)
 
         var avatarFileName: String?
-        if let avatarURL = payload.sender?.avatarURL, let name = payload.avatarFileName,
+        if let avatarURL = payload.sender?.avatarURL, let name = payload.avatarFileName(fallbackID: fallbackID),
            let avatar = try? await download(avatarURL) {
             try store.writeFile(avatar, groupID: payload.groupID, fileName: name)
             avatarFileName = name
@@ -161,8 +157,8 @@ public struct WidgetDelivery: Sendable {
         let snapshot = WidgetSnapshot(
             groupID: payload.groupID,
             groupName: payload.groupName ?? store.groups().first { $0.id == payload.groupID }?.name,
-            postID: payload.postID,
-            photoFileName: payload.renditionFileName,
+            sourceID: payload.sourceID,
+            photoFileName: photoFileName,
             senderDisplayName: payload.sender?.displayName,
             senderAvatarFileName: avatarFileName,
             caption: payload.caption,
