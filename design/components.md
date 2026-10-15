@@ -123,7 +123,7 @@ Activity · Profile (2026).
 | selected | `color.global.textPrimary` #000000 / #FFFFFF |
 | unselected | `color.global.tabInactive` #B2B2B2 / #999999 |
 | unread dot | `size.global.tabBadgeDot` (4) circle `color.global.badge` #EA3337, centred, `size.global.tabBadgeOffset` (5) below the glyph |
-| over a photo (full-bleed page) | selected `color.global.textOnMedia`, unselected white 60 % (#FFFFFF99 — `color.global.textSecondary.android`'s dark value), on `layout.global.photoScrim` |
+| over a photo (full-bleed page) | selected `color.global.textOnMedia`, unselected `color.global.tabInactiveOnMedia` (white 62 %), on `layout.global.photoScrim` |
 | background | `color.global.background` (iOS) / `.background.android` |
 
 **States.** Selected = glyph colour only (no pill, no fill variant). Pressed: platform default. Tab switch
@@ -270,12 +270,12 @@ Field at the bottom of the viewer (and of a thread): own avatar leading, placeho
 | fill | on media `color.global.controlOnDeep` #262626; on a page (Android thread) `color.global.surfaceSecondary.android` / iOS `color.global.control` |
 | height / corners | `size.global.commentFieldHeight` (48), `radius.global.commentField` (12) |
 | inset | `size.global.screenMargin` (16) each side |
-| leading avatar | ≈30 pt circle (TC-2B; not isolated — **Gap**: use `size.global.avatarSmall` until measured) |
+| leading avatar | `size.global.avatarComment` (30), own photo |
 | placeholder | text role `body` (15), `color.global.textSecondary` ("Add a comment…") |
 | trailing glyph | `icon.global.more` (or send `icon.global.send` when text is present — mechanics) in `color.global.textSecondary` |
 
 **Accessibility.** Text field with a label from copy; send button labelled. Contrast: placeholder on #262626
-5.31:1 (row 41). **Evidence.** TC-2B (field rows 1821–1934 = 48 pt; corner fit 12.1 pt — measured this pass;
+5.31:1 (row 41). **Evidence.** TC-2B (field rows 1821–1934 = 48 pt; corner fit 12.1 pt; field avatar x1377–1446 — measured this pass;
 fill (1700–1720,1880–1890)); RV §4 #15; APK-X vv3.l "reply bar".
 
 ## C-14 Grouped section and rows (settings)
@@ -320,7 +320,7 @@ Counts in subtitles ("2 posts") are a Retro pattern our tenets drop (copy decide
 
 | part | token |
 |---|---|
-| avatar | `size.global.avatarPicker` (37) |
+| avatar | `size.global.avatarPicker` (37) in request / member rows; `size.global.avatarComment` (30) in comment rows |
 | name / line | text role `listTitle` (15 semibold) / `listSubtitle` (15) `color.global.textSecondary`; timestamp text role `caption` (14) |
 | actions | pair of medium capsules (C-06) 150 × 36, gap ≈8.8 (`size.global.pillGap`) |
 | unread marker | `size.global.tabBadgeDot` dot `color.global.badge` (TC-1B unread dot) |
@@ -435,7 +435,7 @@ back"); Retro shows no progress bars.
 | photo | full width, `radius.global.photo` (0) |
 | footer | location text role `listTitle` + date text role `listSubtitle` `color.global.textSecondary`; trailing reaction slot (mechanics: Locket reactions; Retro's heart like is do-not-copy) |
 | divider | `color.global.separator` dark value #4D4D4D, `size.global.hairline` |
-| comment row | C-16 (avatar `size.global.avatarPicker`, "name 2h", text role `body` `color.global.textOnMedia`) |
+| comment row | C-16 (avatar `size.global.avatarComment` (30), "name 2h": name text role `listTitle`, time text role `caption` `color.global.textSecondary`; text role `body` `color.global.textOnMedia`) |
 | more | `icon.global.more` → native menu (Save / Delete / Report, destructive red) |
 
 **Motion.** Open from a card / tile: `duration.global.photoOpen` (250) `easing.global.standard`; advance and close:
@@ -450,7 +450,8 @@ field), TC-R3 phone 1 (black viewer under a light sheet); RV §2 row 15, §3.8, 
 |---|---|---|
 | `size.global.avatarSmall` | 22.6 | stack (album rows) |
 | `size.global.avatarList` | 26.5 | friend-card header |
-| `size.global.avatarPicker` | 37 | people / comment rows |
+| `size.global.avatarComment` | 30 | comment rows, inside the reply field |
+| `size.global.avatarPicker` | 37 | request / member rows |
 | `size.global.avatarHeader` | 39 | viewer header (with ring) |
 | `size.global.avatarProfile` | 64 | profile header |
 | `size.global.avatarGrid` | 81 | people grid |
@@ -481,8 +482,8 @@ APK-X wv3.a (11/11 W600); RV §3.1, §3.3, §4 #8.
 |---|---|
 | fill pill / template "Create" | C-06 fill variant |
 | position pill | see C-22 |
-| video duration ("1:00") | capsule `color.global.surfaceLight` 71 × 24, `icon.global.video` + monospaced digits, text role `badge`-sized bold (PAY "1:00" — 13 bold per RV §3.3 "Pill label small") |
-| premium pill ("FREE") | 51 × 26 capsule, `layout.global.premiumGradient` (top #D543DE → bottom #A327B8) / `color.global.premium`, label 13 bold `color.global.onBadge`; coloured shadow not measured; **paywall only, owner decides** |
+| video duration ("1:00") | capsule `color.global.surfaceLight` 71 × 24, `icon.global.video` + monospaced digits, text role `pillSmall` (13 bold) `color.global.onSurfaceLight` |
+| premium pill ("FREE") | 51 × 26 capsule, `layout.global.premiumGradient` (top #D543DE → bottom #A327B8) / `color.global.premium`, label text role `pillSmall` (13 bold, caps) `color.global.onBadge`; coloured shadow not measured; **paywall only, owner decides** |
 | relative week | C-03 |
 
 **Evidence.** PAY ((945–955,1480–1495), col x=960 y1450–1525); RV §3.1, §3.3, §4 #8.
@@ -596,7 +597,7 @@ pill below (recap preview) or a pager of plan cards (paywall).
 | part | token |
 |---|---|
 | backdrop | the photo blurred (`layout.global.materials.backdrop`); blur radius not measurable (**Gap**) |
-| recap card | `color.global.surfaceElevated` #FFFFFF / #181818; corners ≈5 % of its width (TC-H) — use `radius.global.thumbnail` × … **Gap** (no fit possible on the gradient backdrop); photo grid with `size.global.stripGap` gaps, `radius.global.thumbnail` cells; footer: year in `font.global.display` text role `displaySmall`, name text role `listTitle`, domain line text role `meta` `color.global.textSecondary` |
+| recap card | `color.global.surfaceElevated` #FFFFFF / #181818; corners ≈4.5–5 % of the card width (TC-H; no exact fit on the gradient backdrop — **Gap**: one lossless share-image export); photo grid with `size.global.stripGap` gaps, `radius.global.thumbnail` cells; footer: year in `font.global.display` text role `displaySmall`, name text role `listTitle`, domain line text role `meta` `color.global.textSecondary` |
 | plan card (paywall) | translucent white on iOS (alpha not derivable — **Gap**; opaque `color.global.surfaceElevated` is the APK value); corners `radius.global.cardLarge` (36); padding `size.global.planCardPadding` (27); its capsule (C-05) 16 from the card sides and bottom; next card peeks after `size.global.planCardGap` (8); width = screen − 2 × `size.global.buttonMarginH` |
 | plan card text | title 24 bold / price 22 heavy, body 15, steps 17, footnote 15 (PAY) — paywall surface tokens (Pass 2) |
 | close | glass circle `size.global.circleButtonSmall` (32) (C-11) |
@@ -608,8 +609,8 @@ TC-H (`press/tc-2023-12-retro-header.png`), PAY (card x60–1144 y1386–2456; T
 ## C-35 Full-bleed media page (Rewind-style)
 
 Full-bleed photo on `color.global.backgroundDeep`; display date title (text role `headerTitle`,
-`color.global.textOnMedia`) at the margin with an optional `icon.global.chevronDown`; subtitle text role
-`textButton`-size regular in white at reduced opacity (not measurable — **Gap**); top-right glass "•••"
+`color.global.textOnMedia`) at the margin with an optional `icon.global.chevronDown`; subtitle ("On this week") text
+role `textButton` (≈17 regular) in white at reduced opacity (opacity not measurable — **Gap**); top-right glass "•••"
 (`size.global.circleButtonPhoto`); bottom `layout.global.photoScrim`; central control flanked by glass circles
 (`size.global.circleButtonLarge`) with `icon.global.share` / `icon.global.random`; the tab bar (C-04, over-photo
 colours) sits on the scrim. A dial / scrubber plays `haptic.global.select` once per step (RP §3.8).

@@ -170,6 +170,7 @@ export const PAIRS = [
   ["color.global.textOnMedia", "color.global.scrim,#FFFFFF", "text", "white text at the tile's bottom edge (scrim 60 %) over a white photo"],
   ["color.global.textOnMedia", "color.global.glass,#FFFFFF", "nontext", "white glyph in a glass circle over a white photo — worst case"],
   ["color.global.textOnMedia", "color.global.glass,#7D7263", "nontext", "white glyph in a glass circle over the measured Rewind photo (RWA outside #7D7263)"],
+  ["color.global.tabInactiveOnMedia", "#322C25", "nontext", "unselected tab glyph over the measured Rewind photo and scrim (RWA #322C25)"],
   // Material 3 system surfaces (Android; Retro's scheme + M3 baseline)
   ["color.global.system.onSurface", "color.global.system.surface", "text", "M3 list item label (bodyLarge) on surface"],
   ["color.global.system.onSurfaceVariant", "color.global.system.surface", "text", "M3 supporting text (bodyMedium 14) on surface"],

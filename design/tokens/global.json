@@ -208,6 +208,17 @@
       "method": "darkest pixel (light render) / solid stem cores (dark RAW)",
       "precision": "±2/255 (light), exact (dark)"
     },
+    "color.global.tabInactiveOnMedia": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global",
+      "type": "color",
+      "value": "#FFFFFF9E",
+      "element": "unselected tab glyphs over a full-bleed photo (selected: color.global.textOnMedia)",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-a.png icon bands y2640–2740: unselected glyph #B2AFAC over #322C25 (brightest 25 px vs darkest 200 px per icon) — design/research/retro-visual.md §3.2",
+      "method": "white alpha solved per channel: (178−50)/(255−50)=0.62, (175−44)/(255−44)=0.62, (172−37)/(255−37)=0.62 → 0x9E",
+      "precision": "±0.02 alpha"
+    },
     "color.global.badge": {
       "level": "SOURCED",
       "source_app": "Retro",
@@ -1079,6 +1090,29 @@
       "method": "visual weight comparison against the regular / semibold text in the same capture",
       "precision": "±1 weight step"
     },
+    "fontSize.global.pillSmall": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global",
+      "type": "fontSize",
+      "value": 13,
+      "element": "label of small pills on media / the paywall ('FREE', video duration '1:00' with monospaced digits)",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png 'F' 27 px → 12.8 pt — design/research/retro-visual.md §3.3 (Pill label small)",
+      "method": "cap height ÷ 0.705 (RAW)",
+      "precision": "±1 pt",
+      "unit": "pt"
+    },
+    "fontWeight.global.pillSmall": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global",
+      "type": "fontWeight",
+      "value": "bold",
+      "element": "label of small pills on media / the paywall ('FREE', video duration '1:00' with monospaced digits)",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png 'F' 27 px → 12.8 pt — design/research/retro-visual.md §3.3 (Pill label small)",
+      "method": "visual weight comparison against the regular / semibold text in the same capture",
+      "precision": "±1 weight step"
+    },
     "fontSize.global.body.android": {
       "level": "SOURCED",
       "source_app": "Retro",
@@ -1214,7 +1248,8 @@
         "tileLabel": "footnote",
         "tileDay": "title",
         "tileMonth": "subheadline",
-        "badge": "caption2"
+        "badge": "caption2",
+        "pillSmall": "footnote"
       },
       "element": "iOS Dynamic Type text style each fontSize.global.<role> scales with (SwiftUI Font.TextStyle case; DSTextStyle.relativeTo); Android sp sizes follow the font scale",
       "evidence": "HIG Typography: Dynamic Type sizes at the default (Large) size — largeTitle 34, title 28, title2 22, title3 20, headline 17 semibold, body 17, callout 16, subheadline 15, footnote 13, caption 12, caption2 11 (MERGE_DECISIONS Foundations F-13)",
@@ -1705,11 +1740,24 @@
       "surface": "global",
       "type": "dimension",
       "value": 37,
-      "element": "avatar in a people row (friend request, member, comment rows)",
-      "evidence": "references/auto/retro/press/tc-2023-07-retro-1b.webp (1356–1436) → 36.3; references/auto/retro/press/tc-2023-07-retro-2b.jpg comment avatar 36 — design/research/retro-visual.md §3.4, §4 #11, #15",
+      "element": "avatar in a people row (friend request, member rows)",
+      "evidence": "references/auto/retro/press/tc-2023-07-retro-1b.webp (1356–1436) → 36.3 — design/research/retro-visual.md §3.4, §4 #11",
       "method": "px ÷ px/pt",
       "precision": "±2 %",
       "unit": "pt"
+    },
+    "size.global.avatarComment": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global",
+      "type": "dimension",
+      "value": 30,
+      "element": "avatar in a comment row and inside the reply / comment field",
+      "evidence": "references/auto/retro/press/tc-2023-07-retro-2b.jpg comment-row avatar x1356–1423 y1703–1768 (67 px → 29.6), field avatar x1377–1446 y1843–1912 (70 px → 30.5) at 2.298 px/pt — measured this pass",
+      "method": "ink extent ÷ px/pt (JPEG)",
+      "precision": "±0.5 pt",
+      "unit": "pt",
+      "notes": "retro-visual §4 #15 lists the comment avatar as 36; the re-measurement gives 29.6–30.5 (MERGE_DECISIONS R-15)."
     },
     "size.global.avatarSmall": {
       "level": "SOURCED",
