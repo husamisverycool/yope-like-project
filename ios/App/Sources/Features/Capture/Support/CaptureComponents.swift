@@ -101,7 +101,7 @@ struct CaptureCoachTooltip: View {
                     .accessibilityElement()
                     .accessibilityLabel(Copy.cameraCaptureA11yClose)
                     .accessibilityAddTraits(.isButton)
-                    .accessibilityAction(onClose)
+                    .accessibilityAction(.default, onClose)
                     .accessibilitySortPriority(1)
             }
             .padding(.horizontal, Coach.paddingHorizontal)

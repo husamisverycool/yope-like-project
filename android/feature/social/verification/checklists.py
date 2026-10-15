@@ -79,7 +79,8 @@ def px(img, x_dp, y_dp):
 
 def count_near(img, hex_, tol=8):
     t = tuple(int(hex_.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4))
-    return sum(1 for p in img.getdata() if all(abs(p[i] - t[i]) <= tol for i in range(3)))
+    pixels = img.get_flattened_data() if hasattr(img, "get_flattened_data") else img.getdata()
+    return sum(1 for p in pixels if all(abs(p[i] - t[i]) <= tol for i in range(3)))
 
 
 def colour_close(a, b, tol):
