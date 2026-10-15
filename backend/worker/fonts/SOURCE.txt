@@ -1,0 +1,4 @@
+Roboto 2.138 (unhinted), Apache License 2.0 (see LICENSE in this folder).
+Source: https://github.com/googlefonts/roboto/releases/download/v2.138/roboto-unhinted.zip
+Files: Roboto-{Thin,Light,Regular,Medium,Bold,Black}.ttf, copied unmodified.
+Used by the worker for server-rendered text (tribute videos); level PLATFORM per docs/ARCHITECTURE.md.
