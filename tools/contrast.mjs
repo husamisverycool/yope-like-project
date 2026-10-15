@@ -1,12 +1,16 @@
 #!/usr/bin/env node
-// WCAG 2.2 contrast checks for the design tokens (SC 1.4.3 text, SC 1.4.11 non-text).
+// WCAG 2.2 contrast checks for the design tokens (SC 1.4.3 text, SC 1.4.11 non-text), in both
+// appearances.
 //
-//   node tools/contrast.mjs <fg> <bg> [text|large|nontext]
+//   node tools/contrast.mjs <fg> <bg> [text|large|nontext] [--appearance light|dark]
 //        one pair. A color is a token name (color.global.textPrimary) or #RRGGBB / #RRGGBBAA.
 //        A translucent color is composited over the next color: "<fg>" over "<bg>[,<base>...]",
 //        e.g. node tools/contrast.mjs '#CAC4D066' color.global.system.surfaceContainerLow nontext
+//        A token whose value is {light, dark} resolves to the appearance asked for; without
+//        --appearance the pair is checked in both and one line per appearance is printed.
 //   node tools/contrast.mjs --pairs
-//        every pair the foundations imply (PAIRS below), as a Markdown table.
+//        every pair the foundations imply (PAIRS below), as a Markdown table: one row per
+//        appearance when any color in the pair differs between appearances, else one row ("both").
 //   node tools/contrast.mjs --write
 //        rewrites the table in design/CONTRAST.md between the contrast:begin / contrast:end markers.
 //
@@ -23,6 +27,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const APPEARANCES = ["light", "dark"];
 
 // ---------- tokens (same file set as tools/designgen.mjs) ----------
 function loadTokens() {
@@ -51,13 +56,22 @@ function parseHex(hex) {
   const n = parseInt(m[1], 16);
   return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255, a: m[2] ? parseInt(m[2], 16) / 255 : 1 };
 }
-function resolveColor(ref) {
+/** true when the reference (a token or a stack "a,b") resolves differently in light and dark */
+export function isThemed(ref) {
+  return String(ref).split(",").some((s) => {
+    const t = TOKENS[s.trim()];
+    return t && t.type === "color" && t.value && typeof t.value === "object";
+  });
+}
+function resolveColor(ref, appearance) {
   if (ref.startsWith("#")) return { hex: ref.toUpperCase(), ...parseHex(ref) };
   const t = TOKENS[ref];
   if (!t) throw new Error(`unknown token ${ref}`);
   if (t.type !== "color") throw new Error(`${ref} is not a color token`);
   if (t.value === null || t.value === undefined) throw new Error(`${ref} has no value (${t.level})`);
-  return { hex: t.value.toUpperCase(), ...parseHex(t.value) };
+  const v = typeof t.value === "object" ? t.value[appearance] : t.value;
+  if (!v) throw new Error(`${ref} has no ${appearance} value`);
+  return { hex: v.toUpperCase(), ...parseHex(v) };
 }
 // stack: [top, ..., bottom]; the bottom-most color must be opaque.
 function composite(stack) {
@@ -84,79 +98,115 @@ export function ratio(c1, c2) {
 }
 const toHex = ({ r, g, b }) => "#" + [r, g, b].map((v) => Math.round(v).toString(16).padStart(2, "0")).join("").toUpperCase();
 
-// fg over bg (bg may itself be a list "a,b" = a over b)
-export function check(fgRef, bgRef, kind = "text") {
-  const bgStack = String(bgRef).split(",").map((s) => resolveColor(s.trim()));
+// fg over bg (bg may itself be a list "a,b" = a over b), in one appearance
+export function check(fgRef, bgRef, kind = "text", appearance = "light") {
+  const bgStack = String(bgRef).split(",").map((s) => resolveColor(s.trim(), appearance));
   const bg = composite(bgStack);
-  const fg = composite([resolveColor(fgRef), ...bgStack]);
+  const fg = composite([resolveColor(fgRef, appearance), ...bgStack]);
   const r = ratio(fg, bg);
   const need = threshold(kind);
-  return { fg: toHex(fg), bg: toHex(bg), ratio: r, need, pass: r + 1e-9 >= need };
+  return { fg: toHex(fg), bg: toHex(bg), ratio: r, need, pass: r + 1e-9 >= need, appearance };
 }
 
 // ---------- the pairs the foundations imply ----------
 // kind: text = 4.5:1 (text up to 17 pt, not bold); large = 3:1 (18 pt+, or bold); nontext = 3:1 (SC 1.4.11).
-// "use" names the measured element the pair comes from (design/research/*.md).
+// "use" names the measured element the pair comes from (design/research/retro-*.md, design/components.md).
+// Optional 5th element: "light" | "dark" to check one appearance only (e.g. a pair that exists only there).
 export const PAIRS = [
-  // Yope app surfaces
-  ["color.global.textPrimary", "color.global.background", "text", "message / body text 17 regular on group & chat screens"],
-  ["color.global.textPrimary", "color.global.backgroundDeep", "text", "names, titles, body on black screens (home, sheets, camera)"],
-  ["color.global.textPrimary", "color.global.control", "text", "typed text in the composer field; header capsule title"],
-  ["color.global.textPrimary", "color.global.controlRaised", "text", "selected tab glyph / inner header pill text"],
-  ["color.global.textPrimary", "color.global.controlOnDeep", "nontext", "✕ / ↓ glyphs in header circles on black"],
-  ["color.global.textPrimary", "color.global.control", "nontext", "‹ / film-strip glyphs in header circles on #171717"],
-  ["color.global.textSecondary", "color.global.background", "text", "secondary text on group & chat screens"],
-  ["color.global.textSecondary", "color.global.backgroundDeep", "text", "section label 'suggested friends' (16 semibold) on black"],
-  ["color.global.textSecondary", "color.global.control", "text", "placeholder 'start typing...' (17 regular) in the composer field"],
-  ["color.global.textSecondary", "color.global.control", "nontext", "inactive tab-bar glyphs on the tab-bar capsule"],
-  ["color.global.onAccent", "color.global.accent", "text", "primary button label (15 semibold) and tooltip text on lime"],
-  ["color.global.onAccent", "color.global.accent", "nontext", "camera glyph on the lime composer button"],
-  ["color.global.accent", "color.global.background", "text", "lime text on #171717 (sender name, links)"],
-  ["color.global.accent", "color.global.backgroundDeep", "text", "lime text on black (sender name on home, 'try other options' link)"],
-  ["color.global.accent", "color.global.background", "nontext", "lime button / shutter ring against #171717"],
-  ["color.global.accent", "color.global.backgroundDeep", "nontext", "lime button / shutter ring against black"],
-  ["color.global.onSurfaceLight", "color.global.surfaceLight", "text", "label on white pill buttons ('invite more friends', 'enable')"],
-  ["color.global.surfaceLight", "color.global.backgroundDeep", "nontext", "white pill button against black"],
-  ["color.global.surfaceLight", "color.global.background", "nontext", "white pill / selected segment against #171717"],
-  ["color.global.control", "color.global.background", "nontext", "circle button / capsule fill against #171717"],
-  ["color.global.controlOnDeep", "color.global.backgroundDeep", "nontext", "header circle fill against black"],
-  ["color.global.controlRaised", "color.global.control", "nontext", "selected tab pill against the tab-bar capsule"],
-  ["color.global.textPrimary", "color.global.textSecondary", "nontext", "selected (white) vs inactive (gray) tab glyph — the state change itself"],
-  ["color.global.selection", "color.global.backgroundDeep", "nontext", "filled check circle on black pickers"],
-  ["color.global.selection", "color.global.background", "nontext", "filled check circle on #171717"],
-  ["color.global.textPrimary", "color.global.accentSecondary", "large", "white name on the pink sticker (heavy display text, large/bold threshold)"],
-  ["color.global.textPrimary", "color.global.accentSecondary", "text", "white text under 18 pt, not bold, on the pink (not observed; shows the limit)"],
-  ["color.global.accentSecondary", "color.global.background", "nontext", "pink card outline against #171717"],
-  ["color.global.destructive", "color.global.background", "text", "red destructive menu text (systemRed, dark) on #171717"],
-  ["color.global.destructive", "color.global.backgroundDeep", "text", "red destructive text (systemRed, dark) on black"],
-  // Material 3 system surfaces (Android, baseline dark scheme)
-  ["color.global.system.onSurface", "color.global.system.surface", "text", "M3 list item label (bodyLarge 16) on surface"],
+  // Page text (iOS page colour; Android page colour where Android differs)
+  ["color.global.textPrimary", "color.global.background", "text", "body / names 15 pt on the page (iOS)"],
+  ["color.global.textPrimary", "color.global.background.android", "text", "body / names on the Android page"],
+  ["color.global.textSecondary", "color.global.background", "text", "secondary text 13–15 pt regular on the page: date range, real name, list subtitle, legal 14 pt (iOS)"],
+  ["color.global.textSecondary", "color.global.background", "large", "grey 'Friends Only' 30 pt on the landing (large text)"],
+  ["color.global.textSecondary.android", "color.global.background.android", "text", "Android meta lines (black 50 % / white 60 %) on the page"],
+  ["color.global.textSecondary.android", "color.global.surfaceSecondary.android", "text", "Android row subtitle on a grouped row"],
+  ["color.global.textTertiary", "color.global.background", "text", "tertiary / disabled text (WCAG exempts inactive components)"],
+  ["color.global.textTertiary", "color.global.background.android", "text", "tertiary / disabled text on the Android page"],
+  // Fills (tiles, fields, pills, circles, grouped rows)
+  ["color.global.textPrimary", "color.global.control", "text", "typed text in a field; 'Create' fill-pill label 15 semibold; row text on an iOS grouped row"],
+  ["color.global.textPrimary", "color.global.control", "nontext", "'+' glyph on the add tile / '+' circle; '×' on a light sheet's close circle"],
+  ["color.global.textSecondary", "color.global.control", "text", "placeholder 'Search' 17 pt and row subtitles on a fill (iOS)"],
+  ["color.global.textPrimary", "color.global.surfaceSecondary.android", "text", "Android grouped-row title / chip label"],
+  ["color.global.control", "color.global.background", "nontext", "tile / field / circle / grouped-row fill against the page"],
+  ["color.global.surfaceSecondary.android", "color.global.background.android", "nontext", "Android grouped-row / chip fill against the page"],
+  ["color.global.emptyTileText", "color.global.control", "text", "empty-day tile month / weekday 14 pt"],
+  ["color.global.emptyTileText", "color.global.control", "large", "empty-day tile day number 28 pt semibold (large text)"],
+  // Buttons
+  ["color.global.onAccent", "color.global.accent", "text", "primary capsule label 17 semibold; medium capsule label 15 semibold"],
+  ["color.global.accent", "color.global.background", "nontext", "primary capsule against the page"],
+  ["color.global.accent", "color.global.background.android", "nontext", "primary capsule against the Android page"],
+  ["color.global.textPrimary", "color.global.background", "nontext", "outline capsule 1 pt border against the page"],
+  ["color.global.controlRaised", "color.global.background", "nontext", "disabled primary capsule fill (inactive component: exempt)"],
+  // Tab bar, badges, dots
+  ["color.global.tabInactive", "color.global.background", "nontext", "unselected tab glyph against the bar (= page)"],
+  ["color.global.textPrimary", "color.global.tabInactive", "nontext", "selected vs unselected tab glyph — the state change itself"],
+  ["color.global.badge", "color.global.background", "nontext", "4 pt unread dot under a tab glyph"],
+  ["color.global.onBadge", "color.global.badge", "text", "'new' label 11 semibold on the red badge"],
+  ["color.global.onBadge", "color.global.badgeMuted", "text", "'Last Week' label (small semibold) on the grey pill"],
+  ["color.global.pageDotInactive", "color.global.background", "nontext", "inactive page dot on the page"],
+  ["color.global.pageDotInactive", "color.global.backgroundDeep", "nontext", "inactive page dot on a media surface (recap preview)"],
+  ["color.global.textPrimary", "color.global.pageDotInactive", "nontext", "active vs inactive page dot (state)"],
+  ["color.global.selection", "color.global.background", "nontext", "system-blue check circle / switch on the page (iOS)"],
+  // Destructive
+  ["color.global.destructive", "color.global.background", "text", "red destructive row / menu text 15–17 regular on the page"],
+  ["color.global.destructive", "color.global.control", "text", "red destructive text on an iOS grouped row"],
+  ["color.global.destructive", "color.global.surfaceSecondary.android", "text", "red destructive text on an Android grouped row"],
+  // Hairline (decorative)
+  ["color.global.separator", "color.global.background", "nontext", "hairline divider (decorative: not required by SC 1.4.11)"],
+  // Cards on backdrops
+  ["color.global.textPrimary", "color.global.surfaceElevated", "text", "text on the recap / plan card"],
+  ["color.global.textSecondary", "color.global.surfaceElevated", "text", "secondary text ('retro.app'-style footer, plan footnote) on the card"],
+  // Media surfaces (black in both appearances)
+  ["color.global.textOnMedia", "color.global.backgroundDeep", "text", "viewer header name 15 semibold, comment text on black"],
+  ["color.global.textSecondary", "color.global.backgroundDeep", "text", "viewer 'Week 49' / date 15 regular on black"],
+  ["color.global.textOnMedia", "color.global.controlOnDeep", "text", "position pill / 'Add a message' label on #262626"],
+  ["color.global.textOnMedia", "color.global.controlOnDeep", "nontext", "close / edit glyph in a #262626 circle"],
+  ["color.global.textSecondary", "color.global.controlOnDeep", "text", "comment-field placeholder on #262626"],
+  ["color.global.controlOnDeep", "color.global.backgroundDeep", "nontext", "#262626 circle / pill / field against black"],
+  ["color.global.onSurfaceLight", "color.global.surfaceLight", "text", "'Share' / 'Send Postcard' label on the white pill"],
+  ["color.global.surfaceLight", "color.global.backgroundDeep", "nontext", "white pill against black"],
+  // Over photos (worst case: a white photo)
+  ["color.global.textOnMedia", "#00000066,#FFFFFF", "text", "weekday tile label 13 semibold at its baseline (scrim ≈40 % there) over a WHITE photo — worst case"],
+  ["color.global.textOnMedia", "color.global.scrim,#FFFFFF", "text", "white text at the tile's bottom edge (scrim 60 %) over a white photo"],
+  ["color.global.textOnMedia", "color.global.glass,#FFFFFF", "nontext", "white glyph in a glass circle over a white photo — worst case"],
+  ["color.global.textOnMedia", "color.global.glass,#7D7263", "nontext", "white glyph in a glass circle over the measured Rewind photo (RWA outside #7D7263)"],
+  // Material 3 system surfaces (Android; Retro's scheme + M3 baseline)
+  ["color.global.system.onSurface", "color.global.system.surface", "text", "M3 list item label (bodyLarge) on surface"],
   ["color.global.system.onSurfaceVariant", "color.global.system.surface", "text", "M3 supporting text (bodyMedium 14) on surface"],
-  ["color.global.system.onSurface", "color.global.system.surfaceContainerHigh", "text", "M3 dialog headline / text on dialog container"],
+  ["color.global.system.onSurface", "color.global.system.surfaceContainerHigh", "text", "M3 dialog headline / text on the dialog container"],
   ["color.global.system.onSurfaceVariant", "color.global.system.surfaceContainerHigh", "text", "M3 dialog supporting text"],
-  ["color.global.system.primary", "color.global.system.surfaceContainerHigh", "text", "M3 dialog action label (labelLarge 14/500)"],
+  ["color.global.system.primary", "color.global.system.surfaceContainerHigh", "text", "M3 dialog action label (labelLarge 14/500) in Retro blue"],
+  ["color.global.system.primary", "color.global.system.surface", "text", "M3 text button / link in Retro blue on surface"],
   ["color.global.system.error", "color.global.system.surface", "text", "M3 error / destructive text on surface"],
   ["color.global.system.error", "color.global.system.surfaceContainerHigh", "text", "M3 destructive action label in a dialog"],
   ["color.global.system.onSurface", "color.global.system.surfaceContainerLow", "text", "M3 bottom-sheet list text"],
-  ["color.global.system.outline", "color.global.system.surface", "nontext", "M3 list divider (1 dp outline)"],
-  ["#CAC4D066", "color.global.system.surfaceContainerLow", "nontext", "M3 sheet drag handle: on-surface-variant at 0.4 opacity"],
+  ["color.global.system.outline", "color.global.system.surface", "nontext", "M3 outline (outlined field border)"],
+  ["#CAC4D066", "color.global.system.surfaceContainerLow", "nontext", "M3 sheet drag handle: on-surface-variant at 0.4 opacity (dark)", "dark"],
+  ["#49454F66", "color.global.system.surfaceContainerLow", "nontext", "M3 sheet drag handle: on-surface-variant at 0.4 opacity (light)", "light"],
 ];
 
 function fmt(r) {
   return r.toFixed(2) + ":1";
 }
+/** rows for one pair: [appearance, result] per appearance it is checked in */
+export function checkPair([fg, bg, kind, , only]) {
+  const apps = only ? [only] : isThemed(fg) || isThemed(bg) ? APPEARANCES : ["both"];
+  return apps.map((a) => [a, check(fg, bg, kind, a === "both" ? "light" : a)]);
+}
 export function table() {
-  let out = "| # | foreground | background | kind | ratio | needs | result | use |\n|---|---|---|---|---|---|---|---|\n";
-  PAIRS.forEach(([fg, bg, kind, use], i) => {
-    let row;
+  let out = "| # | foreground | background | kind | appearance | ratio | needs | result | use |\n|---|---|---|---|---|---|---|---|---|\n";
+  PAIRS.forEach((pair, i) => {
+    const [fg, bg, kind, use] = pair;
+    let rows;
     try {
-      const c = check(fg, bg, kind);
-      const fgLabel = fg.startsWith("#") ? `\`${fg}\`` : `\`${fg}\` ${c.fg}`;
-      row = `| ${i + 1} | ${fgLabel} | \`${bg}\` ${c.bg} | ${kind} | ${fmt(c.ratio)} | ${c.need}:1 | ${c.pass ? "pass" : "**FAIL**"} | ${use} |`;
+      rows = checkPair(pair).map(([a, c]) => {
+        const fgLabel = fg.startsWith("#") ? `\`${fg}\`` : `\`${fg}\` ${c.fg}`;
+        return `| ${i + 1} | ${fgLabel} | \`${bg}\` ${c.bg} | ${kind} | ${a} | ${fmt(c.ratio)} | ${c.need}:1 | ${c.pass ? "pass" : "**FAIL**"} | ${use} |`;
+      });
     } catch (e) {
-      row = `| ${i + 1} | \`${fg}\` | \`${bg}\` | ${kind} | — | — | not computed: ${e.message} | ${use} |`;
+      rows = [`| ${i + 1} | \`${fg}\` | \`${bg}\` | ${kind} | — | — | — | not computed: ${e.message} | ${use} |`];
     }
-    out += row + "\n";
+    out += rows.join("\n") + "\n";
   });
   return out;
 }
@@ -164,7 +214,11 @@ export function table() {
 // ---------- CLI ----------
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
-  const args = process.argv.slice(2);
+  const argv = process.argv.slice(2);
+  const ai = argv.indexOf("--appearance");
+  const appearance = ai >= 0 ? argv[ai + 1] : null;
+  const args = ai >= 0 ? argv.filter((_, i) => i !== ai && i !== ai + 1) : argv;
+  if (appearance && !APPEARANCES.includes(appearance)) { console.error("--appearance must be light or dark"); process.exit(2); }
   if (args[0] === "--pairs") {
     process.stdout.write(table());
   } else if (args[0] === "--write") {
@@ -177,10 +231,15 @@ if (isMain) {
     fs.writeFileSync(f, md.slice(0, i + begin.length) + "\n" + table() + md.slice(j));
     console.log("contrast: table written to design/CONTRAST.md");
   } else if (args.length >= 2) {
-    const c = check(args[0], args[1], args[2] ?? "text");
-    console.log(`${c.fg} on ${c.bg}: ${fmt(c.ratio)} (needs ${c.need}:1) ${c.pass ? "pass" : "FAIL"}`);
+    const kind = args[2] ?? "text";
+    const apps = appearance ? [appearance] : isThemed(args[0]) || isThemed(args[1]) ? APPEARANCES : ["light"];
+    for (const a of apps) {
+      const c = check(args[0], args[1], kind, a);
+      const label = appearance || apps.length > 1 ? ` [${a}]` : "";
+      console.log(`${c.fg} on ${c.bg}${label}: ${fmt(c.ratio)} (needs ${c.need}:1) ${c.pass ? "pass" : "FAIL"}`);
+    }
   } else {
-    console.error("usage: node tools/contrast.mjs <fg> <bg> [text|large|nontext] | --pairs | --write");
+    console.error("usage: node tools/contrast.mjs <fg> <bg> [text|large|nontext] [--appearance light|dark] | --pairs | --write");
     process.exit(2);
   }
 }

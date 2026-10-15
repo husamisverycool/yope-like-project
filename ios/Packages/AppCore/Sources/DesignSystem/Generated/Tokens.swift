@@ -116,78 +116,120 @@ public enum Tokens {
         /// Tribute · birthday.tribute · fill around a photo that does not cover the 16:9 frame (read by the worker) · SOURCED
         /// token: `color.birthday.tribute.pillarbox`
         public static let birthdayTributePillarbox: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
-        /// Yope · global · brand lime: composer camera button, primary buttons, coach tooltips, toasts, shutter ring, 'today' bar · SOURCED
+        /// Retro · global · primary action fill: full-width primary capsule, primary medium capsule ('Accept'), selected state that is a fill. Retro has no brand colour in chrome — the primary fill is the inverse of the page · SOURCED
         /// token: `color.global.accent`
-        public static let globalAccent: Color = Color(.sRGB, red: 0.8039, green: 0.9922, blue: 0.0275, opacity: 1)
-        /// Yope · global · pink: profile card outline and name sticker · SOURCED
-        /// token: `color.global.accentSecondary`
-        public static let globalAccentSecondary: Color = Color(.sRGB, red: 0.9961, green: 0.1216, blue: 0.5176, opacity: 1)
-        /// Yope · global · screen background of group, chat and profile-grid screens (dark gray, not black) · SOURCED
+        public static let globalAccent: Color = Color(light: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1), dark: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1))
+        /// Retro · global · page background of every app screen (home, profile, albums, settings, sheets); iOS — and Android's 'true black' option · SOURCED
         /// token: `color.global.background`
-        public static let globalBackground: Color = Color(.sRGB, red: 0.0902, green: 0.0902, blue: 0.0902, opacity: 1)
-        /// Yope · global · screen background of the home list, sheets ('new group', 'send to...'), camera, sign-up, profile 'pics' grid, group photo cards (2026) · SOURCED
+        public static let globalBackground: Color = Color(light: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1), dark: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1))
+        /// Retro · global · page background on Android (Retro's default dark scheme; the iOS / true-black value is color.global.background) · SOURCED
+        /// token: `color.global.background.android`
+        public static let globalBackgroundAndroid: Color = Color(light: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1), dark: Color(.sRGB, red: 0.1098, green: 0.1098, blue: 0.1176, opacity: 1))
+        /// Retro · global · media surfaces that stay black in both appearances: photo / story viewer, camera, postcard-style composer, recap preview, full-bleed media (Rewind) · SOURCED
         /// token: `color.global.backgroundDeep`
         public static let globalBackgroundDeep: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
-        /// Yope · global · control fill on #171717: header circle buttons, header title capsule, floating tab-bar capsule, composer text field · SOURCED
+        /// Retro · global · Retro red: 'new' badge capsule, 4 pt unread dot on a tab, red count-free markers · SOURCED
+        /// token: `color.global.badge`
+        public static let globalBadge: Color = Color(.sRGB, red: 0.9176, green: 0.2, blue: 0.2157, opacity: 1)
+        /// Retro · global · grey relative-week pill next to the title ('Last Week'), label color.global.onBadge · SOURCED
+        /// token: `color.global.badgeMuted`
+        public static let globalBadgeMuted: Color = Color(.sRGB, red: 0.6, green: 0.6, blue: 0.6, opacity: 1)
+        /// Retro · global · fill of tiles (add tile, empty-day tile, strip placeholder), search / text fields, circle buttons ('+'), fill pills ('Create'), grouped rows on iOS · SOURCED
         /// token: `color.global.control`
-        public static let globalControl: Color = Color(.sRGB, red: 0.1804, green: 0.1804, blue: 0.1804, opacity: 1)
-        /// Yope · global · header circle icon buttons on black screens and sheets (✕, download) · SOURCED
+        public static let globalControl: Color = Color(light: Color(.sRGB, red: 0.9451, green: 0.9451, blue: 0.9451, opacity: 1), dark: Color(.sRGB, red: 0.149, green: 0.149, blue: 0.149, opacity: 1))
+        /// Retro · global · controls on the black media surfaces (both appearances): close circle, 'Add a message' pill, edit circle, position pill ('3 of 4'), comment field on the viewer · SOURCED
         /// token: `color.global.controlOnDeep`
-        public static let globalControlOnDeep: Color = Color(.sRGB, red: 0.0627, green: 0.0627, blue: 0.0627, opacity: 1)
-        /// Yope · global · raised fill: selected tab pill, inner pill inside the header capsule, inactive page dots · SOURCED
+        public static let globalControlOnDeep: Color = Color(.sRGB, red: 0.149, green: 0.149, blue: 0.149, opacity: 1)
+        /// Retro · global · stronger fill: disabled primary capsule, container fill · SOURCED
         /// token: `color.global.controlRaised`
-        public static let globalControlRaised: Color = Color(.sRGB, red: 0.2627, green: 0.2627, blue: 0.2627, opacity: 1)
-        /// Apple HIG · global.system · destructive actions on system surfaces (delete account, block, leave, report) — iOS systemRed via Button(role: .destructive) · PLATFORM
+        public static let globalControlRaised: Color = Color(light: Color(.sRGB, red: 0.8, green: 0.8, blue: 0.8, opacity: 1), dark: Color(.sRGB, red: 0.302, green: 0.302, blue: 0.302, opacity: 1))
+        /// Retro · global.system · destructive actions drawn by the app and destructive menu items: delete, remove, report, leave · SOURCED
         /// token: `color.global.destructive`
-        public static let globalDestructive: Color = Color(.sRGB, red: 1, green: 0.2588, blue: 0.2706, opacity: 1)
-        /// Yope · global · text and glyphs on lime: camera glyph on the composer button, primary button labels, tooltip text · SOURCED
+        public static let globalDestructive: Color = Color(.sRGB, red: 0.9176, green: 0.2, blue: 0.2157, opacity: 1)
+        /// Retro · global · month / day number / weekday on an empty-day tile · SOURCED
+        /// token: `color.global.emptyTileText`
+        public static let globalEmptyTileText: Color = Color(light: Color(.sRGB, red: 0.851, green: 0.851, blue: 0.851, opacity: 1), dark: Color(.sRGB, red: 0.3176, green: 0.3176, blue: 0.3176, opacity: 1))
+        /// Retro · global · glass circle buttons and pills drawn over a photo (Rewind share / random / more circles) · SOURCED
+        /// token: `color.global.glass`
+        public static let globalGlass: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.1216)
+        /// Retro · global · label and glyph on the primary fill · SOURCED
         /// token: `color.global.onAccent`
-        public static let globalOnAccent: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
-        /// Yope · global · label on the light pill (secondary buttons, selected segment, 'today') · SOURCED
+        public static let globalOnAccent: Color = Color(light: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1), dark: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1))
+        /// Retro · global · label on the red badge; label on the grey 'Last Week' relative-week pill · SOURCED
+        /// token: `color.global.onBadge`
+        public static let globalOnBadge: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
+        /// Retro · global · label on the light pill over media ('Share', 'Send Postcard') · SOURCED
         /// token: `color.global.onSurfaceLight`
         public static let globalOnSurfaceLight: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
-        /// Locket · global · dimming layer behind sheets / over photos under text on app surfaces · SOURCED
+        /// Retro · global · inactive page dots (pagers: recap preview, friends grid); the active dot is color.global.textPrimary · SOURCED
+        /// token: `color.global.pageDotInactive`
+        public static let globalPageDotInactive: Color = Color(light: Color(.sRGB, red: 0.8667, green: 0.8667, blue: 0.8667, opacity: 1), dark: Color(.sRGB, red: 0.502, green: 0.502, blue: 0.502, opacity: 1))
+        /// Retro · global · premium-only accent: 'FREE' pill on the paywall plan card (owner decides whether the premium accent is used) · SOURCED
+        /// token: `color.global.premium`
+        public static let globalPremium: Color = Color(.sRGB, red: 0.6902, green: 0.1804, blue: 0.7569, opacity: 1)
+        /// Retro · global · bottom scrim over photos under white text (day tiles, Rewind, widgets): black reaching 60 % at the bottom edge; geometry in layout.global.photoScrim · SOURCED
         /// token: `color.global.scrim`
-        public static let globalScrim: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.502)
-        /// Apple HIG · global · filled check circle on selected people / groups (Yope draws it in iOS system blue) · PLATFORM
+        public static let globalScrim: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.6)
+        /// Apple HIG · global · system tint on iOS: sheet nav text buttons ('Cancel', 'Update'), selected check circle, switches · PLATFORM
         /// token: `color.global.selection`
-        public static let globalSelection: Color = Color(.sRGB, red: 0, green: 0.5686, blue: 1, opacity: 1)
-        /// Locket · global · hairline between rows on app (Yope-referenced) surfaces · SOURCED
+        public static let globalSelection: Color = Color(light: Color(.sRGB, red: 0, green: 0.5333, blue: 1, opacity: 1), dark: Color(.sRGB, red: 0, green: 0.5686, blue: 1, opacity: 1))
+        /// Retro · global · hairline divider (1 device pixel), used sparingly: under the profile header, above 'Total', between the viewer footer and comments, between grouped rows · SOURCED
         /// token: `color.global.separator`
-        public static let globalSeparator: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.2)
-        /// Yope · global · light pill fill: secondary buttons ('invite more friends', 'enable', 'new recap'), selected segment pill, 'today' pill · SOURCED
+        public static let globalSeparator: Color = Color(light: Color(.sRGB, red: 0.8, green: 0.8, blue: 0.8, opacity: 1), dark: Color(.sRGB, red: 0.302, green: 0.302, blue: 0.302, opacity: 1))
+        /// Retro · global · card on a blurred photo backdrop (recap collage card, plan card) and other elevated surfaces · SOURCED
+        /// token: `color.global.surfaceElevated`
+        public static let globalSurfaceElevated: Color = Color(light: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1), dark: Color(.sRGB, red: 0.0941, green: 0.0941, blue: 0.0941, opacity: 1))
+        /// Retro · global · light pill / capsule on media and dark surfaces in both appearances: 'Share' on the recap preview, 'Send Postcard' on the black composer · SOURCED
         /// token: `color.global.surfaceLight`
         public static let globalSurfaceLight: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
-        /// Material 3 · global.system · error / destructive text and icons (role md.sys.color.error, baseline dark scheme) · PLATFORM
+        /// Retro · global · Android secondary surface: grouped settings rows, chips, reply / comment bar, sheet cards (iOS draws these in color.global.control) · SOURCED
+        /// token: `color.global.surfaceSecondary.android`
+        public static let globalSurfaceSecondaryAndroid: Color = Color(light: Color(.sRGB, red: 0.9686, green: 0.9686, blue: 0.9686, opacity: 1), dark: Color(.sRGB, red: 0.149, green: 0.149, blue: 0.149, opacity: 1))
+        /// Retro · global.system · Android M3 error: error / destructive text and icons in M3 components · SOURCED
         /// token: `color.global.system.error`
-        public static let globalSystemError: Color = Color(.sRGB, red: 0.949, green: 0.7216, blue: 0.7098, opacity: 1)
-        /// Material 3 · global.system · list item label, dialog headline (role md.sys.color.on-surface, baseline dark scheme) · PLATFORM
+        public static let globalSystemError: Color = Color(.sRGB, red: 0.9176, green: 0.2, blue: 0.2157, opacity: 1)
+        /// Retro · global.system · Android M3 on-surface: list item labels, dialog headline · SOURCED
         /// token: `color.global.system.onSurface`
-        public static let globalSystemOnSurface: Color = Color(.sRGB, red: 0.902, green: 0.8784, blue: 0.9137, opacity: 1)
-        /// Material 3 · global.system · supporting text, leading icons, drag handle (role md.sys.color.on-surface-variant, baseline dark scheme) · PLATFORM
+        public static let globalSystemOnSurface: Color = Color(light: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1), dark: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1))
+        /// Material 3 · global.system · Android M3 supporting text, leading icons, drag handle (role md.sys.color.on-surface-variant) · PLATFORM
         /// token: `color.global.system.onSurfaceVariant`
-        public static let globalSystemOnSurfaceVariant: Color = Color(.sRGB, red: 0.7922, green: 0.7686, blue: 0.8157, opacity: 1)
-        /// Material 3 · global.system · list divider (1 dp) (role md.sys.color.outline, baseline dark scheme) · PLATFORM
+        public static let globalSystemOnSurfaceVariant: Color = Color(light: Color(.sRGB, red: 0.2863, green: 0.2706, blue: 0.3098, opacity: 1), dark: Color(.sRGB, red: 0.7922, green: 0.7686, blue: 0.8157, opacity: 1))
+        /// Material 3 · global.system · Android M3 outline (outlined text field border, M3 divider defaults) · PLATFORM
         /// token: `color.global.system.outline`
-        public static let globalSystemOutline: Color = Color(.sRGB, red: 0.5765, green: 0.5608, blue: 0.6, opacity: 1)
-        /// Material 3 · global.system · dialog action labels, switches, selected controls (role md.sys.color.primary, baseline dark scheme) · PLATFORM
+        public static let globalSystemOutline: Color = Color(light: Color(.sRGB, red: 0.4745, green: 0.4549, blue: 0.4941, opacity: 1), dark: Color(.sRGB, red: 0.5765, green: 0.5608, blue: 0.6, opacity: 1))
+        /// Retro · global.system · Android M3 primary: dialog action labels, switches, selected controls, text-field cursor · SOURCED
         /// token: `color.global.system.primary`
-        public static let globalSystemPrimary: Color = Color(.sRGB, red: 0.8157, green: 0.7373, blue: 1, opacity: 1)
-        /// Material 3 · global.system · page / list container on Android system surfaces (role md.sys.color.surface, baseline dark scheme) · PLATFORM
+        public static let globalSystemPrimary: Color = Color(.sRGB, red: 0.0392, green: 0.5176, blue: 1, opacity: 1)
+        /// Retro · global.system · Android M3 primary container (on-primary-container #000000 / #FFFFFF) · SOURCED
+        /// token: `color.global.system.primaryContainer`
+        public static let globalSystemPrimaryContainer: Color = Color(light: Color(.sRGB, red: 0.8, green: 0.8, blue: 0.8, opacity: 1), dark: Color(.sRGB, red: 0.302, green: 0.302, blue: 0.302, opacity: 1))
+        /// Retro · global.system · Android M3 secondary container (segmented button selection, tonal containers; on-secondary-container #000000 / #FFFFFF) · SOURCED
+        /// token: `color.global.system.secondaryContainer`
+        public static let globalSystemSecondaryContainer: Color = Color(light: Color(.sRGB, red: 0.9686, green: 0.9686, blue: 0.9686, opacity: 1), dark: Color(.sRGB, red: 0.149, green: 0.149, blue: 0.149, opacity: 1))
+        /// Retro · global.system · Android M3 surface / background (dialogs and sheets inherit from it unless a container role applies) · SOURCED
         /// token: `color.global.system.surface`
-        public static let globalSystemSurface: Color = Color(.sRGB, red: 0.0784, green: 0.0706, blue: 0.0941, opacity: 1)
-        /// Material 3 · global.system · M3 dialog container (role md.sys.color.surface-container-high, baseline dark scheme) · PLATFORM
+        public static let globalSystemSurface: Color = Color(light: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1), dark: Color(.sRGB, red: 0.1098, green: 0.1098, blue: 0.1176, opacity: 1))
+        /// Material 3 · global.system · Android M3 dialog container (role md.sys.color.surface-container-high) · PLATFORM
         /// token: `color.global.system.surfaceContainerHigh`
-        public static let globalSystemSurfaceContainerHigh: Color = Color(.sRGB, red: 0.1686, green: 0.1608, blue: 0.1882, opacity: 1)
-        /// Material 3 · global.system · M3 modal bottom sheet container (role md.sys.color.surface-container-low, baseline dark scheme) · PLATFORM
+        public static let globalSystemSurfaceContainerHigh: Color = Color(light: Color(.sRGB, red: 0.9255, green: 0.902, blue: 0.9412, opacity: 1), dark: Color(.sRGB, red: 0.1686, green: 0.1608, blue: 0.1882, opacity: 1))
+        /// Material 3 · global.system · Android M3 modal bottom sheet container (role md.sys.color.surface-container-low) · PLATFORM
         /// token: `color.global.system.surfaceContainerLow`
-        public static let globalSystemSurfaceContainerLow: Color = Color(.sRGB, red: 0.1137, green: 0.1059, blue: 0.1255, opacity: 1)
-        /// Yope · global · primary text and glyphs · SOURCED
+        public static let globalSystemSurfaceContainerLow: Color = Color(light: Color(.sRGB, red: 0.9686, green: 0.949, blue: 0.9804, opacity: 1), dark: Color(.sRGB, red: 0.1137, green: 0.1059, blue: 0.1255, opacity: 1))
+        /// Retro · global · unselected tab-bar glyphs (black 30 % on white / white 60 % on black) · SOURCED
+        /// token: `color.global.tabInactive`
+        public static let globalTabInactive: Color = Color(light: Color(.sRGB, red: 0.698, green: 0.698, blue: 0.698, opacity: 1), dark: Color(.sRGB, red: 0.6, green: 0.6, blue: 0.6, opacity: 1))
+        /// Retro · global · primary text and glyphs; selected tab glyph; page-dot selected · SOURCED
         /// token: `color.global.textPrimary`
-        public static let globalTextPrimary: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
-        /// Yope · global · secondary text, placeholders ('start typing...'), inactive tab-bar glyphs, chevrons inside capsules · SOURCED
+        public static let globalTextPrimary: Color = Color(light: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1), dark: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1))
+        /// Retro · global · secondary text on iOS: date ranges, real names, list subtitles, meta lines, field placeholders (2025), grey links and legal text · SOURCED
         /// token: `color.global.textSecondary`
-        public static let globalTextSecondary: Color = Color(.sRGB, red: 0.5882, green: 0.5882, blue: 0.5882, opacity: 1)
+        public static let globalTextSecondary: Color = Color(.sRGB, red: 0.6, green: 0.6, blue: 0.6, opacity: 1)
+        /// Retro · global · secondary text on Android: meta lines ('A · B'), NUX body, list subtitles · SOURCED
+        /// token: `color.global.textSecondary.android`
+        public static let globalTextSecondaryAndroid: Color = Color(light: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.502), dark: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.6))
+        /// Retro · global · tertiary / disabled text and glyphs · SOURCED
+        /// token: `color.global.textTertiary`
+        public static let globalTextTertiary: Color = Color(light: Color(.sRGB, red: 0.7569, green: 0.7569, blue: 0.7569, opacity: 1), dark: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.302))
         /// Timehop · onthisday · years-ago banner fill (every memory) · SOURCED
         /// token: `color.onthisday.banner`
         public static let onthisdayBanner: Color = Color(.sRGB, red: 0.9882, green: 0.3725, blue: 0.2, opacity: 1)
@@ -471,15 +513,27 @@ public enum Tokens {
         /// VidDay · birthday.tribute · title card fully visible before the crossfade (read by the worker) · SOURCED
         /// token: `duration.birthday.tribute.titleHold`
         public static let birthdayTributeTitleHold: TimeInterval = 1.167
-        /// Yope · global · horizontal push to the next screen ('new group' → new group chat after create) · SOURCED
-        /// token: `duration.global.navigationPush`
-        public static let globalNavigationPush: TimeInterval = 0.1
-        /// Yope · global · horizontal swipe to the adjacent photo in the viewer, first movement to settled (gesture-driven) · SOURCED
-        /// token: `duration.global.photoSwipe`
-        public static let globalPhotoSwipe: TimeInterval = 0.167
-        /// Yope · global · bottom-sheet presentation, first movement to rest (rise ≈ 100 ms to an overshoot ≈ 16 pt past rest, settle ≈ 100 ms) · SOURCED
+        /// Retro · global · crossfade between two states of one element · SOURCED
+        /// token: `duration.global.crossfade`
+        public static let globalCrossfade: TimeInterval = 0.1
+        /// Retro · global · house default: fade in / out (paired with a slide) for composers, caption box, picker, media preview · SOURCED
+        /// token: `duration.global.fade`
+        public static let globalFade: TimeInterval = 0.15
+        /// Retro · global · small fades · SOURCED
+        /// token: `duration.global.fadeShort`
+        public static let globalFadeShort: TimeInterval = 0.12
+        /// Retro · global · onboarding page enter (fade + expand) / exit (fade + shrink); onboarding header height · SOURCED
+        /// token: `duration.global.pageTransition`
+        public static let globalPageTransition: TimeInterval = 0.5
+        /// Retro · global · opening a photo from a list / comment into the viewer (easing.global.standard) · SOURCED
+        /// token: `duration.global.photoOpen`
+        public static let globalPhotoOpen: TimeInterval = 0.25
+        /// Retro · global · native sheet presentation, first movement to rest (curve spring.global.sheetPresent) · SOURCED
         /// token: `duration.global.sheetPresent`
-        public static let globalSheetPresent: TimeInterval = 0.215
+        public static let globalSheetPresent: TimeInterval = 0.567
+        /// Retro · global · a tile shifts one slot when a photo is added to the strip (easing.global.standard) · SOURCED
+        /// token: `duration.global.stripInsert`
+        public static let globalStripInsert: TimeInterval = 0.25
         /// VidDay · onthisday · transition between two years' memories · SOURCED
         /// token: `duration.onthisday.memoryChange`
         public static let onthisdayMemoryChange: TimeInterval = 0.7
@@ -518,6 +572,9 @@ public enum Tokens {
         /// Locket · chat.reactions · speed curve of each rain copy · SOURCED
         /// token: `chat.reactions.easing.rain`
         public static let chatReactionsEasingRain: DSEasing = .easeInOut
+        /// Retro · global · Retro's house easing (FastOutSlowIn) for fades, slides, photo open, strip insert · SOURCED
+        /// token: `easing.global.standard`
+        public static let globalStandard: DSEasing = .cubicBezier(0.4, 0, 0.2, 1)
         /// Material 3 · global.system · M3 standard easing for custom transitions on Android system surfaces · PLATFORM
         /// token: `easing.global.system.standard`
         public static let globalSystemStandard: DSEasing = .cubicBezier(0.2, 0, 0, 1)
@@ -622,48 +679,72 @@ public enum Tokens {
         /// Tribute · birthday.tribute · secondary button label · VERIFIED
         /// token: `fontSize.birthday.tribute.button`
         public static let birthdayTributeButton: CGFloat = 14
-        /// Yope · global · chat message text in bubbles (body text) · SOURCED
+        /// Retro · global · label of the red 'new' badge and small pills · SOURCED
+        /// token: `fontSize.global.badge`
+        public static let globalBadge: CGFloat = 11
+        /// Retro · global · body / list row text on iOS ('Weeks Posted: 32'-style info rows, comment text, address lines, sheet rows) · SOURCED
         /// token: `fontSize.global.body`
-        public static let globalBody: CGFloat = 17
-        /// Yope · global · primary button label ('create group', 'send') · SOURCED
+        public static let globalBody: CGFloat = 15
+        /// Retro · global · Android body text (Retro's most-used style, 33 call sites) · SOURCED
+        /// token: `fontSize.global.body.android`
+        public static let globalBodyAndroid: CGFloat = 14
+        /// Retro · global · label of the 60 pt full-width capsule ('Claim', 'Send Postcard', 'Get started') · SOURCED
         /// token: `fontSize.global.button`
-        public static let globalButton: CGFloat = 15
-        /// Yope · global · small meta text: voice-message duration ('00:38'), legal footer under sign-up · SOURCED
+        public static let globalButton: CGFloat = 17
+        /// Retro · global · fine print and timestamps: legal footer under the sign-up button ('By continuing, I confirm…'), timestamps ('1d', '2h') · SOURCED
         /// token: `fontSize.global.caption`
-        public static let globalCaption: CGFloat = 12
-        /// Yope · global · empty-state detail line ('and added mẹ, Anh'), italic · SOURCED
+        public static let globalCaption: CGFloat = 14
+        /// Retro · global · display serif headline on cards, sheets and onboarding ('Share Video' paywall headline, invite page headline, feed-card titles) — family font.global.display · SOURCED
+        /// token: `fontSize.global.displayMedium`
+        public static let globalDisplayMedium: CGFloat = 32
+        /// Retro · global · small display serif: recap month cards ('December'), album titles on covers, recap year ('2023') — family font.global.display · SOURCED
+        /// token: `fontSize.global.displaySmall`
+        public static let globalDisplaySmall: CGFloat = 24
+        /// Retro · global · empty-state explanation (two lines, grey) under the title · SOURCED
         /// token: `fontSize.global.emptyDetail`
         public static let globalEmptyDetail: CGFloat = 14
-        /// Yope · global · empty-state title ('you created group') · SOURCED
+        /// Retro · global · empty-state title ('Welcome to Week 43!') · SOURCED
         /// token: `fontSize.global.emptyTitle`
-        public static let globalEmptyTitle: CGFloat = 16
-        /// Yope · global · group name in the header capsule · SOURCED
+        public static let globalEmptyTitle: CGFloat = 20
+        /// Retro · global · display serif screen title ('Week 43', 'Albums', 'Friends', 'Messages', profile username); also the date title on full-bleed photos ('May 1, 2019') — family font.global.display · SOURCED
         /// token: `fontSize.global.headerTitle`
-        public static let globalHeaderTitle: CGFloat = 15
-        /// Yope · global · row subtitle ('new pic added · 9:43 AM'), secondary color · SOURCED
+        public static let globalHeaderTitle: CGFloat = 40
+        /// Retro · global · row subtitle and secondary line ('daniel shared 2 posts', date range 'Jul 3 - 9', 'Week 28' in the viewer header) · SOURCED
         /// token: `fontSize.global.listSubtitle`
-        public static let globalListSubtitle: CGFloat = 14
-        /// Yope · global · row / card name on the home list ('kylee') · SOURCED
+        public static let globalListSubtitle: CGFloat = 15
+        /// Retro · global · name / row title ('olson', 'Mexico City', 'Total'), friend-card name, secondary link ('already have an account?') · SOURCED
         /// token: `fontSize.global.listTitle`
-        public static let globalListTitle: CGFloat = 17.5
-        /// Yope · global · onboarding / sign-up big title ('registrarse') · SOURCED
+        public static let globalListTitle: CGFloat = 15
+        /// Retro · global · small secondary line: real name under the profile name ('Isabel Reyes'), field labels ('Mailing Address') · SOURCED
+        /// token: `fontSize.global.meta`
+        public static let globalMeta: CGFloat = 13
+        /// Retro · global · large line on the sign-up landing under the mark ('Friends Only'), in color.global.textSecondary · SOURCED
         /// token: `fontSize.global.onboardingTitle`
-        public static let globalOnboardingTitle: CGFloat = 40
-        /// Yope · global · hour / time overlay centred on a photo in the chat ('10:00 PM') · SOURCED
-        /// token: `fontSize.global.overlayTime`
-        public static let globalOverlayTime: CGFloat = 21
-        /// Yope · global · hour overlay on the camera viewfinder and the send-to preview ('5:00 PM') · SOURCED
-        /// token: `fontSize.global.overlayTimeCamera`
-        public static let globalOverlayTimeCamera: CGFloat = 26
-        /// Yope · global · text-field placeholder ('start typing...') · SOURCED
+        public static let globalOnboardingTitle: CGFloat = 30
+        /// Retro · global · label of the 36–37 pt capsules ('Get this week started', 'Recaps', 'Share Profile', 'Accept', 'Create') · SOURCED
+        /// token: `fontSize.global.pill`
+        public static let globalPill: CGFloat = 15
+        /// Retro · global · placeholder and typed text in the search / text field ('Search'), colour color.global.textSecondary · SOURCED
         /// token: `fontSize.global.placeholder`
         public static let globalPlaceholder: CGFloat = 17
-        /// Yope · global · section label ('suggested friends'), secondary color · SOURCED
+        /// Retro · global · section header ('Week 27' before its date range; dated album group 'January 25, 2024') · SOURCED
         /// token: `fontSize.global.sectionLabel`
-        public static let globalSectionLabel: CGFloat = 16
-        /// Yope · global · sheet title centred between header circles ('send to...') · SOURCED
+        public static let globalSectionLabel: CGFloat = 15
+        /// Retro · global · modal / sheet title, centred ('Postcard', 'Create Recap', 'Settings', 'Add to Your Week') · SOURCED
         /// token: `fontSize.global.sheetTitle`
-        public static let globalSheetTitle: CGFloat = 19.5
+        public static let globalSheetTitle: CGFloat = 17
+        /// Retro · global · app-drawn text buttons in a header ('Invite', 'Keys'); native sheet nav buttons ('Cancel', 'Update') are the system's own at the same size · SOURCED
+        /// token: `fontSize.global.textButton`
+        public static let globalTextButton: CGFloat = 17
+        /// Retro · global · day number on an empty-day tile ('20'), tabular digits · SOURCED
+        /// token: `fontSize.global.tileDay`
+        public static let globalTileDay: CGFloat = 28
+        /// Retro · global · weekday label on a photo tile ('Mon'), white over the bottom scrim, centred, baseline 13.4 above the tile bottom · SOURCED
+        /// token: `fontSize.global.tileLabel`
+        public static let globalTileLabel: CGFloat = 13
+        /// Retro · global · month and weekday lines on an empty-day tile ('Oct' / 'Mon') · SOURCED
+        /// token: `fontSize.global.tileMonth`
+        public static let globalTileMonth: CGFloat = 14
         /// Timehop · onthisday · 'N YEARS AGO' banner label, set in the platform font · SOURCED
         /// token: `fontSize.onthisday.banner.label`
         public static let onthisdayBannerLabel: CGFloat = 25.8
@@ -882,42 +963,63 @@ public enum Tokens {
         /// Tribute · birthday.tribute · secondary button label · VERIFIED
         /// token: `fontWeight.birthday.tribute.button`
         public static let fontWeightBirthdayTributeButton: Font.Weight = .semibold
-        /// Yope · global · chat message text · SOURCED
+        /// Retro · global · label of the red 'new' badge and small pills · SOURCED
+        /// token: `fontWeight.global.badge`
+        public static let fontWeightGlobalBadge: Font.Weight = .semibold
+        /// Retro · global · body / list row text on iOS ('Weeks Posted: 32'-style info rows, comment text, address lines, sheet rows) · SOURCED
         /// token: `fontWeight.global.body`
         public static let fontWeightGlobalBody: Font.Weight = .regular
-        /// Yope · global · primary button label · SOURCED
+        /// Retro · global · label of the 60 pt full-width capsule ('Claim', 'Send Postcard', 'Get started') · SOURCED
         /// token: `fontWeight.global.button`
         public static let fontWeightGlobalButton: Font.Weight = .semibold
-        /// Yope · global · voice-message duration ('00:38') · SOURCED
+        /// Retro · global · fine print and timestamps: legal footer under the sign-up button ('By continuing, I confirm…'), timestamps ('1d', '2h') · SOURCED
         /// token: `fontWeight.global.caption`
-        public static let fontWeightGlobalCaption: Font.Weight = .semibold
-        /// Yope · global · empty-state title · SOURCED
+        public static let fontWeightGlobalCaption: Font.Weight = .regular
+        /// Retro · global · display serif headline on cards, sheets and onboarding ('Share Video' paywall headline, invite page headline, feed-card titles) — family font.global.display · SOURCED
+        /// token: `fontWeight.global.displayMedium`
+        public static let fontWeightGlobalDisplayMedium: Font.Weight = .regular
+        /// Retro · global · small display serif: recap month cards ('December'), album titles on covers, recap year ('2023') — family font.global.display · SOURCED
+        /// token: `fontWeight.global.displaySmall`
+        public static let fontWeightGlobalDisplaySmall: Font.Weight = .regular
+        /// Retro · global · empty-state explanation (two lines, grey) under the title · SOURCED
+        /// token: `fontWeight.global.emptyDetail`
+        public static let fontWeightGlobalEmptyDetail: Font.Weight = .regular
+        /// Retro · global · empty-state title ('Welcome to Week 43!') · SOURCED
         /// token: `fontWeight.global.emptyTitle`
-        public static let fontWeightGlobalEmptyTitle: Font.Weight = .bold
-        /// Yope · global · group name in the header capsule · SOURCED
+        public static let fontWeightGlobalEmptyTitle: Font.Weight = .semibold
+        /// Retro · global · display serif screen title ('Week 43', 'Albums', 'Friends', 'Messages', profile username); also the date title on full-bleed photos ('May 1, 2019') — family font.global.display · SOURCED
         /// token: `fontWeight.global.headerTitle`
-        public static let fontWeightGlobalHeaderTitle: Font.Weight = .bold
-        /// Yope · global · row subtitle · SOURCED
+        public static let fontWeightGlobalHeaderTitle: Font.Weight = .regular
+        /// Retro · global · row subtitle and secondary line ('daniel shared 2 posts', date range 'Jul 3 - 9', 'Week 28' in the viewer header) · SOURCED
         /// token: `fontWeight.global.listSubtitle`
         public static let fontWeightGlobalListSubtitle: Font.Weight = .regular
-        /// Yope · global · row / card name on the home list · SOURCED
+        /// Retro · global · name / row title ('olson', 'Mexico City', 'Total'), friend-card name, secondary link ('already have an account?') · SOURCED
         /// token: `fontWeight.global.listTitle`
-        public static let fontWeightGlobalListTitle: Font.Weight = .bold
-        /// Yope · global · onboarding / sign-up big title · SOURCED
+        public static let fontWeightGlobalListTitle: Font.Weight = .semibold
+        /// Retro · global · small secondary line: real name under the profile name ('Isabel Reyes'), field labels ('Mailing Address') · SOURCED
+        /// token: `fontWeight.global.meta`
+        public static let fontWeightGlobalMeta: Font.Weight = .regular
+        /// Retro · global · large line on the sign-up landing under the mark ('Friends Only'), in color.global.textSecondary · SOURCED
         /// token: `fontWeight.global.onboardingTitle`
-        public static let fontWeightGlobalOnboardingTitle: Font.Weight = .heavy
-        /// Yope · global · time overlay on a photo · SOURCED
-        /// token: `fontWeight.global.overlayTime`
-        public static let fontWeightGlobalOverlayTime: Font.Weight = .heavy
-        /// Yope · global · hour overlay on the viewfinder · SOURCED
-        /// token: `fontWeight.global.overlayTimeCamera`
-        public static let fontWeightGlobalOverlayTimeCamera: Font.Weight = .heavy
-        /// Yope · global · section label · SOURCED
+        public static let fontWeightGlobalOnboardingTitle: Font.Weight = .regular
+        /// Retro · global · label of the 36–37 pt capsules ('Get this week started', 'Recaps', 'Share Profile', 'Accept', 'Create') · SOURCED
+        /// token: `fontWeight.global.pill`
+        public static let fontWeightGlobalPill: Font.Weight = .semibold
+        /// Retro · global · section header ('Week 27' before its date range; dated album group 'January 25, 2024') · SOURCED
         /// token: `fontWeight.global.sectionLabel`
         public static let fontWeightGlobalSectionLabel: Font.Weight = .semibold
-        /// Yope · global · sheet title ('send to...') · SOURCED
+        /// Retro · global · modal / sheet title, centred ('Postcard', 'Create Recap', 'Settings', 'Add to Your Week') · SOURCED
         /// token: `fontWeight.global.sheetTitle`
-        public static let fontWeightGlobalSheetTitle: Font.Weight = .bold
+        public static let fontWeightGlobalSheetTitle: Font.Weight = .semibold
+        /// Retro · global · app-drawn text buttons in a header ('Invite', 'Keys'); native sheet nav buttons ('Cancel', 'Update') are the system's own at the same size · SOURCED
+        /// token: `fontWeight.global.textButton`
+        public static let fontWeightGlobalTextButton: Font.Weight = .regular
+        /// Retro · global · day number on an empty-day tile ('20'), tabular digits · SOURCED
+        /// token: `fontWeight.global.tileDay`
+        public static let fontWeightGlobalTileDay: Font.Weight = .semibold
+        /// Retro · global · weekday label on a photo tile ('Mon'), white over the bottom scrim, centred, baseline 13.4 above the tile bottom · SOURCED
+        /// token: `fontWeight.global.tileLabel`
+        public static let fontWeightGlobalTileLabel: Font.Weight = .semibold
         /// Timehop · onthisday · 'N YEARS AGO' banner label · SOURCED
         /// token: `fontWeight.onthisday.banner.label`
         public static let fontWeightOnthisdayBannerLabel: Font.Weight = .bold
@@ -1010,7 +1112,10 @@ public enum Tokens {
         /// Tribute + VidDay · birthday.request · all birthday surfaces (request, contribute, tribute screen) · PLATFORM
         /// token: `font.birthday`
         public static let birthday: DSFontFamily = .system
-        /// Yope · global · typeface of all text (SF Pro on iOS, Roboto on Android) · PLATFORM
+        /// Apple HIG / Material 3 · global · display serif for screen titles ('Week 27', 'Albums', profile name), the date title on Rewind, recap month cards and headlines: New York on iOS, Noto Serif on Android · PLATFORM
+        /// token: `font.global.display`
+        public static let globalDisplay: DSFontFamily = .systemSerif
+        /// Retro · global · UI typeface of all non-display text: SF Pro on iOS, Inter Variable on Android · SOURCED
         /// token: `font.global.family`
         public static let globalFamily: DSFontFamily = .system
         /// Timehop · onthisday · all on-this-day text · PLATFORM
@@ -1027,19 +1132,19 @@ public enum Tokens {
         public static let weekHistoryFontTitle: DSFontFamily = .system
     }
     public enum Haptics {
-        /// Apple HIG / Material 3 · global · a task failed (send failed) · PLATFORM
+        /// Apple HIG / Material 3 · global · a task failed · PLATFORM
         /// token: `haptic.global.error`
         public static let globalError: DSHaptic = .notificationError
-        /// Apple HIG / Material 3 · global · a recipient / group toggled, a segmented choice, picker scrubbing · PLATFORM
+        /// Retro · global · tick: one per step on a dial / scrubber (Rewind dial, friend picker, video trim), a segmented choice, a toggled selection · PLATFORM
         /// token: `haptic.global.select`
         public static let globalSelect: DSHaptic = .selection
         /// Apple HIG / Material 3 · global · confirm / send: a photo or message was sent · PLATFORM
         /// token: `haptic.global.send`
         public static let globalSend: DSHaptic = .notificationSuccess
-        /// Apple HIG / Material 3 · global · any task completed successfully (same generator as send) · PLATFORM
+        /// Apple HIG / Material 3 · global · a task completed successfully · PLATFORM
         /// token: `haptic.global.success`
         public static let globalSuccess: DSHaptic = .notificationSuccess
-        /// Apple HIG / Material 3 · global · a destructive action was confirmed (delete account, block, leave) · PLATFORM
+        /// Apple HIG / Material 3 · global · a destructive action was confirmed · PLATFORM
         /// token: `haptic.global.warning`
         public static let globalWarning: DSHaptic = .notificationWarning
     }
@@ -1056,105 +1161,135 @@ public enum Tokens {
         /// Yope · collage.share · filled share glyph (box + up arrow) in the pill · PLATFORM
         /// token: `collage.share.icon.share`
         public static let collageShareIconShare: String = "square.and.arrow.up.fill"
-        /// Yope · global · add (+ in a header circle) · PLATFORM
+        /// Retro · global · activity tab · PLATFORM
+        /// token: `icon.global.activity`
+        public static let globalActivity: String = "bell"
+        /// Retro · global · add ('+' on the add tile, '+' circle, CTA icon) · PLATFORM
         /// token: `icon.global.add`
         public static let globalAdd: String = "plus"
-        /// Yope · global · back (‹ in a header circle) · PLATFORM
+        /// Retro · global · albums / groups (book glyph: home header 2026, tab ≤2025) · PLATFORM
+        /// token: `icon.global.albums`
+        public static let globalAlbums: String = "book"
+        /// Retro · global · back (chevron before the serif title on pushed screens) · PLATFORM
         /// token: `icon.global.back`
         public static let globalBack: String = "chevron.left"
-        /// Yope · global · calendar circle in the group header · PLATFORM
+        /// Retro · global · week / calendar (empty-week glyph, 'Weeks' info row) · PLATFORM
         /// token: `icon.global.calendar`
         public static let globalCalendar: String = "calendar"
-        /// Yope · global · camera (composer button, row quick-camera, camera tab) · PLATFORM
+        /// Retro · global · camera (composer header, capture entry) — outline per the icon style · PLATFORM
         /// token: `icon.global.camera`
-        public static let globalCamera: String = "camera.fill"
-        /// Yope · global · chats tab (two overlapping bubbles) · PLATFORM
+        public static let globalCamera: String = "camera"
+        /// Retro · global · messages (chat glyph in the home header) · PLATFORM
         /// token: `icon.global.chats`
-        public static let globalChats: String = "bubble.left.and.bubble.right.fill"
-        /// Yope · global · selected (filled check circle, color.global.selection) · PLATFORM
+        public static let globalChats: String = "bubble.left"
+        /// Apple HIG / Material 3 · global · selected (filled check circle — a state, so filled) · PLATFORM
         /// token: `icon.global.check`
         public static let globalCheck: String = "checkmark.circle.fill"
-        /// Yope · global · done / posted (bare check, e.g. in the 'posted in the wall' toast) · PLATFORM
+        /// Apple HIG / Material 3 · global · done (bare check in a toast or row) · PLATFORM
         /// token: `icon.global.checkmark`
         public static let globalCheckmark: String = "checkmark"
-        /// Yope · global · disclosure / forward (› at the end of the header capsule) · PLATFORM
+        /// Retro · global · disclosure on grouped rows and recap month cards · PLATFORM
         /// token: `icon.global.chevron`
         public static let globalChevron: String = "chevron.right"
-        /// Yope · global · expand / dismiss down (⌄) · PLATFORM
+        /// Retro · global · expand (after the date title on Rewind; 'Camera Roll ⌄') · PLATFORM
         /// token: `icon.global.chevronDown`
         public static let globalChevronDown: String = "chevron.down"
-        /// Yope · global · close / dismiss (✕ in a header circle on sheets) · PLATFORM
+        /// Retro · global · close / dismiss (in a circle on modals and over photos) · PLATFORM
         /// token: `icon.global.close`
         public static let globalClose: String = "xmark"
-        /// Yope · global · download / save (arrow down to a line in a header circle) · PLATFORM
+        /// Apple HIG / Material 3 · global · save to device · PLATFORM
         /// token: `icon.global.download`
         public static let globalDownload: String = "arrow.down.to.line"
-        /// Yope · global · edit (pencil in a header circle) · PLATFORM
+        /// Retro · global · edit ('Add a message' pill, address edit circle) · PLATFORM
         /// token: `icon.global.edit`
         public static let globalEdit: String = "pencil"
-        /// Yope · global · flash off (slashed bolt on the viewfinder) · PLATFORM
+        /// Apple HIG / Material 3 · global · flash off (mechanics: camera; outline style) · PLATFORM
         /// token: `icon.global.flashOff`
-        public static let globalFlashOff: String = "bolt.slash.fill"
-        /// Locket · global · flash on (bolt) · PLATFORM
+        public static let globalFlashOff: String = "bolt.slash"
+        /// Apple HIG / Material 3 · global · flash on (mechanics: camera; outline style) · PLATFORM
         /// token: `icon.global.flashOn`
         public static let globalFlashOn: String = "bolt"
-        /// Yope · global · flip camera (two circular arrows in a circle) · PLATFORM
+        /// Apple HIG / Material 3 · global · flip camera (mechanics: Locket / Yope; outline style) · PLATFORM
         /// token: `icon.global.flip`
         public static let globalFlip: String = "arrow.triangle.2.circlepath"
-        /// Yope · global · photo library (camera, when no thumbnail) · PLATFORM
+        /// Apple HIG / Material 3 · global · photo library · PLATFORM
         /// token: `icon.global.gallery`
         public static let globalGallery: String = "photo.on.rectangle"
-        /// Locket · global · grid view (2×2 rounded squares) · PLATFORM
-        /// token: `icon.global.grid`
-        public static let globalGrid: String = "square.grid.2x2"
-        /// Yope · global · group / people · PLATFORM
+        /// Retro · global · friends / people (Friends tab) · PLATFORM
         /// token: `icon.global.group`
-        public static let globalGroup: String = "person.2.fill"
-        /// Yope · global · leave group (menu item, destructive color) · PLATFORM
+        public static let globalGroup: String = "person.2"
+        /// Retro · global · hide (menu item) · PLATFORM
+        /// token: `icon.global.hide`
+        public static let globalHide: String = "eye.slash"
+        /// Retro · global · Home tab · PLATFORM
+        /// token: `icon.global.home`
+        public static let globalHome: String = "house"
+        /// Apple HIG / Material 3 · global · leave (menu item) · PLATFORM
         /// token: `icon.global.leave`
         public static let globalLeave: String = "rectangle.portrait.and.arrow.right"
-        /// Yope · global · invite link · PLATFORM
+        /// Apple HIG / Material 3 · global · invite link / copy link · PLATFORM
         /// token: `icon.global.link`
         public static let globalLink: String = "link"
-        /// Partiful · global · private / restricted · PLATFORM
+        /// Retro · global · location (info row, widget place line) · PLATFORM
+        /// token: `icon.global.location`
+        public static let globalLocation: String = "location"
+        /// Retro · global · private (lock on a private week header; filled as in the capture) · PLATFORM
         /// token: `icon.global.lock`
         public static let globalLock: String = "lock.fill"
-        /// Yope · global · microphone (voice memo, voice message) · PLATFORM
+        /// Apple HIG / Material 3 · global · microphone (voice note; outline style) · PLATFORM
         /// token: `icon.global.mic`
-        public static let globalMic: String = "mic.fill"
-        /// Yope · global · more (•••) · PLATFORM
+        public static let globalMic: String = "mic"
+        /// Retro · global · more '•••' (week section, viewer, over photos) · PLATFORM
         /// token: `icon.global.more`
         public static let globalMore: String = "ellipsis"
-        /// Yope · global · default avatar silhouette · PLATFORM
+        /// Retro · global · new album / group in the header (book + plus badge; no exact SF Symbol — closest) · PLATFORM
+        /// token: `icon.global.newAlbum`
+        public static let globalNewAlbum: String = "plus.rectangle.on.rectangle"
+        /// Retro · global · pause (dial centre while playing) · PLATFORM
+        /// token: `icon.global.pause`
+        public static let globalPause: String = "pause.fill"
+        /// Apple HIG / Material 3 · global · silhouette where no name exists (Retro's no-photo avatar shows initials on a colour circle — ED-W3 'SF') · PLATFORM
         /// token: `icon.global.person`
         public static let globalPerson: String = "person.fill"
-        /// Yope · global · play (voice message) · PLATFORM
+        /// Retro · global · play (dial centre) · PLATFORM
         /// token: `icon.global.play`
         public static let globalPlay: String = "play.fill"
-        /// Yope · global · recap entry in a header circle (film frame with stacked lines, outline) · PLATFORM
+        /// Retro · global · random memory (glass circle on Rewind) · PLATFORM
+        /// token: `icon.global.random`
+        public static let globalRandom: String = "dice"
+        /// Apple HIG / Material 3 · global · recap entry where a glyph is needed (Retro's profile shows a text pill 'Recaps' — no Retro glyph) · PLATFORM
         /// token: `icon.global.recap`
         public static let globalRecap: String = "film.stack"
-        /// Yope · global · report (menu item, destructive color) · PLATFORM
+        /// Apple HIG / Material 3 · global · report (menu item; outline per the icon style) · PLATFORM
         /// token: `icon.global.report`
-        public static let globalReport: String = "flag.fill"
-        /// Yope · global · search (home header circle) · PLATFORM
+        public static let globalReport: String = "flag"
+        /// Retro · global · Rewind / on-this-day tab · PLATFORM
+        /// token: `icon.global.rewind`
+        public static let globalRewind: String = "clock.arrow.circlepath"
+        /// Retro · global · search (leading glyph in the search field) · PLATFORM
         /// token: `icon.global.search`
         public static let globalSearch: String = "magnifyingglass"
-        /// Locket · global · send (paper plane in a circle) · PLATFORM
+        /// Apple HIG / Material 3 · global · send (outline paper plane) · PLATFORM
         /// token: `icon.global.send`
         public static let globalSend: String = "paperplane"
-        /// Apple HIG / Material 3 · global · settings entry · PLATFORM
+        /// Retro · global · settings (gear capsule on the profile) · PLATFORM
         /// token: `icon.global.settings`
         public static let globalSettings: String = "gearshape"
-        /// Yope · global · share (square + up arrow) · PLATFORM
+        /// Retro · global · share · PLATFORM
         /// token: `icon.global.share`
         public static let globalShare: String = "square.and.arrow.up"
-        /// Yope · global · not selected (empty ring) · PLATFORM
+        /// Retro · global · delete (menu item, red) · PLATFORM
+        /// token: `icon.global.trash`
+        public static let globalTrash: String = "trash"
+        /// Apple HIG / Material 3 · global · not selected (empty ring) · PLATFORM
         /// token: `icon.global.uncheck`
         public static let globalUncheck: String = "circle"
-        /// Yope · global · walls / recaps tab (film frame with stacked lines, filled) · PLATFORM
+        /// Retro · global · video duration pill · PLATFORM
+        /// token: `icon.global.video`
+        public static let globalVideo: String = "video.fill"
+        /// Retro · global · profile tab — your weeks (= walls) · PLATFORM
         /// token: `icon.global.wall`
-        public static let globalWall: String = "film.stack.fill"
+        public static let globalWall: String = "person.crop.circle"
         /// Spotify Wrapped · year.story · pause (two bars) · PLATFORM
         /// token: `icon.year.story.pause`
         public static let yearStoryPause: String = "pause.fill"
@@ -1592,7 +1727,7 @@ public enum Tokens {
         public enum CollageViewLayoutTextStyleMap {
             public static let title: String = "callout"
         }
-        /// Apple HIG · global.system · semantic colors of native inset-grouped lists, alerts and sheets on system surfaces (settings.*, safety.*, system.permissions), iOS · PLATFORM
+        /// Apple HIG · global.system · semantic colours of native components on iOS (alerts, menus, share sheet, pickers, keyboard, system permission prompts); dynamic — they follow Light / Dark · PLATFORM
         /// token: `color.global.system.ios`
         public enum GlobalSystemIos {
             public static let groupedBackground: String = "systemGroupedBackground"
@@ -1783,21 +1918,18 @@ public enum Tokens {
             public static let extraLong3: CGFloat = 900
             public static let extraLong4: CGFloat = 1000
         }
-        /// Yope · global · motion of native components Yope uses; their curves and durations are the platform's · PLATFORM
+        /// Apple HIG / Material 3 · global · motion of native components; their curves and durations are the platform's · PLATFORM
         /// token: `easing.global.native`
         public enum GlobalNative {
+            public static let sheet: String = "system (.sheet / ModalBottomSheet) — measured on Retro: spring.global.sheetPresent"
+            public static let navigationPush: String = "system (NavigationStack / Compose Navigation default) — Retro's push not captured"
             public static let keyboard: String = "system"
             public static let alert: String = "system"
+            public static let menu: String = "system"
             public static let activityIndicator: String = "system (ProgressView / CircularProgressIndicator)"
             public static let scrollIndicator: String = "system"
-            public static let navigationPush: String = "system (NavigationStack / Compose Navigation default)"
-            public static let sheet: String = "system (.sheet / ModalBottomSheet)"
-        }
-        /// Yope · global · settle curve of the photo swipe after the finger lifts · PLATFORM
-        /// token: `easing.global.photoSwipe`
-        public enum GlobalPhotoSwipe {
-            public static let ios: String = "system paging scroll physics"
-            public static let android: String = "Compose HorizontalPager default fling"
+            public static let segmentedControl: String = "system"
+            public static let toast: String = "Android Toast LENGTH_SHORT"
         }
         /// Yope · groups.create · two-tone title ('create **new group**', 'create your / **first group**', 'Add friends to / **2025 dumps**') · SOURCED
         /// token: `groups.create.layout.titleAccent`
@@ -1860,11 +1992,18 @@ public enum Tokens {
             public static let ios: String = "none"
             public static let android: String = "none"
         }
-        /// Apple HIG · global · which SF Symbol variant a context uses · PLATFORM
+        /// Retro · global · tap on a button, tile or card (played just before the action) · PLATFORM
+        /// token: `haptic.global.tap`
+        public enum GlobalTap {
+            public static let ios: String = "none"
+            public static let android: String = "VIRTUAL_KEY"
+        }
+        /// Retro · global · which SF Symbol / Material variant a context uses · PLATFORM
         /// token: `icon.global.variantRule`
         public enum GlobalVariantRule {
-            public static let tabBar: String = "fill variant"
-            public static let header: String = "outline variant unless the reference glyph is filled"
+            public static let tabBar: String = "outline variant; selection shown by colour only (color.global.textPrimary vs color.global.tabInactive)"
+            public static let header: String = "outline variant"
+            public static let states: String = "fill variant only for a state (selected check, play / pause, lock)"
         }
         /// Partiful · invite.appclip · App Clip / universal link / App Link association · VERIFIED
         /// token: `invite.appclip.layout.association`
@@ -2077,12 +2216,13 @@ public enum Tokens {
             public static let height: CGFloat = 1080
             public static let fps: CGFloat = 29.97
         }
-        /// Yope · global · appearance of every surface (app and system) · PLATFORM
+        /// Retro · global · appearance of every surface · SOURCED
         /// token: `layout.global.appearance`
         public enum GlobalAppearance {
-            public static let mode: String = "dark only"
-            public static let ios: String = "Info.plist UIUserInterfaceStyle = Dark"
-            public static let android: String = "dark color scheme only"
+            public static let mode: String = "follows the system Light / Dark setting"
+            public static let ios: String = "no UIUserInterfaceStyle key and no preferredColorScheme override; colour tokens are dynamic (Color(light:dark:))"
+            public static let android: String = "DsTheme(dark = isSystemInDarkTheme()) wraps the app and every test host; colour getters read LocalDsDarkTheme"
+            public static let media: String = "photo / story viewer, camera, postcard-style composer, recap preview and full-bleed media stay dark (color.global.backgroundDeep) in both appearances; sheets over them follow the appearance"
         }
         /// W3C WCAG 2.2 · global · minimum contrast ratio: text 18 pt and larger, or bold at any size · VERIFIED
         /// token: `layout.global.contrast.largeText`
@@ -2102,36 +2242,97 @@ public enum Tokens {
             public static let ratio: CGFloat = 4.5
             public static let rule: String = "text up to 17 pt (iOS) / below 18 sp (Android), not bold"
         }
-        /// Apple HIG / Material 3 · global · Reduce Motion substitution rule for every token animation (implemented by DSAnimation.reducedMotion / dsMotion / dsTransition and Motion.kt dsMotionSpec) · PLATFORM
+        /// Retro · global · corner curve of every rounded rectangle · SOURCED
+        /// token: `layout.global.cornerStyle`
+        public enum GlobalCornerStyle {
+            public static let ios: String = "continuous (RoundedRectangle(cornerRadius:style: .continuous))"
+            public static let android: String = "circular (RoundedCornerShape)"
+        }
+        /// Retro · global · shadows and elevation · SOURCED
+        /// token: `layout.global.elevation`
+        public enum GlobalElevation {
+            public static let cards: String = "none"
+            public static let tiles: String = "none"
+            public static let lists: String = "none"
+            public static let buttons: String = "none"
+            public static let darkMode: String = "no elevation tint: #262626 fills on the page colour"
+            public static let exceptions: String = "album cover drop shadow (book cover); premium pill coloured shadow (paywall) — both unmeasured"
+        }
+        /// Retro · global · icon style of every glyph · SOURCED
+        /// token: `layout.global.iconStyle`
+        public enum GlobalIconStyle {
+            public static let style: String = "outline, uniform stroke, rounded caps and joins"
+            public static let stroke: CGFloat = 2
+            public static let glyphBox: CGFloat = 24
+            public static let filled: String = "only as a state (selected check, play / pause, lock)"
+            public static let ios: String = "SF Symbols, outline variant (also in the tab bar), weight regular"
+            public static let android: String = "Material Icons Outlined / Rounded (outline shapes), 24 dp"
+        }
+        /// Retro · global · where translucency is used · SOURCED
+        /// token: `layout.global.materials`
+        public enum GlobalMaterials {
+            public static let glass: String = "only over photos or colour (color.global.glass)"
+            public static let backdrop: String = "full-screen blurred, colour-rich version of the photo behind a card (recap preview, paywall)"
+            public static let native: String = "menus, share sheet, sheets: system materials"
+        }
+        /// Retro · global · bottom gradient on photo tiles and full-bleed photos under white text (end colour color.global.scrim) · SOURCED
+        /// token: `layout.global.photoScrim`
+        public enum GlobalPhotoScrim {
+            public static let color: String = "#000000"
+            public static let startAt: CGFloat = 0.55
+            public static let startOpacity: CGFloat = 0
+            public static let endOpacity: CGFloat = 0.6
+            public static let direction: String = "top → bottom"
+        }
+        /// Retro · global · vertical gradient of the premium pill · SOURCED
+        /// token: `layout.global.premiumGradient`
+        public enum GlobalPremiumGradient {
+            public static let top: String = "#D543DE"
+            public static let bottom: String = "#A327B8"
+            public static let direction: String = "vertical"
+        }
+        /// Apple HIG / Material 3 · global · Reduce Motion substitution rule for every token animation (DSAnimation.reducedMotion / dsMotion / dsTransition; Motion.kt dsMotionSpec) · PLATFORM
         /// token: `layout.global.reduceMotion`
         public enum GlobalReduceMotion {
             public static let ios: String = "UIAccessibility.isReduceMotionEnabled / @Environment(\\.accessibilityReduceMotion)"
             public static let android: String = "Settings.Global.ANIMATOR_DURATION_SCALE == 0 or ValueAnimator.areAnimatorsEnabled() == false (Accessibility > Remove animations)"
             public static let substitute: String = "replace x/y/z movement with a cross-fade of the same token duration; springs lose their bounce (dampingFraction 1); drop zoom, scale, peripheral and automatic repeating animation; never animate into or out of blur; motion that tracks the finger stays"
         }
-        /// Apple HIG / Material 3 · global.system · text styles on system surfaces · PLATFORM
+        /// Apple HIG / Material 3 · global.system · text styles of components the system draws · PLATFORM
         /// token: `layout.global.system.typography`
         public enum GlobalSystemTypography {
-            public static let ios: String = "built-in text styles (Font.TextStyle) on native lists, alerts and sheets"
-            public static let android: String = "MaterialTheme.typography (M3 baseline type scale: list label bodyLarge, supporting bodyMedium, dialog headline headlineSmall, actions labelLarge)"
+            public static let ios: String = "built-in text styles (Font.TextStyle) inside native alerts, menus, share sheet, pickers"
+            public static let android: String = "MaterialTheme.typography with Retro's overrides: headlineLarge = display 40/48, bodyLarge = Inter 15/18 W600, bodyMedium = Inter 14/17 W600, bodySmall = Inter 11/11 W600; other M3 styles stay baseline"
         }
-        /// Apple HIG · global · iOS Dynamic Type text style each fontSize.global.<role> scales with (SwiftUI Font.TextStyle case; DSTextStyle.relativeTo) · PLATFORM
+        /// Apple HIG · global · iOS Dynamic Type text style each fontSize.global.<role> scales with (SwiftUI Font.TextStyle case; DSTextStyle.relativeTo); Android sp sizes follow the font scale · PLATFORM
         /// token: `layout.global.textStyleMap`
         public enum GlobalTextStyleMap {
-            public static let onboardingTitle: String = "largeTitle"
-            public static let sheetTitle: String = "title3"
-            public static let headerTitle: String = "subheadline"
-            public static let listTitle: String = "headline"
+            public static let headerTitle: String = "largeTitle"
+            public static let displayMedium: String = "largeTitle"
+            public static let displaySmall: String = "title2"
+            public static let onboardingTitle: String = "title"
+            public static let sheetTitle: String = "headline"
+            public static let listTitle: String = "subheadline"
             public static let listSubtitle: String = "subheadline"
-            public static let body: String = "body"
-            public static let button: String = "subheadline"
-            public static let caption: String = "caption"
-            public static let overlayTime: String = "title2"
-            public static let overlayTimeCamera: String = "title"
+            public static let body: String = "subheadline"
+            public static let button: String = "headline"
+            public static let pill: String = "subheadline"
+            public static let textButton: String = "body"
+            public static let caption: String = "subheadline"
+            public static let meta: String = "footnote"
             public static let placeholder: String = "body"
-            public static let sectionLabel: String = "callout"
-            public static let emptyTitle: String = "callout"
+            public static let sectionLabel: String = "subheadline"
+            public static let emptyTitle: String = "title3"
             public static let emptyDetail: String = "subheadline"
+            public static let tileLabel: String = "footnote"
+            public static let tileDay: String = "title"
+            public static let tileMonth: String = "subheadline"
+            public static let badge: String = "caption2"
+        }
+        /// Retro · global · Android weights on Inter's wght axis that the named weights cannot express (FontWeight(450)) · SOURCED
+        /// token: `layout.global.variableWeight.android`
+        public enum GlobalVariableWeightAndroid {
+            public static let body: CGFloat = 450
         }
         /// Timehop · onthisday · years-ago banner geometry · SOURCED
         /// token: `layout.onthisday.banner`
@@ -2400,13 +2601,13 @@ public enum Tokens {
             public static let corners: String = "radius.global.photo on all four corners"
             public static let swipe: String = "horizontal paging to the adjacent photo"
         }
-        /// Yope · global · full pill: header title capsule, composer text field, chat bubbles, tab-bar capsule, tooltip ends, white secondary pills · SOURCED
+        /// Retro · global · buttons (60 / 37 / 36), pills, badges, position pill; circles for avatars and circle buttons · SOURCED
         /// token: `radius.global.capsule`
         public enum GlobalCapsule {
             public static let shape: String = "capsule"
             public static let radius: String = "height / 2"
         }
-        /// Apple HIG / Material 3 · global · sheet top corners (Yope's sheet radius was not measured) · PLATFORM
+        /// Apple HIG / Material 3 · global · top corners of native sheets (iOS draws its own; Android ModalBottomSheet default) · PLATFORM
         /// token: `radius.global.sheet`
         public enum GlobalSheet {
             public static let ios: String = "system"
@@ -2475,12 +2676,11 @@ public enum Tokens {
             public static let ios: String = "system (SwiftUI Toggle plays its own haptic; no custom generator)"
             public static let android: String = "TOGGLE_ON / TOGGLE_OFF (API 34) only if the Switch does not already play one"
         }
-        /// Yope · global · observed shape of the sheet presentation: overshoot past rest, time to the peak, time from the peak to rest · SOURCED
-        /// token: `spring.global.sheetPresentObserved`
-        public enum GlobalSheetPresentObserved {
-            public static let overshootPt: CGFloat = 16
-            public static let timeToPeakMs: CGFloat = 100
-            public static let settleMs: CGFloat = 100
+        /// Retro · global · thickness of color.global.separator · SOURCED
+        /// token: `size.global.hairline`
+        public enum GlobalHairline {
+            public static let ios: String = "1 device pixel (1 / displayScale pt)"
+            public static let android: String = "1 device pixel"
         }
         /// Yope · walls.mine · how wall items fill the grid · SOURCED
         /// token: `walls.mine.layout.gridOrder`
@@ -2721,9 +2921,21 @@ public enum Tokens {
         /// Tribute · birthday.request · title · VERIFIED
         /// token: `lineHeight.birthday.request.title`
         public static let birthdayRequestTitle: CGFloat = 28.8
-        /// Yope · global · line pitch of the 3-line legal footer under sign-up (12 pt text) · SOURCED
+        /// Retro · global · Android badge line height (Inter 11/11 W600) · SOURCED
+        /// token: `lineHeight.global.badge.android`
+        public static let globalBadgeAndroid: CGFloat = 11
+        /// Retro · global · Android body line height · SOURCED
+        /// token: `lineHeight.global.body.android`
+        public static let globalBodyAndroid: CGFloat = 17
+        /// Retro · global · line pitch of the multi-line legal footer (14 pt) · SOURCED
         /// token: `lineHeight.global.caption`
-        public static let globalCaption: CGFloat = 15.2
+        public static let globalCaption: CGFloat = 21.7
+        /// Retro · global · line height of the display serif title (multi-line titles) · SOURCED
+        /// token: `lineHeight.global.headerTitle`
+        public static let globalHeaderTitle: CGFloat = 48
+        /// Retro · global · Android name / row title line height (Inter 15/18 W600) · SOURCED
+        /// token: `lineHeight.global.listTitle.android`
+        public static let globalListTitleAndroid: CGFloat = 18
         /// Spotify Wrapped · year.story · subline line pitch · SOURCED
         /// token: `lineHeight.year.story.body`
         public static let yearStoryBody: CGFloat = 21.4
@@ -2881,21 +3093,30 @@ public enum Tokens {
         /// Tribute · birthday.tribute · secondary button corners · VERIFIED
         /// token: `radius.birthday.tribute.button`
         public static let birthdayTributeButton: CGFloat = 8
-        /// Yope · global · primary (lime) button corners — not a full pill · SOURCED
+        /// Retro · global · full-width 60 pt capsule (radius = height ÷ 2) · SOURCED
         /// token: `radius.global.button`
-        public static let globalButton: CGFloat = 14
-        /// Yope · global · list card corners (home conversation / group cards, inline permission card) · SOURCED
+        public static let globalButton: CGFloat = 30
+        /// Retro · global · photo containers: week-strip outer corners, friend card — continuous corner (layout.global.cornerStyle) · SOURCED
         /// token: `radius.global.card`
-        public static let globalCard: CGFloat = 17
-        /// Yope · global · single-line form text field corners ('name group (optional)') · SOURCED
+        public static let globalCard: CGFloat = 18
+        /// Retro · global · large card on a blurred backdrop (paywall plan card) · SOURCED
+        /// token: `radius.global.cardLarge`
+        public static let globalCardLarge: CGFloat = 36
+        /// Retro · global · search / text field corners (52 pt field) · SOURCED
         /// token: `radius.global.field`
-        public static let globalField: CGFloat = 12
-        /// Yope · global · photo corners in the thread and in grids of walls · SOURCED
+        public static let globalField: CGFloat = 19
+        /// Retro · global · grouped list (settings) — first row top corners, last row bottom corners, a single row all corners; middle rows square · SOURCED
+        /// token: `radius.global.groupedRow`
+        public static let globalGroupedRow: CGFloat = 12
+        /// Retro · global · photo cells inside strips and grids (inner corners square; only the container's outer corners round) · SOURCED
         /// token: `radius.global.photo`
-        public static let globalPhoto: CGFloat = 15
-        /// Yope · global · camera viewfinder corners (full-width viewfinder) · SOURCED
+        public static let globalPhoto: CGFloat = 0
+        /// Retro · global · list row cover thumbnail (albums), recap collage cells · SOURCED
+        /// token: `radius.global.thumbnail`
+        public static let globalThumbnail: CGFloat = 4
+        /// Retro · global · camera viewfinder corners — composition: the viewfinder is drawn as Retro's photo container (radius.global.card) · SOURCED
         /// token: `radius.global.viewfinder`
-        public static let globalViewfinder: CGFloat = 18.5
+        public static let globalViewfinder: CGFloat = 18
         /// Yope · walls.mine · wall grid tile corner radius · SOURCED
         /// token: `walls.mine.radius.gridTile`
         public static let wallsMineRadiusGridTile: CGFloat = 6.5
@@ -3603,48 +3824,120 @@ public enum Tokens {
         /// Material 3 · settings.root · M3 two-line list item height · VERIFIED
         /// token: `settings.root.size.listItemTwoLine.android`
         public static let settingsRootSizeListItemTwoLineAndroid: CGFloat = 72
-        /// Yope · global · group avatar inside the header capsule · SOURCED
+        /// Retro · global · avatar in a 3-column people grid (name centred below) · SOURCED
+        /// token: `size.global.avatarGrid`
+        public static let globalAvatarGrid: CGFloat = 81
+        /// Retro · global · viewer / story header avatar including its white ring with a gap · SOURCED
         /// token: `size.global.avatarHeader`
-        public static let globalAvatarHeader: CGFloat = 28
-        /// Yope · global · avatar in a home list card · SOURCED
+        public static let globalAvatarHeader: CGFloat = 39
+        /// Retro · global · avatar beside a name above a friend card (home feed) · SOURCED
         /// token: `size.global.avatarList`
-        public static let globalAvatarList: CGFloat = 64
-        /// Yope · global · avatar in a people-picker row · SOURCED
+        public static let globalAvatarList: CGFloat = 26.5
+        /// Retro · global · avatar in a people row (friend request, member, comment rows) · SOURCED
         /// token: `size.global.avatarPicker`
-        public static let globalAvatarPicker: CGFloat = 40
-        /// Yope · global · small avatar: chat sender, send-to recipient row · SOURCED
+        public static let globalAvatarPicker: CGFloat = 37
+        /// Retro · global · avatar in the profile header (right margin, aligned to the title) · SOURCED
+        /// token: `size.global.avatarProfile`
+        public static let globalAvatarProfile: CGFloat = 64
+        /// Retro · global · avatar in an avatar stack (≈3 pt overlap, white ring) · SOURCED
         /// token: `size.global.avatarSmall`
-        public static let globalAvatarSmall: CGFloat = 32.6
-        /// Yope · global · full-width primary button in a form ('create group') · SOURCED
+        public static let globalAvatarSmall: CGFloat = 22.6
+        /// Retro · global · overlap between avatars in a stack · SOURCED
+        /// token: `size.global.avatarStackOverlap`
+        public static let globalAvatarStackOverlap: CGFloat = 3
+        /// Retro · global · pushed screen: screen edge → back chevron ink (chevron ink 11.1 × 18.3 pt, centred on the title's cap middle) · SOURCED
+        /// token: `size.global.backInset`
+        public static let globalBackInset: CGFloat = 21.1
+        /// Retro · global · height of the red badge capsule · SOURCED
+        /// token: `size.global.badgeHeight`
+        public static let globalBadgeHeight: CGFloat = 24
+        /// Retro · global · 'new' badge: distance from the card's top and right edges · SOURCED
+        /// token: `size.global.badgeInset`
+        public static let globalBadgeInset: CGFloat = 12
+        /// Retro · global · height of the full-width primary / secondary capsule · SOURCED
         /// token: `size.global.buttonHeight`
-        public static let globalButtonHeight: CGFloat = 45
-        /// Yope · global · primary action button at the bottom of a sheet ('send ⓝ') · SOURCED
+        public static let globalButtonHeight: CGFloat = 60
+        /// Retro · global · height of the full-width capsule at the bottom of a sheet / modal (same as buttonHeight in Retro) · SOURCED
         /// token: `size.global.buttonHeightSheet`
-        public static let globalButtonHeightSheet: CGFloat = 47
-        /// Yope · global · side margin of the form primary button · SOURCED
+        public static let globalButtonHeightSheet: CGFloat = 60
+        /// Retro · global · side margin of the full-width bottom capsule (and of the plan card) · SOURCED
         /// token: `size.global.buttonMarginH`
-        public static let globalButtonMarginH: CGFloat = 19
-        /// Yope · global · side margin of the sheet-bottom primary button · SOURCED
+        public static let globalButtonMarginH: CGFloat = 20
+        /// Retro · global · side margin of a full-width capsule at the bottom of a sheet / modal (same as buttonMarginH in Retro) · SOURCED
         /// token: `size.global.buttonMarginHSheet`
-        public static let globalButtonMarginHSheet: CGFloat = 27
-        /// Yope · global · selection circle (empty ring / filled check) in pickers and recipient rows · SOURCED
+        public static let globalButtonMarginHSheet: CGFloat = 20
+        /// Retro · global · gap between friend cards in the horizontal pager (the next card peeks) · SOURCED
+        /// token: `size.global.cardGap`
+        public static let globalCardGap: CGFloat = 16
+        /// Retro · global · friend card header: avatar bottom → card top · SOURCED
+        /// token: `size.global.cardHeaderGap`
+        public static let globalCardHeaderGap: CGFloat = 10
+        /// Retro · global · friend card header: avatar → name ink · SOURCED
+        /// token: `size.global.cardNameGap`
+        public static let globalCardNameGap: CGFloat = 11
+        /// Retro · global · selection circle (empty ring / filled check) — drawn in the 24 pt glyph box · SOURCED
         /// token: `size.global.checkCircle`
         public static let globalCheckCircle: CGFloat = 24
-        /// Yope · global · single-line form text field height · SOURCED
+        /// Retro · global · circle button with a glyph on a fill ('+' on album rows, close on the postcard modal) · SOURCED
+        /// token: `size.global.circleButton`
+        public static let globalCircleButton: CGFloat = 36
+        /// Retro · global · large glass circle beside a central control (Rewind share / random) · SOURCED
+        /// token: `size.global.circleButtonLarge`
+        public static let globalCircleButtonLarge: CGFloat = 64
+        /// Retro · global · '•••' glass circle over a full-bleed photo · SOURCED
+        /// token: `size.global.circleButtonPhoto`
+        public static let globalCircleButtonPhoto: CGFloat = 40
+        /// Retro · global · small close circle (glass over colour on the paywall) · SOURCED
+        /// token: `size.global.circleButtonSmall`
+        public static let globalCircleButtonSmall: CGFloat = 32
+        /// Retro · global · reply / comment field at the bottom of the viewer (own avatar leading, trailing glyph) · SOURCED
+        /// token: `size.global.commentFieldHeight`
+        public static let globalCommentFieldHeight: CGFloat = 48
+        /// Retro · global · empty-state outline glyph · SOURCED
+        /// token: `size.global.emptyIcon`
+        public static let globalEmptyIcon: CGFloat = 22
+        /// Retro · global · empty state: glyph bottom → title cap top · SOURCED
+        /// token: `size.global.emptyIconToTitle`
+        public static let globalEmptyIconToTitle: CGFloat = 26
+        /// Retro · global · empty state: title baseline → capsule top · SOURCED
+        /// token: `size.global.emptyTitleToAction`
+        public static let globalEmptyTitleToAction: CGFloat = 25
+        /// Retro · global · feature-intro sheet floating in from the screen edges · SOURCED
+        /// token: `size.global.featureSheetInset`
+        public static let globalFeatureSheetInset: CGFloat = 12
+        /// Retro · global · search / text field height (full width inside the margins) · SOURCED
         /// token: `size.global.fieldHeight`
-        public static let globalFieldHeight: CGFloat = 44
-        /// Yope · global · circle icon buttons in headers (back, close, download, film-strip, search) · SOURCED
+        public static let globalFieldHeight: CGFloat = 52
+        /// Retro · global · friend card (photo) height, 2:3 · SOURCED
+        /// token: `size.global.friendCardHeight`
+        public static let globalFriendCardHeight: CGFloat = 361
+        /// Retro · global · friend card (photo) width, 2:3 · SOURCED
+        /// token: `size.global.friendCardWidth`
+        public static let globalFriendCardWidth: CGFloat = 240
+        /// Apple HIG · global · hit area of a header icon button (Retro draws the glyph bare, no circle); glyph centred · PLATFORM
         /// token: `size.global.headerButton`
         public static let globalHeaderButton: CGFloat = 44
-        /// Yope · global · gap between the back circle and the header title capsule · SOURCED
+        /// Retro · global · pushed screen: back chevron ink → serif title ink · SOURCED
         /// token: `size.global.headerGap`
-        public static let globalHeaderGap: CGFloat = 7.3
-        /// Yope · global · screen edge to the first / last header circle · SOURCED
+        public static let globalHeaderGap: CGFloat = 14.6
+        /// Retro · global · centre-to-centre distance of trailing header glyphs (book, chat) · SOURCED
+        /// token: `size.global.headerIconPitch`
+        public static let globalHeaderIconPitch: CGFloat = 48
+        /// Retro · global · screen edge → ink of the last trailing header glyph (the glyph, not its hit area, sits on the margin) · SOURCED
         /// token: `size.global.headerInset`
-        public static let globalHeaderInset: CGFloat = 11.5
-        /// Yope · global · vertical gap between stacked list cards · SOURCED
+        public static let globalHeaderInset: CGFloat = 16
+        /// Retro · global · glyph box of outline icons: tab bar, header, list accessories · SOURCED
+        /// token: `size.global.icon`
+        public static let globalIcon: CGFloat = 24
+        /// Retro · global · inline glyph inside a pill ('+' in 'Get this week started'); info-row icons measure 14 · SOURCED
+        /// token: `size.global.iconSmall`
+        public static let globalIconSmall: CGFloat = 14.7
+        /// Retro · global · profile info rows (14 pt icon + 15 pt text) baseline pitch · SOURCED
+        /// token: `size.global.infoRowPitch`
+        public static let globalInfoRowPitch: CGFloat = 29
+        /// Retro · global · vertical gap between list rows with a thumbnail (albums list: row pitch 119.5 − thumbnail 97) · SOURCED
         /// token: `size.global.listGap`
-        public static let globalListGap: CGFloat = 7.5
+        public static let globalListGap: CGFloat = 22.5
         /// Material 3 · global · minimum touch target, Android · VERIFIED
         /// token: `size.global.minTouchTarget.android`
         public static let globalMinTouchTargetAndroid: CGFloat = 48
@@ -3657,30 +3950,87 @@ public enum Tokens {
         /// Apple HIG · global · absolute minimum control size, iOS · VERIFIED
         /// token: `size.global.minTouchTarget.iosMinimum`
         public static let globalMinTouchTargetIosMinimum: CGFloat = 28
-        /// Yope · global · side margin of full-width content (home list cards); edge elements sit at the same inset · SOURCED
+        /// Retro · global · page-dot diameter · SOURCED
+        /// token: `size.global.pageDot`
+        public static let globalPageDot: CGFloat = 5.9
+        /// Retro · global · page-dot centre-to-centre · SOURCED
+        /// token: `size.global.pageDotPitch`
+        public static let globalPageDotPitch: CGFloat = 9.6
+        /// Retro · global · gap between side-by-side capsules (Recaps / Share Profile / gear) · SOURCED
+        /// token: `size.global.pillGap`
+        public static let globalPillGap: CGFloat = 8.8
+        /// Retro · global · height of the medium capsules (outline CTA, action pairs, profile action row) · SOURCED
+        /// token: `size.global.pillHeight`
+        public static let globalPillHeight: CGFloat = 37
+        /// Retro · global · outline CTA with icon: icon → label · SOURCED
+        /// token: `size.global.pillIconGap`
+        public static let globalPillIconGap: CGFloat = 9.7
+        /// Retro · global · outline CTA with icon: leading edge → icon · SOURCED
+        /// token: `size.global.pillPaddingLeading`
+        public static let globalPillPaddingLeading: CGFloat = 18
+        /// Retro · global · outline CTA with icon: label → trailing edge · SOURCED
+        /// token: `size.global.pillPaddingTrailing`
+        public static let globalPillPaddingTrailing: CGFloat = 17
+        /// Retro · global · gap before the next card that peeks in a horizontal card pager · SOURCED
+        /// token: `size.global.planCardGap`
+        public static let globalPlanCardGap: CGFloat = 8
+        /// Retro · global · padding inside the large card on a blurred backdrop (paywall plan card); its capsule sits 16 from the card sides and bottom · SOURCED
+        /// token: `size.global.planCardPadding`
+        public static let globalPlanCardPadding: CGFloat = 27
+        /// Retro · global · position pill in the viewer header ('3 of 4') · SOURCED
+        /// token: `size.global.positionPillHeight`
+        public static let globalPositionPillHeight: CGFloat = 22
+        /// Retro · global · list row thumbnail → text · SOURCED
+        /// token: `size.global.rowThumbGap`
+        public static let globalRowThumbGap: CGFloat = 17
+        /// Retro · global · list row thumbnail height (3:4 cover) · SOURCED
+        /// token: `size.global.rowThumbHeight`
+        public static let globalRowThumbHeight: CGFloat = 97
+        /// Retro · global · list row thumbnail width (3:4 cover) · SOURCED
+        /// token: `size.global.rowThumbWidth`
+        public static let globalRowThumbWidth: CGFloat = 72
+        /// Retro · global · side margin of all content: titles, strips, friend cards, list rows, header glyph ink, search field · SOURCED
         /// token: `size.global.screenMargin`
-        public static let globalScreenMargin: CGFloat = 12
-        /// Yope · global · 'me' tab avatar · SOURCED
-        /// token: `size.global.tabBarAvatar`
-        public static let globalTabBarAvatar: CGFloat = 34
-        /// Yope · global · floating tab-bar capsule height · SOURCED
+        public static let globalScreenMargin: CGFloat = 16
+        /// Retro · global · strip bottom → next section header cap top · SOURCED
+        /// token: `size.global.sectionGap`
+        public static let globalSectionGap: CGFloat = 36.4
+        /// Retro · global · section header baseline → strip / grid top · SOURCED
+        /// token: `size.global.sectionHeaderToContent`
+        public static let globalSectionHeaderToContent: CGFloat = 11.7
+        /// Retro · global · gap between strip tiles (page colour shows through) · SOURCED
+        /// token: `size.global.stripGap`
+        public static let globalStripGap: CGFloat = 2
+        /// Retro · global · week-strip tile height (3:4) · SOURCED
+        /// token: `size.global.stripTileHeight`
+        public static let globalStripTileHeight: CGFloat = 112
+        /// Retro · global · week-strip tile width (3:4) · SOURCED
+        /// token: `size.global.stripTileWidth`
+        public static let globalStripTileWidth: CGFloat = 84
+        /// Retro · global · red unread dot under a tab glyph · SOURCED
+        /// token: `size.global.tabBadgeDot`
+        public static let globalTabBadgeDot: CGFloat = 4
+        /// Retro · global · tab glyph bottom → dot top (dot centred) · SOURCED
+        /// token: `size.global.tabBadgeOffset`
+        public static let globalTabBadgeOffset: CGFloat = 5
+        /// Retro · global · tab bar height above the home indicator (standard bar; background = page, no hairline, no labels) · SOURCED
         /// token: `size.global.tabBarHeight`
-        public static let globalTabBarHeight: CGFloat = 58
-        /// Yope · global · tab glyph size (20-23 pt measured) · SOURCED
+        public static let globalTabBarHeight: CGFloat = 49
+        /// Retro · global · tab glyph box (ink 18.7–24 × 19.7–22 pt) · SOURCED
         /// token: `size.global.tabBarIcon`
-        public static let globalTabBarIcon: CGFloat = 21
-        /// Yope · global · tab-bar side inset from the screen edges · SOURCED
+        public static let globalTabBarIcon: CGFloat = 24
+        /// Retro · global · tab bar inset from the screen edges: none — Retro's bar is not floating; it spans the width with 5 items evenly distributed (centres at width ÷ 10, 3 ÷ 10 …) and sits on the home indicator · SOURCED
         /// token: `size.global.tabBarInset`
-        public static let globalTabBarInset: CGFloat = 22
-        /// Yope · global · selected-tab pill height · SOURCED
-        /// token: `size.global.tabBarSelectedHeight`
-        public static let globalTabBarSelectedHeight: CGFloat = 48
-        /// Yope · global · selected-tab pill width (fill color.global.controlRaised) · SOURCED
-        /// token: `size.global.tabBarSelectedWidth`
-        public static let globalTabBarSelectedWidth: CGFloat = 74
-        /// Yope · global · floating tab-bar capsule width · SOURCED
-        /// token: `size.global.tabBarWidth`
-        public static let globalTabBarWidth: CGFloat = 344
+        public static let globalTabBarInset: CGFloat = 0
+        /// Retro · global · photo tile: weekday label baseline → tile bottom · SOURCED
+        /// token: `size.global.tileLabelBaseline`
+        public static let globalTileLabelBaseline: CGFloat = 13.4
+        /// Retro · global · display title baseline → first content (strip top) · SOURCED
+        /// token: `size.global.titleToContent`
+        public static let globalTitleToContent: CGFloat = 30
+        /// Retro · global · safe-area top → baseline of the display title on a root screen · SOURCED
+        /// token: `size.global.titleTop`
+        public static let globalTitleTop: CGFloat = 64
         /// Yope · walls.browse · person circle in the 'me & friends' row · SOURCED
         /// token: `walls.browse.dimension.avatar`
         public static let wallsBrowseDimensionAvatar: CGFloat = 60
@@ -3827,19 +4177,31 @@ public enum Tokens {
         /// Locket · camera.capture · shutter press: scale to camera.capture.layout.shutterPress.scale and dim the disc · SOURCED
         /// token: `camera.capture.spring.shutterPress`
         public static let cameraCaptureSpringShutterPress: DSSpring = DSSpring(response: 0.233, dampingFraction: 1)
-        /// Material 3 · global · Android default spring (Compose spring() defaults) for custom motion whose Yope curve was not measurable · PLATFORM
+        /// Material 3 · global · Android default spring (Compose spring() defaults: stiffness 1500, damping 1) · PLATFORM
         /// token: `spring.global.platformDefault.android`
         public static let globalPlatformDefaultAndroid: DSSpring = DSSpring(response: 0.1622, dampingFraction: 1)
-        /// Apple HIG · global · iOS default animation (SwiftUI Animation.default) for custom motion whose Yope curve was not measurable · PLATFORM
+        /// Apple HIG · global · iOS default animation (SwiftUI Animation.default) for motion Retro shows no value for · PLATFORM
         /// token: `spring.global.platformDefault.ios`
         public static let globalPlatformDefaultIos: DSSpring = DSSpring(response: 0.55, dampingFraction: 1)
-        /// React Navigation iOS modal spec (shipped in Locket) · global · sheet presentation spring (response, dampingFraction) · SOURCED
+        /// Retro · global · playful reveals (fan-outs, blur reveal, avatar entries) · SOURCED
+        /// token: `spring.global.playful`
+        public static let globalPlayful: DSSpring = DSSpring(response: 0.4443, dampingFraction: 0.75)
+        /// Retro · global · native sheet presentation curve (critically damped, no overshoot); for custom presentations that must match it · SOURCED
         /// token: `spring.global.sheetPresent`
-        public static let globalSheetPresent: DSSpring = DSSpring(response: 0.3441, dampingFraction: 1)
+        public static let globalSheetPresent: DSSpring = DSSpring(response: 0.347, dampingFraction: 1)
     }
     public enum Tracking {
         /// Partiful · invite.web · title tracking · VERIFIED
         /// token: `invite.web.letterSpacing.title`
         public static let inviteWebLetterSpacingTitle: CGFloat = -0.02
+        /// Retro · global · Android badge tracking — Latin script only · SOURCED
+        /// token: `letterSpacing.global.badge.android`
+        public static let globalBadgeAndroid: CGFloat = -0.2
+        /// Retro · global · Android body tracking — only when the locale's script is Latin (hh3.p0), else 0 · SOURCED
+        /// token: `letterSpacing.global.body.android`
+        public static let globalBodyAndroid: CGFloat = -0.3
+        /// Retro · global · Android name / row title tracking — Latin script only · SOURCED
+        /// token: `letterSpacing.global.listTitle.android`
+        public static let globalListTitleAndroid: CGFloat = -0.35
     }
 }

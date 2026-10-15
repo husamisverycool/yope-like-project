@@ -205,31 +205,45 @@ export const tokens = {
   "color.birthday.request.prompts.header": "#292D34", // Tribute · birthday.request · VERIFIED
   "color.birthday.tribute.button.label": "#292D34", // Tribute · birthday.tribute · VERIFIED
   "color.birthday.tribute.pillarbox": "#000000", // Tribute · birthday.tribute · SOURCED
-  "color.global.accent": "#CDFD07", // Yope · global · SOURCED
-  "color.global.accentSecondary": "#FE1F84", // Yope · global · SOURCED
-  "color.global.background": "#171717", // Yope · global · SOURCED
-  "color.global.backgroundDeep": "#000000", // Yope · global · SOURCED
-  "color.global.control": "#2E2E2E", // Yope · global · SOURCED
-  "color.global.controlOnDeep": "#101010", // Yope · global · SOURCED
-  "color.global.controlRaised": "#434343", // Yope · global · SOURCED
-  "color.global.destructive": "#FF4245", // Apple HIG · global.system · PLATFORM
-  "color.global.onAccent": "#000000", // Yope · global · SOURCED
-  "color.global.onSurfaceLight": "#000000", // Yope · global · SOURCED
-  "color.global.scrim": "#00000080", // Locket · global · SOURCED
-  "color.global.selection": "#0091FF", // Apple HIG · global · PLATFORM
-  "color.global.separator": "#FFFFFF33", // Locket · global · SOURCED
-  "color.global.surfaceLight": "#FFFFFF", // Yope · global · SOURCED
-  "color.global.system.error": "#F2B8B5", // Material 3 · global.system · PLATFORM
+  "color.global.accent": {"light":"#000000","dark":"#FFFFFF"}, // Retro · global · SOURCED
+  "color.global.background": {"light":"#FFFFFF","dark":"#000000"}, // Retro · global · SOURCED
+  "color.global.background.android": {"light":"#FFFFFF","dark":"#1C1C1E"}, // Retro · global · SOURCED
+  "color.global.backgroundDeep": "#000000", // Retro · global · SOURCED
+  "color.global.badge": "#EA3337", // Retro · global · SOURCED
+  "color.global.badgeMuted": "#999999", // Retro · global · SOURCED
+  "color.global.control": {"light":"#F1F1F1","dark":"#262626"}, // Retro · global · SOURCED
+  "color.global.controlOnDeep": "#262626", // Retro · global · SOURCED
+  "color.global.controlRaised": {"light":"#CCCCCC","dark":"#4D4D4D"}, // Retro · global · SOURCED
+  "color.global.destructive": "#EA3337", // Retro · global.system · SOURCED
+  "color.global.emptyTileText": {"light":"#D9D9D9","dark":"#515151"}, // Retro · global · SOURCED
+  "color.global.glass": "#FFFFFF1F", // Retro · global · SOURCED
+  "color.global.onAccent": {"light":"#FFFFFF","dark":"#000000"}, // Retro · global · SOURCED
+  "color.global.onBadge": "#FFFFFF", // Retro · global · SOURCED
+  "color.global.onSurfaceLight": "#000000", // Retro · global · SOURCED
+  "color.global.pageDotInactive": {"light":"#DDDDDD","dark":"#808080"}, // Retro · global · SOURCED
+  "color.global.premium": "#B02EC1", // Retro · global · SOURCED
+  "color.global.scrim": "#00000099", // Retro · global · SOURCED
+  "color.global.selection": {"light":"#0088FF","dark":"#0091FF"}, // Apple HIG · global · PLATFORM
+  "color.global.separator": {"light":"#CCCCCC","dark":"#4D4D4D"}, // Retro · global · SOURCED
+  "color.global.surfaceElevated": {"light":"#FFFFFF","dark":"#181818"}, // Retro · global · SOURCED
+  "color.global.surfaceLight": "#FFFFFF", // Retro · global · SOURCED
+  "color.global.surfaceSecondary.android": {"light":"#F7F7F7","dark":"#262626"}, // Retro · global · SOURCED
+  "color.global.system.error": "#EA3337", // Retro · global.system · SOURCED
   "color.global.system.ios": {"groupedBackground":"systemGroupedBackground","cell":"secondarySystemGroupedBackground","label":"label","secondaryLabel":"secondaryLabel","placeholder":"placeholderText","separator":"separator","tint":"systemBlue","destructive":"systemRed"}, // Apple HIG · global.system · PLATFORM
-  "color.global.system.onSurface": "#E6E0E9", // Material 3 · global.system · PLATFORM
-  "color.global.system.onSurfaceVariant": "#CAC4D0", // Material 3 · global.system · PLATFORM
-  "color.global.system.outline": "#938F99", // Material 3 · global.system · PLATFORM
-  "color.global.system.primary": "#D0BCFF", // Material 3 · global.system · PLATFORM
-  "color.global.system.surface": "#141218", // Material 3 · global.system · PLATFORM
-  "color.global.system.surfaceContainerHigh": "#2B2930", // Material 3 · global.system · PLATFORM
-  "color.global.system.surfaceContainerLow": "#1D1B20", // Material 3 · global.system · PLATFORM
-  "color.global.textPrimary": "#FFFFFF", // Yope · global · SOURCED
-  "color.global.textSecondary": "#969696", // Yope · global · SOURCED
+  "color.global.system.onSurface": {"light":"#000000","dark":"#FFFFFF"}, // Retro · global.system · SOURCED
+  "color.global.system.onSurfaceVariant": {"light":"#49454F","dark":"#CAC4D0"}, // Material 3 · global.system · PLATFORM
+  "color.global.system.outline": {"light":"#79747E","dark":"#938F99"}, // Material 3 · global.system · PLATFORM
+  "color.global.system.primary": "#0A84FF", // Retro · global.system · SOURCED
+  "color.global.system.primaryContainer": {"light":"#CCCCCC","dark":"#4D4D4D"}, // Retro · global.system · SOURCED
+  "color.global.system.secondaryContainer": {"light":"#F7F7F7","dark":"#262626"}, // Retro · global.system · SOURCED
+  "color.global.system.surface": {"light":"#FFFFFF","dark":"#1C1C1E"}, // Retro · global.system · SOURCED
+  "color.global.system.surfaceContainerHigh": {"light":"#ECE6F0","dark":"#2B2930"}, // Material 3 · global.system · PLATFORM
+  "color.global.system.surfaceContainerLow": {"light":"#F7F2FA","dark":"#1D1B20"}, // Material 3 · global.system · PLATFORM
+  "color.global.tabInactive": {"light":"#B2B2B2","dark":"#999999"}, // Retro · global · SOURCED
+  "color.global.textPrimary": {"light":"#000000","dark":"#FFFFFF"}, // Retro · global · SOURCED
+  "color.global.textSecondary": "#999999", // Retro · global · SOURCED
+  "color.global.textSecondary.android": {"light":"#00000080","dark":"#FFFFFF99"}, // Retro · global · SOURCED
+  "color.global.textTertiary": {"light":"#C1C1C1","dark":"#FFFFFF4D"}, // Retro · global · SOURCED
   "color.onthisday.banner": "#FC5F33", // Timehop · onthisday · SOURCED
   "color.onthisday.banner.label": "#FFFFFF", // Timehop · onthisday · SOURCED
   "color.onthisday.meta.text": "#FFFFFF", // Timehop · onthisday · SOURCED
@@ -326,23 +340,28 @@ export const tokens = {
   "duration.birthday.tribute.photoHold": 4000, // VidDay · birthday.tribute · SOURCED
   "duration.birthday.tribute.titleCrossfade": 600, // VidDay · birthday.tribute · SOURCED
   "duration.birthday.tribute.titleHold": 1167, // VidDay · birthday.tribute · SOURCED
-  "duration.global.navigationPush": 100, // Yope · global · SOURCED
-  "duration.global.photoSwipe": 167, // Yope · global · SOURCED
-  "duration.global.sheetPresent": 215, // Yope · global · SOURCED
+  "duration.global.crossfade": 100, // Retro · global · SOURCED
+  "duration.global.fade": 150, // Retro · global · SOURCED
+  "duration.global.fadeShort": 120, // Retro · global · SOURCED
+  "duration.global.pageTransition": 500, // Retro · global · SOURCED
+  "duration.global.photoOpen": 250, // Retro · global · SOURCED
+  "duration.global.sheetPresent": 567, // Retro · global · SOURCED
+  "duration.global.stripInsert": 250, // Retro · global · SOURCED
   "duration.global.system.scale": {"short1":50,"short2":100,"short3":150,"short4":200,"medium1":250,"medium2":300,"medium3":350,"medium4":400,"long1":450,"long2":500,"long3":550,"long4":600,"extraLong1":700,"extraLong2":800,"extraLong3":900,"extraLong4":1000}, // Material 3 · global.system · PLATFORM
   "duration.onthisday.memoryChange": 700, // VidDay · onthisday · SOURCED
   "duration.year.story.card": 4000, // VidDay · year.story · SOURCED
   "duration.year.story.reveal.headline": 800, // Spotify Wrapped · year.story · SOURCED
   "duration.year.story.reveal.subline": 600, // Spotify Wrapped · year.story · SOURCED
   "duration.year.story.reveal.sublineDelay": 267, // Spotify Wrapped · year.story · SOURCED
-  "easing.global.native": {"keyboard":"system","alert":"system","activityIndicator":"system (ProgressView / CircularProgressIndicator)","scrollIndicator":"system","navigationPush":"system (NavigationStack / Compose Navigation default)","sheet":"system (.sheet / ModalBottomSheet)"}, // Yope · global · PLATFORM
-  "easing.global.photoSwipe": {"ios":"system paging scroll physics","android":"Compose HorizontalPager default fling"}, // Yope · global · PLATFORM
+  "easing.global.native": {"sheet":"system (.sheet / ModalBottomSheet) — measured on Retro: spring.global.sheetPresent","navigationPush":"system (NavigationStack / Compose Navigation default) — Retro's push not captured","keyboard":"system","alert":"system","menu":"system","activityIndicator":"system (ProgressView / CircularProgressIndicator)","scrollIndicator":"system","segmentedControl":"system","toast":"Android Toast LENGTH_SHORT"}, // Apple HIG / Material 3 · global · PLATFORM
+  "easing.global.standard": {"x1":0.4,"y1":0,"x2":0.2,"y2":1}, // Retro · global · SOURCED
   "easing.global.system.standard": {"x1":0.2,"y1":0,"x2":0,"y2":1}, // Material 3 · global.system · PLATFORM
   "easing.year.story.progress.fill": "linear", // Spotify Wrapped · year.story · SOURCED
   "easing.year.story.reveal": {"x1":0.56,"y1":0.08,"x2":0.14,"y2":0.87}, // Spotify Wrapped · year.story · SOURCED
   "easing.year.story.reveal.subline": {"x1":0.05,"y1":0.36,"x2":0.26,"y2":0.94}, // Spotify Wrapped · year.story · SOURCED
   "font.birthday": {"ios":"system","android":"system"}, // Tribute + VidDay · birthday.request · PLATFORM
-  "font.global.family": {"ios":"system","android":"system"}, // Yope · global · PLATFORM
+  "font.global.display": {"ios":"system-serif","android":"serif"}, // Apple HIG / Material 3 · global · PLATFORM
+  "font.global.family": {"ios":"system","android":"Inter"}, // Retro · global · SOURCED
   "font.onthisday": {"ios":"system","android":"system"}, // Timehop · onthisday · PLATFORM
   "font.year.story": {"ios":"system","android":"system"}, // Spotify Wrapped · year.story · PLATFORM
   "fontSize.birthday.contribute.button": 16, // Tribute · birthday.contribute · VERIFIED
@@ -358,20 +377,28 @@ export const tokens = {
   "fontSize.birthday.request.prompts.header": 15, // Tribute · birthday.request · VERIFIED
   "fontSize.birthday.request.title": 24, // Tribute · birthday.request · VERIFIED
   "fontSize.birthday.tribute.button": 14, // Tribute · birthday.tribute · VERIFIED
-  "fontSize.global.body": 17, // Yope · global · SOURCED
-  "fontSize.global.button": 15, // Yope · global · SOURCED
-  "fontSize.global.caption": 12, // Yope · global · SOURCED
-  "fontSize.global.emptyDetail": 14, // Yope · global · SOURCED
-  "fontSize.global.emptyTitle": 16, // Yope · global · SOURCED
-  "fontSize.global.headerTitle": 15, // Yope · global · SOURCED
-  "fontSize.global.listSubtitle": 14, // Yope · global · SOURCED
-  "fontSize.global.listTitle": 17.5, // Yope · global · SOURCED
-  "fontSize.global.onboardingTitle": 40, // Yope · global · SOURCED
-  "fontSize.global.overlayTime": 21, // Yope · global · SOURCED
-  "fontSize.global.overlayTimeCamera": 26, // Yope · global · SOURCED
-  "fontSize.global.placeholder": 17, // Yope · global · SOURCED
-  "fontSize.global.sectionLabel": 16, // Yope · global · SOURCED
-  "fontSize.global.sheetTitle": 19.5, // Yope · global · SOURCED
+  "fontSize.global.badge": 11, // Retro · global · SOURCED
+  "fontSize.global.body": 15, // Retro · global · SOURCED
+  "fontSize.global.body.android": 14, // Retro · global · SOURCED
+  "fontSize.global.button": 17, // Retro · global · SOURCED
+  "fontSize.global.caption": 14, // Retro · global · SOURCED
+  "fontSize.global.displayMedium": 32, // Retro · global · SOURCED
+  "fontSize.global.displaySmall": 24, // Retro · global · SOURCED
+  "fontSize.global.emptyDetail": 14, // Retro · global · SOURCED
+  "fontSize.global.emptyTitle": 20, // Retro · global · SOURCED
+  "fontSize.global.headerTitle": 40, // Retro · global · SOURCED
+  "fontSize.global.listSubtitle": 15, // Retro · global · SOURCED
+  "fontSize.global.listTitle": 15, // Retro · global · SOURCED
+  "fontSize.global.meta": 13, // Retro · global · SOURCED
+  "fontSize.global.onboardingTitle": 30, // Retro · global · SOURCED
+  "fontSize.global.pill": 15, // Retro · global · SOURCED
+  "fontSize.global.placeholder": 17, // Retro · global · SOURCED
+  "fontSize.global.sectionLabel": 15, // Retro · global · SOURCED
+  "fontSize.global.sheetTitle": 17, // Retro · global · SOURCED
+  "fontSize.global.textButton": 17, // Retro · global · SOURCED
+  "fontSize.global.tileDay": 28, // Retro · global · SOURCED
+  "fontSize.global.tileLabel": 13, // Retro · global · SOURCED
+  "fontSize.global.tileMonth": 14, // Retro · global · SOURCED
   "fontSize.onthisday.banner.label": 25.8, // Timehop · onthisday · SOURCED
   "fontSize.onthisday.meta": 10.6, // Timehop · onthisday · SOURCED
   "fontSize.year.story.body": 15.4, // Spotify Wrapped · year.story · SOURCED
@@ -388,18 +415,25 @@ export const tokens = {
   "fontWeight.birthday.request.prompts.header": "medium", // Tribute · birthday.request · VERIFIED
   "fontWeight.birthday.request.title": "semibold", // Tribute · birthday.request · VERIFIED
   "fontWeight.birthday.tribute.button": "semibold", // Tribute · birthday.tribute · VERIFIED
-  "fontWeight.global.body": "regular", // Yope · global · SOURCED
-  "fontWeight.global.button": "semibold", // Yope · global · SOURCED
-  "fontWeight.global.caption": "semibold", // Yope · global · SOURCED
-  "fontWeight.global.emptyTitle": "bold", // Yope · global · SOURCED
-  "fontWeight.global.headerTitle": "bold", // Yope · global · SOURCED
-  "fontWeight.global.listSubtitle": "regular", // Yope · global · SOURCED
-  "fontWeight.global.listTitle": "bold", // Yope · global · SOURCED
-  "fontWeight.global.onboardingTitle": "heavy", // Yope · global · SOURCED
-  "fontWeight.global.overlayTime": "heavy", // Yope · global · SOURCED
-  "fontWeight.global.overlayTimeCamera": "heavy", // Yope · global · SOURCED
-  "fontWeight.global.sectionLabel": "semibold", // Yope · global · SOURCED
-  "fontWeight.global.sheetTitle": "bold", // Yope · global · SOURCED
+  "fontWeight.global.badge": "semibold", // Retro · global · SOURCED
+  "fontWeight.global.body": "regular", // Retro · global · SOURCED
+  "fontWeight.global.button": "semibold", // Retro · global · SOURCED
+  "fontWeight.global.caption": "regular", // Retro · global · SOURCED
+  "fontWeight.global.displayMedium": "regular", // Retro · global · SOURCED
+  "fontWeight.global.displaySmall": "regular", // Retro · global · SOURCED
+  "fontWeight.global.emptyDetail": "regular", // Retro · global · SOURCED
+  "fontWeight.global.emptyTitle": "semibold", // Retro · global · SOURCED
+  "fontWeight.global.headerTitle": "regular", // Retro · global · SOURCED
+  "fontWeight.global.listSubtitle": "regular", // Retro · global · SOURCED
+  "fontWeight.global.listTitle": "semibold", // Retro · global · SOURCED
+  "fontWeight.global.meta": "regular", // Retro · global · SOURCED
+  "fontWeight.global.onboardingTitle": "regular", // Retro · global · SOURCED
+  "fontWeight.global.pill": "semibold", // Retro · global · SOURCED
+  "fontWeight.global.sectionLabel": "semibold", // Retro · global · SOURCED
+  "fontWeight.global.sheetTitle": "semibold", // Retro · global · SOURCED
+  "fontWeight.global.textButton": "regular", // Retro · global · SOURCED
+  "fontWeight.global.tileDay": "semibold", // Retro · global · SOURCED
+  "fontWeight.global.tileLabel": "semibold", // Retro · global · SOURCED
   "fontWeight.onthisday.banner.label": "bold", // Timehop · onthisday · SOURCED
   "fontWeight.onthisday.meta": "bold", // Timehop · onthisday · SOURCED
   "fontWeight.year.story.body": "regular", // Spotify Wrapped · year.story · SOURCED
@@ -462,45 +496,56 @@ export const tokens = {
   "haptic.global.error": {"ios":"notification.error","android":"REJECT"}, // Apple HIG / Material 3 · global · PLATFORM
   "haptic.global.longPressStart": {"ios":"system (context menu plays its own haptic; no custom generator)","android":"LONG_PRESS"}, // Apple HIG / Material 3 · global · PLATFORM
   "haptic.global.reaction": {"ios":"system (context menu plays its own haptic; no custom generator)","android":"LONG_PRESS"}, // Apple HIG / Material 3 · global · PLATFORM
-  "haptic.global.select": {"ios":"selection","android":"SEGMENT_TICK"}, // Apple HIG / Material 3 · global · PLATFORM
+  "haptic.global.select": {"ios":"selection","android":"SEGMENT_FREQUENT_TICK"}, // Retro · global · PLATFORM
   "haptic.global.send": {"ios":"notification.success","android":"CONFIRM"}, // Apple HIG / Material 3 · global · PLATFORM
   "haptic.global.shutter": {"ios":"none","android":"none"}, // Apple HIG / Material 3 · global · PLATFORM
   "haptic.global.success": {"ios":"notification.success","android":"CONFIRM"}, // Apple HIG / Material 3 · global · PLATFORM
+  "haptic.global.tap": {"ios":"none","android":"VIRTUAL_KEY"}, // Retro · global · PLATFORM
   "haptic.global.warning": {"ios":"notification.warning","android":"CONFIRM"}, // Apple HIG / Material 3 · global · PLATFORM
-  "icon.global.add": {"ios":"plus","android":"Rounded.Add"}, // Yope · global · PLATFORM
-  "icon.global.back": {"ios":"chevron.left","android":"AutoMirrored.Rounded.KeyboardArrowLeft"}, // Yope · global · PLATFORM
-  "icon.global.calendar": {"ios":"calendar","android":"Rounded.CalendarMonth"}, // Yope · global · PLATFORM
-  "icon.global.camera": {"ios":"camera.fill","android":"Rounded.PhotoCamera"}, // Yope · global · PLATFORM
-  "icon.global.chats": {"ios":"bubble.left.and.bubble.right.fill","android":"Rounded.Forum"}, // Yope · global · PLATFORM
-  "icon.global.check": {"ios":"checkmark.circle.fill","android":"Rounded.CheckCircle"}, // Yope · global · PLATFORM
-  "icon.global.checkmark": {"ios":"checkmark","android":"Rounded.Check"}, // Yope · global · PLATFORM
-  "icon.global.chevron": {"ios":"chevron.right","android":"AutoMirrored.Rounded.KeyboardArrowRight"}, // Yope · global · PLATFORM
-  "icon.global.chevronDown": {"ios":"chevron.down","android":"Rounded.ExpandMore"}, // Yope · global · PLATFORM
-  "icon.global.close": {"ios":"xmark","android":"Rounded.Close"}, // Yope · global · PLATFORM
-  "icon.global.download": {"ios":"arrow.down.to.line","android":"Rounded.Download"}, // Yope · global · PLATFORM
-  "icon.global.edit": {"ios":"pencil","android":"Rounded.Edit"}, // Yope · global · PLATFORM
-  "icon.global.flashOff": {"ios":"bolt.slash.fill","android":"Rounded.FlashOff"}, // Yope · global · PLATFORM
-  "icon.global.flashOn": {"ios":"bolt","android":"Rounded.FlashOn"}, // Locket · global · PLATFORM
-  "icon.global.flip": {"ios":"arrow.triangle.2.circlepath","android":"Rounded.Sync"}, // Yope · global · PLATFORM
-  "icon.global.gallery": {"ios":"photo.on.rectangle","android":"Rounded.PhotoLibrary"}, // Yope · global · PLATFORM
-  "icon.global.grid": {"ios":"square.grid.2x2","android":"Rounded.GridView"}, // Locket · global · PLATFORM
-  "icon.global.group": {"ios":"person.2.fill","android":"Rounded.Group"}, // Yope · global · PLATFORM
-  "icon.global.leave": {"ios":"rectangle.portrait.and.arrow.right","android":"AutoMirrored.Rounded.Logout"}, // Yope · global · PLATFORM
-  "icon.global.link": {"ios":"link","android":"Rounded.Link"}, // Yope · global · PLATFORM
-  "icon.global.lock": {"ios":"lock.fill","android":"Rounded.Lock"}, // Partiful · global · PLATFORM
-  "icon.global.mic": {"ios":"mic.fill","android":"Rounded.Mic"}, // Yope · global · PLATFORM
-  "icon.global.more": {"ios":"ellipsis","android":"Rounded.MoreHoriz"}, // Yope · global · PLATFORM
-  "icon.global.person": {"ios":"person.fill","android":"Rounded.Person"}, // Yope · global · PLATFORM
-  "icon.global.play": {"ios":"play.fill","android":"Rounded.PlayArrow"}, // Yope · global · PLATFORM
-  "icon.global.recap": {"ios":"film.stack","android":"Rounded.VideoLibrary"}, // Yope · global · PLATFORM
-  "icon.global.report": {"ios":"flag.fill","android":"Rounded.Flag"}, // Yope · global · PLATFORM
-  "icon.global.search": {"ios":"magnifyingglass","android":"Rounded.Search"}, // Yope · global · PLATFORM
-  "icon.global.send": {"ios":"paperplane","android":"AutoMirrored.Rounded.Send"}, // Locket · global · PLATFORM
-  "icon.global.settings": {"ios":"gearshape","android":"Rounded.Settings"}, // Apple HIG / Material 3 · global · PLATFORM
-  "icon.global.share": {"ios":"square.and.arrow.up","android":"Rounded.IosShare"}, // Yope · global · PLATFORM
-  "icon.global.uncheck": {"ios":"circle","android":"Rounded.RadioButtonUnchecked"}, // Yope · global · PLATFORM
-  "icon.global.variantRule": {"tabBar":"fill variant","header":"outline variant unless the reference glyph is filled"}, // Apple HIG · global · PLATFORM
-  "icon.global.wall": {"ios":"film.stack.fill","android":"Rounded.VideoLibrary"}, // Yope · global · PLATFORM
+  "icon.global.activity": {"ios":"bell","android":"Outlined.Notifications"}, // Retro · global · PLATFORM
+  "icon.global.add": {"ios":"plus","android":"Rounded.Add"}, // Retro · global · PLATFORM
+  "icon.global.albums": {"ios":"book","android":"AutoMirrored.Outlined.MenuBook"}, // Retro · global · PLATFORM
+  "icon.global.back": {"ios":"chevron.left","android":"AutoMirrored.Rounded.ArrowBackIos"}, // Retro · global · PLATFORM
+  "icon.global.calendar": {"ios":"calendar","android":"Outlined.CalendarMonth"}, // Retro · global · PLATFORM
+  "icon.global.camera": {"ios":"camera","android":"Outlined.PhotoCamera"}, // Retro · global · PLATFORM
+  "icon.global.chats": {"ios":"bubble.left","android":"Outlined.ChatBubbleOutline"}, // Retro · global · PLATFORM
+  "icon.global.check": {"ios":"checkmark.circle.fill","android":"Rounded.CheckCircle"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.checkmark": {"ios":"checkmark","android":"Rounded.Check"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.chevron": {"ios":"chevron.right","android":"AutoMirrored.Rounded.KeyboardArrowRight"}, // Retro · global · PLATFORM
+  "icon.global.chevronDown": {"ios":"chevron.down","android":"Rounded.ExpandMore"}, // Retro · global · PLATFORM
+  "icon.global.close": {"ios":"xmark","android":"Rounded.Close"}, // Retro · global · PLATFORM
+  "icon.global.download": {"ios":"arrow.down.to.line","android":"Rounded.Download"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.edit": {"ios":"pencil","android":"Outlined.Edit"}, // Retro · global · PLATFORM
+  "icon.global.flashOff": {"ios":"bolt.slash","android":"Outlined.FlashOff"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.flashOn": {"ios":"bolt","android":"Outlined.FlashOn"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.flip": {"ios":"arrow.triangle.2.circlepath","android":"Rounded.Sync"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.gallery": {"ios":"photo.on.rectangle","android":"Outlined.PhotoLibrary"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.group": {"ios":"person.2","android":"Outlined.Group"}, // Retro · global · PLATFORM
+  "icon.global.hide": {"ios":"eye.slash","android":"Outlined.VisibilityOff"}, // Retro · global · PLATFORM
+  "icon.global.home": {"ios":"house","android":"Outlined.Home"}, // Retro · global · PLATFORM
+  "icon.global.leave": {"ios":"rectangle.portrait.and.arrow.right","android":"AutoMirrored.Outlined.Logout"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.link": {"ios":"link","android":"Rounded.Link"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.location": {"ios":"location","android":"Outlined.NearMe"}, // Retro · global · PLATFORM
+  "icon.global.lock": {"ios":"lock.fill","android":"Rounded.Lock"}, // Retro · global · PLATFORM
+  "icon.global.mic": {"ios":"mic","android":"Outlined.Mic"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.more": {"ios":"ellipsis","android":"Rounded.MoreHoriz"}, // Retro · global · PLATFORM
+  "icon.global.newAlbum": {"ios":"plus.rectangle.on.rectangle","android":"Outlined.LibraryAdd"}, // Retro · global · PLATFORM
+  "icon.global.pause": {"ios":"pause.fill","android":"Rounded.Pause"}, // Retro · global · PLATFORM
+  "icon.global.person": {"ios":"person.fill","android":"Rounded.Person"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.play": {"ios":"play.fill","android":"Rounded.PlayArrow"}, // Retro · global · PLATFORM
+  "icon.global.random": {"ios":"dice","android":"Outlined.Casino"}, // Retro · global · PLATFORM
+  "icon.global.recap": {"ios":"film.stack","android":"Outlined.VideoLibrary"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.report": {"ios":"flag","android":"Outlined.Flag"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.rewind": {"ios":"clock.arrow.circlepath","android":"Outlined.History"}, // Retro · global · PLATFORM
+  "icon.global.search": {"ios":"magnifyingglass","android":"Rounded.Search"}, // Retro · global · PLATFORM
+  "icon.global.send": {"ios":"paperplane","android":"AutoMirrored.Outlined.Send"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.settings": {"ios":"gearshape","android":"Outlined.Settings"}, // Retro · global · PLATFORM
+  "icon.global.share": {"ios":"square.and.arrow.up","android":"Rounded.IosShare"}, // Retro · global · PLATFORM
+  "icon.global.trash": {"ios":"trash","android":"Outlined.Delete"}, // Retro · global · PLATFORM
+  "icon.global.uncheck": {"ios":"circle","android":"Rounded.RadioButtonUnchecked"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.variantRule": {"tabBar":"outline variant; selection shown by colour only (color.global.textPrimary vs color.global.tabInactive)","header":"outline variant","states":"fill variant only for a state (selected check, play / pause, lock)"}, // Retro · global · PLATFORM
+  "icon.global.video": {"ios":"video.fill","android":"Rounded.Videocam"}, // Retro · global · PLATFORM
+  "icon.global.wall": {"ios":"person.crop.circle","android":"Outlined.AccountCircle"}, // Retro · global · PLATFORM
   "icon.year.story.pause": {"ios":"pause.fill","android":"Rounded.Pause"}, // Spotify Wrapped · year.story · PLATFORM
   "icon.year.story.replay": {"ios":"arrow.counterclockwise","android":"Rounded.Replay"}, // Spotify Wrapped · year.story · PLATFORM
   "icon.year.story.share": {"ios":"square.and.arrow.up","android":"Rounded.Share"}, // Spotify Wrapped · year.story · PLATFORM
@@ -627,13 +672,20 @@ export const tokens = {
   "layout.birthday.tribute.structure": {"order":"title card, one card per contribution (photo + contributor first name + line), end card","photoFit":"whole photo inside the 16:9 frame on color.birthday.tribute.pillarbox","audio":"none"}, // Tribute + VidDay · birthday.tribute · SOURCED
   "layout.birthday.tribute.titleCard": {"background":"#EFEEF3","textColor":"#444347","fontWeight":500,"fontSizeRatio":0.084,"maxWidthRatio":0.405,"centerYRatio":0.5}, // VidDay · birthday.tribute · SOURCED
   "layout.birthday.tribute.video": {"width":1920,"height":1080,"fps":29.97}, // Tribute + VidDay · birthday.tribute · SOURCED
-  "layout.global.appearance": {"mode":"dark only","ios":"Info.plist UIUserInterfaceStyle = Dark","android":"dark color scheme only"}, // Yope · global · PLATFORM
+  "layout.global.appearance": {"mode":"follows the system Light / Dark setting","ios":"no UIUserInterfaceStyle key and no preferredColorScheme override; colour tokens are dynamic (Color(light:dark:))","android":"DsTheme(dark = isSystemInDarkTheme()) wraps the app and every test host; colour getters read LocalDsDarkTheme","media":"photo / story viewer, camera, postcard-style composer, recap preview and full-bleed media stay dark (color.global.backgroundDeep) in both appearances; sheets over them follow the appearance"}, // Retro · global · SOURCED
   "layout.global.contrast.largeText": {"ratio":3,"rule":"text 18 pt and larger, or bold at any size"}, // W3C WCAG 2.2 · global · VERIFIED
   "layout.global.contrast.nonText": {"ratio":3,"rule":"UI components and graphical objects against adjacent colors"}, // W3C WCAG 2.2 · global · VERIFIED
   "layout.global.contrast.text": {"ratio":4.5,"rule":"text up to 17 pt (iOS) / below 18 sp (Android), not bold"}, // W3C WCAG 2.2 · global · VERIFIED
+  "layout.global.cornerStyle": {"ios":"continuous (RoundedRectangle(cornerRadius:style: .continuous))","android":"circular (RoundedCornerShape)"}, // Retro · global · SOURCED
+  "layout.global.elevation": {"cards":"none","tiles":"none","lists":"none","buttons":"none","darkMode":"no elevation tint: #262626 fills on the page colour","exceptions":"album cover drop shadow (book cover); premium pill coloured shadow (paywall) — both unmeasured"}, // Retro · global · SOURCED
+  "layout.global.iconStyle": {"style":"outline, uniform stroke, rounded caps and joins","stroke":2,"glyphBox":24,"filled":"only as a state (selected check, play / pause, lock)","ios":"SF Symbols, outline variant (also in the tab bar), weight regular","android":"Material Icons Outlined / Rounded (outline shapes), 24 dp"}, // Retro · global · SOURCED
+  "layout.global.materials": {"glass":"only over photos or colour (color.global.glass)","backdrop":"full-screen blurred, colour-rich version of the photo behind a card (recap preview, paywall)","native":"menus, share sheet, sheets: system materials"}, // Retro · global · SOURCED
+  "layout.global.photoScrim": {"color":"#000000","startAt":0.55,"startOpacity":0,"endOpacity":0.6,"direction":"top → bottom"}, // Retro · global · SOURCED
+  "layout.global.premiumGradient": {"top":"#D543DE","bottom":"#A327B8","direction":"vertical"}, // Retro · global · SOURCED
   "layout.global.reduceMotion": {"ios":"UIAccessibility.isReduceMotionEnabled / @Environment(\\.accessibilityReduceMotion)","android":"Settings.Global.ANIMATOR_DURATION_SCALE == 0 or ValueAnimator.areAnimatorsEnabled() == false (Accessibility > Remove animations)","substitute":"replace x/y/z movement with a cross-fade of the same token duration; springs lose their bounce (dampingFraction 1); drop zoom, scale, peripheral and automatic repeating animation; never animate into or out of blur; motion that tracks the finger stays"}, // Apple HIG / Material 3 · global · PLATFORM
-  "layout.global.system.typography": {"ios":"built-in text styles (Font.TextStyle) on native lists, alerts and sheets","android":"MaterialTheme.typography (M3 baseline type scale: list label bodyLarge, supporting bodyMedium, dialog headline headlineSmall, actions labelLarge)"}, // Apple HIG / Material 3 · global.system · PLATFORM
-  "layout.global.textStyleMap": {"onboardingTitle":"largeTitle","sheetTitle":"title3","headerTitle":"subheadline","listTitle":"headline","listSubtitle":"subheadline","body":"body","button":"subheadline","caption":"caption","overlayTime":"title2","overlayTimeCamera":"title","placeholder":"body","sectionLabel":"callout","emptyTitle":"callout","emptyDetail":"subheadline"}, // Apple HIG · global · PLATFORM
+  "layout.global.system.typography": {"ios":"built-in text styles (Font.TextStyle) inside native alerts, menus, share sheet, pickers","android":"MaterialTheme.typography with Retro's overrides: headlineLarge = display 40/48, bodyLarge = Inter 15/18 W600, bodyMedium = Inter 14/17 W600, bodySmall = Inter 11/11 W600; other M3 styles stay baseline"}, // Apple HIG / Material 3 · global.system · PLATFORM
+  "layout.global.textStyleMap": {"headerTitle":"largeTitle","displayMedium":"largeTitle","displaySmall":"title2","onboardingTitle":"title","sheetTitle":"headline","listTitle":"subheadline","listSubtitle":"subheadline","body":"subheadline","button":"headline","pill":"subheadline","textButton":"body","caption":"subheadline","meta":"footnote","placeholder":"body","sectionLabel":"subheadline","emptyTitle":"title3","emptyDetail":"subheadline","tileLabel":"footnote","tileDay":"title","tileMonth":"subheadline","badge":"caption2"}, // Apple HIG · global · PLATFORM
+  "layout.global.variableWeight.android": {"body":450}, // Retro · global · SOURCED
   "layout.onthisday.banner": {"width":"full screen width","top":"screen top edge, behind the status bar","labelAlign":"centre","labelCase":"uppercase","colourPerMemory":"color.onthisday.banner"}, // Timehop · onthisday · SOURCED
   "layout.onthisday.dayBoundary": {"hour":5,"clock":"group time zone (groups.time_zone)"}, // Timehop · onthisday · SOURCED
   "layout.onthisday.grid": {"columns":2,"arrangement":"masonry: every photo keeps its aspect ratio and goes to the shorter column","scroll":"vertical","background":"color.global.background"}, // Timehop · onthisday · SOURCED
@@ -655,10 +707,17 @@ export const tokens = {
   "layout.year.story.summary.dots": {"count":"one per share card","diameter":8.4,"pitch":16.8,"selectedColor":"#FFFFFF","unselectedColor":"#666666","centerBelowCarousel":20.4,"centerAboveShare":29.3,"animation":"none observed (static render)"}, // Spotify Wrapped · year.story · SOURCED
   "layout.year.story.text": {"align":"centre","block":"centred horizontally and vertically on the canvas","order":"headline, then subline"}, // Spotify Wrapped · year.story · SOURCED
   "layout.year.story.textStyleMap": {"headline":"largeTitle","body":"subheadline","share":"callout","sharePill":"headline"}, // Apple HIG · year.story · PLATFORM
+  "letterSpacing.global.badge.android": -0.2, // Retro · global · SOURCED
+  "letterSpacing.global.body.android": -0.3, // Retro · global · SOURCED
+  "letterSpacing.global.listTitle.android": -0.35, // Retro · global · SOURCED
   "lineHeight.birthday.request.message": 28, // Tribute · birthday.request · VERIFIED
   "lineHeight.birthday.request.prompt": 18.75, // Tribute · birthday.request · VERIFIED
   "lineHeight.birthday.request.title": 28.8, // Tribute · birthday.request · VERIFIED
-  "lineHeight.global.caption": 15.2, // Yope · global · SOURCED
+  "lineHeight.global.badge.android": 11, // Retro · global · SOURCED
+  "lineHeight.global.body.android": 17, // Retro · global · SOURCED
+  "lineHeight.global.caption": 21.7, // Retro · global · SOURCED
+  "lineHeight.global.headerTitle": 48, // Retro · global · SOURCED
+  "lineHeight.global.listTitle.android": 18, // Retro · global · SOURCED
   "lineHeight.year.story.body": 21.4, // Spotify Wrapped · year.story · SOURCED
   "lineHeight.year.story.headline": 36.4, // Spotify Wrapped · year.story · SOURCED
   "notifications.push.layout.channels": {"daily_invitation":"IMPORTANCE_HIGH","new_post":"IMPORTANCE_DEFAULT","reactions_replies":"IMPORTANCE_DEFAULT","recap":"IMPORTANCE_DEFAULT","birthday_request":"IMPORTANCE_DEFAULT","tribute":"IMPORTANCE_DEFAULT"}, // Material 3 · notifications.push · PLATFORM
@@ -775,13 +834,16 @@ export const tokens = {
   "radius.birthday.request.cta": 8, // Tribute · birthday.request · VERIFIED
   "radius.birthday.request.prompts": 8, // Tribute · birthday.request · VERIFIED
   "radius.birthday.tribute.button": 8, // Tribute · birthday.tribute · VERIFIED
-  "radius.global.button": 14, // Yope · global · SOURCED
-  "radius.global.capsule": {"shape":"capsule","radius":"height / 2"}, // Yope · global · SOURCED
-  "radius.global.card": 17, // Yope · global · SOURCED
-  "radius.global.field": 12, // Yope · global · SOURCED
-  "radius.global.photo": 15, // Yope · global · SOURCED
+  "radius.global.button": 30, // Retro · global · SOURCED
+  "radius.global.capsule": {"shape":"capsule","radius":"height / 2"}, // Retro · global · SOURCED
+  "radius.global.card": 18, // Retro · global · SOURCED
+  "radius.global.cardLarge": 36, // Retro · global · SOURCED
+  "radius.global.field": 19, // Retro · global · SOURCED
+  "radius.global.groupedRow": 12, // Retro · global · SOURCED
+  "radius.global.photo": 0, // Retro · global · SOURCED
   "radius.global.sheet": {"ios":"system","android":28}, // Apple HIG / Material 3 · global · PLATFORM
-  "radius.global.viewfinder": 18.5, // Yope · global · SOURCED
+  "radius.global.thumbnail": 4, // Retro · global · SOURCED
+  "radius.global.viewfinder": 18, // Retro · global · SOURCED
   "safety.block.duration.toast": 2000, // Locket · safety.block · SOURCED
   "safety.block.layout.confirm": {"ios":"confirmationDialog(titleVisibility: .visible) with message; 'Block' role .destructive at the top, Cancel at the bottom","android":"M3 AlertDialog (settings.account.layout.alert) with 'Block' as the confirming action"}, // Apple HIG · safety.block · VERIFIED
   "safety.block.layout.menu": {"ios":"Menu (UIMenu) item with role .destructive","android":"DropdownMenu item (M3 baseline: 48 dp items, 4 dp container corner, labelLarge) in color.global.system.error"}, // Apple HIG · safety.block · VERIFIED
@@ -801,36 +863,80 @@ export const tokens = {
   "settings.root.size.listItemPaddingV.android": 10, // Material 3 · settings.root · VERIFIED
   "settings.root.size.listItemThreeLine.android": 88, // Material 3 · settings.root · VERIFIED
   "settings.root.size.listItemTwoLine.android": 72, // Material 3 · settings.root · VERIFIED
-  "size.global.avatarHeader": 28, // Yope · global · SOURCED
-  "size.global.avatarList": 64, // Yope · global · SOURCED
-  "size.global.avatarPicker": 40, // Yope · global · SOURCED
-  "size.global.avatarSmall": 32.6, // Yope · global · SOURCED
-  "size.global.buttonHeight": 45, // Yope · global · SOURCED
-  "size.global.buttonHeightSheet": 47, // Yope · global · SOURCED
-  "size.global.buttonMarginH": 19, // Yope · global · SOURCED
-  "size.global.buttonMarginHSheet": 27, // Yope · global · SOURCED
-  "size.global.checkCircle": 24, // Yope · global · SOURCED
-  "size.global.fieldHeight": 44, // Yope · global · SOURCED
-  "size.global.headerButton": 44, // Yope · global · SOURCED
-  "size.global.headerGap": 7.3, // Yope · global · SOURCED
-  "size.global.headerInset": 11.5, // Yope · global · SOURCED
-  "size.global.listGap": 7.5, // Yope · global · SOURCED
+  "size.global.avatarGrid": 81, // Retro · global · SOURCED
+  "size.global.avatarHeader": 39, // Retro · global · SOURCED
+  "size.global.avatarList": 26.5, // Retro · global · SOURCED
+  "size.global.avatarPicker": 37, // Retro · global · SOURCED
+  "size.global.avatarProfile": 64, // Retro · global · SOURCED
+  "size.global.avatarSmall": 22.6, // Retro · global · SOURCED
+  "size.global.avatarStackOverlap": 3, // Retro · global · SOURCED
+  "size.global.backInset": 21.1, // Retro · global · SOURCED
+  "size.global.badgeHeight": 24, // Retro · global · SOURCED
+  "size.global.badgeInset": 12, // Retro · global · SOURCED
+  "size.global.buttonHeight": 60, // Retro · global · SOURCED
+  "size.global.buttonHeightSheet": 60, // Retro · global · SOURCED
+  "size.global.buttonMarginH": 20, // Retro · global · SOURCED
+  "size.global.buttonMarginHSheet": 20, // Retro · global · SOURCED
+  "size.global.cardGap": 16, // Retro · global · SOURCED
+  "size.global.cardHeaderGap": 10, // Retro · global · SOURCED
+  "size.global.cardNameGap": 11, // Retro · global · SOURCED
+  "size.global.checkCircle": 24, // Retro · global · SOURCED
+  "size.global.circleButton": 36, // Retro · global · SOURCED
+  "size.global.circleButtonLarge": 64, // Retro · global · SOURCED
+  "size.global.circleButtonPhoto": 40, // Retro · global · SOURCED
+  "size.global.circleButtonSmall": 32, // Retro · global · SOURCED
+  "size.global.commentFieldHeight": 48, // Retro · global · SOURCED
+  "size.global.emptyIcon": 22, // Retro · global · SOURCED
+  "size.global.emptyIconToTitle": 26, // Retro · global · SOURCED
+  "size.global.emptyTitleToAction": 25, // Retro · global · SOURCED
+  "size.global.featureSheetInset": 12, // Retro · global · SOURCED
+  "size.global.fieldHeight": 52, // Retro · global · SOURCED
+  "size.global.friendCardHeight": 361, // Retro · global · SOURCED
+  "size.global.friendCardWidth": 240, // Retro · global · SOURCED
+  "size.global.hairline": {"ios":"1 device pixel (1 / displayScale pt)","android":"1 device pixel"}, // Retro · global · SOURCED
+  "size.global.headerButton": 44, // Apple HIG · global · PLATFORM
+  "size.global.headerGap": 14.6, // Retro · global · SOURCED
+  "size.global.headerIconPitch": 48, // Retro · global · SOURCED
+  "size.global.headerInset": 16, // Retro · global · SOURCED
+  "size.global.icon": 24, // Retro · global · SOURCED
+  "size.global.iconSmall": 14.7, // Retro · global · SOURCED
+  "size.global.infoRowPitch": 29, // Retro · global · SOURCED
+  "size.global.listGap": 22.5, // Retro · global · SOURCED
   "size.global.minTouchTarget.android": 48, // Material 3 · global · VERIFIED
   "size.global.minTouchTarget.androidSpacing": 8, // Material 3 · global · VERIFIED
   "size.global.minTouchTarget.ios": 44, // Apple HIG · global · VERIFIED
   "size.global.minTouchTarget.iosMinimum": 28, // Apple HIG · global · VERIFIED
-  "size.global.screenMargin": 12, // Yope · global · SOURCED
-  "size.global.tabBarAvatar": 34, // Yope · global · SOURCED
-  "size.global.tabBarHeight": 58, // Yope · global · SOURCED
-  "size.global.tabBarIcon": 21, // Yope · global · SOURCED
-  "size.global.tabBarInset": 22, // Yope · global · SOURCED
-  "size.global.tabBarSelectedHeight": 48, // Yope · global · SOURCED
-  "size.global.tabBarSelectedWidth": 74, // Yope · global · SOURCED
-  "size.global.tabBarWidth": 344, // Yope · global · SOURCED
+  "size.global.pageDot": 5.9, // Retro · global · SOURCED
+  "size.global.pageDotPitch": 9.6, // Retro · global · SOURCED
+  "size.global.pillGap": 8.8, // Retro · global · SOURCED
+  "size.global.pillHeight": 37, // Retro · global · SOURCED
+  "size.global.pillIconGap": 9.7, // Retro · global · SOURCED
+  "size.global.pillPaddingLeading": 18, // Retro · global · SOURCED
+  "size.global.pillPaddingTrailing": 17, // Retro · global · SOURCED
+  "size.global.planCardGap": 8, // Retro · global · SOURCED
+  "size.global.planCardPadding": 27, // Retro · global · SOURCED
+  "size.global.positionPillHeight": 22, // Retro · global · SOURCED
+  "size.global.rowThumbGap": 17, // Retro · global · SOURCED
+  "size.global.rowThumbHeight": 97, // Retro · global · SOURCED
+  "size.global.rowThumbWidth": 72, // Retro · global · SOURCED
+  "size.global.screenMargin": 16, // Retro · global · SOURCED
+  "size.global.sectionGap": 36.4, // Retro · global · SOURCED
+  "size.global.sectionHeaderToContent": 11.7, // Retro · global · SOURCED
+  "size.global.stripGap": 2, // Retro · global · SOURCED
+  "size.global.stripTileHeight": 112, // Retro · global · SOURCED
+  "size.global.stripTileWidth": 84, // Retro · global · SOURCED
+  "size.global.tabBadgeDot": 4, // Retro · global · SOURCED
+  "size.global.tabBadgeOffset": 5, // Retro · global · SOURCED
+  "size.global.tabBarHeight": 49, // Retro · global · SOURCED
+  "size.global.tabBarIcon": 24, // Retro · global · SOURCED
+  "size.global.tabBarInset": 0, // Retro · global · SOURCED
+  "size.global.tileLabelBaseline": 13.4, // Retro · global · SOURCED
+  "size.global.titleToContent": 30, // Retro · global · SOURCED
+  "size.global.titleTop": 64, // Retro · global · SOURCED
   "spring.global.platformDefault.android": {"response":0.16223,"dampingFraction":1}, // Material 3 · global · PLATFORM
   "spring.global.platformDefault.ios": {"response":0.55,"dampingFraction":1}, // Apple HIG · global · PLATFORM
-  "spring.global.sheetPresent": {"response":0.3441,"dampingFraction":1}, // React Navigation iOS modal spec (shipped in Locket) · global · SOURCED
-  "spring.global.sheetPresentObserved": {"overshootPt":16,"timeToPeakMs":100,"settleMs":100}, // Yope · global · SOURCED
+  "spring.global.playful": {"response":0.4443,"dampingFraction":0.75}, // Retro · global · SOURCED
+  "spring.global.sheetPresent": {"response":0.347,"dampingFraction":1}, // Retro · global · SOURCED
   "walls.browse.dimension.avatar": 60, // Yope · walls.browse · SOURCED
   "walls.browse.dimension.avatarPitch": 77.7, // Yope · walls.browse · SOURCED
   "walls.browse.dimension.labelBaselineGap": 22, // Yope · walls.browse · SOURCED

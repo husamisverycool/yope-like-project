@@ -19,47 +19,56 @@ import app.designsystem.DSFontFamily
 import app.designsystem.DSShadow
 import app.designsystem.DSSpring
 import app.designsystem.LocalDsDarkTheme
+import androidx.compose.material.icons.automirrored.outlined.Logout as AutoMirroredOutlinedLogout
+import androidx.compose.material.icons.automirrored.outlined.MenuBook as AutoMirroredOutlinedMenuBook
+import androidx.compose.material.icons.automirrored.outlined.Send as AutoMirroredOutlinedSend
+import androidx.compose.material.icons.automirrored.rounded.ArrowBackIos as AutoMirroredRoundedArrowBackIos
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward as AutoMirroredRoundedArrowForward
-import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft as AutoMirroredRoundedKeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight as AutoMirroredRoundedKeyboardArrowRight
-import androidx.compose.material.icons.automirrored.rounded.Logout as AutoMirroredRoundedLogout
-import androidx.compose.material.icons.automirrored.rounded.Send as AutoMirroredRoundedSend
 import androidx.compose.material.icons.filled.Lock as FilledLock
 import androidx.compose.material.icons.filled.NorthEast as FilledNorthEast
+import androidx.compose.material.icons.outlined.AccountCircle as OutlinedAccountCircle
+import androidx.compose.material.icons.outlined.CalendarMonth as OutlinedCalendarMonth
+import androidx.compose.material.icons.outlined.Casino as OutlinedCasino
+import androidx.compose.material.icons.outlined.ChatBubbleOutline as OutlinedChatBubbleOutline
+import androidx.compose.material.icons.outlined.Delete as OutlinedDelete
+import androidx.compose.material.icons.outlined.Edit as OutlinedEdit
+import androidx.compose.material.icons.outlined.Flag as OutlinedFlag
+import androidx.compose.material.icons.outlined.FlashOff as OutlinedFlashOff
+import androidx.compose.material.icons.outlined.FlashOn as OutlinedFlashOn
+import androidx.compose.material.icons.outlined.Group as OutlinedGroup
+import androidx.compose.material.icons.outlined.History as OutlinedHistory
+import androidx.compose.material.icons.outlined.Home as OutlinedHome
+import androidx.compose.material.icons.outlined.LibraryAdd as OutlinedLibraryAdd
+import androidx.compose.material.icons.outlined.Mic as OutlinedMic
+import androidx.compose.material.icons.outlined.NearMe as OutlinedNearMe
+import androidx.compose.material.icons.outlined.Notifications as OutlinedNotifications
+import androidx.compose.material.icons.outlined.PhotoCamera as OutlinedPhotoCamera
+import androidx.compose.material.icons.outlined.PhotoLibrary as OutlinedPhotoLibrary
+import androidx.compose.material.icons.outlined.Settings as OutlinedSettings
+import androidx.compose.material.icons.outlined.VideoLibrary as OutlinedVideoLibrary
+import androidx.compose.material.icons.outlined.VisibilityOff as OutlinedVisibilityOff
 import androidx.compose.material.icons.rounded.Add as RoundedAdd
 import androidx.compose.material.icons.rounded.AddReaction as RoundedAddReaction
-import androidx.compose.material.icons.rounded.CalendarMonth as RoundedCalendarMonth
 import androidx.compose.material.icons.rounded.Check as RoundedCheck
 import androidx.compose.material.icons.rounded.CheckCircle as RoundedCheckCircle
 import androidx.compose.material.icons.rounded.Close as RoundedClose
 import androidx.compose.material.icons.rounded.Delete as RoundedDelete
 import androidx.compose.material.icons.rounded.Download as RoundedDownload
-import androidx.compose.material.icons.rounded.Edit as RoundedEdit
 import androidx.compose.material.icons.rounded.ExpandMore as RoundedExpandMore
-import androidx.compose.material.icons.rounded.Flag as RoundedFlag
-import androidx.compose.material.icons.rounded.FlashOff as RoundedFlashOff
-import androidx.compose.material.icons.rounded.FlashOn as RoundedFlashOn
-import androidx.compose.material.icons.rounded.Forum as RoundedForum
-import androidx.compose.material.icons.rounded.GridView as RoundedGridView
-import androidx.compose.material.icons.rounded.Group as RoundedGroup
 import androidx.compose.material.icons.rounded.IosShare as RoundedIosShare
 import androidx.compose.material.icons.rounded.Link as RoundedLink
 import androidx.compose.material.icons.rounded.Lock as RoundedLock
 import androidx.compose.material.icons.rounded.LockOpen as RoundedLockOpen
-import androidx.compose.material.icons.rounded.Mic as RoundedMic
 import androidx.compose.material.icons.rounded.MoreHoriz as RoundedMoreHoriz
 import androidx.compose.material.icons.rounded.Pause as RoundedPause
 import androidx.compose.material.icons.rounded.Person as RoundedPerson
-import androidx.compose.material.icons.rounded.PhotoCamera as RoundedPhotoCamera
-import androidx.compose.material.icons.rounded.PhotoLibrary as RoundedPhotoLibrary
 import androidx.compose.material.icons.rounded.PlayArrow as RoundedPlayArrow
 import androidx.compose.material.icons.rounded.RadioButtonUnchecked as RoundedRadioButtonUnchecked
 import androidx.compose.material.icons.rounded.Replay as RoundedReplay
 import androidx.compose.material.icons.rounded.Search as RoundedSearch
-import androidx.compose.material.icons.rounded.Settings as RoundedSettings
 import androidx.compose.material.icons.rounded.Share as RoundedShare
 import androidx.compose.material.icons.rounded.Sync as RoundedSync
-import androidx.compose.material.icons.rounded.VideoLibrary as RoundedVideoLibrary
 import androidx.compose.material.icons.rounded.Videocam as RoundedVideocam
 
 object Tokens {
@@ -140,54 +149,106 @@ object Tokens {
         val birthdayTributeButtonLabel: Color = Color(0xFF292D34)
         /** Tribute · birthday.tribute · fill around a photo that does not cover the 16:9 frame (read by the worker) · SOURCED — token `color.birthday.tribute.pillarbox` */
         val birthdayTributePillarbox: Color = Color(0xFF000000)
-        /** Yope · global · brand lime: composer camera button, primary buttons, coach tooltips, toasts, shutter ring, 'today' bar · SOURCED — token `color.global.accent` */
-        val globalAccent: Color = Color(0xFFCDFD07)
-        /** Yope · global · pink: profile card outline and name sticker · SOURCED — token `color.global.accentSecondary` */
-        val globalAccentSecondary: Color = Color(0xFFFE1F84)
-        /** Yope · global · screen background of group, chat and profile-grid screens (dark gray, not black) · SOURCED — token `color.global.background` */
-        val globalBackground: Color = Color(0xFF171717)
-        /** Yope · global · screen background of the home list, sheets ('new group', 'send to...'), camera, sign-up, profile 'pics' grid, group photo cards (2026) · SOURCED — token `color.global.backgroundDeep` */
+        /** Retro · global · primary action fill: full-width primary capsule, primary medium capsule ('Accept'), selected state that is a fill. Retro has no brand colour in chrome — the primary fill is the inverse of the page · SOURCED — token `color.global.accent` */
+        val globalAccent: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFFFFFFFF) else Color(0xFF000000)
+        /** Retro · global · page background of every app screen (home, profile, albums, settings, sheets); iOS — and Android's 'true black' option · SOURCED — token `color.global.background` */
+        val globalBackground: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF000000) else Color(0xFFFFFFFF)
+        /** Retro · global · page background on Android (Retro's default dark scheme; the iOS / true-black value is color.global.background) · SOURCED — token `color.global.background.android` */
+        val globalBackgroundAndroid: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF1C1C1E) else Color(0xFFFFFFFF)
+        /** Retro · global · media surfaces that stay black in both appearances: photo / story viewer, camera, postcard-style composer, recap preview, full-bleed media (Rewind) · SOURCED — token `color.global.backgroundDeep` */
         val globalBackgroundDeep: Color = Color(0xFF000000)
-        /** Yope · global · control fill on #171717: header circle buttons, header title capsule, floating tab-bar capsule, composer text field · SOURCED — token `color.global.control` */
-        val globalControl: Color = Color(0xFF2E2E2E)
-        /** Yope · global · header circle icon buttons on black screens and sheets (✕, download) · SOURCED — token `color.global.controlOnDeep` */
-        val globalControlOnDeep: Color = Color(0xFF101010)
-        /** Yope · global · raised fill: selected tab pill, inner pill inside the header capsule, inactive page dots · SOURCED — token `color.global.controlRaised` */
-        val globalControlRaised: Color = Color(0xFF434343)
-        /** Apple HIG · global.system · destructive actions on system surfaces (delete account, block, leave, report) — iOS systemRed via Button(role: .destructive) · PLATFORM — token `color.global.destructive` */
-        val globalDestructive: Color = Color(0xFFFF4245)
-        /** Yope · global · text and glyphs on lime: camera glyph on the composer button, primary button labels, tooltip text · SOURCED — token `color.global.onAccent` */
-        val globalOnAccent: Color = Color(0xFF000000)
-        /** Yope · global · label on the light pill (secondary buttons, selected segment, 'today') · SOURCED — token `color.global.onSurfaceLight` */
+        /** Retro · global · Retro red: 'new' badge capsule, 4 pt unread dot on a tab, red count-free markers · SOURCED — token `color.global.badge` */
+        val globalBadge: Color = Color(0xFFEA3337)
+        /** Retro · global · grey relative-week pill next to the title ('Last Week'), label color.global.onBadge · SOURCED — token `color.global.badgeMuted` */
+        val globalBadgeMuted: Color = Color(0xFF999999)
+        /** Retro · global · fill of tiles (add tile, empty-day tile, strip placeholder), search / text fields, circle buttons ('+'), fill pills ('Create'), grouped rows on iOS · SOURCED — token `color.global.control` */
+        val globalControl: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF262626) else Color(0xFFF1F1F1)
+        /** Retro · global · controls on the black media surfaces (both appearances): close circle, 'Add a message' pill, edit circle, position pill ('3 of 4'), comment field on the viewer · SOURCED — token `color.global.controlOnDeep` */
+        val globalControlOnDeep: Color = Color(0xFF262626)
+        /** Retro · global · stronger fill: disabled primary capsule, container fill · SOURCED — token `color.global.controlRaised` */
+        val globalControlRaised: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF4D4D4D) else Color(0xFFCCCCCC)
+        /** Retro · global.system · destructive actions drawn by the app and destructive menu items: delete, remove, report, leave · SOURCED — token `color.global.destructive` */
+        val globalDestructive: Color = Color(0xFFEA3337)
+        /** Retro · global · month / day number / weekday on an empty-day tile · SOURCED — token `color.global.emptyTileText` */
+        val globalEmptyTileText: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF515151) else Color(0xFFD9D9D9)
+        /** Retro · global · glass circle buttons and pills drawn over a photo (Rewind share / random / more circles) · SOURCED — token `color.global.glass` */
+        val globalGlass: Color = Color(0x1FFFFFFF)
+        /** Retro · global · label and glyph on the primary fill · SOURCED — token `color.global.onAccent` */
+        val globalOnAccent: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF000000) else Color(0xFFFFFFFF)
+        /** Retro · global · label on the red badge; label on the grey 'Last Week' relative-week pill · SOURCED — token `color.global.onBadge` */
+        val globalOnBadge: Color = Color(0xFFFFFFFF)
+        /** Retro · global · label on the light pill over media ('Share', 'Send Postcard') · SOURCED — token `color.global.onSurfaceLight` */
         val globalOnSurfaceLight: Color = Color(0xFF000000)
-        /** Locket · global · dimming layer behind sheets / over photos under text on app surfaces · SOURCED — token `color.global.scrim` */
-        val globalScrim: Color = Color(0x80000000)
-        /** Apple HIG · global · filled check circle on selected people / groups (Yope draws it in iOS system blue) · PLATFORM — token `color.global.selection` */
-        val globalSelection: Color = Color(0xFF0091FF)
-        /** Locket · global · hairline between rows on app (Yope-referenced) surfaces · SOURCED — token `color.global.separator` */
-        val globalSeparator: Color = Color(0x33FFFFFF)
-        /** Yope · global · light pill fill: secondary buttons ('invite more friends', 'enable', 'new recap'), selected segment pill, 'today' pill · SOURCED — token `color.global.surfaceLight` */
+        /** Retro · global · inactive page dots (pagers: recap preview, friends grid); the active dot is color.global.textPrimary · SOURCED — token `color.global.pageDotInactive` */
+        val globalPageDotInactive: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF808080) else Color(0xFFDDDDDD)
+        /** Retro · global · premium-only accent: 'FREE' pill on the paywall plan card (owner decides whether the premium accent is used) · SOURCED — token `color.global.premium` */
+        val globalPremium: Color = Color(0xFFB02EC1)
+        /** Retro · global · bottom scrim over photos under white text (day tiles, Rewind, widgets): black reaching 60 % at the bottom edge; geometry in layout.global.photoScrim · SOURCED — token `color.global.scrim` */
+        val globalScrim: Color = Color(0x99000000)
+        /** Apple HIG · global · system tint on iOS: sheet nav text buttons ('Cancel', 'Update'), selected check circle, switches · PLATFORM — token `color.global.selection` */
+        val globalSelection: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF0091FF) else Color(0xFF0088FF)
+        /** Retro · global · hairline divider (1 device pixel), used sparingly: under the profile header, above 'Total', between the viewer footer and comments, between grouped rows · SOURCED — token `color.global.separator` */
+        val globalSeparator: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF4D4D4D) else Color(0xFFCCCCCC)
+        /** Retro · global · card on a blurred photo backdrop (recap collage card, plan card) and other elevated surfaces · SOURCED — token `color.global.surfaceElevated` */
+        val globalSurfaceElevated: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF181818) else Color(0xFFFFFFFF)
+        /** Retro · global · light pill / capsule on media and dark surfaces in both appearances: 'Share' on the recap preview, 'Send Postcard' on the black composer · SOURCED — token `color.global.surfaceLight` */
         val globalSurfaceLight: Color = Color(0xFFFFFFFF)
-        /** Material 3 · global.system · error / destructive text and icons (role md.sys.color.error, baseline dark scheme) · PLATFORM — token `color.global.system.error` */
-        val globalSystemError: Color = Color(0xFFF2B8B5)
-        /** Material 3 · global.system · list item label, dialog headline (role md.sys.color.on-surface, baseline dark scheme) · PLATFORM — token `color.global.system.onSurface` */
-        val globalSystemOnSurface: Color = Color(0xFFE6E0E9)
-        /** Material 3 · global.system · supporting text, leading icons, drag handle (role md.sys.color.on-surface-variant, baseline dark scheme) · PLATFORM — token `color.global.system.onSurfaceVariant` */
-        val globalSystemOnSurfaceVariant: Color = Color(0xFFCAC4D0)
-        /** Material 3 · global.system · list divider (1 dp) (role md.sys.color.outline, baseline dark scheme) · PLATFORM — token `color.global.system.outline` */
-        val globalSystemOutline: Color = Color(0xFF938F99)
-        /** Material 3 · global.system · dialog action labels, switches, selected controls (role md.sys.color.primary, baseline dark scheme) · PLATFORM — token `color.global.system.primary` */
-        val globalSystemPrimary: Color = Color(0xFFD0BCFF)
-        /** Material 3 · global.system · page / list container on Android system surfaces (role md.sys.color.surface, baseline dark scheme) · PLATFORM — token `color.global.system.surface` */
-        val globalSystemSurface: Color = Color(0xFF141218)
-        /** Material 3 · global.system · M3 dialog container (role md.sys.color.surface-container-high, baseline dark scheme) · PLATFORM — token `color.global.system.surfaceContainerHigh` */
-        val globalSystemSurfaceContainerHigh: Color = Color(0xFF2B2930)
-        /** Material 3 · global.system · M3 modal bottom sheet container (role md.sys.color.surface-container-low, baseline dark scheme) · PLATFORM — token `color.global.system.surfaceContainerLow` */
-        val globalSystemSurfaceContainerLow: Color = Color(0xFF1D1B20)
-        /** Yope · global · primary text and glyphs · SOURCED — token `color.global.textPrimary` */
-        val globalTextPrimary: Color = Color(0xFFFFFFFF)
-        /** Yope · global · secondary text, placeholders ('start typing...'), inactive tab-bar glyphs, chevrons inside capsules · SOURCED — token `color.global.textSecondary` */
-        val globalTextSecondary: Color = Color(0xFF969696)
+        /** Retro · global · Android secondary surface: grouped settings rows, chips, reply / comment bar, sheet cards (iOS draws these in color.global.control) · SOURCED — token `color.global.surfaceSecondary.android` */
+        val globalSurfaceSecondaryAndroid: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF262626) else Color(0xFFF7F7F7)
+        /** Retro · global.system · Android M3 error: error / destructive text and icons in M3 components · SOURCED — token `color.global.system.error` */
+        val globalSystemError: Color = Color(0xFFEA3337)
+        /** Retro · global.system · Android M3 on-surface: list item labels, dialog headline · SOURCED — token `color.global.system.onSurface` */
+        val globalSystemOnSurface: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFFFFFFFF) else Color(0xFF000000)
+        /** Material 3 · global.system · Android M3 supporting text, leading icons, drag handle (role md.sys.color.on-surface-variant) · PLATFORM — token `color.global.system.onSurfaceVariant` */
+        val globalSystemOnSurfaceVariant: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFFCAC4D0) else Color(0xFF49454F)
+        /** Material 3 · global.system · Android M3 outline (outlined text field border, M3 divider defaults) · PLATFORM — token `color.global.system.outline` */
+        val globalSystemOutline: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF938F99) else Color(0xFF79747E)
+        /** Retro · global.system · Android M3 primary: dialog action labels, switches, selected controls, text-field cursor · SOURCED — token `color.global.system.primary` */
+        val globalSystemPrimary: Color = Color(0xFF0A84FF)
+        /** Retro · global.system · Android M3 primary container (on-primary-container #000000 / #FFFFFF) · SOURCED — token `color.global.system.primaryContainer` */
+        val globalSystemPrimaryContainer: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF4D4D4D) else Color(0xFFCCCCCC)
+        /** Retro · global.system · Android M3 secondary container (segmented button selection, tonal containers; on-secondary-container #000000 / #FFFFFF) · SOURCED — token `color.global.system.secondaryContainer` */
+        val globalSystemSecondaryContainer: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF262626) else Color(0xFFF7F7F7)
+        /** Retro · global.system · Android M3 surface / background (dialogs and sheets inherit from it unless a container role applies) · SOURCED — token `color.global.system.surface` */
+        val globalSystemSurface: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF1C1C1E) else Color(0xFFFFFFFF)
+        /** Material 3 · global.system · Android M3 dialog container (role md.sys.color.surface-container-high) · PLATFORM — token `color.global.system.surfaceContainerHigh` */
+        val globalSystemSurfaceContainerHigh: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF2B2930) else Color(0xFFECE6F0)
+        /** Material 3 · global.system · Android M3 modal bottom sheet container (role md.sys.color.surface-container-low) · PLATFORM — token `color.global.system.surfaceContainerLow` */
+        val globalSystemSurfaceContainerLow: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF1D1B20) else Color(0xFFF7F2FA)
+        /** Retro · global · unselected tab-bar glyphs (black 30 % on white / white 60 % on black) · SOURCED — token `color.global.tabInactive` */
+        val globalTabInactive: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF999999) else Color(0xFFB2B2B2)
+        /** Retro · global · primary text and glyphs; selected tab glyph; page-dot selected · SOURCED — token `color.global.textPrimary` */
+        val globalTextPrimary: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFFFFFFFF) else Color(0xFF000000)
+        /** Retro · global · secondary text on iOS: date ranges, real names, list subtitles, meta lines, field placeholders (2025), grey links and legal text · SOURCED — token `color.global.textSecondary` */
+        val globalTextSecondary: Color = Color(0xFF999999)
+        /** Retro · global · secondary text on Android: meta lines ('A · B'), NUX body, list subtitles · SOURCED — token `color.global.textSecondary.android` */
+        val globalTextSecondaryAndroid: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0x99FFFFFF) else Color(0x80000000)
+        /** Retro · global · tertiary / disabled text and glyphs · SOURCED — token `color.global.textTertiary` */
+        val globalTextTertiary: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0x4DFFFFFF) else Color(0xFFC1C1C1)
         /** Timehop · onthisday · years-ago banner fill (every memory) · SOURCED — token `color.onthisday.banner` */
         val onthisdayBanner: Color = Color(0xFFFC5F33)
         /** Timehop · onthisday · 'N YEARS AGO' banner label · SOURCED — token `color.onthisday.banner.label` */
@@ -378,12 +439,20 @@ object Tokens {
         val birthdayTributeTitleCrossfade: Int = 600
         /** VidDay · birthday.tribute · title card fully visible before the crossfade (read by the worker) · SOURCED — token `duration.birthday.tribute.titleHold` */
         val birthdayTributeTitleHold: Int = 1167
-        /** Yope · global · horizontal push to the next screen ('new group' → new group chat after create) · SOURCED — token `duration.global.navigationPush` */
-        val globalNavigationPush: Int = 100
-        /** Yope · global · horizontal swipe to the adjacent photo in the viewer, first movement to settled (gesture-driven) · SOURCED — token `duration.global.photoSwipe` */
-        val globalPhotoSwipe: Int = 167
-        /** Yope · global · bottom-sheet presentation, first movement to rest (rise ≈ 100 ms to an overshoot ≈ 16 pt past rest, settle ≈ 100 ms) · SOURCED — token `duration.global.sheetPresent` */
-        val globalSheetPresent: Int = 215
+        /** Retro · global · crossfade between two states of one element · SOURCED — token `duration.global.crossfade` */
+        val globalCrossfade: Int = 100
+        /** Retro · global · house default: fade in / out (paired with a slide) for composers, caption box, picker, media preview · SOURCED — token `duration.global.fade` */
+        val globalFade: Int = 150
+        /** Retro · global · small fades · SOURCED — token `duration.global.fadeShort` */
+        val globalFadeShort: Int = 120
+        /** Retro · global · onboarding page enter (fade + expand) / exit (fade + shrink); onboarding header height · SOURCED — token `duration.global.pageTransition` */
+        val globalPageTransition: Int = 500
+        /** Retro · global · opening a photo from a list / comment into the viewer (easing.global.standard) · SOURCED — token `duration.global.photoOpen` */
+        val globalPhotoOpen: Int = 250
+        /** Retro · global · native sheet presentation, first movement to rest (curve spring.global.sheetPresent) · SOURCED — token `duration.global.sheetPresent` */
+        val globalSheetPresent: Int = 567
+        /** Retro · global · a tile shifts one slot when a photo is added to the strip (easing.global.standard) · SOURCED — token `duration.global.stripInsert` */
+        val globalStripInsert: Int = 250
         /** VidDay · onthisday · transition between two years' memories · SOURCED — token `duration.onthisday.memoryChange` */
         val onthisdayMemoryChange: Int = 700
         /** VidDay · year.story · time one card stays before the story advances on its own · SOURCED — token `duration.year.story.card` */
@@ -410,6 +479,8 @@ object Tokens {
     object Easings {
         /** Locket · chat.reactions · speed curve of each rain copy · SOURCED — token `chat.reactions.easing.rain` */
         val chatReactionsEasingRain: Easing = FastOutSlowInEasing
+        /** Retro · global · Retro's house easing (FastOutSlowIn) for fades, slides, photo open, strip insert · SOURCED — token `easing.global.standard` */
+        val globalStandard: Easing = CubicBezierEasing(0.4f, 0f, 0.2f, 1f)
         /** Material 3 · global.system · M3 standard easing for custom transitions on Android system surfaces · PLATFORM — token `easing.global.system.standard` */
         val globalSystemStandard: Easing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
         /** Spotify Wrapped · year.story · current segment fill over time · SOURCED — token `easing.year.story.progress.fill` */
@@ -480,34 +551,50 @@ object Tokens {
         val birthdayRequestTitle: TextUnit = 24.sp
         /** Tribute · birthday.tribute · secondary button label · VERIFIED — token `fontSize.birthday.tribute.button` */
         val birthdayTributeButton: TextUnit = 14.sp
-        /** Yope · global · chat message text in bubbles (body text) · SOURCED — token `fontSize.global.body` */
-        val globalBody: TextUnit = 17.sp
-        /** Yope · global · primary button label ('create group', 'send') · SOURCED — token `fontSize.global.button` */
-        val globalButton: TextUnit = 15.sp
-        /** Yope · global · small meta text: voice-message duration ('00:38'), legal footer under sign-up · SOURCED — token `fontSize.global.caption` */
-        val globalCaption: TextUnit = 12.sp
-        /** Yope · global · empty-state detail line ('and added mẹ, Anh'), italic · SOURCED — token `fontSize.global.emptyDetail` */
+        /** Retro · global · label of the red 'new' badge and small pills · SOURCED — token `fontSize.global.badge` */
+        val globalBadge: TextUnit = 11.sp
+        /** Retro · global · body / list row text on iOS ('Weeks Posted: 32'-style info rows, comment text, address lines, sheet rows) · SOURCED — token `fontSize.global.body` */
+        val globalBody: TextUnit = 15.sp
+        /** Retro · global · Android body text (Retro's most-used style, 33 call sites) · SOURCED — token `fontSize.global.body.android` */
+        val globalBodyAndroid: TextUnit = 14.sp
+        /** Retro · global · label of the 60 pt full-width capsule ('Claim', 'Send Postcard', 'Get started') · SOURCED — token `fontSize.global.button` */
+        val globalButton: TextUnit = 17.sp
+        /** Retro · global · fine print and timestamps: legal footer under the sign-up button ('By continuing, I confirm…'), timestamps ('1d', '2h') · SOURCED — token `fontSize.global.caption` */
+        val globalCaption: TextUnit = 14.sp
+        /** Retro · global · display serif headline on cards, sheets and onboarding ('Share Video' paywall headline, invite page headline, feed-card titles) — family font.global.display · SOURCED — token `fontSize.global.displayMedium` */
+        val globalDisplayMedium: TextUnit = 32.sp
+        /** Retro · global · small display serif: recap month cards ('December'), album titles on covers, recap year ('2023') — family font.global.display · SOURCED — token `fontSize.global.displaySmall` */
+        val globalDisplaySmall: TextUnit = 24.sp
+        /** Retro · global · empty-state explanation (two lines, grey) under the title · SOURCED — token `fontSize.global.emptyDetail` */
         val globalEmptyDetail: TextUnit = 14.sp
-        /** Yope · global · empty-state title ('you created group') · SOURCED — token `fontSize.global.emptyTitle` */
-        val globalEmptyTitle: TextUnit = 16.sp
-        /** Yope · global · group name in the header capsule · SOURCED — token `fontSize.global.headerTitle` */
-        val globalHeaderTitle: TextUnit = 15.sp
-        /** Yope · global · row subtitle ('new pic added · 9:43 AM'), secondary color · SOURCED — token `fontSize.global.listSubtitle` */
-        val globalListSubtitle: TextUnit = 14.sp
-        /** Yope · global · row / card name on the home list ('kylee') · SOURCED — token `fontSize.global.listTitle` */
-        val globalListTitle: TextUnit = 17.5.sp
-        /** Yope · global · onboarding / sign-up big title ('registrarse') · SOURCED — token `fontSize.global.onboardingTitle` */
-        val globalOnboardingTitle: TextUnit = 40.sp
-        /** Yope · global · hour / time overlay centred on a photo in the chat ('10:00 PM') · SOURCED — token `fontSize.global.overlayTime` */
-        val globalOverlayTime: TextUnit = 21.sp
-        /** Yope · global · hour overlay on the camera viewfinder and the send-to preview ('5:00 PM') · SOURCED — token `fontSize.global.overlayTimeCamera` */
-        val globalOverlayTimeCamera: TextUnit = 26.sp
-        /** Yope · global · text-field placeholder ('start typing...') · SOURCED — token `fontSize.global.placeholder` */
+        /** Retro · global · empty-state title ('Welcome to Week 43!') · SOURCED — token `fontSize.global.emptyTitle` */
+        val globalEmptyTitle: TextUnit = 20.sp
+        /** Retro · global · display serif screen title ('Week 43', 'Albums', 'Friends', 'Messages', profile username); also the date title on full-bleed photos ('May 1, 2019') — family font.global.display · SOURCED — token `fontSize.global.headerTitle` */
+        val globalHeaderTitle: TextUnit = 40.sp
+        /** Retro · global · row subtitle and secondary line ('daniel shared 2 posts', date range 'Jul 3 - 9', 'Week 28' in the viewer header) · SOURCED — token `fontSize.global.listSubtitle` */
+        val globalListSubtitle: TextUnit = 15.sp
+        /** Retro · global · name / row title ('olson', 'Mexico City', 'Total'), friend-card name, secondary link ('already have an account?') · SOURCED — token `fontSize.global.listTitle` */
+        val globalListTitle: TextUnit = 15.sp
+        /** Retro · global · small secondary line: real name under the profile name ('Isabel Reyes'), field labels ('Mailing Address') · SOURCED — token `fontSize.global.meta` */
+        val globalMeta: TextUnit = 13.sp
+        /** Retro · global · large line on the sign-up landing under the mark ('Friends Only'), in color.global.textSecondary · SOURCED — token `fontSize.global.onboardingTitle` */
+        val globalOnboardingTitle: TextUnit = 30.sp
+        /** Retro · global · label of the 36–37 pt capsules ('Get this week started', 'Recaps', 'Share Profile', 'Accept', 'Create') · SOURCED — token `fontSize.global.pill` */
+        val globalPill: TextUnit = 15.sp
+        /** Retro · global · placeholder and typed text in the search / text field ('Search'), colour color.global.textSecondary · SOURCED — token `fontSize.global.placeholder` */
         val globalPlaceholder: TextUnit = 17.sp
-        /** Yope · global · section label ('suggested friends'), secondary color · SOURCED — token `fontSize.global.sectionLabel` */
-        val globalSectionLabel: TextUnit = 16.sp
-        /** Yope · global · sheet title centred between header circles ('send to...') · SOURCED — token `fontSize.global.sheetTitle` */
-        val globalSheetTitle: TextUnit = 19.5.sp
+        /** Retro · global · section header ('Week 27' before its date range; dated album group 'January 25, 2024') · SOURCED — token `fontSize.global.sectionLabel` */
+        val globalSectionLabel: TextUnit = 15.sp
+        /** Retro · global · modal / sheet title, centred ('Postcard', 'Create Recap', 'Settings', 'Add to Your Week') · SOURCED — token `fontSize.global.sheetTitle` */
+        val globalSheetTitle: TextUnit = 17.sp
+        /** Retro · global · app-drawn text buttons in a header ('Invite', 'Keys'); native sheet nav buttons ('Cancel', 'Update') are the system's own at the same size · SOURCED — token `fontSize.global.textButton` */
+        val globalTextButton: TextUnit = 17.sp
+        /** Retro · global · day number on an empty-day tile ('20'), tabular digits · SOURCED — token `fontSize.global.tileDay` */
+        val globalTileDay: TextUnit = 28.sp
+        /** Retro · global · weekday label on a photo tile ('Mon'), white over the bottom scrim, centred, baseline 13.4 above the tile bottom · SOURCED — token `fontSize.global.tileLabel` */
+        val globalTileLabel: TextUnit = 13.sp
+        /** Retro · global · month and weekday lines on an empty-day tile ('Oct' / 'Mon') · SOURCED — token `fontSize.global.tileMonth` */
+        val globalTileMonth: TextUnit = 14.sp
         /** Timehop · onthisday · 'N YEARS AGO' banner label, set in the platform font · SOURCED — token `fontSize.onthisday.banner.label` */
         val onthisdayBannerLabel: TextUnit = 25.8.sp
         /** Timehop · onthisday · meta row text ('TUE 10:34 PM') · SOURCED — token `fontSize.onthisday.meta` */
@@ -654,30 +741,44 @@ object Tokens {
         val fontWeightBirthdayRequestTitle: FontWeight = FontWeight(600)
         /** Tribute · birthday.tribute · secondary button label · VERIFIED — token `fontWeight.birthday.tribute.button` */
         val fontWeightBirthdayTributeButton: FontWeight = FontWeight(600)
-        /** Yope · global · chat message text · SOURCED — token `fontWeight.global.body` */
+        /** Retro · global · label of the red 'new' badge and small pills · SOURCED — token `fontWeight.global.badge` */
+        val fontWeightGlobalBadge: FontWeight = FontWeight(600)
+        /** Retro · global · body / list row text on iOS ('Weeks Posted: 32'-style info rows, comment text, address lines, sheet rows) · SOURCED — token `fontWeight.global.body` */
         val fontWeightGlobalBody: FontWeight = FontWeight(400)
-        /** Yope · global · primary button label · SOURCED — token `fontWeight.global.button` */
+        /** Retro · global · label of the 60 pt full-width capsule ('Claim', 'Send Postcard', 'Get started') · SOURCED — token `fontWeight.global.button` */
         val fontWeightGlobalButton: FontWeight = FontWeight(600)
-        /** Yope · global · voice-message duration ('00:38') · SOURCED — token `fontWeight.global.caption` */
-        val fontWeightGlobalCaption: FontWeight = FontWeight(600)
-        /** Yope · global · empty-state title · SOURCED — token `fontWeight.global.emptyTitle` */
-        val fontWeightGlobalEmptyTitle: FontWeight = FontWeight(700)
-        /** Yope · global · group name in the header capsule · SOURCED — token `fontWeight.global.headerTitle` */
-        val fontWeightGlobalHeaderTitle: FontWeight = FontWeight(700)
-        /** Yope · global · row subtitle · SOURCED — token `fontWeight.global.listSubtitle` */
+        /** Retro · global · fine print and timestamps: legal footer under the sign-up button ('By continuing, I confirm…'), timestamps ('1d', '2h') · SOURCED — token `fontWeight.global.caption` */
+        val fontWeightGlobalCaption: FontWeight = FontWeight(400)
+        /** Retro · global · display serif headline on cards, sheets and onboarding ('Share Video' paywall headline, invite page headline, feed-card titles) — family font.global.display · SOURCED — token `fontWeight.global.displayMedium` */
+        val fontWeightGlobalDisplayMedium: FontWeight = FontWeight(400)
+        /** Retro · global · small display serif: recap month cards ('December'), album titles on covers, recap year ('2023') — family font.global.display · SOURCED — token `fontWeight.global.displaySmall` */
+        val fontWeightGlobalDisplaySmall: FontWeight = FontWeight(400)
+        /** Retro · global · empty-state explanation (two lines, grey) under the title · SOURCED — token `fontWeight.global.emptyDetail` */
+        val fontWeightGlobalEmptyDetail: FontWeight = FontWeight(400)
+        /** Retro · global · empty-state title ('Welcome to Week 43!') · SOURCED — token `fontWeight.global.emptyTitle` */
+        val fontWeightGlobalEmptyTitle: FontWeight = FontWeight(600)
+        /** Retro · global · display serif screen title ('Week 43', 'Albums', 'Friends', 'Messages', profile username); also the date title on full-bleed photos ('May 1, 2019') — family font.global.display · SOURCED — token `fontWeight.global.headerTitle` */
+        val fontWeightGlobalHeaderTitle: FontWeight = FontWeight(400)
+        /** Retro · global · row subtitle and secondary line ('daniel shared 2 posts', date range 'Jul 3 - 9', 'Week 28' in the viewer header) · SOURCED — token `fontWeight.global.listSubtitle` */
         val fontWeightGlobalListSubtitle: FontWeight = FontWeight(400)
-        /** Yope · global · row / card name on the home list · SOURCED — token `fontWeight.global.listTitle` */
-        val fontWeightGlobalListTitle: FontWeight = FontWeight(700)
-        /** Yope · global · onboarding / sign-up big title · SOURCED — token `fontWeight.global.onboardingTitle` */
-        val fontWeightGlobalOnboardingTitle: FontWeight = FontWeight(800)
-        /** Yope · global · time overlay on a photo · SOURCED — token `fontWeight.global.overlayTime` */
-        val fontWeightGlobalOverlayTime: FontWeight = FontWeight(800)
-        /** Yope · global · hour overlay on the viewfinder · SOURCED — token `fontWeight.global.overlayTimeCamera` */
-        val fontWeightGlobalOverlayTimeCamera: FontWeight = FontWeight(800)
-        /** Yope · global · section label · SOURCED — token `fontWeight.global.sectionLabel` */
+        /** Retro · global · name / row title ('olson', 'Mexico City', 'Total'), friend-card name, secondary link ('already have an account?') · SOURCED — token `fontWeight.global.listTitle` */
+        val fontWeightGlobalListTitle: FontWeight = FontWeight(600)
+        /** Retro · global · small secondary line: real name under the profile name ('Isabel Reyes'), field labels ('Mailing Address') · SOURCED — token `fontWeight.global.meta` */
+        val fontWeightGlobalMeta: FontWeight = FontWeight(400)
+        /** Retro · global · large line on the sign-up landing under the mark ('Friends Only'), in color.global.textSecondary · SOURCED — token `fontWeight.global.onboardingTitle` */
+        val fontWeightGlobalOnboardingTitle: FontWeight = FontWeight(400)
+        /** Retro · global · label of the 36–37 pt capsules ('Get this week started', 'Recaps', 'Share Profile', 'Accept', 'Create') · SOURCED — token `fontWeight.global.pill` */
+        val fontWeightGlobalPill: FontWeight = FontWeight(600)
+        /** Retro · global · section header ('Week 27' before its date range; dated album group 'January 25, 2024') · SOURCED — token `fontWeight.global.sectionLabel` */
         val fontWeightGlobalSectionLabel: FontWeight = FontWeight(600)
-        /** Yope · global · sheet title ('send to...') · SOURCED — token `fontWeight.global.sheetTitle` */
-        val fontWeightGlobalSheetTitle: FontWeight = FontWeight(700)
+        /** Retro · global · modal / sheet title, centred ('Postcard', 'Create Recap', 'Settings', 'Add to Your Week') · SOURCED — token `fontWeight.global.sheetTitle` */
+        val fontWeightGlobalSheetTitle: FontWeight = FontWeight(600)
+        /** Retro · global · app-drawn text buttons in a header ('Invite', 'Keys'); native sheet nav buttons ('Cancel', 'Update') are the system's own at the same size · SOURCED — token `fontWeight.global.textButton` */
+        val fontWeightGlobalTextButton: FontWeight = FontWeight(400)
+        /** Retro · global · day number on an empty-day tile ('20'), tabular digits · SOURCED — token `fontWeight.global.tileDay` */
+        val fontWeightGlobalTileDay: FontWeight = FontWeight(600)
+        /** Retro · global · weekday label on a photo tile ('Mon'), white over the bottom scrim, centred, baseline 13.4 above the tile bottom · SOURCED — token `fontWeight.global.tileLabel` */
+        val fontWeightGlobalTileLabel: FontWeight = FontWeight(600)
         /** Timehop · onthisday · 'N YEARS AGO' banner label · SOURCED — token `fontWeight.onthisday.banner.label` */
         val fontWeightOnthisdayBannerLabel: FontWeight = FontWeight(700)
         /** Timehop · onthisday · meta row text · SOURCED — token `fontWeight.onthisday.meta` */
@@ -740,8 +841,10 @@ object Tokens {
     object Fonts {
         /** Tribute + VidDay · birthday.request · all birthday surfaces (request, contribute, tribute screen) · PLATFORM — token `font.birthday` */
         val birthday: DSFontFamily = DSFontFamily.System
-        /** Yope · global · typeface of all text (SF Pro on iOS, Roboto on Android) · PLATFORM — token `font.global.family` */
-        val globalFamily: DSFontFamily = DSFontFamily.System
+        /** Apple HIG / Material 3 · global · display serif for screen titles ('Week 27', 'Albums', profile name), the date title on Rewind, recap month cards and headlines: New York on iOS, Noto Serif on Android · PLATFORM — token `font.global.display` */
+        val globalDisplay: DSFontFamily = DSFontFamily.Serif
+        /** Retro · global · UI typeface of all non-display text: SF Pro on iOS, Inter Variable on Android · SOURCED — token `font.global.family` */
+        val globalFamily: DSFontFamily = DSFontFamily.Custom("Inter")
         /** Timehop · onthisday · all on-this-day text · PLATFORM — token `font.onthisday` */
         val onthisday: DSFontFamily = DSFontFamily.System
         /** Spotify Wrapped · year.story · all story text · PLATFORM — token `font.year.story` */
@@ -752,15 +855,15 @@ object Tokens {
         val weekHistoryFontTitle: DSFontFamily = DSFontFamily.System
     }
     object Haptics {
-        /** Apple HIG / Material 3 · global · a task failed (send failed) · PLATFORM — token `haptic.global.error` */
+        /** Apple HIG / Material 3 · global · a task failed · PLATFORM — token `haptic.global.error` */
         val globalError: Int = HapticFeedbackConstants.REJECT
-        /** Apple HIG / Material 3 · global · a recipient / group toggled, a segmented choice, picker scrubbing · PLATFORM — token `haptic.global.select` */
-        val globalSelect: Int = HapticFeedbackConstants.SEGMENT_TICK
+        /** Retro · global · tick: one per step on a dial / scrubber (Rewind dial, friend picker, video trim), a segmented choice, a toggled selection · PLATFORM — token `haptic.global.select` */
+        val globalSelect: Int = HapticFeedbackConstants.SEGMENT_FREQUENT_TICK
         /** Apple HIG / Material 3 · global · confirm / send: a photo or message was sent · PLATFORM — token `haptic.global.send` */
         val globalSend: Int = HapticFeedbackConstants.CONFIRM
-        /** Apple HIG / Material 3 · global · any task completed successfully (same generator as send) · PLATFORM — token `haptic.global.success` */
+        /** Apple HIG / Material 3 · global · a task completed successfully · PLATFORM — token `haptic.global.success` */
         val globalSuccess: Int = HapticFeedbackConstants.CONFIRM
-        /** Apple HIG / Material 3 · global · a destructive action was confirmed (delete account, block, leave) · PLATFORM — token `haptic.global.warning` */
+        /** Apple HIG / Material 3 · global · a destructive action was confirmed · PLATFORM — token `haptic.global.warning` */
         val globalWarning: Int = HapticFeedbackConstants.CONFIRM
     }
     object Icons {
@@ -772,72 +875,92 @@ object Tokens {
         val chatVoiceIconPause: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedPause
         /** Yope · collage.share · filled share glyph (box + up arrow) in the pill · PLATFORM — token `collage.share.icon.share` */
         val collageShareIconShare: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedIosShare
-        /** Yope · global · add (+ in a header circle) · PLATFORM — token `icon.global.add` */
+        /** Retro · global · activity tab · PLATFORM — token `icon.global.activity` */
+        val globalActivity: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedNotifications
+        /** Retro · global · add ('+' on the add tile, '+' circle, CTA icon) · PLATFORM — token `icon.global.add` */
         val globalAdd: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedAdd
-        /** Yope · global · back (‹ in a header circle) · PLATFORM — token `icon.global.back` */
-        val globalBack: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Rounded.AutoMirroredRoundedKeyboardArrowLeft
-        /** Yope · global · calendar circle in the group header · PLATFORM — token `icon.global.calendar` */
-        val globalCalendar: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedCalendarMonth
-        /** Yope · global · camera (composer button, row quick-camera, camera tab) · PLATFORM — token `icon.global.camera` */
-        val globalCamera: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedPhotoCamera
-        /** Yope · global · chats tab (two overlapping bubbles) · PLATFORM — token `icon.global.chats` */
-        val globalChats: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedForum
-        /** Yope · global · selected (filled check circle, color.global.selection) · PLATFORM — token `icon.global.check` */
+        /** Retro · global · albums / groups (book glyph: home header 2026, tab ≤2025) · PLATFORM — token `icon.global.albums` */
+        val globalAlbums: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Outlined.AutoMirroredOutlinedMenuBook
+        /** Retro · global · back (chevron before the serif title on pushed screens) · PLATFORM — token `icon.global.back` */
+        val globalBack: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Rounded.AutoMirroredRoundedArrowBackIos
+        /** Retro · global · week / calendar (empty-week glyph, 'Weeks' info row) · PLATFORM — token `icon.global.calendar` */
+        val globalCalendar: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedCalendarMonth
+        /** Retro · global · camera (composer header, capture entry) — outline per the icon style · PLATFORM — token `icon.global.camera` */
+        val globalCamera: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedPhotoCamera
+        /** Retro · global · messages (chat glyph in the home header) · PLATFORM — token `icon.global.chats` */
+        val globalChats: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedChatBubbleOutline
+        /** Apple HIG / Material 3 · global · selected (filled check circle — a state, so filled) · PLATFORM — token `icon.global.check` */
         val globalCheck: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedCheckCircle
-        /** Yope · global · done / posted (bare check, e.g. in the 'posted in the wall' toast) · PLATFORM — token `icon.global.checkmark` */
+        /** Apple HIG / Material 3 · global · done (bare check in a toast or row) · PLATFORM — token `icon.global.checkmark` */
         val globalCheckmark: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedCheck
-        /** Yope · global · disclosure / forward (› at the end of the header capsule) · PLATFORM — token `icon.global.chevron` */
+        /** Retro · global · disclosure on grouped rows and recap month cards · PLATFORM — token `icon.global.chevron` */
         val globalChevron: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Rounded.AutoMirroredRoundedKeyboardArrowRight
-        /** Yope · global · expand / dismiss down (⌄) · PLATFORM — token `icon.global.chevronDown` */
+        /** Retro · global · expand (after the date title on Rewind; 'Camera Roll ⌄') · PLATFORM — token `icon.global.chevronDown` */
         val globalChevronDown: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedExpandMore
-        /** Yope · global · close / dismiss (✕ in a header circle on sheets) · PLATFORM — token `icon.global.close` */
+        /** Retro · global · close / dismiss (in a circle on modals and over photos) · PLATFORM — token `icon.global.close` */
         val globalClose: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedClose
-        /** Yope · global · download / save (arrow down to a line in a header circle) · PLATFORM — token `icon.global.download` */
+        /** Apple HIG / Material 3 · global · save to device · PLATFORM — token `icon.global.download` */
         val globalDownload: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedDownload
-        /** Yope · global · edit (pencil in a header circle) · PLATFORM — token `icon.global.edit` */
-        val globalEdit: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedEdit
-        /** Yope · global · flash off (slashed bolt on the viewfinder) · PLATFORM — token `icon.global.flashOff` */
-        val globalFlashOff: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedFlashOff
-        /** Locket · global · flash on (bolt) · PLATFORM — token `icon.global.flashOn` */
-        val globalFlashOn: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedFlashOn
-        /** Yope · global · flip camera (two circular arrows in a circle) · PLATFORM — token `icon.global.flip` */
+        /** Retro · global · edit ('Add a message' pill, address edit circle) · PLATFORM — token `icon.global.edit` */
+        val globalEdit: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedEdit
+        /** Apple HIG / Material 3 · global · flash off (mechanics: camera; outline style) · PLATFORM — token `icon.global.flashOff` */
+        val globalFlashOff: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedFlashOff
+        /** Apple HIG / Material 3 · global · flash on (mechanics: camera; outline style) · PLATFORM — token `icon.global.flashOn` */
+        val globalFlashOn: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedFlashOn
+        /** Apple HIG / Material 3 · global · flip camera (mechanics: Locket / Yope; outline style) · PLATFORM — token `icon.global.flip` */
         val globalFlip: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedSync
-        /** Yope · global · photo library (camera, when no thumbnail) · PLATFORM — token `icon.global.gallery` */
-        val globalGallery: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedPhotoLibrary
-        /** Locket · global · grid view (2×2 rounded squares) · PLATFORM — token `icon.global.grid` */
-        val globalGrid: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedGridView
-        /** Yope · global · group / people · PLATFORM — token `icon.global.group` */
-        val globalGroup: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedGroup
-        /** Yope · global · leave group (menu item, destructive color) · PLATFORM — token `icon.global.leave` */
-        val globalLeave: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Rounded.AutoMirroredRoundedLogout
-        /** Yope · global · invite link · PLATFORM — token `icon.global.link` */
+        /** Apple HIG / Material 3 · global · photo library · PLATFORM — token `icon.global.gallery` */
+        val globalGallery: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedPhotoLibrary
+        /** Retro · global · friends / people (Friends tab) · PLATFORM — token `icon.global.group` */
+        val globalGroup: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedGroup
+        /** Retro · global · hide (menu item) · PLATFORM — token `icon.global.hide` */
+        val globalHide: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedVisibilityOff
+        /** Retro · global · Home tab · PLATFORM — token `icon.global.home` */
+        val globalHome: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedHome
+        /** Apple HIG / Material 3 · global · leave (menu item) · PLATFORM — token `icon.global.leave` */
+        val globalLeave: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Outlined.AutoMirroredOutlinedLogout
+        /** Apple HIG / Material 3 · global · invite link / copy link · PLATFORM — token `icon.global.link` */
         val globalLink: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedLink
-        /** Partiful · global · private / restricted · PLATFORM — token `icon.global.lock` */
+        /** Retro · global · location (info row, widget place line) · PLATFORM — token `icon.global.location` */
+        val globalLocation: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedNearMe
+        /** Retro · global · private (lock on a private week header; filled as in the capture) · PLATFORM — token `icon.global.lock` */
         val globalLock: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedLock
-        /** Yope · global · microphone (voice memo, voice message) · PLATFORM — token `icon.global.mic` */
-        val globalMic: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedMic
-        /** Yope · global · more (•••) · PLATFORM — token `icon.global.more` */
+        /** Apple HIG / Material 3 · global · microphone (voice note; outline style) · PLATFORM — token `icon.global.mic` */
+        val globalMic: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedMic
+        /** Retro · global · more '•••' (week section, viewer, over photos) · PLATFORM — token `icon.global.more` */
         val globalMore: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedMoreHoriz
-        /** Yope · global · default avatar silhouette · PLATFORM — token `icon.global.person` */
+        /** Retro · global · new album / group in the header (book + plus badge; no exact SF Symbol — closest) · PLATFORM — token `icon.global.newAlbum` */
+        val globalNewAlbum: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedLibraryAdd
+        /** Retro · global · pause (dial centre while playing) · PLATFORM — token `icon.global.pause` */
+        val globalPause: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedPause
+        /** Apple HIG / Material 3 · global · silhouette where no name exists (Retro's no-photo avatar shows initials on a colour circle — ED-W3 'SF') · PLATFORM — token `icon.global.person` */
         val globalPerson: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedPerson
-        /** Yope · global · play (voice message) · PLATFORM — token `icon.global.play` */
+        /** Retro · global · play (dial centre) · PLATFORM — token `icon.global.play` */
         val globalPlay: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedPlayArrow
-        /** Yope · global · recap entry in a header circle (film frame with stacked lines, outline) · PLATFORM — token `icon.global.recap` */
-        val globalRecap: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedVideoLibrary
-        /** Yope · global · report (menu item, destructive color) · PLATFORM — token `icon.global.report` */
-        val globalReport: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedFlag
-        /** Yope · global · search (home header circle) · PLATFORM — token `icon.global.search` */
+        /** Retro · global · random memory (glass circle on Rewind) · PLATFORM — token `icon.global.random` */
+        val globalRandom: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedCasino
+        /** Apple HIG / Material 3 · global · recap entry where a glyph is needed (Retro's profile shows a text pill 'Recaps' — no Retro glyph) · PLATFORM — token `icon.global.recap` */
+        val globalRecap: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedVideoLibrary
+        /** Apple HIG / Material 3 · global · report (menu item; outline per the icon style) · PLATFORM — token `icon.global.report` */
+        val globalReport: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedFlag
+        /** Retro · global · Rewind / on-this-day tab · PLATFORM — token `icon.global.rewind` */
+        val globalRewind: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedHistory
+        /** Retro · global · search (leading glyph in the search field) · PLATFORM — token `icon.global.search` */
         val globalSearch: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedSearch
-        /** Locket · global · send (paper plane in a circle) · PLATFORM — token `icon.global.send` */
-        val globalSend: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Rounded.AutoMirroredRoundedSend
-        /** Apple HIG / Material 3 · global · settings entry · PLATFORM — token `icon.global.settings` */
-        val globalSettings: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedSettings
-        /** Yope · global · share (square + up arrow) · PLATFORM — token `icon.global.share` */
+        /** Apple HIG / Material 3 · global · send (outline paper plane) · PLATFORM — token `icon.global.send` */
+        val globalSend: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Outlined.AutoMirroredOutlinedSend
+        /** Retro · global · settings (gear capsule on the profile) · PLATFORM — token `icon.global.settings` */
+        val globalSettings: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedSettings
+        /** Retro · global · share · PLATFORM — token `icon.global.share` */
         val globalShare: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedIosShare
-        /** Yope · global · not selected (empty ring) · PLATFORM — token `icon.global.uncheck` */
+        /** Retro · global · delete (menu item, red) · PLATFORM — token `icon.global.trash` */
+        val globalTrash: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedDelete
+        /** Apple HIG / Material 3 · global · not selected (empty ring) · PLATFORM — token `icon.global.uncheck` */
         val globalUncheck: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedRadioButtonUnchecked
-        /** Yope · global · walls / recaps tab (film frame with stacked lines, filled) · PLATFORM — token `icon.global.wall` */
-        val globalWall: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedVideoLibrary
+        /** Retro · global · video duration pill · PLATFORM — token `icon.global.video` */
+        val globalVideo: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedVideocam
+        /** Retro · global · profile tab — your weeks (= walls) · PLATFORM — token `icon.global.wall` */
+        val globalWall: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedAccountCircle
         /** Spotify Wrapped · year.story · pause (two bars) · PLATFORM — token `icon.year.story.pause` */
         val yearStoryPause: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedPause
         /** Spotify Wrapped · year.story · replay glyph before 'Replay from beginning' · PLATFORM — token `icon.year.story.replay` */
@@ -1219,7 +1342,7 @@ object Tokens {
         object CollageViewLayoutTextStyleMap {
             const val title: String = "callout"
         }
-        /** Apple HIG · global.system · semantic colors of native inset-grouped lists, alerts and sheets on system surfaces (settings.*, safety.*, system.permissions), iOS · PLATFORM — token `color.global.system.ios` */
+        /** Apple HIG · global.system · semantic colours of native components on iOS (alerts, menus, share sheet, pickers, keyboard, system permission prompts); dynamic — they follow Light / Dark · PLATFORM — token `color.global.system.ios` */
         object GlobalSystemIos {
             const val groupedBackground: String = "systemGroupedBackground"
             const val cell: String = "secondarySystemGroupedBackground"
@@ -1389,19 +1512,17 @@ object Tokens {
             const val extraLong3: Float = 900f
             const val extraLong4: Float = 1000f
         }
-        /** Yope · global · motion of native components Yope uses; their curves and durations are the platform's · PLATFORM — token `easing.global.native` */
+        /** Apple HIG / Material 3 · global · motion of native components; their curves and durations are the platform's · PLATFORM — token `easing.global.native` */
         object GlobalNative {
+            const val sheet: String = "system (.sheet / ModalBottomSheet) — measured on Retro: spring.global.sheetPresent"
+            const val navigationPush: String = "system (NavigationStack / Compose Navigation default) — Retro's push not captured"
             const val keyboard: String = "system"
             const val alert: String = "system"
+            const val menu: String = "system"
             const val activityIndicator: String = "system (ProgressView / CircularProgressIndicator)"
             const val scrollIndicator: String = "system"
-            const val navigationPush: String = "system (NavigationStack / Compose Navigation default)"
-            const val sheet: String = "system (.sheet / ModalBottomSheet)"
-        }
-        /** Yope · global · settle curve of the photo swipe after the finger lifts · PLATFORM — token `easing.global.photoSwipe` */
-        object GlobalPhotoSwipe {
-            const val ios: String = "system paging scroll physics"
-            const val android: String = "Compose HorizontalPager default fling"
+            const val segmentedControl: String = "system"
+            const val toast: String = "Android Toast LENGTH_SHORT"
         }
         /** Yope · groups.create · two-tone title ('create **new group**', 'create your / **first group**', 'Add friends to / **2025 dumps**') · SOURCED — token `groups.create.layout.titleAccent` */
         object GroupsCreateLayoutTitleAccent {
@@ -1455,10 +1576,16 @@ object Tokens {
             const val ios: String = "none"
             const val android: String = "none"
         }
-        /** Apple HIG · global · which SF Symbol variant a context uses · PLATFORM — token `icon.global.variantRule` */
+        /** Retro · global · tap on a button, tile or card (played just before the action) · PLATFORM — token `haptic.global.tap` */
+        object GlobalTap {
+            const val ios: String = "none"
+            const val android: String = "VIRTUAL_KEY"
+        }
+        /** Retro · global · which SF Symbol / Material variant a context uses · PLATFORM — token `icon.global.variantRule` */
         object GlobalVariantRule {
-            const val tabBar: String = "fill variant"
-            const val header: String = "outline variant unless the reference glyph is filled"
+            const val tabBar: String = "outline variant; selection shown by colour only (color.global.textPrimary vs color.global.tabInactive)"
+            const val header: String = "outline variant"
+            const val states: String = "fill variant only for a state (selected check, play / pause, lock)"
         }
         /** Partiful · invite.appclip · App Clip / universal link / App Link association · VERIFIED — token `invite.appclip.layout.association` */
         object InviteAppclipLayoutAssociation {
@@ -1643,11 +1770,12 @@ object Tokens {
             const val height: Float = 1080f
             const val fps: Float = 29.97f
         }
-        /** Yope · global · appearance of every surface (app and system) · PLATFORM — token `layout.global.appearance` */
+        /** Retro · global · appearance of every surface · SOURCED — token `layout.global.appearance` */
         object GlobalAppearance {
-            const val mode: String = "dark only"
-            const val ios: String = "Info.plist UIUserInterfaceStyle = Dark"
-            const val android: String = "dark color scheme only"
+            const val mode: String = "follows the system Light / Dark setting"
+            const val ios: String = "no UIUserInterfaceStyle key and no preferredColorScheme override; colour tokens are dynamic (Color(light:dark:))"
+            const val android: String = "DsTheme(dark = isSystemInDarkTheme()) wraps the app and every test host; colour getters read LocalDsDarkTheme"
+            const val media: String = "photo / story viewer, camera, postcard-style composer, recap preview and full-bleed media stay dark (color.global.backgroundDeep) in both appearances; sheets over them follow the appearance"
         }
         /** W3C WCAG 2.2 · global · minimum contrast ratio: text 18 pt and larger, or bold at any size · VERIFIED — token `layout.global.contrast.largeText` */
         object GlobalContrastLargeText {
@@ -1664,33 +1792,87 @@ object Tokens {
             const val ratio: Float = 4.5f
             const val rule: String = "text up to 17 pt (iOS) / below 18 sp (Android), not bold"
         }
-        /** Apple HIG / Material 3 · global · Reduce Motion substitution rule for every token animation (implemented by DSAnimation.reducedMotion / dsMotion / dsTransition and Motion.kt dsMotionSpec) · PLATFORM — token `layout.global.reduceMotion` */
+        /** Retro · global · corner curve of every rounded rectangle · SOURCED — token `layout.global.cornerStyle` */
+        object GlobalCornerStyle {
+            const val ios: String = "continuous (RoundedRectangle(cornerRadius:style: .continuous))"
+            const val android: String = "circular (RoundedCornerShape)"
+        }
+        /** Retro · global · shadows and elevation · SOURCED — token `layout.global.elevation` */
+        object GlobalElevation {
+            const val cards: String = "none"
+            const val tiles: String = "none"
+            const val lists: String = "none"
+            const val buttons: String = "none"
+            const val darkMode: String = "no elevation tint: #262626 fills on the page colour"
+            const val exceptions: String = "album cover drop shadow (book cover); premium pill coloured shadow (paywall) — both unmeasured"
+        }
+        /** Retro · global · icon style of every glyph · SOURCED — token `layout.global.iconStyle` */
+        object GlobalIconStyle {
+            const val style: String = "outline, uniform stroke, rounded caps and joins"
+            const val stroke: Float = 2f
+            const val glyphBox: Float = 24f
+            const val filled: String = "only as a state (selected check, play / pause, lock)"
+            const val ios: String = "SF Symbols, outline variant (also in the tab bar), weight regular"
+            const val android: String = "Material Icons Outlined / Rounded (outline shapes), 24 dp"
+        }
+        /** Retro · global · where translucency is used · SOURCED — token `layout.global.materials` */
+        object GlobalMaterials {
+            const val glass: String = "only over photos or colour (color.global.glass)"
+            const val backdrop: String = "full-screen blurred, colour-rich version of the photo behind a card (recap preview, paywall)"
+            const val native: String = "menus, share sheet, sheets: system materials"
+        }
+        /** Retro · global · bottom gradient on photo tiles and full-bleed photos under white text (end colour color.global.scrim) · SOURCED — token `layout.global.photoScrim` */
+        object GlobalPhotoScrim {
+            const val color: String = "#000000"
+            const val startAt: Float = 0.55f
+            const val startOpacity: Float = 0f
+            const val endOpacity: Float = 0.6f
+            const val direction: String = "top → bottom"
+        }
+        /** Retro · global · vertical gradient of the premium pill · SOURCED — token `layout.global.premiumGradient` */
+        object GlobalPremiumGradient {
+            const val top: String = "#D543DE"
+            const val bottom: String = "#A327B8"
+            const val direction: String = "vertical"
+        }
+        /** Apple HIG / Material 3 · global · Reduce Motion substitution rule for every token animation (DSAnimation.reducedMotion / dsMotion / dsTransition; Motion.kt dsMotionSpec) · PLATFORM — token `layout.global.reduceMotion` */
         object GlobalReduceMotion {
             const val ios: String = "UIAccessibility.isReduceMotionEnabled / @Environment(\\.accessibilityReduceMotion)"
             const val android: String = "Settings.Global.ANIMATOR_DURATION_SCALE == 0 or ValueAnimator.areAnimatorsEnabled() == false (Accessibility > Remove animations)"
             const val substitute: String = "replace x/y/z movement with a cross-fade of the same token duration; springs lose their bounce (dampingFraction 1); drop zoom, scale, peripheral and automatic repeating animation; never animate into or out of blur; motion that tracks the finger stays"
         }
-        /** Apple HIG / Material 3 · global.system · text styles on system surfaces · PLATFORM — token `layout.global.system.typography` */
+        /** Apple HIG / Material 3 · global.system · text styles of components the system draws · PLATFORM — token `layout.global.system.typography` */
         object GlobalSystemTypography {
-            const val ios: String = "built-in text styles (Font.TextStyle) on native lists, alerts and sheets"
-            const val android: String = "MaterialTheme.typography (M3 baseline type scale: list label bodyLarge, supporting bodyMedium, dialog headline headlineSmall, actions labelLarge)"
+            const val ios: String = "built-in text styles (Font.TextStyle) inside native alerts, menus, share sheet, pickers"
+            const val android: String = "MaterialTheme.typography with Retro's overrides: headlineLarge = display 40/48, bodyLarge = Inter 15/18 W600, bodyMedium = Inter 14/17 W600, bodySmall = Inter 11/11 W600; other M3 styles stay baseline"
         }
-        /** Apple HIG · global · iOS Dynamic Type text style each fontSize.global.<role> scales with (SwiftUI Font.TextStyle case; DSTextStyle.relativeTo) · PLATFORM — token `layout.global.textStyleMap` */
+        /** Apple HIG · global · iOS Dynamic Type text style each fontSize.global.<role> scales with (SwiftUI Font.TextStyle case; DSTextStyle.relativeTo); Android sp sizes follow the font scale · PLATFORM — token `layout.global.textStyleMap` */
         object GlobalTextStyleMap {
-            const val onboardingTitle: String = "largeTitle"
-            const val sheetTitle: String = "title3"
-            const val headerTitle: String = "subheadline"
-            const val listTitle: String = "headline"
+            const val headerTitle: String = "largeTitle"
+            const val displayMedium: String = "largeTitle"
+            const val displaySmall: String = "title2"
+            const val onboardingTitle: String = "title"
+            const val sheetTitle: String = "headline"
+            const val listTitle: String = "subheadline"
             const val listSubtitle: String = "subheadline"
-            const val body: String = "body"
-            const val button: String = "subheadline"
-            const val caption: String = "caption"
-            const val overlayTime: String = "title2"
-            const val overlayTimeCamera: String = "title"
+            const val body: String = "subheadline"
+            const val button: String = "headline"
+            const val pill: String = "subheadline"
+            const val textButton: String = "body"
+            const val caption: String = "subheadline"
+            const val meta: String = "footnote"
             const val placeholder: String = "body"
-            const val sectionLabel: String = "callout"
-            const val emptyTitle: String = "callout"
+            const val sectionLabel: String = "subheadline"
+            const val emptyTitle: String = "title3"
             const val emptyDetail: String = "subheadline"
+            const val tileLabel: String = "footnote"
+            const val tileDay: String = "title"
+            const val tileMonth: String = "subheadline"
+            const val badge: String = "caption2"
+        }
+        /** Retro · global · Android weights on Inter's wght axis that the named weights cannot express (FontWeight(450)) · SOURCED — token `layout.global.variableWeight.android` */
+        object GlobalVariableWeightAndroid {
+            const val body: Float = 450f
         }
         /** Timehop · onthisday · years-ago banner geometry · SOURCED — token `layout.onthisday.banner` */
         object OnthisdayBanner {
@@ -1925,12 +2107,12 @@ object Tokens {
             const val corners: String = "radius.global.photo on all four corners"
             const val swipe: String = "horizontal paging to the adjacent photo"
         }
-        /** Yope · global · full pill: header title capsule, composer text field, chat bubbles, tab-bar capsule, tooltip ends, white secondary pills · SOURCED — token `radius.global.capsule` */
+        /** Retro · global · buttons (60 / 37 / 36), pills, badges, position pill; circles for avatars and circle buttons · SOURCED — token `radius.global.capsule` */
         object GlobalCapsule {
             const val shape: String = "capsule"
             const val radius: String = "height / 2"
         }
-        /** Apple HIG / Material 3 · global · sheet top corners (Yope's sheet radius was not measured) · PLATFORM — token `radius.global.sheet` */
+        /** Apple HIG / Material 3 · global · top corners of native sheets (iOS draws its own; Android ModalBottomSheet default) · PLATFORM — token `radius.global.sheet` */
         object GlobalSheet {
             const val ios: String = "system"
             const val android: Float = 28f
@@ -1989,11 +2171,10 @@ object Tokens {
             const val ios: String = "system (SwiftUI Toggle plays its own haptic; no custom generator)"
             const val android: String = "TOGGLE_ON / TOGGLE_OFF (API 34) only if the Switch does not already play one"
         }
-        /** Yope · global · observed shape of the sheet presentation: overshoot past rest, time to the peak, time from the peak to rest · SOURCED — token `spring.global.sheetPresentObserved` */
-        object GlobalSheetPresentObserved {
-            const val overshootPt: Float = 16f
-            const val timeToPeakMs: Float = 100f
-            const val settleMs: Float = 100f
+        /** Retro · global · thickness of color.global.separator · SOURCED — token `size.global.hairline` */
+        object GlobalHairline {
+            const val ios: String = "1 device pixel (1 / displayScale pt)"
+            const val android: String = "1 device pixel"
         }
         /** Yope · walls.mine · how wall items fill the grid · SOURCED — token `walls.mine.layout.gridOrder` */
         object WallsMineLayoutGridOrder {
@@ -2205,8 +2386,16 @@ object Tokens {
         val birthdayRequestPrompt: TextUnit = 18.75.sp
         /** Tribute · birthday.request · title · VERIFIED — token `lineHeight.birthday.request.title` */
         val birthdayRequestTitle: TextUnit = 28.8.sp
-        /** Yope · global · line pitch of the 3-line legal footer under sign-up (12 pt text) · SOURCED — token `lineHeight.global.caption` */
-        val globalCaption: TextUnit = 15.2.sp
+        /** Retro · global · Android badge line height (Inter 11/11 W600) · SOURCED — token `lineHeight.global.badge.android` */
+        val globalBadgeAndroid: TextUnit = 11.sp
+        /** Retro · global · Android body line height · SOURCED — token `lineHeight.global.body.android` */
+        val globalBodyAndroid: TextUnit = 17.sp
+        /** Retro · global · line pitch of the multi-line legal footer (14 pt) · SOURCED — token `lineHeight.global.caption` */
+        val globalCaption: TextUnit = 21.7.sp
+        /** Retro · global · line height of the display serif title (multi-line titles) · SOURCED — token `lineHeight.global.headerTitle` */
+        val globalHeaderTitle: TextUnit = 48.sp
+        /** Retro · global · Android name / row title line height (Inter 15/18 W600) · SOURCED — token `lineHeight.global.listTitle.android` */
+        val globalListTitleAndroid: TextUnit = 18.sp
         /** Spotify Wrapped · year.story · subline line pitch · SOURCED — token `lineHeight.year.story.body` */
         val yearStoryBody: TextUnit = 21.4.sp
         /** Spotify Wrapped · year.story · headline line pitch · SOURCED — token `lineHeight.year.story.headline` */
@@ -2313,16 +2502,22 @@ object Tokens {
         val birthdayRequestPrompts: Dp = 8.dp
         /** Tribute · birthday.tribute · secondary button corners · VERIFIED — token `radius.birthday.tribute.button` */
         val birthdayTributeButton: Dp = 8.dp
-        /** Yope · global · primary (lime) button corners — not a full pill · SOURCED — token `radius.global.button` */
-        val globalButton: Dp = 14.dp
-        /** Yope · global · list card corners (home conversation / group cards, inline permission card) · SOURCED — token `radius.global.card` */
-        val globalCard: Dp = 17.dp
-        /** Yope · global · single-line form text field corners ('name group (optional)') · SOURCED — token `radius.global.field` */
-        val globalField: Dp = 12.dp
-        /** Yope · global · photo corners in the thread and in grids of walls · SOURCED — token `radius.global.photo` */
-        val globalPhoto: Dp = 15.dp
-        /** Yope · global · camera viewfinder corners (full-width viewfinder) · SOURCED — token `radius.global.viewfinder` */
-        val globalViewfinder: Dp = 18.5.dp
+        /** Retro · global · full-width 60 pt capsule (radius = height ÷ 2) · SOURCED — token `radius.global.button` */
+        val globalButton: Dp = 30.dp
+        /** Retro · global · photo containers: week-strip outer corners, friend card — continuous corner (layout.global.cornerStyle) · SOURCED — token `radius.global.card` */
+        val globalCard: Dp = 18.dp
+        /** Retro · global · large card on a blurred backdrop (paywall plan card) · SOURCED — token `radius.global.cardLarge` */
+        val globalCardLarge: Dp = 36.dp
+        /** Retro · global · search / text field corners (52 pt field) · SOURCED — token `radius.global.field` */
+        val globalField: Dp = 19.dp
+        /** Retro · global · grouped list (settings) — first row top corners, last row bottom corners, a single row all corners; middle rows square · SOURCED — token `radius.global.groupedRow` */
+        val globalGroupedRow: Dp = 12.dp
+        /** Retro · global · photo cells inside strips and grids (inner corners square; only the container's outer corners round) · SOURCED — token `radius.global.photo` */
+        val globalPhoto: Dp = 0.dp
+        /** Retro · global · list row cover thumbnail (albums), recap collage cells · SOURCED — token `radius.global.thumbnail` */
+        val globalThumbnail: Dp = 4.dp
+        /** Retro · global · camera viewfinder corners — composition: the viewfinder is drawn as Retro's photo container (radius.global.card) · SOURCED — token `radius.global.viewfinder` */
+        val globalViewfinder: Dp = 18.dp
         /** Yope · walls.mine · wall grid tile corner radius · SOURCED — token `walls.mine.radius.gridTile` */
         val wallsMineRadiusGridTile: Dp = 6.5.dp
         /** Retro · week.history · outer corners of a strip only (first tile's left corners, last tile's right corners); inner corners square · SOURCED — token `week.history.radius.strip` */
@@ -2795,34 +2990,82 @@ object Tokens {
         val settingsRootSizeListItemThreeLineAndroid: Dp = 88.dp
         /** Material 3 · settings.root · M3 two-line list item height · VERIFIED — token `settings.root.size.listItemTwoLine.android` */
         val settingsRootSizeListItemTwoLineAndroid: Dp = 72.dp
-        /** Yope · global · group avatar inside the header capsule · SOURCED — token `size.global.avatarHeader` */
-        val globalAvatarHeader: Dp = 28.dp
-        /** Yope · global · avatar in a home list card · SOURCED — token `size.global.avatarList` */
-        val globalAvatarList: Dp = 64.dp
-        /** Yope · global · avatar in a people-picker row · SOURCED — token `size.global.avatarPicker` */
-        val globalAvatarPicker: Dp = 40.dp
-        /** Yope · global · small avatar: chat sender, send-to recipient row · SOURCED — token `size.global.avatarSmall` */
-        val globalAvatarSmall: Dp = 32.6.dp
-        /** Yope · global · full-width primary button in a form ('create group') · SOURCED — token `size.global.buttonHeight` */
-        val globalButtonHeight: Dp = 45.dp
-        /** Yope · global · primary action button at the bottom of a sheet ('send ⓝ') · SOURCED — token `size.global.buttonHeightSheet` */
-        val globalButtonHeightSheet: Dp = 47.dp
-        /** Yope · global · side margin of the form primary button · SOURCED — token `size.global.buttonMarginH` */
-        val globalButtonMarginH: Dp = 19.dp
-        /** Yope · global · side margin of the sheet-bottom primary button · SOURCED — token `size.global.buttonMarginHSheet` */
-        val globalButtonMarginHSheet: Dp = 27.dp
-        /** Yope · global · selection circle (empty ring / filled check) in pickers and recipient rows · SOURCED — token `size.global.checkCircle` */
+        /** Retro · global · avatar in a 3-column people grid (name centred below) · SOURCED — token `size.global.avatarGrid` */
+        val globalAvatarGrid: Dp = 81.dp
+        /** Retro · global · viewer / story header avatar including its white ring with a gap · SOURCED — token `size.global.avatarHeader` */
+        val globalAvatarHeader: Dp = 39.dp
+        /** Retro · global · avatar beside a name above a friend card (home feed) · SOURCED — token `size.global.avatarList` */
+        val globalAvatarList: Dp = 26.5.dp
+        /** Retro · global · avatar in a people row (friend request, member, comment rows) · SOURCED — token `size.global.avatarPicker` */
+        val globalAvatarPicker: Dp = 37.dp
+        /** Retro · global · avatar in the profile header (right margin, aligned to the title) · SOURCED — token `size.global.avatarProfile` */
+        val globalAvatarProfile: Dp = 64.dp
+        /** Retro · global · avatar in an avatar stack (≈3 pt overlap, white ring) · SOURCED — token `size.global.avatarSmall` */
+        val globalAvatarSmall: Dp = 22.6.dp
+        /** Retro · global · overlap between avatars in a stack · SOURCED — token `size.global.avatarStackOverlap` */
+        val globalAvatarStackOverlap: Dp = 3.dp
+        /** Retro · global · pushed screen: screen edge → back chevron ink (chevron ink 11.1 × 18.3 pt, centred on the title's cap middle) · SOURCED — token `size.global.backInset` */
+        val globalBackInset: Dp = 21.1.dp
+        /** Retro · global · height of the red badge capsule · SOURCED — token `size.global.badgeHeight` */
+        val globalBadgeHeight: Dp = 24.dp
+        /** Retro · global · 'new' badge: distance from the card's top and right edges · SOURCED — token `size.global.badgeInset` */
+        val globalBadgeInset: Dp = 12.dp
+        /** Retro · global · height of the full-width primary / secondary capsule · SOURCED — token `size.global.buttonHeight` */
+        val globalButtonHeight: Dp = 60.dp
+        /** Retro · global · height of the full-width capsule at the bottom of a sheet / modal (same as buttonHeight in Retro) · SOURCED — token `size.global.buttonHeightSheet` */
+        val globalButtonHeightSheet: Dp = 60.dp
+        /** Retro · global · side margin of the full-width bottom capsule (and of the plan card) · SOURCED — token `size.global.buttonMarginH` */
+        val globalButtonMarginH: Dp = 20.dp
+        /** Retro · global · side margin of a full-width capsule at the bottom of a sheet / modal (same as buttonMarginH in Retro) · SOURCED — token `size.global.buttonMarginHSheet` */
+        val globalButtonMarginHSheet: Dp = 20.dp
+        /** Retro · global · gap between friend cards in the horizontal pager (the next card peeks) · SOURCED — token `size.global.cardGap` */
+        val globalCardGap: Dp = 16.dp
+        /** Retro · global · friend card header: avatar bottom → card top · SOURCED — token `size.global.cardHeaderGap` */
+        val globalCardHeaderGap: Dp = 10.dp
+        /** Retro · global · friend card header: avatar → name ink · SOURCED — token `size.global.cardNameGap` */
+        val globalCardNameGap: Dp = 11.dp
+        /** Retro · global · selection circle (empty ring / filled check) — drawn in the 24 pt glyph box · SOURCED — token `size.global.checkCircle` */
         val globalCheckCircle: Dp = 24.dp
-        /** Yope · global · single-line form text field height · SOURCED — token `size.global.fieldHeight` */
-        val globalFieldHeight: Dp = 44.dp
-        /** Yope · global · circle icon buttons in headers (back, close, download, film-strip, search) · SOURCED — token `size.global.headerButton` */
+        /** Retro · global · circle button with a glyph on a fill ('+' on album rows, close on the postcard modal) · SOURCED — token `size.global.circleButton` */
+        val globalCircleButton: Dp = 36.dp
+        /** Retro · global · large glass circle beside a central control (Rewind share / random) · SOURCED — token `size.global.circleButtonLarge` */
+        val globalCircleButtonLarge: Dp = 64.dp
+        /** Retro · global · '•••' glass circle over a full-bleed photo · SOURCED — token `size.global.circleButtonPhoto` */
+        val globalCircleButtonPhoto: Dp = 40.dp
+        /** Retro · global · small close circle (glass over colour on the paywall) · SOURCED — token `size.global.circleButtonSmall` */
+        val globalCircleButtonSmall: Dp = 32.dp
+        /** Retro · global · reply / comment field at the bottom of the viewer (own avatar leading, trailing glyph) · SOURCED — token `size.global.commentFieldHeight` */
+        val globalCommentFieldHeight: Dp = 48.dp
+        /** Retro · global · empty-state outline glyph · SOURCED — token `size.global.emptyIcon` */
+        val globalEmptyIcon: Dp = 22.dp
+        /** Retro · global · empty state: glyph bottom → title cap top · SOURCED — token `size.global.emptyIconToTitle` */
+        val globalEmptyIconToTitle: Dp = 26.dp
+        /** Retro · global · empty state: title baseline → capsule top · SOURCED — token `size.global.emptyTitleToAction` */
+        val globalEmptyTitleToAction: Dp = 25.dp
+        /** Retro · global · feature-intro sheet floating in from the screen edges · SOURCED — token `size.global.featureSheetInset` */
+        val globalFeatureSheetInset: Dp = 12.dp
+        /** Retro · global · search / text field height (full width inside the margins) · SOURCED — token `size.global.fieldHeight` */
+        val globalFieldHeight: Dp = 52.dp
+        /** Retro · global · friend card (photo) height, 2:3 · SOURCED — token `size.global.friendCardHeight` */
+        val globalFriendCardHeight: Dp = 361.dp
+        /** Retro · global · friend card (photo) width, 2:3 · SOURCED — token `size.global.friendCardWidth` */
+        val globalFriendCardWidth: Dp = 240.dp
+        /** Apple HIG · global · hit area of a header icon button (Retro draws the glyph bare, no circle); glyph centred · PLATFORM — token `size.global.headerButton` */
         val globalHeaderButton: Dp = 44.dp
-        /** Yope · global · gap between the back circle and the header title capsule · SOURCED — token `size.global.headerGap` */
-        val globalHeaderGap: Dp = 7.3.dp
-        /** Yope · global · screen edge to the first / last header circle · SOURCED — token `size.global.headerInset` */
-        val globalHeaderInset: Dp = 11.5.dp
-        /** Yope · global · vertical gap between stacked list cards · SOURCED — token `size.global.listGap` */
-        val globalListGap: Dp = 7.5.dp
+        /** Retro · global · pushed screen: back chevron ink → serif title ink · SOURCED — token `size.global.headerGap` */
+        val globalHeaderGap: Dp = 14.6.dp
+        /** Retro · global · centre-to-centre distance of trailing header glyphs (book, chat) · SOURCED — token `size.global.headerIconPitch` */
+        val globalHeaderIconPitch: Dp = 48.dp
+        /** Retro · global · screen edge → ink of the last trailing header glyph (the glyph, not its hit area, sits on the margin) · SOURCED — token `size.global.headerInset` */
+        val globalHeaderInset: Dp = 16.dp
+        /** Retro · global · glyph box of outline icons: tab bar, header, list accessories · SOURCED — token `size.global.icon` */
+        val globalIcon: Dp = 24.dp
+        /** Retro · global · inline glyph inside a pill ('+' in 'Get this week started'); info-row icons measure 14 · SOURCED — token `size.global.iconSmall` */
+        val globalIconSmall: Dp = 14.7.dp
+        /** Retro · global · profile info rows (14 pt icon + 15 pt text) baseline pitch · SOURCED — token `size.global.infoRowPitch` */
+        val globalInfoRowPitch: Dp = 29.dp
+        /** Retro · global · vertical gap between list rows with a thumbnail (albums list: row pitch 119.5 − thumbnail 97) · SOURCED — token `size.global.listGap` */
+        val globalListGap: Dp = 22.5.dp
         /** Material 3 · global · minimum touch target, Android · VERIFIED — token `size.global.minTouchTarget.android` */
         val globalMinTouchTargetAndroid: Dp = 48.dp
         /** Material 3 · global · spacing between touch targets, Android · VERIFIED — token `size.global.minTouchTarget.androidSpacing` */
@@ -2831,22 +3074,60 @@ object Tokens {
         val globalMinTouchTargetIos: Dp = 44.dp
         /** Apple HIG · global · absolute minimum control size, iOS · VERIFIED — token `size.global.minTouchTarget.iosMinimum` */
         val globalMinTouchTargetIosMinimum: Dp = 28.dp
-        /** Yope · global · side margin of full-width content (home list cards); edge elements sit at the same inset · SOURCED — token `size.global.screenMargin` */
-        val globalScreenMargin: Dp = 12.dp
-        /** Yope · global · 'me' tab avatar · SOURCED — token `size.global.tabBarAvatar` */
-        val globalTabBarAvatar: Dp = 34.dp
-        /** Yope · global · floating tab-bar capsule height · SOURCED — token `size.global.tabBarHeight` */
-        val globalTabBarHeight: Dp = 58.dp
-        /** Yope · global · tab glyph size (20-23 pt measured) · SOURCED — token `size.global.tabBarIcon` */
-        val globalTabBarIcon: Dp = 21.dp
-        /** Yope · global · tab-bar side inset from the screen edges · SOURCED — token `size.global.tabBarInset` */
-        val globalTabBarInset: Dp = 22.dp
-        /** Yope · global · selected-tab pill height · SOURCED — token `size.global.tabBarSelectedHeight` */
-        val globalTabBarSelectedHeight: Dp = 48.dp
-        /** Yope · global · selected-tab pill width (fill color.global.controlRaised) · SOURCED — token `size.global.tabBarSelectedWidth` */
-        val globalTabBarSelectedWidth: Dp = 74.dp
-        /** Yope · global · floating tab-bar capsule width · SOURCED — token `size.global.tabBarWidth` */
-        val globalTabBarWidth: Dp = 344.dp
+        /** Retro · global · page-dot diameter · SOURCED — token `size.global.pageDot` */
+        val globalPageDot: Dp = 5.9.dp
+        /** Retro · global · page-dot centre-to-centre · SOURCED — token `size.global.pageDotPitch` */
+        val globalPageDotPitch: Dp = 9.6.dp
+        /** Retro · global · gap between side-by-side capsules (Recaps / Share Profile / gear) · SOURCED — token `size.global.pillGap` */
+        val globalPillGap: Dp = 8.8.dp
+        /** Retro · global · height of the medium capsules (outline CTA, action pairs, profile action row) · SOURCED — token `size.global.pillHeight` */
+        val globalPillHeight: Dp = 37.dp
+        /** Retro · global · outline CTA with icon: icon → label · SOURCED — token `size.global.pillIconGap` */
+        val globalPillIconGap: Dp = 9.7.dp
+        /** Retro · global · outline CTA with icon: leading edge → icon · SOURCED — token `size.global.pillPaddingLeading` */
+        val globalPillPaddingLeading: Dp = 18.dp
+        /** Retro · global · outline CTA with icon: label → trailing edge · SOURCED — token `size.global.pillPaddingTrailing` */
+        val globalPillPaddingTrailing: Dp = 17.dp
+        /** Retro · global · gap before the next card that peeks in a horizontal card pager · SOURCED — token `size.global.planCardGap` */
+        val globalPlanCardGap: Dp = 8.dp
+        /** Retro · global · padding inside the large card on a blurred backdrop (paywall plan card); its capsule sits 16 from the card sides and bottom · SOURCED — token `size.global.planCardPadding` */
+        val globalPlanCardPadding: Dp = 27.dp
+        /** Retro · global · position pill in the viewer header ('3 of 4') · SOURCED — token `size.global.positionPillHeight` */
+        val globalPositionPillHeight: Dp = 22.dp
+        /** Retro · global · list row thumbnail → text · SOURCED — token `size.global.rowThumbGap` */
+        val globalRowThumbGap: Dp = 17.dp
+        /** Retro · global · list row thumbnail height (3:4 cover) · SOURCED — token `size.global.rowThumbHeight` */
+        val globalRowThumbHeight: Dp = 97.dp
+        /** Retro · global · list row thumbnail width (3:4 cover) · SOURCED — token `size.global.rowThumbWidth` */
+        val globalRowThumbWidth: Dp = 72.dp
+        /** Retro · global · side margin of all content: titles, strips, friend cards, list rows, header glyph ink, search field · SOURCED — token `size.global.screenMargin` */
+        val globalScreenMargin: Dp = 16.dp
+        /** Retro · global · strip bottom → next section header cap top · SOURCED — token `size.global.sectionGap` */
+        val globalSectionGap: Dp = 36.4.dp
+        /** Retro · global · section header baseline → strip / grid top · SOURCED — token `size.global.sectionHeaderToContent` */
+        val globalSectionHeaderToContent: Dp = 11.7.dp
+        /** Retro · global · gap between strip tiles (page colour shows through) · SOURCED — token `size.global.stripGap` */
+        val globalStripGap: Dp = 2.dp
+        /** Retro · global · week-strip tile height (3:4) · SOURCED — token `size.global.stripTileHeight` */
+        val globalStripTileHeight: Dp = 112.dp
+        /** Retro · global · week-strip tile width (3:4) · SOURCED — token `size.global.stripTileWidth` */
+        val globalStripTileWidth: Dp = 84.dp
+        /** Retro · global · red unread dot under a tab glyph · SOURCED — token `size.global.tabBadgeDot` */
+        val globalTabBadgeDot: Dp = 4.dp
+        /** Retro · global · tab glyph bottom → dot top (dot centred) · SOURCED — token `size.global.tabBadgeOffset` */
+        val globalTabBadgeOffset: Dp = 5.dp
+        /** Retro · global · tab bar height above the home indicator (standard bar; background = page, no hairline, no labels) · SOURCED — token `size.global.tabBarHeight` */
+        val globalTabBarHeight: Dp = 49.dp
+        /** Retro · global · tab glyph box (ink 18.7–24 × 19.7–22 pt) · SOURCED — token `size.global.tabBarIcon` */
+        val globalTabBarIcon: Dp = 24.dp
+        /** Retro · global · tab bar inset from the screen edges: none — Retro's bar is not floating; it spans the width with 5 items evenly distributed (centres at width ÷ 10, 3 ÷ 10 …) and sits on the home indicator · SOURCED — token `size.global.tabBarInset` */
+        val globalTabBarInset: Dp = 0.dp
+        /** Retro · global · photo tile: weekday label baseline → tile bottom · SOURCED — token `size.global.tileLabelBaseline` */
+        val globalTileLabelBaseline: Dp = 13.4.dp
+        /** Retro · global · display title baseline → first content (strip top) · SOURCED — token `size.global.titleToContent` */
+        val globalTitleToContent: Dp = 30.dp
+        /** Retro · global · safe-area top → baseline of the display title on a root screen · SOURCED — token `size.global.titleTop` */
+        val globalTitleTop: Dp = 64.dp
         /** Yope · walls.browse · person circle in the 'me & friends' row · SOURCED — token `walls.browse.dimension.avatar` */
         val wallsBrowseDimensionAvatar: Dp = 60.dp
         /** Yope · walls.browse · centre-to-centre pitch of the person circles · SOURCED — token `walls.browse.dimension.avatarPitch` */
@@ -2945,16 +3226,24 @@ object Tokens {
     object Springs {
         /** Locket · camera.capture · shutter press: scale to camera.capture.layout.shutterPress.scale and dim the disc · SOURCED — token `camera.capture.spring.shutterPress` */
         val cameraCaptureSpringShutterPress: DSSpring = DSSpring(dampingRatio = 1f, stiffness = 727.19f)
-        /** Material 3 · global · Android default spring (Compose spring() defaults) for custom motion whose Yope curve was not measurable · PLATFORM — token `spring.global.platformDefault.android` */
+        /** Material 3 · global · Android default spring (Compose spring() defaults: stiffness 1500, damping 1) · PLATFORM — token `spring.global.platformDefault.android` */
         val globalPlatformDefaultAndroid: DSSpring = DSSpring(dampingRatio = 1f, stiffness = 1500.0212f)
-        /** Apple HIG · global · iOS default animation (SwiftUI Animation.default) for custom motion whose Yope curve was not measurable · PLATFORM — token `spring.global.platformDefault.ios` */
+        /** Apple HIG · global · iOS default animation (SwiftUI Animation.default) for motion Retro shows no value for · PLATFORM — token `spring.global.platformDefault.ios` */
         val globalPlatformDefaultIos: DSSpring = DSSpring(dampingRatio = 1f, stiffness = 130.5072f)
-        /** React Navigation iOS modal spec (shipped in Locket) · global · sheet presentation spring (response, dampingFraction) · SOURCED — token `spring.global.sheetPresent` */
-        val globalSheetPresent: DSSpring = DSSpring(dampingRatio = 1f, stiffness = 333.419f)
+        /** Retro · global · playful reveals (fan-outs, blur reveal, avatar entries) · SOURCED — token `spring.global.playful` */
+        val globalPlayful: DSSpring = DSSpring(dampingRatio = 0.75f, stiffness = 199.9895f)
+        /** Retro · global · native sheet presentation curve (critically damped, no overshoot); for custom presentations that must match it · SOURCED — token `spring.global.sheetPresent` */
+        val globalSheetPresent: DSSpring = DSSpring(dampingRatio = 1f, stiffness = 327.8693f)
     }
     object Tracking {
         /** Partiful · invite.web · title tracking · VERIFIED — token `invite.web.letterSpacing.title` */
         val inviteWebLetterSpacingTitle: TextUnit = -0.02.sp
+        /** Retro · global · Android badge tracking — Latin script only · SOURCED — token `letterSpacing.global.badge.android` */
+        val globalBadgeAndroid: TextUnit = -0.2.sp
+        /** Retro · global · Android body tracking — only when the locale's script is Latin (hh3.p0), else 0 · SOURCED — token `letterSpacing.global.body.android` */
+        val globalBodyAndroid: TextUnit = -0.3.sp
+        /** Retro · global · Android name / row title tracking — Latin script only · SOURCED — token `letterSpacing.global.listTitle.android` */
+        val globalListTitleAndroid: TextUnit = -0.35.sp
     }
     object ColorsLight {
         val albumsListColorCard: Color = Color(0xFF181818)
@@ -2987,30 +3276,44 @@ object Tokens {
         val birthdayRequestPromptsHeader: Color = Color(0xFF292D34)
         val birthdayTributeButtonLabel: Color = Color(0xFF292D34)
         val birthdayTributePillarbox: Color = Color(0xFF000000)
-        val globalAccent: Color = Color(0xFFCDFD07)
-        val globalAccentSecondary: Color = Color(0xFFFE1F84)
-        val globalBackground: Color = Color(0xFF171717)
+        val globalAccent: Color = Color(0xFF000000)
+        val globalBackground: Color = Color(0xFFFFFFFF)
+        val globalBackgroundAndroid: Color = Color(0xFFFFFFFF)
         val globalBackgroundDeep: Color = Color(0xFF000000)
-        val globalControl: Color = Color(0xFF2E2E2E)
-        val globalControlOnDeep: Color = Color(0xFF101010)
-        val globalControlRaised: Color = Color(0xFF434343)
-        val globalDestructive: Color = Color(0xFFFF4245)
-        val globalOnAccent: Color = Color(0xFF000000)
+        val globalBadge: Color = Color(0xFFEA3337)
+        val globalBadgeMuted: Color = Color(0xFF999999)
+        val globalControl: Color = Color(0xFFF1F1F1)
+        val globalControlOnDeep: Color = Color(0xFF262626)
+        val globalControlRaised: Color = Color(0xFFCCCCCC)
+        val globalDestructive: Color = Color(0xFFEA3337)
+        val globalEmptyTileText: Color = Color(0xFFD9D9D9)
+        val globalGlass: Color = Color(0x1FFFFFFF)
+        val globalOnAccent: Color = Color(0xFFFFFFFF)
+        val globalOnBadge: Color = Color(0xFFFFFFFF)
         val globalOnSurfaceLight: Color = Color(0xFF000000)
-        val globalScrim: Color = Color(0x80000000)
-        val globalSelection: Color = Color(0xFF0091FF)
-        val globalSeparator: Color = Color(0x33FFFFFF)
+        val globalPageDotInactive: Color = Color(0xFFDDDDDD)
+        val globalPremium: Color = Color(0xFFB02EC1)
+        val globalScrim: Color = Color(0x99000000)
+        val globalSelection: Color = Color(0xFF0088FF)
+        val globalSeparator: Color = Color(0xFFCCCCCC)
+        val globalSurfaceElevated: Color = Color(0xFFFFFFFF)
         val globalSurfaceLight: Color = Color(0xFFFFFFFF)
-        val globalSystemError: Color = Color(0xFFF2B8B5)
-        val globalSystemOnSurface: Color = Color(0xFFE6E0E9)
-        val globalSystemOnSurfaceVariant: Color = Color(0xFFCAC4D0)
-        val globalSystemOutline: Color = Color(0xFF938F99)
-        val globalSystemPrimary: Color = Color(0xFFD0BCFF)
-        val globalSystemSurface: Color = Color(0xFF141218)
-        val globalSystemSurfaceContainerHigh: Color = Color(0xFF2B2930)
-        val globalSystemSurfaceContainerLow: Color = Color(0xFF1D1B20)
-        val globalTextPrimary: Color = Color(0xFFFFFFFF)
-        val globalTextSecondary: Color = Color(0xFF969696)
+        val globalSurfaceSecondaryAndroid: Color = Color(0xFFF7F7F7)
+        val globalSystemError: Color = Color(0xFFEA3337)
+        val globalSystemOnSurface: Color = Color(0xFF000000)
+        val globalSystemOnSurfaceVariant: Color = Color(0xFF49454F)
+        val globalSystemOutline: Color = Color(0xFF79747E)
+        val globalSystemPrimary: Color = Color(0xFF0A84FF)
+        val globalSystemPrimaryContainer: Color = Color(0xFFCCCCCC)
+        val globalSystemSecondaryContainer: Color = Color(0xFFF7F7F7)
+        val globalSystemSurface: Color = Color(0xFFFFFFFF)
+        val globalSystemSurfaceContainerHigh: Color = Color(0xFFECE6F0)
+        val globalSystemSurfaceContainerLow: Color = Color(0xFFF7F2FA)
+        val globalTabInactive: Color = Color(0xFFB2B2B2)
+        val globalTextPrimary: Color = Color(0xFF000000)
+        val globalTextSecondary: Color = Color(0xFF999999)
+        val globalTextSecondaryAndroid: Color = Color(0x80000000)
+        val globalTextTertiary: Color = Color(0xFFC1C1C1)
         val onthisdayBanner: Color = Color(0xFFFC5F33)
         val onthisdayBannerLabel: Color = Color(0xFFFFFFFF)
         val onthisdayMetaText: Color = Color(0xFFFFFFFF)
@@ -3113,30 +3416,44 @@ object Tokens {
         val birthdayRequestPromptsHeader: Color = Color(0xFF292D34)
         val birthdayTributeButtonLabel: Color = Color(0xFF292D34)
         val birthdayTributePillarbox: Color = Color(0xFF000000)
-        val globalAccent: Color = Color(0xFFCDFD07)
-        val globalAccentSecondary: Color = Color(0xFFFE1F84)
-        val globalBackground: Color = Color(0xFF171717)
+        val globalAccent: Color = Color(0xFFFFFFFF)
+        val globalBackground: Color = Color(0xFF000000)
+        val globalBackgroundAndroid: Color = Color(0xFF1C1C1E)
         val globalBackgroundDeep: Color = Color(0xFF000000)
-        val globalControl: Color = Color(0xFF2E2E2E)
-        val globalControlOnDeep: Color = Color(0xFF101010)
-        val globalControlRaised: Color = Color(0xFF434343)
-        val globalDestructive: Color = Color(0xFFFF4245)
+        val globalBadge: Color = Color(0xFFEA3337)
+        val globalBadgeMuted: Color = Color(0xFF999999)
+        val globalControl: Color = Color(0xFF262626)
+        val globalControlOnDeep: Color = Color(0xFF262626)
+        val globalControlRaised: Color = Color(0xFF4D4D4D)
+        val globalDestructive: Color = Color(0xFFEA3337)
+        val globalEmptyTileText: Color = Color(0xFF515151)
+        val globalGlass: Color = Color(0x1FFFFFFF)
         val globalOnAccent: Color = Color(0xFF000000)
+        val globalOnBadge: Color = Color(0xFFFFFFFF)
         val globalOnSurfaceLight: Color = Color(0xFF000000)
-        val globalScrim: Color = Color(0x80000000)
+        val globalPageDotInactive: Color = Color(0xFF808080)
+        val globalPremium: Color = Color(0xFFB02EC1)
+        val globalScrim: Color = Color(0x99000000)
         val globalSelection: Color = Color(0xFF0091FF)
-        val globalSeparator: Color = Color(0x33FFFFFF)
+        val globalSeparator: Color = Color(0xFF4D4D4D)
+        val globalSurfaceElevated: Color = Color(0xFF181818)
         val globalSurfaceLight: Color = Color(0xFFFFFFFF)
-        val globalSystemError: Color = Color(0xFFF2B8B5)
-        val globalSystemOnSurface: Color = Color(0xFFE6E0E9)
+        val globalSurfaceSecondaryAndroid: Color = Color(0xFF262626)
+        val globalSystemError: Color = Color(0xFFEA3337)
+        val globalSystemOnSurface: Color = Color(0xFFFFFFFF)
         val globalSystemOnSurfaceVariant: Color = Color(0xFFCAC4D0)
         val globalSystemOutline: Color = Color(0xFF938F99)
-        val globalSystemPrimary: Color = Color(0xFFD0BCFF)
-        val globalSystemSurface: Color = Color(0xFF141218)
+        val globalSystemPrimary: Color = Color(0xFF0A84FF)
+        val globalSystemPrimaryContainer: Color = Color(0xFF4D4D4D)
+        val globalSystemSecondaryContainer: Color = Color(0xFF262626)
+        val globalSystemSurface: Color = Color(0xFF1C1C1E)
         val globalSystemSurfaceContainerHigh: Color = Color(0xFF2B2930)
         val globalSystemSurfaceContainerLow: Color = Color(0xFF1D1B20)
+        val globalTabInactive: Color = Color(0xFF999999)
         val globalTextPrimary: Color = Color(0xFFFFFFFF)
-        val globalTextSecondary: Color = Color(0xFF969696)
+        val globalTextSecondary: Color = Color(0xFF999999)
+        val globalTextSecondaryAndroid: Color = Color(0x99FFFFFF)
+        val globalTextTertiary: Color = Color(0x4DFFFFFF)
         val onthisdayBanner: Color = Color(0xFFFC5F33)
         val onthisdayBannerLabel: Color = Color(0xFFFFFFFF)
         val onthisdayMetaText: Color = Color(0xFFFFFFFF)
