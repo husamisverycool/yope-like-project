@@ -24,7 +24,10 @@ import app.model.SessionPromptGate
  * The root flow: signed out → sign-up (auth.phone; or the remembered under-age refusal) →
  * onboarding → home. Watches the session ([AccountEnvironment.backend] `authState`):
  * - signed out (launch without a session, sign-out, account deletion) → auth.phone, stack cleared;
- * - signed in at launch → the first unfinished step (AccountFlow), or home (pending invite → join).
+ * - signed in at launch → the first unfinished step (AccountFlow), or home (pending invite → join);
+ *   home with at least one group opens the camera over groups.list (camera.capture → In: "app
+ *   launch (the app opens to the camera)"; groups.list stays the root, Back and the tab bar lead there).
+ *   A deep link that already moved the app off groups.list wins.
  * Sign-up screens drive their own steps; the gate only acts outside them. Returns whether the first
  * decision is made (the shell covers the screen until then, so no wrong screen flashes).
  */
@@ -63,7 +66,13 @@ fun RootGate(nav: NavHostController, env: AccountEnvironment): Boolean {
                                 // onboarding, else the first sign-up step that can tell (age gate).
                                 if (t.dataError() == DataError.Network && env.stores.isOnboardingDone(state.userId)) AccountFlow.home(env) else AppRoute.AuthAgeGate
                             }
-                            if (next != AppRoute.GroupsList) nav.navigateAccount(AccountEvent.Navigate(next, clearStack = true))
+                            if (next != AppRoute.GroupsList) {
+                                nav.navigateAccount(AccountEvent.Navigate(next, clearStack = true))
+                            } else if (env.launchToCamera && runCatching { AccountFlow.hasGroups(env) }.getOrDefault(false) &&
+                                nav.currentBackStackEntry?.destination?.hasRoute<AppRoute.GroupsList>() == true
+                            ) {
+                                nav.navigate(AppRoute.Camera()) { launchSingleTop = true }
+                            }
                         }
                     }
                     ready = true

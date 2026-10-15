@@ -64,6 +64,11 @@ class AccountEnvironment(
     val region: () -> String? = { null },
     /** Whether a runtime permission is granted (`ContextCompat.checkSelfPermission`). */
     val isGranted: (permission: String) -> Boolean = { false },
+    /**
+     * A launch with a session and at least one group opens the camera over groups.list
+     * (camera.capture: "the app opens to the camera"). Off in tests that are about other screens.
+     */
+    val launchToCamera: Boolean = true,
     /** Yope's lime toast, shown by the shell's `ToastHost` over every screen (it outlives navigation). */
     val toasts: app.ui.components.ToastState = app.ui.components.ToastState(),
 )

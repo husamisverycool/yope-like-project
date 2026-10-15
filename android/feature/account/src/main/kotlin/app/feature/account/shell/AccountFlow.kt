@@ -3,6 +3,7 @@ package app.feature.account.shell
 import android.Manifest
 import app.feature.account.AccountEnvironment
 import app.model.AppRoute
+import kotlinx.coroutines.flow.first
 import app.ui.permissions.PermissionChecks
 
 /**
@@ -58,5 +59,9 @@ object AccountFlow {
     }
 
     /** Home, or the pending invite's join first (invite.web install path). */
+    /** Whether the person is in a group: the cached list when there is one, else the first answer. */
+    suspend fun hasGroups(env: AccountEnvironment): Boolean =
+        env.backend.observeMyGroups().first { it.value != null || !it.refreshing }.value?.isNotEmpty() == true
+
     fun home(env: AccountEnvironment): AppRoute = env.stores.pendingInviteToken?.let(AppRoute::InviteJoin) ?: AppRoute.GroupsList
 }

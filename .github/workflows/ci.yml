@@ -172,7 +172,7 @@ jobs:
         run: |
           SIM=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k,v in sorted(d.items(), reverse=True) if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
           set -o pipefail
-          xcodebuild -project App.xcodeproj -scheme App -destination "id=$SIM" -derivedDataPath build CODE_SIGNING_ALLOWED=NO test 2>&1 | tee xcodebuild.log | grep -E "error:|Test Suite|Executed|BUILD|\*\*" || true
+          xcodebuild -project App.xcodeproj -scheme App -destination "id=$SIM" -derivedDataPath build -IDEBuildingContinueBuildingAfterErrors=YES CODE_SIGNING_ALLOWED=NO 'OTHER_SWIFT_FLAGS=$(inherited) -continue-building-after-errors' test 2>&1 | tee xcodebuild.log | grep -E "error:|Test Suite|Executed|BUILD|\*\*" || true
           grep -q "\*\* TEST SUCCEEDED \*\*" xcodebuild.log
       - name: upload logs and snapshots
         if: always()

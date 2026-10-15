@@ -29,7 +29,8 @@ import app.ui.components.TabLabels
 
 /**
  * The app chrome: the floating tab bar (`groups.list.layout.tabBar`) over the tab destinations —
- * groups.list (groups), walls.browse (walls), walls.mine (me, own avatar); camera opens camera.capture.
+ * camera.capture (camera, the bar under the camera as on Yope's), groups.list (groups), walls.browse
+ * (walls), walls.mine (me, own avatar).
  * Placed `size.global.tabBarInset` from the screen sides, above the navigation bar.
  */
 @Composable
@@ -38,6 +39,7 @@ fun ShellTabBar(nav: NavHostController, env: AccountEnvironment, modifier: Modif
     val destination = entry?.destination
     val selected = when {
         destination == null -> null
+        destination.hasRoute<AppRoute.Camera>() -> AppTab.Camera
         destination.hasRoute<AppRoute.GroupsList>() -> AppTab.Groups
         destination.hasRoute<AppRoute.WallsBrowse>() -> AppTab.Walls
         destination.hasRoute<AppRoute.WallMine>() -> AppTab.Me
