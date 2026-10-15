@@ -82,7 +82,7 @@ Full screen on `color.global.backgroundDeep`, side margin `dimension.birthday.re
 | player | `layout.birthday.tribute.player`, `layout.birthday.tribute.video` (aspect) | — | signed URL of `video_path` (1 h) |
 | Download | `dimension.birthday.tribute.button.*`, `radius.birthday.tribute.button`, `fontSize/fontWeight.birthday.tribute.button`, `color.birthday.tribute.button.label`, `color.global.surfaceLight`, `icon.global.download` | `birthday.tribute.download`, toast `birthday.tribute.saved` | saves the MP4 to the photo library (add-only access; purpose string owned by `system.permissions`) |
 | Share | same + `icon.global.share` | `birthday.tribute.share` | system share sheet with the MP4 file |
-| push (honoree) | — | `birthday.tribute.push.title`, `birthday.tribute.push.body` (`{group}`) | once, at delivery; tap → this screen |
+| push (honoree) | — | `notifications.push.tribute.title`, `notifications.push.tribute.body` (`{group}`; owned by notifications.push, MERGE L-1) | once, at delivery; tap → this screen |
 
 ## States
 
@@ -136,7 +136,7 @@ Download saved → `haptic.global.success`; failed → `haptic.global.error`.
   `PHAssetCreationRequest` (add-only authorization `NSPhotoLibraryAddUsageDescription`). Android: Media3 `PlayerView`;
   save with `MediaStore.Video` insert (no permission on API 29+; `WRITE_EXTERNAL_STORAGE` maxSdk 28).
 - Share: `ShareLink(item: URL)` with the downloaded file / Android `ACTION_SEND` `video/mp4` via `FileProvider`.
-- The worker's push keys today are `notifications.push.tribute.*`; this surface's texts are `birthday.tribute.push.*`
+- The worker's push keys today are `notifications.push.tribute.*`; the texts are `notifications.push.tribute.*` (MERGE L-1)
   (MERGE memory M-22).
 
 ## Do-not-copy

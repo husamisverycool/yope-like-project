@@ -73,7 +73,7 @@ Full-screen sheet on `color.global.backgroundDeep` (`layout.birthday.request.str
 | Add Your Photo | `dimension.birthday.request.cta.gap` / `.height`, `radius.birthday.request.cta`, `fontSize/fontWeight.birthday.request.cta`, `color.global.accent`, `color.global.onAccent` | `birthday.request.cta` | → `birthday.contribute` |
 | own contribution | `fontSize/fontWeight.birthday.contribute.label`, `radius.global.photo`, `dimension.birthday.tribute.button.*`, `radius.birthday.tribute.button`, `color.global.surfaceLight`, `color.birthday.tribute.button.label` | `birthday.request.contributed.title`, `.change`, `.remove` | remove = direct DELETE of the own row before `due_at`; no confirmation (re-adding is possible until the due time) |
 | Message Ideas | `color.birthday.request.prompts.header`, `dimension.birthday.request.prompts.*`, `radius.birthday.request.prompts`, `fontSize/fontWeight.birthday.request.prompts.header`, `dimension.birthday.request.prompt.*`, `fontSize/lineHeight.birthday.request.prompt` | `birthday.request.prompts.title`, `birthday.request.prompt.appreciate`, `.impact` | static |
-| push | — | `birthday.request.push.title`, `birthday.request.push.body` (`{name}`) | one per request, never repeated; tap → `DeepLink.birthdayRequest` |
+| push | — | `notifications.push.birthdayRequest.title`, `notifications.push.birthdayRequest.body` (`{group}`, `{name}`; owned by notifications.push, MERGE L-1) | one per request, never repeated; tap → `DeepLink.birthdayRequest` |
 
 ## States
 
@@ -136,7 +136,7 @@ Remove succeeded → `haptic.global.success`; failure → `haptic.global.error`.
   destination when opened from a push.
 - Full-date formatting: iOS `Date.FormatStyle(date: .complete)`, Android `DateFormat.getDateInstance(DateFormat.FULL)`.
 - The worker's push keys today are `notifications.push.birthdayRequest.*` (notifications.push pass); this surface's
-  texts are `birthday.request.push.*` (MERGE memory M-22).
+  texts are `notifications.push.birthdayRequest.*` (MERGE L-1, superseding M-22).
 
 ## Do-not-copy
 
