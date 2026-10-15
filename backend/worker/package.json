@@ -2,17 +2,23 @@
   "name": "worker",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "collage:options": "tsx scripts/render-collage-options.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "0.134.0",
+    "@supabase/supabase-js": "2.117.2",
     "sharp": "0.35.5"
   },
   "devDependencies": {
     "@types/node": "22.20.5",
+    "@types/pg": "8.23.1",
+    "pg": "8.23.0",
     "tsx": "4.23.15",
     "typescript": "5.9.3",
     "vitest": "5.0.4"

@@ -1,0 +1,608 @@
+{
+  "strings": {
+    "auth.signup.title": {
+      "text": "sign up or log in",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "auth.phone",
+      "evidence": "references/auto/yope/frames/a-yrrah-7454430216123862280-t6.73-signup-2024.png (https://www.tiktok.com/@yrrah.yope/video/7454430216123862280 @6.73 s, 2024-12-31)",
+      "level": "SOURCED",
+      "notes": "Pattern yope.voice.title. Old build (2024-12); 2026 es build shows the equivalent \"registrarse\" — no 2026 English evidence."
+    },
+    "auth.signup.subtitle": {
+      "text": "to join or create your friends groups",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "auth.phone",
+      "evidence": "references/auto/yope/frames/a-yrrah-7454430216123862280-t6.73-signup-2024.png (https://www.tiktok.com/@yrrah.yope/video/7454430216123862280 @6.73 s, 2024-12-31)",
+      "level": "SOURCED",
+      "notes": "Italic subtitle under the title. Old build (2024-12)."
+    },
+    "onboarding.permission.camera.purpose": {
+      "text": "Allow camera access. So you can take and share pics with friends",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "onboarding.permission.camera",
+      "evidence": "references/auto/yope/frames/a-virgi-7686278541255642390-t35.23-camera-permission-alert.png (https://www.tiktok.com/@virgi.lifestyle/video/7686278541255642390 @35.23 s, 2026-09-16); references/auto/yope/frames/a-yrrah-7454430216123862280-t13.23-camera-permission-alert-2024.png (https://www.tiktok.com/@yrrah.yope/video/7454430216123862280 @13.23 s, 2024-12-31)",
+      "level": "SOURCED",
+      "notes": "NSCameraUsageDescription as shown in the iOS alert; identical in 2024 and 2026 builds; no final period. Pattern yope.voice.permission. Sentence case (system string)."
+    },
+    "onboarding.permission.photos.purpose": {
+      "text": "This lets you share memories from your library.",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "onboarding.permission.photos",
+      "evidence": "references/auto/yope/frames/a-yrrah-7454430216123862280-t21.23-photos-permission-alert-2024.png (https://www.tiktok.com/@yrrah.yope/video/7454430216123862280 @21.23 s, 2024-12-31)",
+      "level": "SOURCED",
+      "notes": "NSPhotoLibraryUsageDescription in the 2024 build (single source). Pattern yope.voice.permission."
+    },
+    "camera.sendto.voice.micPurpose": {
+      "text": "We need your mic to record your voice in video reactions.",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-virgi-7686278541255642390-t35.93-mic-permission-alert.png (https://www.tiktok.com/@virgi.lifestyle/video/7686278541255642390 @35.93 s, 2026-09-16)",
+      "level": "SOURCED",
+      "notes": "NSMicrophoneUsageDescription (2026-09). Yope context = video reactions; adapting to voice notes would be origin \"adapted\". Pattern yope.voice.permission."
+    },
+    "onboarding.permission.contacts.title": {
+      "text": "can’t see your friends?",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "onboarding.permission.contacts",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @7.73 s, 2026-10-10)",
+      "level": "SOURCED",
+      "notes": "Inline card on home list, 2 lines (\"can’t see / your friends?\"). Pattern yope.voice.permission."
+    },
+    "onboarding.permission.contacts.detail": {
+      "text": "enable contacts",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "onboarding.permission.contacts",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @7.73 s, 2026-10-10)",
+      "level": "SOURCED"
+    },
+    "onboarding.permission.contacts.button": {
+      "text": "enable",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "onboarding.permission.contacts",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @7.73 s, 2026-10-10)",
+      "level": "SOURCED",
+      "notes": "White pill button. Pattern yope.voice.button."
+    },
+    "groups.list.section.suggested": {
+      "text": "suggested friends",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @7.73 s, 2026-10-10)",
+      "level": "SOURCED",
+      "notes": "Gray section label above the contacts card / suggestions."
+    },
+    "groups.list.row.newPic": {
+      "text": "new pic added",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png (https://www.tiktok.com/@savannahclooney/video/7683341732695592206 @6.73 s, 2026-09-09); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t44.23-home-list-new-group-icon.png (https://www.tiktok.com/@itsmthuyope/video/7644974799302823175 @44.23 s, 2026-05-28)",
+      "level": "SOURCED",
+      "notes": "Followed by \" · {time}\" (e.g. \"new pic added · 10:10 AM\"). Pattern yope.voice.confirmation."
+    },
+    "groups.list.row.newPicWithTime": {
+      "text": "new pic added · {time}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png (https://www.tiktok.com/@savannahclooney/video/7683341732695592206 @6.73 s, 2026-09-09)",
+      "pattern": "placeholder swap: \"10:10 AM\" -> {time}",
+      "level": "SOURCED",
+      "notes": "Separator is a middle dot with spaces."
+    },
+    "groups.list.row.newFriend": {
+      "text": "you’re friends!✨ share a pic?",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t44.23-home-list-new-group-icon.png (https://www.tiktok.com/@itsmthuyope/video/7644974799302823175 @44.23 s, 2026-05-28)",
+      "level": "SOURCED",
+      "notes": "Shown for a new 1:1 friend with no pics yet. The only in-app emoji observed. Pattern yope.voice.second-person / yope.voice.emoji."
+    },
+    "groups.list.row.recap": {
+      "text": "recap",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @7.73 s, 2026-10-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png (https://www.tiktok.com/@savannahclooney/video/7683341732695592206 @6.73 s, 2026-09-09)",
+      "level": "SOURCED",
+      "notes": "Lime label + progress bar on a card (recap filling)."
+    },
+    "groups.list.empty.title": {
+      "text": "No messages yet!",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "evidence": "references/auto/yope/frames/a-yrrah-7454430216123862280-t18.73-group-suggestions-2024.png (@18.73 s, 2024-12-31)",
+      "level": "SOURCED",
+      "notes": "Old build (2024-12), Sentence case — exception to yope.voice.lowercase. No 2026 empty state observed."
+    },
+    "groups.list.empty.detail": {
+      "text": "Chat with someone new",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "evidence": "references/auto/yope/frames/a-yrrah-7454430216123862280-t18.73-group-suggestions-2024.png (@18.73 s, 2024-12-31)",
+      "level": "SOURCED",
+      "notes": "Old build (2024-12)."
+    },
+    "groups.create.title": {
+      "text": "new group",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png and -t49.23-new-group-selected-create.png (https://www.tiktok.com/@itsmthuyope/video/7644974799302823175, 2026-05-28)",
+      "level": "SOURCED",
+      "notes": "Pattern yope.voice.title."
+    },
+    "groups.create.namePlaceholder": {
+      "text": "name group (optional)",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png and -t49.23-new-group-selected-create.png (https://www.tiktok.com/@itsmthuyope/video/7644974799302823175, 2026-05-28)",
+      "level": "SOURCED",
+      "notes": "Pattern yope.voice.placeholder."
+    },
+    "groups.create.membersPrompt": {
+      "text": "who would you like to add?",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png and -t49.23-new-group-selected-create.png (https://www.tiktok.com/@itsmthuyope/video/7644974799302823175, 2026-05-28)",
+      "level": "SOURCED",
+      "notes": "Gray label above the friend picker. Pattern yope.voice.second-person."
+    },
+    "groups.create.cta": {
+      "text": "create group",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png and -t49.23-new-group-selected-create.png (https://www.tiktok.com/@itsmthuyope/video/7644974799302823175, 2026-05-28); references/auto/yope/web/a-bi-2025-onboarding-composite.jpg (Business Insider 2025-03-09, https://www.aol.com/trying-buzzy-social-media-platform-110601376.html)",
+      "level": "SOURCED",
+      "notes": "Lime primary button. 2 sources (2025, 2026). Pattern yope.voice.button."
+    },
+    "groups.create.onboarding.title": {
+      "text": "create your first group",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "evidence": "references/auto/yope/web/a-bi-2025-onboarding-composite.jpg (Business Insider 2025-03-09, https://www.aol.com/trying-buzzy-social-media-platform-110601376.html); references/auto/yope/web/a-bi-2025-create-group-composite.jpg (Business Insider 2025-03-09)",
+      "level": "SOURCED",
+      "notes": "Second line \"first group\" in lime. 2025 build."
+    },
+    "groups.create.onboarding.subtitle": {
+      "text": "to share pics daily and get recaps on your memories",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "evidence": "references/auto/yope/web/a-bi-2025-onboarding-composite.jpg (Business Insider 2025-03-09, https://www.aol.com/trying-buzzy-social-media-platform-110601376.html)",
+      "level": "SOURCED",
+      "notes": "2025 build."
+    },
+    "groups.create.onboarding.or": {
+      "text": "or",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "evidence": "references/auto/yope/web/a-bi-2025-onboarding-composite.jpg (Business Insider 2025-03-09, https://www.aol.com/trying-buzzy-social-media-platform-110601376.html)",
+      "level": "SOURCED"
+    },
+    "groups.create.onboarding.joinByLink": {
+      "text": "join friends by link",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "evidence": "references/auto/yope/web/a-bi-2025-onboarding-composite.jpg (Business Insider 2025-03-09, https://www.aol.com/trying-buzzy-social-media-platform-110601376.html)",
+      "level": "SOURCED",
+      "notes": "Dark secondary button under \"create group\". Pattern yope.voice.button."
+    },
+    "groups.create.continue": {
+      "text": "continue",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "evidence": "references/auto/yope/web/a-bi-2025-create-group-composite.jpg (Business Insider 2025-03-09); references/auto/yope/frames/a-yrrah-7452976839846382855-t3.73-create-new-group-empty-2024.png",
+      "level": "SOURCED",
+      "notes": "Lime button after naming the group (2024-25 builds)."
+    },
+    "groups.create.namePlaceholderLegacy": {
+      "text": "group name",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "evidence": "references/auto/yope/frames/a-yrrah-7452976839846382855-t3.73-create-new-group-empty-2024.png",
+      "level": "SOURCED",
+      "notes": "2024 build placeholder; 2026 uses \"name group (optional)\"."
+    },
+    "state.loading": {
+      "text": "Loading",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png (@50.60 s, 2026-05-28)",
+      "level": "SOURCED",
+      "notes": "HUD label (platform-style, capitalised). es: \"Cargando\"."
+    },
+    "groups.screen.created.title": {
+      "text": "you created group",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (@51.23 s, 2026-05-28)",
+      "level": "SOURCED",
+      "notes": "Empty state after creation (bold). Pattern yope.voice.empty-state / yope.voice.confirmation."
+    },
+    "groups.screen.created.detail": {
+      "text": "and added {names}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (@51.23 s, 2026-05-28)",
+      "pattern": "placeholder swap: \"mẹ, Anh\" -> {names} (comma-separated)",
+      "level": "SOURCED",
+      "notes": "Italic."
+    },
+    "groups.screen.memberJoined": {
+      "text": "{name} joined",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "evidence": "references/auto/yope/web/a-bi-2025-create-group-composite.jpg (Business Insider 2025-03-09) (\"Kailyn joined\"); references/auto/yope/frames/a-yrrah-7454430216123862280-t18.73-group-suggestions-2024.png (home row subtitle \"Belle joined\", 2024)",
+      "pattern": "placeholder swap: member name -> {name}",
+      "level": "SOURCED",
+      "notes": "System pill in the group thread. Pattern yope.voice.confirmation."
+    },
+    "groups.screen.recapProgress": {
+      "text": "Add {count} pics more to get a recap",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.73-group-profile-add-20-pics.png (@51.73 s, 2026-05-28)",
+      "pattern": "placeholder swap: \"20\" -> {count} (rendered bold)",
+      "level": "SOURCED",
+      "notes": "Capital A as observed (exception to yope.voice.lowercase). The count is a progress requirement, not a social count."
+    },
+    "groups.screen.tab.pics": {
+      "text": "pics",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.73-group-profile-add-20-pics.png (@51.73 s, 2026-05-28); references/auto/yope/frames/a-arkadeep896-7644663053807586591-t32.73-profile-recaps-empty-skip-queue.png (https://www.tiktok.com/@arkadeep896/video/7644663053807586591 @32.73 s, 2026-05-27)",
+      "level": "SOURCED"
+    },
+    "groups.screen.tab.wall": {
+      "text": "wall",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.73-group-profile-add-20-pics.png (@51.73 s, 2026-05-28); references/auto/yope/frames/a-arkadeep896-7644663053807586591-t32.73-profile-recaps-empty-skip-queue.png (https://www.tiktok.com/@arkadeep896/video/7644663053807586591 @32.73 s, 2026-05-27); references/auto/yope/web/a-bi-2025-create-group-composite.jpg (Business Insider 2025-03-09)",
+      "level": "SOURCED"
+    },
+    "groups.screen.tab.recaps": {
+      "text": "recaps",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.73-group-profile-add-20-pics.png (@51.73 s, 2026-05-28); references/auto/yope/frames/a-arkadeep896-7644663053807586591-t32.73-profile-recaps-empty-skip-queue.png (https://www.tiktok.com/@arkadeep896/video/7644663053807586591 @32.73 s, 2026-05-27)",
+      "level": "SOURCED",
+      "notes": "2025 build used \"recap\" (singular) and a \"chat\" tab."
+    },
+    "groups.screen.recaps.empty": {
+      "text": "skip the queue and create one now",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.73-group-profile-add-20-pics.png (@51.73 s, 2026-05-28); references/auto/yope/frames/a-arkadeep896-7644663053807586591-t32.73-profile-recaps-empty-skip-queue.png (https://www.tiktok.com/@arkadeep896/video/7644663053807586591 @32.73 s, 2026-05-27)",
+      "level": "SOURCED",
+      "notes": "Recaps empty state. Pattern yope.voice.empty-state."
+    },
+    "groups.screen.recaps.newRecap": {
+      "text": "new recap",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.73-group-profile-add-20-pics.png (@51.73 s, 2026-05-28); references/auto/yope/frames/a-arkadeep896-7644663053807586591-t32.73-profile-recaps-empty-skip-queue.png (https://www.tiktok.com/@arkadeep896/video/7644663053807586591 @32.73 s, 2026-05-27)",
+      "level": "SOURCED",
+      "notes": "White pill button with recap glyph. Pattern yope.voice.button."
+    },
+    "groups.screen.chat": {
+      "text": "chat",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t43.73-group-screen-hourly.png (@43.73 s, 2026-05-28); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t8.73-group-wall-header.png",
+      "level": "SOURCED",
+      "notes": "Floating pill that opens the group chat (same string as yope-b chat.thread.open)."
+    },
+    "groups.screen.addMore": {
+      "text": "add more",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t43.73-group-screen-hourly.png (@43.73 s, 2026-05-28)",
+      "level": "SOURCED",
+      "notes": "Pill on the user's own filled hour slot."
+    },
+    "groups.screen.privacyNote": {
+      "text": "friends only see your wall pics",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "evidence": "references/auto/yope/frames/a-arkadeep896-7644663053807586591-t32.73-profile-recaps-empty-skip-queue.png (https://www.tiktok.com/@arkadeep896/video/7644663053807586591 @32.73 s, 2026-05-27)",
+      "level": "SOURCED",
+      "notes": "Lime banner with eye-slash glyph on the own profile wall tab."
+    },
+    "groups.invite.cta": {
+      "text": "invite more friends",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.invite",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (@51.23 s, 2026-05-28)",
+      "level": "SOURCED",
+      "notes": "White pill with link glyph in the new-group empty state. Pattern yope.voice.button."
+    },
+    "groups.invite.shareLinkLabel": {
+      "text": "Share this group link to invite",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.invite",
+      "evidence": "references/auto/yope/frames/a-yrrah-7452976839846382855-t10.73-add-friends-share-link-2024.png (https://www.tiktok.com/@yrrah.yope/video/7452976839846382855 @10.73 s, 2024-12-27)",
+      "level": "SOURCED",
+      "notes": "2024 build, Sentence case."
+    },
+    "groups.invite.addFriendsTo": {
+      "text": "Add friends to {group}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "groups.invite",
+      "evidence": "references/auto/yope/frames/a-yrrah-7452976839846382855-t10.73-add-friends-share-link-2024.png (https://www.tiktok.com/@yrrah.yope/video/7452976839846382855 @10.73 s, 2024-12-27)",
+      "pattern": "placeholder swap: \"2025 dumps\" -> {group}",
+      "level": "SOURCED",
+      "notes": "2024 build; group name on 2nd line in lime."
+    },
+    "groups.invite.friendsHeader": {
+      "text": "Friends",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.invite",
+      "evidence": "references/auto/yope/frames/a-yrrah-7452976839846382855-t10.73-add-friends-share-link-2024.png (https://www.tiktok.com/@yrrah.yope/video/7452976839846382855 @10.73 s, 2024-12-27)",
+      "level": "SOURCED",
+      "notes": "2024 build."
+    },
+    "groups.invite.showMore": {
+      "text": "Show more",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.invite",
+      "evidence": "references/auto/yope/frames/a-yrrah-7452976839846382855-t10.73-add-friends-share-link-2024.png (https://www.tiktok.com/@yrrah.yope/video/7452976839846382855 @10.73 s, 2024-12-27)",
+      "level": "SOURCED",
+      "notes": "2024 build."
+    },
+    "groups.invite.otherApp": {
+      "text": "Other app",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.invite",
+      "evidence": "references/auto/yope/frames/a-yrrah-7452976839846382855-t10.73-add-friends-share-link-2024.png (https://www.tiktok.com/@yrrah.yope/video/7452976839846382855 @10.73 s, 2024-12-27)",
+      "level": "SOURCED",
+      "notes": "2024 build; last item of the share row (opens the system share sheet)."
+    },
+    "groups.invite.linkFormat": {
+      "text": "https://yope.tv/i/{code}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "groups.invite",
+      "evidence": "references/auto/yope/frames/a-yrrah-7454430216123862280-t16.23-invite-link-format-2024.png (@16.23 s, 2024-12-31)",
+      "pattern": "placeholder swap: \"8a61w\" -> {code}",
+      "level": "SOURCED",
+      "notes": "Reference format only; our domain comes from the owner."
+    },
+    "groups.invite.expired.eyebrow": {
+      "text": "A new link, a fresh start",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.invite",
+      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png (https://yope.tv/i/8a61w, live 2026-10-15)",
+      "level": "SOURCED",
+      "notes": "Rendered uppercase, letter-spaced, lime (CSS text-transform). Web error state."
+    },
+    "groups.invite.expired.title": {
+      "text": "This invite has expired",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.invite",
+      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png (https://yope.tv/i/8a61w, live 2026-10-15)",
+      "level": "SOURCED",
+      "notes": "Web; page <title> \"Invite expired · YOPE\". Pattern yope.voice.error."
+    },
+    "groups.invite.expired.body": {
+      "text": "Ask your friend to send you a new link. Your next memories are waiting.",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.invite",
+      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png (https://yope.tv/i/8a61w, live 2026-10-15)",
+      "level": "SOURCED",
+      "notes": "Web; meta description uses the first sentence prefixed by \"This invite has expired.\"."
+    },
+    "groups.invite.expired.footer": {
+      "text": "Life’s better with your people.",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.invite",
+      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png (https://yope.tv/i/8a61w, live 2026-10-15)",
+      "level": "SOURCED"
+    },
+    "groups.settings.menu.downloadAll": {
+      "text": "download all photos",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.settings",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (https://www.tiktok.com/@yrrah.yope/video/7434441926000037121 @33.73 s, 2024-11-07)",
+      "level": "SOURCED",
+      "notes": "2024 build."
+    },
+    "groups.settings.menu.groupRecap": {
+      "text": "get group recap",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.settings",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (https://www.tiktok.com/@yrrah.yope/video/7434441926000037121 @33.73 s, 2024-11-07)",
+      "level": "SOURCED",
+      "notes": "2024 build."
+    },
+    "groups.settings.menu.shareInvite": {
+      "text": "share invite",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.settings",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (https://www.tiktok.com/@yrrah.yope/video/7434441926000037121 @33.73 s, 2024-11-07)",
+      "level": "SOURCED",
+      "notes": "2024 build."
+    },
+    "groups.settings.menu.leave": {
+      "text": "leave group",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.settings",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (https://www.tiktok.com/@yrrah.yope/video/7434441926000037121 @33.73 s, 2024-11-07)",
+      "level": "SOURCED",
+      "notes": "2024 build; destructive (red)."
+    },
+    "groups.settings.menu.report": {
+      "text": "report",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.settings",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (https://www.tiktok.com/@yrrah.yope/video/7434441926000037121 @33.73 s, 2024-11-07)",
+      "level": "SOURCED",
+      "notes": "2024 build; destructive (red)."
+    },
+    "groups.settings.members.title": {
+      "text": "{count} members",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "groups.settings",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t43.23-members-list-2024.png (https://www.tiktok.com/@yrrah.yope/video/7434441926000037121 @43.23 s, 2024-11-07)",
+      "pattern": "placeholder swap: \"121\" -> {count}",
+      "level": "SOURCED",
+      "notes": "2024 build. Member count of the group (roster size, not a social metric)."
+    },
+    "groups.settings.members.pending": {
+      "text": "Pending",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "groups.settings",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t43.23-members-list-2024.png (https://www.tiktok.com/@yrrah.yope/video/7434441926000037121 @43.23 s, 2024-11-07)",
+      "level": "SOURCED",
+      "notes": "2024 build; gray pill for invited-not-joined."
+    },
+    "camera.capture.hint.holdToRecord": {
+      "text": "hold down to record",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30); references/auto/yope/frames/a-alexaa-7684388619099933966-t5.23-camera-hold-to-record-tabbar.png (https://www.tiktok.com/@alexaa.yope/video/7684388619099933966 @5.23 s, 2026-09-11)",
+      "level": "SOURCED",
+      "notes": "First-use lime tooltip with ✕. es: \"mantenga presionado para grabar\". Pattern yope.voice.coach."
+    },
+    "camera.capture.hourOverlay": {
+      "text": "{h}:{mm} {AM/PM}",
+      "origin": "adapted",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) (\"5:00 PM\")",
+      "pattern": "format of the hour slot shown on the viewfinder",
+      "level": "SOURCED",
+      "notes": "Minutes are always :00 (hour slot). Same format as yope-b chat.thread.photo.time."
+    },
+    "camera.sendto.title": {
+      "text": "send to...",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t5.73-sendto-caption-keyboard.png (@5.73 s, 2026-09-09); references/auto/yope/frames/a-jacob-7691153057177931039-t4.73-sendto-voice-tooltip.png (@4.73 s, 2026-09-30)",
+      "level": "SOURCED",
+      "notes": "Three dots, no space. Pattern yope.voice.title."
+    },
+    "camera.sendto.captionPlaceholder": {
+      "text": "add a message",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10); references/auto/yope/frames/a-jacob-7691153057177931039-t4.73-sendto-voice-tooltip.png (@4.73 s, 2026-09-30)",
+      "level": "SOURCED",
+      "notes": "Field on the preview card; caption then renders under the hour overlay. Pattern yope.voice.placeholder."
+    },
+    "camera.sendto.hint.voice": {
+      "text": "add a voice memo on this pic",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10); references/auto/yope/frames/a-jacob-7691153057177931039-t4.73-sendto-voice-tooltip.png (@4.73 s, 2026-09-30)",
+      "level": "SOURCED",
+      "notes": "First-use lime tooltip pointing at the mic. Pattern yope.voice.coach."
+    },
+    "camera.sendto.ownWall": {
+      "text": "my wall",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10)",
+      "level": "SOURCED",
+      "notes": "Oct 2026 build; Sep 2026 builds say \"my moments\" (camera.sendto.ownWallAlt)."
+    },
+    "camera.sendto.ownWallAlt": {
+      "text": "my moments",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t5.73-sendto-caption-keyboard.png (@5.73 s, 2026-09-09); references/auto/yope/frames/a-jacob-7691153057177931039-t4.73-sendto-voice-tooltip.png (@4.73 s, 2026-09-30)",
+      "level": "SOURCED"
+    },
+    "camera.sendto.ownWallDetail": {
+      "text": "just for friends",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t5.73-sendto-caption-keyboard.png (@5.73 s, 2026-09-09); references/auto/yope/frames/a-jacob-7691153057177931039-t4.73-sendto-voice-tooltip.png (@4.73 s, 2026-09-30)",
+      "level": "SOURCED"
+    },
+    "camera.sendto.send": {
+      "text": "send",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t3.73-sendto-more-friends.png (@3.73 s, 2026-10-10)",
+      "level": "SOURCED",
+      "notes": "Followed by a black circle with the number of selected recipients. Pattern yope.voice.button."
+    },
+    "camera.sendto.moreFriends": {
+      "text": "more friends",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t3.73-sendto-more-friends.png (@3.73 s, 2026-10-10)",
+      "level": "SOURCED",
+      "notes": "Dark button beside \"send\" in the compact sheet."
+    },
+    "camera.sendto.posted": {
+      "text": "posted in the wall",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @7.73 s, 2026-10-10)",
+      "level": "SOURCED",
+      "notes": "Lime toast with check after sending. Pattern yope.voice.confirmation."
+    }
+  }
+}

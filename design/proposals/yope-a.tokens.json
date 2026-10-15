@@ -1,0 +1,1460 @@
+{
+  "tokens": {
+    "color.background.group": {
+      "type": "color",
+      "value": "#171717",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "screen background of group / hourly / profile screens (dark gray, not black)",
+      "evidence": "references/auto/yope/store/yope-store-05.png (600,1700); references/auto/yope/store/yope-store-01.png row 720 x125-148; references/auto/yope/store/yope-store-02.png (300,2500); video equivalent references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png reads #101010",
+      "method": "median of 9x9 / 5x5 box, sd 0 (lossless PNG)",
+      "level": "SOURCED",
+      "precision": "±1/255",
+      "notes": "Foundation. Same value as yope-b color.chat.background. Video encodes darken it to #101010."
+    },
+    "color.background.root": {
+      "type": "color",
+      "value": "#000000",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "screen background of home list, new group, send-to, camera, sign-up",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png (col 400 gaps); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png (row 282 x126-469); references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (row 1050 x72-163)",
+      "method": "color runs on decoded H.264 frames",
+      "level": "SOURCED",
+      "precision": "±3/255 (video)",
+      "notes": "Foundation. Several 2026 screens are true black while group screens are #171717."
+    },
+    "color.surface.control": {
+      "type": "color",
+      "value": "#2E2E2E",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "control fill on #171717: header circle buttons, header title capsule, floating tab-bar capsule, text field",
+      "evidence": "references/auto/yope/store/yope-store-01.png bbox x149-257 y664-772 (median); references/auto/yope/store/yope-store-02.png (640,2380) box5; references/auto/yope/store/yope-store-05.png field bbox x361-822 y2391-2489",
+      "method": "bbox median within tolerance 6 / 5x5 box sd 0",
+      "level": "SOURCED",
+      "precision": "±2/255",
+      "notes": "Foundation. Capsules carry a 1-px lighter rim (yope-b color.chat.composer.fieldRim #535353)."
+    },
+    "color.surface.raised": {
+      "type": "color",
+      "value": "#434343",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "raised fill: selected tab pill, inner pill inside the header capsule, inactive page dots (#424242)",
+      "evidence": "references/auto/yope/store/yope-store-02.png (480,2370) = #424242; references/auto/yope/store/yope-store-01.png bbox x630-779 y689-770 = #434343; references/auto/yope/store/yope-store-01.png row 832 x506-524",
+      "method": "box / bbox median",
+      "level": "SOURCED",
+      "precision": "±2/255",
+      "notes": "Foundation. The inner pill in S1 is the streak pill (do-not-copy element); only the color is reused."
+    },
+    "color.surface.card": {
+      "type": "color",
+      "value": "#181818",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "list card fill on black (home rows)",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png col 400 runs y512-655, 667-811, 823-966",
+      "method": "color runs on video frame",
+      "level": "SOURCED",
+      "precision": "±8/255 (video reads darker than source; PNG equivalent not available)"
+    },
+    "color.surface.field": {
+      "type": "color",
+      "value": "#141414",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "text field fill on black (\"name group (optional)\")",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png col 150 y144-192",
+      "method": "color runs on video frame",
+      "level": "SOURCED",
+      "precision": "±8/255 (video)"
+    },
+    "color.surface.inlineCard": {
+      "type": "color",
+      "value": "#131313",
+      "source_app": "Yope",
+      "surface": "onboarding.permission.contacts",
+      "element": "inline permission card on home list (\"can’t see your friends?\")",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png col 150 y600-625, y698-719",
+      "method": "color runs on video frame",
+      "level": "SOURCED",
+      "precision": "±8/255 (video)"
+    },
+    "color.surface.sheetButton": {
+      "type": "color",
+      "value": "#101010",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "element": "circle icon buttons on black sheets (close, download)",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png row 97 x73-125; references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png row 88 x75-126",
+      "method": "color runs on video frame",
+      "level": "SOURCED",
+      "precision": "±8/255 (video)"
+    },
+    "color.camera.flipButton": {
+      "type": "color",
+      "value": "#1F1F1F",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "element": "camera flip circle button fill",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png bbox x486-554 y1018-1086 median #1F1C20",
+      "method": "bbox median",
+      "level": "SOURCED",
+      "precision": "±8/255 (video)"
+    },
+    "color.text.primary": {
+      "type": "color",
+      "value": "#FFFFFF",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "primary text and glyphs",
+      "evidence": "references/auto/yope/store/yope-store-01.png row 720 x192-197 (chevron glyph), header title",
+      "method": "color runs",
+      "level": "SOURCED",
+      "precision": "±1/255"
+    },
+    "color.text.secondary": {
+      "type": "color",
+      "value": "#969696",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "secondary text, placeholders, inactive tab icons, chevrons",
+      "evidence": "references/auto/yope/store/yope-store-02.png row 2412 x319-337 (inactive tab icon); references/auto/yope/store/yope-store-01.png row 720 x796-799 (capsule chevron); references/auto/yope/store/yope-store-05.png x395-580 y2415-2465 (placeholder, top-5% luminance pixels)",
+      "method": "runs / percentile median",
+      "level": "SOURCED",
+      "precision": "±3/255",
+      "notes": "yope-b measured the composer placeholder as #A3A3A3 with a different pixel selection; conflict left for merge."
+    },
+    "color.text.onAccent": {
+      "type": "color",
+      "value": "#000000",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "label and glyph color on lime buttons and tooltips",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png x234-341 y946-961 darkest 15% = #000900",
+      "method": "percentile median",
+      "level": "SOURCED",
+      "precision": "±8/255 (video)"
+    },
+    "color.accent.lime": {
+      "type": "color",
+      "value": "#CDFD07",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "brand lime: composer camera button, primary buttons, tooltips, toasts, \"today\" bar",
+      "evidence": "references/auto/yope/store/yope-store-05.png mask bbox x256-342 y2406-2492 n=2859 p10=p90=(205,253,7)/(205,254,8); references/auto/yope/store/yope-store-04.png bbox x998-1016 y996-1108 n=799",
+      "method": "median of 5x5-eroded saturated mask (edges excluded)",
+      "level": "SOURCED",
+      "precision": "±2/255",
+      "notes": "Video frames read #C2FF0B-#C8FF0B (compression). Website CSS uses a different lime #C8FF2E (color.accent.limeWeb). Owner webp sample #CFFA14."
+    },
+    "color.accent.limeWeb": {
+      "type": "color",
+      "value": "#C8FF2E",
+      "source_app": "Yope",
+      "surface": "groups.invite",
+      "element": "lime on yope.app and the yope.tv invite page (web only)",
+      "evidence": "https://yope.app/ :root{--lime:#c8ff2e}; https://yope.tv/_next/static/css/af7c918c1d60a4a0.css .ExpiredInvite_home__0lL8g{background:#c8ff2e}",
+      "method": "CSS source",
+      "level": "SOURCED",
+      "notes": "Web only; do not use for native app (app = #CDFD07)."
+    },
+    "color.accent.pink": {
+      "type": "color",
+      "value": "#FE1F84",
+      "source_app": "Yope",
+      "surface": "auth.profile",
+      "element": "brand pink: profile name sticker and profile card outline",
+      "evidence": "references/auto/yope/store/yope-store-02.png interior pixels in x180-1100 y1000-2320 n=41703, p10=p90=(254,31,132)",
+      "method": "median of 7x7-eroded mask",
+      "level": "SOURCED",
+      "precision": "±1/255",
+      "notes": "Owner webp sample #FA2283 (lossy). Profile itself is a public-discovery surface (do-not-copy); color recorded as brand accent."
+    },
+    "color.accent.selection": {
+      "type": "color",
+      "value": "systemBlue",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "filled check circle on selected people (iOS system blue)",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png row 282 x474-495 (#166AFA); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png row 558 x456-485 (#1868FC/#1169F9)",
+      "method": "runs on video frames; matches iOS system blue",
+      "level": "PLATFORM",
+      "notes": "Use UIColor.systemBlue / Material primary; measured video values ≈#166AFA."
+    },
+    "color.button.secondary.background": {
+      "type": "color",
+      "value": "#FFFFFF",
+      "source_app": "Yope",
+      "surface": "groups.invite",
+      "element": "light secondary pill (\"invite more friends\", \"enable\", \"new recap\")",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png row 418 x168-408 (#FDFDFD); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png col 470 y638-681 (#FCFCFC)",
+      "method": "runs",
+      "level": "SOURCED",
+      "precision": "±3/255"
+    },
+    "color.button.dark.background": {
+      "type": "color",
+      "value": "#171717",
+      "source_app": "Yope",
+      "surface": "auth.phone",
+      "element": "dark secondary button on black (Google / Facebook / continue as …)",
+      "evidence": "references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png row 622 x86-173,195-282 (#171717/#191919); col 150 y602-650, y838-893",
+      "method": "runs on video frame",
+      "level": "SOURCED",
+      "precision": "±8/255 (video)"
+    },
+    "color.loading.hud": {
+      "type": "color",
+      "value": "#262626",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "Loading HUD square fill (on black)",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png bbox x254-322 y488-562 median (38,38,38)",
+      "method": "bbox median",
+      "level": "SOURCED",
+      "precision": "±8/255 (video)"
+    },
+    "font.family.ui": {
+      "type": "font",
+      "value": {
+        "ios": "system",
+        "android": "system"
+      },
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "all app UI text",
+      "evidence": "No source states the app typeface. yope.app loads Unbounded + Space Grotesk; yope.tv invite page uses Poppins + Raleway (web only).",
+      "method": "source search (site CSS, press, store)",
+      "level": "PLATFORM",
+      "notes": "SF Pro / Roboto."
+    },
+    "fontSize.onboarding.title": {
+      "type": "fontSize",
+      "value": 40,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "auth.phone",
+      "element": "sign-up / onboarding big title",
+      "evidence": "references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png bbox x148-427 y438-484 (47 px asc+desc)",
+      "method": "(asc+desc ≈ 0.95 em) / video 576 px wide: screen x56-519 = 464 px; pt = px / 464 * 393 (1.181 px/pt; 393 pt assumed, device width unknown)",
+      "level": "SOURCED",
+      "precision": "±3 pt If the recording device was 430/440 pt wide, true value is 9-12% larger.",
+      "notes": "es locale (\"registrarse\")."
+    },
+    "fontWeight.onboarding.title": {
+      "type": "fontWeight",
+      "value": "heavy",
+      "source_app": "Yope",
+      "surface": "auth.phone",
+      "element": "sign-up / onboarding big title",
+      "evidence": "references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png",
+      "method": "visual stroke weight",
+      "level": "SOURCED",
+      "precision": "visual"
+    },
+    "fontSize.sheet.title": {
+      "type": "fontSize",
+      "value": 19.5,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "element": "sheet title \"send to...\"",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png bbox x236-339, 17 px ascender",
+      "method": "ascender / 0.74 / video 576 px wide: screen x56-519 = 464 px; pt = px / 464 * 393 (1.181 px/pt; 393 pt assumed, device width unknown)",
+      "level": "SOURCED",
+      "precision": "±2 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "fontWeight.sheet.title": {
+      "type": "fontWeight",
+      "value": "bold",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "element": "sheet title \"send to...\"",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png",
+      "method": "visual",
+      "level": "SOURCED",
+      "precision": "visual"
+    },
+    "fontSize.groups.create.title": {
+      "type": "fontSize",
+      "value": 14.5,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "sheet title \"new group\"",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png 'n' x-height 9 px (y86-94)",
+      "method": "x-height / 0.53 / video 576 px wide: screen x56-519 = 464 px; pt = px / 464 * 393 (1.181 px/pt; 393 pt assumed, device width unknown)",
+      "level": "SOURCED",
+      "precision": "±2 pt If the recording device was 430/440 pt wide, true value is 9-12% larger.",
+      "notes": "Smaller and lighter than \"send to...\"; both are 2026 builds."
+    },
+    "fontSize.header.title": {
+      "type": "fontSize",
+      "value": 15,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "group name in header capsule",
+      "evidence": "references/auto/yope/store/yope-store-01.png 's' x-height 21 px (y712-732), 'd' ascender 28 px (y705-732)",
+      "method": "em ≈ 37.5 px / yope-store-01.png inner screen x120-1107 = 987 px; pt = px / 987 * 393 (2.511 px/pt; 393 pt assumed)",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "fontWeight.header.title": {
+      "type": "fontWeight",
+      "value": "bold",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "group name in header capsule",
+      "evidence": "references/auto/yope/store/yope-store-01.png",
+      "method": "visual",
+      "level": "SOURCED",
+      "precision": "visual"
+    },
+    "fontSize.list.title": {
+      "type": "fontSize",
+      "value": 17.5,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "conversation name in home card",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png 'k' ascender 19 px (y869-887)",
+      "method": "ascender / 0.74 / video 720 px wide: screen x72-647 = 576 px; pt = px / 576 * 393 (1.466 px/pt; 393 pt assumed)",
+      "level": "SOURCED",
+      "precision": "±1.5 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "fontWeight.list.title": {
+      "type": "fontWeight",
+      "value": "bold",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "conversation name in home card",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png",
+      "method": "visual",
+      "level": "SOURCED",
+      "precision": "visual"
+    },
+    "fontSize.list.subtitle": {
+      "type": "fontSize",
+      "value": 14,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "card subtitle \"new pic added · 9:43 AM\"",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png 'd' ascender 15 px (y908-922)",
+      "method": "ascender / 0.74 / video 720 px wide: screen x72-647 = 576 px; pt = px / 576 * 393 (1.466 px/pt; 393 pt assumed)",
+      "level": "SOURCED",
+      "precision": "±1.5 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "fontSize.section.label": {
+      "type": "fontSize",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "section label \"suggested friends\" (gray)",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png bbox y561-578 (18 px asc+desc)",
+      "method": "/0.95 / video 576 px wide: screen x56-519 = 464 px; pt = px / 464 * 393 (1.181 px/pt; 393 pt assumed, device width unknown)",
+      "level": "SOURCED",
+      "precision": "±2 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "fontSize.button.label": {
+      "type": "fontSize",
+      "value": 15,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "primary button label (\"create group\", \"send\")",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png 'create' x-height 9 px; references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png 'send' x-height 10 px, 'd' ascender 13 px",
+      "method": "x-height / 0.54, ascender / 0.74 / video 576 px wide: screen x56-519 = 464 px; pt = px / 464 * 393 (1.181 px/pt; 393 pt assumed, device width unknown)",
+      "level": "SOURCED",
+      "precision": "±1.5 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "fontWeight.button.label": {
+      "type": "fontWeight",
+      "value": "semibold",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "primary button label",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png",
+      "method": "visual",
+      "level": "SOURCED",
+      "precision": "visual"
+    },
+    "fontSize.permissionCard.title": {
+      "type": "fontSize",
+      "value": 17,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "onboarding.permission.contacts",
+      "element": "inline card title \"can’t see your friends?\" (2 lines)",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png bbox y626-673, line pitch ≈24 px",
+      "method": "line pitch / 1.2 / video 576 px wide: screen x56-519 = 464 px; pt = px / 464 * 393 (1.181 px/pt; 393 pt assumed, device width unknown)",
+      "level": "SOURCED",
+      "precision": "±2 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "fontSize.permissionCard.detail": {
+      "type": "fontSize",
+      "value": 14,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "onboarding.permission.contacts",
+      "element": "inline card detail \"enable contacts\" (gray)",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png 'b' ascender 12 px (y684-695)",
+      "method": "ascender / 0.74 / video 576 px wide: screen x56-519 = 464 px; pt = px / 464 * 393 (1.181 px/pt; 393 pt assumed, device width unknown)",
+      "level": "SOURCED",
+      "precision": "±2 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "fontSize.emptyState.title": {
+      "type": "fontSize",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "empty state title \"you created group\" (bold)",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png 'd' ascender 14 px (y312-325)",
+      "method": "ascender / 0.74 / video 576 px wide: screen x56-519 = 464 px; pt = px / 464 * 393 (1.181 px/pt; 393 pt assumed, device width unknown)",
+      "level": "SOURCED",
+      "precision": "±2 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "fontSize.emptyState.detail": {
+      "type": "fontSize",
+      "value": 14,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "empty state detail \"and added …\" (italic)",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png bbox y350-365",
+      "method": "visual + bbox",
+      "level": "SOURCED",
+      "precision": "±2 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "fontSize.photo.hourOverlay": {
+      "type": "fontSize",
+      "value": 26,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "element": "hour overlay on viewfinder / send-to preview (\"5:00 PM\")",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png digits 27 px (y531-557); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png digits 23 px",
+      "method": "digit height / 0.72 / scale (1.466 and 1.181)",
+      "level": "SOURCED",
+      "precision": "±2 pt If the recording device was 430/440 pt wide, true value is 9-12% larger.",
+      "notes": "Same overlay on the 218-pt send-to preview measures ≈27 pt, so it is a fixed size, not proportional. Chat photo overlay ≈21 pt (S5; yope-b fontSize.chat.photo.time)."
+    },
+    "fontWeight.photo.hourOverlay": {
+      "type": "fontWeight",
+      "value": "heavy",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "element": "hour overlay",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png",
+      "method": "visual",
+      "level": "SOURCED",
+      "precision": "visual"
+    },
+    "fontSize.legal.footer": {
+      "type": "fontSize",
+      "value": 12,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "auth.phone",
+      "element": "legal footer under sign-up buttons (gray)",
+      "evidence": "references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png 3 lines y918-973, pitch ≈18 px",
+      "method": "pitch / 1.25 / video 576 px wide: screen x56-519 = 464 px; pt = px / 464 * 393 (1.181 px/pt; 393 pt assumed, device width unknown)",
+      "level": "SOURCED",
+      "precision": "±2 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "dimension.header.iconButton": {
+      "type": "dimension",
+      "value": 44,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "circle icon buttons in headers (back, close, download, film-strip, search)",
+      "evidence": "references/auto/yope/store/yope-store-01.png bbox 109 px (x149-257,y664-772) = 43.4 pt; references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png row 97 x73-125 (53 px) = 44.9 pt; references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png row 88 x75-126 = 43.2 pt",
+      "method": "bbox / runs ÷ scale (store yope-store-01.png inner screen x120-1107 = 987 px; pt = px / 987 * 393 (2.511 px/pt; 393 pt assumed); video 1.181 px/pt)",
+      "level": "SOURCED",
+      "precision": "±1.5 pt",
+      "notes": "Matches yope-b dimension.chat.header.button = 44."
+    },
+    "dimension.header.inset": {
+      "type": "dimension",
+      "value": 13,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "header side inset (screen edge to first circle)",
+      "evidence": "references/auto/yope/store/yope-store-01.png 31 px left / 33 px right = 12.3 / 13.1 pt; references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png 17 px = 14.4 pt",
+      "method": "difference ÷ scale",
+      "level": "SOURCED",
+      "precision": "±1 pt",
+      "notes": "yope-b dimension.chat.header.inset = 11.5."
+    },
+    "dimension.header.capsule": {
+      "type": "dimension",
+      "value": {
+        "width": 225,
+        "height": 44
+      },
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "header title capsule (avatar + name + ›)",
+      "evidence": "references/auto/yope/store/yope-store-01.png bbox x277-841 y664-772",
+      "method": "bbox ÷ yope-store-01.png inner screen x120-1107 = 987 px; pt = px / 987 * 393 (2.511 px/pt; 393 pt assumed)",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "dimension.header.capsuleAvatar": {
+      "type": "dimension",
+      "value": 28,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "group avatar inside header capsule",
+      "evidence": "references/auto/yope/store/yope-store-01.png 70 px (2x crop 140 px)",
+      "method": "crop ÷ 2 ÷ 2.511",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "dimension.pageDots": {
+      "type": "dimension",
+      "value": {
+        "diameter": 7.6,
+        "pitch": 15.5
+      },
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "page dots under header (inactive #424242, active #F4F4F4)",
+      "evidence": "references/auto/yope/store/yope-store-01.png row 832 x506-524 … x703-720",
+      "method": "runs ÷ 2.511",
+      "level": "SOURCED",
+      "precision": "±0.5 pt"
+    },
+    "dimension.list.card.height": {
+      "type": "dimension",
+      "value": 100,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "home conversation card height",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png cards 144-147 px = 98.2-100.3 pt; references/auto/yope/frames/a-virgi-7686278541255642390-t40.23-home-list-es.png cards 119-120 px = 101.6 pt",
+      "method": "dark-gap runs on a column ÷ scale (two devices)",
+      "level": "SOURCED",
+      "precision": "±3 pt"
+    },
+    "dimension.list.card.gap": {
+      "type": "dimension",
+      "value": 7.5,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "gap between home cards",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png gaps 11 px = 7.5 pt; references/auto/yope/frames/a-virgi-7686278541255642390-t40.23-home-list-es.png gaps 8-9 px = 7 pt",
+      "method": "runs ÷ scale",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "dimension.list.card.inset": {
+      "type": "dimension",
+      "value": 12,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "home card side margin",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png card x90 vs screen x72 (18 px)",
+      "method": "difference ÷ 1.466",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "radius.list.card": {
+      "type": "radius",
+      "value": 17,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "home card corner radius",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png top-left corner at y823: inset 25 px at d=0 → 0 at d≈21",
+      "method": "circle fit r≈25 px ÷ 1.466",
+      "level": "SOURCED",
+      "precision": "±2 pt"
+    },
+    "dimension.list.avatar": {
+      "type": "dimension",
+      "value": 64,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "avatar in home card",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png col 160 y848-941 (94 px)",
+      "method": "runs ÷ 1.466",
+      "level": "SOURCED",
+      "precision": "±2 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "dimension.list.avatarInset": {
+      "type": "dimension",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "avatar left inset inside card",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png avatar x113 vs card x90",
+      "method": "difference ÷ 1.466",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "dimension.button.primary.height": {
+      "type": "dimension",
+      "value": 45,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "lime primary button height (\"create group\")",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png col 280 y925-977 (53 px)",
+      "method": "runs ÷ 1.181",
+      "level": "SOURCED",
+      "precision": "±1 pt If the recording device was 430/440 pt wide, true value is 9-12% larger.",
+      "notes": "\"send ⓝ\" on the send-to sheet measures 47 pt (dimension.sendto.sendButton)."
+    },
+    "dimension.button.primary.inset": {
+      "type": "dimension",
+      "value": 19,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "lime primary button side margin",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png button x≈81-495; 22/23 px margins",
+      "method": "difference ÷ 1.181",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "radius.button.primary": {
+      "type": "radius",
+      "value": 14,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "lime primary button corner radius (not a full pill)",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png top edge y925: inset 16 px at d=0 → 0 at d=11",
+      "method": "circle fit r≈16-17 px ÷ 1.181",
+      "level": "SOURCED",
+      "precision": "±2 pt"
+    },
+    "dimension.button.secondary.height": {
+      "type": "dimension",
+      "value": 45,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.invite",
+      "element": "white secondary pill height (\"invite more friends\")",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png col 200 y394-446 (≈53 px)",
+      "method": "runs ÷ 1.181",
+      "level": "SOURCED",
+      "precision": "±3 pt If the recording device was 430/440 pt wide, true value is 9-12% larger.",
+      "notes": "Smaller white button \"enable\" in the contacts card is ≈37 pt tall (dimension.permissionCard.button)."
+    },
+    "dimension.field.height": {
+      "type": "dimension",
+      "value": 44,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "single-line text field height (\"name group (optional)\")",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png col 150 y142-194 (52 px)",
+      "method": "runs ÷ 1.181",
+      "level": "SOURCED",
+      "precision": "±1 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "radius.field": {
+      "type": "radius",
+      "value": 12,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "single-line text field corner radius",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png top edge y143",
+      "method": "circle fit r≈14 px ÷ 1.181",
+      "level": "SOURCED",
+      "precision": "±2 pt"
+    },
+    "dimension.picker.rowPitch": {
+      "type": "dimension",
+      "value": 54.5,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "friend picker row pitch",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png avatar centres 64.3 px apart",
+      "method": "÷ 1.181",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "dimension.picker.avatar": {
+      "type": "dimension",
+      "value": 40,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "friend picker avatar",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png 47.5 px",
+      "method": "÷ 1.181",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "dimension.picker.check": {
+      "type": "dimension",
+      "value": 24,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "selection circle (empty ring / filled blue check)",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png 27.5 px; references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png 30 px",
+      "method": "÷ 1.181",
+      "level": "SOURCED",
+      "precision": "±1.5 pt"
+    },
+    "dimension.permissionCard": {
+      "type": "dimension",
+      "value": {
+        "width": 356,
+        "height": 101,
+        "inset": 18
+      },
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "onboarding.permission.contacts",
+      "element": "inline contacts card on home list",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png x77-497, y600-719",
+      "method": "runs ÷ 1.181",
+      "level": "SOURCED",
+      "precision": "±2 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "dimension.permissionCard.button": {
+      "type": "dimension",
+      "value": {
+        "width": 91,
+        "height": 37
+      },
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "onboarding.permission.contacts",
+      "element": "white \"enable\" button in contacts card",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png x373-481, y638-681",
+      "method": "runs ÷ 1.181",
+      "level": "SOURCED",
+      "precision": "±2 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "dimension.signup.providerButton": {
+      "type": "dimension",
+      "value": {
+        "height": 48,
+        "inset": 25,
+        "gap": 8
+      },
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "auth.phone",
+      "element": "sign-in provider buttons (white Apple full width; dark Google/Facebook halves)",
+      "evidence": "references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png Apple x86-489 y526-582; Google/Facebook y594-650, gap x284-294",
+      "method": "runs ÷ 1.181",
+      "level": "SOURCED",
+      "precision": "±2 pt If the recording device was 430/440 pt wide, true value is 9-12% larger.",
+      "notes": "es locale build, 2026-09."
+    },
+    "dimension.camera.shutter": {
+      "type": "dimension",
+      "value": {
+        "outer": 80,
+        "ring": 3.5,
+        "gap": 5.5,
+        "disc": 59
+      },
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "element": "shutter: white disc, black gap, lime ring",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png row 1050: ring x≈298-306 / 413-420, gap 307-314, disc 317-403; col 360: ring 994-997 / 1106-1110, disc 1009-1095",
+      "method": "runs ÷ 1.466",
+      "level": "SOURCED",
+      "precision": "±2 pt outer, ±1 pt parts If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "dimension.camera.flipButton": {
+      "type": "dimension",
+      "value": 47,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "element": "flip-camera circle button",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png bbox x486-554 (69 px)",
+      "method": "bbox ÷ 1.466",
+      "level": "SOURCED",
+      "precision": "±1 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "radius.camera.viewfinder": {
+      "type": "radius",
+      "value": 18.5,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "element": "viewfinder corner radius (full-width viewfinder)",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png top edge y150: inset 21 px at d=2 → 0 at d=16",
+      "method": "circle fit r≈26-28 px ÷ 1.466",
+      "level": "SOURCED",
+      "precision": "±2 pt"
+    },
+    "layout.camera.viewfinder": {
+      "type": "layout",
+      "value": {
+        "width": "screen",
+        "aspect_h_over_w": 1.38,
+        "top_pt": 103
+      },
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "element": "viewfinder geometry",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png y150-946 (797 px) × full 576 px width",
+      "method": "runs ÷ 1.466",
+      "level": "SOURCED",
+      "precision": "aspect ±0.03; top ±2 pt",
+      "notes": "Not exactly 4:3 (1.33); template may crop. Treat aspect as approximate."
+    },
+    "dimension.camera.tooltip": {
+      "type": "dimension",
+      "value": {
+        "height": 34
+      },
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "element": "lime coach tooltip body height (\"hold down to record\")",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png bbox x226-495 y934-999 incl. pointer (66 px)",
+      "method": "bbox minus pointer ÷ 1.466",
+      "level": "SOURCED",
+      "precision": "±3 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "dimension.sendto.preview": {
+      "type": "dimension",
+      "value": {
+        "width": 218,
+        "height": 290
+      },
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "element": "photo preview card on send-to sheet (3:4)",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png bbox x160-416 y159-500",
+      "method": "bbox ÷ 1.181",
+      "level": "SOURCED",
+      "precision": "±2 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "radius.sendto.preview": {
+      "type": "radius",
+      "value": 16,
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "element": "send-to preview card corner radius",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png",
+      "method": "visual estimate on 1.6x crop",
+      "level": "SOURCED",
+      "precision": "±3 pt"
+    },
+    "dimension.sendto.sendButton": {
+      "type": "dimension",
+      "value": {
+        "height": 47,
+        "inset": 27
+      },
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "element": "lime \"send ⓝ\" button at sheet bottom",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png col 280 y914-969; row 950 x88-487",
+      "method": "runs ÷ 1.181",
+      "level": "SOURCED",
+      "precision": "±1.5 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "dimension.sendto.recipientAvatar": {
+      "type": "dimension",
+      "value": 32,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "element": "recipient row avatar",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png ~38 px",
+      "method": "÷ 1.181",
+      "level": "SOURCED",
+      "precision": "±2 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "dimension.tabbar": {
+      "type": "dimension",
+      "value": {
+        "width": 344,
+        "height": 58,
+        "inset": 22
+      },
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "floating tab-bar capsule",
+      "evidence": "references/auto/yope/store/yope-store-02.png row 2412 x251-1026; col 900 y2336-2466; screen x201-1075 at that row",
+      "method": "runs ÷ yope-store-02.png inner screen x182-1068 = 886 px; pt = px / 886 * 393 (2.254 px/pt; 393 pt assumed)",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "radius.tabbar": {
+      "type": "radius",
+      "value": 29,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "tab-bar capsule radius (full pill = height/2)",
+      "evidence": "references/auto/yope/store/yope-store-02.png",
+      "method": "geometry (semicircular ends)",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "dimension.tabbar.selectedPill": {
+      "type": "dimension",
+      "value": {
+        "width": 74,
+        "height": 48
+      },
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "selected tab indicator pill (#434343)",
+      "evidence": "references/auto/yope/store/yope-store-02.png row 2412 x407-573; col 440 y2358-2464",
+      "method": "runs ÷ 2.254",
+      "level": "SOURCED",
+      "precision": "±2 pt"
+    },
+    "dimension.tabbar.icon": {
+      "type": "dimension",
+      "value": 21,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "tab glyph size",
+      "evidence": "references/auto/yope/store/yope-store-02.png glyph bboxes 44-52 px (chat 44×43, camera 52×44, film 45×51, cards 49×55)",
+      "method": "bbox ÷ 2.254",
+      "level": "SOURCED",
+      "precision": "±2 pt"
+    },
+    "dimension.tabbar.avatar": {
+      "type": "dimension",
+      "value": 34,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "\"me\" tab avatar",
+      "evidence": "references/auto/yope/store/yope-store-02.png col 945 y2363-2438",
+      "method": "runs ÷ 2.254",
+      "level": "SOURCED",
+      "precision": "±2 pt"
+    },
+    "dimension.loading.hud": {
+      "type": "dimension",
+      "value": 100,
+      "unit": "pt",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "Loading HUD square side",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png ≈118 × 116 px",
+      "method": "2x crop ÷ 2 ÷ 1.181",
+      "level": "SOURCED",
+      "precision": "±3 pt If the recording device was 430/440 pt wide, true value is 9-12% larger."
+    },
+    "layout.tabbar.items": {
+      "type": "layout",
+      "value": [
+        "chats",
+        "cards (discovery)",
+        "camera",
+        "wall / recaps",
+        "me (avatar)"
+      ],
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "tab bar order, icons only, no labels",
+      "evidence": "references/auto/yope/store/yope-store-02.png; references/auto/yope/frames/a-alexaa-7684388619099933966-t5.23-camera-hold-to-record-tabbar.png; references/owner/yope-01-find-friends-profile.webp",
+      "method": "visual",
+      "level": "SOURCED",
+      "notes": "Variants: 4 items (camera, chats, wall, me) in references/auto/yope/frames/a-chuongxetank-7694968408424582452-t4.73-camera.png; 3 items (chats, camera, me) in references/auto/yope/frames/a-arkadeep896-7644663053807586591-t32.73-profile-recaps-empty-skip-queue.png. \"cards\" = public discovery (do-not-copy)."
+    },
+    "layout.groups.list.card": {
+      "type": "layout",
+      "value": [
+        "avatar 64 (circle or cut-out sticker)",
+        "name (bold) [+ streak pill: do-not-copy]",
+        "subtitle: \"new pic added · {time}\" / sender name in lime / \"recap\" + progress",
+        "trailing camera glyph"
+      ],
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "home card content order",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png; references/auto/yope/frames/a-virgi-7686278541255642390-t40.23-home-list-es.png; references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t44.23-home-list-new-group-icon.png",
+      "method": "visual",
+      "level": "SOURCED"
+    },
+    "layout.groups.create.order": {
+      "type": "layout",
+      "value": [
+        "header: ✕ + \"new group\"",
+        "name field \"name group (optional)\"",
+        "label \"who would you like to add?\"",
+        "friend rows with check circles",
+        "bottom lime \"create group\""
+      ],
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "new group screen order",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png; references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png",
+      "method": "visual",
+      "level": "SOURCED",
+      "notes": "No cover photo or type step in 2026; 2024-25 builds had a cover photo first (references/auto/yope/web/a-bi-2025-create-group-composite.jpg)."
+    },
+    "layout.camera.sendto.order": {
+      "type": "layout",
+      "value": [
+        "header: ✕ + \"send to...\" + edit + download",
+        "preview card (hour overlay + caption)",
+        "caption field \"add a message\" + mic on the card",
+        "recipients: own wall first (\"my wall\" / \"just for friends\"), then people & groups, multi-select",
+        "bottom lime \"send ⓝ\""
+      ],
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "element": "send-to sheet order",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png; references/auto/yope/frames/a-savannahclooney-7683341732695592206-t5.73-sendto-caption-keyboard.png; references/auto/yope/frames/a-jacob-7691153057177931039-t4.73-sendto-voice-tooltip.png",
+      "method": "visual",
+      "level": "SOURCED"
+    },
+    "duration.groups.create.push": {
+      "type": "duration",
+      "value": 100,
+      "unit": "ms",
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "\"new group\" → new group chat horizontal push after create",
+      "evidence": "https://www.tiktok.com/@itsmthuyope/video/7644974799302823175 50.667 s → 50.767 s (2 intermediate frames at 30 fps)",
+      "method": "frame-diff on native-fps decode; first/last changed frame",
+      "level": "SOURCED",
+      "precision": "±33 ms (1 frame); screen recording may drop frames",
+      "notes": "Duration only; curve not measurable."
+    },
+    "icon.header.back": {
+      "type": "icon",
+      "value": {
+        "ios": "chevron.left",
+        "android": "chevron_left"
+      },
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "‹ in circle",
+      "evidence": "references/auto/yope/store/yope-store-01.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.sheet.close": {
+      "type": "icon",
+      "value": {
+        "ios": "xmark",
+        "android": "close"
+      },
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "✕ in circle",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.sendto.download": {
+      "type": "icon",
+      "value": {
+        "ios": "arrow.down.to.line",
+        "android": "download"
+      },
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "element": "download circle",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.sendto.edit": {
+      "type": "icon",
+      "value": {
+        "ios": "pencil",
+        "android": "edit"
+      },
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "element": "edit circle",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t5.73-sendto-caption-keyboard.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.sendto.voice": {
+      "type": "icon",
+      "value": {
+        "ios": "mic.fill",
+        "android": "mic"
+      },
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "element": "mic circle beside \"add a message\"",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.sendto.sound": {
+      "type": "icon",
+      "value": {
+        "ios": "speaker.wave.2.fill",
+        "android": "volume_up"
+      },
+      "source_app": "Yope",
+      "surface": "camera.sendto",
+      "element": "sound on preview (video)",
+      "evidence": "references/auto/yope/frames/a-virgi-7686278541255642390-t56.23-sendto-three-selected-es.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.list.search": {
+      "type": "icon",
+      "value": {
+        "ios": "magnifyingglass",
+        "android": "search"
+      },
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "search circle on home header",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.list.add": {
+      "type": "icon",
+      "value": {
+        "ios": "plus",
+        "android": "add"
+      },
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "+ circle on home header",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.list.newGroup": {
+      "type": "icon",
+      "value": {
+        "ios": "person.2.badge.plus",
+        "android": "group_add"
+      },
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "two-people-plus glyph that opens \"new group\" (May 2026)",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t44.23-home-list-new-group-icon.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM",
+      "notes": "Nearest match; confirm the symbol exists in the deployment SF Symbols version, else person.badge.plus."
+    },
+    "icon.list.quickCamera": {
+      "type": "icon",
+      "value": {
+        "ios": "camera.fill",
+        "android": "photo_camera"
+      },
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "camera glyph at the end of each home card",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.list.expand": {
+      "type": "icon",
+      "value": {
+        "ios": "chevron.down",
+        "android": "expand_more"
+      },
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "⌄ under the home cover photo",
+      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.tab.chats": {
+      "type": "icon",
+      "value": {
+        "ios": "bubble.left.and.bubble.right.fill",
+        "android": "forum"
+      },
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "two overlapping bubbles tab",
+      "evidence": "references/auto/yope/store/yope-store-02.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM",
+      "notes": "Close match, not identical glyph."
+    },
+    "icon.tab.camera": {
+      "type": "icon",
+      "value": {
+        "ios": "camera.fill",
+        "android": "photo_camera"
+      },
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "camera tab",
+      "evidence": "references/auto/yope/store/yope-store-02.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.tab.wall": {
+      "type": "icon",
+      "value": {
+        "ios": "film.stack",
+        "android": "video_library"
+      },
+      "source_app": "Yope",
+      "surface": "groups.list",
+      "element": "film-strip stack tab",
+      "evidence": "references/auto/yope/store/yope-store-02.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM",
+      "notes": "Close match, not identical glyph."
+    },
+    "icon.header.calendar": {
+      "type": "icon",
+      "value": {
+        "ios": "calendar",
+        "android": "calendar_month"
+      },
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "calendar circle in group header",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t43.73-group-screen-hourly.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.header.capsuleChevron": {
+      "type": "icon",
+      "value": {
+        "ios": "chevron.right",
+        "android": "chevron_right"
+      },
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "› at the end of header capsule",
+      "evidence": "references/auto/yope/store/yope-store-01.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.groups.more": {
+      "type": "icon",
+      "value": {
+        "ios": "ellipsis",
+        "android": "more_horiz"
+      },
+      "source_app": "Yope",
+      "surface": "groups.settings",
+      "element": "••• on group profile and member rows",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.73-group-profile-add-20-pics.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.groups.invite": {
+      "type": "icon",
+      "value": {
+        "ios": "link",
+        "android": "link"
+      },
+      "source_app": "Yope",
+      "surface": "groups.invite",
+      "element": "link glyph in \"invite more friends\"",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.groups.share": {
+      "type": "icon",
+      "value": {
+        "ios": "square.and.arrow.up",
+        "android": "ios_share"
+      },
+      "source_app": "Yope",
+      "surface": "groups.settings",
+      "element": "share invite / members header",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t43.23-members-list-2024.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.groups.downloadAll": {
+      "type": "icon",
+      "value": {
+        "ios": "square.and.arrow.down",
+        "android": "download"
+      },
+      "source_app": "Yope",
+      "surface": "groups.settings",
+      "element": "menu \"download all photos\"",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.groups.leave": {
+      "type": "icon",
+      "value": {
+        "ios": "rectangle.portrait.and.arrow.right",
+        "android": "logout"
+      },
+      "source_app": "Yope",
+      "surface": "groups.settings",
+      "element": "menu \"leave group\" (red)",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM",
+      "notes": "Close match, not identical glyph."
+    },
+    "icon.groups.report": {
+      "type": "icon",
+      "value": {
+        "ios": "flag.fill",
+        "android": "flag"
+      },
+      "source_app": "Yope",
+      "surface": "groups.settings",
+      "element": "menu \"report\" (red)",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.picker.selected": {
+      "type": "icon",
+      "value": {
+        "ios": "checkmark.circle.fill",
+        "android": "check_circle"
+      },
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "filled blue check",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.picker.unselected": {
+      "type": "icon",
+      "value": {
+        "ios": "circle",
+        "android": "radio_button_unchecked"
+      },
+      "source_app": "Yope",
+      "surface": "groups.create",
+      "element": "empty ring",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.avatar.placeholder": {
+      "type": "icon",
+      "value": {
+        "ios": "person.fill",
+        "android": "person"
+      },
+      "source_app": "Yope",
+      "surface": "groups.settings",
+      "element": "default avatar silhouette in gray circle",
+      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t43.23-members-list-2024.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.camera.flashOff": {
+      "type": "icon",
+      "value": {
+        "ios": "bolt.slash.fill",
+        "android": "flash_off"
+      },
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "element": "flash off glyph on viewfinder",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.camera.flip": {
+      "type": "icon",
+      "value": {
+        "ios": "arrow.triangle.2.circlepath",
+        "android": "cameraswitch"
+      },
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "element": "two circular arrows in circle",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM",
+      "notes": "Close match, not identical glyph."
+    },
+    "icon.camera.gallery": {
+      "type": "icon",
+      "value": {
+        "ios": "photo.on.rectangle",
+        "android": "photo_library"
+      },
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "element": "gallery glyph (shown when no thumbnail)",
+      "evidence": "references/auto/yope/frames/a-virgi-7686278541255642390-t36.23-camera-first-open-es.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM",
+      "notes": "Close match, not identical glyph."
+    },
+    "icon.camera.recordHint": {
+      "type": "icon",
+      "value": {
+        "ios": "video.fill",
+        "android": "videocam"
+      },
+      "source_app": "Yope",
+      "surface": "camera.capture",
+      "element": "video glyph in \"hold down to record\" tooltip",
+      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.permission.contactsCardDismiss": {
+      "type": "icon",
+      "value": {
+        "ios": "xmark",
+        "android": "close"
+      },
+      "source_app": "Yope",
+      "surface": "onboarding.permission.contacts",
+      "element": "✕ on contacts card",
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png",
+      "method": "visual glyph match to SF Symbols / Material Symbols",
+      "level": "PLATFORM"
+    },
+    "icon.composer.sticker": {
+      "type": "icon",
+      "value": {
+        "ios": null,
+        "android": null
+      },
+      "source_app": "Yope",
+      "surface": "groups.screen",
+      "element": "sticker glyph (circle with peeled corner) in composer",
+      "evidence": "references/auto/yope/store/yope-store-05.png",
+      "method": "visual; no SF / Material equivalent found",
+      "level": "BLOCKED",
+      "notes": "Needs owner decision or a custom glyph."
+    }
+  }
+}

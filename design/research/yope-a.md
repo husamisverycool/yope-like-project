@@ -218,7 +218,7 @@ treatment is Yope's ML sticker feature (walls; yope-b).
   black), platform activity indicator + "Loading" (es: "Cargando", V-virgi signup). Spinner = PLATFORM.
 - **Empty (group)**: "you created group" / italic "and added …" / white "invite more friends" pill over a faint
   outlined "YOPE" word pattern (do-not-copy wordmark) — V-mthu t51.23. Group profile empty: progress bar + "Add 20 pics
-  more to get a recap", "skip the queue and create one now" + "new recap" (V-mthu, V-arkadeep* see 2.8).
+  more to get a recap", "skip the queue and create one now" + "new recap" (V-mthu t51.73; V-arkadeep t32.73 on the own-profile recaps tab).
 - **Empty (old build, 2024)**: "No messages yet!" / "Chat with someone new" (V-yrrah24 t18.73).
 - **Error**: only the web expired-invite page (W-inv): "A NEW LINK, A FRESH START" (lime, uppercase letter-spaced),
   "This invite has expired", "Ask your friend to send you a new link. Your next memories are waiting.", lime pill
@@ -486,11 +486,11 @@ so treat as duration only, low confidence.
 | "create your first group" · "to share pics daily and get recaps on your memories" · "or" · "join friends by link" · "continue" | groups.create (onboarding variant, 2025) | BI 2025 |
 | "Loading" | loading state | V-mthu t50.60 |
 | "you created group" · "and added {names}" · "invite more friends" | groups.screen / groups.invite | V-mthu t51.23 |
-| "Add {n} pics more to get a recap" · "pics" · "wall" · "recaps" · "skip the queue and create one now" · "new recap" · "add more" · "chat" · "{name} joined" | groups.screen | V-mthu t51.73, t43.73; V-arkadeep (https://www.tiktok.com/@arkadeep896/video/7644663053807586591, 2026-05-27, contact sheet only); BI 2025; V-yrrah24 |
+| "Add {n} pics more to get a recap" · "pics" · "wall" · "recaps" · "skip the queue and create one now" · "new recap" · "add more" · "chat" · "{name} joined" | groups.screen | V-mthu t51.73, t43.73; V-arkadeep t32.73 ("skip the queue…", "new recap", "pics/wall/recaps", "friends only see your wall pics"); BI 2025; V-yrrah24 |
 | "Share this group link to invite" · "Add friends to {group}" · "Friends" · "Show more" · "Other app" · "Continue" | groups.invite (2024, Capitalised) | V-yrrah24 t10.73 |
 | "download all photos" · "get group recap" · "share invite" · "leave group" · "report" · "{n} members" · "Pending" | groups.settings (2024) | V-yrrah24 t33.73, t43.23 |
 | "No messages yet!" · "Chat with someone new" | empty (2024) | V-yrrah24 t18.73 |
-| "hold down to record" | camera.capture | V-jacob t3.73; owner-independent V-alexaa (https://www.tiktok.com/@alexaa.yope/video/7684388619099933966) |
+| "hold down to record" | camera.capture | V-jacob t3.73; V-alexaa t5.23; es "mantenga presionado para grabar" V-virgi t36.23 |
 | "send to..." · "add a message" · "add a voice memo on this pic" · "my wall" · "my moments" · "just for friends" · "more friends" · "send" · "posted in the wall" | camera.sendto | V-chuong t3.73/t6.73/t7.73; V-sav t5.73; V-jacob t4.73 |
 | "This invite has expired" · "Ask your friend to send you a new link." · "Your next memories are waiting." · "A new link, a fresh start" · "Go to YOPE" · "Life’s better with your people." | groups.invite error (web) | W-inv (title "Invite expired · YOPE") |
 | "registrarse", "continuar con Apple", "seguir como …", "probar otras opciones", "al continuar, aceptas nuestros Términos de uso y nuestra Política de privacidad", "mantente al tanto con tus amigos", "recibe fotos de tus amigos directamente en tu pantalla de inicio", "añadir widget", "enviar a...", "mis momentos", "solo para amigos", "amigos sugeridos", "de tus contactos", "tiene amigos en común", "+ agregar", "pendiente", "buscar amigos", "nueva foto añadida", "añadir más", "mantenga presionado para grabar" | es locale (structure only — English equivalents not observed) | V-virgi |
