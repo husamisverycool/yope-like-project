@@ -154,6 +154,7 @@ jobs:
   ios:
     name: "ios (xcodebuild: app, widgets, notification service, App Clip, tests)"
     runs-on: macos-15
+    timeout-minutes: 75
     needs: detect
     if: needs.detect.outputs.ios == 'true'
     steps:
