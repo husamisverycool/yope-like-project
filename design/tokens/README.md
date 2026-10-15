@@ -180,7 +180,7 @@ are in `design/MERGE_DECISIONS.md` → "Foundations"; contrast results in `desig
 |---|---|---|---|---|
 | `duration.global.sheetPresent` | 215 ms | SOURCED | bottom-sheet presentation, first movement to rest (rise ≈ 100 ms to an overshoot ≈ 16 pt past rest, settle ≈ 100 ms) | `Tokens.Durations.globalSheetPresent` |
 | `spring.global.sheetPresentObserved` | overshootPt: 16; timeToPeakMs: 100; settleMs: 100 | SOURCED | observed shape of the sheet presentation: overshoot past rest, time to the peak, time from the peak to rest | `Tokens.Layouts.GlobalSheetPresentObserved.<key>` |
-| `spring.global.sheetPresent` | response 0.3441, damping 4.564 | same | sheet presentation spring (response, dampingFraction) | `Tokens.Springs.globalSheetPresent` |
+| `spring.global.sheetPresent` | response 0.3441, dampingFraction 1.0 | same | sheet presentation spring (response, dampingFraction) | `Tokens.Springs.globalSheetPresent` |
 | `duration.global.photoSwipe` | 167 ms | SOURCED | horizontal swipe to the adjacent photo in the viewer, first movement to settled (gesture-driven) | `Tokens.Durations.globalPhotoSwipe` |
 | `easing.global.photoSwipe` | ios: system paging scroll physics; android: Compose HorizontalPager default fling | PLATFORM | settle curve of the photo swipe after the finger lifts | `Tokens.Layouts.GlobalPhotoSwipe.<key>` |
 | `duration.global.navigationPush` | 100 ms | SOURCED | horizontal push to the next screen ('new group' → new group chat after create) | `Tokens.Durations.globalNavigationPush` |

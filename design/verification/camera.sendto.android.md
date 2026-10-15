@@ -43,7 +43,7 @@ Side by side: [`camera.sendto.android.png`](camera.sendto.android.png) — ours 
 
 | status | token | expected (token) | ours (measured) | reference evidence | note |
 |---|---|---|---|---|---|
-| match (token) | mic + voice coach ship | recorder SOURCED | Blocked.voiceNoteRecorder = true in debug and release |  |  |
+| match (token) | mic + voice coach ship | recorder SOURCED | shown in every build on devices with a microphone |  |  |
 | match | `chat.voice.layout.recording` start / lift / cancel / lock | hold records; lift keeps; slide left cancels; slide up locks | same (FlowTests.voiceMicHoldSlideAndLockGestures) | references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png (verbatim: "Press and hold [mic] next … | on camera.sendto lifting attaches the note to the post, which leaves with SEND (chat sends at once) |
 | approx | slide threshold | not tokenized | one mic diameter (`micDiameter`) |  | gesture distance; not drawn |
 | match (token) | `chat.voice.layout.recording` row | dot → timer → centred hint; mic stays trailing | same (camera.sendto_voice-recording.png) | references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png (verbatim: "Press and hold [mic] next … |  |

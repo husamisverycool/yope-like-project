@@ -27,6 +27,8 @@ dependencies {
     implementation(project(":core:push"))
     implementation(project(":core:billing"))
     implementation(project(":core:links"))
+    // The "i'm in this" self-tag control (design/surfaces/tagging.md) is the memory group's component.
+    implementation(project(":feature:memory"))
     implementation(libs.androidx.core)
     implementation(libs.androidx.activity.compose)
     implementation(libs.kotlinx.serialization.json)

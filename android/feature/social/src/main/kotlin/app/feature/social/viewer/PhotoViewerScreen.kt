@@ -167,9 +167,6 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
         deleteFailed = stringRes(R.string.photo_viewer_error_delete),
         sendFailed = stringRes(R.string.chat_thread_sendfailed),
         reactionFailed = stringRes(R.string.chat_reactions_error),
-        tagError = stringRes(R.string.tagging_error),
-        tagNotFound = stringRes(R.string.tagging_notfound),
-        tagOffline = stringRes(R.string.tagging_offline),
         playFailed = stringRes(R.string.chat_voice_error_play),
     )
     LaunchedEffect(vm) {
@@ -183,11 +180,6 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
                 ViewerEffect.DeleteFailed -> { haptics.play(Tokens.Haptics.globalError); announce(view, texts.deleteFailed) }
                 ViewerEffect.Saved -> { haptics.play(Tokens.Haptics.globalSuccess); ui.toast = texts.saved }
                 ViewerEffect.SaveFailed -> { haptics.play(Tokens.Haptics.globalError); announce(view, texts.saveFailed) }
-                ViewerEffect.Tagged -> haptics.play(Tokens.Haptics.globalSelect)
-                is ViewerEffect.TagFailed -> {
-                    haptics.play(Tokens.Haptics.globalError)
-                    announce(view, when (effect.reason) { TagFailure.Error -> texts.tagError; TagFailure.NotFound -> texts.tagNotFound; TagFailure.Offline -> texts.tagOffline })
-                }
             }
         }
     }
@@ -231,7 +223,7 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
         onSend = vm::sendReply,
         onReact = vm::react,
         onUnreact = vm::unreact,
-        onTag = vm::toggleTag,
+        onPhotoGone = vm::markGone,
         onDelete = { haptics.play(Tokens.Haptics.globalWarning); vm.deleteEverywhere() },
         onSave = onSave,
         onRetry = vm::retryLoad,
@@ -246,9 +238,6 @@ private class ViewerTexts(
     val deleteFailed: String,
     val sendFailed: String,
     val reactionFailed: String,
-    val tagError: String,
-    val tagNotFound: String,
-    val tagOffline: String,
     val playFailed: String,
 )
 
@@ -265,7 +254,7 @@ fun PhotoViewerContent(
     onSend: () -> Unit,
     onReact: (String) -> Unit,
     onUnreact: (String) -> Unit,
-    onTag: () -> Unit,
+    onPhotoGone: (String) -> Unit,
     onDelete: () -> Unit,
     onSave: () -> Unit,
     onRetry: () -> Unit,
@@ -287,7 +276,10 @@ fun PhotoViewerContent(
         if (current != null && post != null && !reduceMotion && current.reactions.none { it.emoji == emoji }) flights.launch(post.id, emoji, from)
         onReact(emoji)
     }
-    CompositionLocalProvider(LocalReactionFlights provides flights) {
+    // [ViewerUiState.coach] set (tests) decides the tagging coach; null = the memory group's per-account store.
+    val coachOverride = ui.coach?.let { show -> remember(show) { FixedCoachStore(!show) } }
+    val coachStore = coachOverride ?: app.feature.memory.tagging.LocalCoachStore.current
+    CompositionLocalProvider(LocalReactionFlights provides flights, app.feature.memory.tagging.LocalCoachStore provides coachStore) {
     Box(Modifier.fillMaxSize().background(Tokens.Colors.photoViewerColorBackground).testTag("photo.viewer")) {
         // Emoji rain: behind the photo, in front of the background (S-9).
         ui.rain?.let { (emoji, key) -> EmojiRain(emoji, key, onFinished = { if (ui.rain?.second == key) ui.rain = null }) }
@@ -300,7 +292,7 @@ fun PhotoViewerContent(
                 key = { i -> state.photos.getOrNull(i)?.postId ?: i },
             ) { page ->
                 val photo = state.photos.getOrNull(page)
-                if (photo != null) ViewerPage(photo, state, ui, nav, voice, playback, onTag, onRetry, onPlay, onSave, onDelete)
+                if (photo != null) ViewerPage(photo, state, ui, nav, voice, playback, onPhotoGone, onRetry, onPlay, onSave, onDelete)
             }
             if (ui.saveDenied) {
                 PermissionCard(
@@ -352,6 +344,12 @@ fun PhotoViewerContent(
             dismissButton = { TextButton(onClick = { ui.confirmDelete = false }) { Text(stringRes(R.string.photo_viewer_delete_cancel)) } },
         )
     }
+}
+
+/** A coach memory with a fixed answer (hoisted UI state for tests and previews). */
+private class FixedCoachStore(private val dismissed: Boolean) : app.feature.memory.tagging.CoachStore {
+    override fun dismissed(userId: String) = dismissed
+    override fun dismiss(userId: String) = Unit
 }
 
 /** Starts loading the neighbouring photos' display images so a swipe lands on a drawn photo. */
@@ -494,7 +492,7 @@ private fun ViewerPage(
     nav: ViewerNav,
     voice: VoiceServices?,
     playback: VoicePlayback,
-    onTag: () -> Unit,
+    onPhotoGone: (String) -> Unit,
     onRetry: () -> Unit,
     onPlay: (String) -> Unit,
     onSave: () -> Unit,
@@ -521,7 +519,7 @@ private fun ViewerPage(
             else -> available * aspect to available
         }
         Column(Modifier.fillMaxSize().padding(top = top), horizontalAlignment = Alignment.CenterHorizontally) {
-            PhotoFrame(photo, state, ui, nav, w, h, if (aspect == null) ContentScale.Fit else ContentScale.Crop, onTag, onRetry, onSave, onDelete)
+            PhotoFrame(photo, state, ui, nav, w, h, if (aspect == null) ContentScale.Fit else ContentScale.Crop, onPhotoGone, onRetry, onSave, onDelete)
             val voiceMs = post?.voiceDurationMs
             if (voicePath != null && voiceMs != null) {
                 Spacer(Modifier.height(Tokens.Sizes.globalScreenMargin))
@@ -553,7 +551,7 @@ private fun PhotoFrame(
     width: Dp,
     height: Dp,
     scale: ContentScale,
-    onTag: () -> Unit,
+    onPhotoGone: (String) -> Unit,
     onRetry: () -> Unit,
     onSave: () -> Unit,
     onDelete: () -> Unit,
@@ -602,47 +600,21 @@ private fun PhotoFrame(
             Spacer(Modifier.width(Tokens.Sizes.photoViewerDimensionSenderNameGap))
             Line(name, Type.headerTitle(), Tokens.Colors.globalTextPrimary, Modifier.clearAndSetSemantics { })
         }
-        // "i'm in this" toggle (top-right slot) and its first-use coach.
-        var toggleWidth by remember { mutableIntStateOf(0) }
-        val density = LocalDensity.current
-        val showCoach = photo.tagged != null && !mine && (ui.coach ?: !TagCoachMemory.seen(context, state.me))
-        Layout(
-            modifier = Modifier.align(Alignment.TopEnd).padding(end = Tokens.Sizes.photoViewerDimensionActionTrailing),
-            content = {
-                if (photo.tagged != null) {
-                    TagToggle(
-                        on = photo.tagged,
-                        pending = photo.tagPending,
-                        onToggle = {
-                            ui.coach = false
-                            TagCoachMemory.markSeen(context, state.me)
-                            onTag()
-                        },
-                        modifier = Modifier.onSizeChanged { toggleWidth = it.width },
-                    )
-                    if (showCoach) {
-                        TagCoach(
-                            targetWidth = with(density) { toggleWidth.toDp() },
-                            onDismiss = {
-                                ui.coach = false
-                                TagCoachMemory.markSeen(context, state.me)
-                            },
-                        )
-                    }
-                }
-            },
-        ) { measurables, constraints ->
-            // The toggle's vertical centre sits `actionCenterTop` below the photo's top edge; the coach hangs under it.
-            val loose = constraints.copy(minWidth = 0, minHeight = 0)
-            val toggle = measurables.getOrNull(0)?.measure(loose)
-            val coach = measurables.getOrNull(1)?.measure(loose)
-            if (toggle == null) return@Layout layout(0, 0) {}
-            val width = maxOf(toggle.width, coach?.width ?: 0)
-            val y = (Tokens.Sizes.photoViewerDimensionActionCenterTop.roundToPx() - toggle.height / 2).coerceAtLeast(0)
-            layout(width, y + toggle.height + (coach?.height ?: 0)) {
-                toggle.place(width - toggle.width, y)
-                coach?.place(width - coach.width, y + toggle.height)
-            }
+        // "i'm in this": the memory group's control (design/surfaces/tagging.md: capsule, optimistic tag_self /
+        // untag_self, first-use coach, toasts), its centre `photo.viewer.dimension.actionCenterTop` below the
+        // photo's top and its right edge `.actionTrailing` from the photo's right (S-19).
+        if (photo.loaded) {
+            val height = Tokens.Sizes.groupsScreenSizeLightPillHeight
+            app.feature.memory.tagging.SelfTagToggle(
+                postId = post.id,
+                postAuthorId = post.authorId,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(end = Tokens.Sizes.photoViewerDimensionActionTrailing, top = (Tokens.Sizes.photoViewerDimensionActionCenterTop - height / 2).coerceAtLeast(0.dp)),
+                initiallyTagged = photo.tagged,
+                onPhotoGone = { onPhotoGone(post.id) },
+                height = height,
+            )
         }
         // Caption (bottom-centre) on its `color.global.scrim` box.
         if (caption != null) {

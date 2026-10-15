@@ -36,9 +36,8 @@ data class ViewerPhoto(
     val author: Profile? = null,
     val groupName: String? = null,
     val reactions: List<ReactionEntry> = emptyList(),
-    /** Your own "i'm in this" tag; null until known. */
+    /** Your own "i'm in this" tag as loaded with the photo (the memory group's control takes it from there); null until known. */
     val tagged: Boolean? = null,
-    val tagPending: Boolean = false,
     val loaded: Boolean = false,
     val gone: Boolean = false,
     val loadFailed: Boolean = false,
@@ -70,12 +69,8 @@ sealed interface ViewerEffect {
     data object DeleteFailed : ViewerEffect
     data object Saved : ViewerEffect
     data object SaveFailed : ViewerEffect
-    data object Tagged : ViewerEffect
-    /** `tagging.error`, `tagging.notFound`, `tagging.offline`. */
-    data class TagFailed(val reason: TagFailure) : ViewerEffect
 }
 
-enum class TagFailure { Error, NotFound, Offline }
 
 /**
  * `photo.viewer`: the opener's photo list ([PhotoContext]), each photo's post / media / author /
@@ -287,38 +282,10 @@ class PhotoViewerViewModel(
     }
 
     /**
-     * "i'm in this" (tagging.md): offline → no change + `tagging.offline`; otherwise the toggle flips
-     * at once, ≤ one call in flight, and reverts on failure.
+     * The photo was deleted meanwhile (the memory group's "i'm in this" control got `post_not_found`):
+     * it shows as gone, as for a realtime `post_deleted`.
      */
-    fun toggleTag() {
-        val photo = _state.value.current ?: return
-        val id = photo.post?.id ?: return
-        if (photo.tagPending) return
-        if (!_state.value.online) {
-            _effects.tryEmit(ViewerEffect.TagFailed(TagFailure.Offline))
-            return
-        }
-        val before = photo.tagged == true
-        update(id) { it.copy(tagged = !before, tagPending = true) }
-        _effects.tryEmit(ViewerEffect.Tagged)
-        viewModelScope.launch {
-            try {
-                if (before) data.untagSelf(id) else data.tagSelf(id)
-                update(id) { it.copy(tagPending = false) }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Throwable) {
-                val error = e.dataError()
-                val reason = when {
-                    error is DataError.Api && error.code == ApiError.PostNotFound -> TagFailure.NotFound
-                    error == DataError.Network -> TagFailure.Offline
-                    else -> TagFailure.Error
-                }
-                update(id) { it.copy(tagged = before, tagPending = false, gone = it.gone || reason == TagFailure.NotFound) }
-                _effects.emit(ViewerEffect.TagFailed(reason))
-            }
-        }
-    }
+    fun markGone(postId: String) = update(postId) { it.copy(gone = true) }
 
     /** `delete_media` (owner only, after the confirmation): gone everywhere; the viewer moves on or closes. */
     fun deleteEverywhere() {

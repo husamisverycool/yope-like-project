@@ -545,3 +545,14 @@ was used only to measure, and is not stored).
 
 `paywall.layout.iconTileArt` (the app icon, owner) and `safety.report.layout.reasons` (moderation categories, owner;
 presentation now sourced, G2-8).
+
+## Lead reconciliation (continued)
+
+**L-2 — `spring.global.sheetPresent` dampingFraction 4.564 → 1.0.** The gap fill converted React
+Navigation's `TransitionIOSSpec` (stiffness 1000, damping 500, mass 3) literally, giving a damping
+ratio of 4.564. React Native's `SpringAnimation.js` has no overdamped solver: for every ratio ≥ 1 it
+runs the critically damped solution (`if (zeta < 1) { … } else { // Critically damped … }`, checked
+in react-native main on 2026-10-15). The motion Locket actually shows is therefore response 0.3441 s
+with dampingFraction 1.0, settling in about 0.4 s; 4.564 in SwiftUI / Compose would be a much slower
+overdamped curve (about 90 % after 1.1 s). Found by the Android capture pass; value changed, evidence
+unchanged.

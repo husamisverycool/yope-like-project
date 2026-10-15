@@ -3835,7 +3835,7 @@ public enum Tokens {
         public static let globalPlatformDefaultIos: DSSpring = DSSpring(response: 0.55, dampingFraction: 1)
         /// React Navigation iOS modal spec (shipped in Locket) · global · sheet presentation spring (response, dampingFraction) · SOURCED
         /// token: `spring.global.sheetPresent`
-        public static let globalSheetPresent: DSSpring = DSSpring(response: 0.3441, dampingFraction: 4.564)
+        public static let globalSheetPresent: DSSpring = DSSpring(response: 0.3441, dampingFraction: 1)
     }
     public enum Tracking {
         /// Partiful · invite.web · title tracking · VERIFIED

@@ -829,7 +829,7 @@ export const tokens = {
   "size.global.tabBarWidth": 344, // Yope · global · SOURCED
   "spring.global.platformDefault.android": {"response":0.16223,"dampingFraction":1}, // Material 3 · global · PLATFORM
   "spring.global.platformDefault.ios": {"response":0.55,"dampingFraction":1}, // Apple HIG · global · PLATFORM
-  "spring.global.sheetPresent": {"response":0.3441,"dampingFraction":4.564}, // React Navigation iOS modal spec (shipped in Locket) · global · SOURCED
+  "spring.global.sheetPresent": {"response":0.3441,"dampingFraction":1}, // React Navigation iOS modal spec (shipped in Locket) · global · SOURCED
   "spring.global.sheetPresentObserved": {"overshootPt":16,"timeToPeakMs":100,"settleMs":100}, // Yope · global · SOURCED
   "walls.browse.dimension.avatar": 60, // Yope · walls.browse · SOURCED
   "walls.browse.dimension.avatarPitch": 77.7, // Yope · walls.browse · SOURCED

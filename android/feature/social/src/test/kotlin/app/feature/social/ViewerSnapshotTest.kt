@@ -45,7 +45,7 @@ class ViewerSnapshotTest : SnapshotBase() {
     @Test fun othersPhotoCoach() {
         val d = data()
         d.tags.clear()
-        viewer(state("v-1", d), ViewerUiState(coach = true), d)
+        viewer(state("v-1", d), ViewerUiState(coach = true), d, screen = true)
     }
 
     @Test fun myPhoto() {

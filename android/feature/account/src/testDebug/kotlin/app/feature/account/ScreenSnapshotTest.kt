@@ -92,6 +92,7 @@ import app.ui.components.ToastState
 import app.feature.account.groups.CreateError
 import androidx.compose.runtime.remember
 import app.feature.account.auth.CountryList
+import app.feature.account.groups.GroupEntryCard
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -241,6 +242,14 @@ class ScreenSnapshotTest {
         photo("p2", "Ana", true, now.minusSeconds(10800)),
     )
     private fun feed(state: GroupFeedUiState) = @Composable { GroupFeedScreen(state, zone, noop, noop, noop, noop, {}, {}, {}, noop, noop, noop, noop, noop) }
+    // The memory entries above the feed (copy is the memory pass's; test strings here).
+    @Test fun feedEntries() = snap("groups.screen", "entries") {
+        GroupFeedScreen(GroupFeedUiState(group = group, items = feedItems, isCreator = true), zone, noop, noop, noop, noop, {}, {}, {}, noop, noop, noop, noop, noop) {
+            GroupEntryCard("Sunday dinners’s Day in History", "1 year ago", noop)
+            GroupEntryCard("It’s time for your 2026 story", "Your year together", noop, button = "Let’s go")
+            GroupEntryCard("Sam’s birthday is coming", "due Oct 20", noop)
+        }
+    }
     @Test fun feedLoading() = snap("groups.screen", "loading", feed(GroupFeedUiState(group = group)))
     @Test fun feedDefault() = snap("groups.screen", "default", feed(GroupFeedUiState(group = group, items = feedItems, isCreator = true)))
     @Test fun feedCreated() = snap("groups.screen", "created", feed(GroupFeedUiState(group = group, items = emptyList(), isCreator = true)))

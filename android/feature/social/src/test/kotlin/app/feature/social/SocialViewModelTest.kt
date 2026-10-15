@@ -18,7 +18,6 @@ import app.feature.social.chat.ChatEffect
 import app.feature.social.chat.ChatState
 import app.feature.social.chat.ChatViewModel
 import app.feature.social.viewer.PhotoViewerViewModel
-import app.feature.social.viewer.TagFailure
 import app.feature.social.viewer.ViewerEffect
 import app.feature.social.walls.BrowseViewModel
 import app.feature.social.walls.WallState
@@ -315,22 +314,13 @@ class SocialViewModelTest {
         assertEquals("w-3", vm.state.value.current?.postId)
     }
 
-    @Test fun viewerTagIsOptimisticRevertsAndRespectsOffline() {
+    /** The memory group's tag control reports a deleted photo (`post_not_found`): the viewer shows it as gone. */
+    @Test fun viewerLoadsYourTagAndMarksAPhotoGone() {
         val data = FakeSocialData().apply { seedAlbums() }
         val vm = PhotoViewerViewModel(data, GROUP, "w-2", PhotoContext.Single, "w-2", null)
-        val seen = collect(vm.effects)
-        assertEquals(false, vm.state.value.current!!.tagged)
-        vm.toggleTag()
-        assertEquals(true, vm.state.value.current!!.tagged)
-        assertTrue(data.calls.contains("tagSelf:w-2"))
-        data.failNext += "untagSelf:w-2"
-        vm.toggleTag()
-        assertEquals("reverted", true, vm.state.value.current!!.tagged)
-        assertTrue(seen.contains(ViewerEffect.TagFailed(TagFailure.Error)))
-        data.onlineState.value = false
-        vm.toggleTag()
-        assertEquals(true, vm.state.value.current!!.tagged)
-        assertTrue(seen.contains(ViewerEffect.TagFailed(TagFailure.Offline)))
+        assertEquals("loaded with the photo (the control's initial state)", false, vm.state.value.current!!.tagged)
+        vm.markGone("w-2")
+        assertTrue(vm.state.value.current!!.gone)
     }
 
     @Test fun viewerDeleteEverywhereMovesOnThenCloses() {

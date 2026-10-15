@@ -60,6 +60,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import app.feature.memory.birthday.BirthdayRequestEntries
+import app.feature.memory.yearstory.YearStoryEntry
+import app.feature.memory.onthisday.OnThisDayEntry
+import app.feature.memory.openOnThisDay
+import androidx.navigation.NavHostController
 import app.data.error.DataError
 import app.data.model.Group
 import app.data.model.GroupKind
@@ -69,6 +74,9 @@ import app.data.realtime.GroupEvent
 import app.data.repo.Member
 import app.designsystem.R
 import app.designsystem.dsTextStyle
+import app.ui.components.LightPillShape
+import app.ui.components.LightPill
+import androidx.compose.ui.text.TextStyle
 import app.designsystem.generated.Tokens
 import app.designsystem.rememberReduceMotion
 import app.feature.account.AccountEnvironment
@@ -270,7 +278,7 @@ class GroupFeedViewModel(private val env: AccountEnvironment, private val groupI
 }
 
 @Composable
-fun GroupFeedRoute(nav: NavController, groupId: String) {
+fun GroupFeedRoute(nav: NavHostController, groupId: String) {
     val env = LocalAccountEnvironment.current
     val vm = viewModel(key = "feed:$groupId") { GroupFeedViewModel(env, groupId) }
     val state by vm.state.collectAsStateWithLifecycle()
@@ -304,6 +312,18 @@ fun GroupFeedRoute(nav: NavController, groupId: String) {
         onCamera = { nav.navigate(AppRoute.Camera(groupId)) },
         onRetry = vm::load,
         onLoadMore = vm::loadMore,
+        entries = {
+            // The memory pass supplies copy and action; the row and its place are this screen's.
+            OnThisDayEntry(groupId, state.group?.name.orEmpty(), onOpen = { nav.openOnThisDay(groupId) }) { title, subtitle, onClick ->
+                GroupEntryCard(title, subtitle, onClick = onClick)
+            }
+            YearStoryEntry(groupId, onOpen = { year -> nav.navigate(AppRoute.YearStory(groupId, year)) }) { title, subtitle, button, onClick ->
+                GroupEntryCard(title, subtitle, button = button, onClick = onClick)
+            }
+            BirthdayRequestEntries(groupId, onOpen = { requestId -> nav.navigate(AppRoute.BirthdayContribute(groupId, requestId)) }) { title, subtitle, onClick ->
+                GroupEntryCard(title, subtitle, onClick = onClick)
+            }
+        },
     )
 }
 
@@ -331,6 +351,7 @@ fun GroupFeedScreen(
     onCamera: () -> Unit,
     onRetry: () -> Unit,
     onLoadMore: () -> Unit,
+    entries: @Composable () -> Unit = {},
 ) {
     val reduceMotion by rememberReduceMotion()
     val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -375,14 +396,16 @@ fun GroupFeedScreen(
                         LazyColumn(
                             state = list,
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = bottom + Tokens.Sizes.groupsScreenSizeChatPillHeight + Tokens.Sizes.groupsScreenSizeCardGap),
-                            verticalArrangement = Arrangement.spacedBy(Tokens.Sizes.groupsScreenSizeCardGap),
+                            // Each item carries its own gap below (groups.screen.size.cardGap), so the entries
+                            // item takes no space at all while it has no rows.
+                            contentPadding = PaddingValues(bottom = bottom + Tokens.Sizes.groupsScreenSizeChatPillHeight),
                         ) {
+                            item(key = ENTRIES_KEY, contentType = ENTRIES_KEY) { Column { entries() } }
                             items(items, key = { it.key }, contentType = { it::class }) { item ->
                                 // New posts arrive with spring.global.platformDefault.android; Reduce Motion: fade only.
                                 val placement = if (reduceMotion) null else Tokens.Springs.globalPlatformDefaultAndroid.spec<IntOffset>()
                                 val fade = Tokens.Springs.globalPlatformDefaultAndroid.spec<Float>()
-                                Box(Modifier.animateItem(fadeInSpec = fade, placementSpec = placement, fadeOutSpec = fade)) {
+                                Box(Modifier.animateItem(fadeInSpec = fade, placementSpec = placement, fadeOutSpec = fade).padding(bottom = Tokens.Sizes.groupsScreenSizeCardGap)) {
                                     when (item) {
                                         is FeedItem.Photo -> PhotoCard(item, zone, onPhoto, onReport, onBlock)
                                         is FeedItem.Joined -> JoinedPill(item)
@@ -399,6 +422,48 @@ fun GroupFeedScreen(
 }
 
 private const val NAME_SEPARATOR = ", "
+private const val ENTRIES_KEY = "entries"
+
+/**
+ * The row of the memory entries above the feed (onthisday.md / year.story.md / birthday.request.md
+ * → A: "row component and position belong to groups.screen"). Yope draws no such row; it is built
+ * from Yope's inline card (`onboarding.permission.contacts.layout.card`) placed on this screen's
+ * #171717: fill `color.global.control` (the screen's control fill — header capsule, joined pill; the
+ * inline card's own #131313 is for black screens), corners `radius.global.card`, side margins
+ * `groups.screen.size.cardMarginH` like the photo cards, content 16 in (`groups.list.size.avatarInset`),
+ * title `onboarding.permission.contacts.fontSize.cardTitle` bold in `color.global.textPrimary`, subtitle
+ * `.fontSize.cardDetail` in `color.global.textSecondary`; [button] (year story) as the card's white
+ * capsule (`.size.cardButtonWidth` × `.size.cardButtonHeight`, label text role `button`). The whole card is one button;
+ * `groups.screen.size.cardGap` below it.
+ */
+@Composable
+fun GroupEntryCard(title: String, subtitle: String, onClick: () -> Unit, button: String? = null) {
+    val shape = RoundedCornerShape(Tokens.Radii.globalCard)
+    Row(
+        Modifier
+            .padding(start = Tokens.Sizes.groupsScreenSizeCardMarginH, end = Tokens.Sizes.groupsScreenSizeCardMarginH, bottom = Tokens.Sizes.groupsScreenSizeCardGap)
+            .fillMaxWidth()
+            .clip(shape)
+            .background(Tokens.Colors.globalControl, shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .semantics(mergeDescendants = true) {}
+            .padding(Tokens.Sizes.groupsListSizeAvatarInset),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.groupsListSizeAvatarInset),
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(
+                title,
+                style = dsTextStyle(Tokens.FontSizes.onboardingPermissionContactsFontSizeCardTitle, Tokens.FontWeights.onboardingPermissionContactsFontWeightCardTitle),
+                color = Tokens.Colors.globalTextPrimary,
+            )
+            Text(subtitle, style = TextStyle(fontSize = Tokens.FontSizes.onboardingPermissionContactsFontSizeCardDetail), color = Tokens.Colors.globalTextSecondary)
+        }
+        if (button != null) {
+            LightPill(button, onClick, Modifier.width(Tokens.Sizes.onboardingPermissionContactsSizeCardButtonWidth), shape = LightPillShape.Capsule, height = Tokens.Sizes.onboardingPermissionContactsSizeCardButtonHeight)
+        }
+    }
+}
 private const val PREFETCH_DISTANCE = 5
 
 @Composable

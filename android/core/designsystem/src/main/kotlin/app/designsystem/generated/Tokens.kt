@@ -2947,7 +2947,7 @@ object Tokens {
         /** Apple HIG · global · iOS default animation (SwiftUI Animation.default) for custom motion whose Yope curve was not measurable · PLATFORM — token `spring.global.platformDefault.ios` */
         val globalPlatformDefaultIos: DSSpring = DSSpring(dampingRatio = 1f, stiffness = 130.5072f)
         /** React Navigation iOS modal spec (shipped in Locket) · global · sheet presentation spring (response, dampingFraction) · SOURCED — token `spring.global.sheetPresent` */
-        val globalSheetPresent: DSSpring = DSSpring(dampingRatio = 4.564f, stiffness = 333.419f)
+        val globalSheetPresent: DSSpring = DSSpring(dampingRatio = 1f, stiffness = 333.419f)
     }
     object Tracking {
         /** Partiful · invite.web · title tracking · VERIFIED — token `invite.web.letterSpacing.title` */

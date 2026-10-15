@@ -47,6 +47,8 @@ dependencies {
     implementation(project(":core:push"))
     implementation(project(":core:billing"))
     implementation(project(":core:links"))
+    // groups.screen places the memory pass's entries (On This Day, year story, birthday requests).
+    implementation(project(":feature:memory"))
     implementation(libs.androidx.core)
     implementation(libs.androidx.activity.compose)
     implementation(libs.kotlinx.coroutines.android)

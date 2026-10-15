@@ -1100,15 +1100,15 @@
       "type": "spring",
       "value": {
         "response": 0.3441,
-        "dampingFraction": 4.564
+        "dampingFraction": 1.0
       },
       "source_app": "React Navigation iOS modal spec (shipped in Locket)",
       "surface": "global",
       "level": "SOURCED",
       "element": "sheet presentation spring (response, dampingFraction)",
       "evidence": "references/auto/platform/react-navigation-ios-modal-spring-excerpt.txt (react-navigation main, packages/stack/src/TransitionConfigs: ModalPresentationIOS 'Standard iOS modal presentation style (introduced in iOS 13)' opens and closes with TransitionIOSSpec = spring {stiffness: 1000, damping: 500, mass: 3, overshootClamping: true, restDisplacementThreshold: 10, restSpeedThreshold: 10}); the same constants ship in references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (TransitionIOSSpec, and gorhom's 'keyboard' sheet config)",
-      "notes": "Gap fill (MERGE G2-3, closes F-15 in favour of the native sheet curve). Conflict: Yope's own sheet showed a 16-pt overshoot (spring.global.sheetPresentObserved, 5 samples at 30 fps, not fittable); the documented iOS modal spring has none. Native .sheet / ModalBottomSheet presentations keep the system motion (easing.global.native.sheet); this token is for custom sheets. A 60 fps recording of a Yope sheet would replace it.",
-      "method": "converted to SwiftUI spring parameters: w0 = sqrt(k/m) = sqrt(1000/3) = 18.257 rad/s, response = 2*pi/w0 = 0.3441 s; dampingFraction = c / (2*sqrt(k*m)) = 500 / (2*sqrt(3000)) = 4.564 (overdamped, no overshoot; the source also clamps overshoot). Compose (designgen): stiffness (2*pi/0.3441)^2 = 333.3 with mass 1 and dampingRatio 4.564 = the same k/m",
+      "notes": "Gap fill (MERGE G2-3, closes F-15 in favour of the native sheet curve; dampingFraction corrected 4.564 -> 1.0 by the lead after the Android capture pass traced React Native's solver, MERGE L-2). Conflict: Yope's own sheet showed a 16-pt overshoot (spring.global.sheetPresentObserved, 5 samples at 30 fps, not fittable); the documented iOS modal spring has none. Native .sheet / ModalBottomSheet presentations keep the system motion (easing.global.native.sheet); this token is for custom sheets. A 60 fps recording of a Yope sheet would replace it.",
+      "method": "converted to SwiftUI spring parameters: w0 = sqrt(k/m) = sqrt(1000/3) = 18.257 rad/s, response = 2*pi/w0 = 0.3441 s; nominal damping ratio c / (2*sqrt(k*m)) = 500 / (2*sqrt(3000)) = 4.564, but React Native's spring solver has no overdamped branch: every ratio >= 1 runs the critically damped solution x(t) = e^(-w0 t)(x0 + (v0 + w0 x0) t) (react-native packages/react-native/Libraries/Animated/animations/SpringAnimation.js, 'if (zeta < 1) … else // Critically damped', checked 2026-10-15), so the curve Locket draws on screen is response 0.3441 with dampingFraction 1.0 (settles in about 0.4 s, no overshoot). Compose (designgen): stiffness (2*pi/0.3441)^2 = 333.3 with mass 1 and dampingRatio 1.0",
       "precision": "exact conversion of the documented constants; the constants themselves are React Navigation's approximation of the iOS modal sheet"
     },
     "duration.global.photoSwipe": {
