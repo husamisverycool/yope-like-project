@@ -26,7 +26,7 @@ final class CameraCaptureModel {
     }
 
     /// The camera chosen in this app session ("front after a flip, kept for the session").
-    private static var sessionPosition: CameraPosition = .back
+    static var sessionPosition: CameraPosition = .back
 
     static var currentSessionPosition: CameraPosition { sessionPosition }
 

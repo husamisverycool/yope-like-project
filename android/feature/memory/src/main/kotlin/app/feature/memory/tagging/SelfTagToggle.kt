@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,7 +39,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.selection.toggleable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
@@ -209,9 +209,9 @@ fun SelfTagToggle(
     var coach by remember(postId, me) {
         mutableStateOf(me != null && postAuthorId != null && postAuthorId != me && !store.dismissed(me))
     }
-    val dismissCoach = {
+    val dismissCoach: () -> Unit = {
         coach = false
-        me?.let(store::dismiss)
+        if (me != null) store.dismiss(me)
     }
     val label = stringResource(R.string.tagging_toggle)
     Box(modifier) {
@@ -284,6 +284,8 @@ private fun Coach(onDismiss: () -> Unit) {
                 .heightIn(min = coach.height.dp)
                 .clip(RoundedCornerShape(coach.cornerRadius.dp))
                 .background(Tokens.Colors.globalAccent)
+                // One element: TalkBack reads the coach text; activating it (or the ✕) dismisses it.
+                .clickable(role = Role.Button, onClick = onDismiss)
                 .padding(horizontal = coach.paddingHorizontal.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -292,12 +294,7 @@ private fun Coach(onDismiss: () -> Unit) {
                 style = roleStyle(Tokens.FontSizes.cameraCaptureFontSizeCoach, Tokens.FontWeights.cameraCaptureFontWeightCoach).copy(color = Tokens.Colors.globalOnAccent),
             )
             Spacer(Modifier.size(coach.textToCloseGap.dp))
-            Icon(
-                Tokens.Icons.globalClose,
-                contentDescription = stringResource(R.string.birthday_add_a11y_close),
-                tint = Tokens.Colors.globalOnAccent,
-                modifier = Modifier.size(coach.closeGlyph.dp).clickable(role = Role.Button, onClick = onDismiss),
-            )
+            Icon(Tokens.Icons.globalClose, contentDescription = null, tint = Tokens.Colors.globalOnAccent, modifier = Modifier.size(coach.closeGlyph.dp))
         }
         Box(Modifier.size(coach.pointerWidth.dp, coach.pointerHeight.dp).background(Tokens.Colors.globalAccent, pointer))
     }
