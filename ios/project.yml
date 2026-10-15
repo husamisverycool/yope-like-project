@@ -132,6 +132,10 @@ targets:
         product: AppServices
       - package: AppCore
         product: AppData
+      # AppData's public API exposes supabase-swift types (e.g. Auth.AuthLocalStorage); the test
+      # bundle must link the module itself or the protocol descriptor is undefined at link time.
+      - package: Supabase
+        product: Supabase
 
   AppUITests:
     type: bundle.ui-testing

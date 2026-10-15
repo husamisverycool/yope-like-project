@@ -85,7 +85,8 @@ describe("POST /webhooks/revenuecat", () => {
 
   it("TRANSFER: the previous owner loses premium", async () => {
     await post(event("INITIAL_PURCHASE", u[2]!.id, { expiration_at_ms: Date.now() + 86_400_000 }));
-    const res = await post({ event: { id: randomUUID(), type: "TRANSFER", transferred_from: [u[2]!.id], transferred_to: [u[0]!.id], event_timestamp_ms: Date.now() + 5 } });
+    // stamped ahead of the server clock on purpose: premium must still end now (CI caught this)
+    const res = await post({ event: { id: randomUUID(), type: "TRANSFER", transferred_from: [u[2]!.id], transferred_to: [u[0]!.id], event_timestamp_ms: Date.now() + 60_000 } });
     expect(res.body.result).toBe("applied");
     const [premium] = await sql(`select private.has_premium($1) as p`, [u[2]!.id]);
     expect(premium.p).toBe(false);

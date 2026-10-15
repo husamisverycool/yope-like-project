@@ -92,7 +92,10 @@ export async function handleRevenueCat(db: Db, log: Logger, authHeader: string |
     // owner's expiry arrives with their next event (RevenueCat sends no expiry on TRANSFER)
     const from = (event.transferred_from ?? []).filter((u) => UUID.test(u));
     const results: string[] = [];
-    for (const u of from) results.push(await apply(`${event.id}:${u.toLowerCase()}`, u.toLowerCase(), at, true));
+    // premium ends at the earlier of the event time and now: an event stamped slightly ahead of
+    // this server's clock must not leave the previous owner with premium until that instant
+    const endsAt = new Date(Math.min(Date.parse(at), Date.now())).toISOString();
+    for (const u of from) results.push(await apply(`${event.id}:${u.toLowerCase()}`, u.toLowerCase(), endsAt, true));
     result = results.length ? results.join(",") : await apply(event.id, null, null, false);
   } else if (SETS_EXPIRY.has(event.type) && touchesPremium(event)) {
     const ms = [event.expiration_at_ms, event.grace_period_expiration_at_ms].filter((x): x is number => typeof x === "number");
