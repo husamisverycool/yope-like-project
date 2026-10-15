@@ -148,7 +148,7 @@ struct TaggingCoach: View {
 
     var body: some View {
         VStack(alignment: .trailing, spacing: 0) {
-            CoachPointer()
+            SelfTagCoachPointer()
                 .fill(Tokens.Colors.globalAccent)
                 .frame(width: Coach.pointerWidth, height: Coach.pointerHeight)
                 .padding(.trailing, max(0, pointerFromTrailing - Coach.pointerWidth / 2))
@@ -179,7 +179,7 @@ struct TaggingCoach: View {
 }
 
 /// An upward triangle (the coach's pointer).
-private struct CoachPointer: Shape {
+private struct SelfTagCoachPointer: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.move(to: CGPoint(x: rect.midX, y: rect.minY))
