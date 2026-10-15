@@ -24,8 +24,16 @@ struct OnThisDayScreen: View {
             let safeTop = proxy.safeAreaInsets.top
             VStack(spacing: 0) {
                 banner(safeTop: safeTop)
-                content(width: proxy.size.width)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                // Year → year: the content cross-fades over `duration.onthisday.memoryChange` with the
+                // platform's ease-in-out (`easing.global.native`); a cross-fade is already the Reduce
+                // Motion substitute, so it is the same with the setting on. Only the content animates:
+                // the banner label and the progress fill jump with the year (onthisday.md § Motion).
+                ZStack {
+                    content(width: proxy.size.width)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
+                .animation(Self.memoryChange, value: model.currentYear?.id)
             }
             .background(Tokens.Colors.globalBackground)
             .ignoresSafeArea()
@@ -36,13 +44,15 @@ struct OnThisDayScreen: View {
         .onChange(of: model.isFinished) { _, finished in
             if finished { dismiss() }
         }
-        .animation(MemoryBlocked.onThisDayMemoryChange.map { .easeInOut(duration: $0) }, value: model.index)
         .onChange(of: model.index) { _, _ in
             UIAccessibility.post(notification: .screenChanged, argument: nil)
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("onthisday")
     }
+
+    /// `duration.onthisday.memoryChange` on the native ease-in-out curve.
+    static let memoryChange = DSAnimation.timing(duration: Tokens.Durations.onthisdayMemoryChange, easing: .easeInOut).animation
 
     // MARK: Banner
 
@@ -106,7 +116,7 @@ struct OnThisDayScreen: View {
                         grid(year, width: width)
                     }
                 }
-                // Year → year: `MemoryBlocked.onThisDayMemoryChange`; while BLOCKED, no animation.
+                // Keyed by year so a year change swaps the content (cross-fade, see `body`).
                 .id(year.id)
                 .transition(.opacity)
             }

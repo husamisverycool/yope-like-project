@@ -12,6 +12,8 @@ struct SendToView: View {
     @State var model: SendToModel
     @FocusState private var isCaptionFocused: Bool
     @State private var isCreatingGroup = false
+    /// The finger's travel while holding the mic (the slide-to-cancel hint follows it).
+    @State private var voiceSlide: CGSize = .zero
 
     private typealias Preview = Tokens.Layouts.CameraSendtoLayoutPreview
     private typealias Field = Tokens.Layouts.CameraSendtoLayoutMessageField
@@ -92,7 +94,7 @@ struct SendToView: View {
             messageRow
                 .frame(maxHeight: .infinity, alignment: .bottom)
                 .padding(.bottom, Field.insetBottom)
-            if model.isVoiceNoteAvailable && model.showsVoiceCoach && !isCaptionFocused {
+            if model.showsVoiceCoach && !isCaptionFocused && model.voicePhase == .idle {
                 voiceCoach
             }
         }
@@ -122,63 +124,43 @@ struct SendToView: View {
             .accessibilitySortPriority(7)
     }
 
-    /// Message field capsule + mic circle, filled `camera.sendto.color.messageField` once it is
-    /// unblocked (CaptureBlocked). The field hides while the keyboard is up.
+    /// Message field capsule + mic circle, both filled `camera.sendto.color.messageField` (the backdrop
+    /// blur under it was not measured, so the tint is drawn alone). The field hides while the keyboard
+    /// is up; while a voice note records (or one is attached) the recorder row takes its place.
     private var messageRow: some View {
         let fieldWidth = Preview.width - Field.insetLeading - Field.gapToMic - Field.micDiameter - Field.insetTrailing
         return HStack(spacing: Field.gapToMic) {
-            TextField(text: $model.caption, prompt: Text(Copy.cameraSendtoCaptionPlaceholder).foregroundStyle(Tokens.Colors.globalTextPrimary)) {
-                Text(Copy.cameraSendtoCaptionPlaceholder)
+            ZStack {
+                if model.showsVoiceRow {
+                    SendToVoiceRow(model: model, slide: voiceSlide)
+                } else {
+                    captionField
+                }
             }
-            .dsTextStyle(CaptureType.messagePlaceholder)
-            .foregroundStyle(Tokens.Colors.globalTextPrimary)
-            .focused($isCaptionFocused)
-            .submitLabel(.done)
-            .onSubmit { isCaptionFocused = false }
-            .padding(.horizontal, Field.height / 2)
             .frame(width: fieldWidth, height: Field.height)
-            .background {
-                if let fill = CaptureBlocked.messageFieldFill { Capsule().fill(fill) }
-            }
-            .contentShape(Capsule())
-            .onChange(of: model.caption) { _, caption in
-                if let limit = CaptureBlocked.captionMaxLength, caption.count > limit {
-                    model.caption = String(caption.prefix(limit))
-                }
-            }
+            .background(Tokens.Colors.cameraSendtoColorMessageField, in: Capsule())
             .opacity(isCaptionFocused ? 0 : 1)
-            .accessibilitySortPriority(6)
-            .accessibilityIdentifier("camera.sendto.caption")
-            micButton
-                .frame(width: Field.micDiameter, height: Field.micDiameter)
-                .background {
-                    if model.isVoiceNoteAvailable, let fill = CaptureBlocked.messageFieldFill { Circle().fill(fill) }
-                }
+            SendToMicButton(model: model, fieldWidth: fieldWidth, slide: $voiceSlide)
+                .accessibilitySortPriority(5)
         }
         .padding(.leading, Field.insetLeading)
         .padding(.trailing, Field.insetTrailing)
     }
 
-    @ViewBuilder
-    private var micButton: some View {
-        if model.isVoiceNoteAvailable {
-            Button {
-                Task { await model.toggleVoiceRecording() }
-            } label: {
-                Image(systemName: Tokens.Icons.globalMic)
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                    .frame(width: Field.micDiameter, height: Field.micDiameter)
-                    .contentShape(Circle())
-                    .captureMinimumHitArea { Task { await model.toggleVoiceRecording() } }
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Copy.cameraSendtoA11yVoice)
-            .accessibilityValue(model.isRecordingVoice ? Copy.cameraCaptureA11yRecording : "")
-            .accessibilitySortPriority(5)
-            .accessibilityIdentifier("camera.sendto.voice")
-        } else {
-            Color.clear
+    private var captionField: some View {
+        TextField(text: $model.caption, prompt: Text(Copy.cameraSendtoCaptionPlaceholder).foregroundStyle(Tokens.Colors.globalTextPrimary)) {
+            Text(Copy.cameraSendtoCaptionPlaceholder)
         }
+        .dsTextStyle(CaptureType.messagePlaceholder)
+        .foregroundStyle(Tokens.Colors.globalTextPrimary)
+        .focused($isCaptionFocused)
+        .submitLabel(.done)
+        .onSubmit { isCaptionFocused = false }
+        .onChange(of: model.caption) { _, _ in model.clampCaption() }
+        .padding(.horizontal, Field.height / 2)
+        .contentShape(Capsule())
+        .accessibilitySortPriority(6)
+        .accessibilityIdentifier("camera.sendto.caption")
     }
 
     /// The Yope coach pointing at the mic, wrapping within the card.

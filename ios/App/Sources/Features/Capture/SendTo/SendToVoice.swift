@@ -120,13 +120,12 @@ struct SendToVoiceRow: View {
                     .frame(width: CaptureMetrics.capHeight(of: CaptureType.messagePlaceholder), height: CaptureMetrics.capHeight(of: CaptureType.messagePlaceholder))
                     .accessibilityHidden(true)
             }
-            TimelineView(.periodic(from: .now, by: 1)) { _ in
-                Text(CaptureFormat.voiceDuration(milliseconds: model.voiceElapsedMs))
-                    .dsTextStyle(CaptureType.messagePlaceholder)
-                    .monospacedDigit()
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                    .accessibilityLabel(CaptureFormat.spokenCountdown(remainingSeconds: model.voiceElapsedMs / 1000))
-            }
+            // The recorder's elapsed time is observable (AppServices `VoiceRecorder`), so the timer updates itself.
+            Text(CaptureFormat.voiceDuration(milliseconds: model.voiceElapsedMs))
+                .dsTextStyle(CaptureType.messagePlaceholder)
+                .monospacedDigit()
+                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                .accessibilityLabel(CaptureFormat.spokenCountdown(remainingSeconds: model.voiceElapsedMs / 1000))
             Spacer(minLength: 0)
             trailing
         }

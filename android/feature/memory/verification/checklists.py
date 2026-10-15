@@ -116,7 +116,7 @@ class Sheet:
 
     def write(self):
         total = sum(self.counts.values())
-        order = ["match", "match (token)", "approx", "not matched", "BLOCKED"]
+        order = ["match", "match (token)", "approx", "not matched", "BLOCKED", "worker"]
         summary = ", ".join(f"{self.counts[k]} {k}" for k in order if self.counts.get(k))
         lines = [
             f"# Verification — `{self.surface}` (Android)",
@@ -274,7 +274,8 @@ def birthday_request():
     s.add("match", "loading / offline / not found / error", "spec layouts", "loading.png, offline.png, not-found.png, error.png")
     s.add("match", "withdraw", "direct DELETE, no confirmation", "optimistic, rolled back on failure; haptic success / error", "ContributeFlowTest.removeTheContributionWithoutConfirmation")
     s.add("match", "entry row (groups.screen)", "title + due line, open requests only", "`BirthdayRequestEntries` composable, never about you")
-    s.extra = "\nNot copied (spec Do-not-copy): countdowns, reminder chase, public submissions list, share-to-social buttons, Tribute red / VidDay blue, gift money. Android presents the request as a full-screen destination (allowed by the spec's platform notes); the deep link `DeepLink.BirthdayRequest` lands on it.\n"
+    s.from_token("spring.global.sheetPresent", "the destination rises from the bottom on the spring and leaves the same way; Remove animations: cross-fade over `duration.global.sheetPresent` (215 ms)", "MemoryNavigation `RequestSheetMotion` (gap fill G2-3); not in the still renders")
+    s.extra = "\nNot copied (spec Do-not-copy): countdowns, reminder chase, public submissions list, share-to-social buttons, Tribute red / VidDay blue, gift money. Android presents the request as a full-screen destination with custom sheet motion (allowed by the spec's platform notes); the deep link `DeepLink.BirthdayRequest` lands on it.\n"
     s.write()
 
 
@@ -342,7 +343,11 @@ def birthday_tribute():
     s.add("match", "Download", "MediaStore.Video (API 29+ no permission; 26-28 WRITE_EXTERNAL_STORAGE)", "AndroidTributeFiles; haptic success / error")
     s.add("match", "Share", "ACTION_SEND video/mp4 via FileProvider", "MemoryFileProvider (`${applicationId}.memory.files`)")
     s.from_token("safety.block.duration.toast", "`saved to your photos` / `couldn't save the video …` toast for 2 s", "toast-saved.png, toast-save-failed.png")
-    s.add("BLOCKED", "video values (`duration.birthday.tribute.photoHold`, `layout.birthday.tribute.caption`, `.endCard`)", "BLOCKED", "worker-only; the app plays what the worker renders")
+    s.section("Video values (worker)")
+    s.add("worker", "`duration.birthday.tribute.photoHold`", tok("duration.birthday.tribute.photoHold")[0] + " ms (SOURCED, gap fill G2-22)", "not drawn by the app", "burned into the video by the worker; the app plays what the worker renders")
+    s.add("worker", "`layout.birthday.tribute.caption`", "SOURCED (G2-24): white name 700 @ 0.0463 H + line 700 @ 0.0795 H on a #11202FC7 band", "not drawn by the app", "worker only")
+    s.add("worker", "`layout.birthday.tribute.endCard`", "SOURCED (G2-23): the title card's style", "not drawn by the app", "worker only")
+    s.add("worker", "copy `birthday.tribute.endCard`", "\"We love you!\" (G2-25, no placeholder)", "not drawn by the app", "worker only; `R.string.birthday_tribute_endcard` exists but no screen shows it", "MERGE_DECISIONS G2-25")
     s.write()
 
 
