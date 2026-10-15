@@ -1100,3 +1100,14 @@ Where this section and an earlier one differ, this section describes what the da
    unreadable object answers 400 with `"404 Object not found"`.
 9. **Private `group:<id>` topic**: a non-member's join is refused server-side, but supabase-swift
    2.55.4 surfaces no error — the join times out. Clients treat a join timeout as "not subscribed".
+10. **Service-role helpers not listed in §10**: `release_job` (migration 0013: a job released on worker
+    shutdown returns to the queue without using an attempt) and `apply_revenuecat_event` with
+    `private.revenuecat_events` (0012: idempotent per RevenueCat event id).
+11. **`due_year_stories`** can raise `config_invalid` (PT503) when its config key is malformed.
+12. **Storage errors** are HTTP 400 with the real status in the JSON body
+    (`{"statusCode":"409","error":"Duplicate",…}`), not PostgREST error bodies.
+13. **Motion clips**: iOS Live Photos store `motion.mov`; Android motion clips are MP4 and are stored as
+    `motion.mp4` (`video/mp4`). Storage policies only require the `u/<uid>/<media_id>/` prefix.
+14. **Config defaults** (migrations 0012 and 0014 supersede §11 / §12.7): `default_waking_start` '09:48',
+    `default_waking_end` '21:12', `collage_option` 'B'; weekly recaps run at the end of each group's waking
+    window on the recap day when `weekly_recap_local_time` is NULL.
