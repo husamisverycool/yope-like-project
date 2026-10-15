@@ -37,7 +37,7 @@ the operating system's own component) or **BLOCKED** (not found).
 | PAY | `lazyweb/retro-lazyweb-20260529-paywall.png` 1206×2622 (Display P3) | RAW iOS, May 2026 | 3.000 | same | ±0.33 pt |
 | RWA | `press/tc-2025-12-rewind-device-a.png` 1320×2868 (Display P3) | RAW iOS, Dec 2025 | 3.000 | 440×956 pt Pro Max | ±0.33 pt |
 | RWB | `press/tc-2025-12-rewind-device-b.jpg` 1260×2736 | RAW iOS (JPEG), Dec 2025 | 3.000 | 420×912 pt | ±0.33 pt + JPEG |
-| ST-01…05 | `store/retro-store-0N.png` 1284×2778 (+ `store/jp|kr|de/…`) | RENDER iOS, listing 124.0 | 2.389 | screen span x 171–1109 = 939 px ÷ 393 pt; tile 200 px ÷ 84 pt = 2.381 agrees | ±0.42 pt ±0.5 % |
+| ST-01…05 | `store/retro-store-0N.png` 1284×2778 (+ `store/{jp,kr,de}/…`) | RENDER iOS, listing 124.0 | 2.389 | screen span x 171–1109 = 939 px ÷ 393 pt; tile 200 px ÷ 84 pt = 2.381 agrees | ±0.42 pt ±0.5 % |
 | ED-A | `store/editorial/retro-appstore-story-1840659619-albums.png` 3524×3348 | RENDER (Apple editorial) | 3.89 | strip tile pitch 335 px ÷ 86 pt; screen 1526 px ÷ 393 pt = 3.88 | ±0.26 pt ±1 % |
 | ED-W3 | `store/editorial/retro-appstore-story-1854931006-week3-albums.png` 3524×3348 | RENDER (Apple editorial) | 3.89 | same method (left screen x 188–1713, right 1809–3333) | ±0.26 pt ±1 % |
 | TC-1B | `press/tc-2023-07-retro-1b.webp` 3510×2163 | RENDER press 2023 (WebP) | 2.204 | phone 2 screen x 1323–2188 = 866 px ÷ 393 pt | ±0.45 pt ±2.5 % |
@@ -107,15 +107,18 @@ Retro pages); AlternativeTo, Bitrise (no screenshots); Threads @retrodotapp (no 
 
 ## 2. Screen inventory
 
-Counts: **41 distinct screens/states** — 26 light, 15 dark; 36 iOS, 5 Android (Android only as marketing renders);
-6 of them RAW device captures (all iOS: 4 dark, 2 photo-backed/colour-backed). "best" = the file to measure from.
+Counts: **33 distinct screens/states found** (rows 1–35 minus row 7 and the localised duplicates in row 33) — **23 with a
+light image, 11 with a dark image** (home has both); all 33 are iOS; **5 also exist as Android renders** (home, profile,
+postcard, recap, Rewind — Play EN + JA; no Android raw capture). **7 RAW iOS files cover 6 states**: dark empty-week
+home ×2 versions, dark sign-up landing, paywall (colour-backed), Rewind ×2 (photo-backed). Rows 7 and 36–41 were not
+found. "best" = the file to measure from.
 
 | # | screen / state | light — best file | dark — best file | platform · kind | notes |
 |---|---|---|---|---|---|
 | 1 | Home, current week **empty** ("Welcome to Week N!" + outline CTA) | — | H43 (2025, book tab), H22 a/b (2026, Rewind tab) | iOS RAW | add tile first, empty-day tiles, calendar glyph, 4 pt red tab dots |
 | 2 | Home, populated (title, strip, friend cards, "N new") | ST-01; ED-A; ED-W3; PLAY-01 | ENG-D (photo, low-res) | iOS/Android RENDER; REAL | "Last Week" pill on Mon/Tue (JED, ENG-D); "Seen" pill (ENG-D, TC 2023 photo) |
 | 3 | Home 2023 with empty days + locked friend cards ("Post to see") | TC-2B phone 1 | — | RENDER | do-not-copy lock |
-| 4 | Profile (own): serif username, info rows, Recaps / Share Profile / gear, week sections | ST-02; `store/jp|kr|de/*-journals.png`; PLAY-02 | — | iOS/Android RENDER | 2023 variant: Edit Profile / Settings / ••• (TC-1B phone 3); 2024: Recaps / Settings / ••• (JED, Apptisan) |
+| 4 | Profile (own): serif username, info rows, Recaps / Share Profile / gear, week sections | ST-02; `store/{jp,kr,de}/*-journals.png`; PLAY-02 | — | iOS/Android RENDER | 2023 variant: Edit Profile / Settings / ••• (TC-1B phone 3); 2024: Recaps / Settings / ••• (JED, Apptisan) |
 | 5 | Profile, current week with empty days + "Getting Started" card | JED phone 2; ENG-P | — | REAL | progress ring = count (do not copy) |
 | 6 | Profile below 4 weeks: "Key holders only" gate | TC-2B phone 3; VID (retrospective contact sheet) | — | RENDER/FRAME | behaviour do-not-copy; layout = empty-state block |
 | 7 | Week section "•••" menu | — | — | — | **not found** |
@@ -144,7 +147,7 @@ Counts: **41 distinct screens/states** — 26 light, 15 dark; 36 iOS, 5 Android 
 | 30 | Composer "Add to Your Week" (Cancel / Update, selected strip, Camera Roll ⌄, photo grid) | VID-COMP | — | iOS FRAME | posting flow |
 | 31 | Messages inbox (serif "Messages" + back, search, rows) | ENG-M | — | REAL (low-res) | thread not captured |
 | 32 | Journal-share Instagram story sticker | TC-J5 phone 3 | — | RENDER | |
-| 33 | Localised home / profile / postcard / recap / Rewind (JP, KR, DE iOS; JA Android) | `store/jp|kr|de/*`, `play/ja/*` | (postcard/recap/Rewind are dark) | RENDER | |
+| 33 | Localised home / profile / postcard / recap / Rewind (JP, KR, DE iOS; JA Android) | `store/{jp,kr,de}/*`, `play/ja/*` | (postcard/recap/Rewind are dark) | RENDER | |
 | 34 | Home-screen widgets (preview art) | `apk/widget_preview_*.webp` (other file) | — | APK | |
 | 35 | Web invite / album pages | other file §7 | — | web | |
 | 36–41 | Activity / notifications tab, toasts, sign-up form (phone / code / username), onboarding pages, permission pre-prompts, iPad, Android raw | — | — | — | **not found** (§6) |
@@ -197,9 +200,9 @@ Counts: **41 distinct screens/states** — 26 light, 15 dark; 36 iOS, 5 Android 
 | White capsule button fill / label | #FFFFFF / #000000 | LAND col x=600 y 2032–2211 (rows 2036–2205 all #FFFFFF); ST-03 Send Postcard rows 2366–2500 #FFFFFF | px | 0 | SOURCED (RAW) |
 | Hairline divider | ≈ #333333 – #353535 (1 device px) | ST-03 col x=640 y 2159; TC-2B col x=1600 y 1667 | runs | ±8 | SOURCED · APK dark separator #4D4D4D |
 | Segmented control track / selected | #1E1E1E / #6B6B6B | TC-REC row y=446 x 238–273 / 370–401; col x=300 y 420–480 | runs | ±3 | PLATFORM (native UISegmentedControl, dark) |
-| Glass circle on photo (Rewind 40 / 64 pt buttons) | photo lightened by ≈ +10–16 levels: inside #8B8273 vs outside #7D7263 (RWA, sRGB) ⇒ ≈ white 8–12 % or a light blur material | RWA row y=2285 x 119–310 (share) and row y=335 x 1152–1271 (more) | inside/outside comparison | — | SOURCED |
+| Glass circle on photo (Rewind 40 / 64 pt buttons) | photo lightened by ≈ +10–16 levels: inside #8D8376 vs outside #7D7263 (RWA, both raw Display-P3 values) ⇒ ≈ white 8–12 % or a light blur material | RWA row y=2285 x 119–310 (share) and row y=335 x 1152–1271 (more) | inside/outside comparison | — | SOURCED |
 | Tab icons over photo (Rewind) | selected #FFFFFF; unselected ≈ white @ 60 % (#B2AFAC over #322C25) | RWA icon bands y 2640–2740 | brightest 25 px vs darkest 200 px per icon | ±4 | SOURCED (RAW) |
-| Paywall close circle on colour | white ≈ 15 % over backdrop (#8B6BA4 inside vs #73508F around, sRGB) | PAY (1045–1055, 230–240) vs (1000–1031, 252) | box | — | SOURCED (RAW) |
+| Paywall close circle on colour | white ≈ 15 % over backdrop (inside #866CA0 vs around #6F4F99 / #62428C, raw Display-P3 values) | PAY (1045–1055, 230–240) vs (1000–1031, 252) | box | — | SOURCED (RAW) |
 
 **Palette summary (what the images support):**
 
@@ -269,7 +272,7 @@ Localisation (ST jp/kr/de): the display role keeps Latin/digits in the serif and
 | Strip tile | **84 × 112** (3:4) | H43 x 48–299, y 468–803 (252 × 336 px) | ±0.3 | ST-01/02 84 × 112 ±0.5; 4 independent images give aspect 1.32–1.335 |
 | Gap between tiles | **2** (page colour shows through) | H43 x 300–305 (6 px #000000) | ±0.3 | light: white gap |
 | Tile pitch | 86 | H43 48 → 306 → 564 (258 px) | ±0.3 | strip scrolls; no trailing inset when it overflows |
-| Strip → first friend row (home) | ≈ 70–80 to the avatar row | ST-01 strip bottom 1135 → avatar top 1331 (196 px → 82) | ±2 | render |
+| Strip → first friend row (home) | 82 to the avatar top (render only; the same render also compresses title → strip to 17.6, so treat as approximate) | ST-01 strip bottom 1135 → avatar top 1331 (196 px) | ±2 | render |
 | Friend card | **240 × 361** (2:3); gap **16** between cards (next card peeks) | ST-01 x 209–782, y 1417–2278; gap x 784–820 (37 px → 15.5); ED-A 1353 → 2766 = 363 | ±1 | |
 | Friend avatar → name → card | avatar **26.5** circle; name 15 semibold starting ≈ 11 after the avatar; avatar bottom → card top ≈ 10 | ST-01 avatar col x=264 y 1331–1393 (63 px → 26.4), avatar right x≈288 → name ink 316 (11.7); ED-A y 1213–1315 (103 px → 26.5), name ink 418 (10.8) | ±0.5 | |
 | "N new" badge position | 12 from card top and right | ED-A badge (947–1138, 1402–1495) vs card (243–1183, 1353) | ±0.5 | |
@@ -383,7 +386,7 @@ the icon set is drawn per platform to match.
 Values in pt; L = light, D = dark. "Fill" = #F1F1F1 (L) / #262626 (D).
 
 1. **Screen title header (display).** Serif title (cap 30.5) at the 16 margin, baseline 126 on a 402×874 device (64
-   below safe-area top). Trailing glyphs 24-ish pt, 2 pt stroke, centred on the title's cap middle, 48 apart, last one
+   below safe-area top). Trailing glyphs 23–25 pt wide × 20–21 pt tall, 2 pt stroke, centred on the title's cap middle, 48 apart, last one
    at the 16 margin (H22). Optional grey capsule next to the title: "Last Week" (#999999 fill, small white semibold text,
    ≈ 24 high — JED col x=305 y 111–132 at ≈0.93 px/pt; also ENG-D in dark). Pushed screens put a `chevron.left` before the serif title (ED-W3, ENG-M). Content starts 30
    below the title baseline.
@@ -409,7 +412,7 @@ Values in pt; L = light, D = dark. "Fill" = #F1F1F1 (L) / #262626 (D).
    - *Outline CTA with icon:* 37 high, hugging width (201.7 for "Get this week started"), 1 pt border, `plus` 14.7 then
      label 15 semibold, paddings 18 / 17 (H43).
    - *Fill pill:* Fill colour, black 15 semibold label ("Create" JED; "Settings"/"Share" journal pills are outline).
-   - *Small white pill on dark/photo:* "Share" ≈ 61 × 36, black semibold (ST-04, TC-REC).
+   - *Small white pill on dark/photo:* "Share" ≈ 61 wide (ST-04 row y=2420 x 882–1026), black semibold label (ST-04, TC-REC); height not isolated.
    - *Text button:* 17 regular (Invite / Keys; Cancel / Update in system blue in sheets).
 7. **Circle buttons.** "+" add 36 Ø Fill with black "+" (Albums rows); close 32 Ø (paywall, glass) / 36 Ø (#262626,
    postcard) / ≈23 (story header, #262626); edit 30 Ø #262626; more "•••" 40 Ø glass on photo; share / random 64 Ø
