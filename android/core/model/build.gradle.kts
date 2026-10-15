@@ -22,3 +22,10 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }
+
+// CI runs `testDebugUnitTest` across the build; a JVM module has only `test`, so alias it.
+tasks.register("testDebugUnitTest") {
+    group = "verification"
+    description = "Runs this JVM module's unit tests (alias of `test` for the Android-wide task name)."
+    dependsOn(tasks.named("test"))
+}

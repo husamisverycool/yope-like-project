@@ -1,0 +1,1650 @@
+{
+  "tokens": {
+    "layout.yearStory.canvas.aspect": {
+      "type": "layout",
+      "value": "9:16",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "story canvas",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg card 558-979x187-937; references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg card 107-554x178-972; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110) 108-971x214-1750",
+      "method": "extent of non-background pixels (1.780 / 1.775 / 1.779)",
+      "level": "SOURCED",
+      "precision": "±0.003",
+      "notes": "On taller phones the 9:16 canvas is letterboxed (see color.yearStory.letterbox)."
+    },
+    "color.yearStory.letterbox": {
+      "type": "color",
+      "value": "#111111",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "bands above/below the 9:16 canvas on a 20:9 phone",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110) x540 y180-212 and y1752-1868",
+      "method": "luma sample (full range)",
+      "level": "SOURCED",
+      "precision": "±2/255",
+      "notes": "Android 2024 recording; iOS not observed."
+    },
+    "layout.yearStory.navigation": {
+      "type": "layout",
+      "value": "tap-through: tap right side = next, left side = previous; explicit pause / sound / close buttons in the top row; one progress segment per chapter",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "story player navigation (2024 model)",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg; references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110); https://uproxx.com/music/how-to-watch-your-spotify-wrapped-2022-again/ ('Users can tap the left or right of the screen to go to the previous or next screen.')",
+      "method": "press quote for taps; renders + recording for buttons",
+      "level": "SOURCED",
+      "notes": "Tap-zone widths and hold-to-pause NOT FOUND. Alternative 2025 model: vertical paging (layout.yearStory.navigation.vertical)."
+    },
+    "layout.yearStory.navigation.vertical": {
+      "type": "layout",
+      "value": "vertical paging: one card per full-screen page, swipe up for next; no progress bar; coach mark on first card",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "story player navigation (2025 model)",
+      "evidence": "references/auto/wrapped/press/wrapped25-press-minutes.png; https://www.tiktok.com/@cdragon2010/video/7579703263306485022 (frames in references/auto/wrapped/frames/wrapped25-rec-cdragon2010-*) t=7.5 s ('Swipe up for more'), swipes at 9.77/17.70/25.93/34.52 s",
+      "method": "frame inspection + per-frame vertical shift",
+      "level": "SOURCED",
+      "notes": "Use only if the owner prefers the 2025 model over tap-through."
+    },
+    "dimension.yearStory.progress.height": {
+      "type": "dimension",
+      "value": 1.8,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "progress bar segment thickness",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg y9-10 of card (2 px/448); references/auto/wrapped/press/wrapped24-press-minutes.jpg y196-197 (2 px/422); references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110) y231-234 (~4 px/864)",
+      "method": "rows with luma>90; px/screen_width*393",
+      "level": "SOURCED",
+      "precision": "±0.3 pt (1.75 / 1.86 / 1.82)"
+    },
+    "dimension.yearStory.progress.top": {
+      "type": "dimension",
+      "value": 8,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "progress bar top offset from canvas top",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg 9 px/448; references/auto/wrapped/press/wrapped24-press-minutes.jpg 9 px/422; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110) 17 px/864",
+      "method": "first bar row minus canvas top",
+      "level": "SOURCED",
+      "precision": "±0.5 pt (7.9 / 8.4 / 7.7)"
+    },
+    "dimension.yearStory.progress.gap": {
+      "type": "dimension",
+      "value": 3.6,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "gap between progress segments",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg 4 px/448; references/auto/wrapped/press/wrapped24-press-minutes.jpg 4 px/422; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110) 8 px/864",
+      "method": "run analysis along bar row",
+      "level": "SOURCED",
+      "precision": "±0.4 pt (3.5 / 3.7 / 3.6)"
+    },
+    "dimension.yearStory.progress.inset": {
+      "type": "dimension",
+      "value": 11,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "progress bar side inset",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110) 24 px left / 25 px right of 864",
+      "method": "first/last bar pixel to screen edge",
+      "level": "SOURCED",
+      "precision": "±0.5 pt",
+      "notes": "CONFLICT: official press renders give 16.7 pt (B: 19 px/448) and 17.7/14.9 pt (A). Device recording preferred."
+    },
+    "color.yearStory.progress.fill": {
+      "type": "color",
+      "value": "#FFFFFF",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "filled / elapsed progress segment",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg luma 254; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110) RGB(255,249,255)",
+      "method": "median of 40x3 px",
+      "level": "SOURCED",
+      "precision": "±3/255"
+    },
+    "opacity.yearStory.progress.track": {
+      "type": "opacity",
+      "value": 0.43,
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "unfilled segment: white at this opacity",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg segs 5-6 luma 109-113 over black",
+      "method": "alpha=(L-bg)/(255-bg)",
+      "level": "SOURCED",
+      "precision": "±0.05",
+      "notes": "Recording over pink art gives 0.27-0.31 (video compression on a 4 px line)."
+    },
+    "easing.yearStory.progress.fill": {
+      "type": "easing",
+      "value": "linear",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "current segment fill over time",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-progress-fill.csv (segments 1 and 11)",
+      "method": "linear fit of fill vs time, R²=0.997 both; quadratic term ≈0",
+      "level": "SOURCED"
+    },
+    "duration.yearStory.progress.segment": {
+      "type": "duration",
+      "value": {
+        "observed_ms": [
+          11290,
+          26280
+        ]
+      },
+      "unit": "ms",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "time for one segment to fill (= one chapter)",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-progress-fill.csv: seg1 2.23→13.53 s, seg11 110.88→137.16 s",
+      "method": "1/slope of linear fit",
+      "level": "SOURCED",
+      "precision": "±100 ms",
+      "notes": "Not a constant: equals the chapter's content length (several beats per chapter)."
+    },
+    "duration.yearStory.reveal.headline": {
+      "type": "duration",
+      "value": 800,
+      "unit": "ms",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "headline moves up when the subline arrives",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv (15.533→16.333 s)",
+      "method": "per-frame top row of white text",
+      "level": "SOURCED",
+      "precision": "±33 ms (1 frame @30 fps)"
+    },
+    "dimension.yearStory.reveal.headlineShift": {
+      "type": "dimension",
+      "value": 18.2,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "distance the headline moves up",
+      "evidence": "same CSV: y 956→916 px in 1080-wide video (screen 864 px)",
+      "method": "40 px × 393/864",
+      "level": "SOURCED",
+      "precision": "±0.5 pt"
+    },
+    "duration.yearStory.reveal.subline": {
+      "type": "duration",
+      "value": 600,
+      "unit": "ms",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "subline slides up into place",
+      "evidence": "same CSV: 15.800→16.400 s",
+      "method": "per-frame top row",
+      "level": "SOURCED",
+      "precision": "±33 ms"
+    },
+    "dimension.yearStory.reveal.sublineOffset": {
+      "type": "dimension",
+      "value": 25.0,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "subline start offset below its final position",
+      "evidence": "same CSV: y 1083→1028 px",
+      "method": "55 px × 393/864",
+      "level": "SOURCED",
+      "precision": "±0.5 pt"
+    },
+    "duration.yearStory.reveal.sublineDelay": {
+      "type": "duration",
+      "value": 267,
+      "unit": "ms",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "delay from headline motion start to subline appearance",
+      "evidence": "same CSV: 15.533→15.800 s",
+      "method": "frame count",
+      "level": "SOURCED",
+      "precision": "±33 ms"
+    },
+    "easing.yearStory.reveal": {
+      "type": "easing",
+      "value": {
+        "shape": "S-curve (ease-in-out)",
+        "samples_time_to_progress": [
+          [
+            0.25,
+            0.125
+          ],
+          [
+            0.5,
+            0.725
+          ],
+          [
+            0.75,
+            0.925
+          ]
+        ]
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "headline/subline reveal motion",
+      "evidence": "same CSV",
+      "method": "normalised position vs time; no named curve fitted",
+      "level": "SOURCED",
+      "notes": "Duration plus sampled points only."
+    },
+    "font.yearStory": {
+      "type": "font",
+      "value": {
+        "ios": "system",
+        "android": "system"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "all story text",
+      "evidence": "Spotify Mix (2024+) / Spotify Circular are proprietary: https://newsroom.spotify.com/2024-05-22/introducing-spotify-mix-our-new-and-exclusive-font/",
+      "method": "—",
+      "level": "PLATFORM"
+    },
+    "fontSize.yearStory.headline": {
+      "type": "fontSize",
+      "value": 32,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "card headline (bold, centred)",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110) 'Y' cap height 49 px of 864 = 22.3 pt",
+      "method": "cap height / 0.705 (SF Pro cap-height ratio)",
+      "level": "SOURCED",
+      "precision": "±1 pt",
+      "notes": "2025 render gives cap 17.9 pt ≈ 25 pt (references/auto/wrapped/press/wrapped25-press-minutes.png screen 1). Approximation: proprietary face matched by cap height."
+    },
+    "lineHeight.yearStory.headline": {
+      "type": "lineHeight",
+      "value": 36.4,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "headline line pitch",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110) line tops 813→893 px",
+      "method": "difference × 393/864",
+      "level": "SOURCED",
+      "precision": "±0.5 pt",
+      "notes": "2025: 30.9 pt."
+    },
+    "fontWeight.yearStory.headline": {
+      "type": "fontWeight",
+      "value": "bold",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "headline weight",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110); references/auto/wrapped/press/wrapped25-press-minutes.png",
+      "method": "visual (heavy display weight)",
+      "level": "SOURCED"
+    },
+    "fontSize.yearStory.body": {
+      "type": "fontSize",
+      "value": 15,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "card subline (regular, centred)",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110) ascender 'worldwide.' 25 px of 864 = 11.4 pt",
+      "method": "ascender / ~0.74",
+      "level": "SOURCED",
+      "precision": "±1 pt",
+      "notes": "2025: cap 11.9 pt ≈ 17 pt."
+    },
+    "lineHeight.yearStory.body": {
+      "type": "lineHeight",
+      "value": 21.4,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "subline line pitch",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110) 1085→1132 px",
+      "method": "difference × 393/864",
+      "level": "SOURCED",
+      "precision": "±0.5 pt",
+      "notes": "2025: 23.3 pt."
+    },
+    "layout.yearStory.card.text": {
+      "type": "layout",
+      "value": "headline + subline centred horizontally and vertically; big numbers inline in the headline (2024) or edge-to-edge on their own line (2025)",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "card content arrangement",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110); references/auto/wrapped/press/wrapped25-press-minutes.png ('78,432' spans x1-720 of 725)",
+      "method": "visual",
+      "level": "SOURCED",
+      "notes": "Count-based cards conflict with the no-counts tenet; owner decision."
+    },
+    "dimension.yearStory.share.height": {
+      "type": "dimension",
+      "value": 50,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "share pill height",
+      "evidence": "references/auto/wrapped/press/wrapped25-press-minutes.png screen 2 y956-1047 (49.9 pt); references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg summary 'Share' y620-676 (50.0 pt)",
+      "method": "extent × 393/width",
+      "level": "SOURCED",
+      "precision": "±0.6 pt"
+    },
+    "radius.yearStory.share": {
+      "type": "radius",
+      "value": "full",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "share pill corners",
+      "evidence": "references/auto/wrapped/press/wrapped25-press-minutes.png; references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg",
+      "method": "semicircular ends",
+      "level": "SOURCED"
+    },
+    "dimension.yearStory.share.paddingH": {
+      "type": "dimension",
+      "value": 34.5,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "share pill horizontal padding",
+      "evidence": "references/auto/wrapped/press/wrapped25-press-minutes.png screen 2 pill x189-534, label x252-470",
+      "method": "(pill width − label width)/2 × 393/725",
+      "level": "SOURCED",
+      "precision": "±0.6 pt"
+    },
+    "dimension.yearStory.share.gapAbove": {
+      "type": "dimension",
+      "value": 27.6,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "gap from subline to share pill (2025)",
+      "evidence": "references/auto/wrapped/press/wrapped25-press-minutes.png screen 2 905→956 px",
+      "method": "difference × 393/725",
+      "level": "SOURCED",
+      "precision": "±0.6 pt"
+    },
+    "dimension.yearStory.share.bottomInset": {
+      "type": "dimension",
+      "value": 29,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "per-card 'Share this story' row bottom inset (2024)",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110) row bottom 1686, canvas bottom 1750",
+      "method": "× 393/864",
+      "level": "SOURCED",
+      "precision": "±0.5 pt"
+    },
+    "dimension.yearStory.chrome.iconGlyph": {
+      "type": "dimension",
+      "value": 14.9,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "pause / sound / close glyph height (2024)",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg y40-56 of card",
+      "method": "extent × 393/448",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "dimension.yearStory.chrome.centerY": {
+      "type": "dimension",
+      "value": 42,
+      "unit": "pt",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "chrome row centre below canvas top (2024)",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg y48 of card",
+      "method": "× 393/448",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "icon.yearStory.chrome.pause": {
+      "type": "icon",
+      "value": {
+        "ios": "pause.fill",
+        "android": "pause"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "pause button (2024 top right)",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg; references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110)",
+      "method": "matches reference two-bar pause glyph",
+      "level": "PLATFORM"
+    },
+    "icon.yearStory.chrome.sound": {
+      "type": "icon",
+      "value": {
+        "ios": "speaker.wave.2",
+        "android": "volume_up"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "sound toggle (2024 top right; 2025 top right)",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg; references/auto/wrapped/press/wrapped25-press-minutes.png",
+      "method": "matches reference speaker glyph",
+      "level": "PLATFORM"
+    },
+    "icon.yearStory.chrome.close": {
+      "type": "icon",
+      "value": {
+        "ios": "xmark",
+        "android": "close"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "close button (2024 top right)",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg; references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg",
+      "method": "matches reference × glyph",
+      "level": "PLATFORM"
+    },
+    "icon.yearStory.chrome.back": {
+      "type": "icon",
+      "value": {
+        "ios": "chevron.left",
+        "android": "arrow_back"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "back control (2025 top left)",
+      "evidence": "references/auto/wrapped/press/wrapped25-press-minutes.png chevron; https://www.tiktok.com/@cdragon2010/video/7579703263306485022 (frames in references/auto/wrapped/frames/wrapped25-rec-cdragon2010-*) Android arrow",
+      "method": "matches reference glyph per platform",
+      "level": "PLATFORM"
+    },
+    "icon.yearStory.share": {
+      "type": "icon",
+      "value": {
+        "ios": "square.and.arrow.up",
+        "android": "share"
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "share glyph left of 'Share this story' (2024)",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg (iOS box-arrow); references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110) (Android share)",
+      "method": "matches reference glyph per platform",
+      "level": "PLATFORM"
+    },
+    "opacity.yearStory.coach.scrim": {
+      "type": "opacity",
+      "value": 0.7,
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "black scrim behind the 'Swipe up for more' coach mark",
+      "evidence": "https://www.tiktok.com/@cdragon2010/video/7579703263306485022 (frames in references/auto/wrapped/frames/wrapped25-rec-cdragon2010-*) bg luma 238→71 at x100-300 y700-850",
+      "method": "alpha = 1 − 71/238",
+      "level": "SOURCED",
+      "precision": "±0.02",
+      "notes": "Only for the vertical model."
+    },
+    "duration.yearStory.coach.fadeIn": {
+      "type": "duration",
+      "value": 360,
+      "unit": "ms",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "coach-mark scrim fade-in",
+      "evidence": "https://www.tiktok.com/@cdragon2010/video/7579703263306485022 (frames in references/auto/wrapped/frames/wrapped25-rec-cdragon2010-*) 6.291 s first change → 6.628-6.684 s settled",
+      "method": "per-frame mean luma at 59.94 fps",
+      "level": "SOURCED",
+      "precision": "±35 ms"
+    },
+    "duration.yearStory.coach.delay": {
+      "type": "duration",
+      "value": 1800,
+      "unit": "ms",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "delay from first card to coach mark",
+      "evidence": "https://www.tiktok.com/@cdragon2010/video/7579703263306485022 (frames in references/auto/wrapped/frames/wrapped25-rec-cdragon2010-*) first card ≈4.5 s, scrim 6.29 s",
+      "method": "frame inspection",
+      "level": "SOURCED",
+      "precision": "±100 ms"
+    },
+    "duration.yearStory.page.settle": {
+      "type": "duration",
+      "value": 250,
+      "unit": "ms",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "vertical page change: release → rest",
+      "evidence": "https://www.tiktok.com/@cdragon2010/video/7579703263306485022 (frames in references/auto/wrapped/frames/wrapped25-rec-cdragon2010-*); references/auto/wrapped/frames/wrapped25-rec-cdragon2010-swipe-shift.csv (243/243/243/262 ms)",
+      "method": "peak velocity frame to last moving frame",
+      "level": "PLATFORM",
+      "precision": "±17 ms",
+      "notes": "Decelerating (ease-out) platform paging physics; use the platform pager. Only for the vertical model."
+    },
+    "layout.yearStory.shareCard.aspect": {
+      "type": "layout",
+      "value": "9:16",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "exported summary share card",
+      "evidence": "references/auto/wrapped/press/wrapped25-press-sharecards.png (808-810 × 1436-1437 px, ratio 1.775)",
+      "method": "extent",
+      "level": "SOURCED",
+      "precision": "±0.003"
+    },
+    "layout.yearStory.shareCard.margin": {
+      "type": "layout",
+      "value": "7.7% of card width",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "share card text margin",
+      "evidence": "references/auto/wrapped/press/wrapped25-press-sharecards.png card 1 text x62 of 809",
+      "method": "ratio",
+      "level": "SOURCED",
+      "precision": "±0.2%"
+    },
+    "layout.yearStory.summary": {
+      "type": "layout",
+      "value": "share card preview (≈60% width) with page dots → 'Share' pill → 'Replay from beginning' text link",
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "outro / summary screen",
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg; https://www.tiktok.com/@cdragon2010/video/7579703263306485022 (frames in references/auto/wrapped/frames/wrapped25-rec-cdragon2010-*) t=252 s",
+      "method": "visual",
+      "level": "SOURCED"
+    },
+    "layout.birthday.request.structure": {
+      "type": "layout",
+      "value": "recipient photo → '{name}' + occasion line → due date (a date, not a countdown) → welcome message → prompt ideas → primary button",
+      "source_app": "Tribute + VidDay",
+      "surface": "birthday.request",
+      "element": "request / contribution page order",
+      "evidence": "references/auto/tribute/mockups/tribute-home-phone-step-1-contribution-page.png; references/auto/vidday/store/vidday-store-01.png; references/auto/vidday/frames/vidday-tour-t064-phone.png (tour video t=64 s, phone screen 542 px)",
+      "method": "visual, 3 images",
+      "level": "SOURCED"
+    },
+    "dimension.birthday.request.margin": {
+      "type": "dimension",
+      "value": 15,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "page side margin (Tribute legacy page)",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json (https://www.tribute.co/testimonials/) x=15",
+      "method": "getBoundingClientRect at 390-px viewport",
+      "level": "VERIFIED",
+      "notes": "VidDay tour shows ≈33 pt button inset (SOURCED, ±1.5 pt)."
+    },
+    "dimension.birthday.request.cta.height": {
+      "type": "dimension",
+      "value": 62,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "primary button height ('Add Your Video')",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json (https://www.tribute.co/testimonials/) y=380.8, 360×62",
+      "method": "computed",
+      "level": "VERIFIED",
+      "notes": "VidDay 'RECORD OR UPLOAD' ≈67.4 pt tall, full pill (references/auto/vidday/frames/vidday-tour-t064-phone.png (tour video t=64 s, phone screen 542 px))."
+    },
+    "radius.birthday.request.cta": {
+      "type": "radius",
+      "value": 8,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "primary button corner radius",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json (https://www.tribute.co/testimonials/)",
+      "method": "computed border-radius",
+      "level": "VERIFIED",
+      "notes": "VidDay uses a full pill."
+    },
+    "fontSize.birthday.request.cta": {
+      "type": "fontSize",
+      "value": 22,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "primary button label",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json (https://www.tribute.co/testimonials/)",
+      "method": "computed",
+      "level": "VERIFIED"
+    },
+    "fontWeight.birthday.request.cta": {
+      "type": "fontWeight",
+      "value": 600,
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "primary button label",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json (https://www.tribute.co/testimonials/)",
+      "method": "computed",
+      "level": "VERIFIED"
+    },
+    "color.birthday.request.cta": {
+      "type": "color",
+      "value": "#FF4B4A",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "primary button fill (Tribute)",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json (https://www.tribute.co/testimonials/) rgb(255,75,74)",
+      "method": "computed",
+      "level": "VERIFIED",
+      "notes": "Brand accent of Tribute; VidDay uses #0086FE (SOURCED, references/auto/vidday/frames/vidday-tour-t064-phone.png (tour video t=64 s, phone screen 542 px)). Owner picks one accent family for the app."
+    },
+    "fontSize.birthday.request.title": {
+      "type": "fontSize",
+      "value": 24,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "page title",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json (https://www.tribute.co/testimonials/) y=84",
+      "method": "computed",
+      "level": "VERIFIED"
+    },
+    "fontWeight.birthday.request.title": {
+      "type": "fontWeight",
+      "value": 600,
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "page title",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json (https://www.tribute.co/testimonials/)",
+      "method": "computed",
+      "level": "VERIFIED"
+    },
+    "fontSize.birthday.request.message": {
+      "type": "fontSize",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "welcome message",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json (https://www.tribute.co/testimonials/) y=133.8",
+      "method": "computed",
+      "level": "VERIFIED"
+    },
+    "lineHeight.birthday.request.message": {
+      "type": "lineHeight",
+      "value": 28,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "welcome message",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json (https://www.tribute.co/testimonials/)",
+      "method": "computed",
+      "level": "VERIFIED"
+    },
+    "fontSize.birthday.request.prompt": {
+      "type": "fontSize",
+      "value": 15,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "prompt list item",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json (https://www.tribute.co/testimonials/) y=625.8",
+      "method": "computed",
+      "level": "VERIFIED"
+    },
+    "lineHeight.birthday.request.prompt": {
+      "type": "lineHeight",
+      "value": 18.75,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.request",
+      "element": "prompt list item",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json (https://www.tribute.co/testimonials/)",
+      "method": "computed",
+      "level": "VERIFIED"
+    },
+    "font.birthday": {
+      "type": "font",
+      "value": {
+        "ios": "system",
+        "android": "system"
+      },
+      "source_app": "Tribute + VidDay",
+      "surface": "birthday.request",
+      "element": "all birthday surfaces",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json (https://www.tribute.co/testimonials/) (Tribute uses Figtree, OFL); VidDay face unknown",
+      "method": "—",
+      "level": "PLATFORM",
+      "notes": "Figtree is open-licensed; kept PLATFORM for one typeface across the app. Owner may choose otherwise."
+    },
+    "layout.birthday.request.messageMax": {
+      "type": "layout",
+      "value": 500,
+      "unit": "characters",
+      "source_app": "VidDay",
+      "surface": "birthday.request",
+      "element": "max characters of the organiser's invitation message",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t042-phone.png counter '216/500'",
+      "method": "read from UI",
+      "level": "SOURCED"
+    },
+    "dimension.birthday.contribute.stepper": {
+      "type": "dimension",
+      "value": 40,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "step indicator circle diameter (4 steps)",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json y=104",
+      "method": "computed",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.contribute.input.height": {
+      "type": "dimension",
+      "value": 46,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "text input height",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json y=390",
+      "method": "computed",
+      "level": "VERIFIED"
+    },
+    "radius.birthday.contribute.input": {
+      "type": "radius",
+      "value": 8,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "text input radius",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json",
+      "method": "computed",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.contribute.button.height": {
+      "type": "dimension",
+      "value": 50,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "Continue button height",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json y=556",
+      "method": "computed",
+      "level": "VERIFIED"
+    },
+    "dimension.birthday.contribute.margin": {
+      "type": "dimension",
+      "value": 20,
+      "unit": "pt",
+      "source_app": "Tribute",
+      "surface": "birthday.contribute",
+      "element": "step page side margin",
+      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json x=20",
+      "method": "computed",
+      "level": "VERIFIED"
+    },
+    "layout.birthday.contribute.lineMax": {
+      "type": "layout",
+      "value": null,
+      "source_app": "Tribute + VidDay",
+      "surface": "birthday.contribute",
+      "element": "max characters of the contributor's one line",
+      "evidence": "—",
+      "method": "not found in Tribute or VidDay (only the organiser message limit, 500)",
+      "level": "BLOCKED"
+    },
+    "duration.birthday.tribute.clipTransition": {
+      "type": "duration",
+      "value": 0,
+      "unit": "ms",
+      "source_app": "Tribute",
+      "surface": "birthday.tribute",
+      "element": "transition between contributions (hard cut)",
+      "evidence": "https://website.tribute.co/6KY_IZ1tLME.mp4 (28 cuts) and https://website.tribute.co/QQe5RpbFIyI.mp4 (22 cuts); references/auto/tribute/frames/*clips*",
+      "method": "per-frame mean abs diff: single-frame spike at every cut",
+      "level": "SOURCED",
+      "precision": "±1 frame",
+      "notes": "VidDay uses a crossfade title→first photo (duration.birthday.tribute.titleCrossfade)."
+    },
+    "duration.birthday.tribute.titleCrossfade": {
+      "type": "duration",
+      "value": 600,
+      "unit": "ms",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "element": "title card → first photo crossfade",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t118.300-phone.png → -t119.300 / -t120.000 (tour 118.97→≈119.57 s)",
+      "method": "decaying per-frame diff",
+      "level": "SOURCED",
+      "precision": "±67 ms (2 frames)"
+    },
+    "duration.birthday.tribute.titleHold": {
+      "type": "duration",
+      "value": 1300,
+      "unit": "ms",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "element": "title card hold (lower bound)",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t118.300-phone.png (static 117.67→118.97 s)",
+      "method": "static frames",
+      "level": "SOURCED",
+      "precision": "lower bound; marketing edit"
+    },
+    "duration.birthday.tribute.unwrap": {
+      "type": "duration",
+      "value": 470,
+      "unit": "ms",
+      "source_app": "VidDay",
+      "surface": "birthday.tribute",
+      "element": "gift-wrap ribbons clear after tap",
+      "evidence": "references/auto/vidday/frames/vidday-tour-t116.500-phone.png, -t117.400-phone.png (117.20→117.67 s)",
+      "method": "per-frame diff",
+      "level": "SOURCED",
+      "precision": "±67 ms"
+    },
+    "color.birthday.tribute.pillarbox": {
+      "type": "color",
+      "value": "#000000",
+      "source_app": "Tribute",
+      "surface": "birthday.tribute",
+      "element": "fill beside portrait clips in a 16:9 video",
+      "evidence": "references/auto/tribute/frames/tribute-sample-tess-t007.080-first-clip.png (content x218-421 of 640)",
+      "method": "luma ≤ 20 outside content",
+      "level": "SOURCED",
+      "precision": "±2/255",
+      "notes": "Tribute help: 'nothing gets cut off'."
+    },
+    "duration.birthday.tribute.photoHold": {
+      "type": "duration",
+      "value": null,
+      "source_app": "Tribute + VidDay",
+      "surface": "birthday.tribute",
+      "element": "how long each photo holds",
+      "evidence": "—",
+      "method": "not found (Tribute: 'a set number of seconds', value not stated)",
+      "level": "BLOCKED"
+    },
+    "dimension.invite.web.margin": {
+      "type": "dimension",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "screen side margin",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --spacing-screen-margin-horizontal:16px; references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) title/poster/date x=16",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "dimension.invite.web.space.xxs": {
+      "type": "dimension",
+      "value": 2,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "spacing scale step xxs",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --spacing-xx-small",
+      "method": "production CSS variable",
+      "level": "VERIFIED"
+    },
+    "dimension.invite.web.space.xs": {
+      "type": "dimension",
+      "value": 4,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "spacing scale step xs",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --spacing-x-small",
+      "method": "production CSS variable",
+      "level": "VERIFIED"
+    },
+    "dimension.invite.web.space.s": {
+      "type": "dimension",
+      "value": 8,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "spacing scale step s",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --spacing-small",
+      "method": "production CSS variable",
+      "level": "VERIFIED"
+    },
+    "dimension.invite.web.space.m": {
+      "type": "dimension",
+      "value": 12,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "spacing scale step m",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --spacing-medium",
+      "method": "production CSS variable",
+      "level": "VERIFIED"
+    },
+    "dimension.invite.web.space.l": {
+      "type": "dimension",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "spacing scale step l",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --spacing-large",
+      "method": "production CSS variable",
+      "level": "VERIFIED"
+    },
+    "dimension.invite.web.space.xl": {
+      "type": "dimension",
+      "value": 24,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "spacing scale step xl",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --spacing-x-large",
+      "method": "production CSS variable",
+      "level": "VERIFIED"
+    },
+    "dimension.invite.web.space.xxl": {
+      "type": "dimension",
+      "value": 40,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "spacing scale step xxl",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --spacing-xx-large",
+      "method": "production CSS variable",
+      "level": "VERIFIED"
+    },
+    "font.invite.web": {
+      "type": "font",
+      "value": {
+        "ios": "system",
+        "android": "system"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "all page text",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css font-face Lausanne (TWK Lausanne) and PartifulGrotesk — proprietary",
+      "method": "font-family names",
+      "level": "PLATFORM"
+    },
+    "fontSize.invite.web.title": {
+      "type": "fontSize",
+      "value": 39,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "event/group title (maximum; shrinks with length)",
+      "evidence": "references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) span.summary 26 chars at y229.6; nine pages: 39/38/32/28/25 px",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED",
+      "notes": "Auto-fit by length; minimum observed 25."
+    },
+    "fontWeight.invite.web.title": {
+      "type": "fontWeight",
+      "value": 700,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "title",
+      "evidence": "references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv); references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-display-font-weight:700",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "lineHeight.invite.web.title": {
+      "type": "lineHeight",
+      "value": 1.2,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "title line height (× size)",
+      "evidence": "references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) 46.8/39",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "letterSpacing.invite.web.title": {
+      "type": "letterSpacing",
+      "value": -0.02,
+      "unit": "em",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "title tracking (em)",
+      "evidence": "references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) −0.78 px at 39 px",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "fontSize.invite.web.date": {
+      "type": "fontSize",
+      "value": 28,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "date line",
+      "evidence": "references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) y647; references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z)",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "fontWeight.invite.web.date": {
+      "type": "fontWeight",
+      "value": 500,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "date line",
+      "evidence": "references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv)",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "opacity.invite.web.date": {
+      "type": "opacity",
+      "value": 0.9,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "date text alpha (black on light, white on dark)",
+      "evidence": "references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) rgba(0,0,0,.9); references/auto/partiful/web/pf-web-public-dark.computed-styles.json (https://partiful.com/e/tdWKXXnFRQqtuxOcPz5e) rgba(255,255,255,.9)",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "fontSize.invite.web.time": {
+      "type": "fontSize",
+      "value": 20,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "time line",
+      "evidence": "references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) y686",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "opacity.invite.web.time": {
+      "type": "opacity",
+      "value": {
+        "light": 0.5,
+        "dark": 0.6
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "time text alpha",
+      "evidence": "references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) rgba(0,0,0,.5); references/auto/partiful/web/pf-web-public-dark.computed-styles.json (https://partiful.com/e/tdWKXXnFRQqtuxOcPz5e) rgba(255,255,255,.6)",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "fontSize.invite.web.body": {
+      "type": "fontSize",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "description, host, location text",
+      "evidence": "references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) y1087; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-large-size:16px",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "lineHeight.invite.web.default": {
+      "type": "lineHeight",
+      "value": 1.4,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "default line height (× size)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --shared-line-height:1.4; computed 22.4/16, 19.6/14, 25.2/18",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "fontSize.invite.web.sectionHeader": {
+      "type": "fontSize",
+      "value": 18,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "section header ('Guest List', 'Restricted Access')",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) y1129",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "fontWeight.invite.web.sectionHeader": {
+      "type": "fontWeight",
+      "value": 700,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "section header",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z)",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "fontSize.invite.web.detail": {
+      "type": "fontSize",
+      "value": 14,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "detail line / medium button label",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) y1154; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-medium-size:14px",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "fontSize.invite.web.small": {
+      "type": "fontSize",
+      "value": 12,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "small label (RSVP choice label, small buttons)",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.computed-styles.json; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-small-size:12px",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "fontWeight.invite.web.button": {
+      "type": "fontWeight",
+      "value": 600,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "button labels",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-font-weight:600; references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv)",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "color.invite.web.text.light": {
+      "type": "color",
+      "value": "#000000",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "primary text on light themes",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css .ptf-light --text-display-color:#000",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "color.invite.web.text.dark": {
+      "type": "color",
+      "value": "#FFFFFF",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "primary text on dark themes",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css .ptf-dark --text-display-color:#fff",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "opacity.invite.web.text.body": {
+      "type": "opacity",
+      "value": 0.8,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "body text alpha",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-body-color rgba(0,0,0,.8) / hsla(0,0%,100%,.8)",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "opacity.invite.web.text.detail": {
+      "type": "opacity",
+      "value": 0.6,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "detail text alpha",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-detail-color",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "opacity.invite.web.text.inactive": {
+      "type": "opacity",
+      "value": 0.4,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "inactive text alpha",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --text-inactive-color",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "dimension.invite.web.button.large.height": {
+      "type": "dimension",
+      "value": 48,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "large button height (RSVP / Sign in / Continue)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-large-height:48px; references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) y2027 310×48",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "radius.invite.web.button.large": {
+      "type": "radius",
+      "value": 4,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "large button radius",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-large-border-radius:4px",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "dimension.invite.web.button.large.paddingH": {
+      "type": "dimension",
+      "value": 24,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "large button horizontal padding",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-large-horizontal-padding:24px",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "dimension.invite.web.button.medium.height": {
+      "type": "dimension",
+      "value": 36,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "medium (pill) button height",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-medium-height:36px; references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) 'Remind me' 128.6×36",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "radius.invite.web.button.medium": {
+      "type": "radius",
+      "value": "full",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "medium button radius",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-medium-border-radius:800px",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "dimension.invite.web.button.medium.paddingH": {
+      "type": "dimension",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "medium button horizontal padding",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-medium-horizontal-padding:16px",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "color.invite.web.button.filled.light": {
+      "type": "color",
+      "value": {
+        "fill": "#000000",
+        "label": "#FFFFFF"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "filled button on light themes",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css .ptf-light --button-filled-background-color:#000; --button-filled-label-color:#fff",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "color.invite.web.button.filled.dark": {
+      "type": "color",
+      "value": {
+        "fill": "#FFFFFF",
+        "label": "#000000"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "filled button on dark themes",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css .ptf-dark --button-filled-*",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "opacity.invite.web.button.outlined.fill": {
+      "type": "opacity",
+      "value": 0.05,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "outlined button fill alpha",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-outlined-background-color rgba(0,0,0,.05)",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "opacity.invite.web.button.outlined.border": {
+      "type": "opacity",
+      "value": {
+        "light": 0.25,
+        "dark": 0.4
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "outlined button 1 pt border alpha",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --button-outlined-border-color",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "dimension.invite.web.avatar": {
+      "type": "dimension",
+      "value": 48,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "member avatar (host row and members row)",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --avatar-medium-size:48px; references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) y1182",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "dimension.invite.web.avatar.gap": {
+      "type": "dimension",
+      "value": 4,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "gap between avatars",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --avatar-group-gap:4px; references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) x 16/68/120",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "radius.invite.web.avatar": {
+      "type": "radius",
+      "value": "full",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "person avatar",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --avatar-border-radius:800px",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "radius.invite.web.avatar.square": {
+      "type": "radius",
+      "value": 8,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "organisation/group square avatar at 48",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --avatar-medium-square-border-radius:8px; references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) host img radius 8",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "opacity.invite.web.avatar.overflow": {
+      "type": "opacity",
+      "value": 0.1,
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "'+N' overflow disc fill alpha (do-not-copy the number)",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) x276 bg rgba(0,0,0,.1)",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED",
+      "notes": "Use the disc without a count (tenet: no counts)."
+    },
+    "radius.invite.web.poster": {
+      "type": "radius",
+      "value": 0,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "cover image corners",
+      "evidence": "references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) img radius 0px, 358 wide",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "layout.invite.web.poster": {
+      "type": "layout",
+      "value": "full content width (358 pt), own aspect ratio, directly under the title",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "cover image",
+      "evidence": "references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) x16 y345 358×285.9",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "color.invite.web.gateCard": {
+      "type": "color",
+      "value": "rgba(255,255,255,0.7)",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "members-only card fill (over blurred content)",
+      "evidence": "references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) y1846; references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) y1340",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "radius.invite.web.gateCard": {
+      "type": "radius",
+      "value": 4,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "members-only card radius",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z)",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "icon.invite.web.lock": {
+      "type": "icon",
+      "value": {
+        "ios": "lock.fill",
+        "android": "lock"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "lock glyph, 64 pt, on the members-only card",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) svg 64×64 at y1364",
+      "method": "matches reference filled padlock glyph",
+      "level": "PLATFORM"
+    },
+    "dimension.invite.web.lockIcon": {
+      "type": "dimension",
+      "value": 64,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "lock glyph size",
+      "evidence": "references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) svg 64×64; references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --icon-xxx-large-size:64px",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "dimension.invite.web.stickyCta.height": {
+      "type": "dimension",
+      "value": 56.4,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "sticky bottom action group height (incl. 1 pt border)",
+      "evidence": "references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) y715.6 263.7×56.4",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "radius.invite.web.stickyCta": {
+      "type": "radius",
+      "value": "full",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "sticky action group",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css PublicEventRsvpButtonGroup_root border-radius: var(--shared-round-border-radius)",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "shadow.invite.web.stickyCta": {
+      "type": "shadow",
+      "value": {
+        "x": 0,
+        "y": 0,
+        "blur": 12,
+        "color_light": "rgba(0,0,0,0.1)",
+        "color_dark": "rgba(0,0,0,0.25)"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "sticky action group glow",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css box-shadow: 0 0 var(--shared-box-shadow-radius) var(--shared-box-shadow-color)",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "dimension.invite.web.stickyCta.bottom": {
+      "type": "dimension",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "sticky action offset above the bottom bar",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css RsvpActions_sticky bottom: calc(var(--spacing-screen-margin-vertical) + var(--bottom-nav-inset))",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "dimension.invite.web.choice": {
+      "type": "dimension",
+      "value": 96,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "circular choice button (emoji + label) in the join sheet",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.computed-styles.json x27/147/267 96×96",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "fontSize.invite.web.choice.emoji": {
+      "type": "fontSize",
+      "value": 28,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "emoji in choice button",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.computed-styles.json",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "fontSize.invite.web.sheetInput": {
+      "type": "fontSize",
+      "value": 24,
+      "unit": "pt",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "sheet text input value/placeholder",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.computed-styles.json 'Your Name' y171",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "opacity.invite.web.sheetPlaceholder": {
+      "type": "opacity",
+      "value": {
+        "light": 0.3,
+        "dark": 0.4
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "sheet input placeholder alpha",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.computed-styles.json; references/auto/partiful/web/pf-web-public-dark-rsvp-sheet.computed-styles.json",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "duration.invite.web.interaction": {
+      "type": "duration",
+      "value": 100,
+      "unit": "ms",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "press feedback",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --animation-duration-interaction:100ms",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "duration.invite.web.quick": {
+      "type": "duration",
+      "value": 150,
+      "unit": "ms",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "quick transitions",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --animation-duration-quick:150ms",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "duration.invite.web.theme": {
+      "type": "duration",
+      "value": 200,
+      "unit": "ms",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "theme change",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --animation-duration-theme:200ms",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "duration.invite.web.default": {
+      "type": "duration",
+      "value": 300,
+      "unit": "ms",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "default transition",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --animation-duration-default:300ms",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "duration.invite.web.confirmation": {
+      "type": "duration",
+      "value": 600,
+      "unit": "ms",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "confirmation animation",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --animation-duration-confirmation:600ms",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "opacity.invite.web.pressed": {
+      "type": "opacity",
+      "value": {
+        "hover": 0.8,
+        "active": 0.6,
+        "disabled": 0.4
+      },
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "interactive state opacities",
+      "evidence": "references/auto/partiful/css/partiful-web-css-excerpt-2026-10-15.css --shared-hover-opacity, --shared-active-opacity, --shared-disabled-opacity",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED"
+    },
+    "layout.invite.web.background": {
+      "type": "layout",
+      "value": "per-invite theme: solid colour + optional looping video behind everything; html class switches light/dark; all text and controls use alpha-black (light) or alpha-white (dark) tokens",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "page background",
+      "evidence": "references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) body rgb(251,235,228) + <video> y64-844; references/auto/partiful/web/pf-web-public-dark.computed-styles.json (https://partiful.com/e/tdWKXXnFRQqtuxOcPz5e) body rgb(28,6,6), html.ptf-dark",
+      "method": "getComputedStyle at 390×844 CSS-px viewport (= pt)",
+      "level": "VERIFIED",
+      "notes": "Theme colours are content, not tokens (10 observed)."
+    },
+    "layout.invite.web.order": {
+      "type": "layout",
+      "value": "banner (do-not-copy) → header → title → cover → date/time → host row → location → description → members row → members-only card → footer 'Get the app'",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "page order",
+      "evidence": "references/auto/partiful/web/pf-web-public-light-01..04.png; pf-web-private-past-01..03.png",
+      "method": "visual + DOM order",
+      "level": "VERIFIED"
+    },
+    "layout.invite.web.ogImage": {
+      "type": "layout",
+      "value": "1200×630, cover letterboxed with blurred fill (served to facebookexternalhit/Apple Messages); otherwise cover at own aspect ≤1000×1000",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "link preview image",
+      "evidence": "references/auto/partiful/og/pf-og-public-crawler-1200x630.jpg; pf-og-public-browser-834x666.jpg; page HTML og:image",
+      "method": "curl with crawler UAs",
+      "level": "VERIFIED"
+    },
+    "layout.invite.web.metaDescription": {
+      "type": "layout",
+      "value": "description truncated to 155 characters + '…' (og:description untruncated)",
+      "source_app": "Partiful",
+      "surface": "invite.web",
+      "element": "meta description",
+      "evidence": "https://partiful.com/e/egrwj3biCR6g5MLJ0dbv HTML (156 chars incl. …)",
+      "method": "HTML",
+      "level": "VERIFIED"
+    },
+    "layout.invite.appclip.association": {
+      "type": "layout",
+      "value": "AASA 'appclips' entry + applinks '/e/*'; Smart App Banner meta 'app-id=…, app-clip-bundle-id=…' on every invite page; Android assetlinks handle_all_urls",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "element": "App Clip / app hand-off",
+      "evidence": "https://partiful.com/.well-known/apple-app-site-association; https://partiful.com/.well-known/assetlinks.json; invite page <meta name=apple-itunes-app>",
+      "method": "fetched JSON/HTML",
+      "level": "VERIFIED"
+    },
+    "layout.invite.appclip.messagesCard": {
+      "type": "layout",
+      "value": "header image (cover on blurred backdrop) with domain chip; footer row: clip icon, title, subtitle, action button 'View'",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "element": "App Clip card in Messages",
+      "evidence": "references/auto/partiful/store/partiful-store-04.png (y1400-2688)",
+      "method": "visual",
+      "level": "SOURCED",
+      "notes": "Header image/title/subtitle limits are Apple HIG (not verified here)."
+    },
+    "color.invite.appclip.action": {
+      "type": "color",
+      "value": {
+        "ios": "systemBlue",
+        "android": "n/a"
+      },
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "element": "'View' action button on the Messages card",
+      "evidence": "references/auto/partiful/store/partiful-store-04.png",
+      "method": "system-rendered card",
+      "level": "PLATFORM"
+    }
+  }
+}
