@@ -48,12 +48,12 @@ final class CameraCaptureModel {
     /// The group from context (`app://camera?group=`, group screen, chat), preselected in send-to.
     let contextGroupID: String?
 
-    @ObservationIgnored let camera: CaptureCamera
-    @ObservationIgnored private let premium: CapturePremium
-    @ObservationIgnored private let library: CaptureLibrary
-    @ObservationIgnored private let coach: CaptureCoachStore
-    @ObservationIgnored private let navigation: CaptureNavigation
-    @ObservationIgnored private let longPressThreshold: Duration
+    let camera: CaptureCamera
+    private let premium: CapturePremium
+    private let library: CaptureLibrary
+    private let coach: CaptureCoachStore
+    private let navigation: CaptureNavigation
+    private let longPressThreshold: Duration
     @ObservationIgnored private var longPressTask: Task<Void, Never>?
     @ObservationIgnored private var maxDurationTask: Task<Void, Never>?
     @ObservationIgnored private var isTouching = false

@@ -6,6 +6,7 @@ import androidx.compose.ui.res.stringResource
 import app.data.model.TributeRequest
 import app.designsystem.R
 import app.feature.memory.common.MemoryBackend
+import app.feature.memory.common.MemoryCache
 import app.feature.memory.common.MemoryFormats
 import app.feature.memory.common.attempt
 import app.feature.memory.common.rememberMemoryBackend
@@ -34,7 +35,11 @@ fun BirthdayRequestEntries(
     row: @Composable (title: String, subtitle: String, onClick: () -> Unit) -> Unit,
 ) {
     val backend = rememberMemoryBackend()
-    val entries = produceState(emptyList<OpenRequestEntry>(), groupId, backend) { value = openRequestEntries(backend, groupId) }.value
+    // Cached first, so rows do not pop in on every visit; the read confirms or replaces them.
+    val key = MemoryCache.key(backend, "entry.requests", groupId)
+    val entries = produceState(MemoryCache.shared.get<List<OpenRequestEntry>>(key).orEmpty(), groupId, backend) {
+        value = (openRequestEntries(backend, groupId) ?: value).also { MemoryCache.shared.put(key, it) }
+    }.value.filter { it.request.isOpen(java.time.Instant.now()) }
     for (entry in entries) {
         row(
             stringResource(R.string.birthday_request_title, entry.honoreeName),
@@ -43,11 +48,11 @@ fun BirthdayRequestEntries(
     }
 }
 
-/** Open requests of [groupId], soonest due first, never about the current user. */
-internal suspend fun openRequestEntries(backend: MemoryBackend, groupId: String, clock: Clock = Clock.systemUTC()): List<OpenRequestEntry> =
+/** Open requests of [groupId], soonest due first, never about the current user; null when the read failed. */
+internal suspend fun openRequestEntries(backend: MemoryBackend, groupId: String, clock: Clock = Clock.systemUTC()): List<OpenRequestEntry>? =
     attempt {
         val me = backend.currentUserId
         val requests = backend.openRequests().filter { it.groupId == groupId && it.honoreeId != me && it.isOpen(clock.instant()) }
         val names = backend.profiles(requests.map { it.honoreeId }.distinct()).associate { it.id to it.firstName.orEmpty() }
         requests.map { OpenRequestEntry(it.id, names[it.honoreeId].orEmpty(), it) }
-    }.getOrDefault(emptyList())
+    }.getOrNull()

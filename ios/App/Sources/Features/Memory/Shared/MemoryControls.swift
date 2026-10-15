@@ -229,9 +229,9 @@ extension View {
     /// `icon.global.checkmark`, text role `button`, `radius.global.capsule`, full width minus
     /// `size.global.screenMargin`, top under the status bar; metrics of the measured Yope toast
     /// `camera.sendto.layout.toast`), as the shared `ToastView` does. Its dwell time is BLOCKED
-    /// (`safety.block.duration.toast`, `camera.sendto.duration.toastVisible`): release builds post the
-    /// text as a VoiceOver announcement only; DEBUG builds also draw the toast until it is tapped or
-    /// replaced, so the layout can be reviewed (same rule as `ToastCenter`).
+    /// (`MemoryBlocked.toastDwell`): release builds post the text as a VoiceOver announcement only;
+    /// DEBUG builds also draw the toast until it is tapped or replaced, so the layout can be reviewed
+    /// (same rule as `ToastCenter`). Once the dwell is sourced the toast shows for that long.
     func memoryToast(_ message: Binding<MemoryToastMessage?>) -> some View {
         modifier(MemoryToastModifier(message: message))
     }
@@ -240,21 +240,33 @@ extension View {
 private struct MemoryToastModifier: ViewModifier {
     @Binding var message: MemoryToastMessage?
 
+    /// Drawn once the dwell is sourced; until then only in DEBUG builds (layout review, snapshots).
+    private var draws: Bool {
+        #if DEBUG
+        return true
+        #else
+        return MemoryBlocked.toastDwell != nil
+        #endif
+    }
+
     func body(content: Content) -> some View {
         content
             .overlay(alignment: .top) {
-                #if DEBUG
-                if let message {
+                if draws, let message {
                     toast(message)
                         .dsTransition(.move(edge: .top).combined(with: .opacity))
                         .id(message.id)
                 }
-                #endif
             }
             .dsAnimation(.spring(Tokens.Springs.globalPlatformDefaultIos), value: message?.id)
             .onChange(of: message?.id) { _, id in
                 guard id != nil, let text = message?.text else { return }
                 AccessibilityNotification.Announcement(text).post()
+            }
+            .task(id: message?.id) {
+                guard message != nil, let dwell = MemoryBlocked.toastDwell else { return }
+                try? await Task.sleep(for: .seconds(dwell))
+                if !Task.isCancelled { message = nil }
             }
     }
 

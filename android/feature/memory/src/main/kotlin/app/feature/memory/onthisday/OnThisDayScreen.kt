@@ -4,6 +4,8 @@
 // references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (progress bar, meta row, close).
 package app.feature.memory.onthisday
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -55,6 +57,8 @@ import androidx.compose.ui.platform.LocalContext
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.memory.common.HeaderCircleButton
+import app.feature.memory.common.MemoryBlocked
+import app.feature.memory.common.PreloadImages
 import app.feature.memory.common.MemoryFormats
 import app.feature.memory.common.MemoryImage
 import app.feature.memory.common.MessageBlock
@@ -144,10 +148,22 @@ private fun Day(state: OnThisDayState.Day, onNext: () -> Unit, onPrevious: () ->
                     }
                 },
         ) {
-            val photos = state.year.photos
-            if (photos.size == 1) SinglePhoto(photos.first(), state.zone) else Grid(photos, state.zone)
+            // `duration.onthisday.memoryChange` is BLOCKED: the year changes without animation until it is sourced.
+            val change = MemoryBlocked.onThisDayMemoryChangeMs
+            if (change == null) {
+                YearContent(state.year, state.zone)
+            } else {
+                Crossfade(state.index, animationSpec = tween(change), label = "memoryChange") { index -> YearContent(state.years[index], state.zone) } // provenance-ok: animation inspector label, never shown
+            }
         }
+        // The next year's photos load before the tap, so they are on screen at once.
+        PreloadImages(state.years.getOrNull(state.index + 1)?.photos.orEmpty().mapNotNull { photo -> if (state.years[state.index + 1].photos.size == 1) photo.displayUrl else photo.thumbUrl })
     }
+}
+
+@Composable
+private fun YearContent(year: MemoryYear, zone: ZoneId) {
+    if (year.photos.size == 1) SinglePhoto(year.photos.first(), zone) else Grid(year.photos, zone)
 }
 
 /** Banner: fill from the screen top, progress bar below the status bar, label + close on one row. */

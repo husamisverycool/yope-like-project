@@ -67,8 +67,11 @@ public enum WidgetReloader {
         public let family: String
     }
 
+    /// Reloads the Home Screen and Lock Screen group-photo widgets.
     public static func reloadGroupWidgets() {
-        WidgetCenter.shared.reloadTimelines(ofKind: WidgetKind.groupPhoto)
+        for kind in WidgetKind.allGroupPhoto {
+            WidgetCenter.shared.reloadTimelines(ofKind: kind)
+        }
     }
 
     public static func reloadAll() {

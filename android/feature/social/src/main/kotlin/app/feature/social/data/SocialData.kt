@@ -78,7 +78,7 @@ interface SocialData {
     suspend fun recap(recapId: String): WeeklyRecap?
     suspend fun updateRecap(recapId: String, items: List<String>, text: String): WeeklyRecap
 
-    fun observeAlbums(groupId: String): Flow<DataState<List<Album>>>
+    suspend fun albums(groupId: String): List<Album>
     suspend fun albumItems(albumId: String): List<AlbumItem>
     suspend fun saveAlbum(groupId: String, name: String, postIds: List<String>): Album
     suspend fun renameAlbum(albumId: String, name: String): Album
@@ -142,7 +142,7 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
     override suspend fun recap(recapId: String) = graph.recaps.recap(recapId)
     override suspend fun updateRecap(recapId: String, items: List<String>, text: String) = graph.recaps.updateRecap(recapId, items, text)
 
-    override fun observeAlbums(groupId: String) = graph.albums.observeAlbums(groupId)
+    override suspend fun albums(groupId: String) = graph.albums.albums(groupId)
     override suspend fun albumItems(albumId: String) = graph.albums.items(albumId)
     override suspend fun saveAlbum(groupId: String, name: String, postIds: List<String>) = graph.albums.saveAlbum(groupId, name, postIds)
     override suspend fun renameAlbum(albumId: String, name: String) = graph.albums.renameAlbum(albumId, name)
@@ -189,7 +189,7 @@ object UnconfiguredSocialData : SocialData {
     override suspend fun recaps(groupId: String): List<WeeklyRecap> = fail()
     override suspend fun recap(recapId: String): WeeklyRecap? = fail()
     override suspend fun updateRecap(recapId: String, items: List<String>, text: String): WeeklyRecap = fail()
-    override fun observeAlbums(groupId: String): Flow<DataState<List<Album>>> = failing()
+    override suspend fun albums(groupId: String): List<Album> = fail()
     override suspend fun albumItems(albumId: String): List<AlbumItem> = fail()
     override suspend fun saveAlbum(groupId: String, name: String, postIds: List<String>): Album = fail()
     override suspend fun renameAlbum(albumId: String, name: String): Album = fail()

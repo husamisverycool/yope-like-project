@@ -45,6 +45,7 @@ struct SendToView: View {
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("camera.sendto")
         .dsHaptic(Tokens.Haptics.globalSelect, trigger: model.selectionChanges)
+        .captureSendStatus(model.statusCenter)
         .task { await model.load() }
         // groups.create (account group) over send-to, so the capture is kept; the list reloads after.
         .sheet(isPresented: $isCreatingGroup, onDismiss: { Task { await model.reload() } }) {
@@ -121,8 +122,8 @@ struct SendToView: View {
             .accessibilitySortPriority(7)
     }
 
-    /// Message field capsule + mic circle. Their fill `camera.sendto.color.messageField` is
-    /// BLOCKED (a translucent material), so no fill is drawn. The field hides while the keyboard is up.
+    /// Message field capsule + mic circle, filled `camera.sendto.color.messageField` once it is
+    /// unblocked (CaptureBlocked). The field hides while the keyboard is up.
     private var messageRow: some View {
         let fieldWidth = Preview.width - Field.insetLeading - Field.gapToMic - Field.micDiameter - Field.insetTrailing
         return HStack(spacing: Field.gapToMic) {
@@ -136,12 +137,23 @@ struct SendToView: View {
             .onSubmit { isCaptionFocused = false }
             .padding(.horizontal, Field.height / 2)
             .frame(width: fieldWidth, height: Field.height)
+            .background {
+                if let fill = CaptureBlocked.messageFieldFill { Capsule().fill(fill) }
+            }
             .contentShape(Capsule())
+            .onChange(of: model.caption) { _, caption in
+                if let limit = CaptureBlocked.captionMaxLength, caption.count > limit {
+                    model.caption = String(caption.prefix(limit))
+                }
+            }
             .opacity(isCaptionFocused ? 0 : 1)
             .accessibilitySortPriority(6)
             .accessibilityIdentifier("camera.sendto.caption")
             micButton
                 .frame(width: Field.micDiameter, height: Field.micDiameter)
+                .background {
+                    if model.isVoiceNoteAvailable, let fill = CaptureBlocked.messageFieldFill { Circle().fill(fill) }
+                }
         }
         .padding(.leading, Field.insetLeading)
         .padding(.trailing, Field.insetTrailing)

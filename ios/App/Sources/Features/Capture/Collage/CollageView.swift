@@ -166,8 +166,8 @@ struct CollageView: View {
 
     // MARK: Share
 
-    /// The share pill (`collage.share.layout.pill`). Its frosted fill `collage.share.color.pill` is
-    /// BLOCKED and not drawn; glyph and label are `color.global.textPrimary`.
+    /// The share pill (`collage.share.layout.pill`); its frosted fill `collage.share.color.pill` is
+    /// drawn once unblocked (CaptureBlocked); glyph and label are `color.global.textPrimary`.
     private func sharePill(_ item: CollageSharePage) -> some View {
         let pill = Tokens.Layouts.CollageShareLayoutPill.self
         let preview = model.pages[model.currentPage].map { Image(uiImage: $0) } ?? Image(systemName: Tokens.Icons.collageShareIconShare)
@@ -183,6 +183,11 @@ struct CollageView: View {
             }
             .foregroundStyle(Tokens.Colors.globalTextPrimary)
             .frame(width: pill.width, height: pill.height)
+            .background {
+                if let fill = CaptureBlocked.sharePillFill {
+                    RoundedRectangle(cornerRadius: pill.cornerRadius, style: .continuous).fill(fill)
+                }
+            }
             .contentShape(RoundedRectangle(cornerRadius: pill.cornerRadius, style: .continuous))
         }
         .buttonStyle(.plain)

@@ -9,6 +9,8 @@ package app.feature.memory.yearstory
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -41,12 +43,14 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -71,6 +75,7 @@ import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.designsystem.scaledDp
 import app.feature.memory.common.HeaderCircleButton
+import app.feature.memory.common.MemoryBlocked
 import app.feature.memory.common.MemoryBackend
 import app.feature.memory.common.MessageBlock
 import app.feature.memory.common.PlatformSpinner
@@ -113,6 +118,7 @@ fun YearStoryScreen(
     onClose: () -> Unit,
     onShare: (StoryCard) -> Unit,
     modifier: Modifier = Modifier,
+    onTogglePause: () -> Unit = {},
     sharing: Boolean = false,
     shareHost: @Composable (canvasWidth: Dp) -> Unit = {},
 ) {
@@ -138,7 +144,7 @@ fun YearStoryScreen(
                     )
                     is YearStoryState.Story -> Story(state, width, height, onNext, onPrevious, onReplay, onShare, sharing)
                 }
-                Chrome(onClose)
+                Chrome(onClose, paused = (state as? YearStoryState.Story)?.paused, onTogglePause = onTogglePause)
             }
             shareHost(width)
         }
@@ -182,8 +188,28 @@ private fun Story(
             StoryCardContent(card, width, height, revealed = false)
         }
         if (card.shareable) ShareRow(enabled = !sharing) { onShare(card) }
-        Progress(state.cards.size, state.index)
+        Progress(state.cards.size, state.index, rememberCardProgress(state, onNext))
     }
+}
+
+/**
+ * How far the current card is through `duration.year.story.card` (linear,
+ * `easing.year.story.progress.fill`), advancing at the end; the summary waits. While that duration is
+ * BLOCKED the current segment shows full and nothing advances on its own (tap-only, M-16). The fill
+ * tracks time, so it stays under Reduce Motion.
+ */
+@Composable
+private fun rememberCardProgress(state: YearStoryState.Story, onNext: () -> Unit): () -> Float {
+    val duration = MemoryBlocked.yearStoryCardMs ?: return { 1f }
+    val next by rememberUpdatedState(onNext)
+    val fraction = remember(state.index) { Animatable(0f) }
+    LaunchedEffect(state.index, state.paused) {
+        if (state.paused || state.card == StoryCard.Summary) return@LaunchedEffect
+        val left = ((1f - fraction.value) * duration).toInt()
+        fraction.animateTo(1f, tween(left, easing = Tokens.Easings.yearStoryProgressFill))
+        next()
+    }
+    return { fraction.value }
 }
 
 /** How many cards ahead have their images loaded. */
@@ -197,7 +223,7 @@ private fun imageUrl(card: StoryCard): String? = when (card) {
 
 /** One segment per card; completed and current filled, upcoming white at the track opacity. */
 @Composable
-private fun Progress(count: Int, index: Int) {
+private fun Progress(count: Int, index: Int, current: () -> Float) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -211,8 +237,17 @@ private fun Progress(count: Int, index: Int) {
                     .weight(1f)
                     .height(Tokens.Sizes.yearStoryProgressHeight)
                     .background(
-                        if (i <= index) Tokens.Colors.yearStoryProgressFill
+                        if (i < index) Tokens.Colors.yearStoryProgressFill
                         else Tokens.Colors.yearStoryProgressFill.copy(alpha = Tokens.Opacities.yearStoryProgressTrack),
+                    )
+                    .then(
+                        if (i == index) {
+                            Modifier.drawBehind {
+                                drawRect(Tokens.Colors.yearStoryProgressFill, size = size.copy(width = size.width * current()))
+                            }
+                        } else {
+                            Modifier
+                        },
                     ),
             )
         }
@@ -224,10 +259,26 @@ private fun Progress(count: Int, index: Int) {
  * `duration.year.story.card` is BLOCKED (no auto-advance to pause, M-16); no sound toggle (M-18).
  */
 @Composable
-private fun Chrome(onClose: () -> Unit) {
+private fun Chrome(onClose: () -> Unit, paused: Boolean?, onTogglePause: () -> Unit) {
     val circle = Tokens.Sizes.yearStoryChromeButton
     val touch = circle + touchOutset(circle) * 2
     Box(Modifier.fillMaxWidth()) {
+        if (MemoryBlocked.yearStoryCardMs != null && paused != null) {
+            HeaderCircleButton(
+                icon = if (paused) Tokens.Icons.globalPlay else Tokens.Icons.yearStoryPause,
+                contentDescription = stringResource(if (paused) R.string.year_story_a11y_play else R.string.year_story_a11y_pause),
+                onClick = onTogglePause,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(
+                        end = Tokens.Sizes.yearStoryChromeInsetRight - touchOutset(circle) + Tokens.Sizes.yearStoryChromePitch,
+                        top = Tokens.Sizes.yearStoryChromeCenterY - touch / 2,
+                    ),
+                diameter = circle,
+                fill = Tokens.Colors.yearStoryChromeFill,
+                glyph = Tokens.Sizes.yearStoryChromeGlyph,
+            )
+        }
         HeaderCircleButton(
             icon = Tokens.Icons.globalClose,
             contentDescription = stringResource(R.string.year_story_a11y_close),
@@ -362,6 +413,7 @@ fun YearStoryDestination(
         onReplay = vm::replay,
         onRetry = vm::retry,
         onClose = onClose,
+        onTogglePause = vm::togglePause,
         onShare = { card ->
             if (!exporter.busy) scope.launch {
                 val story = state as? YearStoryState.Story

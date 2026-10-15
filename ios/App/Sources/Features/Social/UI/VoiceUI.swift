@@ -61,13 +61,17 @@ final class SocialVoicePlayback {
     }
 }
 
-/// Downloaded voice files (temporary directory; the OS clears it).
+/// Downloaded voice / Live Photo files (temporary directory; the OS clears it).
 enum SocialVoiceFiles {
     static func write(_ bytes: Data, name: String) throws -> URL {
+        try writeMedia(bytes, name: "voice-" + name, fileExtension: "m4a")
+    }
+
+    static func writeMedia(_ bytes: Data, name: String, fileExtension: String) throws -> URL {
         let safe = name.unicodeScalars.map { CharacterSet.alphanumerics.contains($0) ? String($0) : "_" }.joined()
         let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent("social-voice-" + safe)
-            .appendingPathExtension("m4a")
+            .appendingPathComponent("social-" + safe)
+            .appendingPathExtension(fileExtension)
         if !FileManager.default.fileExists(atPath: url.path) { try bytes.write(to: url) }
         return url
     }
@@ -158,7 +162,7 @@ struct VoiceBubble: View {
                     if !played { onPlayFailed() }
                 }
             } label: {
-                Image(systemName: Tokens.Icons.globalPlay)
+                Image(systemName: playing ? (SocialBlocked.pauseIcon ?? Tokens.Icons.globalPlay) : Tokens.Icons.globalPlay)
                     .resizable()
                     .scaledToFit()
                     .frame(width: Tokens.Sizes.chatVoiceDimensionPlayGlyph)
@@ -184,8 +188,8 @@ struct VoiceBubble: View {
         .frame(width: Tokens.Sizes.chatVoiceDimensionWidth)
         .frame(minHeight: Tokens.Sizes.chatVoiceDimensionHeight)
         .background {
-            if isMine {
-                RoundedRectangle(cornerRadius: Tokens.Radii.chatVoiceRadiusBubble).fill(Tokens.Colors.chatVoiceColorBubble)
+            if let fill = isMine ? Tokens.Colors.chatVoiceColorBubble : SocialBlocked.voiceBubbleTheirs {
+                RoundedRectangle(cornerRadius: Tokens.Radii.chatVoiceRadiusBubble).fill(fill)
             }
         }
         .accessibilityElement(children: .contain)

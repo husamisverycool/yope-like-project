@@ -36,6 +36,7 @@ import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.social.common.Formats
 import app.feature.social.common.InkGlyph
+import app.feature.social.common.SocialBlocked
 import app.feature.social.common.Line
 import app.feature.social.common.LocalSocialData
 import app.feature.social.common.Type
@@ -52,7 +53,8 @@ fun barCount(width: Dp): Int {
 
 /** Waveform bars: rounded, centred on the line, heights between `barMinHeight` and `barMaxHeight` from [levels] (0…1). */
 @Composable
-fun WaveformBars(levels: List<Float>?, count: Int, modifier: Modifier = Modifier) {
+fun WaveformBars(levels: List<Float>?, count: Int, modifier: Modifier = Modifier, progress: Float = 0f) {
+    val played = SocialBlocked.waveformPlayed
     val min = Tokens.Sizes.chatVoiceDimensionBarMinHeight
     val maxH = Tokens.Sizes.chatVoiceDimensionBarMaxHeight
     val gap = Tokens.Sizes.chatVoiceDimensionBarPitch - Tokens.Sizes.chatVoiceDimensionBarWidth
@@ -64,7 +66,8 @@ fun WaveformBars(levels: List<Float>?, count: Int, modifier: Modifier = Modifier
                     .width(Tokens.Sizes.chatVoiceDimensionBarWidth)
                     .height(min + (maxH - min) * level)
                     .clip(RoundedCornerShape(Tokens.Sizes.chatVoiceDimensionBarWidth))
-                    .background(Tokens.Colors.chatVoiceColorWaveform),
+                    // The played part's colour is BLOCKED (`chat.voice.color.waveformPlayed`): drawn only once unblocked.
+                    .background(if (played != null && count > 0 && i < progress * count) played else Tokens.Colors.chatVoiceColorWaveform),
             )
         }
     }
@@ -85,6 +88,7 @@ fun VoiceBubble(
     voice: VoiceServices?,
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,
+    progress: Float = 0f,
 ) {
     val duration = Formats.voiceDuration(durationMs)
     val buttonLabel = playLabel(playing, durationMs)
@@ -111,7 +115,10 @@ fun VoiceBubble(
                 },
             contentAlignment = Alignment.Center,
         ) {
-            InkGlyph(Tokens.Icons.globalPlay, Tokens.Colors.globalTextPrimary, inkWidth = Tokens.Sizes.chatVoiceDimensionPlayGlyph)
+            // The playing glyph is BLOCKED (`chat.voice.icon.pause`): ▶ stays until it is unblocked.
+            val pause = SocialBlocked.pauseIcon
+            if (playing && pause != null) InkGlyph(pause, Tokens.Colors.globalTextPrimary, inkWidth = Tokens.Sizes.chatVoiceDimensionPlayGlyph)
+            else InkGlyph(Tokens.Icons.globalPlay, Tokens.Colors.globalTextPrimary, inkWidth = Tokens.Sizes.chatVoiceDimensionPlayGlyph)
         }
         Spacer(Modifier.width(Tokens.Sizes.chatVoiceDimensionPlayToWaveform))
         BoxWithConstraints(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
@@ -123,7 +130,7 @@ fun VoiceBubble(
                     value = url?.let { voice.envelope(path, it, count) }
                 }
             }
-            WaveformBars(levels, count)
+            WaveformBars(levels, count, progress = if (playing) progress else 0f)
         }
         Spacer(Modifier.width(Tokens.Sizes.chatVoiceDimensionWaveformToDuration))
         Line(duration, Type.caption(), Tokens.Colors.chatVoiceColorDuration, Modifier.clearAndSetSemantics { })

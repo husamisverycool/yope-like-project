@@ -36,6 +36,7 @@ struct OnThisDayScreen: View {
         .onChange(of: model.isFinished) { _, finished in
             if finished { dismiss() }
         }
+        .animation(MemoryBlocked.onThisDayMemoryChange.map { .easeInOut(duration: $0) }, value: model.index)
         .onChange(of: model.index) { _, _ in
             UIAccessibility.post(notification: .screenChanged, argument: nil)
         }
@@ -104,8 +105,9 @@ struct OnThisDayScreen: View {
                         grid(year, width: width)
                     }
                 }
-                // No animation between years: `duration.onthisday.memoryChange` is BLOCKED.
+                // Year → year: `MemoryBlocked.onThisDayMemoryChange`; while BLOCKED, no animation.
                 .id(year.id)
+                .transition(.opacity)
             }
         }
     }

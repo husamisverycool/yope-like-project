@@ -8,6 +8,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import app.feature.capture.Blocked
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -37,8 +42,33 @@ import app.feature.capture.data.SendTracker
 fun CaptureToastHost(tracker: SendTracker = CaptureServices.tracker(LocalContext.current)) {
     val failure by tracker.failure.collectAsStateWithLifecycle()
     val view = LocalView.current
+    var posted by remember { mutableStateOf<SendTracker.Sent?>(null) }
+    // "posted in …" only once its visible duration is sourced (Blocked.toastVisibleMillis).
+    LaunchedEffect(tracker) {
+        val dwell = Blocked.toastVisibleMillis ?: return@LaunchedEffect
+        tracker.sent.collect { sent ->
+            posted = sent
+            delay(dwell)
+            if (posted == sent) posted = null
+        }
+    }
     LaunchedEffect(failure?.draftId, failure is SendTracker.Failure.SendFailed) {
         if (failure is SendTracker.Failure.SendFailed) view.haptic(Tokens.Haptics.globalError)
+    }
+    val shownPost = posted
+    if (failure == null && shownPost != null) {
+        Box(Modifier.fillMaxWidth().padding(top = Tokens.Layouts.CameraSendtoLayoutToast.top.dp).testTag("capture.toast.posted")) {
+            LimeToast(
+                text = if (shownPost.groupNames.size == 1) {
+                    stringResource(R.string.camera_sendto_toast_postedone, shownPost.groupNames.single())
+                } else {
+                    stringResource(R.string.camera_sendto_toast_postedmany)
+                },
+                actionLabel = null,
+                onAction = null,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+            )
+        }
     }
     val current = failure ?: return
     Box(Modifier.fillMaxWidth().padding(top = Tokens.Layouts.CameraSendtoLayoutToast.top.dp).testTag("capture.toast")) {

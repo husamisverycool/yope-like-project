@@ -6,13 +6,14 @@ import UIKit
 
 /// Shows one toast at a time. Inject one per window (`.toastHost(center)`) and call `show(_:)`.
 ///
-/// The dwell time (`safety.block.duration.toast`) is BLOCKED, so release builds never draw the toast: the message
-/// is still posted as a VoiceOver announcement. DEBUG builds keep it on screen until it is tapped, so the layout
-/// can be reviewed and snapshot.
+/// The message is always posted as a VoiceOver announcement. The toast is drawn for `safety.block.duration.toast`
+/// (`DesignGaps.toastDwell`); while that dwell is BLOCKED release builds draw nothing and DEBUG builds keep the toast
+/// until it is tapped, so the layout can be reviewed and snapshot.
 @MainActor
 @Observable
 final class ToastCenter {
     private(set) var message: String?
+    @ObservationIgnored private var dismissTask: Task<Void, Never>?
 
     init(message: String? = nil) {
         self.message = message
@@ -20,6 +21,16 @@ final class ToastCenter {
 
     func show(_ message: String) {
         UIAccessibility.post(notification: .announcement, argument: message)
+        dismissTask?.cancel()
+        if let dwell = DesignGaps.toastDwell {
+            self.message = message
+            dismissTask = Task { [weak self] in
+                try? await Task.sleep(for: .seconds(dwell))
+                guard !Task.isCancelled else { return }
+                self?.message = nil
+            }
+            return
+        }
         #if DEBUG
         self.message = message
         #endif

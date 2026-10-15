@@ -213,3 +213,50 @@ struct AvatarStack: View {
         }
     }
 }
+
+/// An image at a plain URL (e.g. the invite web service's re-encoded cover and avatars), through the same downsampling
+/// cache as `StorageImage`, filling the frame its caller gives it.
+struct URLImage<Placeholder: View>: View {
+    let url: URL?
+    var contentMode: ContentMode = .fill
+    @ViewBuilder var placeholder: () -> Placeholder
+
+    @Environment(\.displayScale) private var displayScale
+    @State private var loaded: (key: String, image: UIImage)?
+
+    init(url: URL?, contentMode: ContentMode = .fill, @ViewBuilder placeholder: @escaping () -> Placeholder) {
+        self.url = url
+        self.contentMode = contentMode
+        self.placeholder = placeholder
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            let pixels = Int((max(proxy.size.width, proxy.size.height) * displayScale).rounded(.up))
+            let key = (url?.absoluteString ?? "") + "#" + String(pixels)
+            Group {
+                if let image = image(for: key, pixels: pixels) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: contentMode)
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                        .clipped()
+                } else {
+                    placeholder()
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                }
+            }
+            .task(id: key) {
+                guard let url, pixels > 0,
+                      let image = await ImagePipeline.shared.image(path: url.absoluteString, url: url, pixels: pixels) else { return }
+                loaded = (key, image)
+            }
+        }
+    }
+
+    private func image(for key: String, pixels: Int) -> UIImage? {
+        if let loaded, loaded.key == key { return loaded.image }
+        guard let url, pixels > 0 else { return nil }
+        return ImagePipeline.shared.cachedImage(path: url.absoluteString, pixels: pixels)
+    }
+}

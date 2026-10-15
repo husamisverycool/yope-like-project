@@ -146,9 +146,11 @@ struct YearStoryCanvasView: View {
                     model.previous()
                 }
             }
-            YearStoryProgressBar(count: model.cards.count, index: model.index)
-                .padding(.top, Tokens.Sizes.yearStoryProgressTop)
-                .allowsHitTesting(false)
+            TimelineView(.animation(paused: model.cardDuration == nil || model.isPaused)) { context in
+                YearStoryProgressBar(count: model.cards.count, index: model.index, currentFraction: model.currentFraction(at: context.date))
+            }
+            .padding(.top, Tokens.Sizes.yearStoryProgressTop)
+            .allowsHitTesting(false)
             if card.isShareable {
                 shareRow(card)
                     .frame(width: size.width, height: size.height - Tokens.Sizes.yearStoryShareBottomInset, alignment: .bottom)
@@ -174,15 +176,37 @@ struct YearStoryCanvasView: View {
     }
 
     /// Close circle (`dimension.year.story.chrome.*`), centred `chrome.centerY` below the canvas top,
-    /// `chrome.insetRight` from its right; hit area `size.global.minTouchTarget.ios`. The pause
-    /// circle is not shown while `duration.year.story.card` is BLOCKED (no auto-advance).
+    /// `chrome.insetRight` from its right; hit area `size.global.minTouchTarget.ios`. The pause / play
+    /// circle sits `chrome.pitch` to its left only once the story advances on its own
+    /// (`MemoryBlocked.yearStoryCardDuration`).
+    @ViewBuilder
     private var chrome: some View {
         let diameter = Tokens.Sizes.yearStoryChromeButton
-        let hit = max(Tokens.Sizes.globalMinTouchTargetIos, diameter)
-        return Button {
+        let closeX = size.width - Tokens.Sizes.yearStoryChromeInsetRight - diameter / 2
+        chromeCircle(icon: Tokens.Icons.globalClose, label: Copy.yearStoryA11yClose) {
             model.close()
-        } label: {
-            Image(systemName: Tokens.Icons.globalClose)
+        }
+        .accessibilityIdentifier("year.story.close")
+        .accessibilitySortPriority(4)
+        .position(x: closeX, y: Tokens.Sizes.yearStoryChromeCenterY)
+        if model.cardDuration != nil, model.phase == .loaded {
+            chromeCircle(
+                icon: model.isPaused ? Tokens.Icons.globalPlay : Tokens.Icons.yearStoryPause,
+                label: model.isPaused ? Copy.yearStoryA11yPlay : Copy.yearStoryA11yPause
+            ) {
+                model.togglePause()
+            }
+            .accessibilityIdentifier("year.story.pause")
+            .accessibilitySortPriority(3)
+            .position(x: closeX - Tokens.Sizes.yearStoryChromePitch, y: Tokens.Sizes.yearStoryChromeCenterY)
+        }
+    }
+
+    private func chromeCircle(icon: String, label: String, action: @escaping () -> Void) -> some View {
+        let diameter = Tokens.Sizes.yearStoryChromeButton
+        let hit = max(Tokens.Sizes.globalMinTouchTargetIos, diameter)
+        return Button(action: action) {
+            Image(systemName: icon)
                 .resizable()
                 .scaledToFit()
                 .frame(height: Tokens.Sizes.yearStoryChromeGlyph)
@@ -193,13 +217,7 @@ struct YearStoryCanvasView: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(Copy.yearStoryA11yClose)
-        .accessibilityIdentifier("year.story.close")
-        .accessibilitySortPriority(3)
-        .position(
-            x: size.width - Tokens.Sizes.yearStoryChromeInsetRight - diameter / 2,
-            y: Tokens.Sizes.yearStoryChromeCenterY
-        )
+        .accessibilityLabel(label)
     }
 }
 

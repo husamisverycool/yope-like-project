@@ -195,7 +195,7 @@ final class LiveCaptureLibrary: CaptureLibrary {
         request.resizeMode = .fast
         request.isNetworkAccessAllowed = false
         return await withCheckedContinuation { (continuation: CheckedContinuation<UIImage?, Never>) in
-            PHImageManager.default().requestImage(for: asset, targetSize: target, contentMode: .aspectFill, options: request) { @Sendable image, _ in
+            _ = PHImageManager.default().requestImage(for: asset, targetSize: target, contentMode: .aspectFill, options: request) { @Sendable image, _ in
                 continuation.resume(returning: image)
             }
         }

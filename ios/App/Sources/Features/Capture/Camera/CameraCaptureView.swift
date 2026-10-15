@@ -30,6 +30,12 @@ struct CameraCaptureView: View {
                 viewfinder(width: width, height: viewfinderHeight)
                     .frame(width: width, height: viewfinderHeight)
                     .clipShape(RoundedRectangle(cornerRadius: Tokens.Radii.globalViewfinder, style: .continuous))
+                    .overlay {
+                        if model.isRecording, let outline = CaptureBlocked.recordingOutlineWidth {
+                            RoundedRectangle(cornerRadius: Tokens.Radii.globalViewfinder, style: .continuous)
+                                .strokeBorder(Tokens.Colors.globalAccent, lineWidth: outline)
+                        }
+                    }
                     .offset(y: Viewfinder.top)
                 controls(width: width)
                     .frame(width: width, height: Tokens.Sizes.cameraCaptureSizeShutterOuter)
@@ -88,8 +94,6 @@ struct CameraCaptureView: View {
                 .accessibilityIdentifier("camera.capture.unavailable")
             }
         }
-        // While a video records an outline in `color.global.accent` surrounds the viewfinder; its
-        // width `camera.capture.size.recordingOutline` is BLOCKED, so it is not drawn.
     }
 
     /// The hour slot the photo will be filed under; updates on the hour.

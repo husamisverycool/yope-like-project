@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import app.designsystem.R
 import app.feature.memory.common.MemoryBackend
+import app.feature.memory.common.MemoryCache
 import app.feature.memory.common.MemoryFormats
 import app.feature.memory.common.attempt
 import app.feature.memory.common.rememberMemoryBackend
@@ -34,7 +35,11 @@ fun OnThisDayEntry(
     row: @Composable (title: String, subtitle: String, onClick: () -> Unit) -> Unit,
 ) {
     val backend = rememberMemoryBackend()
-    val newest = produceState<Int?>(null, groupId, backend) { value = newestYearsAgo(backend, groupId) }.value ?: return
+    // Cached first, so the row does not pop in on every visit; the read confirms or removes it.
+    val key = MemoryCache.key(backend, "entry.onthisday", groupId)
+    val newest = produceState(MemoryCache.shared.get<Int>(key), groupId, backend) {
+        value = newestYearsAgo(backend, groupId).also { if (it == null) MemoryCache.shared.remove(key) else MemoryCache.shared.put(key, it) }
+    }.value ?: return
     val subtitle = MemoryFormats.yearsAgo(LocalContext.current.resources, newest)
     row(stringResource(R.string.onthisday_entry_title, groupName), subtitle, onOpen)
 }

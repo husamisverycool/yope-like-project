@@ -62,6 +62,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.data.model.Group
+import app.feature.capture.Blocked
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.capture.ui.CaptureText
@@ -302,6 +303,7 @@ private fun MessageRow(showMic: Boolean, recording: Boolean, onField: () -> Unit
                     .weight(1f)
                     .height(f.height.dp)
                     .clip(CapsuleShape)
+                    .then(Blocked.messageFieldFill?.let { Modifier.background(it) } ?: Modifier)
                     .clickable(onClick = onField)
                     .semantics { role = Role.Button; contentDescription = placeholder; traversalIndex = 3f }
                     .padding(horizontal = f.height.dp / 2)
@@ -321,7 +323,7 @@ private fun MessageRow(showMic: Boolean, recording: Boolean, onField: () -> Unit
                     icon = Tokens.Icons.globalMic,
                     contentDescription = stringResource(R.string.camera_sendto_a11y_voice),
                     diameter = f.micDiameter.dp,
-                    fill = null,
+                    fill = Blocked.messageFieldFill,
                     tint = Tokens.Colors.globalTextPrimary,
                     onClick = onMic,
                     modifier = Modifier.semantics { traversalIndex = 4f }.testTag(if (recording) "sendto.mic.recording" else "sendto.mic"),
@@ -426,7 +428,7 @@ internal fun decodePreview(file: File, targetPx: Int): ImageBitmap? {
     var sample = 1
     while (minOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= max(1, targetPx)) sample *= 2
     val bitmap: Bitmap = BitmapFactory.decodeFile(file.path, BitmapFactory.Options().apply { inSampleSize = sample }) ?: return null
-    val rotation = runCatching { android.media.ExifInterface(file.path).rotationDegrees }.getOrDefault(0)
+    val rotation = app.feature.capture.data.exifRotation(file)
     val rotated = if (rotation == 0) bitmap else {
         val m = android.graphics.Matrix().apply { postRotate(rotation.toFloat()) }
         Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, m, true)

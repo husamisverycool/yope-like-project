@@ -148,7 +148,7 @@ fun BirthdayAddScreen(
                         onAdd,
                         Modifier.fillMaxWidth(),
                         enabled = pattern.parse(state.digits) != null,
-                        busy = state.busy,
+                        busy = state.busy && !state.removing,
                     )
                     LightPill(stringResource(R.string.birthday_add_later), onLater, Modifier.fillMaxWidth(), enabled = !state.busy)
                 }

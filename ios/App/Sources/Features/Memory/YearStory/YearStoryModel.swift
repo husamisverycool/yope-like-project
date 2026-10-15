@@ -267,6 +267,7 @@ final class YearStoryModel {
         index = currentID.flatMap { id in fresh.firstIndex { $0.id == id } } ?? 0
         phase = .loaded
         preloadUpcoming()
+        if currentID == nil || currentCard?.id != currentID { restartCardTimer() }
     }
 
     static func postIDs(of cards: [YearStoryCard]) -> Set<PostID> {
@@ -345,23 +346,82 @@ final class YearStoryModel {
         if index + 1 < cards.count {
             index += 1
             preloadUpcoming()
+            restartCardTimer()
         }
     }
 
     /// Left half: the previous card (nothing on the first card).
     func previous() {
-        if index > 0 { index -= 1 }
+        if index > 0 {
+            index -= 1
+            restartCardTimer()
+        }
     }
 
     /// "Replay from beginning".
     func replay() {
         index = 0
         summaryPage = 0
+        preloadUpcoming()
+        restartCardTimer()
     }
 
     func close() {
         deletionTask?.cancel()
+        advanceTask?.cancel()
         isFinished = true
+    }
+
+    // MARK: Auto-advance (`MemoryBlocked.yearStoryCardDuration`; tap-only while BLOCKED)
+
+    /// Paused with the pause circle (shown only when the story advances on its own).
+    private(set) var isPaused = false
+    /// Time already spent on the current card before the last pause.
+    private(set) var elapsedBeforePause: TimeInterval = 0
+    /// When the current card's timer last (re)started.
+    private(set) var timerStartedAt: Date?
+    private var advanceTask: Task<Void, Never>?
+
+    /// The card duration once it is sourced; nil = tap-only.
+    var cardDuration: TimeInterval? { MemoryBlocked.yearStoryCardDuration }
+
+    /// Filled fraction of the current progress segment at `date` (1 while tap-only).
+    func currentFraction(at date: Date) -> Double {
+        guard let duration = cardDuration, duration > 0, currentCard != .summary else { return 1 }
+        var elapsed = elapsedBeforePause
+        if !isPaused, let start = timerStartedAt { elapsed += date.timeIntervalSince(start) }
+        return min(max(elapsed / duration, 0), 1)
+    }
+
+    func restartCardTimer() {
+        advanceTask?.cancel()
+        elapsedBeforePause = 0
+        timerStartedAt = dependencies.now()
+        scheduleAdvance()
+    }
+
+    func togglePause() {
+        if isPaused {
+            isPaused = false
+            timerStartedAt = dependencies.now()
+            scheduleAdvance()
+        } else {
+            advanceTask?.cancel()
+            if let start = timerStartedAt { elapsedBeforePause += dependencies.now().timeIntervalSince(start) }
+            timerStartedAt = nil
+            isPaused = true
+        }
+    }
+
+    private func scheduleAdvance() {
+        guard let duration = cardDuration, !isPaused, phase == .loaded, let card = currentCard, card != .summary else { return }
+        let remaining = max(0, duration - elapsedBeforePause)
+        let cardID = card.id
+        advanceTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(remaining))
+            guard !Task.isCancelled, let self, self.currentCard?.id == cardID, !self.isPaused else { return }
+            self.next()
+        }
     }
 
     // MARK: Deletions
@@ -404,6 +464,7 @@ final class YearStoryModel {
     func stopListening() {
         deletionTask?.cancel()
         deletionTask = nil
+        advanceTask?.cancel()
     }
 }
 

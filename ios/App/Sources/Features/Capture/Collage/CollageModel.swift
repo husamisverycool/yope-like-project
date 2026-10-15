@@ -41,9 +41,9 @@ final class CollageModel {
     private(set) var dateText = ""
     private(set) var groupName = ""
 
-    @ObservationIgnored let collages: CaptureCollageSource
-    @ObservationIgnored private let invitations: CaptureInvitationSource
-    @ObservationIgnored private let navigation: CaptureNavigation
+    let collages: CaptureCollageSource
+    private let invitations: CaptureInvitationSource
+    private let navigation: CaptureNavigation
 
     init(
         groupID: String,

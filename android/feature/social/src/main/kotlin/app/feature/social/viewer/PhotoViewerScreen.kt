@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
@@ -144,7 +145,7 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
     val view = LocalView.current
     val haptics = rememberHaptics()
     val reduceMotion by rememberReduceMotion()
-    val approximations = LocalApproximations.current
+    val rainAllowed = app.feature.social.common.shows(app.feature.social.common.SocialBlocked.rainEasing != null)
     val services = LocalSocialServices.current
     val voice = remember { services.voice(context) }
     androidx.compose.runtime.DisposableEffect(voice) { onDispose { voice.release() } }
@@ -170,7 +171,7 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
             when (effect) {
                 ViewerEffect.Sent -> haptics.play(Tokens.Haptics.globalSend)
                 ViewerEffect.SendFailed -> { haptics.play(Tokens.Haptics.globalError); announce(view, texts.sendFailed) }
-                is ViewerEffect.Rain -> if (approximations && !reduceMotion) ui.rain = effect.emoji to ++rainKey
+                is ViewerEffect.Rain -> if (rainAllowed && !reduceMotion) ui.rain = effect.emoji to ++rainKey
                 ViewerEffect.ReactionFailed -> { haptics.play(Tokens.Haptics.globalError); announce(view, texts.reactionFailed) }
                 ViewerEffect.Deleted -> ui.toast = texts.deleted
                 ViewerEffect.DeleteFailed -> { haptics.play(Tokens.Haptics.globalError); announce(view, texts.deleteFailed) }
@@ -262,7 +263,7 @@ fun PhotoViewerContent(
     onRetry: () -> Unit,
     onPlay: (String) -> Unit,
 ) {
-    val approximations = LocalApproximations.current
+    val activityAllowed = app.feature.social.common.shows(app.feature.social.common.SocialBlocked.activitySheet)
     val pager = rememberPagerState(initialPage = state.index) { state.photos.size }
     // Keep the pager on the view model's photo when the list grows around it or a photo is removed.
     LaunchedEffect(state.index, state.photos.size) { if (pager.currentPage != state.index && state.index in state.photos.indices) pager.scrollToPage(state.index) }
@@ -274,7 +275,13 @@ fun PhotoViewerContent(
         // Emoji rain: behind the photo, in front of the background (S-9).
         ui.rain?.let { (emoji, key) -> EmojiRain(emoji, key, onFinished = { if (ui.rain?.second == key) ui.rain = null }) }
         Column(Modifier.fillMaxSize().imePadding().navigationBarsPadding()) {
-            HorizontalPager(state = pager, modifier = Modifier.weight(1f).fillMaxWidth(), key = { i -> state.photos.getOrNull(i)?.postId ?: i }) { page ->
+            // Page gap is BLOCKED (`photo.viewer.dimension.pageGap`): none until it is known.
+            HorizontalPager(
+                state = pager,
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                pageSpacing = app.feature.social.common.SocialBlocked.viewerPageGap ?: 0.dp,
+                key = { i -> state.photos.getOrNull(i)?.postId ?: i },
+            ) { page ->
                 val photo = state.photos.getOrNull(page)
                 if (photo != null) ViewerPage(photo, state, ui, nav, voice, playback, onTag, onRetry, onPlay, onSave, onDelete)
             }
@@ -304,7 +311,7 @@ fun PhotoViewerContent(
     }
 
     if (ui.picker) ReactionPickerSheet(onPick = { emoji -> ui.picker = false; onReact(emoji) }, onDismiss = { ui.picker = false })
-    if (approximations && ui.activity && current?.post != null) {
+    if (activityAllowed && ui.activity && current?.post != null) {
         val me = state.me
         ActivitySheet(current.reactions, me, { id -> if (id == current.post.authorId) current.author?.firstName.orEmpty() else "" }, current.author?.firstName.orEmpty(), onDismiss = { ui.activity = false })
     }
@@ -495,7 +502,8 @@ private fun ViewerPage(
                     VoiceBubble(
                         path = voicePath,
                         durationMs = voiceMs,
-                        fill = if (mine) Tokens.Colors.chatVoiceColorBubble else null,
+                        fill = if (mine) Tokens.Colors.chatVoiceColorBubble else app.feature.social.common.SocialBlocked.voiceBubbleTheirs,
+                        progress = if (playback.key == voicePath) playback.progress else 0f,
                         label = if (mine) stringRes(R.string.chat_voice_a11y_messagemine, Formats.spokenDuration(voiceMs))
                         else stringRes(R.string.chat_voice_a11y_message, photo.author?.firstName.orEmpty(), Formats.spokenDuration(voiceMs)),
                         playing = playback.key == voicePath && playback.isPlaying,
@@ -522,7 +530,7 @@ private fun PhotoFrame(
     onSave: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    val approximations = LocalApproximations.current
+    val activityAllowed = app.feature.social.common.shows(app.feature.social.common.SocialBlocked.activitySheet)
     val context = LocalContext.current
     val post = photo.post
     val media = photo.media
@@ -612,6 +620,7 @@ private fun PhotoFrame(
         }
         // Caption (bottom-centre; its color.global.scrim box fill is BLOCKED and not drawn).
         if (caption != null) {
+            val scrim = app.feature.social.common.SocialBlocked.scrim
             Box(
                 Modifier
                     .align(Alignment.BottomCenter)
@@ -620,6 +629,8 @@ private fun PhotoFrame(
                         start = Tokens.Sizes.chatReactionsDimensionClusterInsetLeading + Tokens.Sizes.chatReactionsDimensionClusterEmoji,
                         end = Tokens.Sizes.chatReactionsDimensionClusterInsetLeading + Tokens.Sizes.chatReactionsDimensionClusterEmoji,
                     )
+                    .heightIn(min = Tokens.Sizes.chatThreadDimensionCaptionHeight)
+                    .let { if (scrim != null) it.background(scrim, RoundedCornerShape(Tokens.Radii.chatThreadRadiusCaption)) else it }
                     .padding(horizontal = Tokens.Sizes.chatThreadDimensionCaptionPaddingH)
                     .clearAndSetSemantics { },
                 contentAlignment = Alignment.Center,
@@ -635,7 +646,7 @@ private fun PhotoFrame(
         }
         ReactionCluster(
             photo.reactions,
-            if (approximations) ({ ui.activity = true }) else null,
+            if (activityAllowed) ({ ui.activity = true }) else null,
             Modifier.align(Alignment.BottomStart).padding(start = Tokens.Sizes.chatReactionsDimensionClusterInsetLeading, bottom = Tokens.Sizes.chatReactionsDimensionClusterInsetBottom),
         )
     }

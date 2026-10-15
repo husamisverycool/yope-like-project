@@ -8,15 +8,15 @@ enum HeaderCircleFill {
     case onDeep
     /// `color.global.control`: circles on `color.global.background` (#171717) screens (group feed).
     case onBackground
-    /// No fill: the glyph alone. Used where the specified fill is BLOCKED
-    /// (`groups.list.color.headerCircleOverPhoto`, circles over the home cover photo).
-    case none
+    /// Over the home cover photo: `groups.list.color.headerCircleOverPhoto` (`DesignGaps.headerCircleOverPhoto`;
+    /// BLOCKED → the glyph alone until it is set).
+    case overPhoto
 
     var color: Color? {
         switch self {
         case .onDeep: return Tokens.Colors.globalControlOnDeep
         case .onBackground: return Tokens.Colors.globalControl
-        case .none: return nil
+        case .overPhoto: return DesignGaps.headerCircleOverPhoto
         }
     }
 }

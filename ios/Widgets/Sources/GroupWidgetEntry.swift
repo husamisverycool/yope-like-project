@@ -11,8 +11,8 @@ import WidgetKit
 /// app and the Notification Service Extension reload.
 enum GroupWidgetKinds {
     static let home = WidgetKind.groupPhoto
-    static let lockScreen = "GroupPhotoLockWidget"
-    static let all = [home, lockScreen]
+    static let lockScreen = WidgetKind.groupPhotoLock
+    static let all = WidgetKind.allGroupPhoto
 }
 
 struct GroupPhotoEntry: TimelineEntry {

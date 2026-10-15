@@ -9,6 +9,7 @@ import app.designsystem.generated.Tokens
 import app.feature.memory.common.EffectQueue
 import app.feature.memory.common.Failure
 import app.feature.memory.common.MemoryBackend
+import app.feature.memory.common.MemoryCache
 import app.feature.memory.common.attempt
 import app.feature.memory.common.failureOf
 import app.feature.memory.share.MemoryFiles
@@ -79,7 +80,9 @@ class TributeViewModel(
     private val backend: MemoryBackend,
     private val files: TributeFiles,
     private val clock: Clock = Clock.systemUTC(),
+    private val cache: MemoryCache = MemoryCache.shared,
 ) : ViewModel() {
+    private val cacheKey = MemoryCache.key(backend, "birthday.tribute", tributeId)
     private val _state = MutableStateFlow(TributeState())
     val state: StateFlow<TributeState> = _state.asStateFlow()
     private val queue = EffectQueue()
@@ -91,18 +94,33 @@ class TributeViewModel(
     private var load: Job? = null
 
     init {
-        retry()
+        // Cached content first: the video as last shown starts preparing at once; the refresh confirms it.
+        cache.get<TributeState>(cacheKey)?.let { _state.value = it }
+        refresh()
     }
 
+    /** "try again" on the error state. */
     fun retry() {
-        load?.cancel()
         _state.update { it.copy(content = TributeContent.Loading) }
-        load = viewModelScope.launch { _state.update { it.copy(content = loadContent()) } }
+        refresh()
+    }
+
+    private fun refresh() {
+        load?.cancel()
+        load = viewModelScope.launch {
+            val shown = _state.value.content is TributeContent.Ready
+            val content = loadContent()
+            // Offline or a transient failure keeps cached content on screen.
+            if (shown && (content == TributeContent.Offline || content == TributeContent.Failed)) return@launch
+            _state.update { it.copy(content = content) }
+            val s = _state.value
+            if (s.content is TributeContent.Ready) cache.put(cacheKey, s.copy(saving = false, toast = null)) else cache.remove(cacheKey)
+        }
     }
 
     /** On resume: a tribute that was rendering is fetched again. */
     fun refreshIfRendering() {
-        if (_state.value.content == TributeContent.Rendering) retry()
+        if (_state.value.content == TributeContent.Rendering) refresh()
     }
 
     private suspend fun loadContent(): TributeContent {

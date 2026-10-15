@@ -107,6 +107,8 @@ class DataGraphAccountBackend(private val graph: DataGraph) : AccountBackend {
     override suspend fun media(ids: Collection<String>): List<Media> = graph.posts.media(ids)
     override suspend fun post(postId: String): Post? = graph.posts.post(postId)
     override fun groupEvents(groupId: String): Flow<GroupEvent> = graph.realtime.events(groupId)
+    override suspend fun latestRecapId(groupId: String): String? =
+        graph.recaps.recaps(groupId).filter { it.status == app.data.model.RenderStatus.Ready }.maxByOrNull { it.weekStart }?.id
 
     override suspend fun notificationSettings(): NotificationSettings? = graph.settings.notificationSettings()
     override suspend fun setQuietHours(start: LocalTime?, end: LocalTime?, timeZone: String?): NotificationSettings =
@@ -172,6 +174,7 @@ class UnconfiguredAccountBackend : AccountBackend {
     override suspend fun media(ids: Collection<String>): List<Media> = fail()
     override suspend fun post(postId: String): Post? = fail()
     override fun groupEvents(groupId: String): Flow<GroupEvent> = emptyFlow()
+    override suspend fun latestRecapId(groupId: String): String? = fail()
     override suspend fun notificationSettings(): NotificationSettings? = fail()
     override suspend fun setQuietHours(start: LocalTime?, end: LocalTime?, timeZone: String?): NotificationSettings = fail()
     override suspend fun blocked(): List<Block> = fail()

@@ -138,7 +138,8 @@ fun clusterLabel(entries: List<ReactionEntry>): String =
  */
 @Composable
 fun ReactionCluster(entries: List<ReactionEntry>, onClick: (() -> Unit)?, modifier: Modifier = Modifier) {
-    val emoji = clusterEmoji(entries)
+    val all = clusterEmoji(entries)
+    val emoji = app.feature.social.common.SocialBlocked.clusterMaxVisible?.let { all.take(it) } ?: all
     if (emoji.isEmpty()) return
     val label = clusterLabel(entries)
     val size = Tokens.Sizes.chatReactionsDimensionClusterEmoji
@@ -250,7 +251,7 @@ fun ReactionPickerSheet(onPick: (String) -> Unit, onDismiss: () -> Unit) {
  * builds (constant speed) and never under Reduce Motion. Not interactive; hidden from accessibility.
  */
 @Composable
-fun EmojiRain(emoji: String, key: Any, onFinished: () -> Unit, modifier: Modifier = Modifier) {
+fun EmojiRain(emoji: String, key: Any, onFinished: () -> Unit, modifier: Modifier = Modifier, easing: androidx.compose.animation.core.Easing = app.feature.social.common.SocialBlocked.rainEasing ?: androidx.compose.animation.core.LinearEasing) {
     val copies = Tokens.Counts.chatReactionsCountRainCopies
     val spawn = Tokens.Durations.chatReactionsDurationRainSpawnInterval
     val travel = Tokens.Durations.chatReactionsDurationRainTravel
@@ -269,8 +270,9 @@ fun EmojiRain(emoji: String, key: Any, onFinished: () -> Unit, modifier: Modifie
         val h = with(density) { maxHeight.toPx() }
         val s = with(density) { size.toPx() }
         for (i in 0 until copies) {
-            val progress = (elapsed - i * spawn).toFloat() / travel
-            if (progress < 0f || progress > 1f) continue
+            val linear = (elapsed - i * spawn).toFloat() / travel
+            if (linear < 0f || linear > 1f) continue
+            val progress = easing.transform(linear)
             val y = h - progress * (h + s)
             val x = xs[i] * (w - s).coerceAtLeast(0f)
             EmojiGlyph(emoji, size, Modifier.offset { IntOffset(x.roundToInt(), y.roundToInt()) })

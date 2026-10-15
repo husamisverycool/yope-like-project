@@ -46,12 +46,14 @@ fun HeaderCircleButton(
     modifier: Modifier = Modifier,
     fill: HeaderCircleFill = HeaderCircleFill.Control,
     diameter: androidx.compose.ui.unit.Dp = Tokens.Sizes.globalHeaderButton,
+    /** Overrides [fill] with another `color.*` token (e.g. a surface's circle-over-photo fill). */
+    fillColor: Color = fill.color,
 ) {
     Box(
         modifier
             .size(diameter)
             .clip(CircleShape)
-            .background(fill.color, CircleShape)
+            .background(fillColor, CircleShape)
             .clickable(role = Role.Button, onClick = onClick)
             .semantics { this.contentDescription = contentDescription },
         contentAlignment = Alignment.Center,

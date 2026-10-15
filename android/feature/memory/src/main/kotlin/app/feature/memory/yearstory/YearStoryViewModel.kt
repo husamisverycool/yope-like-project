@@ -7,6 +7,7 @@ import app.data.model.RenderStatus
 import app.designsystem.generated.Tokens
 import app.feature.memory.common.Failure
 import app.feature.memory.common.MemoryBackend
+import app.feature.memory.common.MemoryCache
 import app.feature.memory.common.attempt
 import app.feature.memory.common.failureOf
 import kotlinx.coroutines.Job
@@ -93,7 +94,8 @@ sealed interface StoryCard {
 sealed interface YearStoryState {
     data object Loading : YearStoryState
     data class Failed(val offline: Boolean) : YearStoryState
-    data class Story(val cards: List<StoryCard>, val index: Int) : YearStoryState {
+    /** [paused] matters only once `duration.year.story.card` is sourced (auto-advance). */
+    data class Story(val cards: List<StoryCard>, val index: Int, val paused: Boolean = false) : YearStoryState {
         val card: StoryCard get() = cards[index]
         val shareCards: List<StoryCard> get() = cards.filter { it.shareable }
     }
@@ -109,29 +111,58 @@ class YearStoryViewModel(
     private val year: Int,
     private val backend: MemoryBackend,
     private val clock: Clock = Clock.systemUTC(),
+    private val cache: MemoryCache = MemoryCache.shared,
 ) : ViewModel() {
+    private val cacheKey = MemoryCache.key(backend, "yearstory", groupId, year.toString())
     private val _state = MutableStateFlow<YearStoryState>(YearStoryState.Loading)
     val state: StateFlow<YearStoryState> = _state.asStateFlow()
     private var load: Job? = null
 
     init {
-        retry()
+        // Cached content first: the story as last shown paints at once; the refresh replaces it.
+        cache.get<List<StoryCard>>(cacheKey)?.let { _state.value = YearStoryState.Story(it, 0) }
+        refresh()
         viewModelScope.launch { backend.postDeletions(groupId).collect(::onPostDeleted) }
     }
 
+    /** "try again" on the error / offline state. */
     fun retry() {
-        load?.cancel()
         _state.value = YearStoryState.Loading
+        refresh()
+    }
+
+    private fun refresh() {
+        load?.cancel()
         load = viewModelScope.launch {
+            val shown = _state.value is YearStoryState.Story
             if (!backend.isOnline()) {
-                _state.value = YearStoryState.Failed(offline = true)
+                if (!shown) _state.value = YearStoryState.Failed(offline = true)
                 return@launch
             }
-            _state.value = attempt { loadCards(backend, groupId, year) }
-                .map { cards -> if (cards == null) YearStoryState.Failed(offline = false) else YearStoryState.Story(cards, 0) }
-                .getOrElse { YearStoryState.Failed(offline = failureOf(it) == Failure.Offline) }
+            attempt { loadCards(backend, groupId, year) }
+                .onSuccess { cards ->
+                    if (cards == null) {
+                        cache.remove(cacheKey)
+                        _state.value = YearStoryState.Failed(offline = false)
+                    } else {
+                        cache.put(cacheKey, cards)
+                        _state.update { s ->
+                            if (s is YearStoryState.Story) {
+                                // Keep the viewer on the same card.
+                                val at = cards.indexOf(s.card).takeIf { it >= 0 } ?: s.index.coerceAtMost(cards.lastIndex)
+                                s.copy(cards = cards, index = at)
+                            } else {
+                                YearStoryState.Story(cards, 0)
+                            }
+                        }
+                    }
+                }
+                .onFailure { e -> if (!shown) _state.value = YearStoryState.Failed(offline = failureOf(e) == Failure.Offline) }
         }
     }
+
+    /** Pause / play (shown only once `duration.year.story.card` is sourced). */
+    fun togglePause() = _state.update { s -> if (s is YearStoryState.Story) s.copy(paused = !s.paused) else s }
 
     /** Right half: next card (nothing on the summary). */
     fun next() = _state.update { s -> if (s is YearStoryState.Story && s.index < s.cards.lastIndex) s.copy(index = s.index + 1) else s }
@@ -152,6 +183,7 @@ class YearStoryViewModel(
                 (c == StoryCard.TogetherSetup && kept.none { it is StoryCard.TogetherDay })
         }
         val index = cards.indexOf(current).takeIf { it >= 0 } ?: s.index.coerceAtMost(cards.lastIndex)
+        cache.put(cacheKey, cards)
         s.copy(cards = cards, index = index)
     }
 

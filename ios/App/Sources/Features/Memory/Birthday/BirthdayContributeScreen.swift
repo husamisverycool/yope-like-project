@@ -324,6 +324,10 @@ private struct ContributeMessageStep: View {
                         model.line = value.replacingOccurrences(of: "\n", with: "")
                         fieldFocused = false
                     }
+                    // UI limit once `layout.birthday.contribute.lineMax` is sourced (no visible counter).
+                    if let limit = MemoryBlocked.contributeLineMax, model.line.count > limit {
+                        model.line = String(model.line.prefix(limit))
+                    }
                 }
                 MemoryMessageIdeas(honoreeName: model.honoreeName)
                     .padding(.top, Tokens.Sizes.birthdayContributeGroupGap)

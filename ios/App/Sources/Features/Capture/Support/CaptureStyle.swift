@@ -92,7 +92,7 @@ enum CaptureType {
     // MARK: daily.capture
 
     static var countdown: DSTextStyle {
-        role(Tokens.FontSizes.dailyCaptureFontSizeCountdown, platformWeight, Tokens.Layouts.DailyCaptureLayoutTextStyleMap.countdown)
+        role(Tokens.FontSizes.dailyCaptureFontSizeCountdown, CaptureBlocked.countdownWeight ?? platformWeight, Tokens.Layouts.DailyCaptureLayoutTextStyleMap.countdown)
     }
 
     static var prompt: DSTextStyle {

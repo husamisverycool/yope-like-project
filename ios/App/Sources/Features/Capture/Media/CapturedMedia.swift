@@ -70,6 +70,8 @@ struct CaptureSendRequest: Sendable, Identifiable {
     var caption: String?
     var voice: VoiceNote?
     var invitationID: String?
+    /// The confirmation toast text ('posted in {group}' / 'posted in your groups').
+    var confirmation: String?
 
     /// Removes the camera's and the recorder's temporary files once the outbox holds copies.
     func removeTemporaryFiles() {

@@ -70,8 +70,12 @@ public struct WidgetGroup: Codable, Hashable, Sendable, Identifiable {
 
 /// Identifiers shared by the app and its extensions.
 public enum WidgetKind {
-    /// `AppIntentConfiguration` kind of the per-group photo widget (home and lock screen).
+    /// `AppIntentConfiguration` kind of the per-group Home Screen photo widget.
     public static let groupPhoto = "GroupPhotoWidget"
+    /// Kind of the per-group Lock Screen widget (its own gallery entry, `widget.lock.*`).
+    public static let groupPhotoLock = "GroupPhotoLockWidget"
+    /// Every kind that shows group photos; reload all of them when a photo arrives or is deleted.
+    public static let allGroupPhoto = [groupPhoto, groupPhotoLock]
 }
 
 public enum AppGroup {

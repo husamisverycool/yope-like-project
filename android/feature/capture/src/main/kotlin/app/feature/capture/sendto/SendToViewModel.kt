@@ -41,6 +41,7 @@ class SendToViewModel(
     private val gate: SessionPromptGate,
     /** Whether the voice-note recorder exists in this build (`chat.voice.layout.recording` BLOCKED in release). */
     private val voiceRecorderAvailable: Boolean,
+    private val maxCaption: Int? = null,
 ) : ViewModel() {
 
     sealed interface Groups {
@@ -156,7 +157,8 @@ class SendToViewModel(
         state.update { s -> s.copy(selected = if (groupId in s.selected) s.selected - groupId else s.selected + groupId) }
     }
 
-    fun onCaption(text: String) = state.update { it.copy(caption = text) }
+    /** Typed on the photo; `camera.sendto.size.captionMaxLength` (BLOCKED → [maxCaption] null) caps it. */
+    fun onCaption(text: String) = state.update { it.copy(caption = maxCaption?.let(text::take) ?: text) }
 
     fun dismissVoiceCoach() {
         prefs.voiceCoachDone = true

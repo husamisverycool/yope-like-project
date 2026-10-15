@@ -48,6 +48,8 @@ protocol AccountDataSource: AnyObject, Sendable {
     func group(id: GroupID) async throws -> PhotoGroup?
     func members(groupID: GroupID) async throws -> [MemberProfile]
     func cachedMembers(groupID: GroupID) async -> [MemberProfile]?
+    /// The caller's own membership row (role, mute).
+    func myMembership(groupID: GroupID) async throws -> GroupMember?
     func createGroup(name: String, kind: GroupKind, coverPath: String?) async throws -> PhotoGroup
     func updateGroup(id: GroupID, name: String?, kind: GroupKind?, cover: CoverChange) async throws -> PhotoGroup
     /// Uploads `u/<uid>/covers/<uuid>.jpg`; returns its path.
@@ -205,6 +207,11 @@ final class LiveAccountData: AccountDataSource {
     func cachedMembers(groupID: GroupID) async -> [MemberProfile]? {
         guard let groups = environment?.groups else { return nil }
         return await groups.cachedMembers(groupID: groupID)?.value
+    }
+
+    func myMembership(groupID: GroupID) async throws -> GroupMember? {
+        let groups = try env().groups
+        return try await groups.myMembership(groupID: groupID)
     }
 
     func createGroup(name: String, kind: GroupKind, coverPath: String?) async throws -> PhotoGroup {

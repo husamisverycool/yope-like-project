@@ -64,6 +64,7 @@ import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.account.AccountEnvironment
 import app.feature.account.LocalAccountEnvironment
+import app.feature.account.blocked.BlockedValues
 import app.feature.account.common.AccountViewModel
 import app.feature.account.common.CollectEvents
 import app.feature.account.common.dataError
@@ -140,6 +141,8 @@ class GroupsListViewModel(private val env: AccountEnvironment) : AccountViewMode
 
     init {
         load()
+        // Optimistic leave (GroupActions.leave): hide at once, restore if the server refuses.
+        viewModelScope.launch { env.optimistic.leftGroups.collect { if (mutable.value.rows != null) publish(groups.value, mutable.value.refreshing, mutable.value.error) } }
         viewModelScope.launch {
             groups.map { list -> list.map { it.id }.toSet() }.distinctUntilChanged().flatMapLatest { ids ->
                 merge(*ids.map { id -> env.backend.groupEvents(id) }.toTypedArray())
@@ -205,7 +208,9 @@ class GroupsListViewModel(private val env: AccountEnvironment) : AccountViewMode
 
     private fun publish(list: List<Group>, refreshing: Boolean, error: DataError?) {
         val me = env.backend.currentUserId
-        val rows = list.map { g ->
+        val left = env.optimistic.leftGroups.value
+        val visible = list.filterNot { it.id in left }
+        val rows = visible.map { g ->
             val d = Details.byGroup[g.id]
             val subtitle: RowSubtitle? = when {
                 d == null -> null
@@ -215,7 +220,7 @@ class GroupsListViewModel(private val env: AccountEnvironment) : AccountViewMode
             }
             GroupRow(g.id, g.name, d?.coverUrl, subtitle, maxOf(d?.newest?.createdAt ?: g.createdAt, g.createdAt))
         }.sortedByDescending { it.activityAt }
-        val newest = list.mapNotNull { g -> Details.byGroup[g.id]?.let { d -> d.newest?.let { p -> Triple(g, d, p) } } }.maxByOrNull { it.third.createdAt }
+        val newest = visible.mapNotNull { g -> Details.byGroup[g.id]?.let { d -> d.newest?.let { p -> Triple(g, d, p) } } }.maxByOrNull { it.third.createdAt }
         val cover = newest?.let { (g, d, p) -> CoverPhoto(g.id, p.id, d.photoUrl, d.senderFirstName, g.name) }
         mutable.update { it.copy(rows = rows, cover = cover, refreshing = refreshing, error = error) }
     }
@@ -320,16 +325,26 @@ private fun CoverHeader(cover: CoverPhoto?, onCreate: () -> Unit, onCover: (Cove
     }
     val coverLabel = stringResource(R.string.groups_list_cover_accessibilitylabel, cover.firstName.orEmpty(), cover.groupName)
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .height(Tokens.Sizes.groupsListSizeCoverHeight)
-                .background(Tokens.Colors.globalControlRaised)
-                .clickable(role = Role.Image) { onCover(cover) }
-                .semantics { contentDescription = coverLabel },
-        ) {
-            if (cover.url != null) {
-                AsyncImage(model = cover.url, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+        Box(Modifier.fillMaxWidth().height(Tokens.Sizes.groupsListSizeCoverHeight)) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Tokens.Colors.globalControlRaised)
+                    .clickable(role = Role.Image) { onCover(cover) }
+                    .semantics { contentDescription = coverLabel },
+            ) {
+                if (cover.url != null) {
+                    AsyncImage(model = cover.url, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                }
+            }
+            BlockedValues.groupsListHeaderCircleOverPhoto?.let { fill ->
+                HeaderCircleButton(
+                    Tokens.Icons.globalAdd,
+                    addLabel,
+                    onCreate,
+                    fillColor = fill,
+                    modifier = Modifier.align(Alignment.TopEnd).windowInsetsPadding(WindowInsets.statusBars).padding(horizontal = Tokens.Sizes.globalHeaderInset),
+                )
             }
         }
         Icon(Tokens.Icons.globalChevronDown, contentDescription = null, tint = Tokens.Colors.globalTextPrimary)

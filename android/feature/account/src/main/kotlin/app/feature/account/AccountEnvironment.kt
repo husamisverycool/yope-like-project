@@ -22,6 +22,14 @@ class InviteLinks(private val codec: DeepLinkCodec, val domain: String?) {
     fun previewUrl(token: String): String? = domain?.let { "https://$it${DeepLinkCodec.INVITE_PATH}$token/preview.json" }
 }
 
+/**
+ * Optimistic writes that outlive the screen that made them (leave group): the group disappears from
+ * groups.list at once and comes back if the server refuses.
+ */
+class OptimisticState {
+    val leftGroups = kotlinx.coroutines.flow.MutableStateFlow<Set<String>>(emptySet())
+}
+
 /** The phone number being verified, shared by auth.phone → auth.code (and the resend). */
 class SignUpSession {
     @Volatile var phoneE164: String? = null
@@ -47,6 +55,9 @@ class AccountEnvironment(
     val sdkInt: Int = android.os.Build.VERSION.SDK_INT,
     val promptGate: SessionPromptGate = SessionPromptGate.process,
     val signUp: SignUpSession = SignUpSession(),
+    /** Process-lifetime scope for writes that finish after their screen is gone (optimistic leave). */
+    val appScope: kotlinx.coroutines.CoroutineScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Main.immediate),
+    val optimistic: OptimisticState = OptimisticState(),
     /** SMS User Consent (Play services); off in tests and where Play services are missing. */
     val smsUserConsent: Boolean = true,
     /** The device region for the calling-code prefill (ISO 3166 alpha-2), e.g. from the SIM / network. */

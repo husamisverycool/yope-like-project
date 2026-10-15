@@ -47,15 +47,15 @@ final class SendToModel: Identifiable {
     /// Increments on every recipient toggle (`haptic.global.select` trigger).
     private(set) var selectionChanges = 0
 
-    @ObservationIgnored private let groupSource: CaptureGroupSource
-    @ObservationIgnored private let premium: CapturePremium
-    @ObservationIgnored private let library: CaptureLibrary
-    @ObservationIgnored private let voice: CaptureVoiceRecorder
-    @ObservationIgnored private let coach: CaptureCoachStore
-    @ObservationIgnored private let sendCenter: CaptureSendCenter
-    @ObservationIgnored private let navigation: CaptureNavigation
-    @ObservationIgnored private let onClose: @MainActor () -> Void
-    @ObservationIgnored private let onSent: @MainActor () -> Void
+    private let groupSource: CaptureGroupSource
+    private let premium: CapturePremium
+    private let library: CaptureLibrary
+    private let voice: CaptureVoiceRecorder
+    private let coach: CaptureCoachStore
+    private let sendCenter: CaptureSendCenter
+    private let navigation: CaptureNavigation
+    private let onClose: @MainActor () -> Void
+    private let onSent: @MainActor () -> Void
     @ObservationIgnored private var didPreselect = false
 
     init(
@@ -86,8 +86,8 @@ final class SendToModel: Identifiable {
 
     // MARK: Derived state
 
-    /// The voice note is left out of release builds (CaptureBlockedElements.voiceNote).
-    var isVoiceNoteAvailable: Bool { CaptureBlockedElements.voiceNote }
+    /// The voice note's recording interaction is BLOCKED (CaptureBlocked.voiceNoteRecording).
+    var isVoiceNoteAvailable: Bool { CaptureBlocked.voiceNoteRecording }
 
     /// A video needs premium at `create_post`; a free member's video cannot be sent.
     var isMediaSendable: Bool { !media.needsPremium || isPremium }
@@ -96,6 +96,9 @@ final class SendToModel: Identifiable {
     var canSend: Bool { !selection.isEmpty && isMediaSendable }
 
     var canCreateGroup: Bool { navigation.canCreateGroup }
+
+    /// Where the toasts of this flow are shown (send failures, 'saved to your library').
+    var statusCenter: CaptureSendCenter { sendCenter }
 
     func isSelected(_ groupID: String) -> Bool {
         selection.contains(groupID)
@@ -175,11 +178,13 @@ final class SendToModel: Identifiable {
     func send() {
         guard canSend else { return }
         if isRecordingVoice { finishVoiceRecording() }
+        let names = groups.filter { selection.contains($0.id) }.map(\.name)
         let request = CaptureSendRequest(
             payload: .media(media),
             groupIDs: selection,
             caption: caption,
-            voice: voiceNote
+            voice: voiceNote,
+            confirmation: names.count == 1 ? Copy.cameraSendtoToastPostedOne(group: names[0]) : Copy.cameraSendtoToastPostedMany
         )
         sendCenter.submit(request)
         onSent()
@@ -194,10 +199,14 @@ final class SendToModel: Identifiable {
         onClose()
     }
 
-    /// Download: saves the photo / Live Photo / video with add-only access. The 'saved' toast's
-    /// visible time is BLOCKED (`camera.sendto.duration.toastVisible`), so no toast follows.
+    /// Download: saves the photo / Live Photo / video with add-only access, then the 'saved' toast.
     func save() async {
-        try? await library.save(media)
+        do {
+            try await library.save(media)
+            sendCenter.confirm(Copy.cameraSendtoToastSaved)
+        } catch {
+            // Add-only access refused: the system-settings path belongs to system.permissions.
+        }
     }
 
     // MARK: Voice note (optional; the note goes on every chosen group's post)

@@ -397,4 +397,17 @@ final class SocialChatThreadModelTests: XCTestCase {
         XCTAssertEqual(model.signals.notice?.notice, .reactionFailed)
         XCTAssertEqual(model.signals.feedback?.kind, .failed)
     }
+
+    // MARK: Row layout
+
+    func testRowsPutTheAvatarOnTheLastMessageOfARunAndPickTheGaps() {
+        let rows = ChatRowLayout.rows(SocialDemo.messages, me: SocialDemo.me)
+        XCTAssertEqual(rows.map(\.gap), [.none, .sameSender, .betweenSenders, .betweenSenders, .textToVoice, .betweenSenders, .betweenSenders, .betweenSenders, .betweenSenders])
+        XCTAssertEqual(rows.map(\.showsAvatar), [false, true, true, false, false, true, true, false, true])
+        XCTAssertEqual(rows.map(\.isMine), [false, false, false, true, true, false, false, true, false])
+        let photo = SocialDemo.message(60, by: SocialDemo.ben, at: SocialDemo.monday, post: SocialDemo.p1)
+        let next = SocialDemo.message(61, by: SocialDemo.ben, at: SocialDemo.monday, post: SocialDemo.p3)
+        XCTAssertEqual(ChatRowLayout.gap(from: photo, to: next), .photo)
+        XCTAssertEqual(ChatRowLayout.gap(from: photo, to: SocialDemo.message(62, by: SocialDemo.ben, at: SocialDemo.monday, text: "x")), .photo)
+    }
 }

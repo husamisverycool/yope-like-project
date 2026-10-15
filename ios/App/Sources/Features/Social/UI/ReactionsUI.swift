@@ -15,7 +15,15 @@ import SwiftUI
 /// (`chat.reactions.layout.clusterOrder`); every distinct emoji shows (the visible maximum is BLOCKED,
 /// `chat.reactions.count.clusterMaxVisible`), clipped by the photo. Hidden when nobody reacted.
 struct ReactionCluster: View {
-    let emoji: [String]
+    let allEmoji: [String]
+
+    init(emoji: [String]) {
+        allEmoji = emoji
+    }
+
+    private var emoji: [String] {
+        SocialBlocked.clusterMaxVisible.map { Array(allEmoji.prefix($0)) } ?? allEmoji
+    }
 
     var body: some View {
         if !emoji.isEmpty {
@@ -31,7 +39,7 @@ struct ReactionCluster: View {
                 alignment: .leading
             )
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text(SocialEmoji.clusterLabel(emoji)))
+            .accessibilityLabel(Text(SocialEmoji.clusterLabel(allEmoji)))
             .accessibilityAddTraits(.isButton)
         }
     }
@@ -65,9 +73,9 @@ struct ReactionSticker: View {
 /// behind the photo, in front of the background; never interactive; hidden from accessibility.
 ///
 /// Reduce Motion (`chat.reactions.layout.reduceMotion`): not played; the sticker appears in place.
-/// The speed curve is BLOCKED (`chat.reactions.easing.rain`): release builds never play the rain (the same result as
-/// the Reduce Motion substitute). DEBUG builds play it with linear progress so the path, timing and layering can be
-/// reviewed — that progress is a review stand-in, not a design value.
+/// The speed curve `chat.reactions.easing.rain` (`SocialBlocked.rainEasing`) is BLOCKED: until it is filled, release
+/// builds never play the rain (the same result as the Reduce Motion substitute) and DEBUG builds play it with linear
+/// progress so the path, timing and layering can be reviewed — a review stand-in, not a design value.
 struct EmojiRain: View {
     let trigger: SentReaction?
 
@@ -92,8 +100,9 @@ struct EmojiRain: View {
             }
     }
 
-    /// False while the rain's speed curve is BLOCKED (release builds).
+    /// False in release builds while the rain's speed curve is BLOCKED.
     static var plays: Bool {
+        if SocialBlocked.rainEasing != nil { return true }
         #if DEBUG
         return true
         #else
@@ -103,7 +112,6 @@ struct EmojiRain: View {
 
     @ViewBuilder
     private var content: some View {
-        #if DEBUG
         if let run {
             TimelineView(.animation) { context in
                 GeometryReader { geometry in
@@ -120,15 +128,14 @@ struct EmojiRain: View {
             }
             .ignoresSafeArea()
         }
-        #endif
     }
 
-    #if DEBUG
     @ViewBuilder
     private func copy(_ emoji: String, index: Int, x: Double, elapsed: TimeInterval, size: CGSize) -> some View {
         let glyph = Tokens.Sizes.chatReactionsDimensionRainEmoji
-        let progress = (elapsed - Double(index) * Tokens.Durations.chatReactionsDurationRainSpawnInterval) / Tokens.Durations.chatReactionsDurationRainTravel
-        if progress >= 0, progress <= 1 {
+        let linear = (elapsed - Double(index) * Tokens.Durations.chatReactionsDurationRainSpawnInterval) / Tokens.Durations.chatReactionsDurationRainTravel
+        let progress = SocialBlocked.rainEasing.map { $0.unitCurve.value(at: min(max(linear, 0), 1)) } ?? linear
+        if linear >= 0, linear <= 1 {
             // From just below the bottom edge to just past the top edge.
             let startY = size.height + glyph / 2
             let endY = -glyph / 2
@@ -137,7 +144,6 @@ struct EmojiRain: View {
                 .position(x: x * size.width, y: startY + (endY - startY) * progress)
         }
     }
-    #endif
 }
 
 // MARK: - Picker (§2)

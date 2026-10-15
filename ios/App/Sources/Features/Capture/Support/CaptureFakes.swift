@@ -75,6 +75,8 @@ final class FakeCaptureCamera: CaptureCamera {
     var failsConfigure = false
     var failsDual = false
     var hasFrontCamera = true
+    /// Holds `captureDual` until cancelled (the 'capturing' state in snapshots).
+    var suspendsCapture = false
     var previewImage: UIImage?
     var onInterruption: ((Bool) -> Void)?
 
@@ -115,6 +117,7 @@ final class FakeCaptureCamera: CaptureCamera {
 
     func captureDual(flash: Bool) async throws -> CaptureDualStills {
         flashRequests.append(flash)
+        if suspendsCapture { try await Task.sleep(for: .seconds(3600)) }
         if failsDual { throw FakeCaptureError.failed }
         return CaptureDualStills(
             back: CaptureFakes.still(Tokens.Colors.globalAccent, position: .back),
@@ -143,7 +146,7 @@ final class FakeCaptureCamera: CaptureCamera {
     }
 }
 
-/// The fake camera feed: a still image, or a token-coloured surface.
+/// The fake camera feed: a still image, or no frame yet (`color.global.backgroundDeep`).
 struct FakeCameraPreview: View {
     let image: UIImage?
 
@@ -153,7 +156,7 @@ struct FakeCameraPreview: View {
                 .resizable()
                 .scaledToFill()
         } else {
-            Tokens.Colors.cameraCaptureColorFlipButton
+            Tokens.Colors.globalBackgroundDeep
         }
     }
 }
@@ -178,6 +181,8 @@ final class FakeCaptureGroups: CaptureGroupSource {
     var cached: [CaptureGroup]?
     var loadError: Error?
     var isOffline = false
+    /// Holds `loadGroups` until cancelled (the loading state in snapshots).
+    var suspendsLoad = false
     var covers: [String: UIImage] = [:]
 
     init(groups: [CaptureGroup], cached: [CaptureGroup]? = nil) {
@@ -188,6 +193,7 @@ final class FakeCaptureGroups: CaptureGroupSource {
     func cachedGroups() async -> [CaptureGroup]? { cached }
 
     func loadGroups() async throws -> [CaptureGroup] {
+        if suspendsLoad { try await Task.sleep(for: .seconds(3600)) }
         if let loadError { throw loadError }
         return groups
     }
@@ -317,11 +323,14 @@ final class FakeCaptureCollages: CaptureCollageSource {
     var collage: Collage?
     var cached: Collage?
     var error: Error?
+    /// Holds `collage(invitationID:)` until cancelled (the loading state in snapshots).
+    var suspendsFetch = false
     var images: [String: UIImage] = [:]
     var cachedImages: [String: UIImage] = [:]
     var isOffline = false
 
     func collage(invitationID: String) async throws -> Collage? {
+        if suspendsFetch { try await Task.sleep(for: .seconds(3600)) }
         if let error { throw error }
         return collage
     }

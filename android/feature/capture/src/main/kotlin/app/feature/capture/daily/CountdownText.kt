@@ -78,7 +78,7 @@ internal fun CountdownText(countdown: CountdownState.Open?, weight: FontWeight?,
                         dsEnterTransition(reduce, inFade, inSlide) { IntOffset(0, travelPx) } togetherWith
                             dsExitTransition(reduce, outFade, outSlide) { IntOffset(0, -travelPx) }
                     },
-                    label = "digit$index",
+                    label = "digit$index", // provenance-ok: animation debug label (tooling only)
                 ) { c -> BasicText(c.toString(), style = style) }
             }
         }

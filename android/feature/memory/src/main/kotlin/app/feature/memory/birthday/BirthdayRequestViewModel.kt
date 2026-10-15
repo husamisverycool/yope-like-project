@@ -9,6 +9,8 @@ import app.designsystem.generated.Tokens
 import app.feature.memory.common.EffectQueue
 import app.feature.memory.common.Failure
 import app.feature.memory.common.MemoryBackend
+import app.feature.memory.common.MemoryBlocked
+import app.feature.memory.common.MemoryCache
 import app.feature.memory.common.aspectRatio
 import app.feature.memory.common.attempt
 import app.feature.memory.common.failureOf
@@ -33,7 +35,10 @@ data class RequestInfo(
     val honoreeAvatarUrl: String?,
     val birthdayDate: LocalDate,
     val dueAt: Instant,
-)
+) {
+    /** Contributions close at `due_at`. */
+    fun isOpenAt(clock: Clock): Boolean = dueAt.isAfter(clock.instant())
+}
 
 /** The member's own contribution (the only one anybody can read). */
 data class OwnContribution(val postId: String, val photoUrl: String?, val aspectRatio: Float, val line: String)
@@ -99,7 +104,10 @@ class BirthdayRequestViewModel(
     private val requestId: String,
     private val backend: MemoryBackend,
     private val clock: Clock = Clock.systemUTC(),
+    private val cache: MemoryCache = MemoryCache.shared,
 ) : ViewModel() {
+    private val requestKey = MemoryCache.key(backend, "birthday.request", requestId)
+    private val photosKey = MemoryCache.key(backend, "birthday.eligible", groupId)
     private val _state = MutableStateFlow(BirthdayFlowState())
     val state: StateFlow<BirthdayFlowState> = _state.asStateFlow()
     private val queue = EffectQueue()
@@ -108,30 +116,59 @@ class BirthdayRequestViewModel(
     private var zone: ZoneId = ZoneId.of("UTC")
 
     init {
-        retry()
+        // Cached content first: the request as last shown paints at once; the refresh replaces it.
+        cache.get<RequestState.Ready>(requestKey)?.let { cached ->
+            _state.update { it.copy(request = cached.copy(closed = cached.closed || !cached.info.isOpenAt(clock), withdrawing = false)) }
+        }
+        cache.get<List<EligiblePhoto>>(photosKey)?.let { photos -> _state.update { it.copy(contribute = it.contribute.copy(photos = PhotosState.Loaded(photos))) } }
+        refresh()
         viewModelScope.launch { backend.postDeletions(groupId).collect(::onPostDeleted) }
     }
 
+    /** "try again" on the error state. */
     fun retry() {
-        load?.cancel()
         _state.update { it.copy(request = RequestState.Loading) }
+        refresh()
+    }
+
+    private fun refresh() {
+        load?.cancel()
         load = viewModelScope.launch {
+            val shown = _state.value.request is RequestState.Ready
             if (!backend.isOnline()) {
-                _state.update { it.copy(request = RequestState.Offline) }
+                if (!shown) _state.update { it.copy(request = RequestState.Offline) }
                 return@launch
             }
             val result = attempt { loadRequest() }
-            _state.update { s ->
-                s.copy(
-                    request = result.getOrElse { e ->
-                        when (failureOf(e)) {
-                            Failure.Offline -> RequestState.Offline
-                            Failure.NotFound -> RequestState.NotFound
-                            else -> RequestState.Failed
-                        }
-                    },
-                )
+            result.onSuccess { fresh ->
+                _state.update { s ->
+                    // A write in flight keeps its optimistic contribution until it settles.
+                    val current = s.request as? RequestState.Ready
+                    val merged = if (fresh is RequestState.Ready && current != null && writing) fresh.copy(contribution = current.contribution) else fresh
+                    s.copy(request = merged)
+                }
+                rememberRequest()
             }
+            result.onFailure { e ->
+                val failure = failureOf(e)
+                if (failure == Failure.NotFound) {
+                    cache.remove(requestKey)
+                    _state.update { it.copy(request = RequestState.NotFound) }
+                } else if (!shown) {
+                    _state.update { it.copy(request = if (failure == Failure.Offline) RequestState.Offline else RequestState.Failed) }
+                }
+            }
+        }
+    }
+
+    /** A contribute / withdraw call is running (optimistic state on screen). */
+    private var writing = false
+
+    private fun rememberRequest() {
+        when (val r = _state.value.request) {
+            is RequestState.Ready -> cache.put(requestKey, r)
+            RequestState.NotFound -> cache.remove(requestKey)
+            else -> Unit
         }
     }
 
@@ -183,40 +220,49 @@ class BirthdayRequestViewModel(
                 ),
             )
         }
-        if (_state.value.contribute.photos !is PhotosState.Loaded) loadPhotos()
+        // Cached photos show at once; the list is refreshed behind them.
+        loadPhotos()
     }
 
-    /** "Remove": direct DELETE of the own row before due_at, no confirmation. */
+    /** "Remove": direct DELETE of the own row before due_at, no confirmation; optimistic, rolled back on failure. */
     fun withdraw() {
         val ready = _state.value.request as? RequestState.Ready ?: return
-        if (ready.contribution == null || ready.withdrawing) return
-        _state.update { it.copy(request = ready.copy(withdrawing = true)) }
+        val previous = ready.contribution ?: return
+        if (ready.withdrawing) return
+        writing = true
+        updateReady { it.copy(contribution = null, withdrawing = true) }
         viewModelScope.launch {
             attempt { backend.withdraw(requestId) }
                 .onSuccess {
                     queue.haptic(Tokens.Haptics.globalSuccess)
-                    updateReady { it.copy(contribution = null, withdrawing = false) }
+                    updateReady { it.copy(withdrawing = false) }
                     _state.update { it.copy(contribute = ContributeState(photos = it.contribute.photos)) }
                 }
                 .onFailure { e ->
                     queue.haptic(Tokens.Haptics.globalError)
-                    updateReady { it.copy(withdrawing = false, closed = it.closed || failureOf(e) == Failure.Closed) }
+                    updateReady { it.copy(contribution = previous, withdrawing = false, closed = it.closed || failureOf(e) == Failure.Closed) }
                 }
+            writing = false
+            rememberRequest()
         }
     }
 
     // ---- contribute steps ----------------------------------------------------------------------
 
     fun loadPhotos() {
-        _state.update { it.copy(contribute = it.contribute.copy(photos = PhotosState.Loading)) }
+        val cached = _state.value.contribute.photos is PhotosState.Loaded
+        if (!cached) _state.update { it.copy(contribute = it.contribute.copy(photos = PhotosState.Loading)) }
         viewModelScope.launch {
             if (!backend.isOnline()) {
-                setPhotos(PhotosState.Failed(offline = true))
+                if (!cached) setPhotos(PhotosState.Failed(offline = true))
                 return@launch
             }
             attempt { eligiblePhotos() }
-                .onSuccess { photos -> setPhotos(if (photos.isEmpty()) PhotosState.Empty else PhotosState.Loaded(photos)) }
-                .onFailure { e -> setPhotos(PhotosState.Failed(offline = failureOf(e) == Failure.Offline)) }
+                .onSuccess { photos ->
+                    cache.put(photosKey, photos)
+                    setPhotos(if (photos.isEmpty()) PhotosState.Empty else PhotosState.Loaded(photos))
+                }
+                .onFailure { e -> if (!cached) setPhotos(PhotosState.Failed(offline = failureOf(e) == Failure.Offline)) }
         }
     }
 
@@ -255,45 +301,63 @@ class BirthdayRequestViewModel(
         _state.update { it.copy(page = RequestPage.Message, contribute = it.contribute.copy(inline = null)) }
     }
 
-    /** The one line; up to the API bound (280, `layout.birthday.contribute.lineMax` BLOCKED), no counter. */
-    fun setLine(text: String) = _state.update { it.copy(contribute = it.contribute.copy(line = text.take(LINE_API_BOUND), inline = null)) }
+    /** The one line: up to `layout.birthday.contribute.lineMax`, or the API bound while that is BLOCKED; no counter. */
+    fun setLine(text: String) = _state.update {
+        it.copy(contribute = it.contribute.copy(line = text.take(MemoryBlocked.birthdayLineMax ?: LINE_API_BOUND), inline = null))
+    }
 
-    /** "Submit" (or "try again" after an error): `contribute_tribute` with the trimmed line. */
+    /**
+     * "Submit" (or "try again" after an error): `contribute_tribute` with the trimmed line. Optimistic:
+     * step 3 and the own block show at once; a failure rolls both back to the step with the spec's
+     * message (not eligible → step 1; closed → the closed message; offline / error → under Submit).
+     */
     fun submit() {
         val c = _state.value.contribute
         val photo = c.selectedPhoto ?: return
         if (!c.canSubmit) return
         if (!backend.isOnline()) {
+            queue.haptic(Tokens.Haptics.globalError)
             _state.update { it.copy(contribute = it.contribute.copy(inline = ContributeState.Inline.Offline)) }
             return
         }
-        _state.update { it.copy(contribute = it.contribute.copy(sending = true, inline = null)) }
+        val line = c.line.trim()
+        val previous = (_state.value.request as? RequestState.Ready)?.contribution
+        writing = true
+        updateReady { it.copy(contribution = OwnContribution(photo.postId, photo.displayUrl, photo.aspectRatio, line)) }
+        _state.update { it.copy(page = RequestPage.Done, contribute = it.contribute.copy(sending = true, inline = null)) }
+        queue.haptic(Tokens.Haptics.globalSend)
         viewModelScope.launch {
-            attempt { backend.contribute(requestId, photo.postId, c.line.trim()) }
+            attempt { backend.contribute(requestId, photo.postId, line) }
                 .onSuccess { saved ->
-                    queue.haptic(Tokens.Haptics.globalSend)
                     updateReady { it.copy(contribution = OwnContribution(photo.postId, photo.displayUrl, photo.aspectRatio, saved.line)) }
-                    _state.update { it.copy(page = RequestPage.Done, contribute = it.contribute.copy(sending = false)) }
+                    _state.update { it.copy(contribute = it.contribute.copy(sending = false)) }
                 }
                 .onFailure { e ->
                     queue.haptic(Tokens.Haptics.globalError)
+                    updateReady { it.copy(contribution = previous) }
                     when (failureOf(e)) {
                         Failure.NotEligible -> _state.update {
                             it.copy(page = RequestPage.Photo, contribute = it.contribute.copy(sending = false, inline = ContributeState.Inline.NotEligible))
                         }
                         Failure.Closed -> {
                             updateReady { it.copy(closed = true) }
-                            _state.update { it.copy(contribute = it.contribute.copy(sending = false, closed = true)) }
+                            _state.update { it.copy(page = RequestPage.Message, contribute = it.contribute.copy(sending = false, closed = true)) }
                         }
-                        Failure.Offline -> _state.update { it.copy(contribute = it.contribute.copy(sending = false, inline = ContributeState.Inline.Offline)) }
+                        Failure.Offline -> _state.update {
+                            it.copy(page = RequestPage.Message, contribute = it.contribute.copy(sending = false, inline = ContributeState.Inline.Offline))
+                        }
                         Failure.NotFound -> {
-                            // post_not_found: the photo is gone; request_not_found: the request is.
+                            // post_not_found: the photo is gone (back to step 1 without it).
+                            _state.update { it.copy(page = RequestPage.Message, contribute = it.contribute.copy(sending = false)) }
                             onPostDeleted(photo.postId)
-                            _state.update { it.copy(contribute = it.contribute.copy(sending = false)) }
                         }
-                        else -> _state.update { it.copy(contribute = it.contribute.copy(sending = false, inline = ContributeState.Inline.Error)) }
+                        else -> _state.update {
+                            it.copy(page = RequestPage.Message, contribute = it.contribute.copy(sending = false, inline = ContributeState.Inline.Error))
+                        }
                     }
                 }
+            writing = false
+            rememberRequest()
         }
     }
 
@@ -327,6 +391,8 @@ class BirthdayRequestViewModel(
             )
         }
         updateReady { if (it.contribution?.postId == postId) it.copy(contribution = null) else it }
+        cache.get<List<EligiblePhoto>>(photosKey)?.let { cached -> cache.put(photosKey, cached.filterNot { it.postId == postId }) }
+        rememberRequest()
     }
 
     private fun updateReady(transform: (RequestState.Ready) -> RequestState.Ready) = _state.update { s ->

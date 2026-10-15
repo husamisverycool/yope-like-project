@@ -153,7 +153,7 @@ struct WidgetOverlay: View {
                 senderRow
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
             case .empty, .notSetUp:
-                WidgetEmptyStack()
+                WidgetEmptyStack(text: content.emptyText)
             case .collage, .loading:
                 Color.clear
             }
@@ -183,13 +183,33 @@ struct WidgetOverlay: View {
 }
 
 /// Locket's empty widget (`widget.home.small.layout.empty`, md variant): a translucent circle holding
-/// the photo glyph inside a ring. The label under it is not drawn: its color
-/// `widget.home.small.color.emptyLabel` is BLOCKED (the text stays the accessibility label). The lg
-/// variant for large / extra large exists only in the token's notes, so md is used at every size.
+/// the photo glyph inside a ring, then the label `labelGap` below in `label` pt — drawn once its color
+/// `widget.home.small.color.emptyLabel` is unblocked (WidgetBlocked); the text is the accessibility
+/// label meanwhile. The lg variant for large / extra large exists only in the token's notes, so md is
+/// used at every size.
 struct WidgetEmptyStack: View {
+    var text: String?
+
     private typealias Empty = Tokens.Layouts.WidgetHomeSmallLayoutEmpty
 
     var body: some View {
+        VStack(spacing: Empty.labelGap) {
+            graphic
+            if let text, let color = WidgetBlocked.emptyLabelColor {
+                Text(text)
+                    .dsTextStyle(DSTextStyle(
+                        family: Tokens.Fonts.globalFamily,
+                        size: Empty.label,
+                        weight: .regular,
+                        relativeTo: WidgetTextStyleName.resolve(Tokens.Layouts.WidgetHomeSmallLayoutTextStyleMap.emptyLabel)
+                    ))
+                    .foregroundStyle(color)
+                    .lineLimit(1)
+            }
+        }
+    }
+
+    private var graphic: some View {
         ZStack {
             Circle()
                 .strokeBorder(Tokens.Colors.widgetHomeSmallColorEmptyRing, lineWidth: Empty.ringStroke)

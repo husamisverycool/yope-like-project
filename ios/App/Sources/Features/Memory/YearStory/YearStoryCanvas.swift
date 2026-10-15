@@ -100,37 +100,54 @@ struct YearStoryCardContent: View {
     }
 }
 
-/// Headline, then subline, centred. Reveal (`duration.year.story.reveal.*`): the curve
-/// `easing.year.story.reveal` is BLOCKED, so every user gets the Reduce Motion substitute — no
-/// movement; the subline cross-fades in `sublineDelay` after the card appears, over `subline`.
+/// Headline, then subline, centred. Reveal (`duration.year.story.reveal.*`,
+/// `dimension.year.story.reveal.*`): the headline moves up as the subline rises in. Its curve
+/// (`MemoryBlocked.yearStoryRevealEasing`) is BLOCKED, so every user gets the Reduce Motion
+/// substitute (`layout.global.reduceMotion`): no movement; the subline cross-fades in
+/// `sublineDelay` after the card appears, over `subline`.
 struct YearStoryTextBlock: View {
     let headline: String
     let subline: String?
     var revealed = false
+    @State private var headlineSettled = false
     @State private var sublineVisible = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// Movement only once the curve is sourced, and never under Reduce Motion.
+    private var moves: Bool {
+        MemoryBlocked.yearStoryRevealEasing != nil && !reduceMotion && !revealed
+    }
 
     var body: some View {
+        let sublineShown = revealed || sublineVisible
         VStack {
             Text(headline)
                 .dsTextStyle(YearStoryType.headline)
+                .offset(y: moves && subline != nil && !headlineSettled ? Tokens.Sizes.yearStoryRevealHeadlineShift : 0)
                 .accessibilityAddTraits(.isHeader)
                 .accessibilitySortPriority(2)
             if let subline {
                 Text(subline)
                     .dsTextStyle(YearStoryType.body)
-                    .opacity(revealed || sublineVisible ? 1 : 0)
+                    .opacity(sublineShown ? 1 : 0)
+                    .offset(y: moves && !sublineShown ? Tokens.Sizes.yearStoryRevealSublineOffset : 0)
                     .accessibilitySortPriority(1)
             }
         }
         .foregroundStyle(Tokens.Colors.globalTextPrimary)
         .multilineTextAlignment(.center)
         .fixedSize(horizontal: false, vertical: true)
-        .onAppear {
-            guard !revealed, subline != nil else { return }
-            let fade = DSAnimation.timing(duration: Tokens.Durations.yearStoryRevealSubline, easing: .linear) // provenance-ok: cross-fade substitute; the reveal curve is BLOCKED (easing.year.story.reveal)
-            withAnimation(fade.animation.delay(Tokens.Durations.yearStoryRevealSublineDelay)) {
-                sublineVisible = true
-            }
+        .onAppear(perform: reveal)
+    }
+
+    private func reveal() {
+        guard !revealed, subline != nil else { return }
+        let easing = MemoryBlocked.yearStoryRevealEasing ?? .linear // provenance-ok: cross-fade substitute while easing.year.story.reveal is BLOCKED
+        withAnimation(easing.animation(duration: Tokens.Durations.yearStoryRevealHeadline)) {
+            headlineSettled = true
+        }
+        withAnimation(easing.animation(duration: Tokens.Durations.yearStoryRevealSubline).delay(Tokens.Durations.yearStoryRevealSublineDelay)) {
+            sublineVisible = true
         }
     }
 }
@@ -141,19 +158,30 @@ struct YearStoryTextBlock: View {
 struct YearStoryProgressBar: View {
     let count: Int
     let index: Int
+    /// Filled fraction of the current segment (1 while `duration.year.story.card` is BLOCKED).
+    var currentFraction: Double = 1
 
     var body: some View {
         HStack(spacing: Tokens.Sizes.yearStoryProgressGap) {
             ForEach(0..<count, id: \.self) { position in
-                Rectangle()
-                    .fill(position <= index
-                          ? Tokens.Colors.yearStoryProgressFill
-                          : Tokens.Colors.globalTextPrimary.opacity(Tokens.Opacities.yearStoryProgressTrack))
-                    .frame(height: Tokens.Sizes.yearStoryProgressHeight)
+                GeometryReader { segment in
+                    ZStack(alignment: .leading) {
+                        Tokens.Colors.globalTextPrimary.opacity(Tokens.Opacities.yearStoryProgressTrack)
+                        Tokens.Colors.yearStoryProgressFill
+                            .frame(width: segment.size.width * fill(position))
+                    }
+                }
+                .frame(height: Tokens.Sizes.yearStoryProgressHeight)
             }
         }
         .padding(.horizontal, Tokens.Sizes.yearStoryProgressInset)
         .accessibilityHidden(true)
+    }
+
+    private func fill(_ position: Int) -> CGFloat {
+        if position < index { return 1 }
+        if position == index { return CGFloat(min(max(currentFraction, 0), 1)) }
+        return 0
     }
 }
 

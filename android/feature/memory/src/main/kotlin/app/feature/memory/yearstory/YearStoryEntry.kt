@@ -6,6 +6,7 @@ import androidx.compose.ui.res.stringResource
 import app.data.model.RenderStatus
 import app.designsystem.R
 import app.feature.memory.common.MemoryBackend
+import app.feature.memory.common.MemoryCache
 import app.feature.memory.common.attempt
 import app.feature.memory.common.rememberMemoryBackend
 import java.time.Clock
@@ -29,7 +30,11 @@ fun YearStoryEntry(
     row: @Composable (title: String, subtitle: String, button: String, onClick: () -> Unit) -> Unit,
 ) {
     val backend = rememberMemoryBackend()
-    val year = produceState<Int?>(null, groupId, backend) { value = readyStoryYear(backend, groupId) }.value ?: return
+    // Cached first, so the row does not pop in on every visit; the read confirms or removes it.
+    val key = MemoryCache.key(backend, "entry.yearstory", groupId)
+    val year = produceState(MemoryCache.shared.get<Int>(key), groupId, backend) {
+        value = readyStoryYear(backend, groupId).also { if (it == null) MemoryCache.shared.remove(key) else MemoryCache.shared.put(key, it) }
+    }.value ?: return
     row(
         stringResource(R.string.year_story_entry_title, year.toString()),
         stringResource(R.string.year_story_entry_subtitle),

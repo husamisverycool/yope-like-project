@@ -30,8 +30,8 @@ import kotlin.math.max
 /** A finished recording ready to send. */
 data class RecordedVoice(val file: File, val durationMs: Int)
 
-/** What plays now: [key] = the voice path of the playing message (null = nothing). */
-data class VoicePlayback(val key: String?, val isPlaying: Boolean)
+/** What plays now: [key] = the voice path of the playing message (null = nothing); [progress] 0…1 of it. */
+data class VoicePlayback(val key: String?, val isPlaying: Boolean, val progress: Float = 0f)
 
 /** Voice messages: record (core:voice `VoiceRecorder`) and play (core:voice `VoicePlayer`). */
 interface VoiceServices {
@@ -87,7 +87,12 @@ class PlatformVoiceServices(private val context: Context) : VoiceServices {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     init {
-        scope.launch { player.state.collect { s -> state.value = VoicePlayback(playingKey, s.isPlaying) } }
+        scope.launch {
+            player.state.collect { s ->
+                val duration = s.durationMs?.takeIf { it > 0 }
+                state.value = VoicePlayback(playingKey, s.isPlaying, if (duration != null) (s.positionMs.toFloat() / duration).coerceIn(0f, 1f) else 0f)
+            }
+        }
     }
 
     override val levels: StateFlow<List<Float>> get() = recorder.levels

@@ -106,7 +106,8 @@ import app.ui.components.HeaderCircleFill
 import app.ui.components.PermissionCard
 import app.feature.social.common.Line
 import app.feature.social.common.LoadingHud
-import app.feature.social.common.LocalApproximations
+import app.feature.social.common.SocialBlocked
+import app.feature.social.common.shows
 import app.feature.social.common.LocalSocialData
 import app.feature.social.common.LocalSocialServices
 import app.feature.social.common.PillAction
@@ -168,7 +169,7 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
     val view = LocalView.current
     val haptics = rememberHaptics()
     val reduceMotion by rememberReduceMotion()
-    val approximations = LocalApproximations.current
+    val rainAllowed = shows(SocialBlocked.rainEasing != null)
     val services = LocalSocialServices.current
     val voice = remember { services.voice(context) }
     DisposableEffect(voice) { onDispose { voice.release() } }
@@ -191,7 +192,7 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
                 ChatEffect.ReactionFailed -> { haptics.play(Tokens.Haptics.globalError); announce(view, reactionFailed) }
                 ChatEffect.DeleteFailed -> haptics.play(Tokens.Haptics.globalError)
                 ChatEffect.RecordFailed -> { haptics.play(Tokens.Haptics.globalError); announce(view, recordFailed) }
-                is ChatEffect.Rain -> if (approximations && !reduceMotion) ui.rain = effect.emoji to ++rainKey
+                is ChatEffect.Rain -> if (rainAllowed && !reduceMotion) ui.rain = effect.emoji to ++rainKey
                 is ChatEffect.Incoming -> announce(view, labels.of(effect.row))
             }
         }
@@ -200,7 +201,7 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
     val micLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         ui.showMicCard = !granted
     }
-    val onMic: (() -> Unit)? = if (!approximations) null else {
+    val onMic: (() -> Unit)? = if (!shows(SocialBlocked.voiceRecording)) null else {
         {
             val activity = context.findActivity()
             when {
@@ -315,7 +316,7 @@ fun ChatContent(
     onPlay: (path: String) -> Unit,
     listState: LazyListState = rememberLazyListState(),
 ) {
-    val approximations = LocalApproximations.current
+    val activityAllowed = shows(SocialBlocked.activitySheet)
     Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackground).testTag("chat.thread")) {
         // Emoji rain: behind the messages, in front of the background (chat.reactions.md §4).
         ui.rain?.let { (emoji, key) -> EmojiRain(emoji, key, onFinished = { if (ui.rain?.second == key) ui.rain = null }) }
@@ -347,7 +348,7 @@ fun ChatContent(
                     Modifier.padding(horizontal = Tokens.Sizes.onboardingPermissionContactsSizeCardMarginH),
                 )
             }
-            ComposerRow(state.draft, onDraft, onSend, nav.camera, onMic, recordingLevels)
+            ComposerRow(state.draft, onDraft, onSend, nav.camera, onMic, recordingLevels, Modifier.padding(bottom = SocialBlocked.composerBottomInset ?: 0.dp))
         }
         Header(state, nav)
     }
@@ -356,7 +357,7 @@ fun ChatContent(
     ui.pickerFor?.let { postId ->
         ReactionPickerSheet(onPick = { emoji -> ui.pickerFor = null; onReact(postId, emoji) }, onDismiss = { ui.pickerFor = null })
     }
-    if (approximations) ui.activityFor?.let { postId ->
+    if (activityAllowed) ui.activityFor?.let { postId ->
         val row = state.rows.firstOrNull { it.post?.id == postId }
         if (row != null) {
             val nameOf: (String) -> String = { id -> state.nameOf(id).orEmpty() }
@@ -494,7 +495,7 @@ private fun MessageRow(
     onPlay: (String) -> Unit,
 ) {
     val haptics = rememberHaptics()
-    val approximations = LocalApproximations.current
+    val activityAllowed = shows(SocialBlocked.activitySheet)
     val showAvatar = !row.mine && (next == null || next.message.authorId != row.message.authorId)
     val labels = rowLabels()
     val deleteLabel = stringRes(R.string.chat_thread_menu_delete)
@@ -518,7 +519,7 @@ private fun MessageRow(
                                 ui.pickerFor = post.id
                             }
                         },
-                        onCluster = if (approximations && post != null) ({ ui.activityFor = post.id }) else null,
+                        onCluster = if (activityAllowed && post != null) ({ ui.activityFor = post.id }) else null,
                         reactLabel = reactLabel,
                     )
                 }
@@ -563,7 +564,8 @@ private fun MessageRow(
                         VoiceBubble(
                             path = path,
                             durationMs = row.message.voiceDurationMs ?: 0,
-                            fill = if (row.mine) Tokens.Colors.chatVoiceColorBubble else null,
+                            fill = if (row.mine) Tokens.Colors.chatVoiceColorBubble else SocialBlocked.voiceBubbleTheirs,
+                            progress = if (playback.key == path) playback.progress else 0f,
                             label = labels.of(row),
                             playing = playback.key == path && playback.isPlaying,
                             voice = voice,
@@ -572,8 +574,14 @@ private fun MessageRow(
                     }
                     else -> {
                         val quote = row.quote
-                        if (quote != null) ReplyBubble(row, quote, labels.of(row), onQuote = { nav.photo(quote.postId) })
-                        else TextBubble(row.message.body.orEmpty(), row.mine, Modifier.semantics { contentDescription = labels.of(row) })
+                        val body = row.message.body.orEmpty()
+                        val emojiMax = SocialBlocked.emojiOnlyMax
+                        val emojiOnly = if (quote == null && emojiMax != null) EmojiText.emojiOnly(body, emojiMax) else null
+                        when {
+                            quote != null -> ReplyBubble(row, quote, labels.of(row), onQuote = { nav.photo(quote.postId) })
+                            emojiOnly != null -> EmojiOnlyMessage(emojiOnly, Modifier.semantics { contentDescription = labels.of(row) })
+                            else -> TextBubble(body, row.mine, Modifier.semantics { contentDescription = labels.of(row) })
+                        }
                     }
                 }
                 DropdownMenu(expanded = ui.menuFor == row.id, onDismissRequest = { ui.menuFor = null }) {
@@ -623,9 +631,11 @@ fun TextBubble(text: String, mine: Boolean, modifier: Modifier = Modifier, minWi
     val fill = if (mine) Tokens.Colors.chatThreadColorBubbleMine else Tokens.Colors.chatThreadColorBubbleTheirs
     val rim = if (mine) Brush.verticalGradient(listOf(Tokens.Colors.chatThreadColorBubbleRimMineTop, Tokens.Colors.chatThreadColorBubbleRimMineBottom))
     else Brush.verticalGradient(listOf(Tokens.Colors.chatThreadColorBubbleRimTheirsTop, Tokens.Colors.chatThreadColorBubbleRimTheirsBottom))
+    val max = SocialBlocked.bubbleMaxWidth
     Box(
         modifier
             .widthIn(min = minWidth)
+            .let { if (max != null) it.widthIn(max = max) else it }
             .clip(shape)
             .background(fill)
             .border(Tokens.Sizes.chatThreadDimensionBubbleRim, rim, shape)
@@ -648,6 +658,47 @@ private fun CenteredLines(text: String, style: TextStyle, minHeight: Dp) {
         val width = placeable.width.coerceIn(constraints.minWidth, constraints.maxWidth)
         layout(width, height) { placeable.place(0, (height - placeable.height) / 2) }
     }
+}
+
+/**
+ * An emoji-only message: no bubble, each emoji `chat.thread.dimension.emojiOnlyGlyph` wide. Shown
+ * only once its threshold (`chat.thread.count.emojiOnlyMax`, BLOCKED) is known; until then emoji
+ * messages are text bubbles.
+ */
+@Composable
+private fun EmojiOnlyMessage(emoji: List<String>, modifier: Modifier = Modifier) {
+    Row(modifier) { emoji.forEach { e -> app.feature.social.reactions.EmojiGlyph(e, Tokens.Sizes.chatThreadDimensionEmojiOnlyGlyph) } }
+}
+
+/** Emoji-only detection by grapheme (user-perceived character). */
+object EmojiText {
+    /** The emoji of [text] when it holds only 1…[max] emoji (whitespace ignored), else null. */
+    fun emojiOnly(text: String, max: Int): List<String>? {
+        val t = text.filterNot { it.isWhitespace() }
+        if (t.isEmpty()) return null
+        val it = java.text.BreakIterator.getCharacterInstance()
+        it.setText(t)
+        val out = ArrayList<String>()
+        var start = it.first()
+        var end = it.next()
+        while (end != java.text.BreakIterator.DONE) {
+            val g = t.substring(start, end)
+            if (!isEmoji(g)) return null
+            out += g
+            if (out.size > max) return null
+            start = end
+            end = it.next()
+        }
+        return out
+    }
+
+    private fun isEmoji(grapheme: String): Boolean {
+        val first = grapheme.codePointAt(0)
+        return Character.getType(first) == Character.OTHER_SYMBOL.toInt() || first in REGIONAL_INDICATORS || grapheme.contains(VS16)
+    }
+
+    private val REGIONAL_INDICATORS = 0x1F1E6..0x1F1FF
+    private const val VS16 = '\uFE0F'
 }
 
 /**
@@ -778,11 +829,13 @@ private fun PhotoMessage(
             RemotePhoto(media?.imagePath(Media.Rendition.Display), null, Modifier.fillMaxSize(), ContentScale.Crop, fallbackPath = media?.imagePath(Media.Rendition.Thumb))
             Line(Formats.overlayTime(row.message.createdAt), Type.overlayTime(), Tokens.Colors.globalTextPrimary, Modifier.align(Alignment.Center).clearAndSetSemantics { })
             if (caption != null) {
+                val scrim = SocialBlocked.scrim
                 Box(
                     Modifier
                         .align(Alignment.BottomCenter)
                         .padding(bottom = Tokens.Sizes.chatThreadDimensionCaptionInsetBottom)
                         .heightIn(min = Tokens.Sizes.chatThreadDimensionCaptionHeight)
+                        .let { if (scrim != null) it.background(scrim, RoundedCornerShape(Tokens.Radii.chatThreadRadiusCaption)) else it }
                         .padding(horizontal = Tokens.Sizes.chatThreadDimensionCaptionPaddingH)
                         .clearAndSetSemantics { },
                     contentAlignment = Alignment.Center,

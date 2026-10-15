@@ -73,6 +73,7 @@ fun SendToRoute(
             prefs = SharedCapturePrefs(context),
             gate = SessionPromptGate.process,
             voiceRecorderAvailable = Blocked.voiceNoteRecorder,
+            maxCaption = Blocked.captionMaxLength,
         )
     }
     val state by vm.ui.collectAsStateWithLifecycle()
@@ -116,7 +117,12 @@ fun SendToRoute(
         vm.event.collect { event ->
             when (event) {
                 SendToViewModel.Event.Close -> onClose()
-                SendToViewModel.Event.Sent -> onSent()
+                SendToViewModel.Event.Sent -> {
+                    // Optimistic: queued = sent (uploads.enqueue works offline and resumes); a later
+                    // failure shows the error toast with haptic.global.error.
+                    view.haptic(Tokens.Haptics.globalSend)
+                    onSent()
+                }
                 SendToViewModel.Event.OpenPaywall -> onOpenPaywall()
                 SendToViewModel.Event.CreateGroup -> onCreateGroup()
                 is SendToViewModel.Event.SaveToLibrary -> {

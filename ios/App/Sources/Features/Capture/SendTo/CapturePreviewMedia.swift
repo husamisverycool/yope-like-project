@@ -52,7 +52,7 @@ struct LivePhotoPreview: UIViewRepresentable {
         view.contentMode = .scaleAspectFill
         view.clipsToBounds = true
         guard let stillURL = Self.writeStill(imageData) else { return view }
-        PHLivePhoto.request(
+        _ = PHLivePhoto.request(
             withResourceFileURLs: [stillURL, movieURL],
             placeholderImage: placeholder,
             targetSize: .zero,

@@ -20,16 +20,19 @@ final class CaptureSendCenter {
 
     /// The error toast's state; nil while nothing failed.
     private(set) var failure: Failure?
+    /// The confirmation toast's text while it is shown ('posted in …', 'saved to your library').
+    private(set) var confirmation: String?
     private(set) var isRetrying = false
     private(set) var inFlight = 0
     /// Number of sends that reached `create_post` (tests, the BLOCKED success toast).
     private(set) var postedCount = 0
 
-    @ObservationIgnored private let posting: CapturePosting
-    @ObservationIgnored private let playHaptic: @MainActor (DSHaptic) -> Void
+    private let posting: CapturePosting
+    private let playHaptic: @MainActor (DSHaptic) -> Void
     /// Requests that never reached the outbox (encoding or local-file failure); retried with it.
     @ObservationIgnored private var unqueued: [CaptureSendRequest] = []
     @ObservationIgnored private var onlineTask: Task<Void, Never>?
+    @ObservationIgnored private var confirmationTask: Task<Void, Never>?
 
     init(posting: CapturePosting, playHaptic: @escaping @MainActor (DSHaptic) -> Void = CaptureSendCenter.systemHaptic) {
         self.posting = posting
@@ -49,6 +52,20 @@ final class CaptureSendCenter {
                 guard let self, self.failure == .offline else { continue }
                 await self.retry()
             }
+        }
+    }
+
+    /// A confirmation: always announced to VoiceOver; drawn as the lime toast for
+    /// `camera.sendto.duration.toastVisible` once that value is unblocked (CaptureBlocked).
+    func confirm(_ text: String) {
+        AccessibilityNotification.Announcement(text).post()
+        guard let visible = CaptureBlocked.toastVisible else { return }
+        confirmation = text
+        confirmationTask?.cancel()
+        confirmationTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(visible))
+            guard !Task.isCancelled else { return }
+            self?.confirmation = nil
         }
     }
 
@@ -83,6 +100,7 @@ final class CaptureSendCenter {
         if result.posted > 0 {
             postedCount += result.posted
             playHaptic(Tokens.Haptics.globalSend)
+            confirm(Copy.cameraSendtoToastPostedMany)
         }
         if let error = result.error {
             fail(error == .offline ? .offline : .sendFailed)
@@ -106,6 +124,7 @@ final class CaptureSendCenter {
             request.removeTemporaryFiles()
             postedCount += 1
             playHaptic(Tokens.Haptics.globalSend)
+            if let text = request.confirmation { confirm(text) }
         } catch {
             let dataError = DataError.from(error)
             if case .localFile = dataError {
@@ -126,9 +145,37 @@ final class CaptureSendCenter {
     }
 }
 
-/// The lime toast bar (`camera.sendto.layout.toast`) in its error form: the text and a trailing
-/// retry text button. The success form ('posted in …') is not shown: its visible time
-/// `camera.sendto.duration.toastVisible` is BLOCKED (camera.sendto Gaps).
+/// The lime toast bar (`camera.sendto.layout.toast`): `icon.global.check` in `color.global.onAccent`
+/// (C-12) and the confirmation text.
+struct CaptureConfirmationToast: View {
+    let text: String
+
+    private typealias Toast = Tokens.Layouts.CameraSendtoLayoutToast
+
+    var body: some View {
+        HStack(spacing: Toast.glyphToText) {
+            Image(systemName: Tokens.Icons.globalCheck)
+                .resizable()
+                .scaledToFit()
+                .frame(width: Toast.glyph, height: Toast.glyph)
+                .accessibilityHidden(true)
+            Text(text)
+                .dsTextStyle(CaptureType.button)
+                .lineLimit(1)
+            Spacer(minLength: 0)
+        }
+        .foregroundStyle(Tokens.Colors.globalOnAccent)
+        .padding(.horizontal, Toast.glyphInset)
+        .frame(height: Toast.height)
+        .frame(maxWidth: .infinity)
+        .background(Tokens.Colors.globalAccent, in: RoundedRectangle(cornerRadius: Toast.cornerRadius, style: .continuous))
+        .padding(.horizontal, Toast.marginHorizontal)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("capture.toast.confirmation")
+    }
+}
+
+/// The same toast bar in its error form: the text and a trailing retry text button.
 struct CaptureFailureToast: View {
     let failure: CaptureSendCenter.Failure
     let isRetrying: Bool
@@ -185,6 +232,11 @@ private struct CaptureSendStatusModifier: ViewModifier {
                 .padding(.top, Tokens.Layouts.CameraSendtoLayoutToast.top)
                 .ignoresSafeArea(edges: .top)
                 .transition(.identity)
+            } else if let confirmation = center.confirmation {
+                CaptureConfirmationToast(text: confirmation)
+                    .padding(.top, Tokens.Layouts.CameraSendtoLayoutToast.top)
+                    .ignoresSafeArea(edges: .top)
+                    .transition(.identity)
             }
         }
     }

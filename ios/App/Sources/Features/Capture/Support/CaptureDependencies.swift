@@ -221,22 +221,6 @@ final class UserDefaultsCoachStore: CaptureCoachStore {
     }
 }
 
-// MARK: - Feature gates for BLOCKED elements
-
-/// Elements whose design is BLOCKED are left out of release builds (docs/SCREENS_BRIEF.md rule 1).
-/// DEBUG builds keep them so the layout can be reviewed.
-enum CaptureBlockedElements {
-    /// The send-to voice note: its recording interaction is `chat.voice.layout.recording` (BLOCKED,
-    /// design/surfaces/chat.voice.md), which `camera.sendto` reuses ("the chat.voice recorder").
-    static var voiceNote: Bool {
-        #if DEBUG
-        return true
-        #else
-        return false
-        #endif
-    }
-}
-
 // MARK: - Launch arguments (UI tests)
 
 enum CaptureLaunchArgument {

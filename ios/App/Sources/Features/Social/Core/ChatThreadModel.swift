@@ -459,3 +459,51 @@ final class ChatThreadModel {
         page.sorted(by: isOrdered)
     }
 }
+
+/// The vertical gap above a message (`chat.thread` "Message geometry"); the view maps each to its token.
+enum ChatGap: Equatable, Sendable {
+    /// First message of the list.
+    case none
+    /// Same sender, bubble → bubble (`chat.thread.dimension.gapSameSender`).
+    case sameSender
+    /// Same sender, text → voice (`chat.thread.dimension.gapTextToVoice`).
+    case textToVoice
+    /// Same sender, photo → photo (`chat.thread.dimension.photoGap`); also photo ↔ bubble (not measured:
+    /// the photo gap is used, spec Gaps).
+    case photo
+    /// Runs of different senders (`chat.thread.dimension.gapBetweenSenders`).
+    case betweenSenders
+}
+
+/// One row of the thread: the message, its gap above, and whether the sender's avatar sits beside it
+/// (another member's message, last of its run).
+struct ChatRowLayout: Identifiable, Equatable, Sendable {
+    let message: Message
+    let gap: ChatGap
+    let showsAvatar: Bool
+    let isMine: Bool
+
+    var id: MessageID { message.id }
+
+    static func rows(_ messages: [Message], me: UserID?) -> [ChatRowLayout] {
+        messages.indices.map { index in
+            let message = messages[index]
+            let previous = index > 0 ? messages[index - 1] : nil
+            let next = index + 1 < messages.count ? messages[index + 1] : nil
+            let isMine = message.authorID == me
+            return ChatRowLayout(
+                message: message,
+                gap: previous.map { gap(from: $0, to: message) } ?? .none,
+                showsAvatar: !isMine && next?.authorID != message.authorID,
+                isMine: isMine
+            )
+        }
+    }
+
+    static func gap(from previous: Message, to message: Message) -> ChatGap {
+        guard previous.authorID == message.authorID else { return .betweenSenders }
+        if previous.kind == .photo || message.kind == .photo { return .photo }
+        if previous.kind == .text, message.kind == .voice { return .textToVoice }
+        return .sameSender
+    }
+}

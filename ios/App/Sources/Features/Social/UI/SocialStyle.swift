@@ -112,6 +112,17 @@ extension View {
         }
     }
 
+    /// Keeps `width` equal to this view's width (frame-sized image decoding).
+    func socialReadsWidth(_ width: Binding<CGFloat>) -> some View {
+        background {
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { width.wrappedValue = proxy.size.width }
+                    .onChange(of: proxy.size.width) { _, new in width.wrappedValue = new }
+            }
+        }
+    }
+
     /// Extends the hit area to `size.global.minTouchTarget.ios` without changing the drawn size.
     func socialMinimumHitArea() -> some View {
         frame(minWidth: Tokens.Sizes.globalMinTouchTargetIos, minHeight: Tokens.Sizes.globalMinTouchTargetIos)
@@ -196,16 +207,19 @@ extension View {
 struct SocialPhoto<Failure: View>: View {
     let path: String?
     var contentMode: ContentMode = .fill
+    /// Longest side of the frame in pixels: the image is decoded at that size (nil: full size).
+    var maxPixel: Int?
     @ViewBuilder var failure: () -> Failure
 
     @State private var image: UIImage?
     @State private var failed = false
 
-    init(path: String?, contentMode: ContentMode = .fill, @ViewBuilder failure: @escaping () -> Failure) {
+    init(path: String?, contentMode: ContentMode = .fill, maxPixel: Int? = nil, @ViewBuilder failure: @escaping () -> Failure) {
         self.path = path
         self.contentMode = contentMode
+        self.maxPixel = maxPixel
         self.failure = failure
-        _image = State(initialValue: path.flatMap { SocialServices.shared.images.cached($0) })
+        _image = State(initialValue: path.flatMap { SocialServices.shared.images.cached($0, maxPixel: maxPixel) })
     }
 
     var body: some View {
@@ -225,11 +239,11 @@ struct SocialPhoto<Failure: View>: View {
                     image = nil
                     return
                 }
-                if let cached = SocialServices.shared.images.cached(path) {
+                if let cached = SocialServices.shared.images.cached(path, maxPixel: maxPixel) {
                     image = cached
                     return
                 }
-                let loaded = await SocialServices.shared.images.load(path)
+                let loaded = await SocialServices.shared.images.load(path, maxPixel: maxPixel)
                 image = loaded
                 failed = loaded == nil
             }
@@ -238,8 +252,8 @@ struct SocialPhoto<Failure: View>: View {
 }
 
 extension SocialPhoto where Failure == EmptyView {
-    init(path: String?, contentMode: ContentMode = .fill) {
-        self.init(path: path, contentMode: contentMode) { EmptyView() }
+    init(path: String?, contentMode: ContentMode = .fill, maxPixel: Int? = nil) {
+        self.init(path: path, contentMode: contentMode, maxPixel: maxPixel) { EmptyView() }
     }
 }
 
@@ -380,5 +394,37 @@ enum SocialEmoji {
     /// "Reactions: fire, sparkling heart" — names only, never a count.
     static func clusterLabel(_ emoji: [String]) -> String {
         Copy.chatReactionsA11yCluster(emojiNames: emoji.map(name).joined(separator: ", "))
+    }
+}
+
+// MARK: - Font metrics (cap-top / baseline placement)
+
+enum SocialMetrics {
+    /// Cap height of a token text style at the current Dynamic Type size.
+    static func capHeight(_ style: DSTextStyle) -> CGFloat {
+        font(style).capHeight
+    }
+
+    /// Line height of a token text style at the default content size.
+    static func lineHeight(_ style: DSTextStyle) -> CGFloat {
+        UIFont.systemFont(ofSize: style.size, weight: uiWeight(style.weight)).lineHeight
+    }
+
+    private static func font(_ style: DSTextStyle) -> UIFont {
+        UIFont.systemFont(ofSize: DSDynamicType.scaled(style.size, relativeTo: style.relativeTo), weight: uiWeight(style.weight))
+    }
+
+    static func uiWeight(_ weight: Font.Weight) -> UIFont.Weight {
+        let pairs: [(Font.Weight, UIFont.Weight)] = [
+            (.ultraLight, .ultraLight), (.thin, .thin), (.light, .light), (.regular, .regular),
+            (.medium, .medium), (.semibold, .semibold), (.bold, .bold), (.heavy, .heavy), (.black, .black),
+        ]
+        return pairs.first { $0.0 == weight }?.1 ?? .regular
+    }
+
+    /// Vertical inset that keeps a single line where it sits in a control of `height` when the text wraps
+    /// (multi-line layouts were not measured).
+    static func singleLineInset(height: CGFloat, style: DSTextStyle) -> CGFloat {
+        max(0, (height - lineHeight(style)) / 2)
     }
 }

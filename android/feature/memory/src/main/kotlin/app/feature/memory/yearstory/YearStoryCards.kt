@@ -1,6 +1,7 @@
 package app.feature.memory.yearstory
 
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,13 +14,18 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -30,7 +36,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.designsystem.R
-import app.designsystem.dsAnimateAlphaAsState
+import app.designsystem.rememberReduceMotion
+import app.feature.memory.common.MemoryBlocked
 import app.designsystem.generated.Tokens
 import app.feature.memory.common.MemoryFormats
 import app.feature.memory.common.MemoryImage
@@ -107,13 +114,24 @@ fun StoryCardContent(
             StoryCard.Summary -> LaunchedEffect(Unit) { onSettled() }
             else -> {
                 LaunchedEffect(Unit) { onSettled() }
-                Column(
+                // One reveal per card: its animation state starts fresh on every card.
+                key(card) { Column(
                     Modifier.align(Alignment.Center).widthIn(max = Tokens.Sizes.yearStoryTextMaxWidth),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Headline(headline, Modifier.fillMaxWidth())
-                    if (subline != null) Subline(subline, card, revealed)
-                }
+                    val reveal = rememberReveal(card, animate = !revealed && subline != null)
+                    Headline(headline, Modifier.fillMaxWidth().graphicsLayer { translationY = reveal.headlineOffset() })
+                    if (subline != null) {
+                        BasicText(
+                            subline,
+                            Modifier.fillMaxWidth().graphicsLayer {
+                                translationY = reveal.sublineOffset()
+                                alpha = reveal.sublineAlpha()
+                            },
+                            style = sublineStyle,
+                        )
+                    }
+                } }
             }
         }
     }
@@ -132,19 +150,40 @@ private fun Headline(text: String, modifier: Modifier) {
 }
 
 /**
- * The subline arrives after the headline. `easing.year.story.reveal` is BLOCKED, so every viewer
- * gets the Reduce Motion substitute (`layout.global.reduceMotion`): a cross-fade with the same
- * timings — `duration.year.story.reveal.sublineDelay`, then `duration.year.story.reveal.subline`.
+ * The text reveal of a card with a subline (design/surfaces/year.story.md, Motion): the headline
+ * moves up `dimension.year.story.reveal.headlineShift` over `duration.year.story.reveal.headline`; the
+ * subline starts `duration.year.story.reveal.sublineDelay` later, `dimension.year.story.reveal.sublineOffset`
+ * below, and settles over `duration.year.story.reveal.subline`, on `easing.year.story.reveal`.
+ * While that easing is BLOCKED — and always under Reduce Motion (`layout.global.reduceMotion`) — the
+ * movement is replaced by a cross-fade with the same timings: the headline stays in place and the
+ * subline fades in.
  */
+@Stable
+internal class Reveal(private val headline: State<Float>, private val subline: State<Float>, private val moves: Boolean, private val density: Density) {
+    fun headlineOffset(): Float = if (moves) with(density) { Tokens.Sizes.yearStoryRevealHeadlineShift.toPx() } * (1f - headline.value) else 0f
+    fun sublineOffset(): Float = if (moves) with(density) { Tokens.Sizes.yearStoryRevealSublineOffset.toPx() } * (1f - subline.value) else 0f
+    fun sublineAlpha(): Float = subline.value
+}
+
 @Composable
-private fun Subline(text: String, card: StoryCard, revealed: Boolean) {
-    var shown by remember(card) { mutableStateOf(revealed) }
-    LaunchedEffect(card) { shown = true }
-    val alpha by dsAnimateAlphaAsState(
-        if (shown) 1f else 0f,
-        // A cross-fade interpolates opacity linearly over the token duration.
-        tween(Tokens.Durations.yearStoryRevealSubline, Tokens.Durations.yearStoryRevealSublineDelay, LinearEasing),
-        label = "subline",
+internal fun rememberReveal(card: StoryCard, animate: Boolean): Reveal {
+    val reduceMotion by rememberReduceMotion()
+    val easing = MemoryBlocked.yearStoryRevealEasing
+    val moves = animate && easing != null && !reduceMotion
+    var started by remember(card) { mutableStateOf(!animate) }
+    LaunchedEffect(card) { started = true }
+    // A cross-fade interpolates opacity linearly over the token duration.
+    val curve = if (moves) easing!! else LinearEasing
+    val headline = animateFloatAsState(
+        if (started) 1f else 0f,
+        tween(Tokens.Durations.yearStoryRevealHeadline, easing = curve),
+        label = "revealHeadline", // provenance-ok: animation inspector label, never shown
     )
-    BasicText(text, Modifier.fillMaxWidth().alpha(alpha), style = sublineStyle)
+    val subline = animateFloatAsState(
+        if (started) 1f else 0f,
+        tween(Tokens.Durations.yearStoryRevealSubline, Tokens.Durations.yearStoryRevealSublineDelay, curve),
+        label = "revealSubline", // provenance-ok: animation inspector label, never shown
+    )
+    val density = LocalDensity.current
+    return remember(card, moves, density) { Reveal(headline, subline, moves, density) }
 }

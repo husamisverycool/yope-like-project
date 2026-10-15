@@ -173,12 +173,27 @@ final class PhotoViewerModel {
         if let value = try? await data.isTagged(postID: id, userID: me) { tagged[id] = value }
     }
 
-    /// Paging moved to another photo.
-    func select(_ id: PostID) async {
+    /// Paging moved to another photo (synchronous, so the pager never snaps back).
+    func show(_ id: PostID) {
         guard postIDs.contains(id), id != selection else { return }
         selection = id
         updateCoach()
-        await loadTag(for: id)
+    }
+
+    /// The "i'm in this" state of the photo on screen.
+    func loadSelectedTag() async {
+        await loadTag(for: selection)
+    }
+
+    func select(_ id: PostID) async {
+        show(id)
+        await loadSelectedTag()
+    }
+
+    /// The posts beside the current one (prefetched while the current one shows).
+    var neighbours: [PostWithMedia] {
+        guard let index = postIDs.firstIndex(of: selection) else { return [] }
+        return [index - 1, index + 1].filter(postIDs.indices.contains).compactMap { posts[postIDs[$0]] }
     }
 
     // MARK: Live

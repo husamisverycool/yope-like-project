@@ -44,10 +44,10 @@ final class DailyCaptureModel {
     private(set) var mainImage: UIImage? = nil
     private(set) var insetImage: UIImage? = nil
 
-    @ObservationIgnored let camera: CaptureCamera
-    @ObservationIgnored private let invitations: CaptureInvitationSource
-    @ObservationIgnored private let sendCenter: CaptureSendCenter
-    @ObservationIgnored private let navigation: CaptureNavigation
+    let camera: CaptureCamera
+    private let invitations: CaptureInvitationSource
+    private let sendCenter: CaptureSendCenter
+    private let navigation: CaptureNavigation
 
     init(
         groupID: String,
@@ -209,7 +209,8 @@ final class DailyCaptureModel {
         sendCenter.submit(CaptureSendRequest(
             payload: .daily(answer),
             groupIDs: [groupID],
-            invitationID: invitationID
+            invitationID: invitationID,
+            confirmation: Copy.cameraSendtoToastPostedOne(group: groupName)
         ))
         self.answer = nil
         navigation.closeCapture()

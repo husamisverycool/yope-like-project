@@ -81,7 +81,7 @@ import app.designsystem.dsAnimateAlphaAsState
 import app.designsystem.dsAnimateFloatAsState
 import app.designsystem.generated.Tokens
 import app.feature.capture.Blocked
-import app.feature.capture.camera.CameraXController
+import app.feature.capture.camera.CameraControllers
 import app.feature.capture.camera.photoSize
 import app.feature.capture.data.CaptureDataProvider
 import app.feature.capture.data.CaptureHandoff
@@ -128,7 +128,7 @@ fun DailyCaptureRoute(groupId: String, invitationId: String, onDismiss: () -> Un
         )
     }
     val state by vm.ui.collectAsStateWithLifecycle()
-    val controller = remember(lifecycleOwner) { CameraXController(context.applicationContext, lifecycleOwner) }
+    val controller = remember(lifecycleOwner) { CameraControllers.factory(context, lifecycleOwner) }
     val scope = rememberCoroutineScope()
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         MediaPermissions.markRequested(context, MediaPermission.Camera)
@@ -144,7 +144,14 @@ fun DailyCaptureRoute(groupId: String, invitationId: String, onDismiss: () -> Un
         }
     }
     LaunchedEffect(vm) {
-        vm.event.collect { if (it == DailyCaptureViewModel.Event.Sent) onDismiss() }
+        vm.event.collect {
+            if (it == DailyCaptureViewModel.Event.Sent) {
+                // Optimistic: queued = sent (it uploads in the background); a later failure shows the
+                // error toast with haptic.global.error.
+                view.haptic(Tokens.Haptics.globalSend)
+                onDismiss()
+            }
+        }
     }
     // Status bar hidden while the cover shows (as in the reference).
     DisposableEffect(view) {
@@ -296,8 +303,8 @@ private fun LiveArea(
     val seq = Tokens.Layouts.DailyCaptureLayoutCaptureSequence
     val text = Tokens.Colors.dailyCaptureColorText
     // Capturing: the viewfinder fades to black, then spinner + prompt; the first photo fades in behind them.
-    val blackout by dsAnimateAlphaAsState(if (capturing) 1f else 0f, springWithResponse(seq.viewfinderFadeOut).spec(), label = "blackout")
-    val firstIn by dsAnimateAlphaAsState(if (capturing && state.firstTaken) 1f else 0f, springWithResponse(seq.backPhotoFadeIn).spec(), label = "firstIn")
+    val blackout by dsAnimateAlphaAsState(if (capturing) 1f else 0f, springWithResponse(seq.viewfinderFadeOut).spec(), label = "blackout") // provenance-ok: animation debug label (tooling only)
+    val firstIn by dsAnimateAlphaAsState(if (capturing && state.firstTaken) 1f else 0f, springWithResponse(seq.backPhotoFadeIn).spec(), label = "firstIn") // provenance-ok: animation debug label (tooling only)
     Box(
         Modifier
             .fillMaxSize()
@@ -357,9 +364,9 @@ private fun ControlRow(state: DailyCaptureViewModel.UiState, capturing: Boolean,
         },
         animationSpec = springWithResponse(if (capturing) seq.controlsOut else seq.press).spec(),
         channel = MotionChannel.Movement,
-        label = "dailyShutter",
+        label = "dailyShutter", // provenance-ok: animation debug label (tooling only)
     )
-    val controlsAlpha by dsAnimateAlphaAsState(if (capturing) 0f else 1f, springWithResponse(seq.controlsOut).spec(), label = "controls")
+    val controlsAlpha by dsAnimateAlphaAsState(if (capturing) 0f else 1f, springWithResponse(seq.controlsOut).spec(), label = "controls") // provenance-ok: animation debug label (tooling only)
     val flashLabel = stringResource(R.string.daily_capture_a11y_flash)
     val flashValue = stringResource(if (state.flashOn) R.string.daily_capture_a11y_flashon else R.string.daily_capture_a11y_flashoff)
     val shutterLabel = stringResource(R.string.daily_capture_a11y_shutter)
@@ -434,7 +441,7 @@ private fun PreviewOverlay(groupName: String?, onRetake: () -> Unit) {
             icon = Tokens.Icons.globalClose,
             contentDescription = stringResource(R.string.daily_capture_a11y_retake),
             diameter = r.diameter.dp,
-            fill = null,
+            fill = Blocked.overlayControlFill,
             tint = text,
             onClick = onRetake,
             glyphSize = r.glyph.dp,
@@ -447,6 +454,7 @@ private fun PreviewOverlay(groupName: String?, onRetake: () -> Unit) {
                     .padding(bottom = chip.bottomInset.dp)
                     .height(chip.height.dp)
                     .clip(CapsuleShape)
+                    .then(Blocked.overlayControlFill?.let { Modifier.background(it) } ?: Modifier)
                     .padding(start = chip.paddingLeading.dp, end = chip.paddingTrailing.dp)
                     .semantics(mergeDescendants = true) { traversalIndex = 4f }
                     .testTag("daily.chip"),
@@ -472,21 +480,15 @@ private fun SendLabel(onSend: () -> Unit, modifier: Modifier) {
     val label = stringResource(R.string.daily_capture_send)
     val a11y = stringResource(R.string.daily_capture_a11y_send)
     val toBaseline = glyphTopToBaseline(Tokens.FontSizes.dailyCaptureFontSizeSend, Tokens.FontWeights.dailyCaptureFontWeightSend, label)
-    val view = LocalView.current
     Box(modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
         Row(
             Modifier
-                .clickable {
-                    // Optimistic: the post is queued (it sends in the background); a failure shows the
-                    // error toast with haptic.global.error.
-                    view.haptic(Tokens.Haptics.globalSend)
-                    onSend()
-                }
+                .clickable(onClick = onSend)
                 .clearAndSetSemantics {
                     contentDescription = a11y
                     role = Role.Button
                     traversalIndex = 5f
-                    onClick { view.haptic(Tokens.Haptics.globalSend); onSend(); true }
+                    onClick { onSend(); true }
                 }
                 .testTag("daily.send"),
             verticalAlignment = Alignment.CenterVertically,

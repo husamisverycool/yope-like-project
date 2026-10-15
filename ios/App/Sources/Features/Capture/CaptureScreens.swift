@@ -9,7 +9,7 @@ struct CameraCaptureScreen: View {
     /// Nil: `CaptureEnvironment.shared`.
     var environment: CaptureEnvironment?
 
-    @State private var model: CameraCaptureModel?
+    @State private var model: CameraCaptureModel? = nil
 
     var body: some View {
         ZStack {
@@ -42,7 +42,7 @@ struct DailyCaptureScreen: View {
     let invitationID: String
     var environment: CaptureEnvironment?
 
-    @State private var model: DailyCaptureModel?
+    @State private var model: DailyCaptureModel? = nil
 
     var body: some View {
         ZStack {
@@ -63,7 +63,7 @@ struct CollageScreen: View {
     let invitationID: String
     var environment: CaptureEnvironment?
 
-    @State private var model: CollageModel?
+    @State private var model: CollageModel? = nil
 
     var body: some View {
         ZStack {

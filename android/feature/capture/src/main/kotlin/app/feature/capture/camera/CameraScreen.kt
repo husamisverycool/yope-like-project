@@ -66,6 +66,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.data.model.MediaKind
+import app.feature.capture.Blocked
 import app.designsystem.R
 import app.designsystem.dsAnimateFloatAsState
 import app.designsystem.MotionChannel
@@ -117,7 +118,7 @@ fun CameraRoute(
         )
     }
     val state by vm.ui.collectAsStateWithLifecycle()
-    val controller = remember(lifecycleOwner) { CameraXController(context.applicationContext, lifecycleOwner) }
+    val controller = remember(lifecycleOwner) { CameraControllers.factory(context, lifecycleOwner) }
     val scope = rememberCoroutineScope()
     val view = LocalView.current
     val recordingLabel = stringResource(R.string.camera_capture_a11y_recording)
@@ -152,6 +153,7 @@ fun CameraRoute(
                 CameraViewModel.Event.OpenSendTo -> onOpenSendTo()
                 CameraViewModel.Event.OpenPaywall -> onOpenPaywall()
                 CameraViewModel.Event.AskMicrophone -> microphonePermission.launch(Manifest.permission.RECORD_AUDIO)
+                @Suppress("DEPRECATION") // the spec asks for an announcement when recording starts
                 CameraViewModel.Event.RecordingStarted -> view.announceForAccessibility(recordingLabel)
             }
         }
@@ -256,7 +258,11 @@ fun CameraScreen(
                         modifier = Modifier.align(Alignment.Center).semantics { traversalIndex = HOUR_ORDER },
                     )
                     if (state.hasFlash) FlashToggle(state.flashOn, onFlash)
-                    // Recording outline (camera.capture.size.recordingOutline) is BLOCKED: not drawn.
+                    // Recording outline in color.global.accent (width BLOCKED → not drawn while null).
+                    val outline = Blocked.recordingOutline
+                    if (state.recording && outline != null) {
+                        Box(Modifier.fillMaxSize().border(outline, Tokens.Colors.globalAccent, RoundedCornerShape(Tokens.Radii.globalViewfinder)))
+                    }
                 }
             }
         }
@@ -368,7 +374,7 @@ private fun Shutter(
         targetValue = if (pressed || state.recording) Tokens.Layouts.CameraCaptureLayoutShutterPress.scale else 1f,
         animationSpec = Tokens.Springs.cameraCaptureSpringShutterPress.spec(),
         channel = MotionChannel.Movement,
-        label = "shutterPress",
+        label = "shutterPress", // provenance-ok: animation debug label (tooling only)
     )
     val label = stringResource(R.string.camera_capture_a11y_shutter)
     val recordLabel = stringResource(R.string.camera_capture_a11y_recordvideo)
@@ -475,6 +481,6 @@ internal fun photoSize(file: File): Pair<Int, Int>? {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeFile(file.path, bounds)
     if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
-    val rotation = runCatching { android.media.ExifInterface(file.path).rotationDegrees }.getOrDefault(0)
+    val rotation = app.feature.capture.data.exifRotation(file)
     return if (rotation % 180 != 0) bounds.outHeight to bounds.outWidth else bounds.outWidth to bounds.outHeight
 }

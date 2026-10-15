@@ -8,6 +8,7 @@ import app.data.model.OnThisDayItem
 import app.designsystem.generated.Tokens
 import app.feature.memory.common.Failure
 import app.feature.memory.common.MemoryBackend
+import app.feature.memory.common.MemoryCache
 import app.feature.memory.common.attempt
 import app.feature.memory.common.failureOf
 import kotlinx.coroutines.Job
@@ -68,30 +69,59 @@ class OnThisDayViewModel(
     private val groupId: String,
     private val backend: MemoryBackend,
     private val clock: Clock = Clock.systemUTC(),
+    private val cache: MemoryCache = MemoryCache.shared,
 ) : ViewModel() {
+    /** The day as last shown, with the date it belongs to. */
+    private data class Cached(val date: LocalDate, val day: OnThisDayState.Day)
+
+    private val cacheKey = MemoryCache.key(backend, "onthisday", groupId)
     private val _state = MutableStateFlow<OnThisDayState>(OnThisDayState.Loading)
     val state: StateFlow<OnThisDayState> = _state.asStateFlow()
     private var load: Job? = null
 
     init {
-        retry()
+        // Cached content first: today's day as last shown paints at once; the refresh replaces it.
+        cache.get<Cached>(cacheKey)?.takeIf { it.date == localDate(clock, it.day.zone) }?.let { _state.value = it.day.copy(index = 0) }
+        refresh()
         viewModelScope.launch {
             backend.postDeletions(groupId).collect(::onPostDeleted)
         }
     }
 
+    /** "try again" on the error / offline state. */
     fun retry() {
-        load?.cancel()
         _state.value = OnThisDayState.Loading
+        refresh()
+    }
+
+    private fun refresh() {
+        load?.cancel()
         load = viewModelScope.launch {
+            val shown = _state.value as? OnThisDayState.Day
             if (!backend.isOnline()) {
-                _state.value = OnThisDayState.Failed(offline = true)
+                // Offline: cached content stays; without it, the offline state.
+                if (shown == null) _state.value = OnThisDayState.Failed(offline = true)
                 return@launch
             }
             attempt { loadDay(backend, groupId, clock) }
-                .onSuccess { day -> _state.value = day ?: OnThisDayState.Finished }
-                .onFailure { _state.value = OnThisDayState.Failed(offline = failureOf(it) == Failure.Offline) }
+                .onSuccess { day ->
+                    _state.update { current ->
+                        when {
+                            day == null -> OnThisDayState.Finished
+                            // Same years as on screen: keep the viewer's position.
+                            current is OnThisDayState.Day && current.years.map { it.yearsAgo } == day.years.map { it.yearsAgo } -> day.copy(index = current.index)
+                            else -> day
+                        }
+                    }
+                    remember()
+                }
+                .onFailure { e -> if (shown == null) _state.value = OnThisDayState.Failed(offline = failureOf(e) == Failure.Offline) }
         }
+    }
+
+    private fun remember() {
+        val day = _state.value as? OnThisDayState.Day
+        if (day == null) cache.remove(cacheKey) else cache.put(cacheKey, Cached(localDate(clock, day.zone), day))
     }
 
     /** Right half: the next (older) year; on the oldest year it closes the day. */
@@ -105,13 +135,16 @@ class OnThisDayViewModel(
     }
 
     /** `post_deleted`: drop the photo, the year when it was its last photo, the day when none remain. */
-    fun onPostDeleted(postId: String) = _state.update { s ->
-        if (s !is OnThisDayState.Day) return@update s
-        val current = s.year.yearsAgo
-        val years = s.years.map { y -> y.copy(photos = y.photos.filterNot { it.postId == postId }) }.filter { it.photos.isNotEmpty() }
-        if (years.isEmpty()) return@update OnThisDayState.Finished
-        val index = years.indexOfFirst { it.yearsAgo >= current }.let { if (it < 0) years.lastIndex else it }
-        s.copy(years = years, index = index)
+    fun onPostDeleted(postId: String) {
+        _state.update { s ->
+            if (s !is OnThisDayState.Day) return@update s
+            val current = s.year.yearsAgo
+            val years = s.years.map { y -> y.copy(photos = y.photos.filterNot { it.postId == postId }) }.filter { it.photos.isNotEmpty() }
+            if (years.isEmpty()) return@update OnThisDayState.Finished
+            val index = years.indexOfFirst { it.yearsAgo >= current }.let { if (it < 0) years.lastIndex else it }
+            s.copy(years = years, index = index)
+        }
+        remember()
     }
 
     companion object {

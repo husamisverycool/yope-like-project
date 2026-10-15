@@ -62,6 +62,9 @@ targets:
         product: AppData
       - package: Supabase
         product: Supabase
+      # The paywall reads RevenueCat's offerings and packages (PurchasesService's public API exposes them).
+      - package: RevenueCat
+        product: RevenueCat
 
   Widgets:
     type: app-extension
@@ -97,6 +100,10 @@ targets:
       Release: Config/AppClip.xcconfig
     sources:
       - path: AppClip/Sources
+      # Shared with the app: components (buttons, fields, HUD, toast…) and the account group's invite preview,
+      # SMS code step and data seam (ios/App/Sources/Features/Account/Shared).
+      - path: App/Sources/Components
+      - path: App/Sources/Features/Account/Shared
       - path: ../config/app.json
         buildPhase: resources
     dependencies:

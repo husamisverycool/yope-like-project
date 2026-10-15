@@ -59,6 +59,7 @@ import java.time.Clock
 fun TributeScreen(
     state: TributeState,
     autoplay: Boolean,
+    player: TributePlayerHolder?,
     onDownload: () -> Unit,
     onShare: () -> Unit,
     onRetry: () -> Unit,
@@ -80,7 +81,7 @@ fun TributeScreen(
                 action = stringResource(R.string.birthday_tribute_error_retry),
                 onAction = onRetry,
             )
-            else -> Page(state, content, autoplay, onDownload, onShare)
+            else -> Page(state, content, autoplay, player, onDownload, onShare)
         }
         LeadingHeaderCircle(Tokens.Icons.globalClose, stringResource(R.string.birthday_tribute_a11y_close), onClose)
         MemoryToast(
@@ -96,7 +97,7 @@ fun TributeScreen(
 }
 
 @Composable
-private fun Page(state: TributeState, content: TributeContent, autoplay: Boolean, onDownload: () -> Unit, onShare: () -> Unit) {
+private fun Page(state: TributeState, content: TributeContent, autoplay: Boolean, player: TributePlayerHolder?, onDownload: () -> Unit, onShare: () -> Unit) {
     val navigation = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val headerBottom = headerClearance()
     Column(
@@ -111,13 +112,13 @@ private fun Page(state: TributeState, content: TributeContent, autoplay: Boolean
             style = roleStyle(Tokens.FontSizes.birthdayRequestTitle, Tokens.FontWeights.fontWeightBirthdayRequestTitle, Tokens.LineHeights.birthdayRequestTitle, Tokens.Fonts.birthday)
                 .copy(color = Tokens.Colors.globalTextPrimary),
         )
-        state.groupName?.let { name ->
-            BasicText(
-                name,
-                style = roleStyle(Tokens.FontSizes.birthdayRequestMessage, Tokens.FontWeights.fontWeightGlobalListSubtitle, family = Tokens.Fonts.birthday)
-                    .copy(color = Tokens.Colors.globalTextSecondary),
-            )
-        }
+        // The group line keeps its height while the name loads, so the player never moves.
+        BasicText(
+            state.groupName.orEmpty(),
+            style = roleStyle(Tokens.FontSizes.birthdayRequestMessage, Tokens.FontWeights.fontWeightGlobalListSubtitle, family = Tokens.Fonts.birthday)
+                .copy(color = Tokens.Colors.globalTextSecondary),
+            minLines = 1,
+        )
         if (content == TributeContent.Offline) {
             BasicText(
                 stringResource(R.string.birthday_tribute_offline),
@@ -126,7 +127,7 @@ private fun Page(state: TributeState, content: TributeContent, autoplay: Boolean
         }
         Spacer(Modifier.size(Tokens.Sizes.birthdayRequestMessageGap))
         when (content) {
-            is TributeContent.Ready -> TributePlayer(content.videoUrl, content.posterUrl, autoplay, Modifier.fillMaxWidth())
+            is TributeContent.Ready -> TributePlayer(player, content.videoUrl, content.posterUrl, autoplay, Modifier.fillMaxWidth())
             TributeContent.Loading, TributeContent.Rendering -> Box(Modifier.fillMaxWidth().aspectRatio(tributeAspect), contentAlignment = Alignment.Center) {
                 PlatformSpinner()
             }
@@ -166,9 +167,12 @@ fun TributeDestination(
     // API 26-28: MediaStore writes need WRITE_EXTERNAL_STORAGE (maxSdkVersion 28 in the manifest).
     val askWrite = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> vm.save(granted) }
     val reduceMotion by rememberReduceMotion()
+    // Created on open (while the tribute row loads) and prepared as soon as the URL is known.
+    val player = rememberTributePlayerHolder()
     TributeScreen(
         state = state,
         autoplay = !reduceMotion,
+        player = player,
         onDownload = {
             val legacy = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
             if (legacy && ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {

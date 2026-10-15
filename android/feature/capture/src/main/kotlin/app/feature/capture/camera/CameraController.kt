@@ -83,6 +83,11 @@ interface CameraController {
     data class DualResult(val main: File, val other: File?, val mode: DualCaptureMode)
 }
 
+/** Creates the controller a capture screen drives; tests replace [factory]. */
+object CameraControllers {
+    @Volatile var factory: (Context, LifecycleOwner) -> CameraController = { context, owner -> CameraXController(context.applicationContext, owner) }
+}
+
 /** CameraX implementation of [CameraController] for one screen's lifecycle. */
 class CameraXController(private val context: Context, private val lifecycleOwner: LifecycleOwner) : CameraController {
     private var provider: ProcessCameraProvider? = null

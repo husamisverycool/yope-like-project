@@ -8,7 +8,7 @@ import SwiftUI
 /// Caption box on a photo (`chat.thread` "On a photo message" 2; `photo.viewer` caption): height
 /// `chat.thread.dimension.captionHeight` (minimum), padding `chat.thread.dimension.captionPaddingH`, corners
 /// `chat.thread.radius.caption`, text `chat.thread.fontSize.caption` / `.fontWeight.caption` in
-/// `color.global.textPrimary`. Its fill `color.global.scrim` is BLOCKED: the box is drawn without a fill.
+/// `color.global.textPrimary`. Fill `color.global.scrim` (`SocialBlocked.scrim`: drawn without a fill while BLOCKED).
 struct PhotoCaption: View {
     let text: String
     /// Thread: one line, tail truncation (S-8). Viewer: long captions wrap.
@@ -23,7 +23,11 @@ struct PhotoCaption: View {
             .multilineTextAlignment(.center)
             .padding(.horizontal, Tokens.Sizes.chatThreadDimensionCaptionPaddingH)
             .frame(minHeight: Tokens.Sizes.chatThreadDimensionCaptionHeight)
-            .clipShape(RoundedRectangle(cornerRadius: Tokens.Radii.chatThreadRadiusCaption))
+            .background {
+                if let scrim = SocialBlocked.scrim {
+                    RoundedRectangle(cornerRadius: Tokens.Radii.chatThreadRadiusCaption).fill(scrim)
+                }
+            }
             .accessibilityHidden(true)
     }
 }

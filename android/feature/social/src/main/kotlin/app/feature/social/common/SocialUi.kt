@@ -5,7 +5,11 @@ import android.view.View
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -71,6 +75,10 @@ val LocalApproximations = staticCompositionLocalOf { BuildApproximations.ENABLED
  */
 @Composable
 fun SocialRoot(content: @Composable () -> Unit) = AppTheme(content)
+
+/** Whether an element gated by a BLOCKED value shows: once [unblocked] ([SocialBlocked]), or as the development approximation. */
+@Composable
+fun shows(unblocked: Boolean): Boolean = unblocked || LocalApproximations.current
 
 /** Text styles from tokens: size and weight tokens; weight null = not measured (platform default). */
 object Type {
@@ -179,7 +187,9 @@ fun ActivityIndicator(modifier: Modifier = Modifier) {
 @Composable
 fun LoadingHud(modifier: Modifier = Modifier) {
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        app.ui.components.LoadingHud(stringRes(app.designsystem.R.string.groups_create_hud_loading))
+        val radius = SocialBlocked.loadingHudRadius
+        val label = stringRes(app.designsystem.R.string.groups_create_hud_loading)
+        if (radius != null) app.ui.components.LoadingHud(label, shape = app.ui.components.hudShape(radius)) else app.ui.components.LoadingHud(label)
     }
 }
 
@@ -198,12 +208,22 @@ fun EmptyState(title: String, detail: String?, pill: PillAction?, modifier: Modi
  * like every screen of the app, no toast is drawn while it is; the text is announced to TalkBack.
  */
 @Composable
-fun ConfirmationToast(text: String?, onShown: () -> Unit) {
+fun ConfirmationToast(text: String?, modifier: Modifier = Modifier, onShown: () -> Unit) {
     val view = LocalView.current
     if (text == null) return
+    val dwell = SocialBlocked.toastDwellMs
     androidx.compose.runtime.LaunchedEffect(text) {
         announce(view, text)
+        if (dwell != null) kotlinx.coroutines.delay(dwell)
         onShown()
+    }
+    if (dwell != null) {
+        app.ui.components.LimeToast(
+            text,
+            modifier
+                .windowInsetsPadding(androidx.compose.foundation.layout.WindowInsets.Companion.statusBars)
+                .padding(horizontal = Tokens.Layouts.CameraSendtoLayoutToast.marginHorizontal.dp),
+        )
     }
 }
 

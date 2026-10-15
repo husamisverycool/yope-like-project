@@ -56,7 +56,7 @@ enum WidgetType {
         DSTextStyle(
             family: Tokens.Fonts.globalFamily,
             size: Tokens.FontSizes.dailyCaptureFontSizeCountdown,
-            weight: Tokens.FontWeights.dailyLiveactivityFontWeightMin,
+            weight: WidgetBlocked.countdownWeight ?? Tokens.FontWeights.dailyLiveactivityFontWeightMin,
             relativeTo: WidgetTextStyleName.resolve(Tokens.Layouts.DailyCaptureLayoutTextStyleMap.countdown)
         )
     }
