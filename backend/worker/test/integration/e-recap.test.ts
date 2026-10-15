@@ -4,7 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import type { RecapInput, RecapModel, RecapModelResult } from "../../src/recap/ai.js";
 import { closeDb, createGroup, createUsers, getConfig, parkQueuedJobs, postPhoto, rpc, setConfig, sql, type TestGroup, type TestUser } from "../helpers/db.js";
 import { apnsDeviceSends, startWorld, type World } from "../helpers/world.js";
-import { registerDevice } from "../helpers/db.js";
+import { admin, registerDevice } from "../helpers/db.js";
 
 const WEEK_START = "2026-09-07"; // a Monday
 let u: TestUser[];
@@ -37,7 +37,7 @@ async function weekGroup(name: string): Promise<{ g: TestGroup; moment: string[]
 async function createRecap(groupId: string): Promise<string> {
   // the recap moment after that week: Sunday 2026-09-13 at the configured time
   await rpc(u[0]!.client, "set_group_muted", { p_group_id: groupId, p_muted: false });
-  const rows = await rpc<any[]>(rpc.length ? (await import("../helpers/db.js")).admin : (null as any), "due_weekly_recaps", { p_now: "2026-09-13T20:00:00Z" });
+  const rows = await rpc<any[]>(admin, "due_weekly_recaps", { p_now: "2026-09-13T20:00:00Z" });
   const mine = rows.find((r) => r.group_id === groupId);
   expect(mine, "recap created").toBeDefined();
   return mine.id;
@@ -67,7 +67,7 @@ describe("without an API key", () => {
     const recapId = await createRecap(g.id);
     await w.runner.runUntilIdle({ kinds: ["recap.generate", "push.recap_ready"] });
     const [r] = await sql(`select * from public.weekly_recaps where id = $1`, [recapId]);
-    expect(r.week_start.toISOString?.().slice(0, 10) ?? r.week_start).toBeDefined();
+    expect(r.week_start.toISOString().slice(0, 10)).toBe(WEEK_START);
     expect(r.status).toBe("ready");
     expect(r.items).toEqual([...moment, reacted, plain]);
     expect(r.text).toBe("[week.recap.template] group=Recap fallback");

@@ -1,12 +1,13 @@
 import fs from "node:fs";
-import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { blockedConfig, loadConfig, parseAppIdentity } from "../../src/config.js";
 import { REQUIRED_COPY, blockedMarker, missingCopy, text } from "../../src/design.js";
 import { startupProblems } from "../../src/startup.js";
 import { FULL_APP_JSON, testConfig } from "../support/app.js";
 
-const repoAppJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../../../config/app.json"), "utf8"));
+const appPath = fileURLToPath(new URL("../../../config/app.json", import.meta.url));
+const repoAppJson = JSON.parse(fs.readFileSync(appPath, "utf8"));
 const fullCopy = Object.fromEntries(REQUIRED_COPY.map((k) => [k, k === "invite.web.documentTitle" ? "{title} | Name" : "x"]));
 
 describe("config", () => {
@@ -51,7 +52,6 @@ describe("config", () => {
   });
 
   it("parses the environment", () => {
-    const appPath = path.resolve(__dirname, "../../../config/app.json");
     const c = loadConfig({ NODE_ENV: "test", APP_CONFIG_PATH: appPath, SUPABASE_URL: "http://127.0.0.1:54321/", SUPABASE_ANON_KEY: "a", SUPABASE_SERVICE_ROLE_KEY: "s", INVITE_CACHE_SECONDS: "30" });
     expect(c.supabase?.url).toBe("http://127.0.0.1:54321");
     expect(c.inviteCacheSeconds).toBe(30);

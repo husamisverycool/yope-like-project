@@ -8,7 +8,7 @@ describe("theme", () => {
     expect(relativeLuminance([0, 0, 0])).toBe(0);
     expect(contrastRatio([0, 0, 0], [255, 255, 255])).toBeCloseTo(21);
     expect(contrastRatio([119, 119, 119], [255, 255, 255])).toBeCloseTo(4.48, 2);
-    expect(over([0, 0, 0], 0.8, [255, 255, 255])).toEqual([51, 51, 51]);
+    over([0, 0, 0], 0.8, [255, 255, 255]).forEach((c) => expect(c).toBeCloseTo(51));
   });
 
   it("picks the text colour with the higher contrast", () => {

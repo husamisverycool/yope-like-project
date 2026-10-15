@@ -102,6 +102,17 @@ export async function widgetRefresh(ctx: JobContext): Promise<void> {
     };
   }
 
+  // posts whose new-post alert (with the widget fields, for the Notification Service Extension)
+  // is queued, running or sent: members who get that alert need no background push for it
+  const alerted = new Set(
+    (must(
+      await ctx.db.from("jobs").select("payload").eq("kind", "push.new_post").in("status", ["queued", "running", "done"]).in("payload->>post_id", posts.slice(0, 8).map((p) => p.id)),
+      "new-post jobs",
+    ) as Array<{ payload: { post_id?: string } }>).map((j) => j.payload.post_id),
+  );
+  const coveredByAlert = (memberId: string, muted: boolean, item: WidgetItem | null) =>
+    !!item && !muted && item.fields.kind === "photo" && alerted.has(item.fields.postId) && posts.find((p) => p.id === item.fields.postId)?.author_id !== memberId;
+
   const sends: DeviceSend[] = [];
   const deferred: number[] = [];
   const nowMs = now.getTime();
@@ -124,6 +135,7 @@ export async function widgetRefresh(ctx: JobContext): Promise<void> {
           continue;
         }
         if (!item || ctx.throttle.alreadyDelivered(d.push_token, groupId, item.key)) continue;
+        if (coveredByAlert(m.userId, m.muted, item)) continue;
         const next = ctx.throttle.backgroundNextAt(d.push_token, nowMs);
         if (next === null) {
           ctx.throttle.recordBackground(d.push_token, nowMs);
