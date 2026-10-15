@@ -75,9 +75,11 @@ fun ShellTabBar(nav: NavHostController, env: AccountEnvironment, modifier: Modif
                         AppTab.Walls -> AppRoute.WallsBrowse
                         AppTab.Me -> AppRoute.WallMine
                     }
-                    if (tab == AppTab.Camera) {
-                        nav.navigate(route)
-                    } else if (tab != selected) {
+                    if (tab == selected) {
+                        // Already there.
+                    } else if (tab == AppTab.Camera) {
+                        nav.navigate(route) { launchSingleTop = true }
+                    } else {
                         nav.navigate(route) {
                             popUpTo(nav.graph.startDestinationId) { saveState = true }
                             launchSingleTop = true

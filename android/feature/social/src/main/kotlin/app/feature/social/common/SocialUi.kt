@@ -201,28 +201,24 @@ fun EmptyState(title: String, detail: String?, pill: PillAction?, modifier: Modi
 }
 
 /**
- * A confirmation that would show as Yope's lime toast. The toast's dwell is BLOCKED
- * (`camera.sendto.duration.toastVisible`, `safety.block.duration.toast`; core:ui `ToastDwell`):
- * like every screen of the app, no toast is drawn while it is; the text is announced to TalkBack.
+ * A confirmation as Yope's lime toast (core:ui `LimeToast`, `camera.sendto.layout.toast`), shown for
+ * `camera.sendto.duration.toastVisible` (sourced in the second global gap fill, G2-7) and announced to TalkBack.
  */
 @Composable
 fun ConfirmationToast(text: String?, modifier: Modifier = Modifier, onShown: () -> Unit) {
     val view = LocalView.current
     if (text == null) return
-    val dwell = SocialBlocked.toastDwellMs
     androidx.compose.runtime.LaunchedEffect(text) {
         announce(view, text)
-        if (dwell != null) kotlinx.coroutines.delay(dwell)
+        kotlinx.coroutines.delay(Tokens.Durations.cameraSendtoDurationToastVisible.toLong())
         onShown()
     }
-    if (dwell != null) {
-        app.ui.components.LimeToast(
-            text,
-            modifier
-                .windowInsetsPadding(androidx.compose.foundation.layout.WindowInsets.Companion.statusBars)
-                .padding(horizontal = Tokens.Layouts.CameraSendtoLayoutToast.marginHorizontal.dp),
-        )
-    }
+    app.ui.components.LimeToast(
+        text,
+        modifier
+            .windowInsetsPadding(androidx.compose.foundation.layout.WindowInsets.Companion.statusBars)
+            .padding(horizontal = Tokens.Layouts.CameraSendtoLayoutToast.marginHorizontal.dp),
+    )
 }
 
 /** Says [text] through TalkBack (errors and confirmations whose visual is BLOCKED or absent). */

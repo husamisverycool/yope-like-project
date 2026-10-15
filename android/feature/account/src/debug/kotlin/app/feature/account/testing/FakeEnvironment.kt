@@ -68,6 +68,7 @@ fun fakeEnvironment(
     granted: Set<String> = emptySet(),
     sdkInt: Int = 36,
     scope: CoroutineScope? = null,
+    launchToCamera: Boolean = false,
 ): AccountEnvironment = AccountEnvironment(
     backend = backend,
     stores = stores,
@@ -86,9 +87,11 @@ fun fakeEnvironment(
     smsUserConsent = false,
     region = { "US" },
     isGranted = { it in granted },
+    launchToCamera = launchToCamera,
 ).let { env -> if (scope != null) env.copyWithScope(scope) else env }
 
 private fun AccountEnvironment.copyWithScope(scope: CoroutineScope) = AccountEnvironment(
     backend, stores, inviteLinks, invitePreview, premium, contacts, images, legal, clock, zone, sdkInt, promptGate, signUp,
     appScope = scope, optimistic = optimistic, smsUserConsent = smsUserConsent, region = region, isGranted = isGranted,
+    launchToCamera = launchToCamera, toasts = toasts,
 )

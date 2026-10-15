@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.Dp
  * `.layout.recording`; `chat.reactions.layout.clusterOrder`, `.easing.rain`, `.duration.flyToCluster`,
  * `.layout.unreact`; `photo.viewer.dimension.pageGap`; `week.history.color.emptyTile`, `.emptyTileText`;
  * `week.edit.layout.reorder`; `albums.list.layout.yopeAlbums`; and by the second global pass (G2):
- * `color.global.scrim` (the caption box fill).
+ * `color.global.scrim` (the caption box fill) and the toast dwell `camera.sendto.duration.toastVisible`.
  */
 object SocialBlocked {
     // chat.voice
@@ -32,11 +32,6 @@ object SocialBlocked {
     // photo.viewer
     /** `photo.viewer.layout.voiceNote` → true once built (until then: under the photo at `size.global.screenMargin`). */
     const val viewerVoiceNote: Boolean = false
-    /**
-     * `camera.sendto.duration.toastVisible` / `safety.block.duration.toast` → the toast dwell in ms
-     * (core:ui `ToastDwell.millis`); null = no toast is drawn.
-     */
-    val toastDwellMs: Long? = app.ui.components.ToastDwell.millis
 
     // walls
     /** `walls.mine.layout.freeformWall` / `.mosaic` → true once built (until then: the profile grid, S-11). */
