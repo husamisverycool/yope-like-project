@@ -105,6 +105,7 @@ export const tokens = {
   "invite.appclip.fontSize.sheetInput": 24, // Partiful · invite.appclip · VERIFIED
   "invite.appclip.layout.association": {"aasaAppClips":"appclips.apps = [TEAM_ID.BUNDLE_ID.Clip]","aasaAppLinks":"applinks.details[0].components: exclude /i/*/* (page sub-resources), then /i/*","banner":"<meta name=apple-itunes-app content='app-id=…, app-clip-bundle-id=…, app-clip-display=card'>","android":"assetlinks.json delegate_permission/common.handle_all_urls for the application id"}, // Partiful · invite.appclip · VERIFIED
   "invite.appclip.layout.cardLimits": {"headerImage":"1800×1200 px, no transparency, no text","titleMaxCharacters":30,"subtitleMaxCharacters":56}, // Apple HIG · invite.appclip · PLATFORM
+  "invite.appclip.layout.fullAppOverlay": {"position":"bottom","when":"after join_group succeeds (a natural pause); never before the person has joined"}, // Apple HIG · invite.appclip · PLATFORM
   "invite.appclip.layout.messagesCard": {"header":"cover on a blurred backdrop with a domain chip","footer":"clip icon, title, subtitle, action button"}, // Partiful · invite.appclip · SOURCED
   "invite.appclip.opacity.sheetHelper.dark": 0.4, // Partiful · invite.appclip · VERIFIED
   "invite.appclip.opacity.sheetHelper.light": 0.3, // Partiful · invite.appclip · VERIFIED

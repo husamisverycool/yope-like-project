@@ -26,4 +26,5 @@ include(
     ":core:push",
     ":core:billing",
     ":core:links",
+    ":core:data",
 )

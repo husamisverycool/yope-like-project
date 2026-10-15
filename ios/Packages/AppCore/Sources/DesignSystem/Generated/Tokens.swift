@@ -489,6 +489,12 @@ public enum Tokens {
             public static let titleMaxCharacters: CGFloat = 30
             public static let subtitleMaxCharacters: CGFloat = 56
         }
+        /// Apple HIG · invite.appclip · offer of the full app over the App Clip (SKOverlay.AppClipConfiguration) · PLATFORM
+        /// token: `invite.appclip.layout.fullAppOverlay`
+        public enum InviteAppclipLayoutFullAppOverlay {
+            public static let position: String = "bottom"
+            public static let when: String = "after join_group succeeds (a natural pause); never before the person has joined"
+        }
         /// Partiful · invite.appclip · App Clip card in Messages (drawn by iOS) · SOURCED
         /// token: `invite.appclip.layout.messagesCard`
         public enum InviteAppclipLayoutMessagesCard {

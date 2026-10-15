@@ -80,7 +80,7 @@
       "origin": "verbatim",
       "source_app": "Partiful",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/web/pf-web-notfound-01.png + pf-web-notfound.computed-styles.json (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) DIV.__404_visual; references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [B] children:'\\uD83D\\uDE2C'",
+      "evidence": "references/auto/partiful/web/pf-web-notfound-01.png + pf-web-notfound.computed-styles.json (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) DIV.__404_visual; references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [B] children:'\\uD83D\\uDE2C'",
       "level": "VERIFIED",
       "notes": "Emoji glyph of every non-ideal state (U+1F62C)."
     },
@@ -89,7 +89,7 @@
       "origin": "verbatim",
       "source_app": "Partiful",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [B] role='img' aria-label g('Grimace face')",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [B] role='img' aria-label g('Grimace face')",
       "level": "VERIFIED",
       "notes": "Accessible name of the glyph."
     },
@@ -98,7 +98,7 @@
       "origin": "adapted",
       "source_app": "Partiful",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [C] tO.default({message:e3('Event not found')}) — the event page's not-found message passed to the 404 component",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [C] tO.default({message:e3('Event not found')}) — the event page's not-found message passed to the 404 component",
       "pattern": "P-IW-6 not-found message '{Noun} not found' (examples 'Event not found', 'Page Not Found'); noun swap Event → Invite",
       "level": "VERIFIED",
       "notes": "Shown in uppercase (layout token invite.web.layout.state.title)."
@@ -108,7 +108,7 @@
       "origin": "verbatim",
       "source_app": "Partiful",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/web/pf-web-notfound-01.png + pf-web-notfound.computed-styles.json (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) <title> 'Not Found | Partiful'; references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [B] g('Not Found')",
+      "evidence": "references/auto/partiful/web/pf-web-notfound-01.png + pf-web-notfound.computed-styles.json (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) <title> 'Not Found | Partiful'; references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [B] g('Not Found')",
       "level": "VERIFIED"
     },
     "invite.web.unavailable.title": {
@@ -116,7 +116,7 @@
       "origin": "new",
       "source_app": "Partiful",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [D] 'The existing link will no longer work.'; [H] 'This link won't work once disabled.'",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [D] 'The existing link will no longer work.'; [H] 'This link won't work once disabled.'",
       "pattern": "P-IW-7 link status statement (examples 'The existing link will no longer work.', 'This link won't work once disabled.'); present tense because the link has already expired or been revoked; no period, as a state title",
       "level": "VERIFIED",
       "notes": "Expired and revoked invites share this state, so the page does not reveal which."
@@ -126,7 +126,7 @@
       "origin": "new",
       "source_app": "Partiful",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [C] 'Could not add as check-in staff. Try again, or ask the host for another link'",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [C] 'Could not add as check-in staff. Try again, or ask the host for another link'",
       "pattern": "P-IW-8 recovery hint '…ask the host for another link' (Partiful); noun swap host → member; 'Try again, or' dropped because retrying an expired or revoked link cannot succeed",
       "level": "VERIFIED"
     },
@@ -135,7 +135,7 @@
       "origin": "verbatim",
       "source_app": "Partiful",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [C] 'Something went wrong. Please try again.'; [E] title 'Something went wrong \\uD83D\\uDE2C'",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [C] 'Something went wrong. Please try again.'; [E] title 'Something went wrong \\uD83D\\uDE2C'",
       "level": "VERIFIED",
       "notes": "The emoji is the state glyph above."
     },
@@ -144,7 +144,7 @@
       "origin": "verbatim",
       "source_app": "Partiful",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [G] description:I('Please try again.')",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [G] description:I('Please try again.')",
       "level": "VERIFIED"
     },
     "invite.web.error.retry": {
@@ -152,7 +152,7 @@
       "origin": "verbatim",
       "source_app": "Partiful",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [D] 'Try again'; [C] NonIdealState action {text:u('Try again')}",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [D] 'Try again'; [C] NonIdealState action {text:u('Try again')}",
       "level": "VERIFIED"
     },
     "invite.web.rateLimited.body": {
@@ -160,7 +160,7 @@
       "origin": "verbatim",
       "source_app": "Partiful",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [F]",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [F]",
       "level": "VERIFIED",
       "notes": "Body of the error state when the per-address limit is reached (HTTP 429)."
     },
@@ -224,6 +224,61 @@
       "surface": "invite.appclip",
       "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv)",
       "level": "VERIFIED"
+    },
+    "invite.appclip.join": {
+      "text": "Join",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [J] RSVP button label for the waitlist status: label:(0,a.ab)('Join')",
+      "level": "VERIFIED",
+      "notes": "The members-only card's action inside the App Clip (the web page's 'Get the app' would point at the store the clip replaces). Opens the join sheet."
+    },
+    "invite.appclip.full.glyph": {
+      "text": "😭",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [I] glyph '\\uD83D\\uDE2D' of the capacity error",
+      "level": "VERIFIED",
+      "notes": "U+1F62D; accessible name invite.appclip.full.glyphLabel."
+    },
+    "invite.appclip.full.glyphLabel": {
+      "text": "Loudly crying face",
+      "origin": "new",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [B] (the not-found glyph is labelled with its Unicode name, 'Grimace face')",
+      "pattern": "P-IW-A2 glyph label: the emoji's face named in sentence case (Partiful: 'Grimace face' for U+1F62C); the name used is the Unicode CLDR short name of U+1F62D, 'loudly crying face'",
+      "level": "VERIFIED"
+    },
+    "invite.appclip.full.title": {
+      "text": "Couldn't join",
+      "origin": "adapted",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [I] title 'Couldn't RSVP'",
+      "pattern": "partiful.voice.labels; adaptation rule RSVP → join (design/copy-patterns.md 'Adaptation rules')",
+      "level": "VERIFIED",
+      "notes": "join_group fails with group_full (30 members, docs/API.md §6.1)."
+    },
+    "invite.appclip.full.body": {
+      "text": "Group is full",
+      "origin": "adapted",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [I] description 'Event is full'",
+      "pattern": "partiful.voice.labels; noun swap event → group",
+      "level": "VERIFIED"
+    },
+    "invite.appclip.offline.body": {
+      "text": "This usually occurs due to a poor internet connection - try again in a few minutes",
+      "origin": "verbatim",
+      "source_app": "Partiful",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [E], [K] description under 'Something went wrong 😬'",
+      "level": "VERIFIED",
+      "notes": "Offline / network failure in the App Clip (title invite.web.error.title, glyph invite.web.state.glyph, action invite.web.error.retry)."
     }
   }
 }

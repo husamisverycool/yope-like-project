@@ -161,7 +161,7 @@
       "source_app": "Partiful",
       "surface": "invite.web",
       "element": "title: starting size for multi-line titles on phones (largest size tried is 39)",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [A] p=40 (used when the mobile flag is set); references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z)/references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) 39 px titles",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [A] p=40 (used when the mobile flag is set); references/auto/partiful/web/pf-web-private-past.computed-styles.json (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z)/references/auto/partiful/web/pf-web-public-light.computed-styles.json (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) 39 px titles",
       "method": "production JS constant (minified source, block [A]); binary search returns lo, so the largest multi-line result is 39",
       "level": "VERIFIED"
     },
@@ -172,7 +172,7 @@
       "source_app": "Partiful",
       "surface": "invite.web",
       "element": "title: upper bound for titles that fit on one line at the base size (largest size tried 47)",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [A] I=48",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [A] I=48",
       "method": "production JS constant (minified source, block [A])",
       "level": "VERIFIED"
     },
@@ -183,7 +183,7 @@
       "source_app": "Partiful",
       "surface": "invite.web",
       "element": "title: smallest size",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [A] A=25; design/research/wrapped-tribute-partiful.md §5.3 (smallest of 9 pages: 25)",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [A] A=25; design/research/wrapped-tribute-partiful.md §5.3 (smallest of 9 pages: 25)",
       "method": "production JS constant (minified source, block [A])",
       "level": "VERIFIED"
     },
@@ -193,7 +193,7 @@
       "source_app": "Partiful",
       "surface": "invite.web",
       "element": "title: most lines allowed before the size shrinks",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [A] C=3",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [A] C=3",
       "method": "production JS constant (minified source, block [A])",
       "level": "VERIFIED"
     },
@@ -211,7 +211,7 @@
       "source_app": "Partiful",
       "surface": "invite.web",
       "element": "title auto-fit: estimated text width = size × (0.9 × wide + 0.7 × normal + 0.4 × thin characters); line count by greedy wrap; widest word must fit",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt [A] function f() server-side branch, function T(), function O()",
+      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [A] function f() server-side branch, function T(), function O()",
       "method": "production JS (the server-rendered estimate; the browser re-measures with canvas)",
       "level": "VERIFIED",
       "notes": "This page is server-rendered without client script, so Partiful's server-side estimate is used for every column width (see web/src/titleFit.ts)."
@@ -1160,6 +1160,19 @@
       "element": "App Clip card metadata limits (App Store Connect)",
       "evidence": "https://developer.apple.com/design/human-interface-guidelines/app-clips (docs/PLATFORM_CONSTRAINTS.md §3)",
       "method": "Apple HIG",
+      "level": "PLATFORM"
+    },
+    "invite.appclip.layout.fullAppOverlay": {
+      "type": "layout",
+      "value": {
+        "position": "bottom",
+        "when": "after join_group succeeds (a natural pause); never before the person has joined"
+      },
+      "source_app": "Apple HIG",
+      "surface": "invite.appclip",
+      "element": "offer of the full app over the App Clip (SKOverlay.AppClipConfiguration)",
+      "evidence": "https://developer.apple.com/documentation/storekit/skoverlay/appclipconfiguration/init(position:) (default position .bottom); https://developer.apple.com/documentation/appclip/recommending-your-app-to-app-clip-users ('when someone completes a task or reaches a natural pause'); docs/PLATFORM_CONSTRAINTS.md §3",
+      "method": "Apple documentation",
       "level": "PLATFORM"
     },
     "invite.appclip.fontSize.sheetInput": {

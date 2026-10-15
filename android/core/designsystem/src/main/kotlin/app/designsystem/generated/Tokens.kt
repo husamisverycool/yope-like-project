@@ -402,6 +402,11 @@ object Tokens {
             const val titleMaxCharacters: Float = 30f
             const val subtitleMaxCharacters: Float = 56f
         }
+        /** Apple HIG · invite.appclip · offer of the full app over the App Clip (SKOverlay.AppClipConfiguration) · PLATFORM — token `invite.appclip.layout.fullAppOverlay` */
+        object InviteAppclipLayoutFullAppOverlay {
+            const val position: String = "bottom"
+            const val when: String = "after join_group succeeds (a natural pause); never before the person has joined"
+        }
         /** Partiful · invite.appclip · App Clip card in Messages (drawn by iOS) · SOURCED — token `invite.appclip.layout.messagesCard` */
         object InviteAppclipLayoutMessagesCard {
             const val header: String = "cover on a blurred backdrop with a domain chip"

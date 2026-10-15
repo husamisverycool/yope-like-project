@@ -4,6 +4,12 @@
 const table = {
   "invite.appclip.card.action": "View", // Partiful · invite.appclip · SOURCED
   "invite.appclip.card.subtitle": "Make memories", // Partiful · invite.appclip · SOURCED
+  "invite.appclip.full.body": "Group is full", // Partiful · invite.appclip · VERIFIED
+  "invite.appclip.full.glyph": "😭", // Partiful · invite.appclip · VERIFIED
+  "invite.appclip.full.glyphLabel": "Loudly crying face", // Partiful · invite.appclip · VERIFIED
+  "invite.appclip.full.title": "Couldn't join", // Partiful · invite.appclip · VERIFIED
+  "invite.appclip.join": "Join", // Partiful · invite.appclip · VERIFIED
+  "invite.appclip.offline.body": "This usually occurs due to a poor internet connection - try again in a few minutes", // Partiful · invite.appclip · VERIFIED
   "invite.appclip.sheet.cancel": "Cancel", // Partiful · invite.appclip · VERIFIED
   "invite.appclip.sheet.continue": "Continue", // Partiful · invite.appclip · VERIFIED
   "invite.appclip.sheet.helper": "Just for group updates. No spam.", // Partiful · invite.appclip · VERIFIED

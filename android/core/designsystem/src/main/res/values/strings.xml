@@ -5,6 +5,18 @@
     <string name="invite_appclip_card_action" formatted="false">View</string>
     <!-- Partiful · invite.appclip · verbatim · SOURCED -->
     <string name="invite_appclip_card_subtitle" formatted="false">Make memories</string>
+    <!-- Partiful · invite.appclip · adapted · VERIFIED -->
+    <string name="invite_appclip_full_body" formatted="false">Group is full</string>
+    <!-- Partiful · invite.appclip · verbatim · VERIFIED -->
+    <string name="invite_appclip_full_glyph" formatted="false">😭</string>
+    <!-- Partiful · invite.appclip · new · VERIFIED -->
+    <string name="invite_appclip_full_glyphlabel" formatted="false">Loudly crying face</string>
+    <!-- Partiful · invite.appclip · adapted · VERIFIED -->
+    <string name="invite_appclip_full_title" formatted="false">Couldn\'t join</string>
+    <!-- Partiful · invite.appclip · verbatim · VERIFIED -->
+    <string name="invite_appclip_join" formatted="false">Join</string>
+    <!-- Partiful · invite.appclip · verbatim · VERIFIED -->
+    <string name="invite_appclip_offline_body" formatted="false">This usually occurs due to a poor internet connection - try again in a few minutes</string>
     <!-- Partiful · invite.appclip · verbatim · VERIFIED -->
     <string name="invite_appclip_sheet_cancel" formatted="false">Cancel</string>
     <!-- Partiful · invite.appclip · verbatim · VERIFIED -->

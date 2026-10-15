@@ -125,6 +125,7 @@ as RSVP glyphs and in the marketing banner.
 | `P-IW-2` reassurance | `invite.web` | "Just for {purpose}. No spam." | "Just for event updates. No spam." (P4) — the only verbatim example found | — |
 | `P-IW-3` returning-user link | `invite.web` | "Already {state}? Sign in" | "Already RSVP'd? Sign in" (P1) — the only verbatim example found | — |
 | `P-IW-4` … `P-IW-8`, `P-IW-T`, `P-IW-A` | `invite.web` | Defined by the invite consolidation pass with their own evidence (`design/copy/invite.json`, `pattern` fields): `P-IW-4` field row "{Participle} by {name}" ("Hosted by New York Dog Parade"); `P-IW-5` section label in Title Case ("Guest List"); `P-IW-6` "{Noun} not found" ("Event not found", "Page Not Found"); `P-IW-7` link status statement ("The existing link will no longer work.", "This link won't work once disabled."); `P-IW-8` recovery hint ("Try again, or ask the host for another link"); `P-IW-T` document title "{Event title} \| Partiful"; `P-IW-A` image alt "{Event title} Event Cover Image". | see each string's evidence in `design/copy/invite.json` | see above |
+| `P-IW-A2` | `invite.appclip` | Glyph label for an emoji used as an illustration: the emoji's face named in sentence case (Partiful labels its not-found glyph "Grimace face", U+1F62C, in its production web code — `references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js`, local only). New labels use the Unicode CLDR short name of the emoji. | `invite.appclip.full.glyphLabel` (see `design/copy/invite.json`) | — |
 
 ### Apple HIG / Material 3 (system surfaces) — ids from platform "Pattern ids introduced"
 
@@ -148,7 +149,7 @@ permission-denied states on Yope surfaces use `yope.voice.empty-state` / `yope.v
 |---|---|
 | `global` | `yope.voice.lowercase`, `yope.voice.second-person`, `yope.voice.button`, `yope.voice.title`, `yope.voice.placeholder`, `yope.voice.coach`, `yope.voice.confirmation`, `yope.voice.empty-state`, `yope.voice.error`, `yope.voice.emoji`, `yope.voice.punctuation`, `yope.voice.formats` |
 | `global.system` | `platform.alertTitle`, `platform.alertMessage`, `platform.alertButton`, `platform.menuItem`, `platform.purposeString` |
-| `invite.web` | `partiful.voice.labels`, `P-IW-1` … `P-IW-8`, `P-IW-T`, `P-IW-A` |
+| `invite.web`, `invite.appclip` | `partiful.voice.labels`, `P-IW-1` … `P-IW-8`, `P-IW-T`, `P-IW-A`, `P-IW-A2` |
 | `invite.appclip` | `partiful.voice.labels`, `P-IW-1` … `P-IW-3`, `platform.appClipCard` |
 | `auth.phone`, `auth.code`, `auth.agegate`, `auth.profile` | Yope (`global` set); `yope.voice.placeholder`; `yope.voice.error` for wrong-code / offline |
 | `onboarding.permission.camera`, `.notifications`, `.photos`, `.contacts` | `yope.voice.permission`, `yope.voice.button`, `yope.voice.lowercase`, `yope.voice.second-person`; the system prompt that follows: `platform.purposeString` (iOS pre-alert rule: one button, "Continue"/"Next", no "Not now" — platform §system.permissions) |

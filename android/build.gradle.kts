@@ -39,6 +39,10 @@ extra["app.domain"] = configValue("domain", "value") as String?
 extra["app.displayName"] = configValue("displayName", "value") as String?
 extra["app.revenuecatAndroidApiKey"] = configValue("revenuecat", "androidApiKey") as String?
 extra["app.premiumEntitlement"] = configValue("revenuecat", "entitlement") as String
+// Supabase project URL + anon (publishable) key; null until the owner sets them (core:data then
+// reports NotConfigured). The service role key never reaches the app.
+extra["app.supabaseUrl"] = configValue("supabase", "url") as String?
+extra["app.supabaseAnonKey"] = configValue("supabase", "anonKey") as String?
 
 // ---------------------------------------------------------------------------------------------
 // Shared Android module setup.

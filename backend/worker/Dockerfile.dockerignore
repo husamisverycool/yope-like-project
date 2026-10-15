@@ -1,0 +1,9 @@
+# Build context is the repository root (docker build -f backend/worker/Dockerfile .): send only what the image needs.
+**
+!backend/worker/package.json
+!backend/worker/package-lock.json
+!backend/worker/tsconfig.json
+!backend/worker/src/**
+!backend/worker/fonts/**
+!design/proposals/**
+!design/*.md

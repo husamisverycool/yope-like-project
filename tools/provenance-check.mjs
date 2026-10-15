@@ -87,7 +87,10 @@ function scan(files, rules, { ui = true } = {}) {
 // UI code: app targets. The DesignSystem primitives that *apply* tokens live in DesignSystem/ and are allowed
 // to reference SwiftUI/Compose APIs with token arguments; they are scanned with the same rules.
 scan(walk(path.join(ROOT, "ios"), [".swift"]), SWIFT_RULES);
-scan(walk(path.join(ROOT, "android"), [".kt"]), KOTLIN_RULES);
+// Android: data and model modules hold no UI (serialization names like @SerialName("text") are wire values).
+const androidNonUi = (f) => /android\/core\/(data|model)\//.test(f);
+scan(walk(path.join(ROOT, "android"), [".kt"]).filter((f) => !androidNonUi(f)), KOTLIN_RULES);
+scan(walk(path.join(ROOT, "android"), [".kt"]).filter(androidNonUi), [], { ui: false });
 scan(walk(path.join(ROOT, "web/src"), [".tsx", ".css"]), TS_UI_RULES);
 scan(walk(path.join(ROOT, "backend"), [".ts", ".sql"]), [], { ui: false });
 scan(walk(path.join(ROOT, "docs"), [".md"]).filter((f) => !f.endsWith("CONVENTIONS.md")), [], { ui: false });

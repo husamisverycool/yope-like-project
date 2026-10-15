@@ -6,21 +6,24 @@
     "node": ">=22"
   },
   "scripts": {
+    "start": "node --import tsx src/main.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "collage:options": "tsx scripts/render-collage-options.ts"
+    "collage:options": "tsx scripts/render-collage-options.ts",
+    "measure:costs": "tsx scripts/measure-costs.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.134.0",
     "@supabase/supabase-js": "2.117.2",
-    "sharp": "0.35.5"
+    "sharp": "0.35.5",
+    "tsx": "4.23.15"
   },
   "devDependencies": {
     "@types/node": "22.20.5",
     "@types/pg": "8.23.1",
     "pg": "8.23.0",
-    "tsx": "4.23.15",
     "typescript": "5.9.3",
     "vitest": "5.0.4"
-  }
+  },
+  "description": "Job runner, scheduler, media/collage/tribute rendering, pushes (APNs/FCM), recaps and the RevenueCat webhook (docs/ARCHITECTURE.md)."
 }

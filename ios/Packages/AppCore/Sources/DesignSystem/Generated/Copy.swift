@@ -7,6 +7,18 @@ public enum Copy {
     public static var inviteAppclipCardAction: String { CopyLookup.string("invite.appclip.card.action", default: "View") }
     /// "Make memories" — Partiful · invite.appclip · verbatim · SOURCED
     public static var inviteAppclipCardSubtitle: String { CopyLookup.string("invite.appclip.card.subtitle", default: "Make memories") }
+    /// "Group is full" — Partiful · invite.appclip · adapted · VERIFIED
+    public static var inviteAppclipFullBody: String { CopyLookup.string("invite.appclip.full.body", default: "Group is full") }
+    /// "😭" — Partiful · invite.appclip · verbatim · VERIFIED
+    public static var inviteAppclipFullGlyph: String { CopyLookup.string("invite.appclip.full.glyph", default: "😭") }
+    /// "Loudly crying face" — Partiful · invite.appclip · new · VERIFIED
+    public static var inviteAppclipFullGlyphLabel: String { CopyLookup.string("invite.appclip.full.glyphLabel", default: "Loudly crying face") }
+    /// "Couldn't join" — Partiful · invite.appclip · adapted · VERIFIED
+    public static var inviteAppclipFullTitle: String { CopyLookup.string("invite.appclip.full.title", default: "Couldn't join") }
+    /// "Join" — Partiful · invite.appclip · verbatim · VERIFIED
+    public static var inviteAppclipJoin: String { CopyLookup.string("invite.appclip.join", default: "Join") }
+    /// "This usually occurs due to a poor internet connection - try again in a few minutes" — Partiful · invite.appclip · verbatim · VERIFIED
+    public static var inviteAppclipOfflineBody: String { CopyLookup.string("invite.appclip.offline.body", default: "This usually occurs due to a poor internet connection - try again in a few minutes") }
     /// "Cancel" — Partiful · invite.appclip · verbatim · VERIFIED
     public static var inviteAppclipSheetCancel: String { CopyLookup.string("invite.appclip.sheet.cancel", default: "Cancel") }
     /// "Continue" — Partiful · invite.appclip · verbatim · VERIFIED

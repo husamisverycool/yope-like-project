@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Supabase (PostgREST, Auth, Storage, Realtime) over HTTPS / WebSocket. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Connectivity flow (offline state) and WorkManager's network constraint for uploads. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+</manifest>

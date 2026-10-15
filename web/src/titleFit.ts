@@ -1,5 +1,5 @@
 // Title auto-fit, ported from Partiful's event title component (production JS, server-side branch):
-// references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.txt block [A]. Every number comes
+// references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js block [A]. Every number comes
 // from the invite.web.*.title tokens; see design/surfaces/invite.web.md "Title".
 //
 // Partiful measures text with a canvas in the browser and with a character-class estimate on the

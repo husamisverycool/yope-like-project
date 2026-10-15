@@ -1,0 +1,131 @@
+package app.data.auth
+
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
+import app.data.model.DataJson
+import io.github.jan.supabase.auth.SessionManager
+import io.github.jan.supabase.auth.exception.NoSessionFoundException
+import io.github.jan.supabase.auth.user.UserSession
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
+import java.security.GeneralSecurityException
+import java.security.KeyStore
+import java.security.SecureRandom
+import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+import javax.crypto.spec.GCMParameterSpec
+
+/** Authenticated encryption for the stored session. */
+interface SessionCipher {
+    fun encrypt(plain: ByteArray): ByteArray
+    /** Throws [GeneralSecurityException] when [blob] was tampered with or the key changed. */
+    fun decrypt(blob: ByteArray): ByteArray
+}
+
+/**
+ * AES-256-GCM with a random 96-bit IV per write (`iv || ciphertext+tag`). The key comes from
+ * [key]; [KeystoreSessionCipher] keeps it in the Android Keystore (non-exportable).
+ */
+open class AesGcmSessionCipher(private val key: () -> SecretKey) : SessionCipher {
+    private val random = SecureRandom()
+
+    override fun encrypt(plain: ByteArray): ByteArray {
+        val cipher = Cipher.getInstance(TRANSFORMATION)
+        val iv = ByteArray(IV_BYTES).also(random::nextBytes)
+        cipher.init(Cipher.ENCRYPT_MODE, key(), GCMParameterSpec(TAG_BITS, iv))
+        return iv + cipher.doFinal(plain)
+    }
+
+    override fun decrypt(blob: ByteArray): ByteArray {
+        if (blob.size <= IV_BYTES) throw GeneralSecurityException("session blob too short")
+        val cipher = Cipher.getInstance(TRANSFORMATION)
+        cipher.init(Cipher.DECRYPT_MODE, key(), GCMParameterSpec(TAG_BITS, blob, 0, IV_BYTES))
+        return cipher.doFinal(blob, IV_BYTES, blob.size - IV_BYTES)
+    }
+
+    companion object {
+        private const val TRANSFORMATION = "AES/GCM/NoPadding"
+        private const val IV_BYTES = 12
+        private const val TAG_BITS = 128
+    }
+}
+
+/**
+ * The app's cipher: an AES key generated inside the Android Keystore under [alias]. It never leaves
+ * the secure hardware / keystore daemon, so a copied session file is useless on another device.
+ */
+class KeystoreSessionCipher(private val alias: String = DEFAULT_ALIAS) : AesGcmSessionCipher({ keystoreKey(alias) }) {
+    companion object {
+        const val DEFAULT_ALIAS = "app.data.session"
+        private const val PROVIDER = "AndroidKeyStore"
+        private const val KEY_BITS = 256
+
+        @Synchronized
+        private fun keystoreKey(alias: String): SecretKey {
+            val store = KeyStore.getInstance(PROVIDER).apply { load(null) }
+            (store.getEntry(alias, null) as? KeyStore.SecretKeyEntry)?.let { return it.secretKey }
+            val generator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, PROVIDER)
+            generator.init(
+                KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+                    .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                    .setKeySize(KEY_BITS)
+                    .setRandomizedEncryptionRequired(true)
+                    .build(),
+            )
+            return generator.generateKey()
+        }
+    }
+}
+
+/**
+ * supabase-kt [SessionManager] that keeps the session (access + refresh token) encrypted in one
+ * file (put it under `noBackupFilesDir`: tokens are per-device). Writes are atomic; a file that no
+ * longer decrypts (key reset, tampering) is deleted and reads as "no session" (signed out).
+ */
+class EncryptedSessionManager(private val file: File, private val cipher: SessionCipher) : SessionManager {
+    private val mutex = Mutex()
+
+    override suspend fun saveSession(session: UserSession) = mutex.withLock {
+        withContext(Dispatchers.IO) {
+            val plain = DataJson.encodeToString(UserSession.serializer(), session).toByteArray(Charsets.UTF_8)
+            writeAtomically(cipher.encrypt(plain))
+        }
+    }
+
+    override suspend fun loadSession(): UserSession = mutex.withLock {
+        withContext(Dispatchers.IO) {
+            if (!file.isFile) throw NoSessionFoundException()
+            try {
+                val plain = cipher.decrypt(file.readBytes())
+                DataJson.decodeFromString(UserSession.serializer(), String(plain, Charsets.UTF_8))
+            } catch (e: Exception) {
+                file.delete()
+                throw NoSessionFoundException()
+            }
+        }
+    }
+
+    override suspend fun deleteSession() = mutex.withLock {
+        withContext(Dispatchers.IO) { file.delete(); Unit }
+    }
+
+    private fun writeAtomically(bytes: ByteArray) {
+        file.parentFile?.mkdirs()
+        val tmp = File(file.parentFile, "${file.name}.tmp")
+        FileOutputStream(tmp).use { out ->
+            out.write(bytes)
+            out.flush()
+            out.fd.sync()
+        }
+        if (!tmp.renameTo(file)) {
+            file.delete()
+            if (!tmp.renameTo(file)) throw java.io.IOException("could not store session")
+        }
+    }
+}
