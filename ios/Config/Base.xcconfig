@@ -1,0 +1,31 @@
+// Hand-written build settings shared by every target. User-facing Info.plist strings
+// (purpose strings) come only from InfoPlist.generated.xcconfig (tools/designgen.mjs from
+// design/copy.json); this file holds identifiers, versions and non-copy Info.plist keys.
+// Include order in each target file: Base.xcconfig, InfoPlist.generated.xcconfig, then the
+// target's own settings.
+
+// ---- Identity (config/app.json; AppModelsTests/AppConfigurationTests keeps these equal) ----
+APP_BUNDLE_ID = com.example.groupphotos
+// config/app.json `domain` is BLOCKED (docs/OWNER_SETUP.md step 4.1). The reserved `.invalid`
+// name keeps the associated-domains entitlements well formed until the owner sets it.
+APP_DOMAIN = example.invalid
+APP_GROUP_ID = group.$(APP_BUNDLE_ID)
+// config/app.json `ios.teamId` (BLOCKED until owner step 1.1). Empty: unsigned CI builds.
+DEVELOPMENT_TEAM =
+CODE_SIGN_STYLE = Automatic
+
+// ---- Platform ----
+IPHONEOS_DEPLOYMENT_TARGET = 17.2
+TARGETED_DEVICE_FAMILY = 1,2
+MARKETING_VERSION = 1.0
+CURRENT_PROJECT_VERSION = 1
+
+// ---- Swift ----
+// Swift 6 language mode (strict concurrency) unless a target file overrides it.
+SWIFT_VERSION = 6.0
+ENABLE_USER_SCRIPT_SANDBOXING = YES
+
+// ---- Info.plist ----
+// Generated from build settings (INFOPLIST_KEY_*) merged with each target's small Info.plist
+// for keys that have no build setting (NSExtension, UIBackgroundModes, NSAppClip, AppGroupIdentifier).
+GENERATE_INFOPLIST_FILE = YES

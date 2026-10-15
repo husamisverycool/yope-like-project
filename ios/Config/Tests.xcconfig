@@ -1,0 +1,8 @@
+#include "Base.xcconfig"
+#include "InfoPlist.generated.xcconfig"
+
+PRODUCT_BUNDLE_IDENTIFIER = $(APP_BUNDLE_ID).$(TARGET_NAME:lower)
+// Test code runs in Swift 5 mode (XCTestCase is nonisolated; tests call @MainActor APIs from
+// test methods); complete checking still reports concurrency issues as warnings.
+SWIFT_VERSION = 5.0
+SWIFT_STRICT_CONCURRENCY = complete

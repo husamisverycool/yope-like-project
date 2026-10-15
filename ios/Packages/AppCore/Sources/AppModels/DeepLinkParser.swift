@@ -1,0 +1,168 @@
+import Foundation
+
+/// Parses URLs and notification payloads into `DeepLink`s, and builds URLs back.
+///
+/// Accepted forms:
+/// - `https://<domain>/i/<token>` for each configured universal-link host (invites, App Clip).
+/// - `<customScheme>://<route>?<field>=<id>…`, e.g. `app://camera?group=<id>` from widgets.
+/// - Notification `userInfo` with `"route": "<route>"` and `<field>_id` keys (see `DeepLinkField.payloadKey`).
+///
+/// Identifiers are accepted only when they consist of URL-safe characters, so a crafted link
+/// cannot carry path separators or query syntax into the app.
+public struct DeepLinkParser: Sendable {
+    public static let defaultCustomScheme = "app"
+    public static let invitePathPrefix = "i"
+    public static let routePayloadKey = "route"
+
+    public let universalLinkHosts: Set<String>
+    public let customScheme: String
+
+    public init(universalLinkHosts: Set<String>, customScheme: String = DeepLinkParser.defaultCustomScheme) {
+        self.universalLinkHosts = Set(universalLinkHosts.map { $0.lowercased() })
+        self.customScheme = customScheme.lowercased()
+    }
+
+    /// Hosts come from `config/app.json` → `domain`; a missing (BLOCKED) domain accepts no universal links.
+    public init(configuration: AppConfiguration, customScheme: String = DeepLinkParser.defaultCustomScheme) {
+        self.init(universalLinkHosts: configuration.domain.map { [$0] } ?? [], customScheme: customScheme)
+    }
+
+    // MARK: URLs
+
+    public func parse(_ url: URL) -> DeepLink? {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let scheme = components.scheme?.lowercased() else { return nil }
+        if scheme == "https" {
+            return parseUniversalLink(components)
+        }
+        if scheme == customScheme {
+            return parseCustomScheme(components)
+        }
+        return nil
+    }
+
+    private func parseUniversalLink(_ components: URLComponents) -> DeepLink? {
+        guard let host = components.host?.lowercased(), universalLinkHosts.contains(host) else { return nil }
+        let segments = components.path.split(separator: "/", omittingEmptySubsequences: true).map(String.init)
+        guard segments.count == 2, segments[0] == Self.invitePathPrefix else { return nil }
+        let token = segments[1]
+        guard Self.isValidToken(token) else { return nil }
+        return .invite(token: token)
+    }
+
+    private func parseCustomScheme(_ components: URLComponents) -> DeepLink? {
+        // `app://camera?…` puts the route in the host; `app:camera?…` / `app:///camera` in the path.
+        let host = components.host.flatMap { $0.isEmpty ? nil : $0 }
+        let routeName = host ?? components.path.split(separator: "/").first.map(String.init)
+        guard let routeName, let route = DeepLinkRoute(rawValue: routeName.lowercased()) else { return nil }
+        var values: [String: String] = [:]
+        for item in components.queryItems ?? [] {
+            guard let field = DeepLinkField(rawValue: item.name), let value = item.value else { continue }
+            values[field.rawValue] = value
+        }
+        return Self.make(route: route) { values[$0.rawValue] }
+    }
+
+    /// The URL that opens `link`. Invites need a universal-link host; returns nil when none is configured.
+    public func url(for link: DeepLink) -> URL? {
+        if case .invite(let token) = link {
+            guard let host = universalLinkHosts.sorted().first else { return nil }
+            var components = URLComponents()
+            components.scheme = "https"
+            components.host = host
+            components.path = "/\(Self.invitePathPrefix)/\(token)"
+            return components.url
+        }
+        guard let route = link.route else { return nil }
+        var components = URLComponents()
+        components.scheme = customScheme
+        components.host = route.rawValue
+        let fields = link.fields
+        if !fields.isEmpty {
+            components.queryItems = fields.map { URLQueryItem(name: $0.0.queryName, value: $0.1) }
+        }
+        return components.url
+    }
+
+    // MARK: Notification payloads
+
+    /// Reads the route of a notification tap. `userInfo` is the APNs payload (top-level keys
+    /// next to `aps`).
+    public func parse(notificationPayload userInfo: [AnyHashable: Any]) -> DeepLink? {
+        guard let routeName = userInfo[Self.routePayloadKey] as? String,
+              let route = DeepLinkRoute(rawValue: routeName) else { return nil }
+        return Self.make(route: route) { field in
+            switch userInfo[field.payloadKey] {
+            case let string as String: return string
+            case let int as Int: return String(int)
+            case let number as NSNumber: return number.stringValue
+            default: return nil
+            }
+        }
+    }
+
+    /// The payload dictionary for `link` (used by tests and local notifications).
+    public func payload(for link: DeepLink) -> [String: String] {
+        guard let route = link.route else { return [:] }
+        var payload = [Self.routePayloadKey: route.rawValue]
+        for (field, value) in link.fields { payload[field.payloadKey] = value }
+        return payload
+    }
+
+    // MARK: Shared
+
+    private static func make(route: DeepLinkRoute, value: (DeepLinkField) -> String?) -> DeepLink? {
+        func id(_ field: DeepLinkField) -> String? {
+            guard let raw = value(field), isValidIdentifier(raw) else { return nil }
+            return raw
+        }
+        switch route {
+        case .camera:
+            // An unreadable group id still opens the camera, without preselecting a group.
+            return .camera(groupID: id(.group))
+        case .post:
+            guard let group = id(.group), let post = id(.post) else { return nil }
+            return .post(groupID: group, postID: post)
+        case .chatMessage:
+            guard let group = id(.group), let message = id(.message) else { return nil }
+            return .chatMessage(groupID: group, messageID: message)
+        case .dailyInvitation:
+            guard let group = id(.group), let invitation = id(.invitation) else { return nil }
+            return .dailyInvitation(groupID: group, invitationID: invitation)
+        case .recap:
+            guard let group = id(.group), let recap = id(.recap) else { return nil }
+            return .recap(groupID: group, recapID: recap)
+        case .birthdayRequest:
+            guard let request = id(.request) else { return nil }
+            return .birthdayRequest(requestID: request, groupID: id(.group))
+        case .tribute:
+            guard let tribute = id(.tribute) else { return nil }
+            return .tribute(tributeID: tribute, groupID: id(.group))
+        case .yearStory:
+            guard let group = id(.group), let yearText = value(.year), let year = Int(yearText),
+                  (1...9999).contains(year) else { return nil }
+            return .yearStory(groupID: group, year: year)
+        }
+    }
+
+    static let maxIdentifierLength = 128
+    static let maxTokenLength = 256
+
+    /// Database identifiers (UUIDs or similar): letters, digits, `-`, `_`.
+    public static func isValidIdentifier(_ value: String) -> Bool {
+        isURLSafe(value, maxLength: maxIdentifierLength)
+    }
+
+    /// Invite tokens: URL-safe base64 alphabet.
+    public static func isValidToken(_ value: String) -> Bool {
+        isURLSafe(value, maxLength: maxTokenLength)
+    }
+
+    private static func isURLSafe(_ value: String, maxLength: Int) -> Bool {
+        guard !value.isEmpty, value.utf8.count <= maxLength else { return false }
+        return value.utf8.allSatisfy { byte in
+            (byte >= 0x30 && byte <= 0x39) || (byte >= 0x41 && byte <= 0x5A) || (byte >= 0x61 && byte <= 0x7A)
+                || byte == 0x2D || byte == 0x5F
+        }
+    }
+}

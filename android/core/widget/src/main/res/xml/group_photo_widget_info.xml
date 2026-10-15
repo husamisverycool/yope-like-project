@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Group photo widget (surface widget.android). Sizes are PLATFORM values, not design values:
+  default 2x2 cells (WidgetSizeClass.Small); minWidth/minHeight use Android's cell formula for
+  pre-Android 12 launchers ((70 x n) - 30 dp for n cells, the value in the platform's own
+  default_size_attributes example), targetCell* is used on Android 12+.
+  https://developer.android.com/develop/ui/views/appwidgets/layouts#anatomy_determining_size
+  Styling (preview, description) is added by the screens pass from tokens and copy.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="app.widget.WidgetConfigureActivity"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:minWidth="110dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="110dp"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable" />

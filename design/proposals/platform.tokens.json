@@ -1,0 +1,2648 @@
+{
+  "tokens": {
+    "font.size.textStyle.ios.largeTitle": {
+      "type": "fontSize",
+      "value": 34,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS Dynamic Type text style Large Title at the default (Large) size",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Large Title' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED",
+      "notes": "Use the system text style (Font.TextStyle / UIFont.TextStyle) so Dynamic Type scales it; the number is the default-size reference only."
+    },
+    "font.lineHeight.textStyle.ios.largeTitle": {
+      "type": "lineHeight",
+      "value": 41,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Large Title leading at Large",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Large Title' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.ios.largeTitle": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Large Title weight (Regular)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Large Title' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weightEmphasized.textStyle.ios.largeTitle": {
+      "type": "fontWeight",
+      "value": 700,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Large Title emphasized weight (Bold, via .bold()/traitBold)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Large Title' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.size.textStyle.ios.title1": {
+      "type": "fontSize",
+      "value": 28,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS Dynamic Type text style Title 1 at the default (Large) size",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Title 1' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED",
+      "notes": "Use the system text style (Font.TextStyle / UIFont.TextStyle) so Dynamic Type scales it; the number is the default-size reference only."
+    },
+    "font.lineHeight.textStyle.ios.title1": {
+      "type": "lineHeight",
+      "value": 34,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Title 1 leading at Large",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Title 1' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.ios.title1": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Title 1 weight (Regular)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Title 1' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weightEmphasized.textStyle.ios.title1": {
+      "type": "fontWeight",
+      "value": 700,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Title 1 emphasized weight (Bold, via .bold()/traitBold)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Title 1' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.size.textStyle.ios.title2": {
+      "type": "fontSize",
+      "value": 22,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS Dynamic Type text style Title 2 at the default (Large) size",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Title 2' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED",
+      "notes": "Use the system text style (Font.TextStyle / UIFont.TextStyle) so Dynamic Type scales it; the number is the default-size reference only."
+    },
+    "font.lineHeight.textStyle.ios.title2": {
+      "type": "lineHeight",
+      "value": 28,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Title 2 leading at Large",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Title 2' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.ios.title2": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Title 2 weight (Regular)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Title 2' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weightEmphasized.textStyle.ios.title2": {
+      "type": "fontWeight",
+      "value": 700,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Title 2 emphasized weight (Bold, via .bold()/traitBold)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Title 2' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.size.textStyle.ios.title3": {
+      "type": "fontSize",
+      "value": 20,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS Dynamic Type text style Title 3 at the default (Large) size",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Title 3' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED",
+      "notes": "Use the system text style (Font.TextStyle / UIFont.TextStyle) so Dynamic Type scales it; the number is the default-size reference only."
+    },
+    "font.lineHeight.textStyle.ios.title3": {
+      "type": "lineHeight",
+      "value": 25,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Title 3 leading at Large",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Title 3' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.ios.title3": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Title 3 weight (Regular)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Title 3' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weightEmphasized.textStyle.ios.title3": {
+      "type": "fontWeight",
+      "value": 600,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Title 3 emphasized weight (Semibold, via .bold()/traitBold)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Title 3' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.size.textStyle.ios.headline": {
+      "type": "fontSize",
+      "value": 17,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS Dynamic Type text style Headline at the default (Large) size",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Headline' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED",
+      "notes": "Use the system text style (Font.TextStyle / UIFont.TextStyle) so Dynamic Type scales it; the number is the default-size reference only."
+    },
+    "font.lineHeight.textStyle.ios.headline": {
+      "type": "lineHeight",
+      "value": 22,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Headline leading at Large",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Headline' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.ios.headline": {
+      "type": "fontWeight",
+      "value": 600,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Headline weight (Semibold)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Headline' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weightEmphasized.textStyle.ios.headline": {
+      "type": "fontWeight",
+      "value": 600,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Headline emphasized weight (Semibold, via .bold()/traitBold)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Headline' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.size.textStyle.ios.body": {
+      "type": "fontSize",
+      "value": 17,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS Dynamic Type text style Body at the default (Large) size",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Body' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED",
+      "notes": "Use the system text style (Font.TextStyle / UIFont.TextStyle) so Dynamic Type scales it; the number is the default-size reference only."
+    },
+    "font.lineHeight.textStyle.ios.body": {
+      "type": "lineHeight",
+      "value": 22,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Body leading at Large",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Body' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.ios.body": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Body weight (Regular)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Body' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weightEmphasized.textStyle.ios.body": {
+      "type": "fontWeight",
+      "value": 600,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Body emphasized weight (Semibold, via .bold()/traitBold)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Body' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.size.textStyle.ios.callout": {
+      "type": "fontSize",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS Dynamic Type text style Callout at the default (Large) size",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Callout' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED",
+      "notes": "Use the system text style (Font.TextStyle / UIFont.TextStyle) so Dynamic Type scales it; the number is the default-size reference only."
+    },
+    "font.lineHeight.textStyle.ios.callout": {
+      "type": "lineHeight",
+      "value": 21,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Callout leading at Large",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Callout' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.ios.callout": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Callout weight (Regular)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Callout' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weightEmphasized.textStyle.ios.callout": {
+      "type": "fontWeight",
+      "value": 600,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Callout emphasized weight (Semibold, via .bold()/traitBold)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Callout' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.size.textStyle.ios.subhead": {
+      "type": "fontSize",
+      "value": 15,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS Dynamic Type text style Subhead at the default (Large) size",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Subhead' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED",
+      "notes": "Use the system text style (Font.TextStyle / UIFont.TextStyle) so Dynamic Type scales it; the number is the default-size reference only."
+    },
+    "font.lineHeight.textStyle.ios.subhead": {
+      "type": "lineHeight",
+      "value": 20,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Subhead leading at Large",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Subhead' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.ios.subhead": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Subhead weight (Regular)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Subhead' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weightEmphasized.textStyle.ios.subhead": {
+      "type": "fontWeight",
+      "value": 600,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Subhead emphasized weight (Semibold, via .bold()/traitBold)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Subhead' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.size.textStyle.ios.footnote": {
+      "type": "fontSize",
+      "value": 13,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS Dynamic Type text style Footnote at the default (Large) size",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Footnote' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED",
+      "notes": "Use the system text style (Font.TextStyle / UIFont.TextStyle) so Dynamic Type scales it; the number is the default-size reference only."
+    },
+    "font.lineHeight.textStyle.ios.footnote": {
+      "type": "lineHeight",
+      "value": 18,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Footnote leading at Large",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Footnote' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.ios.footnote": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Footnote weight (Regular)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Footnote' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weightEmphasized.textStyle.ios.footnote": {
+      "type": "fontWeight",
+      "value": 600,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Footnote emphasized weight (Semibold, via .bold()/traitBold)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Footnote' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.size.textStyle.ios.caption1": {
+      "type": "fontSize",
+      "value": 12,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS Dynamic Type text style Caption 1 at the default (Large) size",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Caption 1' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED",
+      "notes": "Use the system text style (Font.TextStyle / UIFont.TextStyle) so Dynamic Type scales it; the number is the default-size reference only."
+    },
+    "font.lineHeight.textStyle.ios.caption1": {
+      "type": "lineHeight",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Caption 1 leading at Large",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Caption 1' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.ios.caption1": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Caption 1 weight (Regular)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Caption 1' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weightEmphasized.textStyle.ios.caption1": {
+      "type": "fontWeight",
+      "value": 600,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Caption 1 emphasized weight (Semibold, via .bold()/traitBold)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Caption 1' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.size.textStyle.ios.caption2": {
+      "type": "fontSize",
+      "value": 11,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS Dynamic Type text style Caption 2 at the default (Large) size",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Caption 2' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED",
+      "notes": "Use the system text style (Font.TextStyle / UIFont.TextStyle) so Dynamic Type scales it; the number is the default-size reference only."
+    },
+    "font.lineHeight.textStyle.ios.caption2": {
+      "type": "lineHeight",
+      "value": 13,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Caption 2 leading at Large",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Caption 2' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.ios.caption2": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Caption 2 weight (Regular)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Caption 2' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.weightEmphasized.textStyle.ios.caption2": {
+      "type": "fontWeight",
+      "value": 600,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS text style Caption 2 emphasized weight (Semibold, via .bold()/traitBold)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Specifications (iOS, iPadOS Dynamic Type sizes > Large (default); page change log 2025-12-16); screenshot references/auto/platform/hig-typography-dynamic-type-large.png",
+      "method": "Read from HIG table 'Large (default)' row 'Caption 2' (DocC JSON https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json, fetched 2026-10-15)",
+      "level": "VERIFIED"
+    },
+    "font.size.all.ios.default": {
+      "type": "fontSize",
+      "value": 17,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS default text size",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Ensuring-legibility",
+      "method": "HIG table 'Default size / Minimum size', row iOS, iPadOS",
+      "level": "VERIFIED"
+    },
+    "font.size.all.ios.minimum": {
+      "type": "fontSize",
+      "value": 11,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "iOS minimum text size (also widget text minimum)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Ensuring-legibility ; https://developer.apple.com/design/human-interface-guidelines/widgets#Displaying-text-in-widgets",
+      "method": "HIG table row iOS, iPadOS minimum; widgets page 'display text using fonts at 11 points or larger'",
+      "level": "VERIFIED"
+    },
+    "font.family.all.system": {
+      "type": "font",
+      "value": {
+        "ios": "system",
+        "android": "system"
+      },
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "Typeface for all platform-convention surfaces (settings, dialogs, permissions, widgets, Live Activities)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography#Using-system-fonts ; https://developer.android.com/design/ui/mobile/guides/widgets/style",
+      "method": "SF Pro is the iOS system font (HIG); Android widget style guide: 'widgets use system fonts'",
+      "level": "PLATFORM"
+    },
+    "font.size.textStyle.android.displayLarge": {
+      "type": "fontSize",
+      "value": 57,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Material 3 baseline type style display-large",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.display-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "Compose: MaterialTheme.typography.displayLarge. M3 publishes the value in 'pt'; Android renders it in sp."
+    },
+    "font.lineHeight.textStyle.android.displayLarge": {
+      "type": "lineHeight",
+      "value": 64,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 display-large line height",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.display-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.android.displayLarge": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 display-large weight",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.display-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.letterSpacing.textStyle.android.displayLarge": {
+      "type": "letterSpacing",
+      "value": -0.25,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 display-large tracking",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.display-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "0 where the token value is empty in the data (protobuf omits zero) and the page shows 0pt."
+    },
+    "font.size.textStyle.android.displayMedium": {
+      "type": "fontSize",
+      "value": 45,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Material 3 baseline type style display-medium",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.display-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "Compose: MaterialTheme.typography.displayMedium. M3 publishes the value in 'pt'; Android renders it in sp."
+    },
+    "font.lineHeight.textStyle.android.displayMedium": {
+      "type": "lineHeight",
+      "value": 52,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 display-medium line height",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.display-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.android.displayMedium": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 display-medium weight",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.display-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.letterSpacing.textStyle.android.displayMedium": {
+      "type": "letterSpacing",
+      "value": 0,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 display-medium tracking",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.display-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "0 where the token value is empty in the data (protobuf omits zero) and the page shows 0pt."
+    },
+    "font.size.textStyle.android.displaySmall": {
+      "type": "fontSize",
+      "value": 36,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Material 3 baseline type style display-small",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.display-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "Compose: MaterialTheme.typography.displaySmall. M3 publishes the value in 'pt'; Android renders it in sp."
+    },
+    "font.lineHeight.textStyle.android.displaySmall": {
+      "type": "lineHeight",
+      "value": 44,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 display-small line height",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.display-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.android.displaySmall": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 display-small weight",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.display-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.letterSpacing.textStyle.android.displaySmall": {
+      "type": "letterSpacing",
+      "value": 0,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 display-small tracking",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.display-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "0 where the token value is empty in the data (protobuf omits zero) and the page shows 0pt."
+    },
+    "font.size.textStyle.android.headlineLarge": {
+      "type": "fontSize",
+      "value": 32,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Material 3 baseline type style headline-large",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.headline-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "Compose: MaterialTheme.typography.headlineLarge. M3 publishes the value in 'pt'; Android renders it in sp."
+    },
+    "font.lineHeight.textStyle.android.headlineLarge": {
+      "type": "lineHeight",
+      "value": 40,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 headline-large line height",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.headline-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.android.headlineLarge": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 headline-large weight",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.headline-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.letterSpacing.textStyle.android.headlineLarge": {
+      "type": "letterSpacing",
+      "value": 0,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 headline-large tracking",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.headline-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "0 where the token value is empty in the data (protobuf omits zero) and the page shows 0pt."
+    },
+    "font.size.textStyle.android.headlineMedium": {
+      "type": "fontSize",
+      "value": 28,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Material 3 baseline type style headline-medium",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.headline-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "Compose: MaterialTheme.typography.headlineMedium. M3 publishes the value in 'pt'; Android renders it in sp."
+    },
+    "font.lineHeight.textStyle.android.headlineMedium": {
+      "type": "lineHeight",
+      "value": 36,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 headline-medium line height",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.headline-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.android.headlineMedium": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 headline-medium weight",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.headline-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.letterSpacing.textStyle.android.headlineMedium": {
+      "type": "letterSpacing",
+      "value": 0,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 headline-medium tracking",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.headline-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "0 where the token value is empty in the data (protobuf omits zero) and the page shows 0pt."
+    },
+    "font.size.textStyle.android.headlineSmall": {
+      "type": "fontSize",
+      "value": 24,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Material 3 baseline type style headline-small",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.headline-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "Compose: MaterialTheme.typography.headlineSmall. M3 publishes the value in 'pt'; Android renders it in sp."
+    },
+    "font.lineHeight.textStyle.android.headlineSmall": {
+      "type": "lineHeight",
+      "value": 32,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 headline-small line height",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.headline-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.android.headlineSmall": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 headline-small weight",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.headline-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.letterSpacing.textStyle.android.headlineSmall": {
+      "type": "letterSpacing",
+      "value": 0,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 headline-small tracking",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.headline-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "0 where the token value is empty in the data (protobuf omits zero) and the page shows 0pt."
+    },
+    "font.size.textStyle.android.titleLarge": {
+      "type": "fontSize",
+      "value": 22,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Material 3 baseline type style title-large",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.title-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "Compose: MaterialTheme.typography.titleLarge. M3 publishes the value in 'pt'; Android renders it in sp."
+    },
+    "font.lineHeight.textStyle.android.titleLarge": {
+      "type": "lineHeight",
+      "value": 28,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 title-large line height",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.title-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.android.titleLarge": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 title-large weight",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.title-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.letterSpacing.textStyle.android.titleLarge": {
+      "type": "letterSpacing",
+      "value": 0,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 title-large tracking",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.title-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "0 where the token value is empty in the data (protobuf omits zero) and the page shows 0pt."
+    },
+    "font.size.textStyle.android.titleMedium": {
+      "type": "fontSize",
+      "value": 16,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Material 3 baseline type style title-medium",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.title-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "Compose: MaterialTheme.typography.titleMedium. M3 publishes the value in 'pt'; Android renders it in sp."
+    },
+    "font.lineHeight.textStyle.android.titleMedium": {
+      "type": "lineHeight",
+      "value": 24,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 title-medium line height",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.title-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.android.titleMedium": {
+      "type": "fontWeight",
+      "value": 500,
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 title-medium weight",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.title-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.letterSpacing.textStyle.android.titleMedium": {
+      "type": "letterSpacing",
+      "value": 0.15,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 title-medium tracking",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.title-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "0 where the token value is empty in the data (protobuf omits zero) and the page shows 0pt."
+    },
+    "font.size.textStyle.android.titleSmall": {
+      "type": "fontSize",
+      "value": 14,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Material 3 baseline type style title-small",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.title-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "Compose: MaterialTheme.typography.titleSmall. M3 publishes the value in 'pt'; Android renders it in sp."
+    },
+    "font.lineHeight.textStyle.android.titleSmall": {
+      "type": "lineHeight",
+      "value": 20,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 title-small line height",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.title-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.android.titleSmall": {
+      "type": "fontWeight",
+      "value": 500,
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 title-small weight",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.title-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.letterSpacing.textStyle.android.titleSmall": {
+      "type": "letterSpacing",
+      "value": 0.1,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 title-small tracking",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.title-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "0 where the token value is empty in the data (protobuf omits zero) and the page shows 0pt."
+    },
+    "font.size.textStyle.android.bodyLarge": {
+      "type": "fontSize",
+      "value": 16,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Material 3 baseline type style body-large",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.body-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "Compose: MaterialTheme.typography.bodyLarge. M3 publishes the value in 'pt'; Android renders it in sp."
+    },
+    "font.lineHeight.textStyle.android.bodyLarge": {
+      "type": "lineHeight",
+      "value": 24,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 body-large line height",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.body-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.android.bodyLarge": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 body-large weight",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.body-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.letterSpacing.textStyle.android.bodyLarge": {
+      "type": "letterSpacing",
+      "value": 0.5,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 body-large tracking",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.body-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "0 where the token value is empty in the data (protobuf omits zero) and the page shows 0pt."
+    },
+    "font.size.textStyle.android.bodyMedium": {
+      "type": "fontSize",
+      "value": 14,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Material 3 baseline type style body-medium",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.body-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "Compose: MaterialTheme.typography.bodyMedium. M3 publishes the value in 'pt'; Android renders it in sp."
+    },
+    "font.lineHeight.textStyle.android.bodyMedium": {
+      "type": "lineHeight",
+      "value": 20,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 body-medium line height",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.body-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.android.bodyMedium": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 body-medium weight",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.body-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.letterSpacing.textStyle.android.bodyMedium": {
+      "type": "letterSpacing",
+      "value": 0.25,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 body-medium tracking",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.body-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "0 where the token value is empty in the data (protobuf omits zero) and the page shows 0pt."
+    },
+    "font.size.textStyle.android.bodySmall": {
+      "type": "fontSize",
+      "value": 12,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Material 3 baseline type style body-small",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.body-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "Compose: MaterialTheme.typography.bodySmall. M3 publishes the value in 'pt'; Android renders it in sp."
+    },
+    "font.lineHeight.textStyle.android.bodySmall": {
+      "type": "lineHeight",
+      "value": 16,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 body-small line height",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.body-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.android.bodySmall": {
+      "type": "fontWeight",
+      "value": 400,
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 body-small weight",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.body-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.letterSpacing.textStyle.android.bodySmall": {
+      "type": "letterSpacing",
+      "value": 0.4,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 body-small tracking",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.body-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "0 where the token value is empty in the data (protobuf omits zero) and the page shows 0pt."
+    },
+    "font.size.textStyle.android.labelLarge": {
+      "type": "fontSize",
+      "value": 14,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Material 3 baseline type style label-large",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.label-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "Compose: MaterialTheme.typography.labelLarge. M3 publishes the value in 'pt'; Android renders it in sp."
+    },
+    "font.lineHeight.textStyle.android.labelLarge": {
+      "type": "lineHeight",
+      "value": 20,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 label-large line height",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.label-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.android.labelLarge": {
+      "type": "fontWeight",
+      "value": 500,
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 label-large weight",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.label-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.letterSpacing.textStyle.android.labelLarge": {
+      "type": "letterSpacing",
+      "value": 0.1,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 label-large tracking",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.label-large.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "0 where the token value is empty in the data (protobuf omits zero) and the page shows 0pt."
+    },
+    "font.size.textStyle.android.labelMedium": {
+      "type": "fontSize",
+      "value": 12,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Material 3 baseline type style label-medium",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.label-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "Compose: MaterialTheme.typography.labelMedium. M3 publishes the value in 'pt'; Android renders it in sp."
+    },
+    "font.lineHeight.textStyle.android.labelMedium": {
+      "type": "lineHeight",
+      "value": 16,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 label-medium line height",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.label-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.android.labelMedium": {
+      "type": "fontWeight",
+      "value": 500,
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 label-medium weight",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.label-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.letterSpacing.textStyle.android.labelMedium": {
+      "type": "letterSpacing",
+      "value": 0.5,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 label-medium tracking",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.label-medium.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "0 where the token value is empty in the data (protobuf omits zero) and the page shows 0pt."
+    },
+    "font.size.textStyle.android.labelSmall": {
+      "type": "fontSize",
+      "value": 11,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Material 3 baseline type style label-small",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.label-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "Compose: MaterialTheme.typography.labelSmall. M3 publishes the value in 'pt'; Android renders it in sp."
+    },
+    "font.lineHeight.textStyle.android.labelSmall": {
+      "type": "lineHeight",
+      "value": 16,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 label-small line height",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.label-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.weight.textStyle.android.labelSmall": {
+      "type": "fontWeight",
+      "value": 500,
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 label-small weight",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.label-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED"
+    },
+    "font.letterSpacing.textStyle.android.labelSmall": {
+      "type": "letterSpacing",
+      "value": 0.5,
+      "unit": "sp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 label-small tracking",
+      "evidence": "https://m3.material.io/styles/typography/type-scale-tokens (baseline type style tokens; data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TYPOGRAPHY.20543ce18892f7d9.json, snapshot 2026-10-13)",
+      "method": "Resolved md.sys.typescale.label-small.* from the M3 token JSON with audience context '3p' (the values the public page renders); cross-checked against rendered page text",
+      "level": "VERIFIED",
+      "notes": "0 where the token value is empty in the data (protobuf omits zero) and the page shows 0pt."
+    },
+    "dimension.all.touchTarget.ios": {
+      "type": "dimension",
+      "value": 44,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "Default (recommended) control size, iOS",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/accessibility#Mobility (table 'Default control size / Minimum control size'; page change log 2025-06-09)",
+      "method": "HIG table row iOS, iPadOS: 44x44 pt default",
+      "level": "VERIFIED",
+      "notes": "Width and height: 44x44 pt."
+    },
+    "dimension.all.touchTarget.iosMinimum": {
+      "type": "dimension",
+      "value": 28,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "Minimum control size, iOS",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/accessibility#Mobility",
+      "method": "HIG table row iOS, iPadOS: 28x28 pt minimum",
+      "level": "VERIFIED"
+    },
+    "dimension.all.touchTarget.android": {
+      "type": "dimension",
+      "value": 48,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Minimum touch target, Android",
+      "evidence": "https://developer.android.com/guide/topics/ui/accessibility/apps (last updated 2026-09-22) ; https://support.google.com/accessibility/android/answer/7101858",
+      "method": "'touch target size, of at least 48dpx48dp'",
+      "level": "VERIFIED"
+    },
+    "dimension.all.touchTarget.androidSpacing": {
+      "type": "dimension",
+      "value": 8,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Spacing between touch targets, Android",
+      "evidence": "https://support.google.com/accessibility/android/answer/7101858",
+      "method": "'at least 48x48dp, separated by 8dp of space or more'",
+      "level": "VERIFIED"
+    },
+    "layout.all.contrast.textMinimum": {
+      "type": "layout",
+      "value": "4.5:1",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "Minimum text contrast (WCAG AA) for text up to 17 pt (iOS) / below 18 sp (Android)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/accessibility#Vision ; https://developer.android.com/guide/topics/ui/accessibility/apps ; https://www.w3.org/TR/WCAG22/#contrast-minimum (W3C Rec 2024-12-12)",
+      "method": "HIG table 'Up to 17 pts / All / 4.5:1'; Android: 'smaller than 18sp, or bold and smaller than 14sp ... at least 4.5:1'",
+      "level": "VERIFIED"
+    },
+    "layout.all.contrast.largeText": {
+      "type": "layout",
+      "value": "3:1",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "Minimum contrast for large text (iOS 18 pt+ or bold; Android 18 sp+ or bold 14 sp+)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/accessibility#Vision ; https://developer.android.com/guide/topics/ui/accessibility/apps ; https://www.w3.org/TR/WCAG22/#contrast-minimum",
+      "method": "HIG table rows '18 pts / All / 3:1' and 'All / Bold / 3:1'",
+      "level": "VERIFIED"
+    },
+    "layout.all.contrast.nonText": {
+      "type": "layout",
+      "value": "3:1",
+      "source_app": "W3C WCAG 2.2",
+      "surface": "all",
+      "element": "Minimum contrast of UI components and graphical objects against adjacent colors",
+      "evidence": "https://www.w3.org/TR/WCAG22/#non-text-contrast",
+      "method": "WCAG 2.2 SC 1.4.11 (Level AA)",
+      "level": "VERIFIED",
+      "notes": "source_app is outside the CONVENTIONS enum; HIG cites WCAG as its contrast standard."
+    },
+    "motion.all.reduceMotion": {
+      "type": "layout",
+      "value": {
+        "ios": "UIAccessibility.isReduceMotionEnabled / SwiftUI @Environment(\\.accessibilityReduceMotion)",
+        "android": "ValueAnimator.areAnimatorsEnabled() == false or Settings.Global.ANIMATOR_DURATION_SCALE == 0 (Accessibility > Remove animations sets WINDOW_, TRANSITION_ and ANIMATOR_DURATION_SCALE to 0)"
+      },
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "Signal to replace movement with fades and drop repeating/zoom/scale/blur animations",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/accessibility#Vision (Reduce Motion bullets) ; https://developer.apple.com/documentation/uikit/uiaccessibility/isreducemotionenabled ; https://developer.android.com/reference/android/animation/ValueAnimator#areAnimatorsEnabled() ; https://android.googlesource.com/platform/packages/apps/Settings/+/refs/heads/main/src/com/android/settings/accessibility/DisableAnimationsPreferenceController.java",
+      "method": "HIG: 'reducing automatic and repetitive animations, including zooming, scaling, and peripheral motion ... Replacing transitions in x-, y-, and z-axes with fades ... Avoiding animating into and out of blurs'",
+      "level": "PLATFORM"
+    },
+    "layout.settings.list.ios": {
+      "type": "layout",
+      "value": "List with .listStyle(.insetGrouped); Section(header:footer:) for groups",
+      "source_app": "Apple HIG",
+      "surface": "settings.root",
+      "element": "Settings list container (also settings.notifications, settings.account, settings.blocked)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/lists-and-tables#Style ; https://developer.apple.com/documentation/swiftui/insetgroupedliststyle ; https://developer.apple.com/documentation/swiftui/section",
+      "method": "HIG: grouped style 'uses headers, footers, and additional space to separate groups of data'; native component",
+      "level": "PLATFORM"
+    },
+    "layout.settings.list.android": {
+      "type": "layout",
+      "value": "Compose Material 3 ListItem rows in a LazyColumn; headers as section labels; HorizontalDivider between groups (or M3 expressive 'segmented' style)",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "Settings list container, Android",
+      "evidence": "https://m3.material.io/components/lists/specs",
+      "method": "Native component; M3 list specs page (expressive lists = segmented style with round corners)",
+      "level": "PLATFORM"
+    },
+    "color.settings.background.ios": {
+      "type": "color",
+      "value": "systemGroupedBackground",
+      "source_app": "Apple HIG",
+      "surface": "settings.root",
+      "element": "Grouped list page background, iOS",
+      "evidence": "https://developer.apple.com/documentation/uikit/uicolor/systemgroupedbackground ; https://developer.apple.com/design/human-interface-guidelines/color",
+      "method": "Semantic system color 'for the main background of your grouped interface'",
+      "level": "PLATFORM"
+    },
+    "color.settings.cell.ios": {
+      "type": "color",
+      "value": "secondarySystemGroupedBackground",
+      "source_app": "Apple HIG",
+      "surface": "settings.root",
+      "element": "Grouped list cell background, iOS",
+      "evidence": "https://developer.apple.com/documentation/uikit/uicolor/secondarysystemgroupedbackground",
+      "method": "Semantic system color 'for content layered on top of the main background of your grouped interface'",
+      "level": "PLATFORM"
+    },
+    "color.settings.destructive.ios": {
+      "type": "color",
+      "value": "systemRed (via Button(role: .destructive))",
+      "source_app": "Apple HIG",
+      "surface": "settings.account",
+      "element": "Delete-account row / destructive button tint, iOS",
+      "evidence": "https://developer.apple.com/documentation/swiftui/buttonrole/destructive",
+      "method": "ButtonRole.destructive renders the system destructive appearance",
+      "level": "PLATFORM"
+    },
+    "dimension.settings.listItem.oneLine.height.android": {
+      "type": "dimension",
+      "value": 56,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 one-line list item container height",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.list-item.one-line.container.height",
+      "level": "VERIFIED"
+    },
+    "dimension.settings.listItem.twoLine.height.android": {
+      "type": "dimension",
+      "value": 72,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 two-line list item container height",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.list-item.two-line.container.height",
+      "level": "VERIFIED"
+    },
+    "dimension.settings.listItem.threeLine.height.android": {
+      "type": "dimension",
+      "value": 88,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 three-line list item container height",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.list-item.three-line.container.height",
+      "level": "VERIFIED"
+    },
+    "dimension.settings.listItem.padding.leading.android": {
+      "type": "dimension",
+      "value": 16,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 list item leading space",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.list-item.leading-space",
+      "level": "VERIFIED"
+    },
+    "dimension.settings.listItem.padding.trailing.android": {
+      "type": "dimension",
+      "value": 16,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 list item trailing space",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.list-item.trailing-space",
+      "level": "VERIFIED"
+    },
+    "dimension.settings.listItem.padding.top.android": {
+      "type": "dimension",
+      "value": 10,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 list item top space",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.list-item.top-space",
+      "level": "VERIFIED"
+    },
+    "dimension.settings.listItem.padding.bottom.android": {
+      "type": "dimension",
+      "value": 10,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 list item bottom space",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.list-item.bottom-space",
+      "level": "VERIFIED"
+    },
+    "dimension.settings.listItem.padding.between.android": {
+      "type": "dimension",
+      "value": 12,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 list item between space",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.list-item.between-space",
+      "level": "VERIFIED"
+    },
+    "dimension.settings.listItem.leadingIcon.android": {
+      "type": "dimension",
+      "value": 24,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 list item leading icon size",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.list-item.leading-icon.size",
+      "level": "VERIFIED"
+    },
+    "dimension.settings.listItem.leadingAvatar.android": {
+      "type": "dimension",
+      "value": 40,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "settings.blocked",
+      "element": "M3 list item leading avatar size (blocked-people rows)",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.list-item.leading-avatar.size (shape md.sys.shape.corner.full)",
+      "level": "VERIFIED"
+    },
+    "dimension.settings.divider.android": {
+      "type": "dimension",
+      "value": 1,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 list divider thickness",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.divider.height",
+      "level": "VERIFIED"
+    },
+    "dimension.settings.segmentedGap.android": {
+      "type": "dimension",
+      "value": 2,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "Gap between items in the M3 expressive segmented list style",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.segmented.gap (md.sys.measurement.space25)",
+      "level": "VERIFIED"
+    },
+    "radius.settings.segmentedContainer.android": {
+      "type": "radius",
+      "value": 16,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "Container corner of the M3 segmented list style",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.container.shape -> md.sys.shape.corner.large",
+      "level": "VERIFIED"
+    },
+    "font.style.settings.listLabel.android": {
+      "type": "font",
+      "value": "bodyLarge",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 list item label text style",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.list-item.label-text.* -> md.sys.typescale.body-large",
+      "level": "VERIFIED"
+    },
+    "font.style.settings.listSupporting.android": {
+      "type": "font",
+      "value": "bodyMedium",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 list item supporting text style (section footers / explanations)",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.list-item.supporting-text.* -> md.sys.typescale.body-medium",
+      "level": "VERIFIED"
+    },
+    "font.style.settings.listTrailing.android": {
+      "type": "font",
+      "value": "labelSmall",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 list item trailing supporting text style",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.list-item.trailing-supporting-text.* -> md.sys.typescale.label-small",
+      "level": "VERIFIED"
+    },
+    "color.settings.container.android": {
+      "type": "color",
+      "value": "md.sys.color.surface",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 list item container color role",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.* color token reference (dynamic color role, not a fixed hex)",
+      "level": "VERIFIED"
+    },
+    "color.settings.label.android": {
+      "type": "color",
+      "value": "md.sys.color.on-surface",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 list item label text color role",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.* color token reference (dynamic color role, not a fixed hex)",
+      "level": "VERIFIED"
+    },
+    "color.settings.supporting.android": {
+      "type": "color",
+      "value": "md.sys.color.on-surface-variant",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 supporting / trailing text and leading icon color role",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.* color token reference (dynamic color role, not a fixed hex)",
+      "level": "VERIFIED"
+    },
+    "color.settings.divider.android": {
+      "type": "color",
+      "value": "md.sys.color.outline",
+      "source_app": "Material 3",
+      "surface": "settings.root",
+      "element": "M3 divider color role",
+      "evidence": "https://m3.material.io/components/lists/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.6c818a16475113bd.json)",
+      "method": "md.comp.list.* color token reference (dynamic color role, not a fixed hex)",
+      "level": "VERIFIED"
+    },
+    "layout.settings.confirmDelete.ios": {
+      "type": "layout",
+      "value": "alert(_:isPresented:actions:message:) with a destructive-role button and a Cancel button",
+      "source_app": "Apple HIG",
+      "surface": "settings.account",
+      "element": "Delete-account confirmation, iOS",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/alerts#Buttons (change log 2024-02-02) ; https://developer.apple.com/design/human-interface-guidelines/managing-accounts#Deleting-accounts",
+      "method": "HIG: uncommon destructive action that can't be undone -> alert; 'If there's a destructive action, include a Cancel button'; don't make Cancel the default",
+      "level": "PLATFORM"
+    },
+    "layout.all.alert.maxButtons.ios": {
+      "type": "layout",
+      "value": 3,
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "Maximum buttons in an alert",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/alerts#Content",
+      "method": "'alerts display a title, optional informative text, and up to three buttons'",
+      "level": "VERIFIED"
+    },
+    "layout.all.dialog.maxActions.android": {
+      "type": "layout",
+      "value": 2,
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "Maximum actions in an M3 dialog (one confirming + one dismissing)",
+      "evidence": "https://m3.material.io/components/dialogs/guidelines",
+      "method": "'Dialogs should contain a maximum of two actions'",
+      "level": "VERIFIED"
+    },
+    "layout.all.dialog.buttonOrder.android": {
+      "type": "layout",
+      "value": "dismissive leading, confirming trailing (closest to edge); stacked: confirming above dismissive",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 dialog button placement",
+      "evidence": "https://m3.material.io/components/dialogs/guidelines",
+      "method": "'The confirmation button is always closest to the edge'; 'Don't place dismissive actions to the right of confirming actions'",
+      "level": "VERIFIED"
+    },
+    "layout.all.alert.buttonOrder.ios": {
+      "type": "layout",
+      "value": "default/most-likely on trailing side (or top of stack); Cancel on leading side (or bottom of stack)",
+      "source_app": "Apple HIG",
+      "surface": "all",
+      "element": "HIG alert button placement",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/alerts#Buttons",
+      "method": "'Always place the default button on the trailing side of a row or at the top of a stack. Cancel buttons are typically on the leading side of a row or at the bottom of a stack.'",
+      "level": "VERIFIED"
+    },
+    "radius.all.dialog.android": {
+      "type": "radius",
+      "value": 28,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 basic dialog container corner",
+      "evidence": "https://m3.material.io/components/dialogs/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.0b1e39a67d5bafdc.json)",
+      "method": "md.comp.dialog.container.shape -> md.sys.shape.corner.extra-large",
+      "level": "VERIFIED"
+    },
+    "font.style.all.dialogHeadline.android": {
+      "type": "font",
+      "value": "headlineSmall",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 dialog headline style (24/32)",
+      "evidence": "https://m3.material.io/components/dialogs/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.0b1e39a67d5bafdc.json)",
+      "method": "md.comp.dialog.headline.* -> md.sys.typescale.headline-small",
+      "level": "VERIFIED"
+    },
+    "font.style.all.dialogSupporting.android": {
+      "type": "font",
+      "value": "bodyMedium",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 dialog supporting text style (14/20)",
+      "evidence": "https://m3.material.io/components/dialogs/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.0b1e39a67d5bafdc.json)",
+      "method": "md.comp.dialog.supporting-text.* -> md.sys.typescale.body-medium",
+      "level": "VERIFIED"
+    },
+    "font.style.all.dialogAction.android": {
+      "type": "font",
+      "value": "labelLarge",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 dialog action label style (14/20, weight 500)",
+      "evidence": "https://m3.material.io/components/dialogs/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.0b1e39a67d5bafdc.json)",
+      "method": "md.comp.dialog.action.label-text.* -> md.sys.typescale.label-large",
+      "level": "VERIFIED"
+    },
+    "color.all.dialogContainer.android": {
+      "type": "color",
+      "value": "md.sys.color.surface-container-high",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 dialog container color role",
+      "evidence": "https://m3.material.io/components/dialogs/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.0b1e39a67d5bafdc.json)",
+      "method": "md.comp.dialog.container.color",
+      "level": "VERIFIED"
+    },
+    "shadow.all.dialog.android": {
+      "type": "shadow",
+      "value": "md.sys.elevation.level3 (6dp)",
+      "source_app": "Material 3",
+      "surface": "all",
+      "element": "M3 dialog elevation",
+      "evidence": "https://m3.material.io/components/dialogs/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.0b1e39a67d5bafdc.json)",
+      "method": "md.comp.dialog.container.elevation",
+      "level": "VERIFIED"
+    },
+    "layout.safety.report.ios": {
+      "type": "layout",
+      "value": "confirmationDialog (action sheet): destructive choices at top, Cancel at bottom, no scrolling",
+      "source_app": "Apple HIG",
+      "surface": "safety.report",
+      "element": "Report / block choice sheet, iOS",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/action-sheets ; https://developer.apple.com/documentation/swiftui/view/confirmationdialog(_:ispresented:titlevisibility:actions:message:)",
+      "method": "HIG action sheets: 'Use an action sheet ... to offer choices related to an intentional action'; 'place these [destructive] buttons at the top'; 'Place the Cancel button at the bottom'; 'Avoid letting an action sheet scroll'",
+      "level": "PLATFORM",
+      "notes": "Entry point from the photo/member overflow is a Menu (HIG menus); the choices after tapping Report/Block are an action sheet."
+    },
+    "layout.safety.report.android": {
+      "type": "layout",
+      "value": "ModalBottomSheet with ListItem rows (long or described choices) or DropdownMenu (short lists) + AlertDialog to confirm block",
+      "source_app": "Material 3",
+      "surface": "safety.report",
+      "element": "Report / block choices, Android",
+      "evidence": "https://m3.material.io/components/bottom-sheets/guidelines ; https://m3.material.io/components/menus/specs",
+      "method": "M3: 'Use a modal bottom sheet as an alternative to inline menus or simple dialogs on mobile, especially when offering a long list of action items, or when items require longer descriptions and icons'",
+      "level": "PLATFORM"
+    },
+    "radius.safety.sheet.android": {
+      "type": "radius",
+      "value": {
+        "topLeft": 28,
+        "topRight": 28,
+        "bottom": 0
+      },
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "safety.report",
+      "element": "M3 bottom sheet container top corners",
+      "evidence": "https://m3.material.io/components/bottom-sheets/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.75e530a1014802b3.json)",
+      "method": "md.comp.sheet.bottom.docked.container.shape -> md.sys.shape.corner.extra-large.top",
+      "level": "VERIFIED"
+    },
+    "dimension.safety.sheetHandle.android": {
+      "type": "dimension",
+      "value": {
+        "width": 32,
+        "height": 4
+      },
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "safety.report",
+      "element": "M3 bottom sheet drag handle",
+      "evidence": "https://m3.material.io/components/bottom-sheets/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.75e530a1014802b3.json)",
+      "method": "md.comp.sheet.bottom.docked.drag-handle.width / .height",
+      "level": "VERIFIED"
+    },
+    "opacity.safety.sheetHandle.android": {
+      "type": "opacity",
+      "value": 0.4,
+      "source_app": "Material 3",
+      "surface": "safety.report",
+      "element": "M3 drag handle opacity (color md.sys.color.on-surface-variant)",
+      "evidence": "https://m3.material.io/components/bottom-sheets/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.75e530a1014802b3.json)",
+      "method": "md.comp.sheet.bottom.docked.drag-handle.opacity",
+      "level": "VERIFIED"
+    },
+    "color.safety.sheet.android": {
+      "type": "color",
+      "value": "md.sys.color.surface-container-low",
+      "source_app": "Material 3",
+      "surface": "safety.report",
+      "element": "M3 bottom sheet container color role",
+      "evidence": "https://m3.material.io/components/bottom-sheets/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.75e530a1014802b3.json)",
+      "method": "md.comp.sheet.bottom.docked.container.color",
+      "level": "VERIFIED"
+    },
+    "layout.safety.sheet.initialHeight.android": {
+      "type": "layout",
+      "value": "50% of screen height (cap for initial position)",
+      "source_app": "Material 3",
+      "surface": "safety.report",
+      "element": "M3 modal bottom sheet initial height",
+      "evidence": "https://m3.material.io/components/bottom-sheets/guidelines",
+      "method": "'the initial vertical position of modal bottom sheets is capped at 50% of the screen height'",
+      "level": "VERIFIED"
+    },
+    "layout.safety.sheet.ios": {
+      "type": "layout",
+      "value": "sheet with .presentationDetents([.medium, .large]) and visible grabber when resizable",
+      "source_app": "Apple HIG",
+      "surface": "safety.report",
+      "element": "Sheet presentation for longer report flows, iOS",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/sheets (change log 2026-03-24)",
+      "method": "HIG: system detents large and medium ('about half'); 'Include a grabber in a resizable sheet'",
+      "level": "PLATFORM"
+    },
+    "dimension.safety.menuItem.height.android": {
+      "type": "dimension",
+      "value": 48,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "safety.block",
+      "element": "M3 (baseline) menu item height",
+      "evidence": "https://m3.material.io/components/menus/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.385a28e5d3bb3dd0.json)",
+      "method": "md.comp.menu.list-item.container.height",
+      "level": "VERIFIED",
+      "notes": "M3 expressive menus (md.comp.menus.*) use 44dp items and a 16dp container corner; pick one family per the Compose Material 3 version in use."
+    },
+    "radius.safety.menu.android": {
+      "type": "radius",
+      "value": 4,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "safety.block",
+      "element": "M3 (baseline) menu container corner",
+      "evidence": "https://m3.material.io/components/menus/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.385a28e5d3bb3dd0.json)",
+      "method": "md.comp.menu.container.shape -> md.sys.shape.corner.extra-small",
+      "level": "VERIFIED"
+    },
+    "font.style.safety.menuItem.android": {
+      "type": "font",
+      "value": "labelLarge",
+      "source_app": "Material 3",
+      "surface": "safety.block",
+      "element": "M3 menu item label style",
+      "evidence": "https://m3.material.io/components/menus/specs (token data https://m3.material.io/_dsm/data/dsdb-m3/2026-10-13_06-10-19/TOKEN_TABLE.385a28e5d3bb3dd0.json)",
+      "method": "md.comp.menu.list-item.label-text.* -> md.sys.typescale.label-large",
+      "level": "VERIFIED"
+    },
+    "layout.safety.menu.ios": {
+      "type": "layout",
+      "value": "Menu (UIMenu) with title-style labels, destructive items marked with role .destructive",
+      "source_app": "Apple HIG",
+      "surface": "safety.block",
+      "element": "Overflow menu on photo / member (Report, Block)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/menus (change log 2026-06-08)",
+      "method": "HIG: verb labels, title-style capitalization, no articles, ellipsis when more input is needed",
+      "level": "PLATFORM"
+    },
+    "layout.system.permissions.preAlert.ios": {
+      "type": "layout",
+      "value": "single button that opens the system alert; no close/cancel/skip on the pre-alert screen",
+      "source_app": "Apple HIG",
+      "surface": "system.permissions",
+      "element": "Custom screen shown before an iOS permission alert",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/privacy#Pre-alert-screens-windows-or-views (change log 2023-06-21)",
+      "method": "'Include only one button and make it clear that it opens the system alert ... Use a term like Continue or Next'; 'don't provide a way for people to leave the screen ... without viewing the system alert'",
+      "level": "VERIFIED",
+      "notes": "Conflicts with a skippable contacts step: on iOS, offer contacts from an in-context action (ContactAccessButton / contactAccessPicker, iOS 18+) instead of a skippable pre-alert screen."
+    },
+    "layout.system.permissions.rationale.android": {
+      "type": "layout",
+      "value": "educational UI only when shouldShowRequestPermissionRationale() is true; always cancellable",
+      "source_app": "Material 3",
+      "surface": "system.permissions",
+      "element": "Android rationale UI",
+      "evidence": "https://developer.android.com/training/permissions/requesting (last updated 2026-10-01)",
+      "method": "'Don't block the user. Always provide the option to cancel an educational UI flow'; second denial = permanent",
+      "level": "VERIFIED"
+    },
+    "layout.system.permissions.photos": {
+      "type": "layout",
+      "value": {
+        "ios": "PHPickerViewController / PhotosPicker (no permission); PHPhotoLibrary add-only access to save",
+        "android": "Photo Picker (PickVisualMedia / PickMultipleVisualMedia), no READ_MEDIA_* permission"
+      },
+      "source_app": "Apple HIG",
+      "surface": "system.permissions",
+      "element": "How the app picks and saves photos",
+      "evidence": "https://developer.apple.com/documentation/photokit/delivering-an-enhanced-privacy-experience-in-your-photos-app ; https://developer.android.com/training/data-storage/shared/photo-picker ; https://support.google.com/googleplay/android-developer/answer/14115180",
+      "method": "Apple: picker 'doesn't need to explicitly authorize'; Play policy: READ_MEDIA_IMAGES only if 'system pickers ... are not sufficient for your app to provide core functionality'",
+      "level": "PLATFORM"
+    },
+    "layout.widget.home.small.size.ios": {
+      "type": "layout",
+      "value": {
+        "430x932": "170x170",
+        "428x926": "170x170",
+        "414x896": "169x169",
+        "414x736": "159x159",
+        "393x852": "158x158",
+        "390x844": "158x158",
+        "375x812": "155x155",
+        "375x667": "148x148",
+        "360x780": "155x155",
+        "320x568": "141x141"
+      },
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "widget.home.small",
+      "element": "WidgetKit systemSmall size by iPhone screen size (portrait, pt)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/widgets#Specifications (change log 2026-10-13); screenshot references/auto/platform/hig-widgets-ios-dimensions.png",
+      "method": "Transcribed from HIG 'iOS dimensions' table",
+      "level": "VERIFIED",
+      "notes": "The system sizes the widget; use for design comps only. The table has no rows for 402x874 / 440x956 screens."
+    },
+    "layout.widget.home.medium.size.ios": {
+      "type": "layout",
+      "value": {
+        "430x932": "364x170",
+        "428x926": "364x170",
+        "414x896": "360x169",
+        "414x736": "348x157",
+        "393x852": "338x158",
+        "390x844": "338x158",
+        "375x812": "329x155",
+        "375x667": "321x148",
+        "360x780": "329x155",
+        "320x568": "292x141"
+      },
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "widget.home.medium",
+      "element": "WidgetKit systemMedium size by iPhone screen size (portrait, pt)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/widgets#Specifications (change log 2026-10-13); screenshot references/auto/platform/hig-widgets-ios-dimensions.png",
+      "method": "Transcribed from HIG 'iOS dimensions' table",
+      "level": "VERIFIED",
+      "notes": "The system sizes the widget; use for design comps only. The table has no rows for 402x874 / 440x956 screens."
+    },
+    "layout.widget.home.large.size.ios": {
+      "type": "layout",
+      "value": {
+        "430x932": "364x382",
+        "428x926": "364x382",
+        "414x896": "360x379",
+        "414x736": "348x357",
+        "393x852": "338x354",
+        "390x844": "338x354",
+        "375x812": "329x345",
+        "375x667": "321x324",
+        "360x780": "329x345",
+        "320x568": "292x311"
+      },
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "widget.home.large",
+      "element": "WidgetKit systemLarge size by iPhone screen size (portrait, pt)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/widgets#Specifications (change log 2026-10-13); screenshot references/auto/platform/hig-widgets-ios-dimensions.png",
+      "method": "Transcribed from HIG 'iOS dimensions' table",
+      "level": "VERIFIED",
+      "notes": "The system sizes the widget; use for design comps only. The table has no rows for 402x874 / 440x956 screens."
+    },
+    "layout.widget.lock.circular.size.ios": {
+      "type": "layout",
+      "value": {
+        "430x932": "76x76",
+        "428x926": "76x76",
+        "414x896": "76x76",
+        "414x736": "76x76",
+        "393x852": "72x72",
+        "390x844": "72x72",
+        "375x812": "72x72",
+        "375x667": "68x68",
+        "360x780": "72x72"
+      },
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "widget.lock.circular",
+      "element": "WidgetKit accessoryCircular size by iPhone screen size (portrait, pt)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/widgets#Specifications (change log 2026-10-13); screenshot references/auto/platform/hig-widgets-ios-dimensions.png",
+      "method": "Transcribed from HIG 'iOS dimensions' table",
+      "level": "VERIFIED",
+      "notes": "The system sizes the widget; use for design comps only. The table has no rows for 402x874 / 440x956 screens."
+    },
+    "layout.widget.lock.rect.size.ios": {
+      "type": "layout",
+      "value": {
+        "430x932": "172x76",
+        "428x926": "172x76",
+        "414x896": "160x72",
+        "414x736": "170x76",
+        "393x852": "160x72",
+        "390x844": "160x72",
+        "375x812": "157x72",
+        "375x667": "153x68",
+        "360x780": "157x72"
+      },
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "widget.lock.rect",
+      "element": "WidgetKit accessoryRectangular size by iPhone screen size (portrait, pt)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/widgets#Specifications (change log 2026-10-13); screenshot references/auto/platform/hig-widgets-ios-dimensions.png",
+      "method": "Transcribed from HIG 'iOS dimensions' table",
+      "level": "VERIFIED",
+      "notes": "The system sizes the widget; use for design comps only. The table has no rows for 402x874 / 440x956 screens."
+    },
+    "layout.widget.lock.inline.size.ios": {
+      "type": "layout",
+      "value": {
+        "430x932": "257x26",
+        "428x926": "257x26",
+        "414x896": "248x26",
+        "414x736": "248x26",
+        "393x852": "234x26",
+        "390x844": "234x26",
+        "375x812": "225x26",
+        "375x667": "225x26",
+        "360x780": "225x26"
+      },
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "widget.lock.inline",
+      "element": "WidgetKit accessoryInline size by iPhone screen size (portrait, pt)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/widgets#Specifications (change log 2026-10-13); screenshot references/auto/platform/hig-widgets-ios-dimensions.png",
+      "method": "Transcribed from HIG 'iOS dimensions' table",
+      "level": "VERIFIED",
+      "notes": "The system sizes the widget; use for design comps only. The table has no rows for 402x874 / 440x956 screens."
+    },
+    "layout.widget.home.xl.size.ios": {
+      "type": "layout",
+      "value": {
+        "1024x1366 device": "748x356",
+        "834x1194 device": "628x300",
+        "820x1180 device": "628x300",
+        "768x1024 device": "540x260",
+        "744x1133 device": "540x260"
+      },
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "widget.home.xl",
+      "element": "systemExtraLarge size (iPad only)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/widgets#Specifications (iPadOS dimensions)",
+      "method": "Transcribed 'Device' rows of HIG iPadOS table",
+      "level": "VERIFIED",
+      "notes": "HIG anatomy table: System extra large on iPhone = 'Not supported'. widget.home.xl exists on iPad (and Mac) only."
+    },
+    "dimension.widget.home.margin": {
+      "type": "dimension",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "widget.home.small",
+      "element": "Standard widget content margin (applies to all system family sizes)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/widgets#Choosing-margins-and-padding",
+      "method": "'Use the standard margin width for widgets — 16 points for most widgets'",
+      "level": "VERIFIED",
+      "notes": "In code prefer the system default content margins (contentMarginsDisabled() off); widgetContentMargins gives the per-context value."
+    },
+    "dimension.widget.home.marginTight": {
+      "type": "dimension",
+      "value": 11,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "widget.home.small",
+      "element": "Tighter margin for groupings of graphics, buttons, background shapes",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/widgets#Choosing-margins-and-padding",
+      "method": "'setting margins of 11 points can work well'",
+      "level": "VERIFIED"
+    },
+    "layout.widget.home.photoBleed.ios": {
+      "type": "layout",
+      "value": "photo as removable background: .containerBackground(for: .widget) { Image(...) } ; text/glyph overlays inside default content margins",
+      "source_app": "Apple HIG",
+      "surface": "widget.home.small",
+      "element": "Full-bleed photo widget construction",
+      "evidence": "https://developer.apple.com/documentation/widgetkit/displaying-the-right-widget-background ; https://developer.apple.com/documentation/swiftui/widgetconfiguration/contentmarginsdisabled() ; https://developer.apple.com/documentation/swiftui/environmentvalues/widgetcontentmargins",
+      "method": "Native API; backgrounds must be marked removable (StandBy/vibrant contexts remove them)",
+      "level": "PLATFORM"
+    },
+    "radius.widget.home.content": {
+      "type": "radius",
+      "value": "ContainerRelativeShape()",
+      "source_app": "Apple HIG",
+      "surface": "widget.home.small",
+      "element": "Corner radius of any rounded content inside a widget or Live Activity",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/widgets#Choosing-margins-and-padding ; https://developer.apple.com/documentation/swiftui/containerrelativeshape",
+      "method": "HIG: 'use a SwiftUI container to apply the correct corner radius ... see ContainerRelativeShape'",
+      "level": "PLATFORM",
+      "notes": "No numeric widget corner radius is published; the system supplies it."
+    },
+    "layout.widget.home.renderingModes": {
+      "type": "layout",
+      "value": {
+        "fullColor": "Home Screen light/dark, StandBy, CarPlay",
+        "accented": "Home Screen tinted and clear appearances (iOS 18+ tinted; Liquid Glass clear)",
+        "vibrant": "Lock Screen, StandBy Night Mode (red tint)"
+      },
+      "source_app": "Apple HIG",
+      "surface": "widget.home.small",
+      "element": "@Environment(\\.widgetRenderingMode) cases and where they occur on iPhone",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/widgets#Appearances ; https://developer.apple.com/documentation/widgetkit/widgetrenderingmode ; https://developer.apple.com/documentation/widgetkit/optimizing-your-widget-for-accented-rendering-mode-and-liquid-glass",
+      "method": "HIG table 'occurrences for each rendering mode per platform', row iPhone",
+      "level": "VERIFIED",
+      "notes": "Photos: .widgetAccentedRenderingMode(.fullColor) (iOS 18+) keeps a photo in color in tinted/clear appearances — the docs reserve fullColor for media content such as album art. Lock Screen (vibrant) always desaturates."
+    },
+    "duration.widget.arrival.max": {
+      "type": "duration",
+      "value": 2000,
+      "unit": "ms",
+      "source_app": "Apple HIG",
+      "surface": "widget.arrival",
+      "element": "Maximum duration of a widget content-update animation",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/widgets#Updating-widget-content",
+      "method": "'use standard and custom animations with a duration of up to two seconds'",
+      "level": "VERIFIED",
+      "notes": "Measured Locket timing (if any) must be <= this; WidgetKit only animates when the timeline entry changes."
+    },
+    "layout.widget.home.interactive": {
+      "type": "layout",
+      "value": "Button(intent:) / Toggle(intent:) with AppIntent in systemSmall/Medium/Large/ExtraLarge and accessoryCircular/Rectangular; widgetURL for tap-to-open",
+      "source_app": "Apple HIG",
+      "surface": "camera.fromwidget",
+      "element": "Interactive widget elements and deep link",
+      "evidence": "https://developer.apple.com/documentation/widgetkit/adding-interactivity-to-widgets-and-live-activities ; https://developer.apple.com/documentation/swiftui/view/widgeturl(_:)",
+      "method": "Native API; 'Interactions with a toggle or button always guarantee a timeline reload'; inline accessory has one tap target",
+      "level": "PLATFORM",
+      "notes": "Opening the camera is 'just open the app' -> use widgetURL/Link, not a Button (docs: a button 'should do more than open the app'). From a locked device use a LockedCameraCapture extension + control (iOS 18+)."
+    },
+    "layout.widget.lock.photo.ios": {
+      "type": "layout",
+      "value": "vibrant (monochrome) rendering; photos are desaturated on the iPhone Lock Screen",
+      "source_app": "Apple HIG",
+      "surface": "widget.lock.rect",
+      "element": "What a lock-screen photo widget can show",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/widgets#Appearances ; https://developer.apple.com/documentation/widgetkit/preparing-widgets-for-additional-contexts-and-appearances",
+      "method": "HIG: Lock Screen = vibrant mode, 'desaturates text, images, and gauges'; WidgetKit doc: photo-reliant widgets 'may not work well on the Lock Screen' -> disfavoredLocations",
+      "level": "VERIFIED"
+    },
+    "layout.widget.android.size.handheld.2x1": {
+      "type": "layout",
+      "value": {
+        "minWidth": 109,
+        "maxWidth": 306,
+        "minHeight": 56,
+        "maxHeight": 130
+      },
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "widget.android",
+      "element": "Recommended handheld widget size 2x1 (targetCellWidth x targetCellHeight)",
+      "evidence": "https://developer.android.com/design/ui/mobile/guides/widgets/sizing (last updated 2026-05-12); screenshot references/auto/platform/android-widget-default-sizes.png",
+      "method": "Transcribed from 'Default sizes > Handheld' table (Pixel-based)",
+      "level": "VERIFIED"
+    },
+    "layout.widget.android.size.handheld.2x2": {
+      "type": "layout",
+      "value": {
+        "minWidth": 109,
+        "maxWidth": 306,
+        "minHeight": 115,
+        "maxHeight": 276
+      },
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "widget.android",
+      "element": "Recommended handheld widget size 2x2 (targetCellWidth x targetCellHeight)",
+      "evidence": "https://developer.android.com/design/ui/mobile/guides/widgets/sizing (last updated 2026-05-12); screenshot references/auto/platform/android-widget-default-sizes.png",
+      "method": "Transcribed from 'Default sizes > Handheld' table (Pixel-based)",
+      "level": "VERIFIED"
+    },
+    "layout.widget.android.size.handheld.2x3": {
+      "type": "layout",
+      "value": {
+        "minWidth": 109,
+        "maxWidth": 306,
+        "minHeight": 185,
+        "maxHeight": 422
+      },
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "widget.android",
+      "element": "Recommended handheld widget size 2x3 (targetCellWidth x targetCellHeight)",
+      "evidence": "https://developer.android.com/design/ui/mobile/guides/widgets/sizing (last updated 2026-05-12); screenshot references/auto/platform/android-widget-default-sizes.png",
+      "method": "Transcribed from 'Default sizes > Handheld' table (Pixel-based)",
+      "level": "VERIFIED"
+    },
+    "layout.widget.android.size.handheld.4x1": {
+      "type": "layout",
+      "value": {
+        "minWidth": 245,
+        "maxWidth": 624,
+        "minHeight": 56,
+        "maxHeight": 130
+      },
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "widget.android",
+      "element": "Recommended handheld widget size 4x1 (targetCellWidth x targetCellHeight)",
+      "evidence": "https://developer.android.com/design/ui/mobile/guides/widgets/sizing (last updated 2026-05-12); screenshot references/auto/platform/android-widget-default-sizes.png",
+      "method": "Transcribed from 'Default sizes > Handheld' table (Pixel-based)",
+      "level": "VERIFIED"
+    },
+    "layout.widget.android.size.handheld.4x2": {
+      "type": "layout",
+      "value": {
+        "minWidth": 245,
+        "maxWidth": 624,
+        "minHeight": 115,
+        "maxHeight": 276
+      },
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "widget.android",
+      "element": "Recommended handheld widget size 4x2 (targetCellWidth x targetCellHeight)",
+      "evidence": "https://developer.android.com/design/ui/mobile/guides/widgets/sizing (last updated 2026-05-12); screenshot references/auto/platform/android-widget-default-sizes.png",
+      "method": "Transcribed from 'Default sizes > Handheld' table (Pixel-based)",
+      "level": "VERIFIED"
+    },
+    "layout.widget.android.size.handheld.4x3": {
+      "type": "layout",
+      "value": {
+        "minWidth": 245,
+        "maxWidth": 624,
+        "minHeight": 185,
+        "maxHeight": 422
+      },
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "widget.android",
+      "element": "Recommended handheld widget size 4x3 (targetCellWidth x targetCellHeight)",
+      "evidence": "https://developer.android.com/design/ui/mobile/guides/widgets/sizing (last updated 2026-05-12); screenshot references/auto/platform/android-widget-default-sizes.png",
+      "method": "Transcribed from 'Default sizes > Handheld' table (Pixel-based)",
+      "level": "VERIFIED"
+    },
+    "layout.widget.android.cellFormula": {
+      "type": "layout",
+      "value": {
+        "portrait": "(73n - 16) x (118m - 16) dp",
+        "landscape": "(142n - 15) x (66m - 15) dp"
+      },
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "widget.android",
+      "element": "Available size for n x m cells on a typical 5x4 handset grid (Pixel 4)",
+      "evidence": "https://developer.android.com/develop/ui/views/appwidgets/layouts#anatomy_determining_size (last updated 2026-10-01)",
+      "method": "Formula row of the 'Number of cells' table",
+      "level": "VERIFIED"
+    },
+    "radius.widget.android.background": {
+      "type": "radius",
+      "value": "@android:dimen/system_app_widget_background_radius (never larger than 28dp)",
+      "source_app": "Material 3",
+      "surface": "widget.android",
+      "element": "Widget background corner radius",
+      "evidence": "https://developer.android.com/develop/ui/compose/glance/create-app-widget#implement-rounded-corners (last updated 2026-09-22)",
+      "method": "'Specifies the corner radius of the widget background container (never larger than 28 dp)'; Glance: GlanceModifier.cornerRadius(android.R.dimen.system_app_widget_background_radius)",
+      "level": "VERIFIED",
+      "notes": "Inner radius = systemRadiusValue - widgetPadding. Widget quality Tier 1: 'Rectangular widgets must use the corner radius provided by system'."
+    },
+    "layout.widget.android.fillBounds": {
+      "type": "layout",
+      "value": "container edge-to-edge at all sizes; no custom outer padding",
+      "source_app": "Material 3",
+      "surface": "widget.android",
+      "element": "Widget fill rule",
+      "evidence": "https://developer.android.com/design/ui/mobile/guides/widgets/sizing#fill-the-bounds",
+      "method": "'Make sure the container stretches edge-to-edge at all sizes'; Don't 'Add custom padding'",
+      "level": "VERIFIED"
+    },
+    "dimension.widget.android.touchTarget": {
+      "type": "dimension",
+      "value": 48,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "widget.android",
+      "element": "Touch target inside widgets",
+      "evidence": "https://developer.android.com/docs/quality-guidelines/widget-quality (last updated 2026-04-06)",
+      "method": "Tier 2: 'Provide touch targets at 48x48 dp'",
+      "level": "VERIFIED"
+    },
+    "layout.widget.android.lockScreen": {
+      "type": "layout",
+      "value": "same Glance widget; opt out with widgetCategory not_keyguard (API 36) in xml-36; activities launched from lock screen need auth or showWhenLocked",
+      "source_app": "Material 3",
+      "surface": "widget.android",
+      "element": "Android lock-screen widget hub (Pixel phones from Android 16 QPR2; tablets earlier; OEM-dependent)",
+      "evidence": "https://android-developers.googleblog.com/2025/03/widgets-on-lock-screen-faq.html ; https://developer.android.com/reference/android/appwidget/AppWidgetProviderInfo#WIDGET_CATEGORY_NOT_KEYGUARD",
+      "method": "Google FAQ: 'All widgets are compatible with the lock screen widget experience'; 'sized to approximately 4 cells wide by 3 cells tall'",
+      "level": "VERIFIED"
+    },
+    "layout.daily.liveactivity.size.ios": {
+      "type": "layout",
+      "value": {
+        "430x932": {
+          "compact": "62.33x36.67",
+          "minimal": "36.67-45x36.67",
+          "expanded": "408x84-160",
+          "lockScreen": "408x84-160",
+          "limitedWidth": "28x28"
+        },
+        "393x852": {
+          "compact": "52.33x36.67",
+          "minimal": "36.67-45x36.67",
+          "expanded": "371x84-160",
+          "lockScreen": "371x84-160",
+          "limitedWidth": "28x28"
+        }
+      },
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "daily.liveactivity",
+      "element": "Live Activity presentation sizes (pt) on iPhone",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/live-activities#Specifications (change log 2026-10-13); screenshot references/auto/platform/hig-live-activities-ios-dimensions.png",
+      "method": "Transcribed from HIG 'iOS dimensions' table",
+      "level": "VERIFIED"
+    },
+    "dimension.daily.liveactivity.lockScreenMargin": {
+      "type": "dimension",
+      "value": 14,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "daily.liveactivity",
+      "element": "Standard Lock Screen Live Activity layout margin",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/live-activities#Lock-Screen-presentation",
+      "method": "'The standard layout margin for Live Activities on the Lock Screen is 14 points.'",
+      "level": "VERIFIED"
+    },
+    "dimension.daily.liveactivity.limitedWidth": {
+      "type": "dimension",
+      "value": 28,
+      "unit": "pt",
+      "source_app": "Apple HIG",
+      "surface": "daily.liveactivity",
+      "element": "Diameter of the circle compact/minimal content must fit in limited-width contexts (landscape Dynamic Island)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/live-activities#Creating-Live-Activity-layouts",
+      "method": "'adapt your compact and minimal presentations to fit inside a 28pt-diameter circle'",
+      "level": "VERIFIED"
+    },
+    "font.weight.daily.liveactivity.min": {
+      "type": "fontWeight",
+      "value": 500,
+      "source_app": "Apple HIG",
+      "surface": "daily.liveactivity",
+      "element": "Minimum text weight in Live Activities",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/live-activities#Best-practices",
+      "method": "'Use large, heavier-weight text — a medium weight or higher'",
+      "level": "VERIFIED"
+    },
+    "duration.daily.liveactivity.animationMax": {
+      "type": "duration",
+      "value": 2000,
+      "unit": "ms",
+      "source_app": "Apple HIG",
+      "surface": "daily.liveactivity",
+      "element": "Maximum Live Activity animation duration",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/live-activities#Adding-transitions-and-animating-content-updates",
+      "method": "'system and custom animations with a maximum duration of two seconds'",
+      "level": "VERIFIED"
+    },
+    "duration.daily.liveactivity.dismissAfterEnd": {
+      "type": "duration",
+      "value": {
+        "min": 900000,
+        "max": 1800000
+      },
+      "unit": "ms",
+      "source_app": "Apple HIG",
+      "surface": "daily.liveactivity",
+      "element": "Recommended custom dismissal time after the activity ends (15-30 min)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/live-activities#Starting-updating-and-ending-a-Live-Activity",
+      "method": "'In most cases, 15 to 30 minutes is adequate'",
+      "level": "VERIFIED"
+    },
+    "duration.daily.liveactivity.maxActive": {
+      "type": "duration",
+      "value": 28800000,
+      "unit": "ms",
+      "source_app": "Apple HIG",
+      "surface": "daily.liveactivity",
+      "element": "Max active time (8 h); then up to 4 more hours on the Lock Screen (12 h total)",
+      "evidence": "https://developer.apple.com/documentation/activitykit/displaying-live-data-with-live-activities",
+      "method": "'active for up to eight hours ... remains on the Lock Screen ... for up to four additional hours'",
+      "level": "VERIFIED"
+    },
+    "color.daily.liveactivity.islandBackground": {
+      "type": "color",
+      "value": "black (system, not customizable)",
+      "source_app": "Apple HIG",
+      "surface": "daily.liveactivity",
+      "element": "Dynamic Island background",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/live-activities#Choosing-colors",
+      "method": "'Live Activities in the Dynamic Island use a black opaque background'; custom background only for the Lock Screen presentation",
+      "level": "PLATFORM"
+    },
+    "layout.daily.liveactivity.countdown": {
+      "type": "layout",
+      "value": "Text(timerInterval: start...windowEnd, countsDown: true) — self-updating, no pushes needed",
+      "source_app": "Apple HIG",
+      "surface": "daily.liveactivity",
+      "element": "Countdown text",
+      "evidence": "https://developer.apple.com/documentation/swiftui/text/init(timerinterval:pausetime:countsdown:showshours:) ; https://developer.apple.com/documentation/widgetkit/displaying-dynamic-dates",
+      "method": "Native API (iOS 16+)",
+      "level": "PLATFORM"
+    },
+    "layout.daily.ongoing.android": {
+      "type": "layout",
+      "value": "NotificationCompat with setUsesChronometer(true) + setChronometerCountDown(true) + setWhen(windowEnd) + setTimeoutAfter(windowEnd - now) in a dedicated channel; not promoted unless the person opted in",
+      "source_app": "Apple HIG",
+      "surface": "daily.ongoing",
+      "element": "Android daily-window countdown notification",
+      "evidence": "https://developer.android.com/reference/android/app/Notification.Builder ; https://developer.android.com/develop/ui/views/notifications/live-update (last updated 2026-10-07)",
+      "method": "Native APIs: setChronometerCountDown (API 24), setTimeoutAfter (API 26); Live Update usage criteria require user-initiated activities",
+      "level": "PLATFORM"
+    },
+    "dimension.daily.ongoing.chipMaxWidth": {
+      "type": "dimension",
+      "value": 96,
+      "unit": "dp",
+      "source_app": "Material 3",
+      "surface": "daily.ongoing",
+      "element": "Live Update status chip max width (only if promoted)",
+      "evidence": "https://developer.android.com/develop/ui/views/notifications/live-update#status-chip-appearance",
+      "method": "'The chip has a maximum width of 96dp'",
+      "level": "VERIFIED"
+    },
+    "layout.daily.ongoing.chipText": {
+      "type": "layout",
+      "value": 7,
+      "source_app": "Material 3",
+      "surface": "daily.ongoing",
+      "element": "setShortCriticalText suggested max characters (promoted only)",
+      "evidence": "https://developer.android.com/reference/android/app/Notification.Builder#setShortCriticalText(java.lang.String)",
+      "method": "'Suggested max length is 7 characters'",
+      "level": "VERIFIED"
+    },
+    "haptic.camera.sendSuccess": {
+      "type": "haptic",
+      "value": {
+        "ios": "UINotificationFeedbackGenerator .success / SwiftUI .sensoryFeedback(.success)",
+        "android": "HapticFeedbackConstants.CONFIRM (API 30)"
+      },
+      "source_app": "Apple HIG",
+      "surface": "camera.sendto",
+      "element": "Photo sent successfully",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback",
+      "method": "HIG 'Success. Indicates that a task or action has completed.'; Android: CONFIRM 'signal the confirmation or successful completion of a user interaction'",
+      "level": "PLATFORM",
+      "notes": "Mapping by documented meaning only (haptics cannot be observed in references). HIG: make haptics optional; don't play haptics while recording voice/video."
+    },
+    "haptic.camera.sendFailure": {
+      "type": "haptic",
+      "value": {
+        "ios": "UINotificationFeedbackGenerator .error / .sensoryFeedback(.error)",
+        "android": "HapticFeedbackConstants.REJECT (API 30)"
+      },
+      "source_app": "Apple HIG",
+      "surface": "camera.sendto",
+      "element": "Send failed",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback",
+      "method": "HIG 'Error. Indicates that an error has occurred.'; Android REJECT 'signal the rejection or failure of a user interaction'",
+      "level": "PLATFORM",
+      "notes": "Mapping by documented meaning only (haptics cannot be observed in references). HIG: make haptics optional; don't play haptics while recording voice/video."
+    },
+    "haptic.groups.select": {
+      "type": "haptic",
+      "value": {
+        "ios": "UISelectionFeedbackGenerator / .sensoryFeedback(.selection)",
+        "android": "HapticFeedbackConstants.SEGMENT_TICK (API 34); SEGMENT_FREQUENT_TICK for dense scrubbing"
+      },
+      "source_app": "Apple HIG",
+      "surface": "camera.sendto",
+      "element": "Group chip/recipient toggled, segmented choice, picker scrubbing (week.history scrub)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback",
+      "method": "HIG 'Selection. Indicates that a UI element's values are changing.'; Android SEGMENT_TICK 'switching between a series of potential choices'",
+      "level": "PLATFORM",
+      "notes": "Mapping by documented meaning only (haptics cannot be observed in references). HIG: make haptics optional; don't play haptics while recording voice/video."
+    },
+    "haptic.settings.toggle": {
+      "type": "haptic",
+      "value": {
+        "ios": "none added (system Toggle plays its own haptic)",
+        "android": "TOGGLE_ON / TOGGLE_OFF (API 34) if the component does not already play one"
+      },
+      "source_app": "Apple HIG",
+      "surface": "settings.notifications",
+      "element": "Switch toggled (mute, quiet hours)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback",
+      "method": "HIG: 'Use standard UI components — like toggles ... that play Apple-designed system haptics by default'; Android TOGGLE_ON/OFF",
+      "level": "PLATFORM",
+      "notes": "Mapping by documented meaning only (haptics cannot be observed in references). HIG: make haptics optional; don't play haptics while recording voice/video."
+    },
+    "haptic.photo.longPress": {
+      "type": "haptic",
+      "value": {
+        "ios": "system context menu haptic (no custom generator)",
+        "android": "HapticFeedbackConstants.LONG_PRESS"
+      },
+      "source_app": "Apple HIG",
+      "surface": "chat.reactions",
+      "element": "Long press that opens the reaction picker / context menu",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback",
+      "method": "Android LONG_PRESS 'performed a long press on an object that is resulting in an action being performed'",
+      "level": "PLATFORM",
+      "notes": "Mapping by documented meaning only (haptics cannot be observed in references). HIG: make haptics optional; don't play haptics while recording voice/video."
+    },
+    "haptic.daily.countdownStart": {
+      "type": "haptic",
+      "value": {
+        "ios": ".sensoryFeedback(.start) (iOS 17)",
+        "android": "none (no documented start constant)"
+      },
+      "source_app": "Apple HIG",
+      "surface": "daily.capture",
+      "element": "Capture countdown starts",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback",
+      "method": "SwiftUI SensoryFeedback.start 'Indicates that an activity started'; HIG watchOS 'Start ... starting a timer'",
+      "level": "PLATFORM",
+      "notes": "Mapping by documented meaning only (haptics cannot be observed in references). HIG: make haptics optional; don't play haptics while recording voice/video."
+    },
+    "haptic.daily.countdownStop": {
+      "type": "haptic",
+      "value": {
+        "ios": ".sensoryFeedback(.stop) (iOS 17)",
+        "android": "HapticFeedbackConstants.CONFIRM when the capture completes"
+      },
+      "source_app": "Apple HIG",
+      "surface": "daily.capture",
+      "element": "Capture countdown stops/completes",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback",
+      "method": "SwiftUI SensoryFeedback.stop 'Indicates that an activity stopped'",
+      "level": "PLATFORM",
+      "notes": "Mapping by documented meaning only (haptics cannot be observed in references). HIG: make haptics optional; don't play haptics while recording voice/video."
+    },
+    "haptic.week.dragStart": {
+      "type": "haptic",
+      "value": {
+        "ios": "system List reordering feedback (no custom generator)",
+        "android": "HapticFeedbackConstants.DRAG_START (API 34)"
+      },
+      "source_app": "Apple HIG",
+      "surface": "week.edit",
+      "element": "Reorder drag begins",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback",
+      "method": "Android DRAG_START 'started a drag-and-drop gesture'",
+      "level": "PLATFORM",
+      "notes": "Mapping by documented meaning only (haptics cannot be observed in references). HIG: make haptics optional; don't play haptics while recording voice/video."
+    },
+    "haptic.week.dragAlign": {
+      "type": "haptic",
+      "value": {
+        "ios": ".sensoryFeedback(.alignment) (iOS 17) or UIImpactFeedbackGenerator(style: .light)",
+        "android": "SEGMENT_TICK (API 34)"
+      },
+      "source_app": "Apple HIG",
+      "surface": "week.edit",
+      "element": "Dragged item snaps into its slot",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback",
+      "method": "SensoryFeedback.alignment 'Indicates the alignment of a dragged item'; HIG impact Light 'collision between small or lightweight UI objects'",
+      "level": "PLATFORM",
+      "notes": "Mapping by documented meaning only (haptics cannot be observed in references). HIG: make haptics optional; don't play haptics while recording voice/video."
+    },
+    "haptic.all.pullThreshold": {
+      "type": "haptic",
+      "value": {
+        "ios": "system refresh control (no custom generator)",
+        "android": "GESTURE_THRESHOLD_ACTIVATE / GESTURE_THRESHOLD_DEACTIVATE (API 34)"
+      },
+      "source_app": "Apple HIG",
+      "surface": "groups.screen",
+      "element": "Pull-to-refresh crosses / un-crosses its threshold",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback",
+      "method": "Android: 'swipe/drag-style gesture, such as pull-to-refresh ... eligible at a certain threshold'",
+      "level": "PLATFORM",
+      "notes": "Mapping by documented meaning only (haptics cannot be observed in references). HIG: make haptics optional; don't play haptics while recording voice/video."
+    },
+    "haptic.auth.keypad": {
+      "type": "haptic",
+      "value": {
+        "ios": "none (use the system keyboard with .oneTimeCode)",
+        "android": "VIRTUAL_KEY on press / VIRTUAL_KEY_RELEASE on release"
+      },
+      "source_app": "Apple HIG",
+      "surface": "auth.code",
+      "element": "Custom code keypad key press (only if not using the system keyboard)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback",
+      "method": "Android keypress example uses VIRTUAL_KEY / VIRTUAL_KEY_RELEASE",
+      "level": "PLATFORM",
+      "notes": "Mapping by documented meaning only (haptics cannot be observed in references). HIG: make haptics optional; don't play haptics while recording voice/video."
+    },
+    "haptic.settings.destructiveConfirmed": {
+      "type": "haptic",
+      "value": {
+        "ios": "UINotificationFeedbackGenerator .warning / .sensoryFeedback(.warning)",
+        "android": "HapticFeedbackConstants.CONFIRM"
+      },
+      "source_app": "Apple HIG",
+      "surface": "settings.account",
+      "element": "Account deletion / block confirmed",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/playing-haptics (change log 2024-05-07) ; https://developer.apple.com/documentation/swiftui/sensoryfeedback ; https://developer.android.com/reference/android/view/HapticFeedbackConstants (last updated 2026-08-03) ; https://developer.android.com/develop/ui/views/haptics/haptic-feedback",
+      "method": "HIG 'Warning. Indicates that a task or action has produced a warning of some kind.'",
+      "level": "PLATFORM",
+      "notes": "Mapping by documented meaning only (haptics cannot be observed in references). HIG: make haptics optional; don't play haptics while recording voice/video."
+    },
+    "layout.collage.share.ios": {
+      "type": "layout",
+      "value": "ShareLink(item:preview:) / UIActivityViewController via the Share button",
+      "source_app": "Apple HIG",
+      "surface": "collage.share",
+      "element": "Share entry point, iOS",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/activity-views ; https://developer.apple.com/documentation/swiftui/sharelink",
+      "method": "HIG: 'Use the Share button to display an activity view'",
+      "level": "PLATFORM"
+    },
+    "layout.collage.share.android": {
+      "type": "layout",
+      "value": "Intent.createChooser(ACTION_SEND with content:// URI + FLAG_GRANT_READ_URI_PERMISSION)",
+      "source_app": "Apple HIG",
+      "surface": "collage.share",
+      "element": "Android Sharesheet",
+      "evidence": "https://developer.android.com/training/sharing/send (last updated 2026-10-13)",
+      "method": "'To display the Android Sharesheet, call Intent.createChooser()'",
+      "level": "PLATFORM"
+    },
+    "layout.collage.share.storyAspect": {
+      "type": "layout",
+      "value": "9:16 (9:18 also accepted)",
+      "source_app": "Meta developer docs",
+      "surface": "collage.share",
+      "element": "Instagram Stories background image aspect ratio",
+      "evidence": "https://developers.facebook.com/docs/instagram-platform/sharing-to-stories/ (updated 2026-06-30)",
+      "method": "'Recommended image ratios 9:16 or 9:18'",
+      "level": "VERIFIED",
+      "notes": "source_app is outside the CONVENTIONS enum (Apple HIG | Material 3 | apps); flagged for the merge."
+    },
+    "dimension.collage.share.storyMin": {
+      "type": "dimension",
+      "value": {
+        "width": 720,
+        "height": 1280
+      },
+      "unit": "px",
+      "source_app": "Meta developer docs",
+      "surface": "collage.share",
+      "element": "Instagram Stories background minimum dimensions",
+      "evidence": "https://developers.facebook.com/docs/instagram-platform/sharing-to-stories/",
+      "method": "'Minimum dimensions 720x1280'",
+      "level": "VERIFIED",
+      "notes": "source_app is outside the CONVENTIONS enum; flagged for the merge."
+    },
+    "dimension.collage.share.storyCanvas": {
+      "type": "dimension",
+      "value": {
+        "width": 1080,
+        "height": 1920
+      },
+      "unit": "px",
+      "source_app": "Meta developer docs",
+      "surface": "collage.share",
+      "element": "Proposed Stories export canvas",
+      "evidence": "https://developers.facebook.com/docs/instagram-platform/sharing-to-stories/",
+      "method": "Computed: 9:16 at width 1080 (the doc's '1080p' video figure); satisfies the 720x1280 minimum",
+      "level": "VERIFIED",
+      "notes": "The Meta page does NOT state 1080x1920 for images; it states min 720x1280 and ratio 9:16. 1080x1920 is the 9:16 frame at 1080 width (computed, not quoted). source_app is outside the CONVENTIONS enum."
+    },
+    "dimension.collage.share.stickerRecommended": {
+      "type": "dimension",
+      "value": {
+        "width": 640,
+        "height": 480
+      },
+      "unit": "px",
+      "source_app": "Meta developer docs",
+      "surface": "collage.share",
+      "element": "Instagram Stories sticker asset recommended size",
+      "evidence": "https://developers.facebook.com/docs/instagram-platform/sharing-to-stories/",
+      "method": "'Recommended dimensions: 640x480'",
+      "level": "VERIFIED",
+      "notes": "source_app is outside the CONVENTIONS enum."
+    },
+    "color.collage.share.storyDefaultBackground": {
+      "type": "color",
+      "value": "#222222",
+      "source_app": "Meta developer docs",
+      "surface": "collage.share",
+      "element": "Background color Instagram uses when no top/bottom colors are passed with a sticker",
+      "evidence": "https://developers.facebook.com/docs/instagram-platform/sharing-to-stories/",
+      "method": "'If you don't specify the background layer colors, the background layer color is #222222'",
+      "level": "VERIFIED",
+      "notes": "source_app is outside the CONVENTIONS enum."
+    },
+    "dimension.invite.appclip.cardImage": {
+      "type": "dimension",
+      "value": {
+        "width": 1800,
+        "height": 1200
+      },
+      "unit": "px",
+      "source_app": "Apple HIG",
+      "surface": "invite.appclip",
+      "element": "App Clip card header image (PNG/JPEG, no transparency)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/app-clips#Creating-content-for-an-App-Clip-card (change log 2025-06-09)",
+      "method": "'Use a 1800x1200 px PNG or JPEG image without transparency'",
+      "level": "VERIFIED"
+    },
+    "layout.invite.appclip.cardTitleMax": {
+      "type": "layout",
+      "value": 30,
+      "source_app": "Apple HIG",
+      "surface": "invite.appclip",
+      "element": "App Clip card title max characters",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/app-clips#Creating-content-for-an-App-Clip-card",
+      "method": "'a title that has no more than 30 characters'",
+      "level": "VERIFIED"
+    },
+    "layout.invite.appclip.cardSubtitleMax": {
+      "type": "layout",
+      "value": 56,
+      "source_app": "Apple HIG",
+      "surface": "invite.appclip",
+      "element": "App Clip card subtitle max characters",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/app-clips#Creating-content-for-an-App-Clip-card",
+      "method": "'a subtitle that has no more than 56 characters'",
+      "level": "VERIFIED"
+    }
+  }
+}

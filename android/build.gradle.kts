@@ -31,7 +31,10 @@ extra["app.configFile"] = appConfigFile
 extra["app.applicationId"] = configValue("android", "applicationId") as String
 extra["app.minSdk"] = (configValue("android", "minSdk") as Number).toInt()
 extra["app.targetSdk"] = (configValue("android", "targetSdk") as Number).toInt()
-extra["app.compileSdk"] = (configValue("android", "targetSdk") as Number).toInt()
+// compileSdk only selects which APIs are visible to the compiler; runtime behaviour follows
+// targetSdk above. Compose 1.12 (BOM 2026.09.00) and navigation-compose 2.10 declare
+// minCompileSdk 37, so the compile level is the higher of the two.
+extra["app.compileSdk"] = maxOf((configValue("android", "targetSdk") as Number).toInt(), 37)
 extra["app.domain"] = configValue("domain", "value") as String?
 extra["app.displayName"] = configValue("displayName", "value") as String?
 extra["app.revenuecatAndroidApiKey"] = configValue("revenuecat", "androidApiKey") as String?
@@ -69,6 +72,8 @@ fun Project.configureAndroidTests() {
     tasks.withType<Test>().configureEach {
         jvmArgumentProviders.add(RobolectricOfflineArgs(robolectricSdk))
         maxHeapSize = "3g"
+        // Robolectric's API 36 sandbox reflects into jdk.internal.access on JDK 21.
+        jvmArgs("--add-opens=java.base/jdk.internal.access=ALL-UNNAMED")
         testLogging { events("failed"); exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL }
     }
 }

@@ -1,0 +1,12 @@
+#include "Base.xcconfig"
+#include "InfoPlist.generated.xcconfig"
+
+PRODUCT_BUNDLE_IDENTIFIER = $(APP_BUNDLE_ID).notificationservice
+INFOPLIST_FILE = NotificationService/Info.plist
+CODE_SIGN_ENTITLEMENTS = NotificationService/NotificationService.entitlements
+APPLICATION_EXTENSION_API_ONLY = YES
+SKIP_INSTALL = YES
+// UNNotificationServiceExtension's content-handler API carries SDK-dependent Sendable
+// annotations; Swift 5 mode with complete checking reports concurrency issues as warnings.
+SWIFT_VERSION = 5.0
+SWIFT_STRICT_CONCURRENCY = complete

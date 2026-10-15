@@ -1,0 +1,182 @@
+{
+  "strings": {
+    "system.permissions.camera.purpose": {
+      "text": "The app uses your camera to take the photos you send to your groups.",
+      "infoPlistKey": "NSCameraUsageDescription",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "system.permissions",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/privacy#Requesting-permission ; https://developer.apple.com/help/app-review/guideline-reference/5-1-1-purpose-strings/ ; https://developer.apple.com/app-store/review/guidelines/#5.1.1",
+      "pattern": "platform.purposeString — one brief, complete sentence; active voice; sentence case; ends with a period; names the specific feature (HIG examples: 'The app records during the night to detect snoring sounds.'; App Review examples: 'The app uses location data to determine the recommended route to your destination and provide turn-by-turn directions.')",
+      "level": "VERIFIED",
+      "notes": "Subject 'The app' follows Apple's own examples (the alert already shows the app name above the string). Localize per App Review FAQ."
+    },
+    "system.permissions.microphone.purpose": {
+      "text": "The app uses your microphone to record voice notes and the sound in videos you send to your groups.",
+      "infoPlistKey": "NSMicrophoneUsageDescription",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "system.permissions",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/privacy#Requesting-permission ; https://developer.apple.com/help/app-review/guideline-reference/5-1-1-purpose-strings/ ; https://developer.apple.com/app-store/review/guidelines/#5.1.1",
+      "pattern": "platform.purposeString — one brief, complete sentence; active voice; sentence case; ends with a period; names the specific feature (HIG examples: 'The app records during the night to detect snoring sounds.'; App Review examples: 'The app uses location data to determine the recommended route to your destination and provide turn-by-turn directions.')",
+      "level": "VERIFIED",
+      "notes": "Request only when the person starts a voice note or video: guideline 5.1.1(iv) forbids requiring microphone access before photo posting."
+    },
+    "system.permissions.photosAdd.purpose": {
+      "text": "The app saves photos from your groups to your library when you tap Save.",
+      "infoPlistKey": "NSPhotoLibraryAddUsageDescription",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "system.permissions",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/privacy#Requesting-permission ; https://developer.apple.com/help/app-review/guideline-reference/5-1-1-purpose-strings/ ; https://developer.apple.com/app-store/review/guidelines/#5.1.1",
+      "pattern": "platform.purposeString — one brief, complete sentence; active voice; sentence case; ends with a period; names the specific feature (HIG examples: 'The app records during the night to detect snoring sounds.'; App Review examples: 'The app uses location data to determine the recommended route to your destination and provide turn-by-turn directions.')",
+      "level": "VERIFIED",
+      "notes": "Add-only access. 'Save' must match the photo.viewer save button label (owner/copy research)."
+    },
+    "system.permissions.photosRead.purpose": {
+      "text": "The app shows the photos you select so you can send them to your groups.",
+      "infoPlistKey": "NSPhotoLibraryUsageDescription",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "system.permissions",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/privacy#Requesting-permission ; https://developer.apple.com/help/app-review/guideline-reference/5-1-1-purpose-strings/ ; https://developer.apple.com/app-store/review/guidelines/#5.1.1",
+      "pattern": "platform.purposeString — one brief, complete sentence; active voice; sentence case; ends with a period; names the specific feature (HIG examples: 'The app records during the night to detect snoring sounds.'; App Review examples: 'The app uses location data to determine the recommended route to your destination and provide turn-by-turn directions.')",
+      "level": "VERIFIED",
+      "notes": "Only needed if the app reads the library with PhotoKit. Picking with PHPickerViewController/PhotosPicker needs no permission and no string (recommended)."
+    },
+    "system.permissions.contacts.purpose": {
+      "text": "The app uses the contacts you choose to invite people to your groups.",
+      "infoPlistKey": "NSContactsUsageDescription",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "system.permissions",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/privacy#Requesting-permission ; https://developer.apple.com/help/app-review/guideline-reference/5-1-1-purpose-strings/ ; https://developer.apple.com/app-store/review/guidelines/#5.1.1",
+      "pattern": "platform.purposeString — one brief, complete sentence; active voice; sentence case; ends with a period; names the specific feature (HIG examples: 'The app records during the night to detect snoring sounds.'; App Review examples: 'The app uses location data to determine the recommended route to your destination and provide turn-by-turn directions.')",
+      "level": "VERIFIED",
+      "notes": "If contacts are uploaded/matched to find existing members, the string must say so explicitly (5.1.1(ii) 'clearly and completely describe'). Guideline 5.1.2(v): no 'Select All', show the invite message before sending."
+    },
+    "system.permissions.preAlert.continue": {
+      "text": "Continue",
+      "origin": "verbatim",
+      "source_app": "Apple HIG",
+      "surface": "system.permissions",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/privacy#Pre-alert-screens-windows-or-views",
+      "level": "VERIFIED",
+      "notes": "HIG: the single button on a pre-alert screen should use 'a term like Continue or Next'; never 'Allow'. iOS pre-alert screens get no Cancel/Skip."
+    },
+    "common.alert.cancel": {
+      "text": "Cancel",
+      "origin": "verbatim",
+      "source_app": "Apple HIG",
+      "surface": "settings.account",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/alerts#Buttons",
+      "level": "VERIFIED",
+      "notes": "HIG: 'Always use the title Cancel for a button that cancels an alert's action.' Used by every confirmation alert/action sheet (settings.account, safety.block, safety.report)."
+    },
+    "common.alert.ok": {
+      "text": "OK",
+      "origin": "verbatim",
+      "source_app": "Apple HIG",
+      "surface": "settings.root",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/alerts#Buttons",
+      "level": "VERIFIED",
+      "notes": "Informational alerts only; HIG: avoid OK as the default title unless the alert is purely informational. M3: avoid vague 'Done, OK, or Close' for confirming actions."
+    },
+    "settings.account.delete.confirmButton": {
+      "text": "Delete",
+      "origin": "verbatim",
+      "source_app": "Apple HIG",
+      "surface": "settings.account",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/alerts#Buttons",
+      "level": "VERIFIED",
+      "notes": "HIG example of a specific button title ('Erase,' 'Convert,' 'Clear,' or 'Delete'). Destructive role. Same verb on Android as the confirming dialog action."
+    },
+    "settings.account.delete.title": {
+      "text": "Delete your account?",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "settings.account",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/alerts#Content ; https://m3.material.io/components/dialogs/guidelines",
+      "pattern": "platform.alertTitle — HIG: a complete-sentence title uses sentence case and ending punctuation; one or two lines max; M3: 'brief, clear statement or question'; avoid 'Are you sure?', 'Warning!', apologies",
+      "level": "VERIFIED",
+      "notes": "Wording is new; Yope-voice research may adapt it within this pattern."
+    },
+    "settings.account.delete.message": {
+      "text": "This deletes your account and everything you shared with your groups, including photos, voice notes and messages.",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "settings.account",
+      "evidence": "https://developer.apple.com/support/offering-account-deletion-in-your-app/ ; https://developer.apple.com/design/human-interface-guidelines/managing-accounts#Deleting-accounts",
+      "pattern": "platform.alertMessage — HIG: informative text only if it adds value; complete sentences, sentence case, punctuation",
+      "level": "VERIFIED",
+      "notes": "Content is required: Apple's 5.1.1(v) FAQ says user-generated content shared with others must be deleted with the account. Conflicts with tenet 'Nothing gets lost' — owner decision (see PLATFORM_CONSTRAINTS.md §9)."
+    },
+    "settings.account.delete.subscriptionNote": {
+      "text": "Your subscription keeps renewing until you cancel it in your subscription settings.",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "settings.account",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/managing-accounts#Deleting-accounts ; https://developer.apple.com/support/offering-account-deletion-in-your-app/",
+      "pattern": "platform.alertMessage (see above)",
+      "level": "VERIFIED",
+      "notes": "Required disclosure: 'Billing for an auto-renewable subscription continues through Apple until people cancel'. No store trademark per CONVENTIONS §4. Pair with showManageSubscriptions / Play Subscription Center link."
+    },
+    "safety.block.confirmButton": {
+      "text": "Block",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "safety.block",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/alerts#Buttons ; https://developer.apple.com/design/human-interface-guidelines/menus#Labels",
+      "pattern": "platform.alertButton — HIG: one- or two-word verb describing the result, title-style capitalization, no punctuation (examples 'View All', 'Reply', 'Ignore', 'Erase', 'Delete')",
+      "level": "VERIFIED",
+      "notes": "Destructive role on iOS; confirming action on Android. Yope-voice research may not change the verb without breaking the pattern."
+    },
+    "safety.report.confirmButton": {
+      "text": "Report",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "safety.report",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/alerts#Buttons ; https://developer.apple.com/design/human-interface-guidelines/menus#Labels",
+      "pattern": "platform.alertButton — HIG: one- or two-word verb describing the result, title-style capitalization, no punctuation (examples 'View All', 'Reply', 'Ignore', 'Erase', 'Delete')",
+      "level": "VERIFIED"
+    },
+    "paywall.restore": {
+      "text": "Restore Purchases",
+      "origin": "adapted",
+      "source_app": "Apple HIG",
+      "surface": "paywall",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/apple-in-app-purchase#Auto-renewable-subscriptions (change log 2026-09-17) ; https://developer.apple.com/app-store/subscriptions/",
+      "pattern": "platform.alertButton (title-style capitalization of HIG phrase 'restore purchases')",
+      "level": "VERIFIED",
+      "notes": "Required element: 'A way for existing subscribers to sign in or restore purchases'. Adapted only by title-casing the HIG phrase."
+    },
+    "paywall.privacyPolicy": {
+      "text": "Privacy Policy",
+      "origin": "verbatim",
+      "source_app": "Apple HIG",
+      "surface": "paywall",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/apple-in-app-purchase#Auto-renewable-subscriptions ; https://developer.apple.com/app-store/review/guidelines/#5.1.1",
+      "level": "VERIFIED",
+      "notes": "Link required on the sign-up screen and in settings (5.1.1(i))."
+    },
+    "paywall.terms": {
+      "text": "Terms of Use",
+      "origin": "verbatim",
+      "source_app": "Apple HIG",
+      "surface": "paywall",
+      "evidence": "https://developer.apple.com/app-store/subscriptions/ ('links to your Terms of Use and Privacy Policy')",
+      "level": "VERIFIED",
+      "notes": "HIG uses 'Terms of Service' for the same link; pick one name to match the actual legal document title (owner)."
+    },
+    "widget.home.small.description": {
+      "text": "See the newest photo from your group.",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "widget.home.small",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/widgets#Previews-and-placeholders ; https://developer.android.com/docs/quality-guidelines/widget-quality",
+      "pattern": "platform.widgetDescription — HIG: begin with an action verb; no 'This widget shows…'/'Add this widget'; sentence-style capitalization; one description for all sizes (HIG examples: 'See the current weather conditions and forecast for a location', 'Keep track of your upcoming events and meetings.')",
+      "level": "VERIFIED",
+      "notes": "Shared by all home-screen sizes (HIG: single description) and reused as android:description (Android Tier 1: unique succinct description). Locket copy research may supply a reference-voice variant within the pattern."
+    }
+  }
+}

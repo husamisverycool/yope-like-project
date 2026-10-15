@@ -1,0 +1,22 @@
+{
+  "name": "backend",
+  "private": true,
+  "type": "module",
+  "description": "Supabase project (migrations, RLS, storage, realtime) and its integration tests.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "db:start": "npx -y supabase@2.121.0 start -x studio,imgproxy,edge-runtime,logflare,vector,mailpit,postgres-meta,supavisor",
+    "db:stop": "npx -y supabase@2.121.0 stop",
+    "db:reset": "npx -y supabase@2.121.0 db reset",
+    "db:lint": "npx -y supabase@2.121.0 db lint --level warning"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "2.117.2",
+    "pg": "8.23.0",
+    "vite": "8.3.1",
+    "vitest": "5.0.2"
+  }
+}

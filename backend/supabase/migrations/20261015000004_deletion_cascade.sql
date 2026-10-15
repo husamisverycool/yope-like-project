@@ -44,6 +44,21 @@ begin
 end;
 $$;
 
+-- Queued (not yet started) jobs about a deleted row have nothing left to do.
+create function private.cancel_queued_jobs(p_kinds text[], p_key text, p_id uuid)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  update public.jobs j
+     set status = 'cancelled', finished_at = now(), last_error = 'target deleted'
+   where j.status = 'queued' and j.kind = any (p_kinds) and j.payload ->> p_key = p_id::text
+$$;
+
+create index jobs_queued_payload_idx on public.jobs (kind, (payload ->> 'post_id'), (payload ->> 'media_id'), (payload ->> 'message_id'))
+  where status = 'queued';
+
 create function private.voice_path_unreferenced(p_path text)
 returns boolean
 language sql
@@ -68,6 +83,7 @@ declare
   v_alive boolean := private.group_alive(old.group_id);
   r record;
 begin
+  perform private.cancel_queued_jobs(array['push.new_post', 'push.reaction'], 'post_id', old.id);
   if old.voice_path is not null and private.voice_path_unreferenced(old.voice_path) then
     perform private.enqueue_storage_delete(array[old.voice_path]);
   end if;
@@ -144,6 +160,7 @@ security definer
 set search_path = ''
 as $$
 begin
+  perform private.cancel_queued_jobs(array['media.renditions'], 'media_id', old.id);
   perform private.enqueue_storage_delete(
     array[old.original_path, old.front_original_path, old.motion_path,
           old.display_path, old.thumb_path, old.widget_path,
@@ -165,6 +182,7 @@ security definer
 set search_path = ''
 as $$
 begin
+  perform private.cancel_queued_jobs(array['push.new_message'], 'message_id', old.id);
   if old.voice_path is not null and private.voice_path_unreferenced(old.voice_path) then
     perform private.enqueue_storage_delete(array[old.voice_path]);
   end if;
@@ -188,6 +206,12 @@ security definer
 set search_path = ''
 as $$
 begin
+  update public.jobs j
+     set status = 'cancelled', finished_at = now(), last_error = 'target deleted'
+   where j.status = 'queued' and j.kind = 'push.reaction'
+     and j.payload ->> 'post_id' = old.post_id::text
+     and j.payload ->> 'user_id' = old.user_id::text
+     and j.payload ->> 'emoji' = old.emoji;
   if private.group_alive(old.group_id) and exists (select 1 from public.posts p where p.id = old.post_id) then
     perform private.broadcast_group(old.group_id, 'reactions_changed', jsonb_build_object('post_id', old.post_id));
   end if;
@@ -281,7 +305,11 @@ begin
      and not exists (select 1 from public.groups g where g.cover_path = old.cover_path) then
     v_cover := array[old.cover_path];
   end if;
-  -- (a group is deleted only when its last member leaves: nobody to notify)
+  -- (a group is deleted only when its last member leaves: nobody to notify, and
+  -- nothing queued for it has anything left to do)
+  update public.jobs j
+     set status = 'cancelled', finished_at = now(), last_error = 'group deleted'
+   where j.status = 'queued' and j.kind <> 'storage.delete' and j.payload ->> 'group_id' = old.id::text;
   perform private.enqueue_storage_delete(v_cover, array['g/' || old.id::text || '/']);
   return null;
 end;

@@ -1,0 +1,8 @@
+#include "Base.xcconfig"
+#include "InfoPlist.generated.xcconfig"
+
+PRODUCT_BUNDLE_IDENTIFIER = $(APP_BUNDLE_ID).widgets
+INFOPLIST_FILE = Widgets/Info.plist
+CODE_SIGN_ENTITLEMENTS = Widgets/Widgets.entitlements
+APPLICATION_EXTENSION_API_ONLY = YES
+SKIP_INSTALL = YES

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <!-- One receiver per widget layout (WidgetLayouts.all). Labels/descriptions/previews come
+             from copy and design in the screens pass; until then the picker shows the app label. -->
+        <receiver
+            android:name="app.widget.GroupPhotoWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/group_photo_widget_info" />
+        </receiver>
+
+        <activity
+            android:name="app.widget.WidgetConfigureActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:taskAffinity="">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
