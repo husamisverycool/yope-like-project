@@ -117,10 +117,10 @@ fun VoiceBubble(
         BoxWithConstraints(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
             val count = barCount(maxWidth)
             val data = LocalSocialData.current
-            val levels by produceState<List<Float>?>(null, path, count, voice) {
-                if (voice != null && count > 0) {
+            val levels by produceState(app.feature.social.data.AudioEnvelope.peek(path, count), path, count, voice) {
+                if (voice != null && count > 0 && value == null) {
                     val url = runCatching { data.signedUrls(listOf(path))[path] }.getOrNull()
-                    value = url?.let { voice.envelope(it, count) }
+                    value = url?.let { voice.envelope(path, it, count) }
                 }
             }
             WaveformBars(levels, count)

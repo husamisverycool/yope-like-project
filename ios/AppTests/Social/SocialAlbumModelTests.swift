@@ -108,6 +108,6 @@ final class SocialAlbumModelTests: XCTestCase {
         renaming.renameText = "x"
         await renaming.rename()
         XCTAssertEqual(renaming.signals.notice?.notice, .changesFailed)
-        XCTAssertTrue(renaming.isRenaming)
+        XCTAssertEqual(renaming.album?.name, "weekend", "the optimistic name is put back")
     }
 }

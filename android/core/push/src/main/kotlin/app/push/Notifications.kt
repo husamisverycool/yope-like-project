@@ -143,6 +143,7 @@ object DailyInvitationNotifier {
         // closesAt on this device's clock (corrected only for a clock that is clearly wrong).
         val skew = message.sentAt?.let { Duration.between(deviceNow, it) } ?: Duration.ZERO
         val deviceClosesAt = if (skew.abs() > TRUSTED_SKEW) message.closesAt.minus(skew) else message.closesAt
+        InvitationClock.record(message.invitationId, if (skew.abs() > TRUSTED_SKEW) skew else Duration.ZERO)
         val state = CountdownState.at(deviceClosesAt, deviceNow)
         if (state !is CountdownState.Open) {
             cancel(context, message.groupId)
@@ -176,6 +177,22 @@ object DailyInvitationNotifier {
     fun cancel(context: Context, groupId: String) {
         NotificationManagerCompat.from(context).cancel(tag(groupId), ID)
     }
+}
+
+/**
+ * The server-clock offset seen when an invitation's push arrived (its `sent_at` vs this device),
+ * so `daily.capture` counts down to the same moment as the notification's chronometer. Process
+ * memory only; without an entry the device clock is used.
+ */
+object InvitationClock {
+    private val offsets = java.util.concurrent.ConcurrentHashMap<String, Duration>()
+
+    fun record(invitationId: String, offset: Duration) {
+        offsets[invitationId] = offset
+    }
+
+    /** Server time − device time for [invitationId], or null when unknown. */
+    fun offset(invitationId: String): Duration? = offsets[invitationId]
 }
 
 /** Android 16+ promoted ongoing notifications (Live Updates), which the person can turn off per app. */

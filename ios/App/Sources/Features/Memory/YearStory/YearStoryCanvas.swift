@@ -199,28 +199,39 @@ enum YearStoryShareRenderer {
         let file: URL
     }
 
-    /// - Parameter width: the canvas width in points the card is laid out at (the player's canvas).
-    static func render(_ card: YearStoryCard, width: CGFloat, images: any MemoryImageLoading) async -> Output? {
+    /// - Parameters:
+    ///   - width: the canvas width in points the card is laid out at (the player's canvas).
+    ///   - pixelSize: the photo box's pixel size (`YearStoryModel.imagePixelSize`).
+    static func render(_ card: YearStoryCard, width: CGFloat, pixelSize: CGFloat?, images: any MemoryImageLoading) async -> Output? {
         guard width > 0 else { return nil }
-        if let url = card.imageURL { _ = await images.image(for: url) }
+        if let url = card.imageURL { _ = await images.image(for: url, maxPixelSize: pixelSize) }
         let size = CGSize(width: width, height: width / YearStoryGeometry.aspect)
         let content = YearStoryCardContent(card: card, size: size, revealed: true)
             .frame(width: size.width, height: size.height)
             .background(Tokens.Colors.globalBackgroundDeep)
             .environment(\.memoryImageLoader, images)
             .environment(\.dynamicTypeSize, .large)
+        // `ImageRenderer` draws on the main actor (one card, a few milliseconds); PNG encoding and the
+        // file write run off it.
         let renderer = ImageRenderer(content: content)
         renderer.scale = Tokens.Layouts.YearStoryShareCard.width / width
         renderer.isOpaque = true
-        guard let image = renderer.uiImage, let png = image.pngData() else { return nil }
-        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("YearStoryShare", isDirectory: true)
-        do {
-            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            let file = folder.appendingPathComponent(card.id + ".png") // provenance-ok: file extension of the PNG
-            try png.write(to: file, options: .atomic)
-            return Output(image: image, file: file)
-        } catch {
-            return nil
-        }
+        guard let cgImage = renderer.cgImage else { return nil }
+        let frame = DecodedImage(image: cgImage)
+        let name = card.id + ".png" // provenance-ok: file extension of the PNG
+        let file = await Task.detached(priority: .utility) { () -> URL? in
+            let folder = FileManager.default.temporaryDirectory.appendingPathComponent("YearStoryShare", isDirectory: true)
+            guard let png = UIImage(cgImage: frame.image).pngData() else { return nil }
+            do {
+                try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                let file = folder.appendingPathComponent(name)
+                try png.write(to: file, options: .atomic)
+                return file
+            } catch {
+                return nil
+            }
+        }.value
+        guard let file else { return nil }
+        return Output(image: UIImage(cgImage: cgImage), file: file)
     }
 }

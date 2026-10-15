@@ -19,6 +19,9 @@ final class AlbumsListModel {
     private(set) var profiles: [UserID: Profile] = [:]
     /// The latest ready recap (empty-state "view recap").
     private(set) var latestRecapID: RecapID?
+    private(set) var hasCheckedCache = false
+
+    var showsLoading: Bool { phase == .loading && hasCheckedCache }
 
     init(groupID: GroupID, data: any SocialDataSource) {
         self.groupID = groupID
@@ -37,7 +40,9 @@ final class AlbumsListModel {
         if albums.isEmpty, let cached = await data.cachedAlbums(groupID: groupID), !cached.isEmpty {
             albums = cached
             phase = .ready
+            await loadDetails()
         }
+        hasCheckedCache = true
         do {
             albums = try await data.albums(groupID: groupID)
             isOffline = false
@@ -111,8 +116,21 @@ final class AlbumModel {
 
     var postIDs: [PostID] { posts.map(\.id) }
 
+    private(set) var hasCheckedCache = false
+
+    var showsLoading: Bool { phase == .loading && hasCheckedCache }
+
     func load() async {
         let me = await data.currentUserID()
+        if album == nil, let cached = await data.cachedAlbums(groupID: groupID),
+           let found = cached.first(where: { $0.album.id == albumID }) {
+            album = found.album
+            if let shown = try? await data.posts(ids: found.postIDs), !shown.isEmpty {
+                posts = shown
+                phase = .ready
+            }
+        }
+        hasCheckedCache = true
         do {
             let albums = try await data.albums(groupID: groupID)
             isOffline = false
@@ -164,16 +182,19 @@ final class AlbumModel {
             renameMissing = true
             return
         }
-        guard !isWorking else { return }
+        guard !isWorking, let previous = album else { return }
         isWorking = true
         defer { isWorking = false }
+        // Shown at once; put back if the call fails.
+        album?.name = name
+        isRenaming = false
+        renameMissing = false
         do {
             album = try await data.renameAlbum(id: albumID, name: name)
-            isRenaming = false
-            renameMissing = false
             signals.emit(.success)
             signals.post(.albumRenamed)
         } catch {
+            album = previous
             if SocialFailure(error) == .notFound { phase = .notFound }
             signals.emit(.failed)
             signals.post(.changesFailed)

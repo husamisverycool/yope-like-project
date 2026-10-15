@@ -44,8 +44,15 @@ final class ChatThreadModel {
     private(set) var sentReaction: SentReaction?
     /// Composer text.
     var draft = ""
+    /// Local copies of messages being sent (optimistic), by their temporary id.
+    private(set) var pending: Set<MessageID> = []
+    /// Recorded voice files of pending / just-sent voice messages, playable before the upload finishes.
+    private(set) var localVoiceFiles: [MessageID: URL] = [:]
+    /// The offline copy was looked at; the loading HUD shows only when there was none (no flash before cached content).
+    private(set) var hasCheckedCache = false
 
     private var reactionCounter = 0
+    private var localCounter = 0
 
     init(groupID: GroupID, focusMessageID: MessageID? = nil, data: any SocialDataSource) {
         self.groupID = groupID
@@ -56,6 +63,11 @@ final class ChatThreadModel {
     // MARK: Derived
 
     var hasOlder: Bool { olderCursor != nil }
+
+    /// The first-load HUD (`chat.thread` loading state).
+    var showsLoading: Bool { phase == .loading && hasCheckedCache }
+
+    func isPending(_ message: Message) -> Bool { pending.contains(message.id) }
 
     /// Photo posts of the thread in chronological order (`photo.viewer` context).
     var photoPostIDs: [PostID] {
@@ -95,6 +107,7 @@ final class ChatThreadModel {
             }
             phase = .ready
         }
+        hasCheckedCache = true
         await loadGroup()
         await refresh()
     }
@@ -105,12 +118,14 @@ final class ChatThreadModel {
             let page = try await data.messages(groupID: groupID, before: nil)
             isOffline = false
             let newest = Self.ascending(page.items)
+            let local = messages.filter { pending.contains($0.id) }
             if let oldestNew = newest.first, hasLoadedBeyondFirstPage {
-                messages = messages.filter { $0.createdAt < oldestNew.createdAt } + newest
+                messages = messages.filter { $0.createdAt < oldestNew.createdAt && !pending.contains($0.id) } + newest
             } else {
                 messages = newest
                 olderCursor = page.nextCursor
             }
+            for message in local where !messages.contains(where: { $0.id == message.id }) { insert(message) }
             await loadDetails(for: newest)
             phase = messages.isEmpty ? .empty : .ready
             await loadLatestRecap()
@@ -240,6 +255,7 @@ final class ChatThreadModel {
         switch event {
         case let .messageInserted(message):
             guard message.groupID == groupID, !messages.contains(where: { $0.id == message.id }) else { return }
+            removePendingCopy(of: message)
             insert(message)
             await loadDetails(for: [message])
             phase = .ready
@@ -290,20 +306,22 @@ final class ChatThreadModel {
 
     // MARK: Composer
 
-    /// Sends the composer text (`send_message`, kind text). The keyboard's return key sends: the send
-    /// control is BLOCKED (`chat.composer.layout.typingState`).
+    /// Sends the composer text (`send_message`, kind text). The message shows at once (optimistic) and is
+    /// replaced by the server's row; on failure it is taken back, the text returns to the field and
+    /// `chat.thread.sendFailed` is announced. The keyboard's return key sends: the send control is BLOCKED
+    /// (`chat.composer.layout.typingState`).
     func sendDraft() async {
         let body = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !body.isEmpty, !isSending else { return }
-        isSending = true
+        guard !body.isEmpty, let me else { return }
         draft = ""
-        defer { isSending = false }
+        let local = makeLocal(Message(id: nextLocalID(), groupID: groupID, authorID: me, kind: .text, body: body, createdAt: Date()))
+        isSending = true
         do {
             let message = try await data.sendText(groupID: groupID, body: body, replyToPostID: nil)
-            if !messages.contains(where: { $0.id == message.id }) { insert(message) }
-            phase = .ready
+            confirm(local, with: message)
             signals.emit(.sent)
         } catch {
+            rollBack(local)
             if SocialFailure(error) == .offline { isOffline = true }
             if draft.isEmpty { draft = body }
             signals.emit(.failed)
@@ -311,15 +329,21 @@ final class ChatThreadModel {
         }
     }
 
-    /// Uploads and sends a recorded voice message (`chat.voice`).
+    /// Uploads and sends a recorded voice message (`chat.voice`); shown at once, playable from the local file.
     func sendVoice(fileURL: URL, durationMs: Int) async {
-        guard durationMs > 0 else { return }
+        guard durationMs > 0, let me else { return }
+        let local = makeLocal(Message(
+            id: nextLocalID(), groupID: groupID, authorID: me, kind: .voice, voiceDurationMs: durationMs, createdAt: Date()
+        ))
+        localVoiceFiles[local.id] = fileURL
         do {
             let message = try await data.sendVoice(groupID: groupID, fileURL: fileURL, durationMs: durationMs)
-            if !messages.contains(where: { $0.id == message.id }) { insert(message) }
-            phase = .ready
+            confirm(local, with: message)
+            localVoiceFiles[message.id] = fileURL
             signals.emit(.sent)
         } catch {
+            rollBack(local)
+            localVoiceFiles[local.id] = nil
             if SocialFailure(error) == .offline { isOffline = true }
             signals.emit(.failed)
             signals.post(.sendFailed)
@@ -332,22 +356,74 @@ final class ChatThreadModel {
         signals.post(.recordFailed)
     }
 
+    private func nextLocalID() -> MessageID {
+        localCounter += 1
+        return MessageID("local-" + String(localCounter))
+    }
+
+    /// Inserts the optimistic copy after everything already shown.
+    private func makeLocal(_ draft: Message) -> Message {
+        var local = draft
+        if let last = messages.last, last.createdAt >= local.createdAt {
+            local.createdAt = last.createdAt.addingTimeInterval(1)
+        }
+        pending.insert(local.id)
+        messages.append(local)
+        phase = .ready
+        return local
+    }
+
+    private func confirm(_ local: Message, with message: Message) {
+        pending.remove(local.id)
+        isSending = !pending.isEmpty
+        guard let index = messages.firstIndex(where: { $0.id == local.id }) else {
+            if !messages.contains(where: { $0.id == message.id }) { insert(message) }
+            return
+        }
+        if messages.contains(where: { $0.id == message.id }) {
+            messages.remove(at: index)
+        } else {
+            messages[index] = message
+        }
+    }
+
+    private func rollBack(_ local: Message) {
+        pending.remove(local.id)
+        messages.removeAll { $0.id == local.id }
+        if messages.isEmpty { phase = .empty }
+        isSending = !pending.isEmpty
+    }
+
+    /// A realtime insert of my own message replaces its optimistic copy.
+    private func removePendingCopy(of message: Message) {
+        guard message.authorID == me, !pending.isEmpty else { return }
+        guard let local = messages.first(where: { candidate in
+            pending.contains(candidate.id) && candidate.kind == message.kind
+                && candidate.body == message.body && candidate.voiceDurationMs == message.voiceDurationMs
+        }) else { return }
+        pending.remove(local.id)
+        if let file = localVoiceFiles[local.id] { localVoiceFiles[message.id] = file }
+        messages.removeAll { $0.id == local.id }
+    }
+
     // MARK: Messages
 
-    /// Deletes one of my text / voice messages after the native confirmation.
+    /// Deletes one of my text / voice messages after the native confirmation: gone at once, put back if the
+    /// call fails.
     func delete(_ message: Message) async {
-        guard isMine(message), message.kind != .photo else { return }
+        guard isMine(message), message.kind != .photo, !pending.contains(message.id),
+              let index = messages.firstIndex(where: { $0.id == message.id }) else { return }
         signals.emit(.warning)
+        messages.remove(at: index)
+        if messages.isEmpty { phase = .empty }
         do {
             try await data.deleteMessage(id: message.id, groupID: groupID)
-            messages.removeAll { $0.id == message.id }
-            if messages.isEmpty { phase = .empty }
         } catch {
-            if SocialFailure(error) == .notFound {
-                messages.removeAll { $0.id == message.id }
-            } else {
-                signals.emit(.failed)
-            }
+            if SocialFailure(error) == .notFound { return }
+            if SocialFailure(error) == .offline { isOffline = true }
+            insert(message)
+            phase = .ready
+            signals.emit(.failed)
         }
     }
 

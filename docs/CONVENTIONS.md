@@ -1,5 +1,8 @@
 # Conventions
 
+> **Owner decision 2026-10-15** (`docs/OWNER_DECISIONS.md`): any successful app may be a design reference,
+> not only the directive's list; every value must still trace to evidence.
+
 Everyone (people and agents) working in this repo follows these rules. They implement
 Part 2 of the build directive: no design decision is ours.
 

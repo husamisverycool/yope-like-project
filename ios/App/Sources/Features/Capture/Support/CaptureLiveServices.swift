@@ -4,6 +4,7 @@
 import AppData
 import AppModels
 import AppServices
+import DesignSystem
 @preconcurrency import AVFoundation
 import Foundation
 import Photos
@@ -51,19 +52,32 @@ final class LiveCaptureCamera: CaptureCamera {
         Self.device(position)?.hasTorch ?? false
     }
 
+    /// The configured graph is kept between openings: configuring the same mode again only
+    /// restarts a stopped session (the first frame comes faster, e.g. after a pre-warm).
+    private var activeMode: CaptureCameraMode?
+    private var isRunning = false
+
     func configure(_ mode: CaptureCameraMode) async throws {
-        switch mode {
-        case let .photo(position):
-            try await service.configure(.photo(position, livePhoto: true))
-        case let .video(position):
-            try await service.configure(.video(position))
-        case .dual:
-            try await service.configure(.dual)
+        if mode != activeMode {
+            activeMode = nil
+            switch mode {
+            case let .photo(position):
+                try await service.configure(.photo(position, livePhoto: true))
+            case let .video(position):
+                try await service.configure(.video(position))
+            case .dual:
+                try await service.configure(.dual)
+            }
+            activeMode = mode
         }
-        await service.start()
+        if !isRunning {
+            await service.start()
+            isRunning = true
+        }
     }
 
     func stop() async {
+        isRunning = false
         await service.stop()
     }
 
@@ -238,8 +252,10 @@ final class LiveCaptureGroups: CaptureGroupSource {
     func coverImage(path: String) async -> UIImage? {
         if let image = covers[path] { return image }
         guard let data, let url = try? await data.signedURLs.url(for: path),
-              let response = try? await URLSession.shared.data(from: url),
-              let image = UIImage(data: response.0) else { return nil }
+              let response = try? await URLSession.shared.data(from: url) else { return nil }
+        // Downsampled to the recipient avatar, decoded off the main actor.
+        let side = CaptureImageDecoder.pixels(Tokens.Sizes.globalAvatarSmall)
+        guard let image = await CaptureImageDecoder.image(data: response.0, maxPixelSize: side) else { return nil }
         covers[path] = image
         return image
     }
@@ -424,15 +440,24 @@ final class LiveCaptureCollages: CaptureCollageSource {
         await data?.cache.read(Collage.self, for: Self.cacheKey(invitationID))?.value
     }
 
-    func cachedImage(path: String) -> UIImage? {
-        UIImage(contentsOfFile: fileURL(path).path)
+    func cachedImage(path: String) async -> UIImage? {
+        let file = fileURL(path)
+        guard FileManager.default.fileExists(atPath: file.path) else { return nil }
+        return await CaptureImageDecoder.image(contentsOf: file, maxPixelSize: Self.pagePixels)
     }
 
     func image(path: String) async throws -> UIImage {
-        if let image = cachedImage(path: path) { return image }
+        if let image = await cachedImage(path: path) { return image }
         let file = try await download(path)
-        guard let image = UIImage(contentsOfFile: file.path) else { throw DataError.decoding(path) }
+        guard let image = await CaptureImageDecoder.image(contentsOf: file, maxPixelSize: Self.pagePixels) else {
+            throw DataError.decoding(path)
+        }
         return image
+    }
+
+    /// Pages are decoded at their composed size (`collage.view.layout.page`: 1080 px wide, 9:16).
+    private static var pagePixels: CGFloat {
+        Tokens.Layouts.CollageViewLayoutPage.canvasWidthPx / Tokens.Layouts.CollageViewLayoutPage.canvasAspect
     }
 
     func shareFile(path: String) async throws -> URL {

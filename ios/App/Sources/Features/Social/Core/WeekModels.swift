@@ -324,11 +324,14 @@ final class WeekHistoryModel {
     var currentWeekStart: LocalDate { SocialCalendar.weekStart(containing: now(), in: timeZone) }
 
     func load() async {
-        if let fresh = try? await data.group(id: groupID) {
-            group = fresh
-        } else if group == nil {
-            group = await data.cachedGroup(id: groupID)
+        if group == nil { group = await data.cachedGroup(id: groupID) }
+        // Cached weeks first (no indicator when there are some), refreshed in place.
+        if weeks.isEmpty, let cached = await data.cachedHistoryWeeks(groupID: groupID), !cached.isEmpty {
+            apply(cached, replacing: true)
+            isLoading = false
+            await loadDetails()
         }
+        if let fresh = try? await data.group(id: groupID) { group = fresh }
         do {
             let fetched = try await data.historyWeeks(groupID: groupID, beforeWeek: nil)
             isOffline = false

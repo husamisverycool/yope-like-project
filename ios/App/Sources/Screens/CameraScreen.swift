@@ -11,6 +11,13 @@ struct CameraScreen: View {
     let groupID: String?
     let invitationID: String?
 
+    /// Starts the camera session ahead of `camera.capture` (first frame as early as the platform
+    /// allows). For the shell: call when the camera is about to be shown.
+    @MainActor
+    static func prewarm() {
+        Task { await CaptureEnvironment.shared.prewarmCamera() }
+    }
+
     var body: some View {
         if let groupID, let invitationID {
             DailyCaptureScreen(groupID: groupID, invitationID: invitationID)

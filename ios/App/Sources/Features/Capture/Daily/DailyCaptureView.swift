@@ -100,8 +100,8 @@ struct DailyCaptureView: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: Viewfinder.cornerRadius, style: .continuous))
         case .preview:
-            if let answer = model.answer {
-                DualImageView(main: answer.main.image, inset: answer.inset?.image, accessibilityLabel: model.dualImageLabel)
+            if model.answer != nil {
+                DualImageView(main: model.mainImage, inset: model.insetImage, accessibilityLabel: model.dualImageLabel)
                     .frame(width: width, height: height)
                     .overlay(alignment: .topTrailing) { retakeButton }
                     .overlay(alignment: .bottom) { audienceChip }

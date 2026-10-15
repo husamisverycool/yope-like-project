@@ -3,6 +3,7 @@
 // enforces it and this model checks it too); other members can read it at any time.
 import AppData
 import AppServices
+import AVFoundation
 import DesignSystem
 import Foundation
 import Observation
@@ -30,6 +31,8 @@ final class TributeModel {
     var localFile: URL?
     var isSaving = false
     var toast: MemoryToastMessage?
+    /// Prepared as soon as the video URL is known, so playback starts fast when the screen shows it.
+    private(set) var player: AVPlayer?
 
     let tributeID: TributeID
     private let dependencies: MemoryDependencies
@@ -106,9 +109,13 @@ final class TributeModel {
                 phase = .notFound
                 return
             }
-            videoURL = video
+            if videoURL != video || player == nil {
+                videoURL = video
+                player = AVPlayer(url: video)
+            }
             posterURL = tribute.posterPath.flatMap { urls[$0] }
             phase = .ready
+            // The file for Download / Share comes after the player was prepared.
             localFile = try? await data.downloadFile(from: video, name: tribute.id.rawValue + ".mp4") // provenance-ok: file extension of the MP4
         } catch {
             switch MemoryFailure(error) {

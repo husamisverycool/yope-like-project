@@ -10,14 +10,17 @@ import UniformTypeIdentifiers
 
 struct CapturePreviewMedia: View {
     let media: CapturedMedia
+    /// The still, decoded off the main actor at the card's size (nil until ready: the card stays
+    /// `color.global.backgroundDeep`).
+    let still: UIImage?
 
     var body: some View {
         switch media.kind {
         case .photo:
             stillImage
         case .livePhoto:
-            if let still = media.still, let movie = still.livePhotoMovieURL {
-                LivePhotoPreview(imageData: still.imageData, movieURL: movie)
+            if let capture = media.still, let movie = capture.livePhotoMovieURL {
+                LivePhotoPreview(imageData: capture.imageData, placeholder: still, movieURL: movie)
             } else {
                 stillImage
             }
@@ -30,8 +33,8 @@ struct CapturePreviewMedia: View {
 
     @ViewBuilder
     private var stillImage: some View {
-        if let image = media.still?.image {
-            Image(uiImage: image)
+        if let still {
+            Image(uiImage: still)
                 .resizable()
                 .scaledToFill()
         }
@@ -41,6 +44,7 @@ struct CapturePreviewMedia: View {
 /// PHLivePhotoView: touch and hold plays the motion (the system's own gesture).
 struct LivePhotoPreview: UIViewRepresentable {
     let imageData: Data
+    let placeholder: UIImage?
     let movieURL: URL
 
     func makeUIView(context: Context) -> PHLivePhotoView {
@@ -48,7 +52,6 @@ struct LivePhotoPreview: UIViewRepresentable {
         view.contentMode = .scaleAspectFill
         view.clipsToBounds = true
         guard let stillURL = Self.writeStill(imageData) else { return view }
-        let placeholder = UIImage(data: imageData)
         PHLivePhoto.request(
             withResourceFileURLs: [stillURL, movieURL],
             placeholderImage: placeholder,

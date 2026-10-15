@@ -38,6 +38,10 @@ data class Quote(val postId: String, val posterName: String?, val thumbPath: Str
 /** One message as drawn. Photo messages carry their post, media and reaction rows (never a count). */
 data class ChatRow(
     val message: Message,
+    /** Stable list key: an optimistic row keeps its local key after the server confirms it (no scroll jump). */
+    val key: String = message.id,
+    /** Shown before `send_message` returned (optimistic). */
+    val pending: Boolean = false,
     val author: Profile?,
     val mine: Boolean,
     val post: Post? = null,
@@ -65,7 +69,6 @@ data class ChatState(
     val iAmCreator: Boolean = false,
     val addedNames: List<String> = emptyList(),
     val draft: String = "",
-    val sending: Boolean = false,
 ) {
     enum class Phase { Loading, Ready, Error, OfflineEmpty }
 
@@ -111,6 +114,10 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
     val effects: SharedFlow<ChatEffect> = _effects.asSharedFlow()
 
     private var messages: List<Message> = emptyList()
+    /** Optimistic messages not yet confirmed, by local key. */
+    private val pending = LinkedHashMap<String, Message>()
+    /** Server id → the local key its optimistic row used. */
+    private val keys = HashMap<String, String>()
     private val posts = LinkedHashMap<String, Post>()
     private val media = LinkedHashMap<String, Media>()
     private val profiles = LinkedHashMap<String, Profile>()
@@ -220,36 +227,78 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
 
     fun setDraft(text: String) = _state.update { it.copy(draft = text) }
 
-    /** Sends the draft (`send_message` text). The draft is kept when sending fails. */
+    /**
+     * Sends the draft (`send_message` text), optimistically: the message shows at once and the field
+     * clears; if the call fails the row is taken back, the text returns to the field and the
+     * failure is announced (the failed-message layout is BLOCKED, `chat.thread.layout.failedMessage`).
+     */
     fun send() {
         val body = _state.value.draft.trim()
-        if (body.isEmpty() || _state.value.sending) return
-        _state.update { it.copy(sending = true) }
+        val me = data.currentUserId() ?: return
+        if (body.isEmpty()) return
+        val local = optimistic(me, MessageKind.Text, body = body)
+        _state.update { it.copy(draft = "") }
+        publish()
         viewModelScope.launch {
             try {
                 val sent = data.sendText(groupId, body)
-                insert(sent)
-                _state.update { it.copy(sending = false, draft = if (it.draft.trim() == body) "" else it.draft) }
+                confirm(local.id, sent)
                 _effects.emit(ChatEffect.Sent)
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Throwable) {
-                _state.update { it.copy(sending = false) }
+                pending.remove(local.id)
+                _state.update { it.copy(draft = if (it.draft.isEmpty()) body else it.draft) }
+                publish()
                 _effects.emit(ChatEffect.SendFailed)
             }
         }
     }
 
-    /** Uploads and sends a recorded voice message (`send_message` voice). */
+    private fun optimistic(me: String, kind: MessageKind, body: String? = null, voicePath: String? = null, durationMs: Int? = null): Message {
+        val now = java.time.Instant.now().let { n -> messages.lastOrNull()?.createdAt?.let { last -> if (last.isAfter(n)) last.plusMillis(1) else n } ?: n }
+        val message = Message(
+            id = "local-" + java.util.UUID.randomUUID(),
+            groupId = groupId,
+            authorId = me,
+            kind = kind,
+            body = body,
+            postId = null,
+            voicePath = voicePath,
+            voiceDurationMs = durationMs,
+            replyToPostId = null,
+            replyToMessageId = null,
+            createdAt = now,
+        )
+        pending[message.id] = message
+        return message
+    }
+
+    /** The server's row replaces the optimistic one under the same list key. */
+    private suspend fun confirm(localId: String, sent: Message) {
+        pending.remove(localId)
+        keys[sent.id] = localId
+        merge(listOf(sent), replaceNewest = false)
+        runCatching { hydrate(listOf(sent)) }
+        _state.update { if (it.phase != ChatState.Phase.Ready) it.copy(phase = ChatState.Phase.Ready) else it }
+        publish()
+    }
+
+    /** Uploads and sends a recorded voice message (`send_message` voice), shown at once and taken back on failure. */
     fun sendVoice(file: File, durationMs: Int) {
+        val me = data.currentUserId() ?: return
+        val local = optimistic(me, MessageKind.Voice, voicePath = file.absolutePath, durationMs = durationMs)
+        publish()
         viewModelScope.launch {
             try {
                 val sent = data.sendVoice(groupId, file, durationMs)
-                insert(sent)
+                confirm(local.id, sent)
                 _effects.emit(ChatEffect.Sent)
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Throwable) {
+                pending.remove(local.id)
+                publish()
                 _effects.emit(ChatEffect.SendFailed)
             } finally {
                 file.delete()
@@ -280,15 +329,18 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
         }
     }
 
-    /** Your own text / voice message (`delete_message`, after the confirmation). */
+    /** Your own text / voice message (`delete_message`, after the confirmation): removed at once, restored if the call fails. */
     fun deleteMessage(messageId: String) {
+        val removed = messages.firstOrNull { it.id == messageId } ?: return
+        remove(messageId)
         viewModelScope.launch {
             try {
                 data.deleteMessage(messageId)
-                remove(messageId)
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Throwable) {
+                merge(listOf(removed), replaceNewest = false)
+                publish()
                 _effects.emit(ChatEffect.DeleteFailed)
             }
         }
@@ -298,6 +350,9 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
         when (event) {
             is GroupEvent.MessageInserted -> {
                 val isNew = messages.none { it.id == event.message.id }
+                // My own message can arrive before send_message returns: adopt the optimistic row.
+                pending.values.firstOrNull { it.authorId == event.message.authorId && it.kind == event.message.kind && it.body == event.message.body && it.voiceDurationMs == event.message.voiceDurationMs }
+                    ?.let { local -> pending.remove(local.id); keys[event.message.id] = local.id }
                 insert(event.message)
                 if (isNew && event.message.authorId != data.currentUserId()) {
                     _state.value.rows.firstOrNull { it.id == event.message.id }?.let { _effects.emit(ChatEffect.Incoming(it)) }
@@ -414,11 +469,14 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
 
     private fun publish() {
         val me = data.currentUserId()
-        val rows = messages.mapNotNull { m ->
+        val all = (messages + pending.values).sortedWith(compareBy<Message> { it.createdAt }.thenBy { it.id })
+        val rows = all.mapNotNull { m ->
             val post = m.postId?.let(posts::get)
             if (m.kind == MessageKind.Photo && m.postId == null) return@mapNotNull null
             ChatRow(
                 message = m,
+                key = keys[m.id] ?: m.id,
+                pending = m.id in pending,
                 author = profiles[m.authorId],
                 mine = m.authorId == me,
                 post = post,

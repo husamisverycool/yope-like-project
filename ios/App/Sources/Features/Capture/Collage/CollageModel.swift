@@ -16,6 +16,8 @@ import UniformTypeIdentifiers
 @Observable
 final class CollageModel {
     enum State: Equatable {
+        /// Before the cache answered: nothing is drawn, so cached pages appear without a HUD frame.
+        case idle
         /// Collage `pending` (composing) or its image downloading.
         case loading
         case ready
@@ -30,7 +32,7 @@ final class CollageModel {
     let groupID: String
     let invitationID: String
 
-    private(set) var state: State = .loading
+    private(set) var state: State = .idle
     private(set) var collage: Collage? = nil
     /// Page images by 1-based page number.
     private(set) var pages: [Int: UIImage] = [:]
@@ -72,20 +74,17 @@ final class CollageModel {
 
     func load() async {
         async let details: Void = loadDetails()
-        if let cached = await collages.cachedCollage(invitationID: invitationID), cached.imagePath != nil {
+        if collage == nil, let cached = await collages.cachedCollage(invitationID: invitationID), cached.isReady,
+           let path = cached.imagePath(page: 1), let image = await collages.cachedImage(path: path) {
             collage = cached
-            if let image = collages.cachedImage(path: cached.imagePath(page: 1) ?? "") {
-                pages[1] = image
-                state = .ready
-            }
+            pages = [1: image]
+            state = .ready
         }
+        if state == .idle { state = .loading }
         do {
-            let fresh = try await collages.collage(invitationID: invitationID)
-            apply(fresh)
+            await apply(try await collages.collage(invitationID: invitationID))
         } catch {
-            if pages.isEmpty {
-                state = (collages.isOffline || DataError.from(error) == .offline) ? .offline : .error
-            }
+            failIfNothingShown(error)
         }
         await details
         await loadPages(around: currentPage)
@@ -104,7 +103,7 @@ final class CollageModel {
         }
     }
 
-    private func apply(_ fresh: Collage?) {
+    private func apply(_ fresh: Collage?) async {
         guard let fresh else {
             // No collage row: the window closed with no answers.
             if pages.isEmpty { state = .empty }
@@ -114,13 +113,31 @@ final class CollageModel {
         case .failed:
             if pages.isEmpty { state = .error }
         case .ready where fresh.imagePath != nil:
-            if fresh.imagePath != collage?.imagePath { pages = [:] }
-            collage = fresh
-            state = pages.isEmpty ? .loading : .ready
+            if fresh.imagePath == collage?.imagePath {
+                collage = fresh
+                return
+            }
+            // A new version (first load or recomposed): the shown pages stay until the new first
+            // page is decoded, then the pages swap in one frame.
+            guard let path = fresh.imagePath(page: 1) else { return }
+            do {
+                let image = try await collages.image(path: path)
+                collage = fresh
+                pages = [1: image]
+                currentPage = 1
+                state = .ready
+            } catch {
+                failIfNothingShown(error)
+            }
         default:
-            // Pending or recomposing (`image_path` null): the previous pages stay, else loading.
+            // Pending, or recomposing (`image_path` null): the previous pages stay, else loading.
             if pages.isEmpty { state = .loading }
         }
+    }
+
+    private func failIfNothingShown(_ error: Error) {
+        guard pages.isEmpty else { return }
+        state = (collages.isOffline || DataError.from(error) == .offline) ? .offline : .error
     }
 
     /// Loads the current page and its neighbours (paging is horizontal).
@@ -132,9 +149,7 @@ final class CollageModel {
                 pages[number] = try await collages.image(path: path)
                 if number == page { state = .ready }
             } catch {
-                if number == page && pages.isEmpty {
-                    state = (collages.isOffline || DataError.from(error) == .offline) ? .offline : .error
-                }
+                if number == page { failIfNothingShown(error) }
             }
         }
     }

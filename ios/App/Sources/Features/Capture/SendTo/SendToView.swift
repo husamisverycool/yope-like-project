@@ -83,7 +83,7 @@ struct SendToView: View {
     private var previewCard: some View {
         ZStack {
             Tokens.Colors.globalBackgroundDeep
-            CapturePreviewMedia(media: model.media)
+            CapturePreviewMedia(media: model.media, still: model.previewImage)
                 .frame(width: Preview.width, height: Preview.height)
                 .clipped()
                 .accessibilityHidden(true)
@@ -189,6 +189,8 @@ struct SendToView: View {
     @ViewBuilder
     private func recipients(width: CGFloat) -> some View {
         switch model.listState {
+        case .idle:
+            Color.clear
         case .loading:
             ProgressView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

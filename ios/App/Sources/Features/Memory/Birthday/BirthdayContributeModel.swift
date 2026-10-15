@@ -97,40 +97,78 @@ final class BirthdayContributeModel {
         await load()
     }
 
+    private struct Cached {
+        let groupID: GroupID
+        let honoreeName: String
+        let groupName: String
+        let photos: [EligiblePhoto]
+        let ownPostID: PostID?
+        let ownLine: String?
+    }
+
+    private var cacheKey: String { "birthday.contribute." + requestID.rawValue } // provenance-ok: cache key
+
+    /// Cache-first: the picker opened before shows its photos at once; the fresh read replaces them.
     private func load() async {
-        phase = .loading
         guard let data = dependencies.data else {
             phase = .error
             return
         }
+        let me = await data.currentUser()
+        let showsContent = phase == .loaded || phase == .empty
+        if !showsContent, let cached = dependencies.cache.value(Cached.self, key: cacheKey, user: me) {
+            apply(cached, keepSelection: false)
+        } else if !showsContent {
+            phase = .loading
+        }
         do {
-            let me = await data.currentUser()
             guard let request = try await data.request(id: requestID), request.honoreeID != me else {
+                dependencies.cache.remove(key: cacheKey)
                 phase = .error
                 return
             }
-            groupID = request.groupID
-            honoreeName = try await data.profiles(ids: [request.honoreeID]).first?.firstName ?? ""
-            groupName = try await data.group(id: request.groupID)?.name ?? ""
             guard request.isOpen(at: dependencies.now()) else {
                 phase = .closed
                 return
             }
-            photos = try await Self.eligiblePhotos(groupID: request.groupID, data: data)
-            if let own = try await data.myContribution(requestID: requestID) {
-                // "Retake" from the request: the current photo starts selected, the line is kept.
-                if photos.contains(where: { $0.id == own.postID }) { selectedID = own.postID }
-                line = own.line
-            }
-            phase = photos.isEmpty ? .empty : .loaded
+            let honoree = try await data.profiles(ids: [request.honoreeID]).first?.firstName ?? ""
+            let group = try await data.group(id: request.groupID)?.name ?? ""
+            let fresh = try await Self.eligiblePhotos(groupID: request.groupID, data: data)
+            let own = try await data.myContribution(requestID: requestID)
+            let value = Cached(
+                groupID: request.groupID, honoreeName: honoree, groupName: group, photos: fresh,
+                ownPostID: own?.postID, ownLine: own?.line
+            )
+            dependencies.cache.set(value, key: cacheKey, user: me, postIDs: Set(fresh.map(\.id)))
+            apply(value, keepSelection: true)
             listenForDeletions(groupID: request.groupID, data: data)
         } catch {
-            switch MemoryFailure(error) {
-            case .offline: phase = .offline
-            case .closed: phase = .closed
-            default: phase = .error
+            let failure = MemoryFailure(error)
+            if failure == .closed {
+                phase = .closed
+            } else if phase != .loaded && phase != .empty {
+                phase = failure == .offline ? .offline : .error
             }
         }
+    }
+
+    /// Shows `value`; a choice the person already made in this flow is kept.
+    private func apply(_ value: Cached, keepSelection: Bool) {
+        groupID = value.groupID
+        honoreeName = value.honoreeName
+        groupName = value.groupName
+        photos = value.photos
+        let current = keepSelection ? selectedID : nil
+        if let current, photos.contains(where: { $0.id == current }) {
+            selectedID = current
+        } else if let own = value.ownPostID, photos.contains(where: { $0.id == own }) {
+            // "Retake" from the request: the current photo starts selected, the line is kept.
+            selectedID = own
+        } else {
+            selectedID = nil
+        }
+        if line.isEmpty, let ownLine = value.ownLine { line = ownLine }
+        phase = photos.isEmpty ? .empty : .loaded
     }
 
     /// The group's posts the caller posted or is self-tagged in, newest first, deduplicated.
@@ -186,15 +224,18 @@ final class BirthdayContributeModel {
         path = []
     }
 
+    /// Optimistic: step 3 shows at once (its Done button waits for the answer); on failure the flow
+    /// goes back to where the problem is, with the spec's error line.
     func submit() async {
         guard canSubmit, let selectedID, let data = dependencies.data else { return }
         inline = nil
         isSending = true
+        path = [.message, .done]
         defer { isSending = false }
         do {
             _ = try await data.contribute(requestID: requestID, postID: selectedID, line: trimmedLine)
             dependencies.haptics(Tokens.Haptics.globalSend)
-            path = [.message, .done]
+            dependencies.cache.remove(key: "birthday.request." + requestID.rawValue) // provenance-ok: cache key of birthday.request
         } catch {
             dependencies.haptics(Tokens.Haptics.globalError)
             switch MemoryFailure(error) {
@@ -206,14 +247,18 @@ final class BirthdayContributeModel {
                 path = []
             case .offline:
                 inline = .offline
+                path = [.message]
             case .notFound:
                 if case .api(.postNotFound, _) = DataError.from(error) {
                     removePost(selectedID)
+                    path = []
                 } else {
                     inline = .error
+                    path = [.message]
                 }
             default:
                 inline = .error
+                path = [.message]
             }
         }
     }
@@ -221,6 +266,7 @@ final class BirthdayContributeModel {
     // MARK: Step 3 — Done / close
 
     func finish() {
+        guard !isSending else { return }
         deletionTask?.cancel()
         isFinished = true
     }
@@ -234,6 +280,7 @@ final class BirthdayContributeModel {
 
     /// Drops the cell; if it was the chosen photo, back to step 1.
     func removePost(_ postID: PostID) {
+        dependencies.cache.purge(postID: postID)
         photos.removeAll { $0.id == postID }
         if selectedID == postID {
             selectedID = nil

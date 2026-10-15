@@ -90,26 +90,55 @@ final class OnThisDayModel {
         await load()
     }
 
+    private struct Cached {
+        let years: [Year]
+        let timeZone: TimeZone
+    }
+
+    /// Cache-first: the last content of this day shows at once and is replaced in place.
     private func load() async {
-        phase = .loading
         guard let data = dependencies.data else {
             phase = .error
             return
         }
+        let me = await data.currentUser()
+        let cacheKey = "onthisday." + groupID.rawValue // provenance-ok: cache key
+        let cached = dependencies.cache.value(Cached.self, key: cacheKey, user: me)
+        if let cached, phase != .loaded {
+            apply(cached.years, timeZone: cached.timeZone)
+        } else if phase != .loaded {
+            phase = .loading
+        }
         do {
             let group = try await data.group(id: groupID)
             let zone = group?.resolvedTimeZone ?? MemoryFormat.utc
-            timeZone = zone
             let day = OnThisDayCalendar.localDate(now: dependencies.now(), timeZone: zone)
             let rows = try await data.onThisDay(groupID: groupID, localDate: day)
-            years = try await Self.resolve(rows: rows, data: data)
-            index = 0
-            phase = .loaded
+            let fresh = try await Self.resolve(rows: rows, data: data)
+            dependencies.cache.set(Cached(years: fresh, timeZone: zone), key: cacheKey, user: me,
+                                   postIDs: Set(fresh.flatMap { $0.photos.map(\.id) }))
+            apply(fresh, timeZone: zone)
             if years.isEmpty { isFinished = true }
             listenForDeletions(data: data)
         } catch {
-            phase = MemoryFailure(error) == .offline ? .offline : .error
+            // Cached content stays on screen; without it, the error / offline state.
+            if phase != .loaded {
+                phase = MemoryFailure(error) == .offline ? .offline : .error
+            }
         }
+    }
+
+    /// Shows `fresh`, keeping the year in view when it is still there.
+    private func apply(_ fresh: [Year], timeZone zone: TimeZone) {
+        let currentID = currentYear?.id
+        timeZone = zone
+        years = fresh
+        if let currentID, let kept = fresh.firstIndex(where: { $0.id == currentID }) {
+            index = kept
+        } else {
+            index = 0
+        }
+        phase = .loaded
     }
 
     static func resolve(rows: [OnThisDayItem], data: any MemoryDataSource) async throws -> [Year] {
@@ -171,6 +200,7 @@ final class OnThisDayModel {
 
     /// Drops a deleted photo, its year when it was the last one, and closes the day when none remain.
     func removePost(_ postID: PostID) {
+        dependencies.cache.purge(postID: postID)
         let currentID = currentYear?.id
         for position in years.indices {
             years[position].photos.removeAll { $0.id == postID }
@@ -249,19 +279,28 @@ final class OnThisDayEntryModel {
             content = nil
             return
         }
+        let me = await data.currentUser()
+        let cacheKey = "onthisday.entry." + groupID.rawValue // provenance-ok: cache key
+        if content == nil, let cached = dependencies.cache.value(Content.self, key: cacheKey, user: me) {
+            content = cached
+        }
         do {
             let group = try await data.group(id: groupID)
             guard let group else {
                 content = nil
+                dependencies.cache.remove(key: cacheKey)
                 return
             }
             let day = OnThisDayCalendar.localDate(now: dependencies.now(), timeZone: group.resolvedTimeZone)
             let rows = try await data.onThisDay(groupID: groupID, localDate: day)
             guard let newest = rows.map(\.yearsAgo).min() else {
                 content = nil
+                dependencies.cache.remove(key: cacheKey)
                 return
             }
-            content = Content(title: Copy.onthisdayEntryTitle(group: group.name), subtitle: MemoryFormat.yearsAgo(newest))
+            let fresh = Content(title: Copy.onthisdayEntryTitle(group: group.name), subtitle: MemoryFormat.yearsAgo(newest))
+            content = fresh
+            dependencies.cache.set(fresh, key: cacheKey, user: me, postIDs: Set(rows.map(\.postID)))
         } catch {
             // The entry is only an invitation: on failure it stays as it was.
         }

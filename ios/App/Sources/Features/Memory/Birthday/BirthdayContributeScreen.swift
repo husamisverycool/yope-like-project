@@ -404,9 +404,11 @@ private struct ContributeDoneStep: View {
                 .padding(.horizontal, Tokens.Sizes.birthdayContributeMargin)
             }
             .scrollBounceBehavior(.basedOnSize)
-            MemoryFilledButton.contributePrimary(Copy.birthdayContributeDoneButton) {
+            // While the optimistic send is unanswered the button shows the platform activity indicator.
+            MemoryFilledButton.contributePrimary(Copy.birthdayContributeDoneButton, isWorking: model.isSending) {
                 model.finish()
             }
+            .disabled(model.isSending)
             .accessibilityIdentifier("birthday.contribute.done")
             .padding(.horizontal, Tokens.Sizes.birthdayContributeMargin)
             .padding(.bottom, Tokens.Sizes.birthdayContributeMargin)

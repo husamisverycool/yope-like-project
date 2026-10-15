@@ -53,6 +53,8 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         var sentVoice: [(URL, Int)] = []
         var calls: [String] = []
         var messagePageSize = SocialPaging.messages
+        /// Runs inside `sendText` / `sendVoice` before they return (e.g. the realtime echo arriving first).
+        var beforeSendReturns: (@Sendable (Message) async -> Void)?
         var idCounter = 0
         var now = Date(timeIntervalSince1970: 1_792_000_000)
     }
@@ -188,6 +190,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
             body: body, replyToPostID: replyToPostID, createdAt: tick()
         )
         update { $0.messages.append(message) }
+        if let hook = read({ $0.beforeSendReturns }) { await hook(message) }
         return message
     }
 
@@ -201,6 +204,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
             $0.messages.append(message)
             $0.sentVoice.append((fileURL, durationMs))
         }
+        if let hook = read({ $0.beforeSendReturns }) { await hook(message) }
         return message
     }
 

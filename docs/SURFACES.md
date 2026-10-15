@@ -1,5 +1,8 @@
 # Surface inventory
 
+> **Owner decision 2026-10-15**: each surface keeps the primary reference listed here; any other
+> successful app may fill what the primary reference doesn't show (`docs/OWNER_DECISIONS.md`).
+
 Every screen and system surface in the app, with the reference app assigned to it (directive
 Part 3). A reference is used only on the surfaces listed for it. Each surface gets a build spec at
 `design/surfaces/<id>.md` once its references are gathered.

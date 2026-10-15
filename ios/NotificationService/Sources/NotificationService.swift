@@ -17,25 +17,6 @@ final class NotificationService: UNNotificationServiceExtension {
     /// Request timeout inside the extension's execution window; renditions are small.
     private static let downloader = HTTPDownloader(timeout: 20, maxBytes: 10 * 1024 * 1024)
     private static let attachmentIdentifier = "widget-rendition"
-    /// `GroupWidgetKinds.all` of the widget extension.
-    static let widgetKinds = [WidgetKind.groupPhoto, "GroupPhotoLockWidget"]
-
-    /// Thread = group id; category = push type (registered by `PushService`, no actions: none has
-    /// copy); a time-sensitive level is lowered to `active` (daily.notification C-10).
-    static func applyPresentation(to content: UNMutableNotificationContent) {
-        let userInfo = content.userInfo
-        if content.threadIdentifier.isEmpty, let groupID = userInfo[PushKey.groupID] as? String, !groupID.isEmpty {
-            content.threadIdentifier = groupID
-        }
-        if content.categoryIdentifier.isEmpty, let type = userInfo[PushKey.type] as? String,
-           PushType(rawValue: type) != nil {
-            content.categoryIdentifier = type
-        }
-        if content.interruptionLevel == .timeSensitive || content.interruptionLevel == .critical {
-            content.interruptionLevel = .active
-        }
-    }
-
     private let lock = NSLock()
     private var contentHandler: ((UNNotificationContent) -> Void)?
     private var bestAttempt: UNMutableNotificationContent?
@@ -46,7 +27,7 @@ final class NotificationService: UNNotificationServiceExtension {
         withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void
     ) {
         let content = (request.content.mutableCopy() as? UNMutableNotificationContent) ?? UNMutableNotificationContent()
-        Self.applyPresentation(to: content)
+        NotificationPresentation.apply(to: content)
         lock.lock()
         self.contentHandler = contentHandler
         bestAttempt = content
@@ -61,7 +42,7 @@ final class NotificationService: UNNotificationServiceExtension {
         work = Task { [weak self] in
             if let snapshot = try? await delivery.deliver(payload, receivedAt: Date()) {
                 // The Home Screen and the Lock Screen widget kinds (ios/Widgets/Sources/GroupPhotoWidget.swift).
-                for kind in Self.widgetKinds {
+                for kind in NotificationPresentation.widgetKinds {
                     WidgetCenter.shared.reloadTimelines(ofKind: kind)
                 }
                 if let file = store.photoURL(for: snapshot) {

@@ -4,6 +4,7 @@ import AppData
 import AppModels
 import AppServices
 import DesignSystem
+import ImageIO
 import SwiftUI
 import UIKit
 
@@ -11,14 +12,25 @@ import UIKit
 final class SocialServices {
     let data: any SocialDataSource
     let images: SocialImageLoader
+    let voiceLevels: SocialVoiceLevels
     let flags: SocialFlags
     let saver: any SocialPhotoSaving
+    /// One voice message plays at a time across the social screens.
+    let playback: SocialVoicePlayback
 
-    init(data: any SocialDataSource, images: SocialImageLoader, flags: SocialFlags = SocialFlags(), saver: any SocialPhotoSaving = LibraryPhotoSaver()) {
+    init(
+        data: any SocialDataSource,
+        images: SocialImageLoader,
+        voiceLevels: SocialVoiceLevels? = nil,
+        flags: SocialFlags = SocialFlags(),
+        saver: any SocialPhotoSaving = LibraryPhotoSaver()
+    ) {
         self.data = data
         self.images = images
+        self.voiceLevels = voiceLevels ?? SocialVoiceLevels(data: data)
         self.flags = flags
         self.saver = saver
+        playback = SocialVoicePlayback(data: data)
     }
 
     /// The services every social screen reads (tests replace it).
@@ -28,7 +40,9 @@ final class SocialServices {
         #if DEBUG
         if SocialLaunch.usesFakes {
             let data = SocialDemo.makeData()
-            return SocialServices(data: data, images: .demo(), flags: SocialFlags(defaults: SocialLaunch.defaults), saver: DemoPhotoSaver())
+            return SocialServices(
+                data: data, images: .demo(), voiceLevels: .demo(), flags: SocialFlags(defaults: SocialLaunch.defaults), saver: DemoPhotoSaver()
+            )
         }
         #endif
         if let environment = AppEnvironment.shared.data {
@@ -40,10 +54,17 @@ final class SocialServices {
     }
 }
 
-/// Loads private images by storage path (signed URL → download → decode), cached in memory per path.
+/// A decoded image handed across actors (decoding happens off the main actor).
+struct SocialDecodedImage: @unchecked Sendable {
+    let image: UIImage
+}
+
+/// Loads private images by storage path: signed URL → download → downsampled decode off the main actor,
+/// sized to the frame that shows it, cached in memory per path and size, one request per image in flight.
 @MainActor
 final class SocialImageLoader {
     private let cache = NSCache<NSString, UIImage>()
+    private var inFlight: [String: Task<UIImage?, Never>] = [:]
     private let data: (any SocialDataSource)?
     /// DEBUG demo images, drawn synchronously (snapshot tests, UI tests).
     private let renderer: ((String) -> UIImage?)?
@@ -58,24 +79,46 @@ final class SocialImageLoader {
         self.renderer = renderer
     }
 
-    func cached(_ path: String) -> UIImage? {
-        if let image = cache.object(forKey: path as NSString) { return image }
+    private static func key(_ path: String, _ maxPixel: Int?) -> String {
+        path + "@" + String(maxPixel ?? 0)
+    }
+
+    /// The image already in memory for this path at (at least) this size.
+    func cached(_ path: String, maxPixel: Int? = nil) -> UIImage? {
+        if let image = cache.object(forKey: Self.key(path, maxPixel) as NSString) { return image }
+        if maxPixel != nil, let full = cache.object(forKey: Self.key(path, nil) as NSString) { return full }
         if let renderer, let image = renderer(path) {
-            cache.setObject(image, forKey: path as NSString)
+            cache.setObject(image, forKey: Self.key(path, maxPixel) as NSString)
             return image
         }
         return nil
     }
 
-    /// Nil when the file cannot be read (deleted, blocked, offline).
-    func load(_ path: String) async -> UIImage? {
-        if let image = cached(path) { return image }
+    /// Nil when the file cannot be read (deleted, blocked, offline). `maxPixel` downsamples to the frame
+    /// (longest side in pixels); nil decodes the full image.
+    func load(_ path: String, maxPixel: Int? = nil) async -> UIImage? {
+        if let image = cached(path, maxPixel: maxPixel) { return image }
         guard let data else { return nil }
-        guard let url = try? await data.fileURL(path: path),
-              let bytes = await Self.download(url),
-              let image = UIImage(data: bytes) else { return nil }
-        cache.setObject(image, forKey: path as NSString)
+        let key = Self.key(path, maxPixel)
+        if let task = inFlight[key] { return await task.value }
+        let task = Task<UIImage?, Never> {
+            guard let url = try? await data.fileURL(path: path),
+                  let bytes = await Self.download(url),
+                  let decoded = await Self.decode(bytes, maxPixel: maxPixel) else { return nil }
+            return decoded.image
+        }
+        inFlight[key] = task
+        let image = await task.value
+        inFlight[key] = nil
+        if let image { cache.setObject(image, forKey: key as NSString) }
         return image
+    }
+
+    /// Starts loading images that are about to show (next photos in the viewer, the next grid rows).
+    func prefetch(_ paths: [String], maxPixel: Int? = nil) {
+        for path in paths where cached(path, maxPixel: maxPixel) == nil {
+            Task(priority: .utility) { _ = await self.load(path, maxPixel: maxPixel) }
+        }
     }
 
     /// Downloads a file (signed URL) to memory.
@@ -85,9 +128,68 @@ final class SocialImageLoader {
         return result.0
     }
 
-    /// Forgets a deleted photo's images.
-    func forget(_ path: String) {
-        cache.removeObject(forKey: path as NSString)
+    /// Decodes (and downsamples) with ImageIO on a background thread.
+    nonisolated static func decode(_ bytes: Data, maxPixel: Int?) async -> SocialDecodedImage? {
+        await Task.detached(priority: .userInitiated) { () -> SocialDecodedImage? in
+            guard let source = CGImageSourceCreateWithData(bytes as CFData, [kCGImageSourceShouldCache: false] as CFDictionary) else {
+                return nil
+            }
+            var options: [CFString: Any] = [
+                kCGImageSourceCreateThumbnailFromImageAlways: true,
+                kCGImageSourceCreateThumbnailWithTransform: true,
+                kCGImageSourceShouldCacheImmediately: true,
+            ]
+            if let maxPixel { options[kCGImageSourceThumbnailMaxPixelSize] = maxPixel }
+            guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
+            return SocialDecodedImage(image: UIImage(cgImage: image))
+        }.value
+    }
+
+    /// Drops every decoded image (after a deletion: deleted photos must not stay on the device).
+    func forgetAll() {
+        cache.removeAllObjects()
+    }
+}
+
+/// Voice-message level envelopes (`chat.voice` waveform), computed once per file from its samples and kept.
+@MainActor
+final class SocialVoiceLevels {
+    private var cache: [String: [Float]] = [:]
+    private let data: (any SocialDataSource)?
+    private let demo: ((String) -> [Float])?
+
+    init(data: any SocialDataSource) {
+        self.data = data
+        demo = nil
+    }
+
+    init(demo: @escaping (String) -> [Float]) {
+        data = nil
+        self.demo = demo
+    }
+
+    func cached(_ key: String) -> [Float]? {
+        if let levels = cache[key] { return levels }
+        if let demo {
+            let levels = demo(key)
+            cache[key] = levels
+            return levels
+        }
+        return nil
+    }
+
+    /// Levels of a remote voice file (storage path) or a local recording (file URL).
+    func levels(path: String?, localFile: URL?) async -> [Float]? {
+        let key = localFile?.absoluteString ?? path ?? ""
+        if let levels = cached(key) { return levels }
+        var fileURL = localFile
+        if fileURL == nil, let path, let data, let url = try? await data.fileURL(path: path),
+           let bytes = await SocialImageLoader.download(url) {
+            fileURL = try? SocialVoiceFiles.write(bytes, name: key)
+        }
+        guard let fileURL, let levels = await VoiceEnvelope.levels(of: fileURL) else { return nil }
+        cache[key] = levels
+        return levels
     }
 }
 
@@ -186,6 +288,19 @@ extension SocialImageLoader {
             return UIGraphicsImageRenderer(size: size).image { context in
                 color.setFill()
                 context.fill(CGRect(origin: .zero, size: size))
+            }
+        }
+    }
+}
+
+extension SocialVoiceLevels {
+    /// Demo envelopes: a fixed pattern per path (sample data for snapshots and UI tests, not a design value).
+    static func demo() -> SocialVoiceLevels {
+        SocialVoiceLevels { key in
+            let seed = key.unicodeScalars.reduce(UInt32(7)) { ($0 &* 31) &+ $1.value }
+            return (0..<64).map { index in
+                let mixed = (seed &+ UInt32(index) &* 2_654_435_761) >> 24
+                return Float(mixed) / Float(UInt8.max)
             }
         }
     }

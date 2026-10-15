@@ -14,6 +14,9 @@ import UIKit
 @Observable
 final class SendToModel: Identifiable {
     enum ListState: Equatable {
+        /// Before the offline cache answered: nothing is drawn, so cached groups appear without a
+        /// spinner frame first.
+        case idle
         case loading
         case loaded
         /// The member has no groups.
@@ -29,7 +32,9 @@ final class SendToModel: Identifiable {
     /// The group from context; nil = no context (all groups preselected).
     let contextGroupID: String?
 
-    private(set) var listState: ListState = .loading
+    private(set) var listState: ListState = .idle
+    /// The capture decoded off the main actor at the preview card's size.
+    private(set) var previewImage: UIImage? = nil
     private(set) var groups: [CaptureGroup] = []
     /// Selected group ids in list order.
     private(set) var selection: [String] = []
@@ -99,11 +104,15 @@ final class SendToModel: Identifiable {
     // MARK: Loading
 
     func load() async {
+        async let decoded = decodePreview()
         isPremium = await premium.isPremium()
         showsVoiceCoach = isVoiceNoteAvailable && !coach.isDismissed(.voice)
         if let cached = await groupSource.cachedGroups(), !cached.isEmpty {
             apply(cached)
+        } else if listState == .idle {
+            listState = .loading
         }
+        previewImage = await decoded
         do {
             apply(try await groupSource.loadGroups())
         } catch {
@@ -114,8 +123,15 @@ final class SendToModel: Identifiable {
     }
 
     func reload() async {
-        listState = .loading
+        if groups.isEmpty { listState = .loading }
         await load()
+    }
+
+    private func decodePreview() async -> UIImage? {
+        if let previewImage { return previewImage }
+        guard let data = media.still?.imageData else { return nil }
+        let side = CaptureImageDecoder.pixels(max(Tokens.Layouts.CameraSendtoLayoutPreview.width, Tokens.Layouts.CameraSendtoLayoutPreview.height))
+        return await CaptureImageDecoder.image(data: data, maxPixelSize: side)
     }
 
     private func apply(_ list: [CaptureGroup]) {

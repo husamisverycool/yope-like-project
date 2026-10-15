@@ -68,6 +68,9 @@ interface CameraController {
     /** The front + back mode this device supports. */
     suspend fun dualMode(): DualCaptureMode
 
+    /** Binds for the daily capture: both cameras when supported (preview of [main]), else [main]. */
+    suspend fun bindDual(main: Lens): DualCaptureMode
+
     /**
      * The daily capture: the photo from [main] (the live lens) and from the other lens, at the same
      * moment when supported, else [main] first then the other (sequential fallback). The other
@@ -141,7 +144,7 @@ class CameraXController(private val context: Context, private val lifecycleOwner
     }
 
     /** Binds both cameras concurrently when supported (preview of [main]); else [main] alone. */
-    suspend fun bindDual(main: Lens): DualCaptureMode = withContext(Dispatchers.Main) {
+    override suspend fun bindDual(main: Lens): DualCaptureMode = withContext(Dispatchers.Main) {
         val provider = provider()
         val index = DualCameraSupport.frontBackPair(facingCombinations(provider))
         if (!DualCameraSupport.hasConcurrentFeature(context) || index == null) {

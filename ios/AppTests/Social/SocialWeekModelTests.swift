@@ -203,6 +203,12 @@ final class SocialWeekModelTests: XCTestCase {
         await model.handle(.postInserted(fresh.post))
         XCTAssertEqual(model.weeks[0].postIDs.last, fresh.id)
 
+        let cachedData = SocialDemo.makeData()
+        cachedData.update { $0.cachedHistory[SocialDemo.groupID] = [HistoryWeek(weekStart: SocialDemo.lastWeek, postIDs: [SocialDemo.p5])] }
+        let cachedFirst = historyModel(cachedData)
+        await cachedFirst.load()
+        XCTAssertEqual(cachedFirst.weeks.first?.postIDs.count, 4, "refreshed in place after the cached copy")
+
         let offlineData = SocialDemo.makeData()
         offlineData.update { state in
             state.mode = .offline

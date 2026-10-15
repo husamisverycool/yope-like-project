@@ -222,30 +222,84 @@ final class YearStoryModel {
         await load()
     }
 
+    /// Cache-first: the story shown last opens at once; the fresh read replaces it in place.
     private func load() async {
-        phase = .loading
         guard let data = dependencies.data else {
             phase = .error
             return
+        }
+        let me = await data.currentUser()
+        let cacheKey = "yearstory." + groupID.rawValue + "." + String(year) // provenance-ok: cache key
+        if phase != .loaded, let cached = dependencies.cache.value([YearStoryCard].self, key: cacheKey, user: me) {
+            apply(cached)
+        } else if phase != .loaded {
+            phase = .loading
         }
         do {
             guard let story = try await data.yearStory(groupID: groupID, year: year), story.status == .ready,
                   let storyData = YearStoryData(json: story.data, fallbackYear: year) else {
                 // `status = 'pending'` has no screen (the entry is hidden); opened by a link, it reads as an error.
-                phase = .error
+                if phase != .loaded { phase = .error }
                 return
             }
             let groupName = try await data.group(id: groupID)?.name ?? ""
             let photos = try await Self.photos(storyData, data: data)
             let collages = try await Self.collages(storyData, data: data)
-            cards = YearStoryCard.build(data: storyData, groupName: groupName, photos: photos, collages: collages)
-            index = 0
-            phase = .loaded
+            let fresh = YearStoryCard.build(data: storyData, groupName: groupName, photos: photos, collages: collages)
+            dependencies.cache.set(fresh, key: cacheKey, user: me, postIDs: Self.postIDs(of: fresh))
+            apply(fresh)
             listenForDeletions(data: data)
         } catch {
-            phase = MemoryFailure(error) == .offline ? .offline : .error
+            if phase != .loaded {
+                phase = MemoryFailure(error) == .offline ? .offline : .error
+            }
         }
     }
+
+    /// Shows `fresh`, staying on the card in view when it is still there.
+    private func apply(_ fresh: [YearStoryCard]) {
+        let currentID = currentCard?.id
+        if fresh != cards {
+            shareFiles = shareFiles.filter { id, _ in fresh.contains { $0.id == id } }
+            shareImages = shareImages.filter { id, _ in fresh.contains { $0.id == id } }
+        }
+        cards = fresh
+        index = currentID.flatMap { id in fresh.firstIndex { $0.id == id } } ?? 0
+        phase = .loaded
+        preloadUpcoming()
+    }
+
+    static func postIDs(of cards: [YearStoryCard]) -> Set<PostID> {
+        var ids = Set<PostID>()
+        for card in cards {
+            switch card {
+            case let .mostReacted(photo): ids.insert(photo.postID)
+            case let .togetherDay(collage): ids.formUnion(collage.postIDs)
+            default: break
+            }
+        }
+        return ids
+    }
+
+    /// Pixel size the photo box is shown and shared at (set by the screen from the canvas).
+    var imagePixelSize: CGFloat?
+
+    /// Loads the images of the card in view and the next cards before they are tapped to.
+    func preloadUpcoming() {
+        let upcoming = cards.dropFirst(index).prefix(Self.preloadCount + 1).compactMap(\.imageURL)
+        guard !upcoming.isEmpty else { return }
+        let images = dependencies.images
+        let size = imagePixelSize
+        Task {
+            for url in upcoming {
+                _ = await images.image(for: url, maxPixelSize: size)
+            }
+        }
+    }
+
+    /// How many cards ahead are preloaded: the photo / collage cards of one list
+    /// (`count.year.story.listLength`).
+    static var preloadCount: Int { Int(Tokens.Counts.yearStoryListLength) }
 
     /// Most-reacted posts in the worker's order; posts hidden by a block (RLS) are skipped.
     static func photos(_ story: YearStoryData, data: any MemoryDataSource) async throws -> [YearStoryPhoto] {
@@ -288,7 +342,10 @@ final class YearStoryModel {
 
     /// Right half: the next card (nothing on the last card).
     func next() {
-        if index + 1 < cards.count { index += 1 }
+        if index + 1 < cards.count {
+            index += 1
+            preloadUpcoming()
+        }
     }
 
     /// Left half: the previous card (nothing on the first card).
@@ -311,6 +368,7 @@ final class YearStoryModel {
 
     /// Drops the card(s) showing a deleted photo, and a section's setup card when its list is empty.
     func removePost(_ postID: PostID) {
+        dependencies.cache.purge(postID: postID)
         let currentID = currentCard?.id
         cards.removeAll { card in
             switch card {
@@ -363,10 +421,21 @@ final class YearStoryEntryModel {
         self.dependencies = dependencies
     }
 
+    private struct Cached {
+        let content: MemoryEntryContent
+        let year: Int
+    }
+
     func refresh() async {
         guard let data = dependencies.data else {
             content = nil
             return
+        }
+        let me = await data.currentUser()
+        let cacheKey = "yearstory.entry." + groupID.rawValue // provenance-ok: cache key
+        if content == nil, let cached = dependencies.cache.value(Cached.self, key: cacheKey, user: me) {
+            year = cached.year
+            content = cached.content
         }
         do {
             let zone = try await data.group(id: groupID)?.resolvedTimeZone ?? MemoryFormat.utc
@@ -374,14 +443,17 @@ final class YearStoryEntryModel {
             guard let story = try await data.yearStory(groupID: groupID, year: currentYear), story.status == .ready,
                   story.data != nil else {
                 content = nil
+                dependencies.cache.remove(key: cacheKey)
                 return
             }
-            year = currentYear
-            content = MemoryEntryContent(
+            let fresh = MemoryEntryContent(
                 title: Copy.yearStoryEntryTitle(year: String(currentYear)),
                 subtitle: Copy.yearStoryEntrySubtitle,
                 buttonTitle: Copy.yearStoryEntryButton
             )
+            year = currentYear
+            content = fresh
+            dependencies.cache.set(Cached(content: fresh, year: currentYear), key: cacheKey, user: me)
         } catch {
             // An invitation only: on failure it stays as it was.
         }

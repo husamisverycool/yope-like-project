@@ -467,7 +467,7 @@ private fun MessageList(
         }
     }
     LazyColumn(Modifier.fillMaxSize(), state = listState, reverseLayout = true, contentPadding = padding) {
-        itemsIndexed(newestFirst, key = { _, row -> row.id }) { i, row ->
+        itemsIndexed(newestFirst, key = { _, row -> row.key }, contentType = { _, row -> row.kind }) { i, row ->
             val prev = newestFirst.getOrNull(i + 1)
             val next = newestFirst.getOrNull(i - 1)
             MessageRow(row, prev, next, state, ui, nav, voice, playback, onPlay)

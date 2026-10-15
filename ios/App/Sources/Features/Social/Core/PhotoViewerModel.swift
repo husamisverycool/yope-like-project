@@ -305,22 +305,27 @@ final class PhotoViewerModel {
 
     // MARK: Menu
 
-    /// `delete_media` after the confirmation: gone everywhere; the viewer moves to the next photo or closes.
+    /// `delete_media` after the confirmation: gone everywhere. The viewer moves on at once (to the next photo, or
+    /// closes when there is none) and puts the photo back if the call fails.
     func deleteCurrent() async {
         guard let post = current, isOwn(post) else { return }
         signals.emit(.warning)
+        let snapshot = (postIDs, selection, posts, reactions)
+        let removed = Set(postIDs.filter { posts[$0]?.post.mediaID == post.post.mediaID }).union([post.id])
+        removeFromContext(removed)
         do {
             try await data.deleteMedia(id: post.post.mediaID)
         } catch {
             if SocialFailure(error) != .notFound {
                 if SocialFailure(error) == .offline { isOffline = true }
+                (postIDs, selection, posts, reactions) = snapshot
+                isClosed = false
+                updateCoach()
                 signals.emit(.failed)
                 signals.post(.deleteFailed)
                 return
             }
         }
-        let removed = Set(postIDs.filter { posts[$0]?.post.mediaID == post.post.mediaID })
-        removeFromContext(removed.union([post.id]))
         signals.post(.photoDeleted)
     }
 

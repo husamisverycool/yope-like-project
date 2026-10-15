@@ -202,13 +202,17 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         XCTAssertTrue(data.read { $0.deletedMedia }.isEmpty)
     }
 
-    func testDeleteFailureKeepsThePhoto() async {
+    func testDeleteFailurePutsThePhotoBack() async {
         let data = SocialDemo.makeData()
         let model = makeModel(data, start: SocialDemo.p3)
         await model.load()
+        let order = model.postIDs
         data.update { $0.failOnce.insert("deleteMedia") }
         await model.deleteCurrent()
+        XCTAssertEqual(model.postIDs, order)
         XCTAssertEqual(model.selection, SocialDemo.p3)
+        XCTAssertNotNil(model.current)
+        XCTAssertFalse(model.isClosed)
         XCTAssertEqual(model.signals.notice?.notice, .deleteFailed)
     }
 

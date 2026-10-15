@@ -333,7 +333,7 @@ final class FakeCaptureCollages: CaptureCollageSource {
         throw error ?? FakeCaptureError.failed
     }
 
-    func cachedImage(path: String) -> UIImage? { cachedImages[path] }
+    func cachedImage(path: String) async -> UIImage? { cachedImages[path] }
 
     func shareFile(path: String) async throws -> URL {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent((path as NSString).lastPathComponent)

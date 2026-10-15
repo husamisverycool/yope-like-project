@@ -39,6 +39,10 @@ final class DailyCaptureModel {
     private(set) var mainPosition: CameraPosition = .back
     private(set) var isShutterPressed = false
     private(set) var answer: DailyAnswer? = nil
+    /// The answer's photos decoded off the main actor at the viewfinder's size, so the preview
+    /// appears in one frame (BeReal).
+    private(set) var mainImage: UIImage? = nil
+    private(set) var insetImage: UIImage? = nil
 
     @ObservationIgnored let camera: CaptureCamera
     @ObservationIgnored private let invitations: CaptureInvitationSource
@@ -159,11 +163,10 @@ final class DailyCaptureModel {
         do {
             let stills = try await camera.captureDual(flash: isFlashOn && isFlashAvailable)
             if mainPosition == .front, let front = stills.front {
-                answer = DailyAnswer(main: front, inset: stills.back, capturedAt: capturedAt)
+                await showPreview(DailyAnswer(main: front, inset: stills.back, capturedAt: capturedAt))
             } else {
-                answer = DailyAnswer(main: stills.back, inset: stills.front, capturedAt: capturedAt)
+                await showPreview(DailyAnswer(main: stills.back, inset: stills.front, capturedAt: capturedAt))
             }
-            phase = .preview
         } catch {
             await captureSingle(capturedAt: capturedAt)
         }
@@ -173,16 +176,30 @@ final class DailyCaptureModel {
         do {
             try await camera.configure(.photo(.back))
             let still = try await camera.capturePhoto(flash: isFlashOn && isFlashAvailable)
-            answer = DailyAnswer(main: still, inset: nil, capturedAt: capturedAt)
-            phase = .preview
+            await showPreview(DailyAnswer(main: still, inset: nil, capturedAt: capturedAt))
         } catch {
             phase = .unavailable
         }
     }
 
+    private func showPreview(_ answer: DailyAnswer) async {
+        typealias Composition = Tokens.Layouts.DailyDualimageLayoutComposition
+        let width = CaptureImageDecoder.pixels(Tokens.Layouts.DailyCaptureLayoutViewfinder.width)
+        let mainPixels = width / Composition.mainAspect
+        let insetPixels = width * Composition.insetWidthRatio / Composition.insetAspect
+        async let main = CaptureImageDecoder.image(data: answer.main.imageData, maxPixelSize: mainPixels)
+        async let inset = CaptureImageDecoder.image(optionalData: answer.inset?.imageData, maxPixelSize: insetPixels)
+        mainImage = await main
+        insetImage = await inset
+        self.answer = answer
+        phase = .preview
+    }
+
     /// Back to the live screen; unlimited, no count.
     func retake() async {
         answer = nil
+        mainImage = nil
+        insetImage = nil
         await startSession()
     }
 

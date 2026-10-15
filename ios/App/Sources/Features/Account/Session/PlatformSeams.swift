@@ -30,7 +30,8 @@ final class LiveNotificationAuthorizer: NotificationAuthorizing {
     }
 
     func requestAuthorization() async -> PermissionStatus {
-        (try? await push.requestAuthorization()) ?? (await push.authorizationStatus())
+        if let status = try? await push.requestAuthorization() { return status }
+        return await push.authorizationStatus()
     }
 }
 

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
@@ -73,13 +72,14 @@ fun SegmentedControl(
                 )
             }
         }
-        Row(Modifier.fillMaxWidth().heightIn(min = Tokens.Sizes.groupsScreenSizeSegmentHeight - inset - inset)) {
+        val inner = Tokens.Sizes.groupsScreenSizeSegmentHeight - inset - inset
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             options.forEachIndexed { index, label ->
                 val selected = index == selectedIndex
                 Box(
                     Modifier
                         .weight(1f)
-                        .fillMaxHeight()
+                        .heightIn(min = inner)
                         .selectable(selected = selected, role = Role.Tab) {
                             if (!selected) {
                                 haptics.perform(Tokens.Haptics.globalSelect)
@@ -90,7 +90,7 @@ fun SegmentedControl(
                 ) {
                     if (reduceMotion) {
                         val alpha by dsAnimateAlphaAsState(if (selected) 1f else 0f, spring.spec(), label = "segmentFade")
-                        Box(Modifier.fillMaxSize().alpha(alpha).background(Tokens.Colors.globalSurfaceLight, CircleShape))
+                        Box(Modifier.matchParentSize().alpha(alpha).background(Tokens.Colors.globalSurfaceLight, CircleShape))
                     }
                     Text(
                         label,

@@ -77,11 +77,11 @@ struct TributeScreen: View {
                 .dsTextStyle(BirthdayType.requestTitle)
                 .foregroundStyle(Tokens.Colors.globalTextPrimary)
                 .accessibilityAddTraits(.isHeader)
-            if !model.groupName.isEmpty {
-                Text(model.groupName)
-                    .dsTextStyle(BirthdayType.message)
-                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
-            }
+            // The group line keeps its height while loading, so the player never moves.
+            Text(model.groupName.isEmpty ? " " : model.groupName)
+                .dsTextStyle(BirthdayType.message)
+                .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                .accessibilityHidden(model.groupName.isEmpty)
             if model.phase == .offline {
                 Text(Copy.birthdayTributeOffline)
                     .dsTextStyle(MemoryType.listSubtitle)
@@ -107,8 +107,8 @@ struct TributeScreen: View {
     private var player: some View {
         let aspect = Tokens.Layouts.BirthdayTributeVideo.width / Tokens.Layouts.BirthdayTributeVideo.height
         Group {
-            if model.phase == .ready, let videoURL = model.videoURL {
-                TributePlayer(videoURL: videoURL, posterURL: model.posterURL)
+            if model.phase == .ready, let player = model.player {
+                TributePlayer(player: player, posterURL: model.posterURL)
             } else {
                 ZStack {
                     Tokens.Colors.birthdayTributePillarbox
@@ -144,36 +144,34 @@ struct TributeScreen: View {
 /// (the title card) shown until playback starts. Plays once on open unless the system setting
 /// "Auto-Play Video Previews" is off (`UIAccessibility.isVideoAutoplayEnabled`).
 private struct TributePlayer: View {
-    let videoURL: URL
+    let player: AVPlayer
     let posterURL: URL?
-    @State private var player: AVPlayer?
     @State private var hasStarted = false
+    @State private var didAutoplay = false
 
     var body: some View {
         ZStack {
             Tokens.Colors.birthdayTributePillarbox
-            if let player {
-                VideoPlayer(player: player) {
-                    if !hasStarted {
-                        MemoryRemoteImage(url: posterURL, contentMode: .fit)
-                            .allowsHitTesting(false)
-                    }
+            VideoPlayer(player: player) {
+                if !hasStarted {
+                    MemoryRemoteImage(url: posterURL, contentMode: .fit)
+                        .allowsHitTesting(false)
                 }
-                .onReceive(player.publisher(for: \.timeControlStatus).receive(on: DispatchQueue.main)) { status in
-                    if status == .playing { hasStarted = true }
-                }
+            }
+            .onReceive(player.publisher(for: \.timeControlStatus).receive(on: DispatchQueue.main)) { status in
+                if status == .playing { hasStarted = true }
             }
         }
         .onAppear {
-            guard player == nil else { return }
-            let player = AVPlayer(url: videoURL)
-            self.player = player
+            // Plays once when the screen opens, unless "Auto-Play Video Previews" is off.
+            guard !didAutoplay else { return }
+            didAutoplay = true
             if UIAccessibility.isVideoAutoplayEnabled {
                 player.play()
             }
         }
         .onDisappear {
-            player?.pause()
+            player.pause()
         }
     }
 }

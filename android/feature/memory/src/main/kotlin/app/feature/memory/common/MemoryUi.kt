@@ -257,6 +257,20 @@ fun MemoryImage(
     )
 }
 
+/**
+ * Starts loading [urls] into the image caches now, so they show at once when their screen or card
+ * appears (no image popping in after a tap). Nothing when tests supply images.
+ */
+@Composable
+fun PreloadImages(urls: List<String>) {
+    if (LocalMemoryImages.current != null || urls.isEmpty()) return
+    val context = LocalContext.current
+    LaunchedEffect(urls) {
+        val loader = coil3.SingletonImageLoader.get(context)
+        urls.forEach { url -> loader.enqueue(ImageRequest.Builder(context).data(url).build()) }
+    }
+}
+
 /** Height of the safe-area header row (status bar + one header circle's touch box): content starts below it. */
 @Composable
 fun headerClearance(): Dp =

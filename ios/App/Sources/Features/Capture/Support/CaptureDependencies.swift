@@ -45,7 +45,7 @@ enum CaptureCameraMode: Hashable, Sendable {
 
 /// The camera behind `camera.capture` and `daily.capture`.
 @MainActor
-protocol CaptureCamera: AnyObject {
+protocol CaptureCamera: AnyObject, Sendable {
     func authorization() -> PermissionStatus
     func requestAccess() async -> PermissionStatus
     func microphoneAuthorization() -> PermissionStatus
@@ -69,7 +69,7 @@ protocol CaptureCamera: AnyObject {
 // MARK: - Library
 
 @MainActor
-protocol CaptureLibrary: AnyObject {
+protocol CaptureLibrary: AnyObject, Sendable {
     /// The newest library photo, only when read access was already granted (never asks).
     func newestThumbnail(side: CGFloat) async -> UIImage?
     /// Saves to the library with add-only access (asks on first use).
@@ -86,7 +86,7 @@ struct CaptureGroup: Identifiable, Hashable, Sendable {
 }
 
 @MainActor
-protocol CaptureGroupSource: AnyObject {
+protocol CaptureGroupSource: AnyObject, Sendable {
     /// Groups from the offline cache, when any were cached.
     func cachedGroups() async -> [CaptureGroup]?
     func loadGroups() async throws -> [CaptureGroup]
@@ -96,7 +96,7 @@ protocol CaptureGroupSource: AnyObject {
 }
 
 @MainActor
-protocol CapturePremium: AnyObject {
+protocol CapturePremium: AnyObject, Sendable {
     /// Whether the member has an active premium entitlement (video).
     func isPremium() async -> Bool
     /// Opens the paywall when the session's single premium prompt is still available
@@ -110,7 +110,7 @@ struct VoiceNote: Sendable, Equatable {
 }
 
 @MainActor
-protocol CaptureVoiceRecorder: AnyObject {
+protocol CaptureVoiceRecorder: AnyObject, Sendable {
     var isRecording: Bool { get }
     func permission() -> PermissionStatus
     func requestPermission() async -> PermissionStatus
@@ -129,7 +129,7 @@ struct CaptureRetryResult: Sendable, Equatable {
 }
 
 @MainActor
-protocol CapturePosting: AnyObject {
+protocol CapturePosting: AnyObject, Sendable {
     /// Saves the draft in the outbox and posts it (docs/API.md recipe 9.4). A draft whose post
     /// fails stays in the outbox (AppData `PostPublisher`).
     func publish(_ draft: PostDraft) async throws
@@ -152,7 +152,7 @@ struct CaptureInvitation: Sendable, Equatable {
 }
 
 @MainActor
-protocol CaptureInvitationSource: AnyObject {
+protocol CaptureInvitationSource: AnyObject, Sendable {
     func invitation(id: String, groupID: String) async throws -> CaptureInvitation?
     /// The group's name from the cache, the widget's group list or the server.
     func groupName(groupID: String) async -> String
@@ -168,7 +168,7 @@ protocol CaptureCollageSource: AnyObject, Sendable {
     func cachedCollage(invitationID: String) async -> Collage?
     /// Downloads (or reads from the on-disk cache) the image at a storage path.
     func image(path: String) async throws -> UIImage
-    func cachedImage(path: String) -> UIImage?
+    func cachedImage(path: String) async -> UIImage?
     /// Writes the share image of a page to a local file for the share sheet.
     func shareFile(path: String) async throws -> URL
     var isOffline: Bool { get }
@@ -177,7 +177,7 @@ protocol CaptureCollageSource: AnyObject, Sendable {
 // MARK: - Navigation out of the capture screens
 
 @MainActor
-protocol CaptureNavigation: AnyObject {
+protocol CaptureNavigation: AnyObject, Sendable {
     /// Closes the camera / daily capture (back to where the member was).
     func closeCapture()
     /// Opens the camera with a group preselected (collage.view empty state).
@@ -192,7 +192,7 @@ protocol CaptureNavigation: AnyObject {
 // MARK: - First-use coach marks
 
 @MainActor
-protocol CaptureCoachStore: AnyObject {
+protocol CaptureCoachStore: AnyObject, Sendable {
     func isDismissed(_ coach: CaptureCoach) -> Bool
     func dismiss(_ coach: CaptureCoach)
 }
@@ -204,6 +204,7 @@ enum CaptureCoach: String, CaseIterable, Sendable {
     case voice = "capture.coach.voice"
 }
 
+@MainActor
 final class UserDefaultsCoachStore: CaptureCoachStore {
     private let defaults: UserDefaults
 

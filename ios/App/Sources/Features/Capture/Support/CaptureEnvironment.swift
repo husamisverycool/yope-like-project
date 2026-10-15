@@ -71,12 +71,33 @@ final class CaptureEnvironment {
         )
     }
 
+    // MARK: Camera pre-warm
+
+    /// One single-camera session for every opening of camera.capture (kept configured; stopped
+    /// while the camera is not shown).
+    private var singleCamera: CaptureCamera?
+
+    func sharedSingleCamera() -> CaptureCamera {
+        if let singleCamera { return singleCamera }
+        let camera = makeCamera(false)
+        singleCamera = camera
+        return camera
+    }
+
+    /// Configures and starts the camera ahead of camera.capture (call when the camera is about to
+    /// appear: the camera tab pressed, a widget or deep link received). Never asks for permission.
+    func prewarmCamera() async {
+        let camera = sharedSingleCamera()
+        guard camera.authorization() == .granted else { return }
+        try? await camera.configure(.photo(CameraCaptureModel.currentSessionPosition))
+    }
+
     // MARK: View models
 
     func cameraModel(contextGroupID: String?) -> CameraCaptureModel {
         CameraCaptureModel(
             contextGroupID: contextGroupID,
-            camera: makeCamera(false),
+            camera: sharedSingleCamera(),
             premium: premium,
             library: library,
             coach: coach,

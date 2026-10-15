@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -63,11 +64,11 @@ import org.robolectric.annotation.GraphicsMode
 class ComponentSnapshotTest {
     @get:Rule val compose = createComposeRule()
 
-    private fun shot(name: String, content: @Composable () -> Unit) =
+    private fun shot(name: String, reduceMotion: Boolean = false, content: @Composable () -> Unit) =
         captureRoboImage("src/test/snapshots/components/$name.png") {
             AppTheme {
-                CompositionLocalProvider(LocalReduceMotionOverride provides true) {
-                    Column(Modifier.background(Tokens.Colors.globalBackgroundDeep).padding(Tokens.Sizes.globalScreenMargin)) { content() }
+                CompositionLocalProvider(LocalReduceMotionOverride provides reduceMotion) {
+                    Column(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep).padding(Tokens.Sizes.globalScreenMargin)) { content() }
                 }
             }
         }
@@ -144,6 +145,10 @@ class ComponentSnapshotTest {
             CheckRow("tell my groups when it’s my birthday", false, {}, "tell my groups", detail = "we’ll save your birthday for this")
             CheckRow("tell my groups when it’s my birthday", true, {}, "tell my groups", detail = "we’ll save your birthday for this")
         }
+    }
+
+    @Test fun segmentedReduceMotion() = shot("segmentedReduceMotion", reduceMotion = true) {
+        SegmentedControl(listOf("friends", "family", "roommates", "custom"), 1, {})
     }
 
     @Test fun titles() = shot("titles") {

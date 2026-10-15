@@ -248,6 +248,69 @@ final class SocialChatThreadModelTests: XCTestCase {
         XCTAssertEqual(data.read { $0.messages.last?.body }, "dinner at 8")
     }
 
+    func testOptimisticMessageIsShownWhileSendingAndReplacedOnce() async {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data)
+        await model.load()
+        // The server echo arrives through realtime before the RPC returns.
+        data.update { state in
+            state.beforeSendReturns = { message in
+                await MainActor.run {
+                    XCTAssertTrue(model.messages.contains { model.isPending($0) && $0.body == message.body }, "shown before the server answers")
+                }
+                await model.handle(.messageInserted(message))
+            }
+        }
+        model.draft = "on my way"
+        await model.sendDraft()
+        XCTAssertEqual(model.messages.filter { $0.body == "on my way" }.count, 1)
+        XCTAssertTrue(model.pending.isEmpty)
+        XCTAssertFalse(model.messages.last.map(model.isPending) ?? true)
+        XCTAssertFalse(model.isSending)
+    }
+
+    func testOptimisticVoiceMessageKeepsItsLocalFile() async {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data)
+        await model.load()
+        let file = URL(fileURLWithPath: "/tmp/voice.m4a")
+        await model.sendVoice(fileURL: file, durationMs: 4200)
+        let sent = try! XCTUnwrap(model.messages.last)
+        XCTAssertFalse(model.isPending(sent))
+        XCTAssertEqual(model.localVoiceFiles[sent.id], file, "playable from the recording, no download")
+
+        data.update { $0.failOnce.insert("sendVoice") }
+        let before = model.messages.count
+        await model.sendVoice(fileURL: file, durationMs: 1000)
+        XCTAssertEqual(model.messages.count, before, "rolled back")
+        XCTAssertEqual(model.signals.notice?.notice, .sendFailed)
+    }
+
+    func testNoLoadingHUDWhenACachedCopyExists() async {
+        let data = SocialDemo.makeData()
+        data.update { $0.cachedMessages[SocialDemo.groupID] = SocialDemo.messages.reversed() }
+        let model = makeModel(data)
+        XCTAssertFalse(model.showsLoading, "nothing drawn before the cache was checked")
+        await model.load()
+        XCTAssertEqual(model.phase, .ready)
+        XCTAssertFalse(model.showsLoading)
+
+        let uncached = makeModel(SocialDemo.makeData())
+        XCTAssertFalse(uncached.showsLoading)
+    }
+
+    func testFailedDeleteIsPutBack() async {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data)
+        await model.load()
+        let mine = try! XCTUnwrap(model.messages.first { $0.body == "yes please" })
+        let order = model.messages.map(\.id)
+        data.update { $0.failOnce.insert("deleteMessage") }
+        await model.delete(mine)
+        XCTAssertEqual(model.messages.map(\.id), order)
+        XCTAssertEqual(model.signals.feedback?.kind, .failed)
+    }
+
     func testBlankDraftIsNotSent() async {
         let data = SocialDemo.makeData()
         let model = makeModel(data)

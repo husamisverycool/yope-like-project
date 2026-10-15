@@ -45,6 +45,8 @@ final class BirthdayRequestModel {
     var isRemoving = false
     /// Presents `birthday.contribute` (full screen, its own navigation).
     var showsContribute = false
+    /// A refresh failed offline while content is shown: `birthday.request.offline` under the hero.
+    var isOffline = false
     private(set) var request: TributeRequest?
 
     let requestID: TributeRequestID
@@ -72,37 +74,63 @@ final class BirthdayRequestModel {
         await load()
     }
 
+    private struct Cached {
+        let request: TributeRequest
+        let honoreeName: String
+        let heroURL: URL?
+        let dueText: String
+        let contribution: OwnContribution?
+    }
+
+    private var cacheKey: String { "birthday.request." + requestID.rawValue } // provenance-ok: cache key
+
+    /// Cache-first: the request opened before shows at once; the fresh read replaces it in place.
     private func load() async {
-        phase = .loading
         guard let data = dependencies.data else {
             phase = .error
             return
         }
+        let me = await data.currentUser()
+        if phase != .open && phase != .closed, let cached = dependencies.cache.value(Cached.self, key: cacheKey, user: me),
+           cached.request.honoreeID != me {
+            apply(cached)
+        } else if phase != .open && phase != .closed {
+            phase = .loading
+        }
         do {
-            guard let request = try await data.request(id: requestID) else {
+            guard let request = try await data.request(id: requestID), request.honoreeID != me else {
+                // The honoree never sees a request about them.
+                dependencies.cache.remove(key: cacheKey)
                 phase = .notFound
                 return
             }
-            let me = await data.currentUser()
-            guard request.honoreeID != me else {
-                phase = .notFound
-                return
-            }
-            self.request = request
             let honoree = try await data.profiles(ids: [request.honoreeID]).first
-            honoreeName = honoree?.firstName ?? ""
+            var hero: URL?
             if let avatar = honoree?.avatarPath {
-                heroURL = try await data.signedURLs(paths: [avatar])[avatar]
+                hero = try await data.signedURLs(paths: [avatar])[avatar]
             }
-            dueText = Copy.birthdayRequestDue(date: MemoryFormat.dueDate(birthday: request.birthdayDate))
-            guard request.isOpen(at: dependencies.now()) else {
-                phase = .closed
+            var own: OwnContribution?
+            if request.isOpen(at: dependencies.now()) {
+                own = try await Self.ownContribution(requestID: requestID, data: data)
+            }
+            let fresh = Cached(
+                request: request,
+                honoreeName: honoree?.firstName ?? "",
+                heroURL: hero,
+                dueText: Copy.birthdayRequestDue(date: MemoryFormat.dueDate(birthday: request.birthdayDate)),
+                contribution: own
+            )
+            dependencies.cache.set(fresh, key: cacheKey, user: me, postIDs: Set([own?.postID].compactMap { $0 }))
+            isOffline = false
+            apply(fresh)
+        } catch {
+            let failure = MemoryFailure(error)
+            if phase == .open || phase == .closed {
+                // Cached content stays; offline is said under the hero.
+                isOffline = failure == .offline
                 return
             }
-            contribution = try await Self.ownContribution(requestID: requestID, data: data)
-            phase = .open
-        } catch {
-            switch MemoryFailure(error) {
+            switch failure {
             case .offline: phase = .offline
             case .notFound: phase = .notFound
             case .closed: phase = .closed
@@ -111,12 +139,29 @@ final class BirthdayRequestModel {
         }
     }
 
+    private func apply(_ value: Cached) {
+        request = value.request
+        honoreeName = value.honoreeName
+        heroURL = value.heroURL
+        dueText = value.dueText
+        contribution = value.contribution
+        phase = value.request.isOpen(at: dependencies.now()) ? .open : .closed
+    }
+
+    private func storeContribution() async {
+        guard let request, let data = dependencies.data else { return }
+        let me = await data.currentUser()
+        let value = Cached(request: request, honoreeName: honoreeName, heroURL: heroURL, dueText: dueText, contribution: contribution)
+        dependencies.cache.set(value, key: cacheKey, user: me, postIDs: Set([contribution?.postID].compactMap { $0 }))
+    }
+
     /// Re-reads the own contribution (after `birthday.contribute` closed).
     func reloadContribution() async {
         guard phase == .open, let data = dependencies.data else { return }
         do {
             contribution = try await Self.ownContribution(requestID: requestID, data: data)
             inline = nil
+            await storeContribution()
         } catch {
             if MemoryFailure(error) == .closed { phase = .closed }
         }
@@ -141,17 +186,19 @@ final class BirthdayRequestModel {
     }
 
     /// Withdraw (direct DELETE of the own row before `due_at`); no confirmation — re-adding is
-    /// possible until the due time.
+    /// possible until the due time. Optimistic: the block goes at once and comes back on failure.
     func remove() async {
-        guard contribution != nil, !isRemoving, let data = dependencies.data else { return }
+        guard let removed = contribution, !isRemoving, let data = dependencies.data else { return }
         isRemoving = true
         defer { isRemoving = false }
+        contribution = nil
+        inline = nil
         do {
             try await data.withdraw(requestID: requestID)
-            contribution = nil
-            inline = nil
             dependencies.haptics(Tokens.Haptics.globalSuccess)
+            await storeContribution()
         } catch {
+            contribution = removed
             dependencies.haptics(Tokens.Haptics.globalError)
             switch MemoryFailure(error) {
             case .offline: inline = .offline
@@ -186,15 +233,19 @@ final class BirthdayRequestsEntryModel {
             items = []
             return
         }
+        let me = await data.currentUser()
+        let cacheKey = "birthday.requests.entry." + groupID.rawValue // provenance-ok: cache key
+        if items.isEmpty, let cached = dependencies.cache.value([Item].self, key: cacheKey, user: me) {
+            items = cached
+        }
         do {
-            let me = await data.currentUser()
             let now = dependencies.now()
             let requests = try await data.openRequests().filter {
                 $0.groupID == groupID && $0.honoreeID != me && $0.isOpen(at: now)
             }
             let profiles = try await data.profiles(ids: Array(Set(requests.map(\.honoreeID))))
             let names = Dictionary(profiles.map { ($0.id, $0.firstName ?? "") }, uniquingKeysWith: { first, _ in first })
-            items = requests.map { request in
+            let fresh = requests.map { request in
                 Item(
                     requestID: request.id,
                     content: MemoryEntryContent(
@@ -203,6 +254,8 @@ final class BirthdayRequestsEntryModel {
                     )
                 )
             }
+            items = fresh
+            dependencies.cache.set(fresh, key: cacheKey, user: me)
         } catch {
             // The rows are invitations only: on failure they stay as they were.
         }

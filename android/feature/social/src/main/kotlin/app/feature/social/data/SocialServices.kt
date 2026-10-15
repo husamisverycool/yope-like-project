@@ -48,8 +48,12 @@ interface VoiceServices {
     fun play(key: String, url: String)
     fun pause()
 
-    /** The level envelope of an audio file at [url], as [bars] bars (0…1), or null when it cannot be decoded. */
-    suspend fun envelope(url: String, bars: Int): List<Float>?
+    /**
+     * The level envelope of the audio file [key] (its storage path) at [url], as [bars] bars (0…1),
+     * or null when it cannot be decoded. Computed once per file and kept, so bubbles scrolled back
+     * into view draw at once.
+     */
+    suspend fun envelope(key: String, url: String, bars: Int): List<Float>?
     fun release()
 }
 
@@ -57,7 +61,9 @@ interface VoiceServices {
 interface GallerySaver {
     /** API 26–28 need WRITE_EXTERNAL_STORAGE; 29+ need nothing (MediaStore insert). */
     fun needsPermission(context: Context): Boolean
-    suspend fun saveJpeg(context: Context, bytes: ByteArray): Boolean
+
+    /** Inserts [bytes] ([mimeType]: an image or video type) into the library; false when it failed. */
+    suspend fun save(context: Context, bytes: ByteArray, mimeType: String, extension: String): Boolean
 }
 
 /** The services the screens use; tests replace them. */
@@ -114,7 +120,7 @@ class PlatformVoiceServices(private val context: Context) : VoiceServices {
         state.value = VoicePlayback(playingKey, false)
     }
 
-    override suspend fun envelope(url: String, bars: Int): List<Float>? = AudioEnvelope.decode(url, bars)
+    override suspend fun envelope(key: String, url: String, bars: Int): List<Float>? = AudioEnvelope.cached(key, url, bars)
 
     override fun release() {
         scope.cancel()
@@ -135,6 +141,19 @@ class PlatformVoiceServices(private val context: Context) : VoiceServices {
  * the peak per bar.
  */
 object AudioEnvelope {
+    private val cache = object : LinkedHashMap<String, List<Float>>(16, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, List<Float>>?): Boolean = size > CACHE_ENTRIES
+    }
+
+    /** From memory when this file was decoded before (keyed by storage path and bar count). */
+    suspend fun cached(key: String, url: String, bars: Int): List<Float>? {
+        val id = "$key#$bars"
+        synchronized(cache) { cache[id] }?.let { return it }
+        return decode(url, bars)?.also { synchronized(cache) { cache[id] = it } }
+    }
+
+    fun peek(key: String, bars: Int): List<Float>? = synchronized(cache) { cache["$key#$bars"] }
+
     suspend fun decode(url: String, bars: Int): List<Float>? = withContext(Dispatchers.IO) {
         runCatching { decodeBlocking(url, bars) }.getOrNull()
     }
@@ -190,6 +209,7 @@ object AudioEnvelope {
     }
 
     private const val TIMEOUT_US = 10_000L
+    private const val CACHE_ENTRIES = 256
 }
 
 /** MediaStore insert into Pictures (photo.viewer → Save; Android saves the still, PLATFORM_CONSTRAINTS §Summary). */
@@ -198,24 +218,26 @@ object MediaStoreGallerySaver : GallerySaver {
         Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
             context.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != android.content.pm.PackageManager.PERMISSION_GRANTED
 
-    override suspend fun saveJpeg(context: Context, bytes: ByteArray): Boolean = withContext(Dispatchers.IO) {
+    override suspend fun save(context: Context, bytes: ByteArray, mimeType: String, extension: String): Boolean = withContext(Dispatchers.IO) {
         val resolver = context.contentResolver
+        val video = mimeType.startsWith("video/")
         val values = ContentValues().apply {
-            put(MediaStore.Images.Media.DISPLAY_NAME, "${UUID.randomUUID()}.jpg")
-            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.MediaColumns.DISPLAY_NAME, "${UUID.randomUUID()}.$extension")
+            put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
-                put(MediaStore.Images.Media.IS_PENDING, 1)
+                put(MediaStore.MediaColumns.RELATIVE_PATH, if (video) Environment.DIRECTORY_MOVIES else Environment.DIRECTORY_PICTURES)
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
             }
         }
-        val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values) ?: return@withContext false
+        val collection = if (video) MediaStore.Video.Media.EXTERNAL_CONTENT_URI else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        val uri = resolver.insert(collection, values) ?: return@withContext false
         val ok = runCatching { resolver.openOutputStream(uri)?.use { it.write(bytes) } != null }.getOrDefault(false)
         if (!ok) {
             resolver.delete(uri, null, null)
             return@withContext false
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            resolver.update(uri, ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) }, null, null)
+            resolver.update(uri, ContentValues().apply { put(MediaStore.MediaColumns.IS_PENDING, 0) }, null, null)
         }
         true
     }

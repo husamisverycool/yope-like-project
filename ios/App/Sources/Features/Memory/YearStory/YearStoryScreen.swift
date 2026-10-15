@@ -20,6 +20,7 @@ struct YearStoryScreen: View {
     /// Snapshots: subline shown at once instead of the reveal.
     private let revealsImmediately: Bool
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.displayScale) private var displayScale
 
     init(groupID: String, year: Int, model: YearStoryModel? = nil, revealsImmediately: Bool = false) {
         self.groupID = groupID
@@ -36,6 +37,8 @@ struct YearStoryScreen: View {
                     .ignoresSafeArea()
                 YearStoryCanvasView(model: model, size: canvas, revealsImmediately: revealsImmediately)
                     .frame(width: canvas.width, height: canvas.height)
+                    .onAppear { updatePixelSize(width: canvas.width) }
+                    .onChange(of: canvas.width) { _, width in updatePixelSize(width: width) }
                     .task(id: renderKey(width: canvas.width)) {
                         await renderShares(width: canvas.width)
                     }
@@ -60,11 +63,24 @@ struct YearStoryScreen: View {
         "\(model.phase == .loaded)-\(model.currentCard?.id ?? "")-\(Int(width))" // provenance-ok: task identity, not UI text
     }
 
+    /// The photo box in pixels, at the larger of the screen's and the share image's scale.
+    private func updatePixelSize(width: CGFloat) {
+        guard width > 0 else { return }
+        let box = width * Tokens.Layouts.YearStoryPhotoCard.boxWidthRatio
+        model.imagePixelSize = box * max(displayScale, Tokens.Layouts.YearStoryShareCard.width / width)
+        model.preloadUpcoming()
+    }
+
     private func renderShares(width: CGFloat) async {
         guard model.phase == .loaded, let card = model.currentCard else { return }
         let targets = card == .summary ? model.shareableCards : (card.isShareable ? [card] : [])
         for target in targets where model.shareFiles[target.id] == nil {
-            guard let output = await YearStoryShareRenderer.render(target, width: width, images: model.images) else { continue }
+            // One card per main-actor turn, so taps and frames are not held up.
+            await Task.yield()
+            guard !Task.isCancelled else { return }
+            guard let output = await YearStoryShareRenderer.render(
+                target, width: width, pixelSize: model.imagePixelSize, images: model.images
+            ) else { continue }
             model.shareFiles[target.id] = output.file
             model.shareImages[target.id] = output.image
         }

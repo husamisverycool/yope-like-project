@@ -47,6 +47,8 @@ final class WallModel {
     private(set) var collages: [CollageID: Collage] = [:]
     private(set) var cursor: Date?
     private(set) var isLoadingMore = false
+    /// The offline copy was looked at (the loading indicator shows only when there was none).
+    private(set) var hasCheckedCache = false
 
     init(owner: Owner, data: any SocialDataSource) {
         self.owner = owner
@@ -77,6 +79,8 @@ final class WallModel {
 
     var hasMore: Bool { cursor != nil }
 
+    var showsLoading: Bool { phase == .loading && hasCheckedCache }
+
     var displayName: String? { profile?.displayName }
 
     // MARK: Loading
@@ -98,6 +102,7 @@ final class WallModel {
             await loadDetails(for: cached)
             phase = .ready
         }
+        hasCheckedCache = true
         do {
             let page = try await data.wall(userID: userID, before: nil, limit: SocialPaging.wall)
             isOffline = false

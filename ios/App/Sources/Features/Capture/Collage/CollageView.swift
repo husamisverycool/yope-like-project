@@ -87,6 +87,8 @@ struct CollageView: View {
         let pageWidth = min(available.width, available.height * Page.canvasAspect)
         let pageSize = CGSize(width: pageWidth, height: pageWidth / Page.canvasAspect)
         switch model.state {
+        case .idle:
+            Color.clear
         case .loading:
             loadingHUD
                 .frame(width: pageSize.width, height: pageSize.height)

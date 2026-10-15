@@ -46,6 +46,9 @@ struct BirthdayRequestScreen: View {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 0) {
                             hero(safeTop: safeTop)
+                            if model.isOffline {
+                                offlineLine
+                            }
                             belowHero
                         }
                         .padding(.bottom, proxy.safeAreaInsets.bottom + Tokens.Sizes.birthdayRequestMargin)
@@ -137,11 +140,7 @@ struct BirthdayRequestScreen: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, Tokens.Sizes.birthdayRequestCtaGap)
         case .offline:
-            Text(Copy.birthdayRequestOffline)
-                .dsTextStyle(MemoryType.listSubtitle)
-                .foregroundStyle(Tokens.Colors.globalTextSecondary)
-                .padding(.horizontal, Tokens.Sizes.birthdayRequestMargin)
-                .padding(.top, Tokens.Sizes.birthdayRequestCtaGap)
+            offlineLine
         case .closed:
             MemoryStateMessage(title: Copy.birthdayRequestClosedTitle, detail: Copy.birthdayRequestClosedDetail(name: model.honoreeName))
                 .padding(.horizontal, Tokens.Sizes.birthdayRequestMargin)
@@ -167,6 +166,15 @@ struct BirthdayRequestScreen: View {
         case .notFound, .error:
             EmptyView()
         }
+    }
+
+    /// `birthday.request.offline` under the hero (`fontSize.global.listSubtitle`, `color.global.textSecondary`).
+    private var offlineLine: some View {
+        Text(Copy.birthdayRequestOffline)
+            .dsTextStyle(MemoryType.listSubtitle)
+            .foregroundStyle(Tokens.Colors.globalTextSecondary)
+            .padding(.horizontal, Tokens.Sizes.birthdayRequestMargin)
+            .padding(.top, Tokens.Sizes.birthdayRequestCtaGap)
     }
 
     /// The member's own block: heading, photo (`radius.global.photo`, content width), line, then

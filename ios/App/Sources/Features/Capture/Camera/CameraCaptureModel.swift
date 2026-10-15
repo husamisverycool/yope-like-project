@@ -28,6 +28,8 @@ final class CameraCaptureModel {
     /// The camera chosen in this app session ("front after a flip, kept for the session").
     private static var sessionPosition: CameraPosition = .back
 
+    static var currentSessionPosition: CameraPosition { sessionPosition }
+
     private(set) var phase: Phase = .starting
     private(set) var position: CameraPosition
     private(set) var isFlashOn = false
@@ -107,10 +109,14 @@ final class CameraCaptureModel {
             phase = .denied
             return
         }
+        // The session first (first frame as early as possible); premium and the library thumbnail
+        // load meanwhile.
+        async let premiumStatus = premium.isPremium()
+        async let thumbnail = library.newestThumbnail(side: Tokens.Sizes.cameraCaptureSizeLibraryThumb)
         await startSession()
-        isVideoAvailable = await premium.isPremium()
+        isVideoAvailable = await premiumStatus
         showsCoach = isVideoAvailable && !coach.isDismissed(.holdToRecord)
-        libraryThumbnail = await library.newestThumbnail(side: Tokens.Sizes.cameraCaptureSizeLibraryThumb)
+        libraryThumbnail = await thumbnail
     }
 
     func disappear() async {
