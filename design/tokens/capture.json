@@ -267,13 +267,16 @@
     },
     "camera.capture.size.recordingOutline": {
       "type": "dimension",
-      "value": null,
+      "value": 6,
       "source_app": "Locket",
       "surface": "camera.capture",
       "element": "outline drawn around the viewfinder while a video records (color.global.accent)",
-      "evidence": "https://help.locket.com/en/articles/7915017 'The yellow outline around the viewfinder indicates that capture is in progress.' (no image)",
-      "level": "BLOCKED",
-      "notes": "Stroke width not observed. Smallest capture: a 10-second iPhone screen recording of Locket hold-to-record (locket.md §5)."
+      "evidence": "references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (Locket Android 1.243.0, decompiled Hermes JS bundle): the camera screen draws BorderProgressBarOverlay with props {size, borderRadius: 60, color} only; BorderProgressBar defaults strokeWidth to 6 and color to YELLOW, and fills its stroke with withTiming(1, {duration, easing: Easing.linear}) (strokeDashoffset = dasharray x (1 - progress)); https://help.locket.com/en/articles/7915017 'The yellow outline around the viewfinder indicates that capture is in progress.'",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-9). Colour color.global.accent (C-1: Yope's camera). Locket's outline is a progress stroke: it traces the viewfinder's rounded outline from empty to full linearly over the maximum video length (Locket passes its viewfinder radius; ours follows radius.global.viewfinder).",
+      "unit": "pt",
+      "method": "source default read from the decompiled bundle (React Native dp = pt)",
+      "precision": "exact (source constant)"
     },
     "camera.capture.size.permissionButtonHeight": {
       "type": "dimension",
@@ -362,13 +365,15 @@
     },
     "camera.sendto.color.messageField": {
       "type": "color",
-      "value": null,
+      "value": "#0000007A",
       "source_app": "Yope",
       "surface": "camera.sendto",
       "element": "translucent fill of the 'add a message' capsule and the mic circle",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10) field median (74,64,52) over a beige photo; (35–70) over a dark area",
-      "level": "BLOCKED",
-      "notes": "Blurred translucent material; one image cannot solve its alpha. Smallest capture: one screenshot of Yope's send-to card over a flat white and a flat black photo."
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (576 x 1024): 'add a message' field over the beige photo: field (90,78,61) at x180-200 y442-448 and (81,68.5,57) at y474-479 vs the photo just above the field (161,144,117) at x180-200 y418-434; field (86,76.5,63) at x200-220 vs photo above (172,158.5,87)",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-10). Covers the field and the mic circle (same material). Draw it over a backdrop blur of the photo (as observed; radius not measured). Cross-checks in this pass: BeReal's controls over a photo solve to black ≈0.46 (daily.capture.color.overlayControl), Yope's home header circle ≈0.58.",
+      "method": "single-background solve; a neutral grey tint g fits the three channels only for g ≤ 0 (g = -47 for the first pair), so the tint is black: alpha = 1 - C/B = 0.44/0.46/0.48 (first pair), 0.50/0.52 (second pair, R/G; its blue channel 0.28 is off because the yellowish photo above differs from the photo under the field) -> mean 0.48 -> #000000 at 0.48 (122/255 = 0x7A)",
+      "precision": "±0.05 alpha (video; the blurred photo under the field is assumed equal to the photo just above it; the blur radius is not measured)"
     },
     "camera.sendto.fontSize.messagePlaceholder": {
       "type": "fontSize",
@@ -484,23 +489,28 @@
     },
     "camera.sendto.duration.toastVisible": {
       "type": "duration",
-      "value": null,
-      "source_app": "Yope",
+      "value": 2000,
+      "source_app": "Locket",
       "surface": "camera.sendto",
       "element": "how long the confirmation toast stays, and its entrance / exit motion",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (@7.73 s, 2026-10-10) (single frame only)",
-      "level": "BLOCKED",
-      "notes": "Smallest capture: a 5-second screen recording of Yope right after tapping send (toast in → out)."
+      "evidence": "references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (Locket Android 1.243.0, decompiled Hermes JS bundle): Locket's confirmation toasts use ToastAndroid.SHORT; references/auto/platform/aosp-toast-duration-excerpt.txt: SHORT_DELAY = 2000 ms. Yope: references/auto/yope/frames/a-chuongxetank-7694968408424582452-1080p-toast-lime-track.csv (60 fps: the toast enters 7.567 -> 7.683 s, ≈117 ms; still on screen when the edit cuts away at ≈8.25 s)",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-7): same dwell as safety.block.duration.toast (one toast component). Yope's own dwell is not observable (the TikTok edit cuts away while the toast is shown).",
+      "unit": "ms",
+      "method": "platform constant behind the reference's toast; Yope entrance from per-frame lime pixel counts (60 fps)",
+      "precision": "dwell exact (platform constant); entrance ±17 ms (1 frame at 60 fps), curve not measurable; exit not visible"
     },
     "camera.sendto.size.captionMaxLength": {
       "type": "count",
-      "value": null,
-      "source_app": "Yope",
+      "value": 36,
+      "source_app": "Locket",
       "surface": "camera.sendto",
       "element": "longest caption the field accepts",
-      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t5.73-sendto-caption-keyboard.png (https://www.tiktok.com/@savannahclooney/video/7683341732695592206 @5.73 s, 2026-09-09)",
-      "level": "BLOCKED",
-      "notes": "Not observed. docs/API.md §12.18: the server bound (1000) is integrity only; UI limits come from the design. Smallest capture: type a long caption in Yope's send-to."
+      "evidence": "references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (Locket Android 1.243.0, decompiled Hermes JS bundle): the caption TextInput on the photo (style captionInput) has maxLength = MAX_CHARS; the caption module exports MULTILINE_MAX_LINES 4, MULTILINE_MAX_CHARS 200, MAX_CHARS 36, MIN_WIDTH 28; MULTILINE is Locket Gold's 'Send longer captions' perk ('Type even more on your photos!')",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-11). camera.sendto is Yope + Locket; Yope's limit was not observed, Locket's free single-line caption is the same element (a one-line caption over the photo, shown in the widget pill). The server bound (1000, docs/API.md §12.18) stays integrity only. No counter (Locket shows none).",
+      "method": "source constant read from the decompiled bundle",
+      "precision": "exact (source constant)"
     },
     "camera.fromwidget.layout.target": {
       "type": "layout",
@@ -762,13 +772,15 @@
     },
     "widget.home.small.color.emptyLabel": {
       "type": "color",
-      "value": null,
-      "source_app": "Locket",
+      "value": "#969696",
+      "source_app": "Yope",
       "surface": "widget.home.small",
       "element": "empty-state label color",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) label is an ImageView whose bitmap is drawn in code; no color resource (public resources searched this pass)",
-      "level": "BLOCKED",
-      "notes": "Smallest capture: one screenshot of a just-added, empty Locket Android widget."
+      "evidence": "Locket's label colour is not recoverable: in the APK the label is ImageView id/locket_widget_empty_text (res/layout/widget_empty.xml, marginTop 9 dp) whose bitmap is drawn at run time; no colour resource or JS style for it was found (APK 1.243.0 resources and Hermes bundle searched in the gap-fill pass). Value = color.global.textSecondary (Yope, #969696: references/auto/yope/store/yope-store-05.png placeholder plateau 279 px exactly (150,150,150))",
+      "level": "SOURCED",
+      "notes": "Gap fill. Contrast on the empty widget's top fill #2E2E2E: 4.59:1 (pass), on #1B1B1B 5.8:1. Smallest capture that would replace it: one screenshot of a just-added, empty Locket Android widget.",
+      "method": "role rule (MERGE G2-12): when the surface reference's colour is unknown, keep the app's global colour for the same role (secondary label text on a dark tile)",
+      "precision": "±1/255 (lossless store PNG)"
     },
     "widget.home.small.layout.size": {
       "type": "layout",
@@ -926,13 +938,19 @@
     },
     "widget.lock.rect.layout.content": {
       "type": "layout",
-      "value": null,
+      "value": {
+        "noCaptionRectangular": "the sender avatar alone, in its 24-pt leading slot (Locket's small widget without a caption shows only the avatar)",
+        "noCaptionInline": "the sentence of widget.home.small.a11y.photo ('{name}’s photo in {group}') as the inline text (the inline widget has no avatar slot)",
+        "newestIsCollage": "keep showing the newest single photo's sender (avatar, and its caption if any): Locket's widget always shows one sender's newest photo and has no collage state"
+      },
       "source_app": "Locket",
       "surface": "widget.lock.rect",
       "element": "what the Lock Screen widgets show in the two cases Locket's small-widget anatomy cannot fill: the newest photo has no caption (rectangular, inline) and the newest item is a collage (all three)",
-      "evidence": "design/research/locket.md §3 (no Locket Lock Screen widget exists in any source)",
-      "level": "BLOCKED",
-      "notes": "Composed parts (circular = sender avatar; rectangular = avatar + caption; inline = caption) are specified in design/surfaces/widget.lock.*.md. Smallest capture: one screenshot of the iOS Lock Screen 'Add Widgets' sheet after searching 'Locket' (locket.md §3); otherwise an owner decision."
+      "evidence": "references/auto/locket/store/locket-store-06.png (small widget, photo + avatar at the bottom-left, no caption, no badge) next to references/auto/locket/store/locket-store-03.png (avatar + caption pill); https://developer.apple.com/design/human-interface-guidelines/widgets ('Provide useful information in your Lock Screen widget'; 'show content quickly without hiding stale data behind placeholder content')",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-13). No Lock Screen widget exists in Locket, BeReal or any source found (BeReal / Locket help searched); this is the closest sourced composition, flagged for the owner. widget.lock.circular already shows the newest sender's avatar, so the collage rule keeps the three Lock Screen sizes consistent.",
+      "method": "composition from the reference's own no-caption anatomy (store-06) and its one-photo-at-a-time content rule (C-19 brief: compose from the small anatomy + HIG)",
+      "precision": "—"
     },
     "widget.arrival.duration.transition": {
       "type": "duration",
@@ -1145,13 +1163,15 @@
     },
     "daily.capture.fontWeight.countdown": {
       "type": "fontWeight",
-      "value": null,
+      "value": "bold",
       "source_app": "BeReal",
       "surface": "daily.capture",
       "element": "countdown digit weight",
-      "evidence": "references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (lossless, 2x) '1' stem x370–375 at y222: stem ÷ digit height = 0.19–0.20",
-      "level": "BLOCKED",
-      "notes": "Not measurable as a weight. Closing step (no owner capture): render the platform font's digits at 23 pt in each weight and pick the one whose stem ÷ digit height is 0.19–0.20."
+      "evidence": "references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (lossless 2x): countdown '1' stem x370-376, row coverage (156 + 5 x 250 + 187) / 250 = 6.37 px at y225, digit height 31 rows (y207-237) -> stem / height 0.205; references/auto/platform/sf-pro-display-digit-one-stem-ratio.csv: SF Pro Display '1' stem / height regular 0.121, medium 0.152, semibold 0.175, bold 0.207, heavy 0.253, black 0.294",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-14). Android uses the same weight with Roboto (Roboto Bold stem / cap 0.208, memory pass).",
+      "method": "closing step of the capture pass: the platform font's '1' rendered per weight (SF Pro Display web font from apple.com, measurement only, not stored) and compared with BeReal's ratio; nearest = Bold (0.207 vs 0.205)",
+      "precision": "±0.007 ratio (sub-pixel coverage on a 31-px digit); neighbours differ by ≥0.03"
     },
     "daily.capture.layout.viewfinder": {
       "type": "layout",
@@ -1258,13 +1278,15 @@
     },
     "daily.capture.color.overlayControl": {
       "type": "color",
-      "value": null,
+      "value": "#00000075",
       "source_app": "BeReal",
       "surface": "daily.capture",
       "element": "translucent dark fill of the retake circle and the audience chip over the photo",
-      "evidence": "references/auto/bereal/store/bereal-store-02.png (retake luminance 42–45 over a bright photo); references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (TT #640, 1.846 px/pt) chip median (120,117,125)",
-      "level": "BLOCKED",
-      "notes": "Translucent; one image cannot solve the alpha. Smallest capture: one lossless screenshot of a BeReal post preview over a flat light photo."
+      "evidence": "references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (lossless 2x, under a uniform tutorial dimming): retake ✕ circle interior (4,14,26) at x700-712 y300-345 vs the flat sky beside it (8,23,44) at x676-690; 'BTS On' chip (6,14,26) at x640-655 vs sky (13,27,46) at x462-472",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-15): BeReal's own lossless frame; earlier attempts used a busy concert photo (bereal-store-02) where the blur makes a flat-tint solve inconsistent. Draw over a backdrop blur of the photo (the controls blur what is under them).",
+      "method": "single-background solve for a black tint; ratios are unchanged by the uniform dimming: alpha = 1 - C/B = 0.50/0.39/0.41 (retake) and 0.54/0.48/0.44 (chip), mean 0.46 -> #000000 at 0.46 (117/255 = 0x75)",
+      "precision": "±0.06 alpha (dark 8-bit values; backdrop blur not measured)"
     },
     "daily.capture.layout.audienceChip": {
       "type": "layout",
@@ -1644,13 +1666,15 @@
     },
     "collage.share.color.pill": {
       "type": "color",
-      "value": null,
+      "value": "#9A9489A8",
       "source_app": "Yope",
       "surface": "collage.share",
       "element": "frosted, backdrop-dependent pill fill with a light rim",
-      "evidence": "references/auto/yope/frames/b-derot-store-04-rot-3.65.png (references/auto/yope/store/yope-store-04.png rotated -3.65 deg; App Store listing 1.229.0) (495,2350) #ABA79E over light, (720,2350) #7B6955 over dark",
-      "level": "BLOCKED",
-      "notes": "Material, not a solid color. Smallest capture: one lossless screenshot of Yope's 'share' pill over a flat white and a flat black area."
+      "evidence": "references/auto/yope/store/yope-store-04.png (lossless, App Store listing 1.229.0): 'share' pill spans a light hoodie and dark hair; pill left (169,166,158) at x535-550 y2370-2430, right (123,107,90) at x790-805; backgrounds beside it left (218,219,210) at x488-512, right (39,20,8) at x830-860; second background estimate above the pill (191,191,181) / (61,31,12) at y2290-2315",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-16). A light frosted material: draw this tint over a backdrop blur of the collage (blur radius not measured). Label and glyph stay white (as observed).",
+      "method": "two-background solve C = a*T + (1-a)*B: (1-a) = (C1-C2)/(B1-B2) per channel = 0.26/0.30/0.34 (beside) and 0.35/0.37/0.40 (above) -> a = 0.66 mean; tint T = (C - (1-a)B)/a = (152,144,132) and (157,151,143) -> mean (154,148,137) -> #9A9489 at 0.66 (168/255 = 0xA8)",
+      "precision": "tint ±8/255 per channel, alpha ±0.08 (the pill blurs the photo, so the backdrop under it is only estimated from beside / above it)"
     },
     "collage.share.fontSize.label": {
       "type": "fontSize",

@@ -6,9 +6,6 @@
 // references/auto/wrapped/frames/wrapped24-rec-xenarxoxo-sheet-every3s.png.
 package app.feature.memory.yearstory
 
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -81,6 +78,8 @@ import app.feature.memory.common.MemoryBackend
 import app.feature.memory.common.MessageBlock
 import app.feature.memory.common.PlatformSpinner
 import app.feature.memory.common.PreloadImages
+import app.feature.memory.common.findActivity
+import app.feature.memory.common.tokenColor
 import app.feature.memory.common.rememberMemoryBackend
 import app.feature.memory.common.roleStyle
 import app.feature.memory.common.touchOutset
@@ -319,8 +318,8 @@ private fun androidx.compose.foundation.layout.BoxScope.ShareRow(enabled: Boolea
 
 /**
  * Summary (`layout.year.story.summary`): pager of the story's share cards at `previewWidthRatio` of
- * the canvas, the Share pill sharing the card in view, then "Replay from beginning". No page dots
- * (`layout.year.story.summary.dots` BLOCKED).
+ * the canvas, page dots (`layout.year.story.summary.dots`), the Share pill sharing the card in view,
+ * then "Replay from beginning".
  */
 @Composable
 private fun Summary(cards: List<StoryCard>, width: Dp, height: Dp, onReplay: () -> Unit, onShare: (StoryCard) -> Unit, sharing: Boolean) {
@@ -345,7 +344,24 @@ private fun Summary(cards: List<StoryCard>, width: Dp, height: Dp, onReplay: () 
                 }
             }
         }
-        Spacer(Modifier.size(gap))
+        if (MemoryBlocked.YEAR_STORY_SUMMARY_DOTS) {
+            // layout.year.story.summary.dots: one per share card, centres 20.4 below the card and 29.3 above the pill.
+            val dots = Tokens.Layouts.YearStorySummaryDots
+            Spacer(Modifier.size((dots.centerBelowCarousel - dots.diameter / 2).dp))
+            Row(Modifier.clearAndSetSemantics { }, horizontalArrangement = Arrangement.spacedBy((dots.pitch - dots.diameter).dp)) {
+                repeat(cards.size) { i ->
+                    Box(
+                        Modifier
+                            .size(dots.diameter.dp)
+                            .clip(CircleShape)
+                            .background(tokenColor(if (i == pager.currentPage) dots.selectedColor else dots.unselectedColor)),
+                    )
+                }
+            }
+            Spacer(Modifier.size((dots.centerAboveShare - dots.diameter / 2).dp))
+        } else {
+            Spacer(Modifier.size(gap))
+        }
         Box(
             Modifier
                 .widthIn(min = Tokens.Sizes.yearStorySummaryShareWidth)
@@ -378,12 +394,6 @@ private fun Summary(cards: List<StoryCard>, width: Dp, height: Dp, onReplay: () 
     }
 }
 
-private tailrec fun Context.activity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.activity()
-    else -> null
-}
-
 /** The year-story destination: loads the story, hides the system bars, renders and shares cards. */
 @Composable
 fun YearStoryDestination(
@@ -399,7 +409,7 @@ fun YearStoryDestination(
     val view = LocalView.current
     // Android: full screen, system bars hidden with transient reveal (design/surfaces/year.story.md, Platform notes).
     DisposableEffect(view) {
-        val window = view.context.activity()?.window
+        val window = view.context.findActivity()?.window
         val controller = window?.let { WindowCompat.getInsetsController(it, view) }
         controller?.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         controller?.hide(WindowInsetsCompat.Type.systemBars())

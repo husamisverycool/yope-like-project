@@ -6,8 +6,8 @@ import SwiftUI
 ///
 /// Tokens: side `groups.create.size.hud` (minimum; grows with Dynamic Type), fill `groups.create.color.hud`,
 /// label `groups.create.fontSize.hudLabel` in `color.global.textPrimary`, spinner = platform activity indicator
-/// (`easing.global.native.activityIndicator`). Corners: `DesignGaps.hudCornerRadius` (`chat.thread.radius.loadingHud`,
-/// BLOCKED → square until it is set). Spinner–label gap: platform stack spacing (not measured).
+/// (`easing.global.native.activityIndicator`), corners `chat.thread.radius.loadingHud`. Spinner–label gap: platform stack
+/// spacing (not measured).
 struct LoadingHUD: View {
     var body: some View {
         VStack {
@@ -17,7 +17,7 @@ struct LoadingHUD: View {
                 .foregroundStyle(Tokens.Colors.globalTextPrimary)
         }
         .frame(minWidth: Tokens.Sizes.groupsCreateSizeHud, minHeight: Tokens.Sizes.groupsCreateSizeHud)
-        .background(Tokens.Colors.groupsCreateColorHud, in: RoundedRectangle(cornerRadius: DesignGaps.hudCornerRadius ?? 0))
+        .background(Tokens.Colors.groupsCreateColorHud, in: RoundedRectangle(cornerRadius: Tokens.Radii.chatThreadRadiusLoadingHud))
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.updatesFrequently)
     }

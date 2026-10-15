@@ -87,6 +87,11 @@ import app.ui.permissions.PermissionRationale
 import app.ui.system.SystemAlertDialog
 import app.ui.theme.AppTheme
 import com.github.takahirom.roborazzi.captureScreenRoboImage
+import app.ui.components.ToastHost
+import app.ui.components.ToastState
+import app.feature.account.groups.CreateError
+import androidx.compose.runtime.remember
+import app.feature.account.auth.CountryList
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -127,10 +132,12 @@ class ScreenSnapshotTest {
     }
 
     // auth.phone ------------------------------------------------------------------------------------
-    @Test fun phoneDefault() = snap("auth.phone", "default") { PhoneScreen(PhoneUiState(phone = "+1", prefill = "+1"), {}, noop, noop, noop, noop, focusOnAppear = false) }
-    @Test fun phoneFilled() = snap("auth.phone", "filled") { PhoneScreen(PhoneUiState(phone = "+1 415 555 0100", prefill = "+1"), {}, noop, noop, noop, noop, focusOnAppear = false) }
-    @Test fun phoneSending() = snap("auth.phone", "sending") { PhoneScreen(PhoneUiState(phone = "+1 415 555 0100", prefill = "+1", sending = true), {}, noop, noop, noop, noop, focusOnAppear = false) }
-    @Test fun phoneInvalidNumber() = snap("auth.phone", "invalidNumber-blocked") { PhoneScreen(PhoneUiState(phone = "+1 12", prefill = "+1", error = PhoneError.InvalidNumber), {}, noop, noop, noop, noop, focusOnAppear = false) }
+    @Test fun phoneDefault() = snap("auth.phone", "default") { PhoneScreen(PhoneUiState(phone = "+1", prefill = "+1", region = "US"), {}, noop, noop, noop, noop, focusOnAppear = false) }
+    @Test fun phoneFilled() = snap("auth.phone", "filled") { PhoneScreen(PhoneUiState(phone = "+1 415-555-0100", prefill = "+1", region = "US"), {}, noop, noop, noop, noop, focusOnAppear = false) }
+    @Test fun phoneSending() = snap("auth.phone", "sending") { PhoneScreen(PhoneUiState(phone = "+1 415-555-0100", prefill = "+1", region = "US", sending = true), {}, noop, noop, noop, noop, focusOnAppear = false) }
+    @Test fun phoneInvalidNumber() = snap("auth.phone", "invalidNumber") { PhoneScreen(PhoneUiState(phone = "+1 12", prefill = "+1", region = "US", error = PhoneError.InvalidNumber), {}, noop, noop, noop, noop, focusOnAppear = false) }
+    // The sheet's content (the modal sheet itself is the platform's).
+    @Test fun phoneCountryList() = snap("auth.phone", "countryList") { Box(Modifier.fillMaxSize().background(Tokens.Colors.globalSystemSurfaceContainerLow)) { CountryList("GB", {}) } }
     @Test fun phoneOffline() = snap("auth.phone", "offline") { PhoneScreen(PhoneUiState(offline = true), {}, noop, noop, noop, noop, focusOnAppear = false) }
 
     // auth.code -------------------------------------------------------------------------------------
@@ -138,7 +145,14 @@ class ScreenSnapshotTest {
     @Test fun codeDefault() = snap("auth.code", "default") { CodeScreen(code, {}, noop, noop, noop, noop, focusOnAppear = false) }
     @Test fun codeFilledResendOpen() = snap("auth.code", "filled-resendEnabled") { CodeScreen(code.copy(code = "123456", resendLocked = false), {}, noop, noop, noop, noop, focusOnAppear = false) }
     @Test fun codeVerifying() = snap("auth.code", "verifying") { CodeScreen(code.copy(code = "123456", verifying = true), {}, noop, noop, noop, noop, focusOnAppear = false) }
-    @Test fun codeWrong() = snap("auth.code", "wrong-blocked") { CodeScreen(code.copy(error = CodeError.Wrong), {}, noop, noop, noop, noop, focusOnAppear = false) }
+    @Test fun codeWrong() = snap("auth.code", "wrong") { CodeScreen(code.copy(error = CodeError.Wrong), {}, noop, noop, noop, noop, focusOnAppear = false) }
+    @Test fun codeResentToast() = snap("auth.code", "resent-toast") {
+        val toasts = remember { ToastState().apply { show("new code sent") } }
+        Box(Modifier.fillMaxSize()) {
+            CodeScreen(code, {}, noop, noop, noop, noop, focusOnAppear = false)
+            ToastHost(toasts, Modifier.align(Alignment.TopCenter))
+        }
+    }
     @Test fun codeOffline() = snap("auth.code", "offline") { CodeScreen(code.copy(offline = true), {}, noop, noop, noop, noop, focusOnAppear = false) }
 
     // auth.agegate ----------------------------------------------------------------------------------
@@ -146,7 +160,7 @@ class ScreenSnapshotTest {
     @Test fun ageDefault() = snap("auth.agegate", "default") { AgeGateScreen(AgeGateUiState(), us, false, {}, {}, noop, noop, focusOnAppear = false) }
     @Test fun ageFilledOptIn() = snap("auth.agegate", "filled-optIn") { AgeGateScreen(AgeGateUiState(digits = "03142001", optIn = true), us, true, {}, {}, noop, noop, focusOnAppear = false) }
     @Test fun ageChecking() = snap("auth.agegate", "checking") { AgeGateScreen(AgeGateUiState(digits = "03142001", checking = true), us, false, {}, {}, noop, noop, focusOnAppear = false) }
-    @Test fun ageInvalid() = snap("auth.agegate", "invalidDate-blocked") { AgeGateScreen(AgeGateUiState(digits = "02302001", invalidDate = true), us, false, {}, {}, noop, noop, focusOnAppear = false) }
+    @Test fun ageInvalid() = snap("auth.agegate", "invalidDate") { AgeGateScreen(AgeGateUiState(digits = "02302001", invalidDate = true), us, false, {}, {}, noop, noop, focusOnAppear = false) }
     @Test fun ageNotConfigured() = snap("auth.agegate", "notConfigured") { AgeGateScreen(AgeGateUiState(notConfigured = true), us, false, {}, {}, noop, noop, focusOnAppear = false) }
     @Test fun ageUnderAge() = snap("auth.agegate", "underAge") { AgeGateScreen(AgeGateUiState(refusal = app.feature.account.platform.AgeRefusal(13)), us, false, {}, {}, noop, noop, focusOnAppear = false) }
     @Test fun ageOffline() = snap("auth.agegate", "offline") { AgeGateScreen(AgeGateUiState(offline = true), us, false, {}, {}, noop, noop, focusOnAppear = false) }
@@ -155,7 +169,7 @@ class ScreenSnapshotTest {
     @Test fun profileDefault() = snap("auth.profile", "default") { ProfileScreen(ProfileUiState(), {}, noop, noop, noop) }
     @Test fun profileFilled() = snap("auth.profile", "filled-photo") { ProfileScreen(ProfileUiState(name = "Ana Lima"), {}, noop, noop, noop, avatarImage = ColorPainter(Tokens.Colors.globalAccentSecondary)) }
     @Test fun profileSaving() = snap("auth.profile", "saving") { ProfileScreen(ProfileUiState(name = "Ana Lima", saving = true), {}, noop, noop, noop) }
-    @Test fun profileUploadFailed() = snap("auth.profile", "uploadFailed-blocked") { ProfileScreen(ProfileUiState(name = "Ana Lima", error = ProfileError.Upload), {}, noop, noop, noop) }
+    @Test fun profileUploadFailed() = snap("auth.profile", "uploadFailed") { ProfileScreen(ProfileUiState(name = "Ana Lima", error = ProfileError.Upload), {}, noop, noop, noop) }
     @Test fun profileOffline() = snap("auth.profile", "offline") { ProfileScreen(ProfileUiState(offline = true), {}, noop, noop, noop) }
 
     // onboarding ------------------------------------------------------------------------------------
@@ -201,6 +215,7 @@ class ScreenSnapshotTest {
     @Test fun createDefault() = snap("groups.create", "default") { GroupCreateScreen(GroupCreateUiState(), noop, {}, {}, noop, noop) }
     @Test fun createFilled() = snap("groups.create", "filled") { GroupCreateScreen(GroupCreateUiState(name = "Book club", kind = GroupKind.Family), noop, {}, {}, noop, noop, coverImage = ColorPainter(Tokens.Colors.globalAccentSecondary)) }
     @Test fun createCreating() = snap("groups.create", "creating") { GroupCreateScreen(GroupCreateUiState(name = "Book club", working = true), noop, {}, {}, noop, noop) }
+    @Test fun createError() = snap("groups.create", "error") { GroupCreateScreen(GroupCreateUiState(name = "Book club", error = CreateError.Failed), noop, {}, {}, noop, noop) }
     @Test fun createEdit() = snap("groups.create", "edit") { GroupCreateScreen(GroupCreateUiState(editGroupId = "g1", name = "Sunday dinners", kind = GroupKind.Custom), noop, {}, {}, noop, noop) }
 
     // groups.invite ---------------------------------------------------------------------------------

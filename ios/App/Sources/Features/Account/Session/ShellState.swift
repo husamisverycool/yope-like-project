@@ -76,15 +76,21 @@ struct PresentedRoute: Identifiable, Hashable {
 }
 
 extension ShellState {
-    /// Takes a link-pushed route whose spec presents it modally off the stack: year.story becomes
-    /// `AppModal.memory(.yearStory)` (full screen, year.story.md platform notes), birthday.request and birthday.tribute
-    /// become `presentedRoute`. Returns true when it moved one.
+    /// Takes a pushed route whose spec presents it modally off the stack: year.story and onthisday become
+    /// `AppModal.memory(.yearStory / .onThisDay)` (full screen, their platform notes), birthday.request and
+    /// birthday.tribute become `presentedRoute`. Returns true when it moved one.
     @discardableResult
     func presentModalRoute(router: AppRouter) -> Bool {
         guard let last = router.path.last else { return false }
         if case let .yearStory(groupID, year) = last {
             router.path.removeLast()
             router.modal = .memory(.yearStory(groupID: groupID, year: year))
+            return true
+        }
+        if case let .memory(.onThisDay(groupID)) = last {
+            // onthisday.md platform notes: `.fullScreenCover`.
+            router.path.removeLast()
+            router.modal = .memory(.onThisDay(groupID: groupID))
             return true
         }
         guard let presented = PresentedRoute.modal(for: last) else { return false }

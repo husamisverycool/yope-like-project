@@ -46,6 +46,7 @@ class BlockViewModel(private val env: AccountEnvironment, private val userId: St
             try {
                 env.backend.block(userId)
                 haptic(Tokens.Haptics.globalWarning)
+                mutable.value.firstName.takeIf { it.isNotBlank() }?.let { toast(R.string.safety_block_done, it) }
                 emit(AccountEvent.Back)
             } catch (t: Throwable) {
                 t.dataError()
@@ -80,8 +81,8 @@ fun BlockRoute(nav: NavController, userId: String) {
 /**
  * `safety.block.layout.confirm` android: M3 AlertDialog (`settings.account.layout.alert`) — title
  * `safety.block.title`, message `safety.block.message` (replaced by `safety.block.error` after a
- * failure), Cancel (dismissive, leading) and Block (destructive, trailing). The success toast is
- * BLOCKED (`safety.block.duration.toast`).
+ * failure), Cancel (dismissive, leading) and Block (destructive, trailing). Success: Yope's lime toast
+ * `safety.block.done` (`safety.block.layout.toast`, dwell `safety.block.duration.toast`).
  */
 @Composable
 fun BlockConfirmation(state: BlockUiState, onConfirm: () -> Unit, onCancel: () -> Unit) {

@@ -46,8 +46,8 @@ describe("designToken", () => {
   });
 
   it("treats BLOCKED and unknown tokens as missing, with the token's name in the error", () => {
-    expect(() => designToken("duration.birthday.tribute.photoHold")).toThrow(MissingTokenError);
-    expect(() => designToken("duration.birthday.tribute.photoHold")).toThrow("missing design token duration.birthday.tribute.photoHold");
+    expect(() => designToken("paywall.layout.iconTileArt")).toThrow(MissingTokenError);
+    expect(() => designToken("paywall.layout.iconTileArt")).toThrow("missing design token paywall.layout.iconTileArt");
     expect(() => designToken("layout.no.such.token")).toThrow(MissingTokenError);
   });
 

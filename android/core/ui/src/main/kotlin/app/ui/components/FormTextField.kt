@@ -22,6 +22,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.isSpecified
 import app.designsystem.dsTextStyle
 import app.designsystem.generated.Tokens
 
@@ -37,6 +39,10 @@ import app.designsystem.generated.Tokens
  * `*.field.accessibilityLabel`) names the field for TalkBack because the placeholder disappears once
  * typing starts. [autofill] sets the autofill content type (`ContentType.PhoneNumber`,
  * `ContentType.SmsOtpCode`, `ContentType.PersonFirstName`).
+ *
+ * [leading] draws at the field's leading edge, [leadingInset] in from it (auth.phone's country flag,
+ * `auth.phone.layout.countryCode`); the text stays centred on the whole field and keeps
+ * [leadingClearance] free on both sides so it never runs under the leading element.
  */
 @Composable
 fun FormTextField(
@@ -49,7 +55,11 @@ fun FormTextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     autofill: ContentType? = null,
     enabled: Boolean = true,
+    leading: (@Composable () -> Unit)? = null,
+    leadingInset: Dp = Dp.Unspecified,
+    leadingClearance: Dp = Dp.Unspecified,
 ) {
+    val sideInset = if (leading != null && leadingClearance.isSpecified) maxOf(leadingClearance, Tokens.Radii.globalField) else Tokens.Radii.globalField
     val shape = RoundedCornerShape(Tokens.Radii.globalField)
     val style: TextStyle = dsTextStyle(Tokens.FontSizes.groupsCreateFontSizeFieldText, Tokens.FontWeights.groupsCreateFontWeightFieldText, Tokens.Fonts.globalFamily)
         .copy(color = Tokens.Colors.globalTextPrimary, textAlign = TextAlign.Center)
@@ -74,14 +84,18 @@ fun FormTextField(
                     .fillMaxWidth()
                     .heightIn(min = Tokens.Sizes.globalFieldHeight)
                     .clip(shape)
-                    .background(Tokens.Colors.groupsCreateColorField, shape)
-                    .padding(horizontal = Tokens.Radii.globalField),
+                    .background(Tokens.Colors.groupsCreateColorField, shape),
                 contentAlignment = Alignment.Center,
             ) {
-                if (value.text.isEmpty()) {
-                    Text(placeholder, style = style.copy(color = Tokens.Colors.globalTextSecondary), modifier = Modifier.fillMaxWidth(), maxLines = 1)
+                if (leading != null) {
+                    Box(Modifier.align(Alignment.CenterStart).padding(start = if (leadingInset.isSpecified) leadingInset else Tokens.Radii.globalField)) { leading() }
                 }
-                inner()
+                Box(Modifier.fillMaxWidth().padding(horizontal = sideInset), contentAlignment = Alignment.Center) {
+                    if (value.text.isEmpty()) {
+                        Text(placeholder, style = style.copy(color = Tokens.Colors.globalTextSecondary), modifier = Modifier.fillMaxWidth(), maxLines = 1)
+                    }
+                    inner()
+                }
             }
         },
     )

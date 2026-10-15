@@ -7,6 +7,16 @@
 package app.feature.social.chat
 
 import android.Manifest
+import android.os.SystemClock
+import androidx.activity.compose.BackHandler
+import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableLongStateOf
+import app.feature.social.common.InkGlyph
+import app.feature.social.reactions.FlightLayer
+import app.feature.social.reactions.LocalReactionFlights
+import app.feature.social.reactions.ReactionFlights
+import kotlinx.coroutines.delay
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -155,8 +165,15 @@ class ChatUiState(
     var confirmDelete by mutableStateOf(confirmDelete)
     var showMicCard by mutableStateOf(showMicCard)
     var rain by mutableStateOf<Pair<String, Int>?>(null)
-    var recording by mutableStateOf(false)
+    /** Voice recording in progress (`chat.voice.layout.recording`), null when idle. */
+    var recording by mutableStateOf<Recording?>(null)
 }
+
+/** Playback key of the paused recording's preview (not a storage path). */
+private const val DRAFT_KEY = "draft"
+
+/** How often the recording timer re-reads the clock. */
+private const val TIMER_TICK_MS = 200L
 
 /** Cap height of the platform font (Roboto: 1456 / 2048 em), to place a cap top from a baseline. */
 private const val PLATFORM_CAP_HEIGHT_EM = 0.711f
@@ -168,7 +185,6 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
     val view = LocalView.current
     val haptics = rememberHaptics()
     val reduceMotion by rememberReduceMotion()
-    val rainAllowed = shows(SocialBlocked.rainEasing != null)
     val services = LocalSocialServices.current
     val voice = remember { services.voice(context) }
     DisposableEffect(voice) { onDispose { voice.release() } }
@@ -191,7 +207,7 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
                 ChatEffect.ReactionFailed -> { haptics.play(Tokens.Haptics.globalError); announce(view, reactionFailed) }
                 ChatEffect.DeleteFailed -> haptics.play(Tokens.Haptics.globalError)
                 ChatEffect.RecordFailed -> { haptics.play(Tokens.Haptics.globalError); announce(view, recordFailed) }
-                is ChatEffect.Rain -> if (rainAllowed && !reduceMotion) ui.rain = effect.emoji to ++rainKey
+                is ChatEffect.Rain -> if (!reduceMotion) ui.rain = effect.emoji to ++rainKey
                 is ChatEffect.Incoming -> announce(view, labels.of(effect.row))
             }
         }
@@ -200,26 +216,85 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
     val micLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         ui.showMicCard = !granted
     }
-    val onMic: (() -> Unit)? = if (!shows(SocialBlocked.voiceRecording)) null else {
-        {
-            val activity = context.findActivity()
-            when {
-                ui.recording -> {
-                    ui.recording = false
-                    val note = runCatching { voice.stopRecording() }.getOrNull()
-                    if (note != null) vm.sendVoice(note.file, note.durationMs) else vm.recordFailed()
-                }
-                MediaPermissions.isGranted(context, MediaPermission.Microphone) -> {
-                    ui.showMicCard = false
-                    if (runCatching { voice.startRecording() }.isSuccess) ui.recording = true else vm.recordFailed()
-                }
-                else -> {
-                    if (activity != null) MediaPermissions.markRequested(context, MediaPermission.Microphone)
-                    micLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                }
+    // Recording (`chat.voice.layout.recording`): hold to record, lift to send, slide left to cancel,
+    // slide up to lock; locked: pause keeps a draft to play, send sends. No haptics (mic in use).
+    val startRecording: () -> Boolean = start@{
+        if (ui.recording != null) return@start false
+        if (!MediaPermissions.isGranted(context, MediaPermission.Microphone)) {
+            if (context.findActivity() != null) MediaPermissions.markRequested(context, MediaPermission.Microphone)
+            micLauncher.launch(Manifest.permission.RECORD_AUDIO)
+            return@start false
+        }
+        ui.showMicCard = false
+        if (runCatching { voice.startRecording() }.isFailure) {
+            vm.recordFailed()
+            return@start false
+        }
+        ui.recording = Recording.Holding(SystemClock.elapsedRealtime())
+        true
+    }
+    val sendRecording: () -> Unit = {
+        when (val r = ui.recording) {
+            is Recording.Draft -> {
+                if (playback.key == DRAFT_KEY) voice.pause()
+                vm.sendVoice(r.voice.file, r.voice.durationMs)
+            }
+            null -> Unit
+            else -> {
+                val note = runCatching { voice.stopRecording() }.getOrNull()
+                if (note != null) vm.sendVoice(note.file, note.durationMs) else vm.recordFailed()
             }
         }
+        ui.recording = null
     }
+    val cancelRecording: () -> Unit = {
+        when (val r = ui.recording) {
+            is Recording.Draft -> {
+                if (playback.key == DRAFT_KEY) voice.pause()
+                r.voice.file.delete()
+            }
+            null -> Unit
+            else -> runCatching { voice.cancelRecording() }
+        }
+        ui.recording = null
+    }
+    BackHandler(enabled = ui.recording != null, onBack = cancelRecording)
+    DisposableEffect(Unit) { onDispose { if (ui.recording != null) cancelRecording() } }
+    var now by remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
+    LaunchedEffect(ui.recording) {
+        while (ui.recording is Recording.Holding || ui.recording is Recording.Locked) {
+            now = SystemClock.elapsedRealtime()
+            delay(TIMER_TICK_MS)
+        }
+    }
+    val recorder = VoiceControls(
+        recording = ui.recording,
+        elapsedMs = when (val r = ui.recording) {
+            is Recording.Holding -> now - r.startedAt
+            is Recording.Locked -> now - r.startedAt
+            else -> 0L
+        }.coerceAtLeast(0L),
+        draftPlaying = playback.key == DRAFT_KEY && playback.isPlaying,
+        draftProgress = if (playback.key == DRAFT_KEY) playback.progress else 0f,
+        onHoldStart = startRecording,
+        onHoldEnd = sendRecording,
+        onCancel = cancelRecording,
+        onLock = { (ui.recording as? Recording.Holding)?.let { ui.recording = Recording.Locked(it.startedAt) } },
+        onStartLocked = { if (startRecording()) (ui.recording as? Recording.Holding)?.let { ui.recording = Recording.Locked(it.startedAt) } },
+        onPause = {
+            val held = levels
+            val note = runCatching { voice.stopRecording() }.getOrNull()
+            ui.recording = note?.let { Recording.Draft(it, held) }
+            if (note == null) vm.recordFailed()
+        },
+        onPlayDraft = {
+            val r = ui.recording as? Recording.Draft
+            if (r != null) {
+                if (playback.key == DRAFT_KEY && playback.isPlaying) voice.pause() else voice.play(DRAFT_KEY, Uri.fromFile(r.voice.file).toString())
+            }
+        },
+        onSend = sendRecording,
+    )
     val onMicCard = {
         val activity = context.findActivity()
         val permanently = activity != null && MediaPermissions.state(activity, MediaPermission.Microphone) == PermissionState.PermanentlyDenied
@@ -241,14 +316,15 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
         focusMessageId = focusMessageId,
         voice = voice,
         playback = playback,
-        recordingLevels = if (ui.recording) levels else null,
+        recorder = recorder,
         onDraft = vm::setDraft,
         onSend = vm::send,
         onRetry = vm::retry,
         onLoadOlder = vm::loadOlder,
         onReact = vm::react,
+        onUnreact = vm::unreact,
+        onRetrySend = vm::retrySend,
         onDelete = { id -> haptics.play(Tokens.Haptics.globalWarning); vm.deleteMessage(id) },
-        onMic = onMic,
         onMicCard = onMicCard,
         onPlay = onPlay,
     )
@@ -303,19 +379,23 @@ fun ChatContent(
     focusMessageId: String?,
     voice: VoiceServices?,
     playback: VoicePlayback,
-    recordingLevels: List<Float>?,
+    recorder: VoiceControls,
     onDraft: (String) -> Unit,
     onSend: () -> Unit,
     onRetry: () -> Unit,
     onLoadOlder: () -> Unit,
     onReact: (postId: String, emoji: String) -> Unit,
+    onUnreact: (postId: String, emoji: String) -> Unit,
+    onRetrySend: (messageId: String) -> Unit,
     onDelete: (messageId: String) -> Unit,
-    onMic: (() -> Unit)?,
     onMicCard: () -> Unit,
     onPlay: (path: String) -> Unit,
     listState: LazyListState = rememberLazyListState(),
+    flights: ReactionFlights = remember { ReactionFlights() },
 ) {
     val activityAllowed = shows(SocialBlocked.activitySheet)
+    val reduceMotion by rememberReduceMotion()
+    CompositionLocalProvider(LocalReactionFlights provides flights) {
     Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackground).testTag("chat.thread")) {
         // Emoji rain: behind the messages, in front of the background (chat.reactions.md §4).
         ui.rain?.let { (emoji, key) -> EmojiRain(emoji, key, onFinished = { if (ui.rain?.second == key) ui.rain = null }) }
@@ -335,7 +415,7 @@ fun ChatContent(
                         val detail = state.addedNames.takeIf { it.isNotEmpty() }?.let { stringRes(R.string.chat_thread_empty_detail, it.joinToString(", ")) }
                         EmptyState(title, detail, PillAction(stringRes(R.string.chat_thread_empty_invite), Tokens.Icons.globalLink, nav.invite))
                     }
-                    else -> MessageList(state, ui, nav, focusMessageId, voice, playback, onLoadOlder, onPlay, PaddingValues(top = top), listState)
+                    else -> MessageList(state, ui, nav, focusMessageId, voice, playback, onLoadOlder, onPlay, onRetrySend, PaddingValues(top = top), listState)
                 }
             }
             if (ui.showMicCard) {
@@ -347,14 +427,28 @@ fun ChatContent(
                     Modifier.padding(horizontal = Tokens.Sizes.onboardingPermissionContactsSizeCardMarginH),
                 )
             }
-            ComposerRow(state.draft, onDraft, onSend, nav.camera, onMic, recordingLevels, Modifier.padding(bottom = SocialBlocked.composerBottomInset ?: 0.dp))
+            ComposerRow(state.draft, onDraft, onSend, nav.camera, recorder, Modifier.padding(bottom = Tokens.Sizes.chatComposerDimensionBottomInset))
         }
         Header(state, nav)
+        FlightLayer(flights)
+    }
     }
 
     // Sheets and dialogs.
     ui.pickerFor?.let { postId ->
-        ReactionPickerSheet(onPick = { emoji -> ui.pickerFor = null; onReact(postId, emoji) }, onDismiss = { ui.pickerFor = null })
+        val row = state.rows.firstOrNull { it.post?.id == postId }
+        val mine = row?.reactions.orEmpty().filter { it.userId == state.me }.map { it.emoji }.toSet()
+        ReactionPickerSheet(
+            mine = mine,
+            onPick = { emoji, from ->
+                ui.pickerFor = null
+                // The flight joins the cluster's leading end only for an emoji not in it yet (a repeat adds no sticker).
+                if (!reduceMotion && row?.reactions.orEmpty().none { it.emoji == emoji }) flights.launch(postId, emoji, from)
+                onReact(postId, emoji)
+            },
+            onUnreact = { emoji -> ui.pickerFor = null; onUnreact(postId, emoji) },
+            onDismiss = { ui.pickerFor = null },
+        )
     }
     if (activityAllowed) ui.activityFor?.let { postId ->
         val row = state.rows.firstOrNull { it.post?.id == postId }
@@ -446,6 +540,7 @@ private fun MessageList(
     playback: VoicePlayback,
     onLoadOlder: () -> Unit,
     onPlay: (String) -> Unit,
+    onRetrySend: (String) -> Unit,
     padding: PaddingValues,
     listState: LazyListState,
 ) {
@@ -470,7 +565,7 @@ private fun MessageList(
         itemsIndexed(newestFirst, key = { _, row -> row.key }, contentType = { _, row -> row.kind }) { i, row ->
             val prev = newestFirst.getOrNull(i + 1)
             val next = newestFirst.getOrNull(i - 1)
-            MessageRow(row, prev, next, state, ui, nav, voice, playback, onPlay)
+            MessageRow(row, prev, next, state, ui, nav, voice, playback, onPlay, onRetrySend)
         }
         if (state.loadingOlder) item(key = "older") {
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { ActivityIndicator() }
@@ -492,6 +587,7 @@ private fun MessageRow(
     voice: VoiceServices?,
     playback: VoicePlayback,
     onPlay: (String) -> Unit,
+    onRetrySend: (String) -> Unit,
 ) {
     val haptics = rememberHaptics()
     val activityAllowed = shows(SocialBlocked.activitySheet)
@@ -536,20 +632,23 @@ private fun MessageRow(
             if (row.mine) add(CustomAccessibilityAction(deleteLabel) { ui.confirmDelete = row.id; true })
             else add(CustomAccessibilityAction(reportLabel) { nav.report(row.id, row.message.authorId); true })
         }
+        val failedSpec = Tokens.Layouts.ChatThreadLayoutFailedMessage
+        val retryLabel = stringRes(R.string.chat_thread_sendfailed)
         Row(
             Modifier.fillMaxWidth().padding(
                 start = if (row.mine) Tokens.Sizes.chatThreadDimensionBubbleInsetTheirs else 0.dp,
                 end = if (row.mine) Tokens.Sizes.chatThreadDimensionBubbleInsetMine else Tokens.Sizes.chatThreadDimensionPhotoInsetTrailing,
             ),
             horizontalArrangement = if (row.mine) Arrangement.End else Arrangement.Start,
-            verticalAlignment = Alignment.Bottom,
+            // A failed message's indicator is centred on its bubble (`chat.thread.layout.failedMessage`).
+            verticalAlignment = if (row.failed) Alignment.CenterVertically else Alignment.Bottom,
         ) {
             if (!row.mine) AvatarColumn(row, showAvatar, nav)
             Box(
                 Modifier
                     .weight(1f, fill = false)
                     .combinedClickable(
-                        onClick = {},
+                        onClick = { if (row.failed) onRetrySend(row.id) },
                         onLongClick = {
                             haptics.playNamed(Tokens.Layouts.GlobalLongPressStart.android)
                             ui.menuFor = row.id
@@ -563,7 +662,7 @@ private fun MessageRow(
                         VoiceBubble(
                             path = path,
                             durationMs = row.message.voiceDurationMs ?: 0,
-                            fill = if (row.mine) Tokens.Colors.chatVoiceColorBubble else SocialBlocked.voiceBubbleTheirs,
+                            fill = if (row.mine) Tokens.Colors.chatVoiceColorBubble else Tokens.Colors.chatVoiceColorBubbleTheirs,
                             progress = if (playback.key == path) playback.progress else 0f,
                             label = labels.of(row),
                             playing = playback.key == path && playback.isPlaying,
@@ -574,8 +673,7 @@ private fun MessageRow(
                     else -> {
                         val quote = row.quote
                         val body = row.message.body.orEmpty()
-                        val emojiMax = SocialBlocked.emojiOnlyMax
-                        val emojiOnly = if (quote == null && emojiMax != null) EmojiText.emojiOnly(body, emojiMax) else null
+                        val emojiOnly = if (quote == null) EmojiText.emojiOnly(body, Tokens.Counts.chatThreadCountEmojiOnlyMax) else null
                         when {
                             quote != null -> ReplyBubble(row, quote, labels.of(row), onQuote = { nav.photo(quote.postId) })
                             emojiOnly != null -> EmojiOnlyMessage(emojiOnly, Modifier.semantics { contentDescription = labels.of(row) })
@@ -599,6 +697,25 @@ private fun MessageRow(
                     }
                 }
             }
+            if (row.failed) {
+                Spacer(Modifier.width(failedSpec.indicatorGap.dp))
+                // `indicatorIconAndroid` (Rounded.ErrorOutline), its circle `indicatorSize` wide, `color.global.destructive`.
+                Box(Modifier.clickable { onRetrySend(row.id) }.clearAndSetSemantics { }) {
+                    InkGlyph(androidx.compose.material.icons.Icons.Rounded.ErrorOutline, Tokens.Colors.globalDestructive, inkWidth = failedSpec.indicatorSize.dp)
+                }
+            }
+        }
+        if (row.failed) {
+            // `chat.thread.sendFailed` under the bubble, trailing-aligned with the message column, text role `caption`.
+            Line(
+                retryLabel,
+                Type.caption(),
+                Tokens.Colors.globalDestructive,
+                Modifier
+                    .align(Alignment.End)
+                    .padding(top = failedSpec.labelGap.dp, end = Tokens.Sizes.chatThreadDimensionBubbleInsetMine)
+                    .clickable(role = Role.Button) { onRetrySend(row.id) },
+            )
         }
     }
 }
@@ -630,11 +747,10 @@ fun TextBubble(text: String, mine: Boolean, modifier: Modifier = Modifier, minWi
     val fill = if (mine) Tokens.Colors.chatThreadColorBubbleMine else Tokens.Colors.chatThreadColorBubbleTheirs
     val rim = if (mine) Brush.verticalGradient(listOf(Tokens.Colors.chatThreadColorBubbleRimMineTop, Tokens.Colors.chatThreadColorBubbleRimMineBottom))
     else Brush.verticalGradient(listOf(Tokens.Colors.chatThreadColorBubbleRimTheirsTop, Tokens.Colors.chatThreadColorBubbleRimTheirsBottom))
-    val max = SocialBlocked.bubbleMaxWidth
     Box(
         modifier
-            .widthIn(min = minWidth)
-            .let { if (max != null) it.widthIn(max = max) else it }
+            // `chat.thread.dimension.bubbleMaxWidth` (Apple Messages, G-1): longer text wraps.
+            .widthIn(min = minWidth, max = maxOf(minWidth, Tokens.Sizes.chatThreadDimensionBubbleMaxWidth))
             .clip(shape)
             .background(fill)
             .border(Tokens.Sizes.chatThreadDimensionBubbleRim, rim, shape)
@@ -660,9 +776,8 @@ private fun CenteredLines(text: String, style: TextStyle, minHeight: Dp) {
 }
 
 /**
- * An emoji-only message: no bubble, each emoji `chat.thread.dimension.emojiOnlyGlyph` wide. Shown
- * only once its threshold (`chat.thread.count.emojiOnlyMax`, BLOCKED) is known; until then emoji
- * messages are text bubbles.
+ * An emoji-only message (1…`chat.thread.count.emojiOnlyMax` emoji, Messages + WhatsApp rule, G-2):
+ * no bubble, each emoji `chat.thread.dimension.emojiOnlyGlyph` wide; more emoji are a text bubble.
  */
 @Composable
 private fun EmojiOnlyMessage(emoji: List<String>, modifier: Modifier = Modifier) {
@@ -849,6 +964,7 @@ private fun PhotoMessage(
                 row.reactions,
                 onCluster,
                 Modifier.align(Alignment.BottomStart).padding(start = Tokens.Sizes.chatReactionsDimensionClusterInsetLeading, bottom = Tokens.Sizes.chatReactionsDimensionClusterInsetBottom),
+                postId = row.post?.id,
             )
         }
     }

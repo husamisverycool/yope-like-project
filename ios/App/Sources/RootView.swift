@@ -260,8 +260,8 @@ struct RouteDestination: View {
     }
 }
 
-/// `birthday.add` pushed from the settings.account "birthday" row; shows `birthday.add.added` as a toast after adding
-/// (shown once the toast dwell time is unblocked, `DesignGaps.toastDwell`; announced to VoiceOver meanwhile).
+/// `birthday.add` pushed from the settings.account "birthday" row; shows `birthday.add.added` as the lime toast after
+/// adding (birthday.add.md).
 struct BirthdayAddRoute: View {
     @Environment(AccountDependencies.self) private var dependencies
 

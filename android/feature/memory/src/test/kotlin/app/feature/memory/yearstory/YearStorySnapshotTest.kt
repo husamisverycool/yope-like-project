@@ -7,6 +7,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.centerLeft
 import androidx.compose.ui.test.centerRight
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -19,6 +20,7 @@ import app.feature.memory.SnapshotTest
 import app.feature.memory.TestImages
 import app.feature.memory.resetFileProviderCache
 import app.feature.memory.share.MemoryFiles
+import app.designsystem.generated.Tokens
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
@@ -106,33 +108,55 @@ class YearStoryShareImageTest : SnapshotTest() {
     }
 }
 
-/** Robolectric flow: tap through the story (both directions), share a card, replay from the summary. */
+/**
+ * Robolectric flow: tap through the story (both directions), share a card, replay from the summary.
+ * The clock is driven by hand: the story advances on its own every `duration.year.story.card`.
+ */
 class YearStoryFlowTest : SnapshotTest() {
-    @Test fun tapThroughShareAndReplay() {
-        resetFileProviderCache()
-        val backend = Scenario.backend()
+    private fun step(ms: Long = 100) = compose.mainClock.advanceTimeBy(ms)
+
+    private fun open(backend: FakeMemoryBackend) {
+        compose.mainClock.autoAdvance = false
         compose.setContent {
             MemoryTestContent(backend) {
                 YearStoryDestination(FakeMemoryBackend.GROUP, 2026, onClose = {}, backend = backend, clock = Scenario.clock)
             }
         }
-        val canvas = compose.onNodeWithTag(YearStoryTags.CANVAS)
+        step()
+    }
+
+    private fun tap(right: Boolean) {
+        compose.onNodeWithTag(YearStoryTags.CANVAS).performTouchInput { click(if (right) centerRight else centerLeft) }
+        step()
+    }
+
+    @Test fun tapThroughShareAndReplay() {
+        resetFileProviderCache()
+        val backend = Scenario.backend()
+        open(backend)
         compose.onNodeWithText("We're ready for you.").assertExists()
-        canvas.performTouchInput { click(centerLeft) }
+        tap(right = false)
         compose.onNodeWithText("We're ready for you.").assertExists()
-        canvas.performTouchInput { click(centerRight) }
+        tap(right = true)
         compose.onNodeWithText("You shared. We saved.").assertExists()
         compose.onNodeWithTag(YearStoryTags.SHARE_ROW).assertDoesNotExist()
-        canvas.performTouchInput { click(centerRight) }
+        tap(right = true)
         compose.onNodeWithText("Sunday Lunch shared 1,284 moments this year.").assertExists()
-        canvas.performTouchInput { click(centerLeft) }
+        tap(right = false)
         compose.onNodeWithText("You shared. We saved.").assertExists()
-        canvas.performTouchInput { click(centerRight) }
+        tap(right = true)
 
-        // Share this story → a 9:16 PNG to the system share sheet.
+        // Share this story → a 9:16 PNG to the system share sheet (rendered off screen, encoded off the main thread).
         compose.onNodeWithTag(YearStoryTags.SHARE_ROW).performClick()
-        compose.waitUntil(10_000) { shadowOf(ApplicationProvider.getApplicationContext<android.app.Application>()).peekNextStartedActivity() != null }
-        val chooser = shadowOf(ApplicationProvider.getApplicationContext<android.app.Application>()).nextStartedActivity
+        val app = ApplicationProvider.getApplicationContext<android.app.Application>()
+        repeat(300) {
+            if (shadowOf(app).peekNextStartedActivity() == null) {
+                step(16)
+                Thread.sleep(5)
+            }
+        }
+        val chooser = shadowOf(app).nextStartedActivity
+        assertNotNull("share sheet opened", chooser)
         assertEquals(Intent.ACTION_CHOOSER, chooser.action)
         @Suppress("DEPRECATION")
         val send = chooser.getParcelableExtra<Intent>(Intent.EXTRA_INTENT)!!
@@ -143,10 +167,45 @@ class YearStoryFlowTest : SnapshotTest() {
         assertEquals("content", stream.scheme)
 
         // Most-reacted photos: names and dates only, in order; to the summary; replay.
-        repeat(3) { canvas.performTouchInput { click(centerRight) } }
+        repeat(3) { tap(right = true) }
         compose.onNodeWithText("Ana shared this on February 25").assertExists()
-        repeat(20) { canvas.performTouchInput { click(centerRight) } }
+        repeat(20) { tap(right = true) }
         compose.onNodeWithTag(YearStoryTags.REPLAY).performClick()
+        step()
+        compose.onNodeWithText("We're ready for you.").assertExists()
+    }
+
+    @Test fun advancesOnItsOwnAndPauses() {
+        open(Scenario.backend())
+        compose.onNodeWithText("We're ready for you.").assertExists()
+        step(Tokens.Durations.yearStoryCard.toLong())
+        step()
+        compose.onNodeWithText("You shared. We saved.").assertExists()
+        compose.onNodeWithContentDescription("Pause").performClick()
+        step(Tokens.Durations.yearStoryCard * 2L)
+        compose.onNodeWithText("You shared. We saved.").assertExists()
+        compose.onNodeWithContentDescription("Play").performClick()
+        step(Tokens.Durations.yearStoryCard.toLong())
+        step()
+        compose.onNodeWithText("Sunday Lunch shared 1,284 moments this year.").assertExists()
+    }
+}
+
+/** Reopening shows the cached story at once: no loading state flashes before the refresh. */
+class YearStoryNoFlashTest : SnapshotTest() {
+    @Test fun reopenPaintsCachedCardsWithoutLoading() {
+        val backend = Scenario.backend().apply { gates["yearStory"] = kotlinx.coroutines.CompletableDeferred() }
+        app.feature.memory.common.MemoryCache.shared.put(app.feature.memory.common.MemoryCache.key(backend, "yearstory", FakeMemoryBackend.GROUP, "2026"), sampleCards)
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            MemoryTestContent(backend) { YearStoryDestination(FakeMemoryBackend.GROUP, 2026, onClose = {}, backend = backend, clock = Scenario.clock) }
+        }
+        compose.mainClock.advanceTimeByFrame()
+        compose.onNodeWithText("Loading").assertDoesNotExist()
+        compose.onNodeWithText("We're ready for you.").assertExists()
+        backend.gates.getValue("yearStory").complete(Unit)
+        compose.mainClock.advanceTimeBy(1_000)
+        compose.onNodeWithText("Loading").assertDoesNotExist()
         compose.onNodeWithText("We're ready for you.").assertExists()
     }
 }

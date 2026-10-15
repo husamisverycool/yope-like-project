@@ -115,7 +115,7 @@ class SettingsAccountViewModel(private val env: AccountEnvironment) : AccountVie
 
     /**
      * `delete_account()` then the session is dropped (core:data `AccountRepository`; the device row
-     * is deleted with the account) → auth.phone. The "deleted" toast is BLOCKED (dwell time).
+     * is deleted with the account) → auth.phone with the toast `settings.account.deleted.toast`.
      */
     fun delete() {
         mutable.update { it.copy(confirmDelete = false, deleting = true) }
@@ -124,6 +124,7 @@ class SettingsAccountViewModel(private val env: AccountEnvironment) : AccountVie
             try {
                 env.backend.deleteAccount()
                 mutable.update { it.copy(deleting = false) }
+                toast(R.string.settings_account_deleted_toast)
                 navigate(AppRoute.AuthPhone, clearStack = true)
             } catch (t: Throwable) {
                 t.dataError()

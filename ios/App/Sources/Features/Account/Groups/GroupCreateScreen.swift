@@ -94,6 +94,7 @@ struct GroupCreateView: View {
         .loadingHUD(model.isWorking)
         .dsHaptic(Tokens.Haptics.globalSuccess, trigger: model.successCount)
         .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
+        .formErrorAlert(model.failureMessage, trigger: model.errorCount)
         .presentationDetents([.large])
         .task { await model.loadForEdit() }
         .onChange(of: pickerItem) { _, item in

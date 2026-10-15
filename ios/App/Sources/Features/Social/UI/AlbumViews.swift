@@ -1,8 +1,8 @@
-// Surfaces: albums.list, albums.view — reference app: Yope (no Yope album screen was found; built from documented
-// Yope components, S-14). Specs: design/surfaces/albums.list.md, albums.view.md. References:
-// references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png (card),
-// references/owner/yope-week-recap.jpg (header, pics grid), a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-
-// 2024.png (native ••• menu), a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png (name sheet).
+// Surfaces: albums.list, albums.view — reference apps: Yope (header, states, name sheet, menu) + Apple Photos (the album
+// cover grid, albums.list.layout.yopeAlbums, MERGE_DECISIONS G-17). Specs: design/surfaces/albums.list.md, albums.view.md.
+// References: references/auto/apple-photos/apple-support/photos-albums-ios27.png (cover grid), references/owner/yope-week-recap.jpg
+// (header, pics grid), references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png
+// (native ••• menu), a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png (name sheet).
 import AppData
 import AppModels
 import DesignSystem
@@ -60,10 +60,10 @@ struct AlbumsListScreen: View {
             EmptyStateView(title: Copy.chatThreadOfflineTitle, detail: Copy.chatThreadOfflineDetail)
         case .ready:
             ScrollView {
-                LazyVStack(spacing: Tokens.Sizes.globalListGap) {
+                LazyVGrid(columns: columns, spacing: Covers.gap) {
                     ForEach(model.albums) { album in
                         NavigationLink(value: AppRoute.social(.album(groupID: model.groupID.rawValue, albumID: album.id.rawValue))) {
-                            AlbumCard(
+                            AlbumCover(
                                 name: album.album.name,
                                 subtitle: model.savedByName(album).map { Copy.albumsListRowSubtitle(name: $0) },
                                 coverPath: model.cover(of: album)?.media?.gridPath
@@ -72,47 +72,59 @@ struct AlbumsListScreen: View {
                         .buttonStyle(.plain)
                     }
                 }
-                .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+                .padding(.horizontal, Covers.marginH)
             }
         }
     }
+
+    private typealias Covers = Tokens.Layouts.AlbumsListLayoutYopeAlbums
+
+    private var columns: [GridItem] {
+        Array(repeating: GridItem(.flexible(), spacing: Covers.gap), count: Int(Covers.columns))
+    }
 }
 
-/// The Yope home-list card (`albums.list.layout.composition`): `albums.list.color.card`,
-/// `albums.list.dimension.cardHeight` (minimum), `radius.global.card`; cover circle `size.global.avatarList` at
-/// `albums.list.dimension.coverInset`, then after `.coverToTitle` the name (text role `listTitle`) over the subtitle
-/// (text role `listSubtitle`, `color.global.textSecondary`).
-struct AlbumCard: View {
+/// An album in the Apple Photos "Album Cover" format (`albums.list.layout.yopeAlbums`, G-17): a square cover
+/// (`coverAspect`, corners `coverRadius`) of the album's first photo, aspect fill; the name over its bottom-leading corner
+/// (`titleFontSize`, ink `titleInsetLeading` from the leading edge, baseline `titleBaselineBottom` above the bottom),
+/// one line, tail truncation, `color.global.textPrimary`. The subtitle `albums.list.row.subtitle` is not drawn: it joins
+/// the accessibility label (the platform combines the name and subtitle texts).
+struct AlbumCover: View {
     let name: String
     let subtitle: String?
     let coverPath: String?
 
+    @State private var width: CGFloat = 0
+    @Environment(\.displayScale) private var displayScale
+
+    private typealias Covers = Tokens.Layouts.AlbumsListLayoutYopeAlbums
+
     var body: some View {
-        HStack(spacing: Tokens.Sizes.albumsListDimensionCoverToTitle) {
-            SocialPhoto(path: coverPath)
-                .frame(width: Tokens.Sizes.globalAvatarList, height: Tokens.Sizes.globalAvatarList)
-                .clipShape(Circle())
-                .accessibilityHidden(true)
-            VStack(alignment: .leading) {
+        let shape = RoundedRectangle(cornerRadius: Covers.coverRadius)
+        SocialPhoto(path: coverPath, maxPixel: width > 0 ? Int((width * displayScale).rounded(.up)) : nil)
+            .aspectRatio(Covers.coverAspect, contentMode: .fit)
+            .frame(maxWidth: .infinity)
+            .socialReadsWidth($width)
+            .overlay(alignment: .bottomLeading) {
                 Text(name)
-                    .dsTextStyle(TextRole.listTitle)
+                    .dsTextStyle(SocialText.albumCoverTitle)
                     .foregroundStyle(Tokens.Colors.globalTextPrimary)
                     .lineLimit(1)
-                if let subtitle {
-                    Text(subtitle)
-                        .dsTextStyle(TextRole.listSubtitle)
-                        .foregroundStyle(Tokens.Colors.globalTextSecondary)
-                }
+                    .truncationMode(.tail)
+                    .padding(.leading, Covers.titleInsetLeading)
+                    .padding(.trailing, Covers.titleInsetLeading)
+                    .alignmentGuide(.bottom) { $0[.lastTextBaseline] + Covers.titleBaselineBottom }
             }
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, Tokens.Sizes.albumsListDimensionCoverInset)
-        .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.albumsListDimensionCardHeight)
-        .background(Tokens.Colors.albumsListColorCard, in: RoundedRectangle(cornerRadius: Tokens.Radii.globalCard))
-        .contentShape(RoundedRectangle(cornerRadius: Tokens.Radii.globalCard))
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text([name, subtitle].compactMap { $0 }.joined(separator: ", ")))
-        .accessibilityAddTraits(.isButton)
+            .clipShape(shape)
+            .contentShape(shape)
+            .accessibilityRepresentation {
+                VStack {
+                    Text(name)
+                    if let subtitle { Text(subtitle) }
+                }
+                .accessibilityElement(children: .combine)
+            }
+            .accessibilityAddTraits(.isButton)
     }
 }
 

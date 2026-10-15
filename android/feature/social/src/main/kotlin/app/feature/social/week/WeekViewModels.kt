@@ -265,7 +265,7 @@ class WeekEditViewModel(
         s.copy(checked = if (postId in s.checked) s.checked - postId else s.checked + postId, error = null)
     }
 
-    /** Reorder among the checked photos (development builds until `week.edit.layout.reorder` is captured). */
+    /** Reorder among the checked photos (`week.edit.layout.reorder`: touch and hold, drag, drop). */
     fun move(postId: String, toIndex: Int) = _state.update { s ->
         val from = s.checked.indexOf(postId)
         if (from < 0) return@update s

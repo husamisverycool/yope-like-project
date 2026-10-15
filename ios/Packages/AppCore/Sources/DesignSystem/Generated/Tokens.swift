@@ -35,6 +35,9 @@ public enum Tokens {
         /// Locket · camera.capture · shutter disc while pressed · SOURCED
         /// token: `camera.capture.color.shutterDiscPressed`
         public static let cameraCaptureColorShutterDiscPressed: Color = Color(.sRGB, red: 0.8784, green: 0.8706, blue: 0.8745, opacity: 1)
+        /// Yope · camera.sendto · translucent fill of the 'add a message' capsule and the mic circle · SOURCED
+        /// token: `camera.sendto.color.messageField`
+        public static let cameraSendtoColorMessageField: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.4784)
         /// Yope · chat.composer · hairline rim along the bottom of the text field · SOURCED
         /// token: `chat.composer.color.fieldRimBottom`
         public static let chatComposerColorFieldRimBottom: Color = Color(.sRGB, red: 0.2784, green: 0.2784, blue: 0.2784, opacity: 1)
@@ -80,6 +83,9 @@ public enum Tokens {
         /// Telegram (rule) · Yope (colour) · chat.voice · colour of the played part of the waveform during playback · SOURCED
         /// token: `chat.voice.color.waveformPlayed`
         public static let chatVoiceColorWaveformPlayed: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
+        /// Yope · collage.share · frosted, backdrop-dependent pill fill with a light rim · SOURCED
+        /// token: `collage.share.color.pill`
+        public static let collageShareColorPill: Color = Color(.sRGB, red: 0.6039, green: 0.5804, blue: 0.5373, opacity: 0.6588)
         /// Yope · collage.view · loading HUD fill · SOURCED
         /// token: `collage.view.color.hud`
         public static let collageViewColorHud: Color = Color(.sRGB, red: 0.0471, green: 0.0471, blue: 0.0471, opacity: 1)
@@ -140,9 +146,15 @@ public enum Tokens {
         /// Yope · global · label on the light pill (secondary buttons, selected segment, 'today') · SOURCED
         /// token: `color.global.onSurfaceLight`
         public static let globalOnSurfaceLight: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
+        /// Locket · global · dimming layer behind sheets / over photos under text on app surfaces · SOURCED
+        /// token: `color.global.scrim`
+        public static let globalScrim: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.502)
         /// Apple HIG · global · filled check circle on selected people / groups (Yope draws it in iOS system blue) · PLATFORM
         /// token: `color.global.selection`
         public static let globalSelection: Color = Color(.sRGB, red: 0, green: 0.5686, blue: 1, opacity: 1)
+        /// Locket · global · hairline between rows on app (Yope-referenced) surfaces · SOURCED
+        /// token: `color.global.separator`
+        public static let globalSeparator: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.2)
         /// Yope · global · light pill fill: secondary buttons ('invite more friends', 'enable', 'new recap'), selected segment pill, 'today' pill · SOURCED
         /// token: `color.global.surfaceLight`
         public static let globalSurfaceLight: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
@@ -200,6 +212,9 @@ public enum Tokens {
         /// Spotify Wrapped · year.story · completed and current (filled part) segment · SOURCED
         /// token: `color.year.story.progress.fill`
         public static let yearStoryProgressFill: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
+        /// BeReal · daily.capture · translucent dark fill of the retake circle and the audience chip over the photo · SOURCED
+        /// token: `daily.capture.color.overlayControl`
+        public static let dailyCaptureColorOverlayControl: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.4588)
         /// BeReal · daily.capture · countdown digits, SEND label, prompt line (all BeReal capture text) · SOURCED
         /// token: `daily.capture.color.text`
         public static let dailyCaptureColorText: Color = Color(.sRGB, red: 0.9804, green: 0.9804, blue: 0.9804, opacity: 1)
@@ -217,10 +232,13 @@ public enum Tokens {
         public static let groupsCreateColorField: Color = Color(.sRGB, red: 0.0784, green: 0.0784, blue: 0.0784, opacity: 1)
         /// Yope · groups.create · Loading HUD square fill (on black) · SOURCED
         /// token: `groups.create.color.hud`
-        public static let groupsCreateColorHud: Color = Color(.sRGB, red: 0.149, green: 0.149, blue: 0.149, opacity: 1)
+        public static let groupsCreateColorHud: Color = Color(.sRGB, red: 0.0471, green: 0.0471, blue: 0.0471, opacity: 1)
         /// Yope · groups.list · group card fill on the black home list · SOURCED
         /// token: `groups.list.color.card`
         public static let groupsListColorCard: Color = Color(.sRGB, red: 0.0941, green: 0.0941, blue: 0.0941, opacity: 1)
+        /// Yope · groups.list · translucent dark fill of the header circles drawn over the cover photo · SOURCED
+        /// token: `groups.list.color.headerCircleOverPhoto`
+        public static let groupsListColorHeaderCircleOverPhoto: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.5804)
         /// Yope · groups.screen · floating 'chat' pill fill · SOURCED
         /// token: `groups.screen.color.chatPill`
         public static let groupsScreenColorChatPill: Color = Color(.sRGB, red: 0.0314, green: 0.0314, blue: 0.0314, opacity: 1)
@@ -365,6 +383,9 @@ public enum Tokens {
         /// Locket · widget.home.small · empty-state circle fill (white 24 %) · SOURCED
         /// token: `widget.home.small.color.emptyCircle`
         public static let widgetHomeSmallColorEmptyCircle: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.2392)
+        /// Yope · widget.home.small · empty-state label color · SOURCED
+        /// token: `widget.home.small.color.emptyLabel`
+        public static let widgetHomeSmallColorEmptyLabel: Color = Color(.sRGB, red: 0.5882, green: 0.5882, blue: 0.5882, opacity: 1)
         /// Locket · widget.home.small · empty-state ring stroke · SOURCED
         /// token: `widget.home.small.color.emptyRing`
         public static let widgetHomeSmallColorEmptyRing: Color = Color(.sRGB, red: 1, green: 0.7216, blue: 0, opacity: 1)
@@ -379,6 +400,9 @@ public enum Tokens {
         public static let widgetHomeSmallColorPlaceholderTop: Color = Color(.sRGB, red: 0.1765, green: 0.1686, blue: 0.1843, opacity: 1)
     }
     public enum Counts {
+        /// Locket · camera.sendto · longest caption the field accepts · SOURCED
+        /// token: `camera.sendto.size.captionMaxLength`
+        public static let cameraSendtoSizeCaptionMaxLength: CGFloat = 36
         /// Locket · chat.reactions · emoji per row in the picker grid · SOURCED
         /// token: `chat.reactions.count.pickerColumns`
         public static let chatReactionsCountPickerColumns: CGFloat = 6
@@ -411,6 +435,9 @@ public enum Tokens {
         /// Locket · camera.capture · maximum length of a hold-to-record video (premium) · SOURCED
         /// token: `camera.capture.duration.videoMax`
         public static let cameraCaptureDurationVideoMax: TimeInterval = 10
+        /// Locket · camera.sendto · how long the confirmation toast stays, and its entrance / exit motion · SOURCED
+        /// token: `camera.sendto.duration.toastVisible`
+        public static let cameraSendtoDurationToastVisible: TimeInterval = 2
         /// Locket · chat.reactions · flight of the chosen emoji into the cluster after the picker closes · SOURCED
         /// token: `chat.reactions.duration.flyToCluster`
         public static let chatReactionsDurationFlyToCluster: TimeInterval = 0.3
@@ -435,6 +462,9 @@ public enum Tokens {
         /// Tribute · birthday.tribute · transition from the last contribution to the end card: hard cut (read by the worker) · SOURCED
         /// token: `duration.birthday.tribute.endTransition`
         public static let birthdayTributeEndTransition: TimeInterval = 0
+        /// VidDay · birthday.tribute · time each contribution card stays on screen (read by the worker) · SOURCED
+        /// token: `duration.birthday.tribute.photoHold`
+        public static let birthdayTributePhotoHold: TimeInterval = 4
         /// VidDay · birthday.tribute · crossfade from the title card to the first contribution (read by the worker) · SOURCED
         /// token: `duration.birthday.tribute.titleCrossfade`
         public static let birthdayTributeTitleCrossfade: TimeInterval = 0.6
@@ -450,6 +480,12 @@ public enum Tokens {
         /// Yope · global · bottom-sheet presentation, first movement to rest (rise ≈ 100 ms to an overshoot ≈ 16 pt past rest, settle ≈ 100 ms) · SOURCED
         /// token: `duration.global.sheetPresent`
         public static let globalSheetPresent: TimeInterval = 0.215
+        /// VidDay · onthisday · transition between two years' memories · SOURCED
+        /// token: `duration.onthisday.memoryChange`
+        public static let onthisdayMemoryChange: TimeInterval = 0.7
+        /// VidDay · year.story · time one card stays before the story advances on its own · SOURCED
+        /// token: `duration.year.story.card`
+        public static let yearStoryCard: TimeInterval = 4
         /// Spotify Wrapped · year.story · headline moves up when the subline arrives · SOURCED
         /// token: `duration.year.story.reveal.headline`
         public static let yearStoryRevealHeadline: TimeInterval = 0.8
@@ -465,6 +501,9 @@ public enum Tokens {
         /// Partiful · invite.web · button opacity transition (press feedback) · VERIFIED
         /// token: `invite.web.duration.button.opacity`
         public static let inviteWebDurationButtonOpacity: TimeInterval = 0.1
+        /// Locket · safety.block · how long the lime toast stays before it leaves · SOURCED
+        /// token: `safety.block.duration.toast`
+        public static let safetyBlockDurationToast: TimeInterval = 2
         /// Locket · widget.android · system periodic update interval (safety net; refresh is push-driven) · SOURCED
         /// token: `widget.android.duration.updatePeriod`
         public static let widgetAndroidDurationUpdatePeriod: TimeInterval = 86400
@@ -485,6 +524,12 @@ public enum Tokens {
         /// Spotify Wrapped · year.story · current segment fill over time · SOURCED
         /// token: `easing.year.story.progress.fill`
         public static let yearStoryProgressFill: DSEasing = .linear
+        /// Spotify Wrapped · year.story · curve of the headline / subline reveal · SOURCED
+        /// token: `easing.year.story.reveal`
+        public static let yearStoryReveal: DSEasing = .cubicBezier(0.56, 0.08, 0.14, 0.87)
+        /// Spotify Wrapped · year.story · curve of the subline rising in (with duration.year.story.reveal.subline, .sublineDelay, dimension .sublineOffset) · SOURCED
+        /// token: `easing.year.story.reveal.subline`
+        public static let yearStoryRevealSubline: DSEasing = .cubicBezier(0.05, 0.36, 0.26, 0.94)
         /// Partiful · invite.web · button/link transitions · VERIFIED
         /// token: `invite.web.easing.button`
         public static let inviteWebEasingButton: DSEasing = .easeOut
@@ -798,6 +843,9 @@ public enum Tokens {
         /// Yope · collage.view · date title weight · SOURCED
         /// token: `collage.view.fontWeight.title`
         public static let collageViewFontWeightTitle: Font.Weight = .semibold
+        /// BeReal · daily.capture · countdown digit weight · SOURCED
+        /// token: `daily.capture.fontWeight.countdown`
+        public static let dailyCaptureFontWeightCountdown: Font.Weight = .bold
         /// BeReal · daily.capture · SEND label weight · SOURCED
         /// token: `daily.capture.fontWeight.send`
         public static let dailyCaptureFontWeightSend: Font.Weight = .heavy
@@ -1183,6 +1231,28 @@ public enum Tokens {
         public enum AuthCodeLayoutCodeField {
             public static let ios: String = "one TextField, textContentType .oneTimeCode, keyboardType .numberPad; no per-digit boxes (a custom input view cannot show the AutoFill suggestion)"
             public static let android: String = "one TextField, KeyboardType.NumberPassword with visualTransformation None, autofill ContentType.SmsOtpCode; SMS User Consent API (SmsRetriever.getClient(context).startSmsUserConsent) shows the system consent sheet and fills the field"
+        }
+        /// Locket · auth.phone · country calling-code selector of the phone field · SOURCED
+        /// token: `auth.phone.layout.countryCode`
+        public enum AuthPhoneLayoutCountryCode {
+            public static let pattern: String = "flag at the field's leading edge + the calling code typed inline with the number ('+1 555 ...'); no separate code button"
+            public static let flagWidth: CGFloat = 20
+            public static let flagHeight: CGFloat = 13
+            public static let flagLeading: CGFloat = 20
+            public static let flagToText: CGFloat = 5
+            public static let prefill: String = "'+' and the device region's calling code (Locale / libphonenumber); the flag follows the code as it is typed or edited"
+            public static let autoFormat: Bool = true
+            public static let allowZeroAfterCountryCode: Bool = true
+            public static let flagTap: String = "opens a country list; choosing a country replaces the calling code (Locket: the phone-input library's built-in country picker, picker.selectCountry(iso2) + picker.show(); ours: the platform picker in a sheet)"
+            public static let flagArt: String = "regional-indicator flag emoji (PLATFORM) in the 20 x 13 slot; Locket draws the library's flag images"
+        }
+        /// Locket · auth.phone · how a field-level error (wrong number, wrong or expired code, invalid date) is presented on the sign-up screens · SOURCED
+        /// token: `auth.phone.layout.inlineError`
+        public enum AuthPhoneLayoutInlineError {
+            public static let presentation: String = "system alert: iOS UIAlertController .alert / SwiftUI .alert, Android M3 AlertDialog; not dismissible by tapping outside"
+            public static let title: String = "none: the auth.*.error.* sentence is the alert message (Locket's errors are title + message pairs; our error copy is one sentence, so no title is shown)"
+            public static let button: String = "one button, auth.phone.error.dismiss ('OK'), which closes the alert"
+            public static let appliesTo: String = "auth.phone and auth.code field errors (invalid number, rate limited, send failed, wrong / expired code, too many tries) and auth.agegate invalid date"
         }
         /// Yope · auth.phone · keyboard and AutoFill of the phone-number field · PLATFORM
         /// token: `auth.phone.layout.keyboard`
@@ -1906,6 +1976,11 @@ public enum Tokens {
             public static let pattern: String = "d MMMM"
             public static let example: String = "26 May"
         }
+        /// VidDay · birthday.contribute · UI character limit of the one line · SOURCED
+        /// token: `layout.birthday.contribute.lineMax`
+        public enum BirthdayContributeLineMax {
+            public static let maxCharacters: CGFloat = 110
+        }
         /// Tribute · birthday.contribute · step indicator · VERIFIED
         /// token: `layout.birthday.contribute.stepper`
         public enum BirthdayContributeStepper {
@@ -1946,6 +2021,30 @@ public enum Tokens {
             public static let cta: String = "title2"
             public static let promptsHeader: String = "subheadline"
             public static let prompt: String = "subheadline"
+        }
+        /// Tribute · birthday.tribute · first name + one line over each contribution photo (read by the worker) · SOURCED
+        /// token: `layout.birthday.tribute.caption`
+        public enum BirthdayTributeCaption {
+            public static let textColor: String = "#FFFFFF"
+            public static let nameFontWeight: CGFloat = 700
+            public static let nameFontSizeRatio: CGFloat = 0.0463
+            public static let lineFontWeight: CGFloat = 700
+            public static let lineFontSizeRatio: CGFloat = 0.0795
+            public static let leftRatio: CGFloat = 0.0577
+            public static let bottomRatio: CGFloat = 0.0861
+            public static let maxWidthRatio: CGFloat = 0.8845
+            public static let gapRatio: CGFloat = 0.0099
+            public static let scrim: String = "#11202FC7"
+        }
+        /// VidDay · birthday.tribute · end card text layout (read by the worker) · SOURCED
+        /// token: `layout.birthday.tribute.endCard`
+        public enum BirthdayTributeEndCard {
+            public static let background: String = "#EFEEF3"
+            public static let textColor: String = "#444347"
+            public static let fontWeight: CGFloat = 500
+            public static let fontSizeRatio: CGFloat = 0.084
+            public static let maxWidthRatio: CGFloat = 0.405
+            public static let centerYRatio: CGFloat = 0.5
         }
         /// Tribute + VidDay · birthday.tribute · video player on the tribute screen · PLATFORM
         /// token: `layout.birthday.tribute.player`
@@ -2172,6 +2271,18 @@ public enum Tokens {
             public static let order: String = "share-card carousel, Share pill, Replay from beginning"
             public static let previewWidthRatio: CGFloat = 0.6
             public static let carousel: String = "horizontal paging through the story's share cards"
+        }
+        /// Spotify Wrapped · year.story · page dots under the share-card carousel · SOURCED
+        /// token: `layout.year.story.summary.dots`
+        public enum YearStorySummaryDots {
+            public static let count: String = "one per share card"
+            public static let diameter: CGFloat = 8.4
+            public static let pitch: CGFloat = 16.8
+            public static let selectedColor: String = "#FFFFFF"
+            public static let unselectedColor: String = "#666666"
+            public static let centerBelowCarousel: CGFloat = 20.4
+            public static let centerAboveShare: CGFloat = 29.3
+            public static let animation: String = "none observed (static render)"
         }
         /// Spotify Wrapped · year.story · text card arrangement · SOURCED
         /// token: `layout.year.story.text`
@@ -2565,6 +2676,13 @@ public enum Tokens {
             public static let w375h667: String = "225x26"
             public static let w360h780: String = "225x26"
         }
+        /// Locket · widget.lock.rect · what the Lock Screen widgets show in the two cases Locket's small-widget anatomy cannot fill: the newest photo has no caption (rectangular, inline) and the newest item is a collage (all three) · SOURCED
+        /// token: `widget.lock.rect.layout.content`
+        public enum WidgetLockRectLayoutContent {
+            public static let noCaptionRectangular: String = "the sender avatar alone, in its 24-pt leading slot (Locket's small widget without a caption shows only the avatar)"
+            public static let noCaptionInline: String = "the sentence of widget.home.small.a11y.photo ('{name}’s photo in {group}') as the inline text (the inline widget has no avatar slot)"
+            public static let newestIsCollage: String = "keep showing the newest single photo's sender (avatar, and its caption if any): Locket's widget always shows one sender's newest photo and has no collage state"
+        }
         /// Apple HIG · widget.lock.rect · how every Lock Screen widget renders (circular, rectangular, inline) · VERIFIED
         /// token: `widget.lock.rect.layout.rendering`
         public enum WidgetLockRectLayoutRendering {
@@ -2816,6 +2934,9 @@ public enum Tokens {
         /// Yope · camera.capture · light pill action in empty / permission-denied states ('invite more friends' empty-state pill) · SOURCED
         /// token: `camera.capture.size.permissionButtonHeight`
         public static let cameraCaptureSizePermissionButtonHeight: CGFloat = 45
+        /// Locket · camera.capture · outline drawn around the viewfinder while a video records (color.global.accent) · SOURCED
+        /// token: `camera.capture.size.recordingOutline`
+        public static let cameraCaptureSizeRecordingOutline: CGFloat = 6
         /// Yope · camera.capture · white shutter disc diameter (color.global.surfaceLight) · SOURCED
         /// token: `camera.capture.size.shutterDisc`
         public static let cameraCaptureSizeShutterDisc: CGFloat = 59
@@ -3712,6 +3833,9 @@ public enum Tokens {
         /// Apple HIG · global · iOS default animation (SwiftUI Animation.default) for custom motion whose Yope curve was not measurable · PLATFORM
         /// token: `spring.global.platformDefault.ios`
         public static let globalPlatformDefaultIos: DSSpring = DSSpring(response: 0.55, dampingFraction: 1)
+        /// React Navigation iOS modal spec (shipped in Locket) · global · sheet presentation spring (response, dampingFraction) · SOURCED
+        /// token: `spring.global.sheetPresent`
+        public static let globalSheetPresent: DSSpring = DSSpring(response: 0.3441, dampingFraction: 4.564)
     }
     public enum Tracking {
         /// Partiful · invite.web · title tracking · VERIFIED

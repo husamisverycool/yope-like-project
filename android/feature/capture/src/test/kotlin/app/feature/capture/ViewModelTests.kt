@@ -207,6 +207,32 @@ class ViewModelTests {
         job.cancel()
     }
 
+    @Test fun voiceRecordingLocksAndAttachesTheNote() {
+        data.loaded(group("g1", "Family"))
+        handoff.put(media(), "g1", null)
+        val vm = SendToViewModel(data, handoff, tracker(), MemoryCapturePrefs(), SessionPromptGate(), voiceRecorderAvailable = true)
+        assertTrue(vm.ui.value.micAvailable)
+        assertTrue(vm.ui.value.voiceCoachVisible)
+        vm.onVoiceLocked() // nothing to lock before a recording
+        assertFalse(vm.ui.value.voiceLocked)
+        vm.onVoiceRecording(true, startedAt = 42L)
+        assertTrue(vm.ui.value.recordingVoice)
+        assertEquals(42L, vm.ui.value.recordingStartedAt)
+        assertFalse(vm.ui.value.voiceCoachVisible) // recording dismisses the coach for good
+        vm.onVoiceLocked()
+        assertTrue(vm.ui.value.voiceLocked)
+        val first = File(dir, "v1.m4a").apply { writeBytes(byteArrayOf(1)) }
+        vm.onVoiceNote(VoiceNoteFile(first, 1_000))
+        assertFalse(vm.ui.value.recordingVoice)
+        assertFalse(vm.ui.value.voiceLocked)
+        assertNull(vm.ui.value.recordingStartedAt)
+        // A new note replaces (and deletes) the previous one.
+        val second = File(dir, "v2.m4a").apply { writeBytes(byteArrayOf(2)) }
+        vm.onVoiceNote(VoiceNoteFile(second, 2_000))
+        assertFalse(first.exists())
+        assertEquals(second, vm.ui.value.voice?.file)
+    }
+
     @Test fun nothingSelectedHidesSend() {
         data.loaded(group("g1", "Family"))
         val vm = sendTo("g1")
@@ -257,14 +283,15 @@ class ViewModelTests {
         assertEquals(SendToViewModel.Groups.Loading, sendTo(null).ui.value.groups)
     }
 
-    @Test fun captionIsCappedOnlyWhenTheLimitIsSourced() {
+    @Test fun captionIsCappedAtTheTokenLimitWithoutSplittingAnEmoji() {
         data.loaded(group("g1", "Family"))
-        val open = sendTo("g1")
-        open.onCaption("x".repeat(2000))
-        assertEquals(2000, open.ui.value.caption.length)
-        val capped = sendTo("g1", maxCaption = 5)
-        capped.onCaption("abcdefgh")
-        assertEquals("abcde", capped.ui.value.caption)
+        val max = app.designsystem.generated.Tokens.Counts.cameraSendtoSizeCaptionMaxLength
+        val capped = sendTo("g1", maxCaption = max)
+        capped.onCaption("x".repeat(2000))
+        assertEquals(max, capped.ui.value.caption.length)
+        // An emoji (two UTF-16 units) straddling the limit is dropped whole.
+        capped.onCaption("x".repeat(max - 1) + "\uD83D\uDE00")
+        assertEquals("x".repeat(max - 1), capped.ui.value.caption)
     }
 
     @Test fun closeDiscardsTheCapture() {

@@ -9,8 +9,8 @@ import java.time.LocalDate
 private val us = DateEntryPattern(listOf('M', 'd', 'y'), '/')
 
 class BirthdayAddSnapshotTest : SnapshotTest() {
-    private fun add(state: String, s: BirthdayAddState, toasts: Boolean = false) =
-        snap("birthday.add", state, reviewToasts = toasts) { BirthdayAddScreen(s, us, {}, {}, {}, {}, {}, {}) }
+    private fun add(state: String, s: BirthdayAddState, settle: Long = settleMillis) =
+        snap("birthday.add", state, settle = settle) { BirthdayAddScreen(s, us, {}, {}, {}, {}, {}, {}) }
 
     private val form = BirthdayAddState(loading = false)
 
@@ -24,8 +24,8 @@ class BirthdayAddSnapshotTest : SnapshotTest() {
     @Test fun error() = add("error", form.copy(digits = "05261999", error = true))
     @Test fun manage() = add("manage", form.copy(saved = LocalDate.of(1999, 5, 26)))
 
-    /** Layout review only: release and debug builds show no toast while its dwell time is BLOCKED. */
-    @Test fun addedToast() = add("review-toast-added", form.copy(saved = LocalDate.of(1999, 5, 26), toast = BirthdayAddState.Toast.Added), toasts = true)
+    /** Added: the toast shows for `safety.block.duration.toast`, then the screen closes. */
+    @Test fun addedToast() = add("toast-added", form.copy(saved = LocalDate.of(1999, 5, 26), toast = BirthdayAddState.Toast.Added, finished = true), settle = toastSettle)
 }
 
 internal val sampleInfo = RequestInfo(
@@ -84,8 +84,8 @@ class BirthdayContributeSnapshotTest : SnapshotTest() {
 }
 
 class TributeSnapshotTest : SnapshotTest() {
-    private fun tribute(state: String, s: TributeState, toasts: Boolean = false) =
-        snap("birthday.tribute", state, reviewToasts = toasts) { TributeScreen(s, autoplay = false, player = null, {}, {}, {}, {}, {}) }
+    private fun tribute(state: String, s: TributeState, settle: Long = settleMillis) =
+        snap("birthday.tribute", state, settle = settle) { TributeScreen(s, autoplay = false, player = null, {}, {}, {}, {}, {}) }
 
     private val ready = TributeState(TributeContent.Ready("https://video.test/t.mp4", TestImages.url("poster", 16, 9)), groupName = "Sunday Lunch")
 
@@ -97,7 +97,6 @@ class TributeSnapshotTest : SnapshotTest() {
     @Test fun notFound() = tribute("not-found", TributeState(TributeContent.NotFound))
     @Test fun error() = tribute("error", TributeState(TributeContent.Failed))
 
-    /** Layout review only (toast dwell BLOCKED: not shown in builds). */
-    @Test fun savedToast() = tribute("review-toast-saved", ready.copy(toast = TributeState.Toast.Saved), toasts = true)
-    @Test fun saveFailedToast() = tribute("review-toast-save-failed", ready.copy(toast = TributeState.Toast.SaveFailed), toasts = true)
+    @Test fun savedToast() = tribute("toast-saved", ready.copy(toast = TributeState.Toast.Saved), settle = toastSettle)
+    @Test fun saveFailedToast() = tribute("toast-save-failed", ready.copy(toast = TributeState.Toast.SaveFailed), settle = toastSettle)
 }

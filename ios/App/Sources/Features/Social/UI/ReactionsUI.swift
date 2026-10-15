@@ -11,11 +11,15 @@ import SwiftUI
 // MARK: - Cluster (§1)
 
 /// One sticker per distinct emoji, each `chat.reactions.dimension.clusterStep` right of the previous one and drawn
-/// over it; white outline. Order: the data's (first reacted first) — the sticker order is BLOCKED
-/// (`chat.reactions.layout.clusterOrder`); every distinct emoji shows (the visible maximum is BLOCKED,
+/// over it; white outline. Order `chat.reactions.layout.clusterOrder`: newest first — a new emoji enters at the leading
+/// end and the others shift one step trailing, flying in from below the photo's edge and shrinking from the picker's
+/// size in `chat.reactions.duration.flyToCluster` (decelerating; the pick point itself is not tracked — approximation).
+/// Reduce Motion: inserted without animation. Every distinct emoji shows (the visible maximum is BLOCKED,
 /// `chat.reactions.count.clusterMaxVisible`), clipped by the photo. Hidden when nobody reacted.
 struct ReactionCluster: View {
     let allEmoji: [String]
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init(emoji: [String]) {
         allEmoji = emoji
@@ -25,23 +29,38 @@ struct ReactionCluster: View {
         SocialBlocked.clusterMaxVisible.map { Array(allEmoji.prefix($0)) } ?? allEmoji
     }
 
+    /// `chat.reactions.duration.flyToCluster` with a decelerating curve: the curve was not fitted (G-12), so the platform
+    /// default for unmeasured custom motion (`spring.global.platformDefault.ios`, critically damped) runs over the
+    /// measured duration.
+    private static let flight = DSAnimation.spring(DSSpring(
+        response: Tokens.Durations.chatReactionsDurationFlyToCluster,
+        dampingFraction: Tokens.Springs.globalPlatformDefaultIos.dampingFraction
+    ))
+
+    private var flyIn: AnyTransition {
+        .asymmetric(
+            insertion: .scale(scale: Tokens.Sizes.chatReactionsDimensionPickerEmoji / Tokens.Sizes.chatReactionsDimensionClusterEmoji)
+                .combined(with: .offset(y: Tokens.Sizes.chatReactionsDimensionClusterInsetBottom + Tokens.Sizes.chatReactionsDimensionClusterEmoji)),
+            removal: .identity
+        )
+    }
+
     var body: some View {
-        if !emoji.isEmpty {
-            ZStack(alignment: .leading) {
-                ForEach(Array(emoji.enumerated()), id: \.element) { index, glyph in
-                    ReactionSticker(emoji: glyph)
-                        .offset(x: CGFloat(index) * Tokens.Sizes.chatReactionsDimensionClusterStep)
-                }
+        let step = Tokens.Sizes.chatReactionsDimensionClusterStep
+        let size = Tokens.Sizes.chatReactionsDimensionClusterEmoji
+        ZStack(alignment: .leading) {
+            ForEach(Array(emoji.enumerated()), id: \.element) { index, glyph in
+                ReactionSticker(emoji: glyph)
+                    .offset(x: CGFloat(index) * step)
+                    .transition(flyIn)
             }
-            .frame(
-                width: Tokens.Sizes.chatReactionsDimensionClusterEmoji + CGFloat(emoji.count - 1) * Tokens.Sizes.chatReactionsDimensionClusterStep,
-                height: Tokens.Sizes.chatReactionsDimensionClusterEmoji,
-                alignment: .leading
-            )
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text(SocialEmoji.clusterLabel(allEmoji)))
-            .accessibilityAddTraits(.isButton)
         }
+        .frame(width: emoji.isEmpty ? 0 : size + CGFloat(emoji.count - 1) * step, height: emoji.isEmpty ? 0 : size, alignment: .leading)
+        .animation(reduceMotion ? nil : Self.flight.animation, value: emoji)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(allEmoji.isEmpty ? "" : SocialEmoji.clusterLabel(allEmoji)))
+        .accessibilityAddTraits(.isButton)
+        .accessibilityHidden(allEmoji.isEmpty)
     }
 }
 
@@ -69,13 +88,11 @@ struct ReactionSticker: View {
 
 /// `chat.reactions.layout.rainPath`: `chat.reactions.count.rainCopies` copies of the emoji just sent, entering below
 /// the bottom edge at random x positions, one every `chat.reactions.duration.rainSpawnInterval`, each rising past the
-/// top edge in `chat.reactions.duration.rainTravel`; the effect lasts `chat.reactions.duration.rainTotal`. Placed
-/// behind the photo, in front of the background; never interactive; hidden from accessibility.
+/// top edge in `chat.reactions.duration.rainTravel` along `chat.reactions.easing.rain`; the effect lasts
+/// `chat.reactions.duration.rainTotal`. Placed behind the photo, in front of the background; never interactive; hidden
+/// from accessibility.
 ///
 /// Reduce Motion (`chat.reactions.layout.reduceMotion`): not played; the sticker appears in place.
-/// The speed curve `chat.reactions.easing.rain` (`SocialBlocked.rainEasing`) is BLOCKED: until it is filled, release
-/// builds never play the rain (the same result as the Reduce Motion substitute) and DEBUG builds play it with linear
-/// progress so the path, timing and layering can be reviewed — a review stand-in, not a design value.
 struct EmojiRain: View {
     let trigger: SentReaction?
 
@@ -94,20 +111,10 @@ struct EmojiRain: View {
             .allowsHitTesting(false)
             .accessibilityHidden(true)
             .onChange(of: trigger) { _, new in
-                guard let new, Self.plays, !reduceMotion else { return }
+                guard let new, !reduceMotion else { return }
                 let copies = Int(Tokens.Counts.chatReactionsCountRainCopies)
                 run = RainRun(emoji: new.emoji, start: Date(), positions: (0..<copies).map { _ in Double.random(in: 0...1) })
             }
-    }
-
-    /// False in release builds while the rain's speed curve is BLOCKED.
-    static var plays: Bool {
-        if SocialBlocked.rainEasing != nil { return true }
-        #if DEBUG
-        return true
-        #else
-        return false
-        #endif
     }
 
     @ViewBuilder
@@ -134,7 +141,7 @@ struct EmojiRain: View {
     private func copy(_ emoji: String, index: Int, x: Double, elapsed: TimeInterval, size: CGSize) -> some View {
         let glyph = Tokens.Sizes.chatReactionsDimensionRainEmoji
         let linear = (elapsed - Double(index) * Tokens.Durations.chatReactionsDurationRainSpawnInterval) / Tokens.Durations.chatReactionsDurationRainTravel
-        let progress = SocialBlocked.rainEasing.map { $0.unitCurve.value(at: min(max(linear, 0), 1)) } ?? linear
+        let progress = Tokens.Easings.chatReactionsEasingRain.unitCurve.value(at: min(max(linear, 0), 1))
         if linear >= 0, linear <= 1 {
             // From just below the bottom edge to just past the top edge.
             let startY = size.height + glyph / 2
@@ -159,7 +166,11 @@ struct ReactionPickerTarget: Identifiable, Hashable {
 /// (every emoji in Unicode order; the system categories order is not available to apps). Grid of
 /// `chat.reactions.count.pickerColumns` columns, emoji at `chat.reactions.dimension.pickerEmoji`. A tap sends and closes.
 struct ReactionPicker: View {
+    /// The emoji I already reacted with on this photo (`chat.reactions.layout.unreact`): highlighted on a
+    /// `color.global.selection` circle with the selected trait; tapping one takes it back (the sheet stays).
+    var mine: Set<String> = []
     let onPick: (String) -> Void
+    var onRemove: (String) -> Void = { _ in }
 
     @Environment(\.dismiss) private var dismiss
     @State private var search = ""
@@ -215,17 +226,26 @@ struct ReactionPicker: View {
     }
 
     private func cell(_ emoji: String) -> some View {
-        Button {
-            SocialServices.shared.flags.recordEmoji(emoji, keep: Int(Tokens.Counts.chatReactionsCountPickerColumns))
-            onPick(emoji)
-            dismiss()
+        let isMine = mine.contains(emoji)
+        return Button {
+            if isMine {
+                onRemove(emoji)
+            } else {
+                SocialServices.shared.flags.recordEmoji(emoji, keep: Int(Tokens.Counts.chatReactionsCountPickerColumns))
+                onPick(emoji)
+                dismiss()
+            }
         } label: {
             Text(emoji)
                 .font(Tokens.Fonts.globalFamily.font(size: Tokens.Sizes.chatReactionsDimensionPickerEmoji, weight: Font.Weight.regular))
                 .frame(minWidth: Tokens.Sizes.globalMinTouchTargetIos, minHeight: Tokens.Sizes.globalMinTouchTargetIos)
+                .background {
+                    if isMine { Circle().fill(Tokens.Colors.globalSelection) }
+                }
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text(SocialEmoji.name(emoji)))
+        .accessibilityAddTraits(isMine ? .isSelected : [])
     }
 
     /// Single-scalar emoji with emoji presentation, in code point order.

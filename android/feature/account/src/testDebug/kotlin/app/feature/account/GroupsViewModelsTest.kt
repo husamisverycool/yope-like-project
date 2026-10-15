@@ -27,6 +27,8 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import app.feature.account.common.AccountEvent
+import app.designsystem.R
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -173,6 +175,7 @@ class GroupsViewModelsTest {
         backend.failures.remove("revokeInvite")
         vm.turnOff()
         assertNull(vm.state.value.invite)
+        assertEquals(listOf(AccountEvent.Toast(R.string.groups_invite_link_turnedoff)), events.toasts())
     }
 
     @Test fun fullGroupShowsTheFullState() = runTest(main.dispatcher) {

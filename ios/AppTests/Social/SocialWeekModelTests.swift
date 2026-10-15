@@ -208,6 +208,24 @@ final class SocialWeekModelTests: XCTestCase {
         XCTAssertEqual(SocialCalendar.weekNumber(of: LocalDate(year: 2027, month: 1, day: 4)!, in: model.timeZone), 1)
     }
 
+    func testCurrentWeekListsItsDaysWithoutAPhoto() async {
+        let model = historyModel()
+        await model.load()
+        let current = model.weeks[0]
+        XCTAssertEqual(model.emptyDays(of: current), [
+            LocalDate(year: 2026, month: 10, day: 16)!, LocalDate(year: 2026, month: 10, day: 17)!, LocalDate(year: 2026, month: 10, day: 18)!,
+        ], "Mon–Thu have photos")
+        XCTAssertEqual(model.emptyDays(of: model.weeks[1]), [], "past weeks have no empty-day tiles")
+
+        let empty = historyModel(SocialDemo.makeEmptyData())
+        await empty.load()
+        XCTAssertEqual(empty.emptyDays(of: empty.weeks[0])?.count, 7)
+
+        let unloaded = historyModel()
+        XCTAssertNil(unloaded.emptyDays(of: WeekHistoryModel.Week(weekStart: SocialDemo.thisWeek, postIDs: [SocialDemo.p1], isCurrent: true)),
+                     "no empty-day tiles before the week's photos are known")
+    }
+
     func testEmptyGroupSynthesisesTheCurrentWeek() async {
         let model = historyModel(SocialDemo.makeEmptyData())
         await model.load()

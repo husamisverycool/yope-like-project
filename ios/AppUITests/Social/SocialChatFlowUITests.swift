@@ -36,8 +36,13 @@ final class SocialChatFlowUITests: XCTestCase {
         let app = launchChat()
         let field = composer(app)
         field.tap()
-        field.typeText("dinner at 8\n")
+        XCTAssertTrue(app.descendants(matching: .any)["chat.composer.mic"].exists, "empty field: the mic circle")
+        field.typeText("dinner at 8")
+        let send = app.buttons["chat.composer.send"]
+        XCTAssertTrue(send.waitForExistence(timeout: 5), "text in the field: the lime send circle replaces the mic")
+        send.tap()
         XCTAssertTrue(app.descendants(matching: .any)["you, dinner at 8"].waitForExistence(timeout: 5), "the sent message shows in the thread")
+        XCTAssertTrue(app.descendants(matching: .any)["chat.composer.mic"].waitForExistence(timeout: 5), "the field is empty again: the mic returns")
     }
 
     @MainActor
@@ -51,7 +56,10 @@ final class SocialChatFlowUITests: XCTestCase {
         let reply = app.descendants(matching: .any)["photo.viewer.reply"]
         XCTAssertTrue(reply.waitForExistence(timeout: 5))
         reply.tap()
-        reply.typeText("love this\n")
+        reply.typeText("love this")
+        let send = app.buttons["photo.viewer.send"]
+        XCTAssertTrue(send.waitForExistence(timeout: 5), "the camera circle's slot shows the send circle")
+        send.tap()
         app.buttons["close"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["you, love this"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["reply to Ana’s pic"].exists, "the reply carries the lime quote of the photo")

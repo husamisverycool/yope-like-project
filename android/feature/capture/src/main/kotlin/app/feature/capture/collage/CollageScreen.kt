@@ -63,7 +63,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.designsystem.R
 import app.designsystem.generated.Tokens
-import app.feature.capture.Blocked
 import app.feature.capture.data.CaptureDataProvider
 import app.feature.capture.sendto.decodePreview
 import app.feature.capture.ui.CaptureText
@@ -254,8 +253,8 @@ private fun CollageHud() {
 /**
  * The share pill (`collage.share.layout.pill`): 126 × 58, corner 10, bottom edge 36 above the
  * screen bottom; glyph `collage.share.icon.share` + label `collage.share.button`
- * (`collage.share.fontSize.label` / `.fontWeight.label`), both `color.global.textPrimary`. Its
- * frosted fill is BLOCKED ([Blocked.sharePillFill]).
+ * (`collage.share.fontSize.label` / `.fontWeight.label`), both `color.global.textPrimary`, on the
+ * frosted tint `collage.share.color.pill` (its backdrop blur radius is not tokenized: tint only).
  */
 @Composable
 private fun SharePill(onShare: () -> Unit, sharing: Boolean, modifier: Modifier) {
@@ -267,7 +266,7 @@ private fun SharePill(onShare: () -> Unit, sharing: Boolean, modifier: Modifier)
             .padding(bottom = pill.bottomFromScreenBottom.dp)
             .size(pill.width.dp, pill.height.dp)
             .clip(shape)
-            .then(Blocked.sharePillFill?.let { Modifier.background(it) } ?: Modifier)
+            .background(Tokens.Colors.collageShareColorPill)
             .clickable(enabled = !sharing, onClick = onShare)
             .testTag("collage.share")
             .clearAndSetSemantics { contentDescription = label; role = Role.Button; traversalIndex = 4f },

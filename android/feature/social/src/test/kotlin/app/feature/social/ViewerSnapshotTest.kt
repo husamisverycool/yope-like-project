@@ -30,7 +30,7 @@ class ViewerSnapshotTest : SnapshotBase() {
 
     private fun viewer(state: ViewerState, ui: ViewerUiState = ViewerUiState(coach = false), data: FakeSocialData = data(), screen: Boolean = false, approximations: Boolean = true) =
         snap(data, approximations, screen) {
-            PhotoViewerContent(state, ui, nav, testVoice, VoicePlayback(null, false), {}, {}, {}, {}, {}, {}, {}, {}, {})
+            PhotoViewerContent(state, ui, nav, testVoice, VoicePlayback(null, false), {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
         }
 
     private fun state(postId: String, data: FakeSocialData) = PhotoViewerViewModel(data, GROUP, postId, PhotoContext.Single, postId, null).state.value

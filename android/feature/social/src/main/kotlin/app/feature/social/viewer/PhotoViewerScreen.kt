@@ -6,6 +6,14 @@
 package app.feature.social.viewer
 
 import android.Manifest
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionOnScreen
+import androidx.compose.ui.unit.toSize
+import app.feature.social.chat.SendCircle
+import app.feature.social.reactions.FlightLayer
+import app.feature.social.reactions.LocalReactionFlights
+import app.feature.social.reactions.ReactionFlights
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -144,7 +152,6 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
     val view = LocalView.current
     val haptics = rememberHaptics()
     val reduceMotion by rememberReduceMotion()
-    val rainAllowed = app.feature.social.common.shows(app.feature.social.common.SocialBlocked.rainEasing != null)
     val services = LocalSocialServices.current
     val voice = remember { services.voice(context) }
     androidx.compose.runtime.DisposableEffect(voice) { onDispose { voice.release() } }
@@ -170,7 +177,7 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
             when (effect) {
                 ViewerEffect.Sent -> haptics.play(Tokens.Haptics.globalSend)
                 ViewerEffect.SendFailed -> { haptics.play(Tokens.Haptics.globalError); announce(view, texts.sendFailed) }
-                is ViewerEffect.Rain -> if (rainAllowed && !reduceMotion) ui.rain = effect.emoji to ++rainKey
+                is ViewerEffect.Rain -> if (!reduceMotion) ui.rain = effect.emoji to ++rainKey
                 ViewerEffect.ReactionFailed -> { haptics.play(Tokens.Haptics.globalError); announce(view, texts.reactionFailed) }
                 ViewerEffect.Deleted -> ui.toast = texts.deleted
                 ViewerEffect.DeleteFailed -> { haptics.play(Tokens.Haptics.globalError); announce(view, texts.deleteFailed) }
@@ -223,6 +230,7 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
         onDraft = vm::setDraft,
         onSend = vm::sendReply,
         onReact = vm::react,
+        onUnreact = vm::unreact,
         onTag = vm::toggleTag,
         onDelete = { haptics.play(Tokens.Haptics.globalWarning); vm.deleteEverywhere() },
         onSave = onSave,
@@ -256,13 +264,16 @@ fun PhotoViewerContent(
     onDraft: (String) -> Unit,
     onSend: () -> Unit,
     onReact: (String) -> Unit,
+    onUnreact: (String) -> Unit,
     onTag: () -> Unit,
     onDelete: () -> Unit,
     onSave: () -> Unit,
     onRetry: () -> Unit,
     onPlay: (String) -> Unit,
+    flights: ReactionFlights = remember { ReactionFlights() },
 ) {
     val activityAllowed = app.feature.social.common.shows(app.feature.social.common.SocialBlocked.activitySheet)
+    val reduceMotion by rememberReduceMotion()
     val pager = rememberPagerState(initialPage = state.index) { state.photos.size }
     // Keep the pager on the view model's photo when the list grows around it or a photo is removed.
     LaunchedEffect(state.index, state.photos.size) { if (pager.currentPage != state.index && state.index in state.photos.indices) pager.scrollToPage(state.index) }
@@ -270,15 +281,22 @@ fun PhotoViewerContent(
     PrefetchNeighbours(state)
     val current = state.current
 
+    // A reaction flies from where it was picked to the cluster's leading end (not for an emoji already there; not under Reduce Motion).
+    val react: (String, androidx.compose.ui.geometry.Rect?) -> Unit = { emoji, from ->
+        val post = current?.post
+        if (current != null && post != null && !reduceMotion && current.reactions.none { it.emoji == emoji }) flights.launch(post.id, emoji, from)
+        onReact(emoji)
+    }
+    CompositionLocalProvider(LocalReactionFlights provides flights) {
     Box(Modifier.fillMaxSize().background(Tokens.Colors.photoViewerColorBackground).testTag("photo.viewer")) {
         // Emoji rain: behind the photo, in front of the background (S-9).
         ui.rain?.let { (emoji, key) -> EmojiRain(emoji, key, onFinished = { if (ui.rain?.second == key) ui.rain = null }) }
         Column(Modifier.fillMaxSize().imePadding().navigationBarsPadding()) {
-            // Page gap is BLOCKED (`photo.viewer.dimension.pageGap`): none until it is known.
+            // `photo.viewer.dimension.pageGap` (0: pages touch, G-14).
             HorizontalPager(
                 state = pager,
                 modifier = Modifier.weight(1f).fillMaxWidth(),
-                pageSpacing = app.feature.social.common.SocialBlocked.viewerPageGap ?: 0.dp,
+                pageSpacing = Tokens.Sizes.photoViewerDimensionPageGap,
                 key = { i -> state.photos.getOrNull(i)?.postId ?: i },
             ) { page ->
                 val photo = state.photos.getOrNull(page)
@@ -299,17 +317,28 @@ fun PhotoViewerContent(
                     groupName = current.groupName.orEmpty(),
                     onDraft = onDraft,
                     onSend = onSend,
-                    onReact = onReact,
+                    onReact = react,
                     onPicker = { ui.picker = true },
                     onCamera = { nav.replyWithPhoto(current.post.groupId, current.post.id) },
+                    modifier = Modifier.padding(bottom = Tokens.Sizes.chatComposerDimensionBottomInset),
                 )
             }
         }
         ViewerHeader(state, ui, nav, onSave)
         ConfirmationToast(ui.toast) { ui.toast = null }
+        FlightLayer(flights)
+    }
     }
 
-    if (ui.picker) ReactionPickerSheet(onPick = { emoji -> ui.picker = false; onReact(emoji) }, onDismiss = { ui.picker = false })
+    if (ui.picker) {
+        val mine = current?.reactions.orEmpty().filter { it.userId == state.me }.map { it.emoji }.toSet()
+        ReactionPickerSheet(
+            mine = mine,
+            onPick = { emoji, from -> ui.picker = false; react(emoji, from) },
+            onUnreact = { emoji -> ui.picker = false; onUnreact(emoji) },
+            onDismiss = { ui.picker = false },
+        )
+    }
     if (activityAllowed && ui.activity && current?.post != null) {
         val me = state.me
         ActivitySheet(current.reactions, me, { id -> if (id == current.post.authorId) current.author?.firstName.orEmpty() else "" }, current.author?.firstName.orEmpty(), onDismiss = { ui.activity = false })
@@ -501,7 +530,7 @@ private fun ViewerPage(
                     VoiceBubble(
                         path = voicePath,
                         durationMs = voiceMs,
-                        fill = if (mine) Tokens.Colors.chatVoiceColorBubble else app.feature.social.common.SocialBlocked.voiceBubbleTheirs,
+                        fill = if (mine) Tokens.Colors.chatVoiceColorBubble else Tokens.Colors.chatVoiceColorBubbleTheirs,
                         progress = if (playback.key == voicePath) playback.progress else 0f,
                         label = if (mine) stringRes(R.string.chat_voice_a11y_messagemine, Formats.spokenDuration(voiceMs))
                         else stringRes(R.string.chat_voice_a11y_message, photo.author?.firstName.orEmpty(), Formats.spokenDuration(voiceMs)),
@@ -645,14 +674,16 @@ private fun PhotoFrame(
             photo.reactions,
             if (activityAllowed) ({ ui.activity = true }) else null,
             Modifier.align(Alignment.BottomStart).padding(start = Tokens.Sizes.chatReactionsDimensionClusterInsetLeading, bottom = Tokens.Sizes.chatReactionsDimensionClusterInsetBottom),
+            postId = post.id,
         )
     }
 }
 
 /**
- * The reply row (rides on the keyboard): the composer field with placeholder
- * `photo.viewer.reply.placeholder`, Locket's quick reactions 🔥 💖 and the add-reaction glyph inside
- * its right end (`chat.reactions.layout.quickReactions`), then the camera circle.
+ * The reply row (rides on the keyboard, `chat.composer.dimension.bottomInset` above it): the composer
+ * field with placeholder `photo.viewer.reply.placeholder`, Locket's quick reactions 🔥 💖 and the
+ * add-reaction glyph inside its right end (`chat.reactions.layout.quickReactions`), then the camera
+ * circle — the lime send circle in its slot while the field has text (`chat.composer.layout.typingState`).
  */
 @Composable
 private fun ReplyRow(
@@ -660,11 +691,12 @@ private fun ReplyRow(
     groupName: String,
     onDraft: (String) -> Unit,
     onSend: () -> Unit,
-    onReact: (String) -> Unit,
+    onReact: (String, androidx.compose.ui.geometry.Rect?) -> Unit,
     onPicker: () -> Unit,
     onCamera: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
+    Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
         Spacer(Modifier.width(Tokens.Sizes.chatComposerDimensionInsetLeading))
         CapsuleField(
             value = draft,
@@ -676,15 +708,19 @@ private fun ReplyRow(
             trailing = { QuickReactions(onReact, onPicker) },
         )
         Spacer(Modifier.width(Tokens.Sizes.chatComposerDimensionGapFieldButton))
-        CircleButton(
-            size = Tokens.Sizes.chatComposerDimensionSideButton,
-            fill = Tokens.Colors.globalControlRaised,
-            icon = Tokens.Icons.globalCamera,
-            tint = Tokens.Colors.globalTextPrimary,
-            glyphInkHeight = null,
-            label = stringRes(R.string.chat_composer_a11y_camera),
-            onClick = onCamera,
-        )
+        if (draft.isNotBlank()) {
+            SendCircle(onSend)
+        } else {
+            CircleButton(
+                size = Tokens.Sizes.chatComposerDimensionSideButton,
+                fill = Tokens.Colors.globalControlRaised,
+                icon = Tokens.Icons.globalCamera,
+                tint = Tokens.Colors.globalTextPrimary,
+                glyphInkHeight = null,
+                label = stringRes(R.string.chat_composer_a11y_camera),
+                onClick = onCamera,
+            )
+        }
         Spacer(Modifier.width(Tokens.Sizes.chatComposerDimensionInsetTrailing))
     }
 }
@@ -695,7 +731,7 @@ private fun ReplyRow(
  * `chat.composer.dimension.fieldPaddingLeading` from the field's end (approximation).
  */
 @Composable
-private fun QuickReactions(onReact: (String) -> Unit, onPicker: () -> Unit) {
+private fun QuickReactions(onReact: (String, androidx.compose.ui.geometry.Rect?) -> Unit, onPicker: () -> Unit) {
     val density = LocalDensity.current
     val emojiWidth = with(density) { Tokens.FontSizes.globalBody.toDp() }
     Row(
@@ -705,7 +741,13 @@ private fun QuickReactions(onReact: (String) -> Unit, onPicker: () -> Unit) {
     ) {
         EmojiCatalog.quick.forEach { emoji ->
             val label = stringRes(R.string.chat_reactions_a11y_quick, app.feature.social.common.EmojiNames.name(emoji))
-            Box(Modifier.clickable(role = Role.Button) { onReact(emoji) }.clearAndSetSemantics { contentDescription = label; role = Role.Button }) {
+            var bounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
+            Box(
+                Modifier
+                    .onGloballyPositioned { c -> bounds = androidx.compose.ui.geometry.Rect(c.positionOnScreen(), c.size.toSize()) }
+                    .clickable(role = Role.Button) { onReact(emoji, bounds) }
+                    .clearAndSetSemantics { contentDescription = label; role = Role.Button },
+            ) {
                 EmojiGlyph(emoji, emojiWidth)
             }
         }

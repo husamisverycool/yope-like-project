@@ -1015,14 +1015,14 @@
       "notes": "Rendered by the worker on the title card (layout.birthday.tribute.titleCard); {name} = honoree's first name."
     },
     "birthday.tribute.endCard": {
-      "text": "From {group}",
+      "text": "We love you!",
       "origin": "adapted",
       "source_app": "VidDay",
       "surface": "birthday.tribute",
-      "evidence": "design/research/wrapped-tribute-partiful.md §4.5 (VidDay cover attribution 'From Russell and 36 others'); end card NOT FOUND (§4.5)",
-      "pattern": "Adaptation rules: the people list with a count -> {group}; the count is removed (tenet filter)",
-      "level": "BLOCKED",
-      "notes": "The end card itself was not observed in either reference (layout.birthday.tribute.endCard BLOCKED); this text stays debug-only until research capture 5 (one finished Tribute / VidDay) shows an end card. Worker key."
+      "evidence": "references/auto/vidday/frames/vidday-theme-happy-birthday-t131.000-end-card.png (https://static.vidday.com/vidday_theme_samples/theme_happy_birthday.mp4 @131.0 s, VidDay birthday theme sample, end text card 'We Love You!' after the last contribution, before the brand outro)",
+      "pattern": "P-BT-1 case rule: the reference's theme text case is a style, normalised to Sentence case exactly as the title card ('HAPPY BIRTHDAY, AMELIA!' -> 'Happy birthday, {name}!'); words unchanged",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-23/G2-25). Worker key: rendered on layout.birthday.tribute.endCard. The worker passes {group}; this text does not use it (copyText only fills placeholders present). The former text 'From {group}' was adapted from VidDay's cover attribution ('From Russell and 36 others'), not from an end card; the observed end card is the better evidence for this slot."
     },
     "birthday.tribute.title": {
       "text": "Birthday Video",

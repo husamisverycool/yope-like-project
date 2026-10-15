@@ -62,23 +62,43 @@
     },
     "auth.phone.layout.countryCode": {
       "type": "layout",
-      "value": null,
-      "source_app": "Yope",
+      "value": {
+        "pattern": "flag at the field's leading edge + the calling code typed inline with the number ('+1 555 ...'); no separate code button",
+        "flagWidth": 20,
+        "flagHeight": 13,
+        "flagLeading": 20,
+        "flagToText": 5,
+        "prefill": "'+' and the device region's calling code (Locale / libphonenumber); the flag follows the code as it is typed or edited",
+        "autoFormat": true,
+        "allowZeroAfterCountryCode": true,
+        "flagTap": "opens a country list; choosing a country replaces the calling code (Locket: the phone-input library's built-in country picker, picker.selectCountry(iso2) + picker.show(); ours: the platform picker in a sheet)",
+        "flagArt": "regional-indicator flag emoji (PLATFORM) in the 20 x 13 slot; Locket draws the library's flag images"
+      },
+      "source_app": "Locket",
       "surface": "auth.phone",
       "element": "country calling-code selector of the phone field",
-      "evidence": "Not found: no Yope phone-number screen in any 2024-2026 source (design/research/yope-a.md §2.1, §6).",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: one ~40 s English screen recording of a fresh Yope install up to the first camera screen, tapping 'try other options'. Until then the field is pre-filled with '+' and the device region's calling code (Locale / libphonenumber) and the person edits it as text; no selector is drawn."
+      "evidence": "references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (Locket Android 1.243.0, decompiled Hermes JS bundle): phone field = react-native-phone-input with props initialValue, flagStyle, textStyle, autoFormat: true, allowZeroAfterCountryCode: true, onChangePhoneNumber and no onPressFlag; StyleSheet flag {width: 20, height: 13, marginLeft: 20, marginRight: 5, borderWidth: 0}, container height 60 radius 18 WHITE10, text height 60 paddingHorizontal 20; flag press without onPressFlag -> picker.selectCountry(state.iso2); picker.show(). Screen: references/auto/locket/lazyweb/locket-lazyweb-20260818-cap-sign-up.png ('What’s your number?', field 177 px tall @3x = 59 pt, contents blacked out by Lazyweb)",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-4). Yope's phone screen was never filmed; Locket's sign-up is a phone-first flow of the same app category. Only the code-selection part is taken: field geometry, colours and type stay Yope's (size.global.fieldHeight, radius.global.field, groups.create.color.field, groups.create.fontSize.fieldText). Single source (the screenshot's field is blacked out).",
+      "method": "source constants and props read from the decompiled bundle (hermes-dec); field height cross-checked on the @3x screenshot (field rows y≈872-1049 / 3)",
+      "precision": "exact (dp = pt) for the flag slot; screenshot ±1 pt"
     },
     "auth.phone.layout.inlineError": {
       "type": "layout",
-      "value": null,
-      "source_app": "Yope",
+      "value": {
+        "presentation": "system alert: iOS UIAlertController .alert / SwiftUI .alert, Android M3 AlertDialog; not dismissible by tapping outside",
+        "title": "none: the auth.*.error.* sentence is the alert message (Locket's errors are title + message pairs; our error copy is one sentence, so no title is shown)",
+        "button": "one button, auth.phone.error.dismiss ('OK'), which closes the alert",
+        "appliesTo": "auth.phone and auth.code field errors (invalid number, rate limited, send failed, wrong / expired code, too many tries) and auth.agegate invalid date"
+      },
+      "source_app": "Locket",
       "surface": "auth.phone",
       "element": "how a field-level error (wrong number, wrong or expired code, invalid date) is presented on the sign-up screens",
-      "evidence": "Not found: Yope's only observed error state is the web expired-invite page (design/research/yope-a.md §1.8: 'Offline / in-app error states / permission-denied states: not found').",
-      "level": "BLOCKED",
-      "notes": "Smallest owner capture: the same ~40 s English recording of a fresh Yope install via 'try other options', entering one wrong code. Copy exists (auth.*.error.*); only its presentation is blocked. Full-screen states (offline, not configured, under age) use the sourced empty-state layout instead."
+      "evidence": "references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (Locket Android 1.243.0, decompiled Hermes JS bundle): phone and code errors are PhoneVerificationError {title, message} objects (e.g. 'Couldn't send code' / 'This phone number wasn't recognized. Is {{phone}} your correct number? Make sure you entered the right country code and try again.'; 'Couldn't verify number' / 'Make sure you entered the verification code correctly and try again.'); the app's alert helper renders {title, message} as Alert.alert(title, message, [{text: 'OK'}], {cancelable: false}) (React Native -> UIAlertController / AlertDialog)",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-5). Full-screen states (offline, not configured, under age) keep the sourced empty-state layout. Copy: auth.phone.error.dismiss added (verbatim 'OK', platform.alertButton, native dialog buttons use platform case per A-13). Contrast: system-managed.",
+      "method": "decompiled source: error construction and alert helper read from the bundle",
+      "precision": "exact for the helper; the call from the phone step to the helper is inferred from the shared {title, message} shape (not traced)"
     },
     "auth.code.layout.codeField": {
       "type": "layout",
@@ -398,15 +418,15 @@
     },
     "groups.create.color.hud": {
       "type": "color",
-      "value": "#262626",
+      "value": "#0C0C0C",
       "source_app": "Yope",
       "surface": "groups.create",
       "element": "Loading HUD square fill (on black)",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png (@50.60 s, posted 2026-05-28) bbox x254-322 y488-562 median (38,38,38)",
-      "method": "bbox median",
+      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.40-loading-hud.png, -t50.53-, -t50.60-loading-hud.png (https://www.tiktok.com/@itsmthuyope/video/7644974799302823175, posted 2026-05-28): flat fill bands top x250-330 y472-486 (12,12,12), bottom y572-580 (13,13,13), left x234-250 / right x328-342 y500-550 (12,12,12) on all three frames (std ≤ 1); interior luma mode 12; background (0,0,0)",
+      "method": "median of flat blocks clear of the spinner and the label (re-measured in the gap-fill pass)",
       "level": "SOURCED",
-      "precision": "±8/255 (video)",
-      "notes": "yope-a proposal color.loading.hud. Used by every Yope-referenced surface of this group while a request runs."
+      "precision": "±8/255 (H.264 renders dark greys darker, F-5)",
+      "notes": "Corrected 2026-10-15 (MERGE G2-27): the earlier #262626 (median (38,38,38) of bbox x254-322 y488-562) is not reproducible: the same bbox reads (12,12,12)-(13,13,13) on all three frames. Now equal to collage.view.color.hud (#0C0C0C, C-13). Used by every Yope-referenced surface of this group while a request runs. White label on it 19.6:1; HUD vs #000000 1.07:1, vs #171717 1.09:1 (container edge; reported, not adjusted)."
     },
     "groups.create.size.hud": {
       "type": "dimension",
@@ -498,13 +518,15 @@
     },
     "groups.list.color.headerCircleOverPhoto": {
       "type": "color",
-      "value": null,
+      "value": "#00000094",
       "source_app": "Yope",
       "surface": "groups.list",
       "element": "translucent dark fill of the header circles drawn over the cover photo",
-      "evidence": "design/research/yope-a.md §2.9 ('search circle (left, translucent dark, ≈44 pt)'); not sampled (photo behind).",
-      "level": "BLOCKED",
-      "notes": "Smallest capture: one lossless screenshot of the 2026 Yope home with the cover photo. Same open item as color.global.scrim."
+      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-1080p-t7.617-home-cover-header-circle.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 re-downloaded as 1080x1920 60 fps, @7.617 s, posted 2026-10-10): '+' header circle over the cover photo (circle x≈860-940, y≈145-230): circle interior (44,58,67) at x866-878 y152-172 vs the photo just left of it (116,133,141) at x838-852; second pair (43,51,50) vs (109,126,117) at y196-206",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-6): Yope's own 2026 home, newly readable on the 1080p 60 fps download of the same TikTok (the 576-px copy used earlier was too small). The other translucent controls over photos measured in this pass solve to the same family: Yope send-to field black ≈0.48, BeReal retake / BTS chips black ≈0.46.",
+      "method": "single-background solve for a black tint: alpha = 1 - C/B per channel = 0.62/0.56/0.52 and 0.61/0.60/0.57 (mean 0.58) -> #000000 at 0.58 (148/255 = 0x94)",
+      "precision": "±0.06 alpha (H.264 60 fps re-encode, the photo is moving, the photo under the circle is assumed equal to the photo beside it; any backdrop blur is not measured)"
     },
     "groups.list.layout.tabBar": {
       "type": "layout",
@@ -2048,7 +2070,7 @@
       "element": "list of report reasons shown before the details field",
       "evidence": "Not found: neither Apple nor Google publishes a reason taxonomy (design/research/platform.md §safety); Yope's report flow content was not captured (yope-a §2.13).",
       "level": "BLOCKED",
-      "notes": "Smallest owner input: the list of report categories the moderation process uses (docs/API.md §12 item 19). Without it, reports carry the optional free text; an empty text sends the target kind as p_reason."
+      "notes": "Still BLOCKED: the categories are the owner's moderation decision (docs/API.md §12 item 19). Without them, reports carry the optional free text; an empty text sends the target kind as p_reason. Presentation sourced in the gap-fill pass (MERGE G2-8): Locket 1.243.0, a close-friends photo app, reports a friend's photo, message, comment or post with no reason list at all: a native confirmation alert 'Report?' + 'This Locket will be forwarded for review. The owner will not be notified.' with Cancel / Report, then a SHORT toast 'Photo reported' (references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt). So the flow ships without the list (as today); if the owner adds categories, they are one single-select list of rows above the details field in the existing sheet (safety.report.layout.flow)."
     },
     "safety.block.layout.menu": {
       "type": "layout",
@@ -2094,14 +2116,16 @@
     },
     "safety.block.duration.toast": {
       "type": "duration",
-      "value": null,
+      "value": 2000,
       "unit": "ms",
-      "source_app": "Yope",
+      "source_app": "Locket",
       "surface": "safety.block",
       "element": "how long the lime toast stays before it leaves",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @7.73 s, posted 2026-10-10) (single frame; the toast's lifetime is not visible); design/research/yope-a.md §1.4 ('not measured')",
-      "level": "BLOCKED",
-      "notes": "Smallest capture: one 10-s English screen recording of Yope sending a photo until the 'posted in the wall' toast is gone. Until then confirmations are not shown as toasts in release builds; the action itself completes normally."
+      "evidence": "references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (Locket Android 1.243.0, decompiled Hermes JS bundle): after a report succeeds Locket shows ToastAndroid.show(t('report_photo_toast_success') = 'Photo reported', ToastAndroid.SHORT); references/auto/platform/aosp-toast-duration-excerpt.txt: NotificationManagerService 'static final int SHORT_DELAY = 2000; // 2 seconds' (used for Toast.LENGTH_SHORT). Yope lower bound: references/auto/yope/frames/a-chuongxetank-7694968408424582452-1080p-toast-lime-track.csv (toast fully in at 7.683 s, still on screen when the TikTok edit cuts away at ≈8.25 s)",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-7). Locket's confirmation after a safety action (report) is a SHORT platform toast; the same dwell applies to Yope's lime toast everywhere (camera.sendto.duration.toastVisible = 2000). Entrance measured on the 60 fps Yope frames: lime area 15.5k -> 97.3k px between 7.567 and 7.683 s (≈117 ms, 7 frames; curve not measurable); exit not visible.",
+      "method": "platform constant behind the reference's toast (AOSP source); Yope's own dwell is cut by the video edit (≥ 0.57 s visible)",
+      "precision": "exact (platform constant)"
     }
   }
 }

@@ -32,8 +32,8 @@ async function tributeWithContribution(dueInPast = true) {
 }
 
 describe("tribute.render", () => {
-  it("fails (and is retried later) with a clear missing-design-token error while the research values are absent", async () => {
-    setTokenOverrides(null);
+  it("fails (and is retried later) with a clear missing-design-token error when a design value is absent", async () => {
+    setTokenOverrides({ "duration.birthday.tribute.photoHold": null });
     const { tributeId } = await tributeWithContribution();
     await w.runner.runUntilIdle({ kinds: ["tribute.render"] });
     const [job] = await sql(`select status, last_error from public.jobs where dedupe_key = $1 order by id desc limit 1`, [`tribute.render:${tributeId}`]);

@@ -164,10 +164,10 @@ class BirthdayRequestViewModelTest {
         assertTrue(backend.contributions.isEmpty())
     }
 
-    @Test fun lineIsCappedAtTheApiBound() {
+    @Test fun lineIsCappedAtTheSourcedLimit() {
         val vm = vm()
         vm.setLine("x".repeat(400))
-        assertEquals(BirthdayRequestViewModel.LINE_API_BOUND, vm.contribute.line.length)
+        assertEquals(Tokens.Layouts.BirthdayContributeLineMax.maxCharacters.toInt(), vm.contribute.line.length)
     }
 
     @Test fun deletedChosenPhotoSendsYouBackToStepOne() {

@@ -56,6 +56,7 @@ struct ProfileScreen: View {
         .loadingHUD(model.isSaving)
         .dsHaptic(Tokens.Haptics.globalSuccess, trigger: model.successCount)
         .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
+        .formErrorAlert(model.failureMessage, trigger: model.errorCount)
         .navigationBarBackButtonHidden(true)
         .onChange(of: pickerItem) { _, item in
             guard let item else { return }

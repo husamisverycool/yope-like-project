@@ -7,8 +7,6 @@ import Foundation
 public enum BlockedCopy {
     /// "you need to be {min_age} or older to use {app_name}" — Yope · auth.agegate · new · SOURCED
     public static func authAgegateUnderAgeTitle(minAge: String, appName: String) -> String { CopyLookup.format("auth.agegate.underAge.title", default: "you need to be {min_age} or older to use {app_name}", ["min_age": minAge, "app_name": appName]) }
-    /// "From {group}" — VidDay · birthday.tribute · adapted · BLOCKED
-    public static func birthdayTributeEndCard(group: String) -> String { CopyLookup.format("birthday.tribute.endCard", default: "From {group}", ["group": group]) }
     /// "join {group_name} on {app_name} {link}" — Yope · groups.invite · new · SOURCED
     public static func groupsInviteLinkMessage(groupName: String, appName: String, link: String) -> String { CopyLookup.format("groups.invite.link.message", default: "join {group_name} on {app_name} {link}", ["group_name": groupName, "app_name": appName, "link": link]) }
     /// "{title} | {app_name}" — Partiful · invite.web · adapted · VERIFIED

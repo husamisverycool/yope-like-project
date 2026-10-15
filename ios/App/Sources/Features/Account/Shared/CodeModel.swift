@@ -14,7 +14,7 @@ final class CodeModel {
     /// Typed code, digits only (the screen filters input through `setCode`).
     var code = ""
     private(set) var isVerifying = false
-    /// The last failure (presentation BLOCKED; announced to VoiceOver).
+    /// The last failure, shown as the form error alert (`auth.phone.layout.inlineError`).
     private(set) var failure: AuthFailure?
     /// A request failed for lack of connection (offline state until retry).
     private(set) var failedOffline = false
@@ -96,7 +96,6 @@ final class CodeModel {
             self.failure = failure
             errorCount += 1
             code = ""
-            UIAccessibility.post(notification: .announcement, argument: failure.message)
         }
     }
 
@@ -119,7 +118,6 @@ final class CodeModel {
             }
             self.failure = failure
             errorCount += 1
-            UIAccessibility.post(notification: .announcement, argument: failure.message)
             return false
         }
     }

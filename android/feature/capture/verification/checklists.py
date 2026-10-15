@@ -253,7 +253,30 @@ def camera_sendto():
     sh.row("`camera.sendto.color.messageField`", "BLOCKED", "no fill (Blocked.messageFieldFill = null)", status="BLOCKED")
     sh.row("`camera.sendto.fontSize.messagePlaceholder`", "15 sp", "15 sp, color.global.textPrimary (C-17)", status="match (token)")
     sh.row("`camera.sendto.fontSize.caption` / `.fontWeight.caption`, `.size.captionBaselineOffset`", "16 sp semibold, 31 under the overlay baseline", "16 sp / 600; offset 31 from the overlay line", status="approx", note="offset applied between the centred overlay box and the caption box, not baseline to baseline")
-    sh.row("mic + voice coach (`chat.voice.layout.recording` BLOCKED)", "recorder BLOCKED", "debug only (Blocked.voiceNoteRecorder); release hides mic and coach", status="BLOCKED")
+    sh.section("Voice note (`chat.voice.layout.recording`, SOURCED by the gap fill)")
+    rec = snap("camera.sendto_voice-recording")
+    # The recording dot: the reddest pixel inside the message field (dp bounds from the loaded layout).
+    reddest = max(((x, y) for x in range(int(field["left"] * SCALE), int(field["right"] * SCALE), 2)
+                   for y in range(int(field["top"] * SCALE), int(field["bottom"] * SCALE), 2)),
+                  key=lambda q: (lambda c: c[0] - (c[1] + c[2]) / 2)(rec.getpixel(q)))
+    sh.row("mic + voice coach ship", "recorder SOURCED", "Blocked.voiceNoteRecorder = true in debug and release", status="match (token)")
+    sh.row("`chat.voice.layout.recording` start / lift / cancel / lock", "hold records; lift keeps; slide left cancels; slide up locks",
+           "same (FlowTests.voiceMicHoldSlideAndLockGestures)", status="match",
+           note="on camera.sendto lifting attaches the note to the post, which leaves with SEND (chat sends at once)")
+    sh.row("slide threshold", "not tokenized", "one mic diameter (`micDiameter`)", status="approx", note="gesture distance; not drawn")
+    sh.row("`chat.voice.layout.recording` row", "dot → timer → centred hint; mic stays trailing", "same (camera.sendto_voice-recording.png)", status="match (token)")
+    sh.row("`color.global.destructive` (recording dot)", tok("color.global.destructive"), "#%02X%02X%02X" % rec.getpixel(reddest)[:3], tol=8)
+    sh.row("recording dot size", "not measured", "the timer's digit height", status="approx")
+    sh.row("`chat.voice.layout.durationFormat` timer in `color.global.textPrimary`", "mm:ss", "00:07 (field text role, tabular digits)", status="match (token)")
+    sh.row("hint `icon.global.back` + `chat.voice.recording.slideToCancel`, `color.global.textSecondary`", "‹ slide to cancel", "‹ slide to cancel", status="match (token)")
+    sh.row("lock `icon.global.lock` + `Rounded.ExpandLess` above the mic", "lock capsule above the mic", "glyphs stacked one mic diameter above the mic",
+           status="approx", note="capsule size and fill not measured: drawn without a capsule")
+    sh.row("locked: mic shows `icon.global.send`", "icon.global.send", "icon.global.send (camera.sendto_voice-locked.png)", status="match (token)")
+    sh.row("locked: `chat.voice.icon.pause` pauses and plays the draft", "pause + draft playback", "not built", status="MISS",
+           note="core:voice VoiceRecorder has no pause/resume; needs the chat/foundation owner to add it")
+    sh.row("haptic", "none (microphone)", "none", status="match (token)")
+    sh.row("no layout jump", "mic fixed under the finger", "mic box fixed to `micDiameter`; the lock floats above it", status="match (token)")
+    sh.row("attached note in the field", "not specified", "mm:ss in `chat.voice.color.duration`, caption role", status="approx")
     sh.section("Recipient rows")
     sh.row("`camera.sendto.layout.recipientRow` firstRowCenterBelowPreview", row["firstRowCenterBelowPreview"], (r1["top"] + r1["height"] / 2) - prev["bottom"])
     sh.row("`camera.sendto.layout.recipientRow` pitch", row["pitch"], r2["top"] - r1["top"])

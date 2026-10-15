@@ -30,7 +30,10 @@ Sheet (iOS `.presentationDetents([.medium, .large])` + visible grabber; Android 
 1. Navigation bar: leading `safety.report.cancel`; trailing `safety.report.submit` (destructive, enabled at once).
 2. Title (Yope voice): `safety.report.title.post` / `.message` / `.user` / `.group`.
 3. Explanation `safety.report.explanation`.
-4. Reason list `safety.report.layout.reasons` — **BLOCKED** (not shown in release builds).
+4. Reason list `safety.report.layout.reasons` — **BLOCKED** (owner categories; not shown in release builds). Sourced presentation for
+   this state: Locket 1.243.0 reports a friend's photo / message / comment with no reason list at all (native "Report?" alert with
+   an explanation, Cancel / Report, then a short toast) — so shipping without the list matches a close-friends reference. If the
+   owner adds categories: one single-select list of rows above the details field, in this sheet.
 5. Details: multi-line text field, placeholder `safety.report.details.placeholder`, ≤ 1000 characters.
 
 After submit, the same sheet shows: title `safety.report.sent.title`; message `safety.report.sent.message` ({first_name})
@@ -86,6 +89,6 @@ None observed (Yope's report content was not captured).
 
 | item | status | owner input |
 |---|---|---|
-| report reasons (`safety.report.layout.reasons`) | BLOCKED: no platform taxonomy; Yope's not captured | the moderation categories (docs/API.md §12 item 19) |
+| report reasons (`safety.report.layout.reasons`) | BLOCKED: categories are an owner decision (no platform taxonomy; Yope's not captured). Presentation sourced (gap fill, MERGE G2-8): Locket reports friends' content without reasons | the moderation categories (docs/API.md §12 item 19) |
 | moderation destination and response time | backend/owner (`moderation.report` jobs need a destination) | owner |
-| toast after block from here | `safety.block.duration.toast` BLOCKED | one 10-s recording of a Yope toast lifetime |
+| toast after block from here | `safety.block.duration.toast` 2000 ms (gap fill: Locket's report toast is the platform SHORT toast) | one 10-s recording of a Yope toast lifetime |

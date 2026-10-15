@@ -49,7 +49,7 @@ the shared copy (gallery name and description, empty texts, accessibility labels
 | state | design | copy | source |
 |---|---|---|---|
 | loading (just added, no rendition cached yet) | vertical gradient `widget.home.small.color.placeholderTop` → `.placeholderBottom`; up to three member avatars, 25 pt, 2.5 pt apart, bottom-leading at 6 pt (`widget.home.small.layout.placeholderAvatars`); also the gallery preview when no photo exists | — | Locket 2022 placeholder (LP) |
-| empty (configured group has no photo yet) | gradient `widget.home.small.color.emptyTop` → `.emptyBottom`; centred stack: 72-pt circle `widget.home.small.color.emptyCircle` holding the 32 × 28 photo glyph (`icon.global.gallery`, `color.global.textPrimary`) inside an 82-pt ring (3 pt, `widget.home.small.color.emptyRing`), then the label 9 pt below, 19 pt (`widget.home.small.layout.empty`), color `widget.home.small.color.emptyLabel` (BLOCKED) | `widget.home.small.empty.noPhotos` | Locket APK `widget_empty` (md) |
+| empty (configured group has no photo yet) | gradient `widget.home.small.color.emptyTop` → `.emptyBottom`; centred stack: 72-pt circle `widget.home.small.color.emptyCircle` holding the 32 × 28 photo glyph (`icon.global.gallery`, `color.global.textPrimary`) inside an 82-pt ring (3 pt, `widget.home.small.color.emptyRing`), then the label 9 pt below, 19 pt (`widget.home.small.layout.empty`), color `widget.home.small.color.emptyLabel` (#969696 = `color.global.textSecondary`) | `widget.home.small.empty.noPhotos` | Locket APK `widget_empty` (md) |
 | not set up (no group: none chosen, left, deleted, signed out) | same empty layout | `widget.home.small.empty.setUp` | APK `tap_to_set_up` |
 | error (rendition download failed) / offline | keep the last photo shown (HIG: "show content quickly without hiding stale data behind placeholder content") | — | HIG Widgets |
 | permission-denied | n/a | — | — |
@@ -72,7 +72,7 @@ None (system widget).
 - Contrast: caption white on `#333333CC` over a white photo → #5C5C5C, 6.71:1 pass; over black 14.59:1 pass;
   empty ring #FFB800 on #2E2E2E 7.83:1, on #1B1B1B 9.93:1 pass; glyph white on the circle (#606060 composite) 6.29:1
   pass; **empty circle vs its background 2.16:1 FAIL** (decorative container, no sourced alternative); **avatar ring
-  over white 1.26:1 FAIL** (decorative edge); placeholder avatars white-on-#2D2B2F 14.02:1 pass; empty label: BLOCKED.
+  over white 1.26:1 FAIL** (decorative edge); placeholder avatars white-on-#2D2B2F 14.02:1 pass; empty label #969696 on #2E2E2E 4.59:1, on #1B1B1B 5.82:1 pass.
 
 ## Data & actions
 
@@ -101,7 +101,7 @@ Gold 'widget frames'; Locket's icon and heart art.
 
 | item | status | capture |
 |---|---|---|
-| `widget.home.small.color.emptyLabel` | BLOCKED | one screenshot of a just-added, empty Locket Android widget |
+| `widget.home.small.color.emptyLabel` | SOURCED by gap fill: Yope's secondary text colour (Locket's label bitmap colour is not in its APK; role rule, MERGE G2-12) | one screenshot of a just-added, empty Locket Android widget |
 | iOS caption-pill blur radius | approximated by the APK fill | lossless iOS Home Screen screenshot of a captioned Locket widget |
 | caption weight (semibold vs bold) | visual | side-by-side verification |
 | gallery name | BLOCKED until `{app_name}` | owner names the app |

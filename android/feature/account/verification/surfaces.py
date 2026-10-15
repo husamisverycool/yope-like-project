@@ -1,0 +1,2 @@
+IDS = ["auth.phone","auth.code","auth.agegate","auth.profile","onboarding.permission.camera","onboarding.permission.notifications","onboarding.permission.photos","onboarding.permission.contacts","onboarding.widget","groups.list","groups.create","groups.invite","groups.screen","groups.settings","settings.root","settings.notifications","settings.account","settings.blocked","safety.report","safety.block","system.permissions","paywall"]
+SURFACES=[dict(id=i, what="") for i in IDS]

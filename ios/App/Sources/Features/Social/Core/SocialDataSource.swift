@@ -48,6 +48,8 @@ protocol SocialDataSource: Sendable {
     /// Rows `(user, emoji)`, oldest first. Never a count.
     func reactions(postIDs: [PostID]) async throws -> [Reaction]
     func react(postID: PostID, emoji: String) async throws -> Reaction
+    /// `unreact`: takes back one of my reactions (`chat.reactions.layout.unreact`).
+    func unreact(postID: PostID, emoji: String) async throws
     func isTagged(postID: PostID, userID: UserID) async throws -> Bool
     /// `tag_self` / `untag_self`.
     func setTagged(_ tagged: Bool, postID: PostID) async throws

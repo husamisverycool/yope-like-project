@@ -43,6 +43,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalView
@@ -144,7 +147,6 @@ fun WeekEditContent(
     onSaveAsAlbum: () -> Unit,
     gridState: LazyGridState = rememberLazyGridState(),
 ) {
-    val reorder = shows(SocialBlocked.reorder)
     val pair = shows(SocialBlocked.saveAsAlbumPair)
     Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep).testTag("week.edit")) {
         Column(Modifier.fillMaxSize().imePadding()) {
@@ -161,7 +163,7 @@ fun WeekEditContent(
                     )
                 }
                 EditState.Phase.Ready -> {
-                    EditGrid(state, onToggle, onMove, onText, reorder, gridState, Modifier.weight(1f))
+                    EditGrid(state, onToggle, onMove, onText, gridState, Modifier.weight(1f))
                     if (state.error == EditError.Save) {
                         Line(
                             stringRes(R.string.week_edit_error_save),
@@ -213,78 +215,99 @@ private fun DarkButton(text: String, enabled: Boolean, onClick: () -> Unit, modi
 /**
  * The week's photos in the pics grid with Yope's selection circle at each tile's top-right corner
  * (inset `size.global.listGap`, approximation), then the recap text field (position BLOCKED:
- * under the grid, the spec's approximation). Reorder (BLOCKED gesture): development builds drag a
- * checked tile after a long press.
+ * under the grid, the spec's approximation). Reorder (`week.edit.layout.reorder`, Apple / Google
+ * Photos, G-16): touch and hold a checked tile, drag it, release to drop; the tile follows the
+ * finger and the other tiles move to show the drop position (the platform's item placement
+ * animation; none under Reduce Motion). Haptics `week.edit.haptic.dragStart` / `.dragAlign`.
  */
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun EditGrid(
     state: EditState,
     onToggle: (String) -> Unit,
     onMove: (String, Int) -> Unit,
     onText: (String) -> Unit,
-    reorder: Boolean,
     gridState: LazyGridState,
     modifier: Modifier,
 ) {
     val haptics = rememberHaptics()
+    val reduceMotion by app.designsystem.rememberReduceMotion()
     var dragging by remember { mutableStateOf<String?>(null) }
+    // The finger in grid coordinates, and where it holds the dragged tile.
+    var pointer by remember { mutableStateOf(Offset.Zero) }
+    var grab by remember { mutableStateOf(Offset.Zero) }
     val inRecap = stringRes(R.string.week_edit_a11y_inrecap)
     val notInRecap = stringRes(R.string.week_edit_a11y_notinrecap)
-    fun idAt(offset: Offset): String? = gridState.layoutInfo.visibleItemsInfo.firstOrNull { item ->
+    val checked by androidx.compose.runtime.rememberUpdatedState(state.checked)
+    fun itemAt(offset: Offset) = gridState.layoutInfo.visibleItemsInfo.firstOrNull { item ->
         val o = item.offset
         val s = item.size
         offset.x >= o.x && offset.x < o.x + s.width && offset.y >= o.y && offset.y < o.y + s.height
-    }?.key as? String
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(Tokens.Counts.weekRecapCountPicsColumns),
         state = gridState,
         modifier = modifier
             .fillMaxWidth()
-            .let { m ->
-                if (!reorder) m else m.pointerInput(state.checked) {
-                    detectDragGesturesAfterLongPress(
-                        onDragStart = { offset ->
-                            val id = idAt(offset)
-                            if (id != null && id in state.checked) {
-                                dragging = id
-                                haptics.playNamed(Tokens.Layouts.WeekEditHapticDragStart.android)
-                            }
-                        },
-                        onDrag = { change, _ ->
-                            val id = dragging ?: return@detectDragGesturesAfterLongPress
-                            val target = idAt(change.position) ?: return@detectDragGesturesAfterLongPress
-                            val to = state.checked.indexOf(target)
-                            if (target != id && to >= 0) {
-                                onMove(id, to)
-                                haptics.playNamed(Tokens.Layouts.WeekEditHapticDragAlign.android)
-                            }
-                        },
-                        onDragEnd = { dragging = null },
-                        onDragCancel = { dragging = null },
-                    )
-                }
+            .pointerInput(Unit) {
+                detectDragGesturesAfterLongPress(
+                    onDragStart = { offset ->
+                        val item = itemAt(offset)
+                        val id = item?.key as? String
+                        if (item != null && id != null && id in checked) {
+                            dragging = id
+                            pointer = offset
+                            grab = offset - Offset(item.offset.x.toFloat(), item.offset.y.toFloat())
+                            haptics.playNamed(Tokens.Layouts.WeekEditHapticDragStart.android)
+                        }
+                    },
+                    onDrag = { change, delta ->
+                        val id = dragging ?: return@detectDragGesturesAfterLongPress
+                        change.consume()
+                        pointer += delta
+                        val target = itemAt(pointer)?.key as? String ?: return@detectDragGesturesAfterLongPress
+                        val to = checked.indexOf(target)
+                        if (target != id && to >= 0) {
+                            onMove(id, to)
+                            haptics.playNamed(Tokens.Layouts.WeekEditHapticDragAlign.android)
+                        }
+                    },
+                    onDragEnd = { dragging = null },
+                    onDragCancel = { dragging = null },
+                )
             },
         horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.weekRecapDimensionPicsGap),
         verticalArrangement = Arrangement.spacedBy(Tokens.Sizes.weekRecapDimensionPicsGap),
     ) {
         items(state.photos, key = { it.post.id }) { photo ->
-            val checked = photo.post.id in state.checked
+            val id = photo.post.id
+            val isChecked = id in state.checked
             val label = stringRes(R.string.photo_viewer_a11y_photo, photo.authorName.orEmpty(), Formats.viewerDate(photo.post.createdAt))
+            val lifted = dragging == id
             Box(
                 Modifier
+                    .then(
+                        if (lifted) Modifier.zIndex(1f).graphicsLayer {
+                            val info = gridState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == id }
+                            if (info != null) {
+                                translationX = pointer.x - grab.x - info.offset.x
+                                translationY = pointer.y - grab.y - info.offset.y
+                            }
+                        } else Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null, placementSpec = if (reduceMotion) null else androidx.compose.animation.core.spring(visibilityThreshold = androidx.compose.ui.unit.IntOffset.VisibilityThreshold)),
+                    )
                     .fillMaxWidth()
                     .aspectRatio(Tokens.AspectRatios.weekRecapAspectRatioPicsTile)
-                    .clickable(role = Role.Checkbox) { onToggle(photo.post.id) }
+                    .clickable(role = Role.Checkbox) { onToggle(id) }
                     .clearAndSetSemantics {
                         contentDescription = label
-                        stateDescription = if (checked) inRecap else notInRecap
+                        stateDescription = if (isChecked) inRecap else notInRecap
                         role = Role.Checkbox
                     },
             ) {
                 RemotePhoto(photo.thumbPath, null, Modifier.fillMaxSize())
                 Glyph(
-                    if (checked) Tokens.Icons.globalCheck else Tokens.Icons.globalUncheck,
-                    if (checked) Tokens.Colors.globalSelection else Tokens.Colors.globalTextPrimary,
+                    if (isChecked) Tokens.Icons.globalCheck else Tokens.Icons.globalUncheck,
+                    if (isChecked) Tokens.Colors.globalSelection else Tokens.Colors.globalTextPrimary,
                     Modifier.align(Alignment.TopEnd).padding(Tokens.Sizes.globalListGap),
                     size = Tokens.Sizes.globalCheckCircle,
                 )

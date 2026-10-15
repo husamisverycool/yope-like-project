@@ -37,6 +37,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -190,6 +191,12 @@ class PaywallViewModel(private val env: AccountEnvironment) : AccountViewModel()
 fun PaywallRoute(nav: NavController) {
     val env = LocalAccountEnvironment.current
     val context = LocalContext.current
+    // Release builds while `{app_name}` is BLOCKED have no title or CTA copy: the paywall is omitted
+    // (an entry that reaches it closes it at once). Debug builds show it with the blocked copy.
+    if (BlockedCopy.paywallCta(context) == null) {
+        LaunchedEffect(Unit) { nav.popBackStack() }
+        return
+    }
     val vm = viewModel { PaywallViewModel(env) }
     val state by vm.state.collectAsStateWithLifecycle()
     CollectEvents(vm.events, nav)

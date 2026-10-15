@@ -37,7 +37,6 @@ import androidx.media3.exoplayer.ExoPlayer
 import app.data.model.MediaKind
 import app.designsystem.R
 import app.designsystem.generated.Tokens
-import app.feature.capture.Blocked
 import app.feature.capture.camera.rememberHourText
 import app.feature.capture.data.CaptureDataProvider
 import app.feature.capture.data.CaptureHandoff
@@ -50,6 +49,7 @@ import app.ui.permissions.PermissionRationale
 import app.ui.permissions.rememberPermissionRequest
 import app.voice.VoiceRecorder
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -72,8 +72,8 @@ fun SendToRoute(
             tracker = CaptureServices.tracker(context),
             prefs = SharedCapturePrefs(context),
             gate = SessionPromptGate.process,
-            voiceRecorderAvailable = Blocked.voiceNoteRecorder,
-            maxCaption = Blocked.captionMaxLength,
+            voiceRecorderAvailable = context.packageManager.hasSystemFeature(android.content.pm.PackageManager.FEATURE_MICROPHONE),
+            maxCaption = Tokens.Counts.cameraSendtoSizeCaptionMaxLength,
         )
     }
     val state by vm.ui.collectAsStateWithLifecycle()
@@ -95,7 +95,7 @@ fun SendToRoute(
         }
     }
 
-    // Voice note (debug builds only while chat.voice.layout.recording is BLOCKED).
+    // Voice note (`chat.voice.layout.recording`).
     val recorder = remember { VoiceRecorder(context.applicationContext) }
     DisposableEffect(recorder) { onDispose { recorder.release() } }
     val microphone = rememberPermissionRequest(
@@ -109,8 +109,24 @@ fun SendToRoute(
         ),
         onResult = { },
     )
+    // "saved to your library" (camera.sendto.toast.saved) with haptic.global.success once the copy is written.
+    var savedAt by remember { mutableStateOf<Long?>(null) }
+    LaunchedEffect(savedAt) {
+        if (savedAt != null) {
+            delay(Tokens.Durations.cameraSendtoDurationToastVisible.toLong())
+            savedAt = null
+        }
+    }
+    val save: (CapturedMedia) -> Unit = { m ->
+        scope.launch {
+            if (saveToLibrary(context, m)) {
+                view.haptic(Tokens.Haptics.globalSuccess)
+                savedAt = android.os.SystemClock.elapsedRealtime()
+            }
+        }
+    }
     val storage = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) media?.let { scope.launch { if (saveToLibrary(context, it)) view.haptic(Tokens.Haptics.globalSuccess) } }
+        if (granted) media?.let(save)
     }
 
     LaunchedEffect(vm) {
@@ -131,8 +147,7 @@ fun SendToRoute(
                     ) {
                         storage.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     } else {
-                        // haptic.global.success: the save completed (its toast's duration is BLOCKED).
-                        if (saveToLibrary(context, event.media)) view.haptic(Tokens.Haptics.globalSuccess)
+                        save(event.media)
                     }
                 }
             }
@@ -152,6 +167,7 @@ fun SendToRoute(
         onCreateGroup = vm::createGroup,
         onRetryGroups = vm::loadGroups,
         videoPreview = media?.takeIf { it.kind == MediaKind.Video }?.let { m -> { VideoLoop(m.file) } },
+        savedToast = savedAt != null,
         voiceGestures = remember(recorder, vm) {
             object : VoiceGestures {
                 override fun down() {

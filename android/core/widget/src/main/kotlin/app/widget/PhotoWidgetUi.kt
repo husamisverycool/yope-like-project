@@ -11,6 +11,7 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
@@ -18,13 +19,19 @@ import androidx.glance.LocalContext
 import androidx.glance.LocalSize
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
+import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
+import androidx.glance.text.Text
+import androidx.glance.text.TextAlign
+import androidx.glance.text.TextStyle
+import androidx.glance.unit.ColorProvider
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.model.WidgetSnapshot
@@ -58,8 +65,7 @@ sealed interface WidgetEmptyState {
 /**
  * The group photo widget's styling from tokens (`widget.android`): the sender avatar and caption
  * pill over the photo, the loading placeholder, the empty and not-set-up states, and the
- * widget's one TalkBack label. Every value is a `Tokens.*` constant; the empty-state label is not
- * drawn because its color is BLOCKED (`widget.home.small.color.emptyLabel`) — TalkBack still reads it.
+ * widget's one TalkBack label. Every value is a `Tokens.*` constant.
  */
 object TokenPhotoWidgetSlots : PhotoWidgetSlots {
 
@@ -116,7 +122,8 @@ object TokenPhotoWidgetSlots : PhotoWidgetSlots {
         val context = LocalContext.current
         when (val state = WidgetEmptyState.of(groupId, WidgetGroupMeta.of(WidgetFileStore.default(context)))) {
             is WidgetEmptyState.Loading -> LoadingPlaceholder(context, state.members)
-            WidgetEmptyState.NoPhotos, WidgetEmptyState.NotSetUp -> EmptyStack(context)
+            WidgetEmptyState.NoPhotos -> EmptyStack(context, context.getString(R.string.widget_home_small_empty_nophotos))
+            WidgetEmptyState.NotSetUp -> EmptyStack(context, context.getString(R.string.widget_home_small_empty_setup))
         }
     }
 
@@ -188,7 +195,7 @@ object TokenPhotoWidgetSlots : PhotoWidgetSlots {
     }
 
     @Composable
-    private fun EmptyStack(context: Context) {
+    private fun EmptyStack(context: Context, label: String) {
         val empty = Tokens.Layouts.WidgetHomeSmallLayoutEmpty
         Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Image(
@@ -209,8 +216,20 @@ object TokenPhotoWidgetSlots : PhotoWidgetSlots {
                 glyphHeight = empty.glyphHeight.dp,
                 glyphColor = Tokens.Colors.globalTextPrimary,
             )
-            // The label (empty.label sp, empty.labelGap below) is not drawn: its color is BLOCKED.
-            Image(ImageProvider(stack), contentDescription = null, modifier = GlanceModifier.size(empty.ring.dp))
+            // Ring, then the label `labelGap` below it (`label` sp, `widget.home.small.color.emptyLabel`),
+            // centred together. The widget root carries the same text as its TalkBack label.
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Image(ImageProvider(stack), contentDescription = null, modifier = GlanceModifier.size(empty.ring.dp))
+                Spacer(GlanceModifier.height(empty.labelGap.dp))
+                Text(
+                    label,
+                    style = TextStyle(
+                        color = ColorProvider(Tokens.Colors.widgetHomeSmallColorEmptyLabel),
+                        fontSize = empty.label.sp,
+                        textAlign = TextAlign.Center,
+                    ),
+                )
+            }
         }
     }
 }

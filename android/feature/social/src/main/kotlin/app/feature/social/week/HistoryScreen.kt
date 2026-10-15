@@ -70,7 +70,6 @@ import app.feature.social.common.HeaderCircle
 import app.feature.social.common.InkGlyph
 import app.feature.social.common.Line
 import app.feature.social.common.RemotePhoto
-import app.feature.social.common.SocialBlocked
 import app.feature.social.common.Type
 import app.feature.social.common.inkBounds
 import app.feature.social.common.stringRes
@@ -234,17 +233,17 @@ private fun WeekSection(week: HistoryWeekUi, zone: ZoneId, headerBaseline: Dp, n
 /**
  * The strip: one tile per photo Mon → Sun (`week.history.dimension.tileWidth` × `.tileHeight`, gaps
  * `.tileGap`, outer corners `week.history.radius.strip`), weekday bottom-centred. Starts at
- * `week.history.dimension.inset` and clips at the screen edge. The current week's add tile and
- * empty-day tiles need `week.history.color.emptyTile` / `.emptyTileText` (BLOCKED): drawn only once
- * those are known.
+ * `week.history.dimension.inset` and clips at the screen edge. The current week ends with the add
+ * tile and one empty-day tile per day without a photo (`week.history.color.emptyTile`; labels
+ * `.emptyTileText`, the "+" `color.global.textPrimary`; Retro dark, G-15).
  */
 @Composable
 private fun Strip(week: HistoryWeekUi, zone: ZoneId, nav: HistoryNav) {
-    val fill = SocialBlocked.emptyTile
-    val ink = SocialBlocked.emptyTileText
+    val fill = Tokens.Colors.weekHistoryColorEmptyTile
+    val ink = Tokens.Colors.weekHistoryColorEmptyTileText
     val days = remember(week) { week.photos.map { it.post.createdAt.atZone(zone).toLocalDate() } }
-    val emptyDays = if (week.isCurrent && fill != null && ink != null) (0 until Formats.DAYS_IN_WEEK.toInt()).map { week.weekStart.plusDays(it.toLong()) }.filter { it !in days } else emptyList()
-    val showAdd = week.isCurrent && fill != null && ink != null
+    val emptyDays = if (week.isCurrent) (0 until Formats.DAYS_IN_WEEK.toInt()).map { week.weekStart.plusDays(it.toLong()) }.filter { it !in days } else emptyList()
+    val showAdd = week.isCurrent
     val count = week.photos.size + (if (showAdd) 1 else 0) + emptyDays.size
     if (count == 0) return
     val radius = Tokens.Radii.weekHistoryRadiusStrip
@@ -277,22 +276,22 @@ private fun Strip(week: HistoryWeekUi, zone: ZoneId, nav: HistoryNav) {
                 )
             }
         }
-        if (showAdd && fill != null && ink != null) item(key = "add") {
+        if (showAdd) item(key = "add") {
             val label = stringRes(R.string.week_history_a11y_add)
             val i = week.photos.size
             Box(
                 Modifier.size(Tokens.Sizes.weekHistoryDimensionTileWidth, Tokens.Sizes.weekHistoryDimensionTileHeight).clip(shape(i)).background(fill)
                     .clickable(role = Role.Button, onClick = nav.camera).clearAndSetSemantics { contentDescription = label; role = Role.Button },
                 contentAlignment = Alignment.Center,
-            ) { InkGlyph(Tokens.Icons.weekHistoryIconAdd, ink, inkHeight = Tokens.Sizes.weekHistoryDimensionAddGlyph) }
+            ) { InkGlyph(Tokens.Icons.weekHistoryIconAdd, Tokens.Colors.globalTextPrimary, inkHeight = Tokens.Sizes.weekHistoryDimensionAddGlyph) }
         }
-        if (fill != null && ink != null) itemsIndexed(emptyDays, key = { _, d -> "empty:$d" }) { j, day ->
+        itemsIndexed(emptyDays, key = { _, d -> "empty:$d" }) { j, day ->
             EmptyDayTile(day, fill, ink, shape(week.photos.size + 1 + j))
         }
     }
 }
 
-/** An empty day of the current week: month, day number, weekday (BLOCKED colours; drawn once known). */
+/** An empty day of the current week: month, day number (bold), weekday, in `week.history.color.emptyTileText` on `.emptyTile`. */
 @Composable
 private fun EmptyDayTile(day: LocalDate, fill: androidx.compose.ui.graphics.Color, ink: androidx.compose.ui.graphics.Color, shape: RoundedCornerShape) {
     val label = stringRes(R.string.week_history_a11y_emptyday, Formats.weekdayLong(day), Formats.spokenDate(day))

@@ -338,14 +338,16 @@
     },
     "duration.onthisday.memoryChange": {
       "type": "duration",
-      "value": null,
-      "source_app": "Timehop",
+      "value": 700,
+      "source_app": "VidDay",
       "surface": "onthisday",
       "element": "transition between two years' memories",
-      "evidence": "NOT FOUND: design/research/retro-timehop.md 'Motion - onthisday' (no video obtainable)",
-      "method": "—",
-      "level": "BLOCKED",
-      "notes": "Owner capture: one 15-20 s screen recording tapping through three years of one day on Timehop v5. Until then the memory changes without animation."
+      "evidence": "https://static.vidday.com/vidday_theme_samples/theme_happy_birthday.mp4 (listed on https://www.vidday.com/examples; 1920x1080, 30 fps, 135.72 s); per-frame diff references/auto/vidday/frames/vidday-theme-happy-birthday-framediff.csv: photo-to-photo crossfades 23.233-23.933, 26.467-27.167, 30.467-31.167, 64.133-64.833, 68.167-68.867, 80.500-81.200, 92.133-92.833 s (21-22 changed frames each)",
+      "method": "first to last changed frame of each crossfade (mean abs grey diff > 0.8 on a 192-px decode), 30 fps",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-17). Timehop's own year-to-year change could not be obtained (no Timehop video reachable: App Store listing has none, Play's is YouTube, bot-blocked). VidDay's memory montage is the closest measured change from one remembered photo to the next; the screens already cross-fade the year content over this duration (curve easing.global.native).",
+      "unit": "ms",
+      "precision": "±33 ms (1 frame); curve not measurable (duration only)"
     },
     "layout.onthisday.textStyleMap": {
       "type": "layout",
@@ -504,14 +506,16 @@
     },
     "duration.year.story.card": {
       "type": "duration",
-      "value": null,
-      "source_app": "Spotify Wrapped",
+      "value": 4000,
+      "source_app": "VidDay",
       "surface": "year.story",
       "element": "time one card stays before the story advances on its own",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-progress-fill.csv: segment 1 2.23->13.53 s (11290 ms), segment 11 110.88->137.16 s (26280 ms)",
-      "method": "1/slope of the linear fill fit",
-      "level": "BLOCKED",
-      "notes": "Measured segments are chapters holding several beats; the time per single fact was not measurable (research §1.7). Owner capture: the 30 s 'Your Stories' replay recording (research capture 1) with three single-beat cards. Until then the story does not advance on its own and the pause control is hidden (MERGE memory M-16)."
+      "evidence": "references/auto/vidday/help/vidday-help-display-length-2025-02-07.png (https://help.vidday.com/can-i-change-the-display-length-on-photos-and-text-cards/, last update 07.02.2025: 'Photos and text cards will automatically be set to display for 4 seconds by default.'); measured in https://static.vidday.com/vidday_theme_samples/theme_happy_birthday.mp4 (listed on https://www.vidday.com/examples; 1920x1080, 30 fps, 135.72 s) (references/auto/vidday/frames/vidday-theme-happy-birthday-framediff.csv): text-card and photo slots start-to-start 4.033 s (title 2.967 -> 7.000), 4.000-4.067 s (photos 26.467 -> 30.467 -> 34.533, 64.133 -> 68.167 -> 72.200, 92.133 -> 96.133), 4.000 s (end text card 128.700 -> 132.700)",
+      "method": "documented default, confirmed by the slot pitch in the sample render (frame diff, 30 fps)",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-18). Wrapped's per-fact time is not measurable (chapters hold several beats, M-16); Instagram's ≈5 s per photo appears only in third-party guides (Meta's ads guide gives 5-16 s for ads). VidDay is the documented, measured value for one card of one fact or photo before an automatic advance. The current segment fills linearly over it (easing.year.story.progress.fill).",
+      "unit": "ms",
+      "precision": "exact (documented); slots ±33 ms"
     },
     "duration.year.story.reveal.headline": {
       "type": "duration",
@@ -590,14 +594,20 @@
     },
     "easing.year.story.reveal": {
       "type": "easing",
-      "value": null,
+      "value": {
+        "x1": 0.56,
+        "y1": 0.08,
+        "x2": 0.14,
+        "y2": 0.87
+      },
       "source_app": "Spotify Wrapped",
       "surface": "year.story",
       "element": "curve of the headline / subline reveal",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv (3 samples, layout.year.story.reveal.samples)",
-      "method": "not fitted: 3 samples under-determine a cubic Bezier (same rule as MERGE F-15)",
-      "level": "BLOCKED",
-      "notes": "Owner capture: one 60 fps recording of any Wrapped card whose subline appears. Until then the reveal plays as the global Reduce Motion substitute (cross-fade, same durations)."
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv (25 headline positions at 30 fps, 15.533-16.333 s, y956 -> 916 px); fit: references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-fit.csv",
+      "method": "least-squares cubic Bezier over all 25 samples (0.05 grid, then 0.01 grid): rms 0.012 of the travel = 0.48 px, below the 1-px quantization",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-19). This is the headline's curve (duration.year.story.reveal.headline 800 ms, dimension .headlineShift). The subline follows a different, decelerating curve: easing.year.story.reveal.subline (new token). No single curve fits both (best joint fit rms 0.12 = 5-7 px). The earlier 'not fitted' note used only the three summary points (layout.year.story.reveal.samples). Documented curves tried: FastOutSlowIn (0.4,0,0.2,1) rms 0.060, easeInOut 0.112.",
+      "precision": "±0.05 per control point (flat error surface); residual 0.5 px"
     },
     "font.year.story": {
       "type": "font",
@@ -1010,14 +1020,24 @@
     },
     "layout.year.story.summary.dots": {
       "type": "layout",
-      "value": null,
+      "value": {
+        "count": "one per share card",
+        "diameter": 8.4,
+        "pitch": 16.8,
+        "selectedColor": "#FFFFFF",
+        "unselectedColor": "#666666",
+        "centerBelowCarousel": 20.4,
+        "centerAboveShare": 29.3,
+        "animation": "none observed (static render)"
+      },
       "source_app": "Spotify Wrapped",
       "surface": "year.story",
       "element": "page dots under the share-card carousel",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg (4 dots)",
-      "method": "size, gap and colours not measured",
-      "level": "BLOCKED",
-      "notes": "Owner capture: one full-resolution screenshot of the Wrapped summary screen. Until then the carousel shows no dots."
+      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg (2000 x 1125): phone screen x108-554 (447 px = 393 pt, 1.137 px/pt); four dots centred y764.17, x302.65 / 321.74 / 340.89 / 360.01 (pitch 19.12 px); equivalent diameters 9.8 px (selected, peak 253) and 9.27-9.30 px (others, peak 114-115); selected (253,253,253), others (102,102,102) on (0,0,0); carousel card bottom edge y≈741, Share pill top y≈797.5",
+      "method": "coverage-weighted centroids and equivalent-disc diameters (sum of luminance above the black background ÷ peak); px ÷ 1.137",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-20): measured on the Wrapped render the BLOCKED note already cited (the dots were legible). Diameter 8.4 = mean of 8.6 (selected) and 8.2 (others); both are drawn the same size. Unselected #666666 = white at 0.40 over black (cf. opacity.year.story.progress.track 0.43). Centre offsets are measured from the carousel card's bottom edge and to the Share pill's top edge.",
+      "precision": "±0.9 pt (JPEG render, ≈10-px dots); colours ±3/255"
     },
     "layout.year.story.shareCard": {
       "type": "layout",
@@ -1775,14 +1795,17 @@
     },
     "layout.birthday.contribute.lineMax": {
       "type": "layout",
-      "value": null,
-      "source_app": "Tribute + VidDay",
+      "value": {
+        "maxCharacters": 110
+      },
+      "source_app": "VidDay",
       "surface": "birthday.contribute",
       "element": "UI character limit of the one line",
-      "evidence": "NOT FOUND: design/research/wrapped-tribute-partiful.md §3.3 ('contributor's text message length: not found')",
-      "method": "—",
-      "level": "BLOCKED",
-      "notes": "Until found the field accepts the API bound (280, invalid_line, docs/API.md contribute_tribute) with no visible counter. Owner capture: research capture 4 (a real Tribute or VidDay invitation opened to the contribution screen)."
+      "evidence": "references/auto/vidday/help/vidday-help-written-messages.png (https://help.vidday.com/can-i-add-written-messages, last update 07.02.2025): 'Text cards have a 110-character limit.' / 'Note: emoticons/emojis are not supported.'",
+      "method": "documented limit (help centre text)",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-21). VidDay's text card is its written message from a contributor, the same role as the one line. The API bound (280, invalid_line) stays the server check. No visible counter (none documented). VidDay's emoji restriction is not copied (the line is plain text; the worker renders it with Roboto, which has no colour emoji).",
+      "precision": "exact (documented)"
     },
     "layout.birthday.contribute.textStyleMap": {
       "type": "layout",
@@ -1845,14 +1868,16 @@
     },
     "duration.birthday.tribute.photoHold": {
       "type": "duration",
-      "value": null,
-      "source_app": "Tribute + VidDay",
+      "value": 4000,
+      "source_app": "VidDay",
       "surface": "birthday.tribute",
       "element": "time each contribution card stays on screen (read by the worker)",
-      "evidence": "NOT FOUND: Tribute help 'Photos stay on screen for a set number of seconds' (value not stated); marketing samples are highlight edits (research §4.3)",
-      "method": "—",
-      "level": "BLOCKED",
-      "notes": "Owner capture: one finished Tribute or VidDay video that contains photos (its share link, or a 20 s screen recording playing three photo contributions) - research capture 5."
+      "evidence": "references/auto/vidday/help/vidday-help-display-length-2025-02-07.png (https://help.vidday.com/can-i-change-the-display-length-on-photos-and-text-cards/, last update 07.02.2025: 'Photos and text cards will automatically be set to display for 4 seconds by default.'); measured in https://static.vidday.com/vidday_theme_samples/theme_happy_birthday.mp4 (listed on https://www.vidday.com/examples; 1920x1080, 30 fps, 135.72 s) (references/auto/vidday/frames/vidday-theme-happy-birthday-framediff.csv): photo slots start-to-start 4.000 s (26.467 -> 30.467), 4.067 s (30.467 -> 34.533), 4.033 s (64.133 -> 68.167, 68.167 -> 72.200, 80.500 -> 84.533), 4.000 s (92.133 -> 96.133)",
+      "method": "documented default, confirmed by the slot pitch of photo contributions in the sample render (first changed frame of each 0.7-s crossfade to the next one, 30 fps)",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-22). Read by the worker as each contribution card's fully visible time. VidDay's 4 s slot includes its 0.7-s crossfade; this video uses hard cuts between contributions (duration.birthday.tribute.clipTransition 0, Tribute, M-6), so the whole slot is visible. Tribute's own photo duration is not documented ('a set number of seconds').",
+      "unit": "ms",
+      "precision": "exact (documented); slots ±33 ms"
     },
     "duration.birthday.tribute.clipTransition": {
       "type": "duration",
@@ -1925,25 +1950,45 @@
     },
     "layout.birthday.tribute.endCard": {
       "type": "layout",
-      "value": null,
-      "source_app": "Tribute + VidDay",
+      "value": {
+        "background": "#EFEEF3",
+        "textColor": "#444347",
+        "fontWeight": 500,
+        "fontSizeRatio": 0.084,
+        "maxWidthRatio": 0.405,
+        "centerYRatio": 0.5
+      },
+      "source_app": "VidDay",
       "surface": "birthday.tribute",
       "element": "end card text layout (read by the worker)",
-      "evidence": "NOT FOUND: Tribute's end slot is its brand outro (https://website.tribute.co/6KY_IZ1tLME.mp4 ('Birthday Tribute for Tess', 640x360, 30000/1001 fps); frames references/auto/tribute/frames/tribute-sample-tess-* 94.2-104.2 s, wordmark + tagline on brand teal); VidDay's end card not observed (research §4.5)",
-      "method": "—",
-      "level": "BLOCKED",
-      "notes": "Owner capture: one finished birthday Tribute or VidDay link (research capture 5), last 15 s."
+      "evidence": "https://static.vidday.com/vidday_theme_samples/theme_happy_birthday.mp4 (listed on https://www.vidday.com/examples; 1920x1080, 30 fps, 135.72 s): end text card 'We Love You!' (references/auto/vidday/frames/vidday-theme-happy-birthday-t131.000-end-card.png: glyph bbox x688-1230 y507-571, cap height 65 px, centre (959, 539)) drawn exactly like the same video's title text card 'Happy Birthday, Margo!' (references/auto/vidday/frames/vidday-theme-happy-birthday-t005.000-title-card.png: caps y496-560, 65 px, centre x959.5, cy 539.0): same text colour (61,82,96), cap height, centring and theme background; cap 65 / 1080 / Roboto cap-height 0.711 = 0.0847",
+      "method": "end card = the title card's style, as VidDay renders both (frame measurements, 1080p); values copied from layout.birthday.tribute.titleCard so the video's two text cards match; the independent size check 0.0847 agrees with the title card's 0.084",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-23). The text colour (61,82,96) and light-blue art belong to this VidDay theme; the title card's measured paper / text colours are kept so both cards of our video match (M-4). Timing: VidDay holds its end text card 3.27 s visible in a 4.0-s slot (fade 0.7 s), Tribute's end slot is 10.0 s (duration.birthday.tribute.endHold, unchanged).",
+      "precision": "as layout.birthday.tribute.titleCard (colours ±8/255, ratios ±2 %); this sample: cap ±1 px"
     },
     "layout.birthday.tribute.caption": {
       "type": "layout",
-      "value": null,
-      "source_app": "Tribute + VidDay",
+      "value": {
+        "textColor": "#FFFFFF",
+        "nameFontWeight": 700,
+        "nameFontSizeRatio": 0.0463,
+        "lineFontWeight": 700,
+        "lineFontSizeRatio": 0.0795,
+        "leftRatio": 0.0577,
+        "bottomRatio": 0.0861,
+        "maxWidthRatio": 0.8845,
+        "gapRatio": 0.0099,
+        "scrim": "#11202FC7"
+      },
+      "source_app": "Tribute",
       "surface": "birthday.tribute",
       "element": "first name + one line over each contribution photo (read by the worker)",
-      "evidence": "NOT FOUND: neither Tribute sample shows automatic captions; Tribute's optional creator-added 'text on a clip' ('Auntie Jean, Chicago' at the bottom of the frame) has no measured layout; VidDay none (research §4.2, §4.5)",
-      "method": "—",
-      "level": "BLOCKED",
-      "notes": "Owner capture: one finished Tribute in which the creator added 'text on a clip', or a VidDay with contributor names on photos - a 10 s screen recording or the share link settles text colour, sizes, position, gap and any band behind the text."
+      "evidence": "references/auto/tribute/web/tribute-web-video-editor-name-badge.computed-styles.json + tribute-web-video-editor-name-badge-1440-frame.png (https://www.tribute.co/tools/video-editor/, 'NAME BADGES — Credit everyone who showed up on screen', default Position = Bottom Left, Style = Dark; 'CAPTIONS', style Classic): 16:9 frame 537 x 302.0625 CSS px; badge inset 16 / 16 px, border 1 px, padding 9 x 14, radius 10, fill rgba(17,32,47,0.78), name 14 px / 700 / white (Roboto Flex), text box x31 y615-631.8 -> 26 px above the frame bottom; caption words 24 px / 700 white, row gap 3 px, text-shadow rgba(0,0,0,0.6) 0 2 10",
+      "method": "getComputedStyle / getBoundingClientRect (Playwright 1440x900; identical frame at 1920x1080) divided by the frame: name 14/302.06, line 24/302.06, left (16+1+14)/537, bottom (16+1+9)/302.06, maxWidth (537 - 2 x 31)/537, gap 3/302.06; scrim = the badge fill 0.78 x 255 = 199 = 0xC7",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-24): Tribute's own contributor credit ('Name whoever is speaking … at the bottom of the frame', help 'How Do I Add Text onto Individual Videos or Photos?'). Name = badge text; the line = Tribute's caption text style (Classic). Shape difference: Tribute draws a rounded box (radius 10 / 302 of the frame height) around the name and a soft shadow under caption words; the worker's CaptionLayout can only draw a full-width band from the name's top to the frame bottom, so the badge's fill colour is used for that band (hand-off to the worker team: a box mode would match Tribute exactly). White on the band: 17.7:1 over a black photo, 8.1:1 over a white one.",
+      "precision": "exact ratios of the demo's CSS (VERIFIED-grade measurement of a web demo; the demo's px sizes do not scale with the frame, so the ratios hold for the frame size above)"
     },
     "layout.birthday.tribute.structure": {
       "type": "layout",
@@ -2037,6 +2082,23 @@
       "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) buttons y746 h44, next y800",
       "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
       "level": "VERIFIED"
+    },
+    "easing.year.story.reveal.subline": {
+      "type": "easing",
+      "value": {
+        "x1": 0.05,
+        "y1": 0.36,
+        "x2": 0.26,
+        "y2": 0.94
+      },
+      "source_app": "Spotify Wrapped",
+      "surface": "year.story",
+      "element": "curve of the subline rising in (with duration.year.story.reveal.subline, .sublineDelay, dimension .sublineOffset)",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv (19 subline positions at 30 fps, 15.800-16.400 s, y1083 -> 1028 px); fit: references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-fit.csv",
+      "method": "least-squares cubic Bezier over all 19 samples (0.05 grid, then 0.01 grid): rms 0.008 of the travel = 0.46 px",
+      "level": "SOURCED",
+      "precision": "±0.05 per control point; residual 0.5 px",
+      "notes": "Added in the gap-fill pass (MERGE G2-19) next to easing.year.story.reveal (headline). Closest documented curve: M3 standard decelerate (0,0,0,1), rms 0.047. Reduce Motion: cross-fade with the same durations (layout.global.reduceMotion)."
     }
   }
 }

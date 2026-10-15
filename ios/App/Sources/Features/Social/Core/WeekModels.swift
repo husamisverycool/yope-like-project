@@ -408,6 +408,16 @@ final class WeekHistoryModel {
 
     var currentWeekStart: LocalDate { SocialCalendar.weekStart(containing: now(), in: timeZone) }
 
+    /// The current week's days without a photo (`week.history`: one empty-day tile each, after the add tile), Monday
+    /// first; nil until every photo of the week is loaded (no tile appears and then disappears).
+    func emptyDays(of week: Week) -> [LocalDate]? {
+        guard week.isCurrent else { return [] }
+        let loaded = week.postIDs.compactMap { posts[$0] }
+        guard loaded.count == week.postIDs.count else { return nil }
+        let photoDays = Set(loaded.map { LocalDate($0.post.createdAt, in: timeZone) })
+        return SocialCalendar.days(of: week.weekStart).filter { !photoDays.contains($0) }
+    }
+
     func load() async {
         if group == nil { group = await data.cachedGroup(id: groupID) }
         // Cached weeks first (no indicator when there are some), refreshed in place.

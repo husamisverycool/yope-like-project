@@ -44,8 +44,11 @@ final class ChatThreadModel {
     private(set) var sentReaction: SentReaction?
     /// Composer text.
     var draft = ""
-    /// Local copies of messages being sent (optimistic), by their temporary id.
+    /// Local copies of my messages not yet confirmed by the server (being sent, or failed), by their temporary id.
     private(set) var pending: Set<MessageID> = []
+    /// Local copies whose send failed (`chat.thread.layout.failedMessage`); a tap sends them again.
+    private(set) var failed: Set<MessageID> = []
+    @ObservationIgnored private var outgoing: [MessageID: Outgoing] = [:]
     /// Recorded voice files of pending / just-sent voice messages, playable before the upload finishes.
     private(set) var localVoiceFiles: [MessageID: URL] = [:]
     /// The offline copy was looked at; the loading HUD shows only when there was none (no flash before cached content).
@@ -312,27 +315,22 @@ final class ChatThreadModel {
 
     // MARK: Composer
 
-    /// Sends the composer text (`send_message`, kind text). The message shows at once (optimistic) and is
-    /// replaced by the server's row; on failure it is taken back, the text returns to the field and
-    /// `chat.thread.sendFailed` is announced. The keyboard's return key sends: the send control is BLOCKED
-    /// (`chat.composer.layout.typingState`).
+    /// What a local message sends (kept for a retry after a failure).
+    private enum Outgoing {
+        case text(String)
+        case voice(URL, durationMs: Int)
+    }
+
+    /// Sends the composer text (`send_message`, kind text): the message shows at once (optimistic) and is replaced
+    /// by the server's row. On failure it stays with the failed-message layout (`chat.thread.layout.failedMessage`:
+    /// red "!" and `chat.thread.sendFailed`); tapping it sends it again.
     func sendDraft() async {
         let body = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !body.isEmpty, let me else { return }
         draft = ""
         let local = makeLocal(Message(id: nextLocalID(), groupID: groupID, authorID: me, kind: .text, body: body, createdAt: Date()))
-        isSending = true
-        do {
-            let message = try await data.sendText(groupID: groupID, body: body, replyToPostID: nil)
-            confirm(local, with: message)
-            signals.emit(.sent)
-        } catch {
-            rollBack(local)
-            if SocialFailure(error) == .offline { isOffline = true }
-            if draft.isEmpty { draft = body }
-            signals.emit(.failed)
-            signals.post(.sendFailed)
-        }
+        outgoing[local.id] = .text(body)
+        await deliver(local.id)
     }
 
     /// Uploads and sends a recorded voice message (`chat.voice`); shown at once, playable from the local file.
@@ -342,17 +340,46 @@ final class ChatThreadModel {
             id: nextLocalID(), groupID: groupID, authorID: me, kind: .voice, voiceDurationMs: durationMs, createdAt: Date()
         ))
         localVoiceFiles[local.id] = fileURL
+        outgoing[local.id] = .voice(fileURL, durationMs: durationMs)
+        await deliver(local.id)
+    }
+
+    /// Tap on a failed message (its "!", label or bubble): sends it again.
+    func retry(_ message: Message) async {
+        guard failed.contains(message.id) else { return }
+        failed.remove(message.id)
+        await deliver(message.id)
+    }
+
+    func isFailed(_ message: Message) -> Bool { failed.contains(message.id) }
+
+    private func deliver(_ localID: MessageID) async {
+        guard let payload = outgoing[localID], messages.contains(where: { $0.id == localID }) else { return }
+        isSending = true
         do {
-            let message = try await data.sendVoice(groupID: groupID, fileURL: fileURL, durationMs: durationMs)
-            confirm(local, with: message)
-            localVoiceFiles[message.id] = fileURL
+            let message: Message
+            switch payload {
+            case let .text(body):
+                message = try await data.sendText(groupID: groupID, body: body, replyToPostID: nil)
+            case let .voice(fileURL, durationMs):
+                message = try await data.sendVoice(groupID: groupID, fileURL: fileURL, durationMs: durationMs)
+                localVoiceFiles[message.id] = fileURL
+            }
+            outgoing[localID] = nil
+            isOffline = false
+            confirm(localID, with: message)
             signals.emit(.sent)
         } catch {
-            rollBack(local)
-            localVoiceFiles[local.id] = nil
+            // Taken back meanwhile (deleted while sending, or confirmed by its realtime echo).
+            guard messages.contains(where: { $0.id == localID }), pending.contains(localID) else {
+                isSending = !inFlight.isEmpty
+                return
+            }
+            failed.insert(localID)
+            isSending = !inFlight.isEmpty
             if SocialFailure(error) == .offline { isOffline = true }
             signals.emit(.failed)
-            signals.post(.sendFailed)
+            signals.post(.messageNotSent)
         }
     }
 
@@ -379,10 +406,11 @@ final class ChatThreadModel {
         return local
     }
 
-    private func confirm(_ local: Message, with message: Message) {
-        pending.remove(local.id)
-        isSending = !pending.isEmpty
-        guard let index = messages.firstIndex(where: { $0.id == local.id }) else {
+    private func confirm(_ localID: MessageID, with message: Message) {
+        pending.remove(localID)
+        failed.remove(localID)
+        isSending = !inFlight.isEmpty
+        guard let index = messages.firstIndex(where: { $0.id == localID }) else {
             if !messages.contains(where: { $0.id == message.id }) { insert(message) }
             return
         }
@@ -393,12 +421,8 @@ final class ChatThreadModel {
         }
     }
 
-    private func rollBack(_ local: Message) {
-        pending.remove(local.id)
-        messages.removeAll { $0.id == local.id }
-        if messages.isEmpty { phase = .empty }
-        isSending = !pending.isEmpty
-    }
+    /// Local copies being sent right now (not failed).
+    private var inFlight: Set<MessageID> { pending.subtracting(failed) }
 
     /// A realtime insert of my own message replaces its optimistic copy.
     private func removePendingCopy(of message: Message) {
@@ -408,8 +432,11 @@ final class ChatThreadModel {
                 && candidate.body == message.body && candidate.voiceDurationMs == message.voiceDurationMs
         }) else { return }
         pending.remove(local.id)
+        failed.remove(local.id)
+        outgoing[local.id] = nil
         if let file = localVoiceFiles[local.id] { localVoiceFiles[message.id] = file }
         messages.removeAll { $0.id == local.id }
+        isSending = !inFlight.isEmpty
     }
 
     // MARK: Messages
@@ -417,8 +444,20 @@ final class ChatThreadModel {
     /// Deletes one of my text / voice messages after the native confirmation: gone at once, put back if the
     /// call fails.
     func delete(_ message: Message) async {
-        guard isMine(message), message.kind != .photo, !pending.contains(message.id),
+        guard isMine(message), message.kind != .photo,
               let index = messages.firstIndex(where: { $0.id == message.id }) else { return }
+        if pending.contains(message.id) {
+            // A failed local copy never reached the server: it just goes.
+            guard failed.contains(message.id) else { return }
+            signals.emit(.warning)
+            messages.remove(at: index)
+            pending.remove(message.id)
+            failed.remove(message.id)
+            outgoing[message.id] = nil
+            localVoiceFiles[message.id] = nil
+            if messages.isEmpty { phase = .empty }
+            return
+        }
         signals.emit(.warning)
         messages.remove(at: index)
         if messages.isEmpty { phase = .empty }
@@ -450,6 +489,26 @@ final class ChatThreadModel {
             _ = try await data.react(postID: postID, emoji: emoji)
         } catch {
             if !alreadyThere { reactions[postID]?.remove(userID: me, emoji: emoji) }
+            signals.emit(.failed)
+            signals.post(.reactionFailed)
+        }
+    }
+
+    /// The emoji I reacted with on a post (highlighted in the picker).
+    func myEmoji(on postID: PostID) -> Set<String> {
+        guard let me else { return [] }
+        return reactions[postID]?.emoji(by: me) ?? []
+    }
+
+    /// `unreact` from the picker's highlighted emoji (`chat.reactions.layout.unreact`): optimistic, restored on failure.
+    func unreact(postID: PostID, emoji: String) async {
+        guard let me, let before = reactions[postID], before.contains(userID: me, emoji: emoji) else { return }
+        reactions[postID]?.remove(userID: me, emoji: emoji)
+        do {
+            try await data.unreact(postID: postID, emoji: emoji)
+        } catch {
+            if SocialFailure(error) == .notFound { return }
+            reactions[postID] = before
             signals.emit(.failed)
             signals.post(.reactionFailed)
         }

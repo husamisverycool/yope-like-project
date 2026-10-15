@@ -21,7 +21,7 @@ final class AgeGateModel {
     var optIn = false
     private(set) var phase: Phase = .form
     private(set) var isChecking = false
-    /// "invalid date" (presentation BLOCKED; announced to VoiceOver).
+    /// "invalid date", shown as the form error alert (`auth.phone.layout.inlineError`).
     private(set) var invalidDate = false
     private(set) var successCount = 0
     private(set) var errorCount = 0
@@ -91,7 +91,6 @@ final class AgeGateModel {
     private func failInvalid() {
         invalidDate = true
         errorCount += 1
-        UIAccessibility.post(notification: .announcement, argument: Copy.authAgegateErrorInvalidDate)
     }
 
     /// Retry pill of the not-open / offline states.

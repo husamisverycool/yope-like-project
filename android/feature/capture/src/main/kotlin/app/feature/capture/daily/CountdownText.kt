@@ -44,14 +44,14 @@ private const val TWO_DIGITS = "%02d" // provenance-ok: MM:SS digit format of th
  * The countdown (`daily.capture.layout.countdownTick`): only changed digits move — the old digit
  * slides up `travel` and fades out (`digitOut`), the new one rises from `travel` below
  * (`digitIn`) and fades in (`digitFadeIn`); the colon never moves. Reduce Motion: changed digits
- * cross-fade. At `closes_at` the whole label leaves with the digit-out motion (C-18). [weight] is
- * BLOCKED (`daily.capture.fontWeight.countdown`): null draws nothing.
+ * cross-fade. At `closes_at` the whole label leaves with the digit-out motion (C-18). Weight
+ * `daily.capture.fontWeight.countdown`.
  *
  * TalkBack reads the remaining time as the platform's elapsed-time string, no label words.
  */
 @Composable
-internal fun CountdownText(countdown: CountdownState.Open?, weight: FontWeight?, modifier: Modifier = Modifier) {
-    if (weight == null) return
+internal fun CountdownText(countdown: CountdownState.Open?, modifier: Modifier = Modifier) {
+    val weight = Tokens.FontWeights.dailyCaptureFontWeightCountdown
     val tick = Tokens.Layouts.DailyCaptureLayoutCountdownTick
     val reduce by rememberReduceMotion()
     val travelPx = with(androidx.compose.ui.platform.LocalDensity.current) { tick.travel.dp.toPx().roundToInt() }

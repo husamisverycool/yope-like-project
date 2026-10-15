@@ -4,11 +4,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import app.data.error.DataError
 import app.data.error.DataException
 import app.data.error.ErrorMapping
+import app.feature.account.LocalAccountEnvironment
 import app.model.AppRoute
 import app.ui.haptics.rememberHaptics
 import kotlinx.coroutines.CancellationException
@@ -23,6 +25,8 @@ sealed interface AccountEvent {
     data object Back : AccountEvent
     /** A `haptic` token (`Tokens.Haptics.*`). */
     data class Haptic(val token: Int) : AccountEvent
+    /** Yope's lime toast with the copy [copy] (`R.string.*`) formatted with [args] (`safety.block.layout.toast`). */
+    data class Toast(val copy: Int, val args: List<String> = emptyList()) : AccountEvent
 }
 
 /** Base view model: an event channel and the typed error of a failed data call. */
@@ -36,6 +40,7 @@ abstract class AccountViewModel : ViewModel() {
 
     protected fun navigate(route: AppRoute, clearStack: Boolean = false, popCurrent: Boolean = false) = emit(AccountEvent.Navigate(route, clearStack, popCurrent))
     protected fun haptic(token: Int) = emit(AccountEvent.Haptic(token))
+    protected fun toast(copy: Int, vararg args: String) = emit(AccountEvent.Toast(copy, args.toList()))
 }
 
 /** The [DataError] of a thrown data-layer failure (cancellation rethrown). */
@@ -44,10 +49,12 @@ fun Throwable.dataError(): DataError {
     return (this as? DataException)?.error ?: ErrorMapping.map(this)
 }
 
-/** Performs a view model's events: navigation on [nav], haptics on the current view. */
+/** Performs a view model's events: navigation on [nav], haptics on the current view, toasts in the shell. */
 @Composable
 fun CollectEvents(events: Flow<AccountEvent>, nav: NavController, extra: (AccountEvent) -> Boolean = { false }) {
     val haptics = rememberHaptics()
+    val context = LocalContext.current
+    val toasts = LocalAccountEnvironment.current.toasts
     val handle by rememberUpdatedState(extra)
     LaunchedEffect(events) {
         events.collect { event ->
@@ -56,6 +63,7 @@ fun CollectEvents(events: Flow<AccountEvent>, nav: NavController, extra: (Accoun
                 is AccountEvent.Navigate -> nav.navigateAccount(event)
                 AccountEvent.Back -> nav.popBackStack()
                 is AccountEvent.Haptic -> haptics.perform(event.token)
+                is AccountEvent.Toast -> toasts.show(context.getString(event.copy, *event.args.toTypedArray()))
             }
         }
     }

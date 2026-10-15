@@ -92,9 +92,29 @@ describe("video", () => {
 });
 
 describe("tribute video", () => {
-  it("fails with a clear missing-design-token error while research values are absent", () => {
+  it("reads every tribute value from the canonical design tokens", () => {
+    setTokenOverrides(null);
+    const tk = tributeTokens();
+    for (const v of Object.values(tk)) expect(v).not.toBeNull();
+  });
+
+  it("renders with the canonical tokens (real shapes, no overrides)", async () => {
+    setTokenOverrides(null);
+    const tk = tributeTokens();
+    const cards = [{ image: await testJpeg(3, { width: 900, height: 1200 }), name: "Ana", line: "happy birthday & thank you for everything <3" }];
+    const v = await renderTribute(cards, { title: "Happy birthday, Lea!", end: "We love you!" }, tk, path.join(WORKER_ROOT, "fonts"));
+    const f = tmpFile("real.mp4");
+    fs.writeFileSync(f, v.mp4);
+    const p = await probe(f);
+    const vs = p.streams.find((s) => s.codec_type === "video")!;
+    expect(vs.codec_name).toBe("h264");
+    expect(Math.abs(Number(p.format.duration) * 1000 - v.durationMs)).toBeLessThan(100);
+  }, 180_000);
+
+  it("fails with a clear missing-design-token error when a value is absent", () => {
+    setTokenOverrides({ "duration.birthday.tribute.photoHold": null });
     expect(() => tributeTokens()).toThrow(MissingTokenError);
-    expect(() => tributeTokens()).toThrow(/missing design token (layout\.birthday\.tribute\.video|duration\.birthday\.tribute\.photoHold)/);
+    expect(() => tributeTokens()).toThrow(/missing design token duration\.birthday\.tribute\.photoHold/);
   });
 
   it("renders title card → contribution cards (hard cuts) → end card with the token timings", async () => {

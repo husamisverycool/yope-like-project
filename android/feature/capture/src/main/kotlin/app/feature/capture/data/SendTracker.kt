@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
  * - [failure]: the error toast with retry (`camera.sendto.error.sendFailed` / `.offline`),
  *   shown until the draft is sent; the capture, caption and voice note stay in the draft.
  * - [sent]: one event per sent post (`create_post` succeeded) for `haptic.global.send`, and for
- *   the "posted in …" toast once its visible duration is sourced (BLOCKED).
+ *   the "posted in …" toast (`camera.sendto.duration.toastVisible`).
  */
 class SendTracker(private val data: CaptureData, private val scope: CoroutineScope) {
 

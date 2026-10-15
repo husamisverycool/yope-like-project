@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
@@ -63,6 +64,8 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.TextStyle
@@ -71,7 +74,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.data.model.Group
-import app.feature.capture.Blocked
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.capture.ui.CaptureText
@@ -80,6 +82,7 @@ import app.feature.capture.ui.CircleIconButton
 import app.feature.capture.ui.CoachTooltip
 import app.feature.capture.ui.EmptyStateBlock
 import app.feature.capture.ui.Glyph
+import app.feature.capture.ui.AnimatedToast
 import app.feature.capture.ui.LimeToast
 import app.feature.capture.ui.MinTouchTargets
 import app.feature.capture.ui.haptic
@@ -121,6 +124,7 @@ fun SendToScreen(
     videoPreview: (@Composable () -> Unit)? = null,
     voiceGestures: VoiceGestures = VoiceGestures.None,
     now: () -> Long = android.os.SystemClock::elapsedRealtime,
+    savedToast: Boolean = false,
 ) = MinTouchTargets {
     val view = LocalView.current
     var captionFocused by remember { mutableStateOf(false) }
@@ -186,7 +190,7 @@ fun SendToScreen(
                 onFocus = { captionFocused = it },
                 placeholder = stringResource(R.string.camera_sendto_caption_placeholder),
             )
-            // Bottom row: message field + mic (fill camera.sendto.color.messageField is BLOCKED: no fill).
+            // Bottom row: message field + mic in camera.sendto.color.messageField (backdrop blur radius not tokenized: tint only).
             if (!captionFocused) {
                 MessageRow(
                     state = state,
@@ -251,8 +255,13 @@ fun SendToScreen(
             )
         }
 
-        // Errors that keep the capture: queueing failed, or the group list could not load.
+        // "saved to your library" for camera.sendto.duration.toastVisible (the route times it).
         val failedGroups = state.groups as? SendToViewModel.Groups.Failed
+        AnimatedToast(visible = savedToast && state.sendError == null && failedGroups == null, Modifier.testTag("sendto.saved")) {
+            LimeToast(stringResource(R.string.camera_sendto_toast_saved), null, null, Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+        }
+
+        // Errors that keep the capture: queueing failed, or the group list could not load.
         if (state.sendError != null || failedGroups != null) {
             val offline = failedGroups?.offline == true || state.sendError == app.data.error.DataError.Network
             Box(Modifier.fillMaxWidth().padding(top = Tokens.Layouts.CameraSendtoLayoutToast.top.dp).testTag("sendto.error")) {
@@ -344,7 +353,7 @@ private fun MessageRow(
                     .weight(1f)
                     .height(f.height.dp)
                     .clip(CapsuleShape)
-                    .then(Blocked.messageFieldFill?.let { Modifier.background(it) } ?: Modifier)
+                    .background(Tokens.Colors.cameraSendtoColorMessageField)
                     .clickable(enabled = !state.recordingVoice, onClick = onField)
                     .semantics { role = Role.Button; contentDescription = placeholder; traversalIndex = 3f }
                     .padding(horizontal = f.height.dp / 2)
@@ -371,7 +380,7 @@ private fun MessageRow(
     }
 }
 
-/** While recording: red dot, elapsed time, and the slide-to-cancel glyph centred (its copy does not exist yet). */
+/** While recording: red dot, elapsed time, and the centred hint (‹ slide to cancel) in the field's text role. */
 @Composable
 private fun RecordingRow(startedAt: Long?, style: TextStyle, now: () -> Long) {
     var elapsed by remember(startedAt) { mutableStateOf(0L) }
@@ -388,8 +397,14 @@ private fun RecordingRow(startedAt: Long?, style: TextStyle, now: () -> Long) {
         Box(Modifier.size(dot).clip(CircleShape).background(Tokens.Colors.globalDestructive))
         Spacer(Modifier.width(dot / 2))
         BasicText(voiceDuration(elapsed), style = style)
-        Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+        Row(Modifier.weight(1f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
             Glyph(Tokens.Icons.globalBack, Tokens.Colors.globalTextSecondary, null)
+            BasicText(
+                stringResource(R.string.chat_voice_recording_slidetocancel),
+                style = style.merge(TextStyle(color = Tokens.Colors.globalTextSecondary)),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
@@ -414,11 +429,16 @@ private fun VoiceMic(state: SendToViewModel.UiState, gestures: VoiceGestures, on
     // A slide counts once it travels one mic diameter (gesture threshold, not a drawn size).
     val threshold = with(density) { mic.toPx() }
     val locked = state.voiceLocked
-    Box(contentAlignment = Alignment.Center) {
+    // Fixed to the mic's size: the lock floats above it without moving the row (no layout jump).
+    Box(Modifier.size(mic), contentAlignment = Alignment.Center) {
         if (state.recordingVoice && !locked) {
             // The lock above the mic: chevron up over the lock glyph (capsule size not measured).
             Column(
-                Modifier.align(Alignment.BottomCenter).offset(y = -mic).testTag("sendto.voice.lock"),
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .offset(y = -mic)
+                    .wrapContentSize(Alignment.BottomCenter, unbounded = true)
+                    .testTag("sendto.voice.lock"),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Glyph(androidx.compose.material.icons.Icons.Rounded.ExpandLess, Tokens.Colors.globalTextSecondary, null)
@@ -429,7 +449,7 @@ private fun VoiceMic(state: SendToViewModel.UiState, gestures: VoiceGestures, on
             Modifier
                 .size(mic)
                 .clip(CircleShape)
-                .then(Blocked.messageFieldFill?.let { Modifier.background(it) } ?: Modifier)
+                .background(Tokens.Colors.cameraSendtoColorMessageField)
                 .pointerInput(locked) {
                     awaitEachGesture {
                         val down = awaitFirstDown()

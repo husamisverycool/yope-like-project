@@ -19,3 +19,12 @@ Tribute is web-only: no official Tribute.co app was found on the US App Store (i
 | `frames/tribute-sample-doug-clips-7.2-62.2s-every2s.png` | https://website.tribute.co/QQe5RpbFIyI.mp4 ("Happy Birthday to Doug!", 640×360, 29.97 fps, 72.49 s) | 2026-10-15 | contact sheet of the clip section only | same |
 
 Text sources (no image): help articles under https://www.tribute.co/help/creators/ and https://www.tribute.co/help/participants/ (listed in `design/research/wrapped-tribute-partiful.md`), blog https://blog.tribute.co/birthday-video-from-friends/ (published 2026-04-12, updated 2026-04-14).
+
+## Gap fill (account, capture, global, memory) — 2026-10-15
+
+| file | source URL | accessed | what it shows | version/date |
+|---|---|---|---|---|
+| `web/tribute-web-video-editor-name-badge-1440-frame.png` | https://www.tribute.co/tools/video-editor/ (section NAME BADGES, "Show name badges" clicked; Playwright 1440×900 @2x) | 2026-10-15 | 16:9 demo frame (537 × 302.06 CSS px) with the name badge in its default position (Bottom Left) and style (Dark): "Carol Whitfield" (`layout.birthday.tribute.caption`) | "The New Tribute Video Editor" page, 2026-10 |
+| `web/tribute-web-video-editor-name-badge.computed-styles.json` | same, getComputedStyle / getBoundingClientRect (frame identical at 1920×1080) | 2026-10-15 | badge inset 16/16 px, border 1 px rgba(255,255,255,0.16), padding 9×14, radius 10, fill rgba(17,32,47,0.78), name 14 px / 700 / white (Roboto Flex); caption words (style Classic) 24 px / 700, row gap 3 px, bottom 5 %, shadow rgba(0,0,0,0.6) 0 2 10 | same |
+
+Text source (no image): https://www.tribute.co/help/creators/how-do-i-add-text-onto-individual-videos/ ("Name whoever is speaking … 'Auntie Jean, Chicago' at the bottom of the frame"; font, colour, size in pixels, alignment left / center / right; drag to place). Other homepage samples checked for name captions (https://website.tribute.co/{iU79PdSgHg4,XdHol2Lv5d4,ZYFhqnRqFrQ,afroZcaeTlo,bE3rKUFAuRc,cm0wvHirqmY,eKyWNbtMPq4,ePGVaqSf3qY,jstHfjNE8WU,knWoHPkCqus}.mp4): none drawn by Tribute; eKyWNbtMPq4 shows video-call name tags baked into the clips (not Tribute UI).

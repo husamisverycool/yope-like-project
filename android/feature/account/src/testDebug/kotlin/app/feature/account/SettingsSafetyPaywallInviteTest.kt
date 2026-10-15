@@ -35,6 +35,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import app.feature.account.common.AccountEvent
+import app.designsystem.R
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -90,6 +92,7 @@ class SettingsSafetyPaywallInviteTest {
         assertTrue(backend.accountDeleted)
         assertEquals(AppRoute.AuthPhone, events.navigations().single().route)
         assertEquals(Tokens.Haptics.globalWarning, events.haptics().first())
+        assertEquals(listOf(AccountEvent.Toast(R.string.settings_account_deleted_toast)), events.toasts())
     }
 
     @Test fun deleteAccountErrorKeepsTheAccount() = runTest(main.dispatcher) {
@@ -113,7 +116,9 @@ class SettingsSafetyPaywallInviteTest {
         val vm = SettingsBlockedViewModel(fakeEnvironment(backend))
         val person = vm.state.value.people!!.single()
         assertEquals("Sam Lee", person.name)
+        val events = vm.recordEvents(backgroundScope)
         vm.unblock(person)
+        assertEquals(listOf(AccountEvent.Toast(R.string.safety_block_undone, listOf("Sam"))), events.toasts())
         assertEquals(emptyList<Any>(), vm.state.value.people)
         assertTrue(backend.blocks.isEmpty())
     }
@@ -143,6 +148,15 @@ class SettingsSafetyPaywallInviteTest {
         again.submit()
         assertEquals(ReportPhase.Error, again.state.value.phase)
         assertEquals("kept", again.state.value.details)
+    }
+
+    @Test fun blockShowsTheToastAndGoesBack() = runTest(main.dispatcher) {
+        val backend = world()
+        val vm = BlockViewModel(fakeEnvironment(backend), "u-sam")
+        val events = vm.recordEvents(backgroundScope)
+        vm.block()
+        assertEquals(listOf(AccountEvent.Toast(R.string.safety_block_done, listOf("Sam"))), events.toasts())
+        assertTrue(AccountEvent.Back in events)
     }
 
     @Test fun blockErrorKeepsTheDialog() = runTest(main.dispatcher) {

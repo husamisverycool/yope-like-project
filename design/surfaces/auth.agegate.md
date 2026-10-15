@@ -41,7 +41,7 @@ opt-in row, and `docs/PLATFORM_CONSTRAINTS.md` §9 for the entry rules.
 |---|---|---|---|
 | default | after `auth.code` for a new account | as Structure | — |
 | checking | RPC in flight | HUD | `groups.create.hud.loading` |
-| invalid date | `invalid_birthdate` or unparseable | presentation **BLOCKED** (`auth.phone.layout.inlineError`) | `auth.agegate.error.invalidDate` |
+| invalid date | `invalid_birthdate` or unparseable | error alert (`auth.phone.layout.inlineError`) | `auth.agegate.error.invalidDate` + `auth.phone.error.dismiss` |
 | not configured | `age_gate_not_configured` (503; `min_age_years` null) | Yope empty-state layout replacing 3–10 (title `fontSize.global.emptyTitle` bold, detail `fontSize.global.emptyDetail` italic `color.global.textSecondary`, white pill `color.global.surfaceLight` / `groups.screen.radius.lightPill` / `groups.screen.size.lightPillHeight`) | `auth.agegate.notConfigured.title`, `.detail`, `.retry` |
 | under age | `under_minimum_age` (403) | same empty-state layout, no button; the session is signed out; the refusal is remembered on the device (Keychain / Android Keystore-backed preference) so the screen cannot be retried by going back | `auth.agegate.underAge.title` ({min_age}, {app_name}), `auth.agegate.underAge.detail` |
 | offline | no connection | empty-state layout + retry pill | `auth.phone.offline.title`, `auth.agegate.offline.detail`, `auth.phone.offline.retry` |
@@ -90,6 +90,6 @@ Opt-in toggled → `haptic.global.select`. Confirmed → `haptic.global.success`
 |---|---|---|
 | `min_age_years` | owner decision (docs/API.md §12 item 6) | set the value; the copy needs no change |
 | deletion of the entered data on refusal | backend: `confirm_age` stores nothing, but the auth user (phone number) exists; the "we didn’t save … your number" detail is true only if the client calls a delete (e.g. `delete_account`) on `under_minimum_age` | backend/owner confirmation |
-| error presentation | BLOCKED (`auth.phone.layout.inlineError`) | ~40 s English recording of a fresh Yope install via "try other options" |
+| error presentation | SOURCED by gap fill (Locket native alert, `auth.phone.layout.inlineError`); Yope's own not observed | ~40 s English recording of a fresh Yope install via "try other options" |
 | Yope's own birthday screen | not found | same recording |
 | back-button retry prevention method | counsel to confirm (PLATFORM_CONSTRAINTS §9) | — |

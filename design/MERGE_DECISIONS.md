@@ -451,3 +451,97 @@ do-not-copy); no logos, names or glyph art were copied (glyphs are SF Symbols / 
 `walls.browse.layout.rowOrder`, `walls.browse.layout.selection`, `week.recap.layout.shortRowSplit`,
 `week.recap.dimension.shortRowHeight`, `week.recap.layout.scrim`, `week.recap.layout.page2`, `week.edit.layout.recapText`,
 `week.history.layout.weekMenu`. Each token's `notes` says what was tried and the smallest capture that closes it.
+
+---
+
+## Gap fill (account, capture, global, memory)
+
+Pass: account / capture / global / memory gap fill, 2026-10-15, under the owner decision of the same day
+(`docs/OWNER_DECISIONS.md`). Scope: the 26 BLOCKED tokens of `design/tokens/{global,account,capture,memory}.json` and the
+BLOCKED copy `birthday.tribute.endCard`. Result: **24 tokens filled** in place (same keys, same types; null → value),
+**2 still BLOCKED** (`paywall.layout.iconTileArt`, `safety.report.layout.reasons`), copy `birthday.tribute.endCard` sourced,
+one token added (`easing.year.story.reveal.subline`), one copy key added (`auth.phone.error.dismiss`), and one coordinator
+correction (`groups.create.color.hud`, G2-27). Evidence files and `INDEX.md` rows: `references/auto/locket/apk/` (new),
+`references/auto/{vidday,tribute,platform,yope,wrapped,bereal}/`.
+
+Rules applied: each surface keeps its primary reference; another app fills only what the primary does not show; sizes in
+pt are taken as-is (source constants) or converted to a 393-pt screen; a colour is taken from another app only when the
+element's role matches (dimming behind a sheet, row divider, translucent control over a photo), otherwise the app's global
+colour for the role is kept (G2-12). Translucent fills over photos were solved from the primary app's own frames where
+possible (Yope, BeReal), with the solve model stated. No logos, names, fonts or assets were copied (the SF Pro web font
+was used only to measure, and is not stored).
+
+### Evidence gathered in this pass
+
+| what | source | used for |
+|---|---|---|
+| Locket Android 1.243.0 JS bundle (Hermes, decompiled) | `references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt` | G2-1, G2-2, G2-4, G2-5, G2-7, G2-8, G2-9, G2-11 |
+| VidDay help: photos and text cards 4 s by default; text cards 110 characters | `references/auto/vidday/help/*.png` (both updated 07.02.2025) | G2-18, G2-21, G2-22 |
+| VidDay birthday theme sample render (1080p30, 135.7 s): title card, photo slots, 0.7-s crossfades, end text card "We Love You!" | `references/auto/vidday/frames/vidday-theme-happy-birthday-*` | G2-17, G2-18, G2-22, G2-23, G2-25 |
+| Tribute video editor: name badge (default ↙ / Dark) and caption styles, computed | `references/auto/tribute/web/tribute-web-video-editor-name-badge*` | G2-24 |
+| Yope TikTok re-downloaded at 1080×1920 60 fps (home cover header circle; toast entrance) | `references/auto/yope/frames/a-chuongxetank-…-1080p-*` | G2-6, G2-7 |
+| AOSP toast constants; React Navigation iOS modal spring | `references/auto/platform/aosp-toast-duration-excerpt.txt`, `react-navigation-ios-modal-spring-excerpt.txt` | G2-3, G2-7 |
+| SF Pro Display '1' stem ratios per weight vs BeReal's countdown | `references/auto/platform/sf-pro-display-digit-one-stem-ratio.csv` | G2-14 |
+| Wrapped reveal positions refitted (all 25 / 19 samples); summary dots measured | `references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-fit.csv`; press render | G2-19, G2-20 |
+| Searched, not found / not usable | Instagram story photo duration (only third-party guides; Meta's ads guide: 5–16 s for ads); Instagram App Store preview (no story player); Timehop video (App Store none, Play = YouTube, bot-blocked); BeReal / Locket Lock Screen widget (none found); Locket empty-widget label colour (bitmap drawn at run time; no resource / JS style found); Tribute photo duration (undocumented) | — |
+
+### Cross-app choices
+
+| # | token | value | model app — why it is the right model | adaptation / precision |
+|---|---|---|---|---|
+| G2-1 | `color.global.separator` | #FFFFFF33, hairline | Locket: a dark-only photo app on black (like Yope's deep surfaces) dividing grouped-list rows; Yope itself draws no dividers | source constant (white 0.2, `hairlineWidth`); exact |
+| G2-2 | `color.global.scrim` | #00000080 | Locket's sheets: gorhom backdrop black at `SEE_THROUGH` 0.5 — the dimming behind a sheet in the closest dark photo app; Yope's sheets are full black | exact |
+| G2-3 | `spring.global.sheetPresent` | response 0.3441, dampingFraction 4.564 | the iOS modal sheet, as documented by React Navigation (`ModalPresentationIOS` → `TransitionIOSSpec` k1000 c500 m3, shipped in Locket) | exact conversion; **conflict**: Yope's observed 16-pt overshoot (`spring.global.sheetPresentObserved`) — closes F-15 toward the native curve |
+| G2-4 | `auth.phone.layout.countryCode` | flag slot 20×13 at 20 pt + inline calling code, auto-formatted, flag opens a country list | Locket's phone-first sign-up (same app category); Yope's phone screen never filmed | field geometry/colours stay Yope's; flag art = regional-indicator emoji (PLATFORM); single source |
+| G2-5 | `auth.phone.layout.inlineError` + copy `auth.phone.error.dismiss` "OK" | native alert, message only, one "OK", not cancelable | Locket: phone / code errors are `{title, message}` shown through `Alert.alert(…, [{text:'OK'}], {cancelable:false})` | our errors are one sentence → no title; call site inferred (not traced); button in platform case (A-13) |
+| G2-6 | `groups.list.color.headerCircleOverPhoto` | #00000094 (black 0.58) | Yope itself (2026 home, 1080p frame) | ±0.06 alpha; blur not measured |
+| G2-7 | `safety.block.duration.toast`, `camera.sendto.duration.toastVisible` | 2000 ms | Locket's confirmation after a safety action ("Photo reported") is `ToastAndroid.SHORT` = AOSP `SHORT_DELAY` 2000; Yope's own dwell is cut by the only video's edit (≥0.57 s) | exact; Yope entrance ≈117 ms recorded in notes |
+| G2-8 | `safety.report.layout.reasons` | still BLOCKED | presentation sourced: Locket reports friends' content without a reason list (alert "Report?" + explanation, then a SHORT toast) | categories = owner |
+| G2-9 | `camera.capture.size.recordingOutline` | 6 pt | Locket itself (co-reference of `camera.capture`): `BorderProgressBar` default, a progress stroke filling linearly over the max video length | exact |
+| G2-10 | `camera.sendto.color.messageField` | #0000007A (black 0.48) | Yope itself: three channels agree only for a black tint (0.44/0.46/0.48; 0.50/0.52) | ±0.05; blur radius not measured |
+| G2-11 | `camera.sendto.size.captionMaxLength` | 36 | Locket (co-reference of `camera.sendto`): the one-line caption's `MAX_CHARS` (200 / 4 lines is the Gold perk) | exact |
+| G2-12 | `widget.home.small.color.emptyLabel` | #969696 | Locket's colour is unrecoverable → rule: keep Yope's global colour for the role (secondary text on a dark tile) | 4.59:1 on #2E2E2E |
+| G2-13 | `widget.lock.rect.layout.content` | no caption: avatar alone (rect) / a11y sentence (inline); collage newest: keep the newest single photo's sender | Locket's own no-caption widget (store-06) and one-photo rule; no app with such a Lock Screen widget found | composition, flagged for the owner |
+| G2-14 | `daily.capture.fontWeight.countdown` | bold | BeReal (primary): stem ÷ height 0.205 vs SF Pro Display Bold 0.207 (Semibold 0.175, Heavy 0.253) | closes the capture pass's stated step |
+| G2-15 | `daily.capture.color.overlayControl` | #00000075 (black 0.46) | BeReal itself, lossless help frame over a flat sky (retake ✕ and chip) | ±0.06 |
+| G2-16 | `collage.share.color.pill` | #9A9489A8 | Yope itself: the pill spans a light and a dark backdrop on the lossless store PNG → two-background solve | tint ±8, alpha ±0.08; **white label on it over white: 1.98:1 FAIL** (as Yope draws it) |
+| G2-17 | `duration.onthisday.memoryChange` | 700 ms | VidDay's memory montage: photo-to-photo crossfade (7 transitions, 21–22 frames); Timehop's own unobtainable | ±33 ms; curve native |
+| G2-18 | `duration.year.story.card` | 4000 ms | VidDay documents 4 s per photo / text card and its render shows 4.0-s slots; Wrapped's per-fact time is not measurable; Instagram's ≈5 s is third-party only | exact (documented) |
+| G2-19 | `easing.year.story.reveal` (headline) + new `easing.year.story.reveal.subline` | (0.56, 0.08, 0.14, 0.87); (0.05, 0.36, 0.26, 0.94) | Wrapped itself: the existing CSV has 25 / 19 samples, not 3; a 4-parameter fit is determined (0.5-px residual); no single curve fits both | ±0.05 per control point |
+| G2-20 | `layout.year.story.summary.dots` | one per card, 8.4 pt, pitch 16.8, #FFFFFF / #666666, 20.4 pt below the card, 29.3 pt above Share | Wrapped itself (the press render the BLOCKED note cited) | ±0.9 pt (JPEG) |
+| G2-21 | `layout.birthday.contribute.lineMax` | `{maxCharacters: 110}` | VidDay's written-message text card limit (same role as the one line) | exact; API 280 stays |
+| G2-22 | `duration.birthday.tribute.photoHold` | 4000 ms | VidDay (assigned reference): documented default + 4.0-s slots in its render; Tribute's value undocumented | exact; our cards hard-cut, so the whole slot is visible |
+| G2-23 | `layout.birthday.tribute.endCard` | = `layout.birthday.tribute.titleCard` values | VidDay draws its end text card exactly like its title card (same colour, 65-px caps, centring) | colours kept from the title card so both cards match (M-4) |
+| G2-24 | `layout.birthday.tribute.caption` | white; name 700 @ 0.0463 H; line 700 @ 0.0795 H; left 0.0577 W; bottom 0.0861 H; max width 0.8845 W; gap 0.0099 H; band #11202FC7 | Tribute's own contributor credit (name badge default bottom-left / Dark) + its Classic caption text | badge box → full-width band (worker shape); white on band 17.7:1 / 8.1:1 |
+| G2-25 | copy `birthday.tribute.endCard` | "We love you!" | VidDay's end card text, case normalised by P-BT-1 (replaces "From {group}", which came from a cover attribution) | `{group}` no longer used |
+| G2-26 | `paywall.layout.iconTileArt` | still BLOCKED | owner asset (the app icon) | — |
+| G2-27 | `groups.create.color.hud` (coordinator request) | #262626 → **#0C0C0C** | Yope itself: on t50.40 / t50.53 / t50.60 every flat block of the HUD reads (12,12,12)–(13,13,13), interior luma mode 12; the old bbox x254–322 y488–562 also reads 12–13 (its recorded (38,38,38) is not reproducible) | now equal to `collage.view.color.hud` (C-13); ±8/255 (H.264); white label 19.6:1; container vs #000000 1.07:1, vs #171717 1.09:1 |
+
+### Problems found (for other passes)
+
+- **Worker tests (worker team).** Now that the tribute tokens exist, three assertions that expect them to be missing fail:
+  `test/unit/copy-tokens.test.ts:49` (uses `duration.birthday.tribute.photoHold` as its BLOCKED example — switch to
+  `paywall.layout.iconTileArt`), `test/unit/media-render.test.ts:95-97` and `test/handlers/tribute-year.test.ts`
+  ("fails … while the research values are absent"). `backend/worker/COPY_KEYS.md` still lists `photoHold`, `endCard`,
+  `caption` as missing. A real render with these tokens was checked (contribution cards over a bright and a dark photo,
+  end card): no errors.
+- **Worker shape.** `CaptionLayout` can only draw a full-width band; Tribute draws a rounded box around the name
+  (radius 10 / 302 of the frame height, padding 9 × 14 px of 302 / 537) and a soft text shadow under caption words. A box
+  mode would match the reference exactly.
+- **Timings not in scope, recorded for the memory owner.** VidDay crossfades photo → photo in 0.70–0.73 s (Tribute's hard
+  cut is kept, M-6), its title → first photo fade in this render is 0.73 s (canonical `titleCrossfade` 600 ms, from the
+  tour), and it holds its end text card for a 4-s slot (canonical `endHold` 10 003 ms, Tribute's brand-outro slot). Not changed.
+- **Stale text outside this pass's files.** `design/tokens/README.md` ("Not available yet": separator, scrim, sheet spring
+  still listed as BLOCKED; scrim/separator rows in the colour table); `design/surfaces/chat.thread.md:162-163` and
+  `design/CONTRAST.md` quote the HUD as #262626 (now #0C0C0C: white 19.6:1, container 1.09:1 on #171717).
+- **Screens.** `MemoryBlocked.swift` / `MemoryBlocked.kt` accessors can now return the tokens (card duration, reveal easing
+  — note the new `.subline` curve —, summary dots, memory change, line max, toast dwell). Release builds that referenced
+  `BlockedTokens.*` for these names move to `Tokens.*` (same identifiers).
+- **Contrast (reported, not adjusted).** White on the share pill over a white collage 1.98:1; white text on the send-to
+  field over a white photo 3.69:1 (placeholder 16-17 pt regular needs 4.5:1); BeReal chip text on its fill over white
+  3.45:1; separator 1.66:1 on black (decorative).
+
+### Still BLOCKED (2)
+
+`paywall.layout.iconTileArt` (the app icon, owner) and `safety.report.layout.reasons` (moderation categories, owner;
+presentation now sourced, G2-8).

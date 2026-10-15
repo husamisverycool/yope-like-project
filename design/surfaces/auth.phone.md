@@ -7,7 +7,8 @@ and `design/tokens/global.json`. Copy: `design/copy/account.json` (`auth.phone.*
 **Yope's phone screen was not found.** Every 2024–2026 source opens on social sign-in (Apple / Google / Facebook);
 the phone path sits behind "try other options" and was never filmed (yope-a §2.1, §6). This screen is assembled only
 from documented Yope parts: the sign-in screen (title, subtitle, legal footer, black background), the onboarding form
-stack (field + lime "continue", 2024–2025 builds) and Yope's voice. Everything else is BLOCKED (see Gaps).
+stack (field + lime "continue", 2024–2025 builds) and Yope's voice. The country-code selector, the error presentation and
+the toast dwell are filled from Locket (gap fill 2026-10-15, MERGE_DECISIONS G2-4, G2-5, G2-7; see Gaps).
 
 ## References
 
@@ -44,11 +45,11 @@ stack (field + lime "continue", 2024–2025 builds) and Yope's voice. Everything
 |---|---|---|---|
 | title | `fontSize.global.onboardingTitle`, `fontWeight.global.onboardingTitle`, `color.global.textPrimary`, `font.global.family` | `auth.phone.title` | static; one colour (S24 draws it all white) |
 | subtitle | `auth.phone.fontSize.subtitle`, `auth.phone.layout.subtitle` (italic, regular, `color.global.textPrimary`) | `auth.phone.subtitle` | static |
-| phone field | fill `groups.create.color.field`; height `size.global.fieldHeight`; corners `radius.global.field`; text `groups.create.fontSize.fieldText` + `groups.create.fontWeight.fieldText` in `color.global.textPrimary`; placeholder same size in `color.global.textSecondary`; keyboard/AutoFill `auth.phone.layout.keyboard`; country code `auth.phone.layout.countryCode` (BLOCKED) | `auth.phone.field.placeholder`, `auth.phone.field.accessibilityLabel` | pre-filled with "+" and the device region's calling code; the person edits it as text; normalised to E.164 before sending |
+| phone field | fill `groups.create.color.field`; height `size.global.fieldHeight`; corners `radius.global.field`; text `groups.create.fontSize.fieldText` + `groups.create.fontWeight.fieldText` in `color.global.textPrimary`; placeholder same size in `color.global.textSecondary`; keyboard/AutoFill `auth.phone.layout.keyboard`; country code `auth.phone.layout.countryCode` (Locket: 20 × 13 flag slot 20 pt from the leading edge, 5 pt before the text; calling code typed inline) | `auth.phone.field.placeholder`, `auth.phone.field.accessibilityLabel` | pre-filled with "+" and the device region's calling code; the flag follows the code as it is typed (auto-formatted); tapping the flag opens the country list in a sheet and replaces the code; normalised to E.164 before sending |
 | continue | `color.global.accent` / `color.global.onAccent`; height `size.global.buttonHeight`; corners `radius.global.button`; label `fontSize.global.button` + `fontWeight.global.button`; disabled `groups.create.color.buttonDisabledFill` / `.buttonDisabledLabel` | `auth.phone.continue` | disabled until the field holds digits after the calling code; tap → `signInWithOTP`; HUD while the request runs |
 | legal footer | `auth.phone.layout.legalFooter` (`fontSize.global.caption`, `lineHeight.global.caption`, `color.global.textSecondary`, links bold) | `auth.phone.legal.text` with link ranges `auth.phone.legal.terms`, `auth.phone.legal.privacy` | links open `config/app.json` `legal.termsUrl` / `legal.privacyUrl` in the in-app browser (SFSafariViewController / Custom Tabs) |
 | Loading HUD | `groups.create.color.hud`, `groups.create.size.hud`, label `groups.create.fontSize.hudLabel` in `color.global.textPrimary`, spinner `easing.global.native` (activityIndicator) | `groups.create.hud.loading` | centred over the screen while sending; blocks input |
-| toast | `safety.block.layout.toast`, `safety.block.duration.toast` (BLOCKED) | `auth.phone.toast.codeSent`; after an account deletion `settings.account.deleted.toast` | top of the screen; release builds omit it until the dwell time is captured |
+| toast | `safety.block.layout.toast`, `safety.block.duration.toast` (2000 ms) | `auth.phone.toast.codeSent`; after an account deletion `settings.account.deleted.toast` | top of the screen for 2 s |
 
 ## States
 
@@ -56,9 +57,9 @@ stack (field + lime "continue", 2024–2025 builds) and Yope's voice. Everything
 |---|---|---|---|---|
 | default | launch without a session | as Structure | as above | S24, S26, C24 |
 | sending | `signInWithOTP` in flight | Loading HUD | `groups.create.hud.loading` | HUD (SOURCED) |
-| invalid number | number fails E.164 parsing, or Supabase rejects it | presentation **BLOCKED** (`auth.phone.layout.inlineError`) | `auth.phone.error.invalidNumber` | copy SOURCED (pattern) |
-| rate limited | second request within 60 s / provider limit | presentation **BLOCKED** | `auth.phone.error.rateLimited` | PLATFORM_CONSTRAINTS §7 |
-| send failed | 5xx / provider error | presentation **BLOCKED** | `auth.phone.error.sendFailed` | — |
+| invalid number | number fails E.164 parsing, or Supabase rejects it | system alert, message only, one button (`auth.phone.layout.inlineError`) | `auth.phone.error.invalidNumber` + `auth.phone.error.dismiss` | copy SOURCED (pattern); presentation Locket (gap fill) |
+| rate limited | second request within 60 s / provider limit | error alert (`auth.phone.layout.inlineError`) | `auth.phone.error.rateLimited` + `auth.phone.error.dismiss` | PLATFORM_CONSTRAINTS §7 |
+| send failed | 5xx / provider error | error alert (`auth.phone.layout.inlineError`) | `auth.phone.error.sendFailed` + `auth.phone.error.dismiss` | — |
 | offline | no connection (NWPathMonitor / ConnectivityManager) | Yope empty-state layout replacing 3–8: title `fontSize.global.emptyTitle` bold, detail `fontSize.global.emptyDetail` italic `color.global.textSecondary`, white pill (`color.global.surfaceLight`, `groups.screen.radius.lightPill`, height `groups.screen.size.lightPillHeight`) | `auth.phone.offline.title`, `auth.phone.offline.detail`, `auth.phone.offline.retry` | layout V-mthu t51.23 (SOURCED) |
 | empty / permission-denied | — | not applicable (no list, no permission) | — | — |
 
@@ -113,9 +114,9 @@ stack (field + lime "continue", 2024–2025 builds) and Yope's voice. Everything
 
 | item | status | smallest owner capture |
 |---|---|---|
-| country-code selector (`auth.phone.layout.countryCode`) | BLOCKED | one ~40 s English screen recording of a fresh Yope install up to the first camera screen, tapping "try other options" |
-| inline error presentation (`auth.phone.layout.inlineError`) | BLOCKED | same recording, entering one wrong code |
-| toast dwell time (`safety.block.duration.toast`) | BLOCKED | one 10-s recording of a Yope post until the "posted in the wall" toast disappears |
+| country-code selector (`auth.phone.layout.countryCode`) | SOURCED (gap fill, Locket 1.243.0 source; single source, MERGE G2-4) — Yope's own selector not observed | one ~40 s English screen recording of a fresh Yope install up to the first camera screen, tapping "try other options" |
+| error presentation (`auth.phone.layout.inlineError`) | SOURCED (gap fill, Locket: native alert; the call site is inferred, MERGE G2-5) — Yope's own not observed | same recording, entering one wrong code |
+| toast dwell time (`safety.block.duration.toast`) | SOURCED 2000 ms (Locket SHORT toast = AOSP SHORT_DELAY, MERGE G2-7); Yope's own dwell is cut by the video edit | one 10-s recording of a Yope post until the "posted in the wall" toast disappears |
 | title–subtitle gap, footer position with the keyboard up | approximation (platform leading; footer moves with the stack) | the ~40 s recording above |
 | footer weight | open item of F-24 (global caption role used) | lossless screenshot of the sign-up screen |
 | whole-screen arrangement | approximation: Yope sign-in parts + Yope onboarding form stack | the ~40 s recording above |

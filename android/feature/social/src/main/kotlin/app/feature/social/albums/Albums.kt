@@ -1,6 +1,6 @@
 // Surfaces: albums.list (a group's saved albums) and albums.view (one album).
-// Built from documented Yope components (S-14): references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png
-// (home list card), references/owner/yope-week-recap.jpg (header, pics grid),
+// albums.list covers: Apple Photos' Albums collection (iOS 27 guide image, references/auto/apple-photos/; Gap fill G-17).
+// Built from documented Yope components (S-14): references/owner/yope-week-recap.jpg (header, pics grid),
 // references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (••• menu),
 // references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png (name sheet).
 package app.feature.social.albums
@@ -22,6 +22,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.paddingFromBaseline
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -173,12 +176,13 @@ fun AlbumsListScreen(vm: AlbumsViewModel, onBack: () -> Unit, onAlbum: (String) 
 }
 
 /**
- * albums.list: cards (`albums.list.dimension.cardHeight`, `.color.card`, `radius.global.card`)
- * stacked `size.global.listGap` apart with `size.global.screenMargin` margins; cover circle
- * (`size.global.avatarList`) at `.coverInset`, name (`listTitle`) over "saved by {name}" (`listSubtitle`).
+ * albums.list (`albums.list.layout.yopeAlbums`, Apple Photos' Albums collection, G-17): a grid of
+ * `columns` square covers (`coverAspect`, corners `coverRadius`), side margins `marginH`, `gap` both
+ * ways, newest first; the album name over each cover's bottom-leading corner.
  */
 @Composable
 fun AlbumsListContent(state: AlbumsState, onBack: () -> Unit, onAlbum: (String) -> Unit, onViewRecap: () -> Unit, onRetry: () -> Unit) {
+    val grid = Tokens.Layouts.AlbumsListLayoutYopeAlbums
     Column(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep).testTag("albums.list")) {
         AlbumHeader(stringRes(R.string.albums_list_title), onBack)
         Box(Modifier.weight(1f).fillMaxWidth()) {
@@ -187,12 +191,14 @@ fun AlbumsListContent(state: AlbumsState, onBack: () -> Unit, onAlbum: (String) 
                 state.phase == AlbumsState.Phase.Error -> Centered { EmptyState(stringRes(R.string.albums_list_error_title), stringRes(R.string.chat_thread_error_detail), PillAction(stringRes(R.string.chat_thread_error_retry), null, onRetry)) }
                 state.phase == AlbumsState.Phase.OfflineEmpty -> Centered { EmptyState(stringRes(R.string.chat_thread_offline_title), stringRes(R.string.chat_thread_offline_detail), null) }
                 state.cards.isEmpty() -> Centered { EmptyState(stringRes(R.string.albums_list_empty_title), stringRes(R.string.albums_list_empty_detail), PillAction(stringRes(R.string.albums_list_empty_action), null, onViewRecap)) }
-                else -> LazyColumn(
-                    Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(start = Tokens.Sizes.globalScreenMargin, end = Tokens.Sizes.globalScreenMargin, bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
-                    verticalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalListGap),
+                else -> LazyVerticalGrid(
+                    columns = GridCells.Fixed(grid.columns.toInt()),
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(start = grid.marginH.dp, end = grid.marginH.dp, bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
+                    horizontalArrangement = Arrangement.spacedBy(grid.gap.dp),
+                    verticalArrangement = Arrangement.spacedBy(grid.gap.dp),
                 ) {
-                    items(state.cards, key = { it.album.id }) { card -> AlbumCardRow(card) { onAlbum(card.album.id) } }
+                    items(state.cards, key = { it.album.id }) { card -> AlbumCover(card) { onAlbum(card.album.id) } }
                 }
             }
         }
@@ -202,27 +208,39 @@ fun AlbumsListContent(state: AlbumsState, onBack: () -> Unit, onAlbum: (String) 
 @Composable
 private fun Centered(content: @Composable () -> Unit) = Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { content() }
 
+/**
+ * One album cover: the first photo, aspect fill; the name (one line, tail truncation,
+ * `titleFontSize`, platform weight, `color.global.textPrimary`) with its ink `titleInsetLeading` from
+ * the leading edge and its baseline `titleBaselineBottom` above the bottom. One button whose label is
+ * the name then `albums.list.row.subtitle` (platform merge; the subtitle is not drawn). Without a
+ * cover photo the square shows `icon.global.gallery` on `color.global.controlOnDeep` (not specified).
+ */
 @Composable
-private fun AlbumCardRow(card: AlbumCard, onClick: () -> Unit) {
+private fun AlbumCover(card: AlbumCard, onClick: () -> Unit) {
+    val grid = Tokens.Layouts.AlbumsListLayoutYopeAlbums
     val subtitle = stringRes(R.string.albums_list_row_subtitle, card.savedBy.orEmpty())
-    Row(
+    Box(
         Modifier
             .fillMaxWidth()
-            .heightIn(min = Tokens.Sizes.albumsListDimensionCardHeight)
-            .clip(RoundedCornerShape(Tokens.Radii.globalCard))
-            .background(Tokens.Colors.albumsListColorCard)
+            .aspectRatio(grid.coverAspect)
+            .clip(RoundedCornerShape(grid.coverRadius.dp))
+            .background(Tokens.Colors.globalControlOnDeep)
             .clickable(role = Role.Button, onClick = onClick)
-            // One button read as name then subtitle (the platform merge); the cover is decorative.
-            .semantics(mergeDescendants = true) { role = Role.Button }
-            .padding(start = Tokens.Sizes.albumsListDimensionCoverInset),
-        verticalAlignment = Alignment.CenterVertically,
+            .semantics(mergeDescendants = true) { role = Role.Button },
     ) {
-        Avatar(card.coverPath, Tokens.Sizes.globalAvatarList, fallbackIcon = Tokens.Icons.globalGallery)
-        Spacer(Modifier.width(Tokens.Sizes.albumsListDimensionCoverToTitle))
-        Column(Modifier.weight(1f).padding(end = Tokens.Sizes.albumsListDimensionCoverInset)) {
-            Line(card.album.name, Type.listTitle(), Tokens.Colors.globalTextPrimary)
-            Line(subtitle, Type.listSubtitle(), Tokens.Colors.globalTextSecondary)
-        }
+        if (card.coverPath != null) RemotePhoto(card.coverPath, null, Modifier.fillMaxSize())
+        else Glyph(Tokens.Icons.globalGallery, Tokens.Colors.globalTextSecondary, Modifier.align(Alignment.Center))
+        Line(
+            card.album.name,
+            Type.style(grid.titleFontSize.sp),
+            Tokens.Colors.globalTextPrimary,
+            Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = grid.titleInsetLeading.dp, end = grid.titleInsetLeading.dp)
+                .paddingFromBaseline(bottom = grid.titleBaselineBottom.dp),
+        )
+        // Read after the name (the merged label "{album name}, {subtitle}"); not drawn.
+        Box(Modifier.semantics { contentDescription = subtitle })
     }
 }
 

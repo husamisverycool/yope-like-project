@@ -45,6 +45,7 @@ struct CodeScreen: View {
         .loadingHUD(model.isVerifying)
         .dsHaptic(Tokens.Haptics.globalSuccess, trigger: model.successCount)
         .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
+        .formErrorAlert(model.failure?.message, trigger: model.errorCount)
         .onAppear {
             model.startResendLock()
             fieldFocused = true

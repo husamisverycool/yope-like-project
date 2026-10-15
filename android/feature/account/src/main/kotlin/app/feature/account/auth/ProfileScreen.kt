@@ -47,6 +47,8 @@ import app.media.PhotoImport
 import app.ui.components.Avatar
 import app.ui.components.FormTextField
 import app.ui.components.HudOverlay
+import app.ui.system.ErrorAlert
+import app.feature.account.common.errorDismissLabel
 import app.ui.components.OnboardingTitle
 import app.ui.components.PrimaryButton
 import app.ui.text.TextRoles
@@ -77,6 +79,8 @@ data class ProfileUiState(
 class ProfileViewModel(private val env: AccountEnvironment) : AccountViewModel() {
     private val mutable = MutableStateFlow(ProfileUiState())
     val state: StateFlow<ProfileUiState> = mutable.asStateFlow()
+
+    fun dismissError() = mutable.update { it.copy(error = null) }
 
     fun onName(text: String) = mutable.update { it.copy(name = text.take(MAX_NAME), error = null) }
 
@@ -132,7 +136,7 @@ fun ProfileRoute(nav: NavController) {
     val state by vm.state.collectAsStateWithLifecycle()
     CollectEvents(vm.events, nav)
     val picker = rememberLauncherForActivityResult(PhotoImport.single()) { uri -> uri?.let(vm::onPicked) }
-    ProfileScreen(state, vm::onName, onPickAvatar = { picker.launch(PhotoImport.imagesOnly) }, onContinue = vm::submit, onRetry = vm::retry)
+    ProfileScreen(state, vm::onName, onPickAvatar = { picker.launch(PhotoImport.imagesOnly) }, onContinue = vm::submit, onRetry = vm::retry, onDismissError = vm::dismissError)
 }
 
 @Composable
@@ -143,6 +147,7 @@ fun ProfileScreen(
     onContinue: () -> Unit,
     onRetry: () -> Unit,
     avatarImage: Any? = state.avatar,
+    onDismissError: () -> Unit = {},
 ) {
     if (state.offline) {
         SignUpOffline(stringResource(R.string.auth_profile_offline_detail), onRetry)
@@ -192,4 +197,5 @@ fun ProfileScreen(
         Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeFieldToButton))
         PrimaryButton(stringResource(R.string.auth_profile_continue), onContinue, enabled = state.canContinue)
     }
+    state.error?.let { ErrorAlert(stringResource(it.copy), errorDismissLabel(), onDismissError) }
 }

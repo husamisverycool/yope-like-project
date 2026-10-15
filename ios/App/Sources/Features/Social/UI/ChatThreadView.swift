@@ -6,6 +6,7 @@
 // t51.23-group-created-empty-state.png (empty state), references/auto/locket/store/locket-store-04.png (cluster).
 import AppData
 import AppModels
+import AppServices
 import DesignSystem
 import SwiftUI
 import UIKit
@@ -23,10 +24,8 @@ struct ChatThreadView: View {
     @State private var didScrollToFocus = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
-    #if DEBUG
-    @State private var recording = SocialVoiceRecording()
+    @State private var recorder = SocialVoiceRecorder()
     @State private var micDenied = false
-    #endif
 
     var body: some View {
         ZStack {
@@ -57,9 +56,11 @@ struct ChatThreadView: View {
         .toastHost(toasts)
         .socialPhotoViewer($viewer)
         .sheet(item: $pickerTarget) { target in
-            ReactionPicker { emoji in
-                Task { await model.react(postID: target.postID, emoji: emoji) }
-            }
+            ReactionPicker(
+                mine: model.myEmoji(on: target.postID),
+                onPick: { emoji in Task { await model.react(postID: target.postID, emoji: emoji) } },
+                onRemove: { emoji in Task { await model.unreact(postID: target.postID, emoji: emoji) } }
+            )
         }
         .sheet(item: $activityTarget) { target in
             ReactionActivitySheet(
@@ -203,7 +204,7 @@ struct ChatThreadView: View {
             guard let new else { return }
             if anchor == nil || anchor == old || model.messages.last.map({ model.isMine($0) }) == true { anchor = new }
         }
-        .onAppear(perform: scrollToFocus)
+        .onAppear { scrollToFocus() }
         .onChange(of: model.messages.count) { _, _ in scrollToFocus() }
     }
 
@@ -255,48 +256,35 @@ struct ChatThreadView: View {
 
     private var composerArea: some View {
         VStack(spacing: Tokens.Sizes.globalListGap) {
-            #if DEBUG
             if micDenied {
                 PermissionCard(
                     title: Copy.chatVoicePermissionTitle,
                     detail: Copy.chatVoicePermissionDetail,
                     buttonTitle: Copy.chatVoicePermissionButton,
-                    onEnable: openSettings,
+                    onEnable: { openSettings() },
                     onDismiss: { micDenied = false }
                 )
                 .padding(.horizontal, Tokens.Sizes.onboardingPermissionContactsSizeCardMarginH)
             }
-            #endif
             ChatComposer(
                 text: $model.draft,
                 send: { Task { await model.sendDraft() } },
                 camera: { SocialNav.openCamera(groupID: model.groupID.rawValue) },
-                mic: micAction
+                recorder: recorder,
+                onRecorded: { recording in
+                    micDenied = false
+                    Task { await model.sendVoice(fileURL: recording.fileURL, durationMs: recording.durationMs) }
+                },
+                onRecordFailed: { model.voiceRecordingFailed() },
+                onMicDenied: { micDenied = true }
             )
         }
-    }
-
-    /// `chat.voice.layout.recording` is BLOCKED: release builds have no mic circle; DEBUG builds tap to record and tap
-    /// again to send (no recording UI).
-    private var micAction: (() -> Void)? {
-        #if DEBUG
-        return {
-            Task {
-                switch await recording.toggle() {
-                case let .success(finished):
-                    if let finished {
-                        await model.sendVoice(fileURL: finished.fileURL, durationMs: finished.durationMs)
-                    } else if !recording.permission.allowsAccess {
-                        micDenied = true
-                    }
-                case .failure:
-                    model.voiceRecordingFailed()
-                }
-            }
+        .onChange(of: scenePhase) { _, phase in
+            // Coming back from Settings: the card goes once the microphone is allowed.
+            guard phase == .active else { return }
+            recorder.refreshPermission()
+            if recorder.permission.allowsAccess { micDenied = false }
         }
-        #else
-        return SocialBlocked.hasRecordingLayout ? {} : nil
-        #endif
     }
 
     private func openSettings() {
@@ -327,20 +315,66 @@ struct ChatMessageRow: View {
         }
     }
 
+    private typealias Failed = Tokens.Layouts.ChatThreadLayoutFailedMessage
+
+    private var isFailed: Bool { model.isFailed(message) }
+
+    private func retry() {
+        Task { await model.retry(message) }
+    }
+
     // Another member's messages: avatar column (`chat.thread.dimension.avatarInset`, `size.global.avatarSmall`,
-    // `chat.thread.dimension.avatarGap`); mine: right-aligned at `chat.thread.dimension.bubbleInsetMine`. Bubbles are
-    // bounded by the opposite side's inset while `chat.thread.dimension.bubbleMaxWidth` is BLOCKED.
+    // `chat.thread.dimension.avatarGap`); mine: right-aligned at `chat.thread.dimension.bubbleInsetMine`. Bubbles hug
+    // their text up to `chat.thread.dimension.bubbleMaxWidth`.
     private var bubbleRow: some View {
         HStack(alignment: .bottom, spacing: 0) {
             if row.isMine {
                 Spacer(minLength: Tokens.Sizes.chatThreadDimensionBubbleInsetTheirs)
-                bubbleContent
+                mineWithStatus
                     .padding(.trailing, Tokens.Sizes.chatThreadDimensionBubbleInsetMine)
             } else {
                 avatarColumn
                 bubbleContent
                 Spacer(minLength: Tokens.Sizes.chatThreadDimensionBubbleInsetMine)
             }
+        }
+    }
+
+    /// `chat.thread.layout.failedMessage` (my text and voice messages): the red outlined "!" (`indicatorSize`) takes the
+    /// trailing slot `indicatorGap` after the bubble, vertically centred on it; `chat.thread.sendFailed` in red (text role
+    /// caption) sits `labelGap` under the bubble, trailing-aligned with it. Tapping the "!", the label or the bubble sends
+    /// the message again.
+    @ViewBuilder
+    private var mineWithStatus: some View {
+        if isFailed {
+            VStack(alignment: .trailing, spacing: Failed.labelGap) {
+                HStack(alignment: .center, spacing: Failed.indicatorGap) {
+                    bubbleContent
+                        .onTapGesture { retry() }
+                        .accessibilityValue(Text(Copy.chatThreadSendFailed))
+                        .accessibilityAction(named: Text(Copy.chatThreadSendFailed)) { retry() }
+                    Button { retry() } label: {
+                        Image(systemName: Failed.indicatorIconIos)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: Failed.indicatorSize, height: Failed.indicatorSize)
+                            .foregroundStyle(Tokens.Colors.globalDestructive)
+                            .socialMinimumHitArea()
+                            .frame(width: Failed.indicatorSize, height: Failed.indicatorSize)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text(Copy.chatThreadSendFailed))
+                }
+                Text(Copy.chatThreadSendFailed)
+                    .dsTextStyle(SocialText.failedLabel)
+                    .foregroundStyle(Tokens.Colors.globalDestructive)
+                    .multilineTextAlignment(.trailing)
+                    .padding(.trailing, Failed.indicatorSize + Failed.indicatorGap)
+                    .onTapGesture { retry() }
+                    .accessibilityHidden(true)
+            }
+        } else {
+            bubbleContent
         }
     }
 
@@ -381,7 +415,10 @@ struct ChatMessageRow: View {
             .accessibilityActions { menu }
         default:
             Group {
-                if let replyTo = message.replyToPostID, let quoted = model.posts[replyTo] {
+                if message.replyToPostID == nil, let count = SocialEmojiText.emojiOnlyCount(message.body ?? ""),
+                   count <= Int(Tokens.Counts.chatThreadCountEmojiOnlyMax) {
+                    EmojiOnlyMessage(text: message.body ?? "", accessibilityLabel: textLabel)
+                } else if let replyTo = message.replyToPostID, let quoted = model.posts[replyTo] {
                     ReplyBubble(
                         quote: ReplyQuote(
                             posterFirstName: model.profile(quoted.post.authorID)?.socialFirstName ?? "",
@@ -469,11 +506,13 @@ struct TextBubble: View {
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: Tokens.Radii.chatThreadRadiusBubble)
-        Text(text)
-            .dsTextStyle(TextRole.body)
-            .foregroundStyle(Tokens.Colors.globalTextPrimary)
-            .modifier(SocialMaxWidth(value: SocialBlocked.bubbleMaxWidth))
-            .padding(.horizontal, Tokens.Sizes.chatThreadDimensionBubblePaddingH)
+        let hugging = SocialMaxWidth(maxWidth: Tokens.Sizes.chatThreadDimensionBubbleMaxWidth)
+        hugging {
+            Text(text)
+                .dsTextStyle(TextRole.body)
+                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                .padding(.horizontal, Tokens.Sizes.chatThreadDimensionBubblePaddingH)
+        }
             .padding(.vertical, Self.verticalInset)
             .frame(minHeight: Tokens.Sizes.chatThreadDimensionBubbleHeight)
             .background(isMine ? Tokens.Colors.chatThreadColorBubbleMine : Tokens.Colors.chatThreadColorBubbleTheirs, in: shape)
@@ -488,16 +527,36 @@ struct TextBubble: View {
     }
 }
 
-/// Applies a maximum width only when it is known.
-struct SocialMaxWidth: ViewModifier {
-    let value: CGFloat?
+/// Proposes at most `maxWidth` to its content and takes the content's own size: a bubble hugs its text up to the
+/// maximum, then the text wraps (`chat.thread.dimension.bubbleMaxWidth`).
+struct SocialMaxWidth: Layout {
+    let maxWidth: CGFloat
 
-    func body(content: Content) -> some View {
-        if let value {
-            content.frame(maxWidth: value, alignment: .leading)
-        } else {
-            content
-        }
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        subviews.first?.sizeThatFits(limited(proposal)) ?? .zero
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        subviews.first?.place(at: bounds.origin, proposal: ProposedViewSize(width: bounds.width, height: bounds.height))
+    }
+
+    private func limited(_ proposal: ProposedViewSize) -> ProposedViewSize {
+        ProposedViewSize(width: min(proposal.width ?? maxWidth, maxWidth), height: proposal.height)
+    }
+}
+
+/// A message of only 1…`chat.thread.count.emojiOnlyMax` emoji: large, no bubble, glyphs
+/// `chat.thread.dimension.emojiOnlyGlyph` wide (Dynamic Type `chat.thread.layout.textStyleMap.emojiOnly`).
+struct EmojiOnlyMessage: View {
+    let text: String
+    let accessibilityLabel: String
+
+    var body: some View {
+        Text(text)
+            .dsTextStyle(SocialText.emojiOnly)
+            .fixedSize()
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(accessibilityLabel))
     }
 }
 
@@ -611,6 +670,7 @@ struct ChatPhotoMessage: View {
                 ReactionCluster(emoji: reactions.distinctEmoji)
             }
             .buttonStyle(.plain)
+            .allowsHitTesting(!reactions.isEmpty)
             .padding(.leading, Tokens.Sizes.chatReactionsDimensionClusterInsetLeading)
             .padding(.bottom, Tokens.Sizes.chatReactionsDimensionClusterInsetBottom)
         }
@@ -641,55 +701,161 @@ struct ChatPhotoMessage: View {
 
 // MARK: - Composer
 
-/// `chat.composer`: lime camera circle · text field · mic circle on one centre line. The sticker circle is
-/// do-not-build. The send control is BLOCKED (`chat.composer.layout.typingState`): the keyboard's return key sends.
-/// The mic circle is drawn only while recording is available (`mic` non-nil).
+/// `chat.composer`: lime camera circle · text field · mic circle on one centre line, `chat.composer.dimension.bottomInset`
+/// above the bottom safe area (and the keyboard). The sticker circle is do-not-build. While the field holds text the
+/// mic's slot shows the lime send circle (`chat.composer.layout.typingState`). Holding the mic records
+/// (`chat.voice.layout.recording`): the row then shows the recording row instead of the camera and field.
 struct ChatComposer: View {
     @Binding var text: String
     let send: () -> Void
     let camera: () -> Void
-    let mic: (() -> Void)?
+    let recorder: SocialVoiceRecorder
+    /// A finished recording to send.
+    let onRecorded: (VoiceRecording) -> Void
+    let onRecordFailed: () -> Void
+    /// The microphone is denied: the inline permission card shows.
+    let onMicDenied: () -> Void
+
+    @State private var drag: CGSize = .zero
+    /// The finger is on the mic (reset by the system when the gesture ends or is cancelled).
+    @GestureState private var touching = false
+    /// This touch already started a recording (or tried to).
+    @State private var didStart = false
+    @State private var rowWidth: CGFloat = 0
 
     private static let fieldInset = SocialMetrics.singleLineInset(height: Tokens.Sizes.chatComposerDimensionFieldHeight, style: TextRole.body)
 
+    private var hasText: Bool { !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
     var body: some View {
         HStack(alignment: .bottom, spacing: 0) {
-            Button(action: camera) {
-                Image(systemName: Tokens.Icons.globalCamera)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: Tokens.Sizes.chatComposerDimensionCameraGlyph)
-                    .foregroundStyle(Tokens.Colors.globalOnAccent)
-                    .frame(width: Tokens.Sizes.chatComposerDimensionCameraButton, height: Tokens.Sizes.chatComposerDimensionCameraButton)
-                    .background(Tokens.Colors.globalAccent, in: Circle())
-                    .contentShape(Circle().inset(by: -max(0, Tokens.Sizes.globalMinTouchTargetIos - Tokens.Sizes.chatComposerDimensionCameraButton) / 2))
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text(Copy.chatComposerA11yCamera))
-            .padding(.trailing, Tokens.Sizes.chatComposerDimensionGapCameraField)
-
-            field
-
-            if let mic {
-                Button(action: mic) {
-                    Image(systemName: Tokens.Icons.globalMic)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: Tokens.Sizes.chatComposerDimensionMicGlyph)
-                        .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                        .frame(width: Tokens.Sizes.chatComposerDimensionSideButton, height: Tokens.Sizes.chatComposerDimensionSideButton)
-                        .background(Tokens.Colors.globalControlRaised, in: Circle())
-                        .contentShape(Circle().inset(by: -max(0, Tokens.Sizes.globalMinTouchTargetIos - Tokens.Sizes.chatComposerDimensionSideButton) / 2))
+            HStack(alignment: .bottom, spacing: 0) {
+                if recorder.isActive {
+                    VoiceRecordingRow(recorder: recorder, slide: drag.width, onCancel: { recorder.cancel() })
+                } else {
+                    cameraCircle
+                        .padding(.trailing, Tokens.Sizes.chatComposerDimensionGapCameraField)
+                    field
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text(Copy.chatComposerA11yMic))
-                .accessibilityIdentifier("chat.composer.mic") // provenance-ok: accessibility identifier for UI tests
-                .padding(.leading, Tokens.Sizes.chatComposerDimensionGapFieldButton)
             }
+            .socialReadsWidth($rowWidth)
+            .padding(.trailing, Tokens.Sizes.chatComposerDimensionGapFieldButton)
+
+            trailingSlot
         }
         .padding(.leading, Tokens.Sizes.chatComposerDimensionInsetLeading)
         .padding(.trailing, Tokens.Sizes.chatComposerDimensionInsetTrailing)
-        .padding(.bottom, SocialBlocked.composerBottomInset ?? 0)
+        .padding(.bottom, Tokens.Sizes.chatComposerDimensionBottomInset)
+        .onChange(of: recorder.isActive) { _, active in
+            if !active { drag = .zero }
+        }
+        .onChange(of: touching) { _, isTouching in
+            if !isTouching { didStart = false }
+        }
+    }
+
+    private var cameraCircle: some View {
+        Button(action: camera) {
+            Image(systemName: Tokens.Icons.globalCamera)
+                .resizable()
+                .scaledToFit()
+                .frame(height: Tokens.Sizes.chatComposerDimensionCameraGlyph)
+                .foregroundStyle(Tokens.Colors.globalOnAccent)
+                .frame(width: Tokens.Sizes.chatComposerDimensionCameraButton, height: Tokens.Sizes.chatComposerDimensionCameraButton)
+                .background(Tokens.Colors.globalAccent, in: Circle())
+                .contentShape(Circle().inset(by: -max(0, Tokens.Sizes.globalMinTouchTargetIos - Tokens.Sizes.chatComposerDimensionCameraButton) / 2))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(Copy.chatComposerA11yCamera))
+    }
+
+    /// Mic or send: the same slot (send while the field has text, and for a hands-free recording).
+    @ViewBuilder
+    private var trailingSlot: some View {
+        switch recorder.phase {
+        case .locked, .paused:
+            SendCircle(identifier: "chat.composer.send") { finishRecording() } // provenance-ok: accessibility identifier for UI tests
+        case .idle where hasText:
+            SendCircle(identifier: "chat.composer.send") { send() } // provenance-ok: accessibility identifier for UI tests
+        case .idle, .holding:
+            micCircle
+        }
+    }
+
+    /// The mic circle: press and hold records; lift sends; slide left past the row's middle (the hint) cancels; slide
+    /// up past the lock (one circle and a gap above) keeps recording hands-free.
+    private var micCircle: some View {
+        Image(systemName: Tokens.Icons.globalMic)
+            .resizable()
+            .scaledToFit()
+            .frame(height: Tokens.Sizes.chatComposerDimensionMicGlyph)
+            .foregroundStyle(Tokens.Colors.globalTextPrimary)
+            .frame(width: Tokens.Sizes.chatComposerDimensionSideButton, height: Tokens.Sizes.chatComposerDimensionSideButton)
+            .background(Tokens.Colors.globalControlRaised, in: Circle())
+            .contentShape(Circle().inset(by: -max(0, Tokens.Sizes.globalMinTouchTargetIos - Tokens.Sizes.chatComposerDimensionSideButton) / 2))
+            .overlay(alignment: .top) {
+                if recorder.phase == .holding {
+                    VoiceLockHint()
+                        .alignmentGuide(.top) { $0[.bottom] + Tokens.Sizes.chatComposerDimensionGapFieldButton }
+                }
+            }
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .updating($touching) { _, state, _ in state = true }
+                    .onChanged { value in fingerMoved(value.translation) }
+                    .onEnded { _ in fingerLifted() }
+            )
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(Copy.chatComposerA11yMic))
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction(.default) { start(locked: true) }
+            .accessibilityIdentifier("chat.composer.mic") // provenance-ok: accessibility identifier for UI tests
+    }
+
+    private func fingerMoved(_ translation: CGSize) {
+        if !didStart {
+            didStart = true
+            start(locked: false)
+            return
+        }
+        guard recorder.phase == .holding else { return }
+        drag = translation
+        if translation.width <= -rowWidth / 2 {
+            recorder.cancel()
+        } else if translation.height <= -(Tokens.Sizes.chatComposerDimensionSideButton + Tokens.Sizes.chatComposerDimensionGapFieldButton) {
+            recorder.lock()
+            drag = .zero
+        }
+    }
+
+    private func fingerLifted() {
+        didStart = false
+        drag = .zero
+        if recorder.phase == .holding { finishRecording() }
+    }
+
+    private func start(locked: Bool) {
+        switch recorder.begin(locked: locked) {
+        case .started:
+            break
+        case .askedPermission:
+            Task {
+                await recorder.requestPermission()
+                if !recorder.permission.allowsAccess { onMicDenied() }
+            }
+        case .denied:
+            onMicDenied()
+        case .failed:
+            onRecordFailed()
+        }
+    }
+
+    private func finishRecording() {
+        do {
+            if let recording = try recorder.finish() { onRecorded(recording) }
+        } catch {
+            onRecordFailed()
+        }
     }
 
     private var field: some View {
@@ -702,19 +868,39 @@ struct ChatComposer: View {
         }
         .dsTextStyle(TextRole.body)
         .foregroundStyle(Tokens.Colors.globalTextPrimary)
-        .submitLabel(.send)
-        .onSubmit(send)
-        .onChange(of: text) { _, new in
-            // Return sends (vertical text fields insert a newline instead of submitting).
-            guard new.contains("\n") else { return }
-            text = new.replacingOccurrences(of: "\n", with: "")
-            send()
-        }
         .padding(.horizontal, Tokens.Sizes.chatComposerDimensionFieldPaddingLeading)
         .padding(.vertical, Self.fieldInset)
         .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.chatComposerDimensionFieldHeight, alignment: .leading)
         .background(Tokens.Colors.globalControl, in: Capsule())
         .socialRim(Capsule(), top: Tokens.Colors.chatComposerColorFieldRimTop, bottom: Tokens.Colors.chatComposerColorFieldRimBottom, width: Tokens.Sizes.chatComposerDimensionFieldRim)
         .accessibilityIdentifier("chat.composer.field") // provenance-ok: accessibility identifier for UI tests
+    }
+}
+
+/// The lime send circle (`chat.composer.layout.typingState`): `chat.composer.dimension.sideButton`, `color.global.accent`,
+/// `icon.global.send` in `color.global.onAccent` at the mic glyph's height (the glyph it replaces); no transition.
+struct SendCircle: View {
+    let identifier: String
+    let action: () -> Void
+
+    init(identifier: String, action: @escaping () -> Void) {
+        self.identifier = identifier
+        self.action = action
+    }
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: Tokens.Icons.globalSend)
+                .resizable()
+                .scaledToFit()
+                .frame(height: Tokens.Sizes.chatComposerDimensionMicGlyph)
+                .foregroundStyle(Tokens.Colors.globalOnAccent)
+                .frame(width: Tokens.Sizes.chatComposerDimensionSideButton, height: Tokens.Sizes.chatComposerDimensionSideButton)
+                .background(Tokens.Colors.globalAccent, in: Circle())
+                .contentShape(Circle().inset(by: -max(0, Tokens.Sizes.globalMinTouchTargetIos - Tokens.Sizes.chatComposerDimensionSideButton) / 2))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(Copy.chatComposerA11ySend))
+        .accessibilityIdentifier(identifier)
     }
 }

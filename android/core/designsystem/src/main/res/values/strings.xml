@@ -87,6 +87,8 @@
     <string name="auth_code_toast_resent" formatted="false">new code sent</string>
     <!-- Yope · auth.phone · verbatim · SOURCED -->
     <string name="auth_phone_continue" formatted="false">continue</string>
+    <!-- Locket · auth.phone · verbatim · SOURCED -->
+    <string name="auth_phone_error_dismiss" formatted="false">OK</string>
     <!-- Yope · auth.phone · new · SOURCED -->
     <string name="auth_phone_error_invalidnumber" formatted="false">check your number and try again</string>
     <!-- Yope · auth.phone · new · SOURCED -->
@@ -263,6 +265,8 @@
     <string name="birthday_tribute_a11y_close" formatted="false">Close</string>
     <!-- VidDay · birthday.tribute · verbatim · SOURCED -->
     <string name="birthday_tribute_download" formatted="false">Download</string>
+    <!-- VidDay · birthday.tribute · adapted · SOURCED -->
+    <string name="birthday_tribute_endcard" formatted="false">We love you!</string>
     <!-- Yope · birthday.tribute · new · SOURCED -->
     <string name="birthday_tribute_error_detail" formatted="false">try again in a moment</string>
     <!-- Yope · birthday.tribute · new · SOURCED -->

@@ -21,6 +21,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.assertIsSelected
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -64,6 +66,13 @@ import java.time.LocalDate
 @Config(qualifiers = "w393dp-h852dp-xhdpi")
 @OptIn(ExperimentalCoroutinesApi::class)
 class SocialFlowTest {
+    private companion object {
+        /** Longer than the platform long-press timeout: a hold, not a tap. */
+        const val HOLD_MS = 1_000L
+        /** Far enough to pass the cancel point / reach the lock (px at xhdpi). */
+        const val SLIDE_PX = 500f
+    }
+
     @get:Rule val compose = createComposeRule()
     private val chatNav = ChatNav({}, {}, {}, {}, {}, {}, {}, { _, _ -> })
 
@@ -82,25 +91,109 @@ class SocialFlowTest {
         return vm
     }
 
+    /** Typing swaps the mic for the lime send circle (`chat.composer.layout.typingState`); it and the keyboard's send key send. */
     @Test fun sendText() {
         val data = FakeSocialData().apply { seedChat() }
         chat(data)
+        compose.onNodeWithContentDescription("record a voice message").assertExists()
         compose.onNode(hasSetTextAction()).performTextInput("on my way")
-        compose.onNode(hasSetTextAction()).performImeAction()
+        compose.onNodeWithContentDescription("record a voice message").assertDoesNotExist()
+        compose.onNodeWithContentDescription("send").performClick()
         compose.waitForIdle()
         assertTrue(data.calls.contains("sendText:on my way:"))
         compose.onNodeWithContentDescription("you, on my way").assertExists()
+        compose.onNodeWithContentDescription("record a voice message").assertExists()
+
+        compose.onNode(hasSetTextAction()).performTextInput("brb")
+        compose.onNode(hasSetTextAction()).performImeAction()
+        compose.waitForIdle()
+        assertTrue(data.calls.contains("sendText:brb:"))
     }
 
-    @Test fun sendVoice() {
-        Shadows.shadowOf(ApplicationProvider.getApplicationContext<Application>()).grantPermissions(Manifest.permission.RECORD_AUDIO)
+    /** A failed send stays in the thread with the red indicator and label; a tap sends it again. */
+    @Test fun failedSendRetries() {
         val data = FakeSocialData().apply { seedChat() }
         chat(data)
-        compose.onNodeWithContentDescription("record a voice message").performClick()
+        data.failNext += "sendText:on my way:"
+        compose.onNode(hasSetTextAction()).performTextInput("on my way")
+        compose.onNodeWithContentDescription("send").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithText("couldn’t send — tap to try again").assertExists().performClick()
+        compose.waitForIdle()
+        assertEquals(2, data.calls.count { it == "sendText:on my way:" })
+        compose.onNodeWithText("couldn’t send — tap to try again").assertDoesNotExist()
+    }
+
+    private fun micGranted() = Shadows.shadowOf(ApplicationProvider.getApplicationContext<Application>()).grantPermissions(Manifest.permission.RECORD_AUDIO)
+
+    /** `chat.voice.layout.recording`: press and hold records, lift sends. */
+    @Test fun sendVoice() {
+        micGranted()
+        val data = FakeSocialData().apply { seedChat() }
+        chat(data)
+        compose.onNodeWithContentDescription("record a voice message").performTouchInput {
+            down(center)
+            advanceEventTime(HOLD_MS)
+        }
         assertTrue(testVoice.recording)
+        compose.onNodeWithText("slide to cancel").assertExists()
+        compose.onNodeWithContentDescription("record a voice message").performTouchInput { up() }
+        compose.waitForIdle()
+        assertFalse(testVoice.recording)
+        assertTrue(data.calls.contains("sendVoice:${FakeVoice.DURATION_MS}"))
+    }
+
+    /** Slide left while holding: discarded, nothing sent. A tap (shorter than a hold) records nothing. */
+    @Test fun voiceSlideToCancelAndTap() {
+        micGranted()
+        val data = FakeSocialData().apply { seedChat() }
+        chat(data)
+        compose.onNodeWithContentDescription("record a voice message").performTouchInput {
+            down(center)
+            advanceEventTime(HOLD_MS)
+            moveBy(androidx.compose.ui.geometry.Offset(-SLIDE_PX, 0f))
+            up()
+        }
+        compose.waitForIdle()
+        assertFalse(testVoice.recording)
         compose.onNodeWithContentDescription("record a voice message").performClick()
         compose.waitForIdle()
         assertFalse(testVoice.recording)
+        assertFalse(data.calls.any { it.startsWith("sendVoice") })
+    }
+
+    /** Slide up onto the lock: hands-free; pause keeps a draft to play; the send circle sends it. */
+    @Test fun voiceLockPauseAndSend() {
+        micGranted()
+        val data = FakeSocialData().apply { seedChat() }
+        chat(data)
+        compose.onNodeWithContentDescription("record a voice message").performTouchInput {
+            down(center)
+            advanceEventTime(HOLD_MS)
+            moveBy(androidx.compose.ui.geometry.Offset(0f, -SLIDE_PX))
+            up()
+        }
+        compose.waitForIdle()
+        assertTrue("locked: still recording after the finger lifts", testVoice.recording)
+        compose.onNodeWithContentDescription("pause").performClick()
+        compose.waitForIdle()
+        assertFalse(testVoice.recording)
+        compose.onNodeWithContentDescription("play voice message", substring = true).assertExists()
+        compose.onNodeWithContentDescription("send").performClick()
+        compose.waitForIdle()
+        assertTrue(data.calls.contains("sendVoice:${FakeVoice.DURATION_MS}"))
+    }
+
+    /** TalkBack: activating the mic records hands-free (no hold gesture needed); the send circle sends. */
+    @Test fun voiceWithTalkBack() {
+        micGranted()
+        val data = FakeSocialData().apply { seedChat() }
+        chat(data)
+        compose.onNodeWithContentDescription("record a voice message").performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
+        compose.waitForIdle()
+        assertTrue(testVoice.recording)
+        compose.onNodeWithContentDescription("send").performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
+        compose.waitForIdle()
         assertTrue(data.calls.contains("sendVoice:${FakeVoice.DURATION_MS}"))
     }
 
@@ -109,9 +202,21 @@ class SocialFlowTest {
         chat(data)
         compose.onNodeWithContentDescription("Ana’s pic, 8:01 PM", substring = true).performTouchInput { longClick() }
         compose.waitForIdle()
-        compose.onAllNodesWithContentDescription("fire").onFirst().performClick()
+        compose.onAllNodesWithContentDescription("face with tears of joy").onFirst().performClick()
         compose.waitForIdle()
-        assertTrue(data.calls.contains("react:p-1:🔥"))
+        assertTrue(data.calls.contains("react:p-1:😂"))
+    }
+
+    /** `chat.reactions.layout.unreact`: your reaction is highlighted (selected) in the picker; tapping it takes it back. */
+    @Test fun unreactFromThePicker() {
+        val data = FakeSocialData().apply { seedChat() }
+        chat(data)
+        compose.onNodeWithContentDescription("Ana’s pic, 8:01 PM", substring = true).performTouchInput { longClick() }
+        compose.waitForIdle()
+        compose.onAllNodesWithContentDescription("fire").onFirst().assertIsSelected().performClick()
+        compose.waitForIdle()
+        assertTrue(data.calls.contains("unreact:p-1:🔥"))
+        assertFalse(data.calls.contains("react:p-1:🔥"))
     }
 
     /** Tenet 2: reaction labels name emoji, never a number (cluster labels, TalkBack). */

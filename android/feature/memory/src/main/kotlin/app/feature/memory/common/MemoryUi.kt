@@ -325,3 +325,13 @@ fun headerClearance(): Dp =
 
 /** A screen-reader heading. */
 fun Modifier.heading(): Modifier = semantics { heading() }
+
+/** The activity hosting [this] context, if any (window flags, system bars). */
+tailrec fun android.content.Context.findActivity(): android.app.Activity? = when (this) {
+    is android.app.Activity -> this
+    is android.content.ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
+/** A colour a `layout` token carries as text (`"#666666"`), e.g. `layout.year.story.summary.dots`. */
+fun tokenColor(hex: String): Color = Color(android.graphics.Color.parseColor(hex))

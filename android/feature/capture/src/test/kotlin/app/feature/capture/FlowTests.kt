@@ -14,6 +14,9 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.unit.dp
+import app.designsystem.generated.Tokens
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -26,6 +29,15 @@ import app.feature.capture.camera.CameraControllers
 import app.feature.capture.camera.CameraScreen
 import app.feature.capture.camera.CameraViewModel
 import app.feature.capture.data.CaptureDataProvider
+import app.feature.capture.ui.CaptureToastHost
+import app.data.media.upload.NewPost
+import app.data.media.upload.UploadProgress
+import app.feature.capture.sendto.SendToChrome
+import app.feature.capture.sendto.SendToScreen
+import app.data.model.MediaKind
+import app.feature.capture.data.CapturedMedia
+import app.feature.capture.sendto.SendToViewModel
+import app.feature.capture.sendto.VoiceGestures
 import app.feature.capture.data.CaptureHandoff
 import app.feature.capture.data.CaptureServices
 import app.feature.capture.data.SendTracker
@@ -170,6 +182,71 @@ class FlowTests {
         assertTrue(compose.onAllNodes(hasTestTag("camera.shutter")).fetchSemanticsNodes().isEmpty())
     }
 
+    /** "posted in …" appears when the upload is done and leaves after `camera.sendto.duration.toastVisible`. */
+    @Test fun postedToastShowsWhenSentForTheTokenDwell() {
+        val tracker = SendTracker(data, CoroutineScope(SupervisorJob() + Dispatchers.Unconfined))
+        compose.mainClock.autoAdvance = false
+        compose.setContent { CaptureToastHost(tracker) }
+        val draft = data.enqueue(NewPost(kind = MediaKind.Photo, original = java.io.File(app.cacheDir, "p.jpg"), groupIds = listOf("g1")))
+        compose.runOnIdle { tracker.track(draft, listOf("Sunday dinners")) }
+        compose.mainClock.advanceTimeBy(FRAME_MS)
+        // Queued / uploading: nothing shown (no flash of a toast before the post is in).
+        assertTrue(compose.onAllNodes(androidx.compose.ui.test.hasText("posted in Sunday dinners")).fetchSemanticsNodes().isEmpty())
+        compose.runOnIdle { data.progressFlows.getValue(draft).value = UploadProgress.Done(listOf("p1")) }
+        compose.waitForIdle()
+        compose.mainClock.advanceTimeBy(FRAME_MS * 30)
+        compose.onNode(androidx.compose.ui.test.hasText("posted in Sunday dinners")).assertExists()
+        compose.mainClock.advanceTimeBy(Tokens.Durations.cameraSendtoDurationToastVisible.toLong() + FRAME_MS * 60)
+        assertTrue(compose.onAllNodes(androidx.compose.ui.test.hasText("posted in Sunday dinners")).fetchSemanticsNodes().isEmpty())
+    }
+
+    /** The mic (`chat.voice.layout.recording`): hold records, lift keeps, slide left cancels, slide up locks. */
+    @Test fun voiceMicHoldSlideAndLockGestures() {
+        val calls = mutableListOf<String>()
+        val gestures = object : VoiceGestures {
+            override fun down() { calls += "down" }
+            override fun release() { calls += "release" }
+            override fun cancel() { calls += "cancel" }
+            override fun lock() { calls += "lock" }
+        }
+        val state = androidx.compose.runtime.mutableStateOf(
+            SendToViewModel.UiState(
+                media = CapturedMedia(MediaKind.Photo, java.io.File(app.cacheDir, "x.jpg"), 300, 400, null, false),
+                groups = SendToViewModel.Groups.Loaded(listOf(group("g1", "Family"))),
+                selected = setOf("g1"),
+                micAvailable = true,
+            ),
+        )
+        var finished = 0
+        compose.setContent {
+            SendToScreen(
+                state = state.value,
+                chrome = SendToChrome(preview = null, hourText = ""),
+                onClose = {}, onSave = {}, onCaption = {}, onMic = { finished++ }, onVoiceCoachClose = {}, onToggle = {}, onSend = {},
+                onCreateGroup = {}, onRetryGroups = {},
+                voiceGestures = gestures,
+            )
+        }
+        val mic = compose.onNodeWithTag("sendto.mic", useUnmergedTree = true)
+        val far = with(compose.density) { (Tokens.Layouts.CameraSendtoLayoutMessageField.micDiameter * 2).dp.toPx() }
+        // Hold, then lift: the note is kept.
+        mic.performTouchInput { down(center); advanceEventTime(500); up() }
+        assertEquals(listOf("down", "release"), calls)
+        // Slide left past the threshold: cancelled, the lift does nothing more.
+        calls.clear()
+        mic.performTouchInput { down(center); moveBy(androidx.compose.ui.geometry.Offset(-far, 0f)); up() }
+        assertEquals(listOf("down", "cancel"), calls)
+        // Slide up: locked (hands-free); the lift does not stop it.
+        calls.clear()
+        mic.performTouchInput { down(center); moveBy(androidx.compose.ui.geometry.Offset(0f, -far)); up() }
+        assertEquals(listOf("down", "lock"), calls)
+        // Locked: the mic turns into send; a tap finishes the note.
+        compose.runOnIdle { state.value = state.value.copy(recordingVoice = true, voiceLocked = true, recordingStartedAt = 0L) }
+        compose.onNodeWithTag("sendto.mic.recording", useUnmergedTree = true).performClick()
+        compose.waitForIdle()
+        assertEquals(1, finished)
+    }
+
     class Host : Activity()
 
     @Test fun dailyInvitationNotificationIsAChronometerCountdownWithTimeoutAndQuietHours() {
@@ -222,5 +299,6 @@ class FlowTests {
 
     private companion object {
         const val WAIT_MS = 5_000L
+        const val FRAME_MS = 16L
     }
 }

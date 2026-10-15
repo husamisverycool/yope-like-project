@@ -29,3 +29,4 @@ fun AccountViewModel.recordEvents(scope: CoroutineScope): MutableList<AccountEve
 
 fun List<AccountEvent>.navigations() = filterIsInstance<AccountEvent.Navigate>()
 fun List<AccountEvent>.haptics() = filterIsInstance<AccountEvent.Haptic>().map { it.token }
+fun List<AccountEvent>.toasts() = filterIsInstance<AccountEvent.Toast>()

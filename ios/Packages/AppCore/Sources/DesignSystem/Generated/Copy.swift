@@ -89,6 +89,8 @@ public enum Copy {
     public static var authCodeToastResent: String { CopyLookup.string("auth.code.toast.resent", default: "new code sent") }
     /// "continue" — Yope · auth.phone · verbatim · SOURCED
     public static var authPhoneContinue: String { CopyLookup.string("auth.phone.continue", default: "continue") }
+    /// "OK" — Locket · auth.phone · verbatim · SOURCED
+    public static var authPhoneErrorDismiss: String { CopyLookup.string("auth.phone.error.dismiss", default: "OK") }
     /// "check your number and try again" — Yope · auth.phone · new · SOURCED
     public static var authPhoneErrorInvalidNumber: String { CopyLookup.string("auth.phone.error.invalidNumber", default: "check your number and try again") }
     /// "you can ask for a new code in a minute" — Yope · auth.phone · new · SOURCED
@@ -265,6 +267,8 @@ public enum Copy {
     public static var birthdayTributeA11yClose: String { CopyLookup.string("birthday.tribute.a11y.close", default: "Close") }
     /// "Download" — VidDay · birthday.tribute · verbatim · SOURCED
     public static var birthdayTributeDownload: String { CopyLookup.string("birthday.tribute.download", default: "Download") }
+    /// "We love you!" — VidDay · birthday.tribute · adapted · SOURCED
+    public static var birthdayTributeEndCard: String { CopyLookup.string("birthday.tribute.endCard", default: "We love you!") }
     /// "try again in a moment" — Yope · birthday.tribute · new · SOURCED
     public static var birthdayTributeErrorDetail: String { CopyLookup.string("birthday.tribute.error.detail", default: "try again in a moment") }
     /// "try again" — Yope · birthday.tribute · new · SOURCED

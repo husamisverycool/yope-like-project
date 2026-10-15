@@ -94,6 +94,27 @@ final class SocialSnapshotTests: XCTestCase {
         let cached = ChatThreadModel(groupID: SocialDemo.groupID, data: cachedData)
         await cached.load()
         record(ChatThreadView(model: cached), "chat.thread", "offline-cached")
+
+        // `chat.thread.layout.failedMessage`: a message of mine that could not be sent (red "!" + label).
+        let failingSend = SocialDemo.makeData()
+        use(failingSend)
+        let notSent = ChatThreadModel(groupID: SocialDemo.groupID, data: failingSend)
+        await notSent.load()
+        failingSend.update { $0.failOnce.insert("sendText") }
+        notSent.draft = "see you at 8"
+        await notSent.sendDraft()
+        record(ChatThreadView(model: notSent), "chat.thread", "send-failed")
+
+        // `chat.composer.layout.typingState`: text in the field → the lime send circle in the mic's slot; an emoji-only
+        // message (≤ `chat.thread.count.emojiOnlyMax`) above it.
+        let typingData = SocialDemo.makeData()
+        use(typingData)
+        let typing = ChatThreadModel(groupID: SocialDemo.groupID, data: typingData)
+        await typing.load()
+        typing.draft = "🔥🔥🔥"
+        await typing.sendDraft()
+        typing.draft = "on my way"
+        record(ChatThreadView(model: typing), "chat.composer", "typing")
     }
 
     func testComposerVoiceAndReactionParts() {
@@ -108,12 +129,17 @@ final class SocialSnapshotTests: XCTestCase {
                         buttonTitle: Copy.chatVoicePermissionButton, onEnable: {}, onDismiss: {}
                     )
                     .padding(.horizontal, Tokens.Sizes.onboardingPermissionContactsSizeCardMarginH)
-                    ChatComposer(text: binding, send: {}, camera: {}, mic: {})
+                    ChatComposer(
+                        text: binding, send: {}, camera: {}, recorder: SocialVoiceRecorder(),
+                        onRecorded: { _ in }, onRecordFailed: {}, onMicDenied: {}
+                    )
                 }
             },
             "chat.voice", "permission-denied"
         )
-        record(ReactionPicker { _ in }, "chat.reactions", "picker")
+        record(ReactionPicker(onPick: { _ in }), "chat.reactions", "picker")
+        // `chat.reactions.layout.unreact`: my reactions highlighted in the picker.
+        record(ReactionPicker(mine: ["💛", "🔥"], onPick: { _ in }, onRemove: { _ in }), "chat.reactions", "picker-mine")
         record(
             ReactionActivitySheet(
                 reactions: ReactionSummary(SocialDemo.reactions.filter { $0.postID == SocialDemo.p1 }),
@@ -141,6 +167,12 @@ final class SocialSnapshotTests: XCTestCase {
         let others = viewer(SocialDemo.p2, data: data)
         await others.load()
         record(PhotoViewerView(model: others, presentation: .pushed), "photo.viewer", "ready")
+
+        // Reply typed: the camera circle's slot shows the lime send circle.
+        let replying = viewer(SocialDemo.p2, data: data)
+        await replying.load()
+        replying.replyDraft = "so pretty"
+        record(PhotoViewerView(model: replying, presentation: .pushed), "photo.viewer", "reply-typing")
 
         let own = viewer(SocialDemo.p3, data: data)
         await own.load()

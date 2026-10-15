@@ -130,7 +130,7 @@ struct GroupsListView: View {
         }
     }
 
-    /// "+" over the cover → groups.create (fill `groups.list.color.headerCircleOverPhoto`, see `DesignGaps`).
+    /// "+" over the cover → groups.create (fill `groups.list.color.headerCircleOverPhoto`).
     private var addCircle: some View {
         HeaderCircleButton(icon: Tokens.Icons.globalAdd, accessibilityLabel: Copy.groupsListHeaderAddAccessibilityLabel, fill: .overPhoto) {
             dependencies.router.modal = .account(.groupCreate)

@@ -15,6 +15,8 @@ export const tokens = {
   "auth.code.fontWeight.textLink": "bold", // Yope · auth.code · SOURCED
   "auth.code.layout.codeField": {"ios":"one TextField, textContentType .oneTimeCode, keyboardType .numberPad; no per-digit boxes (a custom input view cannot show the AutoFill suggestion)","android":"one TextField, KeyboardType.NumberPassword with visualTransformation None, autofill ContentType.SmsOtpCode; SMS User Consent API (SmsRetriever.getClient(context).startSmsUserConsent) shows the system consent sheet and fills the field"}, // Yope · auth.code · PLATFORM
   "auth.phone.fontSize.subtitle": 14, // Yope · auth.phone · SOURCED
+  "auth.phone.layout.countryCode": {"pattern":"flag at the field's leading edge + the calling code typed inline with the number ('+1 555 ...'); no separate code button","flagWidth":20,"flagHeight":13,"flagLeading":20,"flagToText":5,"prefill":"'+' and the device region's calling code (Locale / libphonenumber); the flag follows the code as it is typed or edited","autoFormat":true,"allowZeroAfterCountryCode":true,"flagTap":"opens a country list; choosing a country replaces the calling code (Locket: the phone-input library's built-in country picker, picker.selectCountry(iso2) + picker.show(); ours: the platform picker in a sheet)","flagArt":"regional-indicator flag emoji (PLATFORM) in the 20 x 13 slot; Locket draws the library's flag images"}, // Locket · auth.phone · SOURCED
+  "auth.phone.layout.inlineError": {"presentation":"system alert: iOS UIAlertController .alert / SwiftUI .alert, Android M3 AlertDialog; not dismissible by tapping outside","title":"none: the auth.*.error.* sentence is the alert message (Locket's errors are title + message pairs; our error copy is one sentence, so no title is shown)","button":"one button, auth.phone.error.dismiss ('OK'), which closes the alert","appliesTo":"auth.phone and auth.code field errors (invalid number, rate limited, send failed, wrong / expired code, too many tries) and auth.agegate invalid date"}, // Locket · auth.phone · SOURCED
   "auth.phone.layout.keyboard": {"ios":"UITextField/TextField keyboardType .phonePad, textContentType .telephoneNumber (system AutoFill)","android":"TextField KeyboardOptions(keyboardType = KeyboardType.Phone), autofill ContentType.PhoneNumber"}, // Yope · auth.phone · PLATFORM
   "auth.phone.layout.legalFooter": {"text":"color.global.textSecondary","links":"same colour, bold weight (2026 build: bold 'Términos de uso' / 'Política de privacidad'); the 2024 build drew the links white and underlined","size":"fontSize.global.caption","lineHeight":"lineHeight.global.caption","align":"center","placement":"bottom of the screen, centred, above the home indicator (2024 and 2026 sign-in screens)"}, // Yope · auth.phone · SOURCED
   "auth.phone.layout.subtitle": {"style":"italic","weight":"regular","color":"color.global.textPrimary","align":"center"}, // Yope · auth.phone · SOURCED
@@ -36,6 +38,7 @@ export const tokens = {
   "camera.capture.size.libraryThumb": 46, // Yope · camera.capture · SOURCED
   "camera.capture.size.libraryThumbBorder": 1, // Yope · camera.capture · SOURCED
   "camera.capture.size.permissionButtonHeight": 45, // Yope · camera.capture · SOURCED
+  "camera.capture.size.recordingOutline": 6, // Locket · camera.capture · SOURCED
   "camera.capture.size.shutterDisc": 59, // Yope · camera.capture · SOURCED
   "camera.capture.size.shutterGap": 5.5, // Yope · camera.capture · SOURCED
   "camera.capture.size.shutterOuter": 80, // Yope · camera.capture · SOURCED
@@ -44,6 +47,8 @@ export const tokens = {
   "camera.capture.size.sideControlOffset": 110, // Yope · camera.capture · SOURCED
   "camera.capture.spring.shutterPress": {"response":0.233,"dampingFraction":1}, // Locket · camera.capture · SOURCED
   "camera.fromwidget.layout.target": {"link":"app://camera?group=<group_id>","ios":"widgetURL on the whole widget","android":"PendingIntent ACTION_VIEW on the widget root","opens":"camera.capture, group preselected in camera.sendto"}, // Locket · camera.fromwidget · SOURCED
+  "camera.sendto.color.messageField": "#0000007A", // Yope · camera.sendto · SOURCED
+  "camera.sendto.duration.toastVisible": 2000, // Locket · camera.sendto · SOURCED
   "camera.sendto.fontSize.caption": 16, // Yope · camera.sendto · SOURCED
   "camera.sendto.fontSize.countNumber": 11, // Yope · camera.sendto · SOURCED
   "camera.sendto.fontSize.messagePlaceholder": 15, // Yope · camera.sendto · SOURCED
@@ -55,6 +60,7 @@ export const tokens = {
   "camera.sendto.layout.textStyleMap": {"caption":"callout","messagePlaceholder":"subheadline","countNumber":"caption2"}, // Apple HIG · camera.sendto · PLATFORM
   "camera.sendto.layout.toast": {"height":49,"marginHorizontal":8.5,"top":59,"cornerRadius":20,"glyph":17,"glyphInset":19.5,"glyphToText":11}, // Yope · camera.sendto · SOURCED
   "camera.sendto.size.captionBaselineOffset": 31, // Yope · camera.sendto · SOURCED
+  "camera.sendto.size.captionMaxLength": 36, // Locket · camera.sendto · SOURCED
   "camera.sendto.size.countDisc": 18.5, // Yope · camera.sendto · SOURCED
   "camera.sendto.size.countDiscGap": 7, // Yope · camera.sendto · SOURCED
   "camera.sendto.size.sendButtonBottom": 41.5, // Yope · camera.sendto · SOURCED
@@ -174,6 +180,7 @@ export const tokens = {
   "chat.voice.layout.durationFormat": {"pattern":"mm:ss","example":"00:38"}, // Yope · chat.voice · SOURCED
   "chat.voice.layout.recording": {"start":"press and hold the mic circle: recording runs while the finger is down","send":"lift the finger: the message is sent","cancel":"slide left while holding: the recording is discarded and nothing is sent","lock":"slide up onto the lock shown above the mic circle: recording continues hands-free","locked":"while locked: chat.voice.icon.pause pauses and lets you play the draft; the mic circle shows icon.global.send and sends","row":"while recording, the composer row shows leading → trailing: red recording dot, elapsed time, the centred hint (‹ slide to cancel); the mic circle stays at the trailing end under the finger","dotColor":"color.global.destructive","timerFormat":"chat.voice.layout.durationFormat","timerColor":"color.global.textPrimary","hintGlyph":"icon.global.back","hintColor":"color.global.textSecondary","hintCopy":"chat.voice.recording.slideToCancel","lockGlyph":"icon.global.lock","lockHintGlyphIos":"chevron.up","lockHintGlyphAndroid":"Rounded.ExpandLess","haptic":"none (HIG: haptics must not disrupt the microphone)"}, // WhatsApp (gesture, documented) + Telegram (row, 2026 panel) · chat.voice · SOURCED
   "chat.voice.radius.bubble": 14, // Yope · chat.voice · SOURCED
+  "collage.share.color.pill": "#9A9489A8", // Yope · collage.share · SOURCED
   "collage.share.fontSize.label": 18, // Yope · collage.share · SOURCED
   "collage.share.fontWeight.label": "bold", // Yope · collage.share · SOURCED
   "collage.share.icon.share": {"ios":"square.and.arrow.up.fill","android":"Rounded.IosShare"}, // Yope · collage.share · PLATFORM
@@ -208,7 +215,9 @@ export const tokens = {
   "color.global.destructive": "#FF4245", // Apple HIG · global.system · PLATFORM
   "color.global.onAccent": "#000000", // Yope · global · SOURCED
   "color.global.onSurfaceLight": "#000000", // Yope · global · SOURCED
+  "color.global.scrim": "#00000080", // Locket · global · SOURCED
   "color.global.selection": "#0091FF", // Apple HIG · global · PLATFORM
+  "color.global.separator": "#FFFFFF33", // Locket · global · SOURCED
   "color.global.surfaceLight": "#FFFFFF", // Yope · global · SOURCED
   "color.global.system.error": "#F2B8B5", // Material 3 · global.system · PLATFORM
   "color.global.system.ios": {"groupedBackground":"systemGroupedBackground","cell":"secondarySystemGroupedBackground","label":"label","secondaryLabel":"secondaryLabel","placeholder":"placeholderText","separator":"separator","tint":"systemBlue","destructive":"systemRed"}, // Apple HIG · global.system · PLATFORM
@@ -230,11 +239,13 @@ export const tokens = {
   "color.year.story.letterbox": "#111111", // Spotify Wrapped · year.story · SOURCED
   "color.year.story.progress.fill": "#FFFFFF", // Spotify Wrapped · year.story · SOURCED
   "count.year.story.listLength": 5, // Spotify Wrapped · year.story · SOURCED
+  "daily.capture.color.overlayControl": "#00000075", // BeReal · daily.capture · SOURCED
   "daily.capture.color.text": "#FAFAFA", // BeReal · daily.capture · SOURCED
   "daily.capture.fontSize.chip": 13, // BeReal · daily.capture · SOURCED
   "daily.capture.fontSize.countdown": 23, // BeReal · daily.capture · SOURCED
   "daily.capture.fontSize.prompt": 17, // BeReal · daily.capture · SOURCED
   "daily.capture.fontSize.send": 40.5, // BeReal · daily.capture · SOURCED
+  "daily.capture.fontWeight.countdown": "bold", // BeReal · daily.capture · SOURCED
   "daily.capture.fontWeight.send": "heavy", // BeReal · daily.capture · SOURCED
   "daily.capture.layout.audienceChip": {"height":37.4,"paddingLeading":15.7,"paddingTrailing":18,"glyphToText":7.6,"bottomInset":12.5}, // BeReal · daily.capture · SOURCED
   "daily.capture.layout.captureSequence": {"pressScale":0.912,"press":133,"controlsOut":370,"viewfinderFadeOut":267,"betweenShots":500,"backPhotoFadeIn":200}, // BeReal · daily.capture · SOURCED
@@ -312,12 +323,15 @@ export const tokens = {
   "duration.birthday.tribute.clipTransition": 0, // Tribute · birthday.tribute · SOURCED
   "duration.birthday.tribute.endHold": 10003, // Tribute · birthday.tribute · SOURCED
   "duration.birthday.tribute.endTransition": 0, // Tribute · birthday.tribute · SOURCED
+  "duration.birthday.tribute.photoHold": 4000, // VidDay · birthday.tribute · SOURCED
   "duration.birthday.tribute.titleCrossfade": 600, // VidDay · birthday.tribute · SOURCED
   "duration.birthday.tribute.titleHold": 1167, // VidDay · birthday.tribute · SOURCED
   "duration.global.navigationPush": 100, // Yope · global · SOURCED
   "duration.global.photoSwipe": 167, // Yope · global · SOURCED
   "duration.global.sheetPresent": 215, // Yope · global · SOURCED
   "duration.global.system.scale": {"short1":50,"short2":100,"short3":150,"short4":200,"medium1":250,"medium2":300,"medium3":350,"medium4":400,"long1":450,"long2":500,"long3":550,"long4":600,"extraLong1":700,"extraLong2":800,"extraLong3":900,"extraLong4":1000}, // Material 3 · global.system · PLATFORM
+  "duration.onthisday.memoryChange": 700, // VidDay · onthisday · SOURCED
+  "duration.year.story.card": 4000, // VidDay · year.story · SOURCED
   "duration.year.story.reveal.headline": 800, // Spotify Wrapped · year.story · SOURCED
   "duration.year.story.reveal.subline": 600, // Spotify Wrapped · year.story · SOURCED
   "duration.year.story.reveal.sublineDelay": 267, // Spotify Wrapped · year.story · SOURCED
@@ -325,6 +339,8 @@ export const tokens = {
   "easing.global.photoSwipe": {"ios":"system paging scroll physics","android":"Compose HorizontalPager default fling"}, // Yope · global · PLATFORM
   "easing.global.system.standard": {"x1":0.2,"y1":0,"x2":0,"y2":1}, // Material 3 · global.system · PLATFORM
   "easing.year.story.progress.fill": "linear", // Spotify Wrapped · year.story · SOURCED
+  "easing.year.story.reveal": {"x1":0.56,"y1":0.08,"x2":0.14,"y2":0.87}, // Spotify Wrapped · year.story · SOURCED
+  "easing.year.story.reveal.subline": {"x1":0.05,"y1":0.36,"x2":0.26,"y2":0.94}, // Spotify Wrapped · year.story · SOURCED
   "font.birthday": {"ios":"system","android":"system"}, // Tribute + VidDay · birthday.request · PLATFORM
   "font.global.family": {"ios":"system","android":"system"}, // Yope · global · PLATFORM
   "font.onthisday": {"ios":"system","android":"system"}, // Timehop · onthisday · PLATFORM
@@ -394,7 +410,7 @@ export const tokens = {
   "groups.create.color.buttonDisabledLabel": "#49464A", // Yope · groups.create · SOURCED
   "groups.create.color.cover": "#494949", // Yope · groups.create · SOURCED
   "groups.create.color.field": "#141414", // Yope · groups.create · SOURCED
-  "groups.create.color.hud": "#262626", // Yope · groups.create · SOURCED
+  "groups.create.color.hud": "#0C0C0C", // Yope · groups.create · SOURCED
   "groups.create.fontSize.fieldText": 15, // Yope · groups.create · SOURCED
   "groups.create.fontSize.hudLabel": 15, // Yope · groups.create · SOURCED
   "groups.create.fontSize.title": 14.5, // Yope · groups.create · SOURCED
@@ -416,6 +432,7 @@ export const tokens = {
   "groups.invite.layout.share": {"ios":"ShareLink / UIActivityViewController with the invite text and URL","android":"Intent.createChooser(ACTION_SEND text/plain) (Sharesheet)"}, // Yope · groups.invite · PLATFORM
   "groups.invite.size.pickerRowPitch": 54.5, // Yope · groups.invite · SOURCED
   "groups.list.color.card": "#181818", // Yope · groups.list · SOURCED
+  "groups.list.color.headerCircleOverPhoto": "#00000094", // Yope · groups.list · SOURCED
   "groups.list.layout.tabBar": {"order":"camera · groups (chats glyph) · walls (film-strip) · me (own avatar)","selected":"pill color.global.controlRaised (size.global.tabBarSelectedWidth × .tabBarSelectedHeight), glyph color.global.textPrimary","unselected":"glyph color.global.textSecondary","labels":"none (icon-only)","badges":"none (Yope's red count badges are do-not-copy)"}, // Yope · groups.list · SOURCED
   "groups.list.size.avatarInset": 16, // Yope · groups.list · SOURCED
   "groups.list.size.cameraGlyph": 16, // Yope · groups.list · SOURCED
@@ -598,11 +615,14 @@ export const tokens = {
   "invite.web.radius.cover": 0, // Partiful · invite.web · VERIFIED
   "invite.web.radius.gateCard": 4, // Partiful · invite.web · VERIFIED
   "layout.birthday.add.dateFormat": {"pattern":"d MMMM","example":"26 May"}, // Yope · birthday.add · SOURCED
+  "layout.birthday.contribute.lineMax": {"maxCharacters":110}, // VidDay · birthday.contribute · SOURCED
   "layout.birthday.contribute.stepper": {"steps":3,"labels":"Photo, Message, Done","distribution":"first circle 11 pt inside the margin, last circle 11 pt inside the opposite margin, the rest evenly spaced between","labelGap":10}, // Tribute · birthday.contribute · VERIFIED
   "layout.birthday.contribute.textStyleMap": {"heading":"title3","subheading":"callout","label":"callout","input":"callout","button":"callout","stepperNumber":"subheadline","stepperLabel":"caption2"}, // Apple HIG · birthday.contribute · PLATFORM
   "layout.birthday.request.dueDate": {"style":"full date: weekday, month day, year","example":"Wednesday, December 31, 2025","value":"the day before tribute_requests.birthday_date (due_at is 00:00 on the birthday)"}, // Tribute · birthday.request · SOURCED
   "layout.birthday.request.structure": {"order":"hero (honoree photo behind title, due line, message), primary button, Message Ideas","countdown":"none (do-not-copy)"}, // Tribute + VidDay · birthday.request · SOURCED
   "layout.birthday.request.textStyleMap": {"title":"title2","message":"callout","cta":"title2","promptsHeader":"subheadline","prompt":"subheadline"}, // Apple HIG · birthday.request · PLATFORM
+  "layout.birthday.tribute.caption": {"textColor":"#FFFFFF","nameFontWeight":700,"nameFontSizeRatio":0.0463,"lineFontWeight":700,"lineFontSizeRatio":0.0795,"leftRatio":0.0577,"bottomRatio":0.0861,"maxWidthRatio":0.8845,"gapRatio":0.0099,"scrim":"#11202FC7"}, // Tribute · birthday.tribute · SOURCED
+  "layout.birthday.tribute.endCard": {"background":"#EFEEF3","textColor":"#444347","fontWeight":500,"fontSizeRatio":0.084,"maxWidthRatio":0.405,"centerYRatio":0.5}, // VidDay · birthday.tribute · SOURCED
   "layout.birthday.tribute.player": {"ios":"AVPlayerViewController (SwiftUI VideoPlayer), system controls","android":"Media3 PlayerView, default controls","aspect":"16:9 (layout.birthday.tribute.video)"}, // Tribute + VidDay · birthday.tribute · PLATFORM
   "layout.birthday.tribute.structure": {"order":"title card, one card per contribution (photo + contributor first name + line), end card","photoFit":"whole photo inside the 16:9 frame on color.birthday.tribute.pillarbox","audio":"none"}, // Tribute + VidDay · birthday.tribute · SOURCED
   "layout.birthday.tribute.titleCard": {"background":"#EFEEF3","textColor":"#444347","fontWeight":500,"fontSizeRatio":0.084,"maxWidthRatio":0.405,"centerYRatio":0.5}, // VidDay · birthday.tribute · SOURCED
@@ -632,6 +652,7 @@ export const tokens = {
   "layout.year.story.shareCard": {"width":1080,"height":1920,"content":"the card's canvas without progress bar, chrome or share row"}, // Spotify Wrapped + Meta developer docs · year.story · SOURCED
   "layout.year.story.shareSheet": {"ios":"ShareLink(item:preview:) / UIActivityViewController","android":"Intent.createChooser(ACTION_SEND, content:// URI + FLAG_GRANT_READ_URI_PERMISSION)"}, // Apple HIG / Material 3 · year.story · PLATFORM
   "layout.year.story.summary": {"order":"share-card carousel, Share pill, Replay from beginning","previewWidthRatio":0.6,"carousel":"horizontal paging through the story's share cards"}, // Spotify Wrapped · year.story · SOURCED
+  "layout.year.story.summary.dots": {"count":"one per share card","diameter":8.4,"pitch":16.8,"selectedColor":"#FFFFFF","unselectedColor":"#666666","centerBelowCarousel":20.4,"centerAboveShare":29.3,"animation":"none observed (static render)"}, // Spotify Wrapped · year.story · SOURCED
   "layout.year.story.text": {"align":"centre","block":"centred horizontally and vertically on the canvas","order":"headline, then subline"}, // Spotify Wrapped · year.story · SOURCED
   "layout.year.story.textStyleMap": {"headline":"largeTitle","body":"subheadline","share":"callout","sharePill":"headline"}, // Apple HIG · year.story · PLATFORM
   "lineHeight.birthday.request.message": 28, // Tribute · birthday.request · VERIFIED
@@ -761,6 +782,7 @@ export const tokens = {
   "radius.global.photo": 15, // Yope · global · SOURCED
   "radius.global.sheet": {"ios":"system","android":28}, // Apple HIG / Material 3 · global · PLATFORM
   "radius.global.viewfinder": 18.5, // Yope · global · SOURCED
+  "safety.block.duration.toast": 2000, // Locket · safety.block · SOURCED
   "safety.block.layout.confirm": {"ios":"confirmationDialog(titleVisibility: .visible) with message; 'Block' role .destructive at the top, Cancel at the bottom","android":"M3 AlertDialog (settings.account.layout.alert) with 'Block' as the confirming action"}, // Apple HIG · safety.block · VERIFIED
   "safety.block.layout.menu": {"ios":"Menu (UIMenu) item with role .destructive","android":"DropdownMenu item (M3 baseline: 48 dp items, 4 dp container corner, labelLarge) in color.global.system.error"}, // Apple HIG · safety.block · VERIFIED
   "safety.block.layout.toast": {"fill":"color.global.accent","content":"icon.global.checkmark + label in color.global.onAccent, text role button","shape":"radius.global.capsule, full width minus size.global.screenMargin","position":"top, under the status bar","enter":"spring.global.platformDefault.ios / .android (global rule for custom motion whose Yope curve was not measured); Reduce Motion: cross-fade","dwell":"safety.block.duration.toast (BLOCKED)"}, // Yope · safety.block · SOURCED
@@ -807,6 +829,7 @@ export const tokens = {
   "size.global.tabBarWidth": 344, // Yope · global · SOURCED
   "spring.global.platformDefault.android": {"response":0.16223,"dampingFraction":1}, // Material 3 · global · PLATFORM
   "spring.global.platformDefault.ios": {"response":0.55,"dampingFraction":1}, // Apple HIG · global · PLATFORM
+  "spring.global.sheetPresent": {"response":0.3441,"dampingFraction":4.564}, // React Navigation iOS modal spec (shipped in Locket) · global · SOURCED
   "spring.global.sheetPresentObserved": {"overshootPt":16,"timeToPeakMs":100,"settleMs":100}, // Yope · global · SOURCED
   "walls.browse.dimension.avatar": 60, // Yope · walls.browse · SOURCED
   "walls.browse.dimension.avatarPitch": 77.7, // Yope · walls.browse · SOURCED
@@ -901,6 +924,7 @@ export const tokens = {
   "widget.home.small.color.captionPill": "#333333CC", // Locket · widget.home.small · SOURCED
   "widget.home.small.color.emptyBottom": "#1B1B1B", // Locket · widget.home.small · SOURCED
   "widget.home.small.color.emptyCircle": "#FFFFFF3D", // Locket · widget.home.small · SOURCED
+  "widget.home.small.color.emptyLabel": "#969696", // Yope · widget.home.small · SOURCED
   "widget.home.small.color.emptyRing": "#FFB800", // Locket · widget.home.small · SOURCED
   "widget.home.small.color.emptyTop": "#2E2E2E", // Locket · widget.home.small · SOURCED
   "widget.home.small.color.placeholderBottom": "#201E21", // Locket · widget.home.small · SOURCED
@@ -921,6 +945,7 @@ export const tokens = {
   "widget.home.xl.layout.size": {"ipad1024x1366":"748x356","ipad834x1194":"628x300","ipad820x1180":"628x300","ipad768x1024":"540x260","ipad744x1133":"540x260"}, // Apple HIG · widget.home.xl · VERIFIED
   "widget.lock.circular.layout.size": {"w430h932":"76x76","w428h926":"76x76","w414h896":"76x76","w414h736":"76x76","w393h852":"72x72","w390h844":"72x72","w375h812":"72x72","w375h667":"68x68","w360h780":"72x72"}, // Apple HIG · widget.lock.circular · VERIFIED
   "widget.lock.inline.layout.size": {"w430h932":"257x26","w428h926":"257x26","w414h896":"248x26","w414h736":"248x26","w393h852":"234x26","w390h844":"234x26","w375h812":"225x26","w375h667":"225x26","w360h780":"225x26"}, // Apple HIG · widget.lock.inline · VERIFIED
+  "widget.lock.rect.layout.content": {"noCaptionRectangular":"the sender avatar alone, in its 24-pt leading slot (Locket's small widget without a caption shows only the avatar)","noCaptionInline":"the sentence of widget.home.small.a11y.photo ('{name}’s photo in {group}') as the inline text (the inline widget has no avatar slot)","newestIsCollage":"keep showing the newest single photo's sender (avatar, and its caption if any): Locket's widget always shows one sender's newest photo and has no collage state"}, // Locket · widget.lock.rect · SOURCED
   "widget.lock.rect.layout.rendering": {"mode":"vibrant (monochrome, desaturated)","content":"opaque grayscale at full opacity; white / light gray for the most prominent content","minText":11,"margins":"system (smaller on the Lock Screen)"}, // Apple HIG · widget.lock.rect · VERIFIED
   "widget.lock.rect.layout.size": {"w430h932":"172x76","w428h926":"172x76","w414h896":"160x72","w414h736":"170x76","w393h852":"160x72","w390h844":"160x72","w375h812":"157x72","w375h667":"153x68","w360h780":"157x72"}, // Apple HIG · widget.lock.rect · VERIFIED
 } as const;

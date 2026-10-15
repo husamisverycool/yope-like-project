@@ -28,6 +28,7 @@ import app.feature.social.chat.ChatContent
 import app.feature.social.chat.ChatNav
 import app.feature.social.chat.ChatUiState
 import app.feature.social.chat.ChatViewModel
+import app.feature.social.chat.VoiceControls
 import app.feature.social.data.VoicePlayback
 import app.feature.social.viewer.PhotoViewerContent
 import app.feature.social.viewer.PhotoViewerViewModel
@@ -135,7 +136,7 @@ class VerificationMeasurements {
         val state = ChatViewModel(data, GROUP).state.value
         val nav = ChatNav({}, {}, {}, {}, {}, {}, {}, { _, _ -> })
         render(data) {
-            ChatContent(state, ChatUiState(), nav, null, testVoice, VoicePlayback(null, false), null, {}, {}, {}, {}, { _, _ -> }, {}, {}, {}, {})
+            ChatContent(state, ChatUiState(), nav, null, testVoice, VoicePlayback(null, false), VoiceControls(null), {}, {}, {}, {}, { _, _ -> }, { _, _ -> }, {}, {}, {}, {})
         }
         box("back", node("back"))
         box("capsule", node("Sunday dinners, group info"))
@@ -170,6 +171,31 @@ class VerificationMeasurements {
         colour("fieldFill", (field.f("left") + field.f("right")) / 2 + 60f, (field.f("top") + field.f("bottom")) / 2)
         colour("quoteFill", reply.f("left") + 6f, reply.f("top") + 40f)
         colour("controlFill", cap.f("right") - 6f, (cap.f("top") + cap.f("bottom")) / 2)
+        val theirVoice = boundsOf("voiceTheirs")
+        colour("voiceTheirsFill", theirVoice.f("right") - 3f, theirVoice.f("top") + 6f)
+        out["screen"] = buildJsonObject { put("height", (bitmap!!.height / density)); put("width", (bitmap!!.width / density)) }
+
+        // Typing: the send circle in the mic's slot; a failed send: indicator + label.
+        data.failNext += "sendText:running late, sorry:"
+        val vm = ChatViewModel(data, GROUP)
+        vm.setDraft("running late, sorry")
+        vm.send()
+        val failedState = vm.state.value.copy(draft = "hi")
+        render(data) {
+            ChatContent(failedState, ChatUiState(), nav, null, testVoice, VoicePlayback(null, false), VoiceControls(null), {}, {}, {}, {}, { _, _ -> }, { _, _ -> }, {}, {}, {}, {})
+        }
+        box("send", node("send"))
+        val send = boundsOf("send")
+        colour("sendFill", send.f("left") + 4f, (send.f("top") + send.f("bottom")) / 2)
+        box("failedBubble", node("you, running late, sorry"))
+        box("failedLabel", node("couldn’t send — tap to try again", text = true))
+        val fb = boundsOf("failedBubble")
+        // Indicator: the red ring's leftmost ink, scanning right of the bubble on its centre line.
+        val b = bitmap!!
+        val cy = ((fb.f("top") + fb.f("bottom")) / 2 * density).toInt()
+        val start = (fb.f("right") * density).toInt()
+        val ink = (start until b.width).filter { x -> val c = b.getPixel(x, cy); android.graphics.Color.red(c) > 200 && android.graphics.Color.green(c) < 120 }
+        if (ink.isNotEmpty()) out["indicatorInk"] = buildJsonObject { put("left", ink.first() / density); put("right", ink.last() / density); put("hex", String.format("#%06X", b.getPixel(ink.first() + 1, cy) and 0xFFFFFF)) }
         write("chat")
     }
 
@@ -181,7 +207,7 @@ class VerificationMeasurements {
         }
         val state = PhotoViewerViewModel(data, GROUP, "v-1", PhotoContext.Single, "v-1", null).state.value
         render(data) {
-            PhotoViewerContent(state, ViewerUiState(coach = false), ViewerNav({}, { _, _ -> }, { _, _ -> }, { _, _ -> }, {}), testVoice, VoicePlayback(null, false), {}, {}, {}, {}, {}, {}, {}, {}, {})
+            PhotoViewerContent(state, ViewerUiState(coach = false), ViewerNav({}, { _, _ -> }, { _, _ -> }, { _, _ -> }, {}), testVoice, VoicePlayback(null, false), {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
         }
         box("close", node("close"))
         box("more", node("more"))
@@ -274,6 +300,13 @@ class VerificationMeasurements {
         record("tile1", tiles[0])
         record("tile2", tiles[1])
         box("mon", node("Mon", text = true))
+        box("add", node("Add Photos"))
+        val add = boundsOf("add")
+        colour("addFill", add.f("left") + 6f, add.f("top") + 6f)
+        val empty = compose.onAllNodesWithContentDescription("no photos", substring = true, useUnmergedTree = true).fetchSemanticsNodes()
+        record("emptyDay1", empty[0])
+        val e = boundsOf("emptyDay1")
+        colour("emptyFill", e.f("left") + 6f, e.f("top") + 6f)
         colour("background", 5f, 700f)
         write("week.history")
     }
@@ -283,13 +316,12 @@ class VerificationMeasurements {
         val list = AlbumsViewModel(data, GROUP).state.value
         render(data) { AlbumsListContent(list, {}, {}, {}, {}) }
         box("title", node("memory albums", text = true))
-        box("card1", node("birthday dinner", text = true, merged = true))
-        box("card2", node("lake weekend", text = true, merged = true))
+        box("cover1", node("birthday dinner", text = true, merged = true))
+        box("cover2", node("lake weekend", text = true, merged = true))
         box("name1", node("birthday dinner", text = true))
-        box("subtitle1", node("saved by Sam", text = true))
+        val covers = compose.onAllNodesWithContentDescription("saved by", substring = true).fetchSemanticsNodes()
+        out["coverCount"] = buildJsonObject { put("n", covers.size) }
         colour("background", 5f, 700f)
-        val n = boundsOf("card1")
-        colour("cardFill", n.f("right") - 6f, (n.f("top") + n.f("bottom")) / 2)
         write("albums.list")
 
         val album = AlbumViewModel(data, GROUP, "a-2").state.value

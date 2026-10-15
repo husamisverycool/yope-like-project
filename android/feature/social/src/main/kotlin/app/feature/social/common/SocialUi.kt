@@ -181,15 +181,13 @@ fun ActivityIndicator(modifier: Modifier = Modifier) {
 
 /**
  * Yope's "Loading" HUD centred over the screen (core:ui `LoadingHud`, label
- * `groups.create.hud.loading`). Its corner radius is BLOCKED (`chat.thread.radius.loadingHud`);
- * the shared component draws the box square.
+ * `groups.create.hud.loading`), corners `chat.thread.radius.loadingHud`.
  */
 @Composable
 fun LoadingHud(modifier: Modifier = Modifier) {
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        val radius = SocialBlocked.loadingHudRadius
         val label = stringRes(app.designsystem.R.string.groups_create_hud_loading)
-        if (radius != null) app.ui.components.LoadingHud(label, shape = app.ui.components.hudShape(radius)) else app.ui.components.LoadingHud(label)
+        app.ui.components.LoadingHud(label, shape = app.ui.components.hudShape(Tokens.Radii.chatThreadRadiusLoadingHud))
     }
 }
 

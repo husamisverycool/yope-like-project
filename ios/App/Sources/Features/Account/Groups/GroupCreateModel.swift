@@ -20,7 +20,7 @@ final class GroupCreateModel {
     /// Edit mode: the group's current cover.
     private(set) var existingCoverPath: String?
     private(set) var isWorking = false
-    /// Last failure copy (`groups.create.error.*`, `groups.create.offline`; presentation BLOCKED, announced).
+    /// Last failure copy (`groups.create.error.*`, `groups.create.offline`), shown as the form error alert.
     private(set) var failureMessage: String?
     private(set) var successCount = 0
     private(set) var errorCount = 0
@@ -107,7 +107,6 @@ final class GroupCreateModel {
     private func fail(_ message: String) {
         failureMessage = message
         errorCount += 1
-        UIAccessibility.post(notification: .announcement, argument: message)
     }
 
     static func title(of kind: GroupKind) -> String {

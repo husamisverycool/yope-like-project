@@ -228,22 +228,43 @@ class PhotoViewerViewModel(
 
     fun setDraft(text: String) = _state.update { it.copy(draft = text) }
 
-    /** `send_message(text, p_reply_to_post_id)`: the reply appears in the chat. */
+    /**
+     * `send_message(text, p_reply_to_post_id)`: the reply appears in the chat. Optimistic: the field
+     * clears at once; if the call fails the text comes back (unless something new was typed) and the
+     * failure is announced (`chat.thread.sendFailed`).
+     */
     fun sendReply() {
         val post = _state.value.current?.post ?: return
         val body = _state.value.draft.trim()
-        if (body.isEmpty() || _state.value.sending) return
-        _state.update { it.copy(sending = true) }
+        if (body.isEmpty()) return
+        _state.update { it.copy(draft = "") }
         viewModelScope.launch {
             try {
                 data.sendText(post.groupId, body, replyToPostId = post.id)
-                _state.update { it.copy(sending = false, draft = if (it.draft.trim() == body) "" else it.draft) }
                 _effects.emit(ViewerEffect.Sent)
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Throwable) {
-                _state.update { it.copy(sending = false) }
+                _state.update { if (it.draft.isEmpty()) it.copy(draft = body) else it }
                 _effects.emit(ViewerEffect.SendFailed)
+            }
+        }
+    }
+
+    /** `unreact` from the picker's highlighted emoji: the sticker leaves at once; back if the call fails. */
+    fun unreact(emoji: String) {
+        val me = data.currentUserId() ?: return
+        val id = _state.value.current?.post?.id ?: return
+        if (_state.value.current?.reactions.orEmpty().none { it.userId == me && it.emoji == emoji }) return
+        update(id) { it.copy(reactions = withoutReaction(it.reactions, me, emoji)) }
+        viewModelScope.launch {
+            try {
+                data.unreact(id, emoji)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Throwable) {
+                update(id) { it.copy(reactions = withReaction(it.reactions, me, emoji)) }
+                _effects.emit(ViewerEffect.ReactionFailed)
             }
         }
     }

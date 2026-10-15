@@ -1,6 +1,9 @@
 package app.feature.memory
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -17,6 +20,7 @@ import app.feature.memory.birthday.DateEntryPattern
 import app.feature.memory.birthday.TributeDestination
 import app.feature.memory.common.CollectEffects
 import app.feature.memory.common.MemoryBackend
+import app.feature.memory.common.findActivity
 import app.feature.memory.common.rememberMemoryBackend
 import app.feature.memory.onthisday.OnThisDayScreen
 import app.feature.memory.onthisday.OnThisDayState
@@ -76,6 +80,14 @@ fun OnThisDayDestination(groupId: String, onClose: () -> Unit, backend: MemoryBa
     val vm = viewModel(key = "onthisday/$groupId") { OnThisDayViewModel(groupId, backend, clock) }
     val state by vm.state.collectAsStateWithLifecycle()
     LaunchedEffect(state) { if (state == OnThisDayState.Finished) onClose() }
+    // Light status-bar icons over the banner (design/surfaces/onthisday.md, Platform notes).
+    val view = LocalView.current
+    DisposableEffect(view) {
+        val controller = view.context.findActivity()?.window?.let { WindowCompat.getInsetsController(it, view) }
+        val before = controller?.isAppearanceLightStatusBars
+        controller?.isAppearanceLightStatusBars = false
+        onDispose { if (controller != null && before != null) controller.isAppearanceLightStatusBars = before }
+    }
     OnThisDayScreen(state, vm::next, vm::previous, vm::retry, onClose)
 }
 

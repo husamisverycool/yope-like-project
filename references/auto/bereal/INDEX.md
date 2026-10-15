@@ -30,3 +30,7 @@
 | `help/help-21083708285725_bts-post-preview-2x.png` | https://help.bereal.com/hc/article_attachments/21083708285725 (article https://help.bereal.com/hc/en-us/articles/15272815079453-Behind-The-Scenes-BTS) | 2026-10-15 | Post preview at 2x (786x1704, lossless): wordmark + rolling countdown "01:4[3]", full-bleed 3:4 image with inset, "BTS On", retake ✕, mute, "My Friends", "Off", "SEND ➤" (under a dim hint overlay) | 2023-12-05 |
 | `help/help-21083730407325_bts-gif-frame48.png` | https://help.bereal.com/hc/article_attachments/21083730407325 (GIF, 50 frames, 40–70 ms; frame 48 extracted) | 2026-10-15 | 786x1048 (exact 3:4) post image with inset appearing at the end of BTS playback; lossless palette | 2023-12-05 |
 | `help/help-36182541825309_realgroup-notification-settings.png` | https://help.bereal.com/hc/article_attachments/36182541825309 (article https://help.bereal.com/hc/en-us/articles/15753219937821) | 2026-10-15 | Group notification settings: "Daily BeReal", "It's time to BeReal.", "Messages" toggles with footers | article edited 2026-05-19 |
+
+## Gap fill (account, capture, global, memory) — 2026-10-15
+
+No new file; measured on `help/help-21083708285725_bts-post-preview-2x.png` (lossless 2x, uniform tutorial dimming): retake ✕ circle interior (4,14,26) vs flat sky (8,23,44) and "BTS On" chip (6,14,26) vs sky (13,27,46) → black ≈0.46 (`daily.capture.color.overlayControl`); countdown "1" stem coverage 6.37 px over a 31-px digit (0.205) (`daily.capture.fontWeight.countdown`).

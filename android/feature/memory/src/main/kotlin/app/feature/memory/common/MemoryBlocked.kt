@@ -1,33 +1,34 @@
 package app.feature.memory.common
 
 import androidx.compose.animation.core.Easing
+import app.designsystem.generated.Tokens
 
 /**
- * Every BLOCKED design value the memory screens depend on (design/BLOCKED.md), behind one accessor.
- * Null = still BLOCKED: each screen follows its spec's Gaps rule. When `tools/designgen.mjs` moves a
- * value into `Tokens`, replace its `null` with the token (one line); the screens already implement the
- * sourced behaviour behind each value.
+ * The design values the memory screens depended on while they were BLOCKED (design/BLOCKED.md),
+ * behind one accessor. All of them are now sourced (gap fill, MERGE G2-17 … G2-21), so each line
+ * reads its token; a value that becomes BLOCKED again is set back to `null` here (one line) and the
+ * screens fall back to each spec's Gaps rule.
  *
  * Toast dwell (`safety.block.duration.toast`) is shared app-wide: `app.ui.components.ToastDwell`.
  * The tribute video values (`duration.birthday.tribute.photoHold`, `layout.birthday.tribute.caption`,
  * `.endCard`, copy `birthday.tribute.endCard`) are read by the worker only, never by the app.
  */
 object MemoryBlocked {
-    /** `duration.onthisday.memoryChange` (ms). Null: years change without animation. */
-    val onThisDayMemoryChangeMs: Int? = null
+    /** `duration.onthisday.memoryChange` (ms): years cross-fade. Null: they change without animation. */
+    val onThisDayMemoryChangeMs: Int? = Tokens.Durations.onthisdayMemoryChange
 
-    /** `duration.year.story.card` (ms). Null: no auto-advance, the current segment shows full, pause hidden. */
-    val yearStoryCardMs: Int? = null
+    /** `duration.year.story.card` (ms): auto-advance, segment fill, pause control. Null: tap-only, pause hidden. */
+    val yearStoryCardMs: Int? = Tokens.Durations.yearStoryCard
 
-    /** `easing.year.story.reveal`. Null: every viewer gets the Reduce Motion cross-fade with the same timings. */
-    val yearStoryRevealEasing: Easing? = null
+    /** `easing.year.story.reveal` (headline). Null: every viewer gets the Reduce Motion cross-fade. */
+    val yearStoryRevealEasing: Easing? = Tokens.Easings.yearStoryReveal
 
-    /**
-     * `layout.year.story.summary.dots`. False: the summary carousel shows no page dots. The token's
-     * shape (a layout object) is not known yet, so drawing the dots is added with it.
-     */
-    const val YEAR_STORY_SUMMARY_DOTS: Boolean = false
+    /** `easing.year.story.reveal.subline`. Null: as above. */
+    val yearStoryRevealSublineEasing: Easing? = Tokens.Easings.yearStoryRevealSubline
 
-    /** `layout.birthday.contribute.lineMax` (characters). Null: the API bound applies, no visible counter. */
-    val birthdayLineMax: Int? = null
+    /** `layout.year.story.summary.dots`: page dots under the summary carousel. False: no dots. */
+    const val YEAR_STORY_SUMMARY_DOTS: Boolean = true
+
+    /** `layout.birthday.contribute.lineMax` (characters). Null: the API bound applies. No visible counter either way. */
+    val birthdayLineMax: Int? = Tokens.Layouts.BirthdayContributeLineMax.maxCharacters.toInt()
 }

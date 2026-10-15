@@ -50,14 +50,16 @@ final class AccountComponentTests: XCTestCase {
         XCTAssertLessThanOrEqual(max(image?.size.width ?? 0, image?.size.height ?? 0) * (image?.scale ?? 1), 16)
     }
 
-    func testToastIsAnnouncedAndOnlyDrawnInDebugWhileItsDwellIsBlocked() {
+    func testToastStaysForItsDwellOrUntilTapped() async {
         let toasts = ToastCenter()
         toasts.show("done")
-        if DesignGaps.toastDwell == nil {
-            XCTAssertEqual(toasts.message, "done", "DEBUG keeps it until tapped")
-        }
+        XCTAssertEqual(toasts.message, "done")
         toasts.dismiss()
-        XCTAssertNil(toasts.message)
+        XCTAssertNil(toasts.message, "a tap dismisses it")
+
+        toasts.show("again")
+        try? await Task.sleep(nanoseconds: UInt64((Tokens.Durations.safetyBlockDurationToast + 0.5) * 1_000_000_000))
+        XCTAssertNil(toasts.message, "gone after safety.block.duration.toast")
     }
 
     // MARK: auth.phone legal footer

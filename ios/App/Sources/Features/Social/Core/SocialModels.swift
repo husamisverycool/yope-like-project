@@ -41,6 +41,9 @@ struct SocialFeedback: Equatable, Sendable {
 /// A line the screen announces (and, once the toast dwell time is captured, shows as a toast).
 enum SocialNotice: Equatable, Sendable {
     case sendFailed
+    /// `chat.thread.sendFailed` for a message that stays in the thread with the failed-message layout: announced only
+    /// (the label under the message shows it).
+    case messageNotSent
     case reactionFailed
     case photoSaved
     case photoDeleted
@@ -57,6 +60,11 @@ enum SocialNotice: Equatable, Sendable {
     case changesFailed
     case playFailed
     case recordFailed
+}
+
+extension SocialNotice {
+    /// Shown on screen already (the failed-message label): announced to VoiceOver, never drawn as a toast.
+    var isAnnouncementOnly: Bool { self == .messageNotSent }
 }
 
 /// One notice event; `id` changes every time.
@@ -92,11 +100,16 @@ struct ReactionSummary: Equatable, Sendable {
         for row in rows { insert(row) }
     }
 
-    /// One sticker per distinct emoji, in the order the data arrives (first reacted first; the
-    /// sticker order itself is BLOCKED, `chat.reactions.layout.clusterOrder`).
+    /// One sticker per distinct emoji, newest first (`chat.reactions.layout.clusterOrder`): a newly added emoji enters
+    /// at the leading end; a repeat of an emoji already there adds no sticker and keeps its place.
     var distinctEmoji: [String] {
         var seen = Set<String>()
-        return rows.compactMap { seen.insert($0.emoji).inserted ? $0.emoji : nil }
+        return rows.compactMap { seen.insert($0.emoji).inserted ? $0.emoji : nil }.reversed()
+    }
+
+    /// The emoji this person reacted with (highlighted in the picker, `chat.reactions.layout.unreact`).
+    func emoji(by userID: UserID) -> Set<String> {
+        Set(rows.filter { $0.userID == userID }.map(\.emoji))
     }
 
     var isEmpty: Bool { rows.isEmpty }
@@ -122,6 +135,23 @@ struct ReactionSummary: Equatable, Sendable {
             result[reaction.postID, default: ReactionSummary()].insert(reaction)
         }
         return result
+    }
+}
+
+/// Emoji-only messages (`chat.thread`: a message of only 1…`chat.thread.count.emojiOnlyMax` emoji renders large
+/// without a bubble).
+enum SocialEmojiText {
+    /// How many emoji `text` holds when it is made of emoji only (spaces ignored); nil otherwise.
+    static func emojiOnlyCount(_ text: String) -> Int? {
+        let characters = text.filter { !$0.isWhitespace }
+        guard !characters.isEmpty, characters.allSatisfy(isEmoji) else { return nil }
+        return characters.count
+    }
+
+    /// Emoji shown as emoji: emoji presentation by default, or a sequence (variation selector, keycap, ZWJ, skin tone).
+    static func isEmoji(_ character: Character) -> Bool {
+        guard let first = character.unicodeScalars.first else { return false }
+        return first.properties.isEmojiPresentation || (first.properties.isEmoji && character.unicodeScalars.count > 1)
     }
 }
 

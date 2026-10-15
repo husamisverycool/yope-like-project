@@ -159,8 +159,8 @@ When the quoted photo is deleted (`reply_to_post_id` becomes null), the quote pa
 | `color.global.onAccent` #000000 | `color.global.accent` #CDFD07 | text | 17.65:1 | pass | quoted name / 'pic' on the lime quote |
 | `color.global.onAccent` #000000 | `color.global.accent` #CDFD07 | nontext | 17.65:1 | pass | quote bar on lime |
 | `color.global.accent` #CDFD07 | `color.global.background` #171717 | nontext | 15.07:1 | pass | lime quote block against the background |
-| `color.global.textPrimary` #FFFFFF | `groups.create.color.hud` #262626 | text | 15.13:1 | pass | 'Loading' on the HUD |
-| `groups.create.color.hud` #262626 | `color.global.background` #171717 | nontext | 1.18:1 | **FAIL** | HUD against the background |
+| `color.global.textPrimary` #FFFFFF | `groups.create.color.hud` #0C0C0C | text | 19.56:1 | pass | 'Loading' on the HUD |
+| `groups.create.color.hud` #0C0C0C | `color.global.background` #171717 | nontext | 1.09:1 | **FAIL** | HUD against the background (G2-27 corrected the HUD fill) |
 | `color.global.textPrimary` #FFFFFF | `color.global.background` #171717 | text | 17.93:1 | pass | empty-state title |
 | `color.global.textSecondary` #969696 | `color.global.background` #171717 | text | 6.06:1 | pass | empty-state detail |
 | `color.global.onSurfaceLight` #000000 | `color.global.surfaceLight` #FFFFFF | text | 21.00:1 | pass | 'invite more friends' pill label |

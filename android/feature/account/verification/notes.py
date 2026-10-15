@@ -1,0 +1,2 @@
+NOTES = {}
+COPY_NOTES = {}

@@ -18,8 +18,7 @@ enum AuthFailure: Equatable {
     /// auth.code "too many tries" (HTTP 429).
     case tooManyTries
 
-    /// The state's copy. Its presentation (`auth.phone.layout.inlineError`) is BLOCKED: screens do not draw it; it is
-    /// posted as a VoiceOver announcement and kept for tests.
+    /// The state's copy: the message of the form error alert (`auth.phone.layout.inlineError`, `formErrorAlert`).
     var message: String {
         switch self {
         case .invalidNumber: return Copy.authPhoneErrorInvalidNumber

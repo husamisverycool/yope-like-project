@@ -91,3 +91,11 @@
 | `frames/a-itsmthuyope-7644974799302823175-t50.53-loading-hud.png` | same video @ 50.53 s | 2026-10-15 | Gap fill (social): "Loading" HUD (corner fit 12.45 px; sides x 228.4–346.8, y 466.4–584.4) | posted 2026-05-28 |
 | `frames/b-yopeapp-7591560669967682847-t57.27-viewer-swipe.png` | https://www.tiktok.com/@yope.app/video/7591560669967682847 @ 57.27 s (yt-dlp, ffmpeg -vsync 0, 30 fps) | 2026-10-15 | Gap fill (social): viewer mid-swipe, page boundary at x≈263: no background strip between the pages (≤1 px) | Dec 2025 build |
 | `frames/b-yopeapp-7591560669967682847-t57.33-viewer-swipe.png` | same video @ 57.33 s | 2026-10-15 | Gap fill (social): viewer mid-swipe, page boundary at x≈553: no background strip between the pages (≤1 px) | Dec 2025 build |
+
+## Gap fill (account, capture, global, memory) — 2026-10-15
+
+| file | source URL | accessed | what it shows | version/date |
+|---|---|---|---|---|
+| `frames/a-chuongxetank-7694968408424582452-1080p-t7.617-home-cover-header-circle.png` | https://www.tiktok.com/@chuongxetank/video/7694968408424582452 re-downloaded with yt-dlp as 1080×1920 60 fps (the earlier frames are from a 576-px copy), @ 7.617 s | 2026-10-15 | 2026 home: "+" header circle over the cover photo, toast entering; circle (44,58,67) vs photo beside it (116,133,141) → black ≈0.58 (`groups.list.color.headerCircleOverPhoto`) | posted 2026-10-10 |
+| `frames/a-chuongxetank-7694968408424582452-1080p-t8.050-posted-toast.png` | same, @ 8.050 s | 2026-10-15 | "posted in the wall" toast fully in, over the home cover | same |
+| `frames/a-chuongxetank-7694968408424582452-1080p-toast-lime-track.csv` | same, every frame 7.0–8.5 s | 2026-10-15 | lime-pixel count in the top 500 rows: toast enters 7.567→7.683 s (≈117 ms); the edit cuts away ≈8.25 s while it is still shown (dwell not observable) | same |

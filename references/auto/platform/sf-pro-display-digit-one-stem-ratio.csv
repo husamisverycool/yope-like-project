@@ -1,0 +1,8 @@
+weight,stem_px,height_px,stem_over_height,method
+regular,85.0,705,0.1205,"'1' rendered at 1000 px (Pillow) from SF Pro Display v3 web font (https://www.apple.com/wss/fonts/SF-Pro-Display/v3/sf-pro-display_<weight>.woff2, fetched 2026-10-15, measurement only, font not stored); stem = mean row coverage over 40 rows at mid-height; height = ink rows"
+medium,106.9,705,0.1517,same
+semibold,123.5,705,0.1752,same
+bold,146.0,705,0.2071,same
+heavy,178.2,705,0.2528,same
+black,207.0,705,0.2937,same
+bereal_countdown_1,6.37,31,0.205,"references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png '1' x370-376 y207-237: row coverage (156+5x250+187)/250 = 6.37 px at y225; height 31 rows"

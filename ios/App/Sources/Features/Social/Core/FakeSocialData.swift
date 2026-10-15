@@ -270,6 +270,12 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         return reaction
     }
 
+    func unreact(postID: PostID, emoji: String) async throws {
+        try call("unreact")
+        let me = read { $0.me } ?? UserID("me")
+        update { $0.reactions.removeAll { $0.postID == postID && $0.userID == me && $0.emoji == emoji } }
+    }
+
     func isTagged(postID: PostID, userID: UserID) async throws -> Bool {
         try call("isTagged")
         return read { $0.tags.contains { $0.postID == postID && $0.userID == userID } }

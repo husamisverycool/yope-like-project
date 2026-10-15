@@ -48,10 +48,10 @@ class SelfTagSnapshotTest : SnapshotTest() {
         OnPhoto { SelfTagToggle("p-other", FakeMemoryBackend.BEN, it.padding(top = Tokens.Sizes.globalButtonHeight * 2), initiallyTagged = false) }
     }
 
-    /** Layout review only: the error toast is not shown in builds while its dwell time is BLOCKED. */
+    /** A failed tag: the toggle reverts and the failure toast shows (no glyph). */
     @Test fun errorToast() {
         val failing = Scenario.backend().apply { failNext["tagSelf"] = app.data.error.DataError.Unexpected("x") }
-        snap("tagging", "review-toast-error", failing, reviewToasts = true, screen = true, coach = seenCoach) {
+        snap("tagging", "toast-error", failing, screen = true, coach = seenCoach, settle = toastSettle) {
             OnPhoto { m ->
                 val controller = rememberSelfTagController("p-other", initiallyTagged = false)
                 androidx.compose.runtime.LaunchedEffect(Unit) { controller.toggle() }

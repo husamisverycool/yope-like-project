@@ -30,8 +30,8 @@ only after delivery; other members (not blocked with the honoree) can read it at
 | # | segment | content | timing |
 |---|---|---|---|
 | 1 | title card | `layout.birthday.tribute.titleCard`: solid `background`, text `birthday.tribute.titleCard` ("Happy birthday, {name}!") in Roboto `fontWeight`, size `fontSizeRatio` × video height, wrapped inside `maxWidthRatio` × video width, centred horizontally, block centre at `centerYRatio` × height | visible `duration.birthday.tribute.titleHold`, then crossfade `duration.birthday.tribute.titleCrossfade` into card 2 |
-| 2…n | contribution | the contributor's photo (display rendition), whole photo fitted inside the 16:9 frame on `color.birthday.tribute.pillarbox`; contributor's first name + their line laid out by `layout.birthday.tribute.caption` (**BLOCKED**) | `duration.birthday.tribute.photoHold` (**BLOCKED**) each; `duration.birthday.tribute.clipTransition` (0 = hard cut) between them |
-| n+1 | end card | `layout.birthday.tribute.endCard` (**BLOCKED**) with `birthday.tribute.endCard` (**BLOCKED**) | `duration.birthday.tribute.endTransition` (0 = hard cut) in, then `duration.birthday.tribute.endHold` |
+| 2…n | contribution | the contributor's photo (display rendition), whole photo fitted inside the 16:9 frame on `color.birthday.tribute.pillarbox`; contributor's first name + their line laid out by `layout.birthday.tribute.caption` (Tribute name badge + caption text, bottom-left, on a band in the badge's fill) | `duration.birthday.tribute.photoHold` (4000 ms, VidDay) each; `duration.birthday.tribute.clipTransition` (0 = hard cut) between them |
+| n+1 | end card | `layout.birthday.tribute.endCard` (the title card's style, as VidDay draws its end text card) with `birthday.tribute.endCard` ("We love you!") | `duration.birthday.tribute.endTransition` (0 = hard cut) in, then `duration.birthday.tribute.endHold` |
 
 Canvas: `layout.birthday.tribute.video` = 1920 × 1080 at 29.97 fps. Contribution order: worker order (`created_at`).
 
@@ -42,19 +42,21 @@ Canvas: `layout.birthday.tribute.video` = 1920 × 1080 at 29.97 fps. Contributio
 | `layout.birthday.tribute.video` | `{ width: 1920, height: 1080, fps: 29.97 }` | SOURCED |
 | `duration.birthday.tribute.titleHold` | 1167 ms | SOURCED |
 | `duration.birthday.tribute.titleCrossfade` | 600 ms | SOURCED |
-| `duration.birthday.tribute.photoHold` | — | **BLOCKED** |
+| `duration.birthday.tribute.photoHold` | 4000 ms | SOURCED (gap fill) |
 | `duration.birthday.tribute.clipTransition` | 0 ms | SOURCED |
 | `duration.birthday.tribute.endTransition` | 0 ms | SOURCED |
 | `duration.birthday.tribute.endHold` | 10003 ms | SOURCED |
 | `color.birthday.tribute.pillarbox` | `#000000` | SOURCED |
 | `layout.birthday.tribute.titleCard` | `{ background: "#EFEEF3", textColor: "#444347", fontWeight: 500, fontSizeRatio: 0.084, maxWidthRatio: 0.405, centerYRatio: 0.5 }` | SOURCED |
-| `layout.birthday.tribute.endCard` | — | **BLOCKED** |
-| `layout.birthday.tribute.caption` | — | **BLOCKED** |
+| `layout.birthday.tribute.endCard` | `{ background: "#EFEEF3", textColor: "#444347", fontWeight: 500, fontSizeRatio: 0.084, maxWidthRatio: 0.405, centerYRatio: 0.5 }` | SOURCED (gap fill) |
+| `layout.birthday.tribute.caption` | `{ textColor: "#FFFFFF", nameFontWeight: 700, nameFontSizeRatio: 0.0463, lineFontWeight: 700, lineFontSizeRatio: 0.0795, leftRatio: 0.0577, bottomRatio: 0.0861, maxWidthRatio: 0.8845, gapRatio: 0.0099, scrim: "#11202FC7" }` | SOURCED (gap fill) |
 
 Copy keys the worker reads: `birthday.tribute.titleCard` (`{name}`, SOURCED) and `birthday.tribute.endCard`
-(`{group}`, **BLOCKED**). Because three tokens and one string are BLOCKED, `tributeTokens()` throws
-`MissingTokenError` and `tribute.render` jobs retry with backoff until the owner capture lands — no tribute is
-rendered with invented values.
+("We love you!", SOURCED; the worker still passes `{group}`, which this text does not use). Every token and string the
+worker reads is now sourced (gap fill 2026-10-15), so `tribute.render` renders. Worker hand-offs: two worker tests still
+assert that these tokens are missing (`test/unit/copy-tokens.test.ts`, `test/unit/media-render.test.ts`,
+`test/handlers/tribute-year.test.ts`), and `COPY_KEYS.md` still lists them as missing; the caption is drawn as a full-width
+band because `CaptionLayout` has no box mode (Tribute draws a rounded badge, radius 10 / 302 of the frame height).
 
 ## B. The tribute screen (in the app)
 
@@ -149,9 +151,9 @@ gift money ("Funds were collected…", "Redeem"); paid upsells (custom intro, Vi
 
 | item | status | owner capture |
 |---|---|---|
-| `layout.birthday.tribute.caption` (first name + line over each photo) | BLOCKED | one finished Tribute in which the creator added "text on a clip" (name at the bottom of the frame), or a VidDay with contributor names on photos: its share link or a 10 s screen recording |
-| `duration.birthday.tribute.photoHold` | BLOCKED | one finished Tribute or VidDay containing photos: share link, or a 20 s recording playing three photo contributions (research capture 5) |
-| `layout.birthday.tribute.endCard`, copy `birthday.tribute.endCard` | BLOCKED | the last 15 s of a finished (non-marketing) VidDay or Tribute (research capture 5) |
+| `layout.birthday.tribute.caption` (first name + line over each photo) | SOURCED by gap fill: Tribute's own editor (name badge default ↙ / Dark + Classic caption text), computed styles of its live demo (MERGE G2-24); band instead of a badge box (worker shape) | one finished Tribute in which the creator added "text on a clip" (name at the bottom of the frame), or a VidDay with contributor names on photos: its share link or a 10 s screen recording |
+| `duration.birthday.tribute.photoHold` | SOURCED by gap fill: 4000 ms (VidDay documented default, confirmed by its theme render; MERGE G2-22) | one finished Tribute or VidDay containing photos: share link, or a 20 s recording playing three photo contributions (research capture 5) |
+| `layout.birthday.tribute.endCard`, copy `birthday.tribute.endCard` | SOURCED by gap fill: VidDay's end text card "We Love You!" in its title-card style (MERGE G2-23); end slot length stays Tribute's 10.0 s (VidDay holds its end card for a 4-s slot) | the last 15 s of a finished (non-marketing) VidDay or Tribute (research capture 5) |
 | title card `maxWidthRatio` | measured assuming VidDay's 16:9 frame is cropped to fill the square gift-page player | the same finished video at full frame |
 | title-card hold | 1167 ms static span; up to 1667 ms if playback starts at the unwrap tap | the same finished video from its first frame |
 | burned-in text not accessible | no transcript (honoree cannot read contributions) | owner / API decision: expose names + lines to the honoree after delivery |

@@ -65,6 +65,8 @@ import app.ui.components.EmptyState
 import app.ui.components.EmptyStateAction
 import app.ui.components.FormTextField
 import app.ui.components.HudOverlay
+import app.ui.system.ErrorAlert
+import app.feature.account.common.errorDismissLabel
 import app.ui.components.OnboardingTitle
 import app.ui.components.PrimaryButton
 import app.ui.text.TextRoles
@@ -74,7 +76,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** The failure states whose presentation is BLOCKED (`auth.phone.layout.inlineError`): kept in state, not drawn. */
+/** Field errors, shown as the alert of `auth.phone.layout.inlineError` (message = the error sentence, one OK). */
 enum class PhoneError(val copy: Int) {
     InvalidNumber(R.string.auth_phone_error_invalidnumber),
     RateLimited(R.string.auth_phone_error_ratelimited),
@@ -87,6 +89,10 @@ data class PhoneUiState(
     val sending: Boolean = false,
     val offline: Boolean = false,
     val error: PhoneError? = null,
+    /** The region whose flag the field shows (`auth.phone.layout.countryCode`); null = no calling code yet. */
+    val region: String? = null,
+    /** The country list sheet is open. */
+    val pickingCountry: Boolean = false,
 ) {
     val canContinue: Boolean get() = !sending && PhoneNumbers.hasDigitsAfterPrefix(phone, prefill)
 }
@@ -94,7 +100,11 @@ data class PhoneUiState(
 class PhoneViewModel(private val env: AccountEnvironment) : AccountViewModel() {
     private val region = env.region()
     private val prefill = PhoneNumbers.prefill(region)
-    private val mutable = MutableStateFlow(PhoneUiState(phone = env.signUp.phoneDisplay ?: prefill, prefill = prefill))
+    /** The region preferred for a shared calling code: the device's, then the last country picked. */
+    private var preferred: String? = region
+    private val mutable = MutableStateFlow(
+        (env.signUp.phoneDisplay ?: prefill).let { PhoneUiState(phone = it, prefill = prefill, region = PhoneNumbers.regionFor(it, region)) },
+    )
     val state: StateFlow<PhoneUiState> = mutable.asStateFlow()
     private var lastOnline = true
 
@@ -107,9 +117,25 @@ class PhoneViewModel(private val env: AccountEnvironment) : AccountViewModel() {
         }
     }
 
-    fun onPhoneChange(text: String) = mutable.update { it.copy(phone = PhoneNumbers.sanitize(text), error = null) }
+    fun onPhoneChange(text: String) = mutable.update {
+        val next = PhoneNumbers.edit(it.phone, PhoneNumbers.sanitize(text))
+        it.copy(phone = next, region = PhoneNumbers.regionFor(next, preferred), error = null)
+    }
+
+    fun openCountries() = mutable.update { it.copy(pickingCountry = true) }
+
+    fun closeCountries() = mutable.update { it.copy(pickingCountry = false) }
+
+    /** A country chosen in the list: its calling code replaces the typed one. */
+    fun onCountry(region: String) {
+        preferred = region
+        mutable.update { it.copy(phone = PhoneNumbers.withRegion(it.phone, region), region = region, pickingCountry = false, error = null) }
+        haptic(Tokens.Haptics.globalSelect)
+    }
 
     fun retry() = mutable.update { it.copy(offline = !lastOnline) }
+
+    fun dismissError() = mutable.update { it.copy(error = null) }
 
     fun submit() {
         val current = mutable.value
@@ -129,6 +155,7 @@ class PhoneViewModel(private val env: AccountEnvironment) : AccountViewModel() {
                 env.signUp.codeSentAtMillis = env.clock.millis()
                 mutable.update { it.copy(sending = false) }
                 haptic(Tokens.Haptics.globalSuccess)
+                toast(R.string.auth_phone_toast_codesent)
                 navigate(AppRoute.AuthCode)
             } catch (t: Throwable) {
                 val error = t.dataError()
@@ -158,6 +185,10 @@ fun PhoneRoute(nav: NavController) {
         onPhoneChange = vm::onPhoneChange,
         onContinue = vm::submit,
         onRetry = vm::retry,
+        onDismissError = vm::dismissError,
+        onFlag = vm::openCountries,
+        onCountry = vm::onCountry,
+        onCloseCountries = vm::closeCountries,
         onTerms = { env.legal.termsUrl?.let { ExternalActions.openInAppBrowser(context, it) } },
         onPrivacy = { env.legal.privacyUrl?.let { ExternalActions.openInAppBrowser(context, it) } },
     )
@@ -171,6 +202,10 @@ fun PhoneScreen(
     onRetry: () -> Unit,
     onTerms: () -> Unit,
     onPrivacy: () -> Unit,
+    onDismissError: () -> Unit = {},
+    onFlag: () -> Unit = {},
+    onCountry: (String) -> Unit = {},
+    onCloseCountries: () -> Unit = {},
     focusOnAppear: Boolean = true,
 ) {
     if (state.offline) {
@@ -202,10 +237,15 @@ fun PhoneScreen(
             keyboardActions = KeyboardActions(onDone = { onContinue() }),
             autofill = ContentType.PhoneNumber,
             modifier = Modifier.focusRequester(focus),
+            leading = state.region?.let { region -> { CountryFlagButton(region, onFlag) } },
+            leadingInset = CountryFlagSlot.inset,
+            leadingClearance = CountryFlagSlot.clearance,
         )
         Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeFieldToButton))
         PrimaryButton(stringResource(R.string.auth_phone_continue), onContinue, enabled = state.canContinue)
     }
+    state.error?.let { ErrorAlert(stringResource(it.copy), errorDismissLabel(), onDismissError) }
+    if (state.pickingCountry) CountryPickerSheet(state.region, onCountry, onCloseCountries)
     if (focusOnAppear) LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
 }
 

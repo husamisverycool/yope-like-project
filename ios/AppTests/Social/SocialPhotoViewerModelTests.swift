@@ -176,14 +176,22 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         let model = makeModel(data)
         await model.load()
         await model.react("🔥")
-        XCTAssertEqual(model.reactions[SocialDemo.p2]?.distinctEmoji, ["😍", "🔥"])
+        XCTAssertEqual(model.reactions[SocialDemo.p2]?.distinctEmoji, ["🔥", "😍"], "newest first")
         XCTAssertEqual(model.sentReaction?.emoji, "🔥")
 
         data.update { $0.failOnce.insert("react") }
         await model.react("💖")
-        XCTAssertEqual(model.reactions[SocialDemo.p2]?.distinctEmoji, ["😍", "🔥"])
+        XCTAssertEqual(model.reactions[SocialDemo.p2]?.distinctEmoji, ["🔥", "😍"])
         XCTAssertEqual(model.signals.notice?.notice, .reactionFailed)
         XCTAssertFalse(model.reactions[SocialDemo.p2]!.distinctEmoji.joined().socialContainsDigit)
+
+        // Taking it back from the picker (`chat.reactions.layout.unreact`).
+        XCTAssertEqual(model.myEmojiOnCurrent, ["🔥"])
+        let sent = model.sentReaction
+        await model.unreact("🔥")
+        XCTAssertEqual(model.reactions[SocialDemo.p2]?.distinctEmoji, ["😍"])
+        XCTAssertTrue(model.myEmojiOnCurrent.isEmpty)
+        XCTAssertEqual(model.sentReaction, sent, "no rain for taking a reaction back")
     }
 
     func testRealtimeReactionsAndDeletion() async {
@@ -191,7 +199,7 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         let model = makeModel(data)
         await model.load()
         await model.handle(.reactionInserted(SocialDemo.reaction(SocialDemo.p2, SocialDemo.cleo, "🥰", minutes: 3000)))
-        XCTAssertEqual(model.reactions[SocialDemo.p2]?.distinctEmoji, ["😍", "🥰"])
+        XCTAssertEqual(model.reactions[SocialDemo.p2]?.distinctEmoji, ["🥰", "😍"])
         await model.handle(.postDeleted(postID: SocialDemo.p2, mediaID: SocialDemo.mediaID(SocialDemo.p2)))
         XCTAssertTrue(model.isCurrentGone, "post_deleted while open: the gone state")
     }

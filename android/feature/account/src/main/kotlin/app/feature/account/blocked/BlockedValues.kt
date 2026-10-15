@@ -1,6 +1,7 @@
 package app.feature.account.blocked
 
 import androidx.compose.ui.graphics.Color
+import app.designsystem.generated.Tokens
 
 /**
  * Every BLOCKED design value the account screens reference, behind one accessor each (BLOCKED copy
@@ -10,16 +11,7 @@ import androidx.compose.ui.graphics.Color
  */
 object BlockedValues {
     /** `groups.list.color.headerCircleOverPhoto`: the "+" circle over the cover photo (omitted while null). */
-    val groupsListHeaderCircleOverPhoto: Color? = null
-
-    /**
-     * `auth.phone.layout.inlineError`: how auth.*, groups.create and safety errors are presented. While
-     * BLOCKED the error is kept in each screen's state (and plays `haptic.global.error`) but not drawn.
-     */
-    val inlineErrorPresentation: Boolean = false
-
-    /** `auth.phone.layout.countryCode`: the country-code selector (omitted; the field takes "+" and the code as text). */
-    val countryCodeSelector: Boolean = false
+    val groupsListHeaderCircleOverPhoto: Color? = Tokens.Colors.groupsListColorHeaderCircleOverPhoto
 
     /** `safety.report.layout.reasons`: the report reason list (omitted; the details field is the reason). */
     val reportReasons: List<String>? = null

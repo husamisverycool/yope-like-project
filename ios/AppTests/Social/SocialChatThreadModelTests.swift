@@ -181,12 +181,12 @@ final class SocialChatThreadModelTests: XCTestCase {
         let data = SocialDemo.makeData()
         let model = makeModel(data)
         await model.load()
-        XCTAssertEqual(model.reactions[SocialDemo.p1]?.distinctEmoji, ["🔥", "💖"])
+        XCTAssertEqual(model.reactions[SocialDemo.p1]?.distinctEmoji, ["💖", "🔥"], "newest distinct emoji first")
         await model.handle(.reactionInserted(SocialDemo.reaction(SocialDemo.p1, SocialDemo.ana, "🔥", minutes: 70)))
         XCTAssertEqual(model.reactions[SocialDemo.p1]?.rows.filter { $0.userID == SocialDemo.ana }.count, 1)
 
         await model.handle(.reactionInserted(SocialDemo.reaction(SocialDemo.p1, SocialDemo.ben, "😂", minutes: 90)))
-        XCTAssertEqual(model.reactions[SocialDemo.p1]?.distinctEmoji, ["🔥", "💖", "😂"])
+        XCTAssertEqual(model.reactions[SocialDemo.p1]?.distinctEmoji, ["😂", "💖", "🔥"], "a new emoji enters at the leading end")
 
         data.update { $0.reactions.removeAll { $0.postID == SocialDemo.p1 && $0.emoji == "🔥" } }
         await model.handle(.reactionsChanged(SocialDemo.p1))
@@ -298,8 +298,16 @@ final class SocialChatThreadModelTests: XCTestCase {
         data.update { $0.failOnce.insert("sendVoice") }
         let before = model.messages.count
         await model.sendVoice(fileURL: file, durationMs: 1000)
-        XCTAssertEqual(model.messages.count, before, "rolled back")
-        XCTAssertEqual(model.signals.notice?.notice, .sendFailed)
+        XCTAssertEqual(model.messages.count, before + 1, "the failed voice message stays (failed-message layout)")
+        let failed = try! XCTUnwrap(model.messages.last)
+        XCTAssertTrue(model.isFailed(failed))
+        XCTAssertEqual(model.localVoiceFiles[failed.id], file, "still playable")
+        XCTAssertEqual(model.signals.notice?.notice, .messageNotSent)
+
+        await model.retry(failed)
+        XCTAssertFalse(model.messages.contains { $0.id == failed.id }, "replaced by the server row")
+        XCTAssertEqual(model.messages.last?.voiceDurationMs, 1000)
+        XCTAssertTrue(model.failed.isEmpty)
     }
 
     func testNoLoadingHUDWhenACachedCopyExists() async {
@@ -336,17 +344,44 @@ final class SocialChatThreadModelTests: XCTestCase {
         XCTAssertFalse(data.read { $0.calls }.contains("sendText"))
     }
 
-    func testSendFailureKeepsTheTextAndAnnouncesIt() async {
+    func testFailedMessageStaysWithItsLayoutAndATapSendsItAgain() async {
         let data = SocialDemo.makeData()
         let model = makeModel(data)
         await model.load()
         data.update { $0.failOnce.insert("sendText") }
         model.draft = "dinner at 8"
         await model.sendDraft()
-        XCTAssertEqual(model.draft, "dinner at 8")
+        let failed = try! XCTUnwrap(model.messages.last)
+        XCTAssertEqual(failed.body, "dinner at 8", "the message stays in the thread")
+        XCTAssertTrue(model.isFailed(failed))
+        XCTAssertEqual(model.draft, "", "the text is in the failed message, not back in the field")
+        XCTAssertFalse(model.isSending)
         XCTAssertEqual(model.signals.feedback?.kind, .failed)
-        XCTAssertEqual(model.signals.notice?.notice, .sendFailed)
-        XCTAssertFalse(model.messages.contains { $0.body == "dinner at 8" })
+        XCTAssertEqual(model.signals.notice?.notice, .messageNotSent)
+        XCTAssertTrue(SocialNotice.messageNotSent.isAnnouncementOnly, "the label shows it; no toast")
+
+        // A refresh keeps the failed copy.
+        await model.refresh()
+        XCTAssertTrue(model.messages.contains { $0.id == failed.id })
+
+        await model.retry(failed)
+        XCTAssertFalse(model.messages.contains { $0.id == failed.id })
+        XCTAssertEqual(model.messages.filter { $0.body == "dinner at 8" }.count, 1)
+        XCTAssertTrue(model.failed.isEmpty)
+        XCTAssertEqual(model.signals.feedback?.kind, .sent)
+    }
+
+    func testAFailedMessageCanBeDeletedLocally() async {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data)
+        await model.load()
+        data.update { $0.failOnce.insert("sendText") }
+        model.draft = "typo"
+        await model.sendDraft()
+        let failed = try! XCTUnwrap(model.messages.last)
+        await model.delete(failed)
+        XCTAssertFalse(model.messages.contains { $0.id == failed.id })
+        XCTAssertFalse(data.read { $0.calls }.contains("deleteMessage"), "it never reached the server")
     }
 
     func testOfflineSendFailsAndMarksOffline() async {
@@ -357,7 +392,13 @@ final class SocialChatThreadModelTests: XCTestCase {
         model.draft = "later"
         await model.sendDraft()
         XCTAssertTrue(model.isOffline)
-        XCTAssertEqual(model.signals.notice?.notice, .sendFailed)
+        XCTAssertEqual(model.signals.notice?.notice, .messageNotSent)
+        XCTAssertTrue(model.messages.last.map(model.isFailed) ?? false)
+
+        data.update { $0.mode = .normal }
+        await model.retry(model.messages.last!)
+        XCTAssertFalse(model.isOffline)
+        XCTAssertEqual(data.read { $0.messages.last?.body }, "later")
     }
 
     func testVoiceMessageIsUploadedAndSent() async {
@@ -415,6 +456,44 @@ final class SocialChatThreadModelTests: XCTestCase {
     }
 
     // MARK: Row layout
+
+    func testUnreactFromThePickerIsOptimisticAndRestoredOnFailure() async {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data)
+        await model.load()
+        await model.react(postID: SocialDemo.p3, emoji: "🥹")
+        XCTAssertEqual(model.myEmoji(on: SocialDemo.p3), ["🥹"], "highlighted in the picker")
+
+        data.update { $0.failOnce.insert("unreact") }
+        let before = model.reactions[SocialDemo.p3]
+        await model.unreact(postID: SocialDemo.p3, emoji: "🥹")
+        XCTAssertEqual(model.reactions[SocialDemo.p3], before, "put back when the call fails")
+        XCTAssertEqual(model.signals.notice?.notice, .reactionFailed)
+
+        await model.unreact(postID: SocialDemo.p3, emoji: "🥹")
+        XCTAssertFalse(model.reactions[SocialDemo.p3]?.contains(userID: SocialDemo.me, emoji: "🥹") ?? false)
+        XCTAssertTrue(model.myEmoji(on: SocialDemo.p3).isEmpty)
+        XCTAssertFalse(data.read { $0.reactions }.contains { $0.postID == SocialDemo.p3 && $0.emoji == "🥹" && $0.userID == SocialDemo.me })
+    }
+
+    func testEmojiOnlyMessagesAreRecognised() {
+        XCTAssertEqual(SocialEmojiText.emojiOnlyCount("😂"), 1)
+        XCTAssertEqual(SocialEmojiText.emojiOnlyCount("❤️ 🔥 👍🏽"), 3)
+        XCTAssertEqual(SocialEmojiText.emojiOnlyCount("👨‍👩‍👧"), 1, "a ZWJ family is one emoji")
+        XCTAssertEqual(SocialEmojiText.emojiOnlyCount("🔥🔥🔥🔥"), 4, "4+ stays a text bubble in the view")
+        XCTAssertNil(SocialEmojiText.emojiOnlyCount("ok 👍"))
+        XCTAssertNil(SocialEmojiText.emojiOnlyCount("123"), "digits are not emoji")
+        XCTAssertNil(SocialEmojiText.emojiOnlyCount("  "))
+    }
+
+    func testRepeatEmojiKeepsItsPlaceInTheCluster() {
+        var summary = ReactionSummary()
+        summary.insert(SocialDemo.reaction(SocialDemo.p1, SocialDemo.ana, "✌️", minutes: 1))
+        summary.insert(SocialDemo.reaction(SocialDemo.p1, SocialDemo.ben, "😍", minutes: 2))
+        XCTAssertEqual(summary.distinctEmoji, ["😍", "✌️"])
+        summary.insert(SocialDemo.reaction(SocialDemo.p1, SocialDemo.cleo, "✌️", minutes: 3))
+        XCTAssertEqual(summary.distinctEmoji, ["😍", "✌️"], "a repeat adds no sticker")
+    }
 
     func testRowsPutTheAvatarOnTheLastMessageOfARunAndPickTheGaps() {
         let rows = ChatRowLayout.rows(SocialDemo.messages, me: SocialDemo.me)

@@ -73,3 +73,9 @@
 | `frames/locket-tt-7460656081153445163-16.533s-gapfill-fly.png` | https://www.tiktok.com/@locketcamera/video/7460656081153445163 (t=16.533s; yt-dlp; ffmpeg -ss 15.8 -vsync 0, 30 fps) | 2026-10-15 | Gap fill (social): 😍 disc near the cluster | TikTok posted 2025-01-16 (phone filmed in hand) |
 | `frames/locket-tt-7460656081153445163-16.667s-gapfill-fly.png` | https://www.tiktok.com/@locketcamera/video/7460656081153445163 (t=16.667s; yt-dlp; ffmpeg -ss 15.8 -vsync 0, 30 fps) | 2026-10-15 | Gap fill (social): 😍 landed in the cluster (flight end) | TikTok posted 2025-01-16 (phone filmed in hand) |
 | `frames/locket-tt-7460656081153445163-16.767s-gapfill-fly.png` | https://www.tiktok.com/@locketcamera/video/7460656081153445163 (t=16.767s; yt-dlp; ffmpeg -ss 15.8 -vsync 0, 30 fps) | 2026-10-15 | Gap fill (social): settled cluster: 😍 (newest) at the leading position, ✌️ shifted one step trailing | TikTok posted 2025-01-16 (phone filmed in hand) |
+
+## Gap fill (account, capture, global, memory) — 2026-10-15
+
+| file | source URL | accessed | what it shows | version/date |
+|---|---|---|---|---|
+| `apk/locket-1.243.0-hermes-excerpts.txt` | https://d.apkpure.net/b/APK/com.locket.Locket?version=latest (XAPK; base APK `assets/index.android.bundle`, Hermes bytecode, decompiled with hermes-dec) | 2026-10-15 | excerpts with line numbers: caption `MAX_CHARS` 36 / `MULTILINE_MAX_CHARS` 200; text-caption style; phone field (react-native-phone-input, flag 20×13, height 60, radius 18) and default flag picker; `{title, message}` errors and the `Alert.alert(…, [{text:'OK'}], {cancelable:false})` helper; `BorderProgressBar` strokeWidth 6 (recording outline); report alert + `ToastAndroid.SHORT`; list divider hairline WHITE20; sheet backdrop black 0.5; React Navigation `TransitionIOSSpec`; palette and strings subsets. Internal reference; no code or assets reused | Android 1.243.0 (version_code 612) |

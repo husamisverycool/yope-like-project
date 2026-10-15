@@ -64,7 +64,7 @@ guilt words).
 | key | placeholders | surface | meaning |
 |---|---|---|---|
 | `birthday.tribute.titleCard` | `{name}` | `birthday.tribute` | Title card at the start of the video (`{name}` = the birthday person). Proposed in wrapped-tribute-partiful.copy.json (VidDay pattern P-BT-1). |
-| `birthday.tribute.endCard` | `{group}` | `birthday.tribute` | End card of the video. Not found in the research (design/research/wrapped-tribute-partiful.md §4.5). |
+| `birthday.tribute.endCard` | — | `birthday.tribute` | End card of the video ("We love you!", VidDay end card; MERGE_DECISIONS G2). |
 
 Each contribution card shows the contributor's first name and their own line (user content, not copy).
 
@@ -80,17 +80,17 @@ proposal values). A missing token fails the job with `missing design token <name
 | `layout.birthday.tribute.video` | `{ "width": px, "height": px, "fps": n }` | canonical: 1920×1080 @ 29.97 |
 | `duration.birthday.tribute.titleHold` | ms | canonical: 1167 |
 | `duration.birthday.tribute.titleCrossfade` | ms | canonical: 600 |
-| `duration.birthday.tribute.photoHold` | ms | **missing** (BLOCKED: "a set number of seconds", value not found) |
+| `duration.birthday.tribute.photoHold` | ms | canonical: 4000 (VidDay documented default) |
 | `duration.birthday.tribute.clipTransition` | ms, 0 = hard cut | canonical: 0 |
 | `duration.birthday.tribute.endTransition` | ms, 0 = hard cut | canonical: 0 |
 | `duration.birthday.tribute.endHold` | ms | canonical: 10003 |
 | `color.birthday.tribute.pillarbox` | `#RRGGBB` | canonical: `#000000` |
 | `layout.birthday.tribute.titleCard` | `{ background, textColor, fontWeight, fontSizeRatio, maxWidthRatio, centerYRatio }` (ratios of video height/width) | canonical |
-| `layout.birthday.tribute.endCard` | same as titleCard | **missing** |
-| `layout.birthday.tribute.caption` | `{ textColor, nameFontWeight, nameFontSizeRatio, lineFontWeight, lineFontSizeRatio, leftRatio, bottomRatio, maxWidthRatio, gapRatio, scrim? }` | **missing** (research §4.5: "per-contribution layout with name + one line over a photo" not found) |
+| `layout.birthday.tribute.endCard` | same as titleCard | canonical (VidDay: end card in the title-card style) |
+| `layout.birthday.tribute.caption` | `{ textColor, nameFontWeight, nameFontSizeRatio, lineFontWeight, lineFontSizeRatio, leftRatio, bottomRatio, maxWidthRatio, gapRatio, scrim? }` | canonical (Tribute "Name badges": bottom-left, dark band) |
 
-Until the three missing tokens exist, `tribute.render` fails with `missing design token …` and is
-retried; no tribute is delivered.
+All tribute tokens are canonical. If one goes missing, `tribute.render` fails with
+`missing design token …` and is retried; no tribute is delivered.
 
 The font is Roboto (vendored in `fonts/`, Apache 2.0, level PLATFORM); weights map to the
 nearest of Thin/Light/Regular/Medium/Bold/Black.

@@ -32,7 +32,7 @@ One row, leading-aligned, vertically centred:
 |---|---|---|---|
 | avatar | `widget.home.small.size.avatar` | — | newest post's poster |
 | caption | `widget.home.small.fontSize.caption`, `.fontWeight.caption`, `.size.captionGap` | post caption (user content) | — |
-| no caption / newest item is a collage | `widget.lock.rect.layout.content` (BLOCKED) | — | nothing in the anatomy to show |
+| no caption / newest item is a collage | `widget.lock.rect.layout.content` | — | no caption: the avatar alone in its slot (Locket's no-caption widget, store-06); newest is a collage: keep the newest single photo's avatar (+ caption) |
 | tap | `camera.fromwidget.layout.target` | — | opens the camera with the group preselected (the widget's information is the avatar + caption; the tap is the default widget action) |
 | configuration | — | `widget.home.small.configuration.*` | same group parameter as the home widget |
 | gallery | — | `widget.lock.rect.gallery.name`, `.gallery.description` | one Lock Screen widget kind (circular, rectangular, inline) |
@@ -77,6 +77,6 @@ Count badge, streaks (not representable anyway); no color photo.
 
 | item | status | capture |
 |---|---|---|
-| content when there is no caption, and when the newest item is a collage | BLOCKED (`widget.lock.rect.layout.content`) | one screenshot of the iOS Lock Screen 'Add Widgets' sheet after searching 'Locket', or an owner decision |
+| content when there is no caption, and when the newest item is a collage | SOURCED by gap fill as a composition (`widget.lock.rect.layout.content`, MERGE G2-13): Locket's no-caption anatomy + its one-photo rule; flagged for the owner | one screenshot of the iOS Lock Screen 'Add Widgets' sheet after searching 'Locket', or an owner decision |
 | whether Locket offers any Lock Screen widget | not found in 56 help articles, store pages, APK (0 'lock screen' strings) | same screenshot |
 | gallery name | BLOCKED until `{app_name}` | owner |

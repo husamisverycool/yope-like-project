@@ -23,7 +23,7 @@ final class ProfileModel {
     private var avatarJPEG: Data?
     private(set) var phase: Phase = .form
     private(set) var isSaving = false
-    /// Last failure copy (`auth.profile.error.upload` / `.save`; presentation BLOCKED, announced to VoiceOver).
+    /// Last failure copy (`auth.profile.error.upload` / `.save`), shown as the form error alert.
     private(set) var failureMessage: String?
     private(set) var successCount = 0
     private(set) var errorCount = 0
@@ -92,7 +92,6 @@ final class ProfileModel {
     private func fail(_ message: String) {
         failureMessage = message
         errorCount += 1
-        UIAccessibility.post(notification: .announcement, argument: message)
     }
 
     func retry() {

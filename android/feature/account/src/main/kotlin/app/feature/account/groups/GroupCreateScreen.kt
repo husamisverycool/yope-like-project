@@ -70,6 +70,8 @@ import app.ui.components.FormTextField
 import app.ui.components.HeaderCircleButton
 import app.ui.components.HeaderCircleFill
 import app.ui.components.HudOverlay
+import app.ui.system.ErrorAlert
+import app.feature.account.common.errorDismissLabel
 import app.ui.components.PrimaryButton
 import app.ui.components.SegmentedControl
 import app.ui.text.TextRoles
@@ -81,7 +83,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 
-/** groups.create failures: presentation BLOCKED (`auth.phone.layout.inlineError`), kept in state. */
+/** groups.create failures, shown as the alert of `auth.phone.layout.inlineError` (message = the error sentence, one OK). */
 enum class CreateError(val copy: Int) {
     Failed(R.string.groups_create_error_failed),
     SaveFailed(R.string.groups_create_error_savefailed),
@@ -119,6 +121,8 @@ class GroupCreateViewModel(private val env: AccountEnvironment, editGroupId: Str
             }
         }
     }
+
+    fun dismissError() = mutable.update { it.copy(error = null) }
 
     fun onName(text: String) = mutable.update { it.copy(name = text.take(MAX_NAME), error = null) }
     fun onKind(kind: GroupKind) = mutable.update { it.copy(kind = kind) }
@@ -203,6 +207,7 @@ fun GroupCreateRoute(nav: NavController, editGroupId: String? = null) {
         onKind = vm::onKind,
         onPickCover = { picker.launch(PhotoImport.imagesOnly) },
         onSubmit = vm::submit,
+        onDismissError = vm::dismissError,
     )
 }
 
@@ -224,6 +229,7 @@ fun GroupCreateScreen(
     onPickCover: () -> Unit,
     onSubmit: () -> Unit,
     coverImage: Any? = state.coverImage,
+    onDismissError: () -> Unit = {},
 ) {
     val focus = LocalFocusManager.current
     var field by remember { mutableStateOf(TextFieldValue(state.name, TextRange(state.name.length))) }
@@ -289,6 +295,7 @@ fun GroupCreateScreen(
         }
         HudOverlay(state.working, stringResource(R.string.groups_create_hud_loading))
     }
+    state.error?.let { ErrorAlert(stringResource(it.copy), errorDismissLabel(), onDismissError) }
 }
 
 /**

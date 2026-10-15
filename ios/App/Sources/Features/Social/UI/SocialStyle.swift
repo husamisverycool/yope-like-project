@@ -21,6 +21,19 @@ enum SocialText {
     static let replyLabel = role(Tokens.FontSizes.chatThreadFontSizeReplyLabel, Tokens.FontWeights.chatThreadFontWeightReplyLabel, Tokens.Layouts.ChatThreadLayoutTextStyleMap.replyLabel)
     /// Caption on a photo (thread and viewer).
     static let caption = role(Tokens.FontSizes.chatThreadFontSizeCaption, Tokens.FontWeights.chatThreadFontWeightCaption, Tokens.Layouts.ChatThreadLayoutTextStyleMap.caption)
+    /// Emoji-only message (`chat.thread.dimension.emojiOnlyGlyph`: the glyph's rendered width; regular weight).
+    static let emojiOnly = role(Tokens.Sizes.chatThreadDimensionEmojiOnlyGlyph, Font.Weight.regular, Tokens.Layouts.ChatThreadLayoutTextStyleMap.emojiOnly)
+    /// Recording row timer and hint (`chat.voice.layout.recording`: the text role of the field they replace, body).
+    static let recordingRow = TextRole.body
+    /// Failed-message label (`chat.thread.layout.failedMessage.labelTextRole`: caption).
+    static let failedLabel = TextRole.caption
+    /// Album name on its cover (`albums.list.layout.yopeAlbums.titleFontSize`, weight not measured → platform default;
+    /// Dynamic Type of `listSubtitle`, the nearest style).
+    static let albumCoverTitle = role(Tokens.Layouts.AlbumsListLayoutYopeAlbums.titleFontSize, Font.Weight.regular, Tokens.Layouts.GlobalTextStyleMap.listSubtitle)
+    /// Empty-day tile: day number (`week.history.fontSize.emptyDay`, bold per the token's element) and month / weekday
+    /// lines (`week.history.fontSize.emptyDayLabel`, weight not measured → regular).
+    static let historyEmptyDay = role(Tokens.FontSizes.weekHistoryFontSizeEmptyDay, Font.Weight.bold, Tokens.Layouts.WeekHistoryLayoutTextStyleMap.emptyDay)
+    static let historyEmptyDayLabel = role(Tokens.FontSizes.weekHistoryFontSizeEmptyDayLabel, Font.Weight.regular, Tokens.Layouts.WeekHistoryLayoutTextStyleMap.emptyDayLabel)
     /// Reaction picker section labels.
     static let pickerSection = role(Tokens.FontSizes.chatReactionsFontSizePickerSection, Tokens.FontWeights.chatReactionsFontWeightPickerSection, Tokens.Layouts.ChatReactionsLayoutTextStyleMap.pickerSection)
     /// `week.recap` / `albums.*` centred header title.
@@ -62,7 +75,7 @@ extension SocialFeedbackKind {
 extension SocialNotice {
     var text: String {
         switch self {
-        case .sendFailed: return Copy.chatThreadSendFailed
+        case .sendFailed, .messageNotSent: return Copy.chatThreadSendFailed
         case .reactionFailed: return Copy.chatReactionsError
         case .photoSaved: return Copy.photoViewerToastSaved
         case .photoDeleted: return Copy.photoViewerToastDeleted
@@ -93,7 +106,12 @@ extension View {
     /// dwell time is BLOCKED in DEBUG builds).
     func socialNotices(_ event: SocialNoticeEvent?, toasts: ToastCenter) -> some View {
         onChange(of: event) { _, new in
-            if let new { toasts.show(new.notice.text) }
+            guard let new else { return }
+            if new.notice.isAnnouncementOnly {
+                AccessibilityNotification.Announcement(new.notice.text).post()
+            } else {
+                toasts.show(new.notice.text)
+            }
         }
     }
 

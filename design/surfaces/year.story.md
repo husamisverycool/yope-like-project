@@ -40,13 +40,13 @@ button `year.story.entry.button`. Row component and position belong to the `grou
    from both sides, segments `dimension.year.story.progress.height` thick with `dimension.year.story.progress.gap`
    between them, one segment per card (`layout.year.story.progress`): completed and current segments
    `color.year.story.progress.fill`; upcoming segments white at `opacity.year.story.progress.track`. While
-   `duration.year.story.card` is BLOCKED the current segment is shown full (no timer).
+   `duration.year.story.card` (4000 ms, VidDay) the current segment fills linearly; the story then advances on its own.
 3. **Chrome row**, centre `dimension.year.story.chrome.centerY` below the canvas top, right-aligned:
    close circle `dimension.year.story.chrome.button` at `dimension.year.story.chrome.insetRight` from the canvas
    right, fill `color.year.story.chrome.fill`, glyph `icon.global.close` `dimension.year.story.chrome.glyph` high in
    `color.global.textPrimary`. The pause circle (`icon.year.story.pause` / `icon.global.play`) sits
-   `dimension.year.story.chrome.pitch` to the left of close **only once `duration.year.story.card` is sourced**
-   (auto-advance; M-16). Wrapped's sound toggle is not built (no audio, M-18); its logo is do-not-copy. Hit areas
+   `dimension.year.story.chrome.pitch` to the left of close (auto-advance over `duration.year.story.card`, sourced by gap fill;
+   M-16). Wrapped's sound toggle is not built (no audio, M-18); its logo is do-not-copy. Hit areas
    `size.global.minTouchTarget.ios` / `.android` around each circle.
 4. **Card content** (below), centred; text blocks are at most `dimension.year.story.text.maxWidth` wide
    (`layout.year.story.text`): headline `fontSize.year.story.headline` / `fontWeight.year.story.headline` /
@@ -85,7 +85,8 @@ a fact card) at `previewWidthRatio` × canvas width; below it the **Share** pill
 `year.story.summary.share` in `fontSize.year.story.sharePill` / `fontWeight.year.story.sharePill`,
 `color.global.onSurfaceLight`) sharing the card in view; then the text button `icon.year.story.replay` +
 `year.story.summary.replay` (`fontSize.year.story.body`, `color.global.textPrimary`) going back to card 1. Page dots:
-`layout.year.story.summary.dots` BLOCKED → none.
+`layout.year.story.summary.dots` (Wrapped: one per share card, 8.4 pt, pitch 16.8 pt, current #FFFFFF, others #666666;
+centre 20.4 pt below the carousel card, 29.3 pt above the Share pill).
 
 **D. Share image** (`layout.year.story.shareCard`): 1080 × 1920 px render of the card's canvas without the progress
 bar, chrome or share row; handed to the share sheet (`layout.year.story.shareSheet`) as a PNG.
@@ -95,9 +96,9 @@ bar, chrome or share row; handed to the share sheet (`layout.year.story.shareShe
 | element | tokens | copy keys | behaviour |
 |---|---|---|---|
 | letterbox / canvas | `color.year.story.letterbox`, `layout.year.story.canvas`, `color.global.backgroundDeep` | — | canvas keeps 9:16 on every phone |
-| progress bar | `dimension.year.story.progress.height` / `.top` / `.gap` / `.inset`, `color.year.story.progress.fill`, `opacity.year.story.progress.track`, `easing.year.story.progress.fill`, `layout.year.story.progress`, `duration.year.story.card` (BLOCKED) | — | position only until the card duration is sourced |
+| progress bar | `dimension.year.story.progress.height` / `.top` / `.gap` / `.inset`, `color.year.story.progress.fill`, `opacity.year.story.progress.track`, `easing.year.story.progress.fill`, `layout.year.story.progress`, `duration.year.story.card` (4000 ms) | — | current segment fills over the card duration |
 | close | `dimension.year.story.chrome.button` / `.centerY` / `.insetRight` / `.glyph`, `color.year.story.chrome.fill`, `icon.global.close`, `color.global.textPrimary` | `year.story.a11y.close` | dismisses the player |
-| pause / play | same + `dimension.year.story.chrome.pitch`, `icon.year.story.pause`, `icon.global.play` | `year.story.a11y.pause`, `year.story.a11y.play` | hidden while `duration.year.story.card` is BLOCKED |
+| pause / play | same + `dimension.year.story.chrome.pitch`, `icon.year.story.pause`, `icon.global.play` | `year.story.a11y.pause`, `year.story.a11y.play` | shown (auto-advance is on) |
 | headline / subline | `fontSize/fontWeight/lineHeight.year.story.headline`, `…body`, `dimension.year.story.text.maxWidth`, `layout.year.story.text`, `font.year.story` | card keys above | reveal motion below |
 | photo / collage card | `layout.year.story.photoCard`, `count.year.story.listLength`, `layout.year.story.dateFormat` | `year.story.mostReacted.photo`, `year.story.a11y.collage` | photos use `display_path` |
 | share row | `layout.year.story.share`, `dimension.year.story.share.*`, `fontSize/fontWeight.year.story.share`, `icon.year.story.share` | `year.story.share` | renders D and opens the share sheet |
@@ -122,8 +123,8 @@ bar, chrome or share row; handed to the share sheet (`layout.year.story.shareShe
 |---|---|---|
 | open / close player | native full-screen presentation (`easing.global.native`) | system |
 | card → card | cut (Wrapped's chapter transitions are bespoke brand animation, not reproduced) | same |
-| text reveal on a card with a subline: headline moves up `dimension.year.story.reveal.headlineShift` over `duration.year.story.reveal.headline`; subline starts `duration.year.story.reveal.sublineDelay` later from `dimension.year.story.reveal.sublineOffset` below and settles over `duration.year.story.reveal.subline` | curve `easing.year.story.reveal` **BLOCKED** (samples in `layout.year.story.reveal.samples`) → until it is captured, every user gets the substitute | cross-fade of the same durations (`layout.global.reduceMotion`) |
-| progress fill | `easing.year.story.progress.fill` (linear) over `duration.year.story.card` (BLOCKED → no fill animation) | the fill tracks time, so it stays (it is not decorative motion) |
+| text reveal on a card with a subline: headline moves up `dimension.year.story.reveal.headlineShift` over `duration.year.story.reveal.headline`; subline starts `duration.year.story.reveal.sublineDelay` later from `dimension.year.story.reveal.sublineOffset` below and settles over `duration.year.story.reveal.subline` | curves `easing.year.story.reveal` (headline, cubic-bezier(0.56, 0.08, 0.14, 0.87)) and `easing.year.story.reveal.subline` (0.05, 0.36, 0.26, 0.94), fitted to all 25 / 19 samples (0.5-px residual) | cross-fade of the same durations (`layout.global.reduceMotion`) |
+| progress fill | `easing.year.story.progress.fill` (linear) over `duration.year.story.card` (4000 ms) | the fill tracks time, so it stays (it is not decorative motion) |
 
 ## Haptics
 
@@ -136,8 +137,8 @@ None observed in Wrapped; none added. The share sheet plays its own.
   header trait. Photo cards: the image is decorative, the headline carries who and when; collage image
   `year.story.a11y.collage`. Progress bar: hidden (position is read on change, below).
 - **Navigation:** custom accessibility actions `year.story.a11y.next` / `year.story.a11y.previous` on the canvas;
-  after each change post a screen-changed / `announceForAccessibility` so the new headline is read. No auto-advance
-  while the duration is BLOCKED (also meets WCAG 2.2.2 without a pause).
+  after each change post a screen-changed / `announceForAccessibility` so the new headline is read. Auto-advance
+  can be paused with the pause control (WCAG 2.2.2 Pause, Stop, Hide).
 - **Dynamic Type** (`layout.year.story.textStyleMap`): headline `largeTitle`, subline `subheadline`, share label
   `callout`, Share pill `headline`. Text wraps inside `dimension.year.story.text.maxWidth`; at accessibility sizes
   the block may grow past the photo box — keep the box and push the text down. The share image always renders at the
@@ -190,10 +191,10 @@ vertical-swipe coach mark (other navigation model); AI-written report pages.
 
 | item | status | owner capture that closes it |
 |---|---|---|
-| `duration.year.story.card` (auto-advance) and the pause control | BLOCKED → tap-only | 30 s iPhone recording of Wrapped "Your Stories" replay with show-touches on: taps left / right and a press-and-hold (research capture 1) |
+| `duration.year.story.card` (auto-advance) and the pause control | SOURCED by gap fill: 4000 ms (VidDay's documented card time, confirmed in its render; MERGE G2-18); Wrapped's own per-fact time unknown | 30 s iPhone recording of Wrapped "Your Stories" replay with show-touches on: taps left / right and a press-and-hold (research capture 1) |
 | tap-zone widths, hold-to-pause | halves; no hold | same recording |
-| `easing.year.story.reveal` | BLOCKED → cross-fade for everyone | one 60 fps recording of any Wrapped card whose subline appears |
-| `layout.year.story.summary.dots` | BLOCKED → no dots | one full-resolution screenshot of the Wrapped summary screen |
+| `easing.year.story.reveal`, `.reveal.subline` | SOURCED by gap fill: fitted to the existing 30 fps samples (MERGE G2-19) | one 60 fps recording of any Wrapped card whose subline appears |
+| `layout.year.story.summary.dots` | SOURCED by gap fill: measured on the Wrapped 2024 press render (JPEG, ±0.9 pt; MERGE G2-20) | one full-resolution screenshot of the Wrapped summary screen |
 | text block width | lower bound 274 pt (`dimension.year.story.text.maxWidth`) | same recording at full resolution |
 | iOS placement of the chrome | from an Android recording | one iOS screenshot of a Wrapped card |
 | "Share" pill label size (2024) | 2025 pill label used | summary screenshot above |

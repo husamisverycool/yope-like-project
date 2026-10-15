@@ -285,6 +285,32 @@ final class PhotoViewerModel {
         }
     }
 
+    /// The emoji I reacted with on the photo on screen (highlighted in the picker).
+    var myEmojiOnCurrent: Set<String> {
+        guard let me, let post = current else { return [] }
+        return reactions[post.id]?.emoji(by: me) ?? []
+    }
+
+    /// `unreact` from the picker's highlighted emoji (`chat.reactions.layout.unreact`): the sticker leaves at once
+    /// (when nobody else used that emoji) and comes back if the call fails. No haptic, no rain.
+    func unreact(_ emoji: String) async {
+        guard let me, let post = current, !isCurrentGone else { return }
+        let postID = post.id
+        guard let before = reactions[postID], before.contains(userID: me, emoji: emoji) else { return }
+        reactions[postID]?.remove(userID: me, emoji: emoji)
+        do {
+            try await data.unreact(postID: postID, emoji: emoji)
+        } catch {
+            if SocialFailure(error) == .notFound {
+                gone.insert(postID)
+                return
+            }
+            reactions[postID] = before
+            signals.emit(.failed)
+            signals.post(.reactionFailed)
+        }
+    }
+
     // MARK: "i'm in this" (tagging.md)
 
     private func updateCoach() {

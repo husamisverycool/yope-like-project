@@ -3,7 +3,7 @@
 Reference: **Apple HIG / Material 3** (Yope voice for the title and explanation; F-21). Research:
 `design/research/platform.md` §safety; API `docs/API.md` §5.6, §6.3 `block_user` / `unblock_user`. Tokens:
 `safety.block.layout.menu`, `safety.block.layout.confirm`, `safety.block.layout.toast`, `safety.block.duration.toast`
-(BLOCKED), `settings.account.layout.alert`. Copy: `safety.block.*`.
+(2000 ms, gap fill), `settings.account.layout.alert`. Copy: `safety.block.*`.
 
 ## Where Block is exposed
 
@@ -35,7 +35,7 @@ destructive at the top, Cancel at the bottom); HIG Menus; M3 menus and dialogs; 
 |---|---|---|---|
 | menu item | `safety.block.layout.menu` | `safety.block.menuItem` / `safety.block.menuItemNamed` | opens the confirmation |
 | confirmation | `safety.block.layout.confirm` / `settings.account.layout.alert` | `safety.block.title`, `safety.block.message`, `safety.block.confirm`, `safety.block.cancel` | `block_user(p_user_id)` |
-| toast | `safety.block.layout.toast` (`color.global.accent`, `icon.global.checkmark`, `color.global.onAccent`, `radius.global.capsule`, `size.global.screenMargin`), dwell `safety.block.duration.toast` (BLOCKED) | `safety.block.done`, `safety.block.undone` (from `settings.blocked`) | release builds skip the toast until the dwell time is captured |
+| toast | `safety.block.layout.toast` (`color.global.accent`, `icon.global.checkmark`, `color.global.onAccent`, `radius.global.capsule`, `size.global.screenMargin`), dwell `safety.block.duration.toast` (2000 ms) | `safety.block.done`, `safety.block.undone` (from `settings.blocked`) | release builds skip the toast until the dwell time is captured |
 
 ## States
 
@@ -78,4 +78,4 @@ Notifying the blocked person; showing who blocked whom.
 
 | item | status | smallest capture |
 |---|---|---|
-| toast dwell time | BLOCKED (`safety.block.duration.toast`) | one 10-s English recording of Yope sending a photo until the "posted in the wall" toast disappears |
+| toast dwell time | SOURCED by gap fill: 2000 ms (`safety.block.duration.toast`) — Locket's confirmation after a report is `ToastAndroid.SHORT`, AOSP `SHORT_DELAY = 2000`; Yope's own dwell is cut by the only video's edit (≥ 0.57 s visible), entrance ≈117 ms (60 fps) | one 10-s English recording of Yope sending a photo until the "posted in the wall" toast disappears |

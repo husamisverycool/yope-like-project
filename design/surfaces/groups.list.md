@@ -22,7 +22,7 @@ Tokens: `groups.list.*` + global. Copy: `groups.list.*`.
    Tapping the cover opens that photo (`photo.viewer`).
 2. **Header circles over the cover**, top row at the safe area, inset `size.global.headerInset`: the trailing "+"
    circle (`size.global.headerButton`, glyph `icon.global.add`) → `groups.create`. Fill
-   `groups.list.color.headerCircleOverPhoto` (BLOCKED). Yope's leading search circle (friend search) and centre wordmark are
+   `groups.list.color.headerCircleOverPhoto` (#00000094, solved on the 2026 Yope home). Yope's leading search circle (friend search) and centre wordmark are
    not built (Do-not-copy).
 3. **Group cards**, one per group, newest activity first; gap `size.global.listGap`; side margin `size.global.screenMargin`;
    first card `size.global.listGap` under the ⌄.
@@ -42,7 +42,7 @@ avatar (group cover in a circle) · text block (name; subtitle) · trailing came
 | subtitle | `fontSize.global.listSubtitle`, `fontWeight.global.listSubtitle`, `color.global.textSecondary`; sender `{first_name}` in `color.global.accent` | `groups.list.row.sentPic` / `groups.list.row.newPic` / `groups.list.row.noPics` | {time} = newest post time, `h:mm AM/PM` (today) |
 | camera glyph | `icon.global.camera`, `groups.list.size.cameraGlyph`, `color.global.textPrimary`, trailing inset `groups.list.size.avatarInset`; hit area `size.global.minTouchTarget.*` | `groups.list.row.camera.accessibilityLabel` | → `camera.capture` with the group preselected (`DeepLink.camera(groupID:)`) |
 | cover | `groups.list.size.coverHeight`; ⌄ `icon.global.chevronDown` | `groups.list.cover.accessibilityLabel` | tap → `photo.viewer` |
-| + circle | `size.global.headerButton`, `icon.global.add`, `groups.list.color.headerCircleOverPhoto` (BLOCKED) | `groups.list.header.add.accessibilityLabel` | → `groups.create` |
+| + circle | `size.global.headerButton`, `icon.global.add`, `groups.list.color.headerCircleOverPhoto` | `groups.list.header.add.accessibilityLabel` | → `groups.create` |
 | tab bar | `size.global.tabBarWidth`, `.tabBarHeight`, `.tabBarInset`, `.tabBarSelectedWidth`, `.tabBarSelectedHeight`, `.tabBarIcon`, `.tabBarAvatar`; `color.global.control`, `.controlRaised`, `.textPrimary`, `.textSecondary`; `radius.global.capsule`; icons `icon.global.camera`, `icon.global.chats`, `icon.global.wall`, own avatar | `groups.list.tab.camera.accessibilityLabel`, `.groups`, `.walls`, `.me` | camera → `camera.capture`; groups = this screen; walls → `walls.browse`; me → `walls.mine` (where the settings circle lives) |
 
 ## States
@@ -99,7 +99,7 @@ No other haptics.
 
 | item | status | smallest capture |
 |---|---|---|
-| header circle fill over the photo (`groups.list.color.headerCircleOverPhoto`) | BLOCKED | one lossless screenshot of the 2026 Yope home with a cover photo |
+| header circle fill over the photo (`groups.list.color.headerCircleOverPhoto`) | SOURCED by gap fill: black at 0.58 ±0.06 solved on the 1080p 60 fps Yope home frame (MERGE G2-6); blur not measured; white glyph over it on a white photo 5.33:1 | one lossless screenshot of the 2026 Yope home with a cover photo |
 | cover bottom-corner radius | not measured | same screenshot |
 | app wordmark in the header centre | owner asset (app name/logo BLOCKED) | — |
 | group card avatar for groups without a cover | approximation (group glyph on the gray role) | — |

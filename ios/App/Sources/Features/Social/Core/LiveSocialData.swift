@@ -112,6 +112,10 @@ struct LiveSocialData: SocialDataSource {
         try await environment.reactions.react(postID: postID, emoji: emoji)
     }
 
+    func unreact(postID: PostID, emoji: String) async throws {
+        try await environment.reactions.unreact(postID: postID, emoji: emoji)
+    }
+
     func isTagged(postID: PostID, userID: UserID) async throws -> Bool {
         try await environment.reactions.tags(postID: postID).contains { $0.userID == userID }
     }
@@ -242,6 +246,7 @@ struct UnconfiguredSocialData: SocialDataSource {
     func deleteMedia(id: MediaID) async throws { try fail() as Void }
     func reactions(postIDs: [PostID]) async throws -> [Reaction] { try fail() }
     func react(postID: PostID, emoji: String) async throws -> Reaction { try fail() }
+    func unreact(postID: PostID, emoji: String) async throws { try fail() as Void }
     func isTagged(postID: PostID, userID: UserID) async throws -> Bool { try fail() }
     func setTagged(_ tagged: Bool, postID: PostID) async throws { try fail() as Void }
     func block(userID: UserID) async throws { try fail() as Void }

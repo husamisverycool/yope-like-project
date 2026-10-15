@@ -28,3 +28,11 @@ Internal design reference only. Spotify's logo, wordmark, colours-as-brand, illu
 | `frames/wrapped25-rec-cdragon2010-t054.000.png`, `-t060.000.png` | same | 2026-10-15 | "You listened to 1,056 songs this year." → "But can you guess your #1?" | same |
 | `frames/wrapped25-rec-cdragon2010-t252.000.png`, `-t258.000.png` | same | 2026-10-15 | outro share screen: share-card carousel + page dots + "Share" pill; "One more thing..." with down arrows | same |
 | `frames/wrapped25-rec-cdragon2010-t372.000.png` | same | 2026-10-15 | Wrapped Party end screen ("Compare your Wrapped with up to nine friends.") | same |
+
+## Gap fill (account, capture, global, memory) — 2026-10-15
+
+| file | source URL | accessed | what it shows | version/date |
+|---|---|---|---|---|
+| `frames/wrapped24-rec-emilycraig-reveal-fit.csv` | fit of `frames/wrapped24-rec-emilycraig-reveal-positions.csv` (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110) | 2026-10-15 | cubic-Bezier least-squares fits: headline (0.56, 0.08, 0.14, 0.87) rms 0.48 px over 25 samples; subline (0.05, 0.36, 0.26, 0.94) rms 0.46 px over 19; documented curves compared (`easing.year.story.reveal`, `.reveal.subline`) | posted 2024-12 |
+
+Also measured in this pass (no new file): `press/wrapped24-press-summary-sharecard.jpg` page dots under the share-card carousel — centres y764.17, x302.65/321.74/340.89/360.01 (pitch 19.12 px = 16.8 pt at 447 px = 393 pt), diameters ≈9.3–9.8 px, current (253,253,253), others (102,102,102) (`layout.year.story.summary.dots`).

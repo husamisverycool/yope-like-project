@@ -1,0 +1,117 @@
+import XCTest
+
+/// Account flows end to end on in-memory data: the app runs with `-account-ui-test-scenario <name>`
+/// (App/Sources/Features/Account/Testing/AccountUITestScenario.swift): `signed-out` (fresh install, SMS code 123456),
+/// `signed-in` (an onboarded member without groups), `with-groups` (a member in two groups with photos).
+final class AccountFlowUITests: XCTestCase {
+    override func setUp() {
+        continueAfterFailure = false
+    }
+
+    @MainActor
+    private func launch(_ scenario: String) -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments = ["-account-ui-test-scenario", scenario]
+        app.launch()
+        return app
+    }
+
+    private func element(_ app: XCUIApplication, _ identifier: String) -> XCUIElement {
+        app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+    }
+
+    /// The text field carrying `identifier` (the identifier is set on the form field around it).
+    private func field(_ app: XCUIApplication, _ identifier: String) -> XCUIElement {
+        let textField = app.textFields[identifier]
+        return textField.exists ? textField : element(app, identifier)
+    }
+
+    @MainActor
+    private func type(_ text: String, into identifier: String, in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        let target = field(app, identifier)
+        XCTAssertTrue(target.waitForExistence(timeout: 5), "\(identifier) missing", file: file, line: line)
+        target.tap()
+        target.typeText(text)
+    }
+
+    @MainActor
+    private func tap(_ identifier: String, in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        let button = element(app, identifier)
+        XCTAssertTrue(button.waitForExistence(timeout: 5), "\(identifier) missing", file: file, line: line)
+        XCTAssertTrue(button.isEnabled, "\(identifier) disabled", file: file, line: line)
+        button.tap()
+    }
+
+    // MARK: Sign-up → onboarding → home
+
+    @MainActor
+    func testSignUpThroughOnboardingLandsOnTheGroupsList() {
+        let app = launch("signed-out")
+        XCTAssertTrue(element(app, "auth.phone").waitForExistence(timeout: 10))
+        // The field starts with the region's calling code; the digits after it make "continue" available.
+        type("5551234567", into: "auth.phone.field", in: app)
+        tap("auth.phone.continue", in: app)
+
+        XCTAssertTrue(element(app, "auth.code").waitForExistence(timeout: 5))
+        type("123456", into: "auth.code.field", in: app)
+        if element(app, "auth.code").exists, element(app, "auth.code.continue").exists, element(app, "auth.code.continue").isHittable {
+            element(app, "auth.code.continue").tap()
+        }
+
+        XCTAssertTrue(element(app, "auth.agegate").waitForExistence(timeout: 5))
+        type("01012000", into: "auth.agegate.field", in: app)
+        tap("auth.agegate.continue", in: app)
+
+        XCTAssertTrue(element(app, "auth.profile").waitForExistence(timeout: 5))
+        type("Ana", into: "auth.profile.field", in: app)
+        tap("auth.profile.continue", in: app)
+
+        XCTAssertTrue(element(app, "onboarding.permission.notifications").waitForExistence(timeout: 5))
+        tap("onboarding.notifications.continue", in: app)
+
+        XCTAssertTrue(element(app, "onboarding.widget").waitForExistence(timeout: 5))
+        tap("onboarding.widget.continue", in: app)
+
+        XCTAssertTrue(element(app, "groups.list").waitForExistence(timeout: 5), "home after onboarding")
+        XCTAssertTrue(element(app, "groups.list.empty.create").exists, "a new account has no groups yet")
+    }
+
+    @MainActor
+    func testWrongCodeKeepsThePersonOnTheCodeStep() {
+        let app = launch("signed-out")
+        XCTAssertTrue(element(app, "auth.phone").waitForExistence(timeout: 10))
+        type("5551234567", into: "auth.phone.field", in: app)
+        tap("auth.phone.continue", in: app)
+        XCTAssertTrue(element(app, "auth.code").waitForExistence(timeout: 5))
+        type("000000", into: "auth.code.field", in: app)
+        if element(app, "auth.code.continue").isHittable { element(app, "auth.code.continue").tap() }
+        XCTAssertFalse(element(app, "auth.agegate").waitForExistence(timeout: 2))
+        XCTAssertTrue(element(app, "auth.code").exists)
+    }
+
+    // MARK: Create a group
+
+    @MainActor
+    func testCreateGroupOpensItsCreatedState() {
+        let app = launch("signed-in")
+        XCTAssertTrue(element(app, "groups.list").waitForExistence(timeout: 10))
+        tap("groups.list.empty.create", in: app)
+
+        XCTAssertTrue(element(app, "groups.create").waitForExistence(timeout: 5))
+        XCTAssertFalse(element(app, "groups.create.submit").isEnabled, "a name is required")
+        type("Lima family", into: "groups.create.name", in: app)
+        tap("groups.create.submit", in: app)
+
+        XCTAssertTrue(element(app, "groups.screen").waitForExistence(timeout: 5))
+        XCTAssertTrue(element(app, "groups.screen.created").waitForExistence(timeout: 5), "a new group starts with the invite prompt")
+        XCTAssertFalse(element(app, "groups.create").exists, "the sheet closed")
+    }
+
+    @MainActor
+    func testGroupsListShowsTheMembersGroups() {
+        let app = launch("with-groups")
+        XCTAssertTrue(element(app, "groups.list").waitForExistence(timeout: 10))
+        XCTAssertTrue(element(app, "groups.list.row").waitForExistence(timeout: 5))
+        XCTAssertEqual(app.descendants(matching: .any).matching(identifier: "groups.list.row").count, 2)
+    }
+}

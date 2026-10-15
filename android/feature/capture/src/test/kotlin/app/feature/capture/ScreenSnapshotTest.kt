@@ -30,6 +30,7 @@ import app.feature.capture.data.CapturedMedia
 import app.feature.capture.sendto.SendToChrome
 import app.feature.capture.sendto.SendToScreen
 import app.feature.capture.sendto.SendToViewModel
+import app.feature.capture.sendto.VoiceNoteFile
 import app.feature.capture.ui.DualImage
 import app.feature.capture.ui.LimeToast
 import app.feature.capture.widget.WidgetPickerScreen
@@ -53,8 +54,8 @@ import java.util.TimeZone
 
 /**
  * One snapshot per screen per state (docs/SCREENS_BRIEF.md rule 7), on a 393 × 852 dp screen at
- * 3× (the references' iPhone frame), Reduce Motion off. Debug build: BLOCKED review values from the
- * debug source set appear (the countdown weight, the voice-note mic).
+ * 3× (the references' iPhone frame), Reduce Motion off. Every value is the release value (no
+ * capture token is BLOCKED since the gap-fill pass).
  */
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -111,26 +112,35 @@ class ScreenSnapshotTest {
 
     private val media = CapturedMedia(MediaKind.Photo, File(dir, "x.jpg"), 900, 1240, null, false)
     private val groups = listOf(group("g1", "Sunday dinners"), group("g2", "Roommates"), group("g3", "Family"))
-    private val loaded = SendToViewModel.UiState(media = media, groups = SendToViewModel.Groups.Loaded(groups), selected = setOf("g1", "g2"), micAvailable = Blocked.voiceNoteRecorder)
+    private val loaded = SendToViewModel.UiState(media = media, groups = SendToViewModel.Groups.Loaded(groups), selected = setOf("g1", "g2"), micAvailable = true)
 
-    private fun sendTo(name: String, state: SendToViewModel.UiState) = snap("camera.sendto_$name") {
+    private fun sendTo(name: String, state: SendToViewModel.UiState, saved: Boolean = false) = snap("camera.sendto_$name") {
         SendToScreen(
             state = state,
             chrome = SendToChrome(preview = photo, hourText = hour),
             onClose = {}, onSave = {}, onCaption = {}, onMic = {}, onVoiceCoachClose = {}, onToggle = {}, onSend = {},
             onCreateGroup = {}, onRetryGroups = {},
+            now = { RECORDING_STARTED + 7_000 },
+            savedToast = saved,
         )
     }
 
     @Test fun sendToLoading() = sendTo("loading", loaded.copy(groups = SendToViewModel.Groups.Loading, selected = emptySet()))
     @Test fun sendToLoaded() = sendTo("loaded", loaded)
-    @Test fun sendToVoiceCoach() = sendTo("voice-coach", loaded.copy(voiceCoachVisible = Blocked.voiceNoteRecorder))
+    @Test fun sendToVoiceCoach() = sendTo("voice-coach", loaded.copy(voiceCoachVisible = true))
     @Test fun sendToCaption() = sendTo("caption", loaded.copy(caption = "sunday dinner at the limas"))
     @Test fun sendToNothingSelected() = sendTo("nothing-selected", loaded.copy(selected = emptySet()))
     @Test fun sendToEmpty() = sendTo("empty", loaded.copy(groups = SendToViewModel.Groups.Empty, selected = emptySet()))
     @Test fun sendToOffline() = sendTo("offline", loaded.copy(groups = SendToViewModel.Groups.Failed(offline = true), selected = emptySet()))
     @Test fun sendToSendFailed() = sendTo("error", loaded.copy(sendError = DataError.Unexpected(null)))
     @Test fun sendToVideoFreeMember() = sendTo("video-free", loaded.copy(media = media.copy(kind = MediaKind.Video, durationMs = 3000), premium = false))
+
+    // The voice note (`chat.voice.layout.recording`): holding the mic, locked hands-free, attached.
+    private val recording = loaded.copy(recordingVoice = true, recordingStartedAt = RECORDING_STARTED)
+    @Test fun sendToVoiceRecording() = sendTo("voice-recording", recording)
+    @Test fun sendToVoiceLocked() = sendTo("voice-locked", recording.copy(voiceLocked = true))
+    @Test fun sendToSaved() = sendTo("saved", loaded, saved = true)
+    @Test fun sendToVoiceAttached() = sendTo("voice-attached", loaded.copy(voice = VoiceNoteFile(File(dir, "v.m4a"), 7_000)))
 
     // The toast layouts (posted: shown only once its visible duration is sourced; failure: until sent).
     @Test fun toastPosted() = snap("camera.sendto_toast-posted") {
@@ -210,6 +220,7 @@ class ScreenSnapshotTest {
 }
 
 private const val SETTLE_MS = 1_000L
+private const val RECORDING_STARTED = 1_000_000L
 
 /** A synthetic option-B page (test fixture): 3 × 4 dual tiles on the matte, 9:16. */
 object CollagePage {

@@ -26,7 +26,8 @@ video length, widget entry). Conflicts: `design/MERGE_DECISIONS.md` → Capture 
    - **Flash toggle** glyph bottom-leading, centre 28.3 pt from the leading edge and 33 pt above the bottom edge,
      glyph height 15 pt (`camera.capture.layout.flashGlyph`); `icon.global.flashOff` / `icon.global.flashOn`.
    - While recording a video: an outline around the viewfinder in `color.global.accent`
-     (width `camera.capture.size.recordingOutline`, BLOCKED).
+     (width `camera.capture.size.recordingOutline` 6 pt, Locket). As in Locket it is a progress stroke: it traces the
+     viewfinder outline (`radius.global.viewfinder`) from empty to full, linearly, over the maximum video length.
 4. **Coach tooltip** (first use only, video available): lime pill centred on the shutter, pointer apex 2 pt above
    the shutter ring (`camera.capture.layout.coach`): leading video glyph `camera.capture.icon.recordHint`
    (at the text size) · `camera.capture.coach.holdToRecord` · ✕
@@ -52,7 +53,7 @@ video length, widget entry). Conflicts: `design/MERGE_DECISIONS.md` → Capture 
 | flash toggle | `camera.capture.layout.flashGlyph`, `icon.global.flashOff` / `.flashOn`, `color.global.textPrimary` | a11y `camera.capture.a11y.flash` + value `.flashOn` / `.flashOff` | tap toggles off ↔ on (glyph swap, no animation observed). Default off. Hidden when the active camera has no flash. |
 | coach tooltip | `camera.capture.layout.coach`, `camera.capture.icon.recordHint`, `camera.capture.fontSize.coach` / `.fontWeight.coach`, `color.global.accent` fill, `color.global.onAccent` text and glyphs | `camera.capture.coach.holdToRecord`; ✕ a11y `camera.capture.a11y.close` | shown once per install, only when video is available to the member; ✕ or the first recorded video dismisses it for good |
 | shutter | `camera.capture.size.shutter*`, `color.global.accent`, `color.global.surfaceLight`, `camera.capture.color.shutterDiscPressed` | a11y `camera.capture.a11y.shutter`; custom action `camera.capture.a11y.recordVideo` (premium) | **tap** = photo (Live Photo where supported, see Platform notes) → `camera.sendto`. **Long press** = video (premium): records while held, stops on release or at `camera.capture.duration.videoMax` (10 s). Free member: the session's first long press opens `paywall` (owned there; at most one prompt per session); later long presses do nothing; tapping always captures (never blocks the core). |
-| recording outline | `camera.capture.size.recordingOutline` (BLOCKED), `color.global.accent` | announcement `camera.capture.a11y.recording` | visible while a video records |
+| recording outline | `camera.capture.size.recordingOutline` (6 pt), `color.global.accent` | announcement `camera.capture.a11y.recording` | visible while a video records |
 | library thumbnail | `camera.capture.size.libraryThumb`, `.radius.libraryThumb`, `.size.libraryThumbBorder`, `icon.global.gallery` | a11y `camera.capture.a11y.library` | opens the system photo picker (iOS PHPickerViewController / PhotosPicker, Android Photo Picker — no library permission); the picked photo / Live Photo / video goes to `camera.sendto` |
 | flip | `camera.capture.size.flipButton`, `camera.capture.color.flipButton`, `icon.global.flip` | a11y `camera.capture.a11y.flip` | switches front ↔ back |
 
@@ -73,7 +74,7 @@ video length, widget entry). Conflicts: `design/MERGE_DECISIONS.md` → Capture 
 | motion | tokens | Reduce Motion |
 |---|---|---|
 | shutter press: scale to 0.85 and disc → `camera.capture.color.shutterDiscPressed` | `camera.capture.spring.shutterPress` (response 233 ms, no overshoot), `camera.capture.layout.shutterPress` | no scale; the disc color change only (`layout.global.reduceMotion`) |
-| capture → `camera.sendto` | Yope sheet: `duration.global.sheetPresent` + `spring.global.sheetPresent` (BLOCKED, F-15); until F-15 closes the documented alternative is the native presentation (`easing.global.native.sheet`) | cross-fade of the same duration |
+| capture → `camera.sendto` | Yope sheet: `duration.global.sheetPresent` + `spring.global.sheetPresent` (gap fill: the documented iOS modal spring, response 0.344 / damping 4.56, no overshoot — MERGE G2-3; a native presentation keeps `easing.global.native.sheet`) | cross-fade of the same duration |
 | flash / flip / coach / recording outline | none observed → no custom animation (camera feed switch is the platform's) | — |
 
 ## Haptics
@@ -98,7 +99,7 @@ disrupt experiences involving … the camera"). The same rule covers flash, flip
   shutter ring `color.global.accent` on `color.global.backgroundDeep` 17.65:1 pass; disc 21:1 pass; flip glyph white
   on `camera.capture.color.flipButton` 16.48:1 pass; **flip circle vs black 1.27:1 FAIL** (container edge; no
   sourced alternative — the glyph itself passes); thumbnail border 21:1 pass; hour overlay and flash glyph white
-  over the live image: **photo-dependent, no scrim** (`color.global.scrim` BLOCKED).
+  over the live image: **photo-dependent, no scrim** (none observed on the camera; `color.global.scrim` is for sheets).
 
 ## Data & actions
 
@@ -128,7 +129,7 @@ chat button with a count badge, photo-tinted background; streak pills anywhere.
 
 | item | status | smallest capture / decision |
 |---|---|---|
-| `camera.capture.size.recordingOutline` | BLOCKED | 10-s iPhone screen recording of Locket hold-to-record |
+| `camera.capture.size.recordingOutline` | SOURCED by gap fill: 6 pt, Locket 1.243.0 source default (MERGE G2-9) | 10-s iPhone screen recording of Locket hold-to-record (would confirm the iOS build) |
 | Yope hold-to-record visuals, shutter press on the current Yope build | not observed (Locket 2022 motion used) | 10-s Yope recording: one tap capture + one hold-to-record |
 | Live Photo on/off control | not built (no reference shows one) | one screenshot of a Yope / Locket camera with Live Photo |
 | zoom, focus tap | not built (not observed) | — |

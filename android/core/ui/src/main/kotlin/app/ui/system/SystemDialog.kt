@@ -9,6 +9,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import app.designsystem.generated.Tokens
 
 /**
@@ -19,7 +20,8 @@ import app.designsystem.generated.Tokens
  * actions `labelLarge` text buttons in `color.global.system.primary`; at most 2 actions, dismissive
  * leading, confirming trailing; a [destructive] confirm label is `color.global.system.error`.
  * While [confirmBusy] the confirm action shows the platform progress indicator and is disabled
- * (safety.block "blocking", settings.account "deleting").
+ * (safety.block "blocking", settings.account "deleting"). [dismissible] false: tapping outside and
+ * Back do not close it (only its buttons do).
  */
 @Composable
 fun SystemAlertDialog(
@@ -32,10 +34,12 @@ fun SystemAlertDialog(
     modifier: Modifier = Modifier,
     destructive: Boolean = false,
     confirmBusy: Boolean = false,
+    dismissible: Boolean = true,
 ) {
     AlertDialog(
         onDismissRequest = { if (!confirmBusy) onDismiss() },
         modifier = modifier,
+        properties = DialogProperties(dismissOnBackPress = dismissible, dismissOnClickOutside = dismissible),
         shape = RoundedCornerShape(Tokens.Layouts.SettingsAccountLayoutAlert.androidCornerDp.dp),
         containerColor = Tokens.Colors.globalSystemSurfaceContainerHigh,
         titleContentColor = Tokens.Colors.globalSystemOnSurface,
@@ -62,5 +66,24 @@ fun SystemAlertDialog(
                 }
             }
         },
+    )
+}
+
+/**
+ * A field-level error on the sign-up and form screens (`auth.phone.layout.inlineError`, android): the
+ * M3 basic dialog with no title, the error sentence as its message and one button ([buttonLabel])
+ * that closes it; tapping outside or Back does not close it.
+ */
+@Composable
+fun ErrorAlert(message: String, buttonLabel: String, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+    SystemAlertDialog(
+        title = null,
+        text = message,
+        confirmLabel = buttonLabel,
+        onConfirm = onDismiss,
+        dismissLabel = null,
+        onDismiss = onDismiss,
+        modifier = modifier,
+        dismissible = false,
     )
 }

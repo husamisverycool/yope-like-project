@@ -82,10 +82,11 @@ private enum class WallHeaderButton { Settings, Back, None }
  * The wall header: title centred, text role `sheetTitle`, baseline
  * `walls.browse.dimension.titleBaseline` below the top safe-area inset, with an optional header
  * circle vertically centred on the title (settings at the right for walls.mine, back at the left for
- * walls.member), [height] tall in all.
+ * walls.member), [height] tall in all. It sits inside the grid's `walls.mine.dimension.gridInset`
+ * side insets ([bleed]); the circle is placed `size.global.headerInset` from the screen edge.
  */
 @Composable
-private fun WallTitle(title: String, button: WallHeaderButton, onButton: () -> Unit, height: Dp, label: String?, modifier: Modifier = Modifier) {
+private fun WallTitle(title: String, button: WallHeaderButton, onButton: () -> Unit, height: Dp, label: String?, modifier: Modifier = Modifier, bleed: Dp = Tokens.Sizes.wallsMineDimensionGridInset) {
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val circleLabel = when (button) {
         WallHeaderButton.Settings -> stringRes(R.string.walls_mine_a11y_settings)
@@ -104,8 +105,10 @@ private fun WallTitle(title: String, button: WallHeaderButton, onButton: () -> U
         },
     ) { measurables, constraints ->
         val inset = Tokens.Sizes.globalHeaderInset.roundToPx()
+        val out = bleed.roundToPx()
+        val screenWidth = constraints.maxWidth + 2 * out
         val circleSize = Tokens.Sizes.globalHeaderButton.roundToPx()
-        val titleMax = (constraints.maxWidth - 2 * (inset + circleSize)).coerceAtLeast(0)
+        val titleMax = (screenWidth - 2 * (inset + circleSize)).coerceAtLeast(0)
         val titlePlaceable = measurables[0].measure(Constraints(maxWidth = titleMax))
         val circle = measurables.getOrNull(1)?.measure(Constraints())
         val baseline = (top + Tokens.Sizes.wallsBrowseDimensionTitleBaseline).roundToPx()
@@ -116,8 +119,9 @@ private fun WallTitle(title: String, button: WallHeaderButton, onButton: () -> U
             titlePlaceable.place((constraints.maxWidth - titlePlaceable.width) / 2, titleY)
             if (circle != null) {
                 val y = (centre - circle.height / 2).coerceAtLeast(top.roundToPx())
-                val x = if (button == WallHeaderButton.Settings) constraints.maxWidth - inset - circle.width else inset
-                circle.place(x, y)
+                // Screen coordinates → this layout's (it starts [bleed] in from the screen edge).
+                val x = if (button == WallHeaderButton.Settings) screenWidth - inset - circle.width else inset
+                circle.place(x - out, y)
             }
         }
     }

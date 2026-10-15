@@ -87,28 +87,23 @@ extension WeekPicsGrid where Overlay == EmptyView {
     }
 }
 
-/// Moving checked tiles in `week.edit` (`week.edit.layout.reorder` is BLOCKED: DEBUG builds only).
+/// Moving checked tiles in `week.edit` (`week.edit.layout.reorder`).
 struct WeekPicsReorder {
     let canMove: (PostID) -> Bool
     let move: (PostID, PostID) -> Bool
 }
 
-/// DEBUG-only reorder approximation: long-press a checked tile and drop it on another checked tile. The drag pick-up
-/// plays the system's own feedback (`week.edit.haptic.dragStart` iOS: system); each slot the drag enters plays
-/// `week.edit.haptic.dragAlign` (iOS: `sensoryFeedback(.alignment)`). Release builds ignore it until the gesture is
-/// captured (`SocialBlocked.hasReorder`).
+/// `week.edit.layout.reorder` (Apple Photos / Google Photos, G-16): touch and hold a checked tile, then drag it into a
+/// new position among the checked tiles; the platform drag-and-drop shows the drop position. The pick-up plays the
+/// system's own feedback (`week.edit.haptic.dragStart` iOS: system); each slot the drag enters plays
+/// `week.edit.haptic.dragAlign` (iOS: `sensoryFeedback(.alignment)`). The drag tracks the finger (Reduce Motion too).
+/// The "move earlier / later" accessibility actions of the spec have no copy yet (not built).
 struct ReorderableTile: ViewModifier {
     let postID: PostID
     let reorder: WeekPicsReorder?
     @Binding var alignTick: Int
 
-    private var enabled: Bool {
-        #if DEBUG
-        return reorder?.canMove(postID) ?? false
-        #else
-        return SocialBlocked.hasReorder && (reorder?.canMove(postID) ?? false)
-        #endif
-    }
+    private var enabled: Bool { reorder?.canMove(postID) ?? false }
 
     func body(content: Content) -> some View {
         if enabled, let reorder {
@@ -696,11 +691,13 @@ struct WeekSection: View {
 
     /// Tiles `week.history.dimension.tileWidth` × `.tileHeight`, gaps `.tileGap`, outer corners `week.history.radius.strip`,
     /// from `.inset`, scrolling horizontally; the weekday bottom-centred, baseline `.weekdayBaseline` above the bottom.
-    /// The current week's add tile and empty-day tiles need `week.history.color.emptyTile` / `.emptyTileText`
-    /// (BLOCKED): not drawn until filled.
+    /// The current week ends with the add tile and one empty-day tile per day without a photo
+    /// (`week.history.color.emptyTile`; "+" in `color.global.textPrimary`, labels in `.emptyTileText`).
     private var strip: some View {
         let posts = week.postIDs.compactMap { model.posts[$0] }
+        let emptyDays = model.emptyDays(of: week) ?? []
         let height = Tokens.Sizes.weekHistoryDimensionTileHeight
+        let hasTiles = !posts.isEmpty || week.isCurrent
         return ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Tokens.Sizes.weekHistoryDimensionTileGap) {
                 ForEach(posts) { post in
@@ -723,10 +720,62 @@ struct WeekSection: View {
                         name: model.profiles[post.post.authorID]?.socialFirstName ?? ""
                     )))
                 }
+                if week.isCurrent {
+                    addTile
+                    ForEach(emptyDays, id: \.self) { day in
+                        EmptyDayTile(date: SocialCalendar.start(of: day, in: model.timeZone), timeZone: model.timeZone)
+                    }
+                }
             }
             .clipShape(RoundedRectangle(cornerRadius: Tokens.Radii.weekHistoryRadiusStrip))
             .padding(.leading, Tokens.Sizes.weekHistoryDimensionInset)
         }
-        .frame(height: posts.isEmpty ? 0 : height)
+        .frame(height: hasTiles ? height : 0)
+    }
+
+    /// Opens the camera for this group (`week.history.a11y.add`).
+    private var addTile: some View {
+        Button {
+            SocialNav.openCamera(groupID: model.groupID.rawValue)
+        } label: {
+            Image(systemName: Tokens.Icons.weekHistoryIconAdd)
+                .resizable()
+                .scaledToFit()
+                .frame(width: Tokens.Sizes.weekHistoryDimensionAddGlyph, height: Tokens.Sizes.weekHistoryDimensionAddGlyph)
+                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                .frame(width: Tokens.Sizes.weekHistoryDimensionTileWidth, height: Tokens.Sizes.weekHistoryDimensionTileHeight)
+                .background(Tokens.Colors.weekHistoryColorEmptyTile)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(Copy.weekHistoryA11yAdd))
+    }
+}
+
+/// A day of the current week without a photo: month (`MMM`), day number (bold), weekday (`EEE`), centred, in
+/// `week.history.color.emptyTileText` on `week.history.color.emptyTile`. Not interactive.
+struct EmptyDayTile: View {
+    let date: Date
+    let timeZone: TimeZone
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Text(SocialFormat.month(date, timeZone: timeZone))
+                .dsTextStyle(SocialText.historyEmptyDayLabel)
+            Text(SocialFormat.dayNumber(date, timeZone: timeZone))
+                .dsTextStyle(SocialText.historyEmptyDay)
+            Text(SocialFormat.weekday(date, timeZone: timeZone))
+                .dsTextStyle(SocialText.historyEmptyDayLabel)
+        }
+        .lineLimit(1)
+        .minimumScaleFactor(.leastNonzeroMagnitude)
+        .foregroundStyle(Tokens.Colors.weekHistoryColorEmptyTileText)
+        .frame(width: Tokens.Sizes.weekHistoryDimensionTileWidth, height: Tokens.Sizes.weekHistoryDimensionTileHeight)
+        .background(Tokens.Colors.weekHistoryColorEmptyTile)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(Copy.weekHistoryA11yEmptyDay(
+            weekday: SocialFormat.weekday(date, timeZone: timeZone),
+            date: SocialFormat.spokenDate(date, timeZone: timeZone)
+        )))
     }
 }

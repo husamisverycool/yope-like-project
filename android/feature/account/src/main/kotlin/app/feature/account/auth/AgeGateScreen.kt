@@ -48,6 +48,8 @@ import app.ui.components.EmptyState
 import app.ui.components.EmptyStateAction
 import app.ui.components.FormTextField
 import app.ui.components.HudOverlay
+import app.ui.system.ErrorAlert
+import app.feature.account.common.errorDismissLabel
 import app.ui.components.OnboardingTitle
 import app.ui.components.PrimaryButton
 import app.ui.text.TextRoles
@@ -136,6 +138,8 @@ class AgeGateViewModel(private val env: AccountEnvironment, private val pattern:
 
     val canContinue: Boolean get() = with(mutable.value) { !checking && pattern.parse(digits) != null }
 
+    fun dismissError() = mutable.update { it.copy(invalidDate = false) }
+
     fun onDigits(text: String) = mutable.update { it.copy(digits = text.filter(Char::isDigit).take(DateEntryPattern.MAX_DIGITS), invalidDate = false) }
 
     fun onOptIn(value: Boolean) = mutable.update { it.copy(optIn = value) }
@@ -198,7 +202,7 @@ fun AgeGateRoute(nav: NavController) {
     val vm = viewModel { AgeGateViewModel(env, pattern) }
     val state by vm.state.collectAsStateWithLifecycle()
     CollectEvents(vm.events, nav)
-    AgeGateScreen(state, pattern, vm.canContinue, vm::onDigits, vm::onOptIn, vm::submit, vm::retry)
+    AgeGateScreen(state, pattern, vm.canContinue, vm::onDigits, vm::onOptIn, vm::submit, vm::retry, onDismissError = vm::dismissError)
 }
 
 @Composable
@@ -210,6 +214,7 @@ fun AgeGateScreen(
     onOptIn: (Boolean) -> Unit,
     onContinue: () -> Unit,
     onRetry: () -> Unit,
+    onDismissError: () -> Unit = {},
     focusOnAppear: Boolean = true,
 ) {
     val context = LocalContext.current
@@ -268,5 +273,6 @@ fun AgeGateScreen(
         Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeFieldToButton))
         PrimaryButton(stringResource(R.string.auth_agegate_continue), onContinue, enabled = canContinue)
     }
+    if (state.invalidDate) ErrorAlert(stringResource(R.string.auth_agegate_error_invaliddate), errorDismissLabel(), onDismissError)
     if (focusOnAppear) LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
 }

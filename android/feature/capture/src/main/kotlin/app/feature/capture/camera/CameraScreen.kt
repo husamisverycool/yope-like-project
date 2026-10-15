@@ -66,7 +66,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.data.model.MediaKind
-import app.feature.capture.Blocked
 import app.designsystem.R
 import app.designsystem.dsAnimateFloatAsState
 import app.designsystem.MotionChannel
@@ -258,11 +257,7 @@ fun CameraScreen(
                         modifier = Modifier.align(Alignment.Center).semantics { traversalIndex = HOUR_ORDER },
                     )
                     if (state.hasFlash) FlashToggle(state.flashOn, onFlash)
-                    // Recording outline in color.global.accent (width BLOCKED → not drawn while null).
-                    val outline = Blocked.recordingOutline
-                    if (state.recording && outline != null) {
-                        Box(Modifier.fillMaxSize().border(outline, Tokens.Colors.globalAccent, RoundedCornerShape(Tokens.Radii.globalViewfinder)))
-                    }
+                    RecordingOutline(state.recording)
                 }
             }
         }
@@ -495,3 +490,59 @@ internal fun photoSize(file: File): Pair<Int, Int>? {
     val rotation = app.feature.capture.data.exifRotation(file)
     return if (rotation % 180 != 0) bounds.outHeight to bounds.outWidth else bounds.outWidth to bounds.outHeight
 }
+
+/**
+ * `camera.capture.size.recordingOutline` in `color.global.accent`: a progress stroke that traces the
+ * viewfinder's rounded outline (`radius.global.viewfinder`) from empty to full, linearly over
+ * `camera.capture.duration.videoMax`. Drawn inside the viewfinder edge; it starts where a rounded
+ * rect's stroke starts (the top edge, after the top-leading corner) and runs clockwise.
+ */
+@Composable
+private fun RecordingOutline(recording: Boolean) {
+    val progress = remember { androidx.compose.animation.core.Animatable(0f) }
+    LaunchedEffect(recording) {
+        progress.snapTo(0f)
+        if (recording) {
+            progress.animateTo(1f, androidx.compose.animation.core.tween(CameraViewModel.VIDEO_MAX_MS.toInt(), easing = androidx.compose.animation.core.LinearEasing))
+        }
+    }
+    if (!recording) return
+    val accent = Tokens.Colors.globalAccent
+    androidx.compose.foundation.Canvas(Modifier.fillMaxSize().testTag("camera.recordingOutline")) {
+        val stroke = Tokens.Sizes.cameraCaptureSizeRecordingOutline.toPx()
+        val path = roundedOutline(size.width, size.height, Tokens.Radii.globalViewfinder.toPx(), stroke / 2)
+        val measure = androidx.compose.ui.graphics.PathMeasure().apply { setPath(path, false) }
+        val traced = androidx.compose.ui.graphics.Path()
+        measure.getSegment(0f, measure.length * progress.value, traced, true)
+        drawPath(traced, accent, style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke))
+    }
+}
+
+/** The viewfinder outline inset by [inset] (half the stroke), clockwise from the top edge's start. */
+private fun roundedOutline(width: Float, height: Float, radius: Float, inset: Float): androidx.compose.ui.graphics.Path {
+    val l = inset
+    val t = inset
+    val r = width - inset
+    val b = height - inset
+    val c = (radius - inset).coerceAtLeast(0f)
+    val d = c * 2
+    return androidx.compose.ui.graphics.Path().apply {
+        moveTo(l + c, t)
+        lineTo(r - c, t)
+        arcTo(androidx.compose.ui.geometry.Rect(r - d, t, r, t + d), ARC_TOP, ARC_SWEEP, false)
+        lineTo(r, b - c)
+        arcTo(androidx.compose.ui.geometry.Rect(r - d, b - d, r, b), ARC_RIGHT, ARC_SWEEP, false)
+        lineTo(l + c, b)
+        arcTo(androidx.compose.ui.geometry.Rect(l, b - d, l + d, b), ARC_BOTTOM, ARC_SWEEP, false)
+        lineTo(l, t + c)
+        arcTo(androidx.compose.ui.geometry.Rect(l, t, l + d, t + d), ARC_LEFT, ARC_SWEEP, false)
+        close()
+    }
+}
+
+// Arc start angles (degrees, clockwise from 3 o'clock) for the four quarter-circle corners.
+private const val ARC_TOP = 270f // provenance-ok: geometry (quarter-circle corner)
+private const val ARC_RIGHT = 0f // provenance-ok: geometry (quarter-circle corner)
+private const val ARC_BOTTOM = 90f // provenance-ok: geometry (quarter-circle corner)
+private const val ARC_LEFT = 180f // provenance-ok: geometry (quarter-circle corner)
+private const val ARC_SWEEP = 90f // provenance-ok: geometry (quarter-circle corner)

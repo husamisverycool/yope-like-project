@@ -64,6 +64,8 @@ class AccountEnvironment(
     val region: () -> String? = { null },
     /** Whether a runtime permission is granted (`ContextCompat.checkSelfPermission`). */
     val isGranted: (permission: String) -> Boolean = { false },
+    /** Yope's lime toast, shown by the shell's `ToastHost` over every screen (it outlives navigation). */
+    val toasts: app.ui.components.ToastState = app.ui.components.ToastState(),
 )
 
 val LocalAccountEnvironment = staticCompositionLocalOf<AccountEnvironment> { error("AccountEnvironment not provided") }

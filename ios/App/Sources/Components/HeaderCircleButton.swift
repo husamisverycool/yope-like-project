@@ -8,15 +8,14 @@ enum HeaderCircleFill {
     case onDeep
     /// `color.global.control`: circles on `color.global.background` (#171717) screens (group feed).
     case onBackground
-    /// Over the home cover photo: `groups.list.color.headerCircleOverPhoto` (`DesignGaps.headerCircleOverPhoto`;
-    /// BLOCKED → the glyph alone until it is set).
+    /// Over the home cover photo: `groups.list.color.headerCircleOverPhoto`.
     case overPhoto
 
     var color: Color? {
         switch self {
         case .onDeep: return Tokens.Colors.globalControlOnDeep
         case .onBackground: return Tokens.Colors.globalControl
-        case .overPhoto: return DesignGaps.headerCircleOverPhoto
+        case .overPhoto: return Tokens.Colors.groupsListColorHeaderCircleOverPhoto
         }
     }
 }

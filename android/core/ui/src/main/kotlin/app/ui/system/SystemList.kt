@@ -1,5 +1,7 @@
 package app.ui.system
 
+import android.os.Build
+import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Box
@@ -28,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -158,8 +161,8 @@ fun SystemRow(
 }
 
 /**
- * A row with a trailing M3 Switch; the whole row toggles. The Switch plays its own feedback
- * (`settings.root.layout.toggleHaptic`: TOGGLE_ON / OFF only if the Switch does not already play one).
+ * A row with a trailing M3 Switch; the whole row toggles. The M3 Switch plays no haptic of its own, so
+ * the row plays `settings.root.layout.toggleHaptic` (android: TOGGLE_ON / TOGGLE_OFF, API 34+ only).
  */
 @Composable
 fun SystemSwitchRow(
@@ -170,6 +173,7 @@ fun SystemSwitchRow(
     supporting: String? = null,
     enabled: Boolean = true,
 ) {
+    val view = LocalView.current
     ListItem(
         headlineContent = { Text(headline) },
         supportingContent = supporting?.let { { Text(it) } },
@@ -179,7 +183,12 @@ fun SystemSwitchRow(
             headlineColor = Tokens.Colors.globalSystemOnSurface,
             supportingColor = Tokens.Colors.globalSystemOnSurfaceVariant,
         ),
-        modifier = modifier.toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onCheckedChange),
+        modifier = modifier.toggleable(value = checked, enabled = enabled, role = Role.Switch) { on ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                view.performHapticFeedback(if (on) HapticFeedbackConstants.TOGGLE_ON else HapticFeedbackConstants.TOGGLE_OFF)
+            }
+            onCheckedChange(on)
+        },
     )
 }
 

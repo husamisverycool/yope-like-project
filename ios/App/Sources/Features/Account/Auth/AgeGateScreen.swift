@@ -40,6 +40,7 @@ struct AgeGateScreen: View {
         .loadingHUD(model.isChecking)
         .dsHaptic(Tokens.Haptics.globalSuccess, trigger: model.successCount)
         .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
+        .formErrorAlert(model.invalidDate ? Copy.authAgegateErrorInvalidDate : nil, trigger: model.errorCount)
         .navigationBarBackButtonHidden(true)
         .onAppear { fieldFocused = true }
         .accessibilityIdentifier("auth.agegate")

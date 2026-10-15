@@ -80,7 +80,6 @@ import app.designsystem.R
 import app.designsystem.dsAnimateAlphaAsState
 import app.designsystem.dsAnimateFloatAsState
 import app.designsystem.generated.Tokens
-import app.feature.capture.Blocked
 import app.feature.capture.camera.CameraControllers
 import app.feature.capture.camera.photoSize
 import app.feature.capture.data.CaptureDataProvider
@@ -236,19 +235,15 @@ fun DailyCaptureScreen(
             modifier = Modifier.offset(x = d.centerFromLeading.dp - chevron / 2, y = d.centerFromTop.dp - chevron / 2).semantics { traversalIndex = 0f }.testTag("daily.dismiss"),
         )
 
-        // Countdown: digit tops at countdown.digitsTop, centred (weight BLOCKED → omitted in release).
-        val weight = Blocked.countdownWeight
-        if (weight != null) {
-            val toBaseline = glyphTopToBaseline(Tokens.FontSizes.dailyCaptureFontSizeCountdown, weight, DIGIT_SAMPLE)
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
-                CountdownText(
-                    countdown = state.countdown,
-                    weight = weight,
-                    modifier = Modifier
-                        .paddingFromBaseline(top = Tokens.Layouts.DailyCaptureLayoutCountdown.digitsTop.dp + toBaseline)
-                        .semantics { traversalIndex = 1f },
-                )
-            }
+        // Countdown: digit tops at countdown.digitsTop, centred.
+        val toBaseline = glyphTopToBaseline(Tokens.FontSizes.dailyCaptureFontSizeCountdown, Tokens.FontWeights.dailyCaptureFontWeightCountdown, DIGIT_SAMPLE)
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+            CountdownText(
+                countdown = state.countdown,
+                modifier = Modifier
+                    .paddingFromBaseline(top = Tokens.Layouts.DailyCaptureLayoutCountdown.digitsTop.dp + toBaseline)
+                    .semantics { traversalIndex = 1f },
+            )
         }
 
         // Viewfinder / capture area / preview image.
@@ -438,12 +433,12 @@ private fun PreviewOverlay(groupName: String?, onRetake: () -> Unit) {
     val chip = Tokens.Layouts.DailyCaptureLayoutAudienceChip
     val text = Tokens.Colors.dailyCaptureColorText
     Box(Modifier.fillMaxSize()) {
-        // Fill daily.capture.color.overlayControl is BLOCKED: circle and chip are drawn without it.
+        // Fill daily.capture.color.overlayControl (backdrop blur radius not tokenized: tint only).
         CircleIconButton(
             icon = Tokens.Icons.globalClose,
             contentDescription = stringResource(R.string.daily_capture_a11y_retake),
             diameter = r.diameter.dp,
-            fill = Blocked.overlayControlFill,
+            fill = Tokens.Colors.dailyCaptureColorOverlayControl,
             tint = text,
             onClick = onRetake,
             glyphSize = r.glyph.dp,
@@ -456,7 +451,7 @@ private fun PreviewOverlay(groupName: String?, onRetake: () -> Unit) {
                     .padding(bottom = chip.bottomInset.dp)
                     .height(chip.height.dp)
                     .clip(CapsuleShape)
-                    .then(Blocked.overlayControlFill?.let { Modifier.background(it) } ?: Modifier)
+                    .background(Tokens.Colors.dailyCaptureColorOverlayControl)
                     .padding(start = chip.paddingLeading.dp, end = chip.paddingTrailing.dp)
                     .semantics(mergeDescendants = true) { traversalIndex = 4f }
                     .testTag("daily.chip"),

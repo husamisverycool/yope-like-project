@@ -31,7 +31,7 @@ Full-height screen on `color.global.backgroundDeep`.
      `color.global.textPrimary`, wraps within the card;
    - bottom row: **message field** capsule (height 37, 10 pt from the card's leading edge, 14.5 pt above its
      bottom) and **mic circle** (38 pt, 7.5 pt after the field, 8.5 pt from the trailing edge)
-     (`camera.sendto.layout.messageField`), both filled `camera.sendto.color.messageField` (BLOCKED);
+     (`camera.sendto.layout.messageField`), both filled `camera.sendto.color.messageField` (black at 0.48 over a backdrop blur);
      placeholder `camera.sendto.caption.placeholder` in `camera.sendto.fontSize.messagePlaceholder`,
      `color.global.textPrimary`; mic glyph `icon.global.mic`, `color.global.textPrimary`.
    - voice coach (first use): the Yope coach tooltip (`camera.capture.layout.coach`, text
@@ -59,13 +59,13 @@ Full-height screen on `color.global.backgroundDeep`.
 | download | same circle, `icon.global.download` | a11y `camera.sendto.a11y.save`; toast `camera.sendto.toast.saved` | saves the photo / Live Photo / video to the library (add-only access, `NSPhotoLibraryAddUsageDescription` owned by `system.permissions`) |
 | title | text role `sheetTitle` | `camera.sendto.title` | — |
 | preview card | `camera.sendto.layout.preview`, `radius.global.photo` | `camera.capture.hourOverlay` | Live Photo plays its motion on long press (PHLivePhotoView); video plays muted in a loop (Yope 'speaker' glyph not built — Gaps) |
-| caption | `camera.sendto.fontSize.caption`, `.fontWeight.caption`, `.size.captionBaselineOffset` | — | tap the field → keyboard (system); text appears on the photo as typed (Yope); optional; max length `camera.sendto.size.captionMaxLength` (BLOCKED) |
-| message field | `camera.sendto.layout.messageField`, `camera.sendto.color.messageField` (BLOCKED), `radius.global.capsule` | `camera.sendto.caption.placeholder` | hidden while the keyboard is up (Yope t5.73) |
+| caption | `camera.sendto.fontSize.caption`, `.fontWeight.caption`, `.size.captionBaselineOffset` | — | tap the field → keyboard (system); text appears on the photo as typed (Yope); optional; max length `camera.sendto.size.captionMaxLength` (36 characters, Locket; no counter) |
+| message field | `camera.sendto.layout.messageField`, `camera.sendto.color.messageField`, `radius.global.capsule` | `camera.sendto.caption.placeholder` | hidden while the keyboard is up (Yope t5.73) |
 | mic | `camera.sendto.layout.messageField.micDiameter`, `icon.global.mic` | a11y `camera.sendto.a11y.voice`; coach `camera.sendto.coach.voice` | records an optional voice note with the `chat.voice` recorder (same Yope component; microphone permission asked here at first use, App Review 5.1.1(iv)); the note goes on every chosen group's post |
 | recipient row | `camera.sendto.layout.recipientRow`, `size.global.avatarSmall`, `size.global.checkCircle`, `icon.global.check` / `.uncheck`, `color.global.selection` | group name (data) | tap toggles selection (multi-select). Preselected: the group from context (`app://camera?group=`, group screen, chat); with no context, all of the member's groups (references preselect everyone: Locket 'All Friends', Yope 'my wall' — owner to confirm) |
 | send | `size.global.buttonHeightSheet`, `.buttonMarginHSheet`, `radius.global.button`, `color.global.accent` / `.onAccent` | `camera.sendto.send` | tap → upload + `create_post`; the sheet closes at once. With nothing selected the button is hidden (a disabled look was never observed — every Yope frame has a selection; Gaps) |
 | count disc | `camera.sendto.size.countDisc`, `.countDiscGap`, `.fontSize.countNumber` | — (number of selected groups) | selection count only |
-| toast | `camera.sendto.layout.toast`, `icon.global.check`, `camera.sendto.duration.toastVisible` (BLOCKED) | `camera.sendto.toast.postedOne` / `.postedMany` / `.saved` | appears when `create_post` succeeds |
+| toast | `camera.sendto.layout.toast`, `icon.global.check`, `camera.sendto.duration.toastVisible` (2000 ms) | `camera.sendto.toast.postedOne` / `.postedMany` / `.saved` | appears when `create_post` succeeds |
 
 ## States
 
@@ -86,7 +86,7 @@ Full-height screen on `color.global.backgroundDeep`.
 |---|---|---|
 | keyboard, sheet close | `easing.global.native` (keyboard, sheet) | system |
 | recipient toggle | glyph swap, no animation observed | — |
-| toast in / out | BLOCKED (`camera.sendto.duration.toastVisible`) | cross-fade |
+| toast in / out | in ≈117 ms (Yope 60 fps, curve not measurable; `spring.global.platformDefault.*`), visible `camera.sendto.duration.toastVisible` 2000 ms, out not observed | cross-fade |
 
 ## Haptics
 
@@ -106,7 +106,7 @@ recipient toggled → `haptic.global.select`; sent (create_post success) → `ha
 - Contrast: name white on black 21:1; check `color.global.selection` on black 6.49:1; unchecked ring
   `color.global.textSecondary` on black 7.10:1; send label black on lime 17.65:1; count number lime on black
   17.65:1 (bold, large-text rule) pass; toast black on lime 17.65:1 pass; placeholder / caption / overlay white on
-  the photo: photo-dependent (field fill BLOCKED, no scrim).
+  the photo: photo-dependent; over a white photo the field fill gives white 3.69:1 (passes the 3:1 large/bold rule, fails 4.5:1 for 16-pt regular), reported, not adjusted.
 
 ## Data & actions
 
@@ -134,9 +134,9 @@ the edit pencil (C-4), the compact 'more friends' + 'send ❶' variant (its trig
 
 | item | status | capture |
 |---|---|---|
-| `camera.sendto.color.messageField` | BLOCKED | Yope send-to over a flat white and a flat black photo |
-| `camera.sendto.duration.toastVisible` (+ toast motion) | BLOCKED | 5-s recording of Yope right after send |
-| `camera.sendto.size.captionMaxLength` | BLOCKED | type a long caption in Yope |
+| `camera.sendto.color.messageField` | SOURCED by gap fill: black at 0.48 ±0.05, solved on Yope's own frame (MERGE G2-10); blur radius not measured | Yope send-to over a flat white and a flat black photo |
+| `camera.sendto.duration.toastVisible` (+ toast motion) | SOURCED by gap fill: 2000 ms (Locket SHORT toast, MERGE G2-7); entrance ≈117 ms measured on Yope; exit not visible | 5-s recording of Yope right after send |
+| `camera.sendto.size.captionMaxLength` | SOURCED by gap fill: 36 (Locket `MAX_CHARS`, MERGE G2-11) | type a long caption in Yope |
 | video sound glyph on the preview (`speaker.wave.2.fill`, yope-a) | not built (videos play muted) | — |
 | default audience with no context | owner decision | owner |
 | send button with nothing selected | hidden (not observed) | one Yope send-to frame with every row deselected |

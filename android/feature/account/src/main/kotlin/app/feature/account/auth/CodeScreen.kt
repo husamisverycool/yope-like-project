@@ -45,6 +45,8 @@ import app.ui.components.FormTextField
 import app.ui.components.HeaderCircleButton
 import app.ui.components.HeaderCircleFill
 import app.ui.components.HudOverlay
+import app.ui.system.ErrorAlert
+import app.feature.account.common.errorDismissLabel
 import app.ui.components.OnboardingTitle
 import app.ui.components.PrimaryButton
 import app.ui.components.TextLink
@@ -57,7 +59,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** Failure states whose presentation is BLOCKED (`auth.phone.layout.inlineError`): kept in state, not drawn. */
+/** Field errors, shown as the alert of `auth.phone.layout.inlineError` (message = the error sentence, one OK). */
 enum class CodeError(val copy: Int) {
     Wrong(R.string.auth_code_error_wrong),
     Expired(R.string.auth_code_error_expired),
@@ -87,6 +89,8 @@ class CodeViewModel(private val env: AccountEnvironment) : AccountViewModel() {
         startResendLock()
         viewModelScope.launch { env.backend.online.collect { online -> if (online) mutable.update { it.copy(offline = false) } } }
     }
+
+    fun dismissError() = mutable.update { it.copy(error = null) }
 
     fun onCodeChange(text: String) = mutable.update { it.copy(code = text.filter(Char::isLetterOrDigit).take(MAX_CODE), error = null) }
 
@@ -129,6 +133,7 @@ class CodeViewModel(private val env: AccountEnvironment) : AccountViewModel() {
             try {
                 env.backend.requestOtp(number)
                 haptic(Tokens.Haptics.globalSuccess)
+                toast(R.string.auth_code_toast_resent)
             } catch (t: Throwable) {
                 val error = t.dataError()
                 val rateLimited = error is DataError.Auth && error.kind == AuthFailure.RateLimited
@@ -180,7 +185,7 @@ fun CodeRoute(nav: NavController) {
     val state by vm.state.collectAsStateWithLifecycle()
     CollectEvents(vm.events, nav)
     SmsUserConsentEffect(enabled = env.smsUserConsent, restartKey = env.signUp.codeSentAtMillis, onCode = vm::onCodeReceived)
-    CodeScreen(state, vm::onCodeChange, vm::submit, vm::resend, onBack = { nav.popBackStack() }, onRetry = vm::retryOffline)
+    CodeScreen(state, vm::onCodeChange, vm::submit, vm::resend, onBack = { nav.popBackStack() }, onRetry = vm::retryOffline, onDismissError = vm::dismissError)
 }
 
 @Composable
@@ -191,6 +196,7 @@ fun CodeScreen(
     onResend: () -> Unit,
     onBack: () -> Unit,
     onRetry: () -> Unit,
+    onDismissError: () -> Unit = {},
     focusOnAppear: Boolean = true,
 ) {
     if (state.offline) {
@@ -230,5 +236,6 @@ fun CodeScreen(
         Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeFieldToButton))
         TextLink(stringResource(R.string.auth_code_resend), onResend, enabled = !state.resendLocked)
     }
+    state.error?.let { ErrorAlert(stringResource(it.copy), errorDismissLabel(), onDismissError) }
     if (focusOnAppear) LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
 }

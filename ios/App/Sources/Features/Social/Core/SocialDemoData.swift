@@ -65,6 +65,9 @@ enum SocialDemo {
         )
     }
 
+    /// Pixel size of the synthetic sample photos.
+    static let samplePixels = (width: 1080, height: 1440) // provenance-ok: sample media pixel size (demo data, not a design value)
+
     static func post(
         _ id: PostID, by author: UserID, at date: Date, in group: GroupID = groupID, caption: String? = nil,
         voiceMs: Int? = nil, kind: MediaKind = .photo, media: MediaID? = nil, replyTo: PostID? = nil
@@ -80,7 +83,7 @@ enum SocialDemo {
             media: Media(
                 id: mediaID, ownerID: author, kind: kind, originalPath: path,
                 motionPath: kind == .livePhoto ? path + ".mov" : nil, displayPath: path, thumbPath: path,
-                width: 1080, height: 1440, renditionsReadyAt: date, createdAt: date // provenance-ok: demo sample data, pixel size of the synthetic photo
+                width: samplePixels.width, height: samplePixels.height, renditionsReadyAt: date, createdAt: date
             )
         )
     }

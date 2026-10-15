@@ -9,20 +9,37 @@ import UIKit
 @MainActor
 @Observable
 final class PhoneModel {
-    /// Pre-filled with "+" and the device region's calling code; edited as text.
+    /// Pre-filled with "+" and the device region's calling code; edited as text (the calling code inline with the
+    /// number, `auth.phone.layout.countryCode`).
     var phone: String
+    /// The country chosen in the list behind the flag; its flag wins while its calling code is typed.
+    private(set) var pickedRegion: String?
     private(set) var isSending = false
-    /// Last failure (presentation BLOCKED: `auth.phone.layout.inlineError`; announced to VoiceOver).
+    /// Last failure, shown as the form error alert (`auth.phone.layout.inlineError`).
     private(set) var failure: AuthFailure?
     private(set) var failedOffline = false
     private(set) var successCount = 0
     private(set) var errorCount = 0
 
     private let data: AccountDataSource
+    private let deviceRegion: String?
 
-    init(data: AccountDataSource, phone: String = PhoneNumberInput.initialText()) {
+    init(data: AccountDataSource, phone: String? = nil, deviceRegion: String? = Locale.current.region?.identifier) {
         self.data = data
-        self.phone = phone
+        self.deviceRegion = deviceRegion
+        self.phone = phone ?? PhoneNumberInput.initialText(region: deviceRegion)
+    }
+
+    /// The region whose flag shows at the field's leading edge; nil while no calling code is typed.
+    var flagRegion: String? {
+        PhoneNumberInput.region(of: phone, preferring: [pickedRegion, deviceRegion])
+    }
+
+    /// A country chosen in the list: its calling code replaces the typed one.
+    func selectCountry(_ region: String) {
+        guard let code = CallingCodes.byRegion[region.uppercased()] else { return }
+        pickedRegion = region.uppercased()
+        phone = PhoneNumberInput.replacingCallingCode(in: phone, with: code)
     }
 
     /// "continue" is enabled once digits follow the calling code.
@@ -55,7 +72,6 @@ final class PhoneModel {
     private func fail(_ failure: AuthFailure) {
         self.failure = failure
         errorCount += 1
-        UIAccessibility.post(notification: .announcement, argument: failure.message)
     }
 
     func retryAfterOffline() {

@@ -43,3 +43,15 @@ Source: https://static.vidday.com/videos/vidday-group-videos-getting-started-2-m
 | `frames/vidday-tour-t116.500-phone.png`, `-t117.400-phone.png` | t = 116.5 / 117.4 s | 2026-10-15 | recipient gift page: gift-wrap bow (the "UNWRAP VIDEO" label shows on the bow at ~116.0 s), then ribbons sliding away | same |
 | `frames/vidday-tour-t118.300-phone.png` | t = 118.3 s | 2026-10-15 | title card "HAPPY BIRTHDAY, AMELIA!" (theme background) | same |
 | `frames/vidday-tour-t119.300-phone.png`, `-t120.000-phone.png` | t = 119.3 / 120.0 s | 2026-10-15 | crossfade title → first photo; first photo with slow zoom; "Share / Send a special link" row | same |
+
+## Gap fill (account, capture, global, memory) — 2026-10-15
+
+| file | source URL | accessed | what it shows | version/date |
+|---|---|---|---|---|
+| `help/vidday-help-display-length-2025-02-07.png` | https://help.vidday.com/can-i-change-the-display-length-on-photos-and-text-cards/ (Playwright 390×844 @2x) | 2026-10-15 | "Photos and text cards will automatically be set to display for 4 seconds by default." / "anywhere from 4 seconds all the way to 60 seconds" (`duration.birthday.tribute.photoHold`, `duration.year.story.card`) | article last update 07.02.2025 |
+| `help/vidday-help-written-messages.png` | https://help.vidday.com/can-i-add-written-messages (Playwright 390×844 @2x) | 2026-10-15 | "Text cards have a 110-character limit." / "emoticons/emojis are not supported" (`layout.birthday.contribute.lineMax`) | article last update 07.02.2025 |
+| `frames/vidday-theme-happy-birthday-sheet-every2s.png` | https://static.vidday.com/vidday_theme_samples/theme_happy_birthday.mp4 (listed on https://www.vidday.com/examples; 1920×1080, 30 fps, 135.72 s) | 2026-10-15 | contact sheet every 2 s: brand intro (do-not-copy), title text card "Happy Birthday, Margo!", photos and clips with 0.7-s crossfades, end text card "We Love You!", brand outro (do-not-copy); no contributor names on photos | theme sample on the 2026-10 site |
+| `frames/vidday-theme-happy-birthday-framediff.csv` | same video, every frame (ffmpeg gray decode 192 px wide) | 2026-10-15 | per-frame mean abs diff: title card fades in 2.967–3.733 s, static to 7.000 s; photo slots start-to-start 4.000–4.067 s; photo→photo crossfades 0.70–0.73 s; end card in 128.700–129.367 s, static 129.400–132.667 s, out 132.700–133.400 s | same |
+| `frames/vidday-theme-happy-birthday-t005.000-title-card.png` | same, t = 5.000 s | 2026-10-15 | title text card: one centred line, caps y496–560 (65 px), centre x959.5, text (61,82,96) | same |
+| `frames/vidday-theme-happy-birthday-t131.000-end-card.png` | same, t = 131.000 s | 2026-10-15 | end text card "We Love You!": glyph bbox x688–1230 y507–571 (cap 65 px), centre (959, 539), text (61,82,96) = title card | same |
+| `frames/vidday-theme-happy-birthday-t029.000-photo.png` | same, t = 29.000 s | 2026-10-15 | a contribution photo inside the theme frame; no name or caption drawn | same |

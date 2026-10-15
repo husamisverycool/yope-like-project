@@ -24,7 +24,7 @@ Full-screen cover on `color.global.backgroundDeep`; status bar hidden (as in AP)
    `daily.capture.color.text`.
 2. Wordmark slot above the countdown — **empty** (BeReal's wordmark is not copied).
 3. **Countdown** centred, digits top 92.3 pt, 16.2 pt above the viewfinder (`daily.capture.layout.countdown`):
-   `daily.capture.countdown` (MM:SS), `daily.capture.fontSize.countdown` (23 pt) / `.fontWeight.countdown` (BLOCKED),
+   `daily.capture.countdown` (MM:SS), `daily.capture.fontSize.countdown` (23 pt) / `.fontWeight.countdown` (bold),
    monospaced digits, `daily.capture.color.text`.
 4. **Viewfinder** 3:4, 378.7 pt wide (7-pt side margins), top 124.4 pt, corner 16 pt (`daily.capture.layout.viewfinder`);
    back camera live.
@@ -45,10 +45,10 @@ behind them while the front photo is taken; chevron and countdown stay.
    (`daily.dualimage.layout.composition` — corner 0.0455 × width, inset 0.31 × width, margin 0.03 × width, 2-pt-ratio
    black border).
 3. On the image: **retake ✕** circle 34 pt, 12 pt from the top and trailing edges, glyph 14 pt `icon.global.close`
-   (`daily.capture.layout.retake`), fill `daily.capture.color.overlayControl` (BLOCKED), glyph `daily.capture.color.text`;
+   (`daily.capture.layout.retake`), fill `daily.capture.color.overlayControl` (black at 0.46 over a backdrop blur), glyph `daily.capture.color.text`;
    **audience chip** centred, 12.5 pt above the image bottom, height 37.4, capsule (`daily.capture.layout.audienceChip`):
    `icon.global.group` · `daily.capture.audience` ({group} only), `daily.capture.fontSize.chip`,
-   `daily.capture.color.text`, fill `daily.capture.color.overlayControl` (BLOCKED).
+   `daily.capture.color.text`, fill `daily.capture.color.overlayControl`.
 4. **SEND** — `daily.capture.send` (capitals, `daily.capture.fontSize.send` 40.5 pt, `.fontWeight.send` heavy,
    `daily.capture.color.text`), then 11.4 pt later the 19.5-pt triangle `icon.global.play`; the pair centred, cap top
    69 pt below the image bottom (`daily.capture.layout.send`).
@@ -111,7 +111,8 @@ send failed → `haptic.global.error`.
 - Focus order: chevron → countdown → viewfinder area → flash → shutter → flip; preview: chevron → countdown → image →
   retake → chip → SEND.
 - Contrast: `daily.capture.color.text` #FAFAFA on black 20.12:1 pass; shutter white on black 21:1 pass; chip text and
-  ✕ on the BLOCKED translucent fill over a photo: not computable (photo-dependent).
+  ✕ on the translucent fill over a photo: photo-dependent; over a white photo #FAFAFA on the fill 3.45:1 (✕ passes the 3:1
+  non-text rule; 13-pt chip text fails 4.5:1) — reported, not adjusted.
 
 ## Data & actions
 
@@ -140,8 +141,8 @@ the timer".
 
 | item | status | capture |
 |---|---|---|
-| `daily.capture.fontWeight.countdown` | BLOCKED | verification: render the platform digits at 23 pt per weight; pick stem ÷ digit height 0.19–0.20 (H2) |
-| `daily.capture.color.overlayControl` (retake circle, chip) | BLOCKED | one lossless BeReal post-preview screenshot over a flat light photo |
+| `daily.capture.fontWeight.countdown` | SOURCED by gap fill: bold (SF Pro Display '1' stem ÷ height 0.207 vs BeReal 0.205, MERGE G2-14) | — (closed) |
+| `daily.capture.color.overlayControl` (retake circle, chip) | SOURCED by gap fill: black at 0.46 ±0.06 on BeReal's lossless help frame over flat sky (MERGE G2-15) | one lossless BeReal post-preview screenshot over a flat light photo (would tighten the alpha) |
 | countdown start value, 00:00 behavior | not observed (hidden at `closes_at` per T4) | 2–3-min BeReal recording from the push through the end of the window |
 | tap-to-swap / drag of the inset | not found → not built | same recording |
 | BeReal Android capture screen | not found | 20-s Android BeReal capture recording |

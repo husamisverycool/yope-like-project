@@ -54,8 +54,8 @@ number and caption `color.birthday.contribute.stepper.inactiveLabel`, caption we
    below it the one-line field: `dimension.birthday.contribute.input.height`, `radius.birthday.contribute.input`, fill
    `color.birthday.contribute.input.fill`, text `fontSize.birthday.contribute.input`,
    `color.birthday.contribute.input.text`, horizontal padding = `dimension.birthday.contribute.label.gap`. No
-   placeholder (not found). Grows to more lines when the text wraps. Character limit: API bound 280
-   (`layout.birthday.contribute.lineMax` BLOCKED), no visible counter.
+   placeholder (not found). Grows to more lines when the text wraps. Character limit: 110
+   (`layout.birthday.contribute.lineMax`, VidDay's text-card limit; the API bound 280 stays the server check), no visible counter.
 3. `dimension.birthday.contribute.group.gap` below: **Message Ideas** exactly as in `birthday.request` (header bar +
    the two prompts) — helps write the line.
 4. `dimension.birthday.contribute.button.gap` below: primary **Submit** — full content width,
@@ -78,7 +78,7 @@ number and caption `color.birthday.contribute.stepper.inactiveLabel`, caption we
 | stepper | `layout.birthday.contribute.stepper`, `dimension.birthday.contribute.stepper.circle`, `color.birthday.contribute.stepper.active` / `.inactive` / `.inactiveLabel`, `fontSize/fontWeight.birthday.contribute.stepper.number`, `fontSize.birthday.contribute.stepper.label`, `fontWeight.birthday.contribute.stepper.labelActive` / `.label`, `color.global.textPrimary` | `birthday.contribute.step.photo`, `.message`, `.done` | not tappable |
 | heading / thanks | `fontSize/fontWeight.birthday.contribute.heading`, `dimension.birthday.contribute.heading.gap`, `fontSize.birthday.contribute.subheading`, `opacity.birthday.contribute.subheading`, `dimension.birthday.contribute.subheading.gap` | `birthday.contribute.greeting` (`{name}`), `birthday.contribute.thanks`, `birthday.contribute.done.title` | thanks only on step 1 |
 | photo grid + Use Photo | Yope wall grid (`walls.mine`), `radius.global.photo`, `icon.global.check` / `.uncheck`, `color.global.selection`, `size.global.checkCircle`; button as Submit | `birthday.contribute.a11y.photo`, `birthday.contribute.review.use` | single selection; thumbnails `thumb_path` |
-| line field | `fontSize/fontWeight.birthday.contribute.label`, `dimension.birthday.contribute.label.gap`, `dimension.birthday.contribute.input.height`, `radius.birthday.contribute.input`, `color.birthday.contribute.input.fill` / `.text`, `fontSize.birthday.contribute.input`, `layout.birthday.contribute.lineMax` (BLOCKED) | `birthday.contribute.line.label` | trimmed before sending |
+| line field | `fontSize/fontWeight.birthday.contribute.label`, `dimension.birthday.contribute.label.gap`, `dimension.birthday.contribute.input.height`, `radius.birthday.contribute.input`, `color.birthday.contribute.input.fill` / `.text`, `fontSize.birthday.contribute.input`, `layout.birthday.contribute.lineMax` (110) | `birthday.contribute.line.label` | trimmed before sending |
 | Message Ideas | as `birthday.request` | `birthday.request.prompts.title`, `birthday.request.prompt.*` | — |
 | Submit / Done | `dimension.birthday.contribute.button.height` / `.gap`, `radius.birthday.contribute.button`, `fontSize/fontWeight.birthday.contribute.button`, `color.global.accent`, `color.global.onAccent` | `birthday.contribute.submit`, `birthday.contribute.done.button`, `birthday.contribute.review.use` | Submit → `contribute_tribute` |
 | Retake | same size, `color.global.surfaceLight`, `color.global.onSurfaceLight` | `birthday.contribute.review.retake` | back to step 1 |
@@ -155,6 +155,6 @@ are in); "Submit Another" (one contribution per person, replaced instead); seein
 
 | item | status | owner capture |
 |---|---|---|
-| line placeholder and character limit | not found; no placeholder, API bound 280 (`layout.birthday.contribute.lineMax` BLOCKED) | research capture 4: a real Tribute / VidDay invitation opened on a phone up to the recorder / upload screen |
+| line placeholder and character limit | placeholder not found (none); limit SOURCED by gap fill: 110 (VidDay 'Text cards have a 110-character limit', MERGE G2-21) | research capture 4: a real Tribute / VidDay invitation opened on a phone up to the recorder / upload screen |
 | photo picker layout | no reference has an "only your own photos" picker; the Yope wall grid is reused | — (owner decision) |
 | step 2 / 3 screens of the references | not observed (would need a live submission) | same capture 4 |

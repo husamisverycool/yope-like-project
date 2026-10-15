@@ -102,6 +102,9 @@ abstract class SnapshotTest {
     /** Lets reveals and effects finish with the clock paused, so spinners always draw the same frame. */
     protected open val settleMillis: Long = 2_000
 
+    /** Toast snapshots: shown and settled, before the 2 s dwell (`safety.block.duration.toast`) ends. */
+    protected val toastSettle: Long = 1_000
+
     fun snap(
         surface: String,
         state: String,
@@ -109,15 +112,16 @@ abstract class SnapshotTest {
         reviewToasts: Boolean = false,
         screen: Boolean = false,
         coach: CoachStore = TestCoachStore(),
+        settle: Long = settleMillis,
         content: @Composable () -> Unit,
     ) {
         compose.mainClock.autoAdvance = false
         compose.setContent { MemoryTestContent(backend, reviewToasts, coach, content) }
-        compose.mainClock.advanceTimeBy(settleMillis)
+        compose.mainClock.advanceTimeBy(settle)
         if (screen) {
             // Popups (coach, toasts) are separate windows: let them attach and lay out.
-            compose.mainClock.autoAdvance = true
             compose.waitForIdle()
+            compose.mainClock.advanceTimeByFrame()
         }
         val path = "src/test/snapshots/$surface/$state.png"
         if (screen) captureScreenRoboImage(path) else compose.onRoot().captureRoboImage(path)

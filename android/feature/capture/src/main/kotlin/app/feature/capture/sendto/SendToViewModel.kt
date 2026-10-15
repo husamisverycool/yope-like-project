@@ -39,7 +39,7 @@ class SendToViewModel(
     private val tracker: SendTracker,
     private val prefs: CapturePrefs,
     private val gate: SessionPromptGate,
-    /** Whether the voice-note recorder exists in this build (`chat.voice.layout.recording` BLOCKED in release). */
+    /** Whether the device can record a voice note (`chat.voice.layout.recording`; false without a microphone). */
     private val voiceRecorderAvailable: Boolean,
     private val maxCaption: Int? = null,
 ) : ViewModel() {
@@ -161,8 +161,17 @@ class SendToViewModel(
         state.update { s -> s.copy(selected = if (groupId in s.selected) s.selected - groupId else s.selected + groupId) }
     }
 
-    /** Typed on the photo; `camera.sendto.size.captionMaxLength` (BLOCKED → [maxCaption] null) caps it. */
-    fun onCaption(text: String) = state.update { it.copy(caption = maxCaption?.let(text::take) ?: text) }
+    /**
+     * Typed on the photo; `camera.sendto.size.captionMaxLength` caps it (UTF-16 units, as the
+     * reference's text input counts) without splitting an emoji's surrogate pair. No counter.
+     */
+    fun onCaption(text: String) = state.update { it.copy(caption = maxCaption?.let { max -> capCaption(text, max) } ?: text) }
+
+    private fun capCaption(text: String, max: Int): String {
+        if (text.length <= max) return text
+        val end = if (Character.isHighSurrogate(text[max - 1])) max - 1 else max
+        return text.substring(0, end)
+    }
 
     fun dismissVoiceCoach() {
         prefs.voiceCoachDone = true

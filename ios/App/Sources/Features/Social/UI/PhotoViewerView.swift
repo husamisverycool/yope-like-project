@@ -5,6 +5,7 @@
 // references/auto/locket/store/locket-store-08.png (quick reactions), locket-store-04.png (cluster).
 import AppData
 import AppModels
+import AppServices
 import AVKit
 import DesignSystem
 import Photos
@@ -72,7 +73,11 @@ struct PhotoViewerView: View {
         .socialNotices(model.signals.notice, toasts: toasts)
         .toastHost(toasts)
         .sheet(isPresented: $pickerOpen) {
-            ReactionPicker { emoji in Task { await model.react(emoji) } }
+            ReactionPicker(
+                mine: model.myEmojiOnCurrent,
+                onPick: { emoji in Task { await model.react(emoji) } },
+                onRemove: { emoji in Task { await model.unreact(emoji) } }
+            )
         }
         .sheet(isPresented: $activityOpen) {
             if let post = model.current {
@@ -373,10 +378,13 @@ struct ViewerPhoto: View {
                 }
             }
             .overlay(alignment: .bottomLeading) {
+                let emoji = model.reactions[post.id]?.distinctEmoji ?? []
                 Button(action: openActivity) {
-                    ReactionCluster(emoji: model.reactions[post.id]?.distinctEmoji ?? [])
+                    ReactionCluster(emoji: emoji)
                 }
                 .buttonStyle(.plain)
+                .allowsHitTesting(!emoji.isEmpty)
+                .accessibilityHidden(emoji.isEmpty)
                 .padding(.leading, Tokens.Sizes.chatReactionsDimensionClusterInsetLeading)
                 .padding(.bottom, Tokens.Sizes.chatReactionsDimensionClusterInsetBottom)
             }
@@ -583,8 +591,8 @@ struct ViewerVideo: View {
 
 /// The viewer's reply row (`photo.viewer` Structure 4): the composer field with `photo.viewer.reply.placeholder`, the
 /// quick reactions 🔥 💖 and the add-reaction glyph inside its right end (`chat.reactions.layout.quickReactions`), then
-/// the camera circle. Return sends (send control BLOCKED). Quick reactions use the field's text role (their size was
-/// not measured).
+/// the camera circle, whose slot shows the lime send circle while the field has text (`chat.composer.layout.typingState`).
+/// Quick reactions use the field's text role (their size was not measured).
 struct ViewerReplyRow: View {
     @Binding var text: String
     let groupName: String
@@ -611,13 +619,6 @@ struct ViewerReplyRow: View {
                 }
                 .dsTextStyle(TextRole.body)
                 .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                .submitLabel(.send)
-                .onSubmit(send)
-                .onChange(of: text) { _, new in
-                    guard new.contains("\n") else { return }
-                    text = new.replacingOccurrences(of: "\n", with: "")
-                    send()
-                }
                 .padding(.vertical, Self.fieldInset)
                 .accessibilityIdentifier("photo.viewer.reply") // provenance-ok: accessibility identifier for UI tests
                 ForEach(quickEmoji, id: \.self) { emoji in
@@ -643,22 +644,31 @@ struct ViewerReplyRow: View {
             .background(Tokens.Colors.globalControl, in: Capsule())
             .socialRim(Capsule(), top: Tokens.Colors.chatComposerColorFieldRimTop, bottom: Tokens.Colors.chatComposerColorFieldRimBottom, width: Tokens.Sizes.chatComposerDimensionFieldRim)
 
-            Button(action: camera) {
-                Image(systemName: Tokens.Icons.globalCamera)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: Tokens.Sizes.chatComposerDimensionCameraGlyph)
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                    .frame(width: Tokens.Sizes.chatComposerDimensionSideButton, height: Tokens.Sizes.chatComposerDimensionSideButton)
-                    .background(Tokens.Colors.globalControlRaised, in: Circle())
-                    .contentShape(Circle().inset(by: -max(0, Tokens.Sizes.globalMinTouchTargetIos - Tokens.Sizes.chatComposerDimensionSideButton) / 2))
+            Group {
+                if hasText {
+                    // `chat.composer.layout.typingState`: the camera circle's slot shows the lime send circle.
+                    SendCircle(identifier: "photo.viewer.send", action: send) // provenance-ok: accessibility identifier for UI tests
+                } else {
+                    Button(action: camera) {
+                        Image(systemName: Tokens.Icons.globalCamera)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: Tokens.Sizes.chatComposerDimensionCameraGlyph)
+                            .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                            .frame(width: Tokens.Sizes.chatComposerDimensionSideButton, height: Tokens.Sizes.chatComposerDimensionSideButton)
+                            .background(Tokens.Colors.globalControlRaised, in: Circle())
+                            .contentShape(Circle().inset(by: -max(0, Tokens.Sizes.globalMinTouchTargetIos - Tokens.Sizes.chatComposerDimensionSideButton) / 2))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text(Copy.chatComposerA11yCamera))
+                }
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text(Copy.chatComposerA11yCamera))
             .padding(.leading, Tokens.Sizes.chatComposerDimensionGapFieldButton)
         }
         .padding(.leading, Tokens.Sizes.chatComposerDimensionInsetLeading)
         .padding(.trailing, Tokens.Sizes.chatComposerDimensionInsetTrailing)
-        .padding(.bottom, SocialBlocked.composerBottomInset ?? 0)
+        .padding(.bottom, Tokens.Sizes.chatComposerDimensionBottomInset)
     }
+
+    private var hasText: Bool { !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 }

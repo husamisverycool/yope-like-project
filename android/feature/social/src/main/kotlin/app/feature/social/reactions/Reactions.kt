@@ -4,6 +4,17 @@
 // references/auto/locket/frames/locket-tt-7147749171762908462-05.300s-emoji-rain-rising-behind-photo.jpg (rain).
 package app.feature.social.reactions
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionOnScreen
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.unit.toSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -125,8 +136,12 @@ fun Sticker(emoji: String, size: Dp, outline: Dp, modifier: Modifier = Modifier)
     }
 }
 
-/** Distinct emoji in the order they were first reacted (cluster order is BLOCKED: data order). */
-fun clusterEmoji(entries: List<ReactionEntry>): List<String> = entries.map { it.emoji }.distinct()
+/**
+ * Distinct emoji, newest first (`chat.reactions.layout.clusterOrder`, Locket, G-10): a new emoji
+ * enters at the leading end; a repeat of an emoji already there keeps its place. [entries] are
+ * oldest first (the data layer's order).
+ */
+fun clusterEmoji(entries: List<ReactionEntry>): List<String> = entries.map { it.emoji }.distinct().asReversed()
 
 /** The TalkBack label of a cluster: emoji names only, never a count (`chat.reactions.a11y.cluster`). */
 @Composable
@@ -135,32 +150,108 @@ fun clusterLabel(entries: List<ReactionEntry>): String =
 
 /**
  * Locket's cluster at a photo's bottom-left: one sticker per distinct emoji, each
- * `chat.reactions.dimension.clusterStep` right of the previous and drawn over it. No numbers, no
- * avatars, no "+N". Hidden when nobody reacted. Max visible is BLOCKED: every sticker is drawn and
- * the photo clips them.
+ * `chat.reactions.dimension.clusterStep` toward the trailing side of the previous and drawn over it.
+ * No numbers, no avatars, no "+N". The leading slot is the landing point of a reaction in flight
+ * ([ReactionFlights], keyed by [postId]); that sticker stays hidden until the flight lands. Max
+ * visible is BLOCKED (`chat.reactions.count.clusterMaxVisible`): every sticker is drawn and the
+ * photo clips them.
  */
 @Composable
-fun ReactionCluster(entries: List<ReactionEntry>, onClick: (() -> Unit)?, modifier: Modifier = Modifier) {
+fun ReactionCluster(entries: List<ReactionEntry>, onClick: (() -> Unit)?, modifier: Modifier = Modifier, postId: String? = null) {
     val all = clusterEmoji(entries)
     val emoji = app.feature.social.common.SocialBlocked.clusterMaxVisible?.let { all.take(it) } ?: all
-    if (emoji.isEmpty()) return
-    val label = clusterLabel(entries)
+    val flights = LocalReactionFlights.current
+    val arriving = postId?.let { flights?.arriving(it) }
     val size = Tokens.Sizes.chatReactionsDimensionClusterEmoji
     val step = Tokens.Sizes.chatReactionsDimensionClusterStep
-    Box(
-        modifier
-            .let { if (onClick != null) it.clickable(role = Role.Button, onClick = onClick) else it }
-            // Without a tap action the cluster merges into its photo's element (chat.thread a11y: grouped with the photo).
-            .clearAndSetSemantics {
-                contentDescription = label
-                if (onClick != null) role = Role.Button
-            },
-    ) {
-        emoji.forEachIndexed { i, e ->
-            Sticker(e, size, Tokens.Sizes.chatReactionsDimensionClusterOutline, Modifier.offset(x = step * i).zIndex(i.toFloat()))
+    Box(modifier) {
+        if (flights != null && postId != null) FlightAnchor(flights, postId, size)
+        if (emoji.isEmpty()) return@Box
+        val label = clusterLabel(entries)
+        Box(
+            Modifier
+                .let { if (onClick != null) it.clickable(role = Role.Button, onClick = onClick) else it }
+                // Without a tap action the cluster merges into its photo's element (chat.thread a11y: grouped with the photo).
+                .clearAndSetSemantics {
+                    contentDescription = label
+                    if (onClick != null) role = Role.Button
+                },
+        ) {
+            emoji.forEachIndexed { i, e ->
+                val hidden = i == 0 && e == arriving
+                Sticker(e, size, Tokens.Sizes.chatReactionsDimensionClusterOutline, Modifier.offset(x = step * i).zIndex(i.toFloat()).graphicsLayer { alpha = if (hidden) 0f else 1f })
+            }
         }
     }
 }
+
+/** Records where the cluster's leading sticker sits on screen (the flight's landing rect). */
+@Composable
+private fun FlightAnchor(flights: ReactionFlights, postId: String, size: Dp) {
+    androidx.compose.runtime.DisposableEffect(flights, postId) { onDispose { flights.anchors.remove(postId) } }
+    Box(
+        Modifier
+            .size(size)
+            .onGloballyPositioned { c -> flights.anchors[postId] = Rect(c.positionOnScreen(), c.size.toSize()) }
+            .clearAndSetSemantics { },
+    )
+}
+
+/**
+ * Reactions in flight (`chat.reactions` Motion: "the chosen emoji flies from where it was picked to
+ * the cluster's leading end in `chat.reactions.duration.flyToCluster`, decelerating, shrinking to
+ * `chat.reactions.dimension.clusterEmoji`"; Locket 2025, G-12). Reduce Motion: no flight, the sticker
+ * appears in place (callers don't launch).
+ */
+class ReactionFlights {
+    /** Screen rect of each visible cluster's leading slot, by post id. */
+    internal val anchors = HashMap<String, Rect>()
+    var flight by mutableStateOf<Flight?>(null)
+        private set
+    private var next = 0L
+
+    data class Flight(val postId: String, val emoji: String, val from: Rect, val to: Rect, val id: Long)
+
+    /** Starts a flight from [from] (screen rect of the picked emoji) to [postId]'s cluster; false when either end is unknown. */
+    fun launch(postId: String, emoji: String, from: Rect?): Boolean {
+        val to = anchors[postId] ?: return false
+        if (from == null) return false
+        flight = Flight(postId, emoji, from, to, next++)
+        return true
+    }
+
+    fun landed(f: Flight) {
+        if (flight == f) flight = null
+    }
+
+    /** The emoji flying to [postId]'s cluster, if any (its sticker is hidden until it lands). */
+    fun arriving(postId: String): String? = flight?.takeIf { it.postId == postId }?.emoji
+}
+
+val LocalReactionFlights = androidx.compose.runtime.staticCompositionLocalOf<ReactionFlights?> { null }
+
+/** Draws the flight over everything: [Tokens.Durations.chatReactionsDurationFlyToCluster], decelerating (`easing.global.system.standard`). */
+@Composable
+fun FlightLayer(flights: ReactionFlights) {
+    val f = flights.flight ?: return
+    var origin by remember { mutableStateOf<Offset?>(null) }
+    val progress = remember(f) { Animatable(0f) }
+    LaunchedEffect(f) {
+        progress.animateTo(1f, tween(durationMillis = Tokens.Durations.chatReactionsDurationFlyToCluster, easing = Tokens.Easings.globalSystemStandard))
+        flights.landed(f)
+    }
+    val density = LocalDensity.current
+    Box(Modifier.fillMaxSize().onGloballyPositioned { origin = it.positionOnScreen() }.clearAndSetSemantics { }) {
+        val o = origin ?: return@Box
+        val t = progress.value
+        val left = lerp(f.from.left, f.to.left, t) - o.x
+        val top = lerp(f.from.top, f.to.top, t) - o.y
+        val width = with(density) { lerp(f.from.width, f.to.width, t).toDp() }
+        EmojiGlyph(f.emoji, width, Modifier.offset { IntOffset(left.roundToInt(), top.roundToInt()) })
+    }
+}
+
+private fun lerp(a: Float, b: Float, t: Float) = a + (b - a) * t
 
 /** One picker item: a section label or an emoji cell. */
 private sealed interface PickerItem {
@@ -171,11 +262,13 @@ private sealed interface PickerItem {
 /**
  * The emoji picker sheet (`chat.reactions.layout.picker`): native M3 sheet with a search field,
  * then Frequently Used, Popular and All in `chat.reactions.count.pickerColumns` columns. Tapping an
- * emoji picks it and closes the sheet.
+ * emoji picks it ([onPick] gets its screen rect, the flight's start) and closes the sheet. Emoji you
+ * already reacted with ([mine]) sit on a `color.global.selection` circle with the selected trait;
+ * tapping one takes the reaction back (`chat.reactions.layout.unreact`, Apple Messages + WhatsApp, G-13).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReactionPickerSheet(onPick: (String) -> Unit, onDismiss: () -> Unit) {
+fun ReactionPickerSheet(mine: Set<String>, onPick: (String, Rect?) -> Unit, onUnreact: (String) -> Unit, onDismiss: () -> Unit) {
     val context = LocalContext.current
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     var query by rememberSaveable { mutableStateOf("") }
@@ -225,18 +318,10 @@ fun ReactionPickerSheet(onPick: (String) -> Unit, onDismiss: () -> Unit) {
                             Tokens.Colors.globalTextSecondary,
                             Modifier.padding(horizontal = Tokens.Sizes.globalScreenMargin).semantics { heading() },
                         )
-                        is PickerItem.Cell -> {
-                            val name = EmojiNames.name(item.emoji)
-                            Box(
-                                Modifier.fillMaxWidth()
-                                    .clickable(role = Role.Button) {
-                                        EmojiCatalog.remember(context, item.emoji)
-                                        onPick(item.emoji)
-                                    }
-                                    .clearAndSetSemantics { contentDescription = name; role = Role.Button },
-                                contentAlignment = Alignment.Center,
-                            ) { EmojiGlyph(item.emoji, Tokens.Sizes.chatReactionsDimensionPickerEmoji) }
-                        }
+                        is PickerItem.Cell -> PickerCell(item.emoji, item.emoji in mine, onPick = { rect ->
+                            EmojiCatalog.remember(context, item.emoji)
+                            onPick(item.emoji, rect)
+                        }, onUnreact = { onUnreact(item.emoji) })
                     }
                 }
             }
@@ -244,15 +329,37 @@ fun ReactionPickerSheet(onPick: (String) -> Unit, onDismiss: () -> Unit) {
     }
 }
 
+/** One picker cell; a reaction of yours is highlighted (`chat.reactions.layout.unreact`: filled `color.global.selection` circle, selected trait). */
+@Composable
+private fun PickerCell(emoji: String, mine: Boolean, onPick: (Rect?) -> Unit, onUnreact: () -> Unit) {
+    val name = EmojiNames.name(emoji)
+    var bounds by remember { mutableStateOf<Rect?>(null) }
+    val size = Tokens.Sizes.chatReactionsDimensionPickerEmoji
+    Box(
+        Modifier.fillMaxWidth()
+            .clickable(role = Role.Button) { if (mine) onUnreact() else onPick(bounds) }
+            .clearAndSetSemantics {
+                contentDescription = name
+                role = Role.Button
+                selected = mine
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        // The highlight circle's diameter is not measured: one picker cell's emoji width plus the cluster outline on each side.
+        if (mine) Box(Modifier.size(size + Tokens.Sizes.chatReactionsDimensionClusterOutline * 2).clip(CircleShape).background(Tokens.Colors.globalSelection))
+        EmojiGlyph(emoji, size, Modifier.onGloballyPositioned { c -> bounds = Rect(c.positionOnScreen(), c.size.toSize()) })
+    }
+}
+
 /**
  * Emoji rain after you react (`chat.reactions.layout.rainPath`): `chat.reactions.count.rainCopies`
  * copies rise from just below the bottom edge to just past the top, one every
- * `chat.reactions.duration.rainSpawnInterval`, each taking `chat.reactions.duration.rainTravel`.
- * The speed curve is BLOCKED (`chat.reactions.easing.rain`): callers draw it only in development
- * builds (constant speed) and never under Reduce Motion. Not interactive; hidden from accessibility.
+ * `chat.reactions.duration.rainSpawnInterval`, each taking `chat.reactions.duration.rainTravel` on
+ * `chat.reactions.easing.rain` (G-11). Never under Reduce Motion (`chat.reactions.layout.reduceMotion`:
+ * callers don't start it). Not interactive; hidden from accessibility.
  */
 @Composable
-fun EmojiRain(emoji: String, key: Any, onFinished: () -> Unit, modifier: Modifier = Modifier, easing: androidx.compose.animation.core.Easing = app.feature.social.common.SocialBlocked.rainEasing ?: androidx.compose.animation.core.LinearEasing) {
+fun EmojiRain(emoji: String, key: Any, onFinished: () -> Unit, modifier: Modifier = Modifier, easing: androidx.compose.animation.core.Easing = Tokens.Easings.chatReactionsEasingRain) {
     val copies = Tokens.Counts.chatReactionsCountRainCopies
     val spawn = Tokens.Durations.chatReactionsDurationRainSpawnInterval
     val travel = Tokens.Durations.chatReactionsDurationRainTravel
@@ -313,7 +420,7 @@ fun ActivitySheet(entries: List<ReactionEntry>, me: String?, nameOf: (String) ->
 fun withReaction(entries: List<ReactionEntry>, me: String, emoji: String): List<ReactionEntry> =
     if (entries.any { it.userId == me && it.emoji == emoji }) entries else entries + ReactionEntry(me, emoji)
 
-/** Removes `(me, emoji)` (the optimistic row after a failed `react`). */
+/** Removes `(me, emoji)` (the optimistic row after a failed `react`, or `unreact`). */
 fun withoutReaction(entries: List<ReactionEntry>, me: String, emoji: String): List<ReactionEntry> =
     entries.filterNot { it.userId == me && it.emoji == emoji }
 

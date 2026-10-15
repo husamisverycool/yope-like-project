@@ -47,9 +47,9 @@ As `auth.phone` (S24, S26, C24, BI, NG, HUD, T), plus:
 |---|---|---|---|
 | default | after the code was sent | as Structure | — |
 | verifying | `verifyOTP` in flight | HUD | `groups.create.hud.loading` |
-| wrong code | Supabase "invalid token" | presentation **BLOCKED** (`auth.phone.layout.inlineError`); field cleared | `auth.code.error.wrong` |
-| expired | token older than 1 h | **BLOCKED** presentation | `auth.code.error.expired` |
-| too many tries | HTTP 429 | **BLOCKED** presentation | `auth.code.error.tooMany` |
+| wrong code | Supabase "invalid token" | error alert (`auth.phone.layout.inlineError`); field cleared | `auth.code.error.wrong` + `auth.phone.error.dismiss` |
+| expired | token older than 1 h | error alert (`auth.phone.layout.inlineError`) | `auth.code.error.expired` + `auth.phone.error.dismiss` |
+| too many tries | HTTP 429 | error alert (`auth.phone.layout.inlineError`) | `auth.code.error.tooMany` + `auth.phone.error.dismiss` |
 | offline | no connection | Yope empty-state layout (as `auth.phone` offline) | `auth.phone.offline.title`, `auth.code.offline.detail`, `auth.phone.offline.retry` |
 | success (new account) | session created, `profile_private.age_confirmed_at` null | push `auth.agegate` | — |
 | success (returning) | session, age already confirmed, display name set | replace the stack with `groups.list` (pending invite → `join_group` first) | — |
@@ -93,5 +93,5 @@ Nothing observed on this surface.
 | item | status | smallest owner capture |
 |---|---|---|
 | Yope code screen layout, code length display, resend timer | not found → composed from documented parts | one ~40 s English screen recording of a fresh Yope install up to the first camera screen, tapping "try other options" |
-| error presentation | BLOCKED (`auth.phone.layout.inlineError`) | same recording, entering one wrong code |
-| toast dwell | BLOCKED (`safety.block.duration.toast`) | one 10-s recording until the "posted in the wall" toast disappears |
+| error presentation | SOURCED by gap fill (Locket native alert, `auth.phone.layout.inlineError`); Yope's own not observed | same recording, entering one wrong code |
+| toast dwell | SOURCED 2000 ms by gap fill (`safety.block.duration.toast`); Yope's own not observed | one 10-s recording until the "posted in the wall" toast disappears |

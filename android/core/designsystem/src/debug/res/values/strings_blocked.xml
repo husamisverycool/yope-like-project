@@ -3,8 +3,6 @@
 <resources>
     <!-- Yope · auth.agegate · new · SOURCED · args: min_age, app_name -->
     <string name="auth_agegate_underage_title">you need to be %1$s or older to use %2$s</string>
-    <!-- VidDay · birthday.tribute · adapted · BLOCKED · args: group -->
-    <string name="birthday_tribute_endcard">From %1$s</string>
     <!-- Yope · groups.invite · new · SOURCED · args: group_name, app_name, link -->
     <string name="groups_invite_link_message">join %1$s on %2$s %3$s</string>
     <!-- Partiful · invite.web · adapted · VERIFIED · args: title, app_name -->

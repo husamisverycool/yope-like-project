@@ -93,7 +93,7 @@ ascending (1 year ago first), keeping API order inside a year.
 | transition | token | Reduce Motion |
 |---|---|---|
 | open / close the day | native full-screen presentation (`easing.global.native` navigationPush / sheet) | system handles |
-| year → year | `duration.onthisday.memoryChange` **BLOCKED** → change without animation until captured | same |
+| year → year | cross-fade over `duration.onthisday.memoryChange` (700 ms, VidDay's photo-to-photo crossfade; curve `easing.global.native`) | same (a cross-fade is already the Reduce Motion substitute, `layout.global.reduceMotion`) |
 | progress fill change | none (jumps with the year) | same |
 
 ## Haptics
@@ -160,7 +160,7 @@ Timeskip, the intro card (white date on yellow).
 | item | status | owner capture that closes it |
 |---|---|---|
 | per-memory banner colour rule | BLOCKED → one colour (`color.onthisday.banner`) | 15-20 s screen recording tapping through three years of one day on Timehop v5 (research capture 5) |
-| `duration.onthisday.memoryChange` | BLOCKED → no animation | same recording |
+| `duration.onthisday.memoryChange` | SOURCED by gap fill: 700 ms from VidDay's memory montage (MERGE G2-17); Timehop's own not obtainable | same recording |
 | progress bar in v5 | taken from the 2023 help composite (v5 renders show none) | same recording |
 | banner height without the status bar | measured from the screen top on a marketing mockup (±5 %) | same recording |
 | grid background in dark appearance | `color.global.background` (Timehop light #F5F0ED not used, M-8) | one Timehop dark-mode screenshot of a multi-photo day |

@@ -236,6 +236,11 @@ final class AccountSessionTests: XCTestCase {
         XCTAssertTrue(shell.presentModalRoute(router: router))
         XCTAssertEqual(shell.presentedRoute?.style, .fullScreen)
 
+        router.path = [.group(id: "g1"), .memory(.onThisDay(groupID: "g1"))]
+        XCTAssertTrue(shell.presentModalRoute(router: router))
+        XCTAssertEqual(router.modal, .memory(.onThisDay(groupID: "g1")), "onthisday: full-screen modal")
+
+        router.modal = nil
         router.path = [.group(id: "g1")]
         XCTAssertFalse(shell.presentModalRoute(router: router), "ordinary routes stay pushed")
         XCTAssertEqual(router.path, [.group(id: "g1")])

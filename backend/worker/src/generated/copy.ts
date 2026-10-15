@@ -45,6 +45,7 @@ const table = {
   "auth.code.title": "enter the code", // Yope · auth.code · SOURCED
   "auth.code.toast.resent": "new code sent", // Yope · auth.code · SOURCED
   "auth.phone.continue": "continue", // Yope · auth.phone · SOURCED
+  "auth.phone.error.dismiss": "OK", // Locket · auth.phone · SOURCED
   "auth.phone.error.invalidNumber": "check your number and try again", // Yope · auth.phone · SOURCED
   "auth.phone.error.rateLimited": "you can ask for a new code in a minute", // Yope · auth.phone · SOURCED
   "auth.phone.error.sendFailed": "we couldn’t send your code. try again in a moment.", // Yope · auth.phone · SOURCED
@@ -133,6 +134,7 @@ const table = {
   "birthday.request.title": "Birthday Video for {name}!", // Tribute · birthday.request · SOURCED
   "birthday.tribute.a11y.close": "Close", // Apple HIG / Material 3 · birthday.tribute · PLATFORM
   "birthday.tribute.download": "Download", // VidDay · birthday.tribute · SOURCED
+  "birthday.tribute.endCard": "We love you!", // VidDay · birthday.tribute · SOURCED
   "birthday.tribute.error.detail": "try again in a moment", // Yope · birthday.tribute · SOURCED
   "birthday.tribute.error.retry": "try again", // Yope · birthday.tribute · SOURCED
   "birthday.tribute.error.title": "couldn't load your video", // Yope · birthday.tribute · SOURCED

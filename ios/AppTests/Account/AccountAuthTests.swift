@@ -40,6 +40,42 @@ final class AccountAuthTests: XCTestCase {
         XCTAssertEqual(PhoneNumberInput.digits(of: "+1 (555) 12"), "155512")
     }
 
+    func testFlagFollowsTheTypedCallingCode() {
+        XCTAssertEqual(PhoneNumberInput.flag(for: "PT"), "\u{1F1F5}\u{1F1F9}")
+        XCTAssertEqual(PhoneNumberInput.flag(for: "us"), "\u{1F1FA}\u{1F1F8}")
+        XCTAssertEqual(PhoneNumberInput.flag(for: "1A"), "")
+        XCTAssertEqual(PhoneNumberInput.region(of: "+351 912", preferring: [nil, "US"]), "PT")
+        XCTAssertEqual(PhoneNumberInput.region(of: "+1 555", preferring: [nil, "CA"]), "CA", "a shared code keeps the device region")
+        XCTAssertEqual(PhoneNumberInput.region(of: "+1 555", preferring: [nil, "PT"]), "US", "else the code's main region")
+        XCTAssertEqual(PhoneNumberInput.region(of: "+44", preferring: ["JE", "PT"]), "JE", "the picked country wins")
+        XCTAssertNil(PhoneNumberInput.region(of: "+", preferring: ["US"]))
+    }
+
+    func testChoosingACountryReplacesOnlyTheCallingCode() {
+        XCTAssertEqual(PhoneNumberInput.replacingCallingCode(in: "+1 555 123", with: "351"), "+351 555 123")
+        XCTAssertEqual(PhoneNumberInput.replacingCallingCode(in: "+1555123", with: "44"), "+44 555123")
+        XCTAssertEqual(PhoneNumberInput.replacingCallingCode(in: "+1", with: "44"), "+44")
+        XCTAssertEqual(PhoneNumberInput.replacingCallingCode(in: "+", with: "44"), "+44")
+
+        let model = PhoneModel(data: InMemoryAccountData(), deviceRegion: "US")
+        XCTAssertEqual(model.phone, "+1")
+        XCTAssertEqual(model.flagRegion, "US")
+        model.phone = "+1 555 123 4567"
+        model.selectCountry("CA")
+        XCTAssertEqual(model.phone, "+1 555 123 4567")
+        XCTAssertEqual(model.flagRegion, "CA", "same code: the chosen country's flag")
+        model.selectCountry("pt")
+        XCTAssertEqual(model.phone, "+351 555 123 4567")
+        XCTAssertEqual(model.flagRegion, "PT")
+    }
+
+    func testCountryListIsSortedAndComplete() {
+        let countries = PhoneNumberInput.countries(locale: Locale(identifier: "en_US"))
+        XCTAssertTrue(countries.contains { $0.region == "PT" && $0.callingCode == "351" })
+        XCTAssertEqual(countries.map(\.name), countries.map(\.name).sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending })
+        XCTAssertGreaterThan(countries.count, 200)
+    }
+
     // MARK: AuthFailure
 
     func testSendErrorsMapToTheAuthPhoneStates() {

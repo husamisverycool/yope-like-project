@@ -34,7 +34,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @Immutable
-data class BlockedPerson(val userId: String, val name: String?, val avatarUrl: String?)
+data class BlockedPerson(val userId: String, val name: String?, val avatarUrl: String?, val firstName: String? = null)
 
 @Immutable
 data class SettingsBlockedUiState(val people: List<BlockedPerson>? = null, val error: Boolean = false, val online: Boolean = true)
@@ -57,7 +57,7 @@ class SettingsBlockedViewModel(private val env: AccountEnvironment) : AccountVie
                 val urls = runCatching { env.backend.signedUrls(profiles.values.mapNotNull { it.avatarPath }) }.getOrDefault(emptyMap())
                 val people = blocks.sortedByDescending { it.createdAt }.map { b ->
                     val p = profiles[b.blockedId]
-                    BlockedPerson(b.blockedId, p?.displayName?.takeIf { it.isNotBlank() }, p?.avatarPath?.let(urls::get))
+                    BlockedPerson(b.blockedId, p?.displayName?.takeIf { it.isNotBlank() }, p?.avatarPath?.let(urls::get), p?.firstName?.takeIf { it.isNotBlank() })
                 }
                 mutable.update { it.copy(people = people) }
             } catch (t: Throwable) {
@@ -75,6 +75,7 @@ class SettingsBlockedViewModel(private val env: AccountEnvironment) : AccountVie
         viewModelScope.launch {
             try {
                 env.backend.unblock(person.userId)
+                person.firstName?.let { toast(R.string.safety_block_undone, it) }
             } catch (t: Throwable) {
                 t.dataError()
                 mutable.update { it.copy(people = before, error = true) }

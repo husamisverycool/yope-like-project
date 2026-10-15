@@ -26,7 +26,6 @@ import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 
@@ -199,6 +198,3 @@ fun rememberMemoryBackend(): MemoryBackend {
 }
 
 fun memoryBackend(context: Context): MemoryBackend = DataGraph.get(context)?.let(::GraphMemoryBackend) ?: UnconfiguredMemoryBackend
-
-/** Emits nothing; for fakes. */
-fun noDeletions(): Flow<String> = flowOf()

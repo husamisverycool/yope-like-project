@@ -83,6 +83,8 @@ object Tokens {
         val cameraCaptureColorFlipButton: Color = Color(0xFF1F1F1F)
         /** Locket · camera.capture · shutter disc while pressed · SOURCED — token `camera.capture.color.shutterDiscPressed` */
         val cameraCaptureColorShutterDiscPressed: Color = Color(0xFFE0DEDF)
+        /** Yope · camera.sendto · translucent fill of the 'add a message' capsule and the mic circle · SOURCED — token `camera.sendto.color.messageField` */
+        val cameraSendtoColorMessageField: Color = Color(0x7A000000)
         /** Yope · chat.composer · hairline rim along the bottom of the text field · SOURCED — token `chat.composer.color.fieldRimBottom` */
         val chatComposerColorFieldRimBottom: Color = Color(0xFF474747)
         /** Yope · chat.composer · hairline light rim along the top of the text field · SOURCED — token `chat.composer.color.fieldRimTop` */
@@ -113,6 +115,8 @@ object Tokens {
         val chatVoiceColorWaveform: Color = Color(0xFF919191)
         /** Telegram (rule) · Yope (colour) · chat.voice · colour of the played part of the waveform during playback · SOURCED — token `chat.voice.color.waveformPlayed` */
         val chatVoiceColorWaveformPlayed: Color = Color(0xFFFFFFFF)
+        /** Yope · collage.share · frosted, backdrop-dependent pill fill with a light rim · SOURCED — token `collage.share.color.pill` */
+        val collageShareColorPill: Color = Color(0xA89A9489)
         /** Yope · collage.view · loading HUD fill · SOURCED — token `collage.view.color.hud` */
         val collageViewColorHud: Color = Color(0xFF0C0C0C)
         /** Yope · collage.view · active page dot (Android) · SOURCED — token `collage.view.color.pageDotActive` */
@@ -153,8 +157,12 @@ object Tokens {
         val globalOnAccent: Color = Color(0xFF000000)
         /** Yope · global · label on the light pill (secondary buttons, selected segment, 'today') · SOURCED — token `color.global.onSurfaceLight` */
         val globalOnSurfaceLight: Color = Color(0xFF000000)
+        /** Locket · global · dimming layer behind sheets / over photos under text on app surfaces · SOURCED — token `color.global.scrim` */
+        val globalScrim: Color = Color(0x80000000)
         /** Apple HIG · global · filled check circle on selected people / groups (Yope draws it in iOS system blue) · PLATFORM — token `color.global.selection` */
         val globalSelection: Color = Color(0xFF0091FF)
+        /** Locket · global · hairline between rows on app (Yope-referenced) surfaces · SOURCED — token `color.global.separator` */
+        val globalSeparator: Color = Color(0x33FFFFFF)
         /** Yope · global · light pill fill: secondary buttons ('invite more friends', 'enable', 'new recap'), selected segment pill, 'today' pill · SOURCED — token `color.global.surfaceLight` */
         val globalSurfaceLight: Color = Color(0xFFFFFFFF)
         /** Material 3 · global.system · error / destructive text and icons (role md.sys.color.error, baseline dark scheme) · PLATFORM — token `color.global.system.error` */
@@ -193,6 +201,8 @@ object Tokens {
         val yearStoryLetterbox: Color = Color(0xFF111111)
         /** Spotify Wrapped · year.story · completed and current (filled part) segment · SOURCED — token `color.year.story.progress.fill` */
         val yearStoryProgressFill: Color = Color(0xFFFFFFFF)
+        /** BeReal · daily.capture · translucent dark fill of the retake circle and the audience chip over the photo · SOURCED — token `daily.capture.color.overlayControl` */
+        val dailyCaptureColorOverlayControl: Color = Color(0x75000000)
         /** BeReal · daily.capture · countdown digits, SEND label, prompt line (all BeReal capture text) · SOURCED — token `daily.capture.color.text` */
         val dailyCaptureColorText: Color = Color(0xFFFAFAFA)
         /** Yope · groups.create · primary button while its form is incomplete ('continue' with an empty name) · SOURCED — token `groups.create.color.buttonDisabledFill` */
@@ -204,9 +214,11 @@ object Tokens {
         /** Yope · groups.create · single-line text field fill on black ('name group (optional)'); reused by every form field on black (auth.*, groups.invite search) · SOURCED — token `groups.create.color.field` */
         val groupsCreateColorField: Color = Color(0xFF141414)
         /** Yope · groups.create · Loading HUD square fill (on black) · SOURCED — token `groups.create.color.hud` */
-        val groupsCreateColorHud: Color = Color(0xFF262626)
+        val groupsCreateColorHud: Color = Color(0xFF0C0C0C)
         /** Yope · groups.list · group card fill on the black home list · SOURCED — token `groups.list.color.card` */
         val groupsListColorCard: Color = Color(0xFF181818)
+        /** Yope · groups.list · translucent dark fill of the header circles drawn over the cover photo · SOURCED — token `groups.list.color.headerCircleOverPhoto` */
+        val groupsListColorHeaderCircleOverPhoto: Color = Color(0x94000000)
         /** Yope · groups.screen · floating 'chat' pill fill · SOURCED — token `groups.screen.color.chatPill` */
         val groupsScreenColorChatPill: Color = Color(0xFF080808)
         /** Yope · groups.screen · segmented control track fill (on black) · SOURCED — token `groups.screen.color.segmentTrack` */
@@ -303,6 +315,8 @@ object Tokens {
         val widgetHomeSmallColorEmptyBottom: Color = Color(0xFF1B1B1B)
         /** Locket · widget.home.small · empty-state circle fill (white 24 %) · SOURCED — token `widget.home.small.color.emptyCircle` */
         val widgetHomeSmallColorEmptyCircle: Color = Color(0x3DFFFFFF)
+        /** Yope · widget.home.small · empty-state label color · SOURCED — token `widget.home.small.color.emptyLabel` */
+        val widgetHomeSmallColorEmptyLabel: Color = Color(0xFF969696)
         /** Locket · widget.home.small · empty-state ring stroke · SOURCED — token `widget.home.small.color.emptyRing` */
         val widgetHomeSmallColorEmptyRing: Color = Color(0xFFFFB800)
         /** Locket · widget.home.small · empty / unconfigured widget background, top of the vertical gradient (angle 270) · SOURCED — token `widget.home.small.color.emptyTop` */
@@ -313,6 +327,8 @@ object Tokens {
         val widgetHomeSmallColorPlaceholderTop: Color = Color(0xFF2D2B2F)
     }
     object Counts {
+        /** Locket · camera.sendto · longest caption the field accepts · SOURCED — token `camera.sendto.size.captionMaxLength` */
+        val cameraSendtoSizeCaptionMaxLength: Int = 36
         /** Locket · chat.reactions · emoji per row in the picker grid · SOURCED — token `chat.reactions.count.pickerColumns` */
         val chatReactionsCountPickerColumns: Int = 6
         /** Locket · chat.reactions · copies of the chosen emoji in one emoji-rain burst · SOURCED — token `chat.reactions.count.rainCopies` */
@@ -335,6 +351,8 @@ object Tokens {
         val authCodeDurationResendLock: Int = 60000
         /** Locket · camera.capture · maximum length of a hold-to-record video (premium) · SOURCED — token `camera.capture.duration.videoMax` */
         val cameraCaptureDurationVideoMax: Int = 10000
+        /** Locket · camera.sendto · how long the confirmation toast stays, and its entrance / exit motion · SOURCED — token `camera.sendto.duration.toastVisible` */
+        val cameraSendtoDurationToastVisible: Int = 2000
         /** Locket · chat.reactions · flight of the chosen emoji into the cluster after the picker closes · SOURCED — token `chat.reactions.duration.flyToCluster` */
         val chatReactionsDurationFlyToCluster: Int = 300
         /** Locket · chat.reactions · interval between consecutive copies entering · SOURCED — token `chat.reactions.duration.rainSpawnInterval` */
@@ -351,6 +369,8 @@ object Tokens {
         val birthdayTributeEndHold: Int = 10003
         /** Tribute · birthday.tribute · transition from the last contribution to the end card: hard cut (read by the worker) · SOURCED — token `duration.birthday.tribute.endTransition` */
         val birthdayTributeEndTransition: Int = 0
+        /** VidDay · birthday.tribute · time each contribution card stays on screen (read by the worker) · SOURCED — token `duration.birthday.tribute.photoHold` */
+        val birthdayTributePhotoHold: Int = 4000
         /** VidDay · birthday.tribute · crossfade from the title card to the first contribution (read by the worker) · SOURCED — token `duration.birthday.tribute.titleCrossfade` */
         val birthdayTributeTitleCrossfade: Int = 600
         /** VidDay · birthday.tribute · title card fully visible before the crossfade (read by the worker) · SOURCED — token `duration.birthday.tribute.titleHold` */
@@ -361,6 +381,10 @@ object Tokens {
         val globalPhotoSwipe: Int = 167
         /** Yope · global · bottom-sheet presentation, first movement to rest (rise ≈ 100 ms to an overshoot ≈ 16 pt past rest, settle ≈ 100 ms) · SOURCED — token `duration.global.sheetPresent` */
         val globalSheetPresent: Int = 215
+        /** VidDay · onthisday · transition between two years' memories · SOURCED — token `duration.onthisday.memoryChange` */
+        val onthisdayMemoryChange: Int = 700
+        /** VidDay · year.story · time one card stays before the story advances on its own · SOURCED — token `duration.year.story.card` */
+        val yearStoryCard: Int = 4000
         /** Spotify Wrapped · year.story · headline moves up when the subline arrives · SOURCED — token `duration.year.story.reveal.headline` */
         val yearStoryRevealHeadline: Int = 800
         /** Spotify Wrapped · year.story · subline slides up into place · SOURCED — token `duration.year.story.reveal.subline` */
@@ -371,6 +395,8 @@ object Tokens {
         val inviteWebDurationButtonColour: Int = 200
         /** Partiful · invite.web · button opacity transition (press feedback) · VERIFIED — token `invite.web.duration.button.opacity` */
         val inviteWebDurationButtonOpacity: Int = 100
+        /** Locket · safety.block · how long the lime toast stays before it leaves · SOURCED — token `safety.block.duration.toast` */
+        val safetyBlockDurationToast: Int = 2000
         /** Locket · widget.android · system periodic update interval (safety net; refresh is push-driven) · SOURCED — token `widget.android.duration.updatePeriod` */
         val widgetAndroidDurationUpdatePeriod: Int = 86400000
         /** Locket · widget.arrival · documented worst-case delay before a sent photo shows on a member's widget · SOURCED — token `widget.arrival.duration.expectedDelay` */
@@ -385,6 +411,10 @@ object Tokens {
         val globalSystemStandard: Easing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
         /** Spotify Wrapped · year.story · current segment fill over time · SOURCED — token `easing.year.story.progress.fill` */
         val yearStoryProgressFill: Easing = LinearEasing
+        /** Spotify Wrapped · year.story · curve of the headline / subline reveal · SOURCED — token `easing.year.story.reveal` */
+        val yearStoryReveal: Easing = CubicBezierEasing(0.56f, 0.08f, 0.14f, 0.87f)
+        /** Spotify Wrapped · year.story · curve of the subline rising in (with duration.year.story.reveal.subline, .sublineDelay, dimension .sublineOffset) · SOURCED — token `easing.year.story.reveal.subline` */
+        val yearStoryRevealSubline: Easing = CubicBezierEasing(0.05f, 0.36f, 0.26f, 0.94f)
         /** Partiful · invite.web · button/link transitions · VERIFIED — token `invite.web.easing.button` */
         val inviteWebEasingButton: Easing = LinearOutSlowInEasing
     }
@@ -595,6 +625,8 @@ object Tokens {
         val collageShareFontWeightLabel: FontWeight = FontWeight(700)
         /** Yope · collage.view · date title weight · SOURCED — token `collage.view.fontWeight.title` */
         val collageViewFontWeightTitle: FontWeight = FontWeight(600)
+        /** BeReal · daily.capture · countdown digit weight · SOURCED — token `daily.capture.fontWeight.countdown` */
+        val dailyCaptureFontWeightCountdown: FontWeight = FontWeight(700)
         /** BeReal · daily.capture · SEND label weight · SOURCED — token `daily.capture.fontWeight.send` */
         val dailyCaptureFontWeightSend: FontWeight = FontWeight(800)
         /** Apple HIG · daily.liveactivity · minimum weight of any Live Activity text · VERIFIED — token `daily.liveactivity.fontWeight.min` */
@@ -865,6 +897,26 @@ object Tokens {
         object AuthCodeLayoutCodeField {
             const val ios: String = "one TextField, textContentType .oneTimeCode, keyboardType .numberPad; no per-digit boxes (a custom input view cannot show the AutoFill suggestion)"
             const val android: String = "one TextField, KeyboardType.NumberPassword with visualTransformation None, autofill ContentType.SmsOtpCode; SMS User Consent API (SmsRetriever.getClient(context).startSmsUserConsent) shows the system consent sheet and fills the field"
+        }
+        /** Locket · auth.phone · country calling-code selector of the phone field · SOURCED — token `auth.phone.layout.countryCode` */
+        object AuthPhoneLayoutCountryCode {
+            const val pattern: String = "flag at the field's leading edge + the calling code typed inline with the number ('+1 555 ...'); no separate code button"
+            const val flagWidth: Float = 20f
+            const val flagHeight: Float = 13f
+            const val flagLeading: Float = 20f
+            const val flagToText: Float = 5f
+            const val prefill: String = "'+' and the device region's calling code (Locale / libphonenumber); the flag follows the code as it is typed or edited"
+            const val autoFormat: Boolean = true
+            const val allowZeroAfterCountryCode: Boolean = true
+            const val flagTap: String = "opens a country list; choosing a country replaces the calling code (Locket: the phone-input library's built-in country picker, picker.selectCountry(iso2) + picker.show(); ours: the platform picker in a sheet)"
+            const val flagArt: String = "regional-indicator flag emoji (PLATFORM) in the 20 x 13 slot; Locket draws the library's flag images"
+        }
+        /** Locket · auth.phone · how a field-level error (wrong number, wrong or expired code, invalid date) is presented on the sign-up screens · SOURCED — token `auth.phone.layout.inlineError` */
+        object AuthPhoneLayoutInlineError {
+            const val presentation: String = "system alert: iOS UIAlertController .alert / SwiftUI .alert, Android M3 AlertDialog; not dismissible by tapping outside"
+            const val title: String = "none: the auth.*.error.* sentence is the alert message (Locket's errors are title + message pairs; our error copy is one sentence, so no title is shown)"
+            const val button: String = "one button, auth.phone.error.dismiss ('OK'), which closes the alert"
+            const val appliesTo: String = "auth.phone and auth.code field errors (invalid number, rate limited, send failed, wrong / expired code, too many tries) and auth.agegate invalid date"
         }
         /** Yope · auth.phone · keyboard and AutoFill of the phone-number field · PLATFORM — token `auth.phone.layout.keyboard` */
         object AuthPhoneLayoutKeyboard {
@@ -1499,6 +1551,10 @@ object Tokens {
             const val pattern: String = "d MMMM"
             const val example: String = "26 May"
         }
+        /** VidDay · birthday.contribute · UI character limit of the one line · SOURCED — token `layout.birthday.contribute.lineMax` */
+        object BirthdayContributeLineMax {
+            const val maxCharacters: Float = 110f
+        }
         /** Tribute · birthday.contribute · step indicator · VERIFIED — token `layout.birthday.contribute.stepper` */
         object BirthdayContributeStepper {
             const val steps: Float = 3f
@@ -1534,6 +1590,28 @@ object Tokens {
             const val cta: String = "title2"
             const val promptsHeader: String = "subheadline"
             const val prompt: String = "subheadline"
+        }
+        /** Tribute · birthday.tribute · first name + one line over each contribution photo (read by the worker) · SOURCED — token `layout.birthday.tribute.caption` */
+        object BirthdayTributeCaption {
+            const val textColor: String = "#FFFFFF"
+            const val nameFontWeight: Float = 700f
+            const val nameFontSizeRatio: Float = 0.0463f
+            const val lineFontWeight: Float = 700f
+            const val lineFontSizeRatio: Float = 0.0795f
+            const val leftRatio: Float = 0.0577f
+            const val bottomRatio: Float = 0.0861f
+            const val maxWidthRatio: Float = 0.8845f
+            const val gapRatio: Float = 0.0099f
+            const val scrim: String = "#11202FC7"
+        }
+        /** VidDay · birthday.tribute · end card text layout (read by the worker) · SOURCED — token `layout.birthday.tribute.endCard` */
+        object BirthdayTributeEndCard {
+            const val background: String = "#EFEEF3"
+            const val textColor: String = "#444347"
+            const val fontWeight: Float = 500f
+            const val fontSizeRatio: Float = 0.084f
+            const val maxWidthRatio: Float = 0.405f
+            const val centerYRatio: Float = 0.5f
         }
         /** Tribute + VidDay · birthday.tribute · video player on the tribute screen · PLATFORM — token `layout.birthday.tribute.player` */
         object BirthdayTributePlayer {
@@ -1731,6 +1809,17 @@ object Tokens {
             const val order: String = "share-card carousel, Share pill, Replay from beginning"
             const val previewWidthRatio: Float = 0.6f
             const val carousel: String = "horizontal paging through the story's share cards"
+        }
+        /** Spotify Wrapped · year.story · page dots under the share-card carousel · SOURCED — token `layout.year.story.summary.dots` */
+        object YearStorySummaryDots {
+            const val count: String = "one per share card"
+            const val diameter: Float = 8.4f
+            const val pitch: Float = 16.8f
+            const val selectedColor: String = "#FFFFFF"
+            const val unselectedColor: String = "#666666"
+            const val centerBelowCarousel: Float = 20.4f
+            const val centerAboveShare: Float = 29.3f
+            const val animation: String = "none observed (static render)"
         }
         /** Spotify Wrapped · year.story · text card arrangement · SOURCED — token `layout.year.story.text` */
         object YearStoryText {
@@ -2076,6 +2165,12 @@ object Tokens {
             const val w375h667: String = "225x26"
             const val w360h780: String = "225x26"
         }
+        /** Locket · widget.lock.rect · what the Lock Screen widgets show in the two cases Locket's small-widget anatomy cannot fill: the newest photo has no caption (rectangular, inline) and the newest item is a collage (all three) · SOURCED — token `widget.lock.rect.layout.content` */
+        object WidgetLockRectLayoutContent {
+            const val noCaptionRectangular: String = "the sender avatar alone, in its 24-pt leading slot (Locket's small widget without a caption shows only the avatar)"
+            const val noCaptionInline: String = "the sentence of widget.home.small.a11y.photo ('{name}’s photo in {group}') as the inline text (the inline widget has no avatar slot)"
+            const val newestIsCollage: String = "keep showing the newest single photo's sender (avatar, and its caption if any): Locket's widget always shows one sender's newest photo and has no collage state"
+        }
         /** Apple HIG · widget.lock.rect · how every Lock Screen widget renders (circular, rectangular, inline) · VERIFIED — token `widget.lock.rect.layout.rendering` */
         object WidgetLockRectLayoutRendering {
             const val mode: String = "vibrant (monochrome, desaturated)"
@@ -2251,6 +2346,8 @@ object Tokens {
         val cameraCaptureSizeLibraryThumbBorder: Dp = 1.dp
         /** Yope · camera.capture · light pill action in empty / permission-denied states ('invite more friends' empty-state pill) · SOURCED — token `camera.capture.size.permissionButtonHeight` */
         val cameraCaptureSizePermissionButtonHeight: Dp = 45.dp
+        /** Locket · camera.capture · outline drawn around the viewfinder while a video records (color.global.accent) · SOURCED — token `camera.capture.size.recordingOutline` */
+        val cameraCaptureSizeRecordingOutline: Dp = 6.dp
         /** Yope · camera.capture · white shutter disc diameter (color.global.surfaceLight) · SOURCED — token `camera.capture.size.shutterDisc` */
         val cameraCaptureSizeShutterDisc: Dp = 59.dp
         /** Yope · camera.capture · black gap between ring and disc (color.global.backgroundDeep) · SOURCED — token `camera.capture.size.shutterGap` */
@@ -2849,6 +2946,8 @@ object Tokens {
         val globalPlatformDefaultAndroid: DSSpring = DSSpring(dampingRatio = 1f, stiffness = 1500.0212f)
         /** Apple HIG · global · iOS default animation (SwiftUI Animation.default) for custom motion whose Yope curve was not measurable · PLATFORM — token `spring.global.platformDefault.ios` */
         val globalPlatformDefaultIos: DSSpring = DSSpring(dampingRatio = 1f, stiffness = 130.5072f)
+        /** React Navigation iOS modal spec (shipped in Locket) · global · sheet presentation spring (response, dampingFraction) · SOURCED — token `spring.global.sheetPresent` */
+        val globalSheetPresent: DSSpring = DSSpring(dampingRatio = 4.564f, stiffness = 333.419f)
     }
     object Tracking {
         /** Partiful · invite.web · title tracking · VERIFIED — token `invite.web.letterSpacing.title` */

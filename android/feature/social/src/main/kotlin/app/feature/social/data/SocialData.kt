@@ -62,6 +62,8 @@ interface SocialData {
 
     suspend fun reactions(postIds: Collection<String>): Map<String, List<ReactionEntry>>
     suspend fun react(postId: String, emoji: String)
+    /** Takes back your reaction with [emoji] (`unreact`, `chat.reactions.layout.unreact`). */
+    suspend fun unreact(postId: String, emoji: String)
 
     suspend fun isTaggedByMe(postId: String): Boolean
     suspend fun tagSelf(postId: String)
@@ -121,6 +123,7 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
     override suspend fun react(postId: String, emoji: String) {
         graph.reactions.react(postId, emoji)
     }
+    override suspend fun unreact(postId: String, emoji: String) = graph.reactions.unreact(postId, emoji)
 
     override suspend fun isTaggedByMe(postId: String): Boolean {
         val me = currentUserId() ?: return false
@@ -178,6 +181,7 @@ object UnconfiguredSocialData : SocialData {
     override suspend fun deleteMedia(mediaId: String) = fail()
     override suspend fun reactions(postIds: Collection<String>): Map<String, List<ReactionEntry>> = fail()
     override suspend fun react(postId: String, emoji: String) = fail()
+    override suspend fun unreact(postId: String, emoji: String) = fail()
     override suspend fun isTaggedByMe(postId: String): Boolean = fail()
     override suspend fun tagSelf(postId: String) = fail()
     override suspend fun untagSelf(postId: String) = fail()

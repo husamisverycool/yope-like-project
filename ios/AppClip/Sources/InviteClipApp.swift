@@ -46,6 +46,9 @@ final class InviteClipModel {
     var name = ""
     var phone = PhoneNumberInput.initialText()
     private(set) var isSending = false
+    /// The join sheet's last send failure, shown as the form error alert (`auth.phone.layout.inlineError`).
+    private(set) var sendFailure: AuthFailure?
+    private(set) var sendErrorCount = 0
     var codeStep: CodeStep?
     private(set) var joined = false
     /// Offer the full app once the person has joined (`invite.appclip.layout.fullAppOverlay.when`).
@@ -113,18 +116,31 @@ final class InviteClipModel {
 
     /// Join sheet "Continue": the code is sent with the name (it becomes the account's display name).
     func sendCode() async {
-        guard let number = PhoneNumberInput.normalized(phone) else { return }
+        guard let number = PhoneNumberInput.normalized(phone) else {
+            failSending(.invalidNumber)
+            return
+        }
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         isSending = true
         defer { isSending = false }
         do {
             try await data.sendCode(phone: number, displayName: trimmedName.isEmpty ? nil : trimmedName)
+            sendFailure = nil
             showsJoinSheet = false
             codeStep = CodeStep(phone: number, sentAt: Date())
         } catch {
-            if AuthFailure.sending(error) == nil { preview = .offline }
-            UIAccessibility.post(notification: .announcement, argument: (AuthFailure.sending(error) ?? .sendFailed).message)
+            guard let failure = AuthFailure.sending(error) else {
+                showsJoinSheet = false
+                preview = .offline
+                return
+            }
+            failSending(failure)
         }
+    }
+
+    private func failSending(_ failure: AuthFailure) {
+        sendFailure = failure
+        sendErrorCount += 1
     }
 
     /// After the code: `join_group`; errors map to the state pages.
@@ -173,6 +189,7 @@ struct InviteClipContainer: View {
                 onCancel: { model.showsJoinSheet = false },
                 onContinue: { Task { await model.sendCode() } }
             )
+            .formErrorAlert(model.sendFailure?.message, trigger: model.sendErrorCount)
             .preferredColorScheme(model.theme.isDark ? .dark : .light)
         }
         .fullScreenCover(item: $model.codeStep) { step in

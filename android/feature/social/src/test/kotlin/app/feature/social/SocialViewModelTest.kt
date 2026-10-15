@@ -201,9 +201,53 @@ class SocialViewModelTest {
         data.failNext += "sendText:nope:"
         vm.setDraft("nope")
         vm.send()
-        assertTrue(vm.state.value.rows.none { it.message.body == "nope" })
-        assertEquals("the text goes back to the field", "nope", vm.state.value.draft)
+        val failed = vm.state.value.rows.single { it.message.body == "nope" }
+        assertTrue("stays in the thread as failed (chat.thread.layout.failedMessage)", failed.failed)
+        assertFalse(failed.pending)
+        assertEquals("", vm.state.value.draft)
         assertTrue(seen.contains(ChatEffect.SendFailed))
+
+        // A tap on the failed message sends it again; it keeps its list key.
+        vm.retrySend(failed.id)
+        val retried = vm.state.value.rows.single { it.message.body == "nope" }
+        assertFalse(retried.failed)
+        assertEquals(failed.key, retried.key)
+        assertEquals(2, data.calls.count { it == "sendText:nope:" })
+    }
+
+    @Test fun chatFailedVoiceKeepsItsRecordingForRetryAndCanBeDeleted() {
+        val data = FakeSocialData().apply { seedChat() }
+        val vm = ChatViewModel(data, GROUP)
+        val file = java.io.File.createTempFile("voice", ".m4a")
+        data.failNext += "sendVoice:4000"
+        vm.sendVoice(file, 4_000)
+        val failed = vm.state.value.rows.last()
+        assertTrue(failed.failed)
+        assertTrue("the recording is kept for the retry", file.exists())
+        vm.deleteMessage(failed.id)
+        assertTrue("a never-sent message just goes", vm.state.value.rows.none { it.id == failed.id })
+        assertFalse(data.calls.any { it.startsWith("deleteMessage:local-") })
+        assertFalse(file.exists())
+    }
+
+    @Test fun chatUnreactIsOptimisticAndRollsBack() {
+        val data = FakeSocialData().apply { seedChat() }
+        val vm = ChatViewModel(data, GROUP)
+        val seen = collect(vm.effects)
+        vm.unreact("p-1", "🔥")
+        assertFalse(vm.state.value.rows.first { it.id == "m-1" }.reactions.any { it.userId == ME && it.emoji == "🔥" })
+        assertTrue(data.calls.contains("unreact:p-1:🔥"))
+        vm.react("p-1", "🔥")
+        data.failNext += "unreact:p-1:🔥"
+        vm.unreact("p-1", "🔥")
+        assertTrue("restored when unreact fails", vm.state.value.rows.first { it.id == "m-1" }.reactions.contains(ReactionEntry(ME, "🔥")))
+        assertTrue(seen.contains(ChatEffect.ReactionFailed))
+    }
+
+    /** `chat.reactions.layout.clusterOrder`: newest distinct emoji first; a repeat keeps its place. */
+    @Test fun clusterOrderIsNewestDistinctFirst() {
+        val entries = listOf(ReactionEntry(BEN, "😍"), ReactionEntry(ME, "🔥"), ReactionEntry(ANA, "😍"), ReactionEntry(ANA, "😂"))
+        assertEquals(listOf("😂", "🔥", "😍"), app.feature.social.reactions.clusterEmoji(entries))
     }
 
     @Test fun chatReactIsOptimisticAndRollsBack() {
@@ -308,6 +352,25 @@ class SocialViewModelTest {
         vm.sendReply()
         assertTrue(data.calls.contains("sendText:love this:w-2"))
         assertEquals("", vm.state.value.draft)
+
+        // Optimistic: the field clears at once; a failure gives the text back.
+        data.failNext += "sendText:again:w-2"
+        vm.setDraft("again")
+        vm.sendReply()
+        assertEquals("again", vm.state.value.draft)
+    }
+
+    @Test fun viewerUnreactIsOptimisticAndRollsBack() {
+        val data = FakeSocialData().apply { seedAlbums() }
+        val vm = PhotoViewerViewModel(data, GROUP, "w-2", PhotoContext.Single, "w-2", null)
+        vm.react("💖")
+        assertTrue(vm.state.value.current!!.reactions.contains(ReactionEntry(ME, "💖")))
+        vm.unreact("💖")
+        assertFalse(vm.state.value.current!!.reactions.contains(ReactionEntry(ME, "💖")))
+        vm.react("💖")
+        data.failNext += "unreact:w-2:💖"
+        vm.unreact("💖")
+        assertTrue(vm.state.value.current!!.reactions.contains(ReactionEntry(ME, "💖")))
     }
 
     @Test fun viewerReactionRealtimeAndRollback() = runBlocking {

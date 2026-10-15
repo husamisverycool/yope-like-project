@@ -163,6 +163,7 @@ class GroupInviteViewModel(private val env: AccountEnvironment, private val grou
         viewModelScope.launch {
             try {
                 env.backend.revokeInvite(invite.token)
+                toast(R.string.groups_invite_link_turnedoff)
             } catch (t: Throwable) {
                 t.dataError()
                 mutable.update { it.copy(invite = invite) }

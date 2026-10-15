@@ -108,7 +108,7 @@ export const WORKER_COPY_KEYS = {
     meaning: "Title card at the start of the tribute video ({name} = birthday person's first name).",
   },
   "birthday.tribute.endCard": {
-    params: ["group"],
+    params: [],
     surface: "birthday.tribute",
     meaning: "End card of the tribute video.",
   },

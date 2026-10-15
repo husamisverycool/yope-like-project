@@ -72,8 +72,8 @@ are in `design/MERGE_DECISIONS.md` → "Foundations"; contrast results in `desig
 | `color.global.surfaceLight` | #FFFFFF | SOURCED | light pill fill: secondary buttons ('invite more friends', 'enable', 'new recap'), selected segment pill, 'today' pill | `Tokens.Colors.globalSurfaceLight` |
 | `color.global.onSurfaceLight` | #000000 | SOURCED | label on the light pill (secondary buttons, selected segment, 'today') | `Tokens.Colors.globalOnSurfaceLight` |
 | `color.global.selection` | #0091FF | PLATFORM | filled check circle on selected people / groups (Yope draws it in iOS system blue) | `Tokens.Colors.globalSelection` |
-| `color.global.separator` | BLOCKED | BLOCKED | hairline between rows on app (Yope-referenced) surfaces | `Tokens.Colors.globalSeparator` |
-| `color.global.scrim` | BLOCKED | BLOCKED | dimming layer behind sheets / over photos under text on app surfaces | `Tokens.Colors.globalScrim` |
+| `color.global.separator` | `#FFFFFF33` (1 px) | `#FFFFFF33` (1 px) | hairline between rows on app (Yope-referenced) surfaces | `Tokens.Colors.globalSeparator` |
+| `color.global.scrim` | `#00000080` | `#00000080` | dimming layer behind sheets / over photos under text on app surfaces | `Tokens.Colors.globalScrim` |
 
 ### Colors — system surfaces (`global.system`)
 
@@ -180,7 +180,7 @@ are in `design/MERGE_DECISIONS.md` → "Foundations"; contrast results in `desig
 |---|---|---|---|---|
 | `duration.global.sheetPresent` | 215 ms | SOURCED | bottom-sheet presentation, first movement to rest (rise ≈ 100 ms to an overshoot ≈ 16 pt past rest, settle ≈ 100 ms) | `Tokens.Durations.globalSheetPresent` |
 | `spring.global.sheetPresentObserved` | overshootPt: 16; timeToPeakMs: 100; settleMs: 100 | SOURCED | observed shape of the sheet presentation: overshoot past rest, time to the peak, time from the peak to rest | `Tokens.Layouts.GlobalSheetPresentObserved.<key>` |
-| `spring.global.sheetPresent` | BLOCKED | BLOCKED | sheet presentation spring (response, dampingFraction) | `Tokens.Springs.globalSheetPresent` |
+| `spring.global.sheetPresent` | response 0.3441, damping 4.564 | same | sheet presentation spring (response, dampingFraction) | `Tokens.Springs.globalSheetPresent` |
 | `duration.global.photoSwipe` | 167 ms | SOURCED | horizontal swipe to the adjacent photo in the viewer, first movement to settled (gesture-driven) | `Tokens.Durations.globalPhotoSwipe` |
 | `easing.global.photoSwipe` | ios: system paging scroll physics; android: Compose HorizontalPager default fling | PLATFORM | settle curve of the photo swipe after the finger lifts | `Tokens.Layouts.GlobalPhotoSwipe.<key>` |
 | `duration.global.navigationPush` | 100 ms | SOURCED | horizontal push to the next screen ('new group' → new group chat after create) | `Tokens.Durations.globalNavigationPush` |
@@ -253,11 +253,10 @@ are in `design/MERGE_DECISIONS.md` → "Foundations"; contrast results in `desig
 
 ## Not available yet (BLOCKED or not measured)
 
+(separator, scrim and the sheet spring were sourced in the gap fill — MERGE_DECISIONS G2: Locket's list divider and sheet scrim, the iOS modal spring Locket ships.)
+
 | need | status | smallest capture |
 |---|---|---|
-| separator line on app surfaces (`color.global.separator`) | BLOCKED: Yope separates items with gaps; no divider observed | one screenshot of a Yope list with dividers (2026 group ••• menu or members list) |
-| scrim on app surfaces (`color.global.scrim`) | BLOCKED: not measured | one lossless screenshot of a Yope sheet over a known background |
-| sheet spring (`spring.global.sheetPresent`) | BLOCKED: 5 samples, not fittable; the observed shape is in `spring.global.sheetPresentObserved` | one 60 fps screen recording of a Yope sheet opening |
 | placeholder / emptyDetail weight, legal-footer weight | not measured — no token | one lossless screenshot of the sign-up screen and of a text field |
 | line heights other than `caption` | not measured — the platform default leading applies | one lossless screenshot of a multi-line Yope message bubble |
 | sheet corner radius on iOS | system-drawn (`radius.global.sheet.ios = system`) | — |

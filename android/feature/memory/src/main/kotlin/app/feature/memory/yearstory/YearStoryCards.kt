@@ -151,37 +151,39 @@ private fun Headline(text: String, modifier: Modifier) {
 
 /**
  * The text reveal of a card with a subline (design/surfaces/year.story.md, Motion): the headline
- * moves up `dimension.year.story.reveal.headlineShift` over `duration.year.story.reveal.headline`; the
- * subline starts `duration.year.story.reveal.sublineDelay` later, `dimension.year.story.reveal.sublineOffset`
- * below, and settles over `duration.year.story.reveal.subline`, on `easing.year.story.reveal`.
- * While that easing is BLOCKED — and always under Reduce Motion (`layout.global.reduceMotion`) — the
- * movement is replaced by a cross-fade with the same timings: the headline stays in place and the
- * subline fades in.
+ * moves up `dimension.year.story.reveal.headlineShift` over `duration.year.story.reveal.headline` on
+ * `easing.year.story.reveal`; the subline appears `duration.year.story.reveal.sublineDelay` later,
+ * `dimension.year.story.reveal.sublineOffset` below, and settles over `duration.year.story.reveal.subline`
+ * on `easing.year.story.reveal.subline`. Under Reduce Motion (`layout.global.reduceMotion`) — or if a
+ * curve were BLOCKED again — the movement becomes a cross-fade with the same timings: the headline
+ * stays in place and the subline fades in.
  */
 @Stable
 internal class Reveal(private val headline: State<Float>, private val subline: State<Float>, private val moves: Boolean, private val density: Density) {
     fun headlineOffset(): Float = if (moves) with(density) { Tokens.Sizes.yearStoryRevealHeadlineShift.toPx() } * (1f - headline.value) else 0f
     fun sublineOffset(): Float = if (moves) with(density) { Tokens.Sizes.yearStoryRevealSublineOffset.toPx() } * (1f - subline.value) else 0f
-    fun sublineAlpha(): Float = subline.value
+
+    /** Moving: the subline is there from the moment it starts rising; cross-fade: it fades in. */
+    fun sublineAlpha(): Float = if (moves) (if (subline.value > 0f) 1f else 0f) else subline.value
 }
 
 @Composable
 internal fun rememberReveal(card: StoryCard, animate: Boolean): Reveal {
     val reduceMotion by rememberReduceMotion()
-    val easing = MemoryBlocked.yearStoryRevealEasing
-    val moves = animate && easing != null && !reduceMotion
+    val headlineCurve = MemoryBlocked.yearStoryRevealEasing
+    val sublineCurve = MemoryBlocked.yearStoryRevealSublineEasing
+    val moves = animate && headlineCurve != null && sublineCurve != null && !reduceMotion
     var started by remember(card) { mutableStateOf(!animate) }
     LaunchedEffect(card) { started = true }
     // A cross-fade interpolates opacity linearly over the token duration.
-    val curve = if (moves) easing!! else LinearEasing
     val headline = animateFloatAsState(
         if (started) 1f else 0f,
-        tween(Tokens.Durations.yearStoryRevealHeadline, easing = curve),
+        tween(Tokens.Durations.yearStoryRevealHeadline, easing = if (moves) headlineCurve!! else LinearEasing),
         label = "revealHeadline", // provenance-ok: animation inspector label, never shown
     )
     val subline = animateFloatAsState(
         if (started) 1f else 0f,
-        tween(Tokens.Durations.yearStoryRevealSubline, Tokens.Durations.yearStoryRevealSublineDelay, curve),
+        tween(Tokens.Durations.yearStoryRevealSubline, Tokens.Durations.yearStoryRevealSublineDelay, if (moves) sublineCurve!! else LinearEasing),
         label = "revealSubline", // provenance-ok: animation inspector label, never shown
     )
     val density = LocalDensity.current

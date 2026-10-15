@@ -21,7 +21,7 @@ Widgets** (vibrant Lock Screen rendering). Shared kind, copy and rendering: `wid
 
 | element | tokens | copy | behavior |
 |---|---|---|---|
-| avatar | `widget.lock.circular.layout.size` | a11y `widget.home.small.a11y.photo` | newest post's poster; when the newest item is a collage: `widget.lock.rect.layout.content` (BLOCKED) |
+| avatar | `widget.lock.circular.layout.size` | a11y `widget.home.small.a11y.photo` | newest post's poster; when the newest item is a collage: the newest single photo's poster (`widget.lock.rect.layout.content`) |
 | tap | `camera.fromwidget.layout.target` | — | opens the camera, group preselected |
 
 ## States
@@ -60,4 +60,4 @@ As `widget.home.small`.
 
 | item | status | capture |
 |---|---|---|
-| collage as the newest item | BLOCKED (`widget.lock.rect.layout.content`) | see `widget.lock.rect` |
+| collage as the newest item | SOURCED by gap fill as a composition (`widget.lock.rect.layout.content`) | see `widget.lock.rect` |

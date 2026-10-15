@@ -42,7 +42,7 @@ export async function tributeRender(ctx: JobContext): Promise<void> {
   const honoree = maybe(await ctx.db.from("profiles").select("id, display_name, avatar_path").eq("id", t.honoree_id).maybeSingle(), "honoree") as ProfileRow | null;
   const texts = {
     title: copyText("birthday.tribute.titleCard", { name: firstName(honoree?.display_name) ?? "" }),
-    end: copyText("birthday.tribute.endCard", { group: group.name }),
+    end: copyText("birthday.tribute.endCard"),
   };
 
   const version = createHash("sha256")

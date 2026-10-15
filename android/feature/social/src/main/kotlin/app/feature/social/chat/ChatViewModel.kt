@@ -42,6 +42,8 @@ data class ChatRow(
     val key: String = message.id,
     /** Shown before `send_message` returned (optimistic). */
     val pending: Boolean = false,
+    /** My message that could not be sent: drawn with `chat.thread.layout.failedMessage`; a tap sends it again. */
+    val failed: Boolean = false,
     val author: Profile?,
     val mine: Boolean,
     val post: Post? = null,
@@ -116,6 +118,8 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
     private var messages: List<Message> = emptyList()
     /** Optimistic messages not yet confirmed, by local key. */
     private val pending = LinkedHashMap<String, Message>()
+    /** Optimistic messages whose send failed (kept in the thread with the retry affordance). */
+    private val failed = HashSet<String>()
     /** Server id → the local key its optimistic row used. */
     private val keys = HashMap<String, String>()
     private val posts = LinkedHashMap<String, Post>()
@@ -229,8 +233,8 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
 
     /**
      * Sends the draft (`send_message` text), optimistically: the message shows at once and the field
-     * clears; if the call fails the row is taken back, the text returns to the field and the
-     * failure is announced (the failed-message layout is BLOCKED, `chat.thread.layout.failedMessage`).
+     * clears; if the call fails the message stays in the thread as failed
+     * (`chat.thread.layout.failedMessage`) and a tap on it sends it again ([retrySend]).
      */
     fun send() {
         val body = _state.value.draft.trim()
@@ -239,17 +243,42 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
         val local = optimistic(me, MessageKind.Text, body = body)
         _state.update { it.copy(draft = "") }
         publish()
+        deliver(local)
+    }
+
+    /** Uploads and sends a recorded voice message (`send_message` voice), shown at once; a failure leaves it failed with retry. */
+    fun sendVoice(file: File, durationMs: Int) {
+        val me = data.currentUserId() ?: return
+        val local = optimistic(me, MessageKind.Voice, voicePath = file.absolutePath, durationMs = durationMs)
+        publish()
+        deliver(local)
+    }
+
+    /** Sends a failed message again (tap on its indicator, label or bubble). */
+    fun retrySend(localId: String) {
+        val local = pending[localId] ?: return
+        if (!failed.remove(localId)) return
+        publish()
+        deliver(local)
+    }
+
+    private fun deliver(local: Message) {
         viewModelScope.launch {
             try {
-                val sent = data.sendText(groupId, body)
-                confirm(local.id, sent)
+                val sent = when (local.kind) {
+                    MessageKind.Voice -> data.sendVoice(groupId, File(local.voicePath.orEmpty()), local.voiceDurationMs ?: 0)
+                    else -> data.sendText(groupId, local.body.orEmpty())
+                }
+                if (local.kind == MessageKind.Voice) File(local.voicePath.orEmpty()).delete()
+                if (local.id in pending) confirm(local.id, sent)
                 _effects.emit(ChatEffect.Sent)
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Throwable) {
-                pending.remove(local.id)
-                _state.update { it.copy(draft = if (it.draft.isEmpty()) body else it.draft) }
-                publish()
+                if (local.id in pending) {
+                    failed += local.id
+                    publish()
+                }
                 _effects.emit(ChatEffect.SendFailed)
             }
         }
@@ -277,33 +306,12 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
     /** The server's row replaces the optimistic one under the same list key. */
     private suspend fun confirm(localId: String, sent: Message) {
         pending.remove(localId)
+        failed.remove(localId)
         keys[sent.id] = localId
         merge(listOf(sent), replaceNewest = false)
         runCatching { hydrate(listOf(sent)) }
         _state.update { if (it.phase != ChatState.Phase.Ready) it.copy(phase = ChatState.Phase.Ready) else it }
         publish()
-    }
-
-    /** Uploads and sends a recorded voice message (`send_message` voice), shown at once and taken back on failure. */
-    fun sendVoice(file: File, durationMs: Int) {
-        val me = data.currentUserId() ?: return
-        val local = optimistic(me, MessageKind.Voice, voicePath = file.absolutePath, durationMs = durationMs)
-        publish()
-        viewModelScope.launch {
-            try {
-                val sent = data.sendVoice(groupId, file, durationMs)
-                confirm(local.id, sent)
-                _effects.emit(ChatEffect.Sent)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Throwable) {
-                pending.remove(local.id)
-                publish()
-                _effects.emit(ChatEffect.SendFailed)
-            } finally {
-                file.delete()
-            }
-        }
     }
 
     fun recordFailed() {
@@ -329,8 +337,35 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
         }
     }
 
-    /** Your own text / voice message (`delete_message`, after the confirmation): removed at once, restored if the call fails. */
+    /** `unreact`: your sticker leaves at once (unless someone else used that emoji); restored if the call fails. */
+    fun unreact(postId: String, emoji: String) {
+        val me = data.currentUserId() ?: return
+        val before = reactions[postId].orEmpty()
+        if (before.none { it.userId == me && it.emoji == emoji }) return
+        reactions[postId] = withoutReaction(before, me, emoji)
+        publish()
+        viewModelScope.launch {
+            try {
+                data.unreact(postId, emoji)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Throwable) {
+                reactions[postId] = withReaction(reactions[postId].orEmpty(), me, emoji)
+                publish()
+                _effects.emit(ChatEffect.ReactionFailed)
+            }
+        }
+    }
+
+    /** Your own text / voice message (`delete_message`, after the confirmation): removed at once, restored if the call fails. A failed (never sent) one just goes. */
     fun deleteMessage(messageId: String) {
+        pending[messageId]?.let { local ->
+            pending.remove(messageId)
+            failed.remove(messageId)
+            if (local.kind == MessageKind.Voice) File(local.voicePath.orEmpty()).delete()
+            publish()
+            return
+        }
         val removed = messages.firstOrNull { it.id == messageId } ?: return
         remove(messageId)
         viewModelScope.launch {
@@ -352,7 +387,7 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
                 val isNew = messages.none { it.id == event.message.id }
                 // My own message can arrive before send_message returns: adopt the optimistic row.
                 pending.values.firstOrNull { it.authorId == event.message.authorId && it.kind == event.message.kind && it.body == event.message.body && it.voiceDurationMs == event.message.voiceDurationMs }
-                    ?.let { local -> pending.remove(local.id); keys[event.message.id] = local.id }
+                    ?.let { local -> pending.remove(local.id); failed.remove(local.id); keys[event.message.id] = local.id }
                 insert(event.message)
                 if (isNew && event.message.authorId != data.currentUserId()) {
                     _state.value.rows.firstOrNull { it.id == event.message.id }?.let { _effects.emit(ChatEffect.Incoming(it)) }
@@ -476,7 +511,8 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
             ChatRow(
                 message = m,
                 key = keys[m.id] ?: m.id,
-                pending = m.id in pending,
+                pending = m.id in pending && m.id !in failed,
+                failed = m.id in failed,
                 author = profiles[m.authorId],
                 mine = m.authorId == me,
                 post = post,

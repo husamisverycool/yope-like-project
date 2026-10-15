@@ -152,23 +152,27 @@
     },
     "color.global.separator": {
       "type": "color",
-      "value": null,
-      "source_app": "Yope",
+      "value": "#FFFFFF33",
+      "source_app": "Locket",
       "surface": "global",
-      "level": "BLOCKED",
+      "level": "SOURCED",
       "element": "hairline between rows on app (Yope-referenced) surfaces",
-      "evidence": "Not observed: Yope separates stacked items with gaps (size.global.listGap; design/research/yope-a.md §2.9) and draws 1-px rims on controls (design/research/yope-b.md §1-2); no separator line is measured in any Yope source.",
-      "notes": "Smallest capture: one screenshot of a Yope list with row dividers (e.g. the 2026 group ••• menu or members list, yope-a §2.13). System surfaces use the platform separator (color.global.system.ios.separator / color.global.system.outline)."
+      "evidence": "references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (Locket Android 1.243.0, decompiled Hermes JS bundle): grouped option list StyleSheet 'divider' = {height: StyleSheet.hairlineWidth, backgroundColor: WHITE20} with WHITE20 = 'rgba(255, 255, 255, 0.2)' (rows minHeight 56 in a WHITE10 radius-15 group on a black screen); action-sheet 'separator' = height 1, WHITE10, marginHorizontal 12",
+      "notes": "Gap fill (MERGE 'Gap fill' G2-1). Yope draws no row divider (it separates items with gaps, size.global.listGap); Locket is a dark-only photo app whose lists sit on black like Yope's deep surfaces, and it divides rows inside its grouped lists with a white 20 % hairline. Draw it 1 physical pixel thick (iOS 1 / displayScale pt, Android 1 px). Over #000000 it reads #333333 (1.66:1), over #171717 #454545 (1.87:1): a decorative boundary, the rows are identified by their text. System surfaces keep color.global.system.ios.separator / color.global.system.outline.",
+      "method": "source constant read from the decompiled bundle (hermes-dec); rgba(255,255,255,0.2) -> #FFFFFF33 (0.2 x 255 = 51)",
+      "precision": "exact (source constant); line width = the platform hairline (StyleSheet.hairlineWidth: 1 physical pixel)"
     },
     "color.global.scrim": {
       "type": "color",
-      "value": null,
-      "source_app": "Yope",
+      "value": "#00000080",
+      "source_app": "Locket",
       "surface": "global",
-      "level": "BLOCKED",
+      "level": "SOURCED",
       "element": "dimming layer behind sheets / over photos under text on app surfaces",
-      "evidence": "Not measured: the recap card's bottom gradient scrim is on a JPEG owner frame, alpha not solvable (design/research/yope-b.md §6); the header circles over photos are translucent but their alpha was not solved (design/research/yope-b.md §1); the share pill is a backdrop blur (design/research/yope-b.md §9).",
-      "notes": "System sheets supply their own dimming (PLATFORM). Smallest capture: one lossless screenshot of a Yope sheet over a known background."
+      "evidence": "references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (Locket Android 1.243.0, decompiled Hermes JS bundle): every sheet is a gorhom BottomSheetModal whose backdropComponent is BottomSheetBackdrop {opacity: backdropOpacity, appearsOnIndex: 0, disappearsOnIndex: -1}; call sites pass backdropOpacity = BackdropOpacity.SEE_THROUGH = 0.5; the library's backdrop style is backgroundColor 'black' (DEFAULT_OPACITY 0.5)",
+      "notes": "Gap fill (MERGE G2-2). Role match: the dimming layer behind a sheet in a dark-only photo app. Yope's own sheets are full-height black, so no Yope dimming is observable. It fades in with the sheet (index -1 -> 0). Also used under text over photos where a surface asks for color.global.scrim. System sheets keep their own dimming (PLATFORM); M3 documents its scrim at 0.32 for system surfaces.",
+      "method": "source constants read from the decompiled bundle; black at 0.5 -> #00000080 (0.5 x 255 = 127.5 -> 128)",
+      "precision": "exact (source constants)"
     },
     "color.global.destructive": {
       "type": "color",
@@ -1094,13 +1098,18 @@
     },
     "spring.global.sheetPresent": {
       "type": "spring",
-      "value": null,
-      "source_app": "Yope",
+      "value": {
+        "response": 0.3441,
+        "dampingFraction": 4.564
+      },
+      "source_app": "React Navigation iOS modal spec (shipped in Locket)",
       "surface": "global",
-      "level": "BLOCKED",
+      "level": "SOURCED",
       "element": "sheet presentation spring (response, dampingFraction)",
-      "evidence": "design/research/yope-b.md §10: 5 position samples, 'curve not fittable'; observed shape in spring.global.sheetPresentObserved",
-      "notes": "Not fitted here: a fit from 5 samples would be a decision, not a measurement. Either a 60 fps screen recording of a Yope sheet opening (smallest capture) or the native sheet (easing.global.native) — MERGE_DECISIONS F-15."
+      "evidence": "references/auto/platform/react-navigation-ios-modal-spring-excerpt.txt (react-navigation main, packages/stack/src/TransitionConfigs: ModalPresentationIOS 'Standard iOS modal presentation style (introduced in iOS 13)' opens and closes with TransitionIOSSpec = spring {stiffness: 1000, damping: 500, mass: 3, overshootClamping: true, restDisplacementThreshold: 10, restSpeedThreshold: 10}); the same constants ship in references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (TransitionIOSSpec, and gorhom's 'keyboard' sheet config)",
+      "notes": "Gap fill (MERGE G2-3, closes F-15 in favour of the native sheet curve). Conflict: Yope's own sheet showed a 16-pt overshoot (spring.global.sheetPresentObserved, 5 samples at 30 fps, not fittable); the documented iOS modal spring has none. Native .sheet / ModalBottomSheet presentations keep the system motion (easing.global.native.sheet); this token is for custom sheets. A 60 fps recording of a Yope sheet would replace it.",
+      "method": "converted to SwiftUI spring parameters: w0 = sqrt(k/m) = sqrt(1000/3) = 18.257 rad/s, response = 2*pi/w0 = 0.3441 s; dampingFraction = c / (2*sqrt(k*m)) = 500 / (2*sqrt(3000)) = 4.564 (overdamped, no overshoot; the source also clamps overshoot). Compose (designgen): stiffness (2*pi/0.3441)^2 = 333.3 with mass 1 and dampingRatio 4.564 = the same k/m",
+      "precision": "exact conversion of the documented constants; the constants themselves are React Navigation's approximation of the iOS modal sheet"
     },
     "duration.global.photoSwipe": {
       "level": "SOURCED",

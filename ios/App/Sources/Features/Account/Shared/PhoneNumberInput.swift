@@ -32,6 +32,65 @@ enum PhoneNumberInput {
         return digits.count > code.count
     }
 
+    /// The region whose flag the field shows for `text` (`auth.phone.layout.countryCode`: "the flag follows the code
+    /// as it is typed or edited"): the first of `preferred` (the country picked in the list, then the device region)
+    /// that uses the typed calling code, else the code's main region (the first listed for it by the ITU).
+    static func region(of text: String, preferring preferred: [String?]) -> String? {
+        guard let code = callingCode(of: text) else { return nil }
+        for case let region? in preferred where CallingCodes.byRegion[region.uppercased()] == code {
+            return region.uppercased()
+        }
+        return CallingCodes.primaryRegion[code]
+    }
+
+    /// `text` with its calling code replaced by `code` (a country chosen in the list); what follows the old code is
+    /// kept as typed. Without a recognised code the field becomes "+" and `code`.
+    static func replacingCallingCode(in text: String, with code: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        guard let current = callingCode(of: trimmed) else { return "+" + code }
+        var remaining = Substring(trimmed)
+        if remaining.first == "+" { remaining = remaining.dropFirst() }
+        var toDrop = current.count
+        while toDrop > 0, let character = remaining.first {
+            remaining = remaining.dropFirst()
+            if character.isASCII, character.isNumber { toDrop -= 1 }
+        }
+        if let first = remaining.first, first.isNumber { return "+" + code + " " + remaining } // provenance-ok: separator between the code and the number
+        return "+" + code + remaining
+    }
+
+    /// The regional-indicator flag emoji of an ISO 3166-1 alpha-2 region (`auth.phone.layout.countryCode` flagArt);
+    /// empty for anything else.
+    static func flag(for region: String) -> String {
+        let letters = region.uppercased().unicodeScalars
+        guard letters.count == 2 else { return "" }
+        var flag = ""
+        for letter in letters {
+            // Regional indicator symbols: U+1F1E6 ("A") … U+1F1FF ("Z").
+            guard ("A"..."Z").contains(letter), let scalar = Unicode.Scalar(0x1F1E6 + letter.value - 0x41) else { return "" } // provenance-ok: Unicode code points
+            flag.unicodeScalars.append(scalar)
+        }
+        return flag
+    }
+
+    /// The country list behind the flag: every region with a calling code and a name in `locale`, by name.
+    static func countries(locale: Locale = .current) -> [Country] {
+        CallingCodes.byRegion.compactMap { region, code -> Country? in
+            guard let name = locale.localizedString(forRegionCode: region) else { return nil }
+            return Country(region: region, name: name, callingCode: code)
+        }
+        .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    /// One row of the country list.
+    struct Country: Identifiable, Hashable, Sendable {
+        let region: String
+        let name: String
+        let callingCode: String
+        var id: String { region }
+        var flag: String { PhoneNumberInput.flag(for: region) }
+    }
+
     /// The E.164 form ("+15551234567") of `text`, or nil when it is not one: a "+" (or none), then 2–15 digits not
     /// starting with 0, separated by nothing but spaces, dashes, dots, slashes and parentheses.
     static func normalized(_ text: String) -> String? {
@@ -62,6 +121,15 @@ enum CallingCodes {
     }()
 
     static let all: Set<String> = Set(assignments.map { $0.code })
+
+    /// The main region of each calling code (the first listed for it), for the flag of a shared code.
+    static let primaryRegion: [String: String] = {
+        var table: [String: String] = [:]
+        for (code, regions) in assignments {
+            if let first = regions.split(separator: " ").first { table[code] = String(first) }
+        }
+        return table
+    }()
 
     private static let assignments: [(code: String, regions: String)] = [
         ("1", "US CA AG AI AS BB BM BS DM DO GD GU JM KN KY LC MP MS PR SX TC TT VC VG VI UM"),

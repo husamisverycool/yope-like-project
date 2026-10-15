@@ -15,7 +15,7 @@ share sheet (third-party buttons are not copied) + Meta's Stories image spec.
 ## Structure
 
 1. **Share pill** on `collage.view`, bottom centre, bottom edge 36 pt above the screen bottom
-   (`collage.share.layout.pill`): 126 × 58 pt, corner 10, fill `collage.share.color.pill` (BLOCKED, frosted), glyph
+   (`collage.share.layout.pill`): 126 × 58 pt, corner 10, fill `collage.share.color.pill` (#9A9489 at 0.66 over a backdrop blur, frosted), glyph
    `collage.share.icon.share` 25.7 pt + label `collage.share.button` (`collage.share.fontSize.label` /
    `.fontWeight.label`), both `color.global.textPrimary`, centred together.
 2. Tap → the **system share sheet** (`collage.share.layout.sheet`) with the current page's `share-<n>.jpg`
@@ -49,7 +49,7 @@ None (system sheet).
 ## Accessibility
 
 Pill: button, label = its visible text `collage.share.button`; glyph hidden. Dynamic Type: label → headline
-(`collage.share.layout.textStyleMap`). Contrast: white on the BLOCKED frosted fill — not computable (backdrop-dependent).
+(`collage.share.layout.textStyleMap`). Contrast: white on the frosted fill is backdrop-dependent: 6.07:1 over black, **1.98:1 over white — FAIL** (as Yope draws it; reported, not adjusted).
 
 ## Data & actions
 
@@ -70,6 +70,6 @@ Yope's wordmark watermark; Instagram / Snapchat / WhatsApp brand buttons; the or
 
 | item | status | capture |
 |---|---|---|
-| `collage.share.color.pill` | BLOCKED | one lossless screenshot of Yope's share pill over flat white and flat black |
+| `collage.share.color.pill` | SOURCED by gap fill: two-background solve on Yope's lossless store PNG, tint ±8, alpha ±0.08 (MERGE G2-16) | one lossless screenshot of Yope's share pill over flat white and flat black (would tighten it) |
 | `{app_name}` watermark on shared images | owner decision (none built) | owner |
 | options A / C share layout | needs a 9:16 layout no reference shows (README) | owner choice |

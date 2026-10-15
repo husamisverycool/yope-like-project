@@ -25,6 +25,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import app.feature.account.common.AccountEvent
+import app.designsystem.R
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -56,7 +58,34 @@ class AuthViewModelsTest {
         assertEquals("+14155550100", env.signUp.phoneE164)
         assertEquals(AppRoute.AuthCode, events.navigations().single().route)
         assertTrue(Tokens.Haptics.globalSuccess in events.haptics())
+        assertEquals(listOf(AccountEvent.Toast(R.string.auth_phone_toast_codesent)), events.toasts())
         assertFalse(vm.state.value.sending)
+    }
+
+    @Test fun phoneFormatsAsTypedAndTheFlagFollowsTheCallingCode() = runTest(main.dispatcher) {
+        val vm = PhoneViewModel(fakeEnvironment())
+        assertEquals("US", vm.state.value.region)
+        vm.onPhoneChange("+14155550100")
+        assertEquals("+1 415-555-0100", vm.state.value.phone)
+        assertEquals("US", vm.state.value.region)
+        vm.onPhoneChange("+4420")
+        assertEquals("GB", vm.state.value.region)
+        vm.openCountries()
+        assertTrue(vm.state.value.pickingCountry)
+        vm.onCountry("FR")
+        assertTrue(vm.state.value.phone, vm.state.value.phone.startsWith("+33 20"))
+        assertEquals("FR", vm.state.value.region)
+        assertFalse(vm.state.value.pickingCountry)
+        vm.onPhoneChange("+")
+        assertNull(vm.state.value.region)
+    }
+
+    @Test fun backspaceOverAFormattingSeparatorDeletesTheDigitBeforeIt() {
+        val typed = PhoneNumbers.format("+1415555")
+        val dash = typed.lastIndexOf('-')
+        val withoutDash = typed.removeRange(dash, dash + 1)
+        assertEquals(PhoneNumbers.format("+141555"), PhoneNumbers.edit(typed, withoutDash))
+        assertEquals("+1 20", PhoneNumbers.withRegion("+44 20", "US"))
     }
 
     @Test fun phoneErrorsAreKeptInStateWithTheErrorHaptic() = runTest(main.dispatcher) {
@@ -67,6 +96,8 @@ class AuthViewModelsTest {
         vm.submit()
         assertEquals(PhoneError.InvalidNumber, vm.state.value.error)
         assertTrue(backend.calls.isEmpty())
+        vm.dismissError()
+        assertNull(vm.state.value.error)
 
         backend.failures["requestOtp"] = DataError.Auth(AuthFailure.RateLimited, null)
         vm.onPhoneChange("+1 415 555 0100")
@@ -142,9 +173,11 @@ class AuthViewModelsTest {
         assertEquals(CodeError.TooMany, vm.state.value.error)
         advanceTimeBy(Tokens.Durations.authCodeDurationResendLock.toLong() + 1)
         assertFalse(vm.state.value.resendLocked)
+        val events = vm.recordEvents(backgroundScope)
         vm.resend()
         assertTrue(vm.state.value.resendLocked)
         assertTrue("requestOtp" in backend.calls)
+        assertEquals(listOf(AccountEvent.Toast(R.string.auth_code_toast_resent)), events.toasts())
     }
 
     // auth.agegate ----------------------------------------------------------------------------------

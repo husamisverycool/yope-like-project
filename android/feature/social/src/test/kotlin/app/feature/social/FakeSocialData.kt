@@ -146,6 +146,11 @@ class FakeSocialData(var me: String = ME) : SocialData {
         reactions.getOrPut(postId) { ArrayList() }.add(ReactionEntry(me, emoji))
     }
 
+    override suspend fun unreact(postId: String, emoji: String) {
+        write("unreact:$postId:$emoji")
+        reactions[postId]?.removeAll { it.userId == me && it.emoji == emoji }
+    }
+
     override suspend fun isTaggedByMe(postId: String): Boolean { net("tags"); return postId in tags }
     override suspend fun tagSelf(postId: String) { write("tagSelf:$postId"); tags += postId }
     override suspend fun untagSelf(postId: String) { write("untagSelf:$postId"); tags -= postId }

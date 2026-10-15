@@ -82,7 +82,7 @@
       "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png (https://yope.tv/i/8a61w, live 2026-10-15)",
       "pattern": "yope.voice.error — calm, blame-free, names the next step, ends warm; examples 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (W-inv); written lowercase per yope.voice.lowercase",
       "level": "SOURCED",
-      "notes": "Presentation BLOCKED (auth.phone.layout.inlineError)."
+      "notes": "Shown as the message of the error alert (auth.phone.layout.inlineError, button auth.phone.error.dismiss)."
     },
     "auth.phone.error.rateLimited": {
       "text": "you can ask for a new code in a minute",
@@ -243,6 +243,15 @@
       "level": "SOURCED",
       "notes": "Twilio Verify / Supabase rate limits (PLATFORM_CONSTRAINTS §7)."
     },
+    "auth.phone.error.dismiss": {
+      "text": "OK",
+      "origin": "verbatim",
+      "source_app": "Locket",
+      "surface": "auth.phone",
+      "evidence": "references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (Locket Android 1.243.0: the alert helper that shows phone / code errors calls Alert.alert(title, message, [{text: 'OK'}], {cancelable: false}))",
+      "level": "SOURCED",
+      "notes": "Gap fill (MERGE G2-5): the one button of the error alert (auth.phone.layout.inlineError) on auth.phone, auth.code and auth.agegate. Platform case, as every native dialog button in this group (A-13; platform.alertButton: 'OK' is HIG's standard term)."
+    },
     "auth.code.offline.detail": {
       "text": "connect to the internet to check your code. your next memories are waiting.",
       "origin": "new",
@@ -337,7 +346,7 @@
       "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png (https://yope.tv/i/8a61w, live 2026-10-15)",
       "pattern": "yope.voice.error — calm, blame-free, names the next step, ends warm; examples 'This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' (W-inv); written lowercase per yope.voice.lowercase",
       "level": "SOURCED",
-      "notes": "invalid_birthdate (future, before 1900, or not a date). Presentation BLOCKED (auth.phone.layout.inlineError)."
+      "notes": "invalid_birthdate (future, before 1900, or not a date). Shown as the message of the error alert (auth.phone.layout.inlineError, button auth.phone.error.dismiss)."
     },
     "auth.agegate.notConfigured.title": {
       "text": "sign-up isn’t open yet",

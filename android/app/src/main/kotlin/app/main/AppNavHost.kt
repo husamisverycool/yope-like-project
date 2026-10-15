@@ -24,6 +24,7 @@ import app.feature.capture.captureDestinations
 import app.feature.memory.memoryDestinations
 import app.feature.social.socialDestinations
 import app.model.AppRoute
+import app.ui.components.ToastHost
 import app.model.DeepLink
 import app.model.DeepLinkRouting
 import kotlinx.coroutines.flow.Flow
@@ -31,7 +32,7 @@ import kotlinx.coroutines.flow.Flow
 /**
  * The app shell: the navigation graph (destinations registered per feature module,
  * `android/feature/<group>/<Group>Navigation.kt`), the root flow (signed out → sign-up → onboarding →
- * home, `RootGate`), the floating tab bar over the tab destinations, and deep links (invite App Links,
+ * home, `RootGate`), the floating tab bar over the tab destinations, the toast host, and deep links (invite App Links,
  * widget and notification taps) turned into full back stacks (`DeepLinkRouting`).
  */
 @Composable
@@ -54,6 +55,8 @@ fun AppNavHost(
             val ready = RootGate(navController, env)
             // Until the session is known nothing shows, so no screen flashes before sign-up / home.
             if (!ready) Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep))
+            // Yope's lime toast over every screen (it outlives the navigation that follows it).
+            ToastHost(env.toasts, Modifier.align(Alignment.TopCenter))
         }
         LaunchedEffect(navController, deepLinks) {
             deepLinks.collect { link -> navController.show(DeepLinkRouting.backStack(link)) }

@@ -88,19 +88,21 @@ final class AccountSnapshotTests: XCTestCase {
     // MARK: auth.phone
 
     func testAuthPhone() async {
-        record(PhoneScreen(model: PhoneModel(data: fixture.data, phone: "+1")), "auth.phone", "default")
-        record(PhoneScreen(model: PhoneModel(data: fixture.data, phone: "+1 555 123 4567")), "auth.phone", "filled")
+        record(PhoneScreen(model: PhoneModel(data: fixture.data, phone: "+1", deviceRegion: "US")), "auth.phone", "default")
+        record(PhoneScreen(model: PhoneModel(data: fixture.data, phone: "+1 555 123 4567", deviceRegion: "US")), "auth.phone", "filled")
 
-        let sending = PhoneModel(data: fixture.data, phone: "+1 555 123 4567")
+        let sending = PhoneModel(data: fixture.data, phone: "+1 555 123 4567", deviceRegion: "US")
         let task = await whileInFlight({ sending.isSending }) { _ = await sending.send() }
         record(PhoneScreen(model: sending), "auth.phone", "sending")
         task.cancel()
         fixture.data.latency = nil
 
         fixture.data.failures["sendCode"] = .offline
-        let offline = PhoneModel(data: fixture.data, phone: "+1 555 123 4567")
+        let offline = PhoneModel(data: fixture.data, phone: "+1 555 123 4567", deviceRegion: "US")
         _ = await offline.send()
         record(PhoneScreen(model: offline), "auth.phone", "offline")
+
+        record(CountryCodeList(selected: "US", onSelect: { _ in }).environment(\.locale, Locale(identifier: "en_US")), "auth.phone", "country-list")
     }
 
     // MARK: auth.code

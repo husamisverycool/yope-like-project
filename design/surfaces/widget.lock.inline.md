@@ -22,7 +22,7 @@ widgets; custom fonts are ignored):
 
 | element | tokens | copy | behavior |
 |---|---|---|---|
-| caption | `widget.lock.inline.layout.size` | post caption (user content) | no caption, or the newest item is a collage → `widget.lock.rect.layout.content` (BLOCKED) |
+| caption | `widget.lock.inline.layout.size` | post caption (user content) | no caption → the `widget.home.small.a11y.photo` sentence; newest item is a collage → the newest single photo's caption (`widget.lock.rect.layout.content`) |
 | tap (one target) | `camera.fromwidget.layout.target` | — | opens the camera, group preselected |
 
 ## States
@@ -61,4 +61,4 @@ As `widget.home.small`.
 
 | item | status | capture |
 |---|---|---|
-| no caption / collage newest | BLOCKED (`widget.lock.rect.layout.content`) | see `widget.lock.rect` |
+| no caption / collage newest | SOURCED by gap fill as a composition (`widget.lock.rect.layout.content`) | see `widget.lock.rect` |
