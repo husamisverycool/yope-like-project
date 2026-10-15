@@ -255,10 +255,6 @@ public enum Copy {
     public static func birthdayRequestPromptImpact(name: String) -> String { CopyLookup.format("birthday.request.prompt.impact", default: "How has {name} impacted your life?", ["name": name]) }
     /// "Message Ideas" — VidDay · birthday.request · verbatim · SOURCED
     public static var birthdayRequestPromptsTitle: String { CopyLookup.string("birthday.request.prompts.title", default: "Message Ideas") }
-    /// "You're invited to submit a photo and a line. It's quick and easy." — VidDay · birthday.request · adapted · SOURCED
-    public static var birthdayRequestPushBody: String { CopyLookup.string("birthday.request.push.body", default: "You're invited to submit a photo and a line. It's quick and easy.") }
-    /// "Birthday video for {name}" — VidDay · birthday.request · adapted · SOURCED
-    public static func birthdayRequestPushTitle(name: String) -> String { CopyLookup.format("birthday.request.push.title", default: "Birthday video for {name}", ["name": name]) }
     /// "Thank you!" — VidDay · birthday.request · verbatim · SOURCED
     public static var birthdayRequestThanks: String { CopyLookup.string("birthday.request.thanks", default: "Thank you!") }
     /// "Birthday Video for {name}!" — Tribute · birthday.request · adapted · SOURCED
@@ -281,10 +277,6 @@ public enum Copy {
     public static var birthdayTributeNotFoundTitle: String { CopyLookup.string("birthday.tribute.notFound.title", default: "this video isn't here anymore") }
     /// "you're offline — connect to watch your video" — Yope · birthday.tribute · new · SOURCED
     public static var birthdayTributeOffline: String { CopyLookup.string("birthday.tribute.offline", default: "you're offline — connect to watch your video") }
-    /// "A collection of photos from {group}, brought together in a video as a gift." — VidDay · birthday.tribute · adapted · SOURCED
-    public static func birthdayTributePushBody(group: String) -> String { CopyLookup.format("birthday.tribute.push.body", default: "A collection of photos from {group}, brought together in a video as a gift.", ["group": group]) }
-    /// "Happy birthday!" — VidDay · birthday.tribute · adapted · SOURCED
-    public static var birthdayTributePushTitle: String { CopyLookup.string("birthday.tribute.push.title", default: "Happy birthday!") }
     /// "saved to your photos" — Yope · birthday.tribute · new · SOURCED
     public static var birthdayTributeSaved: String { CopyLookup.string("birthday.tribute.saved", default: "saved to your photos") }
     /// "couldn't save the video — try again in a moment" — Yope · birthday.tribute · new · SOURCED
@@ -431,8 +423,6 @@ public enum Copy {
     public static var chatThreadErrorRetry: String { CopyLookup.string("chat.thread.error.retry", default: "try again") }
     /// "couldn’t load this chat" — Yope · chat.thread · new · SOURCED
     public static var chatThreadErrorTitle: String { CopyLookup.string("chat.thread.error.title", default: "couldn’t load this chat") }
-    /// "Loading" — Yope · chat.thread · verbatim · SOURCED
-    public static var chatThreadLoading: String { CopyLookup.string("chat.thread.loading", default: "Loading") }
     /// "delete" — Yope · chat.thread · new · SOURCED
     public static var chatThreadMenuDelete: String { CopyLookup.string("chat.thread.menu.delete", default: "delete") }
     /// "report" — Yope · chat.thread · verbatim · SOURCED

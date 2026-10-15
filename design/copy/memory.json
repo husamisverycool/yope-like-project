@@ -690,26 +690,6 @@
       "level": "SOURCED",
       "notes": "Withdraws the contribution (direct DELETE before due_at, docs/API.md 5.0)."
     },
-    "birthday.request.push.title": {
-      "text": "Birthday video for {name}",
-      "origin": "adapted",
-      "source_app": "VidDay",
-      "surface": "birthday.request",
-      "evidence": "references/auto/vidday/frames/vidday-tour-t064-phone.png ('Celebration video for' / 'Amelia Harris')",
-      "pattern": "noun swap 'Celebration' -> 'Birthday', full name -> {name} (first name); P-BR-1 surface voice",
-      "level": "SOURCED",
-      "notes": "Push text of the one private request (worker job push.birthday_request; never sent to {name}; no reminders, docs/SPEC_FLAGS.md T5). The worker currently reads notifications.push.birthdayRequest.title (owned by the notifications.push pass) - hand-off in design/MERGE_DECISIONS.md memory M-22."
-    },
-    "birthday.request.push.body": {
-      "text": "You're invited to submit a photo and a line. It's quick and easy.",
-      "origin": "adapted",
-      "source_app": "VidDay",
-      "surface": "birthday.request",
-      "evidence": "references/auto/vidday/frames/vidday-tour-t036-phone.png, -t042-phone.png (https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4) ('You're invited to submit a video message …' / 'It's quick and easy.')",
-      "pattern": "P-BR-1 invitation + bar-lowering line; noun swap 'a video message' -> 'a photo and a line'",
-      "level": "SOURCED",
-      "notes": "Tribute's and VidDay's own push / SMS wording for a request was not found (research §2.6). Worker key: notifications.push.birthdayRequest.body (M-22)."
-    },
     "birthday.request.closed.title": {
       "text": "this request has closed",
       "origin": "new",
@@ -1080,26 +1060,6 @@
       "pattern": "yope.voice.confirmation (past tense, lowercase)",
       "level": "SOURCED",
       "notes": "No reference string exists for this state; Yope's in-app voice is the default for app surfaces (design/copy-patterns.md 'Which pattern governs which surface'). Toast after Download."
-    },
-    "birthday.tribute.push.title": {
-      "text": "Happy birthday!",
-      "origin": "adapted",
-      "source_app": "VidDay",
-      "surface": "birthday.tribute",
-      "evidence": "references/auto/vidday/frames/vidday-tour-t118.300-phone.png ('HAPPY BIRTHDAY, AMELIA!')",
-      "pattern": "P-BT-1; the name is dropped because the push goes to the birthday person (the worker passes only {group})",
-      "level": "SOURCED",
-      "notes": "Push to the honoree when the tribute is delivered (worker job push.tribute). Worker key today: notifications.push.tribute.title (M-22)."
-    },
-    "birthday.tribute.push.body": {
-      "text": "A collection of photos from {group}, brought together in a video as a gift.",
-      "origin": "adapted",
-      "source_app": "VidDay",
-      "surface": "birthday.tribute",
-      "evidence": "https://help.vidday.com/i-received-a-vidday-how-does-this-work/ ('A VidDay is a collection of videos and photos from people who love you, brought together in a video montage as a gift.')",
-      "pattern": "noun swaps: trademark 'A VidDay is' dropped; 'videos and photos' -> 'photos'; 'people who love you' -> {group}; 'video montage' -> 'video'",
-      "level": "SOURCED",
-      "notes": "No number of contributors. The 'video is ready' wording of either reference was not found (research §4.5). Worker key today: notifications.push.tribute.body (M-22)."
     },
     "birthday.tribute.notFound.title": {
       "text": "this video isn't here anymore",

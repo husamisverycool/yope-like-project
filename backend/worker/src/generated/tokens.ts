@@ -99,7 +99,6 @@ export const tokens = {
   "chat.thread.color.bubbleRimTheirsBottom": "#363636", // Yope · chat.thread · SOURCED
   "chat.thread.color.bubbleRimTheirsTop": "#414141", // Yope · chat.thread · SOURCED
   "chat.thread.color.bubbleTheirs": "#2B2B2B", // Yope · chat.thread · SOURCED
-  "chat.thread.color.loadingHud": "#262626", // Yope · chat.thread · SOURCED
   "chat.thread.dimension.avatarGap": 6.7, // Yope · chat.thread · SOURCED
   "chat.thread.dimension.avatarInset": 11.2, // Yope · chat.thread · SOURCED
   "chat.thread.dimension.bubbleHeight": 35.6, // Yope · chat.thread · SOURCED
@@ -115,7 +114,6 @@ export const tokens = {
   "chat.thread.dimension.gapSameSender": 3.6, // Yope · chat.thread · SOURCED
   "chat.thread.dimension.gapTextToVoice": 4.7, // Yope · chat.thread · SOURCED
   "chat.thread.dimension.headerCapsuleHeight": 43.3, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.loadingHud": 100, // Yope · chat.thread · SOURCED
   "chat.thread.dimension.photoGap": 15.3, // Yope · chat.thread · SOURCED
   "chat.thread.dimension.photoHeight": 174, // Yope · chat.thread · SOURCED
   "chat.thread.dimension.photoInsetTrailing": 18.7, // Yope · chat.thread · SOURCED

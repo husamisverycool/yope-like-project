@@ -253,10 +253,6 @@
     <string name="birthday_request_prompt_impact">How has %1$s impacted your life?</string>
     <!-- VidDay · birthday.request · verbatim · SOURCED -->
     <string name="birthday_request_prompts_title" formatted="false">Message Ideas</string>
-    <!-- VidDay · birthday.request · adapted · SOURCED -->
-    <string name="birthday_request_push_body" formatted="false">You\'re invited to submit a photo and a line. It\'s quick and easy.</string>
-    <!-- VidDay · birthday.request · adapted · SOURCED · args: name -->
-    <string name="birthday_request_push_title">Birthday video for %1$s</string>
     <!-- VidDay · birthday.request · verbatim · SOURCED -->
     <string name="birthday_request_thanks" formatted="false">Thank you!</string>
     <!-- Tribute · birthday.request · adapted · SOURCED · args: name -->
@@ -279,10 +275,6 @@
     <string name="birthday_tribute_notfound_title" formatted="false">this video isn\'t here anymore</string>
     <!-- Yope · birthday.tribute · new · SOURCED -->
     <string name="birthday_tribute_offline" formatted="false">you\'re offline — connect to watch your video</string>
-    <!-- VidDay · birthday.tribute · adapted · SOURCED · args: group -->
-    <string name="birthday_tribute_push_body">A collection of photos from %1$s, brought together in a video as a gift.</string>
-    <!-- VidDay · birthday.tribute · adapted · SOURCED -->
-    <string name="birthday_tribute_push_title" formatted="false">Happy birthday!</string>
     <!-- Yope · birthday.tribute · new · SOURCED -->
     <string name="birthday_tribute_saved" formatted="false">saved to your photos</string>
     <!-- Yope · birthday.tribute · new · SOURCED -->
@@ -429,8 +421,6 @@
     <string name="chat_thread_error_retry" formatted="false">try again</string>
     <!-- Yope · chat.thread · new · SOURCED -->
     <string name="chat_thread_error_title" formatted="false">couldn’t load this chat</string>
-    <!-- Yope · chat.thread · verbatim · SOURCED -->
-    <string name="chat_thread_loading" formatted="false">Loading</string>
     <!-- Yope · chat.thread · new · SOURCED -->
     <string name="chat_thread_menu_delete" formatted="false">delete</string>
     <!-- Yope · chat.thread · verbatim · SOURCED -->

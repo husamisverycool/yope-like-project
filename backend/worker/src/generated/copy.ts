@@ -128,8 +128,6 @@ const table = {
   "birthday.request.prompt.appreciate": "What do you appreciate most about {name}?", // VidDay · birthday.request · SOURCED
   "birthday.request.prompt.impact": "How has {name} impacted your life?", // VidDay · birthday.request · SOURCED
   "birthday.request.prompts.title": "Message Ideas", // VidDay · birthday.request · SOURCED
-  "birthday.request.push.body": "You're invited to submit a photo and a line. It's quick and easy.", // VidDay · birthday.request · SOURCED
-  "birthday.request.push.title": "Birthday video for {name}", // VidDay · birthday.request · SOURCED
   "birthday.request.thanks": "Thank you!", // VidDay · birthday.request · SOURCED
   "birthday.request.title": "Birthday Video for {name}!", // Tribute · birthday.request · SOURCED
   "birthday.tribute.a11y.close": "Close", // Apple HIG / Material 3 · birthday.tribute · PLATFORM
@@ -141,8 +139,6 @@ const table = {
   "birthday.tribute.notFound.detail": "your memories are waiting", // Yope · birthday.tribute · SOURCED
   "birthday.tribute.notFound.title": "this video isn't here anymore", // Yope · birthday.tribute · SOURCED
   "birthday.tribute.offline": "you're offline — connect to watch your video", // Yope · birthday.tribute · SOURCED
-  "birthday.tribute.push.body": "A collection of photos from {group}, brought together in a video as a gift.", // VidDay · birthday.tribute · SOURCED
-  "birthday.tribute.push.title": "Happy birthday!", // VidDay · birthday.tribute · SOURCED
   "birthday.tribute.saved": "saved to your photos", // Yope · birthday.tribute · SOURCED
   "birthday.tribute.saveFailed": "couldn't save the video — try again in a moment", // Yope · birthday.tribute · SOURCED
   "birthday.tribute.share": "Share", // VidDay · birthday.tribute · SOURCED
@@ -216,7 +212,6 @@ const table = {
   "chat.thread.error.detail": "check your connection and try again — your pics are safe", // Yope · chat.thread · SOURCED
   "chat.thread.error.retry": "try again", // Yope · chat.thread · SOURCED
   "chat.thread.error.title": "couldn’t load this chat", // Yope · chat.thread · SOURCED
-  "chat.thread.loading": "Loading", // Yope · chat.thread · SOURCED
   "chat.thread.menu.delete": "delete", // Yope · chat.thread · SOURCED
   "chat.thread.menu.report": "report", // Yope · chat.thread · SOURCED
   "chat.thread.offline.detail": "your group’s pics will be right here when you’re back", // Yope · chat.thread · SOURCED

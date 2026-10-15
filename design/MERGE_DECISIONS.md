@@ -257,3 +257,7 @@ All pixel work on the original files (`python3 -I`, PIL + numpy); scales as docu
   (`color.global.controlRaised`) 2.12:1, empty-widget circle vs its background 2.16:1, avatar ring over white
   1.26:1, HUD vs black 1.07:1 (container edges; the glyphs and text on them pass); white overlay text on photos
   without a scrim is photo-dependent (`color.global.scrim` BLOCKED).
+
+## Lead reconciliation
+
+- **L-1 Birthday push texts.** The memory pass wrote `birthday.request.push.*` and `birthday.tribute.push.*`; the capture pass owns all push texts (`notifications.push.*`, the keys the worker sends per `backend/worker/COPY_KEYS.md`) and wrote the same events under `notifications.push.birthdayRequest.*` / `notifications.push.tribute.*` following the same patterns (P-BR-1, P-BT-1). The memory duplicates were never read by any code and were removed.

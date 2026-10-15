@@ -62,9 +62,6 @@ public enum Tokens {
         /// Yope · chat.thread · another member's text bubble fill ('valid') · SOURCED
         /// token: `chat.thread.color.bubbleTheirs`
         public static let chatThreadColorBubbleTheirs: Color = Color(.sRGB, red: 0.1686, green: 0.1686, blue: 0.1686, opacity: 1)
-        /// Yope · chat.thread · loading HUD fill · SOURCED
-        /// token: `chat.thread.color.loadingHud`
-        public static let chatThreadColorLoadingHud: Color = Color(.sRGB, red: 0.149, green: 0.149, blue: 0.149, opacity: 1)
         /// Yope · chat.voice · voice message bubble fill (mine) · SOURCED
         /// token: `chat.voice.color.bubble`
         public static let chatVoiceColorBubble: Color = Color(.sRGB, red: 0.149, green: 0.149, blue: 0.149, opacity: 1)
@@ -2827,9 +2824,6 @@ public enum Tokens {
         /// Yope · chat.thread · group capsule height in the chat header (avatar · name · ›) · SOURCED
         /// token: `chat.thread.dimension.headerCapsuleHeight`
         public static let chatThreadDimensionHeaderCapsuleHeight: CGFloat = 43.3
-        /// Yope · chat.thread · loading HUD square (platform spinner + 'Loading') · SOURCED
-        /// token: `chat.thread.dimension.loadingHud`
-        public static let chatThreadDimensionLoadingHud: CGFloat = 100
         /// Yope · chat.thread · vertical gap between two consecutive photo messages · SOURCED
         /// token: `chat.thread.dimension.photoGap`
         public static let chatThreadDimensionPhotoGap: CGFloat = 15.3

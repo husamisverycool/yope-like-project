@@ -101,8 +101,6 @@ object Tokens {
         val chatThreadColorBubbleRimTheirsTop: Color = Color(0xFF414141)
         /** Yope · chat.thread · another member's text bubble fill ('valid') · SOURCED — token `chat.thread.color.bubbleTheirs` */
         val chatThreadColorBubbleTheirs: Color = Color(0xFF2B2B2B)
-        /** Yope · chat.thread · loading HUD fill · SOURCED — token `chat.thread.color.loadingHud` */
-        val chatThreadColorLoadingHud: Color = Color(0xFF262626)
         /** Yope · chat.voice · voice message bubble fill (mine) · SOURCED — token `chat.voice.color.bubble` */
         val chatVoiceColorBubble: Color = Color(0xFF262626)
         /** Yope · chat.voice · duration text ('00:38') · SOURCED — token `chat.voice.color.duration` */
@@ -2234,8 +2232,6 @@ object Tokens {
         val chatThreadDimensionGapTextToVoice: Dp = 4.7.dp
         /** Yope · chat.thread · group capsule height in the chat header (avatar · name · ›) · SOURCED — token `chat.thread.dimension.headerCapsuleHeight` */
         val chatThreadDimensionHeaderCapsuleHeight: Dp = 43.3.dp
-        /** Yope · chat.thread · loading HUD square (platform spinner + 'Loading') · SOURCED — token `chat.thread.dimension.loadingHud` */
-        val chatThreadDimensionLoadingHud: Dp = 100.dp
         /** Yope · chat.thread · vertical gap between two consecutive photo messages · SOURCED — token `chat.thread.dimension.photoGap` */
         val chatThreadDimensionPhotoGap: Dp = 15.3.dp
         /** Yope · chat.thread · photo message height (landscape crop, aspect 1.86) · SOURCED — token `chat.thread.dimension.photoHeight` */

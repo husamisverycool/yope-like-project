@@ -176,7 +176,7 @@ public enum BlockedTokens {
         public static var widgetLockRectLayoutContent: Never { fatalError("BLOCKED token widget.lock.rect.layout.content") }
     }
     public enum Radii {
-        /// Yope · chat.thread · loading HUD corner radius · BLOCKED
+        /// Yope · chat.thread · loading HUD corner radius (the HUD's other values are groups.create.color.hud / .size.hud / .fontSize.hudLabel) · BLOCKED
         /// token: `chat.thread.radius.loadingHud`
         public static var chatThreadRadiusLoadingHud: Never { fatalError("BLOCKED token chat.thread.radius.loadingHud") }
     }
