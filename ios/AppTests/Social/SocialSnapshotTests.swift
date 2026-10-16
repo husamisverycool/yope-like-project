@@ -47,7 +47,7 @@ final class SocialSnapshotTests: XCTestCase {
             data: InMemoryAccountData(signedIn: SocialDemo.me),
             router: AppRouter(parser: .init(universalLinkHosts: [])),
             configuration: AppConfiguration(),
-            notifications: StaticNotificationAuthorizer(status: .authorized),
+            notifications: StaticNotificationAuthorizer(status: .granted),
             purchases: InMemoryPurchases(),
             liveActivity: LiveActivityPreference(defaults: defaults),
             refusals: InMemoryAgeGateRefusalStore(),

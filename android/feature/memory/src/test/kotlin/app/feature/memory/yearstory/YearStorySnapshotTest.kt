@@ -189,11 +189,11 @@ class YearStoryFlowTest : SnapshotTest() {
         // Share → a 9:16 PNG to the system share sheet (rendered off screen, encoded off the main thread).
         compose.onNodeWithText("Share").performClick()
         val app = ApplicationProvider.getApplicationContext<android.app.Application>()
-        repeat(300) {
-            if (shadowOf(app).peekNextStartedActivity() == null) {
-                step(16)
-                Thread.sleep(5)
-            }
+        // The PNG encodes on a background thread: wait on the wall clock too (slow under a full parallel build).
+        val deadline = System.currentTimeMillis() + SHARE_WAIT_MS
+        while (shadowOf(app).peekNextStartedActivity() == null && System.currentTimeMillis() < deadline) {
+            step(16)
+            Thread.sleep(5)
         }
         val chooser = shadowOf(app).nextStartedActivity
         assertNotNull("share sheet opened", chooser)
@@ -213,6 +213,10 @@ class YearStoryFlowTest : SnapshotTest() {
         compose.onNodeWithContentDescription("Watch again").performClick()
         step()
         compose.onNodeWithText("Sunday Lunch · 2026").assertExists()
+    }
+
+    private companion object {
+        const val SHARE_WAIT_MS = 60_000L
     }
 
     @Test fun advancesOnItsOwnAndPauses() {

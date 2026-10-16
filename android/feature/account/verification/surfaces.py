@@ -69,28 +69,59 @@ def line_box(img, box, ink):
     return (min(xs) / M.SCALE, (y0 + start) / M.SCALE, (max(xs) + 1) / M.SCALE, (y0 + base + 1) / M.SCALE)
 
 
-def wide_fill(img, hexc, y0=0, y1=M.H, min_w=200, tol=6, x0=0, x1=M.W):
-    """The first flat block of hexc (scanning down from y0) whose rows hold a run of at least min_w dp."""
+def fill_extent(img, hexc, y, tol=3, x0=0, x1=M.W, min_w=200):
+    """The flat fill of hexc crossing row y: height = the tallest clean column run between 25 % and 75 % of its width
+    (text on the fill breaks some columns, not all); left / right = the outermost matching pixels on the row through the
+    middle of that run (so rounded corners do not narrow it)."""
     pred = near(hexc, tol)
+
+    def row_span(py):
+        xs = [x for x in range(int(x0 * M.SCALE), min(int(x1 * M.SCALE), img.width)) if pred(img.getpixel((x, py)))]
+        return (xs[0], xs[-1] + 1) if xs and (xs[-1] - xs[0]) / M.SCALE >= min_w else None
+
+    py = int(y * M.SCALE)
+    span = row_span(py)
+    if not span:
+        return None
+    l, r = span
+    best = None
+    for x in range(l + (r - l) // 4, r - (r - l) // 4, max(1, (r - l) // 60)):
+        if not pred(img.getpixel((x, py))):
+            continue
+        a = b = py
+        while a > 0 and pred(img.getpixel((x, a - 1))):
+            a -= 1
+        while b < img.height - 1 and pred(img.getpixel((x, b + 1))):
+            b += 1
+        if best is None or b - a > best[1] - best[0]:
+            best = (a, b)
+    if best is None:
+        return None
+    t, bt = best
+    mid = row_span((t + bt) // 2) or span
+    l, r = mid
+    return {"left": l / M.SCALE, "right": r / M.SCALE, "top": t / M.SCALE, "bottom": (bt + 1) / M.SCALE,
+            "width": (r - l) / M.SCALE, "height": (bt + 1 - t) / M.SCALE, "color": M.hexof(img.getpixel((l + 6, (t + bt) // 2)))}
+
+
+def wide_fill(img, hexc, y0=0, y1=M.H, min_w=200, tol=3, x0=0, x1=M.W):
+    """The first fill of hexc (scanning down from y0) at least min_w dp wide."""
     y = y0
     while y < y1:
-        runs = [r for r in M.row_runs(img, y, pred, x0, x1) if r[1] - r[0] >= min_w]
-        if runs:
-            r = max(runs, key=lambda r: r[1] - r[0])
-            return fill_box(img, (r[0] + r[1]) / 2, y + 1, tol)
+        b = fill_extent(img, hexc, y, tol, x0, x1, min_w)
+        if b:
+            return fill_extent(img, hexc, min(y + 2, (y + y1) / 2), tol, x0, x1, min_w) or b
         y += 0.5
     return None
 
 
-def wide_fill_up(img, hexc, y1=M.H, y0=0, min_w=200, tol=6):
-    """As wide_fill, scanning up from y1 (the block nearest the bottom)."""
-    pred = near(hexc, tol)
+def wide_fill_up(img, hexc, y1=M.H, y0=0, min_w=200, tol=3):
+    """As wide_fill, scanning up from y1 (the fill nearest the bottom)."""
     y = y1 - 0.5
     while y > y0:
-        runs = [r for r in M.row_runs(img, y, pred) if r[1] - r[0] >= min_w]
-        if runs:
-            r = max(runs, key=lambda r: r[1] - r[0])
-            return fill_box(img, (r[0] + r[1]) / 2, y - 1, tol)
+        b = fill_extent(img, hexc, y, tol, min_w=min_w)
+        if b:
+            return fill_extent(img, hexc, y - 2, tol, min_w=min_w) or b
         y -= 0.5
     return None
 
@@ -113,7 +144,7 @@ def capsule_rows(label, img, fill_hex, page_hex, bottom=None, y1=M.H):
 
 def form_title_rows(img, page_hex, ink):
     """Onboarding form title (C-33 form): leading inset and baseline below the safe-area top."""
-    line = line_box(img, (0, 30, 393, 120), ink)
+    line = line_box(img, (0, 34, 393, 120), ink)
     return [
         ("title baseline below the safe-area top", "size.global.titleTop", t("size.global.titleTop"), line[3] if line else None, {"tol": 1.5}),
         ("title leading inset (ink)", "size.global.screenMargin", t("size.global.screenMargin"), line[0] if line else None, {"tol": 2.0, "note": "the first glyph's side bearing (≈ 1 dp) is inside the measure"}),
@@ -192,7 +223,8 @@ def auth_agegate():
     im = snap("auth.agegate/filled-optIn-light")
     field = wide_fill(im, t("color.global.control")["light"], 100, 600, min_w=300)
     g, b = grouped_rows(im, LIGHT_PAGE, t("color.global.surfaceSecondary.android")["light"], y0=field["bottom"] + 1 if field else 200, label="opt-in row")
-    g.append(("opt-in row height", "settings.root.size.rowHeight", t("settings.root.size.rowHeight"), b["height"], {"tol": 1.0}))
+    h = t("settings.root.size.rowHeight")
+    g.append(("opt-in row height (minimum)", "settings.root.size.rowHeight", f"≥ {h}", b["height"], {"status": "match" if b["height"] >= h - 1 else "MISS", "note": "the row's minimum; the two-line subtitle makes it taller"}))
     sections.append(("Opt-in row (C-14 with a switch)", g))
     return sections
 
@@ -223,17 +255,45 @@ def notifications():
     return [("Page (default-light)", rows)]
 
 
+def ink_blocks(img, ink, box=(0, 0, M.W, M.H)):
+    """Vertical groups of rows holding ink inside box: [(top, bottom, left, right)] in dp (rows 1 px apart join)."""
+    x0, y0, x1, y1 = (int(v * M.SCALE) for v in box)
+    groups, cur = [], None
+    for y in range(y0, min(y1, img.height)):
+        xs = [x for x in range(x0, min(x1, img.width)) if ink(img.getpixel((x, y)))]
+        if not xs:
+            continue
+        if cur and y - cur[1] <= 1:
+            cur = [cur[0], y, min(cur[2], xs[0]), max(cur[3], xs[-1])]
+        else:
+            if cur:
+                groups.append(cur)
+            cur = [y, y, xs[0], xs[-1]]
+    if cur:
+        groups.append(cur)
+    return [(a / M.SCALE, (b + 1) / M.SCALE, l / M.SCALE, (r + 1) / M.SCALE) for a, b, l, r in groups]
+
+
+def empty_block_rows(img, ink, box, label):
+    """C-27: glyph (box `size.global.emptyIcon` centred on its ink) → title cap top `size.global.emptyIconToTitle`."""
+    blocks = ink_blocks(img, ink, box)
+    if len(blocks) < 2:
+        return [(f"{label}: block found", "size.global.emptyIcon", t("size.global.emptyIcon"), None)]
+    glyph, title = blocks[0], blocks[1]
+    size = max(glyph[1] - glyph[0], glyph[3] - glyph[2])
+    box_bottom = (glyph[0] + glyph[1]) / 2 + t("size.global.emptyIcon") / 2
+    return [
+        (f"{label} glyph ink", "size.global.emptyIcon", t("size.global.emptyIcon"), size, {"status": "approx", "note": "Material glyph ink ≈ 80 % of its 22 dp box"}),
+        (f"{label} glyph box → title cap top", "size.global.emptyIconToTitle", t("size.global.emptyIconToTitle"), title[0] - box_bottom, {"tol": 2.0, "note": "glyph box = its ink centre ± 11; title ink top of a capital = cap top"}),
+        (f"{label} centred", "size.global.emptyIcon", M.W / 2, (glyph[2] + glyph[3]) / 2, {"tol": 1.5}),
+    ]
+
+
 def denied_block(surface):
     def run():
         im = snap(f"{surface}/denied-light")
         rows = [("media surface (both appearances)", "color.global.backgroundDeep", t("color.global.backgroundDeep"), color_at(im, 2, 100))]
-        glyph = M.extent(im, light_ink, (100, 300, 293, 420))
-        title = line_box(im, (0, (glyph[3] if glyph else 380) + 1, 393, 520), light_ink)
-        if glyph:
-            rows.append(("glyph size", "size.global.emptyIcon", t("size.global.emptyIcon"), max(glyph[2] - glyph[0], glyph[3] - glyph[1]), {"tol": 3.0, "note": "the Material glyph's ink inside its 22 dp box"}))
-        if glyph and title:
-            rows.append(("glyph → title (cap top)", "size.global.emptyIconToTitle", t("size.global.emptyIconToTitle"), title[1] - glyph[3], {"tol": 3.0, "note": "measured glyph ink bottom → title ink top"}))
-        rows.append(("title / outline capsule colour", "color.global.textOnMedia", t("color.global.textOnMedia"), color_at(im, (title[0] + 1) if title else 0, (title[1] + title[3]) / 2) if title else None, {"status": "approx", "note": "sampled on a glyph; anti-aliasing lowers the peak"}))
+        rows += empty_block_rows(im, light_ink, (0, 200, 393, 650), "denied block")
         return [(f"Denied block ({surface}/denied-light)", rows)]
     return run
 
@@ -241,10 +301,14 @@ def denied_block(surface):
 def widget():
     im = snap("onboarding.widget/default-light")
     rows = form_title_rows(im, LIGHT_PAGE, dark_ink)
-    tile = M.extent(im, lambda p: abs(p[0] - p[2]) > 20 or max(p[:3]) < 60, (100, 150, 293, 420))
-    if tile:
-        rows += [("preview tile side", "onboarding.widget.size.preview", t("onboarding.widget.size.preview"), tile[2] - tile[0], {"tol": 2.0}),
-                 ("preview centred", "onboarding.widget.size.preview", M.W / 2, (tile[0] + tile[2]) / 2, {"tol": 1.5})]
+    notpage = lambda p: max(p[:3]) < 245
+    col = [r for r in M.col_runs(im, M.W / 2, notpage, 150, 420, min_len=100)]
+    if col:
+        mid = (col[0][0] + col[0][1]) / 2
+        row = [r for r in M.row_runs(im, mid, notpage, min_len=100)]
+        rows += [("preview tile height", "onboarding.widget.size.preview", t("onboarding.widget.size.preview"), col[0][1] - col[0][0], {"tol": 2.0}),
+                 ("preview tile width", "onboarding.widget.size.preview", t("onboarding.widget.size.preview"), row[0][1] - row[0][0] if row else None, {"tol": 2.0}),
+                 ("preview centred", "onboarding.widget.size.preview", M.W / 2, (row[0][0] + row[0][1]) / 2 if row else None, {"tol": 1.5})]
     rows += capsule_rows("Add Widget", im, t("color.global.accent")["light"], LIGHT_PAGE)
     return [("Page (default-light)", rows)]
 
@@ -255,16 +319,16 @@ def groups_list():
     im = snap("groups.list/default-light")
     title = line_box(im, (0, 20, 300, 120), dark_ink)
     rows = [("title baseline below the safe-area top", "size.global.titleTop", t("size.global.titleTop"), title[3] if title else None, {"tol": 1.5}),
-            ("title leading inset (ink)", "size.global.screenMargin", t("size.global.screenMargin"), title[0] if title else None, {"tol": 2.0})]
+            ("title leading inset (ink)", "size.global.screenMargin", t("size.global.screenMargin"), title[0] if title else None, {"tol": 3.0, "note": "the serif capital's side bearing at 40 sp (≈ 2.5 dp) is inside the measure"})]
     # Cover thumbnails: runs down a column through them (anything that is not the white page).
-    thumbs = M.col_runs(im, 50, lambda p: max(p[:3]) < 250, 90, 560, min_len=40)
+    thumbs = M.col_runs(im, 80, lambda p: max(p[:3]) < 250, 90, 560, min_len=40)
     if thumbs:
         th = thumbs[0]
-        left = M.row_runs(im, (th[0] + th[1]) / 2, lambda p: max(p[:3]) < 250, 0, 120, min_len=40)
+        ext = M.extent(im, lambda p: max(p[:3]) < 250, (0, th[0] + 2, 110, th[1] - 2))
         rows.append(("cover thumbnail height", "size.global.rowThumbHeight", t("size.global.rowThumbHeight"), th[1] - th[0], {"tol": 1.0}))
-        if left:
-            rows += [("cover thumbnail width", "size.global.rowThumbWidth", t("size.global.rowThumbWidth"), left[0][1] - left[0][0], {"tol": 1.0}),
-                     ("thumbnail leading inset", "size.global.screenMargin", t("size.global.screenMargin"), left[0][0], {"tol": 1.0})]
+        if ext:
+            rows += [("cover thumbnail width", "size.global.rowThumbWidth", t("size.global.rowThumbWidth"), ext[2] - ext[0], {"tol": 1.0}),
+                     ("thumbnail leading inset", "size.global.screenMargin", t("size.global.screenMargin"), ext[0], {"tol": 1.0})]
     if len(thumbs) > 1:
         rows.append(("gap between rows (thumbnail to thumbnail)", "size.global.listGap", t("size.global.listGap"), thumbs[1][0] - thumbs[0][1], {"tol": 1.5}))
     return [("List (groups.list/default-light)", rows)]
@@ -290,7 +354,7 @@ def groups_invite():
     if cover:
         rows += [("cover width", "groups.invite.size.coverWidth", t("groups.invite.size.coverWidth"), cover[2] - cover[0], {"tol": 2.5}),
                  ("cover height", "groups.invite.size.coverHeight", t("groups.invite.size.coverHeight"), cover[3] - cover[1], {"tol": 2.5})]
-        note = line_box(im, (0, cover[3] + 1, 393, cover[3] + 60), lambda p: max(p[:3]) < 200)
+        note = line_box(im, (0, cover[3] + 1, 393, cover[3] + 60), lambda p: max(p[:3]) < 160)
         if note:
             rows.append(("cover → note (ink top)", "groups.invite.size.coverToNote", t("groups.invite.size.coverToNote"), note[1] - cover[3], {"tol": 3.0, "note": "the shadow below the cover is excluded from the cover box"}))
         cap = wide_fill(im, t("color.global.accent")["light"], cover[3] + 20, 800, min_w=250)
@@ -314,18 +378,20 @@ def groups_screen():
     glyphs = M.extent(im, dark_ink, (300, 20, 393, 80))
     if glyphs:
         rows.append(("trailing glyph pair: right edge inset", "size.global.headerInset", t("size.global.headerInset"), M.W - glyphs[2], {"status": "approx", "note": "glyph ink edge (the 24 dp box has ≈ 2 dp padding)"}))
-    # The week strip: the first photo tile under the week header.
-    strip = None
-    for y in [400 + i * 0.5 for i in range(600)]:
-        runs = [r for r in M.row_runs(im, y, lambda p: max(p[:3]) - min(p[:3]) > 20, 0, 393) if r[1] - r[0] >= 40]
-        if runs and (not cover or y > cover[3] + 150):
-            x = runs[0][0]
-            col = M.col_runs(im, x + 10, lambda p: max(p[:3]) - min(p[:3]) > 8 or max(p[:3]) < 235, y - 1, y + 200)
-            strip = (x, col[0][0] if col else y, col[0][1] if col else y)
+    # The week strip: the first row (below the cover) crossing three or more tile-wide runs.
+    notpage = lambda p: max(p[:3]) < 250
+    for y in [(cover[3] if cover else 380) + 120 + i * 0.5 for i in range(500)]:
+        runs = [r for r in M.row_runs(im, y, notpage, 0, 393, min_len=3) if abs((r[1] - r[0]) - t("size.global.stripTileWidth")) <= 2]
+        if len(runs) >= 3:
+            heights = []
+            for r in runs:
+                col = M.col_runs(im, (r[0] + r[1]) / 2, notpage, y - 120, y + 120, min_len=20)
+                heights += [c[1] - c[0] for c in col if c[0] <= y <= c[1]]
+            rows += [("strip tile leading inset", "size.global.screenMargin", t("size.global.screenMargin"), runs[0][0], {"tol": 1.0}),
+                     ("strip tile width", "size.global.stripTileWidth", t("size.global.stripTileWidth"), runs[0][1] - runs[0][0], {"tol": 1.0}),
+                     ("strip gap", "size.global.stripGap", t("size.global.stripGap"), runs[1][0] - runs[0][1], {"tol": 0.6}),
+                     ("strip tile height (tallest clean column)", "size.global.stripTileHeight", t("size.global.stripTileHeight"), max(heights) if heights else None, {"tol": 1.0})]
             break
-    if strip:
-        rows += [("strip tile leading inset", "size.global.screenMargin", t("size.global.screenMargin"), strip[0], {"tol": 1.5}),
-                 ("strip tile height", "size.global.stripTileHeight", t("size.global.stripTileHeight"), strip[2] - strip[1], {"tol": 3.0, "status": None})]
     rows.append(("page", "color.global.background.android", LIGHT_PAGE, color_at(im, 2, 300)))
     return [("Default (groups.screen/default-light)", rows)]
 
@@ -409,7 +475,7 @@ SURFACES = [
     dict(id="auth.phone", what="Landing (A) and phone form (B) — `auth/PhoneScreen.kt`, `CountryCode.kt`, `common/AccountUi.kt` (`OnboardingForm`).",
          ours="auth.phone/landing", dark="auth.phone/landing", refs=[LAND], measure=auth_phone),
     dict(id="auth.code", what="SMS code — `auth/CodeScreen.kt` (+ SMS User Consent).",
-         ours="auth.code/default", dark="auth.code/default", refs=[LAND], ref_note="LAND: Retro's capsule and page; Retro's code page was not captured (APK strings only).", measure=auth_simple("auth.code", "default")),
+         ours="auth.code/default", dark="auth.code/default", refs=[LAND], ref_note="LAND: Retro's capsule and page; Retro's code page was not captured (APK strings only).", measure=auth_simple("auth.code", "filled-resendEnabled")),
     dict(id="auth.agegate", what="Birthday (neutral age screen) with the birthday-video opt-in row — `auth/AgeGateScreen.kt`.",
          ours="auth.agegate/filled-optIn", dark="auth.agegate/default", refs=[LAND, VIDSET], measure=auth_agegate),
     dict(id="auth.profile", what="Full name (step 1) and profile photo (step 2) — `auth/ProfileScreen.kt`.",

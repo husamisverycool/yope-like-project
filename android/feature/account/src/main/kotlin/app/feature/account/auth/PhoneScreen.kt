@@ -30,6 +30,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFontFamilyResolver
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -304,7 +306,8 @@ private fun Landing(onGetStarted: () -> Unit, onTerms: () -> Unit, onPrivacy: ()
                     Modifier
                         .padding(horizontal = Tokens.Sizes.globalScreenMargin)
                         .capTopAt(Tokens.Sizes.authPhoneSizeLinkToLegal, CapTop.height(legalStyle))
-                        .paddingFrom(LastBaseline, after = max(Tokens.Sizes.authPhoneSizeLegalToBottom, navigation)),
+                        // LAND measures the last line's ink bottom (the descenders), not its baseline.
+                        .paddingFrom(LastBaseline, after = max(Tokens.Sizes.authPhoneSizeLegalToBottom + inkDescent(legalStyle, text), navigation)),
                 )
             }
         },
@@ -380,4 +383,26 @@ internal fun OfflineBlock(onRetry: () -> Unit) {
         detail = stringResource(R.string.auth_phone_offline_detail),
         action = EmptyStateAction(stringResource(R.string.auth_phone_offline_retry), onRetry),
     )
+}
+
+/** How far [text]'s lowest glyph (a descender) reaches below the baseline in [style]'s resolved platform font. */
+@Composable
+private fun inkDescent(style: androidx.compose.ui.text.TextStyle, text: String): Dp {
+    val density = LocalDensity.current
+    val resolver = LocalFontFamilyResolver.current
+    return remember(style, text, density, resolver) {
+        val typeface = resolver.resolve(
+            style.fontFamily,
+            style.fontWeight ?: androidx.compose.ui.text.font.FontWeight.Normal,
+            style.fontStyle ?: androidx.compose.ui.text.font.FontStyle.Normal,
+            style.fontSynthesis ?: androidx.compose.ui.text.font.FontSynthesis.All,
+        ).value as? android.graphics.Typeface ?: android.graphics.Typeface.DEFAULT
+        val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            this.typeface = typeface
+            textSize = with(density) { style.fontSize.toPx() }
+        }
+        val bounds = android.graphics.Rect()
+        paint.getTextBounds(text, 0, text.length, bounds)
+        with(density) { bounds.bottom.coerceAtLeast(0).toDp() }
+    }
 }
