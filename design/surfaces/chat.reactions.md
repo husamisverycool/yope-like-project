@@ -19,6 +19,7 @@ Decisions: `design/MERGE_DECISIONS.md` → Redesign — Social (RS-8, RS-9). Com
 | WEB | `references/auto/retro/web/retro.app-42b38811bebcd07d.css` | 12-pt gap from a photo to the row under it (`.immersiveViewer_mediaFooter`) |
 | WA | `references/auto/whatsapp/store/whatsapp-store-04.png`, `references/auto/whatsapp/help/faq-424198503229937-react-iphone.png` | summary pill under the message showing three distinct emoji (its count is do-not-copy); "tap your reaction to remove it" |
 | IM | `references/auto/imessage/apple-support/messages-tapbacks-ios27.png`, `…/page-react-with-tapbacks.png` | reaction row above the long-pressed message; your reaction highlighted; tap it again to remove |
+| ST-R | `references/auto/stream/docs-react-reactions-excerpt.txt` | the "who reacted" list sorts people in reverse chronological order of their reactions (`chat.reactions.layout.listOrder`) |
 | LK | `references/auto/locket/store/locket-store-08.png`; `references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg`, `…-16.734s-reaction-cluster-landed.jpg` | quick emoji 🔥 💖 + add; picker search / Frequently Used / 6 columns; newest emoji first |
 
 ## Structure
@@ -59,7 +60,8 @@ Native sheet (C-29) titled `chat.reactions.activity.title`, a plain list (no gro
 C-16 row per person and emoji — avatar `size.global.avatarPicker` at the margin, name (text role `listTitle`)
 `chat.thread.dimension.rowAvatarToText` after it, the emoji at the trailing margin in the `size.global.icon` box. Your own rows add
 `chat.reactions.list.removeHint` as a second line (`listSubtitle`, `color.global.textSecondary`); tapping one unreacts
-(`chat.reactions.layout.unreact`). Rows `size.global.listGap` apart; order `chat.reactions.layout.listOrder` (**BLOCKED**).
+(`chat.reactions.layout.unreact`). Rows `size.global.listGap` apart; order `chat.reactions.layout.listOrder`: newest first by
+`reactions.created_at`, your own rows in their place by time (the "who reacted" list of the Stream Chat SDK, ST-R).
 Empty (all reactions taken back while open): `chat.reactions.empty`.
 
 ## Elements
@@ -70,7 +72,7 @@ Empty (all reactions taken back while open): `chat.reactions.empty`.
 | quick row | C-29 menu palette; `chat.reactions.layout.quickReactions` | `chat.reactions.a11y.quick`, `chat.reactions.a11y.add` | react / unreact / open picker |
 | add-reaction glyph (viewer footer) | `chat.reactions.icon.add`, `size.global.icon`, `color.global.textSecondary`; hit area `size.global.headerButton` | `chat.reactions.a11y.add` | opens the picker |
 | picker | C-29 sheet, C-12, C-20 headers, C-11 highlight; `chat.reactions.layout.picker`, `chat.reactions.count.pickerColumns`, `fontSize.global.headerTitle` | `chat.reactions.picker.search`, `.picker.frequent`, `.picker.all` | react / unreact |
-| Reactions sheet | C-29 sheet, C-16 rows; `chat.reactions.layout.list`, `size.global.avatarPicker`, `size.global.icon`; order **BLOCKED** | `chat.reactions.activity.title`, `.activity.row`, `.activity.rowMine`, `chat.reactions.list.removeHint`, `chat.reactions.empty` | your row → unreact |
+| Reactions sheet | C-29 sheet, C-16 rows; `chat.reactions.layout.list`, `size.global.avatarPicker`, `size.global.icon`; order `chat.reactions.layout.listOrder` (newest first) | `chat.reactions.activity.title`, `.activity.row`, `.activity.rowMine`, `chat.reactions.list.removeHint`, `chat.reactions.empty` | your row → unreact |
 
 ## States
 
@@ -147,7 +149,7 @@ No emoji rain and no fly-to-cluster: both were Locket's visual effects (RS-8).
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `chat.reactions.layout.listOrder` | **BLOCKED** (development approximation: newest first) | one screenshot of WhatsApp's or Retro's reaction list with reactions from three people at different times |
+| `chat.reactions.layout.listOrder` (old BLOCKED) | closed 2026-10-16: newest first (Stream Chat's reaction list, `references/auto/stream/docs-react-reactions-excerpt.txt`; WhatsApp / Messages help pages state no order) | a WhatsApp or Retro list with three reactors would confirm |
 | `chat.reactions.count.clusterMaxVisible` (old BLOCKED) | closed: 3 (WhatsApp panel) | — |
 | `chat.reactions.layout.activitySheet` (old BLOCKED) | closed: C-16 rows in Retro's "Reactions" sheet (`chat.reactions.layout.list`) | — |
 | Retro's own reaction UI in messages | not captured | one raw screenshot of a reacted message in a Retro DM |

@@ -26,7 +26,11 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
 (`photo.viewer.layout.appearance`): page `color.global.backgroundDeep`; themed tokens resolve to their dark values.
 
 1. **Header** (fixed, below the top safe area):
-   - leading: avatar `size.global.avatarHeader` (ring included; C-22) at `photo.viewer.dimension.headerInset`;
+   - leading: avatar `size.global.avatarHeader` (ring included; C-22) at `photo.viewer.dimension.headerInset`. The ring
+     (`photo.viewer.layout.avatarRing`, TC-2B) is Retro's position indicator: a `color.global.textOnMedia` arc `strokeWidth`
+     (2.0) wide with round caps, from 12 o'clock clockwise through index ÷ total of the context ("3 of 4" → three
+     quarters; one photo → the full circle), the photo `gap` (3.0) inside it; it changes with the page cross-fade and is
+     hidden from VoiceOver / TalkBack (the pill names the position);
    - `photo.viewer.dimension.headerAvatarToText` after it, two lines centred on the avatar, baselines
      `photo.viewer.dimension.headerLinePitch` apart: the author's display name (text role `listTitle`,
      `color.global.textOnMedia`) and `photo.viewer.header.week` ("Week 28"; opened from a wall:
@@ -39,7 +43,7 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
 2. **Scroll area** (between the header and the field; scrolls vertically when the content is taller):
    - **Photo** `photo.viewer.dimension.headerToPhoto` below the avatar: full width, its own aspect, never cropped, square
      corners, letterboxed when taller than the area (`photo.viewer.layout.photo`). Tap = advance (`photo.viewer.layout.advance`):
-     the leading zone (`photo.viewer.layout.backZone`, **BLOCKED**) goes back, the rest goes forward; past the last photo the
+     the leading 20 % of the photo (`photo.viewer.layout.backZone`, Retro's own viewer: `clientX < 0.2 × width` → previous) goes back, the rest goes forward; past the last photo the
      viewer closes. Long press = context menu with the quick-reaction row (`chat.reactions.layout.quickReactions`) and the
      menu items below.
    - **Footer** inside `size.global.screenMargin`: leading text block — first baseline `photo.viewer.dimension.footerFirstBaseline`
@@ -89,7 +93,7 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
 | header avatar + lines | C-22, C-23; `size.global.avatarHeader`, `photo.viewer.dimension.headerInset`, `.headerAvatarToText`, `.headerLinePitch`; text roles `listTitle` / `listSubtitle` | name (data), `photo.viewer.header.week` / `.header.groupWeek` | tap → `walls.member` (yours → `walls.mine`) |
 | position pill | C-22; `size.global.positionPillHeight`, `color.global.controlOnDeep`, text role `badge` | `photo.viewer.position` | — |
 | close | C-11 on media; `photo.viewer.dimension.closeCircle`, `.closeGlyph`, `color.global.controlOnDeep`, `icon.global.close`; hit `size.global.minTouchTarget.*` | `photo.viewer.a11y.close` | closes (Android back too) |
-| photo | `photo.viewer.layout.photo`, `photo.viewer.layout.advance`, `photo.viewer.layout.backZone` (BLOCKED) | `photo.viewer.a11y.photo` / `.photoMine` (+ `chat.thread.a11y.caption`); hints `photo.viewer.a11y.advanceHint`, `.backHint`; actions `.a11y.next`, `.a11y.previous` | tap advances; long press → menu with quick reactions |
+| photo | `photo.viewer.layout.photo`, `photo.viewer.layout.advance`, `photo.viewer.layout.backZone` (0.2, leading) | `photo.viewer.a11y.photo` / `.photoMine` (+ `chat.thread.a11y.caption`); hints `photo.viewer.a11y.advanceHint`, `.backHint`; actions `.a11y.next`, `.a11y.previous` | tap advances; long press → menu with quick reactions |
 | caption / date lines | text roles `listTitle` / `listSubtitle`; `photo.viewer.dimension.footerFirstBaseline`, `.footerLinePitch`; `photo.viewer.layout.dateFormat` | caption, date (data) | — |
 | voice note | `photo.viewer.layout.voiceNote` (`chat.voice.layout.capsule` with C-36 on media) | `chat.voice.a11y.*` | plays the post's voice note; the played bars follow it |
 | tag run ("I'm in this" / "with {names}") | footer line 2 after " · " (`tagging.md`: text role `listSubtitle`) | `tagging.toggle`, `tagging.with` | untagged: `tag_self`; tagged: opens the "In this photo" sheet (`tagging.md`) |
@@ -191,7 +195,8 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `photo.viewer.layout.backZone` | **BLOCKED** (development approximation: leading third) | 10-s screen recording of Retro's viewer, tapping at several x positions |
+| `photo.viewer.layout.backZone` (old BLOCKED) | closed 2026-10-16: the leading 20 % (Retro's album-page viewer script, `references/auto/retro/web/retro.app-viewer-and-hero-js-excerpts.txt` §1; the in-app NUX names the same left zone) | a recording of the in-app viewer would confirm the app uses the web's fraction |
+| header avatar ring (C-22 "ring width not measured") | closed 2026-10-16: `photo.viewer.layout.avatarRing` — Retro's ring is a progress arc (TC-2B "3 of 4" = three quarters), 2.0-pt stroke, 3.0-pt gap, round caps | — |
 | `photo.viewer.layout.voiceNote` (old BLOCKED) | closed: footer line (composition, RS-13) | — |
 | header position under the safe area; advance / close motion | not measurable from TC-2B (render) | 60 fps recording: open a friend's photo, tap through 3, close |
 | year form of the date for older photos | platform long date with the year (not captured in Retro) | one Retro viewer screenshot of a photo from a past year |
