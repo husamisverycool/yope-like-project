@@ -28,7 +28,7 @@ Root container edge to edge at every size, no outer padding, `cornerRadius(widge
 
 | element | tokens | copy | behaviour |
 |---|---|---|---|
-| widget provider | `widget.android.layout.provider`, `widget.android.duration.updatePeriod` | label `widget.android.label`, description `widget.android.description` | default 2 × 2; resizable down to 100 dp; reconfigurable; generated preview (Android 15+); static `previewImage` BLOCKED (owner asset) |
+| widget provider | `widget.android.layout.provider`, `widget.android.duration.updatePeriod`, `widget.android.layout.lockScreen` | label `widget.android.label`, description `widget.android.description` | default 2 × 2; resizable down to 100 dp; reconfigurable; home screen and lock-screen hub (`home_screen\|keyguard`); generated preview (Android 15+); static `previewImage` BLOCKED (owner asset) |
 | photo, scrim, text stack | as Structure | root `contentDescription` `widget.home.small.a11y.photo` / `.a11y.collage` | — |
 | tap | `camera.fromwidget.layout.target` (PendingIntent) | — | opens `camera.capture`, group preselected |
 | configure activity | page `color.global.background.android`; centred title (text role `sheetTitle`); C-16 rows: group cover (`size.global.avatarPicker`), name text role `listTitle` (`lineHeight.global.listTitle.android`, `letterSpacing.global.listTitle.android`) `color.global.textPrimary`, C-32 hairlines | title `widget.home.small.configuration.title`; empty `widget.android.configure.empty` | tapping a group finishes with RESULT_OK (single choice — no "Done") |
@@ -66,8 +66,18 @@ over mid grey; state tint 14.88:1). Configure activity: `color.global.textPrimar
 
 ## Platform notes
 
-- **Lock-screen hub** (Android 16 QPR2+): widgets are eligible by default (about 4 × 3 cells) — the group photo would
-  show on the lock screen; opting out (`widgetCategory` without `keyguard`, `res/xml-v36`) is an **owner decision**.
+- **Lock screen (owner decision 18: opt in)** — `widget.android.layout.lockScreen`: the provider declares
+  `widgetCategory="home_screen|keyguard"` (`WIDGET_CATEGORY_KEYGUARD`, API 17: "Indicates that the widget can be displayed
+  on the keyguard"), so the widget is offered on the lock-screen widget hub wherever the OS has one — AOSP from "the
+  release after Android 16 (QPR1)" (Pixel phones from Android 16 QPR2), Pixel Tablet since 2024; older releases ignore
+  the flag and keep it on the home screen. The hub slot is "approximately 4 cells wide by 3 cells tall" → the responsive
+  **Medium** layout (`PlatformWidgetGrid.minSize(4, 3)` = 276 × 183 dp): photo / collage with the text stack, and the state
+  column, unchanged (snapshots `widget.android_keyguard_{photo,collage,empty,signedout}`, feature/capture
+  `WidgetSnapshotTest.keyguardHubSlot`). The person adds it to the hub themselves; a tap opens the camera only after
+  unlock (`MainActivity` declares no `showWhenLocked`; "users must authenticate to launch the activity"). The generated
+  preview (Android 15+) covers the keyguard category too (Glance `setWidgetPreviews` default). Sources:
+  https://android-developers.googleblog.com/2025/03/widgets-on-lock-screen-faq.html,
+  https://developer.android.com/reference/android/appwidget/AppWidgetProviderInfo; docs/PLATFORM_CONSTRAINTS.md §4.2.
 - No accessory widgets on Android phones; `widget.lock.*` is iOS only.
 - Font: Glance text uses the system sans (Glance cannot load the bundled Inter) — PLATFORM limitation.
 - Corners: `cornerRadius` works on Android 12+; below 12 the root uses a 22-dp rounded shape drawable.

@@ -101,6 +101,7 @@ class PostUploader(private val remote: PostRemote, private val store: UploadStor
         caption = caption,
         voicePath = voice?.storagePath,
         voiceDurationMs = voiceDurationMs,
+        voiceLevels = voiceLevels,
         invitationId = invitationId,
         replyToPostId = replyToPostId,
     )

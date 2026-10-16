@@ -45,6 +45,9 @@ class RpcArgs internal constructor() {
     fun opt(key: String, value: LocalTime?) { if (value != null) put(key, value) }
     fun opt(key: String, value: List<String>?) { if (value != null) put(key, value) }
 
+    /** An integer array (`smallint[]`, e.g. a voice waveform: `p_voice_levels`); omitted when null. */
+    fun optInts(key: String, value: List<Int>?) { if (value != null) values[key] = JsonArray(value.map(::JsonPrimitive)) }
+
     fun toJson(): JsonObject = JsonObject(values)
 }
 

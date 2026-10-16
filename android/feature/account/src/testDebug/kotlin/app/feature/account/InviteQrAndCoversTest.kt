@@ -11,14 +11,12 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
-import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.printToString
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -44,7 +42,6 @@ import com.google.zxing.ResultMetadataType
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.qrcode.QRCodeReader
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -101,18 +98,17 @@ class InviteQrAndCoversTest {
 
     // The drawn card --------------------------------------------------------------------------------
 
-    @Test fun drawnCardReadsBackAsTheLinkAndIsOneLabelledImage() {
-        compose.setContent { AppTheme(dark = true) { InviteQrCard(link, "Sunday Dinners", 324.dp) } }
+    @Test fun cardIsOneLabelledImage() {
+        compose.setContent { AppTheme { InviteQrCard(link, "Sunday Dinners", 324.dp) } }
         val label = context.getString(R.string.groups_invite_qr_accessibilitylabel, "Sunday Dinners")
         assertEquals("QR code for joining Sunday Dinners", label)
-        compose.onNodeWithContentDescription(label).assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Image))
-        val image = compose.onNodeWithTag(GROUP_INVITE_QR_CARD_TAG).captureToImage()
-        val decoded = decode(image)
-        assertEquals("the card encodes the link the sheet shares (white card in the dark appearance)", link, decoded.first)
-        assertEquals("H", decoded.second)
+        compose.onNodeWithTag(GROUP_INVITE_QR_CARD_TAG)
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf(label)))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Image))
+        assertEquals("the name and tagline are read through the label only", 0, compose.onAllNodesWithText("Sunday Dinners").fetchSemanticsNodes().size)
     }
 
-    @Test fun qrCodeTargetOpensTheCardAndSaveHandsOverItsPixels() {
+    @Test fun qrCodeTargetOpensTheCardWhoseDrawnPixelsReadBackAsTheLink() {
         var opened = false
         var saved: ImageBitmap? = null
         val invite = GroupInvite("i1", "g1", "AbCdEfGhIjKlMnOpQrStUvWx", "u-me", Instant.EPOCH, Instant.EPOCH.plusSeconds(86_400), null)
@@ -120,7 +116,8 @@ class InviteQrAndCoversTest {
         var qrLink by mutableStateOf<String?>(null)
         compose.setContent {
             CompositionLocalProvider(LocalAccountEnvironment provides fakeEnvironment()) {
-                AppTheme {
+                // Dark appearance: the card stays white with black modules (a media surface; reversed codes are not read by every scanner).
+                AppTheme(dark = true) {
                     GroupInviteScreen(
                         state,
                         ZoneId.of("UTC"),
@@ -133,12 +130,14 @@ class InviteQrAndCoversTest {
         compose.onNodeWithText(context.getString(R.string.groups_invite_link_qr)).performClick()
         compose.waitForIdle()
         assertTrue("QR Code → the card", opened)
-        println(compose.onRoot(useUnmergedTree = true).printToString())
         compose.onNodeWithTag(GROUP_INVITE_QR_CARD_TAG).assertExists()
         compose.onNodeWithContentDescription(context.getString(R.string.groups_invite_qr_save)).performClick()
         compose.waitUntil(timeoutMillis = 5_000) { saved != null }
-        assertNotNull(saved)
-        assertEquals("Save gets the card's own pixels", link, decode(saved!!).first)
+        val image = saved!!
+        assertTrue("the card alone (not the backdrop)", image.width < image.height && image.width > 0)
+        val decoded = decode(image)
+        assertEquals("Save gets the card's own pixels: they encode the link the sheet shares", link, decoded.first)
+        assertEquals("error correction H", "H", decoded.second)
     }
 
     // Template covers -------------------------------------------------------------------------------

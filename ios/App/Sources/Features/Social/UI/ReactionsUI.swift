@@ -196,7 +196,7 @@ struct ReactionsSheetTarget: Identifiable, Hashable {
 /// C-16 row per person and emoji — avatar `size.global.avatarPicker` at the margin, the name (text role `listTitle`)
 /// `chat.thread.dimension.rowAvatarToText` after it, the emoji at the trailing margin in the `size.global.icon` box;
 /// your rows add "Tap to remove" (`listSubtitle`, `color.global.textSecondary`) and a tap takes the reaction back. Rows
-/// `size.global.listGap` apart; order `chat.reactions.layout.listOrder` (BLOCKED: `SocialOrdering`). Empty (all taken
+/// `size.global.listGap` apart; order `chat.reactions.layout.listOrder` (newest first, `ReactionSummary.listRows`). Empty (all taken
 /// back while open): C-27 title only. Never a count.
 struct ReactionsSheet: View {
     let reactions: ReactionSummary

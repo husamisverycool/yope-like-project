@@ -534,8 +534,7 @@ final class SocialChatThreadModelTests: XCTestCase {
             SocialDemo.reaction(SocialDemo.p1, SocialDemo.ben, "😍", minutes: 5),
             SocialDemo.reaction(SocialDemo.p1, SocialDemo.ana, "😂", minutes: 3),
         ])
-        XCTAssertEqual(summary.listRows(newestFirst: true).map(\.emoji), ["😍", "😂", "🔥"])
-        XCTAssertEqual(summary.listRows(newestFirst: false).map(\.emoji), ["🔥", "😍", "😂"], "release: the data's order (listOrder BLOCKED)")
+        XCTAssertEqual(summary.listRows().map(\.emoji), ["😍", "😂", "🔥"], "chat.reactions.layout.listOrder: newest first by created_at")
     }
 
     // MARK: Runs and day dividers

@@ -2,9 +2,7 @@ package app.voice
 
 import android.content.Context
 import android.media.MediaMetadataRetriever
-import android.media.MediaRecorder
 import android.net.Uri
-import android.os.Build
 import android.os.SystemClock
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -20,109 +18,119 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
-import kotlin.math.max
+import java.util.UUID
 
-/** A finished recording. */
-data class VoiceNote(val file: File, val durationMs: Long, val waveform: List<Float>)
-
-/** Waveform math: raw MediaRecorder amplitudes → 0…1 levels → a fixed number of bars. */
-object Waveform {
-    /** [MediaRecorder.getMaxAmplitude] is a 16-bit PCM peak. */
-    const val MAX_AMPLITUDE = 32767
-
-    fun level(amplitude: Int): Float = (amplitude.coerceIn(0, MAX_AMPLITUDE).toFloat() / MAX_AMPLITUDE)
-
-    /** Resamples [levels] into [count] bars (peak per bucket), so any length draws in a fixed width. */
-    fun bars(levels: List<Float>, count: Int): List<Float> {
-        require(count > 0)
-        if (levels.isEmpty()) return List(count) { 0f }
-        return List(count) { i ->
-            val start = i * levels.size / count
-            val end = max(start + 1, (i + 1) * levels.size / count)
-            levels.subList(start, end.coerceAtMost(levels.size)).max()
-        }
-    }
-}
+/** A finished recording: the `.m4a`, its length and its waveform (100 levels of 0…31, [VoiceLevels]). */
+data class VoiceNote(val file: File, val durationMs: Long, val levels: List<Int>)
 
 /**
- * Records AAC audio into an `.m4a` file, sampling the input level for the live waveform.
- * Encoding settings are speech-oriented transport choices, not design values.
+ * Records voice (`chat.voice.layout.recording` / `.locked`): start, pause, continue, a playable draft while paused, stop
+ * (segments joined into one `.m4a`) or cancel. Samples the input's peak level every [VoiceLevels.SAMPLING_INTERVAL_MS]
+ * while recording; [levels] is the live / draft waveform (C-36) and [elapsedMs] the recorded length.
  */
 class VoiceRecorder(
-    private val context: Context,
-    private val clock: () -> Long = SystemClock::elapsedRealtime,
-    private val newRecorder: (Context) -> MediaRecorder = ::platformRecorder,
+    context: Context,
+    clock: () -> Long = SystemClock::elapsedRealtime,
+    private val engine: RecordingEngine = MediaRecorderEngine(context, clock),
+    private val joiner: (List<File>, File) -> Unit = Mp4AudioJoiner::join,
+    private val directory: File = File(context.cacheDir, "voice"),
 ) {
-    private var recorder: MediaRecorder? = null
-    private var file: File? = null
-    private var startedAt = 0L
-    private var sampling: Job? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private val samples = MutableStateFlow<List<Float>>(emptyList())
+    private val session = RecordingSession(engine) { newFile() }
+    private val currentState = MutableStateFlow(RecordingSession.State.Idle)
+    private val currentLevels = MutableStateFlow<List<Int>>(emptyList())
+    private val currentElapsed = MutableStateFlow(0L)
+    private var sampling: Job? = null
 
-    /** Levels (0…1) sampled so far in this recording. */
-    val levels: StateFlow<List<Float>> = samples.asStateFlow()
+    /** The joined draft of a multi-segment paused recording (for previews) and the segments it was made from. */
+    private var draft: Pair<File, List<File>>? = null
 
-    val isRecording: Boolean get() = recorder != null
+    val state: StateFlow<RecordingSession.State> = currentState.asStateFlow()
 
-    /**
-     * Starts recording into [output]. Requires RECORD_AUDIO. [samplingIntervalMs] sets how often the
-     * level is read (the waveform's resolution); [maxDurationMs] stops recording automatically.
-     */
-    fun start(output: File, samplingIntervalMs: Long, maxDurationMs: Int? = null) {
-        check(recorder == null) { "already recording" }
-        require(samplingIntervalMs > 0)
-        output.parentFile?.mkdirs()
-        val r = newRecorder(context).apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            setAudioChannels(CHANNELS)
-            setAudioSamplingRate(SAMPLE_RATE_HZ)
-            setAudioEncodingBitRate(BIT_RATE)
-            maxDurationMs?.let(::setMaxDuration)
-            setOutputFile(output.absolutePath)
-            prepare()
-            start()
-        }
-        recorder = r
-        file = output
-        startedAt = clock()
-        samples.value = emptyList()
-        sampling = scope.launch {
-            while (isActive) {
-                samples.value = samples.value + Waveform.level(runCatching { r.maxAmplitude }.getOrDefault(0))
-                delay(samplingIntervalMs)
-            }
-        }
+    /** The waveform of what was recorded so far (100 levels of 0…31); empty when idle. */
+    val levels: StateFlow<List<Int>> = currentLevels.asStateFlow()
+
+    /** Recorded length so far, in ms. */
+    val elapsedMs: StateFlow<Long> = currentElapsed.asStateFlow()
+
+    /** A recording exists (recording or paused). */
+    val isRecording: Boolean get() = session.state != RecordingSession.State.Idle
+
+    /** Starts recording (RECORD_AUDIO granted); throws when the recorder cannot start. */
+    fun start() {
+        cancel()
+        directory.mkdirs()
+        session.start()
+        startSampling()
+        publish()
     }
 
-    /** Stops and returns the note, or null when it was too short for the encoder to finalize. */
-    fun stop(): VoiceNote? {
-        val r = recorder ?: return null
-        val out = file ?: return null
-        sampling?.cancel()
-        val duration = clock() - startedAt
-        val ok = runCatching { r.stop() }.isSuccess
-        r.release()
-        recorder = null
-        file = null
-        if (!ok) {
-            out.delete()
+    /** Recording → paused (`MediaRecorder.pause()`). */
+    fun pause() {
+        if (session.state != RecordingSession.State.Recording) return
+        session.pause()
+        stopSampling()
+        publish()
+    }
+
+    /** Paused → recording, at the end of the draft (`MediaRecorder.resume()`, or a new segment after a preview). */
+    fun resume() {
+        session.resume()
+        startSampling()
+        publish()
+    }
+
+    /** The paused draft as one playable file: the open segment is finished first; several segments are joined. */
+    suspend fun draftFile(): File {
+        val segments = session.finishDraft()
+        publish()
+        segments.singleOrNull()?.let { return it }
+        draft?.let { (file, from) -> if (from == segments) return file }
+        discardDraft()
+        val out = newFile()
+        withContext(Dispatchers.IO) { joiner(segments, out) }
+        draft = out to segments
+        return out
+    }
+
+    /** Stops and returns the recording (one file), or null when nothing usable was recorded. */
+    suspend fun stop(): VoiceNote? {
+        if (session.state == RecordingSession.State.Idle) return null
+        stopSampling()
+        val result = session.finish()
+        publish()
+        val segments = result.segments
+        if (segments.isEmpty()) {
+            discardDraft()
             return null
         }
-        return VoiceNote(out, duration, samples.value)
+        val joined = draft?.takeIf { it.second == segments }?.first
+        val file = when {
+            segments.size == 1 -> segments.first().also { discardDraft() }
+            joined != null -> joined.also { draft = null }
+            else -> {
+                discardDraft()
+                val out = newFile()
+                val ok = runCatching { withContext(Dispatchers.IO) { joiner(segments, out) } }.isSuccess
+                if (!ok) {
+                    (segments + out).forEach(File::delete)
+                    return null
+                }
+                out
+            }
+        }
+        if (segments.size > 1) segments.forEach(File::delete)
+        return VoiceNote(file, result.durationMs, result.levels)
     }
 
+    /** Stops and deletes the recording. */
     fun cancel() {
-        val out = file
-        sampling?.cancel()
-        recorder?.let { runCatching { it.stop() }; it.release() }
-        recorder = null
-        file = null
-        out?.delete()
-        samples.value = emptyList()
+        stopSampling()
+        session.cancel()
+        discardDraft()
+        publish()
     }
 
     fun release() {
@@ -130,14 +138,34 @@ class VoiceRecorder(
         scope.cancel()
     }
 
-    private companion object {
-        const val CHANNELS = 1
-        const val SAMPLE_RATE_HZ = 44_100
-        const val BIT_RATE = 64_000
-
-        fun platformRecorder(context: Context): MediaRecorder =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) MediaRecorder(context) else @Suppress("DEPRECATION") MediaRecorder()
+    private fun startSampling() {
+        sampling?.cancel()
+        sampling = scope.launch {
+            while (isActive) {
+                session.sample()
+                publish()
+                delay(VoiceLevels.SAMPLING_INTERVAL_MS)
+            }
+        }
     }
+
+    private fun stopSampling() {
+        sampling?.cancel()
+        sampling = null
+    }
+
+    private fun publish() {
+        currentState.value = session.state
+        currentElapsed.value = session.elapsedMs
+        currentLevels.value = if (session.state == RecordingSession.State.Idle) emptyList() else session.levels
+    }
+
+    private fun discardDraft() {
+        draft?.first?.delete()
+        draft = null
+    }
+
+    private fun newFile(): File = File(directory, "${UUID.randomUUID()}.m4a")
 }
 
 /** Playback state for a voice message, positions in ms. */

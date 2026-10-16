@@ -435,7 +435,25 @@ final class WeekEditModel {
         return true
     }
 
-    /// Accessibility "move earlier / later" on a strip tile.
+    /// A side of the screen for the strip's reorder actions (`week.edit.a11y.moveLeft` / `.moveRight`).
+    enum ScreenSide { case left, right }
+
+    /// The step in recap order that moves a tile towards `side` of the screen: left is earlier in a left-to-right
+    /// layout and later in a right-to-left one.
+    static func screenStep(_ side: ScreenSide, rightToLeft: Bool) -> Int {
+        switch side {
+        case .left: rightToLeft ? 1 : -1
+        case .right: rightToLeft ? -1 : 1
+        }
+    }
+
+    /// Whether a strip tile has a neighbour `offset` places away (the reorder action is offered only then).
+    func canMove(_ id: PostID, by offset: Int) -> Bool {
+        guard let from = chosen.firstIndex(of: id) else { return false }
+        return offset != 0 && chosen.indices.contains(from + offset)
+    }
+
+    /// Accessibility "Move photo left / right" on a strip tile: swaps it with its neighbour `offset` places away.
     @discardableResult
     func move(_ id: PostID, by offset: Int) -> Bool {
         guard let from = chosen.firstIndex(of: id) else { return false }

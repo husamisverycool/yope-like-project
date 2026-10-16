@@ -13,6 +13,9 @@ Native switches / alerts: Apple HIG / Material 3 (PLATFORM). Tokens: `settings.r
 | TC-J5 | `references/auto/retro/press/tc-2024-04-retro-journals-5.png` | grouped row height `settings.root.size.rowHeight` (58.7) |
 | ST-02 | `references/auto/retro/store/retro-store-02.png` | profile header pattern (C-19: name, grey real name, 64 avatar right) for the profile card |
 | APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | section headers and row titles (`settings_section_header_*`, `settings_title_*`, `settings_description_retro_membership_*`, `settings_page_denied`, `widget_add`) |
+| APK-X | `references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt` 'Retro root theme', 'Retro palette', 'Retro semantic colour accessor' | the Android true-black dark scheme (`colorScheme = isDark ? (trueBlack ? d42.w : d42.v) : d42.u`; only the page `vv3.k` and M3 background / surface change) — owner decision 21 |
+| AP-S | https://raw.githubusercontent.com/AntennaPod/AntennaPod/develop/ui/i18n/src/main/res/values/strings.xml, `…/ui/preferences/src/main/res/xml/preferences_user_interface.xml` | the option's mechanics and words (a switch "Full black" / "Use full black for the dark theme" in its theming section): Retro's package names the scheme in no string (MERGE OD21-1) |
+| MA-S | https://raw.githubusercontent.com/mastodon/mastodon-android/master/mastodon/src/main/res/values/strings.xml `settings_theme` | section header "Appearance" |
 
 ## Structure (page sheet, C-29; `settings.root.layout.list`; scrolls)
 
@@ -29,6 +32,15 @@ Header: centred `settings.root.title` (`sheetTitle`) + trailing close circle (C-
 4. **Widgets** (`settings.root.widgets.header`): row `settings.root.widgets.add` with subtitle `settings.root.widgets.detail`
    + chevron → `onboarding.widget` (which shows the widget preview). Retro shows a carousel of its three widget kinds
    here; this app has one kind, so the section is one row (Gaps).
+4a. **Appearance — Android only** (`settings.root.appearance.header`; owner decision 21): one C-14 toggle row
+   `settings.root.trueBlack` ("True Black") with subtitle `settings.root.trueBlack.detail` ("Use true black for the dark
+   theme.") and the native M3 switch (C-29; the whole row toggles, `haptic.global.select`). On: the **dark** appearance
+   draws its page in `color.global.background.android.trueBlack` (#000000) and M3 surface / background in
+   `color.global.system.surface.trueBlack` (#000000) — Retro's true-black scheme `d42.w`; every other colour (rows and
+   controls #262626, text, separators) and the light appearance stay as they are. Off (default): Retro's default dark page
+   #1C1C1E. Kept on the device (app-private SharedPreferences, as the app's other device settings); the window, the bar
+   scrims and every open screen follow at once. iOS has no such row (its dark page is already #000000, Retro's iOS).
+   The row is always listed (light too): the switch names the dark theme (as AntennaPod's "Full black").
 5. **Privacy** (`settings.root.privacy.header`): row `settings.root.blocked` + chevron → `settings.blocked`.
 6. **System Permissions** (`settings.root.permissions.header`): rows `settings.root.permissions.camera`, `.photos` (iOS),
    `.microphone`, `.contacts`, `.notifications`; trailing value `settings.root.permissions.denied` (`listSubtitle`,
@@ -49,6 +61,7 @@ Sections follow `settings.root.layout.list` (C-14; rows ≥ `settings.root.size.
 | section header | C-14 header (`meta`, `color.global.textSecondary`) | `settings.root.*.header` | header trait |
 | navigation row | C-14 row (`body` title, `meta` subtitle, `icon.global.chevron` in `color.global.textSecondary`) | row keys above | push inside the sheet |
 | permission row | C-14 row + value | `settings.root.permissions.*`, `.denied` | opens system Settings |
+| True Black row (Android) | C-14 row + native switch; `color.global.background.android.trueBlack`, `color.global.system.surface.trueBlack` | `settings.root.appearance.header`, `settings.root.trueBlack`, `.trueBlack.detail` | toggles; the theme follows at once (dark appearance only) |
 | Sign Out | C-14 row | `settings.root.signOut`; alert `settings.root.signOut.title`, `.signOut.confirm`, `settings.root.alert.cancel` | `unregister_device` → `auth.signOut()` → `auth.phone` landing |
 
 ## States
@@ -59,6 +72,7 @@ Sections follow `settings.root.layout.list` (C-14; rows ≥ `settings.root.size.
 | subscription loading | entitlements / store not answered yet | Subscription row shows the platform activity indicator as its trailing value (C-28) | — |
 | subscriber / not | `entitlements` (docs/API.md §5.22) | row 2 variant | as above |
 | permission states | system status | "Denied" value or none | `settings.root.permissions.denied` |
+| True Black on / off (Android) | device setting | switch on / off; in dark the page is #000000 / #1C1C1E | — |
 | signing out | RPCs in flight | Sign Out row shows the activity indicator | — |
 | sign-out failed (offline) | `unregister_device` failed | sign out locally anyway (the token is cleared on the next registration) | — |
 | empty / error / permission-denied | — | not applicable at the root | — |
@@ -70,7 +84,7 @@ Sheet presentation: native, Retro's measured curve (`spring.global.sheetPresent`
 
 ## Haptics
 
-Row presses → `haptic.global.tap` (Android). Switches (none here). Sign-out confirmed → none (navigation is the feedback).
+Row presses → `haptic.global.tap` (Android). The True Black switch (Android) → `haptic.global.select`. Sign-out confirmed → none (navigation is the feedback).
 
 ## Accessibility
 

@@ -112,10 +112,13 @@ struct ReactionSummary: Equatable, Sendable {
         return rows.reversed().compactMap { seen.insert($0.emoji).inserted ? $0.emoji : nil }
     }
 
-    /// The rows of the Reactions sheet (`chat.reactions.layout.list`: one per person and emoji); `newestFirst` is the
-    /// development approximation of the BLOCKED `chat.reactions.layout.listOrder`, else the data's order.
-    func listRows(newestFirst: Bool = SocialOrdering.reactionsNewestFirst) -> [Reaction] {
-        newestFirst ? rows.sorted { $0.createdAt > $1.createdAt } : rows
+    /// The rows of the Reactions sheet (`chat.reactions.layout.list`: one per person and emoji), newest first by
+    /// `reactions.created_at` (`chat.reactions.layout.listOrder`: the reaction list of Stream Chat's SDK); rows with the
+    /// same time keep the later-inserted one first.
+    func listRows() -> [Reaction] {
+        rows.enumerated()
+            .sorted { lhs, rhs in lhs.element.createdAt != rhs.element.createdAt ? lhs.element.createdAt > rhs.element.createdAt : lhs.offset > rhs.offset }
+            .map(\.element)
     }
 
     /// The emoji this person reacted with (highlighted in the picker, `chat.reactions.layout.unreact`).
@@ -149,25 +152,18 @@ struct ReactionSummary: Equatable, Sendable {
     }
 }
 
-/// Orders the specs leave BLOCKED, behind one switch: DEBUG builds use the development approximation named in the
-/// token's notes (design/tokens/social.json); release builds keep the order the data arrives in.
+/// `walls.browse.layout.rowOrder` (Apple Photos' people grid, "Sort by Name"): display name A to Z in the device
+/// locale's collation ignoring case and accents (Android: `Collator` PRIMARY — the same comparison); equal names by
+/// user id so the order is stable.
 enum SocialOrdering {
-    /// `walls.browse.layout.rowOrder` — approximation: newest wall item first, then by name.
-    static var peopleByNewestWall: Bool {
-        #if DEBUG
-        return true
-        #else
-        return false
-        #endif
-    }
-
-    /// `chat.reactions.layout.listOrder` — approximation: newest first by `reactions.created_at`.
-    static var reactionsNewestFirst: Bool {
-        #if DEBUG
-        return true
-        #else
-        return false
-        #endif
+    static func byName<Item>(_ items: [Item], name: (Item) -> String, id: (Item) -> String, locale: Locale = .current) -> [Item] {
+        items.sorted { lhs, rhs in
+            switch name(lhs).compare(name(rhs), options: [.caseInsensitive, .diacriticInsensitive], range: nil, locale: locale) {
+            case .orderedAscending: return true
+            case .orderedDescending: return false
+            case .orderedSame: return id(lhs) < id(rhs)
+            }
+        }
     }
 }
 

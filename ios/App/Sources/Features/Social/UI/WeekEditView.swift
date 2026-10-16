@@ -18,6 +18,7 @@ struct WeekEditView: View {
     @State private var alignTick = 0
     @State private var dragged: PostID?
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.layoutDirection) private var layoutDirection
 
     init(groupID: GroupID, mode: WeekEditModel.Mode, toasts: ToastCenter) {
         self.init(model: WeekEditModel(groupID: groupID, mode: mode, data: SocialServices.shared.data), toasts: toasts)
@@ -135,8 +136,10 @@ struct WeekEditView: View {
     /// The chosen photos in recap order: C-17 photo tiles, outer corners `radius.global.card`, scrolling sideways. Touch
     /// and hold a tile, drag it to a new place, release; the others shift with `duration.global.stripInsert`; each slot
     /// change plays `week.edit.haptic.dragAlign` (iOS: `sensoryFeedback(.alignment)`), the lift the system's own
-    /// feedback (`week.edit.haptic.dragStart`). VoiceOver: drag and drop points on every tile. (The shared `WeekStrip`
-    /// has no reorder — reported as a component gap — so the strip draws `DayTile`s itself.)
+    /// feedback (`week.edit.haptic.dragStart`). VoiceOver: drag and drop points on every tile, and the actions "Move photo
+    /// left" / "Move photo right" (`week.edit.a11y.moveLeft` / `.moveRight`, Chrome's tab reorder actions) where the
+    /// tile has a neighbour on that side — in a right-to-left layout "left" is later in the recap. (The shared
+    /// `WeekStrip` has no reorder — reported as a component gap — so the strip draws `DayTile`s itself.)
     private var strip: some View {
         let posts = model.chosenPosts
         return ScrollView(.horizontal, showsIndicators: false) {
@@ -163,6 +166,16 @@ struct WeekEditView: View {
                         .accessibilityLabel(Text(label))
                         .accessibilityDragPoint(.center, description: Text(label))
                         .accessibilityDropPoint(.leading, description: Text(label))
+                        .accessibilityActions {
+                            let left = WeekEditModel.screenStep(.left, rightToLeft: layoutDirection == .rightToLeft)
+                            let right = WeekEditModel.screenStep(.right, rightToLeft: layoutDirection == .rightToLeft)
+                            if model.canMove(post.id, by: left) {
+                                Button(Copy.weekEditA11yMoveLeft) { _ = withDSAnimation(ComponentMotion.stripInsert) { model.move(post.id, by: left) } }
+                            }
+                            if model.canMove(post.id, by: right) {
+                                Button(Copy.weekEditA11yMoveRight) { _ = withDSAnimation(ComponentMotion.stripInsert) { model.move(post.id, by: right) } }
+                            }
+                        }
                         .transition(.opacity)
                 }
             }
@@ -196,8 +209,8 @@ struct WeekEditView: View {
 
     /// Every visible post of the week in time order: `week.edit.count.gridColumns` square cells, `size.global.stripGap`
     /// gaps, full width inside the margins; a tap toggles in / out (`haptic.global.select`); the in / out mark is
-    /// `week.edit.layout.selectionMark` (BLOCKED: DEBUG approximation only). (The shared `PhotoGrid` has no selection
-    /// state or value — reported as a component gap.)
+    /// `week.edit.layout.selectionMark` (`SelectionMarkCell`). (The shared `PhotoGrid` has no selection state or value —
+    /// reported as a component gap.)
     private func grid(placeholders: Int) -> some View {
         LazyVGrid(
             columns: Array(repeating: GridItem(.flexible(), spacing: Tokens.Sizes.globalStripGap), count: Int(Tokens.Counts.weekEditCountGridColumns)),
@@ -213,10 +226,7 @@ struct WeekEditView: View {
                 ForEach(model.gridPosts) { post in
                     let checked = model.isChecked(post.id)
                     Button { model.toggle(post.id) } label: {
-                        PhotoView(source: SocialImages.source(post.media?.gridPath))
-                            .aspectRatio(1, contentMode: .fit) // provenance-ok: square cells (C-21 composer grid)
-                            .clipShape(Rectangle())
-                            .overlay(alignment: .topTrailing) { selectionMark(checked) }
+                        SelectionMarkedCell(source: SocialImages.source(post.media?.gridPath), checked: checked)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
@@ -227,16 +237,6 @@ struct WeekEditView: View {
             }
         }
         .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
-    }
-
-    @ViewBuilder
-    private func selectionMark(_ checked: Bool) -> some View {
-        if SocialBlocked.showsSelectionMark {
-            Glyph(checked ? Tokens.Icons.globalCheck : Tokens.Icons.globalUncheck, size: Tokens.Sizes.globalCheckCircle)
-                .foregroundStyle(Tokens.Colors.globalTextOnMedia)
-                .padding(SocialBlocked.selectionMarkInset)
-                .accessibilityHidden(true)
-        }
     }
 
     // MARK: Album sheet
@@ -346,4 +346,63 @@ struct WeekEditMessageSheet: View {
             focused = true
         }
     }
+}
+
+/// `week.edit.layout.selectionMark` (the platform photo picker's mark, measured on Android's system picker): a square
+/// cell (C-21 composer grid). Not in the recap, the photo fills it and carries no mark; in the recap, the cell fills with
+/// `color.global.control`, the photo insets `selectedInsetRatio` × the cell width with corners `selectedCornerRatio` ×
+/// the width, and the filled check circle (`icon.global.check` in the `size.global.checkCircle` box: the circle in
+/// `color.global.selection`, the check in `color.global.textOnMedia`, on a white disc `markOutline` wider in radius)
+/// sits centred `markCentreRatio` × the width from the top-leading corner. The change cross-fades
+/// (`duration.global.crossfade`). Decorative: the cell's accessibility value carries the state.
+struct SelectionMarkedCell: View {
+    let source: PhotoSource?
+    let checked: Bool
+
+    private typealias Mark = Tokens.Layouts.WeekEditLayoutSelectionMark
+
+    var body: some View {
+        Color.clear
+            .aspectRatio(1, contentMode: .fit) // provenance-ok: square cells (C-21 composer grid)
+            .overlay {
+                GeometryReader { proxy in
+                    let cell = proxy.size.width
+                    let inset = checked ? cell * Mark.selectedInsetRatio : 0
+                    ZStack(alignment: .topLeading) {
+                        Tokens.Colors.globalControl
+                            .opacity(checked ? 1 : 0)
+                        PhotoView(source: source)
+                            .frame(width: max(0, cell - 2 * inset), height: max(0, cell - 2 * inset))
+                            .clipShape(RoundedRectangle(cornerRadius: checked ? cell * Mark.selectedCornerRatio : 0))
+                            .offset(x: inset, y: inset)
+                        if checked {
+                            mark
+                                .offset(x: cell * Mark.markCentreRatio - Tokens.Sizes.globalCheckCircle / 2, y: cell * Mark.markCentreRatio - Tokens.Sizes.globalCheckCircle / 2)
+                                .transition(.opacity)
+                        }
+                    }
+                }
+            }
+            .clipShape(Rectangle())
+            .dsAnimation(ComponentMotion.crossfade, value: checked)
+    }
+
+    /// The check circle on its white disc (the outline, and the check through the symbol's cut-out).
+    private var mark: some View {
+        let box = Tokens.Sizes.globalCheckCircle
+        let disc = box * Self.glyphInk + 2 * Mark.markOutline
+        return ZStack {
+            Circle()
+                .fill(Tokens.Colors.globalTextOnMedia)
+                .frame(width: disc, height: disc)
+            Glyph(Tokens.Icons.globalCheck, size: box)
+                .foregroundStyle(Tokens.Colors.globalSelection)
+        }
+        .frame(width: box, height: box)
+        .accessibilityHidden(true)
+    }
+
+    /// SF Symbols' `checkmark.circle.fill` circle fills ≈ 20 / 24 of its glyph box at the box size (the Material
+    /// glyph's 20-unit ink in a 24-unit box on Android): the white disc sits just outside it.
+    private static let glyphInk: CGFloat = 20.0 / 24.0 // provenance-ok: symbol glyph geometry (platform), not a design value
 }

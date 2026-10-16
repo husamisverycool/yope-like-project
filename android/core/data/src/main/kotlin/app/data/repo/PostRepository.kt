@@ -27,6 +27,8 @@ data class PostOptions(
     /** Your upload (convention `u/<uid>/<media_id>/voice.m4a`); needs [voiceDurationMs] > 0. */
     val voicePath: String? = null,
     val voiceDurationMs: Int? = null,
+    /** The voice note's waveform: 100 levels of 0…31 (`p_voice_levels`); needs [voicePath]. */
+    val voiceLevels: List<Int>? = null,
     /** The daily invitation being answered; never fails, never "late" (§6.2). */
     val invitationId: String? = null,
     /** Reply to a photo with a photo: exactly one group, the replied post's group. */
@@ -112,6 +114,7 @@ class PostRepository(private val api: Api, private val cache: OfflineCache, priv
             opt("p_caption", options.caption)
             opt("p_voice_path", options.voicePath)
             opt("p_voice_duration_ms", options.voiceDurationMs)
+            optInts("p_voice_levels", options.voiceLevels?.takeIf { options.voicePath != null })
             opt("p_invitation_id", options.invitationId)
             opt("p_reply_to_post_id", options.replyToPostId)
         }

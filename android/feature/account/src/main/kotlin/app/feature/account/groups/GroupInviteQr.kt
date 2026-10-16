@@ -45,12 +45,12 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
@@ -163,8 +163,8 @@ fun InviteQrCard(link: String, groupName: String, width: Dp, modifier: Modifier 
                 .clearAndSetSemantics {
                     contentDescription = label
                     role = Role.Image
-                }
-                .testTag(GROUP_INVITE_QR_CARD_TAG),
+                    testTag = GROUP_INVITE_QR_CARD_TAG
+                },
         ) {
             QrCodeImage(matrix, Modifier.padding(start = padding, top = padding, end = padding).size(width - padding * 2))
             Box(Modifier.fillMaxWidth().height(width * card.footerHeightRatio).padding(horizontal = padding), contentAlignment = Alignment.CenterStart) {

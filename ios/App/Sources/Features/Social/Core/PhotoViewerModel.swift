@@ -125,6 +125,13 @@ final class PhotoViewerModel {
         return (index + 1, postIDs.count)
     }
 
+    /// `photo.viewer.layout.avatarRing`: the share of the circle the header ring draws — the position over the total
+    /// (TC-2B: "3 of 4" draws three quarters); one photo: the full circle.
+    var ringFraction: Double {
+        guard postIDs.count > 1, let index = postIDs.firstIndex(of: selection) else { return 1 }
+        return Double(index + 1) / Double(postIDs.count)
+    }
+
     func taggedPeople(on postID: PostID) -> [UserID] { tagged[postID] ?? [] }
 
     var isCurrentTagged: Bool {

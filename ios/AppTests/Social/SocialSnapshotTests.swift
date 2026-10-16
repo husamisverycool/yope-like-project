@@ -502,11 +502,11 @@ final class SocialSnapshotTests: XCTestCase {
         // The Friends tab's root (C-01 title, tab bar below).
         SocialTabRoot.treatsEveryWallAsRoot = true
         let data = use(SocialDemo.makeData())
-        let browse = WallsBrowseModel(data: data, ordersByNewestWall: true)
+        let browse = WallsBrowseModel(data: data)
         await browse.load()
         record(WallsBrowseScreen(groupID: nil, model: browse), "walls.browse", "ready", both)
 
-        let searching = WallsBrowseModel(data: data, ordersByNewestWall: true)
+        let searching = WallsBrowseModel(data: data)
         await searching.load()
         searching.search = "zed"
         record(WallsBrowseScreen(groupID: nil, model: searching), "walls.browse", "no-results")
@@ -532,13 +532,13 @@ final class SocialSnapshotTests: XCTestCase {
             state.cachedGroups = state.groups
             for group in state.groups { state.cachedMembers[group.id] = state.members[group.id] }
         })
-        let cached = WallsBrowseModel(data: cachedData, ordersByNewestWall: true)
+        let cached = WallsBrowseModel(data: cachedData)
         await cached.load()
         record(WallsBrowseScreen(groupID: nil, model: cached), "walls.browse", "offline")
 
         // Group-scoped entry (pushed: C-02 back chevron + title).
         SocialTabRoot.treatsEveryWallAsRoot = false
-        let scoped = WallsBrowseModel(data: use(SocialDemo.makeData()), groupID: SocialDemo.groupID, ordersByNewestWall: true)
+        let scoped = WallsBrowseModel(data: use(SocialDemo.makeData()), groupID: SocialDemo.groupID)
         await scoped.load()
         record(WallsBrowseScreen(groupID: SocialDemo.groupID.rawValue, model: scoped), "walls.browse", "group")
     }

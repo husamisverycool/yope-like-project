@@ -38,6 +38,8 @@ data class PostDraft(
     val groupIds: List<String>,
     val caption: String? = null,
     val voiceDurationMs: Int? = null,
+    /** The voice note's waveform (100 levels of 0…31, `p_voice_levels`). */
+    val voiceLevels: List<Int>? = null,
     val invitationId: String? = null,
     val replyToPostId: String? = null,
     // Progress.

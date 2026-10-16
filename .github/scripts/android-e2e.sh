@@ -22,6 +22,24 @@ adb logcat -d -v threadtime > "$OUT/logcat.txt" || true
 adb pull /sdcard/Download/e2e "$OUT/screens" || true
 cp -r app/build/reports/androidTests "$OUT/report" 2>/dev/null || true
 cp -r app/build/outputs/androidTest-results "$OUT/results" 2>/dev/null || true
+# Gradle can report success when the instrumentation process dies before any test starts (a crash in the app's
+# start-up, e.g. a manifest component whose class is missing): the journey must have run, and passed, with no skips.
+python3 - "$OUT/results" <<'PY' || status=1
+import glob, sys, xml.etree.ElementTree as ET
+files = glob.glob(sys.argv[1] + "/**/TEST-*.xml", recursive=True)
+total = failed = skipped = 0
+for f in files:
+    for suite in ET.parse(f).getroot().iter("testsuite"):
+        total += int(suite.get("tests", 0))
+        failed += int(suite.get("failures", 0)) + int(suite.get("errors", 0))
+        skipped += int(suite.get("skipped", 0))
+    root = ET.parse(f).getroot()
+    if root.tag == "testsuites" and not list(root):
+        total += int(root.get("tests", 0))
+print(f"android e2e: {total} tests, {failed} failed, {skipped} skipped ({len(files)} result files)")
+sys.exit(0 if files and total > 0 and failed == 0 and skipped == 0 else 1)
+PY
+
 echo "android e2e: exit $status; evidence in $OUT"
 ls -R "$OUT" | head -100 || true
 exit $status

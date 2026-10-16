@@ -140,6 +140,8 @@ data class Post(
     val caption: String?,
     @SerialName("voice_path") val voicePath: String?,
     @SerialName("voice_duration_ms") val voiceDurationMs: Int?,
+    /** The voice note's waveform: 100 levels of 0…31 (§5.8 `voice_levels`); null when it has none. */
+    @SerialName("voice_levels") val voiceLevels: List<Int>? = null,
     @SerialName("invitation_id") val invitationId: String?,
     @SerialName("in_window") val inWindow: Boolean,
     @SerialName("reply_to_post_id") val replyToPostId: String?,
@@ -157,6 +159,8 @@ data class Message(
     @SerialName("post_id") val postId: String?,
     @SerialName("voice_path") val voicePath: String?,
     @SerialName("voice_duration_ms") val voiceDurationMs: Int?,
+    /** A voice message's waveform: 100 levels of 0…31 (§5.9 `voice_levels`); null when it has none. */
+    @SerialName("voice_levels") val voiceLevels: List<Int>? = null,
     @SerialName("reply_to_post_id") val replyToPostId: String?,
     @SerialName("reply_to_message_id") val replyToMessageId: String?,
     @SerialName("created_at") val createdAt: Instant,

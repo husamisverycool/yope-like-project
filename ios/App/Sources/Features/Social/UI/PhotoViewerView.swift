@@ -236,7 +236,7 @@ struct PhotoViewerView: View {
             if let post = model.current, !model.isCurrentGone {
                 Button { SocialNav.openWall(of: post.post.authorID, me: model.me) } label: {
                     HStack(spacing: Tokens.Sizes.photoViewerDimensionHeaderAvatarToText) {
-                        AvatarView(source: SocialImages.source(model.author(of: post)?.avatarPath), diameter: Tokens.Sizes.globalAvatarHeader)
+                        ViewerAvatarRing(source: SocialImages.source(model.author(of: post)?.avatarPath), fraction: model.ringFraction)
                         MetricStack {
                             Text(model.author(of: post)?.displayName ?? "")
                                 .dsTextStyle(TextRole.listTitle)
@@ -455,12 +455,12 @@ struct ViewerPostPage: View {
 
     // MARK: Photo
 
-    /// Tap advances (`photo.viewer.layout.advance`), the leading zone goes back (`photo.viewer.layout.backZone`,
-    /// BLOCKED — `SocialBlocked.viewerBackZoneFraction`); long press: the menu with the quick-reaction row.
+    /// Tap advances (`photo.viewer.layout.advance`), the leading 20 % goes back (`photo.viewer.layout.backZone`, Retro's
+    /// viewer); long press: the menu with the quick-reaction row.
     private var photo: some View {
         ViewerMedia(post: post, accessibilityLabel: photoLabel)
             .viewerTapNavigation(
-                previousFraction: SocialBlocked.viewerBackZoneFraction,
+                previousFraction: Tokens.Layouts.PhotoViewerLayoutBackZone.fraction,
                 previousLabel: Copy.photoViewerA11yPrevious,
                 nextLabel: Copy.photoViewerA11yNext,
                 onPrevious: { withDSAnimation(ComponentMotion.crossfade) { model.goBack() } },
@@ -880,5 +880,32 @@ struct ViewerVideo: View {
                 player = AVPlayer(url: url)
             }
             .onDisappear { player?.pause() }
+    }
+}
+
+/// The header avatar with Retro's progress ring (`photo.viewer.layout.avatarRing`, TC-2B "3 of 4" → three quarters):
+/// `size.global.avatarHeader` across the ring; a `color.global.textOnMedia` arc `strokeWidth` wide with round caps, from
+/// 12 o'clock clockwise through `fraction` of the circle (the position over the total; one photo: the full circle); the
+/// photo `gap` inside it. The arc changes with the page cross-fade. Hidden from VoiceOver: the position pill names the
+/// position.
+struct ViewerAvatarRing: View {
+    let source: PhotoSource?
+    let fraction: Double
+
+    private typealias Ring = Tokens.Layouts.PhotoViewerLayoutAvatarRing
+
+    var body: some View {
+        let outer = Tokens.Sizes.globalAvatarHeader
+        ZStack {
+            Circle()
+                .inset(by: Ring.strokeWidth / 2)
+                .trim(from: 0, to: min(max(fraction, 0), 1))
+                .stroke(Tokens.Colors.globalTextOnMedia, style: StrokeStyle(lineWidth: Ring.strokeWidth, lineCap: .round))
+                .rotationEffect(.degrees(-90)) // provenance-ok: geometry — the arc starts at 12 o'clock (photo.viewer.layout.avatarRing start)
+            AvatarView(source: source, diameter: outer - 2 * (Ring.strokeWidth + Ring.gap))
+        }
+        .frame(width: outer, height: outer)
+        .dsAnimation(ComponentMotion.crossfade, value: fraction)
+        .accessibilityHidden(true)
     }
 }

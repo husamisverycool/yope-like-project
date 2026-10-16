@@ -25,11 +25,11 @@ enum class Rpc(val function: String, val required: Set<String>, val optional: Se
     // §6.2 Photos, chat, reactions, tags
     CreatePost(
         "create_post", setOf("p_media_id", "p_group_ids"),
-        setOf("p_caption", "p_voice_path", "p_voice_duration_ms", "p_invitation_id", "p_reply_to_post_id"),
+        setOf("p_caption", "p_voice_path", "p_voice_duration_ms", "p_voice_levels", "p_invitation_id", "p_reply_to_post_id"),
     ),
     SendMessage(
         "send_message", setOf("p_group_id", "p_kind"),
-        setOf("p_body", "p_voice_path", "p_voice_duration_ms", "p_reply_to_post_id", "p_reply_to_message_id"),
+        setOf("p_body", "p_voice_path", "p_voice_duration_ms", "p_voice_levels", "p_reply_to_post_id", "p_reply_to_message_id"),
     ),
     DeleteMessage("delete_message", setOf("p_message_id")),
     React("react", setOf("p_post_id", "p_emoji")),

@@ -99,12 +99,22 @@ private fun variableFamily(resId: Int): FontFamily = synchronized(variableFamili
 }
 
 /**
- * A `shadow` token. [blur] is the shadow's blur radius as measured in the source; [x]/[y] the
- * offset. The color carries the token's opacity.
+ * A `shadow` token. [blur] is the shadow's Gaussian σ as measured in the source (the tokens' convention: iOS
+ * `.shadow(radius:)` takes it as is); [x]/[y] the offset. The color carries the token's opacity.
  */
 @Immutable
 data class DSShadow(val color: Color, val blur: Dp, val x: Dp, val y: Dp) {
-    fun toShadow(): Shadow = Shadow(radius = blur, color = color, offset = DpOffset(x, y))
+    /**
+     * Compose's [Shadow] radius is a blur radius that Android's blur turns into σ = radius ÷ √3 (Skia
+     * `SkBlurMask::ConvertRadiusToSigma`, 0.57735 × radius), so the token's σ is passed as σ × √3. Measured on the
+     * album cover render: with σ passed as is the shadow fell off at σ ≈ 4.9 dp instead of 8.5.
+     */
+    fun toShadow(): Shadow = Shadow(radius = blur * SIGMA_TO_BLUR_RADIUS, color = color, offset = DpOffset(x, y))
+
+    private companion object {
+        /** √3: Skia's blur-radius ↔ σ factor (platform constant, not a design value). */
+        const val SIGMA_TO_BLUR_RADIUS = 1.7320508f // provenance-ok: Skia blur radius ↔ sigma factor (√3), platform constant
+    }
 }
 
 /** Draws [shadow] behind the content, outside [shape]. */

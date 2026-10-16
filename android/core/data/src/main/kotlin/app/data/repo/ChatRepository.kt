@@ -61,11 +61,15 @@ class ChatRepository(
     /** Reply to a photo in the chat ("reply-to-photo"). A photo replying to a photo is `create_post`. */
     suspend fun replyToPhoto(groupId: String, postId: String, body: String): Message = sendText(groupId, body, replyToPostId = postId)
 
-    /** Uploads [audio] (AAC in MP4, `.m4a`) to `u/<uid>/voice/<uuid>.m4a`, then sends the voice message. */
+    /**
+     * Uploads [audio] (AAC in MP4, `.m4a`) to `u/<uid>/voice/<uuid>.m4a`, then sends the voice message with its waveform
+     * ([levels]: 100 values of 0…31, `p_voice_levels`; null sends none).
+     */
     suspend fun sendVoice(
         groupId: String,
         audio: File,
         durationMs: Int,
+        levels: List<Int>? = null,
         replyToPostId: String? = null,
         replyToMessageId: String? = null,
     ): Message {
@@ -77,6 +81,7 @@ class ChatRepository(
             put("p_kind", MessageKind.Voice.wire)
             put("p_voice_path", path)
             put("p_voice_duration_ms", durationMs)
+            optInts("p_voice_levels", levels)
             opt("p_reply_to_post_id", replyToPostId)
             opt("p_reply_to_message_id", replyToMessageId)
         }

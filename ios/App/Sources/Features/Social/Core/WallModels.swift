@@ -248,8 +248,6 @@ final class WallsBrowseModel {
     @ObservationIgnored private let data: any SocialDataSource
     /// Only one group's members (a group-scoped entry).
     let groupID: GroupID?
-    /// `walls.browse.layout.rowOrder` is BLOCKED: DEBUG builds order by the newest wall item, then name.
-    let ordersByNewestWall: Bool
 
     /// `.empty`: no groups, or nobody else in them.
     private(set) var phase: SocialPhase = .loading
@@ -260,10 +258,13 @@ final class WallsBrowseModel {
     /// The cached copy was looked at: only then may a loading indicator show (no indicator over cached content).
     private(set) var hasCheckedCache = false
 
-    init(data: any SocialDataSource, groupID: GroupID? = nil, ordersByNewestWall: Bool = SocialOrdering.peopleByNewestWall) {
+    /// The collation of `walls.browse.layout.rowOrder` (the device locale; tests pin one).
+    let locale: Locale
+
+    init(data: any SocialDataSource, groupID: GroupID? = nil, locale: Locale = .current) {
         self.data = data
         self.groupID = groupID
-        self.ordersByNewestWall = ordersByNewestWall
+        self.locale = locale
     }
 
     var showsLoading: Bool { phase == .loading && hasCheckedCache }
@@ -314,39 +315,13 @@ final class WallsBrowseModel {
             }
         }
         let unique = others.socialUnique()
-        let ordered = ordersByNewestWall ? await newestFirst(unique, profiles: profiles, fresh: fresh) : unique
-        people = ordered.map { Person(id: $0, profile: profiles[$0]) }
+        // `walls.browse.layout.rowOrder`: by display name, A to Z (Apple Photos' people grid "Sort by Name").
+        people = SocialOrdering.byName(unique.map { Person(id: $0, profile: profiles[$0]) }, name: \.name, id: \.id.rawValue, locale: locale)
         phase = people.isEmpty ? .empty : .ready
     }
 
     func retry() async {
         phase = .loading
         await load()
-    }
-
-    /// The development approximation of the BLOCKED row order: newest wall item first, then by name.
-    private func newestFirst(_ ids: [UserID], profiles: [UserID: Profile], fresh: Bool) async -> [UserID] {
-        let data = self.data
-        let newest = await withTaskGroup(of: (UserID, Date?).self) { group -> [UserID: Date] in
-            for id in ids {
-                group.addTask {
-                    if fresh, let page = try? await data.wall(userID: id, before: nil, limit: 1) {
-                        return (id, page.items.first?.createdAt)
-                    }
-                    return (id, await data.cachedWall(userID: id)?.first?.createdAt)
-                }
-            }
-            var result: [UserID: Date] = [:]
-            for await (id, date) in group {
-                if let date { result[id] = date }
-            }
-            return result
-        }
-        return ids.sorted { lhs, rhs in
-            let left = newest[lhs] ?? .distantPast
-            let right = newest[rhs] ?? .distantPast
-            if left != right { return left > right }
-            return (profiles[lhs]?.displayName ?? "").localizedStandardCompare(profiles[rhs]?.displayName ?? "") == .orderedAscending
-        }
     }
 }

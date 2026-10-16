@@ -154,26 +154,29 @@ final class SocialWallModelTests: XCTestCase {
         XCTAssertEqual(model.phase, .empty)
     }
 
-    func testBrowseListsEveryoneElseNewestWallFirst() async {
-        let model = WallsBrowseModel(data: SocialDemo.makeData(), ordersByNewestWall: true)
+    func testBrowseListsEveryoneElseByName() async {
+        let model = WallsBrowseModel(data: SocialDemo.makeData(), locale: Locale(identifier: "en_US"))
         await model.load()
         XCTAssertEqual(model.phase, .ready)
-        // Newest wall items: Cleo (Thu), Ana (Tue), Ben (Mon); never me.
-        XCTAssertEqual(model.people.map(\.id), [SocialDemo.cleo, SocialDemo.ana, SocialDemo.ben])
-        XCTAssertEqual(model.people.map(\.name), ["Cleo Park", "Ana Lima", "Ben Ortiz"])
+        // walls.browse.layout.rowOrder: display name A to Z (Apple Photos' people grid "Sort by Name"); never me.
+        XCTAssertEqual(model.people.map(\.id), [SocialDemo.ana, SocialDemo.ben, SocialDemo.cleo])
+        XCTAssertEqual(model.people.map(\.name), ["Ana Lima", "Ben Ortiz", "Cleo Park"])
+    }
 
-        let release = WallsBrowseModel(data: SocialDemo.makeData(), ordersByNewestWall: false)
-        await release.load()
-        XCTAssertEqual(Set(release.people.map(\.id)), [SocialDemo.cleo, SocialDemo.ana, SocialDemo.ben], "rowOrder BLOCKED: the data's order")
+    func testPeopleOrderIgnoresCaseAndAccentsAndBreaksTiesByID() {
+        struct Named { let id: String; let name: String }
+        let people = [Named(id: "4", name: "zoë"), Named(id: "3", name: "Émile"), Named(id: "2", name: "ana"), Named(id: "1", name: "Ana"), Named(id: "5", name: "Bea")]
+        let ordered = SocialOrdering.byName(people, name: \.name, id: \.id, locale: Locale(identifier: "en_US"))
+        XCTAssertEqual(ordered.map(\.id), ["1", "2", "5", "3", "4"], "same comparison as Android's Collator at PRIMARY strength")
     }
 
     func testBrowseSearchFiltersByName() async {
-        let model = WallsBrowseModel(data: SocialDemo.makeData(), ordersByNewestWall: true)
+        let model = WallsBrowseModel(data: SocialDemo.makeData())
         await model.load()
         model.search = "  an "
         XCTAssertEqual(model.visiblePeople.map(\.id), [SocialDemo.ana], "case-insensitive, trimmed")
         model.search = "o"
-        XCTAssertEqual(model.visiblePeople.map(\.id), [SocialDemo.cleo, SocialDemo.ben])
+        XCTAssertEqual(model.visiblePeople.map(\.id), [SocialDemo.ben, SocialDemo.cleo])
         model.search = "zed"
         XCTAssertTrue(model.visiblePeople.isEmpty, "no search results")
         XCTAssertEqual(model.phase, .ready)
@@ -203,7 +206,7 @@ final class SocialWallModelTests: XCTestCase {
             state.cachedGroups = state.groups.filter { $0.id == SocialDemo.otherGroupID }
             state.cachedMembers[SocialDemo.otherGroupID] = state.members[SocialDemo.otherGroupID]
         }
-        let model = WallsBrowseModel(data: data, ordersByNewestWall: true)
+        let model = WallsBrowseModel(data: data)
         XCTAssertFalse(model.showsLoading)
         let task = Task { await model.load() }
         let cachedReady = await socialEventually { model.phase == .ready }

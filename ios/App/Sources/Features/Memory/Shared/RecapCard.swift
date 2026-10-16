@@ -13,6 +13,15 @@ import SwiftUI
 
 // MARK: - Recap card (`layout.year.story.recapCard`)
 
+/// A caller's own grid on the card (week.recap's `week.recap.layout.gridFill`): `columns` × `rows` cells sharing a photo
+/// area as wide as the card minus its padding and that width ÷ `areaAspect` tall; a short last row stays leading-aligned
+/// with the card fill after it. Nil on `RecapCard` = the year card's rule (fixed `cellAspect` cells).
+struct RecapGridShape: Equatable, Sendable {
+    let columns: Int
+    let rows: Int
+    let areaAspect: CGFloat
+}
+
 /// One photo of the recap card's grid.
 struct RecapCardPhoto: Identifiable, Hashable {
     let id: String
@@ -43,6 +52,8 @@ struct RecapCard: View {
     var detail: String?
     /// Width of the media page the card sits on.
     let frameWidth: CGFloat
+    /// A caller's grid (week.recap); nil: the year card's fixed-aspect cells.
+    var grid: RecapGridShape?
     var onSelect: ((RecapCardPhoto) -> Void)?
 
     private typealias Card = Tokens.Layouts.YearStoryRecapCard
@@ -53,6 +64,7 @@ struct RecapCard: View {
         name: String? = nil,
         detail: String? = nil,
         frameWidth: CGFloat,
+        grid: RecapGridShape? = nil,
         onSelect: ((RecapCardPhoto) -> Void)? = nil
     ) {
         self.photos = photos
@@ -60,6 +72,7 @@ struct RecapCard: View {
         self.name = name
         self.detail = detail
         self.frameWidth = frameWidth
+        self.grid = grid
         self.onSelect = onSelect
     }
 
@@ -76,11 +89,14 @@ struct RecapCard: View {
     var body: some View {
         let width = Self.width(frameWidth: frameWidth)
         let padding = width * Card.paddingRatio
-        let columns = max(1, Int(Card.columns))
+        let columns = max(1, grid?.columns ?? Int(Card.columns))
         let gap = Tokens.Sizes.globalStripGap
-        let cellWidth = max(0, (width - 2 * padding - CGFloat(columns - 1) * gap) / CGFloat(columns))
-        let cellHeight = cellWidth / Card.cellAspect
-        let shown = Array(photos.prefix(columns * Int(Card.maxRows)))
+        let areaWidth = max(0, width - 2 * padding)
+        let cellWidth = max(0, (areaWidth - CGFloat(columns - 1) * gap) / CGFloat(columns))
+        // A caller's grid: cells share the fixed photo area (week.recap.layout.gridFill); else fixed-aspect cells.
+        let areaHeight = grid.map { areaWidth / $0.areaAspect }
+        let cellHeight = grid.map { max(0, (areaWidth / $0.areaAspect - CGFloat($0.rows - 1) * gap) / CGFloat(max(1, $0.rows))) } ?? cellWidth / Card.cellAspect
+        let shown = Array(photos.prefix(grid.map { $0.columns * $0.rows } ?? columns * Int(Card.maxRows)))
         let rows = stride(from: 0, to: shown.count, by: columns).map { Array(shown[$0..<min($0 + columns, shown.count)]) }
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: gap) {
@@ -92,6 +108,7 @@ struct RecapCard: View {
                     }
                 }
             }
+            .frame(width: grid == nil ? nil : areaWidth, height: areaHeight, alignment: .topLeading)
             .padding([.top, .horizontal], padding)
             footer(padding: padding)
                 .frame(width: width, height: width * Card.footerHeightRatio, alignment: .bottom)

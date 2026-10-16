@@ -134,7 +134,8 @@ struct AlbumSheetTarget: Identifiable, Hashable {
 // MARK: - albums.view
 
 /// Page sheet over albums.list: the cover centred `albums.view.dimension.coverTop` below the sheet top
-/// (`.coverWidth` × `.coverHeight`, `radius.global.thumbnail`, the first item; its shadow is BLOCKED — drawn flat); the
+/// (`.coverWidth` × `.coverHeight`, `radius.global.thumbnail`, the first item, Retro's book-cover drop shadow
+/// `albums.view.shadow.cover`); the
 /// name in the display serif (`displayMedium`, up to two lines) with its cap top `.coverToTitle` below the cover; the
 /// meta line (`listSubtitle`, `color.global.textSecondary`) with its baseline `.titleToMeta` below the name's; the
 /// capsule row `.metaToActions` below the meta baseline — "Rename" filling the row and, for the creator and group admins,
@@ -234,8 +235,8 @@ struct AlbumScreen: View {
         }
     }
 
-    /// The cover: the album's first item (a placeholder while loading or when empty), drawn flat
-    /// (`albums.view.shadow.cover` BLOCKED). Tap → the viewer on the first item.
+    /// The cover: the album's first item (a placeholder while loading or when empty) with Retro's book-cover drop shadow
+    /// (`albums.view.shadow.cover`, TC-J1). Tap → the viewer on the first item.
     private var cover: some View {
         Button {
             if let first = model.posts.first { open(first.id) }
@@ -243,6 +244,7 @@ struct AlbumScreen: View {
             PhotoView(source: SocialImages.source(model.posts.first?.media?.displayImagePath))
                 .frame(width: Tokens.Sizes.albumsViewDimensionCoverWidth, height: Tokens.Sizes.albumsViewDimensionCoverHeight)
                 .clipShape(DSShape.rounded(Tokens.Radii.globalThumbnail))
+                .dsShadow(Tokens.Shadows.albumsViewShadowCover)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text(Copy.albumsViewA11yCover(albumName: name)))

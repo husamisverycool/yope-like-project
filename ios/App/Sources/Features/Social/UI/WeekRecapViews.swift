@@ -233,15 +233,11 @@ struct WeekRecapPreviewScreen: View {
         case cover
     }
 
-    /// Page 1 (the card) only when its grid fill is known (`week.recap.layout.gridFill`, BLOCKED); page 2 always.
+    /// Page 1 the card (`week.recap.layout.gridFill` decides its grid for any number of photos), page 2 the cover.
     private var pages: [Page] {
         guard model.phase == .ready else { return [] }
-        let card = SocialBlocked.recapCardItems(
-            model.cardPosts,
-            columns: Int(Tokens.Layouts.YearStoryRecapCard.columns),
-            maxRows: Int(Tokens.Layouts.YearStoryRecapCard.maxRows)
-        )
-        return (card.map { [Page.card($0)] } ?? []) + [.cover]
+        let shown = RecapGridFill.shown(count: model.cardPosts.count)
+        return (shown > 0 ? [Page.card(Array(model.cardPosts.prefix(shown)))] : []) + [.cover]
     }
 
     var body: some View {
@@ -372,7 +368,8 @@ struct WeekRecapPreviewScreen: View {
                     title: weekTitle,
                     name: model.group?.name,
                     detail: range,
-                    frameWidth: proxy.size.width
+                    frameWidth: proxy.size.width,
+                    grid: RecapGridFill.shape(count: items.count)
                 ) { photo in
                     viewer = PhotoViewerContext(postIDs: model.cardPosts.map(\.id), start: PostID(photo.id), groupID: model.groupID)
                 }
@@ -469,5 +466,25 @@ struct RecapNote: View {
         guard let editor else { return Text(verbatim: text) }
         let name = Text(verbatim: editor.socialFirstName).fontWeight(Tokens.FontWeights.fontWeightGlobalListTitle)
         return Text("\(name) \(Text(verbatim: text))") // provenance-ok: name and note text (data) joined by a space
+    }
+}
+
+/// `week.recap.layout.gridFill` (Retro's recap cards with 1, 9 and 24 photos — retro.app hero, TC-H, TC-REC): ⌊√n⌋
+/// columns (1 … `maxColumns`), ⌈n ÷ columns⌉ rows (at most `maxRows`), the cells sharing a photo area as wide as the
+/// card minus its padding and that width ÷ `areaAspect` tall; a short last row leading-aligned; photos past the grid's
+/// places are not drawn on the card (they stay in the recap and the viewer).
+enum RecapGridFill {
+    private typealias Fill = Tokens.Layouts.WeekRecapLayoutGridFill
+
+    static func shape(count: Int) -> RecapGridShape? {
+        guard count > 0 else { return nil }
+        let columns = min(max(Int(Double(count).squareRoot().rounded(.down)), 1), Int(Fill.maxColumns))
+        let rows = min((count + columns - 1) / columns, Int(Fill.maxRows))
+        return RecapGridShape(columns: columns, rows: rows, areaAspect: Fill.areaAspect)
+    }
+
+    /// How many of `count` photos the card draws.
+    static func shown(count: Int) -> Int {
+        shape(count: count).map { min(count, $0.columns * $0.rows) } ?? 0
     }
 }
