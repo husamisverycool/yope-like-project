@@ -372,7 +372,8 @@ export async function pushPhotosDeveloped(ctx: JobContext): Promise<void> {
   const spec: Omit<AlertSpec, "quiet"> = {
     type: "new_post",
     groupId,
-    ids: { post_id: posts[0]!.id },
+    // revealed_at marks the alert as a reveal: the apps file it under Developed Photos and open every photo revealed with it
+    ids: { post_id: posts[0]!.id, revealed_at: developsAt },
     title: copyText("camera.overnight.push.title", params),
     body: copyText("camera.overnight.push.body", params),
     collapseKey: `developed:${groupId}:${developsAt}`,

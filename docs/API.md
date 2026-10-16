@@ -1182,8 +1182,9 @@ read it — its files are refused even to the sender. Clients only ask:
 
 At the reveal the scheduler (`due_developed_posts`) turns each into an ordinary post (`created_at` = when taken,
 `revealed_at` = the reveal time) with its chat photo message; members get one push per group and reveal time
-(`push.photos_developed`, type `new_post` with the first photo's `post_id`), the senders included, unless they muted the
-group or turned overnight alerts off. Broadcast `developing_changed` (no payload) on create and reveal.
+(`push.photos_developed`, type `new_post` with the first photo's `post_id` and `revealed_at` = the reveal time, which
+marks it as a reveal: Android files it under Developed Photos), the senders included, unless they muted the group or
+turned overnight alerts off. Broadcast `developing_changed` (no payload) on create and reveal.
 
 ### 14.4 Weekly question (Retro prompt cards, Apple Journal)
 
@@ -1197,3 +1198,10 @@ NULL until the catalogue and its order are decided, so nothing is asked today. N
 - `answer_question(p_post_id, p_question_id | null)` — links one of your posts in that group to the question during its
   week (`invalid_question` 404, `question_off`, `question_closed` 409); null unlinks. `posts.question_id` is readable as
   any post column; nothing counts or lists who answered.
+
+### 14.5 Unlinked upload sweep (0022)
+
+Selfies and plan covers are uploaded before the call that links them. `due_unlinked_uploads(p_now, p_limit)`
+(service role; the worker's scheduler runs it hourly) deletes such files under `u/<uid>/selfies/` and `u/<uid>/plans/`
+that no row references and that are more than 7 days old. Post media, voice notes, avatars and group covers are not
+swept (their uploads may wait in an app's outbox).

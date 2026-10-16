@@ -53,6 +53,7 @@ class PlanChannelsTest {
         assertEquals(NotificationManager.IMPORTANCE_DEFAULT, AppChannel.DevelopedPhotos.importance)
         // The reveal push is type new_post: nothing in it tells it from a new post.
         assertEquals(AppChannel.NewPost, AppChannel.forAlert(PushMessage.AlertKind.NewPost))
+        assertEquals(AppChannel.DevelopedPhotos, AppChannel.forAlert(PushMessage.AlertKind.PhotosDeveloped))
     }
 
     @Test fun bothChannelsAreRegisteredWithTheirCopy() {

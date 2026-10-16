@@ -35,8 +35,8 @@ enum class AppChannel(val id: String, val importance: Int) {
 
     /**
      * Overnight photos revealed at 09:00 (`camera.overnight` C, `notifications.push.layout.channels` `developed_photos`,
-     * MERGE ON-9). The reveal push is sent as type `new_post` with no marker that tells it from a new post
-     * (docs/API.md §14.3), so [forAlert] cannot route it here yet: it arrives on [NewPost] until the payload says so.
+     * MERGE ON-9): the reveal push is type `new_post` with `revealed_at` (docs/API.md §14.3), parsed as
+     * [PushMessage.AlertKind.PhotosDeveloped].
      */
     DevelopedPhotos("developed_photos", NotificationManager.IMPORTANCE_DEFAULT),
 
@@ -52,6 +52,7 @@ enum class AppChannel(val id: String, val importance: Int) {
             PushMessage.AlertKind.TributeForYou -> Tribute
             PushMessage.AlertKind.YearStory -> YearStory
             PushMessage.AlertKind.Plan -> Plans
+            PushMessage.AlertKind.PhotosDeveloped -> DevelopedPhotos
         }
     }
 }

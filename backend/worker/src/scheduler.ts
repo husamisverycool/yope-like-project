@@ -3,7 +3,7 @@
 //   local date, which covers every time zone's "today"); arms precise wake-ups so the runner
 //   dispatches invitation.fire at fires_at and closes windows (collage.compose, invitation.end)
 //   at closes_at; then the due_* helpers: weekly recaps, birthday requests, tributes, year stories,
-//   and overnight photos that have developed.
+//   and overnight photos that have developed; hourly, the sweep of unlinked selfie / plan-cover uploads.
 // The SQL helpers are idempotent, so overlapping or repeated ticks are harmless.
 
 import { DbError, must, rpc } from "./db.js";
@@ -11,8 +11,11 @@ import type { Runner } from "./runner.js";
 import type { Services } from "./services.js";
 import { addDays, utcDate } from "./time.js";
 
-export type TickStep = "invitations" | "arm" | "recaps" | "birthdays" | "tributes" | "years" | "developed";
-export const ALL_STEPS: TickStep[] = ["invitations", "arm", "recaps", "birthdays", "tributes", "years", "developed"];
+export type TickStep = "invitations" | "arm" | "recaps" | "birthdays" | "tributes" | "years" | "developed" | "uploads";
+export const ALL_STEPS: TickStep[] = ["invitations", "arm", "recaps", "birthdays", "tributes", "years", "developed", "uploads"];
+
+/** due_unlinked_uploads runs at most this often (its files are a week old; nothing is gained by asking every minute). */
+export const UPLOAD_SWEEP_INTERVAL_MS = 3_600_000;
 
 export interface TickOptions {
   /** steps to run (default all) */
@@ -30,6 +33,8 @@ export interface TickReport {
   tributes: number;
   yearStories: number;
   developed: number;
+  /** unlinked uploads queued for deletion; null when the hourly sweep did not run this tick */
+  unlinkedUploads: number | null;
   errors: string[];
 }
 
@@ -41,6 +46,7 @@ const STEP_OF: Record<string, TickStep> = {
   due_tributes: "tributes",
   due_year_stories: "years",
   due_developed_posts: "developed",
+  due_unlinked_uploads: "uploads",
 };
 
 interface ScheduleRow {
@@ -57,6 +63,7 @@ export class Scheduler {
   private ticking: Promise<TickReport> | null = null;
   lastTick: TickReport | null = null;
   lastTickAt: number | null = null;
+  private lastUploadSweep: number | null = null;
 
   constructor(
     private readonly svc: Services,
@@ -98,6 +105,7 @@ export class Scheduler {
       tributes: 0,
       yearStories: 0,
       developed: 0,
+      unlinkedUploads: null,
       errors: [],
     };
     const step = async (name: string, fn: () => Promise<void>) => {
@@ -166,6 +174,13 @@ export class Scheduler {
     await step("due_developed_posts", async () => {
       report.developed = (await rpc<unknown[]>(this.svc.db, "due_developed_posts", { p_now: now.toISOString() })).length;
     });
+    // hourly, or whenever a caller asks for the step by name
+    if (opts.steps?.includes("uploads") || this.lastUploadSweep === null || now.getTime() - this.lastUploadSweep >= UPLOAD_SWEEP_INTERVAL_MS) {
+      await step("due_unlinked_uploads", async () => {
+        report.unlinkedUploads = await rpc<number>(this.svc.db, "due_unlinked_uploads", { p_now: now.toISOString() });
+        this.lastUploadSweep = now.getTime();
+      });
+    }
 
     if (report.invitations.created || report.recaps || report.birthdayRequests || report.tributes || report.yearStories || report.developed) this.runner?.wake();
     this.lastTick = report;

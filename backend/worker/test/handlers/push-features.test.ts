@@ -120,6 +120,16 @@ describe("plans", () => {
   });
 });
 
+describe("unlinked upload sweep", () => {
+  it("runs hourly from the scheduler, or when asked by name", async () => {
+    const asked = await w.scheduler.tick(new Date(), { steps: ["uploads"] });
+    expect(asked.errors).toEqual([]);
+    expect(asked.unlinkedUploads).toEqual(expect.any(Number));
+    const soon = await w.scheduler.tick(new Date(Date.now() + 60_000), { steps: ["developed"] });
+    expect(soon.unlinkedUploads).toBeNull();
+  });
+});
+
 describe("overnight photos", () => {
   it("the scheduler develops them; the group hears once per reveal, the senders included, unless alerts are off", async () => {
     await rpc(u[2]!.client, "set_overnight_alerts", { p_on: false });
@@ -138,6 +148,7 @@ describe("overnight photos", () => {
       for (const m of [u[0]!, u[1]!]) {
         const [a] = alertsTo(ios.get(m.id)!);
         expect(a!.payload).toMatchObject({ type: "new_post", group_id: g.id });
+        expect(new Date(a!.payload.revealed_at).getTime()).toBe(new Date(d1.develops_at).getTime());
         expect(posts.map((p) => p.id)).toContain(a!.payload.post_id);
         expect(a!.payload.aps.alert.title).toBe("[camera.overnight.push.title] group=Cusco crew");
       }

@@ -57,7 +57,8 @@ sealed interface PushMessage {
      * [Plan]: a plan was made, changed or cancelled, or the day-before reminder (`push.plan_*`, docs/API.md §14.2). New
      * kinds go last: the ordinal is part of the notification id.
      */
-    enum class AlertKind { NewPost, Reaction, Reply, RecapReady, BirthdayRequest, TributeForYou, YearStory, Plan }
+    /** The ordinal is part of the notification id: new kinds go last. */
+    enum class AlertKind { NewPost, Reaction, Reply, RecapReady, BirthdayRequest, TributeForYou, YearStory, Plan, PhotosDeveloped }
 
     companion object {
         fun parse(data: Map<String, String>, codec: DeepLinkCodec): PushMessage? {
@@ -106,7 +107,8 @@ sealed interface PushMessage {
             fun s(key: String) = data[key]?.takeIf { it.isNotBlank() }
             fun id(key: String) = s(key)?.takeIf(DeepLinkCodec::isId)
             val kind = when (s(PushKeys.TYPE)) {
-                PushTypes.NEW_POST -> AlertKind.NewPost
+                // a new_post alert that carries revealed_at is the overnight reveal (camera.overnight C)
+                PushTypes.NEW_POST -> if (s(PushKeys.REVEALED_AT)?.let(::parseInstant) != null) AlertKind.PhotosDeveloped else AlertKind.NewPost
                 PushTypes.REACTION -> AlertKind.Reaction
                 PushTypes.REPLY -> AlertKind.Reply
                 PushTypes.RECAP_READY -> AlertKind.RecapReady
@@ -120,7 +122,7 @@ sealed interface PushMessage {
             // A plan opens without its group too (the page reads the plan's own group).
             val derived: DeepLink? = if (kind == AlertKind.Plan) id(PushKeys.PLAN_ID)?.let { DeepLink.Plan(it, group) } else group?.let { g ->
                 when (kind) {
-                    AlertKind.NewPost, AlertKind.Reaction -> id(PushKeys.POST_ID)?.let { DeepLink.Post(g, it) }
+                    AlertKind.NewPost, AlertKind.Reaction, AlertKind.PhotosDeveloped -> id(PushKeys.POST_ID)?.let { DeepLink.Post(g, it) }
                     AlertKind.Reply -> id(PushKeys.MESSAGE_ID)?.let { DeepLink.ChatMessage(g, it) }
                         ?: id(PushKeys.POST_ID)?.let { DeepLink.Post(g, it) }
                     AlertKind.RecapReady -> id(PushKeys.RECAP_ID)?.let { DeepLink.Recap(g, it) }
@@ -165,6 +167,7 @@ object PushKeys {
     const val TRIBUTE_ID = "tribute_id"
     const val YEAR = "year"
     const val PLAN_ID = "plan_id"
+    const val REVEALED_AT = "revealed_at"
     const val KIND = "kind"
     const val RENDITION_URL = "rendition_url"
     const val SENDER_NAME = "sender_name"

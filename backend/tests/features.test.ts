@@ -115,6 +115,38 @@ describe('selfie reactions', () => {
   });
 });
 
+describe('unlinked upload sweep', () => {
+  it('deletes selfie and plan-cover uploads linked to nothing after 7 days, never a linked or recent one', async () => {
+    const { posts } = await postPhoto(a, [g.id]);
+    const linked = await upload(b, `u/${b.id}/selfies/${randomUUID()}.jpg`);
+    await rpc(b.client, 'react_with_selfie', { p_post_id: posts[0].id, p_image_path: linked });
+    const strayedSelfie = await upload(b, `u/${b.id}/selfies/${randomUUID()}.jpg`);
+    const strayedCover = await upload(c, `u/${c.id}/plans/${randomUUID()}.jpg`);
+    const recent = await upload(c, `u/${c.id}/plans/${randomUUID()}.jpg`);
+    const avatar = await upload(c, `avatars/${c.id}/${randomUUID()}.jpg`);
+    await sql(`update storage.objects set created_at = now() - interval '8 days' where name = any($1::text[])`, [
+      [linked, strayedSelfie, strayedCover, avatar],
+    ]);
+
+    const swept = await admin.rpc('due_unlinked_uploads', {});
+    expect(swept.error).toBeNull();
+    const queued = (await sql(`select payload from public.jobs where kind = 'storage.delete' and status = 'queued'`)).flatMap(
+      (j: any) => j.payload.paths as string[],
+    );
+    expect(queued).toEqual(expect.arrayContaining([strayedSelfie, strayedCover]));
+    for (const kept of [linked, recent, avatar]) expect(queued, kept).not.toContain(kept);
+
+    // a second run does not queue the same files again
+    await admin.rpc('due_unlinked_uploads', {});
+    const again = (await sql(`select payload from public.jobs where kind = 'storage.delete' and status = 'queued'`)).flatMap(
+      (j: any) => j.payload.paths as string[],
+    );
+    expect(again.filter((p) => p === strayedSelfie)).toHaveLength(1);
+    const { error } = await b.client.rpc('due_unlinked_uploads', {});
+    expect(error).not.toBeNull();
+  });
+});
+
 describe('plans', () => {
   it('create: the maker is Going, the group is told, and a reminder waits for the day before', async () => {
     const starts = days(5);

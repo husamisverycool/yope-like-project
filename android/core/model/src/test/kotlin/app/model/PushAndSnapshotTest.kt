@@ -93,6 +93,11 @@ class PushMessageTest {
         assertEquals(DeepLink.Tribute("g", "t"), alert("type" to "tribute", "tribute_id" to "t").link)
         assertEquals(DeepLink.YearStory("g", 2026), alert("type" to "year_story", "year" to "2026").link)
         assertEquals(PushMessage.AlertKind.TributeForYou, alert("type" to "tribute").kind)
+        // the overnight reveal: new_post with revealed_at, opening its first photo
+        val reveal = alert("type" to "new_post", "group_id" to "g", "post_id" to "p", "revealed_at" to "2026-10-17T07:00:00Z")
+        assertEquals(PushMessage.AlertKind.PhotosDeveloped, reveal.kind)
+        assertEquals(DeepLink.Post("g", "p"), reveal.link)
+        assertEquals(PushMessage.AlertKind.NewPost, alert("type" to "new_post", "revealed_at" to "not a time").kind)
     }
 
     @Test fun explicitLinkWinsAndUnknownTypesAreIgnored() {

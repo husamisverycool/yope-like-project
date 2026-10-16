@@ -46,8 +46,9 @@ class PlansModelTest {
 
     @Test fun existingAlertKindsKeepTheirOrdinals() {
         // The ordinal is part of the notification id: new kinds go last.
-        assertEquals(PushMessage.AlertKind.entries.size - 1, PushMessage.AlertKind.Plan.ordinal)
         assertEquals(6, PushMessage.AlertKind.YearStory.ordinal)
+        assertEquals(7, PushMessage.AlertKind.Plan.ordinal)
+        assertEquals(PushMessage.AlertKind.entries.size - 1, PushMessage.AlertKind.PhotosDeveloped.ordinal)
     }
 
     private fun plan(id: String, group: String, day: String) = CountdownPlan(id, group, "Group $group", "Plan $id", day)

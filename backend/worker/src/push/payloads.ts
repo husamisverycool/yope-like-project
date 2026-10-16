@@ -22,6 +22,7 @@ export const K = {
   tributeId: "tribute_id",
   year: "year",
   planId: "plan_id",
+  revealedAt: "revealed_at",
   kind: "kind",
   renditionUrl: "rendition_url",
   senderName: "sender_name",
@@ -83,7 +84,7 @@ export interface WidgetFields {
 export interface AlertSpec {
   type: AlertType;
   groupId: string;
-  ids: Partial<Record<"post_id" | "message_id" | "recap_id" | "request_id" | "tribute_id" | "invitation_id" | "year" | "plan_id", string>>;
+  ids: Partial<Record<"post_id" | "message_id" | "recap_id" | "request_id" | "tribute_id" | "invitation_id" | "year" | "plan_id" | "revealed_at", string>>;
   title: string;
   body: string;
   /** apns-collapse-id / Android notification tag: a re-sent alert replaces the shown one */

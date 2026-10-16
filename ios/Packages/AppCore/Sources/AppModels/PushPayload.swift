@@ -18,6 +18,7 @@ public enum PushKey {
     public static let tributeID = "tribute_id"
     public static let year = "year"
     public static let planID = "plan_id"
+    public static let revealedAt = "revealed_at"
     public static let kind = "kind"
     public static let renditionURL = "rendition_url"
     public static let senderName = "sender_name"

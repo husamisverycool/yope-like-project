@@ -263,6 +263,7 @@ describe('group isolation: RPCs', () => {
         'due_tributes',
         'due_year_stories',
         'due_developed_posts',
+        'due_unlinked_uploads',
       ]),
     );
     for (const fn of names) {
