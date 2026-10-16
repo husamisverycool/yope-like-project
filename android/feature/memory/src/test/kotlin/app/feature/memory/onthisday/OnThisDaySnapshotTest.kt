@@ -100,6 +100,8 @@ class OnThisDaySnapshotTest : SnapshotTest() {
         }
         compose.mainClock.advanceTimeBy(settleMillis)
         compose.onNodeWithTag(OnThisDayTags.MODE).performClick()
+        // The title has no ripple, so nothing else asks for a frame: let the state change reach the recomposer first.
+        compose.waitForIdle()
         compose.mainClock.advanceTimeBy(settleMillis)
         compose.onNodeWithText("On this day…").assertExists()
         compose.onNodeWithText("Shuffle").assertExists()
@@ -112,6 +114,8 @@ class OnThisDaySnapshotTest : SnapshotTest() {
         assertEquals(1, shuffled)
         compose.onNodeWithText("Shuffle").assertDoesNotExist()
         compose.onNodeWithTag(OnThisDayTags.MODE).performClick()
+        // The title has no ripple, so nothing else asks for a frame: let the state change reach the recomposer first.
+        compose.waitForIdle()
         compose.mainClock.advanceTimeBy(settleMillis)
         compose.onNodeWithText("On this day…").performClick()
         compose.mainClock.advanceTimeBy(settleMillis)
@@ -194,6 +198,7 @@ class OnThisDayFlowTest : SnapshotTest() {
         compose.onNodeWithText("Memories · ", substring = true).assertExists()
         // The title's mode menu: "On this day…" goes back to the day's memories, at the newest one.
         compose.onNodeWithTag(OnThisDayTags.MODE).performClick()
+        compose.waitForIdle()
         compose.mainClock.advanceTimeBy(STEP_SETTLE)
         compose.onNodeWithText("On this day…").performClick()
         compose.mainClock.advanceTimeBy(STEP_SETTLE)
