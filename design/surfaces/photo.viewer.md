@@ -45,16 +45,15 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
    - **Footer** inside `size.global.screenMargin`: leading text block — first baseline `photo.viewer.dimension.footerFirstBaseline`
      below the photo, lines `photo.viewer.dimension.footerLinePitch` apart:
      1. the caption, if any (text role `listTitle`, `color.global.textOnMedia`, wraps) — Retro's place line;
-     2. the date `photo.viewer.layout.dateFormat` ("Wednesday, July 5"; with self-tags `photo.viewer.footer.dateWith`
-        "… · with Maya, Tom"), text role `listSubtitle`, `color.global.textSecondary`;
-     3. the voice note, if any (`photo.viewer.layout.voiceNote`: voice capsule on `color.global.controlOnDeep`);
-     4. the **"I'm in this"** toggle (`tagging.md`, memory group: C-06 outline capsule → primary fill when on;
-        `tagging.toggle`) — its top `photo.viewer.dimension.footerLinePitch` below the previous line's baseline.
+     2. the date `photo.viewer.layout.dateFormat` ("Wednesday, July 5"), text role `listSubtitle`, `color.global.textSecondary`,
+        followed by " · " and the **tag run** owned by `tagging.md` (memory group, RM-9): `tagging.toggle` ("I'm in this",
+        `color.global.textOnMedia`) when nobody is tagged, else `tagging.with` ("with {names}"); the run is one button;
+     3. the voice note, if any (`photo.viewer.layout.voiceNote`: voice capsule on `color.global.controlOnDeep`).
      Trailing, centred on the first line: the reaction chip (`chat.reactions.layout.chip`, on `color.global.controlOnDeep`;
      hidden when empty) and the add-reaction glyph (`chat.reactions.icon.add`, `color.global.textSecondary`) at the margin
      — Retro's reaction slot (its heart like is do-not-copy).
    - **Divider** (C-32, `color.global.separator` → #4D4D4D in the forced dark appearance, `size.global.hairline`, inside the
-     margins) `photo.viewer.dimension.footerToDivider` below the footer's last baseline (or the toggle's bottom).
+     margins) `photo.viewer.dimension.footerToDivider` below the footer's last baseline (or the voice capsule's bottom).
    - **Comments** (`photo.viewer.layout.comments`): the group-chat replies to this photo, oldest first, as `chat.thread`
      message rows (C-16) in `color.global.textOnMedia`; first row `photo.viewer.dimension.dividerToComments` below the divider,
      rows `size.global.listGap` apart. None → the divider and the list are left out.
@@ -88,9 +87,9 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
 | position pill | C-22; `size.global.positionPillHeight`, `color.global.controlOnDeep`, text role `badge` | `photo.viewer.position` | — |
 | close | C-11 on media; `photo.viewer.dimension.closeCircle`, `.closeGlyph`, `color.global.controlOnDeep`, `icon.global.close`; hit `size.global.minTouchTarget.*` | `photo.viewer.a11y.close` | closes (Android back too) |
 | photo | `photo.viewer.layout.photo`, `photo.viewer.layout.advance`, `photo.viewer.layout.backZone` (BLOCKED) | `photo.viewer.a11y.photo` / `.photoMine` (+ `chat.thread.a11y.caption`); hints `photo.viewer.a11y.advanceHint`, `.backHint`; actions `.a11y.next`, `.a11y.previous` | tap advances; long press → menu with quick reactions |
-| caption / date lines | text roles `listTitle` / `listSubtitle`; `photo.viewer.dimension.footerFirstBaseline`, `.footerLinePitch`; `photo.viewer.layout.dateFormat` | caption, date (data); `photo.viewer.footer.dateWith` | — |
+| caption / date lines | text roles `listTitle` / `listSubtitle`; `photo.viewer.dimension.footerFirstBaseline`, `.footerLinePitch`; `photo.viewer.layout.dateFormat` | caption, date (data) | — |
 | voice note | `photo.viewer.layout.voiceNote` (`chat.voice.layout.capsule`) | `chat.voice.a11y.*` | plays the post's voice note |
-| "I'm in this" | C-06 outline ↔ primary (`tagging.md`) | `tagging.toggle`, `tagging.coach` | `tag_self` / `untag_self` |
+| tag run ("I'm in this" / "with {names}") | footer line 2 after " · " (`tagging.md`: text role `listSubtitle`) | `tagging.toggle`, `tagging.with` | untagged: `tag_self`; tagged: opens the "In this photo" sheet (`tagging.md`) |
 | reaction chip + add | `chat.reactions.layout.chip`, `chat.reactions.icon.add` | `chat.reactions.a11y.cluster`, `.a11y.add` | Reactions sheet / picker |
 | divider | C-32 | — | decorative |
 | comments | C-16 rows; `photo.viewer.layout.comments`, `.dimension.dividerToComments`, `chat.thread.dimension.*` | `chat.thread.a11y.message` / `.messageMine` | long press → the thread's message menu |
@@ -105,7 +104,7 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
 | gone (`post_not_found`, or `post_deleted` while open) | C-27 block centred in the scroll area, no glyph: title + detail; close stays | `photo.viewer.gone.title`, `.gone.detail`; text roles `emptyTitle` / `emptyDetail` | C-27 |
 | offline | cached image; save / delete / react / reply fail with their strings | `photo.viewer.error.save`, `.error.delete`, `chat.reactions.error`, `chat.thread.sendFailed`; `haptic.global.error` | — |
 | permission-denied (save) | C-29 native alert (presented in the system appearance): title / detail / "Allow Photo Access" (opens Settings) / Cancel | `photo.viewer.permission.title`, `.permission.detail`, `.permission.button`, `photo.viewer.delete.cancel`; purpose string `system.permissions.photosAdd.purpose` | `retro.voice.permission` |
-| tag error / gone / offline | per `tagging.md` | `tagging.error`, `tagging.notFound`, `tagging.offline` | memory group |
+| tag error / gone / offline | per `tagging.md` | `tagging.error`, `tagging.removeError`, `tagging.notFound`, `tagging.offline` | memory group |
 | empty | not applicable (the viewer opens on a photo) | — | — |
 
 ## Motion
@@ -135,7 +134,7 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
   (+ caption) with hints `photo.viewer.a11y.advanceHint` / `.backHint` and custom actions `photo.viewer.a11y.next` /
   `.previous` (tap zones are not required); the menu items are also custom actions on the photo. The header (name + week)
   is one element; the pill is read as "3 of 4" (position only).
-- Focus order: close → header → pill → photo → caption → date → voice note → "I'm in this" → reactions → add → comments →
+- Focus order: close → header → pill → photo → caption → date → tag run → voice note → reactions → add → comments →
   field → camera → "•••".
 - Dynamic Type: `listTitle` / `listSubtitle` / `body` → subheadline, `badge` → caption2 (`layout.global.textStyleMap`); the
   footer grows; the pill and close keep their size (their labels carry the information).

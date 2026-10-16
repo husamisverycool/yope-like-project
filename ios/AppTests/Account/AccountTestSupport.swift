@@ -122,17 +122,19 @@ enum AccountSamplePhotos {
     static let groups = ["Lima family": "grandma-hug-4x3", "Sunday dinners": "dinner-long-table-3x4"]
 
     /// Avatar and cover frames (points): the C-23 avatar sizes (`size.global.avatarSmall`, `.avatarList`, `.avatarComment`,
-    /// `.avatarPicker`, `.avatarHeader`, `.avatarProfile`, `.avatarGrid` — the tab bar no longer shows an avatar) and
-    /// `groups.screen.size.profileAvatar`.
+    /// `.avatarPicker`, `.avatarHeader`, `.avatarProfile`, `.avatarGrid` — the tab bar no longer shows an avatar).
     static var avatarFrames: [ClosedRange<CGFloat>] {
         [Tokens.Sizes.globalAvatarSmall, Tokens.Sizes.globalAvatarList, Tokens.Sizes.globalAvatarComment,
          Tokens.Sizes.globalAvatarPicker, Tokens.Sizes.globalAvatarHeader, Tokens.Sizes.globalAvatarProfile,
-         Tokens.Sizes.globalAvatarGrid, Tokens.Sizes.groupsScreenSizeProfileAvatar].map { $0...$0 }
+         Tokens.Sizes.globalAvatarGrid].map { $0...$0 }
     }
 
-    /// The groups.create cover (`groups.create.size.cover.width`, narrower screens keep the aspect).
+    /// Group covers: the C-15 row thumbnail (longest side `size.global.rowThumbHeight`) and the C-18 card
+    /// (`size.global.friendCardHeight`), besides the avatar sizes (`groups.create.size.cover.width` was removed in the
+    /// redesign).
     static var coverFrames: [ClosedRange<CGFloat>] {
-        avatarFrames + [(Tokens.Sizes.groupsCreateSizeCoverWidth * 0.9)...Tokens.Sizes.groupsCreateSizeCoverWidth]
+        avatarFrames + [Tokens.Sizes.globalRowThumbHeight...Tokens.Sizes.globalRowThumbHeight,
+                        Tokens.Sizes.globalFriendCardHeight...Tokens.Sizes.globalFriendCardHeight]
     }
 
     /// Longest side of the frames a post shows in: the groups.screen card and the groups.list cover (screen wide),

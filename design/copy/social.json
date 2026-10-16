@@ -630,16 +630,6 @@
       "level": "SOURCED",
       "notes": "Replies post to the group chat with reply_to_post_id and list under the photo."
     },
-    "photo.viewer.footer.dateWith": {
-      "text": "{date} · with {names}",
-      "origin": "new",
-      "source_app": "Retro",
-      "surface": "photo.viewer",
-      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_footer_tagged_users_divider) (' · with ')",
-      "pattern": "retro.voice.formats ('Jul 3 - 9', 'January 25, 2024', 'elton 2h', 'Muted · Seen', '1:00')",
-      "level": "SOURCED",
-      "notes": "Date line when people tagged themselves ('I'm in this')."
-    },
     "photo.viewer.menu.save": {
       "text": "Save to Camera Roll",
       "origin": "verbatim",

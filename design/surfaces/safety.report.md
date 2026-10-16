@@ -34,7 +34,7 @@ Copy: `safety.report.*`.
 
 | element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| menu item | C-29 menu (destructive role not used for Report; Block items are destructive) | `safety.report.menuItem.*` | opens the reasons sheet |
+| menu item | C-29 menu, destructive role (red, C-10: Retro draws report actions in its destructive red, APK `vv3.g` call sites include report — RP §3.3) | `safety.report.menuItem.*` | opens the reasons sheet |
 | reasons sheet | C-29 action sheet / M3 bottom sheet; `safety.report.layout.flow` | `safety.report.title.post` / `.message` / `.user` / `.group`; `safety.report.reason.*`; `safety.report.cancel` | one tap files the report |
 | next steps | C-29 action sheet | `safety.report.nextSteps.title`, `.nextSteps.leave`, `.nextSteps.block` | as Structure 4 |
 | confirmation | C-26 | `safety.report.sent.title`; `safety.report.left` | — |
@@ -70,7 +70,7 @@ rows 12 (19.60:1 / 15.13:1).
 ## Platform notes
 
 - iOS: `confirmationDialog` for both sheets. Android: `ModalBottomSheet` (`color.global.system.surfaceContainerLow`,
-  top corners `radius.global.sheet.android`) — M3's own action-sheet form.
+  top corners `radius.global.sheet` android 28) — M3's own action-sheet form.
 
 ## Do-not-copy
 

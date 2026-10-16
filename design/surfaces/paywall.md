@@ -1,151 +1,149 @@
-# `paywall` — premium screen and perks
+# `paywall` — Premium screen
 
-Reference: **Locket (Gold)** for layout, palette and voice (`docs/SURFACES.md`); store-required elements from
-Apple / Google (`docs/PLATFORM_CONSTRAINTS.md` §8). Research: `design/research/locket.md` §10–11;
-`design/research/platform.md` §paywall. Directive Part 6 perks only. API: `docs/API.md` §5.22 (entitlements),
-§6.4 `group_history_weeks` (free window), §12 item 4; `docs/SPEC_FLAGS.md` T1. Tokens: `paywall.*`. Copy: `paywall.*`.
+Visual reference: **Retro Premium paywall** (inventory #27, PAY — RAW iOS, locked-feature variant "Share Video"): full-screen
+blurred, colour-rich backdrop made from the feature's media; product title at the top with a glass close circle; the
+benefit's media card; serif headline + description; a pager of translucent-white plan cards (36 corners, 27 padding,
+black 60 pt capsule 16 in, next card peeking after 8); footer "Cancel anytime. No questions asked." Mechanics: StoreKit /
+Play Billing purchase sheets (PLATFORM). The purple "FREE" pill (`color.global.premium`) is kept as is — whether the
+premium accent is used is the owner's decision. Tokens: `paywall.*` + `global.*`. Copy: `paywall.*`.
 
-**At most one premium prompt per session, never blocking the core** (`paywall.layout.promptRule`,
-`SessionPromptGate`). Only this app's perks are listed; Locket's ads removal, "who viewed", streak restoration, badges,
-unlimited friends, app icons and camera themes are not.
+**At most one paywall per session, never blocking the core** (`paywall.layout.promptRule`, `SessionPromptGate`). Only this
+app's perks are listed (directive Part 6): video, unlimited history (only while `free_history_days` is set), widget
+styles, full-quality downloads.
 
 ## References
 
 | id | file | used for |
 |---|---|---|
-| MB | `references/auto/locket/mobbin/locket-mobbin-paywall-screen.png` (2025-10, @3x) | all paywall values: gradient, icon tile, title, subtitle, perk cards, CTA, "No thanks!" |
-| MB2 | `references/auto/locket/mobbin/locket-mobbin-gold-flow-2.png` | lower perks and their emoji, CTA pinned at the bottom while the cards scroll |
-| MB3–6 | `references/auto/locket/mobbin/locket-mobbin-gold-flow-3.png` … `-6.png` | plan sheet, system success alert, "Welcome to Gold!" sheet |
-| LZP | `references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-plan-picker.png` (2026-08, @3x) | plan sheet values (measured in this pass) |
-| LZ21 | `references/auto/locket/lazyweb/locket-lazyweb-20260803-autocap-21.png` | entry row in the profile; "Gold" badge on locked rows |
-| LZ25 | `references/auto/locket/lazyweb/locket-lazyweb-20260803-autocap-25.png` | system purchase sheet text (renewal sentence) |
+| PAY | `references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png` (RAW iOS, Display P3 → sRGB, 3.000 px/pt) | every value below: media card 248 wide r 27, title 17 semibold, headline cap 22.3 (displayMedium), description 17, plan card x 60–1144 y 1386–2456, card text #090A0A / #757A7D / #A5ABAF, title 24 bold, price 22 heavy, body 15, steps 17, footnote 15, capsule 60, "FREE" pill, footer |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | `retro_membership_paywall_*` benefits, plan names / subtitles / bullets, CTAs, "Cancel anytime", "Restore purchase", welcome |
+| APK-W | `references/auto/retro/apk/retro_membership_paywall_graphic.webp` | benefit graphics exist (Retro assets, not copied) |
 
-## Structure — paywall (full screen)
+## Structure (full-screen modal; media surface: text white in both appearances)
 
-Background: vertical gradient `paywall.color.backgroundTop` (0.078) → `.backgroundUpper` (0.274) → `.backgroundLower`
-(0.587) → `.backgroundBottom` (0.861 and below).
-
-Scrolling content (centred, side margins `paywall.size.perkMarginH`):
-1. Icon tile `paywall.size.iconTile` (art `paywall.layout.iconTileArt`, BLOCKED → tile omitted until the app icon exists).
-2. Title `paywall.title`.
-3. Subtitle `paywall.subtitle` (2 lines).
-4. Perk stack, cards `paywall.size.perkHeight` tall, gap `paywall.size.perkGap`, outer corners `paywall.radius.perkOuter`
-   (top of the first, bottom of the last), inner corners `paywall.radius.perkInner`; order: video, widgets, history
-   (only while `free_history_days` is set), export. Each card: emoji (`paywall.size.perkIcon`, centred 39 pt from the
-   leading edge) · title + subtitle at `paywall.size.perkTextInset`.
-5. Legal block (under the cards; scrolls): `paywall.legal.renews`, the platform billing line
-   (`paywall.legal.billing.ios` / `.android`, with the selected plan's price and period once known),
-   `paywall.legal.optional`, then a row of three text buttons `paywall.restore` · `paywall.terms` · `paywall.privacy`.
-
-Pinned at the bottom (over the scroll, as MB2):
-6. CTA capsule `paywall.cta` + `paywall.icon.ctaUnlock`, full width minus `paywall.size.perkMarginH`.
-7. `paywall.dismiss` text button under it.
-
-## Structure — plan sheet (`paywall.layout.planSheet`, opened by the CTA)
-
-Sheet fill gradient `paywall.color.planSheetTop` → `.planSheetBottom`; system grabber.
-1. Title `paywall.plans.title` (2 lines).
-2. Plan cards, side margin `paywall.size.planMarginH`, 16 pt apart (LZP gap 1951→1999 px = 16 pt): yearly card
-   (name `paywall.plans.yearly.title`, detail `paywall.plans.yearly.detail`, trailing price `paywall.plans.yearly.price`;
-   height `paywall.size.planSelectedHeight`) and monthly card (`paywall.plans.monthly.title`, price
-   `paywall.plans.monthly.price`; height `paywall.size.planHeight`). Selected card: fill `paywall.color.planSelected`,
-   border `paywall.size.planBorder` in `paywall.color.planBorder`; unselected: fill `paywall.color.plan`. Default
-   selection: yearly (Locket's default). Corners: not measured (see Gaps) → `radius.global.card` (approximation).
-3. Subscribe capsule `paywall.plans.subscribe`, height `paywall.size.subscribeHeight`, fill `paywall.color.subscribe`,
-   label `paywall.fontSize.subscribeLabel` in `paywall.color.subscribeLabel`, margins `paywall.size.planMarginH`.
-4. Legal billing line for the selected plan (`paywall.legal.billing.*`) under the button (caption, `paywall.color.dismiss`).
-
-After purchase: iOS shows the system purchase sheet and its own confirmation (PLATFORM); then the "welcome" sheet:
-`paywall.welcome.title`, `paywall.welcome.body`, button `paywall.welcome.done` (Locket's heart rain is not copied).
+1. **Backdrop** (C-34): the current benefit's media, blurred to a colour field over `color.global.backgroundDeep`
+   (`layout.global.materials.backdrop`); no media → `color.global.backgroundDeep` alone.
+2. **Header row** at the top safe area: title `paywall.title` (text role `sheetTitle`, `color.global.textOnMedia`), centred;
+   close circle C-11 glass small (`size.global.circleButtonSmall` 32, `color.global.glass`, `icon.global.close`
+   `color.global.textOnMedia`) at the trailing margin, centred on the title.
+3. **Benefit pager** (one page per perk; opened from a locked feature, that perk's page first), centred in the space
+   between the header and the plan cards:
+   - media card `paywall.size.mediaCardWidth` (248), `paywall.radius.mediaCard` (27), aspect-fill: the newest photo from
+     the person's groups (no photo → no card);
+   - `size.global.titleToContent` below: headline = `paywall.perk.<perk>.title` (`font.global.display`,
+     `displayMedium`, `color.global.textOnMedia`, centred);
+   - directly under it: `paywall.perk.<perk>.subtitle` (text role `textButton` 17 regular, `color.global.textOnMedia`,
+     centred, ≤ 2 lines);
+   - page dots (C-31 on media: active `color.global.textOnMedia`, inactive `color.global.pageDotInactive` dark value)
+     under the description when there is more than one perk.
+4. **Plan cards** (`paywall.layout.planCard`), a horizontal pager: Annual (default, first) and Monthly, width = screen − 2 ×
+   `size.global.buttonMarginH`, the next card peeking after `size.global.planCardGap`. Card: fill
+   `color.global.surfaceLight`, `radius.global.cardLarge`, padding `size.global.planCardPadding`;
+   - title `paywall.plans.<plan>.title` (`paywall.fontSize.planTitle`, `paywall.fontWeight.planTitle`,
+     `paywall.color.planText`) + trailing premium pill C-25 `paywall.plans.trial.badge` only on a plan with a free trial;
+   - subtitle `paywall.plans.<plan>.subtitle` (`paywall.fontSize.planSubtitle`, `paywall.color.planTextSecondary`);
+   - bullets `paywall.plans.<plan>.bullet1` / `.bullet2` (`paywall.fontSize.planBullet`, `paywall.color.planText`), one
+     per line, no marker (Retro's numbered circles mark referral steps, which these lines are not);
+   - price `paywall.plans.<plan>.price` (`paywall.fontSize.planPrice`, `paywall.fontWeight.planPrice`, `paywall.color.planText`);
+   - footnote `paywall.plans.<plan>.detail` (trial: `.trialDetail`) (`paywall.fontSize.planFootnote`, `paywall.color.planTextTertiary`);
+   - capsule C-05 with the light values pinned (#000000 fill, #FFFFFF label; `paywall.layout.planCard.padding`):
+     `paywall.plans.subscribe` (trial: `paywall.plans.trial.cta`).
+5. **Footer** under the cards, centred, text role `caption`, `color.global.textOnMedia`: `paywall.footer`; then the billing
+   line of the visible plan (`paywall.legal.billing.ios` / `.android`); Android: `paywall.legal.optional`; then a row of
+   C-08 text buttons `paywall.restore` · `paywall.terms` · `paywall.privacy` (same style, ≥ 44 / 48 hit areas).
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| title | `paywall.fontSize.title` bold, `paywall.color.title` | `paywall.title` | — |
-| subtitle | `paywall.fontSize.subtitle`, `paywall.lineHeight.subtitle`, `paywall.color.subtitle` | `paywall.subtitle` | — |
-| perk card | `paywall.color.perk`, `.size.perkHeight`, `.radius.perkOuter`/`.perkInner`, `.size.perkIcon`, `.size.perkTextInset`; title `paywall.fontSize.perkTitle` `paywall.fontWeight.perkTitle` `paywall.color.perkTitle`; subtitle `paywall.fontSize.perkSubtitle` `paywall.color.perkSubtitle` | `paywall.perk.video.*`, `paywall.perk.widgets.*`, `paywall.perk.history.*` (emoji BLOCKED), `paywall.perk.export.*` | static |
-| CTA | `paywall.size.ctaHeight`, `paywall.color.cta`, `radius.global.capsule`, label `paywall.fontSize.ctaLabel` bold `paywall.color.ctaLabel`, `paywall.icon.ctaUnlock` | `paywall.cta` | opens the plan sheet |
-| No thanks! | `paywall.fontSize.dismiss`, `paywall.color.dismiss` | `paywall.dismiss` | closes the paywall |
-| legal block | `fontSize.global.caption`, `lineHeight.global.caption`, `paywall.color.dismiss`; link style not observed in Locket → same colour at `paywall.fontWeight.perkTitle` (approximation) | `paywall.legal.*`, `paywall.restore`, `paywall.terms`, `paywall.privacy` | restore → `Purchases.restorePurchases()`; links open `config/app.json` legal URLs |
-| plan cards | `paywall.size.plan*`, `paywall.color.plan*`, names `paywall.fontSize.planName` (bold, `paywall.color.title`), price `paywall.fontSize.planPrice` (bold, `paywall.color.title`), detail `paywall.fontSize.planDetail` `paywall.color.planDetail` | plan strings | tap selects (`haptic.global.select`) |
-| Subscribe | `paywall.size.subscribeHeight`, `paywall.color.subscribe`, `paywall.fontSize.subscribeLabel`, `paywall.color.subscribeLabel` | `paywall.plans.subscribe` | `Purchases.purchase(package:)` (RevenueCat, entitlement `premium`) |
-| locked badge (on other surfaces) | capsule, `paywall.color.cta` fill, `paywall.color.ctaLabel` text, `fontSize.global.caption` (approximation; Locket's badge size not measured) | `paywall.locked.badge` | marks: video recording (`camera.capture`), extra widget styles (`widget.*` configuration), weeks beyond the free window (`week.history`), full-quality export (`albums.view`) |
+| close | C-11 glass small | `paywall.close.accessibilityLabel` | dismiss (always visible) |
+| benefit page | `paywall.size.mediaCardWidth`, `paywall.radius.mediaCard`, `displayMedium`, `textButton`, C-31 | `paywall.perk.video.*`, `.history.*` (only when `free_history_days` is set), `.widgets.*`, `.export.*` | swipe between perks; the backdrop follows the page |
+| plan card | `paywall.layout.planCard` + `paywall.fontSize.*` / `paywall.color.*` | `paywall.plans.yearly.*`, `paywall.plans.monthly.*` | swipe between plans |
+| Continue / Try free | C-05 (light values) | `paywall.plans.subscribe` / `paywall.plans.trial.cta` ({trial_duration} from the store) | `Purchases.purchase(package:)` (RevenueCat, entitlement `premium`) → system purchase sheet |
+| premium pill | C-25 (`layout.global.premiumGradient`, `color.global.premium`, `pillSmall`, `color.global.onBadge`) | `paywall.plans.trial.badge` | static |
+| footer | `caption`, `color.global.textOnMedia`, C-08 | `paywall.footer`, `paywall.legal.*`, `paywall.restore`, `paywall.terms`, `paywall.privacy` | restore → `Purchases.restorePurchases()`; links → `config/app.json` legal URLs |
+| locked pill (other surfaces) | C-25 premium pill | `paywall.locked.badge` | marks: video recording (`camera.capture`), extra widget styles (widget configuration), weeks beyond the free window (`week.history`), full-quality downloads (`albums.view`) |
 
-Prices: always the store's localized strings at runtime (`paywall.layout.requiredDisclosures`); `{monthly_equivalent}`
-is the yearly price ÷ 12 in the product's currency. `config/app.json` prices are defaults for the store setup only.
+Prices: the store's localized strings at runtime (`paywall.layout.requiredDisclosures`); the billed amount is the
+largest price on each card.
 
 ## States
 
 | state | design | copy |
 |---|---|---|
-| loading products | perks shown; plan prices and billing line replaced by a native progress indicator; CTA enabled (sheet shows progress) | — |
-| products unavailable / error | legal block shows the message + `paywall.retry`; Subscribe disabled | `paywall.error.products` |
-| offline | same place | `paywall.offline`, `paywall.retry` |
-| purchasing | Subscribe shows native progress (Locket MB4: spinner in the button) | — |
-| purchase failed | message under Subscribe | `paywall.error.purchase` |
-| user cancelled | sheet stays, no message | — |
-| pending (Ask to Buy / parental approval) | message under Subscribe; the sheet can be closed | `paywall.pending` |
-| success | welcome sheet; entitlement refreshed | `paywall.welcome.*` |
-| restored / nothing to restore | message in the legal block | `paywall.restore.done` / `paywall.restore.none` |
-| already premium | the paywall is not shown; settings shows Manage Subscription | — |
+| loading products | plan cards drawn; price and footnote replaced by the platform activity indicator (C-28, `paywall.color.planTextTertiary`); capsule disabled (C-05 disabled light values: `color.global.controlRaised` light #CCCCCC fill) | — |
+| products unavailable / error | the card pager is replaced by one line + C-09 light pill on media | `paywall.error.products` + `paywall.retry` |
+| offline | same place | `paywall.offline` + `paywall.retry` |
+| purchasing | capsule busy (C-05) | — |
+| purchase failed | message-only alert | `paywall.error.purchase` + `auth.phone.error.dismiss` |
+| cancelled by the person | nothing changes | — |
+| pending (Ask to Buy) | message-only alert; the paywall can be closed | `paywall.pending` |
+| success / restored | benefit pager and cards cross-fade to a welcome block on the same backdrop: headline `paywall.welcome.title` (`displayMedium`, white), `paywall.welcome.body` (`textButton`, white), C-09 light capsule `paywall.welcome.done` | `paywall.welcome.*` (restore: `paywall.restore.done` as the headline) |
+| nothing to restore | message-only alert | `paywall.restore.none` |
+| already premium | the paywall is not shown; Settings shows "Your Subscription" | — |
 | empty / permission-denied | not applicable | — |
 
 ## Motion
 
-Paywall: native modal presentation (`.fullScreenCover` / full-screen destination); plan and welcome sheets native.
-No celebration animation (Locket's 💛 rain uses Locket's heart art). Reduce Motion: platform.
+- Presentation: native full-screen modal (`.fullScreenCover` / full-screen destination; system motion).
+- Benefit and plan pagers: native paging; the backdrop cross-fades `duration.global.fade` (150 ms) per page.
+- Success: cross-fade `duration.global.pageTransition` (500 ms, Retro's onboarding / reveal duration). Retro's recap
+  fan-out and heart-pulse animations are tied to its own graphics and are not used.
+- Reduce Motion: cross-fades only (`layout.global.reduceMotion`).
 
 ## Haptics
 
-Plan selected → `haptic.global.select`; purchase or restore succeeded → `haptic.global.success`; failed → `haptic.global.error`.
+Presses → `haptic.global.tap` (Android). Page changes → `haptic.global.select` (a step on a pager). Purchase / restore
+succeeded → `haptic.global.success`; failed → `haptic.global.error`.
 
 ## Accessibility
 
-- Emoji hidden (decorative); each perk card one element (title, subtitle). Plan cards: buttons with the selected trait
-  (`paywall.plans.selected.accessibilityLabel` as value on Android). Prices read as the store string.
-- Dynamic Type (F-13): title 30 → `title1`; subtitle 17 → `body`; perk title 17 semibold → `headline`; perk subtitle 15 →
-  `subheadline`; CTA 18 bold → `headline`; dismiss 16 → `callout`; plan sheet title 24.5 → `title2`; plan name 18 → `headline`;
-  price 17 → `headline`; detail 15 → `subheadline`; Subscribe 19 → `title3`; legal → `caption`. Cards grow with text.
-- Focus order: tile → title → subtitle → perks → legal block → CTA → No thanks!; sheet: title → plans → Subscribe → legal.
-- Contrast (node tools/contrast.mjs): title 16.72:1, subtitle 8.55:1, perk title 15.16:1, perk subtitle 5.00:1, CTA label
-  9.45:1, CTA vs page 10.50:1, dismiss / legal 6.24:1, sheet title 12.39:1, plan detail 7.10:1, plan text 12.19:1 /
-  10.12:1, selected border 8.37:1, Subscribe label 8.64:1, Subscribe vs sheet 7.96:1, legal on sheet 6.06:1 — pass;
-  perk card vs page 1.17:1 and unselected plan vs sheet 1.15:1 **FAIL** (non-text; text identifies each).
+- Header title is a header; close labelled. Each benefit page reads headline then description; the pager announces
+  "page N of M". Each plan card reads title, subtitle, bullets, price, footnote, then its button; prices read as the
+  store's strings.
+- Dynamic Type: title `headline`; headline `largeTitle`; description `body`; plan title `title2`; price `title2`;
+  subtitle / footnote `subheadline`; bullets `body`; footer `subheadline`. Cards grow in height; the pager scrolls.
+- Focus order: close → title → benefit page → plan cards (content, button) → footer text → Restore → Terms → Privacy.
+- Contrast:
+
+| pair | both appearances |
+|---|---|
+| plan title / bullets / price `#090A0A` on white card | 19.82:1 pass |
+| subtitle `#757A7D` on white card | **4.34:1 FAIL** (15 pt) |
+| footnote `#A5ABAF` on white card | **2.32:1 FAIL** |
+| capsule label #FFFFFF on #000000 | 21:1 pass |
+| white text on the backdrop | photo-dependent (the backdrop is a blurred photo; Retro's own) |
+| glass close: white glyph on white 12 % over a mid-tone photo | 3.72:1 pass at #7D7263 (RWA sample) |
+
+  Failures are Retro's measured card colours (PAY): reported, not adjusted.
 
 ## Data & actions
 
 - RevenueCat (`config/app.json` `revenuecat`, entitlement `premium`, products `premium_monthly`, `premium_yearly`):
-  offerings → packages; purchase; restore. Server truth: `entitlements` (own rows; webhook `apply_revenuecat_event`).
+  offerings → packages; purchase; restore. Server truth: `entitlements` (docs/API.md §5.22).
 - `public_app_config.free_history_days` decides whether the history perk is listed.
-- In: `settings.root` premium row (always allowed, not counted); the first locked-feature tap of a session outside
-  capture/onboarding (`SessionPromptGate`). Never on launch, after posting, or on a timer. Out: back to the caller;
-  after purchase, the locked action continues.
+- Media: the newest post across the person's groups (cached).
+- In: `settings.root` Subscription row (always allowed); the first locked-feature tap of a session outside capture /
+  onboarding (`SessionPromptGate`). Out: back; after purchase, the locked action continues.
 
 ## Platform notes
 
-- iOS: StoreKit purchase sheet and success alert are system UI; `AppStore.showManageSubscriptions` for management.
-- Android: Play Billing sheet; settings link to the Play Subscription Center (`settings.account.layout.manageSubscription`);
-  the "No thanks!" dismiss is always visible (Play: clear dismiss).
-- Billing amount prominence (3.1.2): the yearly card shows `{yearly_price}/yr` as the big price and the monthly
-  equivalent only in the detail line (MERGE account A-2).
+- iOS: StoreKit purchase sheet and its confirmation are system UI; `AppStore.showManageSubscriptions` for management.
+- Android: Play Billing sheet; Play needs a clear dismiss (the close circle) and the "usable without a subscription" line.
 
 ## Do-not-copy
 
-Locket perks: Remove ads / "Never see an ad in History!", Locket views / "See who's opened your Lockets", streak
-restoration, Membership / Custom Gold badge, Unlimited friends + "Early access!", Custom app icon, Camera themes, Send
-longer captions, "Plus so much more..." chips; the gold heart icon art; the 💛 heart rain; "check back soon"; Locket's
-"$2.99/mo"-first yearly price.
+- Retro's referral plan card and steps ("Invite 5 friends…", "Refer N friends"), "Join thousands of subscribers" ratings,
+  "Popular" / "Flexible" badges, "Popular with serious memory-keepers" and "Easy to stop or pause" bullets, the
+  "No Weekly Post-to-See" and "Unlimited Keys" perks, the two-part "Retro Premium" wordmark, benefit graphics and the
+  heart-pulse animation.
 
 ## Gaps
 
 | item | status | smallest capture / owner input |
 |---|---|---|
-| icon tile art (`paywall.layout.iconTileArt`) | BLOCKED | the app icon |
-| history perk emoji (`paywall.perk.history.emoji`) | BLOCKED (perk hidden while history is unlimited) | owner picks one emoji, or no icon |
-| legal block look (Locket shows none) | approximation (Locket muted colour at the caption role) | a 20-s iPhone recording of Locket Gold scrolled to the bottom |
-| plan card corner radius, gap | radius not measured (`radius.global.card` approximation); gap 16 pt read from LZP | lossless crop of LZP corners (available: can be measured by the next pass) |
-| paywall prompt frequency in Locket | not observed (our rule: one per session) | same 20-s recording does not show it; none needed |
-| tenet check of "Members have so much more fun" | owner | — |
-| tier name "Premium" | generic noun replacing "Gold"; owner may name the tier | owner |
-| palette (Locket gold) vs app lime | MERGE account A-1 | owner |
+| plan card translucency | opaque white (alpha not derivable — C-34 Gap) | none from stills |
+| backdrop blur radius | not measurable (C-34 Gap) | none from stills |
+| purple premium accent | kept (`color.global.premium`); used only on the trial pill and locked pills | owner decision |
+| subscription-plan paywall (non-referral) as an image | PAY shows the referral card | one raw screenshot of Retro's paywall with Annual / Monthly cards |
+| tier name "Premium" | Retro's noun kept | owner may rename |

@@ -85,7 +85,7 @@ fun stripTileShape(index: Int, count: Int, radius: Dp = Tokens.Radii.globalCard)
     val inner = Tokens.Radii.globalPhoto
     val first = index == 0
     val last = index == count - 1
-    if (!first && !last && inner == radius) return RectangleShape
+    if (!first && !last) return if (inner.value == 0f) RectangleShape else RoundedCornerShape(inner)
     return RoundedCornerShape(
         topStart = if (first) radius else inner,
         bottomStart = if (first) radius else inner,

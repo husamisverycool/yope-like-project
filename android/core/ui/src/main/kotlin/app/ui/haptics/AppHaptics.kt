@@ -4,6 +4,7 @@ import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalView
 import app.designsystem.Haptics
 import app.designsystem.generated.Tokens
@@ -19,25 +20,19 @@ import app.designsystem.generated.Tokens
  * - [perform] — any other `Tokens.Haptics.global*` (`globalSuccess`, `globalSend`, `globalWarning`, `globalError`).
  */
 @Stable
-class AppHaptics internal constructor(private val view: View) {
+class AppHaptics internal constructor(private val view: View, private val sink: ((Int) -> Unit)? = null) {
     fun perform(token: Int) {
-        Haptics.perform(view, token)
+        if (sink != null) sink(Haptics.resolve(token, android.os.Build.VERSION.SDK_INT)) else Haptics.perform(view, token)
     }
 
     /** `haptic.global.tap` (Android value of the per-platform token). */
-    fun tap() {
-        Haptics.perform(view, TAP)
-    }
+    fun tap() = perform(TAP)
 
     /** `haptic.global.select`. */
-    fun tick() {
-        Haptics.perform(view, Tokens.Haptics.globalSelect)
-    }
+    fun tick() = perform(Tokens.Haptics.globalSelect)
 
     /** `haptic.global.longPressStart` (Android value): a long press that opens a context menu starts. */
-    fun longPress() {
-        Haptics.perform(view, LONG_PRESS)
-    }
+    fun longPress() = perform(LONG_PRESS)
 
     private companion object {
         val TAP: Int = Haptics.named(Tokens.Layouts.GlobalTap.android)
@@ -45,8 +40,15 @@ class AppHaptics internal constructor(private val view: View) {
     }
 }
 
+/**
+ * Receives the haptic constants instead of the view below this point (tests and previews; like
+ * `LocalReduceMotionOverride`). Null = play on the view.
+ */
+val LocalHapticsOverride = staticCompositionLocalOf<((Int) -> Unit)?> { null }
+
 @Composable
 fun rememberHaptics(): AppHaptics {
     val view = LocalView.current
-    return remember(view) { AppHaptics(view) }
+    val sink = LocalHapticsOverride.current
+    return remember(view, sink) { AppHaptics(view, sink) }
 }

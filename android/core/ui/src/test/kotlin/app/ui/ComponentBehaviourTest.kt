@@ -3,14 +3,13 @@ package app.ui
 import android.content.Context
 import android.content.res.Configuration
 import android.view.HapticFeedbackConstants
-import android.view.View
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -37,6 +36,7 @@ import app.ui.components.SegmentedControl
 import app.ui.components.TabBar
 import app.ui.components.TabBarItem
 import app.ui.components.ViewerPhoto
+import app.ui.haptics.LocalHapticsOverride
 import app.ui.text.TextRoles
 import app.ui.theme.AppTheme
 import org.junit.Assert.assertEquals
@@ -52,13 +52,8 @@ class ComponentBehaviourTest {
     @get:Rule val compose = createComposeRule()
     private val context get() = ApplicationProvider.getApplicationContext<Context>()
 
-    /** A view that records the haptic constants played on it (the person's haptics setting is not consulted here). */
-    private class RecordingView(context: Context, private val log: MutableList<String>) : View(context) {
-        override fun performHapticFeedback(feedbackConstant: Int): Boolean {
-            log += "haptic:$feedbackConstant"
-            return true
-        }
-    }
+    /** Records the haptic constants the components play (resolved for the test SDK). */
+    private fun recorder(log: MutableList<String>): (Int) -> Unit = { log += "haptic:$it" }
 
     @Test fun appThemeAppliesTheAppearanceAndTouchTarget() {
         var dark: Boolean? = null
@@ -80,7 +75,7 @@ class ComponentBehaviourTest {
     @Test fun tapHapticPlaysBeforeTheAction() {
         val log = mutableListOf<String>()
         compose.setContent {
-            CompositionLocalProvider(LocalView provides RecordingView(context, log)) {
+            CompositionLocalProvider(LocalHapticsOverride provides recorder(log)) {
                 AppTheme(dark = false) { PrimaryButton("Get started", { log += "click" }) }
             }
         }
@@ -107,7 +102,7 @@ class ComponentBehaviourTest {
         val log = mutableListOf<String>()
         var selected by mutableIntStateOf(0)
         compose.setContent {
-            CompositionLocalProvider(LocalView provides RecordingView(context, log)) {
+            CompositionLocalProvider(LocalHapticsOverride provides recorder(log)) {
                 AppTheme(dark = false) {
                     TabBar(
                         listOf(TabBarItem(Tokens.Icons.globalHome, "Home"), TabBarItem(Tokens.Icons.globalActivity, "Activity", unread = true, unreadDescription = "new activity")),
@@ -128,24 +123,30 @@ class ComponentBehaviourTest {
 
     @Test fun segmentedChoicePlaysTheTick() {
         val log = mutableListOf<String>()
-        var selected = 0
+        var selected by mutableIntStateOf(0)
         compose.setContent {
-            CompositionLocalProvider(LocalView provides RecordingView(context, log)) {
-                AppTheme(dark = false) { SegmentedControl(listOf("Yearly", "Monthly"), 0, { selected = it }) }
+            CompositionLocalProvider(LocalHapticsOverride provides recorder(log)) {
+                AppTheme(dark = false) { SegmentedControl(listOf("Yearly", "Monthly"), selected, { selected = it }) }
             }
         }
         compose.onNodeWithText("Monthly").performClick()
         assertEquals(1, selected)
         // haptic.global.select: SEGMENT_FREQUENT_TICK (API 34+; the test SDK is 36).
         assertEquals(listOf("haptic:${HapticFeedbackConstants.SEGMENT_FREQUENT_TICK}"), log)
+        // Choosing the selected segment again does nothing (no tick).
+        compose.onNodeWithText("Monthly").performClick()
+        assertEquals(1, log.size)
         compose.onNodeWithText("Yearly").performClick()
         assertEquals(0, selected)
+        assertEquals(2, log.size)
     }
 
     @Test fun viewerExposesNextAndPreviousToTalkBack() {
         val log = mutableListOf<String>()
         compose.setContent {
-            AppTheme(dark = false) { ViewerPhoto(null, "Photo by olson", { log += "next" }, { log += "previous" }, "Next", "Previous", previousFraction = 0.3f) }
+            AppTheme(dark = false) {
+                ViewerPhoto(null, "Photo by olson", { log += "next" }, { log += "previous" }, "Next", "Previous", previousFraction = 0.3f, modifier = androidx.compose.ui.Modifier.height(Tokens.Sizes.globalFriendCardHeight))
+            }
         }
         val node = compose.onNodeWithContentDescription("Photo by olson")
         val actions = node.fetchSemanticsNode().config[SemanticsActions.CustomActions]

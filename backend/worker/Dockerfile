@@ -20,10 +20,10 @@ RUN --mount=type=secret,id=build_ca,required=false \
 
 COPY backend/worker/tsconfig.json ./
 COPY backend/worker/src ./src
-# Roboto (Apache 2.0, see fonts/LICENSE): read by path for server-rendered text, also registered with fontconfig
+# Noto Serif + Inter (SIL OFL, see fonts/SOURCE.txt): read by path for server-rendered text, also registered with fontconfig
 COPY backend/worker/fonts ./fonts
-RUN mkdir -p /usr/share/fonts/truetype/roboto \
- && cp fonts/*.ttf /usr/share/fonts/truetype/roboto/ \
+RUN mkdir -p /usr/share/fonts/truetype/app \
+ && cp fonts/*.ttf /usr/share/fonts/truetype/app/ \
  && fc-cache -f
 # design token proposals (collage, platform, tribute) and copy patterns, read at runtime
 COPY design/proposals /app/design/proposals

@@ -1,4 +1,8 @@
-Roboto 2.138 (unhinted), Apache License 2.0 (see LICENSE in this folder).
-Source: https://github.com/googlefonts/roboto/releases/download/v2.138/roboto-unhinted.zip
-Files: Roboto-{Thin,Light,Regular,Medium,Bold,Black}.ttf, copied unmodified.
-Used by the worker for server-rendered text (tribute videos); level PLATFORM per docs/ARCHITECTURE.md.
+Fonts for server-rendered text (tribute videos), matching the app's type roles (design/tokens/global.json).
+
+NotoSerif-Regular.ttf — Noto Serif (display serif role, font.global.display: the platform serif), SIL Open Font
+License 1.1 (OFL-NotoSerif.txt). Source: https://raw.githubusercontent.com/notofonts/notofonts.github.io/main/fonts/NotoSerif/unhinted/ttf/NotoSerif-Regular.ttf
+
+Inter-Regular.ttf, Inter-SemiBold.ttf — Inter (UI role, font.global.family on Android), SIL Open Font License 1.1
+(OFL-Inter.txt). Static instances (wght 400 / 600, default opsz) made with fontTools.varLib.instancer from the
+app's bundled variable font android/core/designsystem/src/main/res/font/inter.ttf (Inter 4.1).

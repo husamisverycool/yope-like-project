@@ -1,5 +1,5 @@
 // Tribute video (surface birthday.tribute): title card → one card per contribution (photo +
-// contributor first name + their one line) → end card, rendered with sharp (cards, Roboto text)
+// contributor first name + their one line) → end card, rendered with sharp (cards; text in the app's fonts: Noto Serif display, Inter UI)
 // and ffmpeg (sequence, transitions, H.264 MP4).
 //
 // Structure and timings come from design tokens (research: design/research/wrapped-tribute-
@@ -93,32 +93,46 @@ export interface TributeTexts {
   end: string;
 }
 
-const WEIGHT_FILES: Array<[number, string]> = [
-  [100, "Roboto-Thin.ttf"],
-  [300, "Roboto-Light.ttf"],
-  [400, "Roboto-Regular.ttf"],
-  [500, "Roboto-Medium.ttf"],
-  [700, "Roboto-Bold.ttf"],
-  [900, "Roboto-Black.ttf"],
-];
+/**
+ * Fonts the video text is set in, matching the app (design/tokens/global.json): title and end cards use the
+ * display serif role (`font.global.display` → the platform serif; Noto Serif, SIL OFL), captions the UI role
+ * (`font.global.family` on Android → Inter, SIL OFL, static instances of the app's variable font).
+ * Files and licences: fonts/SOURCE.txt.
+ */
+export type FontRole = "display" | "ui";
+const FONTS: Record<FontRole, { family: string; files: Array<[number, string]> }> = {
+  display: { family: "Noto Serif", files: [[400, "NotoSerif-Regular.ttf"]] },
+  ui: { family: "Inter Variable", files: [[400, "Inter-Regular.ttf"], [600, "Inter-SemiBold.ttf"]] },
+};
+const PANGO_WEIGHTS: Record<number, string> = { 100: "Thin", 200: "Ultra-Light", 300: "Light", 400: "", 500: "Medium", 600: "Semi-Bold", 700: "Bold", 800: "Ultra-Bold", 900: "Heavy" };
 
-export function fontFile(fontsDir: string, weight: number): string {
-  let best = WEIGHT_FILES[0] as [number, string];
-  for (const w of WEIGHT_FILES) if (Math.abs(w[0] - weight) < Math.abs(best[0] - weight)) best = w;
-  return path.join(fontsDir, best[1]);
+function nearest(role: FontRole, weight: number): [number, string] {
+  let best = FONTS[role].files[0] as [number, string];
+  for (const w of FONTS[role].files) if (Math.abs(w[0] - weight) < Math.abs(best[0] - weight)) best = w;
+  return best;
+}
+
+export function fontFile(fontsDir: string, weight: number, role: FontRole = "ui"): string {
+  return path.join(fontsDir, nearest(role, weight)[1]);
+}
+
+/** Pango font description for the file `fontFile` picks: family, weight keyword, size. */
+export function fontDescription(role: FontRole, weight: number, sizePx: number): string {
+  const w = PANGO_WEIGHTS[nearest(role, weight)[0]] ?? "";
+  return `${FONTS[role].family}${w ? " " + w : ""} ${Math.max(1, Math.round(sizePx))}`;
 }
 
 const pango = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 async function textImage(
   text: string,
-  opts: { fontsDir: string; weight: number; sizePx: number; color: string; width: number; maxHeight?: number; align: "left" | "centre" },
+  opts: { fontsDir: string; role: FontRole; weight: number; sizePx: number; color: string; width: number; maxHeight?: number; align: "left" | "centre" },
 ): Promise<{ data: Buffer; width: number; height: number }> {
   const img = sharp({
     text: {
       text: `<span foreground="${opts.color}">${pango(text)}</span>`,
-      font: `Roboto ${Math.max(1, Math.round(opts.sizePx))}`,
-      fontfile: fontFile(opts.fontsDir, opts.weight),
+      font: fontDescription(opts.role, opts.weight, opts.sizePx),
+      fontfile: fontFile(opts.fontsDir, opts.weight, opts.role),
       width: Math.max(1, Math.round(opts.width)),
       align: opts.align,
       dpi: 72,
@@ -143,7 +157,7 @@ async function solid(w: number, h: number, color: string): Promise<Sharp> {
 
 export async function textCard(text: string, layout: CardTextLayout, video: TributeTokens["video"], fontsDir: string): Promise<Buffer> {
   const { width: W, height: H } = video;
-  const t = await textImage(text, { fontsDir, weight: layout.fontWeight, sizePx: layout.fontSizeRatio * H, color: layout.textColor, width: layout.maxWidthRatio * W, maxHeight: H, align: "centre" });
+  const t = await textImage(text, { fontsDir, role: "display", weight: layout.fontWeight, sizePx: layout.fontSizeRatio * H, color: layout.textColor, width: layout.maxWidthRatio * W, maxHeight: H, align: "centre" });
   const left = Math.round((W - t.width) / 2);
   const top = Math.max(0, Math.round(layout.centerYRatio * H - t.height / 2));
   return (await solid(W, H, layout.background)).composite([{ input: t.data, left: Math.max(0, left), top }]).png().toBuffer();
@@ -156,8 +170,8 @@ export async function contributionCard(c: TributeCardInput, tk: TributeTokens, f
   const layers: OverlayOptions[] = [{ input: photo.data, left: Math.round((W - photo.info.width) / 2), top: Math.round((H - photo.info.height) / 2) }];
   const cap = tk.caption;
   const boxW = cap.maxWidthRatio * W;
-  const name = await textImage(c.name, { fontsDir, weight: cap.nameFontWeight, sizePx: cap.nameFontSizeRatio * H, color: cap.textColor, width: boxW, maxHeight: H / 2, align: "left" });
-  const line = await textImage(c.line, { fontsDir, weight: cap.lineFontWeight, sizePx: cap.lineFontSizeRatio * H, color: cap.textColor, width: boxW, maxHeight: H / 2, align: "left" });
+  const name = await textImage(c.name, { fontsDir, role: "ui", weight: cap.nameFontWeight, sizePx: cap.nameFontSizeRatio * H, color: cap.textColor, width: boxW, maxHeight: H / 2, align: "left" });
+  const line = await textImage(c.line, { fontsDir, role: "ui", weight: cap.lineFontWeight, sizePx: cap.lineFontSizeRatio * H, color: cap.textColor, width: boxW, maxHeight: H / 2, align: "left" });
   const x = Math.round(cap.leftRatio * W);
   const lineTop = Math.max(0, Math.round(H - cap.bottomRatio * H - line.height));
   const nameTop = Math.max(0, Math.round(lineTop - cap.gapRatio * H - name.height));

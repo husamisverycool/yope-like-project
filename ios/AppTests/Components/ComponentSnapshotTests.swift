@@ -587,7 +587,7 @@ final class ComponentSnapshotTests: XCTestCase {
         record("c27-permission-denied", height: Tokens.Sizes.globalFriendCardHeight) {
             PermissionCard(
                 title: Copy.onboardingPermissionPhotosDeniedTitle, detail: Copy.onboardingPermissionPhotosDeniedDetail,
-                buttonTitle: Copy.onboardingPermissionPhotosDeniedButton, onEnable: {}, onDismiss: {}
+                buttonTitle: Copy.onboardingPermissionPhotosDeniedButton, onEnable: {}, onDismiss: {}, dismissAccessibilityLabel: "Close"
             )
             .frame(maxHeight: .infinity)
         }

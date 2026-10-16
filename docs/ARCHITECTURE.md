@@ -42,7 +42,7 @@
 | Queue | Postgres `jobs` table with `SKIP LOCKED` | No extra infrastructure; transactional enqueue with the write that causes it. |
 | Collage | Server-side, deterministic (same inputs → byte-identical output) | Directive. Layout is a pure function `layout(n, option)` with unit tests for n = 1…30. |
 | Tribute / year videos | Server-side ffmpeg | One implementation for both platforms; cost documented in `docs/COSTS.md`. |
-| Server-rendered text font | Roboto (Apache 2.0), level PLATFORM | SF Pro may not be used off Apple platforms. |
+| Server-rendered text font | Noto Serif (display role) and Inter (UI role), SIL OFL — the app's Android faces (Retro redesign) | SF Pro may not be used off Apple platforms. |
 | Widget delivery | Push-driven: alert push with `mutable-content` → Notification Service Extension downloads the widget rendition into the App Group and reloads timelines; plus WidgetKit push / background push where allowed. Android: FCM data message → WorkManager → Glance update. | See `docs/WIDGET_REFRESH.md` (from `docs/PLATFORM_CONSTRAINTS.md`). |
 | Countdown | iOS Live Activity started by push-to-start at the invitation moment; Android ongoing notification with a count-down chronometer | Every member gets it at the same moment, server-driven. |
 | AI | Anthropic Messages API, model configurable (`RECAP_MODEL`, default `claude-opus-5-5`, $4/$20 per MTok), effort `low`, structured output; only that group's content is sent; cost per job logged to `ai_cost_log` | Directive Part 7. |
