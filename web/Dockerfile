@@ -29,6 +29,11 @@ COPY --from=build /app/web/node_modules ./node_modules
 COPY --from=build /app/web/dist ./dist
 # Fonts of the share image (OFL faces + fonts.conf; src/images.ts) and their licences.
 COPY web/assets ./assets
+# Fallback fonts for names in other scripts and emoji (SIL OFL, fonts/fallback/SOURCE.txt): Noto scripts 10.2 MB +
+# monochrome Noto Emoji 0.9 MB, at the same relative place as in the repository (fonts.conf: ../../../fonts/fallback/…).
+COPY fonts/fallback/SOURCE.txt /app/fonts/fallback/SOURCE.txt
+COPY fonts/fallback/scripts /app/fonts/fallback/scripts
+COPY fonts/fallback/emoji-mono /app/fonts/fallback/emoji-mono
 COPY config/app.json /app/config/app.json
 USER node
 EXPOSE 8080

@@ -47,6 +47,8 @@ data class NewPost(
     val caption: String? = null,
     val invitationId: String? = null,
     val replyToPostId: String? = null,
+    /** The voice note's waveform: 100 levels of 0…31 (`p_voice_levels`, C-36). Last, so positional calls keep working. */
+    val voiceLevels: List<Int>? = null,
 ) {
     init {
         require(groupIds.isNotEmpty()) { "no groups" }
@@ -111,6 +113,7 @@ class UploadQueue(
                 groupIds = post.groupIds.distinct(),
                 caption = post.caption,
                 voiceDurationMs = post.voiceDurationMs,
+                voiceLevels = post.voiceLevels.takeIf { post.voice != null },
                 invitationId = post.invitationId,
                 replyToPostId = post.replyToPostId,
             )

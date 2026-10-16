@@ -15,7 +15,7 @@ Side by side: [`walls.member.android.png`](walls.member.android.png) — ours le
 | match | name baseline `size.global.titleTop` (display serif, `fontSize.global.headerTitle`) | 64 | 64 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references/auto/retro/lazyweb/r… |  |
 | match | avatar `size.global.avatarProfile` | 64 | 64 | references/auto/retro/store/retro-store-02.png avatar 919–1072 — design/research/retro-visual.md §3.… |  |
 | match | avatar at the trailing margin | 16 | 16 |  |  |
-| match | avatar centred on the name's cap middle | 49.72 | 49.5 |  |  |
+| match | avatar centred on the name's cap middle | 48.65 | 48.5 |  |  |
 | match | action capsule `size.global.iconPillWidth` × `size.global.pillHeight` | 49 × 37 | 49 × 37 | references/auto/retro/store/retro-store-02.png gear capsule x954–1071 (117 px ÷ 2.389) — design/rese… |  |
 | match | capsule at the trailing margin | 16 | 16 |  |  |
 | match | `walls.mine.dimension.nameToActions` (name baseline → capsule) | 23 | 23 | references/auto/retro/store/retro-store-02.png (last info row baseline y 1074 → capsules top y 1129) |  |

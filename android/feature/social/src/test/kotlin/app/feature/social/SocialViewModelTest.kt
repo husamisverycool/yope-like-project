@@ -442,7 +442,7 @@ class SocialViewModelTest {
         val data = viewerData()
         val vm = PhotoViewerViewModel(data, GROUP, "v-1", PhotoContext.Album, "a-v", null)
         val photo = vm.state.value.current!!
-        assertEquals(listOf("c-1", "c-2"), photo.comments.map { it.id })
+        assertEquals(listOf("c-1", "c-2", "c-3"), photo.comments.map { it.id })
         assertEquals(listOf(ANA, ME), photo.tagged)
         assertTrue(vm.state.value.taggedByMe)
     }
@@ -467,6 +467,16 @@ class SocialViewModelTest {
         val s = app.feature.social.week.RecapListViewModel(data, GROUP).state.value
         assertEquals(listOf("r-w", "r-prev", "r-old"), s.cards.map { it.recap.id })
         assertTrue(s.cards.first().coverPath!!.endsWith("thumb.jpg"))
+    }
+
+    /** `photo.viewer.layout.backZone` (Retro's viewer): a tap in the leading 20 % of the photo goes back, mirrored right to left. */
+    @Test fun viewerBackZoneIsTheLeadingFifth() {
+        val fraction = app.designsystem.generated.Tokens.Layouts.PhotoViewerLayoutBackZone.fraction
+        assertEquals(0.2f, fraction)
+        assertTrue(app.ui.components.ViewerTaps.isPrevious(78f, 393f, fraction, rtl = false))
+        assertFalse(app.ui.components.ViewerTaps.isPrevious(80f, 393f, fraction, rtl = false))
+        assertTrue(app.ui.components.ViewerTaps.isPrevious(315f, 393f, fraction, rtl = true))
+        assertFalse(app.ui.components.ViewerTaps.isPrevious(78f, 393f, fraction, rtl = true))
     }
 
     /** `week.recap.layout.gridFill`: ⌊√n⌋ columns (1 … 4), ⌈n ÷ columns⌉ rows (≤ 6) — Retro's 1, 9 and 24-photo cards; beyond 24 not drawn. */

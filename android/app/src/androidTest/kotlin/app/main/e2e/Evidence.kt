@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Environment
+import android.os.SystemClock
 import android.provider.MediaStore
 import android.util.Log
 import androidx.compose.ui.test.isRoot
@@ -24,10 +25,21 @@ class Evidence(private val compose: ComposeTestRule) {
 
     fun step(name: String) {
         runCatching { compose.waitForIdle() }
+        settle()
         index += 1
         val base = "%02d-%s".format(index, name)
         Log.i(E2eRunner.TAG, "step $base")
         capture(base)
+    }
+
+    /**
+     * Lets the display catch up with the composition before the screenshot: the semantics are current after `waitForIdle`,
+     * but the frame that draws them reaches the screen on a later vsync (a screenshot taken at once showed the previous
+     * screen).
+     */
+    private fun settle() {
+        runCatching { InstrumentationRegistry.getInstrumentation().waitForIdleSync() }
+        SystemClock.sleep(SETTLE_MS)
     }
 
     /** The failure's state (called by the test's watcher while the activity is still up). */
@@ -75,5 +87,7 @@ class Evidence(private val compose: ComposeTestRule) {
     private companion object {
         const val FOLDER = "e2e"
         const val PNG_QUALITY = 100
+        /** A few frames at 60 Hz plus the compositor's latency. */
+        const val SETTLE_MS = 500L
     }
 }

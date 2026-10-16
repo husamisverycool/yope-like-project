@@ -8,3 +8,6 @@
 !web/src
 !web/assets
 !config/app.json
+!fonts/fallback/SOURCE.txt
+!fonts/fallback/scripts
+!fonts/fallback/emoji-mono

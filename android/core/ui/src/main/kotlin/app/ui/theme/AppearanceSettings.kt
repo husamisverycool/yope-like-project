@@ -28,8 +28,8 @@ interface AppearanceSettings {
 }
 
 /** [AppearanceSettings] in app-private preferences; off until the person turns it on (Retro's default dark scheme). */
-private class DeviceAppearanceSettings private constructor(context: Context) : AppearanceSettings {
-    private val prefs = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+private class DeviceAppearanceSettings private constructor(val app: Context) : AppearanceSettings {
+    private val prefs = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
     private val state = MutableStateFlow(prefs.getBoolean(KEY_TRUE_BLACK, false))
 
     override val trueBlack: StateFlow<Boolean> = state
@@ -45,8 +45,16 @@ private class DeviceAppearanceSettings private constructor(context: Context) : A
 
         @Volatile private var instance: DeviceAppearanceSettings? = null
 
-        fun get(context: Context): DeviceAppearanceSettings = instance ?: synchronized(this) {
-            instance ?: DeviceAppearanceSettings(context).also { instance = it }
+        /**
+         * One per application: the process has one in the app; a test runner that starts a new `Application` per test
+         * (Robolectric) gets a fresh instance over that application's preferences instead of an earlier one's.
+         */
+        fun get(context: Context): DeviceAppearanceSettings {
+            val app = context.applicationContext
+            instance?.takeIf { it.app === app }?.let { return it }
+            return synchronized(this) {
+                instance?.takeIf { it.app === app } ?: DeviceAppearanceSettings(app).also { instance = it }
+            }
         }
     }
 }

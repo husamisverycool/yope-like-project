@@ -68,19 +68,27 @@ export async function backdropTone(jpeg: Buffer): Promise<Rgb> {
 // Fonts of the share image, the files the apps bundle (SIL OFL 1.1, in web/assets/fonts with their licences; no
 // Retro face is used): the name in font.global.display, as invite.web.layout.ogImage names it — Roboto Serif Title
 // (ios value = its PostScript name), the heavier title cut matched to Roslindale Retro (MERGE_DECISIONS L-8), closer
-// to Retro's bold share-image name — and the domain in font.global.family's Android value, Inter. fonts.conf there makes them visible to librsvg (FONTCONFIG_FILE is read when fontconfig first initialises,
-// i.e. at the first text render), after the system fonts, which only supply missing glyphs.
+// to Retro's bold share-image name — and the domain in font.global.family's Android value, Inter. Group names in other
+// scripts and with emoji take the fallback set (fonts/fallback/SOURCE.txt): fonts.conf there makes all of them visible
+// to librsvg (FONTCONFIG_FILE is read when fontconfig first initialises, i.e. at the first text render) and orders the
+// fallbacks behind the `serif` / `sans-serif` aliases each face lists after itself. No system fonts are read.
 const FONT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "assets", "fonts");
-const FACES: Record<"display" | "text", { token: TokenName; platform: "ios" | "android"; value: string; family: string; file: string }> = {
-  display: { token: "font.global.display", platform: "ios", value: "RobotoSerifTitle-Regular", family: "Roboto Serif Title", file: "RobotoSerifTitle-Regular.ttf" },
-  text: { token: "font.global.family", platform: "android", value: "Inter", family: "Inter Variable", file: "Inter-Variable.ttf" },
+const FACES: Record<"display" | "text", { token: TokenName; platform: "ios" | "android"; value: string; family: string; fallback: string; file: string }> = {
+  display: { token: "font.global.display", platform: "ios", value: "RobotoSerifTitle-Regular", family: "Roboto Serif Title", fallback: "serif", file: "RobotoSerifTitle-Regular.ttf" },
+  text: { token: "font.global.family", platform: "android", value: "Inter", family: "Inter Variable", fallback: "sans-serif", file: "Inter-Variable.ttf" },
 };
+/**
+ * Emoji in the share image: librsvg draws text as filled outlines, so a colour emoji font comes out as a silhouette;
+ * the monochrome Noto Emoji (fonts/fallback/emoji-mono) is drawn instead, in the text's colour.
+ */
+export const EMOJI_FAMILY = "Noto Emoji";
 for (const f of Object.values(FACES)) {
   const v = (tokens[f.token] as { ios?: string; android?: string })[f.platform];
   if (v !== f.value) throw new Error(`${f.token}.${f.platform} is ${v}; the share image bundles ${f.family} for "${f.value}"`);
   if (!fs.existsSync(path.join(FONT_DIR, f.file))) throw new Error(`missing font file ${path.join(FONT_DIR, f.file)}`);
 }
-if (!process.env.FONTCONFIG_FILE) process.env.FONTCONFIG_FILE = path.join(FONT_DIR, "fonts.conf");
+export const FONTCONFIG_FILE = path.join(FONT_DIR, "fonts.conf");
+if (!process.env.FONTCONFIG_FILE) process.env.FONTCONFIG_FILE = FONTCONFIG_FILE;
 
 interface OgLayout {
   width: number;
@@ -108,11 +116,30 @@ const NAME_MAX_WIDTH = OG_WIDTH - 2 * num("size.global.screenMargin");
 
 const xml = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
-function textSvg(content: string, face: "display" | "text", size: number, baseline: number, opacity: number): Buffer {
+// The `v` flag (properties of strings, Node ≥ 20) is newer than the ES2023 target, so the pattern is built at run time.
+const RGI_EMOJI = () => new RegExp("\\p{RGI_Emoji}", "gv");
+
+/**
+ * SVG text content of `content` with every RGI emoji sequence in its own <tspan> set in the emoji font: Inter has text
+ * glyphs for a few emoji code points (❤ ☀ ↔ ‼), so a ❤️ would otherwise stay in Inter; a bare ❤ stays text.
+ */
+export function emojiTspans(content: string): string {
+  let out = "";
+  let last = 0;
+  for (const m of content.matchAll(RGI_EMOJI())) {
+    out += xml(content.slice(last, m.index)) + `<tspan font-family="${EMOJI_FAMILY}">${xml(m[0])}</tspan>`;
+    last = m.index + m[0].length;
+  }
+  return out + xml(content.slice(last));
+}
+
+/** One line of share-image text as a full-size SVG layer (exported for the font tests). */
+export function textSvg(content: string, face: "display" | "text", size: number, baseline: number, opacity: number): Buffer {
   const fill = colorHex("color.global.textOnMedia");
+  const { family, fallback } = FACES[face];
   return Buffer.from(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${OG_WIDTH}" height="${OG_HEIGHT}">` +
-      `<text x="${OG_WIDTH / 2}" y="${baseline}" text-anchor="middle" font-family="${FACES[face].family}" font-size="${size}" fill="${fill}" fill-opacity="${opacity}">${xml(content)}</text></svg>`,
+      `<text x="${OG_WIDTH / 2}" y="${baseline}" text-anchor="middle" font-family="'${family}', ${fallback}" font-size="${size}" fill="${fill}" fill-opacity="${opacity}">${emojiTspans(content)}</text></svg>`,
   );
 }
 

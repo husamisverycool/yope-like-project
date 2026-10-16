@@ -1,0 +1,48 @@
+Fallback fonts for server-rendered text (worker tribute cards and captions, web invite share image og.png).
+The app's own faces (Roboto Serif Title / Headline, Inter) cover Latin and Cyrillic (Inter also Greek); these
+files supply the glyphs they lack, so names and lines in other scripts or with emoji do not render as tofu.
+All are SIL Open Font License 1.1 (licence files next to them; no Reserved Font Name is used: the CJK fonts'
+RFN is 'Source', these keep their Noto names). Downloaded 2026-10-16; processed with fontTools 4.67.0
+(fontTools.varLib.instancer, fontTools.subset). Which consumer reads which file: worker
+backend/worker/fonts/fonts.conf (scripts/ + emoji-color/), web web/assets/fonts/fonts.conf (scripts/ + emoji-mono/);
+their aliases list the fallback order. The emoji fonts sit in separate folders because fontconfig must not see both:
+given the monochrome one, Pango drew 🎉 / 👩🏽‍🦱 / 🇧🇷 from it in the worker.
+
+Upstream: google/fonts (https://raw.githubusercontent.com/google/fonts/main/ofl/<family>/…) unless noted.
+
+file (folder)                     bytes      from / how
+emoji-color/
+NotoColorEmoji-COLRv1.ttf         4,991,984  googlefonts/noto-emoji tag v2.051, fonts/Noto-COLRv1.ttf (via cdn.jsdelivr.net/gh),
+                                             unchanged. Colour emoji (COLRv1); the worker's renderer (libvips text: Pango +
+                                             cairo 1.18.6) draws it in colour. Worker only. Licence OFL-Noto-Emoji.txt.
+                                             (The same release's CBDT bitmap font is 10,673,480 bytes; the 25 MB google/fonts
+                                             NotoColorEmoji-Regular.ttf was not used.)
+emoji-mono/
+NotoEmoji-Regular.ttf               886,628  notoemoji/NotoEmoji[wght].ttf, instancer wght=400. Monochrome emoji for the web
+                                             share image: librsvg draws SVG text as filled outlines, so colour fonts come out
+                                             as silhouettes. Web only. Licence OFL-Noto-Emoji.txt.
+scripts/
+NotoSansArabic.ttf                  293,796  notosansarabic/NotoSansArabic[wdth,wght].ttf, instancer wdth=100 wght=400:600.
+NotoSansHebrew.ttf                   72,936  notosanshebrew/NotoSansHebrew[wdth,wght].ttf, instancer wdth=100 wght=400:600
+                                             --update-name-table.
+NotoSansDevanagari.ttf              312,148  notosansdevanagari/NotoSansDevanagari[wdth,wght].ttf, wdth=100 wght=400:600.
+NotoSansThai.ttf                     74,352  notosansthai/NotoSansThai[wdth,wght].ttf, wdth=100 wght=400:600.
+NotoNaskhArabic-Regular.ttf         200,416  notonaskharabic/NotoNaskhArabic[wght].ttf, wght=400 (serif-style Arabic for the
+                                             display role).
+NotoSerifHebrew-Regular.ttf          55,940  notoserifhebrew/NotoSerifHebrew[wdth,wght].ttf, wdth=100 wght=400.
+NotoSerifDevanagari-Regular.ttf     257,144  notoserifdevanagari/NotoSerifDevanagari[wdth,wght].ttf, wdth=100 wght=400.
+NotoSerifThai-Regular.ttf            63,008  notoserifthai/NotoSerifThai[wdth,wght].ttf, wdth=100 wght=400.
+NotoSerifGreek-Regular.ttf           50,224  notoserif/NotoSerif[wdth,wght].ttf, wdth=100 wght=400, subset to Greek and Greek
+                                             Extended (U+0370-03FF, U+1F00-1FFF): Roboto Serif has no Greek; family "Noto Serif".
+NotoSansSC-Subset-Regular.ttf     6,141,044  notosanssc/NotoSansSC[wght].ttf (17,772,300 bytes), instancer wght=400
+                                             --update-name-table, subset to the 16,507 Han characters of GB 2312, Big5,
+                                             JIS X 0208 and KS X 1001 (the sets names are written in) present in the font,
+                                             plus kana, Bopomofo, CJK punctuation, enclosed and full-width forms
+                                             (scripts/cjk_codepoints.py lists them). Family "Noto Sans SC".
+NotoSansKR-Hangul-Regular.ttf     2,697,088  notosanskr/NotoSansKR[wght].ttf (10,414,588 bytes), wght=400
+                                             --update-name-table, subset to Hangul: all 11,172 syllables, jamo and
+                                             compatibility jamo. Family "Noto Sans KR". (Noto Sans SC has no Hangul.)
+
+Totals: scripts/ 10,218,096 bytes, emoji-color/ 4,991,984, emoji-mono/ 886,628 (16.1 MB). Worker image: scripts/ +
+emoji-color/ = 15.2 MB; web image: scripts/ + emoji-mono/ = 11.1 MB. CJK text is drawn in the sans regular weight in
+both roles and at both caption weights (a serif CJK face would add ≈ 20 MB; the variable CJK fonts ≈ 28 MB).

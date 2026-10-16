@@ -1,5 +1,6 @@
 // Tribute video (surface birthday.tribute): title card → one card per contribution (photo +
-// contributor first name + their one line) → end card, rendered with sharp (cards; text in the app's fonts: Roboto Serif Headline display, Inter UI)
+// contributor first name + their one line) → end card, rendered with sharp (cards; text in the app's fonts: Roboto Serif Headline display, Inter UI,
+// with the fallback set of fonts/fallback for other scripts and colour emoji — fonts/fonts.conf)
 // and ffmpeg (sequence, transitions, H.264 MP4).
 //
 // Structure and timings come from design tokens (research: design/research/wrapped-tribute-
@@ -14,6 +15,15 @@ import sharp, { type OverlayOptions, type Sharp } from "sharp";
 import { designToken } from "../tokens.js";
 import { ffmpeg } from "../media/ffmpeg.js";
 import { JPEG_OPTIONS } from "../media/renditions.js";
+import { WORKER_ROOT } from "../config.js";
+
+/**
+ * fontconfig reads FONTCONFIG_FILE once, at its first use (the first text or SVG render in the process), so it is set
+ * when this module loads: the app's faces plus the fallback set (fonts/fonts.conf → ../../../fonts/fallback), no system
+ * fonts. An operator's own FONTCONFIG_FILE wins.
+ */
+export const FONTCONFIG_FILE = path.join(process.env.FONTS_DIR || path.join(WORKER_ROOT, "fonts"), "fonts.conf");
+process.env.FONTCONFIG_FILE ||= FONTCONFIG_FILE;
 
 export interface CardTextLayout {
   /** #RRGGBB card background */
@@ -101,10 +111,17 @@ export interface TributeTexts {
  * Files and licences: fonts/SOURCE.txt.
  */
 export type FontRole = "display" | "ui";
-const FONTS: Record<FontRole, { family: string; files: Array<[number, string]> }> = {
-  display: { family: "Roboto Serif Headline", files: [[400, "RobotoSerifHeadline-Regular.ttf"]] },
-  ui: { family: "Inter Variable", files: [[400, "Inter-Regular.ttf"], [600, "Inter-SemiBold.ttf"]] },
+/**
+ * `fallback` is the fontconfig alias (fonts/fonts.conf) whose fonts supply what the app's face lacks: serif Noto faces
+ * for the display role, sans for the UI role (Greek, Arabic, Hebrew, Devanagari, Thai, CJK, Hangul).
+ */
+const FONTS: Record<FontRole, { family: string; fallback: string; files: Array<[number, string]> }> = {
+  display: { family: "Roboto Serif Headline", fallback: "serif", files: [[400, "RobotoSerifHeadline-Regular.ttf"]] },
+  ui: { family: "Inter Variable", fallback: "sans-serif", files: [[400, "Inter-Regular.ttf"], [600, "Inter-SemiBold.ttf"]] },
 };
+
+/** The colour emoji font (fonts/fallback/NotoColorEmoji-COLRv1.ttf; libvips text draws COLRv1 in colour). */
+export const EMOJI_FAMILY = "Noto Color Emoji";
 const PANGO_WEIGHTS: Record<number, string> = { 100: "Thin", 200: "Ultra-Light", 300: "Light", 400: "", 500: "Medium", 600: "Semi-Bold", 700: "Bold", 800: "Ultra-Bold", 900: "Heavy" };
 
 function nearest(role: FontRole, weight: number): [number, string] {
@@ -117,21 +134,40 @@ export function fontFile(fontsDir: string, weight: number, role: FontRole = "ui"
   return path.join(fontsDir, nearest(role, weight)[1]);
 }
 
-/** Pango font description for the file `fontFile` picks: family, weight keyword, size. */
+/** Pango font description for the file `fontFile` picks: family then its fallback alias, weight keyword, size. */
 export function fontDescription(role: FontRole, weight: number, sizePx: number): string {
   const w = PANGO_WEIGHTS[nearest(role, weight)[0]] ?? "";
-  return `${FONTS[role].family}${w ? " " + w : ""} ${Math.max(1, Math.round(sizePx))}`;
+  return `${FONTS[role].family},${FONTS[role].fallback}${w ? " " + w : ""} ${Math.max(1, Math.round(sizePx))}`;
 }
 
 const pango = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-async function textImage(
+// The `v` flag (properties of strings, Node ≥ 20) is newer than the ES2023 target, so the pattern is built at run time.
+const RGI_EMOJI = () => new RegExp("\\p{RGI_Emoji}", "gv");
+
+/**
+ * Pango markup of `text` with every RGI emoji sequence (❤️, 👩🏽‍🦱, 🇧🇷, 1️⃣ …) set in the colour emoji font: Inter has
+ * text glyphs for a few emoji code points (❤ ☀ ↔ ‼) and Pango would otherwise keep them in the text face, in the text
+ * colour. A code point without the emoji variation selector (a bare ❤) stays text, as Unicode presents it.
+ */
+export function emojiMarkup(text: string): string {
+  let out = "";
+  let last = 0;
+  for (const m of text.matchAll(RGI_EMOJI())) {
+    out += pango(text.slice(last, m.index)) + `<span font_family="${EMOJI_FAMILY}">${m[0]}</span>`;
+    last = m.index + m[0].length;
+  }
+  return out + pango(text.slice(last));
+}
+
+/** One block of card text, wrapped inside `width`, as a transparent PNG (exported for the font tests). */
+export async function textImage(
   text: string,
   opts: { fontsDir: string; role: FontRole; weight: number; sizePx: number; color: string; width: number; maxHeight?: number; align: "left" | "centre" },
 ): Promise<{ data: Buffer; width: number; height: number }> {
   const img = sharp({
     text: {
-      text: `<span foreground="${opts.color}">${pango(text)}</span>`,
+      text: `<span foreground="${opts.color}">${emojiMarkup(text)}</span>`,
       font: fontDescription(opts.role, opts.weight, opts.sizePx),
       fontfile: fontFile(opts.fontsDir, opts.weight, opts.role),
       width: Math.max(1, Math.round(opts.width)),

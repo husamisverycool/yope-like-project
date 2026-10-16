@@ -7,3 +7,6 @@
 !backend/worker/fonts/**
 !design/proposals/**
 !design/*.md
+!fonts/fallback/SOURCE.txt
+!fonts/fallback/scripts/**
+!fonts/fallback/emoji-color/**

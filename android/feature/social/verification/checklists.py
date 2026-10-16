@@ -96,6 +96,43 @@ def colour_close(a, b, tol):
         return False
 
 
+def lum(img, x_px, y_px):
+    r, g, b = img.getpixel((int(round(x_px)), int(round(y_px))))[:3]
+    return (r + g + b) / 3
+
+
+def ring_measure(img, box):
+    """Header avatar ring (`photo.viewer.layout.avatarRing`) in a render: stroke, gap, outer diameter (dp) and the
+    share of the circle the white arc covers (caps removed)."""
+    import math
+    cx, cy = (box["left"] + box["right"]) / 2 * SCALE, (box["top"] + box["bottom"]) / 2 * SCALE
+    angles = [a for a in range(-80, 360, 4)]
+    def profile(deg):
+        t = math.radians(deg)
+        return [(r / 8, lum(img, cx + (r / 8) * SCALE * math.cos(t), cy + (r / 8) * SCALE * math.sin(t))) for r in range(80, 168)]
+    # the arc's angular extent at the stroke's middle radius
+    mid = (box["width"] / 2 - tok("photo.viewer.layout.avatarRing", "strokeWidth") / 2) * SCALE
+    white = sorted(a for a in range(0, 360) if lum(img, cx + mid * math.cos(math.radians(a)), cy + mid * math.sin(math.radians(a))) > 200)
+    cap = math.degrees((tok("photo.viewer.layout.avatarRing", "strokeWidth") / 2 * SCALE) / mid)
+    # the arc = the circle minus its largest dark gap (the arc may cross 0°); its round caps reach `cap` past each end
+    gaps = [(b - a) for a, b in zip(white, white[1:])] + ([white[0] + 360 - white[-1]] if white else [])
+    sweep = (360 - max(gaps) + 1 - 2 * cap) / 360 if white else 0
+    prof = profile(-60)
+    peak = max(v for r, v in prof if r > 16)
+    half = peak / 2
+    xs = [r for (r, v), (r2, v2) in zip(prof, prof[1:]) if r > 16 and (v - half) * (v2 - half) < 0]
+    inner, outer = (xs[0], xs[-1]) if len(xs) >= 2 else (-1, -1)
+    # photo edge: going inwards from the ring's inner edge through the black gap until the avatar photo starts; the
+    # outermost such edge over several angles (a dark part of the photo would read as gap at one angle)
+    photo_edge = -1
+    for deg in range(0, 360, 15):
+        for r, v in reversed([(r, v) for r, v in profile(deg) if r < inner - 1]):
+            if v > 30:
+                photo_edge = max(photo_edge, r)
+                break
+    return {"stroke": outer - inner, "outerDiameter": 2 * outer, "gap": inner - photo_edge, "sweep": sweep}
+
+
 def fmt(v):
     if isinstance(v, float):
         return f"{v:.2f}".rstrip("0").rstrip(".")
@@ -301,7 +338,7 @@ def chat_reactions():
     sh.row("`chat.reactions.count.pickerColumns`", tok("chat.reactions.count.pickerColumns"), "6 columns (render `reactionsPicker`)", status="match (token)",
            note="emoji the system font cannot draw are left out (PaintCompat.hasGlyph), as the platform picker does")
     sh.row("`chat.reactions.layout.list` (sheet, people rows, \"Tap to remove\" on yours)", "spec", "render `reactionsSheet`", status="match (token)")
-    sh.row("`chat.reactions.layout.listOrder`", "BLOCKED", "debug: newest first; release: the server order", status="BLOCKED", note="render `reactionsSheetRelease`")
+    sh.row("`chat.reactions.layout.listOrder`", "newest first", "ReactionsSheet reverses the oldest-first rows (every build)", status="match (token)", note="render `reactionsSheet`")
     sh.row("`chat.reactions.layout.quickReactions` (row above the long-press menu)", "spec", "renders `contextMenuPhoto`, viewer `photoContextMenu`", status="match (token)",
            note="local menu variant: core:ui DsDropdownMenu has no header row")
     sh.row("`chat.reactions.icon.add` on Android", tok("chat.reactions.icon.add", "android"), "Tokens.Icons.chatReactionsIconAdd", status="match (token)")
@@ -318,7 +355,13 @@ def photo_viewer():
     sh.row("sheets over the viewer follow the system appearance", "spec", "render `reactionsSheet` (light sheet over the dark viewer)", status="match (token)")
     sh.section("Header")
     sh.row("`photo.viewer.dimension.headerInset`", tok("photo.viewer.dimension.headerInset"), av["left"])
-    sh.row("avatar `size.global.avatarHeader`", tok("size.global.avatarHeader"), av["width"])
+    sh.row("avatar `size.global.avatarHeader` (ring included)", tok("size.global.avatarHeader"), av["width"])
+    ring = ring_measure(snap("ViewerSnapshotTest.othersPhoto"), av)
+    rt = tok("photo.viewer.layout.avatarRing")
+    sh.row("`photo.viewer.layout.avatarRing` strokeWidth", rt["strokeWidth"], round(ring["stroke"], 2), tol=0.5, note="half-maximum crossings along the arc (render `othersPhoto`)")
+    sh.row("`photo.viewer.layout.avatarRing` gap (photo → ring)", rt["gap"], round(ring["gap"], 2), tol=0.6)
+    sh.row("ring outer diameter = `size.global.avatarHeader`", tok("size.global.avatarHeader"), round(ring["outerDiameter"], 2), tol=0.8)
+    sh.row("ring sweep = position ÷ total (\"1 of 3\", from 12 o'clock clockwise, round caps)", round(1 / 3, 3), round(ring["sweep"], 3), tol=0.02)
     sh.row("`photo.viewer.dimension.headerAvatarToText`", tok("photo.viewer.dimension.headerAvatarToText"), name["left"] - av["right"])
     sh.row("`photo.viewer.dimension.headerLinePitch` (name → week)", tok("photo.viewer.dimension.headerLinePitch"), week["baseline"] - name["baseline"])
     sh.row("position pill height `size.global.positionPillHeight`", tok("size.global.positionPillHeight"), pill["height"])
@@ -333,7 +376,7 @@ def photo_viewer():
     sh.row("corners `radius.global.photo`", tok("radius.global.photo"), "square", status="match (token)")
     sh.row("dual capture: core:ui `DualImage`, corners `radius.global.photo`, on media black", "3:4, full width", f"{fmt(m['dual.photo']['width'])} × {fmt(m['dual.photo']['height'])}",
            status="match" if abs(m["dual.photo"]["height"] - W * 4 / 3) <= 0.6 else "MISS", note="render `dualCapture`")
-    sh.row("`photo.viewer.layout.backZone`", "BLOCKED", "debug: leading third goes back; release: no back zone (TalkBack actions only)", status="BLOCKED")
+    sh.row("`photo.viewer.layout.backZone` (leading share of the photo whose tap goes back)", tok("photo.viewer.layout.backZone", "fraction"), "ViewerTaps.isPrevious with Tokens fraction (unit test `viewerBackZoneIsTheLeadingFifth`)", status="match (token)")
     sh.section("Footer")
     sh.row("`photo.viewer.dimension.footerFirstBaseline` + `.footerLinePitch` (photo → date line under a caption)",
            tok("photo.viewer.dimension.footerFirstBaseline") + tok("photo.viewer.dimension.footerLinePitch"), m["date"]["baseline"] - photo["bottom"])
@@ -418,7 +461,7 @@ def walls_browse():
     sh.row("`walls.browse.dimension.rowPitch`", tok("walls.browse.dimension.rowPitch"), c4["top"] - c1["top"])
     sh.row("avatar `size.global.avatarGrid`", tok("size.global.avatarGrid"), "core:ui PeopleGrid(avatar = Tokens.Sizes.globalAvatarGrid)", status="match (token)")
     sh.row("`walls.browse.dimension.nameBaseline` (avatar bottom → name baseline)", tok("walls.browse.dimension.nameBaseline"), n1["baseline"] - (c1["top"] + tok("size.global.avatarGrid")), note="avatar top = the cell top")
-    sh.row("`walls.browse.layout.rowOrder`", "BLOCKED", "debug: by name; release: the server order", status="BLOCKED")
+    sh.row("`walls.browse.layout.rowOrder`", "by name, A to Z (collation, ignoring case and accents)", "orderedByName (VM tests `browseListsOthersByNameAndFilters`, `browseOrderIgnoresCaseAndAccentsAndBreaksTiesById`)", status="match (token)", note="render `browseContent`: Ana, Ben, Chloe, Dev, Femi, Grace, Hugo, Iris, Jonah")
     page_colours(sh, m, "browse.page", "dark.browse.page")
     sh.section("States")
     sh.row("empty / no results / loading / error", "spec States", "renders `browseEmpty`, `browseNoResults`, `browseLoading`, `browseError`", status="match (token)")
@@ -457,15 +500,22 @@ def week_recap():
     sh.row("pill fill `color.global.surfaceLight`", tok("color.global.surfaceLight"), m["p.pillFill"]["hex"])
     sh.row("`week.recap.dimension.selectThumb` (image + 2 × `.selectThumbBorder`)", tok("week.recap.dimension.selectThumb"), thumb["width"] + 2 * tok("week.recap.dimension.selectThumbBorder"))
     card = tok("layout.year.story.recapCard")
+    fill = tok("week.recap.layout.gridFill")
     cw = W * card["widthRatio"]
-    expected_cell = (cw - 2 * cw * card["paddingRatio"] - (card["columns"] - 1) * tok("size.global.stripGap")) / card["columns"]
-    sh.row("memory RecapCard cell (`layout.year.story.recapCard`: width 0.825 W, 4 columns)", round(expected_cell, 2), cell["width"], tol=0.8)
-    sh.row("card cell aspect (cellAspect)", card["cellAspect"], round(cell["width"] / cell["height"], 3), tol=0.01)
+    area_w = cw - 2 * cw * card["paddingRatio"]
+    gap = tok("size.global.stripGap")
+    # six photos (render `recapPreview`): ⌊√6⌋ = 2 columns, 3 rows over the 3:4 area
+    exp_w = (area_w - gap) / 2
+    exp_h = (area_w / fill["areaAspect"] - 2 * gap) / 3
+    sh.row("card cell width (`week.recap.layout.gridFill`: 6 photos → 2 columns over width 0.825 W minus padding)", round(exp_w, 2), cell["width"], tol=0.8)
+    sh.row("card cell height (3 rows sharing the 3:4 area, `areaAspect`)", round(exp_h, 2), cell["height"], tol=0.8)
+    for render, n in (("recapPreviewOne", 1), ("recapPreviewFive", 5), ("recapPreviewNine", 9), ("recapPreviewFull", 24)):
+        ok, desc = grid_check(snap("WeekSnapshotTest." + render), n, fill, card)
+        sh.row(f"`week.recap.layout.gridFill` with {n} photo{'s' if n > 1 else ''}", desc[0], desc[1], status="match" if ok else "MISS", note=f"render `{render}`; gaps white, cells photo, empty places card fill")
     sh.row("card background `color.global.surfaceLight`", tok("color.global.surfaceLight"), m["p.card"]["hex"])
     sh.row("note (`week.recap.layout.note`: `week.recap.radius.note`, padding `.notePaddingV` / `.notePaddingH`, `.noteGap` under the card)",
            f"{tok('week.recap.radius.note')} / {tok('week.recap.dimension.notePaddingV')} / {tok('week.recap.dimension.notePaddingH')} / {tok('week.recap.dimension.noteGap')}", "RecapCardWithNote with these tokens", status="match (token)")
     sh.row("backdrop: the cover blurred (`size.global.backdropBlur`)", tok("size.global.backdropBlur"), "core:ui RecapPreviewScreen (API 31+; below: `color.global.controlOnDeep` page)", status="match (token)")
-    sh.row("`week.recap.layout.gridFill`", "BLOCKED", "debug: up to 24 cells; release: memory RecapCardMetrics.shown", status="BLOCKED", note="renders `recapPreview`, `recapPreviewRelease`")
     sh.row("pages: card, cover full-bleed (`week.recap.layout.pages`); dots below the page", "spec", "renders `recapPreview`, `recapPreviewCover`", status="match (token)")
     sh.row("loading / pending / error", "spec States", "renders `recapPreviewLoading`, `recapPreviewPending`, `recapPreviewError`, `recapListLoading`, `recapListEmpty`, `recapListError`", status="match (token)")
     return sh
@@ -494,9 +544,17 @@ def week_edit():
     sh.row("column gap `size.global.stripGap`", tok("size.global.stripGap"), g2["left"] - g1["right"])
     sh.row("row gap `size.global.stripGap`", tok("size.global.stripGap"), g5["top"] - g1["bottom"])
     sh.row("header line (listSubtitle) above the grid", "Photos taken in Week 42", "Photos taken in Week 42", status="match (token)")
-    sh.row("`week.edit.layout.selectionMark`", "BLOCKED", "debug: check circle `size.global.checkCircle` inset 6; release: no mark (TalkBack state only)", status="BLOCKED", note="renders `editReady`, `editReadyRelease`")
-    sh.row("`week.edit.layout.reorder` (long-press drag, `week.edit.haptic.dragStart` / `.dragAlign`)", "spec", "per-tile drag; VM test reorder; TalkBack move actions", status="approx",
-           note="copy gap: no strings for \"move earlier / later\" actions — the tile label is reused")
+    mk = mark_measure(snap("WeekSnapshotTest.editReady"), g1, g2, g5)
+    sm = tok("week.edit.layout.selectionMark")
+    sh.row("`week.edit.layout.selectionMark` selectedInsetRatio (checked cell: photo inset ÷ cell width)", sm["selectedInsetRatio"], round(mk["inset"] / g1["width"], 3), tol=0.012, note="render `editReady`, cell 1")
+    sh.row("checked cell fill `color.global.control`", tok("color.global.control", "light"), mk["fill"])
+    sh.row("mark centre ÷ cell width from the top-start corner (markCentreRatio)", sm["markCentreRatio"], round(mk["centre"] / g1["width"], 3), tol=0.012)
+    sh.row("check circle ink (20 / 24 of `size.global.checkCircle`)", round(tok("size.global.checkCircle") * 20 / 24, 2), round(mk["circle"], 2), tol=0.8)
+    sh.row("check circle `color.global.system.primary`", tok("color.global.system.primary"), mk["blue"], tol=10)
+    sh.row("white outline (`markOutline` past the circle) in `color.global.textOnMedia`", tok("color.global.textOnMedia"), mk["outline"], tol=12)
+    sh.row("unchecked cell: no mark, the photo fills the cell", "no mark", mk["unchecked"], status="match" if mk["unchecked"] == "no mark" else "MISS", note="cell 7")
+    sh.row("`week.edit.layout.reorder` (long-press drag, `week.edit.haptic.dragStart` / `.dragAlign`)", "spec", "per-tile drag (flow test `reorderARecapByDragging`)", status="match (token)")
+    sh.row("TalkBack reorder actions `week.edit.a11y.moveLeft` / `.moveRight`", "\"Move photo left\" / \"Move photo right\" where a neighbour exists", "custom actions on strip tiles (flow test `reorderARecapWithTalkBackActions`)", status="match (token)")
     sh.row("message sheet (counter, `week.edit.layout.message` limit) / album sheet / lost changes / saving / not ready", "spec",
            "renders `messageSheet`, `albumSheet`, `albumSheetNameError`, `lostChanges`, `editSaving`, `editNotReady`, `editLoading`", status="match (token)")
     return sh
@@ -553,7 +611,8 @@ def albums_view():
     sh.row("`albums.view.dimension.coverHeight`", tok("albums.view.dimension.coverHeight"), cv["height"])
     sh.row("`albums.view.dimension.coverTop`", tok("albums.view.dimension.coverTop"), cv["top"])
     sh.row("cover centred", W / 2, (cv["left"] + cv["right"]) / 2)
-    sh.row("`albums.view.shadow.cover`", "BLOCKED", "debug: soft drop shadow; release: none", status="BLOCKED")
+    for label, d, exp, got in shadow_measure(snap("AlbumsSnapshotTest.viewContent")):
+        sh.row(f"`albums.view.shadow.cover` {label} (luminance, σ 8.5 / y 10 / 25 % model)", exp, got, tol=6, note="render `viewContent`; the model is the token's Gaussian box on white")
     sh.row("`albums.view.dimension.coverToTitle` (cover → serif cap top)", tok("albums.view.dimension.coverToTitle"), round(nm["baseline"] - serif_cap("displayMedium") - cv["bottom"], 2))
     sh.row("`albums.view.dimension.titleToMeta`", tok("albums.view.dimension.titleToMeta"), mt["baseline"] - nm["baseline"])
     sh.row("`albums.view.dimension.metaToActions`", tok("albums.view.dimension.metaToActions"), rn["top"] - mt["baseline"])
@@ -572,6 +631,106 @@ def albums_view():
     return sh
 
 
+def grid_check(img, n, fill, card):
+    """Expected cell rectangles of the recap card for n photos (gridFill) checked against the render: the gap lines
+    between cells are the card's white, each filled cell holds photo pixels, empty places are white."""
+    import math
+    cols = max(1, min(int(math.floor(math.sqrt(n))), int(fill["maxColumns"])))
+    rows = min((n + cols - 1) // cols, int(fill["maxRows"]))
+    cw = W * card["widthRatio"]
+    pad = cw * card["paddingRatio"]
+    left = (W - cw) / 2 + pad
+    aw = cw - 2 * pad
+    ah = aw / fill["areaAspect"]
+    gap = tok("size.global.stripGap")
+    cell_w, cell_h = (aw - (cols - 1) * gap) / cols, (ah - (rows - 1) * gap) / rows
+    # the card top: first white row at the card's padding column
+    x_pad = int(((W - cw) / 2 + pad / 2) * SCALE)
+    top = None
+    for y in range(80, int(H * SCALE) - 10):
+        if all(lum(img, x_pad, y + k) > 250 for k in range(6)):
+            top = y / SCALE + pad
+            break
+    if top is None:
+        return False, (f"{cols} × {rows}", "card not found")
+    ok = True
+    for i in range(cols * rows):
+        r, c = divmod(i, cols)
+        x0, y0 = left + c * (cell_w + gap), top + r * (cell_h + gap)
+        centre = lum(img, (x0 + cell_w / 2) * SCALE, (y0 + cell_h / 2) * SCALE)
+        filled = i < n
+        ok &= (centre < 250) if filled else (centre > 250)
+        if c < cols - 1 and filled and i + 1 < n:
+            ok &= lum(img, (x0 + cell_w + gap / 2) * SCALE, (y0 + cell_h / 2) * SCALE) > 240
+    return ok, (f"{cols} × {rows}, {min(n, cols * rows)} drawn", f"{cols} × {rows} laid out as predicted" if ok else "differs")
+
+
+def mark_measure(img, c1, c2, c5):
+    """The selection mark on the first (checked) grid cell and the absence of a mark on cell 7 (unchecked). The cells'
+    bounds come from the measurement pass (the editor alone); the render shows it as a sheet, so they are shifted to the
+    first column of `color.global.control` (the checked cell's inset frame) found in the render."""
+    s = SCALE
+    control = tok("color.global.control", "light")
+    x_probe = int((c1["left"] + 1) * s)
+    shift = None
+    for y in range(0, img.height - int(c1["height"] * s)):
+        if px_hex(img, x_probe, y) == control and all(px_hex(img, x_probe, y + k) == control for k in range(0, int(c1["height"] * s) - 2, 8)):
+            shift = y / s - c1["top"]
+            break
+    if shift is None:
+        return {"inset": -1, "fill": "-", "centre": -1, "circle": -1, "blue": "-", "outline": "-", "unchecked": "-"}
+    c1 = dict(c1, top=c1["top"] + shift, bottom=c1["bottom"] + shift)
+    c5 = dict(c5, top=c5["top"] + shift, bottom=c5["bottom"] + shift)
+    y_mid = (c1["top"] + c1["bottom"]) / 2
+    fill_hex = "#%02X%02X%02X" % img.getpixel((int((c1["left"] + 1) * s), int(y_mid * s)))[:3]
+    x = c1["left"] * s
+    while x < c1["right"] * s and px_hex(img, x, y_mid * s) == fill_hex:
+        x += 1
+    inset = x / s - c1["left"]
+    primary = tuple(int(tok("color.global.system.primary").lstrip("#")[i:i + 2], 16) for i in (0, 2, 4))
+    near = lambda p: all(abs(p[i] - primary[i]) <= 12 for i in range(3))
+    box = tok("size.global.checkCircle") + 4
+    blues = [(xx, yy) for xx in range(int(c1["left"] * s), int((c1["left"] + box) * s)) for yy in range(int(c1["top"] * s), int((c1["top"] + box) * s))
+             if near(img.getpixel((xx, yy)))]
+    xs, ys = [p[0] for p in blues], [p[1] for p in blues]
+    circle = (max(xs) - min(xs) + 1) / s if blues else -1
+    cx = (max(xs) + min(xs)) / 2 / s - c1["left"] if blues else -1
+    blue = "#%02X%02X%02X" % img.getpixel((min(xs) + 3, int((max(ys) + min(ys)) / 2)))[:3] if blues else "-"
+    outline = "#%02X%02X%02X" % img.getpixel((min(xs) - 1, int((max(ys) + min(ys)) / 2)))[:3] if blues else "-"
+    pitch_x, pitch_y = c2["left"] - c1["left"], c5["top"] - c1["top"]
+    l7, t7 = c1["left"] + 2 * pitch_x, c1["top"] + pitch_y
+    has_blue = any(near(img.getpixel((int(xx), int(yy)))) for xx in range(int(l7 * s), int((l7 + box) * s)) for yy in range(int(t7 * s), int((t7 + box) * s)))
+    corner = "#%02X%02X%02X" % img.getpixel((int((l7 + 1) * s), int((t7 + c1["height"] / 2) * s)))[:3]
+    unchecked = "no mark" if not has_blue and corner != fill_hex else "mark or inset"
+    return {"inset": inset, "fill": fill_hex, "centre": cx, "circle": circle, "blue": blue, "outline": outline, "unchecked": unchecked}
+
+
+def px_hex(img, x, y):
+    return "#%02X%02X%02X" % img.getpixel((int(x), int(y)))[:3]
+
+
+def shadow_measure(img):
+    """Luminance under and beside the album cover against the token's Gaussian-box model on white."""
+    import math
+    g = img.convert("L")
+    w, h = g.size
+    dark = [(x, y) for y in range(0, 800) for x in range(0, w, 2) if g.getpixel((x, y)) < 120]
+    xs, ys = [p[0] for p in dark], [p[1] for p in dark]
+    l, r, t, b = min(xs), max(xs), min(ys), max(ys)
+    sh = tok("albums.view.shadow.cover")
+    phi = lambda z: 0.5 * (1 + math.erf(z / math.sqrt(2)))
+    out = []
+    cx = int((l + r) / 2 + sh["x"] * SCALE)
+    for d in (2, 10, 16):
+        exp = round(255 * (1 - sh["opacity"] * phi((sh["y"] - d) / sh["blur"])), 1)
+        out.append((f"below +{d} dp", d, exp, g.getpixel((cx, int(b + 1 + d * SCALE)))))
+    cy = int((t + b) / 2 + sh["y"] * SCALE)
+    for d in (2, 8):
+        exp = round(255 * (1 - sh["opacity"] * phi((sh["x"] - d) / sh["blur"])), 1)
+        out.append((f"right +{d} dp", d, exp, g.getpixel((int(r + 1 + d * SCALE), cy))))
+    return out
+
+
 TC2B = ("references/auto/retro/press/tc-2023-07-retro-2b.jpg", "1300,110,910,1920")
 TC1B2 = ("references/auto/retro/press/tc-2023-07-retro-1b.webp", "1300,110,910,1920")
 TC1B3 = ("references/auto/retro/press/tc-2023-07-retro-1b.webp", "2470,110,910,1920")
@@ -585,9 +744,9 @@ SURFACES = [
     ("walls.mine", walls_mine, ["WallsSnapshotTest.mineContent", "WallsSnapshotTest.mineContentDark"], [ST02]),
     ("walls.member", lambda: walls_mine("walls.member"), ["WallsSnapshotTest.memberContent", "WallsSnapshotTest.memberContentDark"], [ST02, TC1B3]),
     ("walls.browse", walls_browse, ["WallsSnapshotTest.browseContent", "WallsSnapshotTest.browseContentDark"], [TC1B2]),
-    ("week.recap", week_recap, ["WeekSnapshotTest.recapList", "WeekSnapshotTest.recapPreview", "WeekSnapshotTest.recapPreviewDark"],
-     [("references/auto/retro/press/tc-2023-12-recaps.png", "205,225,650,1400"), ("references/auto/retro/store/retro-store-04.png", None)]),
-    ("week.edit", week_edit, ["WeekSnapshotTest.editReady", "WeekSnapshotTest.editReadyDark"], [("references/auto/retro/video/ig-DDbA_F7x-j7-composer-f130-147-f188-197.png", None)]),
+    ("week.recap", week_recap, ["WeekSnapshotTest.recapList", "WeekSnapshotTest.recapPreview", "WeekSnapshotTest.recapPreviewNine", "WeekSnapshotTest.recapPreviewDark"],
+     [("references/auto/retro/press/tc-2023-12-recaps.png", "205,225,650,1400"), ("references/auto/retro/press/tc-2023-12-retro-header.png", "1600,350,960,1400"), ("references/auto/retro/store/retro-store-04.png", None)]),
+    ("week.edit", week_edit, ["WeekSnapshotTest.editReady", "WeekSnapshotTest.editReadyDark"], [("references/auto/retro/video/ig-DDbA_F7x-j7-composer-f130-147-f188-197.png", None), ("references/auto/platform/android-photopicker-selected-f200.png", None)]),
     ("week.history", week_history, ["WeekSnapshotTest.historyContent", "WeekSnapshotTest.historyContentDark"], [ST02]),
     ("albums.list", albums_list, ["AlbumsSnapshotTest.listContent", "AlbumsSnapshotTest.listContentDark"], [("references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png", None)]),
     ("albums.view", albums_view, ["AlbumsSnapshotTest.viewContent", "AlbumsSnapshotTest.viewContentDark"], [("references/auto/retro/press/tc-2024-04-journals-1.webp", "2460,500,830,1790")]),

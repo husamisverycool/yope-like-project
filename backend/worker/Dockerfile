@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Worker image: Node 22 + ffmpeg (libx264, AAC) + Roboto. Build from the repository root, because
+# Worker image: Node 22 + ffmpeg (libx264, AAC) + the app's fonts and the fallback fonts. Build from the repository root, because
 # the worker reads design token proposals from design/ until they are merged:
 #   docker build -f backend/worker/Dockerfile -t worker .
 # NODE_IMAGE may point at a mirror of the official image (e.g. public.ecr.aws/docker/library/node:22-slim)
@@ -20,11 +20,14 @@ RUN --mount=type=secret,id=build_ca,required=false \
 
 COPY backend/worker/tsconfig.json ./
 COPY backend/worker/src ./src
-# Roboto Serif Headline + Inter (SIL OFL, see fonts/SOURCE.txt): read by path for server-rendered text, also registered with fontconfig
+# Roboto Serif Headline + Inter (SIL OFL, see fonts/SOURCE.txt) and fonts/fonts.conf, which src/tribute/render.ts hands to
+# fontconfig (FONTCONFIG_FILE): those faces, then the fallback set for other scripts and colour emoji — no system fonts.
 COPY backend/worker/fonts ./fonts
-RUN mkdir -p /usr/share/fonts/truetype/app \
- && cp fonts/*.ttf /usr/share/fonts/truetype/app/ \
- && fc-cache -f
+# Fallback fonts (SIL OFL, fonts/fallback/SOURCE.txt): Noto scripts 10.2 MB + colour emoji 5.0 MB.
+# Same relative place as in the repository (fonts.conf: ../../../fonts/fallback/…).
+COPY fonts/fallback/SOURCE.txt /app/fonts/fallback/SOURCE.txt
+COPY fonts/fallback/scripts /app/fonts/fallback/scripts
+COPY fonts/fallback/emoji-color /app/fonts/fallback/emoji-color
 # design token proposals (collage, platform, tribute) and copy patterns, read at runtime
 COPY design/proposals /app/design/proposals
 COPY design/*.md /app/design/
