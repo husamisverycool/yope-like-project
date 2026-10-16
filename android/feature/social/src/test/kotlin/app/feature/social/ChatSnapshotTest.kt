@@ -58,6 +58,15 @@ class ChatSnapshotTest : SnapshotBase() {
         chat(state, data = data, dark = true)
     }
 
+    /** A post with a front photo in the thread: core:ui daily.dualimage in the card's corners. */
+    @Test fun dualPhoto() {
+        val data = FakeSocialData().apply {
+            seedThread()
+            makeDual("p-1")
+        }
+        chat(ChatViewModel(data, GROUP).state.value, data = data)
+    }
+
     @Test fun loading() = chat(ChatState(phase = ChatState.Phase.Loading))
 
     @Test fun empty() {

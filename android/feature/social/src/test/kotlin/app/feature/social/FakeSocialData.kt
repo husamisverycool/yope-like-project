@@ -283,6 +283,18 @@ class FakeSocialData(var me: String = ME) : SocialData {
         return p
     }
 
+    /** Makes [postId]'s photo a dual capture (daily.dualimage): a front photo of its author over the back one. */
+    fun makeDual(postId: String) {
+        val m = media.getValue(posts.getValue(postId).mediaId)
+        media[m.id] = m.copy(
+            frontOriginalPath = "u/${m.ownerId}/${m.id}/front/original.jpg",
+            frontDisplayPath = "u/${m.ownerId}/${m.id}/front/display.jpg",
+            frontThumbPath = "u/${m.ownerId}/${m.id}/front/thumb.jpg",
+            frontWidth = m.width,
+            frontHeight = m.height,
+        )
+    }
+
     /** A thread with text, a reply to a photo, a photo with caption and reactions, and voice messages. */
     fun seedChat() {
         seedGroup()

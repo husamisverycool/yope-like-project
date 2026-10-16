@@ -54,6 +54,7 @@ object TestPhotos {
             "collages" in parts -> SamplePhotos.painter(
                 SamplePhotos.collage(COLLAGE_W, COLLAGE_H, (0 until 4).map { SamplePhotos.pick(it + 9) }, columns = 2), WIDTH, HEIGHT,
             )
+            parts[0] == "u" && "front" in parts -> sized(people[parts[1]] ?: SamplePhotos.avatarForKey(parts[1]))
             parts[0] == "u" && parts.size >= 3 -> sized(photoFor(parts[2]))
             else -> sized(SamplePhotos.forKey(path))
         }

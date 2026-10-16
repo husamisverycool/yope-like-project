@@ -43,6 +43,12 @@ class ViewerSnapshotTest : SnapshotBase() {
         viewer(state("v-1", d), data = d, dark = true)
     }
 
+    /** A dual capture: core:ui daily.dualimage, square corners on media black (`photo.viewer.layout.photo`). */
+    @Test fun dualCapture() {
+        val d = viewerData().apply { makeDual("v-3") }
+        viewer(state("v-3", d), data = d)
+    }
+
     /** Nobody tagged: the run reads "I'm in this" in white. */
     @Test fun untagged() {
         val d = viewerData().apply { tagRows.clear() }
