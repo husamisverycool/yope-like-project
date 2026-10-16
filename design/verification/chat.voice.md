@@ -1,45 +1,56 @@
 # Verification — `chat.voice` (iOS)
 
-Voice message bubble (playback; recording BLOCKED) — `ios/App/Sources/Features/Social/UI/VoiceUI.swift` (`VoiceBubble`, `Waveform`, `SocialVoicePlayback`, `VoiceEnvelope`).
+Voice messages: the capsule in the thread and the viewer, the recording row with slide-to-cancel and lock — `ios/App/Sources/Features/Social/UI/VoiceUI.swift` (`VoiceCapsule`, `SocialVoicePlayback`, `SocialVoiceRecorder`) and the recording row of `ChatComposer.swift`.
 
-Checklist written from the spec (`design/surfaces/chat.voice.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/social/<surface>-<state>.png` (`ios/AppTests/Social/SocialSnapshotTests.swift`), then `tools/sidebyside.py` makes `design/verification/chat.voice.png` next to the reference image(s) below. Values in the third column are read from `design/tokens/*.json` / `design/copy/*.json` (value and evidence level).
+Pass 4 (Retro redesign). Checklist written from the spec (`design/surfaces/chat.voice.md`, MERGE "Redesign — Social (RS-*)", lead L-3 / L-4) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/social/<surface>-<state>-<light|dark>.png` (`ios/AppTests/Social/SocialSnapshotTests.swift`: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/chat.voice.png` next to the Retro reference(s) below. Values in the third column are read from `design/tokens/*.json` / `design/copy/*.json` (value and evidence level). Components are the Pass 3 library (`ios/App/Sources/Components`, C-01…C-35).
 
-Reference image(s): `references/auto/yope/store/yope-store-05.png`, `references/auto/yope/frames/b-derot-store-05-rot-1.68.png`, `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png`
+Retro reference(s): `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png (C-07 anatomy)`, `references/auto/retro/store/retro-store-02.png`, `references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png`
 
-Snapshots (CI): `chat.voice-playback.png`, `chat.voice-permission-denied.png`
+Snapshots (CI): `chat.voice-idle-light.png`, `chat.voice-idle-dark.png`, `chat.voice-recording-light.png`, `chat.voice-recording-locked-light.png`, `chat.voice-error-play-light.png`
 
-**Summary: 15 matched · 4 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 21 matched · 0 approximated · 0 not matched (BLOCKED or not buildable).**
 
-## Bubble
+## Elements
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `chat.voice.dimension.width`<br>`chat.voice.dimension.height`<br>`chat.voice.radius.bubble`<br>`chat.voice.color.bubble` | 271.8 pt (SOURCED)<br>44.9 pt (SOURCED)<br>14 pt (SOURCED)<br>#262626 (SOURCED) | my bubble 271.8 × 44.9, corners 14 | frame(width:) + frame(minHeight:), RoundedRectangle fill |
-| matched | `chat.voice.color.bubbleTheirs` | #2B2B2B (SOURCED) | another member’s fill #2B2B2B (G-7) | background by sender |
-| approximated | `chat.voice.layout.widthRule` | BLOCKED | width per duration | BLOCKED: the observed width for every duration |
-| matched | `chat.thread.dimension.bubbleInsetMine`<br>`chat.thread.dimension.bubbleInsetTheirs` | 23 pt (SOURCED)<br>50.5 pt (SOURCED) | alignment as text bubbles | same row layout as text |
-| matched | `chat.voice.dimension.playButton`<br>`chat.voice.dimension.playInsetLeading`<br>`chat.voice.color.playButton`<br>`icon.global.play`<br>`chat.voice.dimension.playGlyph` | 31.5 pt (SOURCED)<br>8 pt (SOURCED)<br>#333333 (SOURCED)<br>ios: play.fill; android: Rounded.PlayArrow (PLATFORM)<br>11.5 pt (SOURCED) | play circle | circle with ▶; hit area 44 with the drawn position kept |
-| matched | `chat.voice.dimension.playToWaveform`<br>`chat.voice.dimension.barWidth`<br>`chat.voice.dimension.barPitch`<br>`chat.voice.dimension.barMinHeight`<br>`chat.voice.dimension.barMaxHeight`<br>`chat.voice.color.waveform` | 7.8 pt (SOURCED)<br>3.1 pt (SOURCED)<br>6.1 pt (SOURCED)<br>9.3 pt (SOURCED)<br>31.5 pt (SOURCED)<br>#919191 (SOURCED) | waveform bars from the level envelope | RMS envelope computed off the main thread once per file and cached; bars resampled to the width |
-| matched | `chat.voice.dimension.waveformToDuration`<br>`chat.voice.dimension.durationTrailing`<br>`chat.voice.layout.durationFormat`<br>`fontSize.global.caption`<br>`fontWeight.global.caption`<br>`chat.voice.color.duration` | 8.9 pt (SOURCED)<br>9.7 pt (SOURCED)<br>pattern: mm:ss; example: 00:38 (SOURCED)<br>12 pt (SOURCED)<br>semibold (SOURCED)<br>#929292 (SOURCED) | duration “00:38” | DateFormatter mm:ss (UTC), TextRole.caption |
+| matched | `chat.voice.layout.capsule`<br>`size.global.pillHeight`<br>`radius.global.capsule`<br>`size.global.pillPaddingLeading`<br>`size.global.pillIconGap`<br>`size.global.pillPaddingTrailing`<br>`size.global.iconSmall`<br>`chat.voice.a11y.message`<br>`chat.voice.a11y.messageMine`<br>`chat.voice.a11y.play`<br>`chat.voice.a11y.pause`<br>`chat.voice.layout.playback` | component: C-06 fill capsule with the anatomy of C-07: leading glyph, then the label; height: size.global.pillHeight; corners: radius.global… (SOURCED)<br>37 pt (SOURCED)<br>shape: capsule; radius: height / 2 (SOURCED)<br>18 pt (SOURCED)<br>9.7 pt (SOURCED)<br>17 pt (SOURCED)<br>14.7 pt (SOURCED)<br>“{name}'s voice message, {duration}” (SOURCED)<br>“Your voice message, {duration}” (SOURCED)<br>“Play voice message, {duration}” (SOURCED)<br>“Pause” (SOURCED)<br>tap: the capsule toggles play / pause; one voice message plays at a time (starting another stops the first); label: total duration when idle… (SOURCED) | voice capsule | `VoiceCapsule`: C-06 fill capsule (`control` / `controlOnDeep` on media), min height `pillHeight`, `pillPaddingLeading` → glyph (`iconSmall`) → `pillIconGap` → label (`pill`, monospaced digits) → `pillPaddingTrailing`, hugs its content; one button labelled `a11y.message` / `.messageMine`, action play / pause |
+| matched | `chat.voice.layout.durationFormat` | pattern: m:ss; example: 0:38; digits: monospaced (SOURCED) | duration | `SocialFormat.duration` with `chat.voice.layout.durationFormat.pattern` (m:ss); idle total, playing / paused elapsed |
+| matched | `icon.global.mic`<br>`color.global.destructive`<br>`color.global.textSecondary`<br>`chat.voice.recording.slideToCancel` | ios: mic; android: Outlined.Mic (PLATFORM)<br>#EA3337 (SOURCED)<br>#999999 (SOURCED)<br>“Slide to cancel” (SOURCED) | recording row | `recordingRow`: `icon.global.mic` in `destructive` in the avatar's place, elapsed time (`body`, monospaced), "‹ Slide to cancel" (`textSecondary`) following the finger |
+| matched | `size.global.circleButton`<br>`color.global.control`<br>`icon.global.lock`<br>`size.global.pillGap`<br>`chat.voice.a11y.lock` | 36 pt (SOURCED)<br>light #F1F1F1 / dark #262626 (SOURCED)<br>ios: lock.fill; android: Rounded.Lock (PLATFORM)<br>8.8 pt (SOURCED)<br>“Keep recording” (SOURCED) | lock circle | C-11 `CircleButtonFace(icon: lock)` `pillGap` above the field over the mic while holding; slide up past it locks; VoiceOver's default action records hands-free |
+| matched | `icon.global.trash`<br>`color.global.destructive`<br>`icon.global.send`<br>`chat.voice.a11y.discard`<br>`chat.composer.a11y.send` | ios: trash; android: Outlined.Delete (PLATFORM)<br>#EA3337 (SOURCED)<br>ios: paperplane; android: AutoMirrored.Outlined.Send (PLATFORM)<br>“Delete recording” (SOURCED)<br>“Send” (SOURCED) | discard / send (locked) | locked: `icon.global.trash` (`destructive`) discards, `icon.global.send` sends |
+| matched | `chat.voice.permission.title`<br>`chat.voice.permission.detail`<br>`chat.voice.permission.button`<br>`photo.viewer.delete.cancel` | “Microphone Access” (SOURCED)<br>“Voice messages use your microphone. Only people in this group can hear them.” (SOURCED)<br>“Allow Microphone Access” (SOURCED)<br>“Cancel” (PLATFORM) | microphone permission | native `.alert` in `ChatThreadView`: title, detail, "Allow Microphone Access" (opens Settings), Cancel |
 
 ## States
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `—` | — | loading (file): the bubble draws at once | drawn from the message row; waveform when levels arrive (cached thereafter) |
-| matched | `chat.voice.icon.pause`<br>`chat.voice.color.waveformPlayed` | ios: pause.fill; android: Rounded.Pause (PLATFORM)<br>#FFFFFF (SOURCED) | playing: pause glyph; bars up to the playhead white, moving bar by bar (G-8) | SocialVoicePlayback.playedFraction from VoicePlayer.progress (sampled finer than one bar); the split resets when playback finishes |
-| approximated | `chat.voice.error.play` | “couldn’t play this voice message” (SOURCED) | play error | visual BLOCKED: line announced via the toast centre |
-| matched | `chat.voice.error.record`<br>`chat.thread.sendFailed`<br>`haptic.global.error` | “couldn’t record — try again” (SOURCED)<br>“couldn’t send — tap to try again” (SOURCED)<br>ios: notification.error; android: REJECT (PLATFORM) | record / upload error | recordFailed announced; an upload failure keeps the voice message with the failed-message layout (tap retries, still playable from the local file) |
-| matched | `chat.voice.permission.title`<br>`chat.voice.permission.detail`<br>`chat.voice.permission.button`<br>`onboarding.permission.contacts.size.cardMarginH` | “can’t send voice messages?” (SOURCED)<br>“enable your mic” (SOURCED)<br>“enable” (SOURCED)<br>18 pt (SOURCED) | microphone denied card | shared PermissionCard above the composer; first use shows the system prompt |
-| matched | `chat.voice.layout.recording`<br>`chat.voice.recording.slideToCancel`<br>`icon.global.lock`<br>`color.global.destructive` | start: press and hold the mic circle: recording runs while the finger is down; send: lift the finger: the message is sent; cancel: slide left while holding: … (SOURCED)<br>“slide to cancel” (SOURCED)<br>ios: lock.fill; android: Rounded.Lock (PLATFORM)<br>#FF4245 (PLATFORM) | hold to record, lift to send, slide left to cancel, slide up to lock; row: red dot · timer · ‹ slide to cancel; locked: pause previews, send circle sends (G-9) | SocialVoiceRecorder + VoiceRecordingRow + VoiceLockHint; no haptics |
-| approximated | `—` | — | recording thresholds and sizes not in the token | cancel when the finger passes the row’s middle (the hint), lock one circle + gap above the mic; dot as tall as the timer’s capitals; timer / hint in the field’s text role (token notes); a recording that would read 00:00 is not sent |
-| approximated | `—` | — | discarding a hands-free recording | a delete glyph (photo.viewer.icon.delete, “delete”) leads the locked / paused row: the token names no discard control once locked; paused (stopped) recordings cannot resume — AppServices’ recorder has no pause |
+| matched | `—` | — | idle | play glyph + total |
+| matched | `size.global.iconSmall` | 14.7 pt (SOURCED) | loading (file) | `ProgressView` in the glyph slot while `SocialVoicePlayback` downloads (signed URL) |
+| matched | `icon.global.pause` | ios: pause.fill; android: Rounded.Pause (PLATFORM) | playing / paused | pause / play glyph and elapsed time (one message plays at a time; resume from a pause) |
+| matched | `chat.voice.error.play`<br>`color.global.destructive` | “Error loading voice message. Tap to retry” (SOURCED)<br>#EA3337 (SOURCED) | error (play) | `chat.voice.error.play` (`pill`, `destructive`) in the label slot; a tap retries |
+| matched | `chat.voice.error.record`<br>`chat.thread.sendFailed`<br>`haptic.global.error` | “Couldn't record voice message” (SOURCED)<br>“Couldn't send. Tap to retry” (SOURCED)<br>ios: notification.error; android: REJECT (PLATFORM) | error (record / upload) | `voiceRecordingFailed()` → announcement (`recordFailed`) + `haptic.global.error`; failed send → failed-message layout (unit-tested) |
+| matched | `—` | — | offline | recording works; the send fails as above |
+| matched | `chat.voice.permission.*`<br>`system.permissions.microphone.purpose` | (each key of the group)<br>“The app uses your microphone to record voice notes and the sound in videos you share with your group…” (VERIFIED) | permission-denied (microphone) | the alert after the system denial (`onMicDenied`) |
+| matched | `—` | — | empty | n/a |
 
-## Accessibility and haptics
+## Motion
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `chat.voice.a11y.messageMine`<br>`chat.voice.a11y.message`<br>`chat.voice.a11y.play`<br>`chat.voice.a11y.pause` | “your voice message, {duration}” (SOURCED)<br>“{name}’s voice message, {duration}” (SOURCED)<br>“play voice message, {duration}” (SOURCED)<br>“pause” (SOURCED) | labels (duration spoken) | DateComponentsFormatter .full minutes / seconds; waveform hidden |
-| matched | `haptic.global.send`<br>`haptic.global.error` | ios: notification.success; android: CONFIRM (PLATFORM)<br>ios: notification.error; android: REJECT (PLATFORM) | sent / failed | model feedback |
-| matched | `haptic.global.longPressStart` | ios: system (context menu plays its own haptic; no custom generator); android: LONG_PRESS (PLATFORM) | long press (context menu) | contextMenu plays the system haptic |
-| matched | `—` | — | one voice message plays at a time | SocialVoicePlayback (shared) |
+| matched | `duration.global.crossfade` | 100 ms (SOURCED) | play ↔ pause glyph | `ComponentMotion.crossfade` on the glyph |
+| matched | `duration.global.fade`<br>`easing.global.standard` | 150 ms (SOURCED)<br>x1: 0.4; y1: 0; x2: 0.2; y2: 1 (SOURCED) | field ↔ recording row | `ComponentMotion.fade` on `recorder.isActive` |
+| matched | `layout.global.reduceMotion` | ios: UIAccessibility.isReduceMotionEnabled / @Environment(\.accessibilityReduceMotion); android: Settings.Global.ANIMATOR_DURATION_SCALE ==… (PLATFORM) | slide to cancel / to lock | finger-tracked offset, no curve |
+
+## Haptics
+
+| status | token / copy | reference value | element | iOS implementation |
+|---|---|---|---|---|
+| matched | `haptic.global.send` | ios: notification.success; android: CONFIRM (PLATFORM) | voice message sent | `.sent` → `haptic.global.send` |
+| matched | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | send / record failed | `.failed` → `haptic.global.error` |
+| matched | `haptic.global.tap` | ios: none; android: VIRTUAL_KEY (PLATFORM) | tap play / pause (Android) | none on iOS |
+| matched | `—` | — | recording start / stop | none |
+
+## Notes
+
+- Snapshots of the playing state need audio and are not recorded; the recording rows are drawn through the DEBUG `showRecordingForSnapshot` hook (no microphone in tests); the permission alert is a system alert (not drawn by the snapshot renderer).

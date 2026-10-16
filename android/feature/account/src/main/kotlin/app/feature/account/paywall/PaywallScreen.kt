@@ -15,9 +15,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -335,7 +335,10 @@ private fun Benefits(state: PaywallUiState, modifier: Modifier) {
                         Modifier
                             .weight(1f, fill = false)
                             .width(Tokens.Sizes.paywallSizeMediaCardWidth)
-                            .aspectRatio(MEDIA_ASPECT, matchHeightConstraintsFirst = true)
+                            // Retro's card keeps its 248 width and takes the height the page leaves (aspect-fill crop),
+                            // never taller than 3:4.
+                            .heightIn(max = Tokens.Sizes.paywallSizeMediaCardWidth / MEDIA_ASPECT)
+                            .fillMaxHeight()
                             .clip(RoundedCornerShape(Tokens.Radii.paywallRadiusMediaCard)),
                     )
                 }

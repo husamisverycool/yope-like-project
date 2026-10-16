@@ -105,7 +105,10 @@ final class SocialChatFlowUITests: XCTestCase {
         XCTAssertTrue(photo.waitForExistence(timeout: 10))
         XCTAssertFalse(app.descendants(matching: .any)[Demo.myPhotoReactions].exists, "no reactions: no chip")
         photo.press(forDuration: 1.0)
-        let fire = app.buttons["React with fire"].firstMatch
+        // The palette item: its accessibility label, or the emoji itself where the system menu keeps the item's title.
+        let fire = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@ OR label == %@", "React with fire", "🔥"))
+            .firstMatch
         XCTAssertTrue(fire.waitForExistence(timeout: 5), "the quick-reaction row of the context menu")
         fire.tap()
         let chip = app.descendants(matching: .any)[Demo.myPhotoReactions]

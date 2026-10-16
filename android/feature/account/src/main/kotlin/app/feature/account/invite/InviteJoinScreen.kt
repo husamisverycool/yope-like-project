@@ -32,6 +32,9 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -206,7 +209,8 @@ fun InviteJoinScreen(
     val live = state.phase == InviteJoinState.Ready
     Box(Modifier.fillMaxSize().background(Tokens.ColorsLight.globalBackground).windowInsetsPadding(WindowInsets.safeDrawing).padding(Tokens.Sizes.inviteWebSizeCardInset)) {
         Box(Modifier.fillMaxSize().clip(shape).background(Tokens.Colors.globalBackgroundDeep, shape)) {
-            val backdrop = if (live) preview?.coverUrl ?: preview?.inviterAvatarUrl else null
+            // The group's blurred cover stays behind the card while the preview is known (live, or full at join time).
+            val backdrop = if (live || state.phase == InviteJoinState.Full) preview?.coverUrl ?: preview?.inviterAvatarUrl else null
             if (backdrop != null) BlurredBackdrop(backdrop)
             if (state.phase == InviteJoinState.Loading) {
                 val loading = stringResource(R.string.global_a11y_loading)
@@ -317,16 +321,15 @@ private fun Footer(onTerms: (() -> Unit)?, onPrivacy: (() -> Unit)?, modifier: M
         return
     }
     val style = dsTextStyle(Tokens.FontSizes.inviteWebFontSizeFooter, Tokens.FontWeights.fontWeightGlobalBody, Tokens.Fonts.globalFamily)
-    Row(modifier.padding(bottom = Tokens.Sizes.inviteWebSizeFooterMargin), verticalAlignment = Alignment.CenterVertically) {
-        onTerms?.let { FooterLink(stringResource(R.string.invite_web_footer_terms), style, it) }
-        if (onTerms != null && onPrivacy != null) Text(AMPERSAND, style = style, color = Tokens.Colors.globalTextOnMedia)
-        onPrivacy?.let { FooterLink(stringResource(R.string.invite_web_footer_privacy), style, it) }
+    val terms = stringResource(R.string.invite_web_footer_terms)
+    val privacy = stringResource(R.string.invite_web_footer_privacy)
+    // One line, as Retro's footer ("Terms & Privacy"): each label is its own link span; the line keeps the minimum touch height.
+    val text = buildAnnotatedString {
+        onTerms?.let { action -> withLink(LinkAnnotation.Clickable(terms) { action() }) { append(terms) } }
+        if (onTerms != null && onPrivacy != null) append(AMPERSAND)
+        onPrivacy?.let { action -> withLink(LinkAnnotation.Clickable(privacy) { action() }) { append(privacy) } }
     }
-}
-
-@Composable
-private fun FooterLink(text: String, style: androidx.compose.ui.text.TextStyle, onClick: () -> Unit) {
-    Box(Modifier.size(Tokens.Sizes.globalMinTouchTargetAndroid).tapClickable(onClick = onClick), contentAlignment = Alignment.Center) {
+    Box(modifier.padding(bottom = Tokens.Sizes.inviteWebSizeFooterMargin).heightIn(min = Tokens.Sizes.globalMinTouchTargetAndroid), contentAlignment = Alignment.Center) {
         Text(text, style = style, color = Tokens.Colors.globalTextOnMedia, maxLines = 1)
     }
 }

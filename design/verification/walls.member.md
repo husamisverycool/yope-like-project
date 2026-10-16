@@ -1,30 +1,32 @@
 # Verification — `walls.member` (iOS)
 
-A member’s wall — `ios/App/Sources/Features/Social/UI/WallsViews.swift` (`WallMemberScreen`), `Core/WallModels.swift`.
+A member's wall (Retro's profile of a friend: back chevron + name, avatar, "•••" capsule, week sections) — `ios/App/Sources/Features/Social/UI/WallsViews.swift` (`WallMemberScreen`, shared `WallProfileHeader` / `WallWeekList`), `Core/WallModels.swift`.
 
-Checklist written from the spec (`design/surfaces/walls.member.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/social/<surface>-<state>.png` (`ios/AppTests/Social/SocialSnapshotTests.swift`), then `tools/sidebyside.py` makes `design/verification/walls.member.png` next to the reference image(s) below. Values in the third column are read from `design/tokens/*.json` / `design/copy/*.json` (value and evidence level).
+Pass 4 (Retro redesign). Checklist written from the spec (`design/surfaces/walls.member.md`, MERGE "Redesign — Social (RS-*)", lead L-3 / L-4) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/social/<surface>-<state>-<light|dark>.png` (`ios/AppTests/Social/SocialSnapshotTests.swift`: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/walls.member.png` next to the Retro reference(s) below. Values in the third column are read from `design/tokens/*.json` / `design/copy/*.json` (value and evidence level). Components are the Pass 3 library (`ios/App/Sources/Components`, C-01…C-35).
 
-Reference image(s): `references/auto/yope/frames/b-presskit-profile.png`, `references/auto/yope/frames/b-yopeapp-7591560669967682847-t116.00-me-and-friends.png`
+Retro reference(s): `references/auto/retro/store/retro-store-02.png (ST-02)`, `references/auto/retro/press/tc-2023-07-retro-1b.webp ("•••" capsule)`
 
-Snapshots (CI): `walls.member-ready.png`, `walls.member-empty.png`, `walls.member-error.png`, `walls.member-offline.png`
+Snapshots (CI): `walls.member-ready-light.png`, `walls.member-ready-dark.png`, `walls.member-loading-light.png`, `walls.member-empty-light.png`, `walls.member-blocked-light.png`, `walls.member-error-light.png`, `walls.member-offline-light.png`
 
-**Summary: 8 matched · 1 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 11 matched · 0 approximated · 0 not matched (BLOCKED or not buildable).**
 
-## Layout
+## Elements
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `size.global.headerButton`<br>`color.global.controlOnDeep`<br>`icon.global.back`<br>`chat.thread.a11y.back` | 44 pt (SOURCED)<br>#101010 (SOURCED)<br>ios: chevron.left; android: AutoMirrored.Rounded.KeyboardArrowLeft (PLATFORM)<br>“back” (SOURCED) | back circle top-left, centred on the title | HeaderCircleButton(.onDeep) → dismiss |
-| matched | `fontSize.global.sheetTitle`<br>`walls.browse.dimension.titleBaseline`<br>`walls.member.a11y.wall` | 19.5 pt (SOURCED)<br>23.6 pt (SOURCED)<br>“{name}’s wall” (SOURCED) | display name centred, one line, tail truncation; read as “{name}’s wall” | WallHeader |
-| matched | `walls.mine.count.gridColumns`<br>`walls.mine.dimension.gridInset`<br>`walls.mine.dimension.gridGap`<br>`walls.mine.aspectRatio.gridTile`<br>`walls.mine.radius.gridTile`<br>`walls.mine.layout.gridOrder`<br>`walls.mine.dimension.titleToGrid` | 3 (SOURCED)<br>24 pt (SOURCED)<br>4 pt (SOURCED)<br>width: 115.3; height: 158.5 (SOURCED)<br>6.5 pt (SOURCED)<br>order: wall() items newest first, filled left to right, row by row; items: photos and same-moment collages, each in one tile, aspect fill; rows: every row ha… (SOURCED)<br>23.5 pt (SOURCED) | wall grid as walls.mine | WallGrid |
-| approximated | `walls.mine.layout.freeformWall` | BLOCKED | free-form canvas | BLOCKED: grid (S-11) |
+| matched | `icon.global.back`<br>`size.global.backInset`<br>`size.global.headerGap`<br>`chat.thread.a11y.back` | ios: chevron.left; android: AutoMirrored.Rounded.ArrowBackIos (PLATFORM)<br>21.1 pt (SOURCED)<br>14.6 pt (SOURCED)<br>“Back” (SOURCED) | back | back chevron (`icon.global.back` at the `icon` symbol size, ink at `backInset`, ≥ 44 hit area) leading the name line, `headerGap` before the name |
+| matched | `font.global.display`<br>`walls.member.a11y.wall` | ios: system-serif; android: serif (PLATFORM)<br>“{name}'s profile” (SOURCED) | name | name in `headerTitle` (display serif), one line, tail truncation; VoiceOver reads `walls.member.a11y.wall` |
+| matched | `size.global.iconPillWidth`<br>`size.global.pillHeight`<br>`icon.global.more`<br>`size.global.iconSmall`<br>`walls.member.a11y.more`<br>`walls.member.menu.report`<br>`walls.member.menu.block` | 49 pt (SOURCED)<br>37 pt (SOURCED)<br>ios: ellipsis; android: Rounded.MoreHoriz (PLATFORM)<br>14.7 pt (SOURCED)<br>“More Options” (SOURCED)<br>“Report Profile” (SOURCED)<br>“Block Profile” (SOURCED) | more capsule | C-06 `CapsuleLabel(icon: more)` as a native `Menu`: Report Profile (account's `safety.report`, kind user) and Block Profile (account's `blockConfirmation`), both destructive |
+| matched | `week.history.a11y.tile` | “{weekday}, {date}, {name}'s photo” (SOURCED) | photo tile | C-17 tile labelled `week.history.a11y.tile`; tap → viewer with this wall's photos |
+| matched | `walls.browse.a11y.collage` | “Collage, {date}” (SOURCED) | collage tile | collage tile → `collage.view` full screen via the shell |
 
 ## States
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `easing.global.native` | keyboard: system; alert: system; activityIndicator: system (ProgressView / CircularProgressIndicator); scrollIndicator: system; navigationPush: system (Navig… (PLATFORM) | loading | ProgressView only when nothing is cached |
-| matched | `walls.member.empty.title`<br>`walls.member.empty.detail` | “no pics from {name} yet” (SOURCED)<br>“you’ll see the pics {name} sends to groups you’re both in” (SOURCED) | empty (no shared photos / blocked) | EmptyStateView without pill |
-| matched | `walls.mine.error.title`<br>`chat.thread.error.detail`<br>`chat.thread.error.retry` | “couldn’t load this wall” (SOURCED)<br>“check your connection and try again — your pics are safe” (SOURCED)<br>“try again” (SOURCED) | error | EmptyStateView + retry |
-| matched | `chat.thread.offline.title`<br>`chat.thread.offline.detail` | “you’re offline” (SOURCED)<br>“your group’s pics will be right here when you’re back” (SOURCED) | offline | cached grid, else the offline layout |
-| matched | `photo.viewer.a11y.photo`<br>`walls.browse.a11y.collage` | “{name}’s pic, {date}” (SOURCED)<br>“collage, {date}” (SOURCED) | tile labels | buttons |
+| matched | `week.history.a11y.loading` | “Loading” (SOURCED) | loading | header from `profiles`; one placeholder section |
+| matched | `walls.member.empty.title`<br>`walls.member.empty.detail` | “Nothing to see here” (SOURCED)<br>“{name} hasn't shared anything in a group you're both in.” (SOURCED) | empty | C-27: calendar glyph, "Nothing to see here", detail with the first name; no action |
+| matched | `walls.mine.error.title` | “Error loading your weeks. Tap here to try again.” (SOURCED) | error | `SocialErrorLine` (`walls.mine.error.title`) |
+| matched | `—` | — | offline | cached wall, else the error line |
+| matched | `—` | — | blocked (after Block from the menu) | `model.blocked()` after a confirmed block → empty state (unit-tested) |
+| matched | `—` | — | permission-denied | n/a |

@@ -1,35 +1,51 @@
 # Verification — `chat.composer` (iOS)
 
-Group chat composer — `ios/App/Sources/Features/Social/UI/ChatThreadView.swift` (`ChatComposer`, `composerArea`).
+The thread's composer (Retro's C-13 comment field with Messages / WhatsApp glyph order) — `ios/App/Sources/Features/Social/UI/ChatComposer.swift` (`ChatComposer`, `SocialFieldInput`, `SocialFieldGlyph`, `SocialFieldMetrics`, `ChatReplyBar`), hosted by `ChatThreadView`.
 
-Checklist written from the spec (`design/surfaces/chat.composer.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/social/<surface>-<state>.png` (`ios/AppTests/Social/SocialSnapshotTests.swift`), then `tools/sidebyside.py` makes `design/verification/chat.composer.png` next to the reference image(s) below. Values in the third column are read from `design/tokens/*.json` / `design/copy/*.json` (value and evidence level).
+Pass 4 (Retro redesign). Checklist written from the spec (`design/surfaces/chat.composer.md`, MERGE "Redesign — Social (RS-*)", lead L-3 / L-4) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/social/<surface>-<state>-<light|dark>.png` (`ios/AppTests/Social/SocialSnapshotTests.swift`: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/chat.composer.png` next to the Retro reference(s) below. Values in the third column are read from `design/tokens/*.json` / `design/copy/*.json` (value and evidence level). Components are the Pass 3 library (`ios/App/Sources/Components`, C-01…C-35).
 
-Reference image(s): `references/auto/yope/store/yope-store-05.png`, `references/auto/yope/frames/b-derot-store-05-rot-1.68.png`
+Retro reference(s): `references/auto/retro/press/tc-2023-07-retro-2b.jpg (TC-2B, phone 2 field)`, `references/auto/whatsapp/store/whatsapp-store-04.png`
 
-Snapshots (CI): `chat.composer-idle.png`, `chat.composer-typing.png`
+Snapshots (CI): `chat.composer-idle-light.png`, `chat.composer-idle-dark.png`, `chat.composer-typing-light.png`, `chat.composer-replying-light.png`, `chat.composer-sending-light.png`, `chat.composer-failed-light.png`, `chat.composer-emoji-only-light.png`
 
-**Summary: 14 matched · 0 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 19 matched · 1 approximated · 0 not matched (BLOCKED or not buildable).**
 
-## Row
-
-| status | token / copy | reference value | element | iOS implementation |
-|---|---|---|---|---|
-| matched | `chat.composer.dimension.insetLeading`<br>`chat.composer.dimension.insetTrailing` | 22.8 pt (SOURCED)<br>23.4 pt (SOURCED) | row insets | padding(.leading/.trailing) |
-| matched | `chat.composer.dimension.cameraButton`<br>`color.global.accent`<br>`icon.global.camera`<br>`color.global.onAccent`<br>`chat.composer.dimension.cameraGlyph`<br>`chat.composer.a11y.camera` | 40.6 pt (SOURCED)<br>#CDFD07 (SOURCED)<br>ios: camera.fill; android: Rounded.PhotoCamera (PLATFORM)<br>#000000 (SOURCED)<br>19.5 pt (SOURCED)<br>“send a pic” (SOURCED) | lime camera circle | Button; glyph height cameraGlyph; opens camera.capture for this group |
-| matched | `chat.composer.dimension.gapCameraField`<br>`chat.composer.dimension.gapFieldButton` | 6.2 pt (SOURCED)<br>7.1 pt (SOURCED) | gaps | padding |
-| matched | `chat.composer.dimension.fieldHeight`<br>`radius.global.capsule`<br>`color.global.control`<br>`chat.composer.dimension.fieldRim`<br>`chat.composer.color.fieldRimTop`<br>`chat.composer.color.fieldRimBottom` | 39.5 pt (SOURCED)<br>shape: capsule; radius: height / 2 (SOURCED)<br>#2E2E2E (SOURCED)<br>0.44 pt (SOURCED)<br>#4B4B4B (SOURCED)<br>#474747 (SOURCED) | text field capsule with hairline rim | TextField(axis: .vertical) in Capsule fill + gradient strokeBorder |
-| matched | `chat.composer.dimension.fieldPaddingLeading`<br>`fontSize.global.body`<br>`color.global.textPrimary` | 17.8 pt (SOURCED)<br>17 pt (SOURCED)<br>#FFFFFF (SOURCED) | typed text inset, role body | padding(.horizontal) + TextRole.body |
-| matched | `chat.composer.placeholder`<br>`fontSize.global.placeholder`<br>`color.global.textSecondary`<br>`chat.composer.a11y.field` | “start typing...” (SOURCED)<br>17 pt (SOURCED)<br>#969696 (SOURCED)<br>“message” (SOURCED) | placeholder “start typing...” | prompt Text in textSecondary (placeholder size = body size, 17) |
-| matched | `chat.composer.layout.typingState`<br>`chat.composer.a11y.send`<br>`icon.global.send`<br>`color.global.accent`<br>`color.global.onAccent` | rule: while the field holds text, the mic circle is replaced in place by a send circle; when the field is empty again the mic circle returns; sendCircleSize:… (SOURCED)<br>“send” (SOURCED)<br>ios: paperplane; android: AutoMirrored.Rounded.Send (PLATFORM)<br>#CDFD07 (SOURCED)<br>#000000 (SOURCED) | while the field holds text the mic slot shows the lime send circle; empty → mic again (G-6) | SendCircle (sideButton, accent, send glyph at the mic glyph’s height), instant swap; return inserts a new line (UI test) |
-| matched | `chat.composer.dimension.sideButton`<br>`color.global.controlRaised`<br>`icon.global.mic`<br>`chat.composer.dimension.micGlyph`<br>`chat.composer.a11y.mic` | 39.5 pt (SOURCED)<br>#434343 (SOURCED)<br>ios: mic.fill; android: Rounded.Mic (PLATFORM)<br>21.8 pt (SOURCED)<br>“record a voice message” (SOURCED) | mic circle: press and hold records (chat.voice) | drawn in every build; DragGesture(minimumDistance: 0) drives chat.voice.layout.recording; VoiceOver activation starts hands-free |
-| matched | `chat.composer.dimension.bottomInset` | 8 pt (SOURCED) | row 8 above the bottom safe area and the keyboard (G-5) | padding(.bottom) inside the bottom safe-area inset (rides on the keyboard) |
-| matched | `size.global.minTouchTarget.ios` | 44 pt (VERIFIED) | hit areas 44 without changing the drawn size | contentShape(Circle().inset(by: −…)) |
-
-## States and haptics
+## Elements
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `haptic.global.send`<br>`haptic.global.error`<br>`chat.thread.sendFailed` | ios: notification.success; android: CONFIRM (PLATFORM)<br>ios: notification.error; android: REJECT (PLATFORM)<br>“couldn’t send — tap to try again” (SOURCED) | sending / failed | optimistic message; on failure taken back, text returned to the field, line announced |
-| matched | `—` | — | offline: the field stays editable | send fails as above (unit-tested) |
-| matched | `chat.voice.permission.title`<br>`chat.voice.permission.detail`<br>`chat.voice.permission.button` | “can’t send voice messages?” (SOURCED)<br>“enable your mic” (SOURCED)<br>“enable” (SOURCED) | microphone denied: inline card above the composer | shared PermissionCard; leaves once the microphone is allowed (checked on return from Settings) |
-| matched | `easing.global.native` | keyboard: system; alert: system; activityIndicator: system (ProgressView / CircularProgressIndicator); scrollIndicator: system; navigationPush: system (Navig… (PLATFORM) | keyboard | system; scrollDismissesKeyboard(.interactively) |
+| approximated | `color.global.control`<br>`color.global.surfaceSecondary.android`<br>`size.global.commentFieldHeight`<br>`radius.global.commentField`<br>`size.global.screenMargin`<br>`chat.composer.dimension.bottomInset`<br>`chat.composer.a11y.field`<br>`chat.composer.placeholder`<br>`chat.composer.placeholderReply` | light #F1F1F1 / dark #262626 (SOURCED)<br>light #F7F7F7 / dark #262626 (SOURCED)<br>51.2 pt (SOURCED)<br>12.6 pt (SOURCED)<br>16 pt (SOURCED)<br>0 pt (SOURCED)<br>“Message” (SOURCED)<br>“Send a message…” (SOURCED)<br>“Reply…” (SOURCED) | field | `socialFieldShape`: fill `control` (page) / `controlOnDeep` (media), min height `commentFieldHeight` (grows with text, `axis: .vertical`), `radius.global.commentField`, `screenMargin` insets, `bottomInset` above the safe area; placeholder `placeholder` / `placeholderReply`. A local variant of C-13: the shared `ReplyBar` has no measured internals, two glyph slots or a recording row (component gap C-13); text centring derived from the body line height |
+| matched | `size.global.avatarComment`<br>`chat.composer.dimension.avatarInset`<br>`chat.composer.dimension.avatarToText` | 31.2 pt (SOURCED)<br>8.6 pt (SOURCED)<br>10.9 pt (SOURCED) | own avatar | `AvatarView` (`avatarComment`) at `avatarInset`, text `avatarToText` after it; decorative |
+| matched | `icon.global.camera`<br>`color.global.textSecondary`<br>`size.global.headerIconPitch`<br>`size.global.headerButton`<br>`chat.composer.a11y.camera` | ios: camera; android: Outlined.PhotoCamera (PLATFORM)<br>#999999 (SOURCED)<br>48 pt (SOURCED)<br>44 pt (PLATFORM)<br>“Take photo” (SOURCED) | camera glyph | `SocialFieldGlyph` (`icon.global.camera`, `textSecondary`, `icon` box in a `headerButton` hit area), centres `headerIconPitch` apart → the camera for this group (`AppModal.camera`; while replying to a photo: `presentCameraReplying`) |
+| matched | `icon.global.mic`<br>`color.global.textSecondary`<br>`chat.composer.dimension.glyphInsetTrailing`<br>`chat.composer.a11y.mic` | ios: mic; android: Outlined.Mic (PLATFORM)<br>#999999 (SOURCED)<br>17.7 pt (SOURCED)<br>“Record a voice message” (SOURCED) | mic glyph | `icon.global.mic` last, its ink `glyphInsetTrailing` from the field edge; press-and-hold records (chat.voice); first use asks for the microphone |
+| matched | `icon.global.send`<br>`color.global.textPrimary`<br>`chat.composer.a11y.send` | ios: paperplane; android: AutoMirrored.Outlined.Send (PLATFORM)<br>light #000000 / dark #FFFFFF (SOURCED)<br>“Send” (SOURCED) | send glyph | with text: `icon.global.send` (`textPrimary`) in place of camera + mic → `sendDraft()` (reply ids, field cleared, reply bar closed — unit-tested) |
+
+## States
+
+| status | token / copy | reference value | element | iOS implementation |
+|---|---|---|---|---|
+| matched | `—` | — | idle | placeholder, camera + mic |
+| matched | `duration.global.crossfade`<br>`chat.composer.a11y.send` | 100 ms (SOURCED)<br>“Send” (SOURCED) | typing | send glyph, `.dsAnimation(ComponentMotion.crossfade, value: hasText)` |
+| matched | `chat.composer.placeholderReply`<br>`chat.thread.reply.bar` | “Reply…” (SOURCED)<br>“Replying to {name}” (SOURCED) | replying | `ChatReplyBar` ("Replying to {name}" / to yourself, close glyph) `sectionHeaderToContent` above the field; placeholder `placeholderReply` |
+| matched | `chat.thread.sending`<br>`chat.thread.sendFailed`<br>`haptic.global.send`<br>`haptic.global.error`<br>`chat.thread.layout.failedMessage` | “Sending” (SOURCED)<br>“Couldn't send. Tap to retry” (SOURCED)<br>ios: notification.success; android: CONFIRM (PLATFORM)<br>ios: notification.error; android: REJECT (PLATFORM)<br>indicator: one line under the failed message: chat.thread.sendFailed, text role caption, color.global.destructive; no glyph; sending: while… (SOURCED) | sending / failed | optimistic message with `chat.thread.sending`, then `sendFailed` + `haptic.global.error`; `haptic.global.send` on success (unit-tested) |
+| matched | `—` | — | offline | the field stays editable; sends fail into the failed layout |
+| matched | `chat.voice.permission.*` | (each key of the group) | permission-denied (microphone) | native alert in `ChatThreadView` (`chat.voice.permission.*`, Settings link) |
+| matched | `—` | — | permission-denied (camera) | owned by capture's `camera.capture` |
+| matched | `—` | — | loading / empty / error | n/a |
+
+## Motion
+
+| status | token / copy | reference value | element | iOS implementation |
+|---|---|---|---|---|
+| matched | `duration.global.crossfade` | 100 ms (SOURCED) | glyph swap (camera + mic ↔ send) | `ComponentMotion.crossfade` |
+| matched | `duration.global.fade`<br>`easing.global.standard` | 150 ms (SOURCED)<br>x1: 0.4; y1: 0; x2: 0.2; y2: 1 (SOURCED) | composer / reply bar appear | `.dsAnimation(ComponentMotion.fade)` for the reply bar and the recording row |
+| matched | `—` | — | keyboard raise / lower | system keyboard avoidance (`safeAreaInset(edge: .bottom)`) |
+
+## Haptics
+
+| status | token / copy | reference value | element | iOS implementation |
+|---|---|---|---|---|
+| matched | `haptic.global.tap` | ios: none; android: VIRTUAL_KEY (PLATFORM) | tap camera / send (Android) | none on iOS |
+| matched | `haptic.global.send` | ios: notification.success; android: CONFIRM (PLATFORM) | text sent | `haptic.global.send` via the model's `.sent` signal |
+| matched | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | send failed | `haptic.global.error` via `.failed` |
+| matched | `—` | — | mic pressed | no haptic while recording |

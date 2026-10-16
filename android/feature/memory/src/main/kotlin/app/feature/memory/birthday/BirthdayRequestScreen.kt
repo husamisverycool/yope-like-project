@@ -38,11 +38,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import app.designsystem.R
@@ -274,21 +276,32 @@ private fun CardDetail(text: String) {
     Text(text, style = style, color = PageRoles.secondaryText(), modifier = Modifier.capTopAt(Tokens.Sizes.birthdayRequestCardTitleToDetail, CapTop.height(style)))
 }
 
+/**
+ * One numbered prompt: a one-line row is `card.rowPitch` high with the marker and the line centred in it; a prompt
+ * that wraps grows by its extra lines, the marker staying centred on the first line (PAY's numbered steps).
+ */
 @Composable
 private fun PromptRow(number: Int, text: String) {
-    Row(Modifier.fillMaxWidth().heightIn(min = Tokens.Sizes.birthdayRequestCardRowPitch), verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            Modifier
-                .size(Tokens.Sizes.birthdayRequestCardMarker)
-                .clip(CircleShape)
-                .background(Tokens.Colors.globalAccent, CircleShape)
-                .clearAndSetSemantics { },
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(MemoryFormats.position(number), style = TextRoles.badge, color = Tokens.Colors.globalOnAccent)
+    val pitch = Tokens.Sizes.birthdayRequestCardRowPitch
+    val style = TextRoles.textButton
+    val measurer = rememberTextMeasurer()
+    val lineHeight = with(LocalDensity.current) { remember(style, measurer) { measurer.measure(text.take(1), style).size.height }.toDp() }
+    val inset = ((pitch - lineHeight) / 2).coerceAtLeastZero()
+    Row(Modifier.fillMaxWidth()) {
+        Box(Modifier.height(pitch), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .size(Tokens.Sizes.birthdayRequestCardMarker)
+                    .clip(CircleShape)
+                    .background(Tokens.Colors.globalAccent, CircleShape)
+                    .clearAndSetSemantics { },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(MemoryFormats.position(number), style = TextRoles.badge, color = Tokens.Colors.globalOnAccent)
+            }
         }
         Spacer(Modifier.width(Tokens.Sizes.birthdayRequestCardMarkerGap))
-        Text(text, style = TextRoles.textButton, color = Tokens.Colors.globalTextPrimary, modifier = Modifier.weight(1f))
+        Text(text, style = style, color = Tokens.Colors.globalTextPrimary, modifier = Modifier.weight(1f).padding(vertical = inset))
     }
 }
 

@@ -73,6 +73,7 @@ import app.ui.components.MediaPill
 import app.ui.components.MediaPillStyle
 import app.ui.components.PrimaryButton
 import app.ui.foundation.PageRoles
+import app.ui.foundation.endAtLastBaseline
 import app.ui.foundation.tapClickable
 import app.ui.system.SheetHeader
 import app.ui.system.SheetTextAction
@@ -241,7 +242,8 @@ fun ComposerStep(
 ) {
     MediaAppearance {
         Column(modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep)) {
-            MediaSheetHeader(stringResource(R.string.birthday_contribute_composer_title), onBack, onClose)
+            // The header ends at the title's baseline: the photo's top is measured from it (`titleToPhoto`, ST-03).
+            MediaSheetHeader(stringResource(R.string.birthday_contribute_composer_title), onBack, onClose, Modifier.endAtLastBaseline())
             if (state.closed) {
                 EmptyStateFill(Modifier.weight(1f)) { EmptyState(stringResource(R.string.birthday_contribute_closed, info.honoreeName), null) }
                 return@Column
@@ -328,8 +330,8 @@ internal fun fitted(aspect: Float, maxWidth: Dp, maxHeight: Dp): Pair<Dp, Dp> {
  * title (`sheetTitle`, `color.global.textOnMedia`), the close circle on media (C-11) at the trailing margin.
  */
 @Composable
-private fun MediaSheetHeader(title: String, onBack: () -> Unit, onClose: () -> Unit) {
-    Box(Modifier.fillMaxWidth().heightIn(min = Tokens.Sizes.globalMinTouchTargetAndroid).padding(horizontal = Tokens.Sizes.globalScreenMargin), contentAlignment = Alignment.Center) {
+private fun MediaSheetHeader(title: String, onBack: () -> Unit, onClose: () -> Unit, modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxWidth().heightIn(min = Tokens.Sizes.globalMinTouchTargetAndroid).padding(horizontal = Tokens.Sizes.globalScreenMargin), contentAlignment = Alignment.Center) {
         HeaderIconButton(Tokens.Icons.globalBack, stringResource(R.string.onthisday_a11y_back), onBack, Modifier.align(Alignment.CenterStart), tint = Tokens.Colors.globalTextOnMedia)
         Text(title, style = TextRoles.sheetTitle, color = Tokens.Colors.globalTextOnMedia, textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() })
         CircleIconButton(Tokens.Icons.globalClose, stringResource(R.string.birthday_contribute_a11y_close), onClose, Modifier.align(Alignment.CenterEnd), style = CircleButtonStyle.OnMedia)

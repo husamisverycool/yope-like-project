@@ -42,13 +42,39 @@ final class AccountFlowUITests: XCTestCase {
         button.tap()
     }
 
+    /// The first of `identifiers` that is on screen and hittable (SwiftUI may report a row's identifier on the row or on
+    /// its capsule).
+    @MainActor
+    private func tapFirst(_ identifiers: [String], in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        let deadline = Date().addingTimeInterval(5)
+        while Date() < deadline {
+            for identifier in identifiers {
+                let candidate = element(app, identifier)
+                if candidate.exists, candidate.isHittable {
+                    candidate.tap()
+                    return
+                }
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+        }
+        XCTFail("none of \(identifiers) on screen", file: file, line: line)
+    }
+
+    /// auth.phone: the landing's "Get Started" opens the phone form.
+    @MainActor
+    private func openPhoneForm(_ app: XCUIApplication) {
+        XCTAssertTrue(element(app, "auth.phone").waitForExistence(timeout: 10))
+        tap("auth.phone.getStarted", in: app)
+        XCTAssertTrue(element(app, "auth.phone.form").waitForExistence(timeout: 5))
+    }
+
     // MARK: Sign-up → onboarding → home
 
     @MainActor
     func testSignUpThroughOnboardingLandsOnTheGroupsList() {
         let app = launch("signed-out")
-        XCTAssertTrue(element(app, "auth.phone").waitForExistence(timeout: 10))
-        // The field starts with the region's calling code; the digits after it make "continue" available.
+        openPhoneForm(app)
+        // The field starts with the region's calling code; the digits after it make "Next" available.
         type("5551234567", into: "auth.phone.field", in: app)
         tap("auth.phone.continue", in: app)
 
@@ -66,6 +92,10 @@ final class AccountFlowUITests: XCTestCase {
         type("Ana", into: "auth.profile.field", in: app)
         tap("auth.profile.continue", in: app)
 
+        // Step 2 (Retro's profile photo step): "Maybe Later".
+        XCTAssertTrue(element(app, "auth.profile.photo").waitForExistence(timeout: 5))
+        tap("auth.profile.photo.secondary", in: app)
+
         XCTAssertTrue(element(app, "onboarding.permission.notifications").waitForExistence(timeout: 5))
         tap("onboarding.notifications.continue", in: app)
 
@@ -79,7 +109,7 @@ final class AccountFlowUITests: XCTestCase {
     @MainActor
     func testWrongCodeKeepsThePersonOnTheCodeStep() {
         let app = launch("signed-out")
-        XCTAssertTrue(element(app, "auth.phone").waitForExistence(timeout: 10))
+        openPhoneForm(app)
         type("5551234567", into: "auth.phone.field", in: app)
         tap("auth.phone.continue", in: app)
         XCTAssertTrue(element(app, "auth.code").waitForExistence(timeout: 5))
@@ -98,6 +128,10 @@ final class AccountFlowUITests: XCTestCase {
         tap("groups.list.empty.create", in: app)
 
         XCTAssertTrue(element(app, "groups.create").waitForExistence(timeout: 5))
+        // Step A: the type rows (Retro's templates); any row moves on to the cover and name.
+        XCTAssertTrue(element(app, "groups.create.type").waitForExistence(timeout: 5))
+        tapFirst(["groups.template.create", "groups.template.friends"], in: app)
+        XCTAssertTrue(element(app, "groups.create.name").waitForExistence(timeout: 5))
         XCTAssertFalse(element(app, "groups.create.submit").isEnabled, "a name is required")
         type("Lima family", into: "groups.create.name", in: app)
         tap("groups.create.submit", in: app)

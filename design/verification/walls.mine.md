@@ -1,40 +1,43 @@
 # Verification — `walls.mine` (iOS)
 
-My wall (the profile “pics” grid) — `ios/App/Sources/Features/Social/UI/WallsViews.swift` (`WallMineScreen`, `WallGrid`, `WallHeader`), `Core/WallModels.swift`.
+My wall (Retro's profile tab: serif name, avatar, gear capsule, week sections) — `ios/App/Sources/Features/Social/UI/WallsViews.swift` (`WallMineScreen`, `WallProfileHeader`, `WallWeekList`, `WallTiles`, `WallPage`), `Core/WallModels.swift` (`WallModel`).
 
-Checklist written from the spec (`design/surfaces/walls.mine.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/social/<surface>-<state>.png` (`ios/AppTests/Social/SocialSnapshotTests.swift`), then `tools/sidebyside.py` makes `design/verification/walls.mine.png` next to the reference image(s) below. Values in the third column are read from `design/tokens/*.json` / `design/copy/*.json` (value and evidence level).
+Pass 4 (Retro redesign). Checklist written from the spec (`design/surfaces/walls.mine.md`, MERGE "Redesign — Social (RS-*)", lead L-3 / L-4) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/social/<surface>-<state>-<light|dark>.png` (`ios/AppTests/Social/SocialSnapshotTests.swift`: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/walls.mine.png` next to the Retro reference(s) below. Values in the third column are read from `design/tokens/*.json` / `design/copy/*.json` (value and evidence level). Components are the Pass 3 library (`ios/App/Sources/Components`, C-01…C-35).
 
-Reference image(s): `references/auto/yope/frames/b-presskit-profile.png`, `references/auto/yope/frames/b-yopeapp-7591560669967682847-t116.00-me-and-friends.png`
+Retro reference(s): `references/auto/retro/store/retro-store-02.png (ST-02, primary)`, `references/auto/retro/press/engadget-2026-08-profile.jpg (current week)`, `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png (empty week)`
 
-Snapshots (CI): `walls.mine-ready.png`, `walls.mine-loading.png`, `walls.mine-empty.png`, `walls.mine-error.png`, `walls.mine-offline.png`
+Snapshots (CI): `walls.mine-ready-light.png`, `walls.mine-ready-dark.png`, `walls.mine-loading-light.png`, `walls.mine-empty-light.png`, `walls.mine-error-light.png`, `walls.mine-offline-light.png`
 
-**Summary: 12 matched · 2 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 16 matched · 1 approximated · 0 not matched (BLOCKED or not buildable).**
 
-## Layout
+## Elements
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `color.global.backgroundDeep` | #000000 (SOURCED) | black background | background ignoring safe area |
-| matched | `size.global.headerButton`<br>`color.global.controlOnDeep`<br>`icon.global.settings`<br>`size.global.headerInset`<br>`walls.mine.a11y.settings` | 44 pt (SOURCED)<br>#101010 (SOURCED)<br>ios: gearshape; android: Rounded.Settings (PLATFORM)<br>11.5 pt (SOURCED)<br>“settings” (SOURCED) | settings circle top-right, centred on the title | HeaderCircleButton(.onDeep) → settings; centred on baseline − cap height / 2 |
-| matched | `walls.mine.title`<br>`fontSize.global.sheetTitle`<br>`fontWeight.global.sheetTitle`<br>`walls.browse.dimension.titleBaseline` | “my wall” (SOURCED)<br>19.5 pt (SOURCED)<br>bold (SOURCED)<br>23.6 pt (SOURCED) | title “my wall”, baseline below the safe area | alignment guide on firstTextBaseline |
-| matched | `walls.mine.dimension.titleToGrid` | 23.5 pt (SOURCED) | grid top below the baseline | header height = titleBaseline + titleToGrid |
-| matched | `walls.mine.count.gridColumns`<br>`walls.mine.dimension.gridInset`<br>`walls.mine.dimension.gridGap`<br>`walls.mine.aspectRatio.gridTile`<br>`walls.mine.radius.gridTile`<br>`walls.mine.layout.gridOrder` | 3 (SOURCED)<br>24 pt (SOURCED)<br>4 pt (SOURCED)<br>width: 115.3; height: 158.5 (SOURCED)<br>6.5 pt (SOURCED)<br>order: wall() items newest first, filled left to right, row by row; items: photos and same-moment collages, each in one tile, aspect fill; rows: every row ha… (SOURCED) | 3 columns, insets 24, gaps 4, tile 115.3 : 158.5, corners 6.5, newest first | LazyVGrid flexible columns; thumbnails decoded at the tile’s pixel size |
-| approximated | `walls.mine.layout.freeformWall`<br>`walls.mine.layout.mosaic` | BLOCKED<br>BLOCKED | free-form wall / row-2 mosaic | BLOCKED: uniform grid (S-11) |
-| matched | `size.global.tabBarHeight` | 58 pt (SOURCED) | floating tab bar over the bottom (tab root) | account FloatingTabBar in a bottom safe-area inset when this is the “me” tab root; pushed from elsewhere: a back circle instead |
+| matched | `font.global.display`<br>`size.global.titleTop` | ios: system-serif; android: serif (PLATFORM)<br>64 pt (SOURCED) | name | `WallProfileHeader`: the name in `headerTitle` (display serif), one line, first baseline `titleTop` below the safe area (no chevron at the tab root), header trait |
+| approximated | `size.global.avatarProfile` | 64 pt (SOURCED) | avatar | `AvatarView` (`avatarProfile`) at the trailing margin, centred on the name's cap middle (`.capMiddle`) — the shared `ProfileHeader` centres it on the name block with platform spacing (component gap C-19) |
+| matched | `size.global.iconPillWidth`<br>`size.global.pillHeight`<br>`icon.global.settings`<br>`size.global.iconSmall`<br>`walls.mine.dimension.nameToActions`<br>`walls.mine.a11y.settings` | 49 pt (SOURCED)<br>37 pt (SOURCED)<br>ios: gearshape; android: Outlined.Settings (PLATFORM)<br>14.7 pt (SOURCED)<br>23 pt (SOURCED)<br>“Settings” (SOURCED) | settings capsule | C-06 `CapsuleButton(icon: settings)` at the trailing margin, its top `nameToActions` below the name's baseline → `settings.root` (account's sheet route) |
+| matched | `week.history.header.title` | “Week {week_number}” (SOURCED) | section header | C-20 `SectionHeader`: "Week {n}" (ISO, device time zone) + the range ("Oct 12 – 18"), no "•••"; range left out for the current week without photos; first header `actionsToWeeks` below the actions |
+| matched | `photo.viewer.a11y.photoMine` | “Your photo, {date}” (SOURCED) | photo tile | C-17 photo tile; label "Your photo, {date}"; tap → viewer with this wall's photos (newest week first, time order inside — unit-tested), group name in the header line |
+| matched | `walls.browse.a11y.collage` | “Collage, {date}” (SOURCED) | collage tile | collage tile (ready collages only, unit-tested), label `walls.browse.a11y.collage`; tap → capture's `collage.view` presented full screen through the shell (`SocialNav.presentRoute` → `PresentedRoute`) |
+| matched | `color.global.control`<br>`icon.global.add`<br>`week.history.a11y.add` | light #F1F1F1 / dark #262626 (SOURCED)<br>ios: plus; android: Rounded.Add (PLATFORM)<br>“Add photos” (SOURCED) | add tile | C-17 add tile in the current week → `camera.capture` (groups chosen in send-to) |
+| matched | `color.global.control`<br>`color.global.emptyTileText`<br>`week.history.a11y.emptyDay` | light #F1F1F1 / dark #262626 (SOURCED)<br>light #D9D9D9 / dark #515151 (SOURCED)<br>“{weekday}, {date}, no photos” (SOURCED) | empty-day tile | C-17 dated empty-day tiles for the current week without photos (`emptyDays`, unit-tested) |
+| matched | `color.global.control`<br>`week.history.a11y.emptyDay` | light #F1F1F1 / dark #262626 (SOURCED)<br>“{weekday}, {date}, no photos” (SOURCED) | placeholder tile | C-17 blank placeholders after the add tile for the current week's days without a photo |
+| matched | `—` | — | tab bar (C-04) | `AppTabBar(selected: .me)` in the bottom inset when the wall is the profile tab's root (account's shell navigation) |
 
 ## States
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `easing.global.native` | keyboard: system; alert: system; activityIndicator: system (ProgressView / CircularProgressIndicator); scrollIndicator: system; navigationPush: system (Navig… (PLATFORM) | loading / loading more | ProgressView only when nothing is cached (cached grid first) |
-| matched | `walls.mine.empty.title`<br>`walls.mine.empty.detail`<br>`walls.mine.empty.action`<br>`icon.global.camera` | “nothing on your wall yet” (SOURCED)<br>“pics you send to your groups show up here” (SOURCED)<br>“share a pic” (SOURCED)<br>ios: camera.fill; android: Rounded.PhotoCamera (PLATFORM) | empty: title, detail, white pill → camera | EmptyStateView + action |
-| matched | `walls.mine.error.title`<br>`chat.thread.error.detail`<br>`chat.thread.error.retry` | “couldn’t load this wall” (SOURCED)<br>“check your connection and try again — your pics are safe” (SOURCED)<br>“try again” (SOURCED) | error + retry | EmptyStateView |
-| matched | `chat.thread.offline.title`<br>`chat.thread.offline.detail` | “you’re offline” (SOURCED)<br>“your group’s pics will be right here when you’re back” (SOURCED) | offline, nothing cached | cached grid otherwise (unit-tested) |
+| matched | `week.history.a11y.loading` | “Loading” (SOURCED) | loading | header (profile from the cache / `profiles`); one section of seven placeholder tiles under a header without range; announced once |
+| matched | `—` | — | loading more | `ProgressView` after the last section while the next page loads |
+| matched | `icon.global.calendar`<br>`size.global.emptyIcon`<br>`size.global.emptyIconToTitle`<br>`size.global.emptyTitleToAction`<br>`icon.global.add`<br>`walls.mine.empty.title`<br>`walls.mine.empty.action` | ios: calendar; android: Outlined.CalendarMonth (PLATFORM)<br>22 pt (SOURCED)<br>26 pt (SOURCED)<br>25 pt (SOURCED)<br>ios: plus; android: Rounded.Add (PLATFORM)<br>“Welcome to Week {week_number}!” (SOURCED)<br>“Get this week started” (SOURCED) | empty (no photos) | current week strip, then C-27 centred below (`icon.global.calendar`, "Welcome to Week {n}!", C-07 "Get this week started" with `icon.global.add` → camera) |
+| matched | `size.global.screenMargin`<br>`color.global.textSecondary`<br>`walls.mine.error.title` | 16 pt (SOURCED)<br>#999999 (SOURCED)<br>“Error loading your weeks. Tap here to try again.” (SOURCED) | error | `SocialErrorLine` (tappable `body` line in `textSecondary` at the margin) → retry |
+| matched | `walls.mine.error.title` | “Error loading your weeks. Tap here to try again.” (SOURCED) | offline | cached wall first (`cachedWall`); nothing cached → the error line |
+| matched | `—` | — | permission-denied | n/a |
 
-## Tiles and data
+## Haptics
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `photo.viewer.a11y.photoMine`<br>`walls.browse.a11y.collage` | “your pic, {date}” (SOURCED)<br>“collage, {date}” (SOURCED) | tile labels | buttons; photo → viewer with this wall’s photos; collage → collage.view |
-| approximated | `—` | — | collage tiles cropped into the tile | aspect fill (spec approximation) |
-| matched | `—` | — | pages of 50; post_deleted drops every tile of that photo | WallModel (unit-tested) |
+| matched | `haptic.global.tap` | ios: none; android: VIRTUAL_KEY (PLATFORM) | tap on a tile / capsule (Android) | none on iOS |

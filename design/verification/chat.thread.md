@@ -1,100 +1,71 @@
 # Verification — `chat.thread` (iOS)
 
-Group chat thread — `ios/App/Sources/Features/Social/UI/ChatThreadView.swift`, `Core/ChatThreadModel.swift` (Screens/ChatScreen.swift is the route entry).
+Group chat thread (Retro's comment rows as the thread, Messages mechanics) — `ios/App/Sources/Features/Social/UI/ChatThreadView.swift` (`ChatThreadView`, `ChatMessageRow`, `MessageMenu`), `Core/ChatThreadModel.swift` (`ChatThreadModel`, `ChatThreadLayout`); `Screens/ChatScreen.swift` is the route entry.
 
-Checklist written from the spec (`design/surfaces/chat.thread.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/social/<surface>-<state>.png` (`ios/AppTests/Social/SocialSnapshotTests.swift`), then `tools/sidebyside.py` makes `design/verification/chat.thread.png` next to the reference image(s) below. Values in the third column are read from `design/tokens/*.json` / `design/copy/*.json` (value and evidence level).
+Pass 4 (Retro redesign). Checklist written from the spec (`design/surfaces/chat.thread.md`, MERGE "Redesign — Social (RS-*)", lead L-3 / L-4) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/social/<surface>-<state>-<light|dark>.png` (`ios/AppTests/Social/SocialSnapshotTests.swift`: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/chat.thread.png` next to the Retro reference(s) below. Values in the third column are read from `design/tokens/*.json` / `design/copy/*.json` (value and evidence level). Components are the Pass 3 library (`ios/App/Sources/Components`, C-01…C-35).
 
-Reference image(s): `references/auto/yope/store/yope-store-05.png`, `references/auto/yope/frames/b-derot-store-05-rot-1.68.png`, `references/auto/yope/frames/b-yopeapp-7591560669967682847-t49.50-reply-to-photo.png`, `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png`, `references/auto/yope/frames/b-alexaa-7652512140875566349-t5.83-group-chat-pill.png`
+Retro reference(s): `references/auto/retro/press/tc-2023-07-retro-2b.jpg (TC-2B, comment rows)`, `references/auto/retro/press/engadget-2026-08-the-problem-with-friends-only-socials-1786385236.jpg`, `references/auto/retro/store/retro-store-01.png`, `references/auto/retro/press/tc-2024-04-journals-1.webp`
 
-Snapshots (CI): `chat.thread-ready.png`, `chat.thread-loading.png`, `chat.thread-empty.png`, `chat.thread-error.png`, `chat.thread-offline.png`, `chat.thread-offline-cached.png`, `chat.thread-send-failed.png`
+Snapshots (CI): `chat.thread-ready-light.png`, `chat.thread-ready-dark.png`, `chat.thread-loading-light.png`, `chat.thread-loading-older-light.png`, `chat.thread-empty-light.png`, `chat.thread-error-light.png`, `chat.thread-offline-light.png`, `chat.thread-offline-cached-light.png`, `chat.thread-reply-quotes-light.png`
 
-**Summary: 43 matched · 6 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 33 matched · 2 approximated · 0 not matched (BLOCKED or not buildable).**
 
-## Header
-
-| status | token / copy | reference value | element | iOS implementation |
-|---|---|---|---|---|
-| matched | `color.global.background` | #171717 (SOURCED) | screen background | ZStack background, ignores safe area |
-| matched | `size.global.headerButton`<br>`color.global.control`<br>`icon.global.back`<br>`color.global.textPrimary`<br>`size.global.headerInset`<br>`chat.thread.a11y.back` | 44 pt (SOURCED)<br>#2E2E2E (SOURCED)<br>ios: chevron.left; android: AutoMirrored.Rounded.KeyboardArrowLeft (PLATFORM)<br>#FFFFFF (SOURCED)<br>11.5 pt (SOURCED)<br>“back” (SOURCED) | ‹ circle at the header inset | shared HeaderCircleButton (fill .onBackground), padding(.horizontal, headerInset) |
-| matched | `size.global.headerGap` | 7.3 pt (SOURCED) | gap ‹ → capsule | HStack(spacing: headerGap) |
-| approximated | `chat.thread.dimension.headerCapsuleHeight`<br>`color.global.control`<br>`radius.global.capsule`<br>`size.global.avatarHeader`<br>`icon.global.chevron`<br>`color.global.textSecondary` | 43.3 pt (SOURCED)<br>#2E2E2E (SOURCED)<br>shape: capsule; radius: height / 2 (SOURCED)<br>28 pt (SOURCED)<br>ios: chevron.right; android: AutoMirrored.Rounded.KeyboardArrowRight (PLATFORM)<br>#969696 (SOURCED) | group capsule (hugs content) | Capsule fill, min height token; avatar start inset = (capsule − avatar)/2 (not measured); › glyph at the platform size |
-| matched | `chat.thread.a11y.groupCapsule` | “{group_name}, group info” (SOURCED) | capsule label, opens the group profile | AccountRoute.groupProfile |
-| matched | `icon.global.recap`<br>`chat.thread.a11y.recap` | ios: film.stack; android: Rounded.VideoLibrary (PLATFORM)<br>“view recap” (SOURCED) | film-strip circle → latest ready recap; hidden without one | shown only when latestRecapID != nil; pushes AppRoute.recap |
-
-## Message geometry
+## Elements
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `chat.thread.dimension.bubbleInsetTheirs`<br>`chat.thread.dimension.bubbleInsetMine` | 50.5 pt (SOURCED)<br>23 pt (SOURCED) | their bubble left edge / my bubble right edge | avatar column + padding; trailing padding for mine |
-| matched | `chat.thread.dimension.bubblePaddingH`<br>`chat.thread.dimension.bubbleHeight`<br>`chat.thread.radius.bubble` | 11.5 pt (SOURCED)<br>35.6 pt (SOURCED)<br>16 pt (SOURCED) | bubble padding, single-line height (minimum), corners, no tail | TextBubble: padding, frame(minHeight:), RoundedRectangle |
-| matched | `chat.thread.dimension.bubbleMaxWidth` | 256 pt (SOURCED) | bubble hugs its text up to 256, then wraps (G-1) | SocialMaxWidth Layout proposes ≤ 256 to the padded text and takes its size |
-| matched | `chat.thread.color.bubbleTheirs`<br>`chat.thread.color.bubbleMine` | #2B2B2B (SOURCED)<br>#232323 (SOURCED) | bubble fills | background by sender |
-| matched | `chat.thread.dimension.bubbleRim`<br>`chat.thread.color.bubbleRimTheirsTop`<br>`chat.thread.color.bubbleRimTheirsBottom`<br>`chat.thread.color.bubbleRimMineTop`<br>`chat.thread.color.bubbleRimMineBottom` | 0.44 pt (SOURCED)<br>#414141 (SOURCED)<br>#363636 (SOURCED)<br>#393939 (SOURCED)<br>#343434 (SOURCED) | hairline rim shading top → bottom | strokeBorder(LinearGradient top→bottom, lineWidth: bubbleRim) |
-| matched | `chat.thread.dimension.avatarInset`<br>`size.global.avatarSmall`<br>`chat.thread.dimension.avatarGap` | 11.2 pt (SOURCED)<br>32.6 pt (SOURCED)<br>6.7 pt (SOURCED) | avatar column, beside the last message of a run only | ChatRowLayout.showsAvatar (unit-tested); empty column keeps the inset |
-| approximated | `chat.thread.dimension.emojiOnlyGlyph`<br>`chat.thread.count.emojiOnlyMax`<br>`chat.thread.layout.textStyleMap` | 47.5 pt (SOURCED)<br>3 (SOURCED)<br>replyName: subheadline; replyLabel: footnote; caption: title2; emojiOnly: largeTitle (PLATFORM) | a message of only 1–3 emoji: large, no bubble; 4+ as a text bubble (G-2) | SocialEmojiText.emojiOnlyCount (unit-tested); the glyph width is set as the font size (Apple Color Emoji advance ≈ point size), Dynamic Type largeTitle |
-| matched | `chat.thread.dimension.photoInsetTrailing`<br>`chat.thread.dimension.photoWidth`<br>`chat.thread.dimension.photoHeight`<br>`radius.global.photo`<br>`chat.thread.layout.photoFit` | 18.7 pt (SOURCED)<br>323 pt (SOURCED)<br>174 pt (SOURCED)<br>15 pt (SOURCED)<br>content: aspect fill, centred; frameWidthPt: 323; frameHeightPt: 174; timeOverlay: centred on the photo (text role overlayTime) (SOURCED) | photo message 323 × 174 shape, aspect fill | aspectRatio(photoWidth/photoHeight) between the insets, clipShape(radius.global.photo), image .fill |
-| matched | `chat.thread.dimension.gapSameSender`<br>`chat.thread.dimension.gapTextToVoice`<br>`chat.thread.dimension.photoGap`<br>`chat.thread.dimension.gapBetweenSenders` | 3.6 pt (SOURCED)<br>4.7 pt (SOURCED)<br>15.3 pt (SOURCED)<br>15 pt (SOURCED) | vertical gaps | ChatGap per row (unit-tested) |
-| approximated | `chat.thread.dimension.photoGap` | 15.3 pt (SOURCED) | photo ↔ bubble gap (not measured) | photoGap, per spec Gaps |
-
-## On a photo message
-
-| status | token / copy | reference value | element | iOS implementation |
-|---|---|---|---|---|
-| matched | `fontSize.global.overlayTime`<br>`fontWeight.global.overlayTime`<br>`color.global.textPrimary`<br>`chat.thread.layout.timeFormat` | 21 pt (SOURCED)<br>heavy (SOURCED)<br>#FFFFFF (SOURCED)<br>pattern: h:mm a; example: 10:00 PM; locale: device locale short time (SOURCED) | time centred on the photo | TextRole.overlayTime; DateFormatter template h:mm a in the device locale |
-| matched | `chat.thread.dimension.captionInsetBottom`<br>`chat.thread.dimension.captionHeight`<br>`chat.thread.dimension.captionPaddingH`<br>`chat.thread.radius.caption`<br>`chat.thread.fontSize.caption`<br>`chat.thread.fontWeight.caption` | 7.8 pt (SOURCED)<br>45.8 pt (SOURCED)<br>20 pt (SOURCED)<br>13 pt (SOURCED)<br>21 pt (SOURCED)<br>bold (SOURCED) | caption box, one line, tail truncation | PhotoCaption (lineLimit 1) |
-| matched | `color.global.scrim` | #00000080 (SOURCED) | caption box fill (gap fill G2) | RoundedRectangle fill behind the caption |
-| matched | `chat.reactions.dimension.clusterInsetLeading`<br>`chat.reactions.dimension.clusterInsetBottom`<br>`chat.reactions.a11y.cluster` | 17 pt (SOURCED)<br>20 pt (SOURCED)<br>“Reactions: {emoji_names}” (SOURCED) | reaction cluster bottom-left, never a number | ReactionCluster overlay (see chat.reactions) |
-
-## Reply to a photo
-
-| status | token / copy | reference value | element | iOS implementation |
-|---|---|---|---|---|
-| matched | `chat.thread.dimension.replyWidth`<br>`chat.thread.dimension.replyQuoteHeight`<br>`color.global.accent`<br>`chat.thread.radius.replyQuote` | 142 pt (SOURCED)<br>64 pt (SOURCED)<br>#CDFD07 (SOURCED)<br>18.2 pt (SOURCED) | lime quote part, top corners | UnevenRoundedRectangle(top radii) fill accent, frame(replyWidth × replyQuoteHeight) |
-| matched | `color.global.onAccent`<br>`chat.thread.dimension.replyQuoteBar`<br>`chat.thread.dimension.replyQuoteBarInset` | #000000 (SOURCED)<br>1.5 pt (SOURCED)<br>16 pt (SOURCED) | quote bar spanning name → label | Rectangle height = label baseline − name cap top |
-| matched | `chat.thread.fontSize.replyName`<br>`chat.thread.fontWeight.replyName`<br>`chat.thread.dimension.replyTextInset`<br>`chat.thread.dimension.replyNameCapTop` | 14.5 pt (SOURCED)<br>bold (SOURCED)<br>29 pt (SOURCED)<br>18.9 pt (SOURCED) | poster first name, cap top | alignment guide: baseline − cap height = capTop |
-| matched | `chat.thread.reply.photoLabel`<br>`chat.thread.fontSize.replyLabel`<br>`chat.thread.fontWeight.replyLabel`<br>`chat.thread.dimension.replyLabelBaseline` | “pic” (SOURCED)<br>12.7 pt (SOURCED)<br>regular (SOURCED)<br>44.9 pt (SOURCED) | “pic” baseline | alignment guide on firstTextBaseline |
-| matched | `chat.thread.dimension.replyThumb`<br>`chat.thread.radius.replyThumb`<br>`chat.thread.dimension.replyThumbInsetTop`<br>`chat.thread.dimension.replyThumbInsetTrailing` | 41.7 pt (SOURCED)<br>7 pt (SOURCED)<br>12.2 pt (SOURCED)<br>14.5 pt (SOURCED) | square thumbnail top-right (thumb_path) | overlay(alignment: .topTrailing), decoded at its pixel size |
-| matched | `chat.thread.radius.bubble`<br>`chat.thread.a11y.replyQuote` | 16 pt (SOURCED)<br>“reply to {name}’s pic” (SOURCED) | text part overlapping the quote bottom, sender fill | TextBubble with negative top padding = bubble radius |
-| approximated | `—` | — | photo reply to a photo (S-7) | quote part above the photo message, photo overlapping by radius.global.photo; quoted post loaded with the thread (unit-tested) |
-| matched | `—` | — | quoted photo deleted → quote removed, message stays | post_deleted strips reply_to_post_id on messages and posts (unit-tested) |
+| matched | `icon.global.back`<br>`size.global.backInset`<br>`size.global.headerButton`<br>`chat.thread.a11y.back` | ios: chevron.left; android: AutoMirrored.Rounded.ArrowBackIos (PLATFORM)<br>21.1 pt (SOURCED)<br>44 pt (PLATFORM)<br>“Back” (SOURCED) | back | C-02 `PushedScreenHeader` (chevron at `backInset`, ≥ 44 hit area, label from copy); `dismiss()` pops to the group |
+| matched | `font.global.display`<br>`size.global.headerGap`<br>`size.global.titleTop` | ios: system-serif; android: serif (PLATFORM)<br>14.6 pt (SOURCED)<br>64 pt (SOURCED) | title | C-02 title = the group's name, one line, tail truncation; header trait from the component |
+| matched | `size.global.sectionGap`<br>`size.global.sectionHeaderToContent`<br>`chat.thread.divider.today`<br>`chat.thread.divider.yesterday` | 36.4 pt (SOURCED)<br>11.7 pt (SOURCED)<br>“Today” (SOURCED)<br>“Yesterday” (SOURCED) | day divider | `SectionHeader(title:)` per day from `ChatThreadLayout.entries` (unit-tested); gaps = `sectionGap` − the label's cap-top offset above, `sectionHeaderToContent` − below-baseline after; `SocialFormat.dayDivider` → Today / Yesterday / `MMMM d, yyyy` (locale) |
+| matched | `size.global.avatarComment`<br>`chat.thread.dimension.rowAvatarToText`<br>`color.global.textSecondary`<br>`chat.thread.layout.timeFormat` | 31.2 pt (SOURCED)<br>16.7 pt (SOURCED)<br>#999999 (SOURCED)<br>pattern: locale short time (h:mm a in en-US); example: 10:00 PM; where: after the sender's name on the first row of a run, one space apart,… (SOURCED) | run header | `ChatMessageRow`: run's first message only — `AvatarView` (`avatarComment`) + `HStack(spacing: rowAvatarToText)`; name (`listTitle`) + " " + locale short time (`caption`, `textSecondary`) on one baseline; avatar / name tap → `SocialNav.openWall` (mine → walls.mine) |
+| matched | `chat.thread.dimension.rowLinePitch`<br>`chat.thread.count.emojiOnlyMax`<br>`fontSize.global.headerTitle`<br>`chat.thread.a11y.message`<br>`chat.thread.a11y.messageMine` | 19 pt (SOURCED)<br>3 (SOURCED)<br>40 pt (SOURCED)<br>“{name}, {message}” (SOURCED)<br>“You, {message}” (SOURCED) | text message | `SocialTextRole.threadBody` (`body`, line height `rowLinePitch`), first baseline `rowLinePitch` below the name's; 1…`emojiOnlyMax` emoji (`SocialEmojiText`, unit-tested) at `fontSize.global.headerTitle`; labels `a11y.message` / `.messageMine` |
+| matched | `chat.thread.layout.photoFit`<br>`radius.global.card`<br>`chat.thread.a11y.photo`<br>`chat.thread.a11y.photoMine`<br>`chat.thread.a11y.caption`<br>`duration.global.photoOpen` | frame: size.global.friendCardWidth × size.global.friendCardHeight (C-18 photo card, 2:3); corners: radius.global.card (continuous); content:… (SOURCED)<br>18 pt (SOURCED)<br>“{name}'s photo, {time}” (SOURCED)<br>“Your photo, {time}” (SOURCED)<br>“Caption: {caption}” (SOURCED)<br>250 ms (SOURCED) | photo message | C-18 card: `PhotoView` aspect-fill in `friendCardWidth × friendCardHeight`, `radius.global.card` (continuous); tap → `photo.viewer` with the thread's photos in order; labels `a11y.photo` / `.photoMine` |
+| matched | `—` | — | caption | caption text under the chip (`threadBody`), label `chat.thread.a11y.caption` |
+| matched | `chat.reactions.layout.chip`<br>`chat.reactions.dimension.chipTop`<br>`chat.reactions.a11y.cluster` | component: C-06 fill capsule holding the distinct emoji (no number); fill: page: color.global.control (iOS) / color.global.surfaceSecondary.… (SOURCED)<br>12 pt (SOURCED)<br>“Reactions: {emoji_names}” (SOURCED) | reaction chip | `ReactionChip` `chipTop` below the card, leading in the text column (see chat.reactions) |
+| matched | `chat.voice.layout.capsule`<br>`chat.voice.a11y.*` | component: C-06 fill capsule with the anatomy of C-07: leading glyph, then the label; height: size.global.pillHeight; corners: radius.global… (SOURCED)<br>(each key of the group) | voice message | `VoiceCapsule` (see chat.voice) |
+| approximated | `chat.thread.layout.replyQuote`<br>`chat.thread.reply.postTitle`<br>`chat.thread.reply.postWeek`<br>`chat.thread.reply.defaultText`<br>`chat.thread.reply.defaultAttachment`<br>`chat.thread.a11y.replyQuote` | replyToPhoto: a C-15 row above the reply: thumbnail size.global.rowThumbWidth × .rowThumbHeight, radius.global.thumbnail, then title chat.th… (SOURCED)<br>“Post by {name}” (SOURCED)<br>“Week {week_number}” (SOURCED)<br>“Message” (SOURCED)<br>“Attachment” (SOURCED)<br>“Reply to {name}'s post” (SOURCED) | reply quote | photo quote: a local C-15 row (thumb `rowThumbWidth × rowThumbHeight`, `radius.global.thumbnail`, `rowThumbGap`, `reply.postTitle` / `.postWeek`) — the shared `ThumbnailRow` always adds the screen margin, so it cannot sit in the text column (component gap C-15); message quote: one `listSubtitle` line with the name in the `listTitle` weight, tail truncation, defaults for voice / photo; tap → viewer / scrolls to the message; deleted target → no quote (unit-tested) |
+| matched | `color.global.textSecondary`<br>`color.global.destructive`<br>`chat.thread.layout.failedMessage`<br>`chat.thread.sending`<br>`chat.thread.sendFailed` | #999999 (SOURCED)<br>#EA3337 (SOURCED)<br>indicator: one line under the failed message: chat.thread.sendFailed, text role caption, color.global.destructive; no glyph; sending: while… (SOURCED)<br>“Sending” (SOURCED)<br>“Couldn't send. Tap to retry” (SOURCED) | status line | status line under my message: `chat.thread.sending` (`caption`, `textSecondary`) while in flight, `chat.thread.sendFailed` (`destructive`) after a failure; tap → `model.retry` (unit-tested) |
+| matched | `—` | — | context menu | native `.contextMenu` + the same items as `.accessibilityActions` (`MessageMenu`) |
+| matched | `chat.composer.*` | (each key of the group) | composer | `ChatComposer` in the bottom safe-area inset (see chat.composer) |
+| matched | `chat.thread.menu.reply`<br>`chat.thread.menu.copy`<br>`chat.thread.menu.report`<br>`chat.thread.menu.delete`<br>`chat.composer.placeholderReply`<br>`chat.thread.toast.copied` | “Reply” (SOURCED)<br>“Copy” (SOURCED)<br>“Report Message” (SOURCED)<br>“Unsend” (SOURCED)<br>“Reply…” (SOURCED)<br>“Copied!” (SOURCED) | any text message | Reply → `startReply` + focus (reply bar); Copy → `UIPasteboard` + announcement (`toast.copied`, C-26 on iOS); Report → account's `safety.report` (kind message); Unsend → native alert (`deleteMessage.*`) → `delete(_:)` |
+| matched | `—` | — | voice message | same items without Copy |
+| matched | `chat.reactions.layout.quickReactions`<br>`chat.thread.menu.save`<br>`chat.thread.menu.deletePhoto` | emoji: 🔥 then 💖, then the add-reaction glyph (chat.reactions.icon.add); where: a palette row at the top of the photo's native context menu (… (SOURCED)<br>“Save” (SOURCED)<br>“Delete” (SOURCED) | photo message | quick-reaction `ControlGroup` palette (🔥 💖 + add, `chat.reactions.layout.quickReactions`) at the menu's top; Save → `savePhoto` (permission alert when denied); Delete (mine) → native confirmation (`photo.viewer.delete.*`) → `delete_media` |
+| matched | `chat.thread.menu.retry`<br>`chat.thread.menu.delete` | “Retry” (SOURCED)<br>“Unsend” (SOURCED) | your failed message | Retry · Unsend (local removal, never reaches the server — unit-tested) |
 
 ## States
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| approximated | `groups.create.size.hud`<br>`groups.create.color.hud`<br>`groups.create.fontSize.hudLabel`<br>`groups.create.hud.loading` | 100 pt (SOURCED)<br>#0C0C0C (SOURCED)<br>15 pt (SOURCED)<br>“Loading” (SOURCED) | loading HUD (first page) | shared LoadingHUD, shown only after the cache was checked and nothing was cached (no HUD flash) |
-| matched | `chat.thread.radius.loadingHud` | 10.5 pt (SOURCED) | HUD corners 10.5 (G-3) | the account group’s shared LoadingHUD uses the token |
-| matched | `easing.global.native` | keyboard: system; alert: system; activityIndicator: system (ProgressView / CircularProgressIndicator); scrollIndicator: system; navigationPush: system (Navig… (PLATFORM) | older page indicator at the top | ProgressView row; the next older page is prefetched a fifth of a page before the top |
-| matched | `chat.thread.empty.titleCreator`<br>`chat.thread.empty.titleMember`<br>`chat.thread.empty.detail`<br>`chat.thread.empty.invite`<br>`icon.global.link` | “you created group” (SOURCED)<br>“{name} created group” (SOURCED)<br>“and added {names}” (SOURCED)<br>“invite more friends” (SOURCED)<br>ios: link; android: Rounded.Link (PLATFORM) | empty: title, italic detail, white pill → groups.invite | shared EmptyStateView + LightPill action; composer stays |
-| matched | `chat.thread.error.title`<br>`chat.thread.error.detail`<br>`chat.thread.error.retry` | “couldn’t load this chat” (SOURCED)<br>“check your connection and try again — your pics are safe” (SOURCED)<br>“try again” (SOURCED) | error, retry pill | EmptyStateView; retry reloads |
-| matched | `chat.thread.offline.title`<br>`chat.thread.offline.detail` | “you’re offline” (SOURCED)<br>“your group’s pics will be right here when you’re back” (SOURCED) | offline with nothing cached | EmptyStateView without pill |
-| matched | `—` | — | offline with cached messages | cached messages first (also online: cached first, refreshed in place) |
-| matched | `chat.thread.layout.failedMessage`<br>`chat.thread.sendFailed`<br>`color.global.destructive`<br>`haptic.global.error` | indicator: outlined exclamation-mark circle beside the bubble on its trailing side, vertically centred on the bubble; indicatorIconIos: exclamationmark.circl… (SOURCED)<br>“couldn’t send — tap to try again” (SOURCED)<br>#FF4245 (PLATFORM)<br>ios: notification.error; android: REJECT (PLATFORM) | failed message: red outlined ! (22) 14 after the bubble in the trailing slot, red caption label 2 under it; tap ! / label / bubble retries (G-4) | the message stays (local copy kept through refreshes), error haptic, line announced (no toast); retry re-sends the same payload; a failed copy can be deleted locally (unit-tested) |
-| matched | `—` | — | photo deleted while open | post_deleted removes the photo message and strips quotes |
+| matched | `color.global.textSecondary`<br>`week.history.a11y.loading` | #999999 (SOURCED)<br>“Loading” (SOURCED) | loading (first page) | `LoadingHUD` (C-28) centred while nothing is cached; header and composer live; `week.history.a11y.loading` announced once |
+| matched | `—` | — | loading older messages | `ProgressView` (`textSecondary`) above the first loaded message while `hasOlder`; its `.task` loads the older page |
+| matched | `icon.global.chats`<br>`size.global.emptyIcon`<br>`chat.thread.empty.title`<br>`chat.thread.empty.detail`<br>`chat.thread.empty.invite`<br>`size.global.emptyIconToTitle`<br>`size.global.emptyTitleToAction` | ios: bubble.left; android: Outlined.ChatBubbleOutline (PLATFORM)<br>22 pt (SOURCED)<br>“Let's get started” (SOURCED)<br>“Be the first to say hi.” (SOURCED)<br>“Invite friends” (SOURCED)<br>26 pt (SOURCED)<br>25 pt (SOURCED) | empty (no messages yet) | C-27 `EmptyStateView` (`icon.global.chats`, title, detail, outline action → `groups.invite`) centred between header and composer |
+| matched | `chat.thread.error.title`<br>`chat.thread.error.detail`<br>`chat.thread.error.retry` | “Error loading your messages” (SOURCED)<br>“There was a problem. Please try again.” (SOURCED)<br>“Try Again” (SOURCED) | error (first load failed) | C-27 without glyph: title, detail, outline "Try again" → `retry()` |
+| matched | `chat.thread.offline.title`<br>`chat.thread.offline.detail` | “No Connection” (SOURCED)<br>“Check your connection and try again.” (SOURCED) | offline, nothing cached | C-27 title + detail, no action |
+| matched | `chat.thread.sending`<br>`chat.thread.sendFailed`<br>`chat.thread.layout.failedMessage` | “Sending” (SOURCED)<br>“Couldn't send. Tap to retry” (SOURCED)<br>indicator: one line under the failed message: chat.thread.sendFailed, text role caption, color.global.destructive; no glyph; sending: while… (SOURCED) | offline with cached messages | cached messages first (`cachedMessages`), sends fail into the failed-message layout (unit-tested) |
+| matched | `—` | — | message deleted / photo deleted | `messageDeleted` / `postDeleted` remove rows and strip quotes (unit-tested) |
+| matched | `—` | — | permission-denied | nothing on this screen |
 
-## Motion and haptics
-
-| status | token / copy | reference value | element | iOS implementation |
-|---|---|---|---|---|
-| matched | `duration.global.navigationPush` | 100 ms (SOURCED) | push from groups.screen | native NavigationStack push |
-| matched | `—` | — | message insert: no custom animation; position kept unless at the bottom | scrollPosition(id:anchor: .bottom); follows new messages only when the reader was at the bottom or sent it |
-| matched | `haptic.global.send` | ios: notification.success; android: CONFIRM (PLATFORM) | text sent | SocialFeedback.sent → sensoryFeedback |
-| matched | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | send failed | SocialFeedback.failed |
-| approximated | `haptic.global.reaction`<br>`haptic.global.longPressStart` | ios: system (context menu plays its own haptic; no custom generator); android: LONG_PRESS (PLATFORM)<br>ios: system (context menu plays its own haptic; no custom generator); android: LONG_PRESS (PLATFORM) | long press haptics | system long-press feedback of onLongPressGesture / contextMenu (no custom haptic) |
-| matched | `haptic.global.warning` | ios: notification.warning; android: CONFIRM (PLATFORM) | delete confirmed | SocialFeedback.warning |
-
-## Data, actions and accessibility
+## Motion
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `chat.thread.deleteMessage.title`<br>`chat.thread.deleteMessage.message`<br>`photo.viewer.delete.confirm`<br>`photo.viewer.delete.cancel` | “delete this message?” (SOURCED)<br>“it’s removed from the chat for everyone.” (SOURCED)<br>“delete” (SOURCED)<br>“cancel” (SOURCED) | delete own text / voice: native confirmation | confirmationDialog; optimistic removal, put back on failure (unit-tested; UI test) |
-| matched | `chat.thread.menu.delete`<br>`photo.viewer.icon.delete`<br>`chat.thread.menu.report`<br>`icon.global.report` | “delete” (SOURCED)<br>ios: trash; android: Rounded.Delete (PLATFORM)<br>“report” (SOURCED)<br>ios: flag.fill; android: Rounded.Flag (PLATFORM) | native context menu | contextMenu + the same items as accessibility actions; report → account safety.report |
-| matched | `chat.thread.a11y.message`<br>`chat.thread.a11y.messageMine`<br>`chat.thread.a11y.photo`<br>`chat.thread.a11y.photoMine`<br>`chat.thread.a11y.caption` | “{name}, {message}” (SOURCED)<br>“you, {message}” (SOURCED)<br>“{name}’s pic, {time}” (SOURCED)<br>“your pic, {time}” (SOURCED)<br>“caption: {caption}” (SOURCED) | VoiceOver labels | per row; avatars hidden; photos are buttons with react / reactions actions |
-| matched | `—` | — | new incoming messages announced | AccessibilityNotification.Announcement on arrival |
-| matched | `size.global.minTouchTarget.ios` | 44 pt (VERIFIED) | header hit targets 44 | shared header circles |
-| matched | `—` | — | pages of 50, realtime inserts / deletions / reactions_changed, refetch on foreground and reconnect | ChatThreadModel (unit-tested with FakeSocialData) |
+| matched | `—` | — | push in / back | NavigationStack push / pop (system) |
+| matched | `chat.thread.duration.entry`<br>`chat.thread.easing.entry` | 250 ms (SOURCED)<br>linear (SOURCED) | new message appears (sent or received) | entries `.transition(.opacity)` animated with `DSAnimation.timing(chat.thread.duration.entry, chat.thread.easing.entry)` on the message ids |
+| approximated | `duration.global.photoOpen`<br>`easing.global.standard` | 250 ms (SOURCED)<br>x1: 0.4; y1: 0; x2: 0.2; y2: 1 (SOURCED) | photo opens in the viewer | the viewer opens as a native `.fullScreenCover` (system curve), not a 250-ms custom transition from the card |
+| matched | `duration.global.fade`<br>`easing.global.standard` | 150 ms (SOURCED)<br>x1: 0.4; y1: 0; x2: 0.2; y2: 1 (SOURCED) | reply bar in / out | `.dsAnimation(ComponentMotion.fade, value: replyTarget)` + `.transition(.opacity)` |
+| matched | `—` | — | scroll, keyboard, context menu | system |
+
+## Haptics
+
+| status | token / copy | reference value | element | iOS implementation |
+|---|---|---|---|---|
+| matched | `haptic.global.tap` | ios: none; android: VIRTUAL_KEY (PLATFORM) | tap on a photo, avatar, quote (Android) | none on iOS |
+| matched | `haptic.global.longPressStart`<br>`haptic.global.reaction` | ios: system (context menu plays its own haptic; no custom generator); android: LONG_PRESS (PLATFORM)<br>ios: system (context menu plays its own haptic; no custom generator); android: LONG_PRESS (PLATFORM) | long press opens the context menu | system context-menu haptic (no custom generator) |
+| matched | `haptic.global.send` | ios: notification.success; android: CONFIRM (PLATFORM) | text sent | `socialFeedback` → `.sent` → `haptic.global.send` (unit-tested signal) |
+| matched | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | send failed | `.failed` → `haptic.global.error` |
+| matched | `haptic.global.warning` | ios: notification.warning; android: CONFIRM (PLATFORM) | unsend confirmed | `.warning` on unsend (unit-tested signal) |
 
 ## Notes
 
-- Optimistic sends: a text / voice message shows at once with a local id and is replaced by the server row once (realtime echo de-duplicated); on failure it keeps the failed-message layout until a tap re-sends it.
-- Deep link `chat?message=` opens the thread on that message (scrollPosition anchor).
+- Runs (`chat.thread.layout.runs`): consecutive messages of one sender, broken by another sender, a day divider or a reply quote; gaps `itemGap` / `listGap` — `ChatThreadLayout.entries`, unit-tested in `SocialChatThreadModelTests`.
+- Day dividers use the device calendar; times are the locale's short time.

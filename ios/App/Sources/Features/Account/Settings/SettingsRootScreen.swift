@@ -28,6 +28,14 @@ struct SettingsRootScreen: View {
     @State private var link: BrowserLink?
     @Environment(\.openURL) private var openURL
 
+    /// - Parameters: the values `load()` reads, given up front (snapshots); nil / empty: read when the sheet appears.
+    init(profile: Profile? = nil, isPremium: Bool? = nil, statuses: [SystemPermission: PermissionStatus] = [:]) {
+        _profile = State(initialValue: profile)
+        _isPremium = State(initialValue: isPremium ?? false)
+        _premiumLoaded = State(initialValue: isPremium != nil)
+        _statuses = State(initialValue: statuses)
+    }
+
     var body: some View {
         NavigationStack(path: $path) {
             VStack(spacing: 0) {
