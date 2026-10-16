@@ -127,7 +127,7 @@ class MeasurementTest : SnapshotTest() {
         mapOf(
             "back" to label("Back"), "title" to tag(OnThisDayTags.TITLE), "subtitle" to text("On this day · Maya"),
             "more" to tag(OnThisDayTags.MORE), "share" to tag(OnThisDayTags.SHARE), "random" to tag(OnThisDayTags.SHUFFLE),
-            "dial" to tag(DialTags.DIAL), "play" to tag(DialTags.PLAY), "photo" to label("Photo by Maya, July 22, 2022", substring = true),
+            "dial" to tag(DialTags.DIAL), "play" to tag(DialTags.PLAY), "photo" to label("Photo by Maya", substring = true),
         ),
     ) { OnThisDayScreen(samplePage, OnThisDayActions(), isMine = { false }) }
 
@@ -190,10 +190,10 @@ class MeasurementTest : SnapshotTest() {
     @Test fun birthdayRequest() = measure(
         "birthday.request",
         mapOf(
-            "close" to label("Close"), "avatar" to label("Ana", substring = false), "headline" to text("Ana's birthday video"),
+            "close" to label("Close"), "avatar" to tag(BirthdayRequestTags.AVATAR), "headline" to text("Ana's birthday video"),
             "body" to text("You're invited", substring = true), "card" to tag(BirthdayRequestTags.CTA), "cardTitle" to text("Message ideas"),
             "cardDetail" to text("Pick a photo", substring = true), "prompt1" to text("What do you appreciate most about Ana?"),
-            "prompt2" to text("How has Ana made a difference for you?", substring = true), "marker1" to text("1"), "marker2" to text("2"),
+            "prompt2" to text("How has Ana impacted your life?"), "marker1" to text("1"), "marker2" to text("2"),
             "cta" to text("Add your photo"), "due" to text("Add yours by", substring = true),
         ),
     ) { BirthdayRequestScreen(RequestState.Ready(sampleInfo, contribution = null, closed = false), RequestActions()) }
@@ -202,7 +202,7 @@ class MeasurementTest : SnapshotTest() {
         "birthday.request-contributed",
         mapOf(
             "card" to tag(BirthdayRequestTags.CTA), "title" to text("You added a photo"), "line" to text("You make every Sunday better"),
-            "thumb" to label("Your photo", substring = true), "change" to tag(BirthdayRequestTags.CHANGE), "remove" to tag(BirthdayRequestTags.REMOVE),
+            "thumb" to tag(BirthdayRequestTags.THUMB), "change" to tag(BirthdayRequestTags.CHANGE), "remove" to tag(BirthdayRequestTags.REMOVE),
         ),
     ) {
         BirthdayRequestScreen(
@@ -222,7 +222,7 @@ class MeasurementTest : SnapshotTest() {
     @Test fun contributeComposer() = measure(
         "birthday.contribute-composer",
         mapOf(
-            "title" to text("Birthday Video"), "close" to label("Close"), "photo" to label("photo", substring = true, ignoreCase = true),
+            "title" to text("Birthday Video"), "close" to label("Close"), "photo" to tag(ContributeTags.PHOTO),
             "pill" to tag(ContributeTags.PILL), "line" to text("You make every Sunday better"), "submit" to tag(ContributeTags.SUBMIT),
         ),
     ) { ComposerStep(sampleInfo, ContributeState(photos = PhotosState.Loaded(samplePhotos), selected = "p1", line = "You make every Sunday better"), {}, {}, {}, {}) }

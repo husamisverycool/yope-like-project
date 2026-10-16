@@ -80,6 +80,8 @@ object BirthdayRequestTags {
     const val CTA = "birthday.request.cta"
     const val CHANGE = "birthday.request.change"
     const val REMOVE = "birthday.request.remove"
+    const val AVATAR = "birthday.request.avatar"
+    const val THUMB = "birthday.request.thumb"
 }
 
 /** The request screen's actions. */
@@ -169,7 +171,7 @@ private fun Ready(state: RequestState.Ready, actions: RequestActions) {
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Avatar(memoryModel(info.honoreeAvatarUrl), Tokens.Sizes.globalAvatarProfile)
+            Avatar(memoryModel(info.honoreeAvatarUrl), Tokens.Sizes.globalAvatarProfile, Modifier.testTag(BirthdayRequestTags.AVATAR))
             val headline = TextRoles.displayMedium.copy(lineBreak = LineBreak.Heading)
             Text(
                 stringResource(R.string.birthday_request_title, info.honoreeName),
@@ -310,7 +312,7 @@ private fun ColumnScope.Contributed(contribution: OwnContribution, onChange: () 
         MemoryImage(
             contribution.photoUrl,
             null,
-            Modifier.size(Tokens.Sizes.globalRowThumbWidth, Tokens.Sizes.globalRowThumbHeight).clip(RoundedCornerShape(Tokens.Radii.globalThumbnail)),
+            Modifier.size(Tokens.Sizes.globalRowThumbWidth, Tokens.Sizes.globalRowThumbHeight).clip(RoundedCornerShape(Tokens.Radii.globalThumbnail)).testTag(BirthdayRequestTags.THUMB),
             placeholder = Tokens.Colors.globalControl,
         )
         Spacer(Modifier.width(Tokens.Sizes.globalRowThumbGap))

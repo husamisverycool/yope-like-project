@@ -86,6 +86,7 @@ object ContributeTags {
     const val SUBMIT = "birthday.contribute.submit"
     const val FIELD = "birthday.contribute.field"
     const val DONE = "birthday.contribute.done"
+    const val PHOTO = "birthday.contribute.photo"
     fun cell(postId: String) = "birthday.contribute.cell.$postId"
 }
 
@@ -253,7 +254,7 @@ fun ComposerStep(
                         MemoryImage(
                             photo.displayUrl,
                             null,
-                            Modifier.size(w, h).clip(RoundedCornerShape(Tokens.Radii.birthdayContributePhoto)),
+                            Modifier.size(w, h).clip(RoundedCornerShape(Tokens.Radii.birthdayContributePhoto)).testTag(ContributeTags.PHOTO),
                             contentScale = ContentScale.Crop,
                         )
                         MediaPill(
