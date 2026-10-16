@@ -2,208 +2,84 @@
 // Every value below is traced in design/SOURCES.md. Units: pt for sizes (1 pt = 1 px at @1x), ms for durations.
 
 export const tokens = {
-  "albums.list.color.card": "#181818", // Yope · albums.list · SOURCED
-  "albums.list.dimension.cardHeight": 100, // Yope · albums.list · SOURCED
-  "albums.list.dimension.coverInset": 16, // Yope · albums.list · SOURCED
-  "albums.list.dimension.coverToTitle": 15, // Yope · albums.list · SOURCED
-  "albums.list.layout.composition": {"basis":"Yope home list card: cover circle (size.global.avatarList) at coverInset, name (text role listTitle), subtitle (text role listSubtitle, color.global.textSecondary)","list":"cards stacked with size.global.listGap, side margin size.global.screenMargin, corners radius.global.card, on color.global.backgroundDeep","cover":"the album's first photo (thumb_path), aspect fill in the circle"}, // Yope · albums.list · SOURCED
-  "albums.list.layout.yopeAlbums": {"format":"grid of album covers (Apple Photos \"Album Cover\" format)","columns":2,"coverAspect":1,"coverWidth":168,"gap":12.4,"marginH":23,"coverRadius":18.5,"cover":"the album’s first photo (thumb_path), aspect fill","title":"album name over the cover’s bottom-leading corner, one line, tail truncation, color.global.textPrimary","titleInsetLeading":14,"titleBaselineBottom":17,"titleFontSize":15,"titleWeight":"not measured (platform default)","subtitle":"not shown on the cover (the reference shows the name only); albums.list.row.subtitle joins the accessibility label","background":"color.global.backgroundDeep"}, // Apple Photos · albums.list · SOURCED
-  "auth.agegate.layout.dateEntry": {"control":"the Yope form field (groups.create.color.field, size.global.fieldHeight, radius.global.field, groups.create.fontSize.fieldText) with a numeric keyboard","format":"the device locale's numeric short-date order (DateFormatter.dateFormat(fromTemplate: \"MMddyyyy\", options: 0, locale: .current) / DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, null, IsoChronology.INSTANCE, locale)), shown in the placeholder","default":"empty: no pre-filled date, no default year, no age options","threshold":"the minimum age is never shown before the person submits"}, // FTC COPPA FAQ · auth.agegate · VERIFIED
-  "auth.agegate.layout.optIn": {"control":"row with icon.global.uncheck / icon.global.check (color.global.selection) at size.global.checkCircle, trailing, as in Yope's pickers","default":"unchecked (opt-in)","label":"fontSize.global.listSubtitle (14 pt) regular, color.global.textPrimary","detail":"fontSize.global.listSubtitle, color.global.textSecondary"}, // Yope · auth.agegate · SOURCED
+  "albums.list.layout.composition": {"header":"C-02 pushed header: back + albums.list.title (serif); C-12 search field below (albums.list.search)","rows":"C-15 list rows, newest album first: cover = the album's first item (album_items.position 0), title = album name (listTitle), subtitle albums.list.row.subtitle / .subtitleMine with the creator's name in semibold (listSubtitle, color.global.textSecondary)","left":"no avatar stack and no '+' circle (albums here are saved selections: no members of their own, no adding)","spacing":"size.global.listGap between rows; search → first row size.global.titleToContent"}, // Retro · albums.list · SOURCED
+  "albums.view.aspectRatio.gridCell": {"width":116.5,"height":145}, // Retro · albums.view · SOURCED
+  "albums.view.count.gridColumns": 3, // Retro · albums.view · SOURCED
+  "albums.view.dimension.coverHeight": 246, // Retro · albums.view · SOURCED
+  "albums.view.dimension.coverTop": 74, // Retro · albums.view · SOURCED
+  "albums.view.dimension.coverToTitle": 36.7, // Retro · albums.view · SOURCED
+  "albums.view.dimension.coverWidth": 172.5, // Retro · albums.view · SOURCED
+  "albums.view.dimension.metaToActions": 28.5, // Retro · albums.view · SOURCED
+  "albums.view.dimension.titleToMeta": 23.7, // Retro · albums.view · SOURCED
+  "albums.view.radius.grid": 12, // Retro · albums.view · SOURCED
+  "auth.agegate.layout.dateEntry": {"control":"C-12 text field (fill color.global.control, size.global.fieldHeight, radius.global.field, text role placeholder) with a numeric keyboard","format":"the device locale's numeric short-date order (DateFormatter.dateFormat(fromTemplate: \"MMddyyyy\", options: 0, locale: .current) / DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, null, IsoChronology.INSTANCE, locale)), shown as the placeholder","default":"empty: no pre-filled date, no default year, no age options","threshold":"the minimum age is never shown before the person submits"}, // FTC COPPA FAQ · auth.agegate · VERIFIED
+  "auth.agegate.layout.optIn": {"control":"C-14 grouped section with a single row: title (text role body) + subtitle (text role meta, color.global.textSecondary) + trailing native switch (tint color.global.selection / color.global.system.primary)","default":"off","inset":"size.global.screenMargin"}, // Retro · auth.agegate · SOURCED
   "auth.code.duration.resendLock": 60000, // Supabase Auth documentation · auth.code · VERIFIED
-  "auth.code.fontSize.textLink": 14.5, // Yope · auth.code · SOURCED
-  "auth.code.fontWeight.textLink": "bold", // Yope · auth.code · SOURCED
-  "auth.code.layout.codeField": {"ios":"one TextField, textContentType .oneTimeCode, keyboardType .numberPad; no per-digit boxes (a custom input view cannot show the AutoFill suggestion)","android":"one TextField, KeyboardType.NumberPassword with visualTransformation None, autofill ContentType.SmsOtpCode; SMS User Consent API (SmsRetriever.getClient(context).startSmsUserConsent) shows the system consent sheet and fills the field"}, // Yope · auth.code · PLATFORM
-  "auth.phone.fontSize.subtitle": 14, // Yope · auth.phone · SOURCED
-  "auth.phone.layout.countryCode": {"pattern":"flag at the field's leading edge + the calling code typed inline with the number ('+1 555 ...'); no separate code button","flagWidth":20,"flagHeight":13,"flagLeading":20,"flagToText":5,"prefill":"'+' and the device region's calling code (Locale / libphonenumber); the flag follows the code as it is typed or edited","autoFormat":true,"allowZeroAfterCountryCode":true,"flagTap":"opens a country list; choosing a country replaces the calling code (Locket: the phone-input library's built-in country picker, picker.selectCountry(iso2) + picker.show(); ours: the platform picker in a sheet)","flagArt":"regional-indicator flag emoji (PLATFORM) in the 20 x 13 slot; Locket draws the library's flag images"}, // Locket · auth.phone · SOURCED
-  "auth.phone.layout.inlineError": {"presentation":"system alert: iOS UIAlertController .alert / SwiftUI .alert, Android M3 AlertDialog; not dismissible by tapping outside","title":"none: the auth.*.error.* sentence is the alert message (Locket's errors are title + message pairs; our error copy is one sentence, so no title is shown)","button":"one button, auth.phone.error.dismiss ('OK'), which closes the alert","appliesTo":"auth.phone and auth.code field errors (invalid number, rate limited, send failed, wrong / expired code, too many tries) and auth.agegate invalid date"}, // Locket · auth.phone · SOURCED
-  "auth.phone.layout.keyboard": {"ios":"UITextField/TextField keyboardType .phonePad, textContentType .telephoneNumber (system AutoFill)","android":"TextField KeyboardOptions(keyboardType = KeyboardType.Phone), autofill ContentType.PhoneNumber"}, // Yope · auth.phone · PLATFORM
-  "auth.phone.layout.legalFooter": {"text":"color.global.textSecondary","links":"same colour, bold weight (2026 build: bold 'Términos de uso' / 'Política de privacidad'); the 2024 build drew the links white and underlined","size":"fontSize.global.caption","lineHeight":"lineHeight.global.caption","align":"center","placement":"bottom of the screen, centred, above the home indicator (2024 and 2026 sign-in screens)"}, // Yope · auth.phone · SOURCED
-  "auth.phone.layout.subtitle": {"style":"italic","weight":"regular","color":"color.global.textPrimary","align":"center"}, // Yope · auth.phone · SOURCED
-  "auth.profile.layout.avatarPicker": {"ios":"PhotosPicker (SwiftUI) / PHPickerViewController, single image, no library permission","android":"ActivityResultContracts.PickVisualMedia(ImageOnly), no READ_MEDIA_* permission","empty":"circle filled color.global.controlRaised with icon.global.person centred in color.global.textSecondary"}, // Yope · auth.profile · PLATFORM
-  "auth.profile.size.avatar": 92, // Yope · auth.profile · SOURCED
-  "camera.capture.color.flipButton": "#1F1F1F", // Yope · camera.capture · SOURCED
-  "camera.capture.color.shutterDiscPressed": "#E0DEDF", // Locket · camera.capture · SOURCED
+  "auth.code.layout.codeField": {"ios":"one TextField, textContentType .oneTimeCode, keyboardType .numberPad; no per-digit boxes (a custom input view cannot show the AutoFill suggestion)","android":"one TextField, KeyboardType.NumberPassword with visualTransformation None, autofill ContentType.SmsOtpCode; SMS User Consent (SmsRetriever.getClient(context).startSmsUserConsent) shows the system consent sheet and fills the field","field":"drawn as C-12"}, // Apple HIG · auth.code · PLATFORM
+  "auth.phone.fontSize.wordmark": 64, // Retro · auth.phone · SOURCED
+  "auth.phone.layout.countryCode": {"pattern":"flag at the field's leading edge + the calling code typed inline with the number ('+1 555 …'); no separate code button","flagWidth":20,"flagHeight":13,"flagLeading":20,"flagToText":5,"prefill":"'+' and the device region's calling code (Locale / libphonenumber); the flag follows the code as it is typed or edited","autoFormat":true,"allowZeroAfterCountryCode":true,"flagTap":"opens a country list in a native sheet (C-29); choosing a country replaces the calling code","flagArt":"regional-indicator flag emoji (PLATFORM) in the 20 × 13 slot","field":"drawn as design/components.md C-12 (fill color.global.control, size.global.fieldHeight, radius.global.field, text role placeholder)"}, // Locket · auth.phone · SOURCED
+  "auth.phone.layout.inlineError": {"presentation":"native alert: iOS SwiftUI .alert / Android M3 AlertDialog (settings.account.layout.alert); not dismissed by tapping outside","titled":"code errors carry Retro's title + message pair (auth.code.error.*.title + message); phone and generic errors show the message only","buttons":"one 'OK' (auth.phone.error.dismiss); code errors offer Retro's two recoveries instead: 'Send a new code' (auth.code.error.sendNew) and 'Edit code' (auth.code.error.editCode)","appliesTo":"auth.phone, auth.code and auth.agegate field errors; full-screen states (offline, not configured, under age) use the empty-state block (C-27)"}, // Retro · auth.phone · SOURCED
+  "auth.phone.layout.keyboard": {"ios":"TextField keyboardType .phonePad, textContentType .telephoneNumber (system AutoFill offers the person's own number)","android":"TextField KeyboardOptions(keyboardType = KeyboardType.Phone), autofill ContentType.PhoneNumber"}, // Apple HIG · auth.phone · PLATFORM
+  "auth.phone.layout.landingBlock": {"centreY":0.446,"align":"centre (horizontal)","contents":"wordmark (auth.phone.fontSize.wordmark) over the tagline (text role onboardingTitle, color.global.textSecondary)"}, // Retro · auth.phone · SOURCED
+  "auth.phone.size.capsuleToLink": 20.7, // Retro · auth.phone · SOURCED
+  "auth.phone.size.legalToBottom": 40, // Retro · auth.phone · SOURCED
+  "auth.phone.size.linkToLegal": 28.4, // Retro · auth.phone · SOURCED
+  "auth.phone.size.wordmarkToTagline": 19.3, // Retro · auth.phone · SOURCED
+  "auth.profile.layout.avatarPicker": {"ios":"PhotosPicker (SwiftUI) / PHPickerViewController, single image, no library permission","android":"ActivityResultContracts.PickVisualMedia(ImageOnly), no READ_MEDIA_* permission","empty":"circle filled color.global.control with icon.global.person centred in color.global.textSecondary (C-23 no-photo fallback)"}, // Apple HIG · auth.profile · PLATFORM
+  "auth.profile.size.avatar": 112, // Retro · auth.profile · SOURCED
   "camera.capture.duration.videoMax": 10000, // Locket · camera.capture · SOURCED
-  "camera.capture.fontSize.coach": 11, // Yope · camera.capture · SOURCED
-  "camera.capture.fontWeight.coach": "semibold", // Yope · camera.capture · SOURCED
-  "camera.capture.icon.recordHint": {"ios":"video.fill","android":"Rounded.Videocam"}, // Yope · camera.capture · PLATFORM
-  "camera.capture.layout.coach": {"height":34,"cornerRadius":8,"paddingHorizontal":13.6,"textToCloseGap":13.6,"closeGlyph":9.5,"pointerWidth":13.6,"pointerHeight":6.8,"pointerToTarget":2}, // Yope · camera.capture · SOURCED
-  "camera.capture.layout.flashGlyph": {"centerFromLeading":28.3,"centerFromBottom":33,"glyphHeight":15}, // Yope · camera.capture · SOURCED
-  "camera.capture.layout.shutterPress": {"scale":0.85}, // Locket · camera.capture · SOURCED
-  "camera.capture.layout.textStyleMap": {"coach":"caption2"}, // Apple HIG · camera.capture · PLATFORM
-  "camera.capture.layout.viewfinder": {"width":"full screen width","heightOverWidth":1.38,"top":103}, // Yope · camera.capture · SOURCED
-  "camera.capture.radius.libraryThumb": 8, // Yope · camera.capture · SOURCED
-  "camera.capture.size.flipButton": 47, // Yope · camera.capture · SOURCED
-  "camera.capture.size.libraryThumb": 46, // Yope · camera.capture · SOURCED
-  "camera.capture.size.libraryThumbBorder": 1, // Yope · camera.capture · SOURCED
-  "camera.capture.size.permissionButtonHeight": 45, // Yope · camera.capture · SOURCED
+  "camera.capture.layout.controlRow": {"centre":"the shutter, horizontally centred","sideControls":"two circles of size.global.circleButtonLarge (64): library (leading), flip (trailing)","sideCentre":"each side circle is centred in the free space between the screen edge and the shutter's outer edge","vertical":"the row is vertically centred between the viewfinder bottom and the tab bar top (daily.capture: the safe-area bottom)","minimumGap":"size.global.screenMargin above and below the shutter"}, // Retro · camera.capture · SOURCED
+  "camera.capture.layout.viewfinder": {"aspect":0.75,"width":"screen width − 2 × size.global.screenMargin","corners":"radius.global.viewfinder","top":"size.global.titleToContent below the header title baseline (C-01)","fill":"aspect-fill live preview; what the frame shows is what is captured","shrink":"if the control row would get less than size.global.screenMargin above and below the shutter, the viewfinder height shrinks (3:4 kept, centred horizontally)"}, // Retro · camera.capture · SOURCED
   "camera.capture.size.recordingOutline": 6, // Locket · camera.capture · SOURCED
-  "camera.capture.size.shutterDisc": 59, // Yope · camera.capture · SOURCED
-  "camera.capture.size.shutterGap": 5.5, // Yope · camera.capture · SOURCED
-  "camera.capture.size.shutterOuter": 80, // Yope · camera.capture · SOURCED
-  "camera.capture.size.shutterRing": 3.5, // Yope · camera.capture · SOURCED
-  "camera.capture.size.shutterTopGap": 38, // Yope · camera.capture · SOURCED
-  "camera.capture.size.sideControlOffset": 110, // Yope · camera.capture · SOURCED
-  "camera.capture.spring.shutterPress": {"response":0.233,"dampingFraction":1}, // Locket · camera.capture · SOURCED
+  "camera.capture.size.shutterDisc": 70, // Locket · camera.capture · SOURCED
+  "camera.capture.size.shutterGap": 3, // Locket · camera.capture · SOURCED
+  "camera.capture.size.shutterOuter": 86, // Locket · camera.capture · SOURCED
+  "camera.capture.size.shutterRing": 4.5, // Locket · camera.capture · SOURCED
   "camera.fromwidget.layout.target": {"link":"app://camera?group=<group_id>","ios":"widgetURL on the whole widget","android":"PendingIntent ACTION_VIEW on the widget root","opens":"camera.capture, group preselected in camera.sendto"}, // Locket · camera.fromwidget · SOURCED
-  "camera.sendto.color.messageField": "#0000007A", // Yope · camera.sendto · SOURCED
-  "camera.sendto.duration.toastVisible": 2000, // Locket · camera.sendto · SOURCED
-  "camera.sendto.fontSize.caption": 16, // Yope · camera.sendto · SOURCED
-  "camera.sendto.fontSize.countNumber": 11, // Yope · camera.sendto · SOURCED
-  "camera.sendto.fontSize.messagePlaceholder": 15, // Yope · camera.sendto · SOURCED
-  "camera.sendto.fontWeight.caption": "semibold", // Yope · camera.sendto · SOURCED
-  "camera.sendto.fontWeight.countNumber": "bold", // Yope · camera.sendto · SOURCED
-  "camera.sendto.layout.messageField": {"height":37,"insetLeading":10,"insetBottom":14.5,"gapToMic":7.5,"micDiameter":38,"insetTrailing":8.5}, // Yope · camera.sendto · SOURCED
-  "camera.sendto.layout.preview": {"width":218,"height":290,"top":130,"gapBelowHeader":30.5}, // Yope · camera.sendto · SOURCED
-  "camera.sendto.layout.recipientRow": {"pitch":60,"avatarCenterInset":51.5,"nameInset":83,"checkTrailingInset":29,"firstRowCenterBelowPreview":49.5}, // Yope · camera.sendto · SOURCED
-  "camera.sendto.layout.textStyleMap": {"caption":"callout","messagePlaceholder":"subheadline","countNumber":"caption2"}, // Apple HIG · camera.sendto · PLATFORM
-  "camera.sendto.layout.toast": {"height":49,"marginHorizontal":8.5,"top":59,"cornerRadius":20,"glyph":17,"glyphInset":19.5,"glyphToText":11}, // Yope · camera.sendto · SOURCED
-  "camera.sendto.size.captionBaselineOffset": 31, // Yope · camera.sendto · SOURCED
-  "camera.sendto.size.captionMaxLength": 36, // Locket · camera.sendto · SOURCED
-  "camera.sendto.size.countDisc": 18.5, // Yope · camera.sendto · SOURCED
-  "camera.sendto.size.countDiscGap": 7, // Yope · camera.sendto · SOURCED
-  "camera.sendto.size.sendButtonBottom": 41.5, // Yope · camera.sendto · SOURCED
-  "chat.composer.color.fieldRimBottom": "#474747", // Yope · chat.composer · SOURCED
-  "chat.composer.color.fieldRimTop": "#4B4B4B", // Yope · chat.composer · SOURCED
-  "chat.composer.dimension.bottomInset": 8, // WhatsApp + Instagram · chat.composer · SOURCED
-  "chat.composer.dimension.cameraButton": 40.6, // Yope · chat.composer · SOURCED
-  "chat.composer.dimension.cameraGlyph": 19.5, // Yope · chat.composer · SOURCED
-  "chat.composer.dimension.fieldHeight": 39.5, // Yope · chat.composer · SOURCED
-  "chat.composer.dimension.fieldPaddingLeading": 17.8, // Yope · chat.composer · SOURCED
-  "chat.composer.dimension.fieldRim": 0.44, // Yope · chat.composer · SOURCED
-  "chat.composer.dimension.gapCameraField": 6.2, // Yope · chat.composer · SOURCED
-  "chat.composer.dimension.gapFieldButton": 7.1, // Yope · chat.composer · SOURCED
-  "chat.composer.dimension.insetLeading": 22.8, // Yope · chat.composer · SOURCED
-  "chat.composer.dimension.insetTrailing": 23.4, // Yope · chat.composer · SOURCED
-  "chat.composer.dimension.micGlyph": 21.8, // Yope · chat.composer · SOURCED
-  "chat.composer.dimension.sideButton": 39.5, // Yope · chat.composer · SOURCED
-  "chat.composer.layout.typingState": {"rule":"while the field holds text, the mic circle is replaced in place by a send circle; when the field is empty again the mic circle returns","sendCircleSize":"chat.composer.dimension.sideButton","sendCircleFill":"color.global.accent","sendGlyph":"icon.global.send","sendGlyphColor":"color.global.onAccent","action":"tap → send_message(p_kind text); the field clears and the mic circle returns","transition":"none observed (instant swap); Reduce Motion: same","a11yLabel":"chat.composer.a11y.send"}, // Apple Messages (iMessage); WhatsApp (idle mic beside the field) · chat.composer · SOURCED
-  "chat.reactions.color.clusterOutline": "#FFFFFF", // Locket · chat.reactions · SOURCED
+  "camera.sendto.fontSize.counter": 16, // Retro · camera.sendto · SOURCED
+  "camera.sendto.layout.header": {"title":"centred, text role sheetTitle, colour color.global.textOnMedia; its cap middle on the circles' centre line","trailing":"close circle (C-11 on media): size.global.circleButton, centre 37.7 pt from the trailing edge","leading":"save circle, mirrored (centre 37.7 pt from the leading edge)","centreBelowSafeArea":25.8}, // Retro · camera.sendto · SOURCED
+  "camera.sendto.layout.messageField": {"message":"C-09 glass pill on the photo: fill color.global.controlOnDeep, icon.global.edit + label text role pill, colour color.global.textOnMedia, height size.global.pillHeight, width hugs the label","voice":"icon-only capsule after it: width size.global.iconPillWidth, height size.global.pillHeight, same fill, icon.global.mic","gap":"size.global.pillGap","bottomInset":20.5,"align":"the pair centred horizontally on the photo"}, // Retro · camera.sendto · SOURCED
+  "camera.sendto.layout.messageSheet": {"header":"native sheet toolbar: centred title text role sheetTitle; trailing 'Done' text button (C-08, text role textButton, color.global.textPrimary)","field":"multi-line text, text role placeholder (17), typed color.global.textPrimary, placeholder color.global.textSecondary, on color.global.background","textInset":22,"counterTrailingInset":20.7,"counterAboveKeyboard":22,"counter":"camera.sendto.fontSize.counter, monospaced digits (iOS Font.Design.monospaced; Android FontFamily.Monospace), color.global.textSecondary"}, // Retro · camera.sendto · SOURCED
+  "camera.sendto.layout.preview": {"width":297.6,"maxHeight":422.8,"cornerRadius":8.5,"topBelowHeaderCircle":20,"fit":"native aspect, aspect-fill; height = min(width ÷ aspect, maxHeight); centred horizontally"}, // Retro · camera.sendto · SOURCED
+  "camera.sendto.layout.recipientRow": {"label":"section label above the rows: text role meta, color.global.textSecondary, 35.2 pt below the preview bottom, at size.global.screenMargin","row":"C-16 people row: group cover avatar size.global.avatarPicker (circle; no cover → icon.global.group on color.global.controlOnDeep), name text role listTitle color.global.textOnMedia starting size.global.cardNameGap after the avatar (Retro avatar → name gap, C-18), trailing check size.global.checkCircle with its ink at the trailing margin","padding":16,"insets":"size.global.screenMargin","divider":"C-32 hairline between rows, color.global.separator dark value (#4D4D4D) on media, inside the margins","check":"selected icon.global.check in color.global.selection; not selected icon.global.uncheck in color.global.textSecondary"}, // Retro · camera.sendto · SOURCED
+  "camera.sendto.layout.textStyleMap": {"counter":"callout"}, // Apple HIG · camera.sendto · PLATFORM
+  "camera.sendto.size.captionMaxLength": 250, // Retro · camera.sendto · SOURCED
+  "camera.sendto.size.sendButtonBottom": 44.5, // Retro · camera.sendto · SOURCED
+  "chat.composer.dimension.avatarInset": 8.6, // Retro · chat.composer · SOURCED
+  "chat.composer.dimension.avatarToText": 10.9, // Retro · chat.composer · SOURCED
+  "chat.composer.dimension.bottomInset": 0, // Retro · chat.composer · SOURCED
+  "chat.composer.dimension.glyphInsetTrailing": 17.7, // Retro · chat.composer · SOURCED
+  "chat.composer.layout.typingState": {"idle":"trailing glyphs inside the field: icon.global.camera, then icon.global.mic (last), both color.global.textSecondary, size.global.icon box","typing":"while the field holds text both glyphs are replaced in place by icon.global.send in color.global.textPrimary (cross-fade duration.global.crossfade)","replying":"the placeholder becomes chat.composer.placeholderReply and the reply bar (chat.thread.reply.bar) shows above the field","grow":"the field grows with multi-line text; corners stay radius.global.commentField"}, // Apple Messages + WhatsApp + Retro · chat.composer · SOURCED
+  "chat.reactions.count.clusterMaxVisible": 3, // WhatsApp · chat.reactions · SOURCED
   "chat.reactions.count.pickerColumns": 6, // Locket · chat.reactions · SOURCED
-  "chat.reactions.count.rainCopies": 18, // Locket · chat.reactions · SOURCED
-  "chat.reactions.dimension.clusterEmoji": 39, // Locket · chat.reactions · SOURCED
-  "chat.reactions.dimension.clusterInsetBottom": 20, // Locket · chat.reactions · SOURCED
-  "chat.reactions.dimension.clusterInsetLeading": 17, // Locket · chat.reactions · SOURCED
-  "chat.reactions.dimension.clusterOutline": 2, // Locket · chat.reactions · SOURCED
-  "chat.reactions.dimension.clusterStep": 27, // Locket · chat.reactions · SOURCED
-  "chat.reactions.dimension.pickerEmoji": 40, // Locket · chat.reactions · SOURCED
-  "chat.reactions.dimension.rainEmoji": 52, // Locket · chat.reactions · SOURCED
-  "chat.reactions.duration.flyToCluster": 300, // Locket · chat.reactions · SOURCED
-  "chat.reactions.duration.rainSpawnInterval": 125, // Locket · chat.reactions · SOURCED
-  "chat.reactions.duration.rainTotal": 2940, // Locket · chat.reactions · SOURCED
-  "chat.reactions.duration.rainTravel": 770, // Locket · chat.reactions · SOURCED
-  "chat.reactions.easing.rain": "easeInOut", // Locket · chat.reactions · SOURCED
-  "chat.reactions.fontSize.pickerSection": 13, // Locket · chat.reactions · SOURCED
-  "chat.reactions.fontWeight.pickerSection": "semibold", // Locket · chat.reactions · SOURCED
+  "chat.reactions.dimension.chipTop": 12, // Retro · chat.reactions · SOURCED
   "chat.reactions.icon.add": {"ios":"face.smiling","android":"Rounded.AddReaction"}, // Locket · chat.reactions · PLATFORM
-  "chat.reactions.layout.cluster": {"content":"one sticker per distinct emoji that anyone reacted with","arrangement":"horizontal row, each sticker overlapping the previous one by the step","numbers":"none anywhere (no counts, no '+N')","position":"bottom-left corner of the photo"}, // Locket · chat.reactions · SOURCED
-  "chat.reactions.layout.clusterOrder": {"order":"newest distinct emoji first: a newly added emoji enters at the leading end of the cluster and the stickers already there shift one step (chat.reactions.dimension.clusterStep) toward the trailing side","repeatEmoji":"a reaction with an emoji already in the cluster adds no sticker (chat.reactions.layout.cluster); its position change was not observed","observed":"before: ✌️ alone at the leading position; after 😍 lands: 😍 leading, ✌️ one step trailing"}, // Locket · chat.reactions · SOURCED
-  "chat.reactions.layout.picker": {"presentation":"bottom sheet with a grabber over the photo","top":"search field ('Search')","sections":"Frequently Used, Popular, All","selection":"any emoji; tapping one sends the reaction and closes the sheet"}, // Locket · chat.reactions · SOURCED
-  "chat.reactions.layout.pickerPopular": {"row1":"💛 🫶 😍 🔥 🤣","row2":"😭 😋 🥹 🥰 🥲","row3":"😂 😱 😎 🤭 😯 🫠","row4":"❤️‍🔥 💕 💘 ❤️ 💖 💋","row5":"🤍 💚 💙 💜 🧡 🖤","hidden":"row 1 and row 2 have a sixth cell hidden by a finger in the frame; they are left out"}, // Locket · chat.reactions · SOURCED
-  "chat.reactions.layout.quickReactions": {"emoji":"🔥 💖","then":"add-reaction button (chat.reactions.icon.add)","place":"inside the right end of the reply field, after the text"}, // Locket · chat.reactions · SOURCED
-  "chat.reactions.layout.rainPath": {"direction":"upward","start":"just below the bottom screen edge","end":"just above the top screen edge","x":"random across the full screen width, one x per copy","emoji":"the one emoji just sent, every copy","layer":"behind the photo, in front of the background (2022 History screen = viewer)","trigger":"on the reacting person's screen, when the reaction is sent"}, // Locket · chat.reactions · SOURCED
-  "chat.reactions.layout.reduceMotion": {"rain":"not played (automatic, repeating, peripheral motion is dropped)","cluster":"the new sticker appears in place","haptics":"unchanged"}, // Apple HIG / Material 3 · chat.reactions · PLATFORM
-  "chat.reactions.layout.textStyleMap": {"pickerSection":"footnote"}, // Apple HIG · chat.reactions · PLATFORM
-  "chat.reactions.layout.unreact": {"where":"in the reaction picker (long press on the photo, or the add-reaction glyph): every emoji you already reacted with on this photo is highlighted","highlight":"a filled circle behind the emoji in color.global.selection","remove":"tap a highlighted emoji: unreact(p_post_id, p_emoji); the highlight goes and the sticker leaves the cluster when nobody else used that emoji","a11y":"highlighted cells carry the platform selected trait","haptic":"none (as reacting)"}, // Apple Messages (iMessage) + WhatsApp · chat.reactions · SOURCED
-  "chat.thread.color.bubbleMine": "#232323", // Yope · chat.thread · SOURCED
-  "chat.thread.color.bubbleRimMineBottom": "#343434", // Yope · chat.thread · SOURCED
-  "chat.thread.color.bubbleRimMineTop": "#393939", // Yope · chat.thread · SOURCED
-  "chat.thread.color.bubbleRimTheirsBottom": "#363636", // Yope · chat.thread · SOURCED
-  "chat.thread.color.bubbleRimTheirsTop": "#414141", // Yope · chat.thread · SOURCED
-  "chat.thread.color.bubbleTheirs": "#2B2B2B", // Yope · chat.thread · SOURCED
-  "chat.thread.count.emojiOnlyMax": 3, // Apple Messages (iMessage) + WhatsApp (rule); Yope (consistent) · chat.thread · SOURCED
-  "chat.thread.dimension.avatarGap": 6.7, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.avatarInset": 11.2, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.bubbleHeight": 35.6, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.bubbleInsetMine": 23, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.bubbleInsetTheirs": 50.5, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.bubbleMaxWidth": 256, // Apple Messages (iMessage) · chat.thread · SOURCED
-  "chat.thread.dimension.bubblePaddingH": 11.5, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.bubbleRim": 0.44, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.captionHeight": 45.8, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.captionInsetBottom": 7.8, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.captionPaddingH": 20, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.emojiOnlyGlyph": 47.5, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.gapBetweenSenders": 15, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.gapSameSender": 3.6, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.gapTextToVoice": 4.7, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.headerCapsuleHeight": 43.3, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.photoGap": 15.3, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.photoHeight": 174, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.photoInsetTrailing": 18.7, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.photoWidth": 323, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.replyLabelBaseline": 44.9, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.replyNameCapTop": 18.9, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.replyQuoteBar": 1.5, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.replyQuoteBarInset": 16, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.replyQuoteHeight": 64, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.replyTextInset": 29, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.replyThumb": 41.7, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.replyThumbInsetTop": 12.2, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.replyThumbInsetTrailing": 14.5, // Yope · chat.thread · SOURCED
-  "chat.thread.dimension.replyWidth": 142, // Yope · chat.thread · SOURCED
-  "chat.thread.fontSize.caption": 21, // Yope · chat.thread · SOURCED
-  "chat.thread.fontSize.replyLabel": 12.7, // Yope · chat.thread · SOURCED
-  "chat.thread.fontSize.replyName": 14.5, // Yope · chat.thread · SOURCED
-  "chat.thread.fontWeight.caption": "bold", // Yope · chat.thread · SOURCED
-  "chat.thread.fontWeight.replyLabel": "regular", // Yope · chat.thread · SOURCED
-  "chat.thread.fontWeight.replyName": "bold", // Yope · chat.thread · SOURCED
-  "chat.thread.layout.failedMessage": {"indicator":"outlined exclamation-mark circle beside the bubble on its trailing side, vertically centred on the bubble","indicatorIconIos":"exclamationmark.circle","indicatorIconAndroid":"Rounded.ErrorOutline","indicatorSize":22,"indicatorGap":14,"indicatorColor":"color.global.destructive","indicatorPosition":"the indicator takes the trailing inset slot (chat.thread.dimension.bubbleInsetMine); the bubble moves toward the leading side by indicatorSize + indicatorGap","label":"copy chat.thread.sendFailed under the bubble, trailing-aligned with the message column","labelGap":2,"labelTextRole":"caption","labelColor":"color.global.destructive","retry":"tap the indicator, the label or the bubble: the message is sent again (the label says so); on success the indicator and label go away","haptic":"haptic.global.error when a send fails","appliesTo":"my text and voice messages"}, // Apple Messages (iMessage) · chat.thread · SOURCED
-  "chat.thread.layout.photoFit": {"content":"aspect fill, centred","frameWidthPt":323,"frameHeightPt":174,"timeOverlay":"centred on the photo (text role overlayTime)"}, // Yope · chat.thread · SOURCED
-  "chat.thread.layout.textStyleMap": {"replyName":"subheadline","replyLabel":"footnote","caption":"title2","emojiOnly":"largeTitle"}, // Apple HIG · chat.thread · PLATFORM
-  "chat.thread.layout.timeFormat": {"pattern":"h:mm a","example":"10:00 PM","locale":"device locale short time"}, // Yope · chat.thread · SOURCED
-  "chat.thread.radius.bubble": 16, // Yope · chat.thread · SOURCED
-  "chat.thread.radius.caption": 13, // Yope · chat.thread · SOURCED
-  "chat.thread.radius.loadingHud": 10.5, // Yope · chat.thread · SOURCED
-  "chat.thread.radius.replyQuote": 18.2, // Yope · chat.thread · SOURCED
-  "chat.thread.radius.replyThumb": 7, // Yope · chat.thread · SOURCED
-  "chat.voice.color.bubble": "#262626", // Yope · chat.voice · SOURCED
-  "chat.voice.color.bubbleTheirs": "#2B2B2B", // Yope (value) · Telegram (rule) · chat.voice · SOURCED
-  "chat.voice.color.duration": "#929292", // Yope · chat.voice · SOURCED
-  "chat.voice.color.playButton": "#333333", // Yope · chat.voice · SOURCED
-  "chat.voice.color.waveform": "#919191", // Yope · chat.voice · SOURCED
-  "chat.voice.color.waveformPlayed": "#FFFFFF", // Telegram (rule) · Yope (colour) · chat.voice · SOURCED
-  "chat.voice.dimension.barMaxHeight": 31.5, // Yope · chat.voice · SOURCED
-  "chat.voice.dimension.barMinHeight": 9.3, // Yope · chat.voice · SOURCED
-  "chat.voice.dimension.barPitch": 6.1, // Yope · chat.voice · SOURCED
-  "chat.voice.dimension.barWidth": 3.1, // Yope · chat.voice · SOURCED
-  "chat.voice.dimension.durationTrailing": 9.7, // Yope · chat.voice · SOURCED
-  "chat.voice.dimension.height": 44.9, // Yope · chat.voice · SOURCED
-  "chat.voice.dimension.playButton": 31.5, // Yope · chat.voice · SOURCED
-  "chat.voice.dimension.playGlyph": 11.5, // Yope · chat.voice · SOURCED
-  "chat.voice.dimension.playInsetLeading": 8, // Yope · chat.voice · SOURCED
-  "chat.voice.dimension.playToWaveform": 7.8, // Yope · chat.voice · SOURCED
-  "chat.voice.dimension.waveformToDuration": 8.9, // Yope · chat.voice · SOURCED
-  "chat.voice.dimension.width": 271.8, // Yope · chat.voice · SOURCED
-  "chat.voice.icon.pause": {"ios":"pause.fill","android":"Rounded.Pause"}, // Apple Messages (iMessage) / WhatsApp / Telegram (glyph) · chat.voice · PLATFORM
-  "chat.voice.layout.durationFormat": {"pattern":"mm:ss","example":"00:38"}, // Yope · chat.voice · SOURCED
-  "chat.voice.layout.recording": {"start":"press and hold the mic circle: recording runs while the finger is down","send":"lift the finger: the message is sent","cancel":"slide left while holding: the recording is discarded and nothing is sent","lock":"slide up onto the lock shown above the mic circle: recording continues hands-free","locked":"while locked: chat.voice.icon.pause pauses and lets you play the draft; the mic circle shows icon.global.send and sends","row":"while recording, the composer row shows leading → trailing: red recording dot, elapsed time, the centred hint (‹ slide to cancel); the mic circle stays at the trailing end under the finger","dotColor":"color.global.destructive","timerFormat":"chat.voice.layout.durationFormat","timerColor":"color.global.textPrimary","hintGlyph":"icon.global.back","hintColor":"color.global.textSecondary","hintCopy":"chat.voice.recording.slideToCancel","lockGlyph":"icon.global.lock","lockHintGlyphIos":"chevron.up","lockHintGlyphAndroid":"Rounded.ExpandLess","haptic":"none (HIG: haptics must not disrupt the microphone)"}, // WhatsApp (gesture, documented) + Telegram (row, 2026 panel) · chat.voice · SOURCED
-  "chat.voice.radius.bubble": 14, // Yope · chat.voice · SOURCED
-  "collage.share.color.pill": "#9A9489A8", // Yope · collage.share · SOURCED
-  "collage.share.fontSize.label": 18, // Yope · collage.share · SOURCED
-  "collage.share.fontWeight.label": "bold", // Yope · collage.share · SOURCED
-  "collage.share.icon.share": {"ios":"square.and.arrow.up.fill","android":"Rounded.IosShare"}, // Yope · collage.share · PLATFORM
+  "chat.reactions.layout.chip": {"component":"C-06 fill capsule holding the distinct emoji (no number)","fill":"page: color.global.control (iOS) / color.global.surfaceSecondary.android; on media: color.global.controlOnDeep","emoji":"text role pill size (fontSize.global.pill), up to chat.reactions.count.clusterMaxVisible, order chat.reactions.layout.clusterOrder","padding":"12 horizontal / 8 vertical (APK PaddingValues(12, 8, 12, 8) of Retro's small pills); height hugs the emoji line","placementThread":"under the photo card, leading-aligned with the text column, chat.reactions.dimension.chipTop below the photo","placementViewer":"photo.viewer footer, trailing end (Retro's reaction slot), before the add-reaction glyph","tap":"opens the Reactions sheet (chat.reactions.layout.list)","hidden":"when nobody reacted"}, // Retro + WhatsApp · chat.reactions · SOURCED
+  "chat.reactions.layout.clusterOrder": {"order":"newest distinct emoji first (leading); earlier ones follow","tie":"an emoji used again moves to the front"}, // Locket · chat.reactions · SOURCED
+  "chat.reactions.layout.list": {"presentation":"native sheet (C-29) titled chat.reactions.activity.title","row":"C-16 people row: avatar size.global.avatarPicker, name text role listTitle, trailing the emoji in the size.global.icon box; one row per person and emoji","mine":"your rows carry chat.reactions.list.removeHint as a second line (listSubtitle, color.global.textSecondary); tapping one unreacts","empty":"chat.reactions.empty (C-27 title only)"}, // Retro + WhatsApp · chat.reactions · SOURCED
+  "chat.reactions.layout.picker": {"presentation":"native sheet (C-29) with grabber; content on color.global.background","top":"search field C-12, placeholder chat.reactions.picker.search","sections":"chat.reactions.picker.frequent (recently used on this device), then chat.reactions.picker.all (every emoji in Unicode order); section labels text role sectionLabel (C-20 form, no •••)","grid":"chat.reactions.count.pickerColumns equal columns inside size.global.screenMargin; emoji at fontSize.global.headerTitle","mine":"emoji you already used on this photo sit on a size.global.circleButton circle in color.global.control (selected trait)","tap":"an emoji reacts and closes the sheet; a highlighted one unreacts"}, // Locket + WhatsApp · chat.reactions · SOURCED
+  "chat.reactions.layout.quickReactions": {"emoji":"🔥 then 💖, then the add-reaction glyph (chat.reactions.icon.add)","where":"a palette row at the top of the photo's native context menu (long press on a photo message or on the viewer photo)","tap":"an emoji reacts at once; the glyph opens the picker"}, // Locket + Apple Messages + WhatsApp · chat.reactions · SOURCED
+  "chat.reactions.layout.unreact": {"sheet":"tap your own row in the Reactions sheet → unreact(post, emoji)","picker":"tap an emoji highlighted as yours → unreact","menu":"a quick reaction you already used shows selected in the palette row; tapping it unreacts"}, // Apple Messages + WhatsApp · chat.reactions · SOURCED
+  "chat.thread.count.emojiOnlyMax": 3, // Apple Messages + WhatsApp · chat.thread · SOURCED
+  "chat.thread.dimension.itemGap": 8, // Retro · chat.thread · SOURCED
+  "chat.thread.dimension.rowAvatarToText": 16.7, // Retro · chat.thread · SOURCED
+  "chat.thread.dimension.rowLinePitch": 19, // Retro · chat.thread · SOURCED
+  "chat.thread.duration.entry": 250, // Retro · chat.thread · SOURCED
+  "chat.thread.easing.entry": "linear", // Retro · chat.thread · SOURCED
+  "chat.thread.layout.failedMessage": {"indicator":"one line under the failed message: chat.thread.sendFailed, text role caption, color.global.destructive; no glyph","sending":"while the send is in flight, the same slot shows chat.thread.sending in color.global.textSecondary","action":"tap the line or the message → send again (menu item chat.thread.menu.retry does the same)","haptic":"haptic.global.error when a send fails"}, // Retro + Apple Messages · chat.thread · SOURCED
+  "chat.thread.layout.photoFit": {"frame":"size.global.friendCardWidth × size.global.friendCardHeight (C-18 photo card, 2:3)","corners":"radius.global.card (continuous)","content":"aspect fill, centred; the full photo opens in photo.viewer","position":"in the run's text column, chat.thread.dimension.itemGap below the name line or the previous item"}, // Retro · chat.thread · SOURCED
+  "chat.thread.layout.replyQuote": {"replyToPhoto":"a C-15 row above the reply: thumbnail size.global.rowThumbWidth × .rowThumbHeight, radius.global.thumbnail, then title chat.thread.reply.postTitle (text role listTitle) over chat.thread.reply.postWeek (listSubtitle, color.global.textSecondary); gap size.global.rowThumbGap","replyToMessage":"one line above the reply text: the quoted sender's name in fontWeight.global.listTitle followed by the quoted text, text role listSubtitle, color.global.textSecondary, one line, tail truncation (C-15 subtitle form)","defaults":"a quoted voice / photo message shows chat.thread.reply.defaultAttachment; empty text chat.thread.reply.defaultText","tap":"photo quote → photo.viewer on that post; message quote → scrolls to the quoted message","deleted":"reply_to_post_id / reply_to_message_id null → no quote part, the reply stays"}, // Retro · chat.thread · SOURCED
+  "chat.thread.layout.runs": {"rule":"consecutive messages from the same sender form a run; a run starts with the sender's avatar (size.global.avatarComment) and the name / time line; later messages of the run sit in the text column without avatar or name","breaks":"another sender, a day divider, or a reply quote starts a new run","spacing":"items inside a run: chat.thread.dimension.itemGap; run → next run: size.global.listGap; day divider: size.global.sectionGap above, size.global.sectionHeaderToContent below","order":"oldest at the top, newest at the bottom above the composer"}, // Apple Messages + WhatsApp · chat.thread · SOURCED
+  "chat.thread.layout.timeFormat": {"pattern":"locale short time (h:mm a in en-US)","example":"10:00 PM","where":"after the sender's name on the first row of a run, one space apart, text role caption in color.global.textSecondary (C-16 'elton 2h' slot)","dayDividers":"a C-20 dated section header (no •••) before the first message of each day: chat.thread.divider.today, chat.thread.divider.yesterday, else the date as MMMM d, yyyy"}, // Retro · chat.thread · SOURCED
+  "chat.voice.layout.capsule": {"component":"C-06 fill capsule with the anatomy of C-07: leading glyph, then the label","height":"size.global.pillHeight","corners":"radius.global.capsule","fill":"page: color.global.control (iOS) / color.global.surfaceSecondary.android; on media (photo.viewer): color.global.controlOnDeep","glyph":"icon.global.play (playing: icon.global.pause) at size.global.iconSmall, color.global.textPrimary","label":"duration per chat.voice.layout.durationFormat, text role pill, color.global.textPrimary","padding":"size.global.pillPaddingLeading → glyph → size.global.pillIconGap → label → size.global.pillPaddingTrailing","width":"hugs its content (no width per duration)"}, // Retro · chat.voice · SOURCED
+  "chat.voice.layout.durationFormat": {"pattern":"m:ss","example":"0:38","digits":"monospaced"}, // Retro · chat.voice · SOURCED
+  "chat.voice.layout.playback": {"tap":"the capsule toggles play / pause; one voice message plays at a time (starting another stops the first)","label":"total duration when idle; elapsed time while playing or paused mid-way","end":"back to the idle state at the end"}, // Telegram + WhatsApp · chat.voice · SOURCED
+  "chat.voice.layout.recording": {"start":"press and hold the composer's mic glyph: recording runs while the finger is down","send":"lift the finger → the voice message is sent","cancel":"slide left → recording discarded","lock":"slide up onto the lock circle above the mic → keeps recording hands-free; then the send glyph sends, the trash glyph discards","field":"while recording the field shows: icon.global.mic in color.global.destructive · elapsed time (chat.voice.layout.durationFormat, text role body, color.global.textPrimary) · icon.global.back + chat.voice.recording.slideToCancel in color.global.textSecondary","lockCircle":"C-11 circle size.global.circleButton, color.global.control, icon.global.lock in color.global.textPrimary, centred over the mic glyph, size.global.pillGap above the field","haptic":"none on start / stop (HIG: do not disturb the microphone); haptic.global.send when sent"}, // WhatsApp + Telegram · chat.voice · SOURCED
   "collage.share.layout.export": {"aspect":"9:16","widthPx":1080,"heightPx":1920,"source":"collages.share_path page n (worker share-<n>.jpg)","watermark":"none"}, // Meta developer docs (standards: accessibility thresholds, share-image specs) · collage.share · VERIFIED
-  "collage.share.layout.pill": {"width":126,"height":58,"cornerRadius":10,"bottomFromScreenBottom":36,"glyph":25.7}, // Yope · collage.share · SOURCED
+  "collage.share.layout.pill": {"height":43.5,"paddingHorizontal":23,"trailingInset":"size.global.buttonMarginH","centreFromScreenBottom":59.2}, // Retro · collage.share · SOURCED
   "collage.share.layout.sheet": {"ios":"ShareLink(item:preview: SharePreview(title, image))","android":"Intent.createChooser(ACTION_SEND image/jpeg content:// + FLAG_GRANT_READ_URI_PERMISSION, title)"}, // Apple HIG · collage.share · PLATFORM
-  "collage.share.layout.textStyleMap": {"label":"headline"}, // Apple HIG · collage.share · PLATFORM
-  "collage.view.color.hud": "#0C0C0C", // Yope · collage.view · SOURCED
-  "collage.view.color.pageDotActive": "#F4F4F4", // Yope · collage.view · SOURCED
-  "collage.view.fontSize.title": 16, // Yope · collage.view · SOURCED
-  "collage.view.fontWeight.title": "semibold", // Yope · collage.view · SOURCED
-  "collage.view.layout.hud": {"width":100,"height":99,"cornerRadius":8.5}, // Yope · collage.view · SOURCED
   "collage.view.layout.page": {"columns":3,"rowsPerPage":4,"gapRatio":0,"outerRadiusRatio":0.0498,"canvasAspect":0.5625,"canvasWidthPx":1080}, // Yope · collage.view · SOURCED
-  "collage.view.layout.pageDots": {"diameter":7.6,"pitch":15.5,"inactive":"color.global.controlRaised","ios":"native page control (UIPageControl / TabView .page index)"}, // Yope · collage.view · SOURCED
-  "collage.view.layout.screen": {"headerCenterFromTop":81,"dotsCenterFromTop":125,"pageTop":145,"pageFit":"9:16, aspect-fit in the space above the home indicator, centred"}, // Yope · collage.view · SOURCED
-  "collage.view.layout.textStyleMap": {"title":"callout"}, // Apple HIG · collage.view · PLATFORM
-  "color.birthday.contribute.input.fill": "#FFFFFF14", // Tribute · birthday.contribute · VERIFIED
-  "color.birthday.contribute.input.text": "#E7E8E8EB", // Tribute · birthday.contribute · VERIFIED
-  "color.birthday.contribute.stepper.active": "#B8B9B9", // Tribute · birthday.contribute · VERIFIED
-  "color.birthday.contribute.stepper.inactive": "#FFFFFF38", // Tribute · birthday.contribute · VERIFIED
-  "color.birthday.contribute.stepper.inactiveLabel": "#FFFFFF8C", // Tribute · birthday.contribute · VERIFIED
-  "color.birthday.request.prompts.header": "#292D34", // Tribute · birthday.request · VERIFIED
-  "color.birthday.tribute.button.label": "#292D34", // Tribute · birthday.tribute · VERIFIED
+  "collage.view.layout.screen": {"mediaPage":"the page-1 image blurred full-bleed inside a rounded media page (layout.global.materials.backdrop)","mediaPageTop":"safe-area top","mediaPageSideInset":0,"mediaPageBottomFromScreenBottom":94.8,"mediaPageCornerRadius":26.5,"closeCentreFromTrailing":37.7,"closeCentreBelowPageTop":38,"card":"the composed page, aspect-fit and centred in the media page inset by 76 pt top and bottom (close-circle centre 38 + size.global.circleButton ÷ 2 + the 20-pt circle → photo gap of camera.sendto.layout.preview) and at least 32 pt at the sides; clipped to collage.view.layout.page.outerRadiusRatio × its width (393 × 852: 307 × 546 pt)","bottomRowCentreFromScreenBottom":59.2,"bottomRow":"page dots (C-31) centred; 'Share' pill (collage.share.layout.pill) at size.global.buttonMarginH from the trailing edge"}, // Retro · collage.view · SOURCED
   "color.birthday.tribute.pillarbox": "#000000", // Tribute · birthday.tribute · SOURCED
   "color.global.accent": {"light":"#000000","dark":"#FFFFFF"}, // Retro · global · SOURCED
   "color.global.background": {"light":"#FFFFFF","dark":"#000000"}, // Retro · global · SOURCED
@@ -246,96 +122,51 @@ export const tokens = {
   "color.global.textSecondary": "#999999", // Retro · global · SOURCED
   "color.global.textSecondary.android": {"light":"#00000080","dark":"#FFFFFF99"}, // Retro · global · SOURCED
   "color.global.textTertiary": {"light":"#C1C1C1","dark":"#FFFFFF4D"}, // Retro · global · SOURCED
-  "color.onthisday.banner": "#FC5F33", // Timehop · onthisday · SOURCED
-  "color.onthisday.banner.label": "#FFFFFF", // Timehop · onthisday · SOURCED
-  "color.onthisday.meta.text": "#FFFFFF", // Timehop · onthisday · SOURCED
-  "color.onthisday.progress.fill": "#F7D23E", // Timehop · onthisday · SOURCED
-  "color.onthisday.progress.track": "#93140A", // Timehop · onthisday · SOURCED
-  "color.year.story.chrome.fill": "#00000080", // Spotify Wrapped · year.story · SOURCED
-  "color.year.story.letterbox": "#111111", // Spotify Wrapped · year.story · SOURCED
-  "color.year.story.progress.fill": "#FFFFFF", // Spotify Wrapped · year.story · SOURCED
+  "color.onthisday.dial.tick": "#FFFFFF4D", // Retro · onthisday · SOURCED
+  "color.onthisday.subtitle": "#FFFFFFC2", // Retro · onthisday · SOURCED
+  "count.onthisday.dial.ticks": 44, // Retro · onthisday · SOURCED
   "count.year.story.listLength": 5, // Spotify Wrapped · year.story · SOURCED
-  "daily.capture.color.overlayControl": "#00000075", // BeReal · daily.capture · SOURCED
-  "daily.capture.color.text": "#FAFAFA", // BeReal · daily.capture · SOURCED
-  "daily.capture.fontSize.chip": 13, // BeReal · daily.capture · SOURCED
-  "daily.capture.fontSize.countdown": 23, // BeReal · daily.capture · SOURCED
-  "daily.capture.fontSize.prompt": 17, // BeReal · daily.capture · SOURCED
-  "daily.capture.fontSize.send": 40.5, // BeReal · daily.capture · SOURCED
-  "daily.capture.fontWeight.countdown": "bold", // BeReal · daily.capture · SOURCED
-  "daily.capture.fontWeight.send": "heavy", // BeReal · daily.capture · SOURCED
-  "daily.capture.layout.audienceChip": {"height":37.4,"paddingLeading":15.7,"paddingTrailing":18,"glyphToText":7.6,"bottomInset":12.5}, // BeReal · daily.capture · SOURCED
-  "daily.capture.layout.captureSequence": {"pressScale":0.912,"press":133,"controlsOut":370,"viewfinderFadeOut":267,"betweenShots":500,"backPhotoFadeIn":200}, // BeReal · daily.capture · SOURCED
-  "daily.capture.layout.countdown": {"digitsTop":92.3,"gapAboveViewfinder":16.2}, // BeReal · daily.capture · SOURCED
-  "daily.capture.layout.countdownTick": {"tick":1000,"digitOut":100,"digitIn":300,"digitFadeIn":550,"travel":3}, // BeReal · daily.capture · SOURCED
-  "daily.capture.layout.dismiss": {"centerFromLeading":31.7,"centerFromTop":74.5}, // BeReal · daily.capture · SOURCED
-  "daily.capture.layout.prompt": {"gapBelowSpinner":11.4}, // BeReal · daily.capture · SOURCED
-  "daily.capture.layout.retake": {"diameter":34,"inset":12,"glyph":14}, // BeReal · daily.capture · SOURCED
-  "daily.capture.layout.send": {"capTopBelowImage":69,"glyphGap":11.4,"glyph":19.5}, // BeReal · daily.capture · SOURCED
-  "daily.capture.layout.shutter": {"outer":74,"ring":4,"gap":2.75,"disc":60.5,"centerFromBottom":148}, // BeReal · daily.capture · SOURCED
-  "daily.capture.layout.sideControls": {"flashCenterFromLeading":59.2,"flipCenterFromTrailing":60.1}, // BeReal · daily.capture · SOURCED
-  "daily.capture.layout.textStyleMap": {"countdown":"title2","prompt":"body","chip":"footnote","send":"largeTitle"}, // Apple HIG · daily.capture · PLATFORM
-  "daily.capture.layout.viewfinder": {"width":378.7,"sideMargin":7,"top":124.4,"aspect":0.75,"cornerRadius":16}, // BeReal · daily.capture · SOURCED
-  "daily.capture.size.progress": 34.7, // BeReal · daily.capture · SOURCED
+  "daily.capture.layout.viewfinder": {"aspect":0.75,"width":"screen width − 2 × size.global.screenMargin","corners":"radius.global.viewfinder","top":"20 pt below the header circle's bottom (camera.sendto.layout.preview.topBelowHeaderCircle)","shrink":"as camera.capture.layout.viewfinder"}, // Retro · daily.capture · SOURCED
   "daily.dualimage.layout.composition": {"mainAspect":0.75,"mainRadiusRatio":0.0455,"insetWidthRatio":0.31,"insetAspect":0.75,"insetMarginRatio":0.03,"insetBorderRatio":0.0051,"insetOuterRadiusRatio":0.126}, // BeReal · daily.dualimage · SOURCED
   "daily.liveactivity.duration.animationMax": 2000, // Apple HIG · daily.liveactivity · VERIFIED
   "daily.liveactivity.fontWeight.min": "medium", // Apple HIG · daily.liveactivity · VERIFIED
-  "daily.liveactivity.layout.colors": {"islandBackground":"system black (not customizable)","lockScreenBackground":"color.global.backgroundDeep","countdown":"color.global.accent","text":"color.global.textPrimary","keyLine":"color.global.accent","systemActionForeground":"color.global.textPrimary"}, // Apple HIG · daily.liveactivity · PLATFORM
+  "daily.liveactivity.layout.colors": {"islandBackground":"system black (not customizable)","lockScreenBackground":"color.global.backgroundDeep","countdown":"color.global.textOnMedia","text":"color.global.textOnMedia","keyLine":"color.global.textOnMedia","systemActionForeground":"color.global.textOnMedia"}, // Retro · daily.liveactivity · SOURCED
   "daily.liveactivity.layout.lifecycle": {"start":"push-to-start at fires_at with the invitation alert","stale":"closes_at","end":"event end at closes_at, dismissal immediate","countdown":"Text(timerInterval: now...closesAt, countsDown: true)"}, // Apple HIG · daily.liveactivity · PLATFORM
   "daily.liveactivity.layout.size": {"w393compact":"52.33x36.67","w393minimal":"36.67-45x36.67","w393expanded":"371x84-160","w393lockScreen":"371x84-160","w430compact":"62.33x36.67","w430expanded":"408x84-160","w430lockScreen":"408x84-160","limitedWidth":"28x28"}, // Apple HIG · daily.liveactivity · VERIFIED
-  "daily.liveactivity.layout.typography": {"groupName":"headline (17 pt semibold, Dynamic Type)","countdownLockScreen":"daily.capture.fontSize.countdown (23 pt), monospaced digits","countdownCompact":"headline, monospaced digits","countdownMinimal":"caption1, semibold, monospaced digits"}, // Apple HIG · daily.liveactivity · PLATFORM
+  "daily.liveactivity.layout.typography": {"groupNameLockScreen":"font.global.display, text role displaySmall (24, regular), color.global.textOnMedia","countdownLockScreen":"text role sheetTitle (17 semibold), monospaced digits, color.global.textOnMedia","groupNameExpanded":"text role sheetTitle (17 semibold)","countdownCompact":"text role sheetTitle (17 semibold), monospaced digits","countdownMinimal":"Caption 1 (12 pt) semibold, monospaced digits (system; Retro has no role this small)"}, // Retro · daily.liveactivity · SOURCED
   "daily.liveactivity.size.lockScreenMargin": 14, // Apple HIG · daily.liveactivity · VERIFIED
   "daily.notification.layout.delivery": {"ios":"interruption-level active; passive during quiet hours; thread-id = group id; default sound (none in quiet hours)","ios_liveActivities":"the Live Activity push-to-start alert is the invitation (no second notification)","android":"channel daily_invitation; one notification per group per day; no reminder, no update on window close"}, // BeReal · daily.notification · PLATFORM
-  "daily.ongoing.layout.notification": {"style":"NotificationCompat standard (title + text)","countdown":"setUsesChronometer(true) + setChronometerCountDown(true) + setWhen(closesAt)","removal":"setTimeoutAfter(closesAt - now)","ongoing":"false (dismissible)","promoted":"no (Live Update only after an explicit opt-in, with an Unpin action)","channel":"daily_invitation","color":"color.global.accent","tap":"app://daily?group=<id>&invitation=<id>"}, // Material 3 · daily.ongoing · PLATFORM
-  "dimension.birthday.contribute.button.gap": 24, // Tribute · birthday.contribute · VERIFIED
-  "dimension.birthday.contribute.button.height": 50, // Tribute · birthday.contribute · VERIFIED
-  "dimension.birthday.contribute.group.gap": 16, // Tribute · birthday.contribute · VERIFIED
-  "dimension.birthday.contribute.heading.gap": 107, // Tribute · birthday.contribute · VERIFIED
-  "dimension.birthday.contribute.input.height": 46, // Tribute · birthday.contribute · VERIFIED
-  "dimension.birthday.contribute.label.gap": 10, // Tribute · birthday.contribute · VERIFIED
-  "dimension.birthday.contribute.margin": 20, // Tribute · birthday.contribute · VERIFIED
-  "dimension.birthday.contribute.stepper.circle": 40, // Tribute · birthday.contribute · VERIFIED
-  "dimension.birthday.contribute.subheading.gap": 12, // Tribute · birthday.contribute · VERIFIED
-  "dimension.birthday.request.cta.gap": 15, // Tribute · birthday.request · VERIFIED
-  "dimension.birthday.request.cta.height": 62, // Tribute · birthday.request · VERIFIED
-  "dimension.birthday.request.hero.height": 365.8, // Tribute · birthday.request · VERIFIED
-  "dimension.birthday.request.margin": 15, // Tribute · birthday.request · VERIFIED
-  "dimension.birthday.request.message.gap": 20.8, // Tribute · birthday.request · VERIFIED
-  "dimension.birthday.request.prompt.gap": 19.9, // Tribute · birthday.request · VERIFIED
-  "dimension.birthday.request.prompt.indent": 39, // Tribute · birthday.request · VERIFIED
-  "dimension.birthday.request.prompt.top": 24, // Tribute · birthday.request · VERIFIED
-  "dimension.birthday.request.prompts.gap": 20, // Tribute · birthday.request · VERIFIED
-  "dimension.birthday.request.prompts.headerHeight": 42, // Tribute · birthday.request · VERIFIED
-  "dimension.birthday.request.prompts.headerPadding": 24, // Tribute · birthday.request · VERIFIED
-  "dimension.birthday.request.title.top": 84, // Tribute · birthday.request · VERIFIED
-  "dimension.birthday.tribute.button.gap": 10, // Tribute · birthday.tribute · VERIFIED
-  "dimension.birthday.tribute.button.height": 44, // Tribute · birthday.tribute · VERIFIED
-  "dimension.onthisday.banner.height": 96.8, // Timehop · onthisday · SOURCED
-  "dimension.onthisday.banner.labelBaseline": 25.4, // Timehop · onthisday · SOURCED
-  "dimension.onthisday.grid.gutter": 4.2, // Timehop · onthisday · SOURCED
-  "dimension.onthisday.grid.margin": 3.8, // Timehop · onthisday · SOURCED
-  "dimension.onthisday.grid.top": 5.5, // Timehop · onthisday · SOURCED
-  "dimension.onthisday.meta.avatar": 19, // Timehop · onthisday · SOURCED
-  "dimension.onthisday.meta.centerY": 25.7, // Timehop · onthisday · SOURCED
-  "dimension.onthisday.meta.gap": 11.5, // Timehop · onthisday · SOURCED
-  "dimension.onthisday.meta.inset": 16.2, // Timehop · onthisday · SOURCED
-  "dimension.onthisday.progress.height": 4.3, // Timehop · onthisday · SOURCED
-  "dimension.year.story.chrome.button": 29.6, // Spotify Wrapped · year.story · SOURCED
-  "dimension.year.story.chrome.centerY": 48.3, // Spotify Wrapped · year.story · SOURCED
-  "dimension.year.story.chrome.glyph": 14.9, // Spotify Wrapped · year.story · SOURCED
-  "dimension.year.story.chrome.insetRight": 10.5, // Spotify Wrapped · year.story · SOURCED
-  "dimension.year.story.chrome.pitch": 45.9, // Spotify Wrapped · year.story · SOURCED
-  "dimension.year.story.progress.gap": 3.6, // Spotify Wrapped · year.story · SOURCED
-  "dimension.year.story.progress.height": 1.8, // Spotify Wrapped · year.story · SOURCED
-  "dimension.year.story.progress.inset": 11, // Spotify Wrapped · year.story · SOURCED
-  "dimension.year.story.progress.top": 8, // Spotify Wrapped · year.story · SOURCED
+  "daily.ongoing.layout.notification": {"style":"NotificationCompat standard (title + text)","countdown":"setUsesChronometer(true) + setChronometerCountDown(true) + setWhen(closesAt)","removal":"setTimeoutAfter(closesAt - now)","ongoing":"false (dismissible)","promoted":"no (Live Update only after an explicit opt-in, with an Unpin action)","channel":"daily_invitation","color":"not set (system default) — Retro's notification colour was not captured","tap":"app://daily?group=<id>&invitation=<id>"}, // Material 3 · daily.ongoing · PLATFORM
+  "dimension.birthday.contribute.counterAboveKeyboard": 18.5, // Retro · birthday.contribute · SOURCED
+  "dimension.birthday.contribute.counterInset": 20.7, // Retro · birthday.contribute · SOURCED
+  "dimension.birthday.contribute.messageInset": 21.9, // Retro · birthday.contribute · SOURCED
+  "dimension.birthday.contribute.photoMaxHeight": 422.8, // Retro · birthday.contribute · SOURCED
+  "dimension.birthday.contribute.photoWidth": 297.4, // Retro · birthday.contribute · SOURCED
+  "dimension.birthday.contribute.pillBottom": 20.9, // Retro · birthday.contribute · SOURCED
+  "dimension.birthday.contribute.titleToPhoto": 32.6, // Retro · birthday.contribute · SOURCED
+  "dimension.birthday.request.card.blockGap": 29.3, // Retro · birthday.request · SOURCED
+  "dimension.birthday.request.card.marker": 17.3, // Retro · birthday.request · SOURCED
+  "dimension.birthday.request.card.markerGap": 5, // Retro · birthday.request · SOURCED
+  "dimension.birthday.request.card.rowPitch": 32, // Retro · birthday.request · SOURCED
+  "dimension.birthday.request.card.titleToDetail": 11, // Retro · birthday.request · SOURCED
+  "dimension.birthday.request.cardToFooter": 15.3, // Retro · birthday.request · SOURCED
+  "dimension.birthday.request.close.centerY": 21.8, // Retro · birthday.request · SOURCED
+  "dimension.birthday.request.close.inset": 26.2, // Retro · birthday.request · SOURCED
+  "dimension.birthday.request.headlineToMessage": 19.3, // Retro · birthday.request · SOURCED
+  "dimension.birthday.request.messageToCard": 29, // Retro · birthday.request · SOURCED
+  "dimension.onthisday.controls.centerY": 139.2, // Retro · onthisday · SOURCED
+  "dimension.onthisday.dial.diameter": 150, // Retro · onthisday · SOURCED
+  "dimension.onthisday.dial.glyph": 35, // Retro · onthisday · SOURCED
+  "dimension.onthisday.dial.indicatorLength": 16.7, // Retro · onthisday · SOURCED
+  "dimension.onthisday.dial.tickLong": 19.8, // Retro · onthisday · SOURCED
+  "dimension.onthisday.dial.tickShort": 11.8, // Retro · onthisday · SOURCED
+  "dimension.onthisday.dial.tickWidth": 3.2, // Retro · onthisday · SOURCED
+  "dimension.onthisday.subtitleBaseline": 26.4, // Retro · onthisday · SOURCED
+  "dimension.year.story.dots.offset": 16.1, // Retro · year.story · SOURCED
+  "dimension.year.story.footer.baseline": 24.8, // Retro · year.story · SOURCED
+  "dimension.year.story.frame.padding": 19.5, // Retro · year.story · SOURCED
   "dimension.year.story.reveal.headlineShift": 18.2, // Spotify Wrapped · year.story · SOURCED
   "dimension.year.story.reveal.sublineOffset": 25, // Spotify Wrapped · year.story · SOURCED
-  "dimension.year.story.share.bottomInset": 29, // Spotify Wrapped · year.story · SOURCED
-  "dimension.year.story.share.glyphGap": 15.5, // Spotify Wrapped · year.story · SOURCED
-  "dimension.year.story.share.rowHeight": 18.6, // Spotify Wrapped · year.story · SOURCED
-  "dimension.year.story.summary.shareHeight": 50, // Spotify Wrapped · year.story · SOURCED
-  "dimension.year.story.summary.shareWidth": 148, // Spotify Wrapped · year.story · SOURCED
-  "dimension.year.story.text.maxWidth": 274, // Spotify Wrapped · year.story · SOURCED
   "duration.birthday.tribute.clipTransition": 0, // Tribute · birthday.tribute · SOURCED
   "duration.birthday.tribute.endHold": 10003, // Tribute · birthday.tribute · SOURCED
   "duration.birthday.tribute.endTransition": 0, // Tribute · birthday.tribute · SOURCED
@@ -351,6 +182,7 @@ export const tokens = {
   "duration.global.stripInsert": 250, // Retro · global · SOURCED
   "duration.global.system.scale": {"short1":50,"short2":100,"short3":150,"short4":200,"medium1":250,"medium2":300,"medium3":350,"medium4":400,"long1":450,"long2":500,"long3":550,"long4":600,"extraLong1":700,"extraLong2":800,"extraLong3":900,"extraLong4":1000}, // Material 3 · global.system · PLATFORM
   "duration.onthisday.memoryChange": 700, // VidDay · onthisday · SOURCED
+  "duration.onthisday.playHold": 4000, // VidDay · onthisday · SOURCED
   "duration.year.story.card": 4000, // VidDay · year.story · SOURCED
   "duration.year.story.reveal.headline": 800, // Spotify Wrapped · year.story · SOURCED
   "duration.year.story.reveal.subline": 600, // Spotify Wrapped · year.story · SOURCED
@@ -358,27 +190,11 @@ export const tokens = {
   "easing.global.native": {"sheet":"system (.sheet / ModalBottomSheet) — measured on Retro: spring.global.sheetPresent","navigationPush":"system (NavigationStack / Compose Navigation default) — Retro's push not captured","keyboard":"system","alert":"system","menu":"system","activityIndicator":"system (ProgressView / CircularProgressIndicator)","scrollIndicator":"system","segmentedControl":"system","toast":"Android Toast LENGTH_SHORT"}, // Apple HIG / Material 3 · global · PLATFORM
   "easing.global.standard": {"x1":0.4,"y1":0,"x2":0.2,"y2":1}, // Retro · global · SOURCED
   "easing.global.system.standard": {"x1":0.2,"y1":0,"x2":0,"y2":1}, // Material 3 · global.system · PLATFORM
-  "easing.year.story.progress.fill": "linear", // Spotify Wrapped · year.story · SOURCED
   "easing.year.story.reveal": {"x1":0.56,"y1":0.08,"x2":0.14,"y2":0.87}, // Spotify Wrapped · year.story · SOURCED
   "easing.year.story.reveal.subline": {"x1":0.05,"y1":0.36,"x2":0.26,"y2":0.94}, // Spotify Wrapped · year.story · SOURCED
-  "font.birthday": {"ios":"system","android":"system"}, // Tribute + VidDay · birthday.request · PLATFORM
   "font.global.display": {"ios":"system-serif","android":"serif"}, // Apple HIG / Material 3 · global · PLATFORM
   "font.global.family": {"ios":"system","android":"Inter"}, // Retro · global · SOURCED
-  "font.onthisday": {"ios":"system","android":"system"}, // Timehop · onthisday · PLATFORM
-  "font.year.story": {"ios":"system","android":"system"}, // Spotify Wrapped · year.story · PLATFORM
-  "fontSize.birthday.contribute.button": 16, // Tribute · birthday.contribute · VERIFIED
-  "fontSize.birthday.contribute.heading": 20, // Tribute · birthday.contribute · VERIFIED
-  "fontSize.birthday.contribute.input": 16, // Tribute · birthday.contribute · VERIFIED
-  "fontSize.birthday.contribute.label": 16, // Tribute · birthday.contribute · VERIFIED
-  "fontSize.birthday.contribute.stepper.label": 10, // Tribute · birthday.contribute · VERIFIED
-  "fontSize.birthday.contribute.stepper.number": 14, // Tribute · birthday.contribute · VERIFIED
-  "fontSize.birthday.contribute.subheading": 16, // Tribute · birthday.contribute · VERIFIED
-  "fontSize.birthday.request.cta": 22, // Tribute · birthday.request · VERIFIED
-  "fontSize.birthday.request.message": 16, // Tribute · birthday.request · VERIFIED
-  "fontSize.birthday.request.prompt": 15, // Tribute · birthday.request · VERIFIED
-  "fontSize.birthday.request.prompts.header": 15, // Tribute · birthday.request · VERIFIED
-  "fontSize.birthday.request.title": 24, // Tribute · birthday.request · VERIFIED
-  "fontSize.birthday.tribute.button": 14, // Tribute · birthday.tribute · VERIFIED
+  "fontSize.birthday.request.cardTitle": 24, // Retro · birthday.request · SOURCED
   "fontSize.global.badge": 11, // Retro · global · SOURCED
   "fontSize.global.body": 15, // Retro · global · SOURCED
   "fontSize.global.body.android": 14, // Retro · global · SOURCED
@@ -402,22 +218,7 @@ export const tokens = {
   "fontSize.global.tileDay": 28, // Retro · global · SOURCED
   "fontSize.global.tileLabel": 13, // Retro · global · SOURCED
   "fontSize.global.tileMonth": 14, // Retro · global · SOURCED
-  "fontSize.onthisday.banner.label": 25.8, // Timehop · onthisday · SOURCED
-  "fontSize.onthisday.meta": 10.6, // Timehop · onthisday · SOURCED
-  "fontSize.year.story.body": 15.4, // Spotify Wrapped · year.story · SOURCED
-  "fontSize.year.story.headline": 31.6, // Spotify Wrapped · year.story · SOURCED
-  "fontSize.year.story.share": 16.1, // Spotify Wrapped · year.story · SOURCED
-  "fontSize.year.story.sharePill": 17.7, // Spotify Wrapped · year.story · SOURCED
-  "fontWeight.birthday.contribute.button": "semibold", // Tribute · birthday.contribute · VERIFIED
-  "fontWeight.birthday.contribute.heading": "medium", // Tribute · birthday.contribute · VERIFIED
-  "fontWeight.birthday.contribute.label": "semibold", // Tribute · birthday.contribute · VERIFIED
-  "fontWeight.birthday.contribute.stepper.label": "regular", // Tribute · birthday.contribute · VERIFIED
-  "fontWeight.birthday.contribute.stepper.labelActive": "medium", // Tribute · birthday.contribute · VERIFIED
-  "fontWeight.birthday.contribute.stepper.number": "semibold", // Tribute · birthday.contribute · VERIFIED
-  "fontWeight.birthday.request.cta": "semibold", // Tribute · birthday.request · VERIFIED
-  "fontWeight.birthday.request.prompts.header": "medium", // Tribute · birthday.request · VERIFIED
-  "fontWeight.birthday.request.title": "semibold", // Tribute · birthday.request · VERIFIED
-  "fontWeight.birthday.tribute.button": "semibold", // Tribute · birthday.tribute · VERIFIED
+  "fontWeight.birthday.request.cardTitle": "bold", // Retro · birthday.request · SOURCED
   "fontWeight.global.badge": "semibold", // Retro · global · SOURCED
   "fontWeight.global.body": "regular", // Retro · global · SOURCED
   "fontWeight.global.button": "semibold", // Retro · global · SOURCED
@@ -438,65 +239,27 @@ export const tokens = {
   "fontWeight.global.textButton": "regular", // Retro · global · SOURCED
   "fontWeight.global.tileDay": "semibold", // Retro · global · SOURCED
   "fontWeight.global.tileLabel": "semibold", // Retro · global · SOURCED
-  "fontWeight.onthisday.banner.label": "bold", // Timehop · onthisday · SOURCED
-  "fontWeight.onthisday.meta": "bold", // Timehop · onthisday · SOURCED
-  "fontWeight.year.story.body": "regular", // Spotify Wrapped · year.story · SOURCED
-  "fontWeight.year.story.headline": "bold", // Spotify Wrapped · year.story · SOURCED
-  "fontWeight.year.story.share": "bold", // Spotify Wrapped · year.story · SOURCED
-  "fontWeight.year.story.sharePill": "bold", // Spotify Wrapped · year.story · SOURCED
-  "groups.create.color.buttonDisabledFill": "#201D21", // Yope · groups.create · SOURCED
-  "groups.create.color.buttonDisabledLabel": "#49464A", // Yope · groups.create · SOURCED
-  "groups.create.color.cover": "#494949", // Yope · groups.create · SOURCED
-  "groups.create.color.field": "#141414", // Yope · groups.create · SOURCED
-  "groups.create.color.hud": "#0C0C0C", // Yope · groups.create · SOURCED
-  "groups.create.fontSize.fieldText": 15, // Yope · groups.create · SOURCED
-  "groups.create.fontSize.hudLabel": 15, // Yope · groups.create · SOURCED
-  "groups.create.fontSize.title": 14.5, // Yope · groups.create · SOURCED
-  "groups.create.fontWeight.fieldText": "bold", // Yope · groups.create · SOURCED
-  "groups.create.fontWeight.title": "medium", // Yope · groups.create · SOURCED
-  "groups.create.layout.titleAccent": {"line1":"color.global.textPrimary","line2":"color.global.accent","rule":"a two-line onboarding or sheet title draws its second part in lime","font":"fontSize.global.onboardingTitle / fontWeight.global.onboardingTitle, centred"}, // Yope · groups.create · SOURCED
-  "groups.create.radius.cover": 7, // Yope · groups.create · SOURCED
-  "groups.create.size.cover.height": 221, // Yope · groups.create · SOURCED
-  "groups.create.size.cover.width": 330, // Yope · groups.create · SOURCED
-  "groups.create.size.coverGlyph": 21, // Yope · groups.create · SOURCED
-  "groups.create.size.fieldToButton": 18, // Yope · groups.create · SOURCED
-  "groups.create.size.hud": 100, // Yope · groups.create · SOURCED
-  "groups.create.size.mediaToField": 23, // Yope · groups.create · SOURCED
-  "groups.create.size.sheetTopToTitle": 71, // Yope · groups.create · SOURCED
-  "groups.create.size.titleToContent": 34, // Yope · groups.create · SOURCED
-  "groups.invite.fontSize.pickerName": 13.5, // Yope · groups.invite · SOURCED
-  "groups.invite.fontWeight.pickerName": "bold", // Yope · groups.invite · SOURCED
-  "groups.invite.layout.contacts": {"ios18":"ContactAccessButton(queryString:) under a search field: the person grants access per contact (limited access); granted contacts list below","ios17":"button that presents CNContactPickerViewController (no contacts permission); the chosen contact gets the invite through MFMessageComposeViewController so the message is seen before it is sent","android":"READ_CONTACTS granted: contact rows; not granted: Yope's inline contacts card (onboarding.permission.contacts.*); targetSdk ≥ 37 on API 37+: Contact Picker (Intent.ACTION_PICK_CONTACTS), no card","send":"SMS compose with the invite text (iOS MFMessageComposeViewController, Android ACTION_SENDTO smsto:)"}, // Apple HIG · groups.invite · PLATFORM
-  "groups.invite.layout.share": {"ios":"ShareLink / UIActivityViewController with the invite text and URL","android":"Intent.createChooser(ACTION_SEND text/plain) (Sharesheet)"}, // Yope · groups.invite · PLATFORM
-  "groups.invite.size.pickerRowPitch": 54.5, // Yope · groups.invite · SOURCED
-  "groups.list.color.card": "#181818", // Yope · groups.list · SOURCED
-  "groups.list.color.headerCircleOverPhoto": "#00000094", // Yope · groups.list · SOURCED
-  "groups.list.layout.tabBar": {"order":"camera · groups (chats glyph) · walls (film-strip) · me (own avatar)","selected":"pill color.global.controlRaised (size.global.tabBarSelectedWidth × .tabBarSelectedHeight), glyph color.global.textPrimary","unselected":"glyph color.global.textSecondary","labels":"none (icon-only)","badges":"none (Yope's red count badges are do-not-copy)"}, // Yope · groups.list · SOURCED
-  "groups.list.size.avatarInset": 16, // Yope · groups.list · SOURCED
-  "groups.list.size.cameraGlyph": 16, // Yope · groups.list · SOURCED
-  "groups.list.size.cardHeight": 100, // Yope · groups.list · SOURCED
-  "groups.list.size.coverHeight": 205, // Yope · groups.list · SOURCED
-  "groups.screen.color.chatPill": "#080808", // Yope · groups.screen · SOURCED
-  "groups.screen.color.segmentTrack": "#111111", // Yope · groups.screen · SOURCED
-  "groups.screen.fontSize.chatPill": 15, // Yope · groups.screen · SOURCED
-  "groups.screen.fontSize.profileName": 25, // Yope · groups.screen · SOURCED
-  "groups.screen.fontSize.segmentLabel": 14.5, // Yope · groups.screen · SOURCED
-  "groups.screen.fontWeight.profileName": "bold", // Yope · groups.screen · SOURCED
-  "groups.screen.fontWeight.segmentLabel": "bold", // Yope · groups.screen · SOURCED
-  "groups.screen.layout.background": {"feed":"color.global.background (#171717)","profile":"color.global.backgroundDeep (#000000)"}, // Yope · groups.screen · SOURCED
-  "groups.screen.layout.menu": {"ios":"Menu (UIMenu) from the ••• circle; items with trailing SF Symbols; destructive items role .destructive (red)","android":"DropdownMenu anchored to the ••• circle; destructive items in color.global.system.error"}, // Yope · groups.screen · PLATFORM
-  "groups.screen.radius.card": 20, // Yope · groups.screen · SOURCED
-  "groups.screen.radius.lightPill": 11, // Yope · groups.screen · SOURCED
-  "groups.screen.size.cardGap": 8.5, // Yope · groups.screen · SOURCED
-  "groups.screen.size.cardHeight": 152, // Yope · groups.screen · SOURCED
-  "groups.screen.size.cardMarginH": 7.6, // Yope · groups.screen · SOURCED
-  "groups.screen.size.chatPillHeight": 51, // Yope · groups.screen · SOURCED
-  "groups.screen.size.chatPillWidth": 88, // Yope · groups.screen · SOURCED
-  "groups.screen.size.lightPillHeight": 45, // Yope · groups.screen · SOURCED
-  "groups.screen.size.profileAvatar": 92, // Yope · groups.screen · SOURCED
-  "groups.screen.size.segmentHeight": 41.5, // Yope · groups.screen · SOURCED
-  "groups.screen.size.segmentInset": 4, // Yope · groups.screen · SOURCED
-  "groups.screen.size.segmentMarginH": 6, // Yope · groups.screen · SOURCED
+  "groups.invite.color.note": "#767676", // Retro · groups.invite · SOURCED
+  "groups.invite.icon.note": {"ios":"eye","android":"Outlined.Visibility"}, // Retro · groups.invite · PLATFORM
+  "groups.invite.layout.contacts": {"ios18":"ContactAccessButton(queryString:) under the search field (C-12): the person grants access per contact (limited access); granted contacts listed as people rows (C-16)","ios17":"outline capsule (C-06) that presents CNContactPickerViewController (no contacts permission); the chosen contact gets the invite through MFMessageComposeViewController","android":"READ_CONTACTS granted: people rows (C-16); not granted: permission block (C-27, Retro's 'No Contacts Access' copy) inside the section; targetSdk ≥ 37 on API 37+: Contact Picker (Intent.ACTION_PICK_CONTACTS), no block","send":"SMS compose with the invite text (iOS MFMessageComposeViewController, Android ACTION_SENDTO smsto:)"}, // Apple HIG · groups.invite · PLATFORM
+  "groups.invite.layout.share": {"ios":"ShareLink / UIActivityViewController with the invite text and URL ('Share to…' target)","android":"Intent.createChooser(ACTION_SEND text/plain) (Sharesheet)","copy":"Copy Link → UIPasteboard / ClipboardManager, then confirmation (C-26)","message":"Message → MFMessageComposeViewController / ACTION_SENDTO smsto: with the invite text (the person sees it before sending)"}, // Apple HIG · groups.invite · PLATFORM
+  "groups.invite.size.coverHeight": 393.5, // Retro · groups.invite · SOURCED
+  "groups.invite.size.coverToNote": 29, // Retro · groups.invite · SOURCED
+  "groups.invite.size.coverWidth": 281.8, // Retro · groups.invite · SOURCED
+  "groups.invite.size.menuGlyphInset": 17.9, // Retro · groups.invite · SOURCED
+  "groups.invite.size.menuRowHeight": 58.7, // Retro · groups.invite · SOURCED
+  "groups.invite.size.menuTextInset": 52.7, // Retro · groups.invite · SOURCED
+  "groups.invite.size.noteGlyphGap": 6.3, // Retro · groups.invite · SOURCED
+  "groups.invite.size.targetLabelGap": 11.6, // Retro · groups.invite · SOURCED
+  "groups.invite.size.targetPitch": 90.4, // Retro · groups.invite · SOURCED
+  "groups.list.layout.tabBar": {"component":"design/components.md C-04 (icon-only, evenly distributed, page-coloured, no hairline, no labels)","order":"camera · groups (home) · walls (people) · me (profile) — the app's four destinations, unchanged","glyphs":"camera icon.global.camera · groups icon.global.home · walls icon.global.group · me icon.global.wall","badges":"none: no unread dot on our tabs (Retro's dot sits on its Activity tab, which this app does not have)"}, // Retro · groups.list · SOURCED
+  "groups.screen.layout.menu": {"ios":"contextMenu on a grid cell / strip tile (UIMenu with a preview); destructive items role .destructive (red)","android":"DropdownMenu on long press of a grid cell / strip tile; destructive items in color.global.destructive","items":"others' photos: 'Report Post' (safety.report), 'Block {first_name}' (safety.block); own photos: none (the viewer has the full menu)"}, // Apple HIG · groups.screen · PLATFORM
+  "groups.screen.shadow.cover": {"color":"#000000","blur":8.5,"x":3,"y":10,"opacity":0.25}, // Retro · groups.screen · SOURCED
+  "groups.screen.size.coverHeight": 246, // Retro · groups.screen · SOURCED
+  "groups.screen.size.coverToTitle": 36.7, // Retro · groups.screen · SOURCED
+  "groups.screen.size.coverWidth": 173.5, // Retro · groups.screen · SOURCED
+  "groups.screen.size.metaToActions": 26.6, // Retro · groups.screen · SOURCED
+  "groups.screen.size.titleToMeta": 16, // Retro · groups.screen · SOURCED
   "haptic.global.error": {"ios":"notification.error","android":"REJECT"}, // Apple HIG / Material 3 · global · PLATFORM
   "haptic.global.longPressStart": {"ios":"system (context menu plays its own haptic; no custom generator)","android":"LONG_PRESS"}, // Apple HIG / Material 3 · global · PLATFORM
   "haptic.global.reaction": {"ios":"system (context menu plays its own haptic; no custom generator)","android":"LONG_PRESS"}, // Apple HIG / Material 3 · global · PLATFORM
@@ -550,131 +313,55 @@ export const tokens = {
   "icon.global.variantRule": {"tabBar":"outline variant; selection shown by colour only (color.global.textPrimary vs color.global.tabInactive)","header":"outline variant","states":"fill variant only for a state (selected check, play / pause, lock)"}, // Retro · global · PLATFORM
   "icon.global.video": {"ios":"video.fill","android":"Rounded.Videocam"}, // Retro · global · PLATFORM
   "icon.global.wall": {"ios":"person.crop.circle","android":"Outlined.AccountCircle"}, // Retro · global · PLATFORM
-  "icon.year.story.pause": {"ios":"pause.fill","android":"Rounded.Pause"}, // Spotify Wrapped · year.story · PLATFORM
-  "icon.year.story.replay": {"ios":"arrow.counterclockwise","android":"Rounded.Replay"}, // Spotify Wrapped · year.story · PLATFORM
-  "icon.year.story.share": {"ios":"square.and.arrow.up","android":"Rounded.Share"}, // Spotify Wrapped · year.story · PLATFORM
-  "invite.appclip.fontSize.sheetHelper": 14.4, // Partiful · invite.appclip · VERIFIED
-  "invite.appclip.fontSize.sheetInput": 24, // Partiful · invite.appclip · VERIFIED
-  "invite.appclip.layout.association": {"aasaAppClips":"appclips.apps = [TEAM_ID.BUNDLE_ID.Clip]","aasaAppLinks":"applinks.details[0].components: exclude /i/*/* (page sub-resources), then /i/*","banner":"<meta name=apple-itunes-app content='app-id=…, app-clip-bundle-id=…, app-clip-display=card'>","android":"assetlinks.json delegate_permission/common.handle_all_urls for the application id"}, // Partiful · invite.appclip · VERIFIED
-  "invite.appclip.layout.cardLimits": {"headerImage":"1800×1200 px, no transparency, no text","titleMaxCharacters":30,"subtitleMaxCharacters":56}, // Apple HIG · invite.appclip · PLATFORM
-  "invite.appclip.layout.fullAppOverlay": {"position":"bottom","when":"after join_group succeeds (a natural pause); never before the person has joined"}, // Apple HIG · invite.appclip · PLATFORM
-  "invite.appclip.layout.messagesCard": {"header":"cover on a blurred backdrop with a domain chip","footer":"clip icon, title, subtitle, action button"}, // Partiful · invite.appclip · SOURCED
-  "invite.appclip.opacity.sheetHelper.dark": 0.4, // Partiful · invite.appclip · VERIFIED
-  "invite.appclip.opacity.sheetHelper.light": 0.3, // Partiful · invite.appclip · VERIFIED
-  "invite.appclip.opacity.sheetPlaceholder.dark": 0.4, // Partiful · invite.appclip · VERIFIED
-  "invite.appclip.opacity.sheetPlaceholder.light": 0.3, // Partiful · invite.appclip · VERIFIED
-  "invite.web.blur.button.outlined": 40, // Partiful · invite.web · VERIFIED
-  "invite.web.blur.ogImage.fill": 360, // Partiful · invite.web · SOURCED
-  "invite.web.color.button.filled.fill.dark": "#FFFFFF", // Partiful · invite.web · VERIFIED
-  "invite.web.color.button.filled.fill.light": "#000000", // Partiful · invite.web · VERIFIED
-  "invite.web.color.button.filled.label.dark": "#000000", // Partiful · invite.web · VERIFIED
-  "invite.web.color.button.filled.label.light": "#FFFFFF", // Partiful · invite.web · VERIFIED
-  "invite.web.color.gateCard.dark": "#000000", // Partiful · invite.web · VERIFIED
-  "invite.web.color.gateCard.light": "#FFFFFF", // Partiful · invite.web · VERIFIED
-  "invite.web.color.text.dark": "#FFFFFF", // Partiful · invite.web · VERIFIED
-  "invite.web.color.text.light": "#000000", // Partiful · invite.web · VERIFIED
-  "invite.web.color.theme.default": "#111111", // Partiful · invite.web · VERIFIED
-  "invite.web.count.title.maxLines": 3, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.avatar": 48, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.avatarGap": 4, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.button.gap": 4, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.button.large.height": 48, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.button.large.paddingH": 24, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.button.medium.height": 36, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.button.medium.paddingH": 16, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.button.outlined.border": 1, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.columnMaxWidth": 720, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.coverToNext": 16, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.fieldRow.paddingV": 4, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.focus.offset": 2, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.footer.arrow": 16, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.footer.contentPaddingV": 40, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.footer.linkGap": 2, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.footer.paddingTop": 24, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.gateCard.bodyToButton": 16, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.gateCard.glyph": 64, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.gateCard.glyphToTitle": 8, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.gateCard.padding": 24, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.gateCard.titleToBody": 4, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.headerToAvatars": 8, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.margin": 16, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.sectionGap": 24, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.state.bodyToAction": 24, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.state.glyphToTitle": 20, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.state.headerSpace": 60, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.titleToCover": 25.8, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.titleTop": 109.1, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.userRow.columnGap": 12, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.userRow.listGap": 4, // Partiful · invite.web · VERIFIED
-  "invite.web.dimension.userRow.paddingV": 12, // Partiful · invite.web · VERIFIED
-  "invite.web.duration.button.colour": 200, // Partiful · invite.web · VERIFIED
-  "invite.web.duration.button.opacity": 100, // Partiful · invite.web · VERIFIED
-  "invite.web.easing.button": "easeOut", // Partiful · invite.web · VERIFIED
-  "invite.web.font": {"ios":"system","android":"system"}, // Partiful · invite.web · PLATFORM
-  "invite.web.fontSize.body": 16, // Partiful · invite.web · VERIFIED
-  "invite.web.fontSize.button.medium": 14, // Partiful · invite.web · VERIFIED
-  "invite.web.fontSize.detail": 14, // Partiful · invite.web · VERIFIED
-  "invite.web.fontSize.sectionHeader": 18, // Partiful · invite.web · VERIFIED
-  "invite.web.fontSize.state.glyph": 50, // Partiful · invite.web · VERIFIED
-  "invite.web.fontSize.state.title": 24, // Partiful · invite.web · VERIFIED
-  "invite.web.fontSize.title.base": 40, // Partiful · invite.web · VERIFIED
-  "invite.web.fontSize.title.min": 25, // Partiful · invite.web · VERIFIED
-  "invite.web.fontSize.title.singleLineMax": 48, // Partiful · invite.web · VERIFIED
-  "invite.web.fontWeight.body": "regular", // Partiful · invite.web · VERIFIED
-  "invite.web.fontWeight.button": "semibold", // Partiful · invite.web · VERIFIED
-  "invite.web.fontWeight.sectionHeader": "bold", // Partiful · invite.web · VERIFIED
-  "invite.web.fontWeight.state.title": "bold", // Partiful · invite.web · VERIFIED
-  "invite.web.fontWeight.title": "bold", // Partiful · invite.web · VERIFIED
-  "invite.web.fontWeight.userRow.name": "semibold", // Partiful · invite.web · VERIFIED
-  "invite.web.icon.getApp": {"ios":"arrow.up.right","android":"Filled.NorthEast"}, // Partiful · invite.web · PLATFORM
-  "invite.web.icon.lock": {"ios":"lock.fill","android":"Filled.Lock"}, // Partiful · invite.web · PLATFORM
-  "invite.web.layout.cover": {"width":"full column width","aspect":"own (intrinsic)"}, // Partiful · invite.web · VERIFIED
-  "invite.web.layout.link": {"textDecoration":"none","footerLinkTarget":"new tab (target _blank, rel noopener noreferrer)"}, // Partiful · invite.web · VERIFIED
-  "invite.web.layout.linkPreview": {"titleTags":"<title>, og:title, twitter:title = copy invite.web.documentTitle","imageAlt":"copy invite.web.cover.alt","twitterCard":"summary_large_image","robots":"noindex, nofollow","description":"omitted (Partiful uses the event description; groups have none)"}, // Partiful · invite.web · VERIFIED
-  "invite.web.layout.ogImage": {"width":1200,"height":630,"foreground":"cover fitted inside the frame (contain), centred","background":"cover scaled to cover the frame (aspect kept, centre crop), Gaussian-blurred","format":"JPEG"}, // Partiful · invite.web · VERIFIED
-  "invite.web.layout.state": {"page":"column at least the viewport height","content":"vertically centred: equal auto margins above the content, below it, and above the footer","align":"center"}, // Partiful · invite.web · VERIFIED
-  "invite.web.layout.state.title": {"textTransform":"uppercase","textAlign":"center"}, // Partiful · invite.web · VERIFIED
-  "invite.web.layout.text": {"fontSmoothing":"antialiased"}, // Partiful · invite.web · VERIFIED
-  "invite.web.layout.theme": {"source":"group cover","colour":"mean sRGB colour of the cover image (solid page background)","fallback":"invite.web.color.theme.default"}, // Partiful · invite.web · SOURCED
-  "invite.web.layout.themeTextColour": {"rule":"text colour is whichever of invite.web.color.text.light / .dark has the higher contrast ratio against the theme colour","formula":"WCAG 2.2 relative luminance and contrast ratio"}, // W3C WCAG 2.2 · invite.web · PLATFORM
-  "invite.web.layout.title": {"textAlign":"center"}, // Partiful · invite.web · VERIFIED
-  "invite.web.layout.title.fit": {"widthWide":0.9,"widthNormal":0.7,"widthThin":0.4,"thinCharacters":" litjr.',!:;I","normalCharacters":"abcdefghknopqsuvxyz/\"-","words":"split on whitespace","search":"integer binary search; returns the lower bound"}, // Partiful · invite.web · VERIFIED
-  "invite.web.letterSpacing.title": -0.02, // Partiful · invite.web · VERIFIED
-  "invite.web.lineHeight.default": 1.4, // Partiful · invite.web · VERIFIED
-  "invite.web.lineHeight.title": 1.2, // Partiful · invite.web · VERIFIED
-  "invite.web.opacity.avatar.minimal.fill.dark": 0.25, // Partiful · invite.web · VERIFIED
-  "invite.web.opacity.avatar.minimal.fill.light": 0.1, // Partiful · invite.web · VERIFIED
-  "invite.web.opacity.avatar.minimal.text": 0.8, // Partiful · invite.web · VERIFIED
-  "invite.web.opacity.button.active": 0.4, // Partiful · invite.web · VERIFIED
-  "invite.web.opacity.button.hover": 0.6, // Partiful · invite.web · VERIFIED
-  "invite.web.opacity.button.outlined.active.border": 0.4, // Partiful · invite.web · VERIFIED
-  "invite.web.opacity.button.outlined.active.fill": 0.25, // Partiful · invite.web · VERIFIED
-  "invite.web.opacity.button.outlined.border.dark": 0.4, // Partiful · invite.web · VERIFIED
-  "invite.web.opacity.button.outlined.border.light": 0.25, // Partiful · invite.web · VERIFIED
-  "invite.web.opacity.button.outlined.fill": 0.05, // Partiful · invite.web · VERIFIED
-  "invite.web.opacity.button.outlined.hover.fill": 0.1, // Partiful · invite.web · VERIFIED
-  "invite.web.opacity.footer.arrow": 0.8, // Partiful · invite.web · VERIFIED
-  "invite.web.opacity.footer.divider": 0.1, // Partiful · invite.web · VERIFIED
-  "invite.web.opacity.gateCard.dark": 0.8, // Partiful · invite.web · VERIFIED
-  "invite.web.opacity.gateCard.light": 0.7, // Partiful · invite.web · VERIFIED
-  "invite.web.opacity.text.body": 0.8, // Partiful · invite.web · VERIFIED
-  "invite.web.radius.avatar": 800, // Partiful · invite.web · VERIFIED
-  "invite.web.radius.button.large": 4, // Partiful · invite.web · VERIFIED
-  "invite.web.radius.button.medium": 800, // Partiful · invite.web · VERIFIED
-  "invite.web.radius.cover": 0, // Partiful · invite.web · VERIFIED
-  "invite.web.radius.gateCard": 4, // Partiful · invite.web · VERIFIED
-  "layout.birthday.add.dateFormat": {"pattern":"d MMMM","example":"26 May"}, // Yope · birthday.add · SOURCED
+  "icon.year.story.replay": {"ios":"arrow.counterclockwise","android":"Rounded.Replay"}, // Apple HIG / Material 3 · year.story · PLATFORM
+  "invite.appclip.layout.association": {"aasaAppClips":"appclips.apps = [TEAM_ID.BUNDLE_ID.Clip]","aasaAppLinks":"applinks.details[].components = [{\"/\": \"/i/*\"}] for the full app","invocation":"Safari App Clip card from the invite page's apple-itunes-app meta tag (app-clip-display=card); Messages link previews; QR codes of the link","defaultExperience":"App Store Connect default App Clip experience + an advanced experience for https://<domain>/i/ (prefix match)"}, // Apple HIG · invite.appclip · VERIFIED
+  "invite.appclip.layout.cardLimits": {"headerImage":"1800×1200 px, no transparency, no text","titleMaxCharacters":30,"subtitleMaxCharacters":56,"actions":"Open | View | Play (one of the preset verbs)"}, // Apple HIG · invite.appclip · PLATFORM
+  "invite.appclip.layout.fullAppOverlay": {"position":"bottom","when":"after join_group succeeds (a natural pause: the 'Welcome to {group_name}!' state), never before","api":"SKOverlay(configuration: SKOverlay.AppClipConfiguration(position: .bottom))","repeat":"once per launch of the clip"}, // Apple HIG · invite.appclip · PLATFORM
+  "invite.appclip.layout.messagesCard": {"header":"the App Clip card image (App Store Connect header image) — no text in the image","title":"App Store Connect card title (≤ 30 characters)","subtitle":"copy invite.appclip.card.subtitle (≤ 56 characters)","action":"copy invite.appclip.card.action (one of Apple's preset verbs)","display":"app-clip-display=card on the invite page (Retro uses the card display, not the banner)"}, // Apple HIG · invite.appclip · PLATFORM
+  "invite.web.color.avatarPlaceholder": "#EDEDED", // Retro · invite.web · SOURCED
+  "invite.web.color.body": "#FFFFFF9E", // Retro · invite.web · SOURCED
+  "invite.web.color.bodyDesktop": "#00000080", // Retro · invite.web · SOURCED
+  "invite.web.color.pill": "#FFFFFF33", // Retro · invite.web · SOURCED
+  "invite.web.color.pillHover": "#FFFFFF4D", // Retro · invite.web · SOURCED
+  "invite.web.duration.pill": 300, // Retro · invite.web · SOURCED
+  "invite.web.easing.pill": {"x1":0.25,"y1":0.1,"x2":0.25,"y2":1}, // Retro · invite.web · SOURCED
+  "invite.web.fontSize.body": 14, // Retro · invite.web · SOURCED
+  "invite.web.fontSize.bodyDesktop": 20, // Retro · invite.web · SOURCED
+  "invite.web.fontSize.footer": 8, // Retro · invite.web · SOURCED
+  "invite.web.fontSize.headlineDesktop": 48, // Retro · invite.web · SOURCED
+  "invite.web.fontSize.pill": 16, // Retro · invite.web · SOURCED
+  "invite.web.fontWeight.pill": "semibold", // Retro · invite.web · SOURCED
+  "invite.web.layout.linkPreview": {"titleTags":"<title> = copy invite.web.documentTitle; og:title and twitter:title = copy invite.web.og.title","description":"og:description and twitter:description = copy invite.web.og.description","image":"og:image = the 600 × 600 image (invite.web.layout.ogImage) with og:image:width / og:image:height; twitter:card summary_large_image","appClip":"<meta name=\"apple-itunes-app\" content=\"app-id=<appStoreId>, app-clip-bundle-id=<bundleId>.Clip, app-clip-display=card, app-argument=<invite URL>\">","robots":"noindex, noimageindex (meta and X-Robots-Tag)"}, // Retro · invite.web · SOURCED
+  "invite.web.layout.ogImage": {"width":600,"height":600,"background":"the group cover blurred to a colour field (C-34 backdrop) — Retro: a dark blurred gradient made from the profile photo; no cover → color.global.backgroundDeep","avatar":"group cover in a circle, 83 px, centred; top at 208 px","avatarToName":19,"name":"group name in font.global.display, #FFFFFF, centred, ink height 40 px for an ascender word (≈ 52 px type)","nameToDomain":21,"domain":"{domain} in font.global.family, 20 px, white ≈ 70 % (reads #BBC5C9 over the dark backdrop), centred","text":"no other text (no counts, no member names)"}, // Retro · invite.web · SOURCED
+  "invite.web.letterSpacing.body": -0.4, // Retro · invite.web · SOURCED
+  "invite.web.lineHeight.body": 19.6, // Retro · invite.web · SOURCED
+  "invite.web.lineHeight.bodyDesktop": 28, // Retro · invite.web · SOURCED
+  "invite.web.lineHeight.headline": 32, // Retro · invite.web · SOURCED
+  "invite.web.opacity.pillDisabled": 0.75, // Retro · invite.web · SOURCED
+  "invite.web.radius.card": 36, // Retro · invite.web · SOURCED
+  "invite.web.size.avatar": 112, // Retro · invite.web · SOURCED
+  "invite.web.size.avatarDesktop": 70, // Retro · invite.web · SOURCED
+  "invite.web.size.bodyMaxWidthDesktop": 300, // Retro · invite.web · SOURCED
+  "invite.web.size.bodyToPill": 38, // Retro · invite.web · SOURCED
+  "invite.web.size.bodyToQrDesktop": 30, // Retro · invite.web · SOURCED
+  "invite.web.size.breakpoint": 840, // Retro · invite.web · SOURCED
+  "invite.web.size.cardInset": 6, // Retro · invite.web · SOURCED
+  "invite.web.size.footerMargin": 18, // Retro · invite.web · SOURCED
+  "invite.web.size.headlineToBody": 16, // Retro · invite.web · SOURCED
+  "invite.web.size.headlineTopDesktop": 70, // Retro · invite.web · SOURCED
+  "invite.web.size.pillHeight": 56, // Retro · invite.web · SOURCED
+  "invite.web.size.pillInset": 38, // Retro · invite.web · SOURCED
+  "invite.web.size.pillToFooter": 20, // Retro · invite.web · SOURCED
+  "invite.web.size.qrDesktop": 250, // Retro · invite.web · SOURCED
+  "invite.web.size.textMaxWidth": 260, // Retro · invite.web · SOURCED
+  "layout.birthday.add.dateFormat": {"pattern":"MMMM d","example":"July 5","ios":"Date.FormatStyle().month(.wide).day()","android":"DateFormat.getBestDateTimePattern(locale, \"MMMMd\")"}, // Retro · birthday.add · SOURCED
   "layout.birthday.contribute.lineMax": {"maxCharacters":110}, // VidDay · birthday.contribute · SOURCED
-  "layout.birthday.contribute.stepper": {"steps":3,"labels":"Photo, Message, Done","distribution":"first circle 11 pt inside the margin, last circle 11 pt inside the opposite margin, the rest evenly spaced between","labelGap":10}, // Tribute · birthday.contribute · VERIFIED
-  "layout.birthday.contribute.textStyleMap": {"heading":"title3","subheading":"callout","label":"callout","input":"callout","button":"callout","stepperNumber":"subheadline","stepperLabel":"caption2"}, // Apple HIG · birthday.contribute · PLATFORM
-  "layout.birthday.request.dueDate": {"style":"full date: weekday, month day, year","example":"Wednesday, December 31, 2025","value":"the day before tribute_requests.birthday_date (due_at is 00:00 on the birthday)"}, // Tribute · birthday.request · SOURCED
-  "layout.birthday.request.structure": {"order":"hero (honoree photo behind title, due line, message), primary button, Message Ideas","countdown":"none (do-not-copy)"}, // Tribute + VidDay · birthday.request · SOURCED
-  "layout.birthday.request.textStyleMap": {"title":"title2","message":"callout","cta":"title2","promptsHeader":"subheadline","prompt":"subheadline"}, // Apple HIG · birthday.request · PLATFORM
-  "layout.birthday.tribute.caption": {"textColor":"#FFFFFF","nameFontWeight":700,"nameFontSizeRatio":0.0463,"lineFontWeight":700,"lineFontSizeRatio":0.0795,"leftRatio":0.0577,"bottomRatio":0.0861,"maxWidthRatio":0.8845,"gapRatio":0.0099,"scrim":"#11202FC7"}, // Tribute · birthday.tribute · SOURCED
-  "layout.birthday.tribute.endCard": {"background":"#EFEEF3","textColor":"#444347","fontWeight":500,"fontSizeRatio":0.084,"maxWidthRatio":0.405,"centerYRatio":0.5}, // VidDay · birthday.tribute · SOURCED
+  "layout.birthday.request.dueDate": {"pattern":"EEEE, MMMM d","example":"Wednesday, July 5","ios":"Date.FormatStyle().weekday(.wide).month(.wide).day()","android":"DateFormat.getBestDateTimePattern(locale, \"EEEEMMMMd\")"}, // Retro · birthday.request · SOURCED
+  "layout.birthday.tribute.caption": {"textColor":"#FFFFFF","nameFontWeight":600,"nameFontSizeRatio":0.0463,"lineFontWeight":400,"lineFontSizeRatio":0.0795,"leftRatio":0.0577,"bottomRatio":0.0861,"maxWidthRatio":0.8845,"gapRatio":0.0099,"scrim":"#00000099"}, // Retro + Tribute · birthday.tribute · SOURCED
+  "layout.birthday.tribute.endCard": {"background":"#000000","textColor":"#FFFFFF","fontWeight":400,"fontSizeRatio":0.084,"maxWidthRatio":0.405,"centerYRatio":0.5}, // Retro + VidDay · birthday.tribute · SOURCED
   "layout.birthday.tribute.player": {"ios":"AVPlayerViewController (SwiftUI VideoPlayer), system controls","android":"Media3 PlayerView, default controls","aspect":"16:9 (layout.birthday.tribute.video)"}, // Tribute + VidDay · birthday.tribute · PLATFORM
   "layout.birthday.tribute.structure": {"order":"title card, one card per contribution (photo + contributor first name + line), end card","photoFit":"whole photo inside the 16:9 frame on color.birthday.tribute.pillarbox","audio":"none"}, // Tribute + VidDay · birthday.tribute · SOURCED
-  "layout.birthday.tribute.titleCard": {"background":"#EFEEF3","textColor":"#444347","fontWeight":500,"fontSizeRatio":0.084,"maxWidthRatio":0.405,"centerYRatio":0.5}, // VidDay · birthday.tribute · SOURCED
+  "layout.birthday.tribute.titleCard": {"background":"#000000","textColor":"#FFFFFF","fontWeight":400,"fontSizeRatio":0.084,"maxWidthRatio":0.405,"centerYRatio":0.5}, // Retro + VidDay · birthday.tribute · SOURCED
   "layout.birthday.tribute.video": {"width":1920,"height":1080,"fps":29.97}, // Tribute + VidDay · birthday.tribute · SOURCED
   "layout.global.appearance": {"mode":"follows the system Light / Dark setting","ios":"no UIUserInterfaceStyle key and no preferredColorScheme override; colour tokens are dynamic (Color(light:dark:))","android":"DsTheme(dark = isSystemInDarkTheme()) wraps the app and every test host; colour getters read LocalDsDarkTheme","media":"photo / story viewer, camera, postcard-style composer, recap preview and full-bleed media stay dark (color.global.backgroundDeep) in both appearances; sheets over them follow the appearance"}, // Retro · global · SOURCED
   "layout.global.contrast.largeText": {"ratio":3,"rule":"text 18 pt and larger, or bold at any size"}, // W3C WCAG 2.2 · global · VERIFIED
@@ -690,154 +377,68 @@ export const tokens = {
   "layout.global.system.typography": {"ios":"built-in text styles (Font.TextStyle) inside native alerts, menus, share sheet, pickers","android":"MaterialTheme.typography with Retro's overrides: headlineLarge = display 40/48, bodyLarge = Inter 15/18 W600, bodyMedium = Inter 14/17 W600, bodySmall = Inter 11/11 W600; other M3 styles stay baseline"}, // Apple HIG / Material 3 · global.system · PLATFORM
   "layout.global.textStyleMap": {"headerTitle":"largeTitle","displayMedium":"largeTitle","displaySmall":"title2","onboardingTitle":"title","sheetTitle":"headline","listTitle":"subheadline","listSubtitle":"subheadline","body":"subheadline","button":"headline","pill":"subheadline","textButton":"body","caption":"subheadline","meta":"footnote","placeholder":"body","sectionLabel":"subheadline","emptyTitle":"title3","emptyDetail":"subheadline","tileLabel":"footnote","tileDay":"title","tileMonth":"subheadline","badge":"caption2","pillSmall":"footnote"}, // Apple HIG · global · PLATFORM
   "layout.global.variableWeight.android": {"body":450}, // Retro · global · SOURCED
-  "layout.onthisday.banner": {"width":"full screen width","top":"screen top edge, behind the status bar","labelAlign":"centre","labelCase":"uppercase","colourPerMemory":"color.onthisday.banner"}, // Timehop · onthisday · SOURCED
+  "layout.onthisday.controls": {"order":"share circle, dial, random circle","arrangement":"equal gaps across the screen width: edge | share | dial | random | edge (the dial's box = dimension.onthisday.dial.diameter)","circles":"size.global.circleButtonLarge, fill color.global.glass, glyphs icon.global.share / icon.global.random in a size.global.icon box, color.global.textOnMedia","paused":"share, dial (icon.global.play) and random shown","playing":"share and random hidden (fade duration.global.fade, easing.global.standard); the dial shows icon.global.pause","scrim":"layout.global.photoScrim behind the controls"}, // Retro · onthisday · SOURCED
+  "layout.onthisday.dateFormat": {"style":"medium date (the locale's abbreviated month, day, year)","ios":"Date.FormatStyle(date: .abbreviated, time: .omitted)","android":"DateFormat.getDateInstance(DateFormat.MEDIUM)","example":"Jul 22, 2022"}, // Retro · onthisday · SOURCED
   "layout.onthisday.dayBoundary": {"hour":5,"clock":"group time zone (groups.time_zone)"}, // Timehop · onthisday · SOURCED
-  "layout.onthisday.grid": {"columns":2,"arrangement":"masonry: every photo keeps its aspect ratio and goes to the shorter column","scroll":"vertical","background":"color.global.background"}, // Timehop · onthisday · SOURCED
-  "layout.onthisday.navigation": {"order":"one memory screen per year, newest first (1 YEAR AGO, then 2, 3 ...)","next":"tap or swipe on the right half of the screen (older)","previous":"tap or swipe on the left half (back)","autoAdvance":"none"}, // Timehop · onthisday · SOURCED
-  "layout.onthisday.photo.single": {"width":"full screen width","top":"banner bottom","bottom":"screen bottom","fit":"fill (cropped to the area)","cornerRadius":0}, // Timehop · onthisday · SOURCED
-  "layout.onthisday.progress": {"position":"top edge of the banner, directly below the status bar","width":"full screen width","sideInset":0,"fill":"fraction of the day's years reached: (index + 1) / years","gaps":"none"}, // Timehop · onthisday · SOURCED
-  "layout.onthisday.textStyleMap": {"bannerLabel":"title1","meta":"caption2"}, // Apple HIG · onthisday · PLATFORM
-  "layout.year.story.canvas": {"aspectWidth":9,"aspectHeight":16,"width":"screen width","vertical":"centred in the safe area","outside":"letterbox bands (color.year.story.letterbox)","background":"color.global.backgroundDeep"}, // Spotify Wrapped · year.story · SOURCED
-  "layout.year.story.dateFormat": {"pattern":"MMMM d","example":"February 25"}, // Spotify Wrapped · year.story · SOURCED
-  "layout.year.story.monthFormat": {"pattern":"MMMM","example":"January"}, // Spotify Wrapped · year.story · SOURCED
-  "layout.year.story.navigation": {"next":"tap the right half of the canvas","previous":"tap the left half","hold":"none","model":"2024 tap-through (one card per fact)"}, // Spotify Wrapped · year.story · SOURCED
-  "layout.year.story.photoCard": {"box":"square","boxWidthRatio":0.66,"boxCenterYRatio":0.412,"cornerRadius":0,"textGap":24.6,"text":"headline below the box, centred","photoFit":"fill the square","collageFit":"fit inside the square on the canvas colour"}, // Spotify Wrapped · year.story · SOURCED
-  "layout.year.story.progress": {"segments":"one per card","completed":"filled (color.year.story.progress.fill)","current":"fills left to right over duration.year.story.card","upcoming":"track (white at opacity.year.story.progress.track)"}, // Spotify Wrapped · year.story · SOURCED
-  "layout.year.story.reveal.samples": {"t25":0.125,"t50":0.725,"t75":0.925}, // Spotify Wrapped · year.story · SOURCED
-  "layout.year.story.share": {"align":"centre of the canvas","content":"share glyph, then label","shownOn":"every card that states a fact (not the intro, teaser or outro cards)"}, // Spotify Wrapped · year.story · SOURCED
-  "layout.year.story.shareCard": {"width":1080,"height":1920,"content":"the card's canvas without progress bar, chrome or share row"}, // Spotify Wrapped + Meta developer docs · year.story · SOURCED
+  "layout.onthisday.dial": {"slots":44,"pitchDegrees":8.18,"firstSlotDegrees":6,"angleReference":"measured clockwise from 3 o'clock (screen y grows downward)","longTicks":"even slots (0, 2, 4 …); odd slots short","indicator":"drawn on the current memory's slot instead of that slot's tick","startSlot":0,"step":"one slot per memory; dragging around the centre moves one memory per slot crossed; clockwise = next (older), counter-clockwise = previous","playback":"while playing, the indicator moves one slot each time the memory changes","haptic":"haptic.global.select once per slot crossed (and per automatic step while playing)"}, // Retro · onthisday · SOURCED
+  "layout.year.story.dateFormat": {"pattern":"EEEE, MMMM d","example":"Wednesday, July 5","ios":"Date.FormatStyle().weekday(.wide).month(.wide).day()","android":"DateFormat.getBestDateTimePattern(locale, \"EEEEMMMMd\")"}, // Retro · year.story · SOURCED
+  "layout.year.story.frame": {"frame":"the recap-preview media page of collage.view.layout.screen: full screen width, from the safe-area top to mediaPageBottomFromScreenBottom above the screen bottom, corners mediaPageCornerRadius (layout.global.cornerStyle), content clipped","content":"each card is laid out in a 9:16 box (aspectWidth 9, aspectHeight 16) as wide as the frame, centred vertically; backdrops and full-bleed photos fill the whole frame","aspectWidth":9,"aspectHeight":16,"close":"C-11 on media (size.global.circleButton, color.global.controlOnDeep, icon.global.close) at closeCentreFromTrailing / closeCentreBelowPageTop of collage.view.layout.screen","bottomRow":"centre bottomRowCentreFromScreenBottom of collage.view.layout.screen above the screen bottom: leading C-11 circle on media at size.global.buttonMarginH, trailing Share pill collage.share.layout.pill","page":"color.global.backgroundDeep around the frame, both appearances (media)","contentScale":"the share image (layout.year.story.shareCard) is the 9:16 box rendered at 1080 px wide: pt values inside it scale by 1080 ÷ box width"}, // Retro · year.story · SOURCED
+  "layout.year.story.monthFormat": {"pattern":"MMMM","example":"December"}, // Retro · year.story · SOURCED
+  "layout.year.story.navigation": {"next":"tap the right half of the frame","previous":"tap the left half of the frame","hold":"none","model":"tap-through, one card per fact (Wrapped 2024 pacing)","summary":"swipe between the share styles (pager with page dots)"}, // Spotify Wrapped · year.story · SOURCED
+  "layout.year.story.recapCard": {"widthRatio":0.825,"paddingRatio":0.0241,"columns":4,"maxRows":6,"cellAspect":1.12,"gap":"size.global.stripGap","cornerRadiusRatio":0.051,"footerHeightRatio":0.21,"background":"color.global.surfaceElevated","backdrop":"the cover photo blurred, full frame (layout.global.materials.backdrop)","footer":"year: font.global.display, text role headerTitle, color.global.textPrimary at the card padding, bottom-left; group name: text role listTitle, color.global.textPrimary, right-aligned; app line below it: text role meta, color.global.textSecondary"}, // Retro · year.story · SOURCED
+  "layout.year.story.shareCard": {"width":1080,"height":1920,"content":"the frame's content of the card in view (no close circle, position pill or bottom bar), rendered at 1080 px wide"}, // Retro + Spotify Wrapped + Meta developer docs · year.story · SOURCED
   "layout.year.story.shareSheet": {"ios":"ShareLink(item:preview:) / UIActivityViewController","android":"Intent.createChooser(ACTION_SEND, content:// URI + FLAG_GRANT_READ_URI_PERMISSION)"}, // Apple HIG / Material 3 · year.story · PLATFORM
-  "layout.year.story.summary": {"order":"share-card carousel, Share pill, Replay from beginning","previewWidthRatio":0.6,"carousel":"horizontal paging through the story's share cards"}, // Spotify Wrapped · year.story · SOURCED
-  "layout.year.story.summary.dots": {"count":"one per share card","diameter":8.4,"pitch":16.8,"selectedColor":"#FFFFFF","unselectedColor":"#666666","centerBelowCarousel":20.4,"centerAboveShare":29.3,"animation":"none observed (static render)"}, // Spotify Wrapped · year.story · SOURCED
-  "layout.year.story.text": {"align":"centre","block":"centred horizontally and vertically on the canvas","order":"headline, then subline"}, // Spotify Wrapped · year.story · SOURCED
-  "layout.year.story.textStyleMap": {"headline":"largeTitle","body":"subheadline","share":"callout","sharePill":"headline"}, // Apple HIG · year.story · PLATFORM
+  "layout.year.story.summary": {"styles":"two share styles in a horizontal pager inside the frame: 1 = recap card on the blurred backdrop (layout.year.story.recapCard); 2 = the cover photo full-bleed with the footer (dimension.year.story.footer.baseline)","dots":"page dots under the frame (dimension.year.story.dots.offset), one per style","bar":"leading circle = replay (icon.year.story.replay) → card 1; trailing Share pill shares the style in view","cover":"the first photo of data.most_reacted, else the first id of year_stories.post_ids"}, // Retro · year.story · SOURCED
   "letterSpacing.global.badge.android": -0.2, // Retro · global · SOURCED
   "letterSpacing.global.body.android": -0.3, // Retro · global · SOURCED
   "letterSpacing.global.listTitle.android": -0.35, // Retro · global · SOURCED
-  "lineHeight.birthday.request.message": 28, // Tribute · birthday.request · VERIFIED
-  "lineHeight.birthday.request.prompt": 18.75, // Tribute · birthday.request · VERIFIED
-  "lineHeight.birthday.request.title": 28.8, // Tribute · birthday.request · VERIFIED
   "lineHeight.global.badge.android": 11, // Retro · global · SOURCED
   "lineHeight.global.body.android": 17, // Retro · global · SOURCED
   "lineHeight.global.caption": 21.7, // Retro · global · SOURCED
   "lineHeight.global.headerTitle": 48, // Retro · global · SOURCED
   "lineHeight.global.listTitle.android": 18, // Retro · global · SOURCED
-  "lineHeight.year.story.body": 21.4, // Spotify Wrapped · year.story · SOURCED
-  "lineHeight.year.story.headline": 36.4, // Spotify Wrapped · year.story · SOURCED
   "notifications.push.layout.channels": {"daily_invitation":"IMPORTANCE_HIGH","new_post":"IMPORTANCE_DEFAULT","reactions_replies":"IMPORTANCE_DEFAULT","recap":"IMPORTANCE_DEFAULT","birthday_request":"IMPORTANCE_DEFAULT","tribute":"IMPORTANCE_DEFAULT"}, // Material 3 · notifications.push · PLATFORM
   "notifications.push.layout.ios": {"interruptionLevel":"active (passive during quiet hours)","threadId":"group id","newPostAttachment":"widget rendition attached by the notification service extension","sound":"default"}, // Apple HIG · notifications.push · PLATFORM
-  "onboarding.permission.camera.layout.request": {"ios":"no pre-alert screen: AVCaptureDevice.requestAccess(for: .video) the first time camera.capture opens; the system alert shows NSCameraUsageDescription over the camera","android":"Manifest.permission.CAMERA requested the first time camera.capture opens; rationale = M3 basic dialog only when shouldShowRequestPermissionRationale() is true","denied":"inline permission card (onboarding.permission.contacts.* tokens) centred in the viewfinder area of camera.capture"}, // Yope · onboarding.permission.camera · SOURCED
-  "onboarding.permission.contacts.color.card": "#131313", // Yope · onboarding.permission.contacts · SOURCED
-  "onboarding.permission.contacts.fontSize.cardDetail": 14, // Yope · onboarding.permission.contacts · SOURCED
-  "onboarding.permission.contacts.fontSize.cardTitle": 17, // Yope · onboarding.permission.contacts · SOURCED
-  "onboarding.permission.contacts.fontWeight.cardTitle": "bold", // Yope · onboarding.permission.contacts · SOURCED
-  "onboarding.permission.contacts.layout.card": {"leading":"none (Yope's contacts-app-like illustration with a red '!' is do-not-copy)","text":"title then detail, left-aligned, 16 pt from the card's leading edge (groups.list.size.avatarInset)","trailing":"white button vertically centred, 16 pt from the trailing edge","dismiss":"icon.global.close at the top-trailing corner, color.global.textPrimary (only where the card may be dismissed)"}, // Yope · onboarding.permission.contacts · SOURCED
-  "onboarding.permission.contacts.size.cardButtonHeight": 37, // Yope · onboarding.permission.contacts · SOURCED
-  "onboarding.permission.contacts.size.cardButtonWidth": 91, // Yope · onboarding.permission.contacts · SOURCED
-  "onboarding.permission.contacts.size.cardHeight": 101, // Yope · onboarding.permission.contacts · SOURCED
-  "onboarding.permission.contacts.size.cardMarginH": 18, // Yope · onboarding.permission.contacts · SOURCED
-  "onboarding.permission.notifications.color.secondaryButton": "#171717", // Yope · onboarding.permission.notifications · SOURCED
-  "onboarding.permission.notifications.layout.preAlert": {"ios":"one button ('continue') that triggers UNUserNotificationCenter.requestAuthorization; no close, skip or back on this screen","android":"API 33+: same screen, plus a dark secondary button ('maybe later') under the lime one; then the POST_NOTIFICATIONS runtime dialog; API ≤ 32: screen skipped (no runtime permission)","structure":"title (fontSize.global.onboardingTitle, centred, near the top as in Yope's notifications pre-prompt) · detail · primary button pinned to the bottom (size.global.buttonHeightSheet, size.global.buttonMarginHSheet)"}, // Apple HIG · onboarding.permission.notifications · VERIFIED
-  "onboarding.permission.notifications.size.buttonGap": 8, // Yope · onboarding.permission.notifications · SOURCED
-  "onboarding.permission.photos.layout.request": {"ios":"no screen: PhotosPicker / PHPickerViewController need no permission; saving asks add-only access (PHPhotoLibrary.requestAuthorization(for: .addOnly)) at the first save, alert text NSPhotoLibraryAddUsageDescription","android":"no screen: Photo Picker (PickVisualMedia); no READ_MEDIA_* permission; saving through MediaStore needs no permission on API 29+","limited":"only if PhotoKit reading is ever added: handle .limited with PHPhotoLibraryPreventAutomaticLimitedAccessAlert = YES and presentLimitedLibraryPicker from an in-app control"}, // Apple HIG · onboarding.permission.photos · VERIFIED
-  "onboarding.widget.color.backgroundBottom": "#0B090B", // Locket · onboarding.widget · SOURCED
-  "onboarding.widget.color.backgroundTop": "#0E0A07", // Locket · onboarding.widget · SOURCED
-  "onboarding.widget.color.cta": "#FFB800", // Locket · onboarding.widget · SOURCED
-  "onboarding.widget.color.ctaLabel": "#332500", // Locket · onboarding.widget · SOURCED
-  "onboarding.widget.color.step": "#B8B6B2", // Locket · onboarding.widget · SOURCED
-  "onboarding.widget.color.title": "#FFFFFF", // Locket · onboarding.widget · SOURCED
-  "onboarding.widget.fontSize.ctaLabel": 18, // Locket · onboarding.widget · SOURCED
-  "onboarding.widget.fontSize.step": 22, // Locket · onboarding.widget · SOURCED
-  "onboarding.widget.fontSize.title": 33, // Locket · onboarding.widget · SOURCED
-  "onboarding.widget.fontWeight.step": "semibold", // Locket · onboarding.widget · SOURCED
-  "onboarding.widget.fontWeight.title": "bold", // Locket · onboarding.widget · SOURCED
-  "onboarding.widget.icon.ctaArrow": {"ios":"arrow.right","android":"AutoMirrored.Rounded.ArrowForward"}, // Locket · onboarding.widget · PLATFORM
-  "onboarding.widget.lineHeight.step": 32, // Locket · onboarding.widget · SOURCED
-  "onboarding.widget.size.ctaArrow": 17, // Locket · onboarding.widget · SOURCED
-  "onboarding.widget.size.ctaArrowGap": 17, // Locket · onboarding.widget · SOURCED
-  "onboarding.widget.size.ctaHeight": 54, // Locket · onboarding.widget · SOURCED
-  "onboarding.widget.size.ctaPaddingH": 18, // Locket · onboarding.widget · SOURCED
-  "opacity.birthday.contribute.subheading": 0.72, // Tribute · birthday.contribute · VERIFIED
-  "opacity.birthday.request.hero.image": 0.7, // Tribute · birthday.request · VERIFIED
-  "opacity.birthday.request.message": 0.9, // Tribute · birthday.request · VERIFIED
-  "opacity.year.story.progress.track": 0.43, // Spotify Wrapped · year.story · SOURCED
-  "paywall.color.backgroundBottom": "#372805", // Locket · paywall · SOURCED
-  "paywall.color.backgroundLower": "#1E1404", // Locket · paywall · SOURCED
-  "paywall.color.backgroundTop": "#030101", // Locket · paywall · SOURCED
-  "paywall.color.backgroundUpper": "#0E0803", // Locket · paywall · SOURCED
-  "paywall.color.cta": "#FEB900", // Locket · paywall · SOURCED
-  "paywall.color.ctaLabel": "#2A1E05", // Locket · paywall · SOURCED
-  "paywall.color.dismiss": "#BAAA82", // Locket · paywall · SOURCED
-  "paywall.color.perk": "#211B13", // Locket · paywall · SOURCED
-  "paywall.color.perkSubtitle": "#918A80", // Locket · paywall · SOURCED
-  "paywall.color.perkTitle": "#F5F1EB", // Locket · paywall · SOURCED
-  "paywall.color.plan": "#3B3627", // Locket · paywall · SOURCED
-  "paywall.color.planBorder": "#FFB800", // Locket · paywall · SOURCED
-  "paywall.color.planDetail": "#BFB598", // Locket · paywall · SOURCED
-  "paywall.color.planSelected": "#2C2922", // Locket · paywall · SOURCED
-  "paywall.color.planSheetBottom": "#312C1F", // Locket · paywall · SOURCED
-  "paywall.color.planSheetTop": "#292824", // Locket · paywall · SOURCED
-  "paywall.color.subscribe": "#F4BB40", // Locket · paywall · SOURCED
-  "paywall.color.subscribeLabel": "#302506", // Locket · paywall · SOURCED
-  "paywall.color.subtitle": "#B2AA8C", // Locket · paywall · SOURCED
-  "paywall.color.title": "#FDEAB8", // Locket · paywall · SOURCED
-  "paywall.fontSize.ctaLabel": 18, // Locket · paywall · SOURCED
-  "paywall.fontSize.dismiss": 16, // Locket · paywall · SOURCED
-  "paywall.fontSize.perkSubtitle": 15, // Locket · paywall · SOURCED
-  "paywall.fontSize.perkTitle": 17, // Locket · paywall · SOURCED
-  "paywall.fontSize.planDetail": 15, // Locket · paywall · SOURCED
-  "paywall.fontSize.planName": 18, // Locket · paywall · SOURCED
-  "paywall.fontSize.planPrice": 17, // Locket · paywall · SOURCED
-  "paywall.fontSize.planSheetTitle": 24.5, // Locket · paywall · SOURCED
-  "paywall.fontSize.subscribeLabel": 19, // Locket · paywall · SOURCED
-  "paywall.fontSize.subtitle": 17, // Locket · paywall · SOURCED
-  "paywall.fontSize.title": 30, // Locket · paywall · SOURCED
-  "paywall.fontWeight.perkTitle": "semibold", // Locket · paywall · SOURCED
-  "paywall.icon.ctaUnlock": {"ios":"lock.open.fill","android":"Rounded.LockOpen"}, // Locket · paywall · PLATFORM
-  "paywall.layout.planSheet": {"ios":"sheet with presentationDetents([.medium]) and presentationDragIndicator(.visible); system corner radius","android":"ModalBottomSheet with the M3 drag handle; top corners radius.global.sheet.android","measuredCorner":46,"measuredGrabber":"34 × 5 pt, #5D5C58"}, // Locket · paywall · PLATFORM
-  "paywall.layout.promptRule": {"settingsEntry":"always opens (navigation the person chose; not counted)","lockedFeature":"the first tap on a locked perk per session opens the paywall (SessionPromptGate.consumePrompt); later taps that session only show the 'Premium' badge already on the control","never":"during capture or onboarding (SessionPromptGate.Blocker), on launch, after a post, or on a timer","core":"nothing free is ever gated or interrupted"}, // Locket · paywall · SOURCED
-  "paywall.layout.requiredDisclosures": {"price":"the store's localized price for each plan's period (StoreKit Product.displayPrice + subscription.subscriptionPeriod / Play ProductDetails.SubscriptionOfferDetails pricing phases), read at runtime; never a hard-coded price","prominence":"the billed amount for the period is the most prominent price on each plan card; any per-month breakdown sits in the detail line","renewal":"auto-renewal sentence + cancellation path (paywall.legal.*) under the Subscribe button","restore":"'Restore Purchases' (StoreKit AppStore.sync / RevenueCat restorePurchases)","links":"Terms of Use and Privacy Policy (config/app.json legal.termsUrl / legal.privacyUrl)","optional":"a line saying the app is usable without a subscription (Google Play)","dismiss":"'No thanks!' always visible on the paywall"}, // Apple HIG · paywall · VERIFIED
-  "paywall.lineHeight.planSheetTitle": 29, // Locket · paywall · SOURCED
-  "paywall.lineHeight.subtitle": 22, // Locket · paywall · SOURCED
-  "paywall.radius.perkInner": 6, // Locket · paywall · SOURCED
-  "paywall.radius.perkOuter": 23, // Locket · paywall · SOURCED
-  "paywall.size.ctaHeight": 56, // Locket · paywall · SOURCED
-  "paywall.size.iconTile": 76, // Locket · paywall · SOURCED
-  "paywall.size.perkGap": 4, // Locket · paywall · SOURCED
-  "paywall.size.perkHeight": 78, // Locket · paywall · SOURCED
-  "paywall.size.perkIcon": 30, // Locket · paywall · SOURCED
-  "paywall.size.perkMarginH": 20, // Locket · paywall · SOURCED
-  "paywall.size.perkTextInset": 73, // Locket · paywall · SOURCED
-  "paywall.size.planBorder": 3, // Locket · paywall · SOURCED
-  "paywall.size.planHeight": 58, // Locket · paywall · SOURCED
-  "paywall.size.planMarginH": 16, // Locket · paywall · SOURCED
-  "paywall.size.planSelectedHeight": 81, // Locket · paywall · SOURCED
-  "paywall.size.subscribeHeight": 58, // Locket · paywall · SOURCED
-  "photo.viewer.color.background": "#1C191D", // Yope · photo.viewer · SOURCED
-  "photo.viewer.dimension.actionCenterTop": 33.1, // Yope · photo.viewer · SOURCED
-  "photo.viewer.dimension.actionTrailing": 23.8, // Yope · photo.viewer · SOURCED
-  "photo.viewer.dimension.closeCenterX": 39, // Yope · photo.viewer · SOURCED
-  "photo.viewer.dimension.closeGlyph": 14.1, // Yope · photo.viewer · SOURCED
-  "photo.viewer.dimension.headerCenterY": 20, // Yope · photo.viewer · SOURCED
-  "photo.viewer.dimension.moreCenterTrailing": 36, // Yope · photo.viewer · SOURCED
-  "photo.viewer.dimension.moreGlyphWidth": 25.3, // Yope · photo.viewer · SOURCED
-  "photo.viewer.dimension.pageGap": 0, // Yope · photo.viewer · SOURCED
-  "photo.viewer.dimension.photoTop": 107, // Yope · photo.viewer · SOURCED
-  "photo.viewer.dimension.senderAvatar": 38.7, // Yope · photo.viewer · SOURCED
-  "photo.viewer.dimension.senderInsetLeading": 13.8, // Yope · photo.viewer · SOURCED
-  "photo.viewer.dimension.senderInsetTop": 12.3, // Yope · photo.viewer · SOURCED
-  "photo.viewer.dimension.senderNameGap": 13, // Yope · photo.viewer · SOURCED
-  "photo.viewer.dimension.titleToDate": 20.9, // Yope · photo.viewer · SOURCED
-  "photo.viewer.icon.delete": {"ios":"trash","android":"Rounded.Delete"}, // Apple HIG / Material 3 · photo.viewer · PLATFORM
-  "photo.viewer.layout.dateFormat": {"pattern":"MMM d yyyy","example":"Oct 30 2025"}, // Yope · photo.viewer · SOURCED
-  "photo.viewer.layout.deleteConfirm": {"ios":"confirmationDialog (action sheet): title, message, destructive button, Cancel at the bottom","android":"M3 AlertDialog: title, text, dismiss + confirm buttons"}, // Apple HIG / Material 3 · photo.viewer · PLATFORM
-  "photo.viewer.layout.menu": {"ios":"Menu (pull-down) from the ••• glyph, items with trailing SF Symbols, destructive items in the system red","android":"DropdownMenu anchored to the ••• glyph","order":"save, then destructive: delete (own) or report, block (others)"}, // Yope + Apple HIG / Material 3 · photo.viewer · PLATFORM
-  "photo.viewer.layout.photo": {"width":"full screen width","height":"the photo's own aspect (3:4 observed)","corners":"radius.global.photo on all four corners","swipe":"horizontal paging to the adjacent photo"}, // Yope · photo.viewer · SOURCED
-  "radius.birthday.contribute.button": 8, // Tribute · birthday.contribute · VERIFIED
-  "radius.birthday.contribute.input": 8, // Tribute · birthday.contribute · VERIFIED
-  "radius.birthday.request.cta": 8, // Tribute · birthday.request · VERIFIED
-  "radius.birthday.request.prompts": 8, // Tribute · birthday.request · VERIFIED
-  "radius.birthday.tribute.button": 8, // Tribute · birthday.tribute · VERIFIED
+  "onboarding.permission.camera.layout.request": {"ios":"no pre-alert page: AVCaptureDevice.requestAccess(for: .video) the first time camera.capture opens; the system alert shows NSCameraUsageDescription","android":"Manifest.permission.CAMERA requested the first time camera.capture opens; rationale = native dialog (C-29) only when shouldShowRequestPermissionRationale() is true","denied":"permission-denied variant of the empty-state block (C-27) centred in the camera area, drawn with the media colours (color.global.textOnMedia, color.global.textSecondary, outline capsule border color.global.textOnMedia)"}, // Apple HIG · onboarding.permission.camera · PLATFORM
+  "onboarding.permission.notifications.layout.preAlert": {"structure":"onboarding page (C-33 variant): display title (text role displayMedium) + explanation (text role body, color.global.textSecondary) leading-aligned at size.global.screenMargin, primary capsule C-05 pinned to the bottom","ios":"one capsule ('Enable notifications') that triggers UNUserNotificationCenter.requestAuthorization; no close, skip or back (HIG pre-alert rule)","android":"API 33+: the same page plus a text button 'Maybe later' (C-08 secondary link) under the capsule; then the POST_NOTIFICATIONS runtime dialog; API ≤ 32: page skipped (no runtime permission)"}, // Apple HIG · onboarding.permission.notifications · VERIFIED
+  "onboarding.permission.photos.layout.request": {"ios":"no page: PhotosPicker / PHPickerViewController need no permission; saving asks add-only access (PHPhotoLibrary.requestAuthorization(for: .addOnly)) at the first save, alert text NSPhotoLibraryAddUsageDescription","android":"no page: Photo Picker (PickVisualMedia); no READ_MEDIA_* permission; saving through MediaStore needs no permission on API 29+","denied":"permission-denied block (C-27) in place of the save result (photo.viewer places it)"}, // Apple HIG · onboarding.permission.photos · VERIFIED
+  "onboarding.widget.radius.preview": 22, // Retro · onboarding.widget · SOURCED
+  "onboarding.widget.size.preview": 158, // Retro · onboarding.widget · SOURCED
+  "paywall.color.planText": "#090A0A", // Retro · paywall · SOURCED
+  "paywall.color.planTextSecondary": "#757A7D", // Retro · paywall · SOURCED
+  "paywall.color.planTextTertiary": "#A5ABAF", // Retro · paywall · SOURCED
+  "paywall.fontSize.planBullet": 17, // Retro · paywall · SOURCED
+  "paywall.fontSize.planFootnote": 15, // Retro · paywall · SOURCED
+  "paywall.fontSize.planPrice": 22, // Retro · paywall · SOURCED
+  "paywall.fontSize.planSubtitle": 15, // Retro · paywall · SOURCED
+  "paywall.fontSize.planTitle": 24, // Retro · paywall · SOURCED
+  "paywall.fontWeight.planPrice": "heavy", // Retro · paywall · SOURCED
+  "paywall.fontWeight.planTitle": "bold", // Retro · paywall · SOURCED
+  "paywall.layout.planCard": {"fill":"color.global.surfaceLight (#FFFFFF) in both appearances (Retro's card reads translucent white over the backdrop; its alpha is not derivable — C-34 Gap)","corners":"radius.global.cardLarge (36)","padding":"size.global.planCardPadding (27); its capsule (C-05, color.global.accent / onAccent light values: #000000 / #FFFFFF) 16 from the card sides and bottom","width":"screen − 2 × size.global.buttonMarginH","pager":"horizontal; the next card peeks after size.global.planCardGap (8)","order":"title (planTitle) + optional premium pill (C-25) trailing · subtitle (planSubtitle, planTextSecondary) · bullets (planBullet, planText) · price (planPrice, planText) · footnote (planFootnote, planTextTertiary) · capsule"}, // Retro · paywall · SOURCED
+  "paywall.layout.promptRule": {"settingsEntry":"always opens (navigation the person chose; not counted)","lockedFeature":"the first tap on a locked perk per session opens the paywall at that perk's benefit (SessionPromptGate.consumePrompt); later taps that session only show the 'Premium' pill already on the control","never":"during capture or onboarding (SessionPromptGate.Blocker), on launch, after a post, or on a timer","core":"nothing free is ever gated or interrupted"}, // Retro · paywall · SOURCED
+  "paywall.layout.requiredDisclosures": {"price":"the store's localized price for each plan's period (StoreKit Product.displayPrice + subscription.subscriptionPeriod / Play ProductDetails.SubscriptionOfferDetails pricing phases), read at runtime; never a hard-coded price","prominence":"the billed amount for the period is the most prominent price on each plan card (paywall.fontSize.planPrice); the 'Billed …' footnote repeats it","renewal":"the platform billing line (paywall.legal.billing.*) under the card pager","restore":"'Restore purchase' (StoreKit AppStore.sync / RevenueCat restorePurchases) in the footer","links":"'Terms' and 'Privacy' (config/app.json legal.termsUrl / legal.privacyUrl) in the footer","optional":"paywall.legal.optional (the app is usable without a subscription; Google Play)","dismiss":"the close circle (C-11 glass small) is always visible"}, // Apple HIG · paywall · VERIFIED
+  "paywall.radius.mediaCard": 27, // Retro · paywall · SOURCED
+  "paywall.size.mediaCardWidth": 248, // Retro · paywall · SOURCED
+  "photo.viewer.dimension.closeCircle": 23.7, // Retro · photo.viewer · SOURCED
+  "photo.viewer.dimension.closeGlyph": 6.8, // Retro · photo.viewer · SOURCED
+  "photo.viewer.dimension.commentsToField": 24.4, // Retro · photo.viewer · SOURCED
+  "photo.viewer.dimension.dividerToComments": 16.7, // Retro · photo.viewer · SOURCED
+  "photo.viewer.dimension.footerFirstBaseline": 25.4, // Retro · photo.viewer · SOURCED
+  "photo.viewer.dimension.footerLinePitch": 18.6, // Retro · photo.viewer · SOURCED
+  "photo.viewer.dimension.footerToDivider": 15.8, // Retro · photo.viewer · SOURCED
+  "photo.viewer.dimension.headerAvatarToText": 11.8, // Retro · photo.viewer · SOURCED
+  "photo.viewer.dimension.headerInset": 11.3, // Retro · photo.viewer · SOURCED
+  "photo.viewer.dimension.headerLinePitch": 19.9, // Retro · photo.viewer · SOURCED
+  "photo.viewer.dimension.headerToPhoto": 9.1, // Retro · photo.viewer · SOURCED
+  "photo.viewer.layout.advance": {"next":"tap the photo → next photo of the context the viewer was opened from","previous":"tap its leading part → previous photo (zone width: photo.viewer.layout.backZone)","autoAdvance":"none","progress":"no progress bars; position pill photo.viewer.position when the context holds more than one photo","end":"tapping past the last photo closes the viewer"}, // Retro · photo.viewer · SOURCED
+  "photo.viewer.layout.appearance": {"appearance":"the viewer renders in the dark appearance in both system appearances: page color.global.backgroundDeep; every themed token inside resolves to its dark value","ios":"environment colorScheme .dark on the viewer's root view","android":"DsTheme(dark = true) around the viewer","sheets":"menus, alerts and sheets presented over it follow the system appearance"}, // Retro · photo.viewer · SOURCED
+  "photo.viewer.layout.comments": {"content":"replies to this photo in the group chat (messages with reply_to_post_id = this post), oldest first","row":"the chat.thread message row (C-16): size.global.avatarComment, chat.thread.dimension.rowAvatarToText, .rowLinePitch; name text role listTitle, time caption, text body in color.global.textOnMedia","spacing":"photo.viewer.dimension.dividerToComments below the divider; size.global.listGap between rows; photo.viewer.dimension.commentsToField above the field"}, // Retro · photo.viewer · SOURCED
+  "photo.viewer.layout.dateFormat": {"pattern":"EEEE, MMMM d","example":"Wednesday, July 5","otherYear":"EEEE, MMMM d, yyyy"}, // Retro · photo.viewer · SOURCED
+  "photo.viewer.layout.deleteConfirm": {"ios":"confirmationDialog (action sheet): title, message, destructive button, Cancel","android":"AlertDialog: title, message, confirm (color.global.system.error), dismiss"}, // Apple HIG / Material 3 · photo.viewer · PLATFORM
+  "photo.viewer.layout.menu": {"trigger":"the reply field's trailing icon.global.more (C-13, TC-2B) while the field is empty; also the photo's long-press context menu (with the quick-reaction palette, chat.reactions.layout.quickReactions)","component":"native menu (C-29): iOS Menu / contextMenu, Android DropdownMenu; destructive items in red","items":"photo.viewer.menu.save (always) · photo.viewer.menu.delete (your photo, destructive) · photo.viewer.menu.report (others', destructive) · photo.viewer.menu.block (others')","glyphs":"icon.global.download · icon.global.trash · icon.global.report · none"}, // Retro + Apple HIG / Material 3 · photo.viewer · SOURCED
+  "photo.viewer.layout.photo": {"width":"full screen width","height":"the photo's own aspect ratio, never cropped","tall":"a photo taller than the space between the header and the footer is scaled down to fit and centred (letterboxed on color.global.backgroundDeep)","corners":"radius.global.photo (square)","live":"a Live Photo plays while pressed (platform Live Photo view); a dual capture shows as daily.dualimage"}, // Retro · photo.viewer · SOURCED
+  "photo.viewer.layout.voiceNote": {"position":"footer text block, after the date / tags line: capsule top photo.viewer.dimension.footerLinePitch below that line's baseline","component":"chat.voice.layout.capsule on media (color.global.controlOnDeep)"}, // Retro · photo.viewer · SOURCED
+  "radius.birthday.contribute.photo": 8.5, // Retro · birthday.contribute · SOURCED
   "radius.global.button": 30, // Retro · global · SOURCED
   "radius.global.capsule": {"shape":"capsule","radius":"height / 2"}, // Retro · global · SOURCED
   "radius.global.card": 18, // Retro · global · SOURCED
@@ -849,25 +450,15 @@ export const tokens = {
   "radius.global.sheet": {"ios":"system","android":28}, // Apple HIG / Material 3 · global · PLATFORM
   "radius.global.thumbnail": 4, // Retro · global · SOURCED
   "radius.global.viewfinder": 18, // Retro · global · SOURCED
-  "safety.block.duration.toast": 2000, // Locket · safety.block · SOURCED
-  "safety.block.layout.confirm": {"ios":"confirmationDialog(titleVisibility: .visible) with message; 'Block' role .destructive at the top, Cancel at the bottom","android":"M3 AlertDialog (settings.account.layout.alert) with 'Block' as the confirming action"}, // Apple HIG · safety.block · VERIFIED
-  "safety.block.layout.menu": {"ios":"Menu (UIMenu) item with role .destructive","android":"DropdownMenu item (M3 baseline: 48 dp items, 4 dp container corner, labelLarge) in color.global.system.error"}, // Apple HIG · safety.block · VERIFIED
-  "safety.block.layout.toast": {"fill":"color.global.accent","content":"icon.global.checkmark + label in color.global.onAccent, text role button","shape":"radius.global.capsule, full width minus size.global.screenMargin","position":"top, under the status bar","enter":"spring.global.platformDefault.ios / .android (global rule for custom motion whose Yope curve was not measured); Reduce Motion: cross-fade","dwell":"safety.block.duration.toast (BLOCKED)"}, // Yope · safety.block · SOURCED
-  "safety.report.layout.flow": {"entry":"a menu item 'Report…' (ellipsis: more input follows)","ios":"sheet with presentationDetents([.medium, .large]) and a visible grabber: title + explanation (Yope voice), an optional multi-line details field, then 'Report' (destructive role) and 'Cancel' in the navigation bar","android":"ModalBottomSheet (top corners 28 dp, drag handle 32 × 4 dp in onSurfaceVariant at 0.4 opacity, container color.global.system.surfaceContainerLow, initial height ≤ 50 % of the screen) with the same content; 'Report' as a TextButton in color.global.system.error","after":"the sheet content changes to the 'report sent' state; for a person or their content it offers Block (destructive) and Done"}, // Apple HIG · safety.report · VERIFIED
-  "settings.account.layout.alert": {"ios":"alert(_:isPresented:actions:message:): destructive-role button + Cancel; at most 3 buttons; Cancel is never the default; Cancel on the leading side","android":"M3 AlertDialog: container color.global.system.surfaceContainerHigh, corner 28 dp, headline headlineSmall, text bodyMedium, actions labelLarge; at most 2 actions; dismissive leading, confirming trailing (closest to the edge); destructive confirm label color.global.system.error","androidCornerDp":28,"iosMaxButtons":3,"androidMaxActions":2}, // Apple HIG · settings.account · VERIFIED
+  "safety.block.layout.confirm": {"ios":"confirmationDialog(titleVisibility: .visible) with message; 'Yes, block' role .destructive at the top, Cancel at the bottom","android":"M3 AlertDialog (settings.account.layout.alert) with 'Yes, block' as the confirming action"}, // Apple HIG · safety.block · VERIFIED
+  "safety.block.layout.menu": {"ios":"Menu (UIMenu) item with role .destructive","android":"DropdownMenu item (M3 baseline: 48 dp items, labelLarge) in color.global.destructive"}, // Apple HIG · safety.block · VERIFIED
+  "safety.report.layout.flow": {"entry":"menu item 'Report Post' / 'Report Message' / 'Report Profile' / 'Report Group' (C-29 native menu)","reasons":"native action sheet (iOS confirmationDialog with a visible title; Android ModalBottomSheet list) titled with Retro's question; one row per reason (safety.report.layout.reasons), Cancel last","submit":"choosing a reason files report(kind, id, reason) at once — no second screen; confirmation 'Submitted!' (C-26)","dontLike":"'I don't like it' files nothing: it opens a second action sheet 'Next Steps' with 'Leave the group' and 'Block {first_name}' (safety.block)"}, // Retro · safety.report · SOURCED
+  "safety.report.layout.reasons": {"post":"I don't like it · Nudity or sexual activity · Other","message":"I don't like it · Nudity or sexual activity · Other","user":"It's impersonating someone · It's inappropriate · Other","group":"It's impersonating someone · It's inappropriate · Other","sent":"the reason's English text is sent as p_reason (docs/API.md report)"}, // Retro · safety.report · SOURCED
+  "settings.account.layout.alert": {"ios":"alert(_:isPresented:actions:message:): destructive-role button + Cancel; at most 3 buttons; Cancel is never the default","android":"M3 AlertDialog: container color.global.system.surfaceContainerHigh, corner 28 dp, headline headlineSmall, text bodyMedium, actions labelLarge; at most 2 actions; dismissive leading, confirming trailing; destructive confirm label color.global.system.error","androidCornerDp":28,"iosMaxButtons":3,"androidMaxActions":2}, // Apple HIG · settings.account · VERIFIED
   "settings.account.layout.manageSubscription": {"ios":"AppStore.showManageSubscriptions(in:) (manageSubscriptionsSheet)","android":"open https://play.google.com/store/account/subscriptions?sku={productId}&package={applicationId} (Play Subscription Center)"}, // Apple HIG · settings.account · VERIFIED
-  "settings.blocked.layout.empty": {"ios":"ContentUnavailableView(title, systemImage: nil, description)","android":"centred Column: headline in MaterialTheme.typography.bodyLarge, color.global.system.onSurface; supporting text bodyMedium, color.global.system.onSurfaceVariant"}, // Apple HIG · settings.blocked · PLATFORM
-  "settings.root.layout.list": {"ios":"List with .listStyle(.insetGrouped); Section(header:footer:); NavigationLink rows show the system disclosure indicator; colours color.global.system.ios","android":"LazyColumn of M3 ListItem rows on color.global.system.surface; section headers and footers in MaterialTheme.typography.bodyMedium, color.global.system.onSurfaceVariant; HorizontalDivider (settings.root.size.divider.android, color.global.system.outline) between groups"}, // Apple HIG · settings.root · PLATFORM
+  "settings.root.layout.list": {"component":"design/components.md C-14 on both platforms (custom rows; not List(.insetGrouped) / M3 ListItem)","sheet":"page sheet (C-29) with its own navigation: header = centred title (text role sheetTitle) + trailing close circle (C-11 circle on the page); sub-pages push inside the sheet with the native back button and the same centred title","page":"color.global.background (iOS) / color.global.background.android","sectionGap":"size.global.sectionGap between a group's bottom and the next section header"}, // Retro · settings.root · SOURCED
   "settings.root.layout.toggleHaptic": {"ios":"system (SwiftUI Toggle plays its own haptic; no custom generator)","android":"TOGGLE_ON / TOGGLE_OFF (API 34) only if the Switch does not already play one"}, // Apple HIG · settings.root · PLATFORM
-  "settings.root.size.divider.android": 1, // Material 3 · settings.root · VERIFIED
-  "settings.root.size.listItemAvatar.android": 40, // Material 3 · settings.root · VERIFIED
-  "settings.root.size.listItemGap.android": 12, // Material 3 · settings.root · VERIFIED
-  "settings.root.size.listItemIcon.android": 24, // Material 3 · settings.root · VERIFIED
-  "settings.root.size.listItemOneLine.android": 56, // Material 3 · settings.root · VERIFIED
-  "settings.root.size.listItemPaddingH.android": 16, // Material 3 · settings.root · VERIFIED
-  "settings.root.size.listItemPaddingV.android": 10, // Material 3 · settings.root · VERIFIED
-  "settings.root.size.listItemThreeLine.android": 88, // Material 3 · settings.root · VERIFIED
-  "settings.root.size.listItemTwoLine.android": 72, // Material 3 · settings.root · VERIFIED
+  "settings.root.size.rowHeight": 58.7, // Retro · settings.root · SOURCED
   "size.global.avatarComment": 30, // Retro · global · SOURCED
   "size.global.avatarGrid": 81, // Retro · global · SOURCED
   "size.global.avatarHeader": 39, // Retro · global · SOURCED
@@ -944,121 +535,77 @@ export const tokens = {
   "spring.global.platformDefault.ios": {"response":0.55,"dampingFraction":1}, // Apple HIG · global · PLATFORM
   "spring.global.playful": {"response":0.4443,"dampingFraction":0.75}, // Retro · global · SOURCED
   "spring.global.sheetPresent": {"response":0.347,"dampingFraction":1}, // Retro · global · SOURCED
-  "walls.browse.dimension.avatar": 60, // Yope · walls.browse · SOURCED
-  "walls.browse.dimension.avatarPitch": 77.7, // Yope · walls.browse · SOURCED
-  "walls.browse.dimension.labelBaselineGap": 22, // Yope · walls.browse · SOURCED
-  "walls.browse.dimension.rowCenter": 93.5, // Yope · walls.browse · SOURCED
-  "walls.browse.dimension.rowInset": 19.7, // Yope · walls.browse · SOURCED
-  "walls.browse.dimension.titleBaseline": 23.6, // Yope · walls.browse · SOURCED
-  "walls.browse.dimension.wallTop": 173, // Yope · walls.browse · SOURCED
-  "walls.mine.aspectRatio.gridTile": {"width":115.3,"height":158.5}, // Yope · walls.mine · SOURCED
-  "walls.mine.count.gridColumns": 3, // Yope · walls.mine · SOURCED
-  "walls.mine.dimension.gridGap": 4, // Yope · walls.mine · SOURCED
-  "walls.mine.dimension.gridInset": 24, // Yope · walls.mine · SOURCED
-  "walls.mine.dimension.titleToGrid": 23.5, // Yope · walls.mine · SOURCED
-  "walls.mine.layout.gridOrder": {"order":"wall() items newest first, filled left to right, row by row","items":"photos and same-moment collages, each in one tile, aspect fill","rows":"every row has gridColumns tiles; the last row keeps tile size"}, // Yope · walls.mine · SOURCED
-  "walls.mine.radius.gridTile": 6.5, // Yope · walls.mine · SOURCED
-  "week.edit.haptic.dragAlign": {"ios":"sensoryFeedback(.alignment) (iOS 17)","android":"SEGMENT_TICK"}, // Apple HIG / Material 3 · week.edit · PLATFORM
-  "week.edit.haptic.dragStart": {"ios":"system (List / drag reordering plays its own feedback; no custom generator)","android":"DRAG_START"}, // Apple HIG / Material 3 · week.edit · PLATFORM
-  "week.edit.layout.composition": {"header":"close circle (icon.global.close, size.global.headerButton) at the left, sheet title centred (text role sheetTitle)","body":"the week's photos in the pics grid (week.recap.count.picsColumns, .picsGap, .picsTile) with a check circle on each tile","check":"icon.global.check (selected) / icon.global.uncheck, size.global.checkCircle, color.global.selection","footer":"lime primary button at the sheet bottom (size.global.buttonHeightSheet, size.global.buttonMarginHSheet, radius.global.button)"}, // Yope · week.edit · SOURCED
-  "week.edit.layout.reorder": {"gesture":"touch and hold a checked tile, then drag it into a new position; release to drop it there","scope":"the checked tiles (the recap’s items); their order becomes p_items’ order","during":"the dragged tile follows the finger; the platform drag-and-drop moves the other checked tiles to show the drop position","haptics":"week.edit.haptic.dragStart on pick-up, week.edit.haptic.dragAlign on each slot change","reduceMotion":"the drag tracks the finger (allowed by layout.global.reduceMotion)"}, // Apple Photos + Google Photos · week.edit · SOURCED
-  "week.history.aspectRatio.tile": {"width":3,"height":4}, // Retro · week.history · SOURCED
-  "week.history.color.emptyTile": "#262626", // Retro · week.history · SOURCED
-  "week.history.color.emptyTileText": "#515151", // Retro · week.history · SOURCED
-  "week.history.dimension.addGlyph": 20, // Retro · week.history · SOURCED
-  "week.history.dimension.headerToStrip": 11.7, // Retro · week.history · SOURCED
-  "week.history.dimension.inset": 20, // Retro · week.history · SOURCED
-  "week.history.dimension.moreTrailing": 22, // Retro · week.history · SOURCED
-  "week.history.dimension.rangeGap": 7.5, // Retro · week.history · SOURCED
-  "week.history.dimension.sectionGap": 36.4, // Retro · week.history · SOURCED
-  "week.history.dimension.tileGap": 2, // Retro · week.history · SOURCED
-  "week.history.dimension.tileHeight": 112, // Retro · week.history · SOURCED
-  "week.history.dimension.tileWidth": 84.5, // Retro · week.history · SOURCED
-  "week.history.dimension.titleInset": 16, // Retro · week.history · SOURCED
-  "week.history.dimension.titleToStrip": 17.6, // Retro · week.history · SOURCED
-  "week.history.dimension.weekdayBaseline": 13.4, // Retro · week.history · SOURCED
-  "week.history.font.title": {"ios":"system","android":"system"}, // Retro · week.history · PLATFORM
-  "week.history.fontSize.emptyDay": 29, // Retro · week.history · SOURCED
-  "week.history.fontSize.emptyDayLabel": 15, // Retro · week.history · SOURCED
-  "week.history.fontSize.header": 15, // Retro · week.history · SOURCED
-  "week.history.fontSize.title": 43, // Retro · week.history · SOURCED
-  "week.history.fontSize.weekday": 13, // Retro · week.history · SOURCED
-  "week.history.fontWeight.headerRange": "regular", // Retro · week.history · SOURCED
-  "week.history.fontWeight.headerTitle": "semibold", // Retro · week.history · SOURCED
-  "week.history.fontWeight.title": "heavy", // Retro · week.history · SOURCED
-  "week.history.fontWeight.weekday": "semibold", // Retro · week.history · SOURCED
-  "week.history.icon.add": {"ios":"plus","android":"Rounded.Add"}, // Retro · week.history · PLATFORM
-  "week.history.layout.textStyleMap": {"header":"subheadline","weekday":"footnote","emptyDay":"title1","emptyDayLabel":"subheadline","title":"largeTitle"}, // Apple HIG · week.history · PLATFORM
-  "week.history.layout.weeks": {"order":"newest week first, scrolling back without end","weekNumber":"ISO-8601 week number, Monday start","range":"locale date interval Monday–Sunday (month once within a month), omitted for a current week with no photos","strip":"one tile per photo in chronological order Mon→Sun; several photos on one day = several tiles with the same weekday","currentWeek":"photo tiles, then the add tile, then one empty-day tile for each day of the week that has no photo"}, // Retro · week.history · SOURCED
-  "week.history.radius.strip": 14, // Retro · week.history · SOURCED
-  "week.recap.aspectRatio.gridTile": {"width":111,"height":167}, // Yope · week.recap · CAPTURED
-  "week.recap.aspectRatio.picsTile": {"width":131,"height":175}, // Yope · week.recap · CAPTURED
-  "week.recap.count.gridColumns": 3, // Yope · week.recap · CAPTURED
-  "week.recap.count.picsColumns": 3, // Yope · week.recap · CAPTURED
-  "week.recap.dimension.cardToDots": 20.9, // Yope · week.recap · CAPTURED
-  "week.recap.dimension.cardWidth": 334, // Yope · week.recap · CAPTURED
-  "week.recap.dimension.dotsToPics": 40, // Yope · week.recap · CAPTURED
-  "week.recap.dimension.gridGap": 0, // Yope · week.recap · CAPTURED
-  "week.recap.dimension.labelBaselineBottom": 27.5, // Yope · week.recap · CAPTURED
-  "week.recap.dimension.labelInsetLeading": 25.3, // Yope · week.recap · CAPTURED
-  "week.recap.dimension.pageDot": 8, // Yope · week.recap · CAPTURED
-  "week.recap.dimension.pageDotPitch": 17.3, // Yope · week.recap · CAPTURED
-  "week.recap.dimension.picsGap": 1, // Yope · week.recap · CAPTURED
-  "week.recap.dimension.segmentedBottom": 42.6, // Yope · week.recap · CAPTURED
-  "week.recap.dimension.segmentedHeight": 47.5, // Yope · week.recap · CAPTURED
-  "week.recap.dimension.segmentedInset": 3.5, // Yope · week.recap · CAPTURED
-  "week.recap.dimension.segmentedPillHeight": 40.4, // Yope · week.recap · CAPTURED
-  "week.recap.dimension.segmentedPillWidth": 83, // Yope · week.recap · CAPTURED
-  "week.recap.dimension.segmentedWidth": 160, // Yope · week.recap · CAPTURED
-  "week.recap.fontSize.label": 20, // Yope · week.recap · CAPTURED
-  "week.recap.fontSize.segmented": 17, // Yope · week.recap · CAPTURED
-  "week.recap.fontSize.title": 17, // Yope · week.recap · CAPTURED
-  "week.recap.fontWeight.label": "heavy", // Yope · week.recap · CAPTURED
-  "week.recap.fontWeight.segmented": "semibold", // Yope · week.recap · CAPTURED
-  "week.recap.fontWeight.title": "semibold", // Yope · week.recap · CAPTURED
-  "week.recap.layout.shortRow": {"position":"first row of the card","span":"the full card width","tiles":"the photos that do not fill a row of three"}, // Yope · week.recap · CAPTURED
-  "week.recap.layout.textStyleMap": {"title":"headline","label":"title3","segmented":"headline"}, // Apple HIG · week.recap · PLATFORM
-  "week.recap.layout.weekFormat": {"title":"d MMM-d MMM, lowercase, bare hyphen","label":"the title in uppercase","example":"18 aug-24 aug / 18 AUG-24 AUG","week":"Monday–Sunday in the group's time zone"}, // Yope · week.recap · CAPTURED
-  "week.recap.radius.card": 12, // Yope · week.recap · CAPTURED
-  "widget.android.color.avatarPlaceholderBottom": "#828282F5", // Locket · widget.android · SOURCED
-  "widget.android.color.avatarPlaceholderTop": "#A0A0A0F5", // Locket · widget.android · SOURCED
-  "widget.android.duration.updatePeriod": 86400000, // Locket · widget.android · SOURCED
+  "walls.browse.dimension.columnPitch": 124.3, // Retro · walls.browse · SOURCED
+  "walls.browse.dimension.nameBaseline": 27.2, // Retro · walls.browse · SOURCED
+  "walls.browse.dimension.rowPitch": 131.1, // Retro · walls.browse · SOURCED
+  "walls.browse.layout.grid": {"grid":"C-21 people grid: 3 columns of size.global.avatarGrid avatars, column pitch walls.browse.dimension.columnPitch, centred on the screen; row pitch walls.browse.dimension.rowPitch; name text role listTitle centred, baseline walls.browse.dimension.nameBaseline below the avatar, one line, tail truncation","scroll":"vertical; the grid continues down the screen","people":"everyone who shares at least one group with you, without you; order walls.browse.layout.rowOrder","search":"C-12 search field above the grid filters by name"}, // Retro · walls.browse · SOURCED
+  "walls.mine.dimension.actionsToWeeks": 30.1, // Retro · walls.mine · SOURCED
+  "walls.mine.dimension.nameToActions": 23, // Retro · walls.mine · SOURCED
+  "walls.mine.layout.header": {"name":"display name in the display serif, text role headerTitle (C-19), baseline size.global.titleTop below the top safe area (walls.mine) or on the C-02 back-chevron line (walls.member); one line, tail truncation","avatar":"size.global.avatarProfile at the trailing margin, centred on the name's cap middle","realName":"not shown (profiles hold one display name)","infoRows":"not shown ('Weeks Posted: N' is a count; homebase / last-photo place are not product data)","actions":"action row (C-06) walls.mine.dimension.nameToActions below the name baseline: one icon-only outline capsule (size.global.iconPillWidth × size.global.pillHeight) at the trailing margin — walls.mine: icon.global.settings → settings.root; walls.member: icon.global.more → native menu (Report Profile / Block Profile)"}, // Retro · walls.mine · SOURCED
+  "walls.mine.layout.weeks": {"source":"wall(p_user_id) items, grouped by week in the device's time zone, weeks starting on app_config week_start_isodow (Monday)","sections":"C-20 section header ('Week {n}' + date range + •••-less) and C-17 strip per week, newest first","currentWeek":"always first: week.history.layout.currentWeek (walls.mine: add tile → camera.capture; walls.member: no add tile, only the person's photo tiles and placeholder / empty-day tiles)","pastWeeks":"only weeks that have items; photo tiles in time order, Mon → Sun, weekday label from created_at","collage":"a collage item is a photo tile showing the collage image (aspect fill) → collage.view","paging":"wall() pages of 50 by p_before; sections extend as pages arrive"}, // Retro · walls.mine · SOURCED
+  "week.edit.count.gridColumns": 4, // Retro · week.edit · SOURCED
+  "week.edit.haptic.dragAlign": {"ios":"sensoryFeedback(.alignment) (iOS 17)","android":"SEGMENT_FREQUENT_TICK (API 34+; CLOCK_TICK below)"}, // Apple HIG / Material 3 + Retro · week.edit · PLATFORM
+  "week.edit.haptic.dragStart": {"ios":"system (drag-and-drop lift plays its own feedback; no custom generator)","android":"DRAG_START (API 34+; none below)"}, // Apple HIG / Material 3 · week.edit · PLATFORM
+  "week.edit.layout.composition": {"presentation":"page sheet (C-29) with the native toolbar: leading week.edit.cancel, centred week.edit.title, trailing week.edit.save (system tint, C-08)","strip":"the recap's chosen photos as a C-17 strip at the top (photo tiles in recap order, weekday labels), size.global.screenMargin inset; reorder per week.edit.layout.reorder","actions":"action row (C-06, equal widths, size.global.pillGap): outline capsule with icon.global.edit + week.edit.message.add (week.edit.message.edit when text exists) → week.edit.layout.message; outline capsule week.edit.saveAsAlbum → album sheet","header":"week.edit.header line (text role listSubtitle, color.global.textSecondary) above the grid","grid":"every visible post of the recap's week in time order: week.edit.count.gridColumns columns of square cells, size.global.stripGap gaps; tap toggles in / out of the recap (selection mark week.edit.layout.selectionMark); a checked photo joins the strip's end","spacing":"between blocks size.global.sectionGap; header line → grid size.global.sectionHeaderToContent"}, // Retro · week.edit · SOURCED
+  "week.edit.layout.message": {"presentation":"sheet (C-29) on color.global.background: centred title week.edit.message.title (sheetTitle), trailing text button week.edit.message.done (C-08, text role textButton, color.global.textPrimary)","field":"multi-line text from size.global.screenMargin, text role placeholder (typed text color.global.textPrimary, placeholder week.edit.textPlaceholder in color.global.textSecondary), keyboard up","counter":"week.edit.message.counter at the trailing margin above the keyboard, text role body with monospaced digits, color.global.textSecondary","limit":"2000 characters (weekly_recaps.text)"}, // Retro · week.edit · SOURCED
+  "week.edit.layout.reorder": {"gesture":"touch and hold a photo in the top strip, drag it to a new place in the strip, release to drop","scope":"the strip (the recap's items); its order becomes p_items' order","during":"the dragged tile follows the finger; the others shift with duration.global.stripInsert (easing.global.standard)","haptics":"week.edit.haptic.dragStart on pick-up, week.edit.haptic.dragAlign on each slot change","reduceMotion":"the drag tracks the finger; the shifts cross-fade (layout.global.reduceMotion)"}, // Apple Photos + Google Photos + Retro · week.edit · SOURCED
+  "week.history.layout.currentWeek": {"empty":"no photos yet: the add tile first, then one empty-day tile per day Monday → Sunday (dated: month / day / weekday)","withPhotos":"photo tiles in time order, then the add tile, then one placeholder tile (blank fill) per remaining day without a photo","addTile":"C-17 add tile → camera.capture with this group (walls.mine: any group)","readOnly":"where the viewer cannot post (walls.member) the add tile is left out"}, // Retro · week.history · SOURCED
+  "week.history.layout.weekMenu": {"trigger":"the C-20 header's icon.global.more","component":"native menu (C-29), items Sentence case","items":"week.history.menu.viewRecap (only when that week has a ready recap) → week.recap preview · week.history.menu.saveAsAlbum → week.edit album sheet with that week's photos"}, // Retro + Apple HIG / Material 3 · week.history · SOURCED
+  "week.history.layout.weeks": {"order":"newest week first, scrolling back without end; pages of 8 (group_history_weeks)","weekNumber":"ISO-8601 week of week_start in the group's time zone (week_start_isodow, Monday)","section":"C-20 header: week.history.header.title + the date range (locale interval Monday–Sunday; omitted for the current week without photos) + icon.global.more → week.history.layout.weekMenu; C-17 strip under it","strip":"one photo tile per post in time order (several photos on a day = several tiles), weekday label from created_at; current week per week.history.layout.currentWeek","limit":"if app_config free_history_days limits browsing (owner), the list ends there with no message"}, // Retro · week.history · SOURCED
+  "week.recap.aspectRatio.card": {"width":518,"height":779}, // Retro · week.recap · SOURCED
+  "week.recap.aspectRatio.gridCell": {"width":122,"height":108}, // Retro · week.recap · SOURCED
+  "week.recap.aspectRatio.weekCard": {"width":336,"height":251}, // Retro · week.recap · SOURCED
+  "week.recap.count.gridColumns": 4, // Retro · week.recap · SOURCED
+  "week.recap.dimension.cardInsetH": 32.4, // Retro · week.recap · SOURCED
+  "week.recap.dimension.closeInsetLeading": 20.6, // Retro · week.recap · SOURCED
+  "week.recap.dimension.closeInsetTop": 23.6, // Retro · week.recap · SOURCED
+  "week.recap.dimension.controlHeight": 41.6, // Retro · week.recap · SOURCED
+  "week.recap.dimension.controlInset": 28.9, // Retro · week.recap · SOURCED
+  "week.recap.dimension.coverTextBaseline": 28.3, // Retro · week.recap · SOURCED
+  "week.recap.dimension.coverTextInset": 19.5, // Retro · week.recap · SOURCED
+  "week.recap.dimension.footerBaseline": 18.3, // Retro · week.recap · SOURCED
+  "week.recap.dimension.footerInset": 15.3, // Retro · week.recap · SOURCED
+  "week.recap.dimension.footerLinePitch": 18.3, // Retro · week.recap · SOURCED
+  "week.recap.dimension.gridInset": 7.1, // Retro · week.recap · SOURCED
+  "week.recap.dimension.noteGap": 20, // Retro · week.recap · SOURCED
+  "week.recap.dimension.notePaddingH": 18, // Retro · week.recap · SOURCED
+  "week.recap.dimension.notePaddingV": 16, // Retro · week.recap · SOURCED
+  "week.recap.dimension.panelInset": 11.2, // Retro · week.recap · SOURCED
+  "week.recap.dimension.panelToControls": 12.4, // Retro · week.recap · SOURCED
+  "week.recap.dimension.pillPaddingH": 23.5, // Retro · week.recap · SOURCED
+  "week.recap.dimension.weekCardLinePitch": 20.6, // Retro · week.recap · SOURCED
+  "week.recap.dimension.weekCardTextInset": 21.2, // Retro · week.recap · SOURCED
+  "week.recap.dimension.weekCardTextTop": 21.8, // Retro · week.recap · SOURCED
+  "week.recap.fontSize.cardName": 13, // Retro · week.recap · SOURCED
+  "week.recap.fontWeight.cardName": "semibold", // Retro · week.recap · SOURCED
+  "week.recap.layout.list": {"presentation":"page sheet (C-29) over the group; header: C-11 close circle (size.global.circleButton, color.global.control) at the leading margin, centred title week.recap.list.title (text role sheetTitle)","cards":"one card per ready recap, newest first, full width inside size.global.screenMargin, size.global.cardGap apart","card":"cover = the recap's first item (aspect fill), shape week.recap.aspectRatio.weekCard, corners week.recap.radius.card; text at week.recap.dimension.weekCardTextInset / .weekCardTextTop: 'Week {n}' (font.global.display, text role displayMedium) over the date range (listSubtitle), both color.global.textOnMedia; icon.global.chevron at the trailing top in color.global.textOnMedia","pending":"a recap with status pending shows as a C-17 placeholder fill card with week.recap.pending","segmented":"none: only weekly recaps exist (Retro's Yearly / Monthly / Weekly / All Posts control has nothing to switch)"}, // Retro · week.recap · SOURCED
+  "week.recap.layout.note": {"component":"Retro's journal note: rounded box, the text in text role body, color.global.textOnMedia, on color.global.controlOnDeep","corners":"week.recap.radius.note","padding":"week.recap.dimension.notePaddingV vertical, week.recap.dimension.notePaddingH horizontal","attribution":"leading: avatar (size.global.avatarComment) of weekly_recaps.edited_by and the name (text role listTitle) before the text, on the first line","place":"page 1, under the collage card, card width, week.recap.dimension.noteGap below the card; the card + note block is centred in the panel"}, // Retro · week.recap · SOURCED
+  "week.recap.layout.pages": {"page1":"collage card: white card (color.global.surfaceLight in both appearances) centred in the panel, week.recap.dimension.cardInsetH from the panel sides, shape week.recap.aspectRatio.card, corners week.recap.radius.card; photo grid week.recap.dimension.gridInset from the card's top and sides: week.recap.count.gridColumns columns, size.global.stripGap gaps, cells week.recap.aspectRatio.gridCell (aspect fill), outer corners week.recap.radius.grid, inner square; footer: 'Week {n}' (font.global.display, text role headerTitle, color.global.onSurfaceLight) leading at week.recap.dimension.footerInset, baseline week.recap.dimension.footerBaseline above the card bottom; trailing stack right-aligned at the same inset: group name (week.recap.fontSize.cardName / .fontWeight.cardName, color.global.onSurfaceLight) over the date range (text role meta, color.global.textSecondary), the range's baseline on the week's baseline, week.recap.dimension.footerLinePitch apart; the recap text (if any) as a note under the card (week.recap.layout.note)","page2":"cover: the first item fills the panel (aspect fill, panel corners) under layout.global.photoScrim; 'Week {n}' (headerTitle serif, color.global.textOnMedia) leading at week.recap.dimension.coverTextInset, baseline week.recap.dimension.coverTextBaseline above the panel bottom; group name / date range stack trailing at the same inset (as page 1, color.global.textOnMedia / color.global.textSecondary)","dots":"C-31 with two pages"}, // Retro · week.recap · SOURCED
+  "week.recap.layout.preview": {"page":"color.global.backgroundDeep in both appearances (photo.viewer.layout.appearance rule)","panel":"a rounded panel inset week.recap.dimension.panelInset from the screen sides, from the top safe area to week.recap.dimension.panelToControls above the controls row; corners week.recap.radius.panel; filled with the blurred cover photo (layout.global.materials.backdrop)","close":"C-11 glass circle (size.global.circleButtonSmall, color.global.glass, icon.global.close in color.global.textOnMedia) at week.recap.dimension.closeInsetLeading / .closeInsetTop inside the panel","pages":"week.recap.layout.pages, swiped sideways","controls":"row under the panel, height week.recap.dimension.controlHeight: leading C-11 circle (diameter = controlHeight, color.global.controlOnDeep, icon.global.gallery) → week.edit; centre C-31 page dots (on media); trailing C-09 light pill week.recap.saveAsAlbum (height = controlHeight, padding week.recap.dimension.pillPaddingH) → album sheet; both week.recap.dimension.controlInset from the screen sides"}, // Retro · week.recap · SOURCED
+  "week.recap.layout.textStyleMap": {"cardName":"footnote"}, // Apple HIG · week.recap · PLATFORM
+  "week.recap.radius.card": 14, // Retro · week.recap · SOURCED
+  "week.recap.radius.grid": 7.9, // Retro · week.recap · SOURCED
+  "week.recap.radius.note": 18, // Retro · week.recap · SOURCED
+  "week.recap.radius.panel": 23, // Retro · week.recap · SOURCED
+  "widget.android.duration.updatePeriod": 3600000, // Retro · widget.android · SOURCED
+  "widget.android.layout.provider": {"minWidth":200,"minHeight":200,"minResizeWidth":100,"minResizeHeight":100,"targetCellWidth":2,"targetCellHeight":2,"resizeMode":"horizontal|vertical","reconfigurable":true}, // Retro · widget.android · SOURCED
   "widget.android.layout.sizes": {"defaultSize":"2x2 (minWidth/minHeight 110 dp)","range2x2":"109-306 x 115-276 dp","range4x2":"245-624 x 115-276 dp","range4x3":"245-624 x 185-422 dp","lockScreenHub":"about 4x3 cells"}, // Material 3 · widget.android · VERIFIED
-  "widget.android.radius.fallback": 8, // Locket · widget.android · SOURCED
-  "widget.android.size.avatar": 32, // Locket · widget.android · SOURCED
-  "widget.android.size.captionGap": 6, // Locket · widget.android · SOURCED
-  "widget.android.size.minSize": 110, // Locket · widget.android · SOURCED
-  "widget.android.size.overlayMargin": 8, // Locket · widget.android · SOURCED
+  "widget.android.radius.widget": 22, // Retro · widget.android · SOURCED
   "widget.arrival.duration.expectedDelay": 300000, // Locket · widget.arrival · SOURCED
   "widget.arrival.duration.transition": 0, // Locket · widget.arrival · SOURCED
   "widget.home.large.layout.size": {"w430h932":"364x382","w428h926":"364x382","w414h896":"360x379","w414h736":"348x357","w393h852":"338x354","w390h844":"338x354","w375h812":"329x345","w375h667":"321x324","w360h780":"329x345","w320h568":"292x311"}, // Apple HIG · widget.home.large · VERIFIED
   "widget.home.medium.layout.size": {"w430h932":"364x170","w428h926":"364x170","w414h896":"360x169","w414h736":"348x157","w393h852":"338x158","w390h844":"338x158","w375h812":"329x155","w375h667":"321x148","w360h780":"329x155","w320h568":"292x141"}, // Apple HIG · widget.home.medium · VERIFIED
-  "widget.home.small.color.avatarRing": "#0000001A", // Locket · widget.home.small · SOURCED
-  "widget.home.small.color.captionPill": "#333333CC", // Locket · widget.home.small · SOURCED
-  "widget.home.small.color.emptyBottom": "#1B1B1B", // Locket · widget.home.small · SOURCED
-  "widget.home.small.color.emptyCircle": "#FFFFFF3D", // Locket · widget.home.small · SOURCED
-  "widget.home.small.color.emptyLabel": "#969696", // Yope · widget.home.small · SOURCED
-  "widget.home.small.color.emptyRing": "#FFB800", // Locket · widget.home.small · SOURCED
-  "widget.home.small.color.emptyTop": "#2E2E2E", // Locket · widget.home.small · SOURCED
-  "widget.home.small.color.placeholderBottom": "#201E21", // Locket · widget.home.small · SOURCED
-  "widget.home.small.color.placeholderTop": "#2D2B2F", // Locket · widget.home.small · SOURCED
-  "widget.home.small.fontSize.caption": 12, // Locket · widget.home.small · SOURCED
-  "widget.home.small.fontWeight.caption": "semibold", // Locket · widget.home.small · SOURCED
-  "widget.home.small.layout.empty": {"circle":72,"ring":82,"ringStroke":3,"glyphWidth":32,"glyphHeight":28,"label":19,"labelGap":9}, // Locket · widget.home.small · SOURCED
-  "widget.home.small.layout.photo": {"fill":"aspect-fill, full bleed","ios":"containerBackground(for: .widget) with the image; contentMarginsDisabled","android":"ImageView centerCrop"}, // Locket · widget.home.small · SOURCED
-  "widget.home.small.layout.placeholderAvatars": {"diameter":25,"gap":2.5,"max":3,"inset":6}, // Locket · widget.home.small · SOURCED
+  "widget.home.small.color.stateTint": "#FFFFFFD9", // Retro · widget.home.small · SOURCED
+  "widget.home.small.fontSize.overlay": 11, // Retro · widget.home.small · SOURCED
+  "widget.home.small.fontWeight.overlay": "regular", // Retro · widget.home.small · SOURCED
+  "widget.home.small.layout.overlay": {"lines":"line 1: the poster's first name; line 2: the group name (collage: the group name alone, one line)","align":"trailing-aligned stack at the bottom-trailing corner","trailingInset":11,"lastBaselineFromBottom":15,"linePitch":13,"colour":"color.global.textOnMedia","scrim":"layout.global.photoScrim"}, // Retro · widget.home.small · SOURCED
+  "widget.home.small.layout.photo": {"fill":"aspect-fill, full bleed","ios":"containerBackground(for: .widget) with the image; contentMarginsDisabled","android":"ImageView centerCrop"}, // Retro · widget.home.small · SOURCED
   "widget.home.small.layout.size": {"w430h932":"170x170","w428h926":"170x170","w414h896":"169x169","w414h736":"159x159","w393h852":"158x158","w390h844":"158x158","w375h812":"155x155","w375h667":"148x148","w360h780":"155x155","w320h568":"141x141"}, // Apple HIG · widget.home.small · VERIFIED
-  "widget.home.small.layout.textStyleMap": {"caption":"caption","emptyLabel":"title3"}, // Apple HIG · widget.home.small · PLATFORM
-  "widget.home.small.size.avatar": 24, // Locket · widget.home.small · SOURCED
-  "widget.home.small.size.avatarInset": 6, // Locket · widget.home.small · SOURCED
-  "widget.home.small.size.avatarRing": 1, // Locket · widget.home.small · SOURCED
-  "widget.home.small.size.captionGap": 5, // Locket · widget.home.small · SOURCED
-  "widget.home.small.size.captionHeight": 23, // Locket · widget.home.small · SOURCED
-  "widget.home.small.size.captionPadding": 7, // Locket · widget.home.small · SOURCED
+  "widget.home.small.layout.textStyleMap": {"overlay":"caption2"}, // Apple HIG · widget.home.small · PLATFORM
   "widget.home.xl.layout.size": {"ipad1024x1366":"748x356","ipad834x1194":"628x300","ipad820x1180":"628x300","ipad768x1024":"540x260","ipad744x1133":"540x260"}, // Apple HIG · widget.home.xl · VERIFIED
   "widget.lock.circular.layout.size": {"w430h932":"76x76","w428h926":"76x76","w414h896":"76x76","w414h736":"76x76","w393h852":"72x72","w390h844":"72x72","w375h812":"72x72","w375h667":"68x68","w360h780":"72x72"}, // Apple HIG · widget.lock.circular · VERIFIED
   "widget.lock.inline.layout.size": {"w430h932":"257x26","w428h926":"257x26","w414h896":"248x26","w414h736":"248x26","w393h852":"234x26","w390h844":"234x26","w375h812":"225x26","w375h667":"225x26","w360h780":"225x26"}, // Apple HIG · widget.lock.inline · VERIFIED
-  "widget.lock.rect.layout.content": {"noCaptionRectangular":"the sender avatar alone, in its 24-pt leading slot (Locket's small widget without a caption shows only the avatar)","noCaptionInline":"the sentence of widget.home.small.a11y.photo ('{name}’s photo in {group}') as the inline text (the inline widget has no avatar slot)","newestIsCollage":"keep showing the newest single photo's sender (avatar, and its caption if any): Locket's widget always shows one sender's newest photo and has no collage state"}, // Locket · widget.lock.rect · SOURCED
+  "widget.lock.rect.layout.content": {"rectangular":"C-16 people row in vibrant rendering: the newest poster's avatar size.global.avatarPicker, then name (text role listTitle) over the group name (text role listSubtitle)","circular":"the newest poster's avatar filling the circle (C-23)","inline":"one line '{name} · {group}' (copy widget.lock.inline.text)","newestIsCollage":"rectangular / inline show the group name alone; circular shows icon.global.camera"}, // Retro · widget.lock.rect · SOURCED
   "widget.lock.rect.layout.rendering": {"mode":"vibrant (monochrome, desaturated)","content":"opaque grayscale at full opacity; white / light gray for the most prominent content","minText":11,"margins":"system (smaller on the Lock Screen)"}, // Apple HIG · widget.lock.rect · VERIFIED
   "widget.lock.rect.layout.size": {"w430h932":"172x76","w428h926":"172x76","w414h896":"160x72","w414h736":"170x76","w393h852":"160x72","w390h844":"160x72","w375h812":"157x72","w375h667":"153x68","w360h780":"157x72"}, // Apple HIG · widget.lock.rect · VERIFIED
 } as const;

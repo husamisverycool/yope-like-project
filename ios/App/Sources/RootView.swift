@@ -6,7 +6,8 @@ import SwiftUI
 /// cover depending on the surface spec (`AppModal.presentation`); the camera is a tab with the tab bar under it.
 ///
 /// Every screen below gets the account dependencies (`.environment(AccountDependencies)`), the storage URL resolver
-/// for `StorageImage` and the toast host. The appearance is dark only (`layout.global.appearance`).
+/// for `StorageImage` and the toast host. The appearance follows the system Light / Dark setting
+/// (`layout.global.appearance`): nothing here forces a colour scheme.
 struct RootView: View {
     @Bindable var router: AppRouter
     let dependencies: AccountDependencies
@@ -34,7 +35,6 @@ struct RootView: View {
         .environment(dependencies)
         .environment(\.storageURLResolver, dependencies.storageURLResolver)
         .toastHost(dependencies.toasts)
-        .preferredColorScheme(.dark)
     }
 }
 
@@ -54,7 +54,8 @@ struct MainShell: View {
                 CameraScreen(groupID: shell.cameraGroupID, invitationID: nil)
                     .id(shell.cameraGroupID)
                     .safeAreaInset(edge: .bottom, spacing: 0) {
-                        FloatingTabBar(selected: .camera, avatarPath: nil) { tab in
+                        // The camera is a media surface (black in both appearances): C-04 on the media page.
+                        AppTabBar(selected: .camera, surface: .media) { tab in
                             ShellNavigation.select(tab, router: router, shell: shell)
                         }
                     }

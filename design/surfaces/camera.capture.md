@@ -1,137 +1,159 @@
 # camera.capture — the camera the app opens to
 
-Reference: **Yope** (visuals, voice) + **Locket** (what Yope does not show: press motion, recording outline,
-video length, widget entry). Conflicts: `design/MERGE_DECISIONS.md` → Capture C-1 … C-4. Tokens:
-`design/tokens/capture.json` (`camera.capture.*`) + global foundations by name. Copy: `design/copy/capture.json`.
+**Visual reference: Retro** has no camera (it posts from the camera roll — `design/research/retro-visual.md` §5), so
+this page is **composed only from Retro components** — C-01 root header, the C-17 / C-18 photo container
+(`radius.global.viewfinder`), C-11 circles, the C-35 control row (central control flanked by 64-pt circles), C-09 pill,
+C-27 empty block, C-04 tab bar — on Retro's media surface (`color.global.backgroundDeep`, black in both appearances,
+`layout.global.appearance.media`). **Mechanics: Locket** (one tap captures, hold records a video, flip, library pick,
+recording outline, video length). Decisions: `design/MERGE_DECISIONS.md` → "Redesign — Capture" RC-1 … RC-4.
+Composition record: `camera.capture.layout.viewfinder` / `.controlRow` (level SOURCED, method "composition of Retro
+components … in Locket's order").
 
 ## References
 
 | image | what it verifies |
 |---|---|
-| `references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png` (2026-09-30) | whole layout, viewfinder, hour overlay, flash glyph, coach tooltip, shutter, library thumbnail, flip button |
-| `references/auto/yope/frames/a-alexaa-7684388619099933966-t5.23-camera-hold-to-record-tabbar.png` (2026-09-11) | tooltip copy, tab bar under the camera |
-| `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t4.73-camera.png` (2026-10-10) | camera layout, 4-item tab bar variant |
-| `references/auto/yope/frames/a-virgi-7686278541255642390-t36.23-camera-first-open-es.png`, `…t35.23-camera-permission-alert.png` | first open: the system alert appears over the camera (no pre-prompt) |
-| `references/auto/locket/store/locket-store-07.png`, `references/owner/locket-06-capture.webp` | Locket camera (C-1 comparison only) |
-| `references/auto/locket/frames/locket-tt-7069892557970345259-02.800s-camera-2022.jpg`, `…-03.367s-shutter-pressed-2022.jpg` | shutter press motion and pressed disc |
+| `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png` (H43, RAW dark) | C-01 serif root title, trailing bare glyph, 16 margin, 18-pt photo-container corners, tab bar on black |
+| `references/auto/retro/press/tc-2025-12-rewind-device-a.png` (RWA, RAW), `…-device-b.jpg` (RWB) | C-35 media page: central control flanked by 64-pt circles, side-circle centring rule (`camera.capture.layout.controlRow`), tab bar over media |
+| `references/auto/retro/store/retro-store-03.png` (ST-03) | C-09 pill on a photo (coach pill), C-11 circle on media (#262626) |
+| `references/auto/locket/store/locket-store-07.png` (AS-7), `references/owner/locket-06-capture.webp` | mechanics: viewfinder above a flash / shutter / flip row; shutter geometry (`camera.capture.size.shutter*`) |
+| `references/auto/locket/frames/locket-tt-7069892557970345259-02.800s-camera-2022.jpg` | mechanics: tap captures, the shutter hands over to send-to |
+| Locket help HC 7915017 (design/research/locket.md §5) | mechanics: touch and hold records; an outline around the viewfinder shows progress |
 
-## Structure (top to bottom, 393-pt screen)
+## Structure (top to bottom, 393 × 852 pt)
 
-1. Status bar (system). Background `color.global.backgroundDeep`.
-2. Wordmark slot (Yope's 'YOPE' logotype — **not copied**; the slot stays empty, C-2).
-3. **Viewfinder** — full screen width, top 103 pt, height = width × 1.38 (`camera.capture.layout.viewfinder`),
-   corners `radius.global.viewfinder`. Inside it:
-   - **Hour overlay** centred on both axes: `camera.capture.hourOverlay`, text role `overlayTimeCamera`
-     (`fontSize.global.overlayTimeCamera` / `fontWeight.global.overlayTimeCamera`), `color.global.textPrimary`.
-   - **Flash toggle** glyph bottom-leading, centre 28.3 pt from the leading edge and 33 pt above the bottom edge,
-     glyph height 15 pt (`camera.capture.layout.flashGlyph`); `icon.global.flashOff` / `icon.global.flashOn`.
-   - While recording a video: an outline around the viewfinder in `color.global.accent`
-     (width `camera.capture.size.recordingOutline` 6 pt, Locket). As in Locket it is a progress stroke: it traces the
-     viewfinder outline (`radius.global.viewfinder`) from empty to full, linearly, over the maximum video length.
-4. **Coach tooltip** (first use only, video available): lime pill centred on the shutter, pointer apex 2 pt above
-   the shutter ring (`camera.capture.layout.coach`): leading video glyph `camera.capture.icon.recordHint`
-   (at the text size) · `camera.capture.coach.holdToRecord` · ✕
-   (`icon.global.close`, 9.5 pt).
-5. **Control row**, 38 pt below the viewfinder (`camera.capture.size.shutterTopGap` to the ring top), all three
-   vertically centred on the shutter:
-   - leading: **library thumbnail** — 46 pt square (`camera.capture.size.libraryThumb`), corners
-     `camera.capture.radius.libraryThumb`, 1-pt `color.global.textPrimary` border, centre 110 pt left of the shutter
-     centre (`camera.capture.size.sideControlOffset`); shows the newest library photo, or `icon.global.gallery` in
-     `color.global.textPrimary` when there is none / no access;
-   - centre: **shutter** — outer 80 pt; 3.5-pt ring `color.global.accent`; 5.5-pt gap `color.global.backgroundDeep`;
-     59-pt disc `color.global.surfaceLight` (`camera.capture.size.shutterOuter/Ring/Gap/Disc`);
-   - trailing: **flip** — 47-pt circle `camera.capture.color.flipButton`, `icon.global.flip` in
-     `color.global.textPrimary`, centre 110 pt right of the shutter centre.
-6. App tab bar (global tab-bar tokens; owned by the navigation surfaces), as on Yope's camera.
+Page `color.global.backgroundDeep` in both appearances; status bar light content.
+
+1. **Header (C-01 on media).** Serif title `camera.capture.title` ("Week 42") — text role `headerTitle` (40 / line 48,
+   regular, `font.global.display`), `color.global.textOnMedia`, leading `size.global.screenMargin`, baseline
+   `size.global.titleTop` (64) below the safe-area top. Trailing: the **flash** glyph as a bare header glyph
+   (`icon.global.flashOff` / `icon.global.flashOn`, `size.global.icon`, `color.global.textOnMedia`), centred on the
+   title's cap middle, ink at `size.global.headerInset` (16) from the trailing edge, hit area `size.global.headerButton`.
+   Hidden when the active camera has no flash.
+2. **Viewfinder** — `camera.capture.layout.viewfinder`: 3:4, width = screen − 2 × `size.global.screenMargin` (361 ×
+   481), corners `radius.global.viewfinder` (18, `layout.global.cornerStyle` continuous on iOS), top
+   `size.global.titleToContent` (30) below the title baseline; live preview aspect-fill (WYSIWYG: the 3:4 frame is the
+   photo). On it, while a video records: the **recording outline** (`camera.capture.size.recordingOutline` 6,
+   `color.global.surfaceLight`) traced along the viewfinder's rounded outline from empty to full, linearly over
+   `camera.capture.duration.videoMax`. First use only: the **coach pill** (C-09 on media: fill
+   `color.global.controlOnDeep`, `icon.global.video` at `size.global.iconSmall` + `camera.capture.coach.holdToRecord`,
+   text role `pill`, `color.global.textOnMedia`, height `size.global.pillHeight`, width hugs the label, paddings
+   `size.global.pillPaddingLeading` / `.pillPaddingTrailing`, icon gap `size.global.pillIconGap`), centred, its bottom
+   20.5 pt above the viewfinder bottom (`camera.sendto.layout.messageField.bottomInset`, Retro's pill-on-photo inset).
+3. **Control row** — `camera.capture.layout.controlRow`, vertically centred between the viewfinder bottom and the tab
+   bar top (≥ `size.global.screenMargin` above and below the shutter; if less, the viewfinder shrinks, 3:4 kept):
+   - centre: **shutter** — outer `camera.capture.size.shutterOuter` (86); ring `camera.capture.size.shutterRing` (4.5)
+     in `color.global.surfaceLight`; gap `camera.capture.size.shutterGap` (3) showing `color.global.backgroundDeep`;
+     disc `camera.capture.size.shutterDisc` (70) in `color.global.surfaceLight`;
+   - leading: **library** circle — C-11, `size.global.circleButtonLarge` (64), fill `color.global.controlOnDeep`,
+     `icon.global.gallery` (`size.global.icon`, `color.global.textOnMedia`);
+   - trailing: **flip** circle — same, `icon.global.flip`;
+   - each side circle centred in the free space between the screen edge and the shutter's outer edge
+     (393-pt screen: centre 76.8 pt from the edge — Retro's Rewind rule).
+4. **Tab bar** (C-04, owned by `groups.list` — `groups.list.layout.tabBar`) in its media variant: background
+   `color.global.backgroundDeep`, selected `color.global.textOnMedia`, unselected `color.global.tabInactiveOnMedia`.
 
 ## Elements
 
-| element | tokens | copy | behavior |
+| element | component · tokens | copy | behaviour |
 |---|---|---|---|
-| viewfinder | `camera.capture.layout.viewfinder`, `radius.global.viewfinder` | — | live back camera on open (front after a flip, kept for the session). Aspect-fill the camera feed. |
-| hour overlay | text role `overlayTimeCamera`, `color.global.textPrimary` | `camera.capture.hourOverlay` ({time} = start of the current hour, device short-time style) | the hour slot the photo will be filed under; updates on the hour |
-| flash toggle | `camera.capture.layout.flashGlyph`, `icon.global.flashOff` / `.flashOn`, `color.global.textPrimary` | a11y `camera.capture.a11y.flash` + value `.flashOn` / `.flashOff` | tap toggles off ↔ on (glyph swap, no animation observed). Default off. Hidden when the active camera has no flash. |
-| coach tooltip | `camera.capture.layout.coach`, `camera.capture.icon.recordHint`, `camera.capture.fontSize.coach` / `.fontWeight.coach`, `color.global.accent` fill, `color.global.onAccent` text and glyphs | `camera.capture.coach.holdToRecord`; ✕ a11y `camera.capture.a11y.close` | shown once per install, only when video is available to the member; ✕ or the first recorded video dismisses it for good |
-| shutter | `camera.capture.size.shutter*`, `color.global.accent`, `color.global.surfaceLight`, `camera.capture.color.shutterDiscPressed` | a11y `camera.capture.a11y.shutter`; custom action `camera.capture.a11y.recordVideo` (premium) | **tap** = photo (Live Photo where supported, see Platform notes) → `camera.sendto`. **Long press** = video (premium): records while held, stops on release or at `camera.capture.duration.videoMax` (10 s). Free member: the session's first long press opens `paywall` (owned there; at most one prompt per session); later long presses do nothing; tapping always captures (never blocks the core). |
-| recording outline | `camera.capture.size.recordingOutline` (6 pt), `color.global.accent` | announcement `camera.capture.a11y.recording` | visible while a video records |
-| library thumbnail | `camera.capture.size.libraryThumb`, `.radius.libraryThumb`, `.size.libraryThumbBorder`, `icon.global.gallery` | a11y `camera.capture.a11y.library` | opens the system photo picker (iOS PHPickerViewController / PhotosPicker, Android Photo Picker — no library permission); the picked photo / Live Photo / video goes to `camera.sendto` |
-| flip | `camera.capture.size.flipButton`, `camera.capture.color.flipButton`, `icon.global.flip` | a11y `camera.capture.a11y.flip` | switches front ↔ back |
+| title | C-01 · `headerTitle`, `font.global.display`, `color.global.textOnMedia`, `size.global.titleTop` | `camera.capture.title` ({number} = current week number, as `week.history` numbers weeks) | the week the photo will be added to; static text with the header trait |
+| flash | C-01 trailing glyph · `icon.global.flashOff` / `.flashOn`, `size.global.headerButton` | a11y `camera.capture.a11y.flash`, value `.a11y.flashOn` / `.a11y.flashOff` | toggles off ↔ on (glyph swap, `duration.global.crossfade`); default off; hidden without a flash |
+| viewfinder | C-17/C-18 container · `camera.capture.layout.viewfinder`, `radius.global.viewfinder` | — | back camera on open; front after a flip, kept for the session; the captured photo is the 3:4 frame shown |
+| shutter | mechanics (Locket) · `camera.capture.size.shutterOuter/Ring/Gap/Disc`, `color.global.surfaceLight`, `color.global.backgroundDeep` | a11y `camera.capture.a11y.shutter`; custom action `camera.capture.a11y.recordVideo` (video members) | **tap** = photo (Live Photo where supported) → `camera.sendto`. **Hold** = video (premium): records while held, stops on release or at `camera.capture.duration.videoMax` (10 s). Free member: the session's first hold opens `paywall` (at most one prompt per session); later holds do nothing; tap always captures |
+| recording outline | `camera.capture.size.recordingOutline`, `color.global.surfaceLight`, `radius.global.viewfinder` | announcement `camera.capture.a11y.recording` | visible while a video records |
+| library | C-11 64 circle · `size.global.circleButtonLarge`, `color.global.controlOnDeep`, `icon.global.gallery` | a11y `camera.capture.a11y.library` | system photo picker (iOS PhotosPicker, Android Photo Picker — no library permission); the picked photo / Live Photo / video → `camera.sendto` |
+| flip | C-11 64 circle · same, `icon.global.flip` | a11y `camera.capture.a11y.flip` | front ↔ back |
+| coach pill | C-09 on media · `color.global.controlOnDeep`, `icon.global.video`, text role `pill`, `size.global.pillHeight` | `camera.capture.coach.holdToRecord` | once per install, only to members who can record video; tapping it or the first recorded video dismisses it for good |
+| tab bar | C-04 media variant · `color.global.textOnMedia` / `.tabInactiveOnMedia` | owned by `groups.list` | — |
 
 ## States
 
-| state | design | copy | source |
+All states keep the header and the tab bar; the C-27 block replaces the viewfinder content (inside its frame, fill
+`color.global.backgroundDeep`) and is drawn with media colours.
+
+| state | design (components · tokens) | copy | source |
 |---|---|---|---|
-| loading (session starting) | viewfinder area `color.global.backgroundDeep` until the first frame; controls visible | — | no indicator in any Yope frame |
-| permission not yet asked | the system alert appears directly over this screen on first open (iOS `NSCameraUsageDescription` / Android CAMERA runtime prompt) | purpose string owned by `system.permissions` | yope-a §2.6 (V-virgi t35.23) |
-| permission denied | inside the viewfinder, Yope empty-state layout centred: title text role `emptyTitle`, detail `emptyDetail` in `color.global.textSecondary`, light pill (`color.global.surfaceLight` / `color.global.onSurfaceLight`, `radius.global.capsule`, height `camera.capture.size.permissionButtonHeight`, text role `button`); shutter and flip hidden, library thumbnail stays | `camera.capture.denied.title` / `.detail` / `.button` (opens the app's system Settings page) | `yope.voice.empty-state`, `yope.voice.permission` (V-chuong t7.73) |
-| microphone (video) | asked at the first video only, never before a photo (App Review 5.1.1(iv)) | purpose string owned by `system.permissions` | platform.md §system.permissions |
-| error (session interrupted / camera in use) | same empty-state layout | `camera.capture.unavailable.title` / `.detail` / `.button` (retries the session) | `yope.voice.error` |
-| offline | no change: capture is local; sending is handled in `camera.sendto` | — | — |
-| empty | n/a (library empty → `icon.global.gallery` in the thumbnail slot) | — | global icon note |
+| loading (session starting) | viewfinder frame filled `color.global.backgroundDeep` until the first frame, then the preview fades in (`duration.global.fade`); controls visible | — | C-28 (Retro shows no skeletons) |
+| permission not yet asked | the system prompt over this page on first open (iOS `NSCameraUsageDescription`, Android CAMERA) | purpose string owned by `system.permissions` | PLATFORM |
+| permission denied | C-27 in the viewfinder: `icon.global.camera` (`size.global.emptyIcon`, `color.global.textOnMedia`) → `size.global.emptyIconToTitle` → title text role `emptyTitle` `color.global.textOnMedia` → explanation `emptyDetail` `color.global.textSecondary` → `size.global.emptyTitleToAction` → C-07 outline capsule without icon (1-pt border and label `color.global.textOnMedia`, text role `pill`, `size.global.pillHeight`); shutter and flip hidden; library and flash stay | `camera.capture.denied.title` / `.detail` / `.button` (opens the app's system Settings page) | `retro.voice.permission`; C-27 permission variant |
+| microphone (video) | asked at the first video only, never before a photo (App Review 5.1.1(iv)) | owned by `system.permissions` | PLATFORM |
+| error (session interrupted, camera in use) | same C-27 block | `camera.capture.unavailable.title` / `.detail` / `.button` (restarts the session) | `retro.voice.error`; C-27 error variant |
+| offline | no change (capture is local; sending is handled in `camera.sendto`) | — | — |
+| empty | n/a | — | — |
 
 ## Motion
 
 | motion | tokens | Reduce Motion |
 |---|---|---|
-| shutter press: scale to 0.85 and disc → `camera.capture.color.shutterDiscPressed` | `camera.capture.spring.shutterPress` (response 233 ms, no overshoot), `camera.capture.layout.shutterPress` | no scale; the disc color change only (`layout.global.reduceMotion`) |
-| capture → `camera.sendto` | Yope sheet: `duration.global.sheetPresent` + `spring.global.sheetPresent` (gap fill: the documented iOS modal spring, response 0.344 / damping 4.56, no overshoot — MERGE G2-3; a native presentation keeps `easing.global.native.sheet`) | cross-fade of the same duration |
-| flash / flip / coach / recording outline | none observed → no custom animation (camera feed switch is the platform's) | — |
+| preview appears after the session starts; C-27 block in / out | `duration.global.fade` (150) + `easing.global.standard` | same (fade only) |
+| flash glyph on ↔ off, flip | glyph `duration.global.crossfade` (100); the camera feed switch is the platform's | same |
+| shutter press | platform default press (C rules: Retro's press state not recorded) — no custom scale | same |
+| recording outline | linear trim 0 → 1 over `camera.capture.duration.videoMax` (tracks recording time, a progress indicator) | unchanged (progress, not decoration) |
+| capture → `camera.sendto` | native full-screen presentation (`easing.global.native.sheet`; custom presentations match `spring.global.sheetPresent`) | cross-fade of `duration.global.sheetPresent` |
+| coach pill in / out | `duration.global.fade` | same |
 
 ## Haptics
 
-No haptic on any control of this screen: `haptic.global.shutter` (none — HIG: "Ensure that haptic vibrations don't
-disrupt experiences involving … the camera"). The same rule covers flash, flip and the library button.
+Shutter: `haptic.global.shutter` (none — camera rule). Flash, flip, library, coach: `haptic.global.tap` (Android
+VIRTUAL_KEY before the action; iOS none). Paywall hand-off: none.
 
 ## Accessibility
 
-- Labels: shutter `camera.capture.a11y.shutter` (button; custom action `.recordVideo` when video is available),
-  flash `camera.capture.a11y.flash` with value `.flashOn` / `.flashOff` (iOS button + accessibilityValue; Android
-  stateDescription), flip `camera.capture.a11y.flip`, library `camera.capture.a11y.library`, coach ✕
-  `camera.capture.a11y.close`. The coach text is read as static text. Recording start posts
-  `camera.capture.a11y.recording` as an announcement.
-- Hour overlay: static text, read after the viewfinder (the viewfinder itself is not an element).
-- Dynamic Type: hour overlay `overlayTimeCamera` → title; coach → `camera.capture.layout.textStyleMap.coach`
-  (caption2); empty-state texts → `emptyTitle` / `emptyDetail` / `button` roles (global map).
-- Focus order: flash → shutter → library → flip → (coach ✕ when shown, first) → tab bar.
-- Touch targets: thumbnail 46 pt and flash glyph get a hit area of `size.global.minTouchTarget.ios` /
-  `.android`.
-- Contrast (`node tools/contrast.mjs`): coach text `color.global.onAccent` on `color.global.accent` 17.65:1 pass;
-  shutter ring `color.global.accent` on `color.global.backgroundDeep` 17.65:1 pass; disc 21:1 pass; flip glyph white
-  on `camera.capture.color.flipButton` 16.48:1 pass; **flip circle vs black 1.27:1 FAIL** (container edge; no
-  sourced alternative — the glyph itself passes); thumbnail border 21:1 pass; hour overlay and flash glyph white
-  over the live image: **photo-dependent, no scrim** (none observed on the camera; `color.global.scrim` is for sheets).
+- Labels: shutter `camera.capture.a11y.shutter` (button; custom action `.a11y.recordVideo` when video is available),
+  flash `.a11y.flash` + value `.a11y.flashOn` / `.flashOff` (iOS accessibilityValue; Android stateDescription), library
+  `.a11y.library`, flip `.a11y.flip`; coach pill is a button labelled with its text. Recording start posts
+  `.a11y.recording` as an announcement. Viewfinder: not an element.
+- Title: header trait. Dynamic Type: `headerTitle` → largeTitle; coach `pill` → subheadline; C-27 roles per
+  `layout.global.textStyleMap` (fixed controls do not grow).
+- Focus order: title → flash → (coach pill when shown) → library → shutter → flip → tab bar.
+- Touch targets: 64-pt circles and the 86-pt shutter exceed 44 / 48; the flash glyph's hit area is
+  `size.global.headerButton` (44) / 48 dp.
+- Contrast (`node tools/contrast.mjs`; identical in light and dark — media surface):
+
+| pair | ratio | result |
+|---|---|---|
+| title / flash glyph `textOnMedia` on `backgroundDeep` | 21.00:1 | pass |
+| circle glyph `textOnMedia` on `controlOnDeep` (#262626) | 15.13:1 | pass |
+| circle fill `controlOnDeep` vs `backgroundDeep` (non-text) | 1.39:1 | **FAIL** — container edge (CONTRAST failure 2); the glyph identifies the control |
+| shutter `surfaceLight` vs `backgroundDeep` (non-text) | 21.00:1 | pass |
+| coach label `textOnMedia` on `controlOnDeep` | 15.13:1 | pass |
+| C-27 title `textOnMedia` / detail `textSecondary` on `backgroundDeep` | 21.00:1 / 7.37:1 | pass |
+| tab unselected `tabInactiveOnMedia` (#FFFFFF9E) on `backgroundDeep` (non-text) | 7.84:1 | pass |
+| recording outline over the live image | photo-dependent | reported |
 
 ## Data & actions
 
-- Reads: none from the API on this screen; `public_app_config` not needed. Premium: `entitlements` (own row,
-  active when `expires_at` is null or future) decides whether long press records.
-- Writes: none here. The captured media (back photo, Live Photo motion, video) is handed to `camera.sendto`, which
-  uploads (`u/<uid>/<media_id>/original.<ext>`, `motion.mov`) and calls `create_post` (docs/API.md recipe 9.4).
-- In: app launch (the app opens to the camera), tab bar, `camera.fromwidget` deep link `app://camera?group=<id>`
-  (`DeepLink.camera(groupID:)`; the group is preselected in `camera.sendto`), chat composer camera button (Yope).
-- Out: `camera.sendto` (after capture / pick), `paywall` (free long press, once per session), system Settings.
+- Reads: `entitlements` (own row; active when `expires_at` is null or future) decides whether hold records.
+- Writes: none here. The capture (photo, Live Photo motion, video) is handed to `camera.sendto`, which uploads and
+  calls `create_post` (docs/API.md recipe 9.4).
+- In: app launch (the app opens to the camera tab), tab bar, `camera.fromwidget` (`app://camera?group=<id>` →
+  `DeepLink.camera(groupID:)`; the group is preselected in `camera.sendto`), chat composer camera.
+- Out: `camera.sendto` (after capture / pick), `paywall` (free hold, once per session), system Settings.
 
 ## Platform notes
 
-- iOS: `AVCaptureSession` single camera; Live Photo on when `AVCapturePhotoOutput.isLivePhotoCaptureSupported`
-  (still + paired movie, docs/PLATFORM_CONSTRAINTS.md §6). No Live Photo toggle (none in any reference — Gaps).
-- Android: CameraX; no Live Photo capture (PLATFORM_CONSTRAINTS: not researched → still photo). Tooltip glyph
-  `camera.capture.icon.recordHint` (iOS `video.fill`, Android `Rounded.Videocam`).
+- iOS: `AVCaptureSession`, photo preset (4:3 sensor → 3:4 portrait, matching the viewfinder); Live Photo when
+  `AVCapturePhotoOutput.isLivePhotoCaptureSupported` (docs/PLATFORM_CONSTRAINTS.md §6); no Live Photo toggle.
+- Android: CameraX, `AspectRatio.RATIO_4_3`; no Live Photo; page background `color.global.backgroundDeep` (media — not
+  `color.global.background.android`).
+- Corners: iOS `RoundedRectangle(cornerRadius:style: .continuous)`, Android `RoundedCornerShape`
+  (`layout.global.cornerStyle`).
 - Video: `media.kind = video` needs premium at `create_post` (`premium_required`).
-- Android deep link model requires a group id today (C-24): the camera must open without one too.
+- Android `DeepLink.Camera` must accept no group id (MERGE_DECISIONS C-24, still open in code).
 
 ## Do-not-copy
 
-YOPE wordmark; filter-name carousel and '1x' zoom label (not features, C-4); Locket's '12 Friends' pill (a count),
-chat button with a count badge, photo-tinted background; streak pills anywhere.
+Retro: its wordmark / "R" mark anywhere in the header. Locket: '12 Friends' pill (a count), chat button with a count
+badge, photo-tinted background, yellow ring, 'History' row. Yope: wordmark, hour overlay, lime ring, filter carousel and
+'1x' zoom label. Streak pills anywhere.
 
 ## Gaps
 
 | item | status | smallest capture / decision |
 |---|---|---|
-| `camera.capture.size.recordingOutline` | SOURCED by gap fill: 6 pt, Locket 1.243.0 source default (MERGE G2-9) | 10-s iPhone screen recording of Locket hold-to-record (would confirm the iOS build) |
-| Yope hold-to-record visuals, shutter press on the current Yope build | not observed (Locket 2022 motion used) | 10-s Yope recording: one tap capture + one hold-to-record |
-| Live Photo on/off control | not built (no reference shows one) | one screenshot of a Yope / Locket camera with Live Photo |
-| zoom, focus tap | not built (not observed) | — |
-| free-member long press after the session's prompt | does nothing (owner decision) | owner |
-| coach shown only to members with video | owner decision | owner |
+| Retro press state | not recorded → platform default (RC-3) | 60 fps recording of any Retro capsule press (README "Not available yet") |
+| Live Photo on / off control | not built (no reference shows one) | one screenshot of a camera with a Live Photo control in Locket |
+| hold-to-record visuals on the current Locket build | outline known from help text + Locket source default (G2-9) | 10-s iPhone recording of Locket hold-to-record |
+| zoom, tap to focus | not built (not observed) | — |
+| camera as a tab vs a modal | follows `groups.list.layout.tabBar` (account group) | — |

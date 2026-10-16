@@ -1,89 +1,86 @@
 # `walls.member` — a member's wall (only photos from shared groups)
 
-Reference app: **Yope** (`docs/SURFACES.md`). Research: `design/research/yope-b.md` §5, §8. Tokens: the shared wall tokens
-in `design/tokens/social.json` (`walls.mine.*`, `walls.browse.*`) + `global.*`. Copy: `design/copy/social.json`
-(`walls.member.*`). Same grid as `walls.mine.md` (read that spec for the wall rules and S-11).
+Redesign on **Retro**: visual reference Retro's profile of **another person** (screen 4: same header and week sections as
+your own; the action row carries "More Options" — APK `user_profile_more_options` with "Report Profile" / "Block Profile").
+Same structure and tokens as `walls.mine.md` (read it first); this file lists only the differences. Tokens:
+`design/tokens/social.json` (`walls.mine.*`, `week.history.*`) + `global.*`. Copy: `design/copy/social.json`
+(`walls.member.*`). Decisions: `design/MERGE_DECISIONS.md` → Redesign — Social (RS-14).
 
 **Scope rule (data, not design):** `wall(p_user_id)` returns only the person's photos posted in groups **you both belong
 to** (and collages of those groups containing one of their photos); nothing for a person you share no group with or have a
-block with (docs/API.md §6.4). The screen never says why something is missing. How Yope scopes a friend's wall was not
-observed (yope-b §5 "Not found").
+block with (docs/API.md §6.4). The screen never says which groups a photo came from.
 
 ## References
 
 | id | file | used for |
 |---|---|---|
-| S4-p | `references/auto/yope/frames/b-presskit-profile.png` | grid (shared with `walls.mine`) |
-| S5-w | `references/auto/yope/frames/b-yopeapp-7591560669967682847-t52.00-1on1-wall.png` | a member's / shared wall fills the screen (free-form canvas — BLOCKED) |
-| S5-b | `references/auto/yope/frames/b-yopeapp-7591560669967682847-t116.00-me-and-friends.png` | title placement and size |
-| S1 / S6 | `references/auto/yope/store/yope-store-05.png`, `references/auto/yope/frames/b-alexaa-7652512140875566349-t5.83-group-chat-pill.png` | back circle |
+| ST-02 | `references/auto/retro/store/retro-store-02.png` | header, week sections (as `walls.mine`) |
+| TC-1B | `references/auto/retro/press/tc-2023-07-retro-1b.webp` phone 3 | outline "•••" capsule ending the profile action row |
+| APK-X / APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt` (xw1.java: profile action row with `user_profile_more_options`), `…-strings.txt` | "More Options", "Report Profile", "Block Profile", "Nothing to see here", "%1$s hasn't posted anything…" |
+| ED-W3 | `references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png` | C-02 pushed header (back chevron + serif title) |
 
-## Structure (top → bottom)
+## Differences from `walls.mine`
 
-Background `color.global.backgroundDeep`.
+1. **Pushed header** (C-02): back chevron (`icon.global.back`, `size.global.backInset`) then the person's display name in the
+   display serif on the same line, `size.global.headerGap` after the chevron; the avatar (`size.global.avatarProfile`) at the
+   trailing margin, centred on the name's cap middle (`walls.mine.layout.header`).
+2. **Action row**: one C-06 outline icon capsule (`size.global.iconPillWidth` × `size.global.pillHeight`, `icon.global.more`)
+   at the trailing margin, `walls.mine.dimension.nameToActions` below the name baseline → native menu (C-29):
+   `walls.member.menu.report` (destructive red, → `safety.report`, kind `user`) and `walls.member.menu.block` (destructive red,
+   → `safety.block`).
+3. **No add tile** in the current week (you cannot post to their wall): photo tiles, then placeholder tiles for the remaining
+   days; an empty current week shows seven dated empty-day tiles (`week.history.layout.currentWeek` `readOnly`).
+4. **Empty** (no shared photos, a block, or no shared group): C-27 block without action — `icon.global.calendar`, title
+   `walls.member.empty.title`, detail `walls.member.empty.detail`.
 
-1. **Header**: back circle at the top-left (`size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.back`,
-   `size.global.headerInset`), vertically centred on the title; title = the member's display name (data), centred, text
-   role `sheetTitle`, `color.global.textPrimary`, baseline `walls.browse.dimension.titleBaseline` below the top safe-area
-   inset, one line, tail truncation.
-2. **Wall grid** exactly as `walls.mine.md` §Structure 2 (`walls.mine.count.gridColumns`, `.dimension.gridInset`,
-   `.dimension.gridGap`, `.aspectRatio.gridTile`, `.radius.gridTile`, `.layout.gridOrder`), top
-   `walls.mine.dimension.titleToGrid` below the title baseline.
+## Elements (differences)
 
-## Elements
-
-| element | tokens | copy | behaviour |
+| element | component · tokens | copy | behaviour |
 |---|---|---|---|
-| back circle | `size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.back` | `chat.thread.a11y.back` | pops |
-| title | text role `sheetTitle`, `color.global.textPrimary`, `walls.browse.dimension.titleBaseline` | display name (data); screen label `walls.member.a11y.wall` | — |
-| photo tile | wall grid tokens | `photo.viewer.a11y.photo` | tap → `photo.viewer` (context = this wall) |
-| collage tile | wall grid tokens | `walls.browse.a11y.collage` | tap → `collage.view` |
+| back | C-02; `icon.global.back`, `size.global.backInset`, `size.global.headerGap` | `chat.thread.a11y.back` | pops |
+| name | C-02 title; text role `headerTitle`, `font.global.display` | display name (data); screen label `walls.member.a11y.wall` | header trait |
+| more capsule | C-06 outline icon capsule; `size.global.iconPillWidth`, `size.global.pillHeight`, `icon.global.more`, `size.global.iconSmall` | `walls.member.a11y.more` | menu: `walls.member.menu.report`, `walls.member.menu.block` |
+| photo tile | C-17 | `week.history.a11y.tile` ("{weekday}, {date}, {name}'s photo") | → `photo.viewer` (context = this wall) |
+| collage tile | C-17 | `walls.browse.a11y.collage` | → `collage.view` |
 
 ## States
 
-| state | what shows | tokens / copy | source |
+| state | what shows | components · tokens · copy | source |
 |---|---|---|---|
-| loading | platform activity indicator under the title | `easing.global.native.activityIndicator` | PLATFORM |
-| empty (no shared photos, blocked, or no shared group) | centred bold title + gray detail, no pill | text roles `emptyTitle` / `emptyDetail`; `walls.member.empty.title`, `walls.member.empty.detail` | `yope.voice.empty-state` |
-| error | same layout + retry pill | `walls.mine.error.title`, `chat.thread.error.detail`, pill `chat.thread.error.retry` (`groups.screen.size.lightPillHeight`, `groups.screen.radius.lightPill`, `color.global.surfaceLight`) | `yope.voice.error` |
-| offline | cached grid; nothing cached → `chat.thread.offline.title` / `.offline.detail` | as listed | `yope.voice.error` |
+| loading | header from `profiles`; one placeholder section | C-28; `week.history.a11y.loading` | C-28 |
+| empty | header; C-27 (glyph, title, detail; no action) | `walls.member.empty.title`, `walls.member.empty.detail` | APK-S `user_profile_empty_media_title` |
+| error | tappable line (as `walls.mine`) | `walls.mine.error.title` | `retro.voice.error` |
+| offline | cached sections, else the error line | — | — |
+| blocked (after Block from the menu) | the wall empties (API returns nothing); empty state | as empty | docs/API.md §6.4 |
 | permission-denied | not applicable | — | — |
 
-## Motion
+## Motion · Haptics · Accessibility
 
-Push / pop: native (`easing.global.native.navigationPush`; `duration.global.navigationPush` noted in F-11). Reduce Motion:
-system.
-
-## Haptics
-
-None.
-
-## Accessibility
-
-- Screen / title read as `walls.member.a11y.wall` ("{name}’s wall"); tiles `photo.viewer.a11y.photo` / collage label.
-- Focus order: back → title → tiles row by row.
-- Dynamic Type: title → `layout.global.textStyleMap.sheetTitle`.
-- Contrast: same pairs as `walls.mine.md` (white 21.00:1, gray 7.10:1 on black: pass).
+As `walls.mine.md`. Push / pop native (`easing.global.native.navigationPush`). Focus order: back → name → more → sections.
+Contrast pairs as `walls.mine.md` (destructive menu items are platform-drawn: iOS systemRed / Android
+`color.global.system.error` on `color.global.system.surfaceContainerHigh`).
 
 ## Data & actions
 
-- `wall(p_user_id: member id, p_before, p_limit: 50)` (docs/API.md §6.4); `profiles` (§5.1) for the name.
+- `wall(p_user_id: member id, p_before, p_limit: 50)` (docs/API.md §6.4); `profiles` (§5.1) for name / avatar.
+- `report` (kind `user`) via `safety.report`; `block_user` via `safety.block` (account group).
 - Realtime: `post_deleted` on shared groups → drop the tile.
-- Navigation in: sender avatar / name in `chat.thread` and `photo.viewer`, a person circle in `walls.browse` (inline there),
-  member rows in `groups.settings`. Out: `photo.viewer`, `collage.view`. No deep link.
+- Navigation in: avatar / name in `chat.thread`, `photo.viewer`, the people grid of `walls.browse`, member rows in
+  `groups.settings`. Out: `photo.viewer`, `collage.view`, `safety.report`, `safety.block`. No deep link.
 
 ## Platform notes
 
-As `walls.mine.md`.
+As `walls.mine.md`; menu: iOS `Menu` on the capsule (`Button(role: .destructive)`), Android `DropdownMenu`.
 
 ## Do-not-copy
 
-- Stranger / discovery profiles ("find friends like you", interests, "things in common") — no public profiles.
-- Streaks, "@handle", red "new" dots, profile customisation.
+- Retro's "Add Friend" / "Accept" / "Unfriend" / "Give Key" / "Say Hey!" / "Message" / "Send Postcard" actions (no friend
+  graph, keys, DMs or postcards here); "Friends Only" / "Requests Locked" states; "Weeks Posted: N".
+- Discovery profiles, mutual-friend counts ("You share %1$d mutual friends").
 
 ## Gaps
 
 | item | status | smallest owner capture |
 |---|---|---|
-| how Yope scopes a friend's wall | not observed; the API's shared-groups rule is the product rule | one screenshot of a friend's wall in Yope |
-| free-form wall canvas | BLOCKED (`walls.mine.layout.freeformWall`) | see `walls.mine.md` |
+| Retro's pushed profile (where the back chevron sits relative to the serif name and avatar) | composition C-02 + C-19 (RS-14) | one raw screenshot of a friend's profile opened from the Friends tab |
+| a row holding only the "More Options" capsule | composition | same screenshot |

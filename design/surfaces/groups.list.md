@@ -1,105 +1,131 @@
-# `groups.list` — group list / home
+# `groups.list` — group list (home)
 
-Reference: **Yope** home list. Research: `design/research/yope-a.md` §1.5, §2.9; foundations `design/tokens/README.md`.
-Tokens: `groups.list.*` + global. Copy: `groups.list.*`.
+Visual reference: **Retro Albums list** (inventory #10 root, #11 pushed with search; ED-W3, ED-A, TC-J1 phone 2) with the
+"Ideas to Get Started" templates (#12, JED phone 3) and Retro's tab bar (H43 / H22). Tokens: `groups.list.layout.tabBar`
++ `global.*`. Copy: `groups.list.*` (+ `groups.create.type.*` for the template rows). Components: C-01, C-15, C-23, C-11,
+C-06, C-04, C-27, C-28.
 
 ## References
 
 | id | file | used for |
 |---|---|---|
-| H1 | `references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png` (2026-09, en) | cover header, header circles, cards (#181818, ≈100 pt, 7.5 gap, 12 margin, r 17), avatar 64 at 16 inset, name 17.5 bold, subtitle "new pic added · 10:10 AM", sender name in lime, camera glyph |
-| H2 | `references/auto/yope/frames/a-virgi-7686278541255642390-t40.23-home-list-es.png` (2026-09) | card height cross-check (101.6 pt) |
-| H3 | `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t44.23-home-list-new-group-icon.png` (2026-05) | "you’re friends!✨ share a pic?", add-people glyph → "new group" |
-| H4 | `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png` (2026-10) | cover height, ⌄, 4-item tab bar (camera, chats, wall, me) |
-| TB | `references/auto/yope/store/yope-store-02.png` | tab-bar sizes (global tokens) |
-| BI | `references/auto/yope/web/a-bi-2025-onboarding-composite.jpg` | empty-state copy "create your first group" / "to share pics daily and get recaps on your memories" / "create group" |
+| ED-W3 | `references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png` (3.89 px/pt, geometry only) | row pitch 119.5, 72 × 97 cover r ≈ 4, text at thumbnail + 17, subtitle with the actor in semibold, avatar stack, 36 pt "+" Fill circle, header glyph `icon.global.newAlbum` |
+| TC-J1 | `references/auto/retro/press/tc-2024-04-journals-1.webp` phone 2 | serif "Journals" title with the new-album glyph; rows "you shared a post" / "nathan shared a post" |
+| JED | `references/auto/retro/press/jeddacp-2024-05-home-profile-journals.png` phone 3 | "Ideas to Get Started" header + "•••"; template rows (cover, title, 2-line grey description, Fill "Create" pill) |
+| H43, H22 | `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png`, `…-20260528-week22-dark-a.png` | title metrics (C-01), tab bar (C-04), dark values |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | `journals_tab_screen_title`, `journal_tab_context_line_*`, `journal_tab_suggestion*`, `journal_tab_empty_state_*`, `journal_tab_loading_error` |
 
-## Structure (black `color.global.backgroundDeep`, scrolls vertically)
+## Structure (page `color.global.background` / `.background.android`; vertical scroll; tab bar fixed)
 
-1. **Cover header**: the newest photo across the person's groups, full-bleed from the top edge (under the status bar),
-   height `groups.list.size.coverHeight`, rounded bottom corners (radius not measured: Gaps), image `scaledToFill`.
-   ⌄ (`icon.global.chevronDown`, white) centred ≈8 pt under the cover (decorative scroll hint).
-   Tapping the cover opens that photo (`photo.viewer`).
-2. **Header circles over the cover**, top row at the safe area, inset `size.global.headerInset`: the trailing "+"
-   circle (`size.global.headerButton`, glyph `icon.global.add`) → `groups.create`. Fill
-   `groups.list.color.headerCircleOverPhoto` (#00000094, solved on the 2026 Yope home). Yope's leading search circle (friend search) and centre wordmark are
-   not built (Do-not-copy).
-3. **Group cards**, one per group, newest activity first; gap `size.global.listGap`; side margin `size.global.screenMargin`;
-   first card `size.global.listGap` under the ⌄.
-4. **Floating tab bar** over the bottom (`groups.list.layout.tabBar`), inset `size.global.tabBarInset`.
-
-### Card (left → right)
-
-avatar (group cover in a circle) · text block (name; subtitle) · trailing camera glyph.
+1. **Header (C-01)**: serif title `groups.list.title` (`font.global.display`, text role `headerTitle` 40,
+   `color.global.textPrimary`) at `size.global.screenMargin`, baseline `size.global.titleTop`; one trailing glyph
+   `icon.global.newAlbum` (ink at `size.global.headerInset`, hit `size.global.headerButton`) → `groups.create`.
+2. `size.global.titleToContent` below the title baseline: **group rows (C-15)**, newest activity first, thumbnails
+   `size.global.listGap` (22.5) apart (row pitch 119.5), inside `size.global.screenMargin`:
+   - cover thumbnail `size.global.rowThumbWidth` × `.rowThumbHeight` (72 × 97, 3:4), `radius.global.thumbnail` (4),
+     aspect-fill; no cover → `color.global.control` fill with `icon.global.group` centred in `color.global.textSecondary`;
+   - text block `size.global.rowThumbGap` (17) after it, vertically centred on the thumbnail: group name (text role
+     `listTitle`, `color.global.textPrimary`, one line, tail truncation); subtitle (text role `listSubtitle`,
+     `color.global.textSecondary`, the actor — `{first_name}` or "you" — in semibold); member avatar stack (C-23,
+     `size.global.avatarSmall`, overlap `size.global.avatarStackOverlap`, joining order) below the subtitle;
+   - trailing "+" circle (C-11 on the page: `size.global.circleButton`, `color.global.control`, `icon.global.add`
+     `color.global.textPrimary`), ink at the right margin, centred on the thumbnail.
+3. `size.global.sectionGap` (36.4) below the last row: **"Ideas to Get Started"** section — header
+   `groups.list.ideas.title` (text role `sectionLabel`, `color.global.textPrimary`) at the margin; then one template row
+   per group kind in `group_kind` order (friends · family · roommates · custom), same C-15 geometry:
+   thumbnail `color.global.control` placeholder (C-17 placeholder look; no art), title `groups.create.type.<kind>`
+   (`listTitle`), description `groups.create.type.<kind>.detail` (`listSubtitle`, `color.global.textSecondary`, ≤ 2 lines),
+   trailing **fill capsule** C-06 (`color.global.control`, label `groups.create.type.create` text role `pill`, height
+   `size.global.pillHeight`, hugging its label with 12 / 8 padding) at the right margin.
+4. Tab bar (C-04, `groups.list.layout.tabBar`) over the bottom safe area; the list scrolls under it with its last row
+   clear of the bar.
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| card | fill `groups.list.color.card`; height `groups.list.size.cardHeight`; corners `radius.global.card` | row label `groups.list.row.accessibilityLabel` | tap → `groups.screen`; long press: nothing (not observed) |
-| avatar | `size.global.avatarList`, inset `groups.list.size.avatarInset`, circle; empty cover → `color.global.controlRaised` + `icon.global.group` in `color.global.textSecondary` | — | — |
-| name | `fontSize.global.listTitle`, `fontWeight.global.listTitle`, `color.global.textPrimary`, one line, tail truncation | group name (data) | — |
-| subtitle | `fontSize.global.listSubtitle`, `fontWeight.global.listSubtitle`, `color.global.textSecondary`; sender `{first_name}` in `color.global.accent` | `groups.list.row.sentPic` / `groups.list.row.newPic` / `groups.list.row.noPics` | {time} = newest post time, `h:mm AM/PM` (today) |
-| camera glyph | `icon.global.camera`, `groups.list.size.cameraGlyph`, `color.global.textPrimary`, trailing inset `groups.list.size.avatarInset`; hit area `size.global.minTouchTarget.*` | `groups.list.row.camera.accessibilityLabel` | → `camera.capture` with the group preselected (`DeepLink.camera(groupID:)`) |
-| cover | `groups.list.size.coverHeight`; ⌄ `icon.global.chevronDown` | `groups.list.cover.accessibilityLabel` | tap → `photo.viewer` |
-| + circle | `size.global.headerButton`, `icon.global.add`, `groups.list.color.headerCircleOverPhoto` | `groups.list.header.add.accessibilityLabel` | → `groups.create` |
-| tab bar | `size.global.tabBarWidth`, `.tabBarHeight`, `.tabBarInset`, `.tabBarSelectedWidth`, `.tabBarSelectedHeight`, `.tabBarIcon`, `.tabBarAvatar`; `color.global.control`, `.controlRaised`, `.textPrimary`, `.textSecondary`; `radius.global.capsule`; icons `icon.global.camera`, `icon.global.chats`, `icon.global.wall`, own avatar | `groups.list.tab.camera.accessibilityLabel`, `.groups`, `.walls`, `.me` | camera → `camera.capture`; groups = this screen; walls → `walls.browse`; me → `walls.mine` (where the settings circle lives) |
+| title | C-01 | `groups.list.title` | header trait |
+| new group glyph | C-01 trailing glyph `icon.global.newAlbum` | `groups.list.header.add.accessibilityLabel` | → `groups.create` (type step) |
+| group row | C-15 + C-23 | `groups.list.row.accessibilityLabel` ({group_name}, {subtitle}) | tap → `groups.screen` (push) |
+| subtitle | `listSubtitle`, actor semibold | newest post by someone else: `groups.list.row.sentPic` ({first_name}); by you: `groups.list.row.newPic`; no posts: `groups.list.row.createdByYou` / `.createdBy` ({first_name}) / `.noPics` (creator unknown) | updates live (realtime `posts` inserts) |
+| avatar stack | C-23 stack; members in joining order, as many as fit the text column (no "+N", no count) | — | part of the row element |
+| "+" circle | C-11 | `groups.list.row.camera.accessibilityLabel` ("Add to {group_name}") | → `camera.capture` with the group preselected (`DeepLink.camera(groupID:)`) |
+| ideas header | `sectionLabel` | `groups.list.ideas.title` | static (Retro's "•••" after the header is not built — its menu was not captured) |
+| template row | C-15 geometry; C-06 fill capsule | `groups.create.type.*`, `.detail`, `groups.create.type.create` | Create → `groups.create` at its name step with that kind preselected |
+| tab bar | C-04 + `groups.list.layout.tabBar` (`icon.global.camera`, `.home`, `.group`, `.wall`; selected `color.global.textPrimary`, unselected `color.global.tabInactive`) | `groups.list.tab.camera.accessibilityLabel`, `.groups`, `.walls`, `.me` | camera → `camera.capture`; groups = this screen; walls → `walls.browse`; me → `walls.mine` |
 
 ## States
 
 | state | when | design | copy |
 |---|---|---|---|
-| loading | first fetch | Loading HUD (`groups.create.color.hud`, `.size.hud`, `.fontSize.hudLabel`) centred | `groups.create.hud.loading` |
-| empty | no groups | no cover; Yope's 2025 "create your first group" screen (BI): two-line title (`fontSize.global.onboardingTitle`, `fontWeight.global.onboardingTitle`, second line lime per `groups.create.layout.titleAccent`), detail under it (`auth.phone.fontSize.subtitle`, `auth.phone.layout.subtitle`), lime primary button (`color.global.accent`, `size.global.buttonHeight`, `size.global.buttonMarginH`, `radius.global.button`) `groups.create.size.titleToContent` below; vertically centred above the tab bar | `groups.list.empty.title`, `groups.list.empty.detail`, `groups.list.empty.button` (→ `groups.create`) |
-| error | fetch failed | Yope empty-state layout centred: title `fontSize.global.emptyTitle` bold, detail `fontSize.global.emptyDetail` italic `color.global.textSecondary`, white pill (`color.global.surfaceLight`, `groups.screen.size.lightPillHeight`, `groups.screen.radius.lightPill`, label `color.global.onSurfaceLight` text role `button`) | `groups.list.error.title`, `.detail`, `.retry` |
-| offline | no connection and nothing cached | same layout, no pill | `groups.list.offline.title`, `groups.list.offline.detail` |
-| offline with cache | cached rows shown; nothing else changes | — | — |
-| permission-denied | — | none | — |
+| loading | first fetch, nothing cached | C-28: three C-15 rows whose thumbnails are `color.global.control` placeholders (no text) — Retro's placeholder-tile loading form; ideas section hidden | — |
+| default | ≥ 1 group | as Structure | as above |
+| empty | no groups | C-27 block centred between the header and the ideas section: glyph `icon.global.albums` → title `groups.list.empty.title` → explanation `groups.list.empty.detail` → outline CTA C-07 (`icon.global.add` + `groups.list.empty.button`) → `groups.create`; the ideas section follows | `groups.list.empty.*` |
+| error | fetch failed, nothing cached | one tappable line centred under the header (Retro list error): text role `body`, `color.global.textSecondary` | `groups.list.error.title` (tap = retry) |
+| offline, nothing cached | no connection | C-27 block without glyph or action | `groups.list.offline.title`, `.detail` |
+| offline with cache | cached rows; nothing else changes | — | — |
+| permission-denied | — | not applicable | — |
+
+Light and dark: same layout; colours follow the appearance (ED-W3 / TC-J1 / JED light; H43 / H22 dark tab bar and title).
 
 ## Motion
 
-Pull-to-refresh: system refresh control (`haptic` system). Push to `groups.screen`: native navigation push
-(`easing.global.native`). No row animations (Yope's flame rain is do-not-copy). Reduce Motion: platform behaviour.
+- Push to `groups.screen`: native (`easing.global.native` navigationPush; Retro's push not captured, R-14).
+- Pull-to-refresh: system refresh control (Retro's not captured).
+- Rows reorder when activity changes: cross-fade `duration.global.crossfade` (100 ms); a new row fades in
+  `duration.global.fade` (150 ms) with `easing.global.standard`. Reduce Motion: cross-fades only (`layout.global.reduceMotion`).
 
 ## Haptics
 
-Pull-to-refresh threshold: system (iOS refresh control; Android `GESTURE_THRESHOLD_ACTIVATE` only if the component lacks it).
-No other haptics.
+Row, "+", template "Create", tab presses → `haptic.global.tap` (Android VIRTUAL_KEY; iOS none). Pull-to-refresh: system.
 
 ## Accessibility
 
-- Each card is one element (`groups.list.row.accessibilityLabel` = name + subtitle), trait button; the camera glyph is a
-  second element. Tab items: buttons with the `groups.list.tab.*` labels, selected trait on the current tab.
-- Dynamic Type: name `headline`, subtitle `subheadline`; the card grows in height with the text (minimum
-  `groups.list.size.cardHeight`).
-- Focus order: + → cover → cards top to bottom (each: card, camera) → tab bar.
-- Contrast: card vs black 1.18:1 **FAIL** (non-text; text identifies the card); white on card 17.76:1, #969696 on card
-  6.00:1, lime on card 14.92:1, camera glyph 17.76:1 pass. Tab bar pairs: see design/CONTRAST.md (foundations).
+- Each row is one button (name + subtitle; the avatar stack is hidden from assistive technology); the "+" circle is a
+  separate button. Template rows: one element (title + description) plus the Create button.
+- Tabs: buttons with labels, selected trait on the current tab, no count values.
+- Dynamic Type: title `largeTitle`; name, subtitle `subheadline`; section header `subheadline`; capsule `subheadline`.
+  Rows grow with their text (minimum = the thumbnail height); the thumbnail keeps 72 × 97.
+- Focus order: title → new group → rows (row, +) → ideas header → template rows (row, Create) → tab bar.
+- Contrast (`design/CONTRAST.md`):
+
+| pair | light | dark |
+|---|---|---|
+| title / name `textPrimary` on page | 21:1 pass (row 1) | 21:1 / 17.01:1 Android (rows 1–2) |
+| subtitle / description `textSecondary` 15 on page | **2.85:1 FAIL** (row 3) | 7.37:1 pass |
+| "+" glyph on #F1F1F1 / #262626 circle | 18.59:1 pass (row 10) | 15.13:1 pass |
+| "Create" label on fill capsule | 18.59:1 pass (row 9) | 15.13:1 pass |
+| circle / fill capsule / placeholder vs page (non-text) | **1.13:1 FAIL** (row 13) | **1.39:1 FAIL** |
+| tab unselected vs page; selected vs unselected | **2.12:1 FAIL** / 9.90:1 (rows 22–23) | 7.37:1 / **2.85:1 FAIL** |
+
+  All failures are Retro's own palette (R-13): reported, not adjusted.
 
 ## Data & actions
 
-- `groups` (member rows; RLS) + `group_members` (own role) + the newest `posts` per group (`select … order(created_at desc) limit 1`
-  per group, docs/API.md §5.8) + `profiles` for sender first names + signed URLs for covers/avatars (§7).
-- Realtime: `posts` inserts per group (docs/API.md §8.1) update subtitles and the cover; refetch on foreground/reconnect (§8.3).
-- In: app launch with a session (`DeepLinkRouting.home`), end of onboarding, back from any group.
-- Out: `groups.screen`, `groups.create`, `camera.capture` (`DeepLink.camera`), `photo.viewer`, `walls.browse`, `walls.mine`.
+- `groups` (member rows; RLS) + `group_members` (avatars, joining order) + `profiles` (first names, avatars) + the newest
+  `posts` row per group (docs/API.md §5.8) + `groups.created_by` for the no-post subtitle + signed URLs for covers and
+  avatars (§7).
+- Realtime: `posts` inserts per group (§8.1) update subtitles and order; refetch on foreground / reconnect (§8.3).
+- In: launch with a session (`DeepLinkRouting.home`), end of onboarding, back from a group.
+- Out: `groups.screen`, `groups.create` (type step or a preselected kind), `camera.capture` (`DeepLink.camera`),
+  `walls.browse`, `walls.mine`.
 
 ## Platform notes
 
-- iOS `List`-free custom `ScrollView`/`LazyVStack`; Android `LazyColumn`. The tab bar is the app's own floating capsule on
-  both (Yope draws its own; not `TabView`/`NavigationBar`).
-- `DeepLink.camera` carries an optional group id on iOS and a required one on Android (`DeepLink.kt`); the row always has one.
+- iOS: custom `ScrollView` + `LazyVStack`, custom tab bar (C-04: the system `TabView` bar draws labels and a material).
+- Android: `LazyColumn`, custom bottom bar (Retro's Compose bar has no M3 indicator); page `color.global.background.android`.
+- `DeepLink.camera` carries an optional group id on iOS and `DeepLink.Camera(groupId)` on Android; rows always pass one.
 
 ## Do-not-copy
 
-- Streak pills (🔥N), red unread badges on rows and tabs, flame rain over rows, the "YOPE" wordmark, friend search /
-  "find friends", the discovery tab, "suggested friends" from public discovery, presence dots.
+- Counts in subtitles ("shared 2 posts") and Retro's "N new" badges; the user-styled title on Retro's cover thumbnails
+  (this app has no cover-title editor); Retro's sample template photos (Retro assets).
 
 ## Gaps
 
 | item | status | smallest capture |
 |---|---|---|
-| header circle fill over the photo (`groups.list.color.headerCircleOverPhoto`) | SOURCED by gap fill: black at 0.58 ±0.06 solved on the 1080p 60 fps Yope home frame (MERGE G2-6); blur not measured; white glyph over it on a white photo 5.33:1 | one lossless screenshot of the 2026 Yope home with a cover photo |
-| cover bottom-corner radius | not measured | same screenshot |
-| app wordmark in the header centre | owner asset (app name/logo BLOCKED) | — |
-| group card avatar for groups without a cover | approximation (group glyph on the gray role) | — |
+| light Albums list as a RAW capture | renders only (ED-W3 / TC-J1) | raw light screenshot of the Albums list (RV §6) |
+| "Ideas to Get Started" "•••" menu | not built (menu contents not captured) | one screenshot with that menu open |
+| template thumbnails | Fill placeholders (Retro's photos are its own) | owner may supply four cover photos |
+| tab destinations Rewind / Activity | not in this app's IA | lead / owner (MERGE RA-7) |

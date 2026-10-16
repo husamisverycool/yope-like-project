@@ -1,39 +1,53 @@
-// Shared component — the Yope Loading HUD (reference: V-mthu t50.60 "Loading").
+// Shared component — C-28 loading states (design/components.md), replacing Yope's square Loading HUD. Retro shows no
+// skeleton screens; its captured loading forms are placeholder tiles (C-17 `.placeholder`, `WeekStripLayout.placeholders`),
+// progress text ('Updating…', copy `retro.voice.progress`) and the platform activity indicator. Retro's own spinner was
+// not captured (Gap); its collage loader is a Rive file (not copied). Evidence: VID-COMP; RP §2.1, §3.9, §4.1 rule 3.
 import DesignSystem
 import SwiftUI
 
-/// Square HUD with the system activity indicator and the label `groups.create.hud.loading`.
-///
-/// Tokens: side `groups.create.size.hud` (minimum; grows with Dynamic Type), fill `groups.create.color.hud`,
-/// label `groups.create.fontSize.hudLabel` in `color.global.textPrimary`, spinner = platform activity indicator
-/// (`easing.global.native.activityIndicator`), corners `chat.thread.radius.loadingHud`. Spinner–label gap: platform stack
-/// spacing (not measured).
+/// The platform activity indicator (`easing.global.native.activityIndicator`: `ProgressView`, PLATFORM) in
+/// `color.global.textSecondary`, with an optional progress line under it in the platform's label style (copy:
+/// 'Updating…'). Accessibility: announced as busy (updates frequently); the line is read when present.
 struct LoadingHUD: View {
+    var label: String?
+
+    init(label: String? = nil) {
+        self.label = label
+    }
+
     var body: some View {
-        VStack {
-            ProgressView()
-            Text(Copy.groupsCreateHudLoading)
-                .dsTextStyle(TextRole.hudLabel)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+        Group {
+            if let label {
+                ProgressView {
+                    Text(label)
+                        .dsTextStyle(TextRole.body)
+                        .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                }
+            } else {
+                ProgressView()
+            }
         }
-        .frame(minWidth: Tokens.Sizes.groupsCreateSizeHud, minHeight: Tokens.Sizes.groupsCreateSizeHud)
-        .background(Tokens.Colors.groupsCreateColorHud, in: RoundedRectangle(cornerRadius: Tokens.Radii.chatThreadRadiusLoadingHud))
-        .accessibilityElement(children: .combine)
+        .tint(Tokens.Colors.globalTextSecondary)
         .accessibilityAddTraits(.updatesFrequently)
     }
 }
 
 extension View {
-    /// Centres `LoadingHUD` over the view while `isPresented`, blocking input underneath.
-    func loadingHUD(_ isPresented: Bool) -> some View {
+    /// Shows `LoadingHUD` centred over the view while `isPresented`, blocking input underneath; it appears and leaves
+    /// with `duration.global.fade` (`easing.global.standard`).
+    func loadingHUD(_ isPresented: Bool, label: String? = nil) -> some View {
         overlay {
-            if isPresented {
-                ZStack {
-                    Color.clear.contentShape(Rectangle())
-                    LoadingHUD()
+            ZStack {
+                if isPresented {
+                    ZStack {
+                        Color.clear.contentShape(Rectangle())
+                        LoadingHUD(label: label)
+                    }
+                    .ignoresSafeArea()
+                    .dsTransition(.opacity)
                 }
-                .ignoresSafeArea()
             }
+            .dsAnimation(ComponentMotion.fade, value: isPresented)
         }
     }
 }

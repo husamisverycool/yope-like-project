@@ -1,122 +1,5 @@
 {
   "tokens": {
-    "color.onthisday.banner": {
-      "type": "color",
-      "value": "#FC5F33",
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "years-ago banner fill (every memory)",
-      "evidence": "references/auto/timehop/store/timehop-store-01.png (300-306, 680-686); references/auto/timehop/store/timehop-store-03.png left half (230-236, 635-641)",
-      "method": "median of 7x7 box; two images agree",
-      "level": "SOURCED",
-      "precision": "±2/255",
-      "notes": "Timehop varies the banner colour between memories, but the rule that assigns a colour to a memory was not observed. The other v5 colours fail with the sourced white label: #FFC700 (store-02) 1.56:1, #14B6EF (store-05) 2.34:1; #DB6FA3 (share card) passes 3.08:1 but appears only on the share screen. Until the assignment is captured (owner capture: 15-20 s recording tapping through three years on Timehop v5) every memory uses this colour. See design/MERGE_DECISIONS.md memory M-9."
-    },
-    "color.onthisday.banner.label": {
-      "type": "color",
-      "value": "#FFFFFF",
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "'N YEARS AGO' banner label",
-      "evidence": "references/auto/timehop/store/timehop-store-01.png label bbox x416-824 y718-760; references/auto/timehop/help/th-help-2025-06-share-full-43-years-ago.png x419-749 y372-403",
-      "method": "glyph core pixels > 235",
-      "level": "SOURCED",
-      "precision": "±2/255"
-    },
-    "fontSize.onthisday.banner.label": {
-      "type": "fontSize",
-      "value": 25.8,
-      "unit": "pt",
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "'N YEARS AGO' banner label, set in the platform font",
-      "evidence": "references/auto/timehop/store/timehop-store-01.png y718-760, references/auto/timehop/store/timehop-store-02.png y978-1020, references/auto/timehop/store/timehop-store-05.png y640-682 (cap height 43 px = 18.2 pt each)",
-      "method": "cap height 18.2 pt (px / 2.366 (930-px mockup screen, 393 pt assumed; design/research/retro-timehop.md 'Scale conventions')) / SF Pro cap-height ratio 0.705",
-      "level": "SOURCED",
-      "precision": "±5% (marketing render scale)",
-      "notes": "Reference face appears to be Proxima Nova (commercial) -> platform font."
-    },
-    "fontWeight.onthisday.banner.label": {
-      "type": "fontWeight",
-      "value": "bold",
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "'N YEARS AGO' banner label",
-      "evidence": "references/auto/timehop/store/timehop-store-01.png; references/auto/timehop/help/th-help-2025-06-share-full-43-years-ago.png",
-      "method": "visual stem weight",
-      "level": "SOURCED",
-      "precision": "±1 weight step"
-    },
-    "dimension.onthisday.banner.height": {
-      "type": "dimension",
-      "value": 96.8,
-      "unit": "pt",
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "banner bottom edge measured from the screen top (the banner runs behind the status bar)",
-      "evidence": "references/auto/timehop/store/timehop-store-02.png y852-1080",
-      "method": "px / 2.366 (930-px mockup screen, 393 pt assumed; design/research/retro-timehop.md 'Scale conventions')",
-      "level": "SOURCED",
-      "precision": "±5% (mockup)",
-      "notes": "The banner height without the status bar could not be separated (research Not found)."
-    },
-    "dimension.onthisday.banner.labelBaseline": {
-      "type": "dimension",
-      "value": 25.4,
-      "unit": "pt",
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "label baseline to banner bottom edge",
-      "evidence": "references/auto/timehop/store/timehop-store-02.png 1020->1080; references/auto/timehop/store/timehop-store-05.png 682->743",
-      "method": "px / 2.366 (930-px mockup screen, 393 pt assumed; design/research/retro-timehop.md 'Scale conventions')",
-      "level": "SOURCED",
-      "precision": "±5%"
-    },
-    "layout.onthisday.banner": {
-      "type": "layout",
-      "value": {
-        "width": "full screen width",
-        "top": "screen top edge, behind the status bar",
-        "labelAlign": "centre",
-        "labelCase": "uppercase",
-        "colourPerMemory": "color.onthisday.banner"
-      },
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "years-ago banner geometry",
-      "evidence": "references/auto/timehop/store/timehop-store-01.png banner x156-1085 = screen width, label centre x620 vs banner centre 620.5; references/auto/timehop/store/timehop-store-02.png; references/auto/timehop/store/timehop-store-05.png; references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop)",
-      "method": "observation + centre measurement",
-      "level": "SOURCED"
-    },
-    "font.onthisday": {
-      "type": "font",
-      "value": {
-        "ios": "system",
-        "android": "system"
-      },
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "all on-this-day text",
-      "evidence": "https://www.timehop.com CSS: font-family proxima-nova (Adobe Fonts); design/research/retro-timehop.md 'Typeface (Timehop)'",
-      "level": "PLATFORM",
-      "notes": "Proxima Nova is commercial; platform font (SF Pro / Roboto)."
-    },
-    "layout.onthisday.navigation": {
-      "type": "layout",
-      "value": {
-        "order": "one memory screen per year, newest first (1 YEAR AGO, then 2, 3 ...)",
-        "next": "tap or swipe on the right half of the screen (older)",
-        "previous": "tap or swipe on the left half (back)",
-        "autoAdvance": "none"
-      },
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "moving between years of one day",
-      "evidence": "https://help.timehop.com/article/754-how-to-move-through-your-timehop-day ('from most recent to oldest'; 'tap or swipe the right side of your screen to move towards older memories', 'tap or swipe the left side' to go back)",
-      "method": "help-center text",
-      "level": "SOURCED",
-      "notes": "'right side / left side' read as halves; no timer is documented, so memories do not advance on their own. Exact zone widths not found."
-    },
     "layout.onthisday.dayBoundary": {
       "type": "layout",
       "value": {
@@ -129,393 +12,230 @@
       "evidence": "https://help.timehop.com/article/775-when-does-my-timehop-day-begin-and-end ('Your Timehop Day spans 24 hours from 5 am to 5 am')",
       "method": "help-center text",
       "level": "SOURCED",
-      "notes": "Client passes p_local_date = date of (now in the group time zone minus 5 h) to on_this_day."
+      "notes": "Mechanics (not visual): Retro's Rewind is 'On this week' from the camera roll and shows no day boundary; the group's day still rolls over at 5 am group time (Timehop's documented day). Client passes p_local_date = date of (now in the group time zone minus 5 h) to on_this_day."
     },
-    "dimension.onthisday.progress.height": {
-      "type": "dimension",
-      "value": 4.3,
-      "unit": "pt",
-      "source_app": "Timehop",
+    "layout.onthisday.dateFormat": {
+      "type": "layout",
+      "value": {
+        "style": "medium date (the locale's abbreviated month, day, year)",
+        "ios": "Date.FormatStyle(date: .abbreviated, time: .omitted)",
+        "android": "DateFormat.getDateInstance(DateFormat.MEDIUM)",
+        "example": "Jul 22, 2022"
+      },
+      "source_app": "Retro",
       "surface": "onthisday",
-      "element": "progress bar thickness",
-      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) rows y395-402 at x900 (7.5 px)",
-      "method": "2023 help composite: phone screen x 628-1308 = 681 px for 393 pt (1.733 px/pt), measured in this pass (design/MERGE_DECISIONS.md, memory section)",
+      "element": "the memory's date shown as the display title over the photo (and in its accessibility label)",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (RAW iOS 1260x2736, 3.000 px/pt, 420 pt wide) title 'Jul 22, 2022'; references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320x2868, 3.000 px/pt, 440 pt wide) title 'May 1, 2019'; references/auto/retro/press/tc-2025-12-rewind-panels.png (press render, Dec 2025) and references/auto/retro/store/retro-store-05.png (App Store render, 2.389 px/pt) 'July 5, 2021' (render)",
+      "method": "read from the RAW captures; en-US medium date style prints 'Jul 22, 2022'",
       "level": "SOURCED",
-      "precision": "±0.6 pt (composite image)",
-      "notes": "Seen in the 2016-2023 UI; the v5 marketing renders show no bar (research: v5 memory view not captured)."
+      "notes": "RAW (Dec 2025) abbreviates the month; the store / press renders spell it out ('July 5, 2021'). RAW wins (R-* rule). Copy pattern retro.voice.formats."
     },
-    "color.onthisday.progress.fill": {
+    "color.onthisday.subtitle": {
       "type": "color",
-      "value": "#F7D23E",
-      "source_app": "Timehop",
+      "value": "#FFFFFFC2",
+      "source_app": "Retro",
       "surface": "onthisday",
-      "element": "progress bar, reached part",
-      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) x629-732 y396-401",
-      "method": "median of the run (247,210,62)",
+      "element": "subtitle under the date title ('On this day · {name}' / 'Memories · {name}'), over the photo",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-panels.png (press render, Dec 2025) phone 1 'On this week' (x455-615, y450-490 px) and references/auto/retro/store/retro-store-05.png (App Store render, 2.389 px/pt) (x205-435, y850-895 px): glyph core (218,204,197) over the wall behind it (38-39,65-66,52)",
+      "method": "alpha of white solved from the brightest 3 % of glyph pixels against the 30th-percentile background in the same box: R 0.83, G 0.73, B 0.71 → mean 0.76 = 0xC2",
       "level": "SOURCED",
-      "precision": "±3/255"
+      "precision": "±0.06 alpha (the three channels disagree: the text may carry vibrancy over the photo)",
+      "notes": "Retro draws the subtitle white at reduced opacity (components C-35 called it not measurable); this is the closest solve. Over the photo its contrast is photo-dependent (no top scrim in any capture)."
     },
-    "color.onthisday.progress.track": {
-      "type": "color",
-      "value": "#93140A",
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "progress bar, part not reached yet",
-      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) x734-1308 y396-401",
-      "method": "median of the run (147,20,10)",
-      "level": "SOURCED",
-      "precision": "±3/255",
-      "notes": "Observed over the 2023 orange banner (#F26E41). Against color.onthisday.banner it is 2.91:1 (non-text needs 3:1) - reported, no sourced alternative."
-    },
-    "layout.onthisday.progress": {
-      "type": "layout",
-      "value": {
-        "position": "top edge of the banner, directly below the status bar",
-        "width": "full screen width",
-        "sideInset": 0,
-        "fill": "fraction of the day's years reached: (index + 1) / years",
-        "gaps": "none"
-      },
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "progress bar structure",
-      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) (bar starts at the screen edge x629, one continuous run, yellow 104 px then track 575 px)",
-      "method": "row scan",
-      "level": "SOURCED",
-      "notes": "One continuous bar (no segment gaps observed); the fill shows how far through the day's years the viewer is."
-    },
-    "layout.onthisday.photo.single": {
-      "type": "layout",
-      "value": {
-        "width": "full screen width",
-        "top": "banner bottom",
-        "bottom": "screen bottom",
-        "fit": "fill (cropped to the area)",
-        "cornerRadius": 0
-      },
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "memory with one photo",
-      "evidence": "references/auto/timehop/store/timehop-store-01.png; references/auto/timehop/store/timehop-store-02.png; references/auto/timehop/play/timehop-play-01.png",
-      "method": "observation",
-      "level": "SOURCED"
-    },
-    "layout.onthisday.grid": {
-      "type": "layout",
-      "value": {
-        "columns": 2,
-        "arrangement": "masonry: every photo keeps its aspect ratio and goes to the shorter column",
-        "scroll": "vertical",
-        "background": "color.global.background"
-      },
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "memory with several photos from that date",
-      "evidence": "references/auto/timehop/store/timehop-store-05.png col 1 x165-615, col 2 x626-1076",
-      "method": "observation",
-      "level": "SOURCED",
-      "notes": "Timehop draws the grid on #F5F0ED (light appearance). The app is dark only (layout.global.appearance, MERGE F-1) and Timehop's dark-mode value was not measured, so the gaps show color.global.background (MERGE memory M-8)."
-    },
-    "dimension.onthisday.grid.margin": {
+    "dimension.onthisday.subtitleBaseline": {
       "type": "dimension",
-      "value": 3.8,
+      "value": 26.4,
       "unit": "pt",
-      "source_app": "Timehop",
+      "source_app": "Retro",
       "surface": "onthisday",
-      "element": "grid outer margin (left / right)",
-      "evidence": "references/auto/timehop/store/timehop-store-05.png x156-164",
-      "method": "px / 2.366 (930-px mockup screen, 393 pt assumed; design/research/retro-timehop.md 'Scale conventions')",
+      "element": "date title baseline → subtitle baseline",
+      "evidence": "references/auto/retro/store/retro-store-05.png (App Store render, 2.389 px/pt): '2021' digits y752-823 (baseline 823), 'On this week' 'O' y858-886 (baseline 886)",
+      "method": "63 px ÷ 2.389 px/pt",
+      "level": "SOURCED",
+      "precision": "±0.5 pt (render)",
+      "notes": "The RAW captures show no subtitle (RWA has the expand chevron instead, RWB nothing); the press render and store render agree on the subtitle placement."
+    },
+    "dimension.onthisday.dial.diameter": {
+      "type": "dimension",
+      "value": 150,
+      "unit": "pt",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "element": "Rewind dial: outer diameter of the tick ring",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (RAW iOS 1260x2736, 3.000 px/pt, 420 pt wide): centre (630, 2217.5); tick outer radius 225 px (p50 over 720 angles, design/research/retro-timehop.md) / 226.5 px (this pass, edge at 25 levels above the local background over 2880 angles)",
+      "method": "2 × outer radius ÷ 3 px/pt",
+      "level": "SOURCED",
+      "precision": "±2 pt",
+      "notes": "RWA (same month, larger phone) draws the ring smaller: outer radius 214.5 px = 143 pt, with a longer indicator (28 pt) and a larger play glyph — read as another state of the dial (it was not captured at rest); RWB's resting dial is used (MERGE RM-3). The store render ST-05 shows an earlier dial (≈133 pt, 9.8° pitch) — superseded by the RAW captures."
+    },
+    "count.onthisday.dial.ticks": {
+      "type": "count",
+      "value": 44,
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "element": "number of tick slots around the dial (long and short alternate)",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320x2868, 3.000 px/pt, 440 pt wide) centre (660, 2288.5) and references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (RAW iOS 1260x2736, 3.000 px/pt, 420 pt wide) centre (630, 2217.5): tick angles at a constant pitch 8.19° (25 + 26 consecutive ticks, ±0.07°)",
+      "method": "background-subtracted polar profile (2880 angles, radius 100-300 px); 360° ÷ 8.19° = 43.96",
+      "level": "SOURCED",
+      "precision": "exact (the pitch rules out 43 and 45)",
+      "notes": "design/research/retro-timehop.md counted '≈45 (44/45)' by crossings; the pitch settles it at 44."
+    },
+    "dimension.onthisday.dial.tickLong": {
+      "type": "dimension",
+      "value": 19.8,
+      "unit": "pt",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "element": "long tick (even slots) length, measured from the ring's outer edge inward",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (RAW iOS 1260x2736, 3.000 px/pt, 420 pt wide) column x=638 across the 6 o'clock tick: ink y2384-2443 (partial pixels at both ends); polar profile inner radius 167 px vs outer 226.5 px; references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320x2868, 3.000 px/pt, 440 pt wide) 155.5 → 214.5 px",
+      "method": "ink length incl. partial-pixel coverage ÷ 3; RWA and RWB agree (59-59.5 px)",
+      "level": "SOURCED",
+      "precision": "±0.5 pt",
+      "notes": "design/research/retro-timehop.md gives 18 from the 50th-percentile inner radius over all angles (171 px); this pass measured the ticks themselves."
+    },
+    "dimension.onthisday.dial.tickShort": {
+      "type": "dimension",
+      "value": 11.8,
+      "unit": "pt",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "element": "short tick (odd slots) length, from the ring's outer edge inward",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (RAW iOS 1260x2736, 3.000 px/pt, 420 pt wide) polar profile: short ticks inner radius 191 px, outer 226.5 px; references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320x2868, 3.000 px/pt, 440 pt wide): 179.5 → 214.5 px",
+      "method": "(outer − inner) ÷ 3; both captures 35-35.5 px",
       "level": "SOURCED",
       "precision": "±0.5 pt"
     },
-    "dimension.onthisday.grid.gutter": {
+    "dimension.onthisday.dial.tickWidth": {
       "type": "dimension",
-      "value": 4.2,
+      "value": 3.2,
       "unit": "pt",
-      "source_app": "Timehop",
+      "source_app": "Retro",
       "surface": "onthisday",
-      "element": "gap between grid photos (columns and rows)",
-      "evidence": "references/auto/timehop/store/timehop-store-05.png x616-625; y1209-1218",
-      "method": "px / 2.366 (930-px mockup screen, 393 pt assumed; design/research/retro-timehop.md 'Scale conventions')",
+      "element": "width (stroke) of every tick and of the indicator",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320x2868, 3.000 px/pt, 440 pt wide) row y=2488 across the 6 o'clock tick: x663-672 full (129) + partial 96 / 107 over background 75 (≈9.9 px); indicator at 6°: 9.5 px across; references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (RAW iOS 1260x2736, 3.000 px/pt, 420 pt wide) row y=2415: 8 full + 2 partial (≈9 px), indicator rows 2220-2229 (10 px)",
+      "method": "full pixels + partial-pixel coverage ÷ 3",
       "level": "SOURCED",
-      "precision": "±0.5 pt"
+      "precision": "±0.3 pt",
+      "notes": "Ends look square at this scale (the long-tick column starts with one partial pixel); a round cap of 1.6 pt cannot be ruled out."
     },
-    "dimension.onthisday.grid.top": {
-      "type": "dimension",
-      "value": 5.5,
-      "unit": "pt",
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "gap between banner bottom and the first grid row",
-      "evidence": "references/auto/timehop/store/timehop-store-05.png y745-757",
-      "method": "px / 2.366 (930-px mockup screen, 393 pt assumed; design/research/retro-timehop.md 'Scale conventions')",
-      "level": "SOURCED",
-      "precision": "±0.5 pt"
-    },
-    "dimension.onthisday.meta.avatar": {
-      "type": "dimension",
-      "value": 19.0,
-      "unit": "pt",
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "meta row leading circle (Timehop's source icon; here the poster's avatar)",
-      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) icon bbox x656-688 y516-549 (33 px)",
-      "method": "2023 help composite: phone screen x 628-1308 = 681 px for 393 pt (1.733 px/pt), measured in this pass (design/MERGE_DECISIONS.md, memory section)",
-      "level": "SOURCED",
-      "precision": "±0.6 pt",
-      "notes": "Timehop shows the third-party source icon in this slot; in a group the source is the member who posted, so their avatar fills it (MERGE memory M-25)."
-    },
-    "dimension.onthisday.meta.inset": {
-      "type": "dimension",
-      "value": 16.2,
-      "unit": "pt",
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "screen edge to the meta row's leading circle",
-      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) screen left x628, icon left x656",
-      "method": "2023 help composite: phone screen x 628-1308 = 681 px for 393 pt (1.733 px/pt), measured in this pass (design/MERGE_DECISIONS.md, memory section)",
-      "level": "SOURCED",
-      "precision": "±0.6 pt"
-    },
-    "dimension.onthisday.meta.centerY": {
-      "type": "dimension",
-      "value": 25.7,
-      "unit": "pt",
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "banner bottom edge to the meta row's vertical centre",
-      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) photo top y488 (x1200 column), icon centre y532.5",
-      "method": "2023 help composite: phone screen x 628-1308 = 681 px for 393 pt (1.733 px/pt), measured in this pass (design/MERGE_DECISIONS.md, memory section)",
-      "level": "SOURCED",
-      "precision": "±0.6 pt"
-    },
-    "dimension.onthisday.meta.gap": {
-      "type": "dimension",
-      "value": 11.5,
-      "unit": "pt",
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "leading circle to weekday text",
-      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) icon right x688, text left x708",
-      "method": "2023 help composite: phone screen x 628-1308 = 681 px for 393 pt (1.733 px/pt), measured in this pass (design/MERGE_DECISIONS.md, memory section)",
-      "level": "SOURCED",
-      "precision": "±0.6 pt"
-    },
-    "fontSize.onthisday.meta": {
-      "type": "fontSize",
-      "value": 10.6,
-      "unit": "pt",
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "meta row text ('TUE 10:34 PM')",
-      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop) text rows y526-538 (13 px cap height = 7.5 pt)",
-      "method": "2023 help composite: phone screen x 628-1308 = 681 px for 393 pt (1.733 px/pt), measured in this pass (design/MERGE_DECISIONS.md, memory section); cap height / 0.705",
-      "level": "SOURCED",
-      "precision": "±0.6 pt"
-    },
-    "fontWeight.onthisday.meta": {
-      "type": "fontWeight",
-      "value": "bold",
-      "source_app": "Timehop",
-      "surface": "onthisday",
-      "element": "meta row text",
-      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop)",
-      "method": "visual stem weight",
-      "level": "SOURCED",
-      "precision": "±1 weight step"
-    },
-    "color.onthisday.meta.text": {
+    "color.onthisday.dial.tick": {
       "type": "color",
-      "value": "#FFFFFF",
-      "source_app": "Timehop",
+      "value": "#FFFFFF4D",
+      "source_app": "Retro",
       "surface": "onthisday",
-      "element": "meta row text over the photo",
-      "evidence": "references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (https://help.timehop.com/article/755-how-to-hide-unwanted-memories-in-timehop)",
-      "method": "glyph core pixels",
+      "element": "dial ticks (all slots except the indicator)",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320x2868, 3.000 px/pt, 440 pt wide): 26 ticks at radius 200 px, peak vs the background half a pitch either side, e.g. (157,147,138) over (114,100,87), (134,128,120) over (83,73,62); references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (RAW iOS 1260x2736, 3.000 px/pt, 420 pt wide) (JPEG): 7 ticks, alpha 0.30-0.33",
+      "method": "alpha of white per channel = (peak − bg) ÷ (255 − bg); RWA median 0.300 (all channels 0.295-0.307 on the ticks away from the share circle) = 0x4D",
       "level": "SOURCED",
-      "precision": "±5/255",
-      "notes": "No scrim behind the text in the reference; contrast over a light photo is not guaranteed (reported in the spec)."
+      "precision": "±0.01 alpha (RWA PNG); ±0.02 (RWB JPEG)",
+      "notes": "Same value as color.global.textTertiary dark and APK white @ 0.3 (Retro's alpha table, RP §3.3); kept as its own token because its role is the dial on media in both appearances."
+    },
+    "dimension.onthisday.dial.indicatorLength": {
+      "type": "dimension",
+      "value": 16.7,
+      "unit": "pt",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "element": "indicator (the current memory's slot): solid tick from the ring's outer edge inward",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (RAW iOS 1260x2736, 3.000 px/pt, 420 pt wide): indicator at 178° (9 o'clock), row y=2224 white (255) from x404 to x453.5 → radius 176.5-226 px; references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320x2868, 3.000 px/pt, 440 pt wide): indicator at 6° from radius 130 to 214 px (28 pt)",
+      "method": "ink length ÷ 3 (RWB, dial at rest)",
+      "level": "SOURCED",
+      "precision": "±0.5 pt",
+      "notes": "Colour = color.global.textOnMedia (both captures read 255). RWA's 28-pt indicator goes with its smaller ring (another state, see dimension.onthisday.dial.diameter). Capture that would settle the states: 10 s screen recording of the Rewind dial dragged and released."
+    },
+    "dimension.onthisday.dial.glyph": {
+      "type": "dimension",
+      "value": 35,
+      "unit": "pt",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "element": "play / pause glyph in the dial centre: ink height",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (RAW iOS 1260x2736, 3.000 px/pt, 420 pt wide): play triangle ink x589-683, y2165-2269 (31.7 × 35.0 pt); references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320x2868, 3.000 px/pt, 440 pt wide): x616-716, y2233-2344 (33.7 × 37.3 pt)",
+      "method": "bounding box of pixels > 245 ÷ 3; RWB (dial at rest) used",
+      "level": "SOURCED",
+      "precision": "±0.5 pt",
+      "notes": "Glyphs icon.global.play / icon.global.pause (fill variant = a state, icon.global.variantRule), colour color.global.textOnMedia; size the symbol so its ink is this tall."
+    },
+    "layout.onthisday.dial": {
+      "type": "layout",
+      "value": {
+        "slots": 44,
+        "pitchDegrees": 8.18,
+        "firstSlotDegrees": 6,
+        "angleReference": "measured clockwise from 3 o'clock (screen y grows downward)",
+        "longTicks": "even slots (0, 2, 4 …); odd slots short",
+        "indicator": "drawn on the current memory's slot instead of that slot's tick",
+        "startSlot": 0,
+        "step": "one slot per memory; dragging around the centre moves one memory per slot crossed; clockwise = next (older), counter-clockwise = previous",
+        "playback": "while playing, the indicator moves one slot each time the memory changes",
+        "haptic": "haptic.global.select once per slot crossed (and per automatic step while playing)"
+      },
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "element": "Rewind dial geometry and behaviour",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320x2868, 3.000 px/pt, 440 pt wide): ticks at 6.0° + k × 8.19°, indicator on slot 0 (6.0°), long ticks at 22.4°, 38.8° … (even); references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (RAW iOS 1260x2736, 3.000 px/pt, 420 pt wide): ticks at 5.7° + k × 8.19°, indicator on slot 21 (178.1°), long ticks even; references/auto/retro/apk/retro-android-2026.10.1150-strings.txt rewind_home_nux_message ('Drag the dial to take a spin through your memories.'); references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'w9e.java (Rewind tab …) collects a flow with new lh2(view, i) => tick haptic per dial step'",
+      "method": "polar profile of both RAW captures; behaviour from Retro's own NUX string and package (one tick per dial step)",
+      "level": "SOURCED",
+      "precision": "angles ±0.3°",
+      "notes": "Inferred, not observed directly: that the indicator marks the current memory and starts on slot 0 (RWA shows slot 0, RWB slot 21, TC-RWP renders other slots) and that clockwise means forward (clock convention). A 10 s recording of the dial being dragged closes both (MERGE RM-4)."
+    },
+    "dimension.onthisday.controls.centerY": {
+      "type": "dimension",
+      "value": 139.2,
+      "unit": "pt",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "element": "dial centre (and the centres of the share / random circles) above the safe-area bottom",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (RAW iOS 1260x2736, 3.000 px/pt, 420 pt wide): dial centre y=2217.5 px = 739.2 pt on a 912-pt screen; safe-area bottom 878 pt (34-pt home-indicator inset); share circle y-centre 2217 (x107-299); references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320x2868, 3.000 px/pt, 440 pt wide): centre 762.8 pt on a 956-pt screen → 159.2 pt above its safe-area bottom",
+      "method": "(912 − 34) − 739.2",
+      "level": "SOURCED",
+      "precision": "±0.5 pt (RWB); RWA differs by 20 pt (another dial state, MERGE RM-3)",
+      "notes": "In Retro the tab bar sits between the dial and the home indicator; our page has no tab bar, and the controls keep Retro's distance from the bottom so the photo is framed the same way."
+    },
+    "layout.onthisday.controls": {
+      "type": "layout",
+      "value": {
+        "order": "share circle, dial, random circle",
+        "arrangement": "equal gaps across the screen width: edge | share | dial | random | edge (the dial's box = dimension.onthisday.dial.diameter)",
+        "circles": "size.global.circleButtonLarge, fill color.global.glass, glyphs icon.global.share / icon.global.random in a size.global.icon box, color.global.textOnMedia",
+        "paused": "share, dial (icon.global.play) and random shown",
+        "playing": "share and random hidden (fade duration.global.fade, easing.global.standard); the dial shows icon.global.pause",
+        "scrim": "layout.global.photoScrim behind the controls"
+      },
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "element": "bottom control row of the Rewind page",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (RAW iOS 1260x2736, 3.000 px/pt, 420 pt wide): share x107-299, dial ticks 403.5-856.5, random x959-1151 on 1260 px → gaps 35.7 / 34.8 / 34.8 / 35.7 pt; references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320x2868, 3.000 px/pt, 440 pt wide): share x118.5-310.5, random x1009.5-1201.5 on 1320 px → edge gaps 39.5 pt, circle → 150-pt dial box 41 pt; references/auto/retro/press/tc-2025-12-rewind-panels.png (press render, Dec 2025) phone 1 and references/auto/retro/store/retro-store-05.png (App Store render, 2.389 px/pt): playing (pause glyph) with no share / random circles; references/auto/retro/press/tc-2025-12-rewind-panels.png (press render, Dec 2025) phone 2: paused (play glyph) with both circles",
+      "method": "edge runs on the circle row (luminance step ≥ 6); equal-gap model fits both RAW captures within 1.5 pt",
+      "level": "SOURCED",
+      "precision": "±1.5 pt",
+      "notes": "Share / random glyph ink measures 19.7 × 24.7 and 23.7 × 23.3 pt on RWB, inside the 24-pt glyph box."
     },
     "duration.onthisday.memoryChange": {
       "type": "duration",
       "value": 700,
       "source_app": "VidDay",
       "surface": "onthisday",
-      "element": "transition between two years' memories",
+      "element": "cross-fade from one memory to the next while playing (automatic advance)",
       "evidence": "https://static.vidday.com/vidday_theme_samples/theme_happy_birthday.mp4 (listed on https://www.vidday.com/examples; 1920x1080, 30 fps, 135.72 s); per-frame diff references/auto/vidday/frames/vidday-theme-happy-birthday-framediff.csv: photo-to-photo crossfades 23.233-23.933, 26.467-27.167, 30.467-31.167, 64.133-64.833, 68.167-68.867, 80.500-81.200, 92.133-92.833 s (21-22 changed frames each)",
       "method": "first to last changed frame of each crossfade (mean abs grey diff > 0.8 on a 192-px decode), 30 fps",
       "level": "SOURCED",
-      "notes": "Gap fill (MERGE G2-17). Timehop's own year-to-year change could not be obtained (no Timehop video reachable: App Store listing has none, Play's is YouTube, bot-blocked). VidDay's memory montage is the closest measured change from one remembered photo to the next; the screens already cross-fade the year content over this duration (curve easing.global.native).",
+      "notes": "Mechanics (memory montage, VidDay; MERGE G2-17): Retro's own photo change was not captured (Fast Company: photos 'flip by', text only). A step made by dragging the dial cross-fades over duration.global.crossfade (100 ms, Retro) instead, so scrubbing keeps up with the finger. Reduce Motion: the cross-fade stays (it is already the substitute, layout.global.reduceMotion).",
       "unit": "ms",
       "precision": "±33 ms (1 frame); curve not measurable (duration only)"
     },
-    "layout.onthisday.textStyleMap": {
-      "type": "layout",
-      "value": {
-        "bannerLabel": "title1",
-        "meta": "caption2"
-      },
-      "source_app": "Apple HIG",
-      "surface": "onthisday",
-      "element": "iOS Dynamic Type style each on-this-day text role scales with",
-      "evidence": "HIG Typography Large (default) sizes (design/research/platform.md): Title 1 28, Caption 2 11",
-      "method": "nearest Large size (MERGE F-13 method): 25.8 -> title1 (28), 10.6 -> caption2 (11)",
-      "level": "PLATFORM"
-    },
-    "layout.year.story.canvas": {
-      "type": "layout",
-      "value": {
-        "aspectWidth": 9,
-        "aspectHeight": 16,
-        "width": "screen width",
-        "vertical": "centred in the safe area",
-        "outside": "letterbox bands (color.year.story.letterbox)",
-        "background": "color.global.backgroundDeep"
-      },
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "story canvas",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg card 558-979 x 187-937 (1.780); references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg 107-554 x 178-972 (1.775); references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) 108-971 x 214-1750 (1.779)",
-      "method": "extent of non-background pixels",
-      "level": "SOURCED",
-      "precision": "±0.003",
-      "notes": "Wrapped's card art and colours are brand assets and are not copied; the canvas is black (MERGE memory M-15)."
-    },
-    "color.year.story.letterbox": {
-      "type": "color",
-      "value": "#111111",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "bands above and below the 9:16 canvas on taller phones",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) x540 y180-212 and y1752-1868",
-      "method": "luma sample (full range)",
-      "level": "SOURCED",
-      "precision": "±2/255"
-    },
-    "layout.year.story.navigation": {
-      "type": "layout",
-      "value": {
-        "next": "tap the right half of the canvas",
-        "previous": "tap the left half",
-        "hold": "none",
-        "model": "2024 tap-through (one card per fact)"
-      },
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "story navigation",
-      "evidence": "https://uproxx.com/music/how-to-watch-your-spotify-wrapped-2022-again/ ('Users can tap the left or right of the screen to go to the previous or next screen.'); references/auto/wrapped/press/wrapped24-press-minutes.jpg; references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024)",
-      "method": "press quote + 2024 renders and recording",
-      "level": "SOURCED",
-      "notes": "Zone widths and hold-to-pause not found; 'left or right of the screen' read as halves (MERGE memory M-24). The 2025 vertical-swipe model is not used (M-11)."
-    },
-    "dimension.year.story.progress.height": {
-      "type": "dimension",
-      "value": 1.8,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "progress segment thickness",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg y9-10 of card (2 px/448); references/auto/wrapped/press/wrapped24-press-minutes.jpg y196-197 (2 px/422); references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) y231-234 (~4 px/864)",
-      "method": "rows with luma > 90; px / card width x 393",
-      "level": "SOURCED",
-      "precision": "±0.3 pt (1.75 / 1.86 / 1.82)"
-    },
-    "dimension.year.story.progress.top": {
-      "type": "dimension",
-      "value": 8,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "canvas top to progress bar",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg 9 px/448; references/auto/wrapped/press/wrapped24-press-minutes.jpg 9 px/422; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) 17 px/864",
-      "method": "first bar row minus canvas top",
-      "level": "SOURCED",
-      "precision": "±0.5 pt"
-    },
-    "dimension.year.story.progress.gap": {
-      "type": "dimension",
-      "value": 3.6,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "gap between progress segments",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg 4 px/448; references/auto/wrapped/press/wrapped24-press-minutes.jpg 4 px/422; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) 8 px/864",
-      "method": "run analysis along the bar row",
-      "level": "SOURCED",
-      "precision": "±0.4 pt"
-    },
-    "dimension.year.story.progress.inset": {
-      "type": "dimension",
-      "value": 11,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "progress bar side inset",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) 24 px left / 25 px right of 864",
-      "method": "first / last bar pixel to the card edge",
-      "level": "SOURCED",
-      "precision": "±0.5 pt",
-      "notes": "Press renders give 16.7 pt (WB) and 17.7 / 14.9 pt (WA); the device recording is used (MERGE memory M-12)."
-    },
-    "color.year.story.progress.fill": {
-      "type": "color",
-      "value": "#FFFFFF",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "completed and current (filled part) segment",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg luma 254; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) RGB(255,249,255)",
-      "method": "median of 40x3 px",
-      "level": "SOURCED",
-      "precision": "±3/255"
-    },
-    "opacity.year.story.progress.track": {
-      "type": "opacity",
-      "value": 0.43,
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "upcoming segment: white at this opacity",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg segments 5-6 luma 109-113 over black",
-      "method": "alpha = (L - bg) / (255 - bg)",
-      "level": "SOURCED",
-      "precision": "±0.05"
-    },
-    "easing.year.story.progress.fill": {
-      "type": "easing",
-      "value": "linear",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "current segment fill over time",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-progress-fill.csv (segments 1 and 11)",
-      "method": "linear fit of fill vs time, R2 = 0.997 both, quadratic term ~0",
-      "level": "SOURCED"
-    },
-    "layout.year.story.progress": {
-      "type": "layout",
-      "value": {
-        "segments": "one per card",
-        "completed": "filled (color.year.story.progress.fill)",
-        "current": "fills left to right over duration.year.story.card",
-        "upcoming": "track (white at opacity.year.story.progress.track)"
-      },
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "segmented progress bar behaviour",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg; references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024); references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020-bars-zoom2x.png",
-      "method": "observation",
-      "level": "SOURCED"
-    },
-    "duration.year.story.card": {
+    "duration.onthisday.playHold": {
       "type": "duration",
       "value": 4000,
+      "unit": "ms",
       "source_app": "VidDay",
-      "surface": "year.story",
-      "element": "time one card stays before the story advances on its own",
+      "surface": "onthisday",
+      "element": "time one memory stays on screen while the dial is playing, before the next one",
       "evidence": "references/auto/vidday/help/vidday-help-display-length-2025-02-07.png (https://help.vidday.com/can-i-change-the-display-length-on-photos-and-text-cards/, last update 07.02.2025: 'Photos and text cards will automatically be set to display for 4 seconds by default.'); measured in https://static.vidday.com/vidday_theme_samples/theme_happy_birthday.mp4 (listed on https://www.vidday.com/examples; 1920x1080, 30 fps, 135.72 s) (references/auto/vidday/frames/vidday-theme-happy-birthday-framediff.csv): text-card and photo slots start-to-start 4.033 s (title 2.967 -> 7.000), 4.000-4.067 s (photos 26.467 -> 30.467 -> 34.533, 64.133 -> 68.167 -> 72.200, 92.133 -> 96.133), 4.000 s (end text card 128.700 -> 132.700)",
       "method": "documented default, confirmed by the slot pitch in the sample render (frame diff, 30 fps)",
       "level": "SOURCED",
-      "notes": "Gap fill (MERGE G2-18). Wrapped's per-fact time is not measurable (chapters hold several beats, M-16); Instagram's ≈5 s per photo appears only in third-party guides (Meta's ads guide gives 5-16 s for ads). VidDay is the documented, measured value for one card of one fact or photo before an automatic advance. The current segment fills linearly over it (easing.year.story.progress.fill).",
-      "unit": "ms",
-      "precision": "exact (documented); slots ±33 ms"
+      "precision": "exact (documented); slots ±33 ms",
+      "notes": "Mechanics: Retro's play cadence was not captured; the same documented per-photo time as the year story (duration.year.story.card, MERGE G2-18). Playing stops after the last memory (the dial shows play again)."
     },
     "duration.year.story.reveal.headline": {
       "type": "duration",
@@ -527,7 +247,8 @@
       "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv (15.533 -> 16.333 s)",
       "method": "per-frame top row of white text",
       "level": "SOURCED",
-      "precision": "±33 ms (1 frame at 30 fps)"
+      "precision": "±33 ms (1 frame at 30 fps)",
+      "notes": "Mechanics kept from Spotify Wrapped (year-story pacing; docs/REDESIGN_BRIEF.md): applies to the headline / subline of text cards inside the frame. Reduce Motion: cross-fade of the same durations (layout.global.reduceMotion)."
     },
     "dimension.year.story.reveal.headlineShift": {
       "type": "dimension",
@@ -539,7 +260,8 @@
       "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv y956 -> 916 px",
       "method": "40 px x 393 / 864",
       "level": "SOURCED",
-      "precision": "±0.5 pt"
+      "precision": "±0.5 pt",
+      "notes": "Mechanics kept from Spotify Wrapped (year-story pacing; docs/REDESIGN_BRIEF.md): applies to the headline / subline of text cards inside the frame. Reduce Motion: cross-fade of the same durations (layout.global.reduceMotion)."
     },
     "duration.year.story.reveal.subline": {
       "type": "duration",
@@ -551,11 +273,12 @@
       "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv (15.800 -> 16.400 s)",
       "method": "per-frame top row",
       "level": "SOURCED",
-      "precision": "±33 ms"
+      "precision": "±33 ms",
+      "notes": "Mechanics kept from Spotify Wrapped (year-story pacing; docs/REDESIGN_BRIEF.md): applies to the headline / subline of text cards inside the frame. Reduce Motion: cross-fade of the same durations (layout.global.reduceMotion)."
     },
     "dimension.year.story.reveal.sublineOffset": {
       "type": "dimension",
-      "value": 25.0,
+      "value": 25,
       "unit": "pt",
       "source_app": "Spotify Wrapped",
       "surface": "year.story",
@@ -563,7 +286,8 @@
       "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv y1083 -> 1028 px",
       "method": "55 px x 393 / 864",
       "level": "SOURCED",
-      "precision": "±0.5 pt"
+      "precision": "±0.5 pt",
+      "notes": "Mechanics kept from Spotify Wrapped (year-story pacing; docs/REDESIGN_BRIEF.md): applies to the headline / subline of text cards inside the frame. Reduce Motion: cross-fade of the same durations (layout.global.reduceMotion)."
     },
     "duration.year.story.reveal.sublineDelay": {
       "type": "duration",
@@ -575,22 +299,8 @@
       "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv (15.533 -> 15.800 s)",
       "method": "frame count",
       "level": "SOURCED",
-      "precision": "±33 ms"
-    },
-    "layout.year.story.reveal.samples": {
-      "type": "layout",
-      "value": {
-        "t25": 0.125,
-        "t50": 0.725,
-        "t75": 0.925
-      },
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "normalised distance travelled at 25 / 50 / 75 % of the reveal time (S-curve)",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv",
-      "method": "normalised position vs time",
-      "level": "SOURCED",
-      "notes": "Kept as measured; no named curve fitted (see easing.year.story.reveal)."
+      "precision": "±33 ms",
+      "notes": "Mechanics kept from Spotify Wrapped (year-story pacing; docs/REDESIGN_BRIEF.md): applies to the headline / subline of text cards inside the frame. Reduce Motion: cross-fade of the same durations (layout.global.reduceMotion)."
     },
     "easing.year.story.reveal": {
       "type": "easing",
@@ -606,450 +316,204 @@
       "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv (25 headline positions at 30 fps, 15.533-16.333 s, y956 -> 916 px); fit: references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-fit.csv",
       "method": "least-squares cubic Bezier over all 25 samples (0.05 grid, then 0.01 grid): rms 0.012 of the travel = 0.48 px, below the 1-px quantization",
       "level": "SOURCED",
-      "notes": "Gap fill (MERGE G2-19). This is the headline's curve (duration.year.story.reveal.headline 800 ms, dimension .headlineShift). The subline follows a different, decelerating curve: easing.year.story.reveal.subline (new token). No single curve fits both (best joint fit rms 0.12 = 5-7 px). The earlier 'not fitted' note used only the three summary points (layout.year.story.reveal.samples). Documented curves tried: FastOutSlowIn (0.4,0,0.2,1) rms 0.060, easeInOut 0.112.",
+      "notes": "Gap fill (MERGE G2-19). This is the headline's curve (duration.year.story.reveal.headline 800 ms, dimension .headlineShift). The subline follows a different, decelerating curve: easing.year.story.reveal.subline (new token). No single curve fits both (best joint fit rms 0.12 = 5-7 px). The earlier 'not fitted' note used only the three summary points (layout.year.story.reveal.samples). Documented curves tried: FastOutSlowIn (0.4,0,0.2,1) rms 0.060, easeInOut 0.112. Mechanics kept from Spotify Wrapped (year-story pacing; docs/REDESIGN_BRIEF.md): applies to the headline / subline of text cards inside the frame. Reduce Motion: cross-fade of the same durations (layout.global.reduceMotion).",
       "precision": "±0.05 per control point (flat error surface); residual 0.5 px"
     },
-    "font.year.story": {
-      "type": "font",
+    "easing.year.story.reveal.subline": {
+      "type": "easing",
       "value": {
-        "ios": "system",
-        "android": "system"
+        "x1": 0.05,
+        "y1": 0.36,
+        "x2": 0.26,
+        "y2": 0.94
       },
       "source_app": "Spotify Wrapped",
       "surface": "year.story",
-      "element": "all story text",
-      "evidence": "https://newsroom.spotify.com/2024-05-22/introducing-spotify-mix-our-new-and-exclusive-font/ (Spotify Mix, proprietary)",
-      "level": "PLATFORM"
-    },
-    "fontSize.year.story.headline": {
-      "type": "fontSize",
-      "value": 31.6,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "card headline",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) 'Y' cap height 49 px of 864 = 22.3 pt",
-      "method": "cap height / 0.705 (SF Pro)",
+      "element": "curve of the subline rising in (with duration.year.story.reveal.subline, .sublineDelay, dimension .sublineOffset)",
+      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv (19 subline positions at 30 fps, 15.800-16.400 s, y1083 -> 1028 px); fit: references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-fit.csv",
+      "method": "least-squares cubic Bezier over all 19 samples (0.05 grid, then 0.01 grid): rms 0.008 of the travel = 0.46 px",
       "level": "SOURCED",
-      "precision": "±1 pt",
-      "notes": "2024 value (tap-through model). 2025 renders give ~25 pt (MERGE memory M-14)."
+      "precision": "±0.05 per control point; residual 0.5 px",
+      "notes": "Added in the gap-fill pass (MERGE G2-19) next to easing.year.story.reveal (headline). Closest documented curve: M3 standard decelerate (0,0,0,1), rms 0.047. Reduce Motion: cross-fade with the same durations (layout.global.reduceMotion). Mechanics kept from Spotify Wrapped (year-story pacing; docs/REDESIGN_BRIEF.md): applies to the headline / subline of text cards inside the frame. Reduce Motion: cross-fade of the same durations (layout.global.reduceMotion)."
     },
-    "fontWeight.year.story.headline": {
-      "type": "fontWeight",
-      "value": "bold",
-      "source_app": "Spotify Wrapped",
+    "duration.year.story.card": {
+      "type": "duration",
+      "value": 4000,
+      "source_app": "VidDay",
       "surface": "year.story",
-      "element": "card headline",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024); references/auto/wrapped/press/wrapped25-press-minutes.png",
-      "method": "visual (heavy display weight)",
-      "level": "SOURCED"
-    },
-    "lineHeight.year.story.headline": {
-      "type": "lineHeight",
-      "value": 36.4,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "headline line pitch",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) line tops 813 -> 893 px",
-      "method": "px x 393 / 864 (card width in the 2024 recording)",
+      "element": "time one card stays before the story advances on its own",
+      "evidence": "references/auto/vidday/help/vidday-help-display-length-2025-02-07.png (https://help.vidday.com/can-i-change-the-display-length-on-photos-and-text-cards/, last update 07.02.2025: 'Photos and text cards will automatically be set to display for 4 seconds by default.'); measured in https://static.vidday.com/vidday_theme_samples/theme_happy_birthday.mp4 (listed on https://www.vidday.com/examples; 1920x1080, 30 fps, 135.72 s) (references/auto/vidday/frames/vidday-theme-happy-birthday-framediff.csv): text-card and photo slots start-to-start 4.033 s (title 2.967 -> 7.000), 4.000-4.067 s (photos 26.467 -> 30.467 -> 34.533, 64.133 -> 68.167 -> 72.200, 92.133 -> 96.133), 4.000 s (end text card 128.700 -> 132.700)",
+      "method": "documented default, confirmed by the slot pitch in the sample render (frame diff, 30 fps)",
       "level": "SOURCED",
-      "precision": "±0.5 pt"
+      "notes": "Mechanics (VidDay documented card time; MERGE G2-18). Retro's recap preview has no auto-advance and shows no progress bar: the position is the viewer's 'N of M' pill (components C-22). Pause / play sits in the bottom bar's circle.",
+      "unit": "ms",
+      "precision": "exact (documented); slots ±33 ms"
     },
-    "fontSize.year.story.body": {
-      "type": "fontSize",
-      "value": 15.4,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "card subline",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) ascender 'worldwide.' 25 px of 864 = 11.4 pt",
-      "method": "ascender / 0.74",
-      "level": "SOURCED",
-      "precision": "±1 pt"
-    },
-    "fontWeight.year.story.body": {
-      "type": "fontWeight",
-      "value": "regular",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "card subline",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024)",
-      "method": "visual",
-      "level": "SOURCED"
-    },
-    "lineHeight.year.story.body": {
-      "type": "lineHeight",
-      "value": 21.4,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "subline line pitch",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) 1085 -> 1132 px",
-      "method": "px x 393 / 864 (card width in the 2024 recording)",
-      "level": "SOURCED",
-      "precision": "±0.5 pt"
-    },
-    "dimension.year.story.text.maxWidth": {
-      "type": "dimension",
-      "value": 274,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "widest line of card text (text block width)",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) headline line '36,826 minutes this' x240-842 (602 px); 'You listened for 36,826' and the full subline did not fit on one line",
-      "method": "widest observed line x 393 / 864; the wrap width lies in 602-703 px = 274-320 pt",
-      "level": "SOURCED",
-      "precision": "+46 pt (lower bound)",
-      "notes": "Lower bound of the container width (MERGE memory M-23)."
-    },
-    "layout.year.story.text": {
+    "layout.year.story.navigation": {
       "type": "layout",
       "value": {
-        "align": "centre",
-        "block": "centred horizontally and vertically on the canvas",
-        "order": "headline, then subline"
+        "next": "tap the right half of the frame",
+        "previous": "tap the left half of the frame",
+        "hold": "none",
+        "model": "tap-through, one card per fact (Wrapped 2024 pacing)",
+        "summary": "swipe between the share styles (pager with page dots)"
       },
       "source_app": "Spotify Wrapped",
       "surface": "year.story",
-      "element": "text card arrangement",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024)",
-      "method": "visual",
-      "level": "SOURCED"
-    },
-    "layout.year.story.photoCard": {
-      "type": "layout",
-      "value": {
-        "box": "square",
-        "boxWidthRatio": 0.66,
-        "boxCenterYRatio": 0.412,
-        "cornerRadius": 0,
-        "textGap": 24.6,
-        "text": "headline below the box, centred",
-        "photoFit": "fill the square",
-        "collageFit": "fit inside the square on the canvas colour"
-      },
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "card showing one photo or collage (Wrapped 'Your top song' card)",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-sheet-every3s.png tile row 2 col 1: canvas x18-161 y355-611 (144 x 257 px), art x43-137 y414-507, text from y516",
-      "method": "ratios of the canvas; text gap 9 px x 393 / 144",
+      "element": "story navigation inside the frame",
+      "evidence": "https://uproxx.com/music/how-to-watch-your-spotify-wrapped-2022-again/ ('Users can tap the left or right of the screen to go to the previous or next screen.'); references/auto/wrapped/press/wrapped24-press-minutes.jpg; references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024)",
+      "method": "press quote + 2024 renders and recording",
       "level": "SOURCED",
-      "precision": "±1 px of 144 (±0.7 % width, ±2.7 pt)",
-      "notes": "Album art is square and fills its box, so a photo fills the square. A collage is fitted instead of cropped so no member's photo is cut away (tenet 'Nothing gets lost'; MERGE memory M-19)."
+      "notes": "Mechanics (Wrapped). Zone widths and hold-to-pause not found; 'left or right of the screen' read as halves (MERGE memory M-24). Taps on the close circle, position pill and bottom bar are their own."
     },
     "count.year.story.listLength": {
       "type": "count",
       "value": 5,
       "source_app": "Spotify Wrapped",
       "surface": "year.story",
-      "element": "most photos one list shows (most-reacted, everyone-answered days)",
+      "element": "most cards one list shows (most-reacted photos, everyone-answered days)",
       "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-sheet-every3s.png ('Your top songs' and 'Your top artists' list 5 each); research §1.5 'And these 5 were extra special.'",
       "method": "read from the cards",
       "level": "SOURCED",
-      "notes": "The rank numbers 1-5 are not copied (no ranks)."
+      "notes": "Mechanics (Wrapped lists of 5). The rank numbers 1-5 are not copied (no ranks, docs/SPEC_FLAGS.md T2)."
     },
     "layout.year.story.dateFormat": {
       "type": "layout",
       "value": {
-        "pattern": "MMMM d",
-        "example": "February 25"
+        "pattern": "EEEE, MMMM d",
+        "example": "Wednesday, July 5",
+        "ios": "Date.FormatStyle().weekday(.wide).month(.wide).day()",
+        "android": "DateFormat.getBestDateTimePattern(locale, \"EEEEMMMMd\")"
       },
-      "source_app": "Spotify Wrapped",
+      "source_app": "Retro",
       "surface": "year.story",
-      "element": "day shown on a card",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-sheet-every3s.png 'Your biggest listening day was February 25 with 920 minutes' (research §1.5)",
-      "method": "read from the card",
+      "element": "date of a photo or everyone-was-there day (display title of photo and collage cards); the year is the story's",
+      "evidence": "references/auto/retro/press/tc-2023-07-retro-2b.jpg phone 2 (viewer footer 'Greenville, SC' / 'Wednesday, July 5') footer date 'Wednesday, July 5'; references/auto/retro/press/tc-2025-12-rewind-panels.png (press render, Dec 2025) phone 3 share-sheet header 'Tuesday, December 2'",
+      "method": "read from the captures (weekday, month and day, no year)",
       "level": "SOURCED",
-      "notes": "Localised with the device locale's month-day template."
+      "notes": "Replaces Wrapped's 'February 25'. Copy pattern retro.voice.formats."
     },
     "layout.year.story.monthFormat": {
       "type": "layout",
       "value": {
         "pattern": "MMMM",
-        "example": "January"
+        "example": "December"
       },
-      "source_app": "Spotify Wrapped",
+      "source_app": "Retro",
       "surface": "year.story",
-      "element": "month shown on a card",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-sheet-every3s.png 'January was your Academic Wrestling Christian Rock phase', 'December'",
-      "method": "read from the cards",
+      "element": "busiest month in 'December was the most memorable'",
+      "evidence": "references/auto/retro/press/tc-2023-12-recaps.png (press render, phones 2-3; 1.695 px/pt, phone-2 screen x1056-1722) phone 1 month cards 'December' / 'November' / 'October'",
+      "method": "read from the capture",
       "level": "SOURCED"
     },
-    "layout.year.story.share": {
+    "layout.year.story.frame": {
       "type": "layout",
       "value": {
-        "align": "centre of the canvas",
-        "content": "share glyph, then label",
-        "shownOn": "every card that states a fact (not the intro, teaser or outro cards)"
+        "frame": "the recap-preview media page of collage.view.layout.screen: full screen width, from the safe-area top to mediaPageBottomFromScreenBottom above the screen bottom, corners mediaPageCornerRadius (layout.global.cornerStyle), content clipped",
+        "content": "each card is laid out in a 9:16 box (aspectWidth 9, aspectHeight 16) as wide as the frame, centred vertically; backdrops and full-bleed photos fill the whole frame",
+        "aspectWidth": 9,
+        "aspectHeight": 16,
+        "close": "C-11 on media (size.global.circleButton, color.global.controlOnDeep, icon.global.close) at closeCentreFromTrailing / closeCentreBelowPageTop of collage.view.layout.screen",
+        "bottomRow": "centre bottomRowCentreFromScreenBottom of collage.view.layout.screen above the screen bottom: leading C-11 circle on media at size.global.buttonMarginH, trailing Share pill collage.share.layout.pill",
+        "page": "color.global.backgroundDeep around the frame, both appearances (media)",
+        "contentScale": "the share image (layout.year.story.shareCard) is the 9:16 box rendered at 1080 px wide: pt values inside it scale by 1080 ÷ box width"
       },
-      "source_app": "Spotify Wrapped",
+      "source_app": "Retro",
       "surface": "year.story",
-      "element": "per-card 'Share this story' row",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024); references/auto/wrapped/press/wrapped24-press-minutes.jpg cards 2-3; references/auto/wrapped/frames/wrapped24-rec-emilycraig-sheet-every3s.png",
-      "method": "observation",
-      "level": "SOURCED"
-    },
-    "dimension.year.story.share.bottomInset": {
-      "type": "dimension",
-      "value": 29,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "share row bottom to canvas bottom",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) row 1646-1686, canvas bottom 1750",
-      "method": "px x 393 / 864 (card width in the 2024 recording)",
+      "element": "the story frame: every card is shown inside Retro's recap-preview media page",
+      "evidence": "references/auto/retro/store/retro-store-04.png (App Store 124.0 recap preview, 2.389 px/pt: media page x171-1110 full width, y717-2385 = 393 × 698 pt = 9:16; close top-right; dots under the page; 'Share' pill bottom-right) — values held by collage.view.layout.screen / collage.share.layout.pill (capture group, RC-15); references/auto/retro/press/tc-2023-12-recaps.png (press render, phones 2-3; 1.695 px/pt, phone-2 screen x1056-1722) phones 2-3 (2023: same structure, 11-pt side insets, close top-left — superseded)",
+      "method": "composition of Retro's recap preview (components C-34, C-31, C-09, C-11); 698 ÷ 393 = 1.776 ≈ 16 ÷ 9 on the 393 × 852 reference phone",
       "level": "SOURCED",
-      "precision": "±0.5 pt"
+      "precision": "±3 % (render)",
+      "notes": "The recap-preview chrome is one Retro screen used by collage.view / collage.share (capture), week.recap (social) and year.story: this token references the capture group's measured values instead of duplicating them (MERGE RM-8; promote to a global component in Pass 5). Mechanics overlap: Wrapped also shows each card in a 9:16 canvas."
     },
-    "dimension.year.story.share.rowHeight": {
+    "dimension.year.story.frame.padding": {
       "type": "dimension",
-      "value": 18.6,
+      "value": 19.5,
       "unit": "pt",
-      "source_app": "Spotify Wrapped",
+      "source_app": "Retro",
       "surface": "year.story",
-      "element": "share row height (= glyph height)",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) glyph x386-426 y1646-1685",
-      "method": "px x 393 / 864 (card width in the 2024 recording)",
+      "element": "frame edge → content: footer text ink, text-block sides, position pill leading edge",
+      "evidence": "references/auto/retro/press/tc-2023-12-recaps.png (press render, phones 2-3; 1.695 px/pt, phone-2 screen x1056-1722) phone 3 (full-bleed recap style): footer year ink x1967 vs frame left 1934 (19.5 pt); name ink right x2530 vs frame right 2562 (19 pt); close circle edge ≈ 19.5 pt from the frame's top and left (circle centre 37.5 pt; the 2026 render has it at 37.7 / 38 pt from the top-right — collage.view.layout.screen)",
+      "method": "px ÷ 1.695",
       "level": "SOURCED",
-      "precision": "±0.5 pt"
+      "precision": "±1 pt (render)"
     },
-    "dimension.year.story.share.glyphGap": {
+    "dimension.year.story.dots.offset": {
       "type": "dimension",
-      "value": 15.5,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "share glyph to label",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) glyph right x426, label left x460",
-      "method": "px x 393 / 864 (card width in the 2024 recording)",
-      "level": "SOURCED",
-      "precision": "±0.5 pt"
-    },
-    "fontSize.year.story.share": {
-      "type": "fontSize",
       "value": 16.1,
       "unit": "pt",
-      "source_app": "Spotify Wrapped",
+      "source_app": "Retro",
       "surface": "year.story",
-      "element": "'Share this story' label",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) 'S' rows 1654-1678 (25 px cap = 11.4 pt)",
-      "method": "cap height / 0.705",
+      "element": "frame bottom → page-dot centre (summary pager only)",
+      "evidence": "references/auto/retro/store/retro-store-04.png: media page bottom y2385.5, dots y2417-2431 (centre 2424), x600-684; references/auto/retro/press/tc-2023-12-recaps.png (press render, phones 2-3; 1.695 px/pt, phone-2 screen x1056-1722) phone 2 (2023): 15.1 pt",
+      "method": "38.5 px ÷ 2.389 (newest capture)",
       "level": "SOURCED",
-      "precision": "±0.5 pt"
+      "precision": "±0.5 pt (render)",
+      "notes": "Dot size, pitch and colours are the global page dots (size.global.pageDot, .pageDotPitch; active color.global.textOnMedia, inactive color.global.pageDotInactive dark value #808080 — the page is media). The dots sit above the bottom row's centre line, not on it (both captures)."
     },
-    "fontWeight.year.story.share": {
-      "type": "fontWeight",
-      "value": "bold",
-      "source_app": "Spotify Wrapped",
+    "dimension.year.story.footer.baseline": {
+      "type": "dimension",
+      "value": 24.8,
+      "unit": "pt",
+      "source_app": "Retro",
       "surface": "year.story",
-      "element": "'Share this story' label",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024)",
-      "method": "visual",
-      "level": "SOURCED"
+      "element": "full-bleed card footer: year (display serif, text role headerTitle) baseline above the frame bottom; name and app line right-aligned on the same block",
+      "evidence": "references/auto/retro/press/tc-2023-12-recaps.png (press render, phones 2-3; 1.695 px/pt, phone-2 screen x1056-1722) phone 3: '2023' digits y1352-1401 (29.5 pt ≈ headerTitle cap 30.5), frame bottom y1443; 'nathan' y1356-1369, 'retro.app' y1388-1405 right ink x2530",
+      "method": "42 px ÷ 1.695",
+      "level": "SOURCED",
+      "precision": "±1 pt (render)"
     },
-    "icon.year.story.share": {
-      "type": "icon",
+    "layout.year.story.recapCard": {
+      "type": "layout",
       "value": {
-        "ios": "square.and.arrow.up",
-        "android": "Rounded.Share"
+        "widthRatio": 0.825,
+        "paddingRatio": 0.0241,
+        "columns": 4,
+        "maxRows": 6,
+        "cellAspect": 1.12,
+        "gap": "size.global.stripGap",
+        "cornerRadiusRatio": 0.051,
+        "footerHeightRatio": 0.21,
+        "background": "color.global.surfaceElevated",
+        "backdrop": "the cover photo blurred, full frame (layout.global.materials.backdrop)",
+        "footer": "year: font.global.display, text role headerTitle, color.global.textPrimary at the card padding, bottom-left; group name: text role listTitle, color.global.textPrimary, right-aligned; app line below it: text role meta, color.global.textSecondary"
       },
-      "source_app": "Spotify Wrapped",
+      "source_app": "Retro",
       "surface": "year.story",
-      "element": "share glyph left of 'Share this story'",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg (iOS box-and-arrow); references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) (Android three connected dots)",
-      "level": "PLATFORM",
-      "notes": "Android differs from icon.global.share (Rounded.IosShare): Wrapped's Android build uses the Material share glyph."
-    },
-    "dimension.year.story.chrome.button": {
-      "type": "dimension",
-      "value": 29.6,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "pause / close circle diameter (visual; hit area extends to size.global.minTouchTarget)",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) close circle x880-948, y288-352",
-      "method": "px x 393 / 864 (card width in the 2024 recording)",
+      "element": "the yearly recap card (summary style 1 and the year share image): photo grid card on the blurred backdrop",
+      "evidence": "references/auto/retro/press/tc-2023-12-recaps.png (press render, phones 2-3; 1.695 px/pt, phone-2 screen x1056-1722) phone 2: card x1129.5-1647.5 (518 px) in a 627-px frame, y494.5-1274.5; grid from x1142 / y507.5; column gaps 2-3 px; rows 108.5 px; grid bottom 1165.5; corner fit R 26.4 px (rms 0.5); references/auto/retro/press/tc-2023-12-retro-header.png (press render: yearly recap card '2023 / nathan / retro.app'): same card, 3 × 3 grid, padding 16 / 853 px, gaps 6 px, footer 191 / 853",
+      "method": "ratios of the card width (518 px): padding 12.5 ÷ 518; cell 121.5 × 108.5 px; footer 109 ÷ 518; corner 26.4 ÷ 518",
       "level": "SOURCED",
-      "precision": "±1 pt"
-    },
-    "dimension.year.story.chrome.centerY": {
-      "type": "dimension",
-      "value": 48.3,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "canvas top to the chrome row's centre",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) circle centre y320, canvas top y214",
-      "method": "px x 393 / 864 (card width in the 2024 recording)",
-      "level": "SOURCED",
-      "precision": "±1 pt",
-      "notes": "Press render B gives 42 pt; the device recording is used (MERGE memory M-13)."
-    },
-    "dimension.year.story.chrome.insetRight": {
-      "type": "dimension",
-      "value": 10.5,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "canvas right edge to the close circle",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) circle right x948, canvas right x971",
-      "method": "px x 393 / 864 (card width in the 2024 recording)",
-      "level": "SOURCED",
-      "precision": "±1 pt"
-    },
-    "dimension.year.story.chrome.pitch": {
-      "type": "dimension",
-      "value": 45.9,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "centre-to-centre distance of the chrome circles",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) centres x711 / 812 / 913",
-      "method": "px x 393 / 864 (card width in the 2024 recording)",
-      "level": "SOURCED",
-      "precision": "±1 pt"
-    },
-    "dimension.year.story.chrome.glyph": {
-      "type": "dimension",
-      "value": 14.9,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "pause / close glyph height",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg y40-56 of card",
-      "method": "extent x 393 / 448",
-      "level": "SOURCED",
-      "precision": "±1 pt"
-    },
-    "color.year.story.chrome.fill": {
-      "type": "color",
-      "value": "#00000080",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "translucent circle behind the pause / close glyphs",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024) inside vs outside the close circle edge: R 86/182, 72/129; G 8/22, 7/25 ... (ratio 0.47-0.56)",
-      "method": "per-channel ratio inside / outside at 3 edge points -> black at ~0.5",
-      "level": "SOURCED",
-      "precision": "±0.1 alpha (art behind varies; H.264)"
-    },
-    "icon.year.story.pause": {
-      "type": "icon",
-      "value": {
-        "ios": "pause.fill",
-        "android": "Rounded.Pause"
-      },
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "pause (two bars)",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-minutes.jpg; references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg; references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png (https://www.tiktok.com/@emilycraig1996_author/video/7444590686135160110, Android, 2024)",
-      "level": "PLATFORM"
-    },
-    "icon.year.story.replay": {
-      "type": "icon",
-      "value": {
-        "ios": "arrow.counterclockwise",
-        "android": "Rounded.Replay"
-      },
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "replay glyph before 'Replay from beginning'",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg",
-      "level": "PLATFORM"
+      "precision": "±3 % (render)",
+      "notes": "Components C-34 'recap card' with its corner gap closed (≈5.1 % of the card width). The 2023 header render shows a 3-column variant; the in-app preview (4 columns) is used. The app line under the name is the owner's app name / domain — BLOCKED copy until the owner names the app (copy year.story.card.app); until then the name stands alone."
     },
     "layout.year.story.summary": {
       "type": "layout",
       "value": {
-        "order": "share-card carousel, Share pill, Replay from beginning",
-        "previewWidthRatio": 0.6,
-        "carousel": "horizontal paging through the story's share cards"
+        "styles": "two share styles in a horizontal pager inside the frame: 1 = recap card on the blurred backdrop (layout.year.story.recapCard); 2 = the cover photo full-bleed with the footer (dimension.year.story.footer.baseline)",
+        "dots": "page dots under the frame (dimension.year.story.dots.offset), one per style",
+        "bar": "leading circle = replay (icon.year.story.replay) → card 1; trailing Share pill shares the style in view",
+        "cover": "the first photo of data.most_reacted, else the first id of year_stories.post_ids"
       },
-      "source_app": "Spotify Wrapped",
+      "source_app": "Retro",
       "surface": "year.story",
-      "element": "last screen (summary)",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg; references/auto/wrapped/frames/wrapped25-rec-cdragon2010-t252.000.png",
-      "method": "visual",
+      "element": "the story's last page (summary): recap preview with styles",
+      "evidence": "references/auto/retro/press/tc-2023-12-recaps.png (press render, phones 2-3; 1.695 px/pt, phone-2 screen x1056-1722) phones 2-3 (grid card on blurred backdrop / full-bleed photo with '2023 / nathan / retro.app'; 4 page dots; leading circle; 'Share' pill); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt recap_share_title 'Share', recap_select_style_title 'Select Style'",
+      "method": "composition of Retro's recap preview (components C-34, C-31, C-09)",
       "level": "SOURCED"
-    },
-    "dimension.year.story.summary.shareWidth": {
-      "type": "dimension",
-      "value": 148,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "summary 'Share' pill width",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg x140-308 of card",
-      "method": "extent x 393 / 448",
-      "level": "SOURCED",
-      "precision": "±1 pt"
-    },
-    "dimension.year.story.summary.shareHeight": {
-      "type": "dimension",
-      "value": 50,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "summary 'Share' pill height",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg y620-676 of card; references/auto/wrapped/press/wrapped25-press-minutes.png pill 49.9 pt",
-      "method": "extent x 393 / width",
-      "level": "SOURCED",
-      "precision": "±0.6 pt"
-    },
-    "fontSize.year.story.sharePill": {
-      "type": "fontSize",
-      "value": 17.7,
-      "unit": "pt",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "'Share' pill label",
-      "evidence": "references/auto/wrapped/press/wrapped25-press-minutes.png screen 2 'S' cap 23 px of 725 = 12.5 pt",
-      "method": "cap height / 0.705",
-      "level": "SOURCED",
-      "precision": "±0.6 pt",
-      "notes": "Measured on the 2025 'Share this story' pill; the 2024 summary pill label was not measured."
-    },
-    "fontWeight.year.story.sharePill": {
-      "type": "fontWeight",
-      "value": "bold",
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "'Share' pill label",
-      "evidence": "references/auto/wrapped/press/wrapped25-press-minutes.png; references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg",
-      "method": "visual",
-      "level": "SOURCED"
-    },
-    "layout.year.story.summary.dots": {
-      "type": "layout",
-      "value": {
-        "count": "one per share card",
-        "diameter": 8.4,
-        "pitch": 16.8,
-        "selectedColor": "#FFFFFF",
-        "unselectedColor": "#666666",
-        "centerBelowCarousel": 20.4,
-        "centerAboveShare": 29.3,
-        "animation": "none observed (static render)"
-      },
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "page dots under the share-card carousel",
-      "evidence": "references/auto/wrapped/press/wrapped24-press-summary-sharecard.jpg (2000 x 1125): phone screen x108-554 (447 px = 393 pt, 1.137 px/pt); four dots centred y764.17, x302.65 / 321.74 / 340.89 / 360.01 (pitch 19.12 px); equivalent diameters 9.8 px (selected, peak 253) and 9.27-9.30 px (others, peak 114-115); selected (253,253,253), others (102,102,102) on (0,0,0); carousel card bottom edge y≈741, Share pill top y≈797.5",
-      "method": "coverage-weighted centroids and equivalent-disc diameters (sum of luminance above the black background ÷ peak); px ÷ 1.137",
-      "level": "SOURCED",
-      "notes": "Gap fill (MERGE G2-20): measured on the Wrapped render the BLOCKED note already cited (the dots were legible). Diameter 8.4 = mean of 8.6 (selected) and 8.2 (others); both are drawn the same size. Unselected #666666 = white at 0.40 over black (cf. opacity.year.story.progress.track 0.43). Centre offsets are measured from the carousel card's bottom edge and to the Share pill's top edge.",
-      "precision": "±0.9 pt (JPEG render, ≈10-px dots); colours ±3/255"
     },
     "layout.year.story.shareCard": {
       "type": "layout",
       "value": {
         "width": 1080,
         "height": 1920,
-        "content": "the card's canvas without progress bar, chrome or share row"
+        "content": "the frame's content of the card in view (no close circle, position pill or bottom bar), rendered at 1080 px wide"
       },
-      "source_app": "Spotify Wrapped + Meta developer docs",
+      "source_app": "Retro + Spotify Wrapped + Meta developer docs",
       "surface": "year.story",
       "element": "exported share image",
-      "evidence": "references/auto/wrapped/press/wrapped25-press-sharecards.png (808-810 x 1436-1437 px, 1.775); https://developers.facebook.com/docs/instagram-platform/sharing-to-stories/ ('Minimum dimensions 720x1280. Recommended image ratios 9:16 or 9:18')",
+      "evidence": "references/auto/wrapped/press/wrapped25-press-sharecards.png (808-810 x 1436-1437 px, 1.775); https://developers.facebook.com/docs/instagram-platform/sharing-to-stories/ ('Minimum dimensions 720x1280. Recommended image ratios 9:16 or 9:18'); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt recap_aspect_ratio_stories 'Stories' (Retro exports recaps in a 9:16 'Stories' aspect)",
       "method": "Wrapped aspect 9:16; 1080 x 1920 = 9:16 at 1080 width (computed, above Meta's minimum; docs/PLATFORM_CONSTRAINTS.md summary)",
       "level": "SOURCED"
     },
@@ -1061,737 +525,313 @@
       },
       "source_app": "Apple HIG / Material 3",
       "surface": "year.story",
-      "element": "share sheet opened by 'Share this story' and 'Share'",
+      "element": "share sheet opened by the Share pill",
       "evidence": "https://developer.apple.com/design/human-interface-guidelines/activity-views ('Use the Share button to display an activity view'); https://developer.android.com/training/sharing/send",
       "level": "PLATFORM",
       "notes": "Share targets after the tap were not observed in Wrapped (research §1.7)."
     },
-    "layout.year.story.textStyleMap": {
-      "type": "layout",
+    "icon.year.story.replay": {
+      "type": "icon",
       "value": {
-        "headline": "largeTitle",
-        "body": "subheadline",
-        "share": "callout",
-        "sharePill": "headline"
+        "ios": "arrow.counterclockwise",
+        "android": "Rounded.Replay"
       },
-      "source_app": "Apple HIG",
+      "source_app": "Apple HIG / Material 3",
       "surface": "year.story",
-      "element": "iOS Dynamic Type style each year-story text role scales with",
-      "evidence": "HIG Typography Large sizes (design/research/platform.md): Large Title 34, Title 1 28, Headline 17 semibold, Body 17, Callout 16, Subhead 15",
-      "method": "nearest Large size, tie -> weight (MERGE F-13): 31.6 -> largeTitle, 15.4 -> subheadline, 16.1 -> callout, 17.7 bold -> headline",
-      "level": "PLATFORM"
+      "element": "replay glyph in the summary bar's leading circle (back to the first card)",
+      "evidence": "SF Symbols 'arrow.counterclockwise'; Material Icons Rounded.Replay (material-icons-extended 1.7.8)",
+      "level": "PLATFORM",
+      "notes": "Retro's recap preview puts a style / photos glyph in this circle; the year story needs replay there instead (mechanics: Wrapped 'Replay from beginning'). Outline per layout.global.iconStyle."
     },
     "layout.birthday.add.dateFormat": {
       "type": "layout",
       "value": {
-        "pattern": "d MMMM",
-        "example": "26 May"
+        "pattern": "MMMM d",
+        "example": "July 5",
+        "ios": "Date.FormatStyle().month(.wide).day()",
+        "android": "DateFormat.getBestDateTimePattern(locale, \"MMMMd\")"
       },
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "birthday.add",
-      "element": "birthday shown back to the person (day and month only)",
-      "evidence": "design/copy-patterns.md yope.voice.formats ('26 May', day title, yope-b S6); https://www.yope.tv/legal ('we collect your birth day and month')",
-      "method": "read from the reference",
+      "element": "saved birthday (day and month only) on the manage state",
+      "evidence": "references/auto/retro/press/tc-2023-07-retro-2b.jpg phone 2 (viewer footer 'Greenville, SC' / 'Wednesday, July 5') 'Wednesday, July 5'; references/auto/retro/press/tc-2025-12-rewind-panels.png (press render, Dec 2025) phone 3 'Tuesday, December 2'",
+      "method": "Retro's within-year date (month spelled out, day without leading zero); the weekday is dropped because a birthday recurs on different weekdays",
       "level": "SOURCED",
-      "notes": "The year is never shown."
+      "notes": "Replaces Yope's '26 May'. The birth year is never shown."
     },
-    "layout.birthday.request.structure": {
-      "type": "layout",
-      "value": {
-        "order": "hero (honoree photo behind title, due line, message), primary button, Message Ideas",
-        "countdown": "none (do-not-copy)"
-      },
-      "source_app": "Tribute + VidDay",
-      "surface": "birthday.request",
-      "element": "request screen order",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/); references/auto/tribute/mockups/tribute-home-phone-step-1-contribution-page.png (due line under the title); references/auto/vidday/store/vidday-store-01.png (Message Ideas)",
-      "method": "computed layout + visual",
-      "level": "SOURCED"
-    },
-    "dimension.birthday.request.margin": {
+    "dimension.birthday.request.close.inset": {
       "type": "dimension",
-      "value": 15,
+      "value": 26.2,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.request",
-      "element": "side margin of title, message, button and prompts",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) x15",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
+      "element": "close circle (glass, size.global.circleButtonSmall): screen right edge → circle edge",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206x2622, 3.000 px/pt, 402 pt wide): close circle x1031.5-1127.5 (32 pt), y203.5-299.5",
+      "method": "(1206 − 1127.5) px ÷ 3",
+      "level": "SOURCED",
+      "precision": "±0.3 pt",
+      "notes": "Retro screen 27 (paywall plan card on a blurred backdrop) is the visual reference docs/SURFACES.md assigns to birthday.request."
     },
-    "dimension.birthday.request.hero.height": {
+    "dimension.birthday.request.close.centerY": {
       "type": "dimension",
-      "value": 365.8,
+      "value": 21.8,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.request",
-      "element": "hero (photo band) height",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) div.banner 390 x 365.8",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
+      "element": "close circle centre below the safe-area top",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206x2622, 3.000 px/pt, 402 pt wide): circle centre y251.5 px = 83.8 pt; iPhone 16 Pro safe-area top 62 pt",
+      "method": "83.8 − 62",
+      "level": "SOURCED",
+      "precision": "±0.3 pt",
+      "notes": "Retro screen 27 (paywall plan card on a blurred backdrop) is the visual reference docs/SURFACES.md assigns to birthday.request."
     },
-    "opacity.birthday.request.hero.image": {
-      "type": "opacity",
-      "value": 0.7,
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "honoree photo over the black hero background",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) div.banner bg rgb(0,0,0); div.banner-bg opacity 0.7",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "dimension.birthday.request.title.top": {
+    "dimension.birthday.request.headlineToMessage": {
       "type": "dimension",
-      "value": 84,
+      "value": 19.3,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.request",
-      "element": "hero top to title top",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) title y84",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
+      "element": "serif headline baseline → first message line's ascender top",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206x2622, 3.000 px/pt, 402 pt wide): 'Share Video' rows 1051-1121 (baseline 1121); subtitle line 1 rows 1179-1225",
+      "method": "58 px ÷ 3",
+      "level": "SOURCED",
+      "precision": "±0.3 pt",
+      "notes": "Retro screen 27 (paywall plan card on a blurred backdrop) is the visual reference docs/SURFACES.md assigns to birthday.request."
     },
-    "fontSize.birthday.request.title": {
+    "dimension.birthday.request.messageToCard": {
+      "type": "dimension",
+      "value": 29,
+      "unit": "pt",
+      "source_app": "Retro",
+      "surface": "birthday.request",
+      "element": "last message line (descender) → card top",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206x2622, 3.000 px/pt, 402 pt wide): subtitle line 2 rows 1240-1299; plan card top y1386",
+      "method": "87 px ÷ 3",
+      "level": "SOURCED",
+      "precision": "±0.3 pt",
+      "notes": "Retro screen 27 (paywall plan card on a blurred backdrop) is the visual reference docs/SURFACES.md assigns to birthday.request."
+    },
+    "fontSize.birthday.request.cardTitle": {
       "type": "fontSize",
       "value": 24,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.request",
-      "element": "title ('Birthday Video for {name}!')",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) span.tribute-wall-title-fit 24px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
+      "element": "card title ('Message ideas')",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206x2622, 3.000 px/pt, 402 pt wide): plan title '1 Year Free' rows 1464-1515 ('Y' cap 51 px)",
+      "method": "cap 17.0 pt ÷ SF Pro cap ratio 0.705",
+      "level": "SOURCED",
+      "precision": "±1 pt",
+      "notes": "Retro screen 27 (paywall plan card on a blurred backdrop) is the visual reference docs/SURFACES.md assigns to birthday.request. Dynamic Type: title2 (layout.global.textStyleMap has no 24-pt role)."
     },
-    "fontWeight.birthday.request.title": {
+    "fontWeight.birthday.request.cardTitle": {
       "type": "fontWeight",
-      "value": "semibold",
-      "source_app": "Tribute",
+      "value": "bold",
+      "source_app": "Retro",
       "surface": "birthday.request",
-      "element": "title",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) font-weight 600",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
+      "element": "card title weight",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206x2622, 3.000 px/pt, 402 pt wide) plan title; design/research/retro-visual.md §3.3 'Paywall plan title / price 24 / 22 Bold / Heavy'",
+      "method": "stem comparison (research)",
+      "level": "SOURCED",
+      "notes": "Retro screen 27 (paywall plan card on a blurred backdrop) is the visual reference docs/SURFACES.md assigns to birthday.request."
     },
-    "lineHeight.birthday.request.title": {
-      "type": "lineHeight",
-      "value": 28.8,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "title",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) line-height 28.8px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "dimension.birthday.request.message.gap": {
+    "dimension.birthday.request.card.titleToDetail": {
       "type": "dimension",
-      "value": 20.8,
+      "value": 11,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.request",
-      "element": "title bottom to message top",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) title y84 h29, message y133.8",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
+      "element": "card title baseline → detail line ascender top",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206x2622, 3.000 px/pt, 402 pt wide): title baseline y1515; 'Thanks for bringing your friends!' rows 1548-1588",
+      "method": "33 px ÷ 3",
+      "level": "SOURCED",
+      "precision": "±0.3 pt",
+      "notes": "Retro screen 27 (paywall plan card on a blurred backdrop) is the visual reference docs/SURFACES.md assigns to birthday.request."
     },
-    "fontSize.birthday.request.message": {
-      "type": "fontSize",
-      "value": 16,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "welcome message (and due line)",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) p 16px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED",
-      "notes": "The due line (Tribute T1 mockup) was not measured; it uses this message role."
-    },
-    "lineHeight.birthday.request.message": {
-      "type": "lineHeight",
-      "value": 28,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "welcome message",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) line-height 28px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "opacity.birthday.request.message": {
-      "type": "opacity",
-      "value": 0.9,
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "welcome message (white at this opacity)",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) p color white, opacity 0.9",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "dimension.birthday.request.cta.gap": {
+    "dimension.birthday.request.card.blockGap": {
       "type": "dimension",
-      "value": 15,
+      "value": 29.3,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.request",
-      "element": "hero bottom to primary button",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) hero bottom 365.8, button y380.8",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
+      "element": "between the card's blocks: detail line → first prompt row, last prompt row → capsule",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206x2622, 3.000 px/pt, 402 pt wide): detail descender y1588 → step 1 top y1668; footnote bottom y2141 → 'Claim' capsule top y2229",
+      "method": "88 px ÷ 3 (both gaps)",
+      "level": "SOURCED",
+      "precision": "±0.3 pt",
+      "notes": "Retro screen 27 (paywall plan card on a blurred backdrop) is the visual reference docs/SURFACES.md assigns to birthday.request."
     },
-    "dimension.birthday.request.cta.height": {
+    "dimension.birthday.request.card.rowPitch": {
       "type": "dimension",
-      "value": 62,
+      "value": 32,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.request",
-      "element": "primary button height ('Add Your Photo')",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) button.btn-danger 360 x 62",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
+      "element": "prompt rows: centre-to-centre",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206x2622, 3.000 px/pt, 402 pt wide): step markers y1668-1719, 1764-1815, 1860-1911",
+      "method": "96 px ÷ 3",
+      "level": "SOURCED",
+      "precision": "±0.3 pt",
+      "notes": "Retro screen 27 (paywall plan card on a blurred backdrop) is the visual reference docs/SURFACES.md assigns to birthday.request. Rows are Retro's numbered steps; text role textButton (17 regular, the steps' measured size — design/research/retro-visual.md §3.3)."
     },
-    "radius.birthday.request.cta": {
-      "type": "radius",
-      "value": 8,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "primary button corners",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) border-radius 8px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontSize.birthday.request.cta": {
-      "type": "fontSize",
-      "value": 22,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "primary button label",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) 'Add Your Video' 22px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontWeight.birthday.request.cta": {
-      "type": "fontWeight",
-      "value": "semibold",
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "primary button label",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) font-weight 600",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED",
-      "notes": "Fill: Tribute's #FF4B4A and VidDay's #0086FE are each brand's accent -> color.global.accent / color.global.onAccent (MERGE memory M-7)."
-    },
-    "dimension.birthday.request.prompts.gap": {
+    "dimension.birthday.request.card.marker": {
       "type": "dimension",
-      "value": 20,
+      "value": 17.3,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.request",
-      "element": "space above the Message Ideas block",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) countdown bottom y539.8 -> prompts y559.8",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED",
-      "notes": "The countdown that sits between button and prompts in the reference is do-not-copy; the prompts keep their own top spacing."
+      "element": "numbered marker circle before each prompt row",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206x2622, 3.000 px/pt, 402 pt wide): step 3 marker x142-193, y1860-1911 (filled #090A0A, white number); steps 1-2 grey (done state, not used)",
+      "method": "52 px ÷ 3",
+      "level": "SOURCED",
+      "precision": "±0.3 pt",
+      "notes": "Retro screen 27 (paywall plan card on a blurred backdrop) is the visual reference docs/SURFACES.md assigns to birthday.request. Fill color.global.accent, number color.global.onAccent in text role badge (the number's size is not isolated at this scale)."
     },
-    "color.birthday.request.prompts.header": {
-      "type": "color",
-      "value": "#292D34",
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "'Message Ideas' header bar fill",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) strong bg rgb(41,45,52)",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "dimension.birthday.request.prompts.headerHeight": {
+    "dimension.birthday.request.card.markerGap": {
       "type": "dimension",
-      "value": 42,
+      "value": 5,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.request",
-      "element": "header bar height",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) strong 360 x 42",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
+      "element": "marker → prompt text",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206x2622, 3.000 px/pt, 402 pt wide): marker right x195, step text from x210",
+      "method": "15 px ÷ 3",
+      "level": "SOURCED",
+      "precision": "±0.3 pt",
+      "notes": "Retro screen 27 (paywall plan card on a blurred backdrop) is the visual reference docs/SURFACES.md assigns to birthday.request."
     },
-    "dimension.birthday.request.prompts.headerPadding": {
+    "dimension.birthday.request.cardToFooter": {
       "type": "dimension",
-      "value": 24,
+      "value": 15.3,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.request",
-      "element": "header bar horizontal padding",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) padding 12px 24px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "radius.birthday.request.prompts": {
-      "type": "radius",
-      "value": 8,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "prompts block corners (top corners of the header bar)",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) div.tribute-wall-prompts border-radius 8px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontSize.birthday.request.prompts.header": {
-      "type": "fontSize",
-      "value": 15,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "header label",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) 15px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontWeight.birthday.request.prompts.header": {
-      "type": "fontWeight",
-      "value": "medium",
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "header label",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) font-weight 500",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "dimension.birthday.request.prompt.top": {
-      "type": "dimension",
-      "value": 24,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "header bar bottom to first prompt",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) header bottom 601.8, first li y625.8",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "dimension.birthday.request.prompt.indent": {
-      "type": "dimension",
-      "value": 39,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "block left edge to prompt text (bullet in between)",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) li x54 vs block x15",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "dimension.birthday.request.prompt.gap": {
-      "type": "dimension",
-      "value": 19.9,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "gap between prompts",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) li 1 y625.8 h18.8, li 2 y664.5",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontSize.birthday.request.prompt": {
-      "type": "fontSize",
-      "value": 15,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "prompt text",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) li 15px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "lineHeight.birthday.request.prompt": {
-      "type": "lineHeight",
-      "value": 18.75,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.request",
-      "element": "prompt text",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) li line-height 18.75px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "font.birthday": {
-      "type": "font",
-      "value": {
-        "ios": "system",
-        "android": "system"
-      },
-      "source_app": "Tribute + VidDay",
-      "surface": "birthday.request",
-      "element": "all birthday surfaces (request, contribute, tribute screen)",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) (Tribute uses Figtree, OFL); VidDay face unknown",
-      "level": "PLATFORM",
-      "notes": "One platform typeface app-wide (font.global.family); Figtree not adopted."
+      "element": "card bottom → due line (ascender top) under the card",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206x2622, 3.000 px/pt, 402 pt wide): card bottom y2456; 'Cancel anytime. No questions asked.' rows 2502-2540 (x249-955)",
+      "method": "46 px ÷ 3",
+      "level": "SOURCED",
+      "precision": "±0.5 pt",
+      "notes": "Retro screen 27 (paywall plan card on a blurred backdrop) is the visual reference docs/SURFACES.md assigns to birthday.request. Text role caption (14): the line's width (237 pt for 35 characters) fits 14 pt; its translucent colour over the backdrop is not measurable — drawn in color.global.textOnMedia."
     },
     "layout.birthday.request.dueDate": {
       "type": "layout",
       "value": {
-        "style": "full date: weekday, month day, year",
-        "example": "Wednesday, December 31, 2025",
-        "value": "the day before tribute_requests.birthday_date (due_at is 00:00 on the birthday)"
+        "pattern": "EEEE, MMMM d",
+        "example": "Wednesday, July 5",
+        "ios": "Date.FormatStyle().weekday(.wide).month(.wide).day()",
+        "android": "DateFormat.getBestDateTimePattern(locale, \"EEEEMMMMd\")"
       },
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.request",
-      "element": "date in the 'Submit by {date}' line",
-      "evidence": "references/auto/tribute/mockups/tribute-home-phone-step-1-contribution-page.png ('Submit by Wednesday, December 31, 2025')",
-      "method": "read from the mockup",
+      "element": "the day before the birthday in the due line ('Add yours by {date}') — a date, never a countdown (P-BR-3)",
+      "evidence": "references/auto/retro/press/tc-2023-07-retro-2b.jpg phone 2 (viewer footer 'Greenville, SC' / 'Wednesday, July 5') 'Wednesday, July 5'; references/auto/retro/press/tc-2025-12-rewind-panels.png (press render, Dec 2025) phone 3 'Tuesday, December 2'",
+      "method": "Retro's within-year date format",
       "level": "SOURCED",
-      "notes": "iOS DateFormatter .full / Android DateFormat.FULL produce this form; a date, never a countdown."
+      "notes": "Replaces Tribute's 'Wednesday, December 31, 2025' (the request is at most seven days ahead; Retro omits the year inside the year)."
     },
-    "layout.birthday.request.textStyleMap": {
-      "type": "layout",
-      "value": {
-        "title": "title2",
-        "message": "callout",
-        "cta": "title2",
-        "promptsHeader": "subheadline",
-        "prompt": "subheadline"
-      },
-      "source_app": "Apple HIG",
-      "surface": "birthday.request",
-      "element": "iOS Dynamic Type style each request text role scales with",
-      "evidence": "HIG Typography Large sizes (design/research/platform.md)",
-      "method": "nearest Large size (MERGE F-13): 24 -> title2 (22), 16 -> callout, 22 -> title2, 15 -> subheadline",
-      "level": "PLATFORM"
-    },
-    "dimension.birthday.contribute.margin": {
+    "dimension.birthday.contribute.titleToPhoto": {
       "type": "dimension",
-      "value": 20,
+      "value": 32.6,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.contribute",
-      "element": "side margin of every step",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) x20",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
+      "element": "sheet title baseline → photo top (message step)",
+      "evidence": "references/auto/retro/store/retro-store-03.png (App Store render 'Postcard', 2.389 px/pt): 'Postcard' ink y764-792 (baseline 792); photo top y870",
+      "method": "78 px ÷ 2.389",
+      "level": "SOURCED",
+      "precision": "±0.5 pt (render)",
+      "notes": "Retro screens 17-18 (postcard composer, 'Add a Message' modal) are the visual reference docs/SURFACES.md assigns to birthday.contribute."
     },
-    "layout.birthday.contribute.stepper": {
-      "type": "layout",
-      "value": {
-        "steps": 3,
-        "labels": "Photo, Message, Done",
-        "distribution": "first circle 11 pt inside the margin, last circle 11 pt inside the opposite margin, the rest evenly spaced between",
-        "labelGap": 10
-      },
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "step indicator",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) circles x31 / 127 / 223 / 319 (w40) on a 390-pt page with 20-pt margins; labels y154 under circles ending y144",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED",
-      "notes": "Tribute has 4 steps (Info, Video, Photos, Done). 'Info' asks group members for name and email (do-not-copy) and is dropped; 'Video' becomes 'Photo'; the one-line step is 'Message' (MERGE memory M-27)."
-    },
-    "dimension.birthday.contribute.stepper.circle": {
+    "dimension.birthday.contribute.photoWidth": {
       "type": "dimension",
-      "value": 40,
+      "value": 297.4,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.contribute",
-      "element": "step circle diameter",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 40 x 40, radius 9999",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
+      "element": "photo box width (centred) on the message step",
+      "evidence": "references/auto/retro/store/retro-store-03.png (App Store render 'Postcard', 2.389 px/pt): photo x285.5-996 (screen centre 640)",
+      "method": "710.5 px ÷ 2.389",
+      "level": "SOURCED",
+      "precision": "±0.5 pt",
+      "notes": "Retro screens 17-18 (postcard composer, 'Add a Message' modal) are the visual reference docs/SURFACES.md assigns to birthday.contribute. The photo keeps its own aspect, fitted inside photoWidth × photoMaxHeight (Retro's box is the postcard's A6)."
     },
-    "color.birthday.contribute.stepper.active": {
-      "type": "color",
-      "value": "#B8B9B9",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "current step circle fill (number in color.global.textPrimary)",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) bg rgb(184,185,185)",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED",
-      "notes": "White number on it is 1.97:1 (FAIL for 14-pt text) - reported, no sourced alternative."
-    },
-    "color.birthday.contribute.stepper.inactive": {
-      "type": "color",
-      "value": "#FFFFFF38",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "other step circle fill (white at 0.22)",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) bg rgba(255,255,255,0.22)",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "color.birthday.contribute.stepper.inactiveLabel": {
-      "type": "color",
-      "value": "#FFFFFF8C",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "number and caption of other steps (white at 0.55)",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) color rgba(255,255,255,0.55)",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontSize.birthday.contribute.stepper.number": {
-      "type": "fontSize",
-      "value": 14,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "step number",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 14px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontWeight.birthday.contribute.stepper.number": {
-      "type": "fontWeight",
-      "value": "semibold",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "step number",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 600",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontSize.birthday.contribute.stepper.label": {
-      "type": "fontSize",
-      "value": 10,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "step caption under the circle",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) span 10px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontWeight.birthday.contribute.stepper.labelActive": {
-      "type": "fontWeight",
-      "value": "medium",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "current step caption",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 'Info' 500",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontWeight.birthday.contribute.stepper.label": {
-      "type": "fontWeight",
-      "value": "regular",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "other step captions",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 'Video' / 'Photos' / 'Done' 400",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "dimension.birthday.contribute.heading.gap": {
+    "dimension.birthday.contribute.photoMaxHeight": {
       "type": "dimension",
-      "value": 107,
+      "value": 422.8,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.contribute",
-      "element": "step captions bottom to step heading top",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) captions end y167, heading y274",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
+      "element": "photo box height (the photo is fitted inside the box, centred)",
+      "evidence": "references/auto/retro/store/retro-store-03.png (App Store render 'Postcard', 2.389 px/pt): photo y870-1880",
+      "method": "1010 px ÷ 2.389",
+      "level": "SOURCED",
+      "precision": "±0.5 pt",
+      "notes": "Retro screens 17-18 (postcard composer, 'Add a Message' modal) are the visual reference docs/SURFACES.md assigns to birthday.contribute."
     },
-    "fontSize.birthday.contribute.heading": {
-      "type": "fontSize",
-      "value": 20,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "step heading ('Let's add a photo for {name}!'), centred",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) span 20px, x66 w259 (centred)",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontWeight.birthday.contribute.heading": {
-      "type": "fontWeight",
-      "value": "medium",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "step heading",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 500",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "dimension.birthday.contribute.subheading.gap": {
-      "type": "dimension",
-      "value": 12,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "heading bottom to sub-heading",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) heading y274 h28, p y314",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontSize.birthday.contribute.subheading": {
-      "type": "fontSize",
-      "value": 16,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "sub-heading ('Thank you for taking the time to participate!')",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) p 16px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "opacity.birthday.contribute.subheading": {
-      "type": "opacity",
-      "value": 0.72,
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "sub-heading (white at this opacity)",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) rgba(255,255,255,0.72)",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontSize.birthday.contribute.label": {
-      "type": "fontSize",
-      "value": 16,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "field label ('Your Message')",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) label 16px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontWeight.birthday.contribute.label": {
-      "type": "fontWeight",
-      "value": "semibold",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "field label",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 600",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "dimension.birthday.contribute.label.gap": {
-      "type": "dimension",
-      "value": 10,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "label bottom to field top",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) label y356 h24, input y390",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "dimension.birthday.contribute.input.height": {
-      "type": "dimension",
-      "value": 46,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "one-line field height",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) input 350 x 46",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "radius.birthday.contribute.input": {
+    "radius.birthday.contribute.photo": {
       "type": "radius",
-      "value": 8,
+      "value": 8.5,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.contribute",
-      "element": "field corners",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) border-radius 8px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
+      "element": "photo corners on the message step",
+      "evidence": "references/auto/retro/store/retro-store-03.png (App Store render 'Postcard', 2.389 px/pt): photo top-left corner, circle fit 20.5 px (design/research/retro-visual.md §3.5 'Postcard photo 8.5')",
+      "method": "20.5 px ÷ 2.389",
+      "level": "SOURCED",
+      "precision": "±1 pt",
+      "notes": "Retro screens 17-18 (postcard composer, 'Add a Message' modal) are the visual reference docs/SURFACES.md assigns to birthday.contribute."
     },
-    "color.birthday.contribute.input.fill": {
-      "type": "color",
-      "value": "#FFFFFF14",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "field fill (white at 0.08)",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) bg rgba(255,255,255,0.08)",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "color.birthday.contribute.input.text": {
-      "type": "color",
-      "value": "#E7E8E8EB",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "typed text (rgba 231,232,232,0.92)",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) input color rgba(231,232,232,0.92)",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontSize.birthday.contribute.input": {
-      "type": "fontSize",
-      "value": 16,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "typed text",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 16px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "dimension.birthday.contribute.group.gap": {
+    "dimension.birthday.contribute.pillBottom": {
       "type": "dimension",
-      "value": 16,
+      "value": 20.9,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.contribute",
-      "element": "field bottom to the next label",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) input y390 h46, next label y452",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
+      "element": "'Add a message' pill (components C-09 glass variant) bottom → photo bottom; pill centred horizontally",
+      "evidence": "references/auto/retro/store/retro-store-03.png (App Store render 'Postcard', 2.389 px/pt): pill (463-819, 1743-1830), photo bottom y1880",
+      "method": "50 px ÷ 2.389",
+      "level": "SOURCED",
+      "precision": "±0.5 pt",
+      "notes": "Retro screens 17-18 (postcard composer, 'Add a Message' modal) are the visual reference docs/SURFACES.md assigns to birthday.contribute."
     },
-    "dimension.birthday.contribute.button.gap": {
+    "dimension.birthday.contribute.messageInset": {
       "type": "dimension",
-      "value": 24,
+      "value": 21.9,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.contribute",
-      "element": "last field bottom to the button",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) input y486 h46, button y556",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
+      "element": "'Add a Message' modal: screen edge → text (leading) and → 'Done' ink (trailing ≈ 20.7)",
+      "evidence": "references/auto/retro/press/tc-2023-12-retro3.png phone 3 ('Add a Message' modal; screen x1937-2564 = 627 px, 1.595 px/pt): text ink from x1972 (crop x193), screen left x1937; 'Done' right ink x2531 (crop 752), screen right 2564",
+      "method": "35 px ÷ 1.595",
+      "level": "SOURCED",
+      "precision": "±0.6 pt (render)",
+      "notes": "Retro screens 17-18 (postcard composer, 'Add a Message' modal) are the visual reference docs/SURFACES.md assigns to birthday.contribute."
     },
-    "dimension.birthday.contribute.button.height": {
+    "dimension.birthday.contribute.counterInset": {
       "type": "dimension",
-      "value": 50,
+      "value": 20.7,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.contribute",
-      "element": "step button height ('Submit', 'Done')",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) button 350 x 50",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
+      "element": "character counter ('58/250'): screen right edge → counter ink",
+      "evidence": "references/auto/retro/press/tc-2023-12-retro3.png phone 3 ('Add a Message' modal; screen x1937-2564 = 627 px, 1.595 px/pt): counter ink x2439-2531 (crop 660-752), y1006-1029",
+      "method": "33 px ÷ 1.595",
+      "level": "SOURCED",
+      "precision": "±0.6 pt",
+      "notes": "Retro screens 17-18 (postcard composer, 'Add a Message' modal) are the visual reference docs/SURFACES.md assigns to birthday.contribute. Counter text role placeholder (17, digits 12.5 pt tall), monospaced digits, colour color.global.textSecondary (APK vv3.e #999999 'character counter /250'; the render's darkest pixel reads #7F7F7F)."
     },
-    "radius.birthday.contribute.button": {
-      "type": "radius",
-      "value": 8,
+    "dimension.birthday.contribute.counterAboveKeyboard": {
+      "type": "dimension",
+      "value": 18.5,
       "unit": "pt",
-      "source_app": "Tribute",
+      "source_app": "Retro",
       "surface": "birthday.contribute",
-      "element": "step button corners",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) border-radius 8px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontSize.birthday.contribute.button": {
-      "type": "fontSize",
-      "value": 16,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "step button label",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 16px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontWeight.birthday.contribute.button": {
-      "type": "fontWeight",
-      "value": "semibold",
-      "source_app": "Tribute",
-      "surface": "birthday.contribute",
-      "element": "step button label",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials-upload-step1.computed-styles.json + tribute-web-testimonials-upload-step1-info.png (https://www.tribute.co/testimonials/upload/) 600",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED",
-      "notes": "Tribute's button sits on an image gradient (fill not sampled) -> color.global.accent / color.global.onAccent (MERGE memory M-7)."
+      "element": "counter baseline → top of the keyboard",
+      "evidence": "references/auto/retro/press/tc-2023-12-retro3.png phone 3 ('Add a Message' modal; screen x1937-2564 = 627 px, 1.595 px/pt): counter bottom y1029, keyboard top y1058.5",
+      "method": "29.5 px ÷ 1.595",
+      "level": "SOURCED",
+      "precision": "±0.6 pt",
+      "notes": "Retro screens 17-18 (postcard composer, 'Add a Message' modal) are the visual reference docs/SURFACES.md assigns to birthday.contribute."
     },
     "layout.birthday.contribute.lineMax": {
       "type": "layout",
@@ -1804,26 +844,8 @@
       "evidence": "references/auto/vidday/help/vidday-help-written-messages.png (https://help.vidday.com/can-i-add-written-messages, last update 07.02.2025): 'Text cards have a 110-character limit.' / 'Note: emoticons/emojis are not supported.'",
       "method": "documented limit (help centre text)",
       "level": "SOURCED",
-      "notes": "Gap fill (MERGE G2-21). VidDay's text card is its written message from a contributor, the same role as the one line. The API bound (280, invalid_line) stays the server check. No visible counter (none documented). VidDay's emoji restriction is not copied (the line is plain text; the worker renders it with Roboto, which has no colour emoji).",
+      "notes": "Mechanics (VidDay text-card limit, MERGE G2-21). Shown as Retro's counter ('{count}/110', TC-R3 '58/250'). The API bound (280, invalid_line) stays the server check.",
       "precision": "exact (documented)"
-    },
-    "layout.birthday.contribute.textStyleMap": {
-      "type": "layout",
-      "value": {
-        "heading": "title3",
-        "subheading": "callout",
-        "label": "callout",
-        "input": "callout",
-        "button": "callout",
-        "stepperNumber": "subheadline",
-        "stepperLabel": "caption2"
-      },
-      "source_app": "Apple HIG",
-      "surface": "birthday.contribute",
-      "element": "iOS Dynamic Type style each contribute text role scales with",
-      "evidence": "HIG Typography Large sizes (design/research/platform.md)",
-      "method": "nearest Large size, tie -> larger (MERGE F-13): 20 -> title3, 16 -> callout, 14 -> subheadline (tie with footnote 13), 10 -> caption2 (11)",
-      "level": "PLATFORM"
     },
     "layout.birthday.tribute.video": {
       "type": "layout",
@@ -1929,67 +951,6 @@
       "precision": "±2/255",
       "notes": "Tribute help: 'A vertical video is fine. It plays inside your Tribute with the background filling the space on either side, and nothing gets cut off.'"
     },
-    "layout.birthday.tribute.titleCard": {
-      "type": "layout",
-      "value": {
-        "background": "#EFEEF3",
-        "textColor": "#444347",
-        "fontWeight": 500,
-        "fontSizeRatio": 0.084,
-        "maxWidthRatio": 0.405,
-        "centerYRatio": 0.5
-      },
-      "source_app": "VidDay",
-      "surface": "birthday.tribute",
-      "element": "title card ('Happy birthday, {name}!') (read by the worker)",
-      "evidence": "https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4 (1920x1080, 30 fps); frame references/auto/vidday/frames/vidday-tour-t118.300-phone.png (phone crop x680-1240, y40-1040) frame 118.3 s: player y135-688 (553 px) x8-549 in the phone crop; caps lines y368-400 and y422-454.5 (cap height 33.0 px); widest line x81-478 (398 px), centred at x279; stem width 5.16 px (sub-pixel coverage, 19 stems)",
-      "method": "background = median of 125,000 paper pixels (239,238,243); text = median of the darkest 25 % of glyph pixels (68,67,71); fontSizeRatio = cap 33.0 / 553 / Roboto cap-height 0.711; centerYRatio = caps-block centre 411.25 -> (411.25-135)/553 = 0.4995; maxWidthRatio = 398 px / (553 x 16/9) = 0.405 (VidDay's 1080p frame is 16:9, cropped to fill a square player on the gift page); fontWeight = stem/cap 0.156, nearest Roboto weight Medium (0.173; Regular 0.134, both rendered from backend/worker/fonts)",
-      "level": "SOURCED",
-      "precision": "colours ±8/255 (H.264); ratios ±2 %; maxWidthRatio depends on the 16:9 crop reading; weight between Regular and Medium",
-      "notes": "VidDay draws this text in its theme's hand-lettered face over watercolour confetti; the confetti art and face are not copied (solid paper colour, platform Roboto in the worker). P-BT-1 normalises the reference's capitals to Sentence case. MERGE memory M-4."
-    },
-    "layout.birthday.tribute.endCard": {
-      "type": "layout",
-      "value": {
-        "background": "#EFEEF3",
-        "textColor": "#444347",
-        "fontWeight": 500,
-        "fontSizeRatio": 0.084,
-        "maxWidthRatio": 0.405,
-        "centerYRatio": 0.5
-      },
-      "source_app": "VidDay",
-      "surface": "birthday.tribute",
-      "element": "end card text layout (read by the worker)",
-      "evidence": "https://static.vidday.com/vidday_theme_samples/theme_happy_birthday.mp4 (listed on https://www.vidday.com/examples; 1920x1080, 30 fps, 135.72 s): end text card 'We Love You!' (references/auto/vidday/frames/vidday-theme-happy-birthday-t131.000-end-card.png: glyph bbox x688-1230 y507-571, cap height 65 px, centre (959, 539)) drawn exactly like the same video's title text card 'Happy Birthday, Margo!' (references/auto/vidday/frames/vidday-theme-happy-birthday-t005.000-title-card.png: caps y496-560, 65 px, centre x959.5, cy 539.0): same text colour (61,82,96), cap height, centring and theme background; cap 65 / 1080 / Roboto cap-height 0.711 = 0.0847",
-      "method": "end card = the title card's style, as VidDay renders both (frame measurements, 1080p); values copied from layout.birthday.tribute.titleCard so the video's two text cards match; the independent size check 0.0847 agrees with the title card's 0.084",
-      "level": "SOURCED",
-      "notes": "Gap fill (MERGE G2-23). The text colour (61,82,96) and light-blue art belong to this VidDay theme; the title card's measured paper / text colours are kept so both cards of our video match (M-4). Timing: VidDay holds its end text card 3.27 s visible in a 4.0-s slot (fade 0.7 s), Tribute's end slot is 10.0 s (duration.birthday.tribute.endHold, unchanged).",
-      "precision": "as layout.birthday.tribute.titleCard (colours ±8/255, ratios ±2 %); this sample: cap ±1 px"
-    },
-    "layout.birthday.tribute.caption": {
-      "type": "layout",
-      "value": {
-        "textColor": "#FFFFFF",
-        "nameFontWeight": 700,
-        "nameFontSizeRatio": 0.0463,
-        "lineFontWeight": 700,
-        "lineFontSizeRatio": 0.0795,
-        "leftRatio": 0.0577,
-        "bottomRatio": 0.0861,
-        "maxWidthRatio": 0.8845,
-        "gapRatio": 0.0099,
-        "scrim": "#11202FC7"
-      },
-      "source_app": "Tribute",
-      "surface": "birthday.tribute",
-      "element": "first name + one line over each contribution photo (read by the worker)",
-      "evidence": "references/auto/tribute/web/tribute-web-video-editor-name-badge.computed-styles.json + tribute-web-video-editor-name-badge-1440-frame.png (https://www.tribute.co/tools/video-editor/, 'NAME BADGES — Credit everyone who showed up on screen', default Position = Bottom Left, Style = Dark; 'CAPTIONS', style Classic): 16:9 frame 537 x 302.0625 CSS px; badge inset 16 / 16 px, border 1 px, padding 9 x 14, radius 10, fill rgba(17,32,47,0.78), name 14 px / 700 / white (Roboto Flex), text box x31 y615-631.8 -> 26 px above the frame bottom; caption words 24 px / 700 white, row gap 3 px, text-shadow rgba(0,0,0,0.6) 0 2 10",
-      "method": "getComputedStyle / getBoundingClientRect (Playwright 1440x900; identical frame at 1920x1080) divided by the frame: name 14/302.06, line 24/302.06, left (16+1+14)/537, bottom (16+1+9)/302.06, maxWidth (537 - 2 x 31)/537, gap 3/302.06; scrim = the badge fill 0.78 x 255 = 199 = 0xC7",
-      "level": "SOURCED",
-      "notes": "Gap fill (MERGE G2-24): Tribute's own contributor credit ('Name whoever is speaking … at the bottom of the frame', help 'How Do I Add Text onto Individual Videos or Photos?'). Name = badge text; the line = Tribute's caption text style (Classic). Shape difference: Tribute draws a rounded box (radius 10 / 302 of the frame height) around the name and a soft shadow under caption words; the worker's CaptionLayout can only draw a full-width band from the name's top to the frame bottom, so the badge's fill colour is used for that band (hand-off to the worker team: a box mode would match Tribute exactly). White on the band: 17.7:1 over a black photo, 8.1:1 over a white one.",
-      "precision": "exact ratios of the demo's CSS (VERIFIED-grade measurement of a web demo; the demo's px sizes do not scale with the frame, so the ratios hold for the frame size above)"
-    },
     "layout.birthday.tribute.structure": {
       "type": "layout",
       "value": {
@@ -2019,86 +980,66 @@
       "level": "PLATFORM",
       "notes": "Both references play the video in a standard player with the platform's own controls."
     },
-    "dimension.birthday.tribute.button.height": {
-      "type": "dimension",
-      "value": 44,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.tribute",
-      "element": "secondary button height ('Download', 'Share')",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) button 'Share on Facebook' 360 x 44",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "radius.birthday.tribute.button": {
-      "type": "radius",
-      "value": 8,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.tribute",
-      "element": "secondary button corners",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) border-radius 8px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontSize.birthday.tribute.button": {
-      "type": "fontSize",
-      "value": 14,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.tribute",
-      "element": "secondary button label",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) 14px",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "fontWeight.birthday.tribute.button": {
-      "type": "fontWeight",
-      "value": "semibold",
-      "source_app": "Tribute",
-      "surface": "birthday.tribute",
-      "element": "secondary button label",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) 600",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "color.birthday.tribute.button.label": {
-      "type": "color",
-      "value": "#292D34",
-      "source_app": "Tribute",
-      "surface": "birthday.tribute",
-      "element": "secondary button label and glyph (fill color.global.surfaceLight)",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) color rgb(41,45,52) on rgb(255,255,255)",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "dimension.birthday.tribute.button.gap": {
-      "type": "dimension",
-      "value": 10,
-      "unit": "pt",
-      "source_app": "Tribute",
-      "surface": "birthday.tribute",
-      "element": "gap between stacked secondary buttons",
-      "evidence": "references/auto/tribute/web/tribute-web-testimonials.computed-styles.json + tribute-web-testimonials-contribution-page-viewport.png (https://www.tribute.co/testimonials/) buttons y746 h44, next y800",
-      "method": "getComputedStyle / getBoundingClientRect at 390x844 CSS px (CSS px = pt at this viewport)",
-      "level": "VERIFIED"
-    },
-    "easing.year.story.reveal.subline": {
-      "type": "easing",
+    "layout.birthday.tribute.titleCard": {
+      "type": "layout",
       "value": {
-        "x1": 0.05,
-        "y1": 0.36,
-        "x2": 0.26,
-        "y2": 0.94
+        "background": "#000000",
+        "textColor": "#FFFFFF",
+        "fontWeight": 400,
+        "fontSizeRatio": 0.084,
+        "maxWidthRatio": 0.405,
+        "centerYRatio": 0.5
       },
-      "source_app": "Spotify Wrapped",
-      "surface": "year.story",
-      "element": "curve of the subline rising in (with duration.year.story.reveal.subline, .sublineDelay, dimension .sublineOffset)",
-      "evidence": "references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-positions.csv (19 subline positions at 30 fps, 15.800-16.400 s, y1083 -> 1028 px); fit: references/auto/wrapped/frames/wrapped24-rec-emilycraig-reveal-fit.csv",
-      "method": "least-squares cubic Bezier over all 19 samples (0.05 grid, then 0.01 grid): rms 0.008 of the travel = 0.46 px",
+      "source_app": "Retro + VidDay",
+      "surface": "birthday.tribute",
+      "element": "title card ('Happy birthday, {name}!') (read by the worker)",
+      "evidence": "colours and weight: Retro media surfaces (color.global.backgroundDeep #000000, color.global.textOnMedia #FFFFFF; display role weight regular, fontWeight.global.headerTitle — references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320x2868, 3.000 px/pt, 440 pt wide) serif date on media, references/auto/retro/press/tc-2023-12-recaps.png (press render, phones 2-3; 1.695 px/pt, phone-2 screen x1056-1722) phone 3 serif year on media); size and position: https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4 (1920x1080, 30 fps); frame references/auto/vidday/frames/vidday-tour-t118.300-phone.png (phone crop x680-1240, y40-1040) frame 118.3 s: player y135-688 (553 px) x8-549 in the phone crop; caps lines y368-400 and y422-454.5 (cap height 33.0 px); widest line x81-478 (398 px), centred at x279; stem width 5.16 px (sub-pixel coverage, 19 stems)",
+      "method": "background / text = the Retro foundation values for media; weight 400 = Retro's display role; fontSizeRatio / maxWidthRatio / centerYRatio unchanged from VidDay's title card (background = median of 125,000 paper pixels (239,238,243); text = median of the darkest 25 % of glyph pixels (68,67,71); fontSizeRatio = cap 33.0 / 553 / Roboto cap-height 0.711; centerYRatio = caps-block centre 411.25 -> (411.25-135)/553 = 0.4995; maxWidthRatio = 398 px / (553 x 16/9) = 0.405 (VidDay's 1080p frame is 16:9, cropped to fill a square player on the gift page); fontWeight = stem/cap 0.156, nearest Roboto weight Medium (0.173; Regular 0.134, both rendered from backend/worker/fonts))",
       "level": "SOURCED",
-      "precision": "±0.05 per control point; residual 0.5 px",
-      "notes": "Added in the gap-fill pass (MERGE G2-19) next to easing.year.story.reveal (headline). Closest documented curve: M3 standard decelerate (0,0,0,1), rms 0.047. Reduce Motion: cross-fade with the same durations (layout.global.reduceMotion)."
+      "precision": "colours ±8/255 (H.264); ratios ±2 %; maxWidthRatio depends on the 16:9 crop reading; weight between Regular and Medium",
+      "notes": "Redesign (MERGE RM-12): VidDay's paper theme (#EFEEF3 / #444347, Medium) replaced by Retro's media look, geometry kept (mechanics). Worker hand-off: render this text in the display serif (font.global.display: Noto Serif, OFL) instead of Roboto to match the app; the token shape is unchanged."
+    },
+    "layout.birthday.tribute.endCard": {
+      "type": "layout",
+      "value": {
+        "background": "#000000",
+        "textColor": "#FFFFFF",
+        "fontWeight": 400,
+        "fontSizeRatio": 0.084,
+        "maxWidthRatio": 0.405,
+        "centerYRatio": 0.5
+      },
+      "source_app": "Retro + VidDay",
+      "surface": "birthday.tribute",
+      "element": "end card text layout (read by the worker)",
+      "evidence": "colours and weight: Retro media surfaces (color.global.backgroundDeep #000000, color.global.textOnMedia #FFFFFF; display role weight regular, fontWeight.global.headerTitle — references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320x2868, 3.000 px/pt, 440 pt wide) serif date on media, references/auto/retro/press/tc-2023-12-recaps.png (press render, phones 2-3; 1.695 px/pt, phone-2 screen x1056-1722) phone 3 serif year on media); size and position: https://static.vidday.com/vidday_theme_samples/theme_happy_birthday.mp4 (listed on https://www.vidday.com/examples; 1920x1080, 30 fps, 135.72 s): end text card 'We Love You!' (references/auto/vidday/frames/vidday-theme-happy-birthday-t131.000-end-card.png: glyph bbox x688-1230 y507-571, cap height 65 px, centre (959, 539)) drawn exactly like the same video's title text card 'Happy Birthday, Margo!' (references/auto/vidday/frames/vidday-theme-happy-birthday-t005.000-title-card.png: caps y496-560, 65 px, centre x959.5, cy 539.0): same text colour (61,82,96), cap height, centring and theme background; cap 65 / 1080 / Roboto cap-height 0.711 = 0.0847",
+      "method": "background / text = the Retro foundation values for media; weight 400 = Retro's display role; fontSizeRatio / maxWidthRatio / centerYRatio unchanged from VidDay's end card (drawn like its title card) (end card = the title card's style, as VidDay renders both (frame measurements, 1080p); values copied from layout.birthday.tribute.titleCard so the video's two text cards match; the independent size check 0.0847 agrees with the title card's 0.084)",
+      "level": "SOURCED",
+      "notes": "Redesign (MERGE RM-12): VidDay's paper theme (#EFEEF3 / #444347, Medium) replaced by Retro's media look, geometry kept (mechanics). Worker hand-off: render this text in the display serif (font.global.display: Noto Serif, OFL) instead of Roboto to match the app; the token shape is unchanged.",
+      "precision": "as layout.birthday.tribute.titleCard (colours ±8/255, ratios ±2 %); this sample: cap ±1 px"
+    },
+    "layout.birthday.tribute.caption": {
+      "type": "layout",
+      "value": {
+        "textColor": "#FFFFFF",
+        "nameFontWeight": 600,
+        "nameFontSizeRatio": 0.0463,
+        "lineFontWeight": 400,
+        "lineFontSizeRatio": 0.0795,
+        "leftRatio": 0.0577,
+        "bottomRatio": 0.0861,
+        "maxWidthRatio": 0.8845,
+        "gapRatio": 0.0099,
+        "scrim": "#00000099"
+      },
+      "source_app": "Retro + Tribute",
+      "surface": "birthday.tribute",
+      "element": "first name + one line over each contribution photo (read by the worker)",
+      "evidence": "band and weights: Retro's text on photos — color.global.scrim (#00000099, the bottom photo scrim's end colour), name semibold like Retro's white labels on photos (fontWeight.global.tileLabel: weekday labels 13 semibold over the scrim, references/auto/retro/store/retro-store-02.png), line regular (fontWeight.global.body); position and sizes: references/auto/tribute/web/tribute-web-video-editor-name-badge.computed-styles.json + tribute-web-video-editor-name-badge-1440-frame.png (https://www.tribute.co/tools/video-editor/, 'NAME BADGES — Credit everyone who showed up on screen', default Position = Bottom Left, Style = Dark; 'CAPTIONS', style Classic): 16:9 frame 537 x 302.0625 CSS px; badge inset 16 / 16 px, border 1 px, padding 9 x 14, radius 10, fill rgba(17,32,47,0.78), name 14 px / 700 / white (Roboto Flex), text box x31 y615-631.8 -> 26 px above the frame bottom; caption words 24 px / 700 white, row gap 3 px, text-shadow rgba(0,0,0,0.6) 0 2 10",
+      "method": "scrim = color.global.scrim; weights = Retro text roles; the ratios are Tribute's (getComputedStyle / getBoundingClientRect (Playwright 1440x900)",
+      "level": "SOURCED",
+      "notes": "Redesign (MERGE RM-12): Tribute's navy badge fill (#11202FC7) and bold weights replaced by Retro's scrim and weights; geometry kept (mechanics). White on the band over a white photo = white on #666666: 5.74:1. The worker maps weight 600 to Roboto Medium (nearest file) — hand-off: vendor Inter (OFL, font.global.family Android) for the caption.",
+      "precision": "exact ratios of the demo's CSS (VERIFIED-grade measurement of a web demo; the demo's px sizes do not scale with the frame, so the ratios hold for the frame size above)"
     }
   }
 }

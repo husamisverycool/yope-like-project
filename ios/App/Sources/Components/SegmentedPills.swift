@@ -1,4 +1,6 @@
-// Shared component — Yope's segmented control ("pics | wall | recaps", the group-type picker).
+// Shared component — C-30 segmented control (design/components.md), replacing Yope's capsule track with a white pill.
+// Retro uses the system control ('Create Recap': Yearly / Monthly / Weekly / All Posts; TC-REC row y=446), drawn by
+// iOS in the current appearance — PLATFORM. Evidence: TC-REC phone 1; RV §3.2, §4 #20.
 import DesignSystem
 import SwiftUI
 
@@ -14,73 +16,29 @@ struct SegmentOption<Value: Hashable>: Identifiable {
     }
 }
 
-/// Capsule track with a white pill on the selected segment.
-///
-/// Tokens: track `groups.screen.color.segmentTrack`, height `groups.screen.size.segmentHeight` (minimum; grows with
-/// Dynamic Type), capsule (`radius.global.capsule`); selected pill `color.global.surfaceLight` inset
-/// `groups.screen.size.segmentInset`, label `color.global.onSurfaceLight`; labels `groups.screen.fontSize.segmentLabel`
-/// / `.fontWeight.segmentLabel` (Dynamic Type subheadline; labels wrap), unselected `color.global.textPrimary`.
-/// The pill moves with `spring.global.platformDefault.ios`; under Reduce Motion it cross-fades. Selection plays
-/// `haptic.global.select`. Accessibility: each segment is a button with the selected trait. The caller applies
-/// the side margin (`groups.screen.size.segmentMarginH` on the profile page, `size.global.buttonMarginH` in forms).
+/// The native segmented control (`Picker` with `.segmented` style): track, selection and labels are the system's; a
+/// change plays `haptic.global.select`. The name is kept from the Yope component so screens keep compiling.
+/// Accessibility: the system control's own semantics; `accessibilityLabel` (copy) names the control.
 struct SegmentedPills<Value: Hashable>: View {
     let options: [SegmentOption<Value>]
     @Binding var selection: Value
+    var accessibilityLabel: String?
 
-    @Namespace private var namespace
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    private var labelStyle: DSTextStyle {
-        DSTextStyle(
-            family: Tokens.Fonts.globalFamily,
-            size: Tokens.FontSizes.groupsScreenFontSizeSegmentLabel,
-            weight: Tokens.FontWeights.groupsScreenFontWeightSegmentLabel,
-            relativeTo: .subheadline
-        )
-    }
-
-    /// The selected pill's height: the track height minus the inset above and below.
-    private var pillMinHeight: CGFloat {
-        Tokens.Sizes.groupsScreenSizeSegmentHeight - Tokens.Sizes.groupsScreenSizeSegmentInset * 2
+    init(options: [SegmentOption<Value>], selection: Binding<Value>, accessibilityLabel: String? = nil) {
+        self.options = options
+        _selection = selection
+        self.accessibilityLabel = accessibilityLabel
     }
 
     var body: some View {
-        HStack(spacing: 0) {
+        Picker(selection: $selection) {
             ForEach(options) { option in
-                segment(option)
-            }
-        }
-        .padding(Tokens.Sizes.groupsScreenSizeSegmentInset)
-        .background(Tokens.Colors.groupsScreenColorSegmentTrack, in: Capsule())
-        .dsHaptic(Tokens.Haptics.globalSelect, trigger: selection)
-    }
-
-    private func segment(_ option: SegmentOption<Value>) -> some View {
-        let selected = option.value == selection
-        return Button {
-            guard option.value != selection else { return }
-            withDSAnimation(.spring(Tokens.Springs.globalPlatformDefaultIos)) {
-                selection = option.value
+                Text(option.title).tag(option.value)
             }
         } label: {
-            Text(option.title)
-                .dsTextStyle(labelStyle)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(selected ? Tokens.Colors.globalOnSurfaceLight : Tokens.Colors.globalTextPrimary)
-                .frame(maxWidth: .infinity, minHeight: pillMinHeight)
-                .background {
-                    if selected {
-                        if reduceMotion {
-                            Capsule().fill(Tokens.Colors.globalSurfaceLight)
-                        } else {
-                            Capsule().fill(Tokens.Colors.globalSurfaceLight)
-                                .matchedGeometryEffect(id: "selection", in: namespace) // provenance-ok: geometry-effect identifier
-                        }
-                    }
-                }
-                .contentShape(Capsule())
+            Text(accessibilityLabel ?? "")
         }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(selected ? .isSelected : [])
+        .pickerStyle(.segmented)
+        .dsHaptic(Tokens.Haptics.globalSelect, trigger: selection)
     }
 }

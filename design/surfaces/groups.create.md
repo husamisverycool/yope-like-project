@@ -1,114 +1,118 @@
-# `groups.create` — create group: name, cover, type
+# `groups.create` — create a group: type, cover, name
 
-Reference: **Yope** ("new group" sheet 2026; "create new group" / "create your first group" cover step 2024–2025).
-Research: `design/research/yope-a.md` §1.3–1.4, §2.10; API `docs/API.md` §6.1 `create_group` / `update_group`, §9.2.
-Tokens: `groups.create.*` (+ `groups.screen.*` segmented control). Copy: `groups.create.*`.
+Visual reference: Retro **"Ideas to Get Started"** templates (inventory #12, JED phone 3: Event / Friends / Couple rows
+with a Fill "Create" pill) and Retro's **New Album** creation flow (APK-S `journal_creation_flow_title` "New Album",
+`journal_creation_name_placeholder` "Name your album", `journal_creation_profile_picture_primary_cta` "+ Add cover image",
+`journal_creation_form_next`). The creation form itself was not captured as an image: it composes the album-detail
+cover (C-24 / `groups.screen.*` cover tokens), C-07, C-12 and C-05 in Retro's flow order (`level: SOURCED`,
+`method: "composition of Retro components C-29 sheet header, C-15 template rows, C-24 cover, C-07, C-12, C-05 in Retro's
+New Album order"`). Tokens: `groups.screen.size.cover*`, `groups.screen.shadow.cover` + `global.*`. Copy: `groups.create.*`.
 
-Yope 2026 has a name field and a friend picker but **no cover and no type**; the 2024–2025 builds had a cover step.
-Group types (friends / family / roommates / custom) were **not found in any Yope build**: the type is chosen with Yope's
-own segmented control (group profile, 2026-05). There is no friend picker here (members join by invite link,
-`groups.invite`).
+Group kinds (`group_kind`: friends · family · roommates · custom) take Retro's template role: picking a template **is**
+choosing the kind.
 
 ## References
 
 | id | file | used for |
 |---|---|---|
-| NG1 | `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png` | sheet header: ✕ circle + "new group" |
-| NG2 | `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png` | field (#141414, 44 pt, r 12, 19 pt margins, centred bold 15 pt text), section label, lime "create group" 45 pt |
-| C24 | `references/auto/yope/frames/a-yrrah-7452976839846382855-t3.73-create-new-group-empty-2024.png` | cover placeholder (330 × 221, r 7, camera glyph), gaps, disabled button |
-| BI | `references/auto/yope/web/a-bi-2025-create-group-composite.jpg` | cover photo with camera glyph, field, lime "continue" above the keyboard |
-| GP | `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.73-group-profile-add-20-pics.png` | segmented control (track, white selected pill, bold labels) |
-| HUD | `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png` | Loading HUD after "create group" |
+| JED | `references/auto/retro/press/jeddacp-2024-05-home-profile-journals.png` phone 3 | template rows: 3:4 cover, title 15 semibold, 2-line grey description, Fill "Create" capsule |
+| TC-J1 | `references/auto/retro/press/tc-2024-04-journals-1.webp` phone 3 | book cover 173.5 × 246 with its drop shadow, centred |
+| VID-SET | `references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png` | sheet header (centred 17 semibold title + close circle) |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | flow strings above; `journal_tab_suggestion_*`; `error_full_name_too_long` |
 
-## Structure (sheet on black `color.global.backgroundDeep`)
+## Structure (page sheet, C-29; page `color.global.background`)
 
-1. Header row at the sheet top: ✕ circle leading (`size.global.headerButton`, fill `color.global.controlOnDeep`,
-   `icon.global.close`, inset `size.global.headerInset`); title `groups.create.title` centred on the circle's row.
-2. Gap `groups.create.size.titleToContent`.
-3. Cover placeholder `groups.create.size.cover.width` × `.cover.height`, centred; camera glyph centred.
-4. Gap `groups.create.size.mediaToField`.
-5. Name field, full width minus `size.global.buttonMarginH`.
-6. Gap `groups.create.size.mediaToField`.
-7. Section label `groups.create.type.label`, leading-aligned at `size.global.buttonMarginH` (as "who would you like to add?").
-8. Type segmented control directly under the label (the label → control gap was not measured; the label's platform line
-   height is the only space): 4 segments in `groups.create.type.*` order friends · family · roommates · custom; default
-   selection friends (first segment; enum order of `group_kind`).
-9. Flexible space.
-10. Primary button `groups.create.cta` (edit mode `groups.create.save`), full width minus `size.global.buttonMarginH`,
-    `groups.create.size.fieldToButton` above the keyboard or the bottom safe area.
+Sheet header (C-29): centred title (text role `sheetTitle`) + trailing close circle (C-11 on the page:
+`size.global.circleButton`, `color.global.control`, `icon.global.close`); on step B a back chevron (C-02 glyph) leads.
+
+### Step A — type (`groups.create.title`; skipped when opened from a template row or from edit)
+1. `size.global.titleToContent` under the header: question `groups.create.type.label` (`font.global.display`,
+   `displayMedium`) at the margin.
+2. `size.global.titleToContent` below: four template rows (C-15 geometry, `size.global.listGap` apart), as in
+   `groups.list` §3: placeholder thumbnail, `groups.create.type.<kind>` + `.detail`, trailing fill capsule C-06
+   `groups.create.type.create`. Tapping the row or its capsule → step B with that kind.
+
+### Step B — cover and name (`groups.create.title`, or `groups.create.titleEdit` in edit mode)
+1. `size.global.titleToContent` under the header: **cover**, centred: `groups.screen.size.coverWidth` ×
+   `.coverHeight` (173.5 × 246), corners `radius.global.thumbnail` (4, C-15 cover corner), shadow
+   `groups.screen.shadow.cover`; empty → `color.global.control` fill; chosen photo aspect-fills it.
+2. `groups.screen.size.coverToTitle` (36.7) below the cover: outline CTA C-07 — `icon.global.add` +
+   `groups.create.cover.add` while empty; C-06 outline capsule `groups.create.cover.edit` once chosen — centred.
+3. `size.global.titleToContent` below: name field C-12 (inside `size.global.screenMargin`), placeholder
+   `groups.create.name.placeholder`; inline `groups.create.error.tooLong` under it when needed (C-12 error).
+4. Primary capsule C-05 `groups.create.cta` (edit: `groups.create.save`), pinned `size.global.buttonMarginH` above the
+   keyboard / bottom safe area.
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| ✕ | `size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.close`, `color.global.textPrimary` | `groups.create.close.accessibilityLabel` | dismisses; discards the form |
-| title | `groups.create.fontSize.title`, `groups.create.fontWeight.title`, `color.global.textPrimary` | `groups.create.title` / `groups.create.titleEdit` | static |
-| cover placeholder | `groups.create.size.cover.width` / `.height`, `groups.create.radius.cover`, fill `groups.create.color.cover`; glyph `icon.global.camera` height `groups.create.size.coverGlyph` in `color.global.textPrimary` | `groups.create.cover.accessibilityLabel` / `.changeAccessibilityLabel` | tap → system photo picker (`auth.profile.layout.avatarPicker` mechanism); the chosen photo fills the rectangle (`scaledToFill`), glyph hidden |
-| name field | `groups.create.color.field`, `size.global.fieldHeight`, `radius.global.field`, text `groups.create.fontSize.fieldText` + `.fontWeight.fieldText` centred, placeholder `color.global.textSecondary` | `groups.create.name.placeholder`, `groups.create.name.accessibilityLabel` | 1–80 characters (trimmed); return key = done |
-| section label | `fontSize.global.sectionLabel`, `fontWeight.global.sectionLabel`, `color.global.textSecondary` | `groups.create.type.label` | static |
-| type control | track `groups.screen.color.segmentTrack`, height `groups.screen.size.segmentHeight`, side margin `size.global.buttonMarginH` (form column; the profile's 6 pt margin belongs to that page), capsule; selected pill `color.global.surfaceLight`, inset `groups.screen.size.segmentInset`, label `color.global.onSurfaceLight`; labels `groups.screen.fontSize.segmentLabel` / `.fontWeight.segmentLabel`, unselected `color.global.textPrimary` | `groups.create.type.friends` / `.family` / `.roommates` / `.custom` | single choice; changes only copy and defaults elsewhere (per-type strings in `groups.invite`, `groups.screen`, `groups.settings`, `onboarding.permission.contacts`) |
-| create | `color.global.accent` / `color.global.onAccent`, `size.global.buttonHeight`, `radius.global.button`, text role `button`; disabled `groups.create.color.buttonDisabledFill` / `.buttonDisabledLabel` | `groups.create.cta` / `groups.create.save` | disabled while the trimmed name is empty; tap → upload cover (if any) → `create_group` → HUD → push to `groups.screen` (new group) |
-| HUD | `groups.create.color.hud`, `.size.hud`, `.fontSize.hudLabel`, system spinner | `groups.create.hud.loading` | while working |
+| sheet header | C-29 (`sheetTitle`), C-11 close | `groups.create.title` / `.titleEdit`, `groups.create.close.accessibilityLabel`, `groups.create.back.accessibilityLabel` | close discards the form (no confirmation: nothing is lost that was saved) |
+| question | `font.global.display`, `displayMedium` | `groups.create.type.label` | static |
+| template row | C-15 + C-06 fill capsule | `groups.create.type.friends` / `.family` / `.roommates` / `.custom` + `.detail`; `groups.create.type.create` | selects the kind → step B |
+| cover | `groups.screen.size.coverWidth` / `.coverHeight`, `radius.global.thumbnail`, `groups.screen.shadow.cover`, `color.global.control` | `groups.create.cover.accessibilityLabel` / `.changeAccessibilityLabel` | tap or the CTA → system photo picker (`auth.profile.layout.avatarPicker` mechanism) |
+| cover CTA | C-07 / C-06 outline | `groups.create.cover.add` / `.edit` | picker |
+| name field | C-12 | `groups.create.name.placeholder`, `groups.create.name.accessibilityLabel`; `groups.create.error.tooLong` | 1–80 characters after trimming; return = done |
+| Create Group / Save | C-05 (disabled while the trimmed name is empty; busy with the platform indicator) | `groups.create.cta` / `.save`; announcement `groups.create.creating` | upload cover (if any) → `create_group` / `update_group` → close the sheet and push `groups.screen` (new group) |
 
 ## States
 
 | state | when | design | copy |
 |---|---|---|---|
-| default | opened from `groups.list` (+ / empty state) | as Structure | — |
-| edit | opened from `groups.settings` (admin) | prefilled; cover shows the current cover; button `groups.create.save` | `groups.create.titleEdit`, `groups.create.save` |
-| creating / saving | upload + RPC | HUD (V-mthu t50.60) | `groups.create.hud.loading` |
-| error | RPC failed | presentation **BLOCKED** (`auth.phone.layout.inlineError`) | `groups.create.error.failed` / `.saveFailed` |
-| cover upload failed | Storage error | **BLOCKED** presentation; cover returns to the placeholder | `groups.create.error.cover` |
-| offline | no connection | **BLOCKED** presentation | `groups.create.offline` |
-| empty / permission-denied | — | none (system picker needs no permission) | — |
+| step A | opened from `groups.list` header glyph or empty-state CTA | as Structure A | — |
+| step B, kind preselected | opened from a template row | as Structure B, no back chevron | — |
+| edit | opened from `groups.settings` (admin) | step B prefilled with the cover and name; kind unchanged | `groups.create.titleEdit`, `groups.create.save` |
+| creating / saving | upload + RPC | capsule busy (C-05 / C-28); fields disabled | `groups.create.creating` (announced) |
+| create failed | RPC failed | message-only alert (`auth.phone.layout.inlineError`) | `groups.create.error.failed` + `auth.phone.error.dismiss` |
+| save failed | RPC failed (edit) | message-only alert | `groups.create.error.saveFailed` |
+| cover upload failed | Storage error | message-only alert; cover returns to empty | `groups.create.error.cover` |
+| offline | no connection | message-only alert on the capsule tap; the form stays | `groups.create.offline` |
+| empty / permission-denied | — | not applicable (the picker needs no permission) | — |
 
 ## Motion
 
-- Presentation: native sheet (`easing.global.native` sheet); Yope's sheet spring is BLOCKED (`spring.global.sheetPresent`, F-15).
-- After create: native push to the new group (Yope's measured 100 ms horizontal push, `duration.global.navigationPush`,
-  cannot be applied to a native push, F-11) and the sheet closes.
-- Segment change: the selected pill moves with `spring.global.platformDefault.ios` / `.android` (Yope's curve not
-  measured); Reduce Motion → cross-fade (`layout.global.reduceMotion`).
+- Sheet: native presentation (`spring.global.sheetPresent`, `duration.global.sheetPresent` 567 ms; C-29).
+- Step A → B: native push inside the sheet (`easing.global.native`). Chosen cover fades in `duration.global.fade`.
+- After create: the sheet closes (native) and `groups.screen` pushes. Reduce Motion: platform behaviour; fades stay.
 
 ## Haptics
 
-Segment changed → `haptic.global.select`. Group created / saved → `haptic.global.success`. Failed → `haptic.global.error`.
+Presses → `haptic.global.tap` (Android). Kind chosen → `haptic.global.select` (a choice among options, C-30 rule).
+Created / saved → `haptic.global.success`; failed → `haptic.global.error`.
 
 ## Accessibility
 
-- Segmented control: iOS `Picker(.segmented)`-equivalent semantics (each segment a button with the selected trait) /
-  Android `Role.Tab` + `selected`. Cover: button with the cover label.
-- Dynamic Type: title 14.5 → `subheadline`; field `subheadline`; section label `callout`; segment labels `subheadline`
-  (the control grows and labels wrap; no scale factor is sourced); button `subheadline`.
-- Focus order: ✕ → title → cover → name → label → segments → create.
-- Contrast: field text 18.42:1, placeholder 6.23:1, segment label on track 18.88:1, selected pill vs track 18.88:1,
-  camera glyph on cover 9.00:1 pass; field vs black 1.14:1, track vs black 1.11:1, cover vs black 2.33:1 **FAIL**
-  (non-text; labels/glyphs identify each control); disabled button exempt.
+- Template rows: one button each (title + description), the Create capsule a separate button with the same action.
+- Cover: image button with its label; the CTA under it repeats the action.
+- Dynamic Type: sheet title `headline`; question `largeTitle`; row title / description `subheadline`; field `body`;
+  capsule `headline`.
+- Focus order A: close → title → question → rows (row, Create). B: back → close → title → cover → cover CTA → name → capsule.
+- Contrast: rows as `groups.list` (rows 1, 3, 9, 13 of CONTRAST); typed text 18.59:1 / 15.13:1 (row 9); placeholder
+  **2.52:1 FAIL** light (row 11); cover / field fill vs page **1.13:1 / 1.39:1 FAIL** (row 13; non-text, labelled);
+  error text red on page **4.18:1 FAIL** light (row 31).
 
 ## Data & actions
 
 - Cover: upload to `u/<uid>/covers/<uuid>.jpg` (docs/API.md §9.2, §12 item 17).
-- `create_group(p_name, p_kind, p_time_zone: device IANA zone, p_cover_path?)` → `groups` (caller = admin).
-  Waking hours omitted (default window, `app_config.default_waking_*`, NULL until set).
-- Edit: `update_group(p_group_id, p_name?, p_kind?, p_cover_path?)` (admins; `""` removes the cover).
+- `create_group(p_name, p_kind, p_time_zone: device IANA zone, p_cover_path?)` → `groups` (caller = admin); waking hours
+  omitted (default window).
+- Edit: `update_group(p_group_id, p_name?, p_cover_path?)` (admins; `""` removes the cover).
 - Errors: `invalid_name`, `invalid_kind`, `invalid_time_zone`, `invalid_path`, `not_group_admin` (edit).
-- In: `groups.list` (+, empty state), `groups.settings` (edit). Out: `groups.screen` (new group, created empty state).
+- In: `groups.list` (header glyph, empty CTA, template rows), `groups.settings` ("Edit Group"). Out: `groups.screen`.
 
 ## Platform notes
 
-- iOS `.sheet` with the large detent (Yope's "new group" is full height); Android `ModalBottomSheet` expanded, or a
-  full-screen destination. Keyboard: system; return key "done".
+- iOS `.sheet` large detent with its own `NavigationStack`; Android `ModalBottomSheet` expanded (or a full-screen
+  destination) with an inner nav host. Keyboard: system; return key "done".
 
 ## Do-not-copy
 
-- Yope's 2024 "group suggestions" presets ("school squad", "birthday blitz", …) and "hide"; forced friend selection.
+- Retro's template photos, its user-styled cover titles and fonts (ED Lavonia, Chango, Mondwest …), and templates this
+  app has no kind for (Event, Couple, Kid(s), Hobbies — mapped onto friends / family / custom).
 
 ## Gaps
 
-| item | status | smallest capture / owner input |
+| item | status | smallest capture |
 |---|---|---|
-| group type step in Yope | not found → Yope segmented control (approximation) | none possible (Yope has no types); owner to confirm |
-| per-type defaults | none defined in the API (types change only copy here) | owner decision on any default (e.g. invitation hours) |
-| cover placeholder in a 2026 build | 2024 values (older than 12 months) | one screenshot of a 2026 Yope group-cover editor, if one exists |
-| label → control gap, error presentation | not measured / BLOCKED (`auth.phone.layout.inlineError`) | one ~40 s English recording of a fresh Yope install via "try other options" (errors); none for the gap |
-| HUD corner radius | not measured | lossless screenshot of the Yope Loading HUD |
+| Retro's New Album form as an image | composition | screenshots of Retro's "New Album" flow (name + cover) |
+| template thumbnails | Fill placeholders | owner photos (optional) |

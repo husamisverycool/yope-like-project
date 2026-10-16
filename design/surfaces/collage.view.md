@@ -1,109 +1,116 @@
 # collage.view — the same-moment collage of one daily invitation
 
-Reference: **BeReal** dual image (each answer) + **Yope** wall composition (how answers sit together) and Yope's
-day view (the screen around it). The owner has **not chosen** among options A / B / C
-(`design/collage-options/README.md`); the production fallback is **option B "wall pages"**, specified here as the
-worker composes it. If the owner picks A or C, only "The image" changes (proposal tokens `layout.collage.optionA/C`).
+**Visual reference: Retro's recap preview** (ST-04 2026, TC-REC 2023 phones 2–3: a rounded media page holding a
+blurred, colour-rich version of the photo; the recap card centred on it; a close circle; below the page, page dots and
+a white "Share" pill) — C-34 card on a blurred backdrop, C-11, C-31, C-09. **Mechanics:** the collage itself is the
+worker's composition of BeReal dual images (`daily.dualimage`) in the owner-pending layout (option B "wall pages",
+`design/collage-options/README.md`); its page corners (0.0498 × width) equal Retro's recap-card corners (≈ 4.5–5 %
+of the card width, TC-H), so the page is drawn as the card. Decisions: `design/MERGE_DECISIONS.md` RC-14, RC-15.
 
 ## References
 
 | image | what it verifies |
 |---|---|
-| `design/collage-options/option-B.jpg` (rendered by `backend/worker/src/collage/`) | the composed pages for 1–30 people |
-| `references/auto/yope/frames/b-presskit-wall.png` (C5) | 9:16 wall canvas, ≈20-pt corners |
-| `references/owner/yope-week-recap.jpg` (C1) | 3 columns, tiles touch, paged with dots |
-| `references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png` (S6) | screen: back circle, date title, page dots, paged content, bottom pill |
-| `references/auto/bereal/help/help-21083730354333_feed-bonus-3x.png` | the answer tile (see `daily.dualimage`) |
-| `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png` | loading HUD |
+| `references/auto/retro/store/retro-store-04.png` (ST-04, 2026) | media page geometry and corner, close circle, bottom row (`collage.view.layout.screen`), page dots, Share pill |
+| `references/auto/retro/press/tc-2023-12-recaps.png` phones 2–3 (TC-REC) | card centred on the blurred backdrop with ≥ 32-pt side insets; dark page dots; full-bleed variant |
+| `references/auto/retro/press/tc-2023-12-retro-header.png` (TC-H) | recap card shape (white card, ≈ 5 % corners, photo grid) |
+| `design/collage-options/option-B.jpg` | the composed pages for 1–30 people (worker) |
+| `references/auto/bereal/help/help-21083730354333_feed-bonus-3x.png` | the answer tile (`daily.dualimage`) |
 
-## The image (server-side, option B)
+## The image (server-side, unchanged)
 
-`collage.view.layout.page`: pages of **9:16**, 1080 px wide (Stories canvas), **3 columns × 4 rows** of answer tiles
-that touch (gap 0) — 3 × (4/9) = 16/9, so 3:4 tiles fill the page exactly; page corners 0.0498 × width (transparent
-in the master, matte `color.global.backgroundDeep` in the JPEGs); more than 12 answers continue on further pages; cells
-of a part-filled page stay `color.global.backgroundDeep`. Each tile = `daily.dualimage.layout.composition` at the tile
-width. Order: capture time, then member id. Only `in_window` posts are composed. Files under
-`g/<group_id>/collages/<collage_id>/`: `display-<n>.jpg` per page, `widget.jpg` (page 1), `share-<n>.jpg` (= the pages).
+`collage.view.layout.page`: 9:16 pages, 1080 px wide, 3 columns × 4 rows of answer tiles that touch, page corners
+0.0498 × width (transparent in the master, matte `color.global.backgroundDeep` in the JPEGs), more than 12 answers on
+further pages, empty cells `color.global.backgroundDeep`; tiles = `daily.dualimage.layout.composition`. Order: capture
+time, then member id; only `in_window` posts. Files under `g/<group_id>/collages/<collage_id>/<version>/`:
+`display-<n>.jpg`, `widget.jpg`, `share-<n>.jpg`.
 
-## Structure (screen)
+## Structure (393 × 852 pt) — `collage.view.layout.screen`
 
-Background `color.global.backgroundDeep`; positions on an 852-pt screen (`collage.view.layout.screen`).
+Full-screen modal on `color.global.backgroundDeep` (both appearances).
 
-1. **Header** centred 81 pt from the top: back circle (leading, `size.global.headerButton`,
-   `color.global.controlOnDeep`, `icon.global.back`, inset `size.global.headerInset`); centred title
-   `collage.view.title` (the invitation's date, '26 May'), `collage.view.fontSize.title` / `.fontWeight.title`,
-   `color.global.textPrimary`, on the circle's centre line.
-2. **Page dots** centred 125 pt from the top — only with 2+ pages: iOS native page control; Android dots
-   (`collage.view.layout.pageDots`: 7.6 pt, pitch 15.5, active `collage.view.color.pageDotActive`, inactive
-   `color.global.controlRaised`).
-3. **Page** from 145 pt: the current page image, 9:16, aspect-fit into the space above the home indicator and centred
-   (`collage.view.layout.screen.pageFit`), corners as composed. Horizontal paging between pages.
-4. **Share pill** bottom centre over the page — `collage.share`.
+1. **Media page** — full width, from the safe-area top to 94.8 pt above the screen bottom, corners 26.5
+   (`layout.global.cornerStyle`); filled with page 1's image blurred, full bleed (`layout.global.materials.backdrop`;
+   blur radius not measurable — Gap).
+2. **Close** circle (C-11 on media: `size.global.circleButton`, `color.global.controlOnDeep`, `icon.global.close`
+   in `color.global.textOnMedia`), centre 37.7 pt from the trailing edge and 38 pt below the media page top.
+3. **Card** — the current page image, aspect-fit and centred in the media page inset 76 pt top and bottom and ≥ 32 pt
+   at the sides (307 × 546 on this screen), clipped to `collage.view.layout.page.outerRadiusRatio` × its width
+   (continuous on iOS). Pages change by horizontal swipe; the backdrop stays page 1's.
+4. **Bottom row** (on black, below the media page), centred 59.2 pt above the screen bottom:
+   **page dots** (C-31, only with 2+ pages) centred — `size.global.pageDot`, `size.global.pageDotPitch`, active
+   `color.global.textOnMedia`, inactive `color.global.pageDotInactive` dark value (#808080; media surface);
+   **Share** pill (`collage.share`) at `size.global.buttonMarginH` from the trailing edge.
 
 ## Elements
 
-| element | tokens | copy | behavior |
+| element | component · tokens | copy | behaviour |
 |---|---|---|---|
-| back | `size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.back` | a11y `collage.view.a11y.back` | pops / dismisses |
-| title | `collage.view.fontSize.title`, `.fontWeight.title` | `collage.view.title` ({date} = `daily_invitations.local_date`, 'd Month') | — |
-| page dots | `collage.view.layout.pageDots`, `collage.view.color.pageDotActive`, `color.global.controlRaised` | Android a11y `collage.view.a11y.page` | tap / swipe changes page |
-| page | `collage.view.layout.page`, `daily.dualimage.layout.composition` | a11y `collage.view.a11y.collage` | swipe horizontally; no tile tap (not observed in Yope walls) |
-| share | see `collage.share` | `collage.share.button` | shares the current page |
+| media page | C-34 backdrop · `collage.view.layout.screen` (mediaPage*), `layout.global.materials` | — (decorative) | page 1 blurred |
+| close | C-11 on media | a11y `collage.view.a11y.close` | dismisses |
+| card / page | C-34 card · `collage.view.layout.page`, `daily.dualimage.layout.composition` | a11y `collage.view.a11y.collage` ({group}, {date} = `daily_invitations.local_date`, `retro.voice.formats`) | horizontal paging; no tile tap |
+| page dots | C-31 · `size.global.pageDot`, `.pageDotPitch`, `color.global.textOnMedia`, `color.global.pageDotInactive` (dark) | Android a11y value `collage.view.a11y.page` | tap / swipe changes the page |
+| share | C-09 light (`collage.share.layout.pill`) | `collage.share.button` | shares the current page (`collage.share`) |
 
 ## States
 
 | state | design | copy |
 |---|---|---|
-| loading (collage `status = pending` or image downloading) | HUD centred in the page area: 100 × 99 pt, corner 8.5, fill `collage.view.color.hud` (`collage.view.layout.hud`), platform activity indicator over the word in text role `body`, `color.global.textPrimary` | `collage.view.loading` |
-| empty (window closed, no answer → no collage row) | Yope empty state centred: `emptyTitle`, `emptyDetail` (`color.global.textSecondary`), light pill (`camera.capture.size.permissionButtonHeight`, `color.global.surfaceLight`, `radius.global.capsule`, text role `button`) | `collage.view.empty.title` / `.detail` / `.button` → `camera.capture` with the group preselected |
-| error (`status = failed`, or download failed) | same empty-state layout | `collage.view.error.title` / `.error.button` (refetch) |
-| offline | cached pages shown if present; else the same layout | `collage.view.offline.title` / `collage.view.error.button` |
-| recomposing (a post was deleted) | the previous pages stay until the new paths arrive (`image_path` null while recomposing → keep cache, else loading) | — |
+| loading (`status = pending` or pages downloading) | media page filled `color.global.controlOnDeep`; centred in it: platform activity indicator (`color.global.textOnMedia`, C-28) → `size.global.emptyIconToTitle` → line text role `emptyTitle` `color.global.textOnMedia`; no dots, no Share | `collage.view.loading` |
+| empty (window closed, nobody shared → no collage row) | media page `color.global.controlOnDeep`; C-27 on media: `icon.global.camera` (`size.global.emptyIcon`) → title `emptyTitle` → explanation `emptyDetail` `color.global.textSecondary` → C-07 outline capsule (border / label `color.global.textOnMedia`) | `collage.view.empty.title` / `.detail` / `.button` → `camera.capture`, group preselected |
+| error (`status = failed`, download failed) | media page `color.global.controlOnDeep`; one tappable line centred, text role `body`, `color.global.textOnMedia` (Retro's list-error line) | `collage.view.error.title` (tap refetches) |
+| offline | cached pages shown if present; else the error layout | `collage.view.offline.title` |
+| recomposing (a post was deleted) | previous pages stay until the new paths arrive | — |
 | permission-denied | n/a | — |
 
 ## Motion
 
 | motion | tokens | Reduce Motion |
 |---|---|---|
-| page swipe (finger-driven) | `duration.global.photoSwipe`, `easing.global.photoSwipe` (Yope's horizontal swipe) | swipe still tracks the finger; settle without bounce |
-| push in / back | `easing.global.native.navigationPush` | system |
+| modal in / out | native full-screen cover (`easing.global.native.sheet`); custom presentations match `spring.global.sheetPresent` | cross-fade |
+| card and backdrop appear when loaded | `duration.global.fade` (150) + `easing.global.standard` | same |
+| page swipe | finger-tracked, platform pager settle (`easing.global.native`) | tracks the finger, no bounce |
+| dot change | `duration.global.crossfade` (100) | same |
 
 ## Haptics
 
-None (page changes are not selections; HIG: avoid overusing).
+Close and Share presses: `haptic.global.tap` (Android VIRTUAL_KEY; iOS none). Page changes: none (not a selection).
 
 ## Accessibility
 
-- Back `collage.view.a11y.back`; title is a header; each page one image element `collage.view.a11y.collage`;
-  Android dots expose `collage.view.a11y.page`; iOS page control speaks its own value.
-- Dynamic Type: title → callout (`collage.view.layout.textStyleMap`); HUD word → body.
-- Focus order: back → title → page dots → page → share.
-- Contrast: white title on black 21:1; active dot #F4F4F4 on black 19.09:1 pass; **inactive dot
-  `color.global.controlRaised` on black 2.12:1 FAIL** (no sourced alternative; iOS uses the native control);
-  HUD text white on #0C0C0C 19.56:1 pass; HUD vs black 1.07:1 (container edge).
+- Close `collage.view.a11y.close`; each page one image element `collage.view.a11y.collage`; Android dots expose
+  `collage.view.a11y.page` ("2 of 3"); iOS page control speaks its own value. Backdrop hidden.
+- Dynamic Type: `emptyTitle` → title3, `emptyDetail` → subheadline, `body` → subheadline.
+- Focus order: close → page → page dots → Share.
+- Contrast (both appearances identical — media surface): glyph `textOnMedia` on `controlOnDeep` 15.13:1 pass;
+  close fill vs blurred backdrop: photo-dependent; active dot `textOnMedia` on black 21.00:1, inactive #808080 on black
+  5.32:1 pass (non-text); state text `textOnMedia` / `textSecondary` on `controlOnDeep` 15.13:1 / 5.31:1 pass.
 
 ## Data & actions
 
-- `collages` where `invitation_id = <id>` (read: members), show only `status = 'ready'`; page count =
-  ceil(`post_ids.count` / 12); page n = `display-<n>.jpg` in `image_path`'s folder (worker pipeline; confirm the
-  `image_path` contract with the worker team). Signed URLs (1 h).
-- In: `app://daily?…` after `closes_at`, the group screen's daily item, the widget's collage (tap → camera per
-  Locket, so not from the widget). Out: back; `collage.share`; `camera.capture` (empty state).
+- `collages` where `invitation_id = <id>` (members), shown when `status = 'ready'`; pages from `page_count`
+  (`display-<n>.jpg` in `image_path`'s folder); signed URLs (1 h).
+- In: `app://daily?…` after `closes_at`, the group screen's daily item. Out: close; `collage.share`; `camera.capture`
+  (empty).
 
 ## Platform notes
 
-iOS `TabView(.page)` with the native index display; Android `HorizontalPager` + drawn dots. The worker's token names
-differ from these canonical names (C-21).
+iOS `TabView(.page)` (index display hidden; dots drawn per C-31 on black) or a native page control styled with the
+same tokens; Android `HorizontalPager` + C-31 dots. Blurred backdrop: iOS `.blur(radius:)` on the image, Android
+`Modifier.blur` (API 31+; below 31 the backdrop is `color.global.controlOnDeep`). The worker's token names are the
+canonical ones (C-21 resolved).
 
 ## Do-not-copy
 
-Yope wordmark watermark; cut-out stickers and decorations of Yope walls; any count of who answered ('{n} answered');
-any 'missed' / 'late' marker for members without a tile.
+Retro: the bottom-left selected-photos thumbnail with its count badge ("9"), "2023 / nathan / retro.app" footer,
+wordmark, Rive collage loader. Yope: day view (back circle, '26 May' title), loading HUD, watermark, stickers. Any count
+of who answered; any 'missed' / 'late' marker for members without a tile.
 
 ## Gaps
 
-| item | status | capture |
+| item | status | capture / decision |
 |---|---|---|
-| option choice | owner (A / B / C) | owner |
-| how Yope fills a part-empty page / short row | not observed | one Yope recording of a weekly recap with 2–5 photos |
-| tile tap to open one answer | not built (not observed) | — |
+| collage option (A / B / C, or a Retro recap-card composition — RC-14) | owner | owner |
+| backdrop blur radius | not measurable (C-34 Gap) | none from stills |
+| exact media-page corner | ±1.5 pt (fit limited by page content) | one raw iOS screenshot of a Retro recap preview |
+| part-filled page in Yope | not observed | (only if option B stays) |

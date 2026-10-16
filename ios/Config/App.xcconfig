@@ -13,5 +13,5 @@ INFOPLIST_KEY_NSSupportsLiveActivities = YES
 // iPad multitasking requires every orientation (platform rule); iPhone orientations are left to
 // the platform default until the screens pass specifies them.
 INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
-// Dark appearance only, system surfaces included (layout.global.appearance, MERGE_DECISIONS F-1).
-INFOPLIST_KEY_UIUserInterfaceStyle = Dark
+// No UIUserInterfaceStyle key: the app follows the system Light / Dark setting (layout.global.appearance,
+// MERGE_DECISIONS R-1); media surfaces stay black through color.global.backgroundDeep, not a forced appearance.

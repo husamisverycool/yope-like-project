@@ -20,7 +20,7 @@ extension View {
     /// `perform` runs `block_user` (e.g. `SafetyRepository.block(userID:)`). While it runs the dialog's place shows the
     /// platform progress indicator; on failure the dialog comes back with its message replaced by
     /// `safety.block.error` and `haptic.global.error` plays. On success `haptic.global.warning` plays, the toast
-    /// `safety.block.done` is shown through `toasts` (the lime toast, `ToastCenter`) and
+    /// `safety.block.done` is confirmed through `toasts` (`ToastCenter`: an accessibility announcement, C-26) and
     /// `onBlocked` runs so the screen can refetch (the person's content disappears through RLS).
     func blockConfirmation(
         target: Binding<BlockTarget?>,

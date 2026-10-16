@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Dark only (layout.global.appearance: "android: dark color scheme only"): the platform's dark
-         window theme in every configuration. The window background and system bars are set from
-         tokens in MainActivity; the Compose theme (app.ui.theme.AppTheme) is built from tokens. -->
-    <style name="Theme.App" parent="android:Theme.Material.NoActionBar" />
+    <!-- Follows the system Light / Dark setting (layout.global.appearance), as Retro does: its Theme.Retro
+         parent is Theme.Material.Light.NoActionBar (retro-package-copy-motion.md §3.1); values-night/ holds
+         the dark parent. The window background and system bars are set from tokens in MainActivity; the
+         Compose theme (app.ui.theme.AppTheme) is built from tokens. -->
+    <style name="Theme.App" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>

@@ -1,91 +1,96 @@
 # `onboarding.widget` — guided add-the-widget step
 
-Reference: **Locket** (`docs/SURFACES.md`). Research: `design/research/locket.md` §8, §11; `design/copy-patterns.md`
-`locket.onboarding.widgetSteps`; MERGE_DECISIONS F-18 (Locket's Sentence case governs here). Tokens: `onboarding.widget.*`.
-Copy: `onboarding.widget.*`.
-
-**Locket's in-app widget tutorial screens were not seen as images** (locket §8); their copy comes from Locket's Android
-bundle and help centre. The layout below uses the **welcome screen of the same Locket onboarding flow** (LZ welcome:
-text block + content-width yellow capsule) — an approximation noted in Gaps.
+Visual reference: Retro Settings → **Widgets** (inventory #28, VID-SET: rounded widget thumbnails) and Retro's widget art
+and upsell (inventory #34: `apk/widget_preview_*.webp`, 22 dp corners; APK-S `home_widget_nux_upsell_*`, `widget_add`,
+`widget_added`, `widget_pin_failed`). Mechanics: Locket's add-widget steps (content pattern
+`locket.onboarding.widgetSteps`). Composition: `level: SOURCED`, `method: "composition of Retro components C-33
+(onboarding page title), widget preview art (34), C-11 numbered circles, C-05, C-08 in Locket's step order"`.
+Tokens: `onboarding.widget.*`. Copy: `onboarding.widget.*`.
 
 ## References
 
 | id | file / URL | used for |
 |---|---|---|
-| LW | `references/auto/locket/lazyweb/locket-lazyweb-20260821-cap-welcome.png` | background, title line (33 pt bold white), tagline style (22 pt, #B8B6B2, 32 pt pitch), yellow CTA 54 pt with → |
-| LT | `references/owner/locket-add-widget-steps.jpg` (TT 2023, CAPTURED) | numbered steps "1. Edit Home Screen / 2. Click on + in left corner / 3. …" |
-| HC | https://help.locket.com/en/articles/7914857 | iPhone and Android step text, "You're done!" |
-| APK | Locket Android 1.243.0 string table | title "Add the widget\nto your home screen", Android steps |
-| LP3 | `references/auto/locket/lazyweb/locket-lazyweb-20260821-cap-personalization-3.png` | "Continue" |
+| W34 | `references/auto/retro/apk/widget_preview_friends.webp` (158 × 158 dp art) | preview tile size `onboarding.widget.size.preview`; full-bleed photo look |
+| APK-X | `references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt` (qmh.java, Glance corner 22 dp) | `onboarding.widget.radius.preview` |
+| VID-SET | `references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png` | Widgets section in Settings (entry point) |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | upsell title / message, "Add Widget", toasts |
+| HC | https://help.locket.com/en/articles/7914857 ; Locket Android 1.243.0 strings | step text |
 
-## Structure (full screen, vertical gradient `onboarding.widget.color.backgroundTop` → `.backgroundBottom`)
+## Structure (page `color.global.background` / `.background.android`; scrolls when the steps do not fit)
 
-1. Status bar (light).
-2. Title `onboarding.widget.title` (2 lines), centred, cap top `groups.create.size.sheetTopToTitle` below the safe area.
-3. Gap `groups.create.size.titleToContent`.
-4. Steps, centred, one paragraph each, each prefixed "1.", "2.", … (numeral + period, LT):
-   - iOS: `onboarding.widget.step.ios.1` … `.5`;
-   - Android: `onboarding.widget.step.android.1` … `.3`;
-   - then `onboarding.widget.done` (no number).
-   Paragraph spacing = one line pitch (`onboarding.widget.lineHeight.step`). Side margins `paywall.size.perkMarginH` (Locket 20 pt).
-5. Flexible space.
-6. CTA capsule `onboarding.widget.continue` + trailing arrow, content width, centred, bottom of the safe area minus
-   `groups.create.size.fieldToButton`.
+1. C-02 header row: back chevron only when opened from `settings.root`; none inside onboarding.
+2. Title `onboarding.widget.title` (`font.global.display`, `displayMedium`), leading, baseline `size.global.titleTop`.
+3. Explanation `onboarding.widget.detail` under it (`body`, `color.global.textSecondary`).
+4. `size.global.titleToContent` below: **preview tile** `onboarding.widget.size.preview` (158) square, corners
+   `onboarding.widget.radius.preview` (22, `layout.global.cornerStyle`), centred: the newest photo from the person's
+   groups, aspect-fill, with the widget's bottom scrim (`layout.global.photoScrim`) and the sender's first name in
+   text role `listTitle` `color.global.textOnMedia` bottom-trailing (Retro widget art: name stack bottom-right). No photo
+   yet → `color.global.control` fill with `icon.global.gallery` centred in `color.global.textSecondary`.
+5. `size.global.titleToContent` below: **steps**, one row each (iOS `onboarding.widget.step.ios.1` … `.5`; Android
+   `.step.android.1` … `.3`): a 36 pt circle (`size.global.circleButton`, `color.global.control`) holding the numeral in
+   text role `listTitle` `color.global.textPrimary`, then the step text (text role `body`, `color.global.textPrimary`)
+   starting `size.global.rowThumbGap` (17) after the circle; rows `size.global.sectionHeaderToContent` (11.7) apart.
+   After the last step: `onboarding.widget.done` (text role `listTitle`).
+6. Flexible space.
+7. Bottom (frame of the `auth.*` capsules): iOS — C-05 `onboarding.widget.continue`. Android — C-05
+   `onboarding.widget.add` (pin request) and, `auth.phone.size.capsuleToLink` below, C-08 `onboarding.widget.skip`.
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| background | `onboarding.widget.color.backgroundTop`, `.backgroundBottom` (linear, top → bottom) | — | — |
-| title | `onboarding.widget.fontSize.title`, `.fontWeight.title`, `.color.title` | `onboarding.widget.title` | static |
-| steps | `onboarding.widget.fontSize.step`, `.fontWeight.step`, `.lineHeight.step`, `.color.step` | step keys above | static text; the numerals are part of the rendered text |
-| CTA | height `onboarding.widget.size.ctaHeight`, fill `.color.cta`, label `.fontSize.ctaLabel` bold in `.color.ctaLabel`, arrow `.icon.ctaArrow` (width `.size.ctaArrow`) in `.color.ctaLabel` after `.size.ctaArrowGap`, padding `.size.ctaPaddingH` on both sides, shape `radius.global.capsule` | `onboarding.widget.continue` | always enabled; moves on whether or not a widget was added (no check, no gate) |
+| preview | `onboarding.widget.size.preview`, `onboarding.widget.radius.preview`, `layout.global.photoScrim`, `color.global.textOnMedia`; fallback `color.global.control` + `icon.global.gallery` | `onboarding.widget.preview.accessibilityLabel` | decorative preview of what the widget shows |
+| step rows | C-11 circle (`size.global.circleButton`, `color.global.control`), text roles `listTitle` / `body` | step keys; `onboarding.widget.stepNumber.accessibilityLabel` | static |
+| Next (iOS) | C-05 | `onboarding.widget.continue` | moves on whether or not a widget was added (no check, no gate) |
+| Add Widget (Android) | C-05 | `onboarding.widget.add`; result toasts `onboarding.widget.added` / `onboarding.widget.pinFailed` (C-26) | `AppWidgetManager.requestPinAppWidget` (when `isRequestPinAppWidgetSupported`), then moves on; unsupported launcher → the steps are the path |
+| Maybe later (Android) | C-08 | `onboarding.widget.skip` | moves on |
 
 ## States
 
 | state | design |
 |---|---|
 | default | as Structure |
-| returning to the app from the Home Screen | same screen, unchanged (no "did you add it?" question) |
-| loading / empty / error / offline / permission-denied | not applicable (static, no network, no permission) |
+| no photo yet | preview fallback |
+| back from the Home Screen | unchanged (no "did you add it?" question) |
+| pin failed (Android) | toast `onboarding.widget.pinFailed`; the page stays |
+| loading / empty / error / offline / permission-denied | not applicable (the preview uses cached data or the fallback) |
 
 ## Motion
 
-Native push in/out. No animation on this screen (the tutorial's motion was not observed). Reduce Motion: unchanged.
+Onboarding page transition in / out (`duration.global.pageTransition`, fade + expand). From Settings: native push.
+Preview photo fades in `duration.global.fade`. Reduce Motion: cross-fades.
 
 ## Haptics
 
-None (no sourced interaction beyond a button press; `haptic.global.*` are for outcomes).
+Presses → `haptic.global.tap` (Android). Widget added → `haptic.global.success`.
 
 ## Accessibility
 
-- Each step is one element; VoiceOver/TalkBack reads `onboarding.widget.stepNumber.accessibilityLabel` ("step {number}")
-  then the text. The arrow is decorative (hidden).
-- Dynamic Type (F-13 rule): title 33 → `largeTitle`; steps 22 → `title2`; CTA 18 → `headline`. The steps scroll when
-  they no longer fit.
-- Focus order: title → steps → CTA.
-- Contrast: title 19.72:1, steps 9.74:1 / 9.80:1, CTA label 8.62:1, CTA vs background 11.44:1 — all pass.
+- Each step is one element: "Step {number}, <text>". The preview is one image with its label.
+- Dynamic Type: title `largeTitle`, explanation and steps `subheadline`, capsule `headline`.
+- Focus order: title → explanation → preview → steps → capsule → link.
+- Contrast: steps 21:1 (row 1); numeral on the #F1F1F1 / #262626 circle 18.59:1 / 15.13:1 (row 9); explanation light
+  **2.85:1 FAIL** (row 3); preview name on photo: photo-dependent (white over the bottom scrim, failure 8 of CONTRAST).
 
 ## Data & actions
 
-No API. In: `onboarding.permission.notifications`. Out: pending invite → `join_group(token)` → `groups.screen`;
-otherwise `groups.list` (whose empty state offers `groups.create`).
+No API (the preview reads the newest cached post across the person's groups). In: `onboarding.permission.notifications`
+(onboarding) or `settings.root` → Widgets row. Out: pending invite → `join_group(token)` → `groups.screen`; else `groups.list`;
+from Settings: back.
 
 ## Platform notes
 
-- iOS steps name the current iPhone system UI ("Edit", "Add Widget"); Android steps follow Locket's Android strings.
-  Android could add a pin request (`AppWidgetManager.requestPinAppWidget`), but Locket's use of it was not observed, so it
-  is not part of this spec.
-- Case: Locket's Sentence case here, mid-onboarding after Yope's lowercase screens (F-18, owner to confirm).
+- iOS steps name the current system UI ("Edit", "Add Widget"). Android pins through the launcher, as Retro's Android app
+  does (`AppWidgetPinReceiver`).
 
 ## Do-not-copy
 
-- "Have you enabled the widget?" / "I've enabled the widget" gate; "Locket doesn't work unless you add the widget to your
-  home screen." (pressure); Locket's logo, the phone illustration, the help-centre drawings, Proxima Soft.
+- "Have you enabled the widget?" gates; "doesn't work unless you add the widget" pressure; Retro's "Post to see" widget
+  lock; Retro's and Locket's illustrations.
 
 ## Gaps
 
 | item | status | smallest capture |
 |---|---|---|
-| tutorial screen layout (title size, step style, illustration) | approximation from the welcome screen of the same flow | screenshots (or a 30-s recording) of Locket's in-app Settings → "Widget Tutorial" on an iPhone |
-| illustration | none (Locket's art is do-not-copy) | owner art, optional |
+| Retro's in-app widget education (Settings → Widgets tap) | not captured | one screenshot after tapping a widget thumbnail in Retro's Settings (iOS) |

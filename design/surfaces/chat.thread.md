@@ -1,226 +1,201 @@
 # `chat.thread` — group chat thread
 
-Reference app: **Yope** group chat (`docs/SURFACES.md`); reactions shown in the thread are **Locket**'s (`chat.reactions`).
-Research: `design/research/yope-b.md` §1 (primary), `design/research/yope-a.md` §1, §2.12; `design/research/locket.md` §7.
-Tokens: `design/tokens/social.json` (`chat.thread.*`) + `design/tokens/global.json` by name. Copy: `design/copy/social.json`
-(`chat.thread.*`). Decisions: `design/MERGE_DECISIONS.md` → Social (S-1 … S-15).
+Redesign on **Retro** (docs/REDESIGN_BRIEF.md). Visual reference: Retro **Messages** (screen 31, pushed serif header) and
+Retro's **comment rows** under a photo (screen 15) — Retro's message thread itself was not captured, so the thread is
+**composed of Retro components** (C-02, C-16, C-18, C-15, C-20, C-13, C-27) in the order of the mechanics references
+**Apple Messages / WhatsApp** (runs, replies, failed sends), with Retro's own thread strings from its Android package.
+Tokens: `design/tokens/social.json` (`chat.thread.*`) + `global.*`; components `design/components.md`. Copy:
+`design/copy/social.json` (`chat.thread.*`). Decisions: `design/MERGE_DECISIONS.md` → Redesign — Social (RS-1 … RS-6).
+Composition record: `level: SOURCED`, `method: "composition of Retro components C-02, C-16, C-18, C-15, C-20, C-13, C-27
+in Apple Messages / WhatsApp's order"`.
 
 ## References
 
 | id | file | used for |
 |---|---|---|
-| S1 | `references/auto/yope/store/yope-store-05.png` (lossless, listing 1.229.0); coordinates in `references/auto/yope/frames/b-derot-store-05-rot-1.68.png` | **primary**: header, bubbles, avatars, photo messages, emoji-only message, voice bubble, composer, gaps; colours re-sampled on the lossless pixels (S-2) |
-| S3 | `references/auto/yope/frames/b-play-04.png` | same design re-rendered for Google Play (cross-check, not independent) |
-| O1 | `references/owner/yope-04-chat.webp` | owner copy of S1 (cross-check) |
-| S5-r | `references/auto/yope/frames/b-yopeapp-7591560669967682847-t49.50-reply-to-photo.png` | reply to a photo (lime quote), caption box on a photo |
-| S5-t | `references/auto/yope/frames/b-yopeapp-7591560669967682847-t48.50-1on1-thread.png`, `references/owner/yope-1on1-feed.jpg`, `-feed-2.jpg` | 1:1 space (different screen): portrait photo cards, caption box — context only |
-| V-mthu | `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png`, `…-t50.60-loading-hud.png` | empty state, loading HUD |
-| S6 | `references/auto/yope/frames/b-alexaa-7652512140875566349-t5.83-group-chat-pill.png` | 2026 header circles (‹, film strip) |
-| AS-4 | `references/auto/locket/store/locket-store-04.png` | reaction cluster on photos (see `chat.reactions.md`) |
+| ENG-M | `references/auto/retro/press/engadget-2026-08-the-problem-with-friends-only-socials-1786385236.jpg` (live app, light, 780 × 438, low-res) | pushed header "‹ Messages" in the display serif; search field; inbox row (avatar, name, grey "Thank you · 5d"). Measured only as layout (phone photographed at an angle, ≈0.45 px/pt) |
+| TC-2B | `references/auto/retro/press/tc-2023-07-retro-2b.jpg` phone 2 (2.209 px/pt) | comment row (avatar 31, "elton 2h", text), row metrics `chat.thread.dimension.rowAvatarToText` / `.rowLinePitch`; message field (C-13) |
+| ST-01 | `references/auto/retro/store/retro-store-01.png` | photo card (C-18) used for photo messages |
+| TC-J1 | `references/auto/retro/press/tc-2024-04-journals-1.webp` | dated section header ("January 25, 2024") used as the day divider |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | Retro's thread strings: "Send a message…", "Reply…", "Replying to %1$s", "Today", "Yesterday", "Post by %1$s", "Week %1$d", "Unsend", "Retry", "Sending", "Error loading your messages" |
+| APK-X | `references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt` | message "entry animation" (250 ms, linear), composer fade 150 ms |
+| IM | `references/auto/imessage/apple-support/messages-tapbacks-ios27.png`, `…/messages-not-delivered.png` | mechanics: runs with one avatar per incoming run; failed message label under the message |
+| WA | `references/auto/whatsapp/store/whatsapp-store-04.png` | mechanics: sender shown once per run; reaction summary under a message |
 
 ## Structure (top → bottom)
 
-Screen background `color.global.background` (#171717). The message list scrolls under a floating header; newest message
-at the bottom, just above the composer.
+Page `color.global.background` (iOS) / `color.global.background.android` (Android) — the thread follows the system
+appearance (it is not a media surface).
 
-1. **Header** (floats over the list, top safe area): ‹ circle at the left (`size.global.headerInset` from the edge) → gap
-   `size.global.headerGap` → **group capsule** (hugs its content) → film-strip circle at the right (`size.global.headerInset`).
-   No calendar circle (that belongs to `groups.screen`), no streak pill.
-2. **Message list** (vertical scroll), each run of consecutive messages from one sender stacked with the gaps below:
-   - another member's messages: left; their avatar sits in the avatar column only beside the **last** message of a run,
-     bottom-aligned with it;
-   - my messages: right, no avatar;
-   - message kinds: text bubble, emoji-only message, photo message, reply to a photo (text or photo), voice message
-     (`chat.voice.md`).
-   No day separators, no timestamps on text bubbles (S1 shows none; MERGE_DECISIONS S-6).
-3. **Composer** pinned at the bottom (`chat.composer.md`).
-
-### Message geometry
-
-| item | left edge | right edge | height | corners | fill |
-|---|---|---|---|---|---|
-| their text bubble | `chat.thread.dimension.bubbleInsetTheirs` (50.5) | hugs text: `chat.thread.dimension.bubblePaddingH` each side; max `chat.thread.dimension.bubbleMaxWidth` (256 = 0.652 × screen width, iMessage; Gap fill G-1) | `chat.thread.dimension.bubbleHeight` (35.6) per single line | `chat.thread.radius.bubble` (16) all four, no tail | `chat.thread.color.bubbleTheirs` + hairline rim (`chat.thread.dimension.bubbleRim`) shading from `chat.thread.color.bubbleRimTheirsTop` at the top to `…BubbleRimTheirsBottom` at the bottom |
-| my text bubble | hugs text, max `chat.thread.dimension.bubbleMaxWidth` | `chat.thread.dimension.bubbleInsetMine` (23) | same | same | `chat.thread.color.bubbleMine` + rim `…bubbleRimMineTop` → `…bubbleRimMineBottom` |
-| avatar | `chat.thread.dimension.avatarInset` (11.2) | `+ size.global.avatarSmall` (32.6, circle) | — | circle | photo / `icon.global.person` |
-| avatar → bubble | `chat.thread.dimension.avatarGap` (6.7) | | | | |
-| emoji-only message | as a bubble of that sender | | emoji rendered `chat.thread.dimension.emojiOnlyGlyph` (47.5) wide, no bubble | — | — |
-| photo message | `chat.thread.dimension.bubbleInsetTheirs` (photo x 51.2 in S1, within 0.7) | `chat.thread.dimension.photoInsetTrailing` (18.7) → 323 wide on a 393-pt screen | width × 174 / 323 (`chat.thread.dimension.photoWidth` × `…photoHeight`) | `radius.global.photo` (15) | the photo, `chat.thread.layout.photoFit` (aspect fill, centred) |
-
-Vertical gaps: same-sender bubble → bubble `chat.thread.dimension.gapSameSender` (3.6); text → voice of the same sender
-`chat.thread.dimension.gapTextToVoice` (4.7); photo → photo `chat.thread.dimension.photoGap` (15.3); between runs of
-different senders `chat.thread.dimension.gapBetweenSenders` (15). Gaps between a photo and a bubble were not measured:
-`chat.thread.dimension.photoGap` is used (flagged, Gaps).
-
-### On a photo message (top → bottom, over the photo)
-
-1. **Time** centred on the photo: text role `overlayTime` (`fontSize.global.overlayTime` 21, `fontWeight.global.overlayTime`
-   heavy), `color.global.textPrimary`, format `chat.thread.layout.timeFormat` (`h:mm a`, e.g. "10:00 PM").
-2. **Caption box** (only when the post has a caption), horizontally centred, `chat.thread.dimension.captionInsetBottom`
-   above the photo's bottom edge: height `chat.thread.dimension.captionHeight`, padding `chat.thread.dimension.captionPaddingH`,
-   corners `chat.thread.radius.caption`, fill `color.global.scrim` (**BLOCKED**, translucent), text `chat.thread.fontSize.caption`
-   / `chat.thread.fontWeight.caption` in `color.global.textPrimary`, one line, tail truncation (S-8).
-3. **Reaction cluster** bottom-left (`chat.reactions.md`): `chat.reactions.dimension.clusterInsetLeading` /
-   `.clusterInsetBottom`; never a number.
-
-### Reply to a photo (S5-r)
-
-One bubble, two stacked parts, sender-aligned like a text bubble, width = the quote's natural width (142 pt observed,
-`chat.thread.dimension.replyWidth`).
-
-1. **Quote part**: height `chat.thread.dimension.replyQuoteHeight` (64), fill `color.global.accent`, top corners
-   `chat.thread.radius.replyQuote` (18.2). Inside: black quote bar (`color.global.onAccent`, width
-   `chat.thread.dimension.replyQuoteBar`, at `chat.thread.dimension.replyQuoteBarInset` from the left, spanning the name and
-   label lines); the poster's first name (`chat.thread.fontSize.replyName` / `.fontWeight.replyName`, `color.global.onAccent`)
-   at `chat.thread.dimension.replyTextInset`, cap top `chat.thread.dimension.replyNameCapTop`; under it the word **"pic"**
-   (`chat.thread.reply.photoLabel`; `chat.thread.fontSize.replyLabel` / `.fontWeight.replyLabel`, `color.global.onAccent`)
-   with its baseline at `chat.thread.dimension.replyLabelBaseline`; at the right a square thumbnail of the photo
-   (`chat.thread.dimension.replyThumb`, corners `chat.thread.radius.replyThumb`, `chat.thread.dimension.replyThumbInsetTop`
-   from the top, `chat.thread.dimension.replyThumbInsetTrailing` from the right; `thumb_path`).
-2. **Text part** below, overlapping the quote's bottom so the lime shows behind its top corners: a text bubble of the
-   sender (height `chat.thread.dimension.bubbleHeight`, `chat.thread.radius.bubble`, the sender's bubble fill — S-5).
-
-**Reply to a photo with a photo** (create_post with `p_reply_to_post_id`): the photo message with the quote part attached
-above it — an approximation built from the two observed parts (S-7, Gaps).
-When the quoted photo is deleted (`reply_to_post_id` becomes null), the quote part is removed and the message stays.
+1. **Header — C-02 pushed**: back chevron `icon.global.back` (ink at `size.global.backInset`), then the group's name as the
+   serif title (text role `headerTitle`, `font.global.display`, `color.global.textPrimary`) `size.global.headerGap` after the
+   chevron; one line, tail truncation. No trailing glyphs (the group's settings, recap and walls are reached from
+   `groups.screen`, which this screen is pushed from). Content starts `size.global.titleToContent` below the title baseline.
+2. **Message list** (vertical scroll, oldest at the top, newest at the bottom above the composer), inside
+   `size.global.screenMargin`:
+   - **Day divider** before the first message of each day — C-20 dated variant without "•••": `chat.thread.divider.today`,
+     `chat.thread.divider.yesterday`, else the date "MMMM d, yyyy" (text role `sectionLabel`, `color.global.textPrimary`);
+     `size.global.sectionGap` above it, `size.global.sectionHeaderToContent` below its baseline (`chat.thread.layout.timeFormat`).
+   - **Runs** (`chat.thread.layout.runs`): consecutive messages from one sender. The run's first row is the C-16 comment row:
+     avatar `size.global.avatarComment` at the margin, its top on the name line's ascender; then, `chat.thread.dimension.rowAvatarToText`
+     after the avatar, the sender's display name (text role `listTitle`, `color.global.textPrimary`) and, one space after it,
+     the time (`chat.thread.layout.timeFormat`, text role `caption`, `color.global.textSecondary`). Every item of the run sits
+     in the text column (left edge = name ink):
+     - **text** — text role `body`, `color.global.textPrimary` (Android `fontSize.global.body.android` /
+       `lineHeight.global.body.android`), first baseline `chat.thread.dimension.rowLinePitch` below the name baseline, lines
+       at the same pitch; links and long words wrap. A message of only 1–3 emoji (`chat.thread.count.emojiOnlyMax`) renders
+       its emoji at `fontSize.global.headerTitle`.
+     - **photo** — C-18 photo card (`chat.thread.layout.photoFit`: `size.global.friendCardWidth` × `.friendCardHeight`,
+       `radius.global.card`, aspect fill). The post's caption follows as a text item; a voice note follows as the voice
+       capsule (`chat.voice.md`); the reaction chip follows the photo (`chat.reactions.layout.chip`,
+       `chat.reactions.dimension.chipTop` below it).
+     - **voice** — the voice capsule (`chat.voice.layout.capsule`).
+     - **reply quote** (`chat.thread.layout.replyQuote`) above the reply it belongs to: a C-15 row for a quoted photo
+       (thumbnail `size.global.rowThumbWidth` × `.rowThumbHeight`, `radius.global.thumbnail`, `chat.thread.reply.postTitle`
+       over `chat.thread.reply.postWeek`), or one grey line for a quoted message ("**name** text…").
+     - **status line** under your own last message while it is in flight (`chat.thread.sending`) or after it failed
+       (`chat.thread.sendFailed`, `chat.thread.layout.failedMessage`).
+     Items inside a run are `chat.thread.dimension.itemGap` apart; runs are `size.global.listGap` apart. Later messages of
+     a run carry no avatar or name. Your own messages use the same row (Retro shows everyone's comments the same way).
+3. **Composer** pinned at the bottom (`chat.composer.md`; C-13 field). When replying, the reply bar sits above the field.
+4. The message list's bottom content inset = the composer's height + `chat.composer.dimension.bottomInset`; the list keeps
+   the newest message in view when the keyboard rises.
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | component · tokens | copy | behaviour |
 |---|---|---|---|
-| back circle | `size.global.headerButton`, `color.global.control`, `icon.global.back` in `color.global.textPrimary`, `size.global.headerInset` | `chat.thread.a11y.back` | pops to `groups.screen` |
-| group capsule | `chat.thread.dimension.headerCapsuleHeight`, `color.global.control`, `radius.global.capsule`, `size.global.avatarHeader`, text role `headerTitle`, `icon.global.chevron` in `color.global.textSecondary`; insides as the group header in `design/surfaces/groups.screen.md` | group name (data); `chat.thread.a11y.groupCapsule` | opens the group profile / `groups.settings` |
-| film-strip circle | `size.global.headerButton`, `color.global.control`, `icon.global.recap` | `chat.thread.a11y.recap` | opens `week.recap` (latest ready recap); hidden while the group has none |
-| text bubble | table above; text role `body` (`fontSize.global.body` 17 regular) in `color.global.textPrimary` | message text (data); `chat.thread.a11y.message` / `.messageMine` | long press → native context menu (see Data & actions) |
-| emoji-only message | `chat.thread.dimension.emojiOnlyGlyph`; threshold `chat.thread.count.emojiOnlyMax` (3: a message of only 1–3 emoji renders large without a bubble; 4+ as a text bubble — Messages / WhatsApp rule, G-2) | emoji (data) | as a text bubble |
-| sender avatar | `size.global.avatarSmall`, `chat.thread.dimension.avatarInset`, `.avatarGap` | decorative (the message label carries the name) | tap → `walls.member` |
-| photo message | table above; `radius.global.photo`; `chat.thread.layout.photoFit` | `chat.thread.a11y.photo` / `.photoMine` + `chat.thread.a11y.caption` | tap → `photo.viewer` (this thread's photos, chronological); long press → `chat.reactions` picker |
-| time on photo | text role `overlayTime`, `color.global.textPrimary`, `chat.thread.layout.timeFormat` | time (data) | — |
-| caption box | `chat.thread.fontSize.caption`, `.fontWeight.caption`, `.dimension.captionHeight`, `.captionPaddingH`, `.captionInsetBottom`, `.radius.caption`, `color.global.scrim` (**BLOCKED**) | caption (data) | — |
-| reaction cluster | `chat.reactions.*` | `chat.reactions.a11y.cluster` | tap → reactions list (`chat.reactions.md`) |
-| reply quote | quote tokens above | `chat.thread.reply.photoLabel`, poster first name (data), `chat.thread.a11y.replyQuote` | tap → `photo.viewer` on the quoted photo |
-| voice message | `chat.voice.*` | `chat.voice.*` | `chat.voice.md` |
-| composer | `chat.composer.*` | `chat.composer.*` | `chat.composer.md` |
+| back | C-02; `icon.global.back`, `size.global.backInset`, `size.global.headerButton` (hit area) | `chat.thread.a11y.back` | pops to `groups.screen` |
+| title | C-02; text role `headerTitle`, `font.global.display`, `size.global.headerGap`, `size.global.titleTop` | group name (data) | header trait |
+| day divider | C-20 dated variant; text role `sectionLabel`; `size.global.sectionGap`, `size.global.sectionHeaderToContent` | `chat.thread.divider.today`, `.divider.yesterday`, date (data) | header trait |
+| run header | C-16; `size.global.avatarComment`, `chat.thread.dimension.rowAvatarToText`, text roles `listTitle` + `caption`, `color.global.textSecondary`, `chat.thread.layout.timeFormat` | name, time (data) | avatar / name tap → `walls.member` (yours → `walls.mine`) |
+| text message | text role `body`; `chat.thread.dimension.rowLinePitch`; emoji-only `chat.thread.count.emojiOnlyMax` + `fontSize.global.headerTitle` | text (data); `chat.thread.a11y.message` / `.messageMine` | long press → context menu (below) |
+| photo message | C-18; `chat.thread.layout.photoFit`, `radius.global.card` | `chat.thread.a11y.photo` / `.photoMine` + `chat.thread.a11y.caption` | tap → `photo.viewer` (this thread's photos, chronological) with `duration.global.photoOpen`; long press → context menu with the quick-reaction row |
+| caption | text role `body` | caption (data) | — |
+| reaction chip | `chat.reactions.layout.chip`, `chat.reactions.dimension.chipTop` | `chat.reactions.a11y.cluster` | tap → Reactions sheet (`chat.reactions.md`) |
+| voice message | `chat.voice.layout.capsule` | `chat.voice.a11y.*` | `chat.voice.md` |
+| reply quote | C-15; `chat.thread.layout.replyQuote` | `chat.thread.reply.postTitle`, `.reply.postWeek`, `.reply.defaultText`, `.reply.defaultAttachment`, `chat.thread.a11y.replyQuote` | photo quote → `photo.viewer`; message quote → scrolls to it |
+| status line | text role `caption`; `color.global.textSecondary` (sending) / `color.global.destructive` (failed); `chat.thread.layout.failedMessage` | `chat.thread.sending`, `chat.thread.sendFailed` | failed: tap → send again |
+| context menu | C-29 native menu (iOS `contextMenu`, Android `DropdownMenu`) | items below | — |
+| composer | C-13 (`chat.composer.md`) | `chat.composer.*` | — |
+
+### Context menu (long press; C-29; items Sentence case, destructive last and red)
+
+| target | items (in order) | copy | action |
+|---|---|---|---|
+| any text message | Reply · Copy · (others') Report Message · (yours) Unsend | `chat.thread.menu.reply`, `.menu.copy`, `.menu.report`, `.menu.delete` | Reply → reply bar + `chat.composer.placeholderReply`; Copy → clipboard + Android Toast `chat.thread.toast.copied`; Report → `safety.report` (kind `message`); Unsend → confirmation below → `delete_message` |
+| voice message | Reply · (others') Report Message · (yours) Unsend | as above | as above |
+| photo message | quick-reaction row (`chat.reactions.layout.quickReactions`) · Reply · Save · (others') Report Message · (yours) Delete | + `chat.thread.menu.save`, `.menu.deletePhoto` | Save → as `photo.viewer` save; Delete → `photo.viewer` delete confirmation → `delete_media` |
+| your failed message | Retry · Unsend | `chat.thread.menu.retry`, `.menu.delete` | send again / remove locally |
+
+**Unsend confirmation** (C-29 alert; `photo.viewer.layout.deleteConfirm` component): title `chat.thread.deleteMessage.title`,
+message `chat.thread.deleteMessage.message`, destructive `chat.thread.deleteMessage.confirm`, cancel `photo.viewer.delete.cancel`.
+
+**Reply bar** (above the composer while replying): one line `chat.thread.reply.bar` ("Replying to {name}", or
+`chat.thread.reply.barSelf`) in text role `listSubtitle`, `color.global.textSecondary`, at `size.global.screenMargin`, and a
+bare `icon.global.close` glyph (`size.global.icon`, `color.global.textSecondary`, label `chat.thread.a11y.cancelReply`) at the
+trailing margin; the bar's baseline sits `size.global.sectionHeaderToContent` above the field (C-20 label → content spacing).
+Appears / disappears with `duration.global.fade` + `easing.global.standard` (Retro's composer fade, APK-X m6a 150 ms).
 
 ## States
 
-| state | what shows | tokens / copy | source |
+| state | what shows | components · tokens · copy | source |
 |---|---|---|---|
-| loading (first page) | centred HUD: platform activity indicator over "Loading" | `groups.create.size.hud`, `groups.create.color.hud`, `groups.create.fontSize.hudLabel`, `chat.thread.radius.loadingHud` (10.5, Yope frames, G-3), `easing.global.native.activityIndicator`; `groups.create.hud.loading` | V-mthu t50.60 (yope-a §1.8); HUD shared with the groups surfaces (account group) |
-| loading older messages | platform activity indicator at the top of the list | `easing.global.native.activityIndicator` | PLATFORM |
-| empty (no messages yet) | centred: bold title, italic gray detail, white pill with leading link glyph; composer stays | text roles `emptyTitle` (`color.global.textPrimary`) and `emptyDetail` (italic, `color.global.textSecondary`); pill `color.global.surfaceLight` / `color.global.onSurfaceLight`, `groups.screen.size.lightPillHeight`, `groups.screen.radius.lightPill`, text role `button`, `icon.global.link`; `chat.thread.empty.titleCreator` or `.titleMember`, `chat.thread.empty.detail`, `chat.thread.empty.invite` | V-mthu t51.23 (`yope.voice.empty-state`); pill opens `groups.invite` |
-| error (load failed) | same layout as empty | `chat.thread.error.title`, `.error.detail`, pill `chat.thread.error.retry` (reloads) | `yope.voice.error` (no Yope error observed) |
-| offline, nothing cached | same layout as empty, no pill | `chat.thread.offline.title`, `.offline.detail` | `yope.voice.error` |
-| offline with cached messages / send failed | cached messages stay; a failed message of mine gets a red outlined "!" circle (22 pt) on its trailing side, 14 pt from the bubble, and `chat.thread.sendFailed` in red under it (text role `caption`); tapping the circle, label or bubble sends it again | `chat.thread.layout.failedMessage` (`exclamationmark.circle` / `Rounded.ErrorOutline`, `color.global.destructive`); haptic `haptic.global.error` | Apple Messages "Not Delivered" state (support article 118433; Gap fill G-4) — not observed in Yope |
-| photo deleted while open | `post_deleted` broadcast removes the photo message; replies lose their quote part | — | docs/API.md §8.2 |
-| permission-denied | none on this surface (camera → `camera.capture`, microphone → `chat.voice.md`) | — | — |
+| loading (first page) | C-28: the platform activity indicator centred in the list area, `color.global.textSecondary`; the header and composer are live | `easing.global.native.activityIndicator`; announced `week.history.a11y.loading` | C-28 (Retro shows no skeletons) |
+| loading older messages | platform activity indicator above the first loaded message | same | C-28 |
+| empty (no messages yet) | C-27 block centred between the header and the composer: glyph `icon.global.chats` (`size.global.emptyIcon`), title, detail, outline CTA (C-07 without glyph → C-06 outline capsule hugging its label) | `chat.thread.empty.title`, `.empty.detail`, `.empty.invite` (→ `groups.invite`); `size.global.emptyIconToTitle`, `.emptyTitleToAction`; text roles `emptyTitle` / `emptyDetail` | C-27; APK-S `journal_profile_empty_state_title`, `user_profile_empty_new_user_message` |
+| error (first load failed) | C-27 block without glyph: title + detail + outline capsule | `chat.thread.error.title`, `.error.detail`, `.error.retry` (reloads) | APK-S `message_thread_fullscreen_error`, `error_message_generic` |
+| offline, nothing cached | C-27 block, no capsule | `chat.thread.offline.title`, `.offline.detail` | `retro.voice.error` |
+| offline with cached messages | cached messages stay; sends show `chat.thread.sending` then `chat.thread.sendFailed` | `chat.thread.layout.failedMessage` | Messages (mechanics) |
+| message deleted / photo deleted | `message_deleted` / `post_deleted` remove the row; replies lose their quote | — | docs/API.md §8.2 |
+| permission-denied | none here (camera → `camera.capture`; microphone → `chat.voice.md`) | — | — |
 
 ## Motion
 
 | transition | tokens | Reduce Motion |
 |---|---|---|
-| push in from `groups.screen` / back | native navigation (`easing.global.native.navigationPush`; Yope measured `duration.global.navigationPush`, MERGE_DECISIONS F-11) | system cross-fade (`layout.global.reduceMotion`) |
-| scroll, keyboard, context menu | native (`easing.global.native.scrollIndicator`, `.keyboard`) | system |
-| message insert / send | not observed (yope-b §10 "Not found: message send/arrival"): no custom animation | — |
-| emoji rain after a reaction | `chat.reactions.md` | `chat.reactions.layout.reduceMotion` |
+| push in / back | native (`easing.global.native.navigationPush`) | system |
+| new message appears (sent or received) | fade in `chat.thread.duration.entry` (250 ms) with `chat.thread.easing.entry` (linear) — Retro's message-thread "entry animation" | same fade (no movement involved) |
+| photo opens in the viewer | `duration.global.photoOpen` (250 ms) + `easing.global.standard` | cross-fade, same duration |
+| reply bar in / out | `duration.global.fade` + `easing.global.standard` | same fade |
+| scroll, keyboard, context menu | native (`easing.global.native.keyboard`, `.menu`, `.scrollIndicator`) | system |
 
 ## Haptics
 
 | interaction | token |
 |---|---|
-| message sent (text) | `haptic.global.send` |
+| tap on a photo, avatar, quote (Android) | `haptic.global.tap` (iOS none) |
+| long press opens the context menu | `haptic.global.longPressStart` (photo: `haptic.global.reaction`) |
+| text sent | `haptic.global.send` |
 | send failed | `haptic.global.error` |
-| long press on a photo (reaction picker opens) | `haptic.global.reaction` |
-| long press on a text / voice message (context menu) | `haptic.global.longPressStart` |
-| delete confirmed | `haptic.global.warning` |
+| unsend confirmed | `haptic.global.warning` |
 
 ## Accessibility
 
-- Labels: header circles `chat.thread.a11y.back`, `chat.thread.a11y.recap`; capsule `chat.thread.a11y.groupCapsule`;
-  text and emoji messages `chat.thread.a11y.message` / `.messageMine`; photos `chat.thread.a11y.photo` / `.photoMine`
-  (+ `chat.thread.a11y.caption`), grouped with their reaction cluster (`chat.reactions.a11y.cluster`, emoji names, never a
-  count); reply quote `chat.thread.a11y.replyQuote`. Avatars are decorative. Traits: photos and the quote are buttons;
-  long-press actions are exposed as accessibility custom actions (react, delete / report).
-- Dynamic Type: body → `layout.global.textStyleMap.body`; overlay time → `.overlayTime`; header name → `.headerTitle`;
-  empty title / detail → `.emptyTitle` / `.emptyDetail`; reply name / label, caption, emoji-only →
-  `chat.thread.layout.textStyleMap` (subheadline, footnote, title2, largeTitle). Bubbles grow in height with the text
-  (single-line height is the minimum).
-- Focus order: back → group capsule → recap circle → messages oldest → newest → composer (field, then buttons).
-- Hit targets: header circles 44 pt (`size.global.minTouchTarget.ios` / `.android` 48 dp on Android: pad the hit area).
-- New incoming messages are announced (HIG: "Inform VoiceOver when visible content or layout changes occur").
-- Contrast (`node tools/contrast.mjs`):
+- Labels: back `chat.thread.a11y.back`; each message is one element — text `chat.thread.a11y.message` / `.messageMine`,
+  photo `chat.thread.a11y.photo` / `.photoMine` (+ `chat.thread.a11y.caption`), voice `chat.voice.a11y.message` / `.messageMine`;
+  the run header (avatar + name + time) is read as part of the first message; the reaction chip `chat.reactions.a11y.cluster`
+  (emoji names, never a count); quotes `chat.thread.a11y.replyQuote`. Context-menu actions are exposed as accessibility
+  custom actions. Avatars are decorative next to a visible name.
+- Day dividers and the title have the header trait. New incoming messages are announced (HIG: inform VoiceOver of changes).
+- Dynamic Type: title `headerTitle` → largeTitle; names `listTitle`, text `body` → subheadline; time `caption`; divider
+  `sectionLabel`; empty state `emptyTitle` / `emptyDetail` (`layout.global.textStyleMap`). Rows grow with the text.
+- Focus order: back → title → messages oldest → newest (within a run: header, text, photo, chip) → reply bar → composer.
+- Hit targets: back and the reply-bar close extend to 44 pt / 48 dp (`size.global.minTouchTarget.*`).
+- Contrast (`node tools/contrast.mjs`, both appearances):
 
-| foreground | background | kind | ratio | result | pair |
+| foreground | background | kind | light | dark | pair |
 |---|---|---|---|---|---|
-| `color.global.textPrimary` #FFFFFF | `chat.thread.color.bubbleTheirs` #2B2B2B | text | 14.16:1 | pass | message text 17 regular in another member's bubble |
-| `color.global.textPrimary` #FFFFFF | `chat.thread.color.bubbleMine` #232323 | text | 15.72:1 | pass | message text 17 regular in my bubble |
-| `chat.thread.color.bubbleTheirs` #2B2B2B | `color.global.background` #171717 | nontext | 1.27:1 | **FAIL** | their bubble fill against the thread background |
-| `chat.thread.color.bubbleMine` #232323 | `color.global.background` #171717 | nontext | 1.14:1 | **FAIL** | my bubble fill against the thread background |
-| `chat.thread.color.bubbleRimTheirsTop` #414141 | `color.global.background` #171717 | nontext | 1.76:1 | **FAIL** | their bubble top rim against the background |
-| `color.global.onAccent` #000000 | `color.global.accent` #CDFD07 | text | 17.65:1 | pass | quoted name / 'pic' on the lime quote |
-| `color.global.onAccent` #000000 | `color.global.accent` #CDFD07 | nontext | 17.65:1 | pass | quote bar on lime |
-| `color.global.accent` #CDFD07 | `color.global.background` #171717 | nontext | 15.07:1 | pass | lime quote block against the background |
-| `color.global.textPrimary` #FFFFFF | `groups.create.color.hud` #0C0C0C | text | 19.56:1 | pass | 'Loading' on the HUD |
-| `groups.create.color.hud` #0C0C0C | `color.global.background` #171717 | nontext | 1.09:1 | **FAIL** | HUD against the background (G2-27 corrected the HUD fill) |
-| `color.global.textPrimary` #FFFFFF | `color.global.background` #171717 | text | 17.93:1 | pass | empty-state title |
-| `color.global.textSecondary` #969696 | `color.global.background` #171717 | text | 6.06:1 | pass | empty-state detail |
-| `color.global.onSurfaceLight` #000000 | `color.global.surfaceLight` #FFFFFF | text | 21.00:1 | pass | 'invite more friends' pill label |
+| `color.global.textPrimary` | `color.global.background` | text | 21.00:1 pass | 21.00:1 pass | title, names, message text (iOS) |
+| `color.global.textPrimary` | `color.global.background.android` | text | 21.00:1 pass | 17.01:1 pass | the same on Android |
+| `color.global.textSecondary` | `color.global.background` | text | **2.85:1 FAIL** | 7.37:1 pass | time, sending line, quote line, reply bar (iOS) |
+| `color.global.textSecondary.android` | `color.global.background.android` | text | **4.00:1 FAIL** | 6.85:1 pass | the same on Android |
+| `color.global.destructive` | `color.global.background` | text | **4.18:1 FAIL** | 5.03:1 pass | failed-send line, 14 pt (iOS) |
+| `color.global.destructive` | `color.global.background.android` | text | **4.18:1 FAIL** | **4.07:1 FAIL** | the same on Android |
 
-  The bubble / HUD fills are not needed to identify their content (the text inside passes), so SC 1.4.11 does not require
-  them; reported, no sourced alternative. Caption text on `color.global.scrim` cannot be checked until the scrim is captured.
+  Failures are Retro's own palette (design/CONTRAST.md failures 1 and 5); reported, not adjusted. The failed state is also
+  announced and carried by the message's accessibility value. Photos and the chip: see `chat.reactions.md`.
 
 ## Data & actions
 
-- **Reads**: `messages` (docs/API.md §5.9) — `eq(group_id).order(created_at desc).limit(50)`, page with `lt(created_at)`;
-  photo messages carry `post_id` → `posts` (§5.8: caption, voice note, `reply_to_post_id`) and `media` (§5.7: `thumb_path`
-  for reply thumbnails, `display_path` for photo messages; originals until `renditions_ready_at`); `reactions` (§5.10) per
-  post for clusters; `profiles` (§5.1) for names / avatars; `groups` (§5.3) and `group_members` for the header and the
-  empty-state names; `weekly_recaps` (§5.14) for the film-strip target. Files through signed URLs (§7, 1 h).
-- **RPCs**: `send_message` (text; `p_reply_to_post_id` when replying from `photo.viewer`); `delete_message` (own text /
-  voice, after the native confirmation `chat.thread.deleteMessage.title` / `.message`, buttons `photo.viewer.delete.confirm` /
-  `photo.viewer.delete.cancel`); `report` (`report_target_kind` `message`) via `safety.report`; `react` / `unreact` via
-  `chat.reactions`; `create_post` via `chat.composer` → `camera.capture`.
-- **Context menu** (long press, native: iOS `contextMenu`, Android `DropdownMenu`; Yope uses native menus for its •••
-  (yope-a §2.13)): own text / voice → `chat.thread.menu.delete` (`photo.viewer.icon.delete`, destructive); others' →
-  `chat.thread.menu.report` (`icon.global.report`, destructive).
-- **Realtime** (§8): channel `group-<id>` postgres INSERTs on `messages`, `posts`, `reactions` and UPDATEs (reply target
-  removed); private broadcast `group:<id>`: `post_deleted` (remove the photo message, strip quotes), `message_deleted`,
-  `reactions_changed` (refetch that post's reactions). Refetch the visible page on foreground / reconnect (§8.3).
-- **Navigation in**: `groups.screen` ("chat" pill); deep link `DeepLink.chatMessage(groupID:messageID:)` (`app://chat?group=…&message=…`,
-  push type `reply`) opens the thread scrolled to that message. Push texts for replies to you are
-  `notifications.push.reply.*` (design/copy/capture.json).
-- **Navigation out**: `photo.viewer`, `week.recap`, `groups.settings`, `walls.member`, `groups.invite`, `safety.report`,
-  `camera.capture`.
+- **Reads**: `messages` (docs/API.md §5.9) — `eq(group_id).order(created_at desc).limit(50)`, older pages with
+  `lt(created_at)`; photo messages → `posts` (§5.8: caption, voice note, `reply_to_post_id`) + `media` (§5.7:
+  `display_path` for the card; `thumb_path` for quotes; originals until `renditions_ready_at`); `reactions` (§5.10) for chips;
+  `profiles` (§5.1); `groups` (§5.3) for the title. Signed URLs (§7, 1 h). Week number of a quoted post: ISO week of its
+  `created_at` in `groups.time_zone`.
+- **RPCs**: `send_message` (text; `p_reply_to_post_id` / `p_reply_to_message_id` when replying); `delete_message`;
+  `delete_media` (own photo, via the viewer's confirmation); `report` (`message`) via `safety.report`; `react` / `unreact` via
+  `chat.reactions`; `create_post` (photo) via `chat.composer` → `camera.capture`.
+- **Realtime** (§8): channel `group-<id>` INSERTs on `messages`, `posts`, `reactions` and UPDATEs (reply target removed);
+  private broadcast `group:<id>`: `post_deleted`, `message_deleted`, `reactions_changed`. Refetch the visible page on
+  foreground / reconnect (§8.3).
+- **Navigation in**: `groups.screen` (chat entry); `DeepLink.chatMessage(groupID:messageID:)` (`app://chat?group=…&message=…`,
+  push type `reply`) opens the thread scrolled to that message. Push texts: `notifications.push.reply.*` (capture group).
+- **Navigation out**: `photo.viewer`, `walls.member` / `walls.mine`, `groups.invite`, `safety.report`, `camera.capture`.
 
 ## Platform notes
 
-- iOS: `ScrollView` + `LazyVStack` anchored to the bottom; `contextMenu` provides the long-press haptic. Hairline rim =
-  `1 / displayScale` pt.
-- Android: `LazyColumn(reverseLayout = true)`; `combinedClickable` long press + `DropdownMenu`; `HapticFeedbackConstants.LONG_PRESS`.
-  Hairline = `Dp.Hairline`. Emoji fonts differ (Apple Color Emoji / Noto Color Emoji): size emoji-only messages by the
-  rendered glyph width (`chat.thread.dimension.emojiOnlyGlyph`).
-- Dark only (`layout.global.appearance`).
+- iOS: `ScrollView` + `LazyVStack` anchored to the bottom (`.defaultScrollAnchor(.bottom)`); `contextMenu` with a
+  `ControlGroup` (`.controlGroupStyle(.palette)`, iOS 17) for the quick-reaction row; header via `NavigationStack` with the
+  serif title drawn by the app (C-02).
+- Android: `LazyColumn(reverseLayout = true)`; `combinedClickable` + `DropdownMenu` (first item a `Row` of quick reactions);
+  `Toast.LENGTH_SHORT` for "Copied!". Inter weights per R-9.
+- Emoji glyphs differ (Apple Color Emoji / Noto Color Emoji); emoji-only messages are sized by the font size, not by glyph width.
 
 ## Do-not-copy
 
-- Streak pill in the header capsule ("🔥451", "🔥0", lime "🔥5") — tenet 2.
-- Cut-out person stickers floating over the thread and the sticker composer button — do-not-build.
-- Unread count badges (chat pill, tabs) — counts.
-- Yope's reaction capsule under photos with reactor avatars (#2C2C2C, 24 pt): replaced by Locket's cluster
-  (`chat.reactions` is Locket's surface, S-4).
-- Any "late" label, sent / read receipts with counts.
+- Retro thread titles listing names with a count ("%1$s, %2$s and %3$d others"), "%1$d members" subtitles, "Delivered" /
+  "Seen" receipts, "✌️%1$s left the thread" (emoji system line).
+- Yope's streak pill, sticker composer, lime quote block and bubble rims (superseded design).
+- Messages' coloured bubbles and red "!" circle; WhatsApp's reaction count and wallpaper.
+- Any unread count on the chat entry or tabs.
 
 ## Gaps
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `chat.thread.dimension.bubbleMaxWidth` | **SOURCED (gap fill)**: 256 pt = 0.652 × screen width, from Apple Messages (iOS 27 guide image + Messages render in Google Photos' App Store panel; lower bound +0/+11 %) — MERGE_DECISIONS Gap fill G-1. Multi-line line height: still platform default leading | a Yope two-line text (yope-b §14 capture 1) would supersede |
-| `chat.thread.count.emojiOnlyMax` | **SOURCED (gap fill)**: 3 (Messages + WhatsApp rule; Yope S1's 3-emoji message is consistent) — G-2 | one Yope screenshot with a 4-emoji message would confirm |
-| `chat.thread.layout.failedMessage` | **SOURCED (gap fill)**: Apple Messages' "Not Delivered" layout (red "!" circle + red label, tap retries) — G-4 | one Yope screenshot of a failed message would supersede |
-| `chat.thread.radius.loadingHud` | **SOURCED (gap fill)**: 10.5 pt, Yope's own HUD on 3 video frames (±1.5 pt) — G-3 | a lossless Yope HUD screenshot would tighten it |
-| `color.global.scrim` (caption box fill) | BLOCKED (foundations) | one lossless screenshot of a captioned photo card |
-| portrait photos in the group chat | approximation: the 323 × 174 landscape frame, aspect fill | same recording as above (send a portrait photo) |
-| gap between a photo and a bubble | approximation: `chat.thread.dimension.photoGap` | same recording |
-| photo reply to a photo | approximation: quote part + photo message (S-7) | same recording (reply to a photo with the camera) |
-| reply to a text message (`reply_to_message_id`) | not offered (no Yope evidence) | same recording |
-| caption box horizontal position | Locket's centring used (S-8) | — |
-| header capsule internals | from `groups.screen.md` (S1's capsule is covered by a sticker) | — |
+| Retro's own message thread (bubbles or rows, quote visuals, spacing between messages) | not captured; composed from the comment row (RS-1) | one raw screenshot of a Retro DM thread with a photo reply, light + dark (retro-visual §6) |
+| spacing between runs (`size.global.listGap`) and items (`chat.thread.dimension.itemGap`) | composition (RS-3) | same screenshot |
+| context-menu focus animation ("initial context message position / scale", APK-X m6a) | values not in the excerpts; native menu animation used | 60 fps recording of a long press in a Retro thread |
+| Engadget inbox capture | low resolution: layout only (back chevron + serif "Messages", search field, row "Lali / Thank you · 5d"); no value taken from it | — |
+| `color.global.textSecondary`, `color.global.destructive` text contrast in light | FAIL (Retro palette, R-13) | owner / verification |

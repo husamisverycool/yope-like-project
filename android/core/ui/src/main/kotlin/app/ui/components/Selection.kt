@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,25 +16,25 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import app.designsystem.generated.Tokens
-import app.ui.haptics.rememberHaptics
+import app.ui.foundation.PageRoles
+import app.ui.foundation.tickToggleable
 import app.ui.text.TextRoles
 
 /**
- * The selection circle of Yope's pickers: checked = `icon.global.check` in `color.global.selection`,
- * unchecked = `icon.global.uncheck` in `color.global.textSecondary` (inactive glyph role), both at
- * `size.global.checkCircle`. Decorative: the owning row carries the state.
+ * The selection circle (`size.global.checkCircle`): checked = `icon.global.check` (filled — a state) in the
+ * platform tint (`color.global.system.primary` on Android; iOS `color.global.selection`), unchecked =
+ * `icon.global.uncheck` (empty ring) in secondary text. Decorative: the owning row carries the state.
  *
- * The token is the visible circle's diameter. Material Symbols draw on a 24-unit grid whose circle
- * glyphs fill the 20-unit live area (2 units of padding per side, Material "Designing icons": 24dp
- * icon, 20dp live area), so the glyph is scaled by 24/20 around its centre; the layout box stays
- * `size.global.checkCircle`, so the row's measured positions don't move.
+ * The token is the visible circle's diameter. Material Symbols draw on a 24-unit grid whose circle glyphs fill
+ * the 20-unit live area, so the glyph is scaled by 24/20 around its centre; the layout box stays
+ * `size.global.checkCircle`.
  */
 @Composable
 fun CheckCircle(checked: Boolean, modifier: Modifier = Modifier) {
     Icon(
         if (checked) Tokens.Icons.globalCheck else Tokens.Icons.globalUncheck,
         contentDescription = null,
-        tint = if (checked) Tokens.Colors.globalSelection else Tokens.Colors.globalTextSecondary,
+        tint = if (checked) MaterialTheme.colorScheme.primary else PageRoles.secondaryText(),
         modifier = modifier
             .size(Tokens.Sizes.globalCheckCircle)
             .graphicsLayer { scaleX = MATERIAL_GLYPH_TO_LIVE_AREA; scaleY = MATERIAL_GLYPH_TO_LIVE_AREA },
@@ -45,12 +45,10 @@ fun CheckCircle(checked: Boolean, modifier: Modifier = Modifier) {
 private const val MATERIAL_GLYPH_TO_LIVE_AREA = 24f / 20f // provenance-ok: Material icon grid 24 over live area 20 (PLATFORM)
 
 /**
- * A toggle row with a trailing [CheckCircle] (`auth.agegate.layout.optIn`): label text role
- * `listSubtitle` in `color.global.textPrimary`, optional detail in the same role in
- * `color.global.textSecondary`. The whole row toggles; TalkBack reads it as one checkbox
- * (`Role.Checkbox`) labelled [accessibilityLabel], followed by the detail (Compose has no hint
- * property, so the detail is read after the label). Plays
- * `haptic.global.select` on change.
+ * A toggle row with a trailing [CheckCircle]: label text role `body` in `color.global.textPrimary`, optional
+ * detail text role `meta` in secondary text; the whole row toggles as one checkbox labelled
+ * [accessibilityLabel] (copy), the detail read after it. Plays `haptic.global.select` on change. Row and
+ * circle sit `size.global.cardNameGap` apart (no measured gap for this composition).
  */
 @Composable
 fun CheckRow(
@@ -61,26 +59,17 @@ fun CheckRow(
     modifier: Modifier = Modifier,
     detail: String? = null,
 ) {
-    val haptics = rememberHaptics()
     Row(
         modifier
             .fillMaxWidth()
-            .toggleable(value = checked, role = Role.Checkbox) {
-                haptics.perform(Tokens.Haptics.globalSelect)
-                onCheckedChange(it)
-            }
+            .tickToggleable(value = checked, role = Role.Checkbox, onValueChange = onCheckedChange)
             .semantics(mergeDescendants = true) {},
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalHeaderGap),
+        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalCardNameGap),
     ) {
         Column(Modifier.weight(1f)) {
-            Text(
-                label,
-                style = TextRoles.listSubtitle,
-                color = Tokens.Colors.globalTextPrimary,
-                modifier = Modifier.semantics { contentDescription = accessibilityLabel },
-            )
-            if (detail != null) Text(detail, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary)
+            Text(label, style = TextRoles.body, color = Tokens.Colors.globalTextPrimary, modifier = Modifier.semantics { contentDescription = accessibilityLabel })
+            if (detail != null) Text(detail, style = TextRoles.meta, color = PageRoles.secondaryText())
         }
         CheckCircle(checked)
     }

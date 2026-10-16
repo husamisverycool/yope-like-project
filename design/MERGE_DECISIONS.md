@@ -644,3 +644,96 @@ between two Retro measurements RAW beats render, exact constants beat image read
 R-3 (true-black option), R-4 (raw light Settings capture), R-6 (iOS tertiary), R-12 (outcome haptics), R-13
 (contrast of Retro's palette), R-14 (60 fps recording), R-27 (Android viewer in light mode), R-28 (display face
 licence); gaps listed in `design/tokens/README.md` → "Not available yet" and `design/components.md` → "Gaps".
+
+---
+
+## Redesign — Capture (RC-*)
+
+Pass: redesign Pass 2, capture group, 2026-10-16 (docs/REDESIGN_BRIEF.md "Pass 2"). Owns `design/tokens/capture.json`
+(57 tokens: 35 SOURCED, 14 VERIFIED, 8 PLATFORM, 0 BLOCKED — was 133), `design/copy/capture.json` (114 strings, all
+SOURCED: 24 verbatim, 22 adapted, 68 new — was 106), `design/surfaces/{camera.capture, camera.fromwidget,
+camera.sendto, daily.capture, daily.dualimage, daily.liveactivity, daily.notification, daily.ongoing, collage.view,
+collage.share, widget.home.small, widget.home.medium, widget.home.large, widget.home.xl, widget.lock.rect,
+widget.lock.circular, widget.lock.inline, widget.android, widget.arrival, notifications.push}.md` and this section.
+Inputs: `design/components.md` (C-01 … C-35), `design/copy-patterns.md`, `design/research/retro-visual.md`,
+`design/research/retro-package-copy-motion.md`, `references/auto/retro/` (APK strings and excerpts, store / press
+renders), mechanics research (`design/research/{locket,bereal}.md`), `backend/worker/COPY_KEYS.md`. Rule: Retro is the
+identity (colour, type, spacing, shape, motion, voice); Locket (camera, widgets), BeReal (daily capture, dual image)
+and the worker composition (collage) keep the mechanics; native components are PLATFORM. 86 Yope / Locket / BeReal
+visual tokens were removed (list in "Problems found").
+
+### Evidence gathered in this pass
+
+All measurements with `python3 -I` (PIL + numpy) on the files below; scales as in `design/research/retro-visual.md` §0.2.
+
+| what | source (coordinates) | used for |
+|---|---|---|
+| Postcard modal: close circle y736–821 (67.0–102.6 pt, centre 37.7 pt from the right edge), title cap y763–793; photo x286–997 / y869–1879 (297.6 × 422.8 pt, 20 pt below the circle); "Add a message" pill bottom 20.5 pt above the photo bottom; "Mailing Address" label 35.2 pt below the photo; divider y2159 x210–1069 (16.3-pt margins); capsule y2362–2505 (bottom 44.5 pt above the screen bottom) | `references/auto/retro/store/retro-store-03.png` (2.389 px/pt, screen y576–2611) | `camera.sendto.layout.header`, `.layout.preview`, `.layout.messageField`, `.layout.recipientRow`, `.size.sendButtonBottom`; `daily.capture` geometry |
+| "Add a Message" modal: text from 21.9 pt, counter '58/250' digits 18 px tall (11.3 pt), right edge 20.7 pt, 22 pt above the keyboard; disabled "Send Postcard" #4D4D4D with a black label | `references/auto/retro/press/tc-2023-12-retro3.png` phones 3 / 2 (phone 3 screen x1937–2564 = 1.595 px/pt) | `camera.sendto.layout.messageSheet`, `.fontSize.counter`, `.size.captionMaxLength`; disabled send |
+| Recap preview 2026: media page full width, y717–2385 (safe-area top → 94.8 pt above the bottom); corner fits on 70 rows: circle 27.1 pt, continuous (figma-squircle s 0.6) 26.6 pt, threshold 25.5 pt; close #262626 ≈36 pt, centre 37.7 / 38 pt; Share pill x846–1062 / y2418–2521 (90.8 × 43.5 pt), label glyphs x901–1007 (23-pt paddings), 'S' cap 29 px, x-height 21 px (17 pt), 'h' stem 5 px (semibold); page dots 5.0 pt Ø, 10.0 pt pitch | `references/auto/retro/store/retro-store-04.png` | `collage.view.layout.screen`, `collage.share.layout.pill` |
+| Recap preview 2023: page inset 11 pt, card centred with 32–33-pt side insets and 103-pt top / bottom; Share 85 × 42 pt | `references/auto/retro/press/tc-2023-12-recaps.png` (1.697 px/pt) | card inset rule; conflict RC-15 |
+| Rewind control row: 64-pt circles centred 71.3 / 71.7 pt from the edges on 440 pt (RWA) and 67.7 / 68.3 pt on 420 pt (RWB) = centred between the screen edge and the 150-pt dial | `references/auto/retro/press/tc-2025-12-rewind-device-a.png`, `…-device-b.jpg` | `camera.capture.layout.controlRow` |
+| Widget preview art (1 px = 1 dp): name x-height rows 124–129, ascender 122; second line cap 135–142; both lines end at x146 (11 dp trailing inset); last baseline 15 dp above the bottom; pitch 13; stems ≈0.8 px; Albums preview shows the album line without a location glyph; corners ≈24–27 px | `references/auto/retro/apk/widget_preview_{friends,journals,memories}.webp` | `widget.home.small.layout.overlay`, `.fontSize.overlay` (11), `.fontWeight.overlay` (regular) |
+| Glance constants: corner 22 dp; state glyph 48-dp box, 12 padding, tint white 0.85 (`qmh.a`); provider 200 × 200 dp, minResize 100 dp, 2 × 2, updatePeriodMillis 3 600 000 | `references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt` §"Glance widget", §"WIDGET PROVIDERS" | `widget.android.radius.widget`, `.layout.provider`, `.duration.updatePeriod`, `widget.home.small.color.stateTint` |
+| Retro strings used verbatim / adapted (keys cited per entry): `postcard_composer_*`, `media_viewer_shareout_title`, `media_shareout_save_success_message`, `media_viewer_comment_send_failed_*`, `composer_lost_changes_warning_*`, `widget_title_friends`, `widget_description_friends`, `app_widget_*`, `notification_settings_description_posts` / `_comments`, `notification_channel_display_*`, `recap_sticker_collage_loading_message`, `recap_composer_share_cta`, `recap_composer_members_only_pill`, `journal_profile_take_photo`, `activity_tab_empty_message`, `friends_tab_loading_error` | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | `design/copy/capture.json` |
+
+### Conflicts and resolutions
+
+| # | topic | values and sources | resolution | rule / evidence | status |
+|---|---|---|---|---|---|
+| RC-1 | Appearance of capture surfaces | Foundations: media surfaces (camera, postcard-style composer, recap preview, full-bleed media) black in both appearances | camera, send-to, daily capture, collage, widgets, Live Activity on `color.global.backgroundDeep` with `textOnMedia` / `controlOnDeep` / `surfaceLight`; sheets over them ("Add a Message") follow the appearance; themed tokens used on media take their dark value (separator #4D4D4D, disabled #4D4D4D, inactive dot #808080) | `layout.global.appearance.media`; TC-R3 phone 1, ST-03, ST-04 | resolved |
+| RC-2 | Camera viewfinder | Yope full width × 1.38 (removed identity); Locket square, full width, r 49; C-35 full-bleed (lead's suggestion) | Retro photo container: 3:4, 16-pt margins, `radius.global.viewfinder` (18), under a C-01 header; full-bleed rejected: a 3:4 photo aspect-filled into 393 × 852 shows only 61 % of the captured width (not what is captured). C-35's rule is used for the control row | foundations defined `radius.global.viewfinder` as "the viewfinder drawn as Retro's photo container"; 3:4 = Retro's single-photo container (retro-visual §3.8) and the 4:3 sensor (PLATFORM) | resolved |
+| RC-3 | Shutter | Yope 80 / 3.5 / 5.5 / 59 lime ring (removed); Locket 86 / 4.5 / 3 / 70, yellow ring, #EBEBEB disc, press 0.85 in 233 ms, pressed disc #E0DEDF | Retro has no shutter: geometry from the mechanics reference (Locket AS-7), colours Retro's (ring + disc `color.global.surfaceLight`, gap `backgroundDeep`), press = platform default; Locket's press scale / colour removed; recording outline Locket 6 pt in `surfaceLight` | identity = Retro (colour, motion); a control Retro lacks keeps its mechanic's form (brief: compositions add no new values — none exists) | resolved; flag for review |
+| RC-4 | Camera chrome | Yope hour overlay (README: replaced by Retro roles in Pass 2), flash glyph in the viewfinder, library thumbnail, 47-pt flip circle, lime coach tooltip | C-01 serif title `camera.capture.title` "Week {number}" (Retro root title), flash as a bare header glyph, library / flip as C-11 64-pt circles (`controlOnDeep`) centred per Rewind's rule, coach as a C-09 pill on the photo 20.5 pt above its bottom | C-01, C-11, C-35, C-09; README "Removed" row `overlayTimeCamera` | resolved |
+| RC-5 | Send-to header | Yope: ✕ and download circles + "send to..." title; Retro Postcard: centred title + trailing close only | Retro header (`camera.sendto.layout.header`) + a mirrored leading save circle (Locket keeps save opposite discard) | ST-03; locket.md §6 | resolved |
+| RC-6 | Message (caption) | Yope: caption drawn on the photo, 36 chars (Locket); Retro: "Add a message" pill → "Add a Message" sheet, 250-char counter, pill relabels "Edit message" | Retro flow; limit 250 (API allows 1000); caption no longer on the photo or the widget | ST-03, TC-R3 phones 2–3, APK `postcard_composer_*` | resolved |
+| RC-7 | Group chooser | Yope recipient rows (22.6 avatar, 60 pitch); Retro albums list C-15 (72 × 97 covers, 119.5 pitch); retro-visual §5's alternative, the Friends 81-pt avatar grid with a badge in the key-badge position (a key badge, not a selection state in Retro); Retro composer selection circles | C-16 rows (cover in a 37 circle, `listTitle`, trailing `checkCircle`) separated by C-32 hairlines under a Postcard-style label; row 69 pt (APK grouped-list padding 16; Postcard rows ≈67) — C-15 rejected for density (5 groups = 600 pt) | C-16, C-32, C-29 check circle, ST-03 | resolved |
+| RC-8 | Send and its states | Yope: lime 'send ⓝ' with count disc, hidden when nothing is selected, lime toast; Locket: send spinner → sent | C-05 on media "Send", disabled #4D4D4D (Retro's own disabled Send Postcard), busy capsule + title "Sending…" (Retro "Ordering postcard…"), modal closes on success; failure = native alert "Couldn't send photo" / "Try Again" (Retro comment failure); success toast Android only, iOS announcement (C-26); discard asks only when a message or voice note exists (Retro lost-changes) | TC-R3 phone 2; APK strings; C-26 | resolved |
+| RC-9 | Widget anatomy and tap | Locket: photo + 24-pt avatar + caption pill, 6-pt inset; Retro: full-bleed photo, name + place / album stack bottom-trailing, 22-dp corners, tap reloads | Retro anatomy (Albums variant: name over group — our posts carry no location); tap opens the camera (Locket mechanic) | APK, preview art; lead's note | resolved |
+| RC-10 | Widget states | Locket gradients, yellow ring, "No pics yet"; Retro: refresh glyph + line in white 85 %, background not captured | Retro's state column (glyph 24 in a 48 box, white 85 %, one line) with `icon.global.camera` (the tap's action) on `backgroundDeep` (composition); loading = black; errors keep the last photo (HIG) | APK `qmh`; HIG Widgets | resolved; background flagged (capture) |
+| RC-11 | Sizes and Lock Screen | HIG "avoid expanding a smaller widget's content"; Retro's provider resizes one layout (minResize 100 dp); Lock Screen: Locket avatar + caption composition (G2-13, no-caption case) | one layout at every home size (Retro); Lock Screen = Retro information (name, group) in C-16 (rect), C-23 (circular), " · " line (inline) — the no-caption case disappears; gallery / label "Group Updates" (Retro names widgets by content) | APK provider; `widget_title_friends` | resolved; closes 3 BLOCKED copy entries |
+| RC-12 | Daily capture chrome | BeReal: chevron, 23-pt bold countdown, 378.7-pt r16 viewfinder, white shutter, translucent retake / chip, 40.5-pt heavy 'SEND ➤' | Retro: C-29 header (countdown `sheetTitle` monospaced in the title slot, close circle), camera viewfinder container, C-35 row, C-11 glass retake (40) at `badgeInset`, C-09 audience pill, C-05 "Send"; after the window the title slot shows the group name | components; SURFACES daily.capture "media surface as camera.capture" | resolved |
+| RC-13 | Motion on mechanics surfaces | BeReal digit roll and capture choreography, Locket press spring | Retro house motion: `duration.global.crossfade` for digits / state swaps, `duration.global.fade` for appear / disappear, platform press and presentations; dual-image corners follow the host container | identity = Retro motion; R-14 | resolved |
+| RC-14 | Collage composition | worker option B (Yope walls) pending the owner (A / B / C, all Yope-derived); Retro analog: recap card (white card, 3–4 columns, 1–2 pt gaps, serif year + name + domain footer) | worker tokens unchanged (`collage.view.layout.page`, `daily.dualimage.layout.composition`, `collage.share.layout.export` are a code contract); the app draws the page as Retro's recap card on the blurred backdrop (option B's 0.0498 corner = the card's ≈5 %); a Retro recap-card composition is added to the owner's choice (needs worker code) | brief (don't edit code); collage-options README | owner |
+| RC-15 | Recap-preview layout and Share pill | TC-REC 2023: page inset 11, corners ≈29, close top-left, Share 85 × 42; ST-04 2026: full-width page, 26.5 corners, close top-right, Share 90.8 × 43.5, label 17 semibold; C-09: height "Gap — use pillHeight (37)", label `pill` (15); page dots ST-04 5.0 / 10.0 vs `size.global.pageDot` 5.9 / 9.6 (TC-REC) | 2026 render for the screen and the pill (newer, same element) — surface tokens; page dots keep the global tokens (foundations' value) | newer wins; a surface token only where Retro measured this surface | resolved; reported to foundations |
+| RC-16 | Push voice | old: BeReal / Locket / Yope wording ("Time to share a photo.", "{name} sent you a photo!", "new recap added"); Retro: context title, prompt question or statement with a period | Retro voice; invitation title "{group}" (the worker fills only {group}; Retro's "Week N" needs a placeholder), body "What are you up to right now?"; reaction noun "post" (Retro's) with Locket's content rule; birthday request keeps P-BR-1 with Retro's "No pressure." | copy-patterns `retro.voice.push`, "Daily invitation (tenet 5)" | resolved |
+| RC-17 | Live Activity / ongoing colours and type | Yope lime countdown and key line; BeReal 23-pt countdown | `textOnMedia` on `backgroundDeep`; group name in the display serif (`displaySmall`) on the Lock Screen, countdown `sheetTitle` monospaced; Android notification: no tint (Retro's not captured) | retro-visual §5; HIG | resolved; **code** (`InvitationAppearance.accentColor`) |
+| RC-18 | Reactions / replies channel | Retro "Media Feedback — Media activity, such as comments and likes." | "Post Activity" / "Reactions and replies to your posts" (likes are do-not-copy) | tenets | resolved |
+
+### Problems found (for other passes)
+
+- **Foundations (lead).** ST-04 (2026) measures the recap Share pill at 43.5 pt high with 23-pt paddings and a 17-pt
+  semibold label (C-09 still says "height not isolated — use pillHeight", label `pill`), and page dots at 5.0 pt / 10.0
+  pitch vs `size.global.pageDot` 5.9 / 9.6 (TC-REC 2023). Not changed here.
+- **Removed tokens still referenced by code (Pass 4)** — 84 of the 86 removed (`widget.android.size.minSize` and
+  `.radius.fallback` have no reference): `ios/App/Sources/Features/Capture/{Camera/CameraCaptureView,
+  Camera/CameraCaptureModel, Daily/DailyCaptureView, Daily/DailyCountdownView, SendTo/SendToView, SendTo/SendToVoice,
+  SendTo/CaptureSendCenter, Collage/CollageView, Support/CaptureStyle, Support/CaptureComponents}.swift`,
+  `ios/Widgets/Sources/{WidgetSlots,WidgetStyle}.swift`, `ios/AppTests/Capture/{CaptureDailyTests,
+  CaptureSnapshotTests}.swift`, `android/feature/capture/…/{camera/CameraScreen, daily/DailyCaptureScreen,
+  daily/CountdownText, sendto/SendToScreen, sendto/SendToRoute, collage/CollageScreen, ui/Components,
+  ui/CaptureToastHost}.kt`, `android/feature/capture/src/test/…/FlowTests.kt`,
+  `android/core/widget/…/{PhotoWidgetUi, WidgetArt, WidgetGroupMeta}.kt`. **Other groups' code uses capture
+  tokens that are gone:** `ios/App/Sources/Features/Memory/Tagging/SelfTagToggle.swift` and
+  `android/feature/memory/…/tagging/SelfTagToggle.kt` (`camera.capture.layout.coach`, `.fontSize.coach`,
+  `.fontWeight.coach`, `.layout.textStyleMap`), `ios/App/Sources/Features/Memory/Shared/MemoryControls.swift`
+  (`camera.sendto.layout.toast`), `android/feature/social/…/common/SocialUi.kt` (`camera.sendto.duration.toastVisible`)
+  — they should move to C-26 (platform toast / announcement) and their own components.
+- **Removed copy keys still referenced by code:** `camera.capture.hourOverlay`, `camera.capture.a11y.close`,
+  `camera.sendto.coach.voice`, `widget.home.small.a11y.photoWithCaption`, `daily.capture.a11y.send`,
+  `collage.view.title`, `collage.view.error.button`, `collage.view.a11y.back` (files in the reply of this pass).
+- **Worker:** no key or token the worker reads changed shape; push texts change without code. Retro's invitation title
+  "Week N" would need a `{week}` placeholder (owner / worker team).
+- **Android code:** `InvitationAppearance.accentColor` (`android/core/push/…/NotificationUi.kt`) should return no
+  colour (RC-17); `DeepLink.Camera` must accept no group (C-24, still open); `DailyInvitationNotifier` promotion (C-11).
+- **Account group:** the camera tab uses the tab bar's media variant (C-04 over media) — `groups.list.layout.tabBar`;
+  `onboarding.widget` should name the widget "Group Updates" (`widget.home.small.gallery.name`) and may reuse
+  `widget.arrival.help.delay`.
+
+### Unresolved (owner, capture or verification)
+
+RC-3 (shutter form — review in Pass 5), RC-10 (Retro's empty widget background: one screenshot of an empty Retro
+widget), RC-14 (collage option, now including a Retro recap-card composition), RC-15 (foundations: Share pill and page
+dots); owner: default audience with no context (all groups), Android lock-screen hub eligibility, static widget
+`previewImage`, notification small icon, `{app_name}` mark on shared collages; captures: Retro widget on a device at
+2 × 2, raw "Add to Your Week" with 2 photos selected, raw "Add a Message", Retro notifications as rendered.

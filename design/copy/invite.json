@@ -1,284 +1,290 @@
 {
+  "$comment": "invite.web / invite.appclip strings (Account group) — Redesign Pass 2 on Retro's /u/[username] invite page voice (retro.voice.web-invite).",
   "strings": {
     "invite.web.documentTitle": {
-      "text": "{title} | {app_name}",
+      "text": "{app_name} - {title}",
       "origin": "adapted",
-      "source_app": "Partiful",
+      "source_app": "Retro",
       "surface": "invite.web",
-      "evidence": "https://partiful.com/e/egrwj3biCR6g5MLJ0dbv page HTML (design/research/wrapped-tribute-partiful.md §5.4): <title>/og:title 'Tompkins Square Dog Parade | Partiful'; references/auto/partiful/web/pf-web-notfound-01.png + pf-web-notfound.computed-styles.json (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA): <title> 'Not Found | Partiful'",
-      "pattern": "P-IW-T document title '{Event title} | Partiful' (examples 'Tompkins Square Dog Parade | Partiful', 'Not Found | Partiful'); the brand is replaced by {app_name}",
-      "level": "VERIFIED",
-      "notes": "{title} = the group name (valid invite) or the state's short title. Used for <title>, og:title and twitter:title. BLOCKED while the app has no name."
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt (\"<title> 'Retro - <Full Name>'\")",
+      "pattern": "retro.voice.share",
+      "level": "SOURCED",
+      "notes": "App name swapped for {app_name} (BLOCKED until named); {title} = the group name."
     },
-    "invite.web.cover.alt": {
-      "text": "{group_name} Group Cover Image",
-      "origin": "adapted",
-      "source_app": "Partiful",
+    "invite.web.og.title": {
+      "text": "Join {group_name}",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "invite.web",
-      "evidence": "https://partiful.com/e/egrwj3biCR6g5MLJ0dbv page HTML (design/research/wrapped-tribute-partiful.md §5.4): og:image:alt 'Tompkins Square Dog Parade Event Cover Image'",
-      "pattern": "P-IW-A image alt '{Event title} Event Cover Image'; noun swap Event → Group",
-      "level": "VERIFIED",
-      "notes": "Cover <img alt> and og:image:alt."
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt (og:title 'Add me on Retro')",
+      "pattern": "retro.voice.share",
+      "level": "SOURCED",
+      "notes": "Link-preview title: the group the link joins (no app name, so it ships before the app is named)."
+    },
+    "invite.web.og.description": {
+      "text": "Photos with friends and family.",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "invite.web",
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt (og:description 'Photos with friends.')",
+      "pattern": "retro.voice.share",
+      "level": "SOURCED",
+      "notes": "Noun swap friends → friends and family."
     },
     "invite.web.invitedBy": {
-      "text": "Invited by {first_name}",
-      "origin": "new",
-      "source_app": "Partiful",
+      "text": "{first_name} Invited You!",
+      "origin": "adapted",
+      "source_app": "Retro",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/web/pf-web-public-light-02.png and pf-web-public-light.computed-styles.json ('Hosted by New York Dog Parade', one 16/400 row)",
-      "pattern": "P-IW-4 event-field row '{Participle} by {name}' (example 'Hosted by New York Dog Parade'); the inviter is not a host, so 'Hosted' becomes 'Invited'",
-      "level": "VERIFIED",
-      "notes": "{first_name} = invite_preview.inviter_first_name. The row is left out when it is null."
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt /u/[username] (h1 '<first name> Invited You!'); references/auto/retro/web/retro.app-u-nathan-iphone.png ('Nathan Invited You!')",
+      "pattern": "retro.voice.web-invite",
+      "level": "SOURCED",
+      "notes": "Name swapped for the inviter's {first_name}."
+    },
+    "invite.web.invitedFallback": {
+      "text": "You're Invited!",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "invite.web",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_profile_not_joined_empty_state_title` ('You're invited to join'); retro.voice.web-invite (Title-Case headline with '!')",
+      "pattern": "retro.voice.web-invite",
+      "level": "SOURCED",
+      "notes": "When the inviter has no first name."
+    },
+    "invite.web.body": {
+      "text": "See what {group_name} is up to this week.",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "invite.web",
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt ('See what Nathan is up to this week on Retro.')",
+      "pattern": "retro.voice.web-invite",
+      "level": "SOURCED",
+      "notes": "Noun swap: the person → the group; 'on Retro' dropped (no app name)."
+    },
+    "invite.web.cta": {
+      "text": "Let's go",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "invite.web",
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt; references/auto/retro/web/retro.app-u-nathan-iphone.png",
+      "pattern": "retro.voice.web-invite",
+      "level": "SOURCED"
+    },
+    "invite.web.opening": {
+      "text": "Opening…",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "invite.web",
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt ('Opening Retro...')",
+      "pattern": "retro.voice.progress",
+      "level": "SOURCED",
+      "notes": "App name dropped; the ellipsis character per retro.voice.progress."
+    },
+    "invite.web.desktop.scan": {
+      "text": "Scan the code to see what {group_name} is up to this week.",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "invite.web",
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt ('Scan the code to see what Nathan Sharp is up to this week on Retro.')",
+      "pattern": "retro.voice.web-invite",
+      "level": "SOURCED",
+      "notes": "Noun swap: the person → the group; 'on Retro' dropped."
+    },
+    "invite.web.footer.terms": {
+      "text": "Terms",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "invite.web",
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt (mobile footer 'Terms & Privacy')",
+      "pattern": "retro.voice.web-invite",
+      "level": "SOURCED"
+    },
+    "invite.web.footer.privacy": {
+      "text": "Privacy",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "invite.web",
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt (mobile footer 'Terms & Privacy')",
+      "pattern": "retro.voice.web-invite",
+      "level": "SOURCED"
+    },
+    "invite.web.cover.alt": {
+      "text": "{group_name} cover",
+      "origin": "new",
+      "source_app": "W3C WCAG 2.2",
+      "surface": "invite.web",
+      "evidence": "W3C WCAG 2.2 SC 1.1.1 (text alternative for the backdrop image)",
+      "pattern": "platform.a11yLabel",
+      "level": "VERIFIED"
+    },
+    "invite.web.avatar.alt": {
+      "text": "{first_name}",
+      "origin": "new",
+      "source_app": "W3C WCAG 2.2",
+      "surface": "invite.web",
+      "evidence": "W3C WCAG 2.2 SC 1.1.1 (an image of a person is named by the person)",
+      "pattern": "platform.a11yLabel",
+      "level": "VERIFIED"
     },
     "invite.web.members.title": {
-      "text": "Member List",
-      "origin": "adapted",
-      "source_app": "Partiful",
+      "text": "Members of {group_name}",
+      "origin": "new",
+      "source_app": "W3C WCAG 2.2",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/web/pf-web-private-past-02.png (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) ('Guest List')",
-      "pattern": "P-IW-5 section label in Title Case; noun swap Guest → Member ('Guest List')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_members_sheet_title` ('Album Members'); WCAG 2.2 SC 1.1.1",
+      "pattern": "platform.a11yLabel",
       "level": "VERIFIED",
-      "notes": "The reference's count line ('11 Went · 4 Maybe') and '+N' disc are do-not-copy (tenet 2)."
-    },
-    "invite.web.members.viewAll": {
-      "text": "View all",
-      "origin": "verbatim",
-      "source_app": "Partiful",
-      "surface": "invite.web",
-      "evidence": "references/auto/partiful/web/pf-web-private-past-02.png (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z)",
-      "level": "VERIFIED"
-    },
-    "invite.web.gate.title": {
-      "text": "Restricted Access",
-      "origin": "verbatim",
-      "source_app": "Partiful",
-      "surface": "invite.web",
-      "evidence": "references/auto/partiful/web/pf-web-private-past-02.png (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z)",
-      "level": "VERIFIED"
-    },
-    "invite.web.gate.body": {
-      "text": "Verify your phone number to view the group's photos",
-      "origin": "adapted",
-      "source_app": "Partiful",
-      "surface": "invite.web",
-      "evidence": "references/auto/partiful/web/pf-web-private-past-02.png (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) ('Verify your phone number to view event details and activity')",
-      "pattern": "P-IW-1 gate explanation 'Verify your phone number to view {things}'; noun phrase swap 'event details and activity' → 'the group's photos'",
-      "level": "VERIFIED",
-      "notes": "No final period, as in the reference. Members are not named in the swap because first names and avatars are already shown."
+      "notes": "aria-label of the member avatar stack; each avatar's alt is the member's first name."
     },
     "invite.web.getApp": {
-      "text": "Get the app",
-      "origin": "verbatim",
-      "source_app": "Partiful",
+      "text": "Download the app",
+      "origin": "adapted",
+      "source_app": "Retro",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/web/pf-web-private-past-02.png (https://partiful.com/e/6p1Hm5OlE2YIH1VX515z) footer 'Get the app ↗'; references/auto/partiful/web/pf-web-notfound-01.png + pf-web-notfound.computed-styles.json (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) footer",
-      "level": "VERIFIED",
-      "notes": "Members-only card button and footer link (both open the store / App Clip)."
-    },
-    "invite.web.state.glyph": {
-      "text": "😬",
-      "origin": "verbatim",
-      "source_app": "Partiful",
-      "surface": "invite.web",
-      "evidence": "references/auto/partiful/web/pf-web-notfound-01.png + pf-web-notfound.computed-styles.json (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) DIV.__404_visual; references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [B] children:'\\uD83D\\uDE2C'",
-      "level": "VERIFIED",
-      "notes": "Emoji glyph of every non-ideal state (U+1F62C)."
-    },
-    "invite.web.state.glyphLabel": {
-      "text": "Grimace face",
-      "origin": "verbatim",
-      "source_app": "Partiful",
-      "surface": "invite.web",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [B] role='img' aria-label g('Grimace face')",
-      "level": "VERIFIED",
-      "notes": "Accessible name of the glyph."
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt /j/ mobile footer ('Download Retro', 'Download the app to read and leave comments')",
+      "pattern": "retro.voice.web-invite",
+      "level": "SOURCED",
+      "notes": "'Retro' → 'the app'. Desktop link under the QR code."
     },
     "invite.web.notFound.title": {
-      "text": "Invite not found",
+      "text": "Couldn't find invite",
       "origin": "adapted",
-      "source_app": "Partiful",
+      "source_app": "Retro",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [C] tO.default({message:e3('Event not found')}) — the event page's not-found message passed to the 404 component",
-      "pattern": "P-IW-6 not-found message '{Noun} not found' (examples 'Event not found', 'Page Not Found'); noun swap Event → Invite",
-      "level": "VERIFIED",
-      "notes": "Shown in uppercase (layout token invite.web.layout.state.title)."
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_profile_by_slug_does_not_exist_message` ('Couldn't find album')",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED",
+      "notes": "Noun swap album → invite."
     },
     "invite.web.notFound.documentTitle": {
       "text": "Not Found",
       "origin": "verbatim",
-      "source_app": "Partiful",
+      "source_app": "W3C WCAG 2.2",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/web/pf-web-notfound-01.png + pf-web-notfound.computed-styles.json (https://partiful.com/e/AAAAAAAAAAAAAAAAAAAA) <title> 'Not Found | Partiful'; references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [B] g('Not Found')",
+      "evidence": "HTTP 404 reason phrase (RFC 9110 §15.5.5)",
+      "pattern": "retro.voice.error",
       "level": "VERIFIED"
     },
     "invite.web.unavailable.title": {
       "text": "This link no longer works",
       "origin": "new",
-      "source_app": "Partiful",
+      "source_app": "Retro",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [D] 'The existing link will no longer work.'; [H] 'This link won't work once disabled.'",
-      "pattern": "P-IW-7 link status statement (examples 'The existing link will no longer work.', 'This link won't work once disabled.'); present tense because the link has already expired or been revoked; no period, as a state title",
-      "level": "VERIFIED",
-      "notes": "Expired and revoked invites share this state, so the page does not reveal which."
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt /downloads ('This link is invalid, expired, or revoked.')",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED"
     },
     "invite.web.unavailable.body": {
-      "text": "Ask a member for another link",
-      "origin": "new",
-      "source_app": "Partiful",
+      "text": "Contact the sender for a new link.",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [C] 'Could not add as check-in staff. Try again, or ask the host for another link'",
-      "pattern": "P-IW-8 recovery hint '…ask the host for another link' (Partiful); noun swap host → member; 'Try again, or' dropped because retrying an expired or revoked link cannot succeed",
-      "level": "VERIFIED"
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt /downloads ('This link is invalid, expired, or revoked. Contact the sender for a new link.')",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED"
     },
     "invite.web.error.title": {
       "text": "Something went wrong",
       "origin": "verbatim",
-      "source_app": "Partiful",
+      "source_app": "Retro",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [C] 'Something went wrong. Please try again.'; [E] title 'Something went wrong \\uD83D\\uDE2C'",
-      "level": "VERIFIED",
-      "notes": "The emoji is the state glyph above."
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `error_message_dialog_default_title`",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED"
     },
     "invite.web.error.body": {
-      "text": "Please try again.",
+      "text": "There was a problem. Please try again.",
       "origin": "verbatim",
-      "source_app": "Partiful",
+      "source_app": "Retro",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [G] description:I('Please try again.')",
-      "level": "VERIFIED"
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `error_message_generic`",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED"
     },
     "invite.web.error.retry": {
       "text": "Try again",
       "origin": "verbatim",
-      "source_app": "Partiful",
+      "source_app": "Retro",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [D] 'Try again'; [C] NonIdealState action {text:u('Try again')}",
-      "level": "VERIFIED"
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `onboarding_landing_error_try_again`",
+      "pattern": "retro.voice.button",
+      "level": "SOURCED"
     },
     "invite.web.rateLimited.body": {
-      "text": "You've tried too many times - please try again later",
-      "origin": "verbatim",
-      "source_app": "Partiful",
+      "text": "You've tried too many times. Please try again later.",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "invite.web",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [F]",
-      "level": "VERIFIED",
-      "notes": "Body of the error state when the per-address limit is reached (HTTP 429)."
+      "evidence": "design/copy-patterns.md retro.voice.error ('Please try again.')",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED"
     },
     "invite.appclip.card.action": {
       "text": "View",
       "origin": "verbatim",
-      "source_app": "Partiful",
+      "source_app": "Apple HIG",
       "surface": "invite.appclip",
-      "evidence": "references/auto/partiful/store/partiful-store-04.png (App Clip card action)",
-      "level": "SOURCED",
-      "notes": "One of Apple's preset App Clip actions; chosen in App Store Connect (default and advanced experience), not in code."
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/app-clips (preset action verbs Open / View / Play)",
+      "pattern": "platform.appClipCard",
+      "level": "VERIFIED"
     },
     "invite.appclip.card.subtitle": {
-      "text": "Make memories",
-      "origin": "verbatim",
-      "source_app": "Partiful",
-      "surface": "invite.appclip",
-      "evidence": "references/auto/partiful/store/partiful-store-04.png (App Clip card subtitle under 'Book Club')",
-      "level": "SOURCED",
-      "notes": "Entered in App Store Connect (≤56 characters, Apple HIG). docs/OWNER_SETUP.md §1.5 lets the owner replace it."
-    },
-    "invite.appclip.sheet.name": {
-      "text": "Your Name",
-      "origin": "verbatim",
-      "source_app": "Partiful",
-      "surface": "invite.appclip",
-      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv)",
-      "level": "VERIFIED",
-      "notes": "Join sheet: name field placeholder."
-    },
-    "invite.appclip.sheet.phone": {
-      "text": "Phone Number",
-      "origin": "verbatim",
-      "source_app": "Partiful",
-      "surface": "invite.appclip",
-      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv)",
-      "level": "VERIFIED",
-      "notes": "Join sheet: phone field placeholder."
-    },
-    "invite.appclip.sheet.helper": {
-      "text": "Just for group updates. No spam.",
+      "text": "Photos with friends and family",
       "origin": "adapted",
-      "source_app": "Partiful",
+      "source_app": "Retro",
       "surface": "invite.appclip",
-      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv) ('Just for event updates. No spam.')",
-      "pattern": "P-IW-2 reassurance 'Just for {purpose}. No spam.'; noun swap event → group",
-      "level": "VERIFIED"
-    },
-    "invite.appclip.sheet.cancel": {
-      "text": "Cancel",
-      "origin": "verbatim",
-      "source_app": "Partiful",
-      "surface": "invite.appclip",
-      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv)",
-      "level": "VERIFIED"
-    },
-    "invite.appclip.sheet.continue": {
-      "text": "Continue",
-      "origin": "verbatim",
-      "source_app": "Partiful",
-      "surface": "invite.appclip",
-      "evidence": "references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png (https://partiful.com/e/egrwj3biCR6g5MLJ0dbv)",
-      "level": "VERIFIED"
-    },
-    "invite.appclip.join": {
-      "text": "Join",
-      "origin": "verbatim",
-      "source_app": "Partiful",
-      "surface": "invite.appclip",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [J] RSVP button label for the waitlist status: label:(0,a.ab)('Join')",
-      "level": "VERIFIED",
-      "notes": "The members-only card's action inside the App Clip (the web page's 'Get the app' would point at the store the clip replaces). Opens the join sheet."
-    },
-    "invite.appclip.full.glyph": {
-      "text": "😭",
-      "origin": "verbatim",
-      "source_app": "Partiful",
-      "surface": "invite.appclip",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [I] glyph '\\uD83D\\uDE2D' of the capacity error",
-      "level": "VERIFIED",
-      "notes": "U+1F62D; accessible name invite.appclip.full.glyphLabel."
-    },
-    "invite.appclip.full.glyphLabel": {
-      "text": "Loudly crying face",
-      "origin": "new",
-      "source_app": "Partiful",
-      "surface": "invite.appclip",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [B] (the not-found glyph is labelled with its Unicode name, 'Grimace face')",
-      "pattern": "P-IW-A2 glyph label: the emoji's face named in sentence case (Partiful: 'Grimace face' for U+1F62C); the name used is the Unicode CLDR short name of U+1F62D, 'loudly crying face'",
-      "level": "VERIFIED"
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt (og:description 'Photos with friends.'); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `qr_card_content_subtitle` ('Retro.app - Photos with Friends')",
+      "pattern": "platform.appClipCard",
+      "level": "SOURCED",
+      "notes": "Noun swap friends → friends and family; ≤ 56 characters (card limit)."
     },
     "invite.appclip.full.title": {
       "text": "Couldn't join",
       "origin": "adapted",
-      "source_app": "Partiful",
+      "source_app": "Retro",
       "surface": "invite.appclip",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [I] title 'Couldn't RSVP'",
-      "pattern": "partiful.voice.labels; adaptation rule RSVP → join (design/copy-patterns.md 'Adaptation rules')",
-      "level": "VERIFIED",
-      "notes": "join_group fails with group_full (30 members, docs/API.md §6.1)."
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_comment_send_failed_title` ('Couldn't send comment')",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED",
+      "notes": "Verb swap send comment → join."
     },
     "invite.appclip.full.body": {
-      "text": "Group is full",
-      "origin": "adapted",
-      "source_app": "Partiful",
+      "text": "This group is full.",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "invite.appclip",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [I] description 'Event is full'",
-      "pattern": "partiful.voice.labels; noun swap event → group",
-      "level": "VERIFIED"
+      "evidence": "design/copy-patterns.md retro.voice.error (what happened)",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED"
     },
     "invite.appclip.offline.body": {
-      "text": "This usually occurs due to a poor internet connection - try again in a few minutes",
+      "text": "Could not connect. Check your connection and try again.",
       "origin": "verbatim",
-      "source_app": "Partiful",
+      "source_app": "Retro",
       "surface": "invite.appclip",
-      "evidence": "references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js [E], [K] description under 'Something went wrong 😬'",
-      "level": "VERIFIED",
-      "notes": "Offline / network failure in the App Clip (title invite.web.error.title, glyph invite.web.state.glyph, action invite.web.error.retry)."
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt /downloads",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED"
+    },
+    "invite.appclip.joined.title": {
+      "text": "Welcome to {group_name}!",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `onboarding_post_invite_welcome_title` ('Welcome to Retro')",
+      "pattern": "retro.voice.onboarding",
+      "level": "SOURCED",
+      "notes": "Noun swap Retro → the group's name; '!' for a greeting."
+    },
+    "invite.appclip.joined.body": {
+      "text": "Get the full app to see everyone's photos and your daily invitation.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "invite.appclip",
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt /j/ mobile footer ('Download the app to read and leave comments')",
+      "pattern": "retro.voice.web-invite",
+      "level": "SOURCED",
+      "notes": "Shown with the system's full-app overlay (SKOverlay)."
     }
   }
 }

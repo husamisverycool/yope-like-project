@@ -1,21 +1,21 @@
 # widget.home.xl — systemExtraLarge (iPad only)
 
-Reference: **Apple HIG Widgets** ("System extra large | iPhone: Not supported | iPad: Home Screen and Today View") +
-**Locket** anatomy (C-20). On iPhone this surface does not exist (docs/PLATFORM_CONSTRAINTS.md summary).
+**Visual reference: Retro's Glance widget** (one layout at every size, RC-11; Retro ships no iPad set — App Store
+`ipadScreenshotUrls: []`). **Mechanics: Locket.** Size and availability: **Apple HIG Widgets** ("System extra large |
+iPhone: Not supported | iPad: Home Screen and Today View"). Everything not listed here is `widget.home.small`.
 
 ## References
 
-| image | what it verifies |
+| image / doc | what it verifies |
 |---|---|
-| `references/auto/platform/hig-widgets-ios-dimensions.png`; https://developer.apple.com/design/human-interface-guidelines/widgets (system-family support table) | iPad-only, sizes |
-| `references/auto/locket/store/locket-store-03.png`; Locket APK `widget_empty_lg.xml` | anatomy, large empty state |
+| `references/auto/platform/hig-widgets-ios-dimensions.png`; https://developer.apple.com/design/human-interface-guidelines/widgets | iPad-only, sizes (`widget.home.xl.layout.size`) |
+| `references/auto/retro/apk/widget_preview_journals.webp` | the anatomy |
 
 ## Structure
 
-iPad sizes (`widget.home.xl.layout.size`): 748 × 356 pt (13" iPad), 628 × 300, 540 × 260 …
-
-1. photo / collage page aspect-filling the widget (`widget.home.small.layout.photo`), centre-cropped to the wide frame;
-2. avatar (24 pt at 6 pt) + caption pill, unchanged (`widget.home.small.size.*`).
+iPad sizes (`widget.home.xl.layout.size`): 748 × 356 pt (13" iPad), 628 × 300, 540 × 260 … Photo / collage page
+aspect-filling the wide frame, `layout.global.photoScrim`, the text stack (`widget.home.small.layout.overlay`)
+bottom-trailing.
 
 ## Elements
 
@@ -23,7 +23,7 @@ As `widget.home.small`.
 
 ## States
 
-As `widget.home.large` (lg empty variant; loading placeholder; stale on error / offline).
+As `widget.home.small`.
 
 ## Motion
 
@@ -35,24 +35,23 @@ None.
 
 ## Accessibility
 
-As small.
+As `widget.home.small`.
 
 ## Data & actions
 
-As small. The widget rendition is sized for iPhone widgets; on a 748-pt-wide iPad widget it is upscaled — use the
-display rendition (`media.display_path`) for `.systemExtraLarge` (docs/API.md §7 'Which image to show').
+As `widget.home.small`; on a 748-pt-wide widget use the display rendition (`media.display_path`) — the widget
+rendition is sized for iPhone widgets (docs/API.md §7 "Which image to show").
 
 ## Platform notes
 
-Declare `.systemExtraLarge` in `supportedFamilies`; the iPhone widget gallery never offers it (HIG table). Android has no extra-large class; `widget.android` resizes.
+Declare `.systemExtraLarge` in `supportedFamilies`; never offered on iPhone. Android has no extra-large class.
 
 ## Do-not-copy
 
-As small.
+As `widget.home.small`.
 
 ## Gaps
 
 | item | status | capture |
 |---|---|---|
-| any Locket iPad widget | not observed | one iPad Home Screen screenshot with Locket widgets |
-| empty label color | BLOCKED | see `widget.home.small` |
+| any Retro iPad widget | not observed (no iPad app set) | — |

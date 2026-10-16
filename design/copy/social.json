@@ -1,373 +1,496 @@
 {
-  "$comment": "Social surface group strings (chat.*, photo.viewer, walls.*, week.*, albums.*). Decisions: design/MERGE_DECISIONS.md → Social.",
+  "$comment": "Social surface group strings (redesign Pass 2, Retro voice, 2026-10-16): chat.*, photo.viewer, walls.*, week.*, albums.*. Verbatim Retro strings cite their key in references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (%1$s → {name}-style placeholders). Push texts for these surfaces are owned by notifications.push (capture group). Decisions: design/MERGE_DECISIONS.md → Redesign — Social (RS-*).",
   "strings": {
     "chat.thread.a11y.back": {
-      "text": "back",
+      "text": "Back",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Apple HIG / Material 3",
       "surface": "chat.thread",
-      "evidence": "design/surfaces: icon.global.back (‹ in a header circle); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
-      "level": "SOURCED",
-      "notes": "VoiceOver / TalkBack label of the back circle."
-    },
-    "chat.thread.a11y.groupCapsule": {
-      "text": "{group_name}, group info",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "chat.thread",
-      "evidence": "references/auto/yope/store/yope-store-05.png (App Store screenshot 5, group chat, listing 1.229.0) (header capsule: group avatar · name · ›); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record'); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
-      "level": "SOURCED",
-      "notes": "Label of the header capsule that opens the group's profile / settings."
-    },
-    "chat.thread.a11y.recap": {
-      "text": "view recap",
-      "origin": "verbatim",
-      "source_app": "Yope",
-      "surface": "chat.thread",
-      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png (S6, 2026-06) (pill label next to the same film-strip glyph)",
-      "level": "SOURCED",
-      "notes": "Label of the film-strip circle in the chat header."
+      "evidence": "design/components.md C-02 (back chevron; 'Back' is the platform's own label on native bars)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
     },
     "chat.thread.a11y.photo": {
-      "text": "{name}’s pic, {time}",
+      "text": "{name}'s photo, {time}",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); 'pic' as in references/auto/yope/frames/b-yopeapp-7591560669967682847-t49.50-reply-to-photo.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847 @ 49.50 s); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record'); yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_post_attachment_title_template) ('Post by %1$s')",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED",
-      "notes": "{time} uses chat.thread.layout.timeFormat. Add chat.thread.a11y.caption when the post has a caption."
+      "notes": "Photo message label; straight apostrophe per retro.voice.punctuation."
     },
     "chat.thread.a11y.photoMine": {
-      "text": "your pic, {time}",
+      "text": "Your photo, {time}",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s)",
-      "pattern": "yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "evidence": "design/copy-patterns.md retro.voice.second-person",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
     "chat.thread.a11y.message": {
       "text": "{name}, {message}",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
-      "level": "SOURCED",
-      "notes": "Text / emoji message read with its sender (the avatar shows only beside the last bubble of a run)."
+      "evidence": "design/components.md C-16 (name, then the text)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
     },
     "chat.thread.a11y.messageMine": {
-      "text": "you, {message}",
+      "text": "You, {message}",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s)",
-      "pattern": "yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "evidence": "design/copy-patterns.md retro.voice.second-person",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
     "chat.thread.a11y.caption": {
-      "text": "caption: {caption}",
+      "text": "Caption: {caption}",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts) ('Group an image with its caption so VoiceOver reads them together'); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_comment_box_caption_placeholder) ('Add a caption…')",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
     "chat.thread.a11y.replyQuote": {
-      "text": "reply to {name}’s pic",
+      "text": "Reply to {name}'s post",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t49.50-reply-to-photo.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847 @ 49.50 s) (quote block 'Gabriel / pic'); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_post_attachment_title_template) ('Post by %1$s'), references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_context_menu_reply)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
-    "chat.thread.reply.photoLabel": {
-      "text": "pic",
-      "origin": "verbatim",
-      "source_app": "Yope",
+    "chat.thread.a11y.cancelReply": {
+      "text": "Cancel reply",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t49.50-reply-to-photo.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847 @ 49.50 s) (word under the quoted poster's name)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_reply_bar_title_other_user_template) (reply bar)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
-    "chat.thread.empty.titleCreator": {
-      "text": "you created group",
+    "chat.thread.reply.postTitle": {
+      "text": "Post by {name}",
       "origin": "verbatim",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_post_attachment_title_template)",
       "level": "SOURCED",
-      "notes": "Shown to the member who created the group (groups.created_by)."
+      "notes": "Title of the quoted post above a reply to a photo (chat.thread.layout.replyQuote). %1$s → {name}."
     },
-    "chat.thread.empty.titleMember": {
-      "text": "{name} created group",
-      "origin": "adapted",
-      "source_app": "Yope",
+    "chat.thread.reply.postWeek": {
+      "text": "Week {week_number}",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05) ('you created group')",
-      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_post_subtitle_week_template)",
+      "level": "SOURCED"
+    },
+    "chat.thread.reply.defaultText": {
+      "text": "Message",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_reply_default_text)",
+      "level": "SOURCED"
+    },
+    "chat.thread.reply.defaultAttachment": {
+      "text": "Attachment",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_reply_default_text_attachment)",
       "level": "SOURCED",
-      "notes": "Noun swap: 'you' → the creator's first name, for the other members. Left out when created_by is null."
+      "notes": "Shown for a quoted voice or photo message."
+    },
+    "chat.thread.reply.bar": {
+      "text": "Replying to {name}",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_reply_bar_title_other_user_template)",
+      "level": "SOURCED"
+    },
+    "chat.thread.reply.barSelf": {
+      "text": "Replying to yourself",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_reply_bar_title_self)",
+      "level": "SOURCED"
+    },
+    "chat.thread.divider.today": {
+      "text": "Today",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_timestamp_divider_today)",
+      "level": "SOURCED"
+    },
+    "chat.thread.divider.yesterday": {
+      "text": "Yesterday",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_timestamp_divider_yesterday)",
+      "level": "SOURCED"
+    },
+    "chat.thread.empty.title": {
+      "text": "Let's get started",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_profile_empty_state_title)",
+      "level": "SOURCED",
+      "notes": "Empty group chat (C-27). Retro's apostrophe kept straight."
     },
     "chat.thread.empty.detail": {
-      "text": "and added {names}",
-      "origin": "adapted",
-      "source_app": "Yope",
+      "text": "Be the first to say hi.",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05) ('and added mẹ, Anh')",
-      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (user_profile_empty_new_user_message) ('Be the first to say hi\\nand welcome them')",
+      "pattern": "retro.voice.empty-state ('Nothing to see here yet', 'Let's get started' / 'Add some photos or videos to your album!' / 'Add to album', 'Your chats will show up here.' / 'Create a chat')",
       "level": "SOURCED",
-      "notes": "{names}: first names of the other members, comma-separated (data)."
+      "notes": "Shortened from Retro's line (more than a noun swap, so 'new')."
     },
     "chat.thread.empty.invite": {
-      "text": "invite more friends",
+      "text": "Invite friends",
       "origin": "verbatim",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_edit_tagged_user_empty_state_cta)",
       "level": "SOURCED",
-      "notes": "Opens groups.invite. 'friends' kept verbatim; the owner may want the group's member noun for family / roommates groups."
+      "notes": "Empty-state action → groups.invite."
     },
     "chat.thread.error.title": {
-      "text": "couldn’t load this chat",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Error loading your messages",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "no Yope in-app error observed (yope-a §6); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.'); yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_fullscreen_error)",
       "level": "SOURCED"
     },
     "chat.thread.error.detail": {
-      "text": "check your connection and try again — your pics are safe",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "There was a problem. Please try again.",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "no Yope in-app error observed (yope-a §6); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.') (names the next step, ends warm); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (error_message_generic)",
       "level": "SOURCED"
     },
     "chat.thread.error.retry": {
-      "text": "try again",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Try Again",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "no Yope retry button observed; pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_comment_send_failed_retry)",
       "level": "SOURCED"
     },
     "chat.thread.offline.title": {
-      "text": "you’re offline",
+      "text": "No Connection",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "Yope offline states not found (yope-a §1.8, §6); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.'); yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (error_message_expired_auth_code_title) ('Code Expired': an error named in Title Case)",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Error loading friends. Tap here to try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
       "level": "SOURCED"
     },
     "chat.thread.offline.detail": {
-      "text": "your group’s pics will be right here when you’re back",
+      "text": "Check your connection and try again.",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "Yope offline states not found (yope-a §1.8, §6); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.') ('Your next memories are waiting.')",
-      "level": "SOURCED"
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (error_message_auth_code_service) (\"We couldn't verify the code. Check your connection and try again.\")",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Error loading friends. Tap here to try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
+      "level": "SOURCED",
+      "notes": "Second sentence of Retro's string."
     },
     "chat.thread.sendFailed": {
-      "text": "couldn’t send — tap to try again",
+      "text": "Couldn't send. Tap to retry",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "design/research/yope-b.md §1 'Not found: … failed-send state'; pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.'); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (app_widget_error_message) ('Error loading media. Tap to retry'), references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_comment_send_failed_title)",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Error loading friends. Tap here to try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
       "level": "SOURCED",
-      "notes": "Placement of this line is BLOCKED (chat.thread.layout.failedMessage)."
+      "notes": "One tappable line under a failed message (chat.thread.layout.failedMessage)."
+    },
+    "chat.thread.sending": {
+      "text": "Sending",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_delivery_status_sending)",
+      "level": "SOURCED"
+    },
+    "chat.thread.menu.reply": {
+      "text": "Reply",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_context_menu_reply)",
+      "level": "SOURCED"
+    },
+    "chat.thread.menu.copy": {
+      "text": "Copy",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_context_menu_copy)",
+      "level": "SOURCED"
+    },
+    "chat.thread.menu.save": {
+      "text": "Save",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_context_menu_save)",
+      "level": "SOURCED"
+    },
+    "chat.thread.menu.retry": {
+      "text": "Retry",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_context_menu_retry)",
+      "level": "SOURCED"
     },
     "chat.thread.menu.delete": {
-      "text": "delete",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Unsend",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (Yope ••• menu, 2024 build: 'download all photos', 'get group recap', 'share invite', 'leave group', 'report') (lowercase verbs in Yope's native ••• menu); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_context_menu_delete)",
       "level": "SOURCED",
-      "notes": "Context-menu item on your own text / voice message (delete_message)."
+      "notes": "Own text / voice message (delete_message)."
+    },
+    "chat.thread.menu.deletePhoto": {
+      "text": "Delete",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_context_menu_delete_photo_message)",
+      "level": "SOURCED",
+      "notes": "Own photo message → photo.viewer delete confirmation (delete_media)."
     },
     "chat.thread.menu.report": {
-      "text": "report",
-      "origin": "verbatim",
-      "source_app": "Yope",
+      "text": "Report Message",
+      "origin": "adapted",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (Yope ••• menu, 2024 build: 'download all photos', 'get group recap', 'share invite', 'leave group', 'report')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_comment_overflow_report) ('Report Post')",
+      "pattern": "retro.voice.menu-labels ('Share to my week', 'Add to Album', 'Hide photo', 'Delete from Photos', 'Copy Link')",
       "level": "SOURCED",
-      "notes": "Context-menu item on another member's message; opens safety.report."
+      "notes": "Noun swap: Post → Message."
+    },
+    "chat.thread.toast.copied": {
+      "text": "Copied!",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_comment_copy_success_message)",
+      "level": "SOURCED",
+      "notes": "Android Toast (C-26); iOS: accessibility announcement."
     },
     "chat.thread.deleteMessage.title": {
-      "text": "delete this message?",
+      "text": "Unsend message?",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "no Yope confirmation observed; pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s)",
-      "pattern": "yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong') (question form 'can’t see your friends?')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (user_profile_confirm_unfriend_title_template) ('Unfriend %1$s?'), references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_context_menu_delete)",
+      "pattern": "retro.voice.confirm ('Unfriend %1$s?' / 'They will not be notified', 'Block %1$s?', 'Delete address?' / 'Yes, delete')",
       "level": "SOURCED"
     },
     "chat.thread.deleteMessage.message": {
-      "text": "it’s removed from the chat for everyone.",
+      "text": "It will be removed for everyone in the group.",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "docs/API.md §6.2 delete_message (members get a message_deleted broadcast); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.') (one plain sentence with a period, like 'Ask your friend to send you a new link.')",
+      "evidence": "docs/API.md §6.2 delete_message (members get a message_deleted broadcast)",
+      "pattern": "retro.voice.confirm ('Unfriend %1$s?' / 'They will not be notified', 'Block %1$s?', 'Delete address?' / 'Yes, delete'); retro.voice.explanation ('Retro is a social photo journal for moments big and small. Add to any week, any time.')",
       "level": "SOURCED"
     },
-    "chat.composer.placeholder": {
-      "text": "start typing...",
+    "chat.thread.deleteMessage.confirm": {
+      "text": "Unsend",
       "origin": "verbatim",
-      "source_app": "Yope",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_context_menu_delete)",
+      "level": "SOURCED",
+      "notes": "Confirm button restates the action (retro.voice.confirm)."
+    },
+    "chat.composer.placeholder": {
+      "text": "Send a message…",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "chat.composer",
-      "evidence": "references/auto/yope/store/yope-store-05.png (App Store screenshot 5, group chat, listing 1.229.0) (group chat field)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_composer_placeholder)",
+      "level": "SOURCED"
+    },
+    "chat.composer.placeholderReply": {
+      "text": "Reply…",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "chat.composer",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_composer_reply_placeholder)",
       "level": "SOURCED"
     },
     "chat.composer.a11y.camera": {
-      "text": "send a pic",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Take photo",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "chat.composer",
-      "evidence": "references/auto/yope/store/yope-store-05.png (App Store screenshot 5, group chat, listing 1.229.0) (lime camera circle); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap') (verb first, 'pic' as in 'new pic added')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_profile_take_photo)",
       "level": "SOURCED"
     },
     "chat.composer.a11y.mic": {
-      "text": "record a voice message",
+      "text": "Record a voice message",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.composer",
-      "evidence": "references/auto/yope/store/listing.html (v1.210.0–1.212.1: 'add voice to your memories or send voice messages in chat …'); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap'); noun 'voice messages' from the release note",
+      "evidence": "references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png ('voice message')",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
     "chat.composer.a11y.field": {
-      "text": "message",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Message",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "chat.composer",
-      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t48.50-1on1-thread.png ('message...'); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group'); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.placeholder ('name group (optional)', 'add a message', 'message to Oblong')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_reply_default_text)",
       "level": "SOURCED"
     },
     "chat.composer.a11y.send": {
-      "text": "send",
+      "text": "Send",
       "origin": "verbatim",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.composer",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10) (lime 'send' button)",
-      "level": "SOURCED",
-      "notes": "Label of the send control once chat.composer.layout.typingState is captured."
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_dm_share_send_cta)",
+      "level": "SOURCED"
     },
     "chat.voice.a11y.play": {
-      "text": "play voice message, {duration}",
+      "text": "Play voice message, {duration}",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.voice",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); references/auto/yope/store/listing.html (v1.210.0–1.212.1: 'add voice to your memories or send voice messages in chat …'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap'); yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
-      "level": "SOURCED",
-      "notes": "{duration} spoken from the mm:ss value."
+      "evidence": "references/auto/whatsapp/help/faq-1165411581043811-play-voice-iphone.png",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
     },
     "chat.voice.a11y.pause": {
-      "text": "pause",
+      "text": "Pause",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.voice",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "evidence": "references/auto/imessage/apple-support/messages-glyph-pause.png ('the Pause button')",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
     "chat.voice.a11y.message": {
-      "text": "{name}’s voice message, {duration}",
+      "text": "{name}'s voice message, {duration}",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.voice",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); references/auto/yope/store/listing.html (v1.210.0–1.212.1: 'add voice to your memories or send voice messages in chat …'); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "evidence": "design/components.md C-16",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
     "chat.voice.a11y.messageMine": {
-      "text": "your voice message, {duration}",
+      "text": "Your voice message, {duration}",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.voice",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); references/auto/yope/store/listing.html (v1.210.0–1.212.1: 'add voice to your memories or send voice messages in chat …'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s)",
-      "pattern": "yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "evidence": "design/copy-patterns.md retro.voice.second-person",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
+    },
+    "chat.voice.a11y.lock": {
+      "text": "Keep recording",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "chat.voice",
+      "evidence": "references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png (hands-free recording)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
+    },
+    "chat.voice.a11y.discard": {
+      "text": "Delete recording",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "chat.voice",
+      "evidence": "references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png ('cancel and delete your voice message')",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
     "chat.voice.recording.slideToCancel": {
-      "text": "slide to cancel",
+      "text": "Slide to cancel",
       "origin": "verbatim",
-      "source_app": "WhatsApp",
+      "source_app": "Telegram",
       "surface": "chat.voice",
-      "evidence": "references/auto/whatsapp/store/whatsapp-store-02.png (App Store panel 2, listing 26.40.77: recording row 'slide to cancel ‹'); references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png ('While recording you can slide [‹] to cancel and delete your voice message.'); references/auto/telegram/store/telegram-store-03.png ('‹ Slide to cancel', same hint in a second app)",
-      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "evidence": "references/auto/telegram/store/telegram-store-03.png ('‹ Slide to cancel'); references/auto/whatsapp/store/whatsapp-store-02.png ('slide to cancel ‹')",
       "level": "SOURCED",
-      "notes": "Hint in the voice recording row (chat.voice.layout.recording → hintCopy). Generic instruction text, no brand term."
+      "notes": "Telegram's Sentence-case form matches retro.voice.coach; no brand term."
     },
     "chat.voice.permission.title": {
-      "text": "can’t send voice messages?",
+      "text": "Microphone Access",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.voice",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png ('can’t see your friends?'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.permission ('can’t see your friends?' / 'enable contacts' / 'enable')",
-      "level": "SOURCED",
-      "notes": "Shown when the microphone permission is denied and the person taps the mic."
-    },
-    "chat.voice.permission.detail": {
-      "text": "enable your mic",
-      "origin": "adapted",
-      "source_app": "Yope",
-      "surface": "chat.voice",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) ('enable contacts')",
-      "pattern": "yope.voice.permission ('can’t see your friends?' / 'enable contacts' / 'enable')",
-      "level": "SOURCED",
-      "notes": "Noun swap: contacts → your mic."
-    },
-    "chat.voice.permission.button": {
-      "text": "enable",
-      "origin": "verbatim",
-      "source_app": "Yope",
-      "surface": "chat.voice",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) (white 'enable' button)",
-      "level": "SOURCED",
-      "notes": "Opens the app's page in system Settings."
-    },
-    "chat.voice.error.play": {
-      "text": "couldn’t play this voice message",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "chat.voice",
-      "evidence": "Yope playback errors not found (yope-b §3); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (rewind_home_no_permission_upsell_title) ('Camera Roll Access')",
+      "pattern": "retro.voice.permission ('Camera Roll Access' / 'Rewind uses your camera roll to show you memories from past years. These photos are only visible to you.' / 'Allow Photo Access')",
       "level": "SOURCED"
     },
-    "chat.voice.error.record": {
-      "text": "couldn’t record — try again",
+    "chat.voice.permission.detail": {
+      "text": "Voice messages use your microphone. Only people in this group can hear them.",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "chat.voice",
-      "evidence": "Yope recording UI not found (yope-b §3); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.'); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (rewind_home_no_permission_upsell_message)",
+      "pattern": "retro.voice.permission ('Camera Roll Access' / 'Rewind uses your camera roll to show you memories from past years. These photos are only visible to you.' / 'Allow Photo Access')",
+      "level": "SOURCED",
+      "notes": "Use, then a reassurance (pattern rule)."
+    },
+    "chat.voice.permission.button": {
+      "text": "Allow Microphone Access",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "chat.voice",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (rewind_home_no_permission_upsell_cta) ('Allow Photo Access')",
+      "pattern": "retro.voice.permission ('Camera Roll Access' / 'Rewind uses your camera roll to show you memories from past years. These photos are only visible to you.' / 'Allow Photo Access')",
+      "level": "SOURCED",
+      "notes": "Opens the system Settings page of the app."
+    },
+    "chat.voice.error.play": {
+      "text": "Error loading voice message. Tap to retry",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "chat.voice",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (app_widget_error_message) ('Error loading media. Tap to retry')",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Error loading friends. Tap here to try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
+      "level": "SOURCED",
+      "notes": "Noun swap: media → voice message."
+    },
+    "chat.voice.error.record": {
+      "text": "Couldn't record voice message",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "chat.voice",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_comment_send_failed_title) (\"Couldn't send comment\")",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Error loading friends. Tap here to try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
       "level": "SOURCED"
     },
     "chat.reactions.picker.search": {
       "text": "Search",
       "origin": "verbatim",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "chat.reactions",
-      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg (2025-01-16)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_create_thread_input_placeholder)",
       "level": "SOURCED"
     },
     "chat.reactions.picker.frequent": {
@@ -375,741 +498,589 @@
       "origin": "verbatim",
       "source_app": "Locket",
       "surface": "chat.reactions",
-      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg (2025-01-16)",
-      "level": "SOURCED"
-    },
-    "chat.reactions.picker.popular": {
-      "text": "Popular",
-      "origin": "verbatim",
-      "source_app": "Locket",
-      "surface": "chat.reactions",
-      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg (2025-01-16)",
-      "level": "SOURCED"
+      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg (section label)",
+      "level": "SOURCED",
+      "notes": "Same label as the iOS emoji keyboard's first category; Title Case section header (retro.voice.title-case)."
     },
     "chat.reactions.picker.all": {
       "text": "All",
       "origin": "verbatim",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "chat.reactions",
-      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg (2025-01-16)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (activity_tab_filter_all)",
       "level": "SOURCED"
     },
     "chat.reactions.activity.title": {
-      "text": "Activity",
+      "text": "Reactions",
       "origin": "verbatim",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "chat.reactions",
-      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (design/research/locket.md §7) ('Activity')",
-      "level": "SOURCED",
-      "notes": "Title of the sheet listing who reacted to one photo."
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_reactions_sheet_title)",
+      "level": "SOURCED"
     },
     "chat.reactions.activity.row": {
-      "text": "{name} sent {emoji}",
-      "origin": "verbatim",
+      "text": "{name} reacted {emoji}",
+      "origin": "new",
       "source_app": "Locket",
       "surface": "chat.reactions",
-      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (design/research/locket.md §7) ('{{name}} sent {{emoji}}')",
+      "evidence": "design/copy-patterns.md locket.push.reaction",
+      "pattern": "locket.push.reaction ('{name} reacted {emoji} to your photo' — content only, no count); platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED",
-      "notes": "One row per reaction; never a count."
+      "notes": "Accessibility label of a row in the Reactions sheet; no count."
     },
     "chat.reactions.activity.rowMine": {
-      "text": "You reacted {emoji} to {name}’s pic",
-      "origin": "adapted",
-      "source_app": "Locket",
+      "text": "You reacted {emoji}",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "chat.reactions",
-      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (design/research/locket.md §7) ('You reacted {{emoji}} to {{name}}'s Locket')",
-      "pattern": "locket.push.reaction ('{{contactName}} reacted {{emoji}} to your Locket', '{{name}} sent {{emoji}}')",
+      "evidence": "design/copy-patterns.md locket.push.reaction",
+      "pattern": "locket.push.reaction ('{name} reacted {emoji} to your photo' — content only, no count); platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
+    },
+    "chat.reactions.list.removeHint": {
+      "text": "Tap to remove",
+      "origin": "new",
+      "source_app": "WhatsApp",
+      "surface": "chat.reactions",
+      "evidence": "references/auto/whatsapp/help/faq-424198503229937-react-iphone.png ('Tap your reaction to remove it.')",
+      "pattern": "retro.voice.coach ('Tap to advance', 'Tap left to go back')",
       "level": "SOURCED",
-      "notes": "Noun swap: Locket (the photo) → pic."
+      "notes": "Second line of your own rows in the Reactions sheet."
     },
     "chat.reactions.empty": {
-      "text": "No reactions yet",
+      "text": "Nothing to see here yet",
       "origin": "verbatim",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "chat.reactions",
-      "evidence": "Locket Android APK 1.243.0 (2026-10-09) Hermes string table (design/research/locket.md §7) ('No reactions yet')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (activity_tab_empty_message)",
       "level": "SOURCED"
     },
     "chat.reactions.a11y.cluster": {
       "text": "Reactions: {emoji_names}",
       "origin": "new",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "chat.reactions",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: https://help.locket.com (design/research/locket.md §11: 'Remove ads', 'Upload from camera roll')",
-      "pattern": "locket.voice.sentence-case ('Remove ads', 'Upload from camera roll', 'How to add the widget')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_reactions_sheet_title)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED",
-      "notes": "{emoji_names}: the system names of the distinct emoji, comma-separated; never a number."
+      "notes": "Label of the reaction chip: the emoji's system names, never a count."
     },
     "chat.reactions.a11y.add": {
       "text": "Add reaction",
       "origin": "new",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "chat.reactions",
-      "evidence": "references/auto/locket/store/locket-store-08.png (smiley-plus glyph); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: https://help.locket.com (design/research/locket.md §11: 'Remove ads', 'Upload from camera roll')",
-      "pattern": "locket.voice.sentence-case ('Remove ads', 'Upload from camera roll', 'How to add the widget')",
+      "evidence": "references/auto/locket/store/locket-store-08.png (add glyph)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
     "chat.reactions.a11y.quick": {
       "text": "React with {emoji_name}",
       "origin": "new",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "chat.reactions",
-      "evidence": "references/auto/locket/store/locket-store-08.png (quick 🔥 💖); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: https://help.locket.com (design/research/locket.md §11: 'Remove ads', 'Upload from camera roll')",
-      "pattern": "locket.voice.sentence-case ('Remove ads', 'Upload from camera roll', 'How to add the widget')",
+      "evidence": "references/auto/imessage/apple-support/page-react-with-tapbacks.png",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
     "chat.reactions.error": {
-      "text": "Couldn’t send your reaction",
-      "origin": "new",
-      "source_app": "Locket",
+      "text": "Couldn't send reaction",
+      "origin": "adapted",
+      "source_app": "Retro",
       "surface": "chat.reactions",
-      "evidence": "Locket reaction errors not found (locket.md §7); pattern examples: https://help.locket.com (design/research/locket.md §11: 'Remove ads', 'Upload from camera roll')",
-      "pattern": "locket.voice.sentence-case ('Remove ads', 'Upload from camera roll', 'How to add the widget'); locket.widget.empty ('No pics yet' / 'Tap to set up', 'No reactions yet')",
-      "level": "SOURCED"
-    },
-    "photo.viewer.title.you": {
-      "text": "you",
-      "origin": "verbatim",
-      "source_app": "Yope",
-      "surface": "photo.viewer",
-      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s) ('you sent to Oblong': 'you' in white bold)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_comment_send_failed_title) (\"Couldn't send comment\")",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Error loading friends. Tap here to try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
       "level": "SOURCED",
-      "notes": "First word of the title when the photo is yours."
+      "notes": "Noun swap: comment → reaction."
     },
-    "photo.viewer.title.sentTo": {
-      "text": "sent to",
+    "photo.viewer.header.week": {
+      "text": "Week {week_number}",
       "origin": "verbatim",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s) ('sent to' in grey between the two white bold names)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (header_title_week_number_template)",
       "level": "SOURCED",
-      "notes": "Title = [you | sender first name] + 'sent to' + [group name]; only 'sent to' is grey (photo.viewer.md)."
+      "notes": "Second header line (TC-2B 'Week 28')."
+    },
+    "photo.viewer.header.groupWeek": {
+      "text": "{group_name} · Week {week_number}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (home_feed_card_muted_with_seen) ('Muted · Seen'); 'Week 28' (TC-2B)",
+      "pattern": "retro.voice.formats ('Jul 3 - 9', 'January 25, 2024', 'elton 2h', 'Muted · Seen', '1:00')",
+      "level": "SOURCED",
+      "notes": "Used when the viewer was opened from a wall (photos from several groups)."
+    },
+    "photo.viewer.position": {
+      "text": "{index} of {total}",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_progress_badge_template)",
+      "level": "SOURCED",
+      "notes": "Position pill; position only, never a count of views or reactions."
     },
     "photo.viewer.reply.placeholder": {
-      "text": "message to {group_name}...",
-      "origin": "adapted",
-      "source_app": "Yope",
+      "text": "Add a comment…",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s) ('message to Oblong'); references/owner/yope-01-find-friends-profile.webp ('message to Sabrina....')",
-      "pattern": "yope.voice.placeholder ('name group (optional)', 'add a message', 'message to Oblong'); locket.voice.ellipsis ('Send message...', 'Reply to {{name}}...')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_comment_box_placeholder)",
       "level": "SOURCED",
-      "notes": "Noun swap: the 1:1 person → the group name; three periods (copy-patterns do-not-copy: four dots)."
+      "notes": "Replies post to the group chat with reply_to_post_id and list under the photo."
+    },
+    "photo.viewer.footer.dateWith": {
+      "text": "{date} · with {names}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_footer_tagged_users_divider) (' · with ')",
+      "pattern": "retro.voice.formats ('Jul 3 - 9', 'January 25, 2024', 'elton 2h', 'Muted · Seen', '1:00')",
+      "level": "SOURCED",
+      "notes": "Date line when people tagged themselves ('I'm in this')."
     },
     "photo.viewer.menu.save": {
-      "text": "save",
+      "text": "Save to Camera Roll",
       "origin": "verbatim",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t66.00-share-with-friends.png (same video @ 66.00 s; blue 'save' button)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_comment_overflow_save)",
       "level": "SOURCED"
     },
     "photo.viewer.menu.delete": {
-      "text": "delete",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Delete",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (Yope ••• menu, 2024 build: 'download all photos', 'get group recap', 'share invite', 'leave group', 'report') (lowercase verbs; destructive items in red); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
-      "level": "SOURCED",
-      "notes": "Own photos only (delete_media)."
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (user_profile_delete)",
+      "level": "SOURCED"
     },
     "photo.viewer.menu.report": {
-      "text": "report",
+      "text": "Report Post",
       "origin": "verbatim",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (Yope ••• menu, 2024 build: 'download all photos', 'get group recap', 'share invite', 'leave group', 'report')",
-      "level": "SOURCED",
-      "notes": "Others' photos; opens safety.report with target kind 'post'."
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_comment_overflow_report)",
+      "level": "SOURCED"
     },
     "photo.viewer.menu.block": {
-      "text": "block {name}",
+      "text": "Block {name}",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (Yope ••• menu, 2024 build: 'download all photos', 'get group recap', 'share invite', 'leave group', 'report'); design/research/platform.md §safety.block ('Block'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap'); yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
-      "level": "SOURCED",
-      "notes": "Others' photos; opens safety.block for the author."
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (user_profile_confirm_block_title_template) ('Block %1$s?')",
+      "pattern": "retro.voice.menu-labels ('Share to my week', 'Add to Album', 'Hide photo', 'Delete from Photos', 'Copy Link')",
+      "level": "SOURCED"
     },
     "photo.viewer.delete.title": {
-      "text": "delete this pic?",
+      "text": "Delete photo?",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "no Yope delete confirmation observed (yope-b §4); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s)",
-      "pattern": "yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong') (question form 'can’t see your friends?', 'who would you like to add?')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (edit_address_delete_confirmation_title) ('Delete address?')",
+      "pattern": "retro.voice.confirm ('Unfriend %1$s?' / 'They will not be notified', 'Block %1$s?', 'Delete address?' / 'Yes, delete')",
       "level": "SOURCED"
     },
     "photo.viewer.delete.message": {
-      "text": "it’ll be gone everywhere — from every group you sent it to, and from chats, walls, recaps & albums.",
+      "text": "It will be removed from every group you sent it to, and from chats, walls, recaps and albums.",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "docs/API.md §6.2 delete_media ('Deletes the photo everywhere: every post (all groups), its chat photo messages, reactions, tags, album items, recap items …'); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.') (plain full sentence with a period); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
+      "evidence": "docs/API.md §6.2 delete_media ('Deletes the photo everywhere …')",
+      "pattern": "retro.voice.confirm ('Unfriend %1$s?' / 'They will not be notified', 'Block %1$s?', 'Delete address?' / 'Yes, delete'); retro.voice.explanation ('Retro is a social photo journal for moments big and small. Add to any week, any time.')",
       "level": "SOURCED",
-      "notes": "Required by the brief: says the deletion removes it everywhere."
+      "notes": "Required: says the deletion removes it everywhere."
     },
     "photo.viewer.delete.confirm": {
-      "text": "delete",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Yes, delete",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "design/research/platform.md §settings.account (destructive 'Delete' button); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap') (lowercase per yope.voice.lowercase; HIG 'Delete')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (rewind_home_delete_confirmation_cta)",
       "level": "SOURCED"
     },
     "photo.viewer.delete.cancel": {
-      "text": "cancel",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Cancel",
+      "origin": "verbatim",
+      "source_app": "Apple HIG",
       "surface": "photo.viewer",
-      "evidence": "HIG Alerts ('Always use the title Cancel'), design/research/platform.md §settings; pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap') (HIG word, lowercased per yope.voice.lowercase)",
-      "level": "SOURCED"
+      "evidence": "design/research/platform.md (HIG Alerts: 'Cancel')",
+      "level": "PLATFORM"
     },
     "photo.viewer.toast.saved": {
-      "text": "pic saved",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Saved!",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) (lime toast 'posted in the wall'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM')",
-      "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall') ('new pic added')",
-      "level": "SOURCED"
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (edit_address_success_message)",
+      "level": "SOURCED",
+      "notes": "Android Toast (C-26); iOS: accessibility announcement."
     },
     "photo.viewer.toast.deleted": {
-      "text": "pic deleted",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Deleted",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) (lime toast 'posted in the wall'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM')",
-      "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall') ('new pic added')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (rewind_home_delete_media_success)",
       "level": "SOURCED"
     },
     "photo.viewer.error.load": {
-      "text": "couldn’t load this pic",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Error loading media. Tap to retry",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "no Yope load error observed; pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (app_widget_error_message)",
       "level": "SOURCED"
     },
     "photo.viewer.error.save": {
-      "text": "couldn’t save this pic",
+      "text": "Couldn't save photo",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "no Yope save error observed; pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_comment_send_failed_title) (\"Couldn't send comment\")",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Error loading friends. Tap here to try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
       "level": "SOURCED"
     },
     "photo.viewer.error.delete": {
-      "text": "couldn’t delete this pic — try again",
+      "text": "Couldn't delete photo. Please try again.",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "no Yope delete error observed; pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.'); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (error_message_generic) ('There was a problem. Please try again.')",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Error loading friends. Tap here to try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
       "level": "SOURCED"
     },
     "photo.viewer.permission.title": {
-      "text": "can’t save your pics?",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Camera Roll Access",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) ('can’t see your friends?')",
-      "pattern": "yope.voice.permission ('can’t see your friends?' / 'enable contacts' / 'enable')",
-      "level": "SOURCED",
-      "notes": "Shown when photo-library add access is denied and the person taps save."
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (rewind_home_no_permission_upsell_title)",
+      "level": "SOURCED"
     },
     "photo.viewer.permission.detail": {
-      "text": "enable photos",
-      "origin": "adapted",
-      "source_app": "Yope",
+      "text": "Saving a photo needs access to your photo library. You can turn it on in Settings.",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) ('enable contacts')",
-      "pattern": "yope.voice.permission ('can’t see your friends?' / 'enable contacts' / 'enable')",
-      "level": "SOURCED",
-      "notes": "Noun swap: contacts → photos."
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (composer_permission_upsell_message)",
+      "pattern": "retro.voice.permission ('Camera Roll Access' / 'Rewind uses your camera roll to show you memories from past years. These photos are only visible to you.' / 'Allow Photo Access')",
+      "level": "SOURCED"
     },
     "photo.viewer.permission.button": {
-      "text": "enable",
+      "text": "Allow Photo Access",
       "origin": "verbatim",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (rewind_home_no_permission_upsell_cta)",
       "level": "SOURCED",
       "notes": "Opens the app's page in system Settings."
     },
     "photo.viewer.gone.title": {
-      "text": "this pic isn’t here anymore",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Couldn't find photo",
+      "origin": "adapted",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "docs/API.md §3 post_not_found (deleted or not visible); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.'); yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
-      "level": "SOURCED"
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_profile_by_slug_does_not_exist_message) (\"Couldn't find album\")",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Error loading friends. Tap here to try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
+      "level": "SOURCED",
+      "notes": "Noun swap: album → photo."
     },
     "photo.viewer.gone.detail": {
-      "text": "the person who shared it took it down",
+      "text": "It may have been deleted by the person who shared it.",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "docs/API.md §6.2 delete_media / delete_post (author only); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.') (blame-free statement)",
-      "level": "SOURCED"
+      "evidence": "docs/API.md §8.2 post_deleted",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Error loading friends. Tap here to try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
+      "level": "SOURCED",
+      "notes": "No blame."
     },
     "photo.viewer.a11y.close": {
-      "text": "close",
+      "text": "Close",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Apple HIG / Material 3",
       "surface": "photo.viewer",
-      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s) (✕); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "evidence": "design/components.md C-11",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
     "photo.viewer.a11y.more": {
-      "text": "more",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "More Options",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s) (•••); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (user_profile_more_options)",
       "level": "SOURCED"
     },
     "photo.viewer.a11y.photo": {
-      "text": "{name}’s pic, {date}",
+      "text": "{name}'s photo, {date}",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record'); yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
-      "level": "SOURCED",
-      "notes": "Also used for wall and album tiles; add chat.thread.a11y.caption when there is a caption."
+      "evidence": "design/components.md C-22 (photo label: who, when)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
     },
     "photo.viewer.a11y.photoMine": {
-      "text": "your pic, {date}",
+      "text": "Your photo, {date}",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "photo.viewer",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s)",
-      "pattern": "yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "evidence": "design/copy-patterns.md retro.voice.second-person",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
-    "walls.mine.title": {
-      "text": "my wall",
+    "photo.viewer.a11y.advanceHint": {
+      "text": "Tap to advance",
       "origin": "verbatim",
-      "source_app": "Yope",
-      "surface": "walls.mine",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10) (own wall row 'my wall' / 'just for friends' in send to...)",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (viewer_nux_tap_forward)",
+      "level": "SOURCED",
+      "notes": "Accessibility hint of the photo (Retro's first-use tip)."
+    },
+    "photo.viewer.a11y.backHint": {
+      "text": "Tap left to go back",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (viewer_nux_tap_back)",
       "level": "SOURCED"
+    },
+    "photo.viewer.a11y.next": {
+      "text": "Next photo",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (viewer_nux_tap_forward)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED",
+      "notes": "Accessibility custom action."
+    },
+    "photo.viewer.a11y.previous": {
+      "text": "Previous photo",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (viewer_nux_tap_back)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED",
+      "notes": "Accessibility custom action."
     },
     "walls.mine.empty.title": {
-      "text": "nothing on your wall yet",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Welcome to Week {week_number}!",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "walls.mine",
-      "evidence": "Yope empty wall not found (yope-b §5); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
-      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends'); yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
-      "level": "SOURCED"
-    },
-    "walls.mine.empty.detail": {
-      "text": "pics you send to your groups show up here",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "walls.mine",
-      "evidence": "Yope empty wall not found (yope-b §5); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
-      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (home_empty_state_title_template)",
       "level": "SOURCED"
     },
     "walls.mine.empty.action": {
-      "text": "share a pic",
-      "origin": "adapted",
-      "source_app": "Yope",
+      "text": "Get this week started",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "walls.mine",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t44.23-home-list-new-group-icon.png ('you’re friends!✨ share a pic?')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png (iOS empty week: outline CTA 'Get this week started')",
       "level": "SOURCED",
-      "notes": "The action fragment of the verbatim line, without the question mark and emoji (buttons carry none). Opens camera.capture."
+      "notes": "Opens camera.capture."
     },
     "walls.mine.error.title": {
-      "text": "couldn’t load this wall",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Error loading your weeks. Tap here to try again.",
+      "origin": "adapted",
+      "source_app": "Retro",
       "surface": "walls.mine",
-      "evidence": "no Yope wall error observed (yope-b §5); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.')",
-      "level": "SOURCED"
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (friends_tab_loading_error) ('Error loading friends. Tap here to try again.')",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Error loading friends. Tap here to try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
+      "level": "SOURCED",
+      "notes": "Noun swap: friends → your weeks."
     },
     "walls.mine.a11y.settings": {
-      "text": "settings",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Settings",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "walls.mine",
-      "evidence": "references/auto/yope/frames/b-presskit-profile.png (gear circle); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
-      "level": "SOURCED"
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (settings_page_title)",
+      "level": "SOURCED",
+      "notes": "Label of the gear capsule (opens settings.root)."
     },
     "walls.member.empty.title": {
-      "text": "no pics from {name} yet",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Nothing to see here",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "walls.member",
-      "evidence": "Yope empty wall not found (yope-b §5); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
-      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends'); yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (user_profile_empty_media_title)",
       "level": "SOURCED"
     },
     "walls.member.empty.detail": {
-      "text": "you’ll see the pics {name} sends to groups you’re both in",
+      "text": "{name} hasn't shared anything in a group you're both in.",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "walls.member",
-      "evidence": "docs/API.md §6.4 wall (only groups you both belong to); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
-      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends'); yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (user_profile_empty_media_template) (\"%1$s hasn't posted anything in the last %2$d weeks.\")",
+      "pattern": "retro.voice.empty-state ('Nothing to see here yet', 'Let's get started' / 'Add some photos or videos to your album!' / 'Add to album', 'Your chats will show up here.' / 'Create a chat')",
       "level": "SOURCED",
-      "notes": "Also shown for a person you have a block with (the RPC returns nothing); it reveals nothing about the block."
+      "notes": "Says why without blame; no week count."
     },
     "walls.member.a11y.wall": {
-      "text": "{name}’s wall",
+      "text": "{name}'s profile",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "walls.member",
-      "evidence": "references/auto/yope/frames/b-yrrah-7673901254787009810-t11.30-sent-to-wall.png ('the wall'); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (user_profile_more_options) (profile actions)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
-    "walls.browse.title": {
-      "text": "me & friends",
+    "walls.member.a11y.more": {
+      "text": "More Options",
       "origin": "verbatim",
-      "source_app": "Yope",
-      "surface": "walls.browse",
-      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t116.00-me-and-friends.png (same video @ 116.00 s)",
-      "level": "SOURCED",
-      "notes": "'friends' kept verbatim (walls span all your groups); flagged for the owner (MERGE_DECISIONS Social S-12)."
+      "source_app": "Retro",
+      "surface": "walls.member",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (user_profile_more_options)",
+      "level": "SOURCED"
     },
-    "walls.browse.me": {
-      "text": "me",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "walls.browse",
-      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t116.00-me-and-friends.png (same video @ 116.00 s) ('me & friends'); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
+    "walls.member.menu.report": {
+      "text": "Report Profile",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "walls.member",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (user_profile_report_profile)",
       "level": "SOURCED",
-      "notes": "Label under your own circle, first in the row."
+      "notes": "→ safety.report (target kind user)."
+    },
+    "walls.member.menu.block": {
+      "text": "Block Profile",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "walls.member",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (user_profile_block_profile)",
+      "level": "SOURCED",
+      "notes": "→ safety.block."
+    },
+    "walls.browse.title": {
+      "text": "Friends",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "walls.browse",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (friends_tab_screen_title)",
+      "level": "SOURCED",
+      "notes": "Owner decision S-12 carried: the noun for family / roommates groups."
+    },
+    "walls.browse.search": {
+      "text": "Search",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "walls.browse",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_create_thread_input_placeholder)",
+      "level": "SOURCED"
+    },
+    "walls.browse.search.empty": {
+      "text": "No matching people",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "walls.browse",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_edit_tagged_user_no_search_results) ('No matching users')",
+      "pattern": "retro.voice.empty-state ('Nothing to see here yet', 'Let's get started' / 'Add some photos or videos to your album!' / 'Add to album', 'Your chats will show up here.' / 'Create a chat')",
+      "level": "SOURCED",
+      "notes": "Noun swap: users → people."
     },
     "walls.browse.empty.title": {
-      "text": "no walls here yet",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Nothing to see here yet",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "walls.browse",
-      "evidence": "Yope empty state not found for walls (yope-b §5); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
-      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (activity_tab_empty_message)",
       "level": "SOURCED"
     },
     "walls.browse.empty.detail": {
-      "text": "create a group and everyone’s pics show up here",
+      "text": "People in your groups show up here.",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "walls.browse",
-      "evidence": "Yope empty state not found for walls (yope-b §5); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
-      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends'); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_inbox_empty_state_message) ('Your chats will show up here.')",
+      "pattern": "retro.voice.empty-state ('Nothing to see here yet', 'Let's get started' / 'Add some photos or videos to your album!' / 'Add to album', 'Your chats will show up here.' / 'Create a chat')",
       "level": "SOURCED"
     },
     "walls.browse.empty.action": {
-      "text": "create group",
-      "origin": "verbatim",
-      "source_app": "Yope",
+      "text": "Create a group",
+      "origin": "adapted",
+      "source_app": "Retro",
       "surface": "walls.browse",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_inbox_empty_state_cta) ('Create a chat')",
+      "pattern": "retro.voice.button ('Get started', 'Add a memory', 'Create a chat', 'Add to album', 'Yes, delete')",
       "level": "SOURCED",
-      "notes": "Opens groups.create."
+      "notes": "Noun swap: chat → group. Opens groups.create."
+    },
+    "walls.browse.error.title": {
+      "text": "Error loading friends. Tap here to try again.",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "walls.browse",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (friends_tab_loading_error)",
+      "level": "SOURCED"
     },
     "walls.browse.a11y.collage": {
-      "text": "collage, {date}",
+      "text": "Collage, {date}",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "walls.browse",
-      "evidence": "docs/API.md §6.4 wall (item_kind 'collage'); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
-      "level": "SOURCED"
-    },
-    "week.recap.segment.recap": {
-      "text": "recap",
-      "origin": "verbatim",
-      "source_app": "Yope",
-      "surface": "week.recap",
-      "evidence": "references/owner/yope-week-recap.jpg (segmented capsule, selected)",
-      "level": "CAPTURED"
-    },
-    "week.recap.segment.pics": {
-      "text": "pics",
-      "origin": "verbatim",
-      "source_app": "Yope",
-      "surface": "week.recap",
-      "evidence": "references/owner/yope-week-recap.jpg (segmented capsule)",
-      "level": "CAPTURED"
-    },
-    "week.recap.open": {
-      "text": "view recap",
-      "origin": "verbatim",
-      "source_app": "Yope",
-      "surface": "week.recap",
-      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png (S6, 2026-06)",
+      "evidence": "design/components.md C-17 (tile labels carry the date)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED",
-      "notes": "Entry label (chat header circle label, albums empty action)."
-    },
-    "week.recap.a11y.edit": {
-      "text": "edit",
-      "origin": "verbatim",
-      "source_app": "Yope",
-      "surface": "week.recap",
-      "evidence": "references/auto/yope/store/listing.html (App Store version history v1.214.0, 2026-04-06: 'recaps are now walls / edit them, remix them, make your own memory albums / save it or share it with your friends') ('edit them')",
-      "level": "SOURCED",
-      "notes": "Label of the pencil circle that opens week.edit."
-    },
-    "week.recap.a11y.card": {
-      "text": "recap of {week_label}",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "week.recap",
-      "evidence": "references/owner/yope-week-recap.jpg ('18 aug-24 aug'); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
-      "level": "SOURCED",
-      "notes": "{week_label} in week.recap.layout.weekFormat (title form)."
-    },
-    "week.recap.empty.title": {
-      "text": "your first recap shows up on sunday",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "week.recap",
-      "evidence": "docs/API.md §11 weekly_recap_isodow = 7 (Sunday); Yope 'recap' noun; pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
-      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends'); yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
-      "level": "SOURCED",
-      "notes": "If the owner changes weekly_recap_isodow, change the day here. No progress count (do-not-copy 'Add {n} pics more to get a recap')."
-    },
-    "week.recap.empty.detail": {
-      "text": "it’s made from the pics your group shares this week",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "week.recap",
-      "evidence": "docs/API.md §10 recap.generate (items from that week's posts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
-      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
-      "level": "SOURCED"
-    },
-    "week.recap.empty.action": {
-      "text": "share a pic",
-      "origin": "adapted",
-      "source_app": "Yope",
-      "surface": "week.recap",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t44.23-home-list-new-group-icon.png ('you’re friends!✨ share a pic?')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
-      "level": "SOURCED",
-      "notes": "Action fragment of the verbatim line. Opens camera.capture for this group."
-    },
-    "week.recap.error.title": {
-      "text": "couldn’t load this recap",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "week.recap",
-      "evidence": "no Yope recap error observed (yope-b §6); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.')",
-      "level": "SOURCED"
-    },
-    "week.recap.pending": {
-      "text": "your recap is on its way",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "week.recap",
-      "evidence": "docs/API.md §5.14 status 'pending' while the worker generates it; pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM')",
-      "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall'); yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong')",
-      "level": "SOURCED"
-    },
-    "week.edit.title": {
-      "text": "edit recap",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "week.edit",
-      "evidence": "references/auto/yope/store/listing.html (App Store version history v1.214.0, 2026-04-06: 'recaps are now walls / edit them, remix them, make your own memory albums / save it or share it with your friends') ('edit them'); Yope noun 'recap'; pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group'); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.title ('new group', 'send to...', 'suggested friends')",
-      "level": "SOURCED"
-    },
-    "week.edit.save": {
-      "text": "save",
-      "origin": "verbatim",
-      "source_app": "Yope",
-      "surface": "week.edit",
-      "evidence": "references/auto/yope/store/listing.html (App Store version history v1.214.0, 2026-04-06: 'recaps are now walls / edit them, remix them, make your own memory albums / save it or share it with your friends') ('save it'); references/auto/yope/frames/b-yopeapp-7591560669967682847-t66.00-share-with-friends.png (same video @ 66.00 s; blue 'save' button)",
-      "level": "SOURCED"
-    },
-    "week.edit.saveAsAlbum": {
-      "text": "save as album",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "week.edit",
-      "evidence": "references/auto/yope/store/listing.html (App Store version history v1.214.0, 2026-04-06: 'recaps are now walls / edit them, remix them, make your own memory albums / save it or share it with your friends') ('save it', 'make your own memory albums'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
-      "level": "SOURCED"
-    },
-    "week.edit.textPlaceholder": {
-      "text": "add a message",
-      "origin": "verbatim",
-      "source_app": "Yope",
-      "surface": "week.edit",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10) (caption placeholder)",
-      "level": "SOURCED",
-      "notes": "Recap text field; its placement is BLOCKED (week.edit.layout.recapText)."
-    },
-    "week.edit.album.title": {
-      "text": "new album",
-      "origin": "adapted",
-      "source_app": "Yope",
-      "surface": "week.edit",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group') ('new group')",
-      "pattern": "yope.voice.title ('new group', 'send to...', 'suggested friends')",
-      "level": "SOURCED",
-      "notes": "Noun swap: group → album."
-    },
-    "week.edit.album.namePlaceholder": {
-      "text": "name album",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "week.edit",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group') ('name group (optional)'); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group'); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.placeholder ('name group (optional)', 'add a message', 'message to Oblong')",
-      "level": "SOURCED",
-      "notes": "'(optional)' is dropped because an album needs a name (docs/API.md save_album invalid_name)."
-    },
-    "week.edit.toast.saved": {
-      "text": "recap saved",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "week.edit",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) ('posted in the wall'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM')",
-      "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall')",
-      "level": "SOURCED"
-    },
-    "week.edit.toast.albumSaved": {
-      "text": "album saved",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "week.edit",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) ('posted in the wall'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM')",
-      "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall')",
-      "level": "SOURCED"
-    },
-    "week.edit.error.save": {
-      "text": "couldn’t save your changes — try again",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "week.edit",
-      "evidence": "no Yope save error observed; pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.'); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
-      "level": "SOURCED"
-    },
-    "week.edit.error.notReady": {
-      "text": "this recap is still being made",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "week.edit",
-      "evidence": "docs/API.md §3 recap_not_ready; pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.')",
-      "level": "SOURCED"
-    },
-    "week.edit.error.albumName": {
-      "text": "give your album a name",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "week.edit",
-      "evidence": "docs/API.md §3 invalid_name; pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.') (names the next step)",
-      "level": "SOURCED"
-    },
-    "week.edit.a11y.close": {
-      "text": "close",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "week.edit",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
-      "level": "SOURCED"
-    },
-    "week.edit.a11y.inRecap": {
-      "text": "in recap",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "week.edit",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
-      "level": "SOURCED",
-      "notes": "Accessibility value of a checked tile."
-    },
-    "week.edit.a11y.notInRecap": {
-      "text": "not in recap",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "week.edit",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.lowercase ('who would you like to add?', 'hold down to record')",
-      "level": "SOURCED",
-      "notes": "Accessibility value of an unchecked tile."
+      "notes": "Collage tile in a wall's week strip."
     },
     "week.history.header.title": {
       "text": "Week {week_number}",
       "origin": "verbatim",
       "source_app": "Retro",
       "surface": "week.history",
-      "evidence": "references/auto/retro/store/retro-store-02.png ('Week 27', 'Week 26', 'Week 25')",
-      "level": "SOURCED",
-      "notes": "{week_number}: ISO-8601 week number (week.history.layout.weeks)."
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (header_title_week_number_template)",
+      "level": "SOURCED"
     },
     "week.history.menu.viewRecap": {
       "text": "View recap",
       "origin": "new",
       "source_app": "Retro",
       "surface": "week.history",
-      "evidence": "references/auto/retro/press/tc-2025-12-rewind-panels.png (menu labels); Yope 'view recap'; pattern examples: references/auto/retro/press/tc-2025-12-rewind-panels.png ('Hide photo', 'Share to my week')",
-      "pattern": "retro.voice.menu-labels ('On this week', 'Hide photo', 'Share to my week')",
-      "level": "SOURCED",
-      "notes": "Week '•••' item when that week has a ready recap; the menu's own Retro contents are BLOCKED (week.history.layout.weekMenu)."
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (home_rewind_upsell_feed_card_cta) ('View memories')",
+      "pattern": "retro.voice.menu-labels ('Share to my week', 'Add to Album', 'Hide photo', 'Delete from Photos', 'Copy Link')",
+      "level": "SOURCED"
     },
     "week.history.menu.saveAsAlbum": {
-      "text": "Save as album",
+      "text": "Save as Album",
       "origin": "new",
       "source_app": "Retro",
       "surface": "week.history",
-      "evidence": "references/auto/retro/press/tc-2025-12-rewind-panels.png ('Add to Album', 'Share to my week'); pattern examples: references/auto/retro/press/tc-2025-12-rewind-panels.png ('Hide photo', 'Share to my week')",
-      "pattern": "retro.voice.menu-labels ('On this week', 'Hide photo', 'Share to my week')",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-panels.png ('Add to Album')",
+      "pattern": "retro.voice.menu-labels ('Share to my week', 'Add to Album', 'Hide photo', 'Delete from Photos', 'Copy Link')",
       "level": "SOURCED",
-      "notes": "Opens week.edit's album sheet with that week's photos. Retro's 'Add to Album' adds to an existing album, which the API cannot do."
+      "notes": "Album capitalised as in Retro's 'Add to Album'."
     },
     "week.history.a11y.more": {
-      "text": "More",
-      "origin": "new",
+      "text": "More Options",
+      "origin": "verbatim",
       "source_app": "Retro",
       "surface": "week.history",
-      "evidence": "references/auto/retro/store/retro-store-02.png ('Week 27', 'Week 26', 'Week 25') ('•••'); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/retro/store/retro-store-02.png ('Week 27', 'Week 26', 'Week 25') ('Share Profile', 'Recaps')",
-      "pattern": "retro.voice.title-case ('Share Profile', 'Create Recap', 'Add to Album', 'Last Week')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (user_profile_more_options)",
       "level": "SOURCED"
     },
     "week.history.a11y.add": {
-      "text": "Add Photos",
+      "text": "Add photos",
       "origin": "new",
       "source_app": "Retro",
       "surface": "week.history",
-      "evidence": "references/auto/retro/store/retro-store-02.png ('Week 27', 'Week 26', 'Week 25') ('+' tile); design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/retro/store/retro-store-02.png ('Week 27', 'Week 26', 'Week 25') ('Share Profile', 'Recaps')",
-      "pattern": "retro.voice.title-case ('Share Profile', 'Create Recap', 'Add to Album', 'Last Week')",
-      "level": "SOURCED",
-      "notes": "Opens camera.capture for this group."
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_profile_add_photos_or_videos) ('Add photos or videos')",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
     },
     "week.history.a11y.tile": {
-      "text": "{weekday}, {date}, {name}’s photo",
+      "text": "{weekday}, {date}, {name}'s photo",
       "origin": "new",
       "source_app": "Retro",
       "surface": "week.history",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/retro/store/retro-store-02.png ('Week 27', 'Week 26', 'Week 25')",
-      "pattern": "retro.voice.terse-numbers ('Week 27', 'Apr 29 – May 5', 'Mon')",
+      "evidence": "design/components.md C-17 (tile labels: full date and content)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
     "week.history.a11y.emptyDay": {
@@ -1117,181 +1088,561 @@
       "origin": "new",
       "source_app": "Retro",
       "surface": "week.history",
-      "evidence": "design/research/platform.md §Accessibility ('Provide alternative labels for all key interface elements'; photo cells: who and when, plus caption; reaction chips: emoji names without counts); pattern examples: references/auto/retro/store/retro-store-02.png ('Week 27', 'Week 26', 'Week 25')",
-      "pattern": "retro.voice.terse-numbers ('Week 27', 'Apr 29 – May 5', 'Mon')",
+      "evidence": "design/components.md C-17 ('Thursday, June 29, no photos')",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
-    "week.history.empty": {
-      "text": "Photos shared in {group_name} collect here, week by week.",
+    "week.history.a11y.loading": {
+      "text": "Loading",
       "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "week.history",
+      "evidence": "design/components.md C-28 (busy state announced)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
+    },
+    "week.history.empty.title": {
+      "text": "Welcome to Week {week_number}!",
+      "origin": "verbatim",
       "source_app": "Retro",
       "surface": "week.history",
-      "evidence": "references/auto/retro/press/engadget-2026-08-profile.jpg ('Retro is a weekly photo album. Try adding photos to 3 different weeks below.'); pattern examples: references/auto/retro/press/tc-2023-07-retro-2b.jpg; references/auto/retro/press/engadget-2026-08-profile.jpg",
-      "pattern": "retro.voice.explanation ('Only friends you've given a key to can see back more than 4 weeks.', 'Retro is a weekly photo album. Try adding photos to 3 different weeks below.')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (home_empty_state_title_template)",
+      "level": "SOURCED"
+    },
+    "week.history.empty.action": {
+      "text": "Get this week started",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.history",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png (outline CTA)",
       "level": "SOURCED",
-      "notes": "Retro's '3 different weeks' goal and its progress ring are a count (do-not-copy), so the sentence is rewritten without a target."
+      "notes": "Opens camera.capture for this group."
     },
     "week.history.error": {
-      "text": "Couldn’t load your group’s weeks. Pull down to try again.",
-      "origin": "new",
+      "text": "Error loading weeks. Tap here to try again.",
+      "origin": "adapted",
       "source_app": "Retro",
       "surface": "week.history",
-      "evidence": "Retro errors not found (retro-timehop.md); pattern examples: references/auto/retro/press/tc-2023-07-retro-2b.jpg; references/auto/retro/press/engadget-2026-08-profile.jpg",
-      "pattern": "retro.voice.explanation ('Only friends you've given a key to can see back more than 4 weeks.', 'Retro is a weekly photo album. Try adding photos to 3 different weeks below.')",
-      "level": "SOURCED"
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (friends_tab_loading_error)",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Error loading friends. Tap here to try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
+      "level": "SOURCED",
+      "notes": "Noun swap: friends → weeks."
     },
     "week.history.offline": {
-      "text": "You’re offline. Weeks you’ve already opened are still here.",
+      "text": "Couldn't load new weeks. Check your connection and try again.",
       "origin": "new",
       "source_app": "Retro",
       "surface": "week.history",
-      "evidence": "Retro offline state not found (retro-timehop.md); pattern examples: references/auto/retro/press/tc-2023-07-retro-2b.jpg; references/auto/retro/press/engadget-2026-08-profile.jpg",
-      "pattern": "retro.voice.explanation ('Only friends you've given a key to can see back more than 4 weeks.', 'Retro is a weekly photo album. Try adding photos to 3 different weeks below.')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (error_message_auth_code_service)",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Error loading friends. Tap here to try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
+      "level": "SOURCED"
+    },
+    "week.recap.open": {
+      "text": "View recap",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.recap",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (home_rewind_upsell_feed_card_cta) ('View memories')",
+      "pattern": "retro.voice.button ('Get started', 'Add a memory', 'Create a chat', 'Add to album', 'Yes, delete')",
+      "level": "SOURCED",
+      "notes": "Entry label used by other surfaces (groups.screen)."
+    },
+    "week.recap.list.title": {
+      "text": "Recaps",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.recap",
+      "evidence": "references/auto/retro/store/retro-store-02.png (profile capsule 'Recaps')",
+      "level": "SOURCED",
+      "notes": "Title of the recap list sheet."
+    },
+    "week.recap.a11y.close": {
+      "text": "Close",
+      "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "week.recap",
+      "evidence": "design/components.md C-11",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
+    },
+    "week.recap.a11y.edit": {
+      "text": "Select photos",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.recap",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (recap_composer_select_photos_cta)",
+      "level": "SOURCED",
+      "notes": "Label of the gallery circle that opens week.edit."
+    },
+    "week.recap.a11y.card": {
+      "text": "Recap of Week {week_number}, {date_range}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.recap",
+      "evidence": "design/components.md C-34",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
+    },
+    "week.recap.saveAsAlbum": {
+      "text": "Save as Album",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.recap",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_tab_empty_state_create_cta) ('Create Album')",
+      "pattern": "retro.voice.button ('Get started', 'Add a memory', 'Create a chat', 'Add to album', 'Yes, delete'); retro.voice.title-case ('Create Recap', 'New Album', 'Edit Profile', 'Add to Album', 'Share Profile')",
+      "level": "SOURCED",
+      "notes": "Light pill of the recap preview."
+    },
+    "week.recap.empty.title": {
+      "text": "Nothing to see here yet",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.recap",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (activity_tab_empty_message)",
+      "level": "SOURCED"
+    },
+    "week.recap.empty.detail": {
+      "text": "When your group fills in its weeks, you'll see recaps here.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.recap",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (recap_time_selector_empty_message) (\"When you fill in your weeks on Retro, you'll see recaps here.\")",
+      "pattern": "retro.voice.retrospective ('Create Recap', 'When you fill in your weeks on Retro, you'll see recaps here.')",
+      "level": "SOURCED",
+      "notes": "Retro's line with the group as subject (more than a noun swap)."
+    },
+    "week.recap.empty.action": {
+      "text": "Add a memory",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.recap",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (nux_card_cta_what_to_share)",
+      "level": "SOURCED",
+      "notes": "Opens camera.capture for this group."
+    },
+    "week.recap.error.title": {
+      "text": "Error loading recaps. Tap here to try again.",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "week.recap",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (friends_tab_loading_error)",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Error loading friends. Tap here to try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
+      "level": "SOURCED",
+      "notes": "Noun swap: friends → recaps."
+    },
+    "week.recap.pending": {
+      "text": "Creating your recap…",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "week.recap",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (recap_sticker_collage_loading_message) ('Creating your collage…')",
+      "pattern": "retro.voice.progress ('Updating…', 'Downloading…', 'Creating your collage…')",
+      "level": "SOURCED",
+      "notes": "Noun swap: collage → recap."
+    },
+    "week.edit.title": {
+      "text": "Edit Recap",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (edit_profile_page_title) ('Edit Profile')",
+      "pattern": "retro.voice.title-case ('Create Recap', 'New Album', 'Edit Profile', 'Add to Album', 'Share Profile')",
+      "level": "SOURCED"
+    },
+    "week.edit.save": {
+      "text": "Update",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (composer_screen_update_cta)",
+      "level": "SOURCED"
+    },
+    "week.edit.cancel": {
+      "text": "Cancel",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/video/ig-DDbA_F7x-j7-composer-f130-147-f188-197.png ('Cancel / Add to Your Week / Update')",
+      "level": "SOURCED"
+    },
+    "week.edit.header": {
+      "text": "Photos taken in Week {week_number}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (composer_header_template_multi_year) ('Photos taken in Week %1$d, %2$d')",
+      "pattern": "retro.voice.formats ('Jul 3 - 9', 'January 25, 2024', 'elton 2h', 'Muted · Seen', '1:00')",
+      "level": "SOURCED",
+      "notes": "Retro's line without the year (one week of one group)."
+    },
+    "week.edit.saveAsAlbum": {
+      "text": "Save as Album",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_tab_empty_state_create_cta) ('Create Album')",
+      "pattern": "retro.voice.button ('Get started', 'Add a memory', 'Create a chat', 'Add to album', 'Yes, delete'); retro.voice.title-case ('Create Recap', 'New Album', 'Edit Profile', 'Add to Album', 'Share Profile')",
+      "level": "SOURCED"
+    },
+    "week.edit.message.add": {
+      "text": "Add a message",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (postcard_composer_message_cta_add)",
+      "level": "SOURCED"
+    },
+    "week.edit.message.edit": {
+      "text": "Edit message",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (postcard_composer_message_cta_edit)",
+      "level": "SOURCED"
+    },
+    "week.edit.message.title": {
+      "text": "Add a Message",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (postcard_composer_add_message_screen_title)",
+      "level": "SOURCED"
+    },
+    "week.edit.message.done": {
+      "text": "Done",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (postcard_composer_add_message_done)",
+      "level": "SOURCED"
+    },
+    "week.edit.textPlaceholder": {
+      "text": "Add a message…",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (postcard_composer_add_message_placeholder)",
+      "level": "SOURCED"
+    },
+    "week.edit.message.counter": {
+      "text": "{used}/{max}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/press/tc-2023-12-retro3.png (phone 3: '58/250' above the keyboard)",
+      "pattern": "retro.voice.formats ('Jul 3 - 9', 'January 25, 2024', 'elton 2h', 'Muted · Seen', '1:00')",
+      "level": "SOURCED",
+      "notes": "Characters used / limit (2000); an input limit, not a social count."
+    },
+    "week.edit.album.title": {
+      "text": "New Album",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_creation_flow_title)",
+      "level": "SOURCED"
+    },
+    "week.edit.album.namePlaceholder": {
+      "text": "Name your album",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_creation_name_placeholder)",
+      "level": "SOURCED"
+    },
+    "week.edit.album.create": {
+      "text": "Create Album",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_tab_empty_state_create_cta)",
+      "level": "SOURCED"
+    },
+    "week.edit.toast.saved": {
+      "text": "Saved!",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (edit_address_success_message)",
+      "level": "SOURCED"
+    },
+    "week.edit.toast.albumSaved": {
+      "text": "Added to Album!",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_suggested_tag_added_to_album)",
+      "level": "SOURCED"
+    },
+    "week.edit.error.save": {
+      "text": "There was a problem saving your changes. Please try again.",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_edit_location_error_message)",
+      "level": "SOURCED"
+    },
+    "week.edit.error.notReady": {
+      "text": "Creating your recap…",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (recap_sticker_collage_loading_message) ('Creating your collage…')",
+      "pattern": "retro.voice.progress ('Updating…', 'Downloading…', 'Creating your collage…')",
+      "level": "SOURCED",
+      "notes": "Shown instead of the editor while the recap is pending (recap_not_ready). Noun swap: collage → recap."
+    },
+    "week.edit.error.albumName": {
+      "text": "Name missing",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (error_full_name_too_short)",
+      "level": "SOURCED",
+      "notes": "Inline under the album-name field."
+    },
+    "week.edit.a11y.inRecap": {
+      "text": "In recap",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "design/components.md C-17 (state carried by the label)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
+    },
+    "week.edit.a11y.notInRecap": {
+      "text": "Not in recap",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "design/components.md C-17",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
+    },
+    "week.edit.lostChanges.title": {
+      "text": "Discard changes?",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (edit_profile_lost_changes_confirmation_title) ('Are you sure? Any changes you made will be lost')",
+      "pattern": "retro.voice.confirm ('Unfriend %1$s?' / 'They will not be notified', 'Block %1$s?', 'Delete address?' / 'Yes, delete')",
+      "level": "SOURCED",
+      "notes": "HIG-compatible action question instead of 'Are you sure?' (R-21)."
+    },
+    "week.edit.lostChanges.message": {
+      "text": "Any changes you made will be lost",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (edit_profile_lost_changes_confirmation_title) (\"Are you sure? Any changes you made will be lost\")",
+      "pattern": "retro.voice.confirm ('Unfriend %1$s?' / 'They will not be notified', 'Block %1$s?', 'Delete address?' / 'Yes, delete')",
+      "level": "SOURCED",
+      "notes": "Second sentence of Retro's string; the question moves to the title (R-21)."
+    },
+    "week.edit.lostChanges.confirm": {
+      "text": "Yes, go back",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "week.edit",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (composer_lost_changes_warning_cta)",
       "level": "SOURCED"
     },
     "albums.list.title": {
-      "text": "memory albums",
+      "text": "Albums",
       "origin": "verbatim",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "albums.list",
-      "evidence": "references/auto/yope/store/listing.html (App Store version history v1.214.0, 2026-04-06: 'recaps are now walls / edit them, remix them, make your own memory albums / save it or share it with your friends') ('make your own memory albums')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journals_tab_screen_title)",
       "level": "SOURCED"
     },
-    "albums.list.error.title": {
-      "text": "couldn’t load your albums",
-      "origin": "new",
-      "source_app": "Yope",
+    "albums.list.search": {
+      "text": "Search",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "albums.list",
-      "evidence": "no Yope album error observed (yope-b §7); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_create_thread_input_placeholder)",
       "level": "SOURCED"
+    },
+    "albums.list.search.empty": {
+      "text": "No matching albums",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "albums.list",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_edit_tagged_user_no_search_results) ('No matching users')",
+      "pattern": "retro.voice.empty-state ('Nothing to see here yet', 'Let's get started' / 'Add some photos or videos to your album!' / 'Add to album', 'Your chats will show up here.' / 'Create a chat')",
+      "level": "SOURCED",
+      "notes": "Noun swap: users → albums."
     },
     "albums.list.row.subtitle": {
-      "text": "saved by {name}",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "{name} created the album",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "albums.list",
-      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM') (row subtitle 'new pic added · 10:10 AM'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM')",
-      "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_tab_context_line_new_journal_other_template)",
       "level": "SOURCED",
-      "notes": "{name}: first name of albums.created_by; left out when null."
+      "notes": "The name is drawn in semibold (C-15)."
+    },
+    "albums.list.row.subtitleMine": {
+      "text": "you created the album",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "albums.list",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_tab_context_line_new_journal_self)",
+      "level": "SOURCED",
+      "notes": "Lower case as in Retro (a context line after the album title)."
     },
     "albums.list.empty.title": {
-      "text": "no memory albums yet",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Nothing to see here yet",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "albums.list",
-      "evidence": "Yope album screens not found (yope-b §7); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
-      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (activity_tab_empty_message)",
       "level": "SOURCED"
     },
     "albums.list.empty.detail": {
-      "text": "save a recap, or any pics from it, as an album",
+      "text": "Save the photos of a week as an album from its recap.",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "albums.list",
-      "evidence": "references/auto/yope/store/listing.html (App Store version history v1.214.0, 2026-04-06: 'recaps are now walls / edit them, remix them, make your own memory albums / save it or share it with your friends') ('save it', 'make your own memory albums'); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
-      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_tab_empty_state_cover_description)",
+      "pattern": "retro.voice.explanation ('Retro is a social photo journal for moments big and small. Add to any week, any time.')",
       "level": "SOURCED"
     },
     "albums.list.empty.action": {
-      "text": "view recap",
-      "origin": "verbatim",
-      "source_app": "Yope",
-      "surface": "albums.list",
-      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png (S6, 2026-06)",
-      "level": "SOURCED",
-      "notes": "Opens week.recap."
-    },
-    "albums.view.menu.rename": {
-      "text": "rename",
+      "text": "View recaps",
       "origin": "new",
-      "source_app": "Yope",
-      "surface": "albums.view",
-      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (Yope ••• menu, 2024 build: 'download all photos', 'get group recap', 'share invite', 'leave group', 'report') (lowercase verbs in Yope's ••• menu); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "source_app": "Retro",
+      "surface": "albums.list",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (home_rewind_upsell_feed_card_cta) ('View memories')",
+      "pattern": "retro.voice.button ('Get started', 'Add a memory', 'Create a chat', 'Add to album', 'Yes, delete')",
+      "level": "SOURCED",
+      "notes": "Opens the week.recap list."
+    },
+    "albums.list.error.title": {
+      "text": "Error retrieving your albums. Tap here to try again",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "albums.list",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_tab_loading_error)",
       "level": "SOURCED"
     },
-    "albums.view.menu.delete": {
-      "text": "delete album",
+    "albums.view.menu.rename": {
+      "text": "Rename",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "albums.view",
-      "evidence": "references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (Yope ••• menu, 2024 build: 'download all photos', 'get group recap', 'share invite', 'leave group', 'report') ('leave group' form: verb + noun, red); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_creation_flow_edit_cover_title) ('Edit Cover')",
+      "pattern": "retro.voice.button ('Get started', 'Add a memory', 'Create a chat', 'Add to album', 'Yes, delete')",
       "level": "SOURCED",
-      "notes": "Shown only to the album's creator and group admins (delete_album)."
+      "notes": "Outline capsule in the album header."
+    },
+    "albums.view.menu.delete": {
+      "text": "Delete Album",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "albums.view",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_settings_title_delete_journal)",
+      "level": "SOURCED"
     },
     "albums.view.rename.title": {
-      "text": "rename album",
+      "text": "Rename Album",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "albums.view",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group') ('new group'); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group'); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10)",
-      "pattern": "yope.voice.title ('new group', 'send to...', 'suggested friends')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_creation_flow_title) ('New Album')",
+      "pattern": "retro.voice.title-case ('Create Recap', 'New Album', 'Edit Profile', 'Add to Album', 'Share Profile')",
+      "level": "SOURCED"
+    },
+    "albums.view.rename.save": {
+      "text": "Save",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "albums.view",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (edit_profile_save)",
       "level": "SOURCED"
     },
     "albums.view.delete.title": {
-      "text": "delete this album?",
+      "text": "Delete this album?",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "albums.view",
-      "evidence": "no Yope confirmation observed; pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (same video @ 57.07 s)",
-      "pattern": "yope.voice.second-person ('can’t see your friends?', 'you sent to Oblong') (question form)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (edit_address_delete_confirmation_title) ('Delete address?')",
+      "pattern": "retro.voice.confirm ('Unfriend %1$s?' / 'They will not be notified', 'Block %1$s?', 'Delete address?' / 'Yes, delete')",
       "level": "SOURCED"
     },
     "albums.view.delete.message": {
-      "text": "the pics stay in your group — only the album goes away.",
+      "text": "The photos stay in your group. Only the album goes away.",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "albums.view",
-      "evidence": "docs/API.md §6.4 delete_album (posts are untouched); pattern examples: references/auto/yope/web/a-yope-tv-invite-expired-393w.png (W-inv, yope-a §1.8)",
-      "pattern": "yope.voice.error ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.') (plain sentence with a period); yope.voice.punctuation ('me & friends', '— so you can find us faster')",
+      "evidence": "docs/API.md §6.4 delete_album (posts are never deleted)",
+      "pattern": "retro.voice.confirm ('Unfriend %1$s?' / 'They will not be notified', 'Block %1$s?', 'Delete address?' / 'Yes, delete'); retro.voice.explanation ('Retro is a social photo journal for moments big and small. Add to any week, any time.')",
       "level": "SOURCED"
     },
     "albums.view.delete.confirm": {
-      "text": "delete",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Yes, delete",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "albums.view",
-      "evidence": "design/research/platform.md §settings.account (destructive 'Delete'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (V-chuong, 2026-10); references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png ('new group', 'name group (optional)', 'create group')",
-      "pattern": "yope.voice.button ('create group', 'invite more friends', 'send', 'view recap') (lowercase per yope.voice.lowercase)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (rewind_home_delete_confirmation_cta)",
       "level": "SOURCED"
     },
     "albums.view.toast.renamed": {
-      "text": "album renamed",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Saved!",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "albums.view",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) ('posted in the wall'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM')",
-      "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (edit_address_success_message)",
       "level": "SOURCED"
     },
     "albums.view.toast.deleted": {
-      "text": "album deleted",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Deleted",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "albums.view",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10) ('posted in the wall'); pattern examples: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (V-chuong, 2026-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png ('new pic added · 10:10 AM')",
-      "pattern": "yope.voice.confirmation ('posted in the wall', 'new pic added', 'Kailyn joined', 'yrrah sent a pic to the wall')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (rewind_home_delete_media_success)",
       "level": "SOURCED"
     },
     "albums.view.empty.title": {
-      "text": "nothing left in this album",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Nothing has been added to this album",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "albums.view",
-      "evidence": "docs/API.md §5.15 (album items need the post to be visible; deleted posts leave albums); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
-      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_profile_empty_state_no_sharing_title)",
       "level": "SOURCED"
     },
     "albums.view.empty.detail": {
-      "text": "pics taken down by the people who shared them leave albums too",
+      "text": "Photos removed by the people who shared them leave albums too.",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "albums.view",
-      "evidence": "docs/API.md §6.2 delete_media (album items removed); pattern examples: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (V-mthu, 2026-05)",
-      "pattern": "yope.voice.empty-state ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
+      "evidence": "docs/API.md §6.2 delete_media (album items go with the photo)",
+      "pattern": "retro.voice.explanation ('Retro is a social photo journal for moments big and small. Add to any week, any time.')",
+      "level": "SOURCED"
+    },
+    "albums.view.notFound": {
+      "text": "Couldn't find album",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "albums.view",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_profile_by_slug_does_not_exist_message)",
+      "level": "SOURCED"
+    },
+    "albums.view.a11y.more": {
+      "text": "More Options",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "albums.view",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (user_profile_more_options)",
+      "level": "SOURCED"
+    },
+    "albums.view.a11y.cover": {
+      "text": "Cover of {album_name}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "albums.view",
+      "evidence": "references/auto/retro/press/tc-2024-04-journals-1.webp (book-like cover)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     }
   }

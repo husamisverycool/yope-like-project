@@ -1,84 +1,83 @@
-# `onboarding.permission.notifications` — in-context notifications ask
+# `onboarding.permission.notifications` — in-context notifications permission
 
-Reference: **Yope** (`docs/SURFACES.md`), with the HIG pre-alert rule. Research: `design/research/yope-a.md` §2.5;
-`design/research/platform.md` §system.permissions; `docs/PLATFORM_CONSTRAINTS.md` (4.5.4: notifications must not be
-required). Tokens: `onboarding.permission.notifications.*`. Copy: `onboarding.permission.notifications.*`.
-
-Yope's 2026 build shows a pre-prompt (title near the top, then a **fake iOS alert card with a lime "Allow" and an arrow**
-— do-not-copy) and only in Spanish. This screen keeps Yope's structure (title near the top, lime full-width button at the
-bottom) under Apple's pre-alert rule: **one button, no way to leave without the system alert** on iOS.
+Visual reference: Retro's onboarding page NOTIFICATION_PERMISSION_RETRY ("Never miss a message", APK-S
+`onboarding_notification_permission_retry_*`, step order RP §6.3) — an onboarding page (C-33 variant) followed by the
+system prompt (PLATFORM). Not captured as an image: `level: SOURCED`, `method: "composition of Retro components C-33
+(onboarding page title), C-05, C-08 in Retro's onboarding order"`. Tokens:
+`onboarding.permission.notifications.layout.preAlert`. Copy: `onboarding.permission.notifications.*`.
 
 ## References
 
-| id | file | used for |
+| id | file / URL | used for |
 |---|---|---|
-| NP | `references/auto/yope/frames/a-virgi-7686278541255642390-t7.23-notif-preprompt-es.png` | title centred near the top (frame is mid-transition; no values measured) |
-| NA | `references/auto/yope/frames/a-virgi-7686278541255642390-t9.23-notif-system-alert-es.png` | the system alert that follows |
-| WP | `references/auto/yope/frames/a-virgi-7686278541255642390-t11.23-widget-preprompt-es.png` | Yope pre-prompt anatomy: lime full-width button at the bottom, skip top-right |
-| CC | `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png` | Yope's permission voice ("can’t see your friends?" / "enable contacts") |
-| S26 | `references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png` | dark secondary button (#171717 class) |
-| HIG | https://developer.apple.com/design/human-interface-guidelines/privacy#Pre-alert-screens-windows-or-views | one button; "Continue"/"Next"; no close/cancel |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | `onboarding_notification_permission_retry_title` / `_subtitle`, `activity_enable_push_upsell_cta` ("Enable notifications"), `media_viewer_suggested_tag_maybe_later` |
+| LAND | `references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png` | capsule and secondary link geometry (`auth.phone.size.capsuleToLink`) |
+| HIG | https://developer.apple.com/design/human-interface-guidelines/privacy#Pre-alert-screens-windows-or-views | one button that leads to the system alert; no way to leave on iOS |
+| M3 | https://developer.android.com/training/permissions/requesting | Android needs a way out of educational UI |
 
-## Structure (black `color.global.backgroundDeep`) — `onboarding.permission.notifications.layout.preAlert`
+## Structure (page `color.global.background` / `.background.android`)
 
-1. Status bar.
-2. Title `onboarding.permission.notifications.title`, centred, cap top `groups.create.size.sheetTopToTitle` below the safe area.
-3. Detail `onboarding.permission.notifications.detail` under it (italic subtitle style).
-4. Flexible space (Yope's illustration area; its art is do-not-copy and none is sourced — empty).
-5. Android API 33+ only: dark secondary button `onboarding.permission.notifications.skip`, full width minus
-   `size.global.buttonMarginHSheet`, `size.global.buttonHeightSheet` tall, `onboarding.permission.notifications.size.buttonGap` above the primary button
-   (Yope's stacked sign-in buttons).
-6. Primary button `onboarding.permission.notifications.continue`, full width minus `size.global.buttonMarginHSheet`,
-   `size.global.buttonHeightSheet` tall, bottom of the safe area.
+1. Status bar; no header row (iOS pre-alert rule: no back, no close).
+2. Title `onboarding.permission.notifications.title` (`font.global.display`, `displayMedium`, `color.global.textPrimary`),
+   leading at `size.global.screenMargin`, baseline `size.global.titleTop` below the safe area.
+3. Explanation `onboarding.permission.notifications.detail` directly under it (`body`, `color.global.textSecondary`).
+4. Flexible space (no illustration: Retro's onboarding art is do-not-copy, none is sourced).
+5. Primary capsule C-05 `onboarding.permission.notifications.continue`, side margins `size.global.buttonMarginH`,
+   its bottom `size.global.buttonMarginH` above the bottom safe area (the same frame as the form capsules of `auth.*`).
+6. Android API 33+ only: C-08 secondary link `onboarding.permission.notifications.skip`, `auth.phone.size.capsuleToLink`
+   under the capsule (the capsule moves up by the link's height + gap).
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| title | `fontSize.global.onboardingTitle`, `fontWeight.global.onboardingTitle`, `color.global.textPrimary` | `onboarding.permission.notifications.title` | static |
-| detail | `auth.phone.fontSize.subtitle`, `auth.phone.layout.subtitle` | `onboarding.permission.notifications.detail` | static |
-| continue | `color.global.accent` / `color.global.onAccent`, `size.global.buttonHeightSheet`, `size.global.buttonMarginHSheet`, `radius.global.button`, text role `button` | `onboarding.permission.notifications.continue` | `UNUserNotificationCenter.requestAuthorization([.alert, .sound, .badge])` / `POST_NOTIFICATIONS`; whatever the answer, go on to `onboarding.widget` |
-| maybe later (Android) | `onboarding.permission.notifications.color.secondaryButton`, `size.global.buttonHeightSheet`, `radius.global.button`, label `color.global.textPrimary` text role `button` | `onboarding.permission.notifications.skip` | goes on without asking; asked again only from `settings.notifications` |
+| title / explanation | `displayMedium`; `body` + `textSecondary` | `onboarding.permission.notifications.title`, `.detail` | static |
+| Enable notifications | C-05 | `onboarding.permission.notifications.continue` | iOS `UNUserNotificationCenter.requestAuthorization([.alert, .sound, .badge])`; Android 13+ `POST_NOTIFICATIONS`; whatever the answer, continue to `onboarding.widget` |
+| Maybe later (Android) | C-08 | `onboarding.permission.notifications.skip` | continue without asking |
+| Android rationale (only when `shouldShowRequestPermissionRationale` is true, e.g. a later re-ask) | native dialog (C-29, `settings.account.layout.alert`) | `system.permissions.rationale.notifications.title`, `.message`, `system.permissions.rationale.notNow`, `system.permissions.rationale.continue` | — |
 
 ## States
 
-| state | when | design |
+| state | design | copy |
 |---|---|---|
-| default | after `auth.profile`, authorization not determined | as Structure |
-| skipped | iOS: already determined → screen not shown; Android ≤ 32 → not shown | — |
-| granted | → `register_device(...)` with the APNs/FCM token (docs/API.md §6.3) | — |
-| denied (permission-denied) | the app works normally; `settings.notifications` shows `settings.notifications.off.footer` + `settings.notifications.openSettings` | — |
-| loading / empty / error / offline | not applicable; `register_device` failures retry silently on the next token refresh | — |
+| default | as Structure | as above |
+| system prompt open | system alert over the page (PLATFORM) | iOS: system text; Android: system text |
+| granted / denied | the page closes either way (no retry loop); denied is recovered from `settings.notifications` ("Keep up to date!" row) | — |
+| API ≤ 32 (Android) | page skipped (no runtime permission) | — |
+| loading / empty / error / offline | not applicable (no network) | — |
 
-## Motion · Haptics
+## Motion
 
-Native push in/out; the system alert is the platform's. No haptic (the system alert plays none of ours).
+Enter from `auth.profile` with the onboarding page transition (`duration.global.pageTransition` fade + expand); exit
+the same way to `onboarding.widget`. System alert: system. Reduce Motion: cross-fade.
+
+## Haptics
+
+Presses → `haptic.global.tap` (Android). System alerts: none of ours.
 
 ## Accessibility
 
-- Focus order: title → detail → (maybe later) → continue.
-- Dynamic Type: title `largeTitle`; detail `subheadline`; buttons `subheadline`.
-- Contrast: black on lime 17.65:1 pass; white on #171717 17.93:1 pass; #171717 vs black 1.17:1 **FAIL** (non-text, the
-  label identifies the button).
+- Title is a header; the capsule's label is its text. Dynamic Type: title `largeTitle`, explanation `subheadline`,
+  capsule `headline`, link `subheadline`.
+- Focus order: title → explanation → capsule → (Android) link.
+- Contrast: title 21:1 (row 1); explanation / link `textSecondary` light **2.85:1 FAIL** (row 3), dark 7.37:1; capsule 21:1 (row 17).
 
 ## Data & actions
 
-`register_device(p_platform, p_push_token, p_push_to_start_token?, p_widget_push_token?)` after a grant and on every
-token change. In: `auth.profile`. Out: `onboarding.widget`.
+`register_device(p_platform, p_push_token, p_push_to_start_token?, p_widget_push_token?)` after a grant and on every token
+change (docs/API.md §6.3). In: `auth.profile`. Out: `onboarding.widget`.
 
 ## Platform notes
 
-- iOS: no skip, no close, no back (HIG pre-alert rule). Provisional authorization is not used (not researched for this flow).
-- Android: Android requires a way out of educational UI → "maybe later". On API ≤ 32 there is no runtime permission.
+- iOS: no skip (HIG pre-alert); provisional authorization is not used.
+- Android: the skip exists because Android requires a way out of educational UI; on API ≤ 32 the page is skipped.
 
 ## Do-not-copy
 
-- Yope's card that imitates the iOS alert with a lime "Allow" and an arrow (V-virgi t7.23).
-- "Allow" on our own button (HIG: never "Allow").
+- Retro's "Finish setting up your Retro!" nudge notifications and any re-ask loop (tenet 5).
 
 ## Gaps
 
 | item | status | smallest capture |
 |---|---|---|
-| English pre-prompt copy and its sizes | not found (es only, frame mid-transition) → title written to `yope.voice.permission`; sizes from the onboarding title role | one 15-s English recording of Yope's notifications pre-prompt |
-| illustration | none sourced (Yope's art is do-not-copy) | owner art, optional |
+| Retro's notifications page (title placement, any list of what you get) | composition | screenshots of Retro's onboarding pages on a fresh install (RV §6) |

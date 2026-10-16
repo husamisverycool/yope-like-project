@@ -121,11 +121,13 @@ enum AccountSamplePhotos {
     static let people = ["Ana Lima": "avatar-01", "Rui Costa": "avatar-06", "Marta Lima": "avatar-03", "Sam Lee": "avatar-02"]
     static let groups = ["Lima family": "grandma-hug-4x3", "Sunday dinners": "dinner-long-table-3x4"]
 
-    /// Avatar and cover frames (points): `size.global.avatarHeader`, `.avatarSmall`, `.tabBarAvatar`, `.avatarPicker`,
-    /// `.avatarList`, `groups.screen.size.profileAvatar`.
+    /// Avatar and cover frames (points): the C-23 avatar sizes (`size.global.avatarSmall`, `.avatarList`, `.avatarComment`,
+    /// `.avatarPicker`, `.avatarHeader`, `.avatarProfile`, `.avatarGrid` — the tab bar no longer shows an avatar) and
+    /// `groups.screen.size.profileAvatar`.
     static var avatarFrames: [ClosedRange<CGFloat>] {
-        [Tokens.Sizes.globalAvatarHeader, Tokens.Sizes.globalAvatarSmall, Tokens.Sizes.globalTabBarAvatar,
-         Tokens.Sizes.globalAvatarPicker, Tokens.Sizes.globalAvatarList, Tokens.Sizes.groupsScreenSizeProfileAvatar].map { $0...$0 }
+        [Tokens.Sizes.globalAvatarSmall, Tokens.Sizes.globalAvatarList, Tokens.Sizes.globalAvatarComment,
+         Tokens.Sizes.globalAvatarPicker, Tokens.Sizes.globalAvatarHeader, Tokens.Sizes.globalAvatarProfile,
+         Tokens.Sizes.globalAvatarGrid, Tokens.Sizes.groupsScreenSizeProfileAvatar].map { $0...$0 }
     }
 
     /// The groups.create cover (`groups.create.size.cover.width`, narrower screens keep the aspect).

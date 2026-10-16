@@ -165,14 +165,20 @@ extension VerticalAlignment {
 struct TextMetrics {
     /// Height of the capital letters.
     let capHeight: CGFloat
+    /// From the top of a one-line text's frame to its baseline.
+    let ascender: CGFloat
     /// From the last baseline to the bottom of the text's frame (descender plus the font's leading).
     let belowBaseline: CGFloat
 
     init(style: DSTextStyle, size: CGFloat) {
         let font = Self.font(family: style.family, size: size, weight: style.weight)
         capHeight = font.capHeight
+        ascender = font.ascender
         belowBaseline = font.lineHeight - font.ascender
     }
+
+    /// From the top of a one-line text's frame to the top of its capitals.
+    var capTopOffset: CGFloat { max(0, ascender - capHeight) }
 
     static func font(family: DSFontFamily, size: CGFloat, weight: Font.Weight) -> UIFont {
         let uiWeight = Self.uiWeight(weight)
@@ -266,6 +272,22 @@ private struct CapMiddleRowModifier: ViewModifier {
     }
 }
 
+/// For a container whose first line is a text of `style`: the `.capMiddle` guide from the container's first baseline.
+private struct CapMiddleFromBaselineModifier: ViewModifier {
+    let style: DSTextStyle
+    @ScaledMetric private var size: CGFloat
+
+    init(style: DSTextStyle) {
+        self.style = style
+        _size = ScaledMetric(wrappedValue: style.size, relativeTo: style.relativeTo)
+    }
+
+    func body(content: Content) -> some View {
+        let half = TextMetrics(style: style, size: size).capHeight / 2
+        return content.alignmentGuide(.capMiddle) { dimensions in dimensions[.firstTextBaseline] - half }
+    }
+}
+
 /// Publishes the cap height of `style` (scaled) for a container whose first line is set in that role.
 private struct CapHeightModifier: ViewModifier {
     let style: DSTextStyle
@@ -290,6 +312,12 @@ extension View {
     /// For a one-line row aligned on `.capMiddle` around a text of `style`: baselines from the cap middle.
     func capMiddleRow(_ style: DSTextStyle) -> some View {
         modifier(CapMiddleRowModifier(style: style))
+    }
+
+    /// For a container whose first line is a text of `style` (a row of text runs on one baseline): the `.capMiddle`
+    /// guide from the container's first baseline.
+    func capMiddleFromBaseline(_ style: DSTextStyle) -> some View {
+        modifier(CapMiddleFromBaselineModifier(style: style))
     }
 
     /// Publishes the cap height of `style` for a container (e.g. a title + detail block) in a `MetricStack`.
@@ -331,6 +359,23 @@ struct MetricStackLayout: Layout {
                 proposal: ProposedViewSize(width: frame.width, height: frame.height)
             )
         }
+    }
+
+    /// The stack's first baseline is its first child's, its last baseline its last child's (so a `MetricStack` inside
+    /// another one, or in a baseline-aligned row, is placed by its text).
+    func explicitAlignment(
+        of guide: VerticalAlignment,
+        in bounds: CGRect,
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout ()
+    ) -> CGFloat? {
+        guard !subviews.isEmpty, guide == .firstTextBaseline || guide == .lastTextBaseline else { return nil }
+        let arrangement = arrange(width: bounds.width, subviews: subviews)
+        let index = guide == .firstTextBaseline ? 0 : subviews.count - 1
+        let frame = arrangement.frames[index]
+        let dimensions = subviews[index].dimensions(in: ProposedViewSize(width: frame.width, height: frame.height))
+        return bounds.minY + frame.minY + dimensions[guide]
     }
 
     private func arrange(width: CGFloat?, subviews: Subviews) -> (frames: [CGRect], size: CGSize) {

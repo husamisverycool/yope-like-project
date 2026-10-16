@@ -6,6 +6,7 @@ package app.push
 
 import android.content.Context
 import androidx.compose.ui.graphics.toArgb
+import app.designsystem.DsAppearance
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 
@@ -57,9 +58,10 @@ object ChannelCopy {
  * The daily invitation's accent (`Tokens.Layouts.DailyOngoingLayoutNotification.color` =
  * `color.global.accent`): tints the small icon and app name in the header. Alerts keep the
  * system default ([NotificationAppearance.accentColor], none specified in notifications.push).
+ * Read when posting (outside composition), so it takes the accent of the system appearance.
  */
 object InvitationAppearance {
-    val accentColor: Int get() = Tokens.Colors.globalAccent.toArgb()
+    val accentColor: Int get() = DsAppearance.pickSystem(Tokens.ColorsLight.globalAccent, Tokens.ColorsDark.globalAccent).toArgb()
 }
 
 /**

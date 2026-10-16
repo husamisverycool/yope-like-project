@@ -23,10 +23,7 @@ import androidx.compose.material.icons.automirrored.outlined.Logout as AutoMirro
 import androidx.compose.material.icons.automirrored.outlined.MenuBook as AutoMirroredOutlinedMenuBook
 import androidx.compose.material.icons.automirrored.outlined.Send as AutoMirroredOutlinedSend
 import androidx.compose.material.icons.automirrored.rounded.ArrowBackIos as AutoMirroredRoundedArrowBackIos
-import androidx.compose.material.icons.automirrored.rounded.ArrowForward as AutoMirroredRoundedArrowForward
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight as AutoMirroredRoundedKeyboardArrowRight
-import androidx.compose.material.icons.filled.Lock as FilledLock
-import androidx.compose.material.icons.filled.NorthEast as FilledNorthEast
 import androidx.compose.material.icons.outlined.AccountCircle as OutlinedAccountCircle
 import androidx.compose.material.icons.outlined.CalendarMonth as OutlinedCalendarMonth
 import androidx.compose.material.icons.outlined.Casino as OutlinedCasino
@@ -47,19 +44,18 @@ import androidx.compose.material.icons.outlined.PhotoCamera as OutlinedPhotoCame
 import androidx.compose.material.icons.outlined.PhotoLibrary as OutlinedPhotoLibrary
 import androidx.compose.material.icons.outlined.Settings as OutlinedSettings
 import androidx.compose.material.icons.outlined.VideoLibrary as OutlinedVideoLibrary
+import androidx.compose.material.icons.outlined.Visibility as OutlinedVisibility
 import androidx.compose.material.icons.outlined.VisibilityOff as OutlinedVisibilityOff
 import androidx.compose.material.icons.rounded.Add as RoundedAdd
 import androidx.compose.material.icons.rounded.AddReaction as RoundedAddReaction
 import androidx.compose.material.icons.rounded.Check as RoundedCheck
 import androidx.compose.material.icons.rounded.CheckCircle as RoundedCheckCircle
 import androidx.compose.material.icons.rounded.Close as RoundedClose
-import androidx.compose.material.icons.rounded.Delete as RoundedDelete
 import androidx.compose.material.icons.rounded.Download as RoundedDownload
 import androidx.compose.material.icons.rounded.ExpandMore as RoundedExpandMore
 import androidx.compose.material.icons.rounded.IosShare as RoundedIosShare
 import androidx.compose.material.icons.rounded.Link as RoundedLink
 import androidx.compose.material.icons.rounded.Lock as RoundedLock
-import androidx.compose.material.icons.rounded.LockOpen as RoundedLockOpen
 import androidx.compose.material.icons.rounded.MoreHoriz as RoundedMoreHoriz
 import androidx.compose.material.icons.rounded.Pause as RoundedPause
 import androidx.compose.material.icons.rounded.Person as RoundedPerson
@@ -67,86 +63,21 @@ import androidx.compose.material.icons.rounded.PlayArrow as RoundedPlayArrow
 import androidx.compose.material.icons.rounded.RadioButtonUnchecked as RoundedRadioButtonUnchecked
 import androidx.compose.material.icons.rounded.Replay as RoundedReplay
 import androidx.compose.material.icons.rounded.Search as RoundedSearch
-import androidx.compose.material.icons.rounded.Share as RoundedShare
 import androidx.compose.material.icons.rounded.Sync as RoundedSync
 import androidx.compose.material.icons.rounded.Videocam as RoundedVideocam
 
 object Tokens {
     object AspectRatios {
-        /** Yope · walls.mine · wall grid tile shape (width:height 0.73) · SOURCED — token `walls.mine.aspectRatio.gridTile` */
-        val wallsMineAspectRatioGridTile: Float = 0.7274f
-        /** Retro · week.history · day tile shape · SOURCED — token `week.history.aspectRatio.tile` */
-        val weekHistoryAspectRatioTile: Float = 0.75f
-        /** Yope · week.recap · recap card tile in a full row (≈2:3 portrait) · CAPTURED — token `week.recap.aspectRatio.gridTile` */
-        val weekRecapAspectRatioGridTile: Float = 0.6647f
-        /** Yope · week.recap · pics-grid tile (3:4, square corners, full screen width, no side inset) · CAPTURED — token `week.recap.aspectRatio.picsTile` */
-        val weekRecapAspectRatioPicsTile: Float = 0.7486f
-    }
-    object Blurs {
-        /** Partiful · invite.web · outlined button backdrop blur radius · VERIFIED — token `invite.web.blur.button.outlined` */
-        val inviteWebBlurButtonOutlined: Dp = 40.dp
-        /** Partiful · invite.web · Gaussian sigma of the blurred fill, in px of the 1200×630 image · SOURCED — token `invite.web.blur.ogImage.fill` */
-        val inviteWebBlurOgImageFill: Dp = 360.dp
+        /** Retro · albums.view · album grid cell (portrait) · SOURCED — token `albums.view.aspectRatio.gridCell` */
+        val albumsViewAspectRatioGridCell: Float = 0.8034f
+        /** Retro · week.recap · collage card (2:3) · SOURCED — token `week.recap.aspectRatio.card` */
+        val weekRecapAspectRatioCard: Float = 0.665f
+        /** Retro · week.recap · collage card grid cell · SOURCED — token `week.recap.aspectRatio.gridCell` */
+        val weekRecapAspectRatioGridCell: Float = 1.1296f
+        /** Retro · week.recap · recap list card (cover photo) · SOURCED — token `week.recap.aspectRatio.weekCard` */
+        val weekRecapAspectRatioWeekCard: Float = 1.3386f
     }
     object Colors {
-        /** Yope · albums.list · album card fill on black (Yope home list card) · SOURCED — token `albums.list.color.card` */
-        val albumsListColorCard: Color = Color(0xFF181818)
-        /** Yope · camera.capture · flip-camera circle fill · SOURCED — token `camera.capture.color.flipButton` */
-        val cameraCaptureColorFlipButton: Color = Color(0xFF1F1F1F)
-        /** Locket · camera.capture · shutter disc while pressed · SOURCED — token `camera.capture.color.shutterDiscPressed` */
-        val cameraCaptureColorShutterDiscPressed: Color = Color(0xFFE0DEDF)
-        /** Yope · camera.sendto · translucent fill of the 'add a message' capsule and the mic circle · SOURCED — token `camera.sendto.color.messageField` */
-        val cameraSendtoColorMessageField: Color = Color(0x7A000000)
-        /** Yope · chat.composer · hairline rim along the bottom of the text field · SOURCED — token `chat.composer.color.fieldRimBottom` */
-        val chatComposerColorFieldRimBottom: Color = Color(0xFF474747)
-        /** Yope · chat.composer · hairline light rim along the top of the text field · SOURCED — token `chat.composer.color.fieldRimTop` */
-        val chatComposerColorFieldRimTop: Color = Color(0xFF4B4B4B)
-        /** Locket · chat.reactions · sticker outline colour · SOURCED — token `chat.reactions.color.clusterOutline` */
-        val chatReactionsColorClusterOutline: Color = Color(0xFFFFFFFF)
-        /** Yope · chat.thread · my text bubble fill ('no way'); vertical gradient #222222 at the top to #242424 at the bottom · SOURCED — token `chat.thread.color.bubbleMine` */
-        val chatThreadColorBubbleMine: Color = Color(0xFF232323)
-        /** Yope · chat.thread · hairline rim along the bottom of my bubble · SOURCED — token `chat.thread.color.bubbleRimMineBottom` */
-        val chatThreadColorBubbleRimMineBottom: Color = Color(0xFF343434)
-        /** Yope · chat.thread · hairline light rim along the top of my bubble (brightest point) · SOURCED — token `chat.thread.color.bubbleRimMineTop` */
-        val chatThreadColorBubbleRimMineTop: Color = Color(0xFF393939)
-        /** Yope · chat.thread · hairline rim along the bottom of another member's bubble · SOURCED — token `chat.thread.color.bubbleRimTheirsBottom` */
-        val chatThreadColorBubbleRimTheirsBottom: Color = Color(0xFF363636)
-        /** Yope · chat.thread · hairline light rim along the top of another member's bubble (brightest point) · SOURCED — token `chat.thread.color.bubbleRimTheirsTop` */
-        val chatThreadColorBubbleRimTheirsTop: Color = Color(0xFF414141)
-        /** Yope · chat.thread · another member's text bubble fill ('valid') · SOURCED — token `chat.thread.color.bubbleTheirs` */
-        val chatThreadColorBubbleTheirs: Color = Color(0xFF2B2B2B)
-        /** Yope · chat.voice · voice message bubble fill (mine) · SOURCED — token `chat.voice.color.bubble` */
-        val chatVoiceColorBubble: Color = Color(0xFF262626)
-        /** Yope (value) · Telegram (rule) · chat.voice · another member's voice bubble fill · SOURCED — token `chat.voice.color.bubbleTheirs` */
-        val chatVoiceColorBubbleTheirs: Color = Color(0xFF2B2B2B)
-        /** Yope · chat.voice · duration text ('00:38') · SOURCED — token `chat.voice.color.duration` */
-        val chatVoiceColorDuration: Color = Color(0xFF929292)
-        /** Yope · chat.voice · play circle fill (vertical gradient #2F2F2F top → #373737 bottom, light rim) · SOURCED — token `chat.voice.color.playButton` */
-        val chatVoiceColorPlayButton: Color = Color(0xFF333333)
-        /** Yope · chat.voice · waveform bars · SOURCED — token `chat.voice.color.waveform` */
-        val chatVoiceColorWaveform: Color = Color(0xFF919191)
-        /** Telegram (rule) · Yope (colour) · chat.voice · colour of the played part of the waveform during playback · SOURCED — token `chat.voice.color.waveformPlayed` */
-        val chatVoiceColorWaveformPlayed: Color = Color(0xFFFFFFFF)
-        /** Yope · collage.share · frosted, backdrop-dependent pill fill with a light rim · SOURCED — token `collage.share.color.pill` */
-        val collageShareColorPill: Color = Color(0xA89A9489)
-        /** Yope · collage.view · loading HUD fill · SOURCED — token `collage.view.color.hud` */
-        val collageViewColorHud: Color = Color(0xFF0C0C0C)
-        /** Yope · collage.view · active page dot (Android) · SOURCED — token `collage.view.color.pageDotActive` */
-        val collageViewColorPageDotActive: Color = Color(0xFFF4F4F4)
-        /** Tribute · birthday.contribute · field fill (white at 0.08) · VERIFIED — token `color.birthday.contribute.input.fill` */
-        val birthdayContributeInputFill: Color = Color(0x14FFFFFF)
-        /** Tribute · birthday.contribute · typed text (rgba 231,232,232,0.92) · VERIFIED — token `color.birthday.contribute.input.text` */
-        val birthdayContributeInputText: Color = Color(0xEBE7E8E8)
-        /** Tribute · birthday.contribute · current step circle fill (number in color.global.textPrimary) · VERIFIED — token `color.birthday.contribute.stepper.active` */
-        val birthdayContributeStepperActive: Color = Color(0xFFB8B9B9)
-        /** Tribute · birthday.contribute · other step circle fill (white at 0.22) · VERIFIED — token `color.birthday.contribute.stepper.inactive` */
-        val birthdayContributeStepperInactive: Color = Color(0x38FFFFFF)
-        /** Tribute · birthday.contribute · number and caption of other steps (white at 0.55) · VERIFIED — token `color.birthday.contribute.stepper.inactiveLabel` */
-        val birthdayContributeStepperInactiveLabel: Color = Color(0x8CFFFFFF)
-        /** Tribute · birthday.request · 'Message Ideas' header bar fill · VERIFIED — token `color.birthday.request.prompts.header` */
-        val birthdayRequestPromptsHeader: Color = Color(0xFF292D34)
-        /** Tribute · birthday.tribute · secondary button label and glyph (fill color.global.surfaceLight) · VERIFIED — token `color.birthday.tribute.button.label` */
-        val birthdayTributeButtonLabel: Color = Color(0xFF292D34)
         /** Tribute · birthday.tribute · fill around a photo that does not cover the 16:9 frame (read by the worker) · SOURCED — token `color.birthday.tribute.pillarbox` */
         val birthdayTributePillarbox: Color = Color(0xFF000000)
         /** Retro · global · primary action fill: full-width primary capsule, primary medium capsule ('Accept'), selected state that is a fill. Retro has no brand colour in chrome — the primary fill is the inverse of the page · SOURCED — token `color.global.accent` */
@@ -253,182 +184,58 @@ object Tokens {
         /** Retro · global · tertiary / disabled text and glyphs · SOURCED — token `color.global.textTertiary` */
         val globalTextTertiary: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0x4DFFFFFF) else Color(0xFFC1C1C1)
-        /** Timehop · onthisday · years-ago banner fill (every memory) · SOURCED — token `color.onthisday.banner` */
-        val onthisdayBanner: Color = Color(0xFFFC5F33)
-        /** Timehop · onthisday · 'N YEARS AGO' banner label · SOURCED — token `color.onthisday.banner.label` */
-        val onthisdayBannerLabel: Color = Color(0xFFFFFFFF)
-        /** Timehop · onthisday · meta row text over the photo · SOURCED — token `color.onthisday.meta.text` */
-        val onthisdayMetaText: Color = Color(0xFFFFFFFF)
-        /** Timehop · onthisday · progress bar, reached part · SOURCED — token `color.onthisday.progress.fill` */
-        val onthisdayProgressFill: Color = Color(0xFFF7D23E)
-        /** Timehop · onthisday · progress bar, part not reached yet · SOURCED — token `color.onthisday.progress.track` */
-        val onthisdayProgressTrack: Color = Color(0xFF93140A)
-        /** Spotify Wrapped · year.story · translucent circle behind the pause / close glyphs · SOURCED — token `color.year.story.chrome.fill` */
-        val yearStoryChromeFill: Color = Color(0x80000000)
-        /** Spotify Wrapped · year.story · bands above and below the 9:16 canvas on taller phones · SOURCED — token `color.year.story.letterbox` */
-        val yearStoryLetterbox: Color = Color(0xFF111111)
-        /** Spotify Wrapped · year.story · completed and current (filled part) segment · SOURCED — token `color.year.story.progress.fill` */
-        val yearStoryProgressFill: Color = Color(0xFFFFFFFF)
-        /** BeReal · daily.capture · translucent dark fill of the retake circle and the audience chip over the photo · SOURCED — token `daily.capture.color.overlayControl` */
-        val dailyCaptureColorOverlayControl: Color = Color(0x75000000)
-        /** BeReal · daily.capture · countdown digits, SEND label, prompt line (all BeReal capture text) · SOURCED — token `daily.capture.color.text` */
-        val dailyCaptureColorText: Color = Color(0xFFFAFAFA)
-        /** Yope · groups.create · primary button while its form is incomplete ('continue' with an empty name) · SOURCED — token `groups.create.color.buttonDisabledFill` */
-        val groupsCreateColorButtonDisabledFill: Color = Color(0xFF201D21)
-        /** Yope · groups.create · label of the disabled primary button · SOURCED — token `groups.create.color.buttonDisabledLabel` */
-        val groupsCreateColorButtonDisabledLabel: Color = Color(0xFF49464A)
-        /** Yope · groups.create · cover-photo placeholder fill (before a photo is chosen) · SOURCED — token `groups.create.color.cover` */
-        val groupsCreateColorCover: Color = Color(0xFF494949)
-        /** Yope · groups.create · single-line text field fill on black ('name group (optional)'); reused by every form field on black (auth.*, groups.invite search) · SOURCED — token `groups.create.color.field` */
-        val groupsCreateColorField: Color = Color(0xFF141414)
-        /** Yope · groups.create · Loading HUD square fill (on black) · SOURCED — token `groups.create.color.hud` */
-        val groupsCreateColorHud: Color = Color(0xFF0C0C0C)
-        /** Yope · groups.list · group card fill on the black home list · SOURCED — token `groups.list.color.card` */
-        val groupsListColorCard: Color = Color(0xFF181818)
-        /** Yope · groups.list · translucent dark fill of the header circles drawn over the cover photo · SOURCED — token `groups.list.color.headerCircleOverPhoto` */
-        val groupsListColorHeaderCircleOverPhoto: Color = Color(0x94000000)
-        /** Yope · groups.screen · floating 'chat' pill fill · SOURCED — token `groups.screen.color.chatPill` */
-        val groupsScreenColorChatPill: Color = Color(0xFF080808)
-        /** Yope · groups.screen · segmented control track fill (on black) · SOURCED — token `groups.screen.color.segmentTrack` */
-        val groupsScreenColorSegmentTrack: Color = Color(0xFF111111)
-        /** Partiful · invite.web · filled button fill on dark themes · VERIFIED — token `invite.web.color.button.filled.fill.dark` */
-        val inviteWebColorButtonFilledFillDark: Color = Color(0xFFFFFFFF)
-        /** Partiful · invite.web · filled button fill on light themes · VERIFIED — token `invite.web.color.button.filled.fill.light` */
-        val inviteWebColorButtonFilledFillLight: Color = Color(0xFF000000)
-        /** Partiful · invite.web · filled button label on dark themes · VERIFIED — token `invite.web.color.button.filled.label.dark` */
-        val inviteWebColorButtonFilledLabelDark: Color = Color(0xFF000000)
-        /** Partiful · invite.web · filled button label on light themes · VERIFIED — token `invite.web.color.button.filled.label.light` */
-        val inviteWebColorButtonFilledLabelLight: Color = Color(0xFFFFFFFF)
-        /** Partiful · invite.web · members-only card fill colour on dark themes (alpha below) · VERIFIED — token `invite.web.color.gateCard.dark` */
-        val inviteWebColorGateCardDark: Color = Color(0xFF000000)
-        /** Partiful · invite.web · members-only card fill colour on light themes (alpha below) · VERIFIED — token `invite.web.color.gateCard.light` */
-        val inviteWebColorGateCardLight: Color = Color(0xFFFFFFFF)
-        /** Partiful · invite.web · text, icons and focus ring on dark themes (.ptf-dark) · VERIFIED — token `invite.web.color.text.dark` */
-        val inviteWebColorTextDark: Color = Color(0xFFFFFFFF)
-        /** Partiful · invite.web · text, icons and focus ring on light themes (.ptf-light) · VERIFIED — token `invite.web.color.text.light` */
-        val inviteWebColorTextLight: Color = Color(0xFF000000)
-        /** Partiful · invite.web · theme colour when the group has no cover, and on every non-ideal state (not found, link no longer works, error) · VERIFIED — token `invite.web.color.theme.default` */
-        val inviteWebColorThemeDefault: Color = Color(0xFF111111)
-        /** Yope · onboarding.permission.contacts · inline permission card fill (contacts card; reused for every permission-denied card) · SOURCED — token `onboarding.permission.contacts.color.card` */
-        val onboardingPermissionContactsColorCard: Color = Color(0xFF131313)
-        /** Yope · onboarding.permission.notifications · dark secondary button fill on black ('maybe later', Android only) · SOURCED — token `onboarding.permission.notifications.color.secondaryButton` */
-        val onboardingPermissionNotificationsColorSecondaryButton: Color = Color(0xFF171717)
-        /** Locket · onboarding.widget · screen background, bottom · SOURCED — token `onboarding.widget.color.backgroundBottom` */
-        val onboardingWidgetColorBackgroundBottom: Color = Color(0xFF0B090B)
-        /** Locket · onboarding.widget · screen background, top (warm near-black) · SOURCED — token `onboarding.widget.color.backgroundTop` */
-        val onboardingWidgetColorBackgroundTop: Color = Color(0xFF0E0A07)
-        /** Locket · onboarding.widget · CTA capsule fill · SOURCED — token `onboarding.widget.color.cta` */
-        val onboardingWidgetColorCta: Color = Color(0xFFFFB800)
-        /** Locket · onboarding.widget · CTA label and arrow colour · SOURCED — token `onboarding.widget.color.ctaLabel` */
-        val onboardingWidgetColorCtaLabel: Color = Color(0xFF332500)
-        /** Locket · onboarding.widget · step text colour · SOURCED — token `onboarding.widget.color.step` */
-        val onboardingWidgetColorStep: Color = Color(0xFFB8B6B2)
-        /** Locket · onboarding.widget · title colour · SOURCED — token `onboarding.widget.color.title` */
-        val onboardingWidgetColorTitle: Color = Color(0xFFFFFFFF)
-        /** Locket · paywall · background gradient stop at 0.861 of the screen height (x = 20) · SOURCED — token `paywall.color.backgroundBottom` */
-        val paywallColorBackgroundBottom: Color = Color(0xFF372805)
-        /** Locket · paywall · background gradient stop at 0.587 of the screen height (x = 20) · SOURCED — token `paywall.color.backgroundLower` */
-        val paywallColorBackgroundLower: Color = Color(0xFF1E1404)
-        /** Locket · paywall · background gradient stop at 0.078 of the screen height (x = 20) · SOURCED — token `paywall.color.backgroundTop` */
-        val paywallColorBackgroundTop: Color = Color(0xFF030101)
-        /** Locket · paywall · background gradient stop at 0.274 of the screen height (x = 20) · SOURCED — token `paywall.color.backgroundUpper` */
-        val paywallColorBackgroundUpper: Color = Color(0xFF0E0803)
-        /** Locket · paywall · primary CTA fill · SOURCED — token `paywall.color.cta` */
-        val paywallColorCta: Color = Color(0xFFFEB900)
-        /** Locket · paywall · CTA label and glyph colour · SOURCED — token `paywall.color.ctaLabel` */
-        val paywallColorCtaLabel: Color = Color(0xFF2A1E05)
-        /** Locket · paywall · 'No thanks!' colour; also the legal footer text and links · SOURCED — token `paywall.color.dismiss` */
-        val paywallColorDismiss: Color = Color(0xFFBAAA82)
-        /** Locket · paywall · perk card fill (upper cards) · SOURCED — token `paywall.color.perk` */
-        val paywallColorPerk: Color = Color(0xFF211B13)
-        /** Locket · paywall · perk subtitle colour · SOURCED — token `paywall.color.perkSubtitle` */
-        val paywallColorPerkSubtitle: Color = Color(0xFF918A80)
-        /** Locket · paywall · perk title colour · SOURCED — token `paywall.color.perkTitle` */
-        val paywallColorPerkTitle: Color = Color(0xFFF5F1EB)
-        /** Locket · paywall · unselected plan card fill · SOURCED — token `paywall.color.plan` */
-        val paywallColorPlan: Color = Color(0xFF3B3627)
-        /** Locket · paywall · selected plan card border · SOURCED — token `paywall.color.planBorder` */
-        val paywallColorPlanBorder: Color = Color(0xFFFFB800)
-        /** Locket · paywall · plan detail colour · SOURCED — token `paywall.color.planDetail` */
-        val paywallColorPlanDetail: Color = Color(0xFFBFB598)
-        /** Locket · paywall · selected plan card fill · SOURCED — token `paywall.color.planSelected` */
-        val paywallColorPlanSelected: Color = Color(0xFF2C2922)
-        /** Locket · paywall · plan sheet fill beside the second plan card · SOURCED — token `paywall.color.planSheetBottom` */
-        val paywallColorPlanSheetBottom: Color = Color(0xFF312C1F)
-        /** Locket · paywall · plan sheet fill at its top (warms downwards to paywall.color.planSheetBottom) · SOURCED — token `paywall.color.planSheetTop` */
-        val paywallColorPlanSheetTop: Color = Color(0xFF292824)
-        /** Locket · paywall · 'Subscribe' capsule fill · SOURCED — token `paywall.color.subscribe` */
-        val paywallColorSubscribe: Color = Color(0xFFF4BB40)
-        /** Locket · paywall · 'Subscribe' label colour · SOURCED — token `paywall.color.subscribeLabel` */
-        val paywallColorSubscribeLabel: Color = Color(0xFF302506)
-        /** Locket · paywall · subtitle colour · SOURCED — token `paywall.color.subtitle` */
-        val paywallColorSubtitle: Color = Color(0xFFB2AA8C)
-        /** Locket · paywall · title colour (cream gold); also the plan-sheet title, plan names and prices · SOURCED — token `paywall.color.title` */
-        val paywallColorTitle: Color = Color(0xFFFDEAB8)
-        /** Yope · photo.viewer · viewer background behind the photo and header · SOURCED — token `photo.viewer.color.background` */
-        val photoViewerColorBackground: Color = Color(0xFF1C191D)
-        /** Retro · week.history · empty-day tile and add tile fill in the dark appearance · SOURCED — token `week.history.color.emptyTile` */
-        val weekHistoryColorEmptyTile: Color = Color(0xFF262626)
-        /** Retro · week.history · empty-day tile labels (month, day number, weekday) in the dark appearance · SOURCED — token `week.history.color.emptyTileText` */
-        val weekHistoryColorEmptyTileText: Color = Color(0xFF515151)
-        /** Locket · widget.android · avatar placeholder gradient end · SOURCED — token `widget.android.color.avatarPlaceholderBottom` */
-        val widgetAndroidColorAvatarPlaceholderBottom: Color = Color(0xF5828282)
-        /** Locket · widget.android · avatar placeholder (sender has no avatar), gradient start (angle 270) · SOURCED — token `widget.android.color.avatarPlaceholderTop` */
-        val widgetAndroidColorAvatarPlaceholderTop: Color = Color(0xF5A0A0A0)
-        /** Locket · widget.home.small · avatar ring color (black 10 %) · SOURCED — token `widget.home.small.color.avatarRing` */
-        val widgetHomeSmallColorAvatarRing: Color = Color(0x1A000000)
-        /** Locket · widget.home.small · caption pill fill, iOS and Android (shape radius.global.capsule) · SOURCED — token `widget.home.small.color.captionPill` */
-        val widgetHomeSmallColorCaptionPill: Color = Color(0xCC333333)
-        /** Locket · widget.home.small · empty widget background, bottom of the gradient · SOURCED — token `widget.home.small.color.emptyBottom` */
-        val widgetHomeSmallColorEmptyBottom: Color = Color(0xFF1B1B1B)
-        /** Locket · widget.home.small · empty-state circle fill (white 24 %) · SOURCED — token `widget.home.small.color.emptyCircle` */
-        val widgetHomeSmallColorEmptyCircle: Color = Color(0x3DFFFFFF)
-        /** Yope · widget.home.small · empty-state label color · SOURCED — token `widget.home.small.color.emptyLabel` */
-        val widgetHomeSmallColorEmptyLabel: Color = Color(0xFF969696)
-        /** Locket · widget.home.small · empty-state ring stroke · SOURCED — token `widget.home.small.color.emptyRing` */
-        val widgetHomeSmallColorEmptyRing: Color = Color(0xFFFFB800)
-        /** Locket · widget.home.small · empty / unconfigured widget background, top of the vertical gradient (angle 270) · SOURCED — token `widget.home.small.color.emptyTop` */
-        val widgetHomeSmallColorEmptyTop: Color = Color(0xFF2E2E2E)
-        /** Locket · widget.home.small · loading placeholder tile, bottom of the vertical gradient · SOURCED — token `widget.home.small.color.placeholderBottom` */
-        val widgetHomeSmallColorPlaceholderBottom: Color = Color(0xFF201E21)
-        /** Locket · widget.home.small · loading placeholder tile (just added, before the first photo), top of the vertical gradient · SOURCED — token `widget.home.small.color.placeholderTop` */
-        val widgetHomeSmallColorPlaceholderTop: Color = Color(0xFF2D2B2F)
+        /** Retro · onthisday · dial ticks (all slots except the indicator) · SOURCED — token `color.onthisday.dial.tick` */
+        val onthisdayDialTick: Color = Color(0x4DFFFFFF)
+        /** Retro · onthisday · subtitle under the date title ('On this day · {name}' / 'Memories · {name}'), over the photo · SOURCED — token `color.onthisday.subtitle` */
+        val onthisdaySubtitle: Color = Color(0xC2FFFFFF)
+        /** Retro · groups.invite · link note text and its eye glyph under the cover · SOURCED — token `groups.invite.color.note` */
+        val groupsInviteColorNote: Color = Color(0xFF767676)
+        /** Retro · invite.web · avatar circle fill while the photo loads / when the inviter has none · SOURCED — token `invite.web.color.avatarPlaceholder` */
+        val inviteWebColorAvatarPlaceholder: Color = Color(0xFFEDEDED)
+        /** Retro · invite.web · mobile page: body line colour (white 62 %) over the blurred photo · SOURCED — token `invite.web.color.body` */
+        val inviteWebColorBody: Color = Color(0x9EFFFFFF)
+        /** Retro · invite.web · desktop page: body line colour (black 50 %) on white · SOURCED — token `invite.web.color.bodyDesktop` */
+        val inviteWebColorBodyDesktop: Color = Color(0x80000000)
+        /** Retro · invite.web · mobile page: 'Let's go' pill fill (white 20 %) over the blurred photo; label #FFFFFF · SOURCED — token `invite.web.color.pill` */
+        val inviteWebColorPill: Color = Color(0x33FFFFFF)
+        /** Retro · invite.web · mobile page: pill fill on hover (white 30 %) · SOURCED — token `invite.web.color.pillHover` */
+        val inviteWebColorPillHover: Color = Color(0x4DFFFFFF)
+        /** Retro · paywall · primary text on the plan card (title, bullets, price) — both appearances (the card is light in Retro's capture) · SOURCED — token `paywall.color.planText` */
+        val paywallColorPlanText: Color = Color(0xFF090A0A)
+        /** Retro · paywall · plan card subtitle and finished bullets · SOURCED — token `paywall.color.planTextSecondary` */
+        val paywallColorPlanTextSecondary: Color = Color(0xFF757A7D)
+        /** Retro · paywall · plan card footnote under the price · SOURCED — token `paywall.color.planTextTertiary` */
+        val paywallColorPlanTextTertiary: Color = Color(0xFFA5ABAF)
+        /** Retro · widget.home.small · glyph and message of the widget's states (empty, not set up, signed out): white 85 % on color.global.backgroundDeep · SOURCED — token `widget.home.small.color.stateTint` */
+        val widgetHomeSmallColorStateTint: Color = Color(0xD9FFFFFF)
     }
     object Counts {
-        /** Locket · camera.sendto · longest caption the field accepts · SOURCED — token `camera.sendto.size.captionMaxLength` */
-        val cameraSendtoSizeCaptionMaxLength: Int = 36
-        /** Locket · chat.reactions · emoji per row in the picker grid · SOURCED — token `chat.reactions.count.pickerColumns` */
+        /** Retro · albums.view · columns of the album photo grid · SOURCED — token `albums.view.count.gridColumns` */
+        val albumsViewCountGridColumns: Int = 3
+        /** Retro · camera.sendto · longest message the 'Add a Message' sheet accepts (counter '{count}/{max}') · SOURCED — token `camera.sendto.size.captionMaxLength` */
+        val cameraSendtoSizeCaptionMaxLength: Int = 250
+        /** WhatsApp · chat.reactions · most distinct emoji shown in the chip; when more were used, the newest three show and the full set is in the Reactions sheet · SOURCED — token `chat.reactions.count.clusterMaxVisible` */
+        val chatReactionsCountClusterMaxVisible: Int = 3
+        /** Locket · chat.reactions · columns of the emoji grid in the picker · SOURCED — token `chat.reactions.count.pickerColumns` */
         val chatReactionsCountPickerColumns: Int = 6
-        /** Locket · chat.reactions · copies of the chosen emoji in one emoji-rain burst · SOURCED — token `chat.reactions.count.rainCopies` */
-        val chatReactionsCountRainCopies: Int = 18
-        /** Apple Messages (iMessage) + WhatsApp (rule); Yope (consistent) · chat.thread · how many emoji a message may contain and still render large without a bubble · SOURCED — token `chat.thread.count.emojiOnlyMax` */
+        /** Apple Messages + WhatsApp · chat.thread · a text message of only 1–3 emoji renders large (fontSize.global.headerTitle, 40 pt glyphs); 4 or more render as normal text · SOURCED — token `chat.thread.count.emojiOnlyMax` */
         val chatThreadCountEmojiOnlyMax: Int = 3
-        /** Spotify Wrapped · year.story · most photos one list shows (most-reacted, everyone-answered days) · SOURCED — token `count.year.story.listLength` */
+        /** Retro · onthisday · number of tick slots around the dial (long and short alternate) · SOURCED — token `count.onthisday.dial.ticks` */
+        val onthisdayDialTicks: Int = 44
+        /** Spotify Wrapped · year.story · most cards one list shows (most-reacted photos, everyone-answered days) · SOURCED — token `count.year.story.listLength` */
         val yearStoryListLength: Int = 5
-        /** Partiful · invite.web · title: most lines allowed before the size shrinks · VERIFIED — token `invite.web.count.title.maxLines` */
-        val inviteWebCountTitleMaxLines: Int = 3
-        /** Yope · walls.mine · columns of the wall photo grid (walls.mine, walls.member, walls.browse) · SOURCED — token `walls.mine.count.gridColumns` */
-        val wallsMineCountGridColumns: Int = 3
-        /** Yope · week.recap · columns of the full rows of the recap card grid · CAPTURED — token `week.recap.count.gridColumns` */
-        val weekRecapCountGridColumns: Int = 3
-        /** Yope · week.recap · columns of the week's pics grid under the card · CAPTURED — token `week.recap.count.picsColumns` */
-        val weekRecapCountPicsColumns: Int = 3
+        /** Retro · week.edit · columns of the photo grid in the recap editor · SOURCED — token `week.edit.count.gridColumns` */
+        val weekEditCountGridColumns: Int = 4
+        /** Retro · week.recap · columns of the collage card's photo grid · SOURCED — token `week.recap.count.gridColumns` */
+        val weekRecapCountGridColumns: Int = 4
     }
     object Durations {
-        /** Supabase Auth documentation · auth.code · time after a code request before 'send new code' is enabled · VERIFIED — token `auth.code.duration.resendLock` */
+        /** Supabase Auth documentation · auth.code · time after a code request before 'Send again' is enabled · VERIFIED — token `auth.code.duration.resendLock` */
         val authCodeDurationResendLock: Int = 60000
-        /** Locket · camera.capture · maximum length of a hold-to-record video (premium) · SOURCED — token `camera.capture.duration.videoMax` */
+        /** Locket · camera.capture · maximum length of a hold-to-record video (premium); the recording outline fills over this time · SOURCED — token `camera.capture.duration.videoMax` */
         val cameraCaptureDurationVideoMax: Int = 10000
-        /** Locket · camera.sendto · how long the confirmation toast stays, and its entrance / exit motion · SOURCED — token `camera.sendto.duration.toastVisible` */
-        val cameraSendtoDurationToastVisible: Int = 2000
-        /** Locket · chat.reactions · flight of the chosen emoji into the cluster after the picker closes · SOURCED — token `chat.reactions.duration.flyToCluster` */
-        val chatReactionsDurationFlyToCluster: Int = 300
-        /** Locket · chat.reactions · interval between consecutive copies entering · SOURCED — token `chat.reactions.duration.rainSpawnInterval` */
-        val chatReactionsDurationRainSpawnInterval: Int = 125
-        /** Locket · chat.reactions · whole emoji-rain effect, first entry to last exit · SOURCED — token `chat.reactions.duration.rainTotal` */
-        val chatReactionsDurationRainTotal: Int = 2940
-        /** Locket · chat.reactions · one copy's travel from below the bottom edge to past the top edge · SOURCED — token `chat.reactions.duration.rainTravel` */
-        val chatReactionsDurationRainTravel: Int = 770
+        /** Retro · chat.thread · a new message row appearing at the bottom of the thread (fade in) · SOURCED — token `chat.thread.duration.entry` */
+        val chatThreadDurationEntry: Int = 250
         /** Apple HIG · daily.liveactivity · longest allowed Live Activity animation · VERIFIED — token `daily.liveactivity.duration.animationMax` */
         val dailyLiveactivityDurationAnimationMax: Int = 2000
         /** Tribute · birthday.tribute · transition between two contribution cards: hard cut (read by the worker) · SOURCED — token `duration.birthday.tribute.clipTransition` */
@@ -457,8 +264,10 @@ object Tokens {
         val globalSheetPresent: Int = 567
         /** Retro · global · a tile shifts one slot when a photo is added to the strip (easing.global.standard) · SOURCED — token `duration.global.stripInsert` */
         val globalStripInsert: Int = 250
-        /** VidDay · onthisday · transition between two years' memories · SOURCED — token `duration.onthisday.memoryChange` */
+        /** VidDay · onthisday · cross-fade from one memory to the next while playing (automatic advance) · SOURCED — token `duration.onthisday.memoryChange` */
         val onthisdayMemoryChange: Int = 700
+        /** VidDay · onthisday · time one memory stays on screen while the dial is playing, before the next one · SOURCED — token `duration.onthisday.playHold` */
+        val onthisdayPlayHold: Int = 4000
         /** VidDay · year.story · time one card stays before the story advances on its own · SOURCED — token `duration.year.story.card` */
         val yearStoryCard: Int = 4000
         /** Spotify Wrapped · year.story · headline moves up when the subline arrives · SOURCED — token `duration.year.story.reveal.headline` */
@@ -467,94 +276,36 @@ object Tokens {
         val yearStoryRevealSubline: Int = 600
         /** Spotify Wrapped · year.story · headline motion start to subline appearance · SOURCED — token `duration.year.story.reveal.sublineDelay` */
         val yearStoryRevealSublineDelay: Int = 267
-        /** Partiful · invite.web · button/link background-colour and colour transition · VERIFIED — token `invite.web.duration.button.colour` */
-        val inviteWebDurationButtonColour: Int = 200
-        /** Partiful · invite.web · button opacity transition (press feedback) · VERIFIED — token `invite.web.duration.button.opacity` */
-        val inviteWebDurationButtonOpacity: Int = 100
-        /** Locket · safety.block · how long the lime toast stays before it leaves · SOURCED — token `safety.block.duration.toast` */
-        val safetyBlockDurationToast: Int = 2000
-        /** Locket · widget.android · system periodic update interval (safety net; refresh is push-driven) · SOURCED — token `widget.android.duration.updatePeriod` */
-        val widgetAndroidDurationUpdatePeriod: Int = 86400000
+        /** Retro · invite.web · mobile page: pill background-colour transition · SOURCED — token `invite.web.duration.pill` */
+        val inviteWebDurationPill: Int = 300
+        /** Retro · widget.android · system periodic update interval (safety net; refresh stays push-driven) · SOURCED — token `widget.android.duration.updatePeriod` */
+        val widgetAndroidDurationUpdatePeriod: Int = 3600000
         /** Locket · widget.arrival · documented worst-case delay before a sent photo shows on a member's widget · SOURCED — token `widget.arrival.duration.expectedDelay` */
         val widgetArrivalDurationExpectedDelay: Int = 300000
         /** Locket · widget.arrival · placeholder / previous photo → new photo on the widget (instant swap, no animation) · SOURCED — token `widget.arrival.duration.transition` */
         val widgetArrivalDurationTransition: Int = 0
     }
     object Easings {
-        /** Locket · chat.reactions · speed curve of each rain copy · SOURCED — token `chat.reactions.easing.rain` */
-        val chatReactionsEasingRain: Easing = FastOutSlowInEasing
+        /** Retro · chat.thread · curve of the message entry animation · SOURCED — token `chat.thread.easing.entry` */
+        val chatThreadEasingEntry: Easing = LinearEasing
         /** Retro · global · Retro's house easing (FastOutSlowIn) for fades, slides, photo open, strip insert · SOURCED — token `easing.global.standard` */
         val globalStandard: Easing = CubicBezierEasing(0.4f, 0f, 0.2f, 1f)
         /** Material 3 · global.system · M3 standard easing for custom transitions on Android system surfaces · PLATFORM — token `easing.global.system.standard` */
         val globalSystemStandard: Easing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
-        /** Spotify Wrapped · year.story · current segment fill over time · SOURCED — token `easing.year.story.progress.fill` */
-        val yearStoryProgressFill: Easing = LinearEasing
         /** Spotify Wrapped · year.story · curve of the headline / subline reveal · SOURCED — token `easing.year.story.reveal` */
         val yearStoryReveal: Easing = CubicBezierEasing(0.56f, 0.08f, 0.14f, 0.87f)
         /** Spotify Wrapped · year.story · curve of the subline rising in (with duration.year.story.reveal.subline, .sublineDelay, dimension .sublineOffset) · SOURCED — token `easing.year.story.reveal.subline` */
         val yearStoryRevealSubline: Easing = CubicBezierEasing(0.05f, 0.36f, 0.26f, 0.94f)
-        /** Partiful · invite.web · button/link transitions · VERIFIED — token `invite.web.easing.button` */
-        val inviteWebEasingButton: Easing = LinearOutSlowInEasing
+        /** Retro · invite.web · mobile page: pill transition curve (CSS 'ease') · SOURCED — token `invite.web.easing.pill` */
+        val inviteWebEasingPill: Easing = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1f)
     }
     object FontSizes {
-        /** Yope · auth.code · lime text link ('send new code'; Yope's sign-in link 'probar otras opciones' = 'try other options') · SOURCED — token `auth.code.fontSize.textLink` */
-        val authCodeFontSizeTextLink: TextUnit = 14.5.sp
-        /** Yope · auth.phone · italic subtitle under the sign-up title ('to join or create your friends groups') · SOURCED — token `auth.phone.fontSize.subtitle` */
-        val authPhoneFontSizeSubtitle: TextUnit = 14.sp
-        /** Yope · camera.capture · coach tooltip text ('hold down to record') · SOURCED — token `camera.capture.fontSize.coach` */
-        val cameraCaptureFontSizeCoach: TextUnit = 11.sp
-        /** Yope · camera.sendto · caption typed on the preview, centred under the hour overlay (color.global.textPrimary) · SOURCED — token `camera.sendto.fontSize.caption` */
-        val cameraSendtoFontSizeCaption: TextUnit = 16.sp
-        /** Yope · camera.sendto · number inside the count disc · SOURCED — token `camera.sendto.fontSize.countNumber` */
-        val cameraSendtoFontSizeCountNumber: TextUnit = 11.sp
-        /** Yope · camera.sendto · 'add a message' placeholder (color.global.textPrimary: measured near-white (254,251,238), not the gray placeholder of text fields) · SOURCED — token `camera.sendto.fontSize.messagePlaceholder` */
-        val cameraSendtoFontSizeMessagePlaceholder: TextUnit = 15.sp
-        /** Locket · chat.reactions · section labels 'Frequently Used', 'Popular', 'All' (grey) · SOURCED — token `chat.reactions.fontSize.pickerSection` */
-        val chatReactionsFontSizePickerSection: TextUnit = 13.sp
-        /** Yope · chat.thread · caption text in the dark box on a photo ('Chloe'), white · SOURCED — token `chat.thread.fontSize.caption` */
-        val chatThreadFontSizeCaption: TextUnit = 21.sp
-        /** Yope · chat.thread · the word 'pic' under the quoted name · SOURCED — token `chat.thread.fontSize.replyLabel` */
-        val chatThreadFontSizeReplyLabel: TextUnit = 12.7.sp
-        /** Yope · chat.thread · quoted poster's first name in the reply quote ('Gabriel'), black on lime · SOURCED — token `chat.thread.fontSize.replyName` */
-        val chatThreadFontSizeReplyName: TextUnit = 14.5.sp
-        /** Yope · collage.share · 'share' label · SOURCED — token `collage.share.fontSize.label` */
-        val collageShareFontSizeLabel: TextUnit = 18.sp
-        /** Yope · collage.view · date title ('26 May') centred on the back circle's centre line (color.global.textPrimary) · SOURCED — token `collage.view.fontSize.title` */
-        val collageViewFontSizeTitle: TextUnit = 16.sp
-        /** BeReal · daily.capture · audience chip text · SOURCED — token `daily.capture.fontSize.chip` */
-        val dailyCaptureFontSizeChip: TextUnit = 13.sp
-        /** BeReal · daily.capture · countdown digits (MM:SS) in the platform font · SOURCED — token `daily.capture.fontSize.countdown` */
-        val dailyCaptureFontSizeCountdown: TextUnit = 23.sp
-        /** BeReal · daily.capture · prompt line under the spinner · SOURCED — token `daily.capture.fontSize.prompt` */
-        val dailyCaptureFontSizePrompt: TextUnit = 17.sp
-        /** BeReal · daily.capture · SEND label (capitals) · SOURCED — token `daily.capture.fontSize.send` */
-        val dailyCaptureFontSizeSend: TextUnit = 40.5.sp
-        /** Tribute · birthday.contribute · step button label · VERIFIED — token `fontSize.birthday.contribute.button` */
-        val birthdayContributeButton: TextUnit = 16.sp
-        /** Tribute · birthday.contribute · step heading ('Let's add a photo for {name}!'), centred · VERIFIED — token `fontSize.birthday.contribute.heading` */
-        val birthdayContributeHeading: TextUnit = 20.sp
-        /** Tribute · birthday.contribute · typed text · VERIFIED — token `fontSize.birthday.contribute.input` */
-        val birthdayContributeInput: TextUnit = 16.sp
-        /** Tribute · birthday.contribute · field label ('Your Message') · VERIFIED — token `fontSize.birthday.contribute.label` */
-        val birthdayContributeLabel: TextUnit = 16.sp
-        /** Tribute · birthday.contribute · step caption under the circle · VERIFIED — token `fontSize.birthday.contribute.stepper.label` */
-        val birthdayContributeStepperLabel: TextUnit = 10.sp
-        /** Tribute · birthday.contribute · step number · VERIFIED — token `fontSize.birthday.contribute.stepper.number` */
-        val birthdayContributeStepperNumber: TextUnit = 14.sp
-        /** Tribute · birthday.contribute · sub-heading ('Thank you for taking the time to participate!') · VERIFIED — token `fontSize.birthday.contribute.subheading` */
-        val birthdayContributeSubheading: TextUnit = 16.sp
-        /** Tribute · birthday.request · primary button label · VERIFIED — token `fontSize.birthday.request.cta` */
-        val birthdayRequestCta: TextUnit = 22.sp
-        /** Tribute · birthday.request · welcome message (and due line) · VERIFIED — token `fontSize.birthday.request.message` */
-        val birthdayRequestMessage: TextUnit = 16.sp
-        /** Tribute · birthday.request · prompt text · VERIFIED — token `fontSize.birthday.request.prompt` */
-        val birthdayRequestPrompt: TextUnit = 15.sp
-        /** Tribute · birthday.request · header label · VERIFIED — token `fontSize.birthday.request.prompts.header` */
-        val birthdayRequestPromptsHeader: TextUnit = 15.sp
-        /** Tribute · birthday.request · title ('Birthday Video for {name}!') · VERIFIED — token `fontSize.birthday.request.title` */
-        val birthdayRequestTitle: TextUnit = 24.sp
-        /** Tribute · birthday.tribute · secondary button label · VERIFIED — token `fontSize.birthday.tribute.button` */
-        val birthdayTributeButton: TextUnit = 14.sp
+        /** Retro · auth.phone · the app's name set in the display serif (font.global.display) where Retro's landing shows its wordmark, centred above the tagline · SOURCED — token `auth.phone.fontSize.wordmark` */
+        val authPhoneFontSizeWordmark: TextUnit = 64.sp
+        /** Retro · camera.sendto · character counter '58/250' in the 'Add a Message' sheet · SOURCED — token `camera.sendto.fontSize.counter` */
+        val cameraSendtoFontSizeCounter: TextUnit = 16.sp
+        /** Retro · birthday.request · card title ('Message ideas') · SOURCED — token `fontSize.birthday.request.cardTitle` */
+        val birthdayRequestCardTitle: TextUnit = 24.sp
         /** Retro · global · label of the red 'new' badge, the grey relative-week pill and the viewer position pill · SOURCED — token `fontSize.global.badge` */
         val globalBadge: TextUnit = 11.sp
         /** Retro · global · body / list row text on iOS ('Weeks Posted: 32'-style info rows, comment text, address lines, sheet rows) · SOURCED — token `fontSize.global.body` */
@@ -601,152 +352,36 @@ object Tokens {
         val globalTileLabel: TextUnit = 13.sp
         /** Retro · global · month and weekday lines on an empty-day tile ('Oct' / 'Mon') · SOURCED — token `fontSize.global.tileMonth` */
         val globalTileMonth: TextUnit = 14.sp
-        /** Timehop · onthisday · 'N YEARS AGO' banner label, set in the platform font · SOURCED — token `fontSize.onthisday.banner.label` */
-        val onthisdayBannerLabel: TextUnit = 25.8.sp
-        /** Timehop · onthisday · meta row text ('TUE 10:34 PM') · SOURCED — token `fontSize.onthisday.meta` */
-        val onthisdayMeta: TextUnit = 10.6.sp
-        /** Spotify Wrapped · year.story · card subline · SOURCED — token `fontSize.year.story.body` */
-        val yearStoryBody: TextUnit = 15.4.sp
-        /** Spotify Wrapped · year.story · card headline · SOURCED — token `fontSize.year.story.headline` */
-        val yearStoryHeadline: TextUnit = 31.6.sp
-        /** Spotify Wrapped · year.story · 'Share this story' label · SOURCED — token `fontSize.year.story.share` */
-        val yearStoryShare: TextUnit = 16.1.sp
-        /** Spotify Wrapped · year.story · 'Share' pill label · SOURCED — token `fontSize.year.story.sharePill` */
-        val yearStorySharePill: TextUnit = 17.7.sp
-        /** Yope · groups.create · typed text in the form field (centred) · SOURCED — token `groups.create.fontSize.fieldText` */
-        val groupsCreateFontSizeFieldText: TextUnit = 15.sp
-        /** Yope · groups.create · 'Loading' label under the spinner in the HUD · SOURCED — token `groups.create.fontSize.hudLabel` */
-        val groupsCreateFontSizeHudLabel: TextUnit = 15.sp
-        /** Yope · groups.create · sheet title 'new group' · SOURCED — token `groups.create.fontSize.title` */
-        val groupsCreateFontSizeTitle: TextUnit = 14.5.sp
-        /** Yope · groups.invite · name on a picker row (bold, white) · SOURCED — token `groups.invite.fontSize.pickerName` */
-        val groupsInviteFontSizePickerName: TextUnit = 13.5.sp
-        /** Yope · groups.screen · 'chat' label in the pill (bold, white, after icon.global.chats) · SOURCED — token `groups.screen.fontSize.chatPill` */
-        val groupsScreenFontSizeChatPill: TextUnit = 15.sp
-        /** Yope · groups.screen · group name on the group profile page (bold, white, centred) · SOURCED — token `groups.screen.fontSize.profileName` */
-        val groupsScreenFontSizeProfileName: TextUnit = 25.sp
-        /** Yope · groups.screen · segment labels ('pics', 'wall', 'recaps'): bold, white unselected / black selected · SOURCED — token `groups.screen.fontSize.segmentLabel` */
-        val groupsScreenFontSizeSegmentLabel: TextUnit = 14.5.sp
-        /** Partiful · invite.appclip · join sheet helper line ('Just for group updates. No spam.') · VERIFIED — token `invite.appclip.fontSize.sheetHelper` */
-        val inviteAppclipFontSizeSheetHelper: TextUnit = 14.4.sp
-        /** Partiful · invite.appclip · join sheet text input value and placeholder · VERIFIED — token `invite.appclip.fontSize.sheetInput` */
-        val inviteAppclipFontSizeSheetInput: TextUnit = 24.sp
-        /** Partiful · invite.web · body text ('Invited by' row, initials, names, footer link, large button label) · VERIFIED — token `invite.web.fontSize.body` */
-        val inviteWebFontSizeBody: TextUnit = 16.sp
-        /** Partiful · invite.web · medium button label · VERIFIED — token `invite.web.fontSize.button.medium` */
-        val inviteWebFontSizeButtonMedium: TextUnit = 14.sp
-        /** Partiful · invite.web · card body / state body text · VERIFIED — token `invite.web.fontSize.detail` */
-        val inviteWebFontSizeDetail: TextUnit = 14.sp
-        /** Partiful · invite.web · section header ('Member List', 'Restricted Access') · VERIFIED — token `invite.web.fontSize.sectionHeader` */
-        val inviteWebFontSizeSectionHeader: TextUnit = 18.sp
-        /** Partiful · invite.web · emoji glyph on state pages · VERIFIED — token `invite.web.fontSize.state.glyph` */
-        val inviteWebFontSizeStateGlyph: TextUnit = 50.sp
-        /** Partiful · invite.web · state title · VERIFIED — token `invite.web.fontSize.state.title` */
-        val inviteWebFontSizeStateTitle: TextUnit = 24.sp
-        /** Partiful · invite.web · title: starting size for multi-line titles on phones (largest size tried is 39) · VERIFIED — token `invite.web.fontSize.title.base` */
-        val inviteWebFontSizeTitleBase: TextUnit = 40.sp
-        /** Partiful · invite.web · title: smallest size · VERIFIED — token `invite.web.fontSize.title.min` */
-        val inviteWebFontSizeTitleMin: TextUnit = 25.sp
-        /** Partiful · invite.web · title: upper bound for titles that fit on one line at the base size (largest size tried 47) · VERIFIED — token `invite.web.fontSize.title.singleLineMax` */
-        val inviteWebFontSizeTitleSingleLineMax: TextUnit = 48.sp
-        /** Yope · onboarding.permission.contacts · card detail ('enable contacts', color.global.textSecondary) · SOURCED — token `onboarding.permission.contacts.fontSize.cardDetail` */
-        val onboardingPermissionContactsFontSizeCardDetail: TextUnit = 14.sp
-        /** Yope · onboarding.permission.contacts · card title ('can’t see / your friends?', bold, white, 2 lines) · SOURCED — token `onboarding.permission.contacts.fontSize.cardTitle` */
-        val onboardingPermissionContactsFontSizeCardTitle: TextUnit = 17.sp
-        /** Locket · onboarding.widget · CTA label (bold) · SOURCED — token `onboarding.widget.fontSize.ctaLabel` */
-        val onboardingWidgetFontSizeCtaLabel: TextUnit = 18.sp
-        /** Locket · onboarding.widget · step lines (welcome tagline style), centred · SOURCED — token `onboarding.widget.fontSize.step` */
-        val onboardingWidgetFontSizeStep: TextUnit = 22.sp
-        /** Locket · onboarding.widget · title ('Add the widget\nto your home screen'), bold, white, centred · SOURCED — token `onboarding.widget.fontSize.title` */
-        val onboardingWidgetFontSizeTitle: TextUnit = 33.sp
-        /** Locket · paywall · CTA label (bold) + trailing unlock glyph · SOURCED — token `paywall.fontSize.ctaLabel` */
-        val paywallFontSizeCtaLabel: TextUnit = 18.sp
-        /** Locket · paywall · 'No thanks!' text button (regular) · SOURCED — token `paywall.fontSize.dismiss` */
-        val paywallFontSizeDismiss: TextUnit = 16.sp
-        /** Locket · paywall · perk subtitle (regular) · SOURCED — token `paywall.fontSize.perkSubtitle` */
-        val paywallFontSizePerkSubtitle: TextUnit = 15.sp
-        /** Locket · paywall · perk title (semibold) · SOURCED — token `paywall.fontSize.perkTitle` */
-        val paywallFontSizePerkTitle: TextUnit = 17.sp
-        /** Locket · paywall · plan detail line under the name (regular) · SOURCED — token `paywall.fontSize.planDetail` */
-        val paywallFontSizePlanDetail: TextUnit = 15.sp
-        /** Locket · paywall · plan name ('1 Year', '1 Month'), bold, paywall.color.title · SOURCED — token `paywall.fontSize.planName` */
-        val paywallFontSizePlanName: TextUnit = 18.sp
-        /** Locket · paywall · plan price, trailing, bold, paywall.color.title · SOURCED — token `paywall.fontSize.planPrice` */
-        val paywallFontSizePlanPrice: TextUnit = 17.sp
-        /** Locket · paywall · plan sheet title (2 lines, bold, centred, paywall.color.title) · SOURCED — token `paywall.fontSize.planSheetTitle` */
-        val paywallFontSizePlanSheetTitle: TextUnit = 24.5.sp
-        /** Locket · paywall · 'Subscribe' label (bold) · SOURCED — token `paywall.fontSize.subscribeLabel` */
-        val paywallFontSizeSubscribeLabel: TextUnit = 19.sp
-        /** Locket · paywall · subtitle (2 lines, regular, centred) · SOURCED — token `paywall.fontSize.subtitle` */
-        val paywallFontSizeSubtitle: TextUnit = 17.sp
-        /** Locket · paywall · title ('{app_name} Premium'), bold · SOURCED — token `paywall.fontSize.title` */
-        val paywallFontSizeTitle: TextUnit = 30.sp
-        /** Retro · week.history · day number on an empty-day tile (bold) · SOURCED — token `week.history.fontSize.emptyDay` */
-        val weekHistoryFontSizeEmptyDay: TextUnit = 29.sp
-        /** Retro · week.history · month and weekday lines on an empty-day tile · SOURCED — token `week.history.fontSize.emptyDayLabel` */
-        val weekHistoryFontSizeEmptyDayLabel: TextUnit = 15.sp
-        /** Retro · week.history · 'Week N' and its date range · SOURCED — token `week.history.fontSize.header` */
-        val weekHistoryFontSizeHeader: TextUnit = 15.sp
-        /** Retro · week.history · screen title (the group's name) in the display role, left-aligned · SOURCED — token `week.history.fontSize.title` */
-        val weekHistoryFontSizeTitle: TextUnit = 43.sp
-        /** Retro · week.history · weekday label on a photo tile ('Mon'), white, bottom-centred · SOURCED — token `week.history.fontSize.weekday` */
-        val weekHistoryFontSizeWeekday: TextUnit = 13.sp
-        /** Yope · week.recap · week label on the card ('18 AUG-24 AUG'), uppercase, white · CAPTURED — token `week.recap.fontSize.label` */
-        val weekRecapFontSizeLabel: TextUnit = 20.sp
-        /** Yope · week.recap · segment labels ('recap' black on white, 'pics' white) · CAPTURED — token `week.recap.fontSize.segmented` */
-        val weekRecapFontSizeSegmented: TextUnit = 17.sp
-        /** Yope · week.recap · screen title ('18 aug-24 aug'), centred · CAPTURED — token `week.recap.fontSize.title` */
-        val weekRecapFontSizeTitle: TextUnit = 17.sp
-        /** Locket · widget.home.small · caption text ('Sundays ☀️'), color.global.textPrimary (measured (253.5,254,253.5)) · SOURCED — token `widget.home.small.fontSize.caption` */
-        val widgetHomeSmallFontSizeCaption: TextUnit = 12.sp
+        /** Retro · invite.web · mobile page: body line ('See what … is up to this week.'), family font.global.family, regular, centred · SOURCED — token `invite.web.fontSize.body` */
+        val inviteWebFontSizeBody: TextUnit = 14.sp
+        /** Retro · invite.web · desktop page: body line ('Scan the code to …'), line height 28, tracking −0.4, centred, max width 300 · SOURCED — token `invite.web.fontSize.bodyDesktop` */
+        val inviteWebFontSizeBodyDesktop: TextUnit = 20.sp
+        /** Retro · invite.web · mobile page: footer line ('Terms & Privacy'), #FFFFFF, centred · SOURCED — token `invite.web.fontSize.footer` */
+        val inviteWebFontSizeFooter: TextUnit = 8.sp
+        /** Retro · invite.web · desktop page: headline, font.global.display regular, #000000, line height 48 · SOURCED — token `invite.web.fontSize.headlineDesktop` */
+        val inviteWebFontSizeHeadlineDesktop: TextUnit = 48.sp
+        /** Retro · invite.web · mobile page: pill label (semibold, #FFFFFF) · SOURCED — token `invite.web.fontSize.pill` */
+        val inviteWebFontSizePill: TextUnit = 16.sp
+        /** Retro · paywall · plan card bullet lines (Retro: the numbered steps) · SOURCED — token `paywall.fontSize.planBullet` */
+        val paywallFontSizePlanBullet: TextUnit = 17.sp
+        /** Retro · paywall · plan card footnote under the price ('Billed $35.99 yearly') · SOURCED — token `paywall.fontSize.planFootnote` */
+        val paywallFontSizePlanFootnote: TextUnit = 15.sp
+        /** Retro · paywall · plan card price ('$35.99/year' — Retro's 'FREE') · SOURCED — token `paywall.fontSize.planPrice` */
+        val paywallFontSizePlanPrice: TextUnit = 22.sp
+        /** Retro · paywall · plan card subtitle under the title ('Best value for long-term use') · SOURCED — token `paywall.fontSize.planSubtitle` */
+        val paywallFontSizePlanSubtitle: TextUnit = 15.sp
+        /** Retro · paywall · plan card title ('Annual', 'Monthly') · SOURCED — token `paywall.fontSize.planTitle` */
+        val paywallFontSizePlanTitle: TextUnit = 24.sp
+        /** Retro · week.recap · group name in the collage card footer (semibold) · SOURCED — token `week.recap.fontSize.cardName` */
+        val weekRecapFontSizeCardName: TextUnit = 13.sp
+        /** Retro · widget.home.small · name and group lines of the widget text stack (both lines the same size) · SOURCED — token `widget.home.small.fontSize.overlay` */
+        val widgetHomeSmallFontSizeOverlay: TextUnit = 11.sp
     }
     object FontWeights {
-        /** Yope · auth.code · lime text link weight · SOURCED — token `auth.code.fontWeight.textLink` */
-        val authCodeFontWeightTextLink: FontWeight = FontWeight(700)
-        /** Yope · camera.capture · coach tooltip text weight · SOURCED — token `camera.capture.fontWeight.coach` */
-        val cameraCaptureFontWeightCoach: FontWeight = FontWeight(600)
-        /** Yope · camera.sendto · caption on the preview · SOURCED — token `camera.sendto.fontWeight.caption` */
-        val cameraSendtoFontWeightCaption: FontWeight = FontWeight(600)
-        /** Yope · camera.sendto · number inside the count disc · SOURCED — token `camera.sendto.fontWeight.countNumber` */
-        val cameraSendtoFontWeightCountNumber: FontWeight = FontWeight(700)
-        /** Locket · chat.reactions · picker section labels · SOURCED — token `chat.reactions.fontWeight.pickerSection` */
-        val chatReactionsFontWeightPickerSection: FontWeight = FontWeight(600)
-        /** Yope · chat.thread · caption text on a photo · SOURCED — token `chat.thread.fontWeight.caption` */
-        val chatThreadFontWeightCaption: FontWeight = FontWeight(700)
-        /** Yope · chat.thread · the word 'pic' under the quoted name · SOURCED — token `chat.thread.fontWeight.replyLabel` */
-        val chatThreadFontWeightReplyLabel: FontWeight = FontWeight(400)
-        /** Yope · chat.thread · quoted poster's name in the reply quote · SOURCED — token `chat.thread.fontWeight.replyName` */
-        val chatThreadFontWeightReplyName: FontWeight = FontWeight(700)
-        /** Yope · collage.share · 'share' label weight · SOURCED — token `collage.share.fontWeight.label` */
-        val collageShareFontWeightLabel: FontWeight = FontWeight(700)
-        /** Yope · collage.view · date title weight · SOURCED — token `collage.view.fontWeight.title` */
-        val collageViewFontWeightTitle: FontWeight = FontWeight(600)
-        /** BeReal · daily.capture · countdown digit weight · SOURCED — token `daily.capture.fontWeight.countdown` */
-        val dailyCaptureFontWeightCountdown: FontWeight = FontWeight(700)
-        /** BeReal · daily.capture · SEND label weight · SOURCED — token `daily.capture.fontWeight.send` */
-        val dailyCaptureFontWeightSend: FontWeight = FontWeight(800)
         /** Apple HIG · daily.liveactivity · minimum weight of any Live Activity text · VERIFIED — token `daily.liveactivity.fontWeight.min` */
         val dailyLiveactivityFontWeightMin: FontWeight = FontWeight(500)
-        /** Tribute · birthday.contribute · step button label · VERIFIED — token `fontWeight.birthday.contribute.button` */
-        val fontWeightBirthdayContributeButton: FontWeight = FontWeight(600)
-        /** Tribute · birthday.contribute · step heading · VERIFIED — token `fontWeight.birthday.contribute.heading` */
-        val fontWeightBirthdayContributeHeading: FontWeight = FontWeight(500)
-        /** Tribute · birthday.contribute · field label · VERIFIED — token `fontWeight.birthday.contribute.label` */
-        val fontWeightBirthdayContributeLabel: FontWeight = FontWeight(600)
-        /** Tribute · birthday.contribute · other step captions · VERIFIED — token `fontWeight.birthday.contribute.stepper.label` */
-        val fontWeightBirthdayContributeStepperLabel: FontWeight = FontWeight(400)
-        /** Tribute · birthday.contribute · current step caption · VERIFIED — token `fontWeight.birthday.contribute.stepper.labelActive` */
-        val fontWeightBirthdayContributeStepperLabelActive: FontWeight = FontWeight(500)
-        /** Tribute · birthday.contribute · step number · VERIFIED — token `fontWeight.birthday.contribute.stepper.number` */
-        val fontWeightBirthdayContributeStepperNumber: FontWeight = FontWeight(600)
-        /** Tribute · birthday.request · primary button label · VERIFIED — token `fontWeight.birthday.request.cta` */
-        val fontWeightBirthdayRequestCta: FontWeight = FontWeight(600)
-        /** Tribute · birthday.request · header label · VERIFIED — token `fontWeight.birthday.request.prompts.header` */
-        val fontWeightBirthdayRequestPromptsHeader: FontWeight = FontWeight(500)
-        /** Tribute · birthday.request · title · VERIFIED — token `fontWeight.birthday.request.title` */
-        val fontWeightBirthdayRequestTitle: FontWeight = FontWeight(600)
-        /** Tribute · birthday.tribute · secondary button label · VERIFIED — token `fontWeight.birthday.tribute.button` */
-        val fontWeightBirthdayTributeButton: FontWeight = FontWeight(600)
+        /** Retro · birthday.request · card title weight · SOURCED — token `fontWeight.birthday.request.cardTitle` */
+        val fontWeightBirthdayRequestCardTitle: FontWeight = FontWeight(700)
         /** Retro · global · label of the red 'new' badge, the grey relative-week pill and the viewer position pill · SOURCED — token `fontWeight.global.badge` */
         val fontWeightGlobalBadge: FontWeight = FontWeight(600)
         /** Retro · global · body / list row text on iOS ('Weeks Posted: 32'-style info rows, comment text, address lines, sheet rows) · SOURCED — token `fontWeight.global.body` */
@@ -787,80 +422,22 @@ object Tokens {
         val fontWeightGlobalTileDay: FontWeight = FontWeight(600)
         /** Retro · global · weekday label on a photo tile ('Mon'), white over the bottom scrim, centred, baseline 13.4 above the tile bottom · SOURCED — token `fontWeight.global.tileLabel` */
         val fontWeightGlobalTileLabel: FontWeight = FontWeight(600)
-        /** Timehop · onthisday · 'N YEARS AGO' banner label · SOURCED — token `fontWeight.onthisday.banner.label` */
-        val fontWeightOnthisdayBannerLabel: FontWeight = FontWeight(700)
-        /** Timehop · onthisday · meta row text · SOURCED — token `fontWeight.onthisday.meta` */
-        val fontWeightOnthisdayMeta: FontWeight = FontWeight(700)
-        /** Spotify Wrapped · year.story · card subline · SOURCED — token `fontWeight.year.story.body` */
-        val fontWeightYearStoryBody: FontWeight = FontWeight(400)
-        /** Spotify Wrapped · year.story · card headline · SOURCED — token `fontWeight.year.story.headline` */
-        val fontWeightYearStoryHeadline: FontWeight = FontWeight(700)
-        /** Spotify Wrapped · year.story · 'Share this story' label · SOURCED — token `fontWeight.year.story.share` */
-        val fontWeightYearStoryShare: FontWeight = FontWeight(700)
-        /** Spotify Wrapped · year.story · 'Share' pill label · SOURCED — token `fontWeight.year.story.sharePill` */
-        val fontWeightYearStorySharePill: FontWeight = FontWeight(700)
-        /** Yope · groups.create · typed text weight in the form field · SOURCED — token `groups.create.fontWeight.fieldText` */
-        val groupsCreateFontWeightFieldText: FontWeight = FontWeight(700)
-        /** Yope · groups.create · sheet title weight 'new group' · SOURCED — token `groups.create.fontWeight.title` */
-        val groupsCreateFontWeightTitle: FontWeight = FontWeight(500)
-        /** Yope · groups.invite · picker row name weight · SOURCED — token `groups.invite.fontWeight.pickerName` */
-        val groupsInviteFontWeightPickerName: FontWeight = FontWeight(700)
-        /** Yope · groups.screen · group name weight on the profile page · SOURCED — token `groups.screen.fontWeight.profileName` */
-        val groupsScreenFontWeightProfileName: FontWeight = FontWeight(700)
-        /** Yope · groups.screen · segment label weight · SOURCED — token `groups.screen.fontWeight.segmentLabel` */
-        val groupsScreenFontWeightSegmentLabel: FontWeight = FontWeight(700)
-        /** Partiful · invite.web · body text weight (400) · VERIFIED — token `invite.web.fontWeight.body` */
-        val inviteWebFontWeightBody: FontWeight = FontWeight(400)
-        /** Partiful · invite.web · button and link labels (600) · VERIFIED — token `invite.web.fontWeight.button` */
-        val inviteWebFontWeightButton: FontWeight = FontWeight(600)
-        /** Partiful · invite.web · section header weight (700) · VERIFIED — token `invite.web.fontWeight.sectionHeader` */
-        val inviteWebFontWeightSectionHeader: FontWeight = FontWeight(700)
-        /** Partiful · invite.web · state title weight (700) · VERIFIED — token `invite.web.fontWeight.state.title` */
-        val inviteWebFontWeightStateTitle: FontWeight = FontWeight(700)
-        /** Partiful · invite.web · title weight (700) · VERIFIED — token `invite.web.fontWeight.title` */
-        val inviteWebFontWeightTitle: FontWeight = FontWeight(700)
-        /** Partiful · invite.web · member first name in a row (600) · VERIFIED — token `invite.web.fontWeight.userRow.name` */
-        val inviteWebFontWeightUserRowName: FontWeight = FontWeight(600)
-        /** Yope · onboarding.permission.contacts · card title weight · SOURCED — token `onboarding.permission.contacts.fontWeight.cardTitle` */
-        val onboardingPermissionContactsFontWeightCardTitle: FontWeight = FontWeight(700)
-        /** Locket · onboarding.widget · step line weight · SOURCED — token `onboarding.widget.fontWeight.step` */
-        val onboardingWidgetFontWeightStep: FontWeight = FontWeight(600)
-        /** Locket · onboarding.widget · title weight · SOURCED — token `onboarding.widget.fontWeight.title` */
-        val onboardingWidgetFontWeightTitle: FontWeight = FontWeight(700)
-        /** Locket · paywall · perk title weight · SOURCED — token `paywall.fontWeight.perkTitle` */
-        val paywallFontWeightPerkTitle: FontWeight = FontWeight(600)
-        /** Retro · week.history · date range after 'Week N' · SOURCED — token `week.history.fontWeight.headerRange` */
-        val weekHistoryFontWeightHeaderRange: FontWeight = FontWeight(400)
-        /** Retro · week.history · 'Week N' · SOURCED — token `week.history.fontWeight.headerTitle` */
-        val weekHistoryFontWeightHeaderTitle: FontWeight = FontWeight(600)
-        /** Retro · week.history · screen title · SOURCED — token `week.history.fontWeight.title` */
-        val weekHistoryFontWeightTitle: FontWeight = FontWeight(800)
-        /** Retro · week.history · weekday label on a photo tile · SOURCED — token `week.history.fontWeight.weekday` */
-        val weekHistoryFontWeightWeekday: FontWeight = FontWeight(600)
-        /** Yope · week.recap · week label on the card · CAPTURED — token `week.recap.fontWeight.label` */
-        val weekRecapFontWeightLabel: FontWeight = FontWeight(800)
-        /** Yope · week.recap · segment labels · CAPTURED — token `week.recap.fontWeight.segmented` */
-        val weekRecapFontWeightSegmented: FontWeight = FontWeight(600)
-        /** Yope · week.recap · screen title · CAPTURED — token `week.recap.fontWeight.title` */
-        val weekRecapFontWeightTitle: FontWeight = FontWeight(600)
-        /** Locket · widget.home.small · caption text weight · SOURCED — token `widget.home.small.fontWeight.caption` */
-        val widgetHomeSmallFontWeightCaption: FontWeight = FontWeight(600)
+        /** Retro · invite.web · mobile page: pill label weight · SOURCED — token `invite.web.fontWeight.pill` */
+        val inviteWebFontWeightPill: FontWeight = FontWeight(600)
+        /** Retro · paywall · plan card price weight · SOURCED — token `paywall.fontWeight.planPrice` */
+        val paywallFontWeightPlanPrice: FontWeight = FontWeight(800)
+        /** Retro · paywall · plan card title weight · SOURCED — token `paywall.fontWeight.planTitle` */
+        val paywallFontWeightPlanTitle: FontWeight = FontWeight(700)
+        /** Retro · week.recap · group name in the collage card footer · SOURCED — token `week.recap.fontWeight.cardName` */
+        val weekRecapFontWeightCardName: FontWeight = FontWeight(600)
+        /** Retro · widget.home.small · name and group lines of the widget text stack · SOURCED — token `widget.home.small.fontWeight.overlay` */
+        val widgetHomeSmallFontWeightOverlay: FontWeight = FontWeight(400)
     }
     object Fonts {
-        /** Tribute + VidDay · birthday.request · all birthday surfaces (request, contribute, tribute screen) · PLATFORM — token `font.birthday` */
-        val birthday: DSFontFamily = DSFontFamily.System
         /** Apple HIG / Material 3 · global · display serif for screen titles ('Week 27', 'Albums', profile name), the date title on Rewind, recap month cards and headlines: New York on iOS, Noto Serif on Android · PLATFORM — token `font.global.display` */
         val globalDisplay: DSFontFamily = DSFontFamily.Serif
         /** Retro · global · UI typeface of all non-display text: SF Pro on iOS, Inter Variable on Android · SOURCED — token `font.global.family` */
         val globalFamily: DSFontFamily = DSFontFamily.Custom("Inter")
-        /** Timehop · onthisday · all on-this-day text · PLATFORM — token `font.onthisday` */
-        val onthisday: DSFontFamily = DSFontFamily.System
-        /** Spotify Wrapped · year.story · all story text · PLATFORM — token `font.year.story` */
-        val yearStory: DSFontFamily = DSFontFamily.System
-        /** Partiful · invite.web · all page text · PLATFORM — token `invite.web.font` */
-        val inviteWebFont: DSFontFamily = DSFontFamily.System
-        /** Retro · week.history · screen title typeface · PLATFORM — token `week.history.font.title` */
-        val weekHistoryFontTitle: DSFontFamily = DSFontFamily.System
     }
     object Haptics {
         /** Apple HIG / Material 3 · global · a task failed · PLATFORM — token `haptic.global.error` */
@@ -875,14 +452,10 @@ object Tokens {
         val globalWarning: Int = HapticFeedbackConstants.CONFIRM
     }
     object Icons {
-        /** Yope · camera.capture · video-camera glyph leading the 'hold down to record' coach tooltip · PLATFORM — token `camera.capture.icon.recordHint` */
-        val cameraCaptureIconRecordHint: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedVideocam
-        /** Locket · chat.reactions · add-reaction button (smiley with a plus) · PLATFORM — token `chat.reactions.icon.add` */
+        /** Locket · chat.reactions · add-reaction glyph (smiley) — viewer footer and the end of the quick-reaction row · PLATFORM — token `chat.reactions.icon.add` */
         val chatReactionsIconAdd: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedAddReaction
-        /** Apple Messages (iMessage) / WhatsApp / Telegram (glyph) · chat.voice · glyph shown in the play circle while a voice message plays · PLATFORM — token `chat.voice.icon.pause` */
-        val chatVoiceIconPause: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedPause
-        /** Yope · collage.share · filled share glyph (box + up arrow) in the pill · PLATFORM — token `collage.share.icon.share` */
-        val collageShareIconShare: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedIosShare
+        /** Retro · groups.invite · eye glyph before the link note · PLATFORM — token `groups.invite.icon.note` */
+        val groupsInviteIconNote: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedVisibility
         /** Retro · global · activity tab · PLATFORM — token `icon.global.activity` */
         val globalActivity: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedNotifications
         /** Retro · global · add ('+' on the add tile, '+' circle, CTA icon) · PLATFORM — token `icon.global.add` */
@@ -969,72 +542,39 @@ object Tokens {
         val globalVideo: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedVideocam
         /** Retro · global · profile tab — your weeks (= walls) · PLATFORM — token `icon.global.wall` */
         val globalWall: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedAccountCircle
-        /** Spotify Wrapped · year.story · pause (two bars) · PLATFORM — token `icon.year.story.pause` */
-        val yearStoryPause: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedPause
-        /** Spotify Wrapped · year.story · replay glyph before 'Replay from beginning' · PLATFORM — token `icon.year.story.replay` */
+        /** Apple HIG / Material 3 · year.story · replay glyph in the summary bar's leading circle (back to the first card) · PLATFORM — token `icon.year.story.replay` */
         val yearStoryReplay: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedReplay
-        /** Spotify Wrapped · year.story · share glyph left of 'Share this story' · PLATFORM — token `icon.year.story.share` */
-        val yearStoryShare: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedShare
-        /** Partiful · invite.web · arrow after 'Get the app' (web: Material Icons 'north_east', Apache-2.0) · PLATFORM — token `invite.web.icon.getApp` */
-        val inviteWebIconGetApp: ImageVector get() = androidx.compose.material.icons.Icons.Filled.FilledNorthEast
-        /** Partiful · invite.web · lock glyph on the members-only card (web: Material Icons 'lock', Apache-2.0) · PLATFORM — token `invite.web.icon.lock` */
-        val inviteWebIconLock: ImageVector get() = androidx.compose.material.icons.Icons.Filled.FilledLock
-        /** Locket · onboarding.widget · trailing arrow in the CTA ('→') · PLATFORM — token `onboarding.widget.icon.ctaArrow` */
-        val onboardingWidgetIconCtaArrow: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Rounded.AutoMirroredRoundedArrowForward
-        /** Locket · paywall · open-padlock glyph after the CTA label · PLATFORM — token `paywall.icon.ctaUnlock` */
-        val paywallIconCtaUnlock: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedLockOpen
-        /** Apple HIG / Material 3 · photo.viewer · delete item in the ••• menu (own photos) · PLATFORM — token `photo.viewer.icon.delete` */
-        val photoViewerIconDelete: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedDelete
-        /** Retro · week.history · '+' in the add tile · PLATFORM — token `week.history.icon.add` */
-        val weekHistoryIconAdd: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedAdd
     }
     object Layouts {
-        /** Yope · albums.list · albums.list built from documented Yope components · SOURCED — token `albums.list.layout.composition` */
+        /** Retro · albums.list · a group's saved albums (Retro Albums list) · SOURCED — token `albums.list.layout.composition` */
         object AlbumsListLayoutComposition {
-            const val basis: String = "Yope home list card: cover circle (size.global.avatarList) at coverInset, name (text role listTitle), subtitle (text role listSubtitle, color.global.textSecondary)"
-            const val list: String = "cards stacked with size.global.listGap, side margin size.global.screenMargin, corners radius.global.card, on color.global.backgroundDeep"
-            const val cover: String = "the album's first photo (thumb_path), aspect fill in the circle"
-        }
-        /** Apple Photos · albums.list · album list layout (Yope’s own album list was not observed; Apple Photos’ Albums collection fills it) · SOURCED — token `albums.list.layout.yopeAlbums` */
-        object AlbumsListLayoutYopeAlbums {
-            const val format: String = "grid of album covers (Apple Photos \"Album Cover\" format)"
-            const val columns: Float = 2f
-            const val coverAspect: Float = 1f
-            const val coverWidth: Float = 168f
-            const val gap: Float = 12.4f
-            const val marginH: Float = 23f
-            const val coverRadius: Float = 18.5f
-            const val cover: String = "the album’s first photo (thumb_path), aspect fill"
-            const val title: String = "album name over the cover’s bottom-leading corner, one line, tail truncation, color.global.textPrimary"
-            const val titleInsetLeading: Float = 14f
-            const val titleBaselineBottom: Float = 17f
-            const val titleFontSize: Float = 15f
-            const val titleWeight: String = "not measured (platform default)"
-            const val subtitle: String = "not shown on the cover (the reference shows the name only); albums.list.row.subtitle joins the accessibility label"
-            const val background: String = "color.global.backgroundDeep"
+            const val header: String = "C-02 pushed header: back + albums.list.title (serif); C-12 search field below (albums.list.search)"
+            const val rows: String = "C-15 list rows, newest album first: cover = the album's first item (album_items.position 0), title = album name (listTitle), subtitle albums.list.row.subtitle / .subtitleMine with the creator's name in semibold (listSubtitle, color.global.textSecondary)"
+            const val left: String = "no avatar stack and no '+' circle (albums here are saved selections: no members of their own, no adding)"
+            const val spacing: String = "size.global.listGap between rows; search → first row size.global.titleToContent"
         }
         /** FTC COPPA FAQ · auth.agegate · birthday entry (neutral age screen) · VERIFIED — token `auth.agegate.layout.dateEntry` */
         object AuthAgegateLayoutDateEntry {
-            const val control: String = "the Yope form field (groups.create.color.field, size.global.fieldHeight, radius.global.field, groups.create.fontSize.fieldText) with a numeric keyboard"
-            const val format: String = "the device locale's numeric short-date order (DateFormatter.dateFormat(fromTemplate: \"MMddyyyy\", options: 0, locale: .current) / DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, null, IsoChronology.INSTANCE, locale)), shown in the placeholder"
+            const val control: String = "C-12 text field (fill color.global.control, size.global.fieldHeight, radius.global.field, text role placeholder) with a numeric keyboard"
+            const val format: String = "the device locale's numeric short-date order (DateFormatter.dateFormat(fromTemplate: \"MMddyyyy\", options: 0, locale: .current) / DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, null, IsoChronology.INSTANCE, locale)), shown as the placeholder"
             const val default: String = "empty: no pre-filled date, no default year, no age options"
             const val threshold: String = "the minimum age is never shown before the person submits"
         }
-        /** Yope · auth.agegate · optional 'tell my groups on my birthday' opt-in row · SOURCED — token `auth.agegate.layout.optIn` */
+        /** Retro · auth.agegate · opt-in row 'Share My Birthday' under the birthday field · SOURCED — token `auth.agegate.layout.optIn` */
         object AuthAgegateLayoutOptIn {
-            const val control: String = "row with icon.global.uncheck / icon.global.check (color.global.selection) at size.global.checkCircle, trailing, as in Yope's pickers"
-            const val default: String = "unchecked (opt-in)"
-            const val label: String = "fontSize.global.listSubtitle (14 pt) regular, color.global.textPrimary"
-            const val detail: String = "fontSize.global.listSubtitle, color.global.textSecondary"
+            const val control: String = "C-14 grouped section with a single row: title (text role body) + subtitle (text role meta, color.global.textSecondary) + trailing native switch (tint color.global.selection / color.global.system.primary)"
+            const val default: String = "off"
+            const val inset: String = "size.global.screenMargin"
         }
-        /** Yope · auth.code · verification-code field and its autofill · PLATFORM — token `auth.code.layout.codeField` */
+        /** Apple HIG · auth.code · verification-code field and its autofill · PLATFORM — token `auth.code.layout.codeField` */
         object AuthCodeLayoutCodeField {
             const val ios: String = "one TextField, textContentType .oneTimeCode, keyboardType .numberPad; no per-digit boxes (a custom input view cannot show the AutoFill suggestion)"
-            const val android: String = "one TextField, KeyboardType.NumberPassword with visualTransformation None, autofill ContentType.SmsOtpCode; SMS User Consent API (SmsRetriever.getClient(context).startSmsUserConsent) shows the system consent sheet and fills the field"
+            const val android: String = "one TextField, KeyboardType.NumberPassword with visualTransformation None, autofill ContentType.SmsOtpCode; SMS User Consent (SmsRetriever.getClient(context).startSmsUserConsent) shows the system consent sheet and fills the field"
+            const val field: String = "drawn as C-12"
         }
-        /** Locket · auth.phone · country calling-code selector of the phone field · SOURCED — token `auth.phone.layout.countryCode` */
+        /** Locket · auth.phone · country calling-code selector inside the phone field (mechanics) · SOURCED — token `auth.phone.layout.countryCode` */
         object AuthPhoneLayoutCountryCode {
-            const val pattern: String = "flag at the field's leading edge + the calling code typed inline with the number ('+1 555 ...'); no separate code button"
+            const val pattern: String = "flag at the field's leading edge + the calling code typed inline with the number ('+1 555 …'); no separate code button"
             const val flagWidth: Float = 20f
             const val flagHeight: Float = 13f
             const val flagLeading: Float = 20f
@@ -1042,73 +582,50 @@ object Tokens {
             const val prefill: String = "'+' and the device region's calling code (Locale / libphonenumber); the flag follows the code as it is typed or edited"
             const val autoFormat: Boolean = true
             const val allowZeroAfterCountryCode: Boolean = true
-            const val flagTap: String = "opens a country list; choosing a country replaces the calling code (Locket: the phone-input library's built-in country picker, picker.selectCountry(iso2) + picker.show(); ours: the platform picker in a sheet)"
-            const val flagArt: String = "regional-indicator flag emoji (PLATFORM) in the 20 x 13 slot; Locket draws the library's flag images"
+            const val flagTap: String = "opens a country list in a native sheet (C-29); choosing a country replaces the calling code"
+            const val flagArt: String = "regional-indicator flag emoji (PLATFORM) in the 20 × 13 slot"
+            const val field: String = "drawn as design/components.md C-12 (fill color.global.control, size.global.fieldHeight, radius.global.field, text role placeholder)"
         }
-        /** Locket · auth.phone · how a field-level error (wrong number, wrong or expired code, invalid date) is presented on the sign-up screens · SOURCED — token `auth.phone.layout.inlineError` */
+        /** Retro · auth.phone · how a field-level error is presented on the sign-up screens · SOURCED — token `auth.phone.layout.inlineError` */
         object AuthPhoneLayoutInlineError {
-            const val presentation: String = "system alert: iOS UIAlertController .alert / SwiftUI .alert, Android M3 AlertDialog; not dismissible by tapping outside"
-            const val title: String = "none: the auth.*.error.* sentence is the alert message (Locket's errors are title + message pairs; our error copy is one sentence, so no title is shown)"
-            const val button: String = "one button, auth.phone.error.dismiss ('OK'), which closes the alert"
-            const val appliesTo: String = "auth.phone and auth.code field errors (invalid number, rate limited, send failed, wrong / expired code, too many tries) and auth.agegate invalid date"
+            const val presentation: String = "native alert: iOS SwiftUI .alert / Android M3 AlertDialog (settings.account.layout.alert); not dismissed by tapping outside"
+            const val titled: String = "code errors carry Retro's title + message pair (auth.code.error.*.title + message); phone and generic errors show the message only"
+            const val buttons: String = "one 'OK' (auth.phone.error.dismiss); code errors offer Retro's two recoveries instead: 'Send a new code' (auth.code.error.sendNew) and 'Edit code' (auth.code.error.editCode)"
+            const val appliesTo: String = "auth.phone, auth.code and auth.agegate field errors; full-screen states (offline, not configured, under age) use the empty-state block (C-27)"
         }
-        /** Yope · auth.phone · keyboard and AutoFill of the phone-number field · PLATFORM — token `auth.phone.layout.keyboard` */
+        /** Apple HIG · auth.phone · keyboard and AutoFill of the phone-number field (C-12) · PLATFORM — token `auth.phone.layout.keyboard` */
         object AuthPhoneLayoutKeyboard {
-            const val ios: String = "UITextField/TextField keyboardType .phonePad, textContentType .telephoneNumber (system AutoFill)"
+            const val ios: String = "TextField keyboardType .phonePad, textContentType .telephoneNumber (system AutoFill offers the person's own number)"
             const val android: String = "TextField KeyboardOptions(keyboardType = KeyboardType.Phone), autofill ContentType.PhoneNumber"
         }
-        /** Yope · auth.phone · legal footer under the sign-up controls · SOURCED — token `auth.phone.layout.legalFooter` */
-        object AuthPhoneLayoutLegalFooter {
-            const val text: String = "color.global.textSecondary"
-            const val links: String = "same colour, bold weight (2026 build: bold 'Términos de uso' / 'Política de privacidad'); the 2024 build drew the links white and underlined"
-            const val size: String = "fontSize.global.caption"
-            const val lineHeight: String = "lineHeight.global.caption"
-            const val align: String = "center"
-            const val placement: String = "bottom of the screen, centred, above the home indicator (2024 and 2026 sign-in screens)"
+        /** Retro · auth.phone · vertical position of the wordmark + tagline block on the landing (fraction of the screen height, block centre) · SOURCED — token `auth.phone.layout.landingBlock` */
+        object AuthPhoneLayoutLandingBlock {
+            const val centreY: Float = 0.446f
+            const val align: String = "centre (horizontal)"
+            const val contents: String = "wordmark (auth.phone.fontSize.wordmark) over the tagline (text role onboardingTitle, color.global.textSecondary)"
         }
-        /** Yope · auth.phone · subtitle text style under the sign-up title · SOURCED — token `auth.phone.layout.subtitle` */
-        object AuthPhoneLayoutSubtitle {
-            const val style: String = "italic"
-            const val weight: String = "regular"
-            const val color: String = "color.global.textPrimary"
-            const val align: String = "center"
-        }
-        /** Yope · auth.profile · avatar picker · PLATFORM — token `auth.profile.layout.avatarPicker` */
+        /** Apple HIG · auth.profile · profile-photo picker · PLATFORM — token `auth.profile.layout.avatarPicker` */
         object AuthProfileLayoutAvatarPicker {
             const val ios: String = "PhotosPicker (SwiftUI) / PHPickerViewController, single image, no library permission"
             const val android: String = "ActivityResultContracts.PickVisualMedia(ImageOnly), no READ_MEDIA_* permission"
-            const val empty: String = "circle filled color.global.controlRaised with icon.global.person centred in color.global.textSecondary"
+            const val empty: String = "circle filled color.global.control with icon.global.person centred in color.global.textSecondary (C-23 no-photo fallback)"
         }
-        /** Yope · camera.capture · first-use coach tooltip (lime pill with leading glyph, text, ✕, and a pointer at the control it explains) · SOURCED — token `camera.capture.layout.coach` */
-        object CameraCaptureLayoutCoach {
-            const val height: Float = 34f
-            const val cornerRadius: Float = 8f
-            const val paddingHorizontal: Float = 13.6f
-            const val textToCloseGap: Float = 13.6f
-            const val closeGlyph: Float = 9.5f
-            const val pointerWidth: Float = 13.6f
-            const val pointerHeight: Float = 6.8f
-            const val pointerToTarget: Float = 2f
+        /** Retro · camera.capture · control row under the viewfinder: shutter flanked by two 64-pt circles (Retro's central control flanked by 64-pt circles, C-35) · SOURCED — token `camera.capture.layout.controlRow` */
+        object CameraCaptureLayoutControlRow {
+            const val centre: String = "the shutter, horizontally centred"
+            const val sideControls: String = "two circles of size.global.circleButtonLarge (64): library (leading), flip (trailing)"
+            const val sideCentre: String = "each side circle is centred in the free space between the screen edge and the shutter's outer edge"
+            const val vertical: String = "the row is vertically centred between the viewfinder bottom and the tab bar top (daily.capture: the safe-area bottom)"
+            const val minimumGap: String = "size.global.screenMargin above and below the shutter"
         }
-        /** Yope · camera.capture · flash toggle glyph inside the viewfinder, bottom-left (centre from the viewfinder's leading and bottom edges) · SOURCED — token `camera.capture.layout.flashGlyph` */
-        object CameraCaptureLayoutFlashGlyph {
-            const val centerFromLeading: Float = 28.3f
-            const val centerFromBottom: Float = 33f
-            const val glyphHeight: Float = 15f
-        }
-        /** Locket · camera.capture · shutter scale at full press · SOURCED — token `camera.capture.layout.shutterPress` */
-        object CameraCaptureLayoutShutterPress {
-            const val scale: Float = 0.85f
-        }
-        /** Apple HIG · camera.capture · Dynamic Type style each camera.capture font size scales with · PLATFORM — token `camera.capture.layout.textStyleMap` */
-        object CameraCaptureLayoutTextStyleMap {
-            const val coach: String = "caption2"
-        }
-        /** Yope · camera.capture · live viewfinder: full screen width, portrait, top edge below the status bar (corner radius = radius.global.viewfinder) · SOURCED — token `camera.capture.layout.viewfinder` */
+        /** Retro · camera.capture · live viewfinder: a Retro photo container (3:4, 16-pt margins, 18-pt continuous corners) under the root header · SOURCED — token `camera.capture.layout.viewfinder` */
         object CameraCaptureLayoutViewfinder {
-            const val width: String = "full screen width"
-            const val heightOverWidth: Float = 1.38f
-            const val top: Float = 103f
+            const val aspect: Float = 0.75f
+            const val width: String = "screen width − 2 × size.global.screenMargin"
+            const val corners: String = "radius.global.viewfinder"
+            const val top: String = "size.global.titleToContent below the header title baseline (C-01)"
+            const val fill: String = "aspect-fill live preview; what the frame shows is what is captured"
+            const val shrink: String = "if the control row would get less than size.global.screenMargin above and below the shutter, the viewfinder height shrinks (3:4 kept, centred horizontally)"
         }
         /** Locket · camera.fromwidget · what a widget tap does · SOURCED — token `camera.fromwidget.layout.target` */
         object CameraFromwidgetLayoutTarget {
@@ -1117,180 +634,170 @@ object Tokens {
             const val android: String = "PendingIntent ACTION_VIEW on the widget root"
             const val opens: String = "camera.capture, group preselected in camera.sendto"
         }
-        /** Yope · camera.sendto · 'add a message' capsule and mic circle along the bottom of the preview card · SOURCED — token `camera.sendto.layout.messageField` */
+        /** Retro · camera.sendto · sheet header on the black composer: centred title + close circle (Retro 'Postcard' modal); shared by daily.capture · SOURCED — token `camera.sendto.layout.header` */
+        object CameraSendtoLayoutHeader {
+            const val title: String = "centred, text role sheetTitle, colour color.global.textOnMedia; its cap middle on the circles' centre line"
+            const val trailing: String = "close circle (C-11 on media): size.global.circleButton, centre 37.7 pt from the trailing edge"
+            const val leading: String = "save circle, mirrored (centre 37.7 pt from the leading edge)"
+            const val centreBelowSafeArea: Float = 25.8f
+        }
+        /** Retro · camera.sendto · 'Add a message' pill and the voice-note capsule along the bottom of the preview · SOURCED — token `camera.sendto.layout.messageField` */
         object CameraSendtoLayoutMessageField {
-            const val height: Float = 37f
-            const val insetLeading: Float = 10f
-            const val insetBottom: Float = 14.5f
-            const val gapToMic: Float = 7.5f
-            const val micDiameter: Float = 38f
-            const val insetTrailing: Float = 8.5f
+            const val message: String = "C-09 glass pill on the photo: fill color.global.controlOnDeep, icon.global.edit + label text role pill, colour color.global.textOnMedia, height size.global.pillHeight, width hugs the label"
+            const val voice: String = "icon-only capsule after it: width size.global.iconPillWidth, height size.global.pillHeight, same fill, icon.global.mic"
+            const val gap: String = "size.global.pillGap"
+            const val bottomInset: Float = 20.5f
+            const val align: String = "the pair centred horizontally on the photo"
         }
-        /** Yope · camera.sendto · captured-photo preview card, centred (corners radius.global.photo per MERGE_DECISIONS F-10) · SOURCED — token `camera.sendto.layout.preview` */
+        /** Retro · camera.sendto · 'Add a Message' sheet (message entry; follows the appearance like every sheet over media) · SOURCED — token `camera.sendto.layout.messageSheet` */
+        object CameraSendtoLayoutMessageSheet {
+            const val header: String = "native sheet toolbar: centred title text role sheetTitle; trailing 'Done' text button (C-08, text role textButton, color.global.textPrimary)"
+            const val field: String = "multi-line text, text role placeholder (17), typed color.global.textPrimary, placeholder color.global.textSecondary, on color.global.background"
+            const val textInset: Float = 22f
+            const val counterTrailingInset: Float = 20.7f
+            const val counterAboveKeyboard: Float = 22f
+            const val counter: String = "camera.sendto.fontSize.counter, monospaced digits (iOS Font.Design.monospaced; Android FontFamily.Monospace), color.global.textSecondary"
+        }
+        /** Retro · camera.sendto · captured-photo preview (the Postcard modal's photo frame) · SOURCED — token `camera.sendto.layout.preview` */
         object CameraSendtoLayoutPreview {
-            const val width: Float = 218f
-            const val height: Float = 290f
-            const val top: Float = 130f
-            const val gapBelowHeader: Float = 30.5f
+            const val width: Float = 297.6f
+            const val maxHeight: Float = 422.8f
+            const val cornerRadius: Float = 8.5f
+            const val topBelowHeaderCircle: Float = 20f
+            const val fit: String = "native aspect, aspect-fill; height = min(width ÷ aspect, maxHeight); centred horizontally"
         }
-        /** Yope · camera.sendto · recipient (group) row: avatar (size.global.avatarSmall), name (text role headerTitle), check circle (size.global.checkCircle) at the trailing edge · SOURCED — token `camera.sendto.layout.recipientRow` */
+        /** Retro · camera.sendto · group chooser rows under the preview (rows with checks on the black composer) · SOURCED — token `camera.sendto.layout.recipientRow` */
         object CameraSendtoLayoutRecipientRow {
-            const val pitch: Float = 60f
-            const val avatarCenterInset: Float = 51.5f
-            const val nameInset: Float = 83f
-            const val checkTrailingInset: Float = 29f
-            const val firstRowCenterBelowPreview: Float = 49.5f
+            const val label: String = "section label above the rows: text role meta, color.global.textSecondary, 35.2 pt below the preview bottom, at size.global.screenMargin"
+            const val row: String = "C-16 people row: group cover avatar size.global.avatarPicker (circle; no cover → icon.global.group on color.global.controlOnDeep), name text role listTitle color.global.textOnMedia starting size.global.cardNameGap after the avatar (Retro avatar → name gap, C-18), trailing check size.global.checkCircle with its ink at the trailing margin"
+            const val padding: Float = 16f
+            const val insets: String = "size.global.screenMargin"
+            const val divider: String = "C-32 hairline between rows, color.global.separator dark value (#4D4D4D) on media, inside the margins"
+            const val check: String = "selected icon.global.check in color.global.selection; not selected icon.global.uncheck in color.global.textSecondary"
         }
-        /** Apple HIG · camera.sendto · Dynamic Type style each camera.sendto font size scales with · PLATFORM — token `camera.sendto.layout.textStyleMap` */
+        /** Apple HIG · camera.sendto · Dynamic Type style the counter scales with (16 pt = Callout); every other text uses global roles · PLATFORM — token `camera.sendto.layout.textStyleMap` */
         object CameraSendtoLayoutTextStyleMap {
-            const val caption: String = "callout"
-            const val messagePlaceholder: String = "subheadline"
-            const val countNumber: String = "caption2"
+            const val counter: String = "callout"
         }
-        /** Yope · camera.sendto · confirmation toast ('posted in …'): lime bar under the status bar with a check glyph and text · SOURCED — token `camera.sendto.layout.toast` */
-        object CameraSendtoLayoutToast {
-            const val height: Float = 49f
-            const val marginHorizontal: Float = 8.5f
-            const val top: Float = 59f
-            const val cornerRadius: Float = 20f
-            const val glyph: Float = 17f
-            const val glyphInset: Float = 19.5f
-            const val glyphToText: Float = 11f
-        }
-        /** Apple Messages (iMessage); WhatsApp (idle mic beside the field) · chat.composer · what replaces / joins the mic when the field has text (send control) · SOURCED — token `chat.composer.layout.typingState` */
+        /** Apple Messages + WhatsApp + Retro · chat.composer · composer glyphs: idle vs typing · SOURCED — token `chat.composer.layout.typingState` */
         object ChatComposerLayoutTypingState {
-            const val rule: String = "while the field holds text, the mic circle is replaced in place by a send circle; when the field is empty again the mic circle returns"
-            const val sendCircleSize: String = "chat.composer.dimension.sideButton"
-            const val sendCircleFill: String = "color.global.accent"
-            const val sendGlyph: String = "icon.global.send"
-            const val sendGlyphColor: String = "color.global.onAccent"
-            const val action: String = "tap → send_message(p_kind text); the field clears and the mic circle returns"
-            const val transition: String = "none observed (instant swap); Reduce Motion: same"
-            const val a11yLabel: String = "chat.composer.a11y.send"
+            const val idle: String = "trailing glyphs inside the field: icon.global.camera, then icon.global.mic (last), both color.global.textSecondary, size.global.icon box"
+            const val typing: String = "while the field holds text both glyphs are replaced in place by icon.global.send in color.global.textPrimary (cross-fade duration.global.crossfade)"
+            const val replying: String = "the placeholder becomes chat.composer.placeholderReply and the reply bar (chat.thread.reply.bar) shows above the field"
+            const val grow: String = "the field grows with multi-line text; corners stay radius.global.commentField"
         }
-        /** Locket · chat.reactions · how reactions are shown on a photo · SOURCED — token `chat.reactions.layout.cluster` */
-        object ChatReactionsLayoutCluster {
-            const val content: String = "one sticker per distinct emoji that anyone reacted with"
-            const val arrangement: String = "horizontal row, each sticker overlapping the previous one by the step"
-            const val numbers: String = "none anywhere (no counts, no '+N')"
-            const val position: String = "bottom-left corner of the photo"
+        /** Retro + WhatsApp · chat.reactions · reaction summary on a photo (thread photo message, viewer footer) · SOURCED — token `chat.reactions.layout.chip` */
+        object ChatReactionsLayoutChip {
+            const val component: String = "C-06 fill capsule holding the distinct emoji (no number)"
+            const val fill: String = "page: color.global.control (iOS) / color.global.surfaceSecondary.android; on media: color.global.controlOnDeep"
+            const val emoji: String = "text role pill size (fontSize.global.pill), up to chat.reactions.count.clusterMaxVisible, order chat.reactions.layout.clusterOrder"
+            const val padding: String = "12 horizontal / 8 vertical (APK PaddingValues(12, 8, 12, 8) of Retro's small pills); height hugs the emoji line"
+            const val placementThread: String = "under the photo card, leading-aligned with the text column, chat.reactions.dimension.chipTop below the photo"
+            const val placementViewer: String = "photo.viewer footer, trailing end (Retro's reaction slot), before the add-reaction glyph"
+            const val tap: String = "opens the Reactions sheet (chat.reactions.layout.list)"
+            const val hidden: String = "when nobody reacted"
         }
-        /** Locket · chat.reactions · order of the stickers in the cluster (first reacted, last reacted, …) · SOURCED — token `chat.reactions.layout.clusterOrder` */
+        /** Locket · chat.reactions · order of the emoji inside the reaction chip · SOURCED — token `chat.reactions.layout.clusterOrder` */
         object ChatReactionsLayoutClusterOrder {
-            const val order: String = "newest distinct emoji first: a newly added emoji enters at the leading end of the cluster and the stickers already there shift one step (chat.reactions.dimension.clusterStep) toward the trailing side"
-            const val repeatEmoji: String = "a reaction with an emoji already in the cluster adds no sticker (chat.reactions.layout.cluster); its position change was not observed"
-            const val observed: String = "before: ✌️ alone at the leading position; after 😍 lands: 😍 leading, ✌️ one step trailing"
+            const val order: String = "newest distinct emoji first (leading); earlier ones follow"
+            const val tie: String = "an emoji used again moves to the front"
         }
-        /** Locket · chat.reactions · emoji picker sheet · SOURCED — token `chat.reactions.layout.picker` */
+        /** Retro + WhatsApp · chat.reactions · who reacted with what (Reactions sheet) · SOURCED — token `chat.reactions.layout.list` */
+        object ChatReactionsLayoutList {
+            const val presentation: String = "native sheet (C-29) titled chat.reactions.activity.title"
+            const val row: String = "C-16 people row: avatar size.global.avatarPicker, name text role listTitle, trailing the emoji in the size.global.icon box; one row per person and emoji"
+            const val mine: String = "your rows carry chat.reactions.list.removeHint as a second line (listSubtitle, color.global.textSecondary); tapping one unreacts"
+            const val empty: String = "chat.reactions.empty (C-27 title only)"
+        }
+        /** Locket + WhatsApp · chat.reactions · full emoji picker · SOURCED — token `chat.reactions.layout.picker` */
         object ChatReactionsLayoutPicker {
-            const val presentation: String = "bottom sheet with a grabber over the photo"
-            const val top: String = "search field ('Search')"
-            const val sections: String = "Frequently Used, Popular, All"
-            const val selection: String = "any emoji; tapping one sends the reaction and closes the sheet"
+            const val presentation: String = "native sheet (C-29) with grabber; content on color.global.background"
+            const val top: String = "search field C-12, placeholder chat.reactions.picker.search"
+            const val sections: String = "chat.reactions.picker.frequent (recently used on this device), then chat.reactions.picker.all (every emoji in Unicode order); section labels text role sectionLabel (C-20 form, no •••)"
+            const val grid: String = "chat.reactions.count.pickerColumns equal columns inside size.global.screenMargin; emoji at fontSize.global.headerTitle"
+            const val mine: String = "emoji you already used on this photo sit on a size.global.circleButton circle in color.global.control (selected trait)"
+            const val tap: String = "an emoji reacts and closes the sheet; a highlighted one unreacts"
         }
-        /** Locket · chat.reactions · the 'Popular' section, in order · SOURCED — token `chat.reactions.layout.pickerPopular` */
-        object ChatReactionsLayoutPickerPopular {
-            const val row1: String = "💛 🫶 😍 🔥 🤣"
-            const val row2: String = "😭 😋 🥹 🥰 🥲"
-            const val row3: String = "😂 😱 😎 🤭 😯 🫠"
-            const val row4: String = "❤️‍🔥 💕 💘 ❤️ 💖 💋"
-            const val row5: String = "🤍 💚 💙 💜 🧡 🖤"
-            const val hidden: String = "row 1 and row 2 have a sixth cell hidden by a finger in the frame; they are left out"
-        }
-        /** Locket · chat.reactions · quick reactions in the photo viewer's reply field · SOURCED — token `chat.reactions.layout.quickReactions` */
+        /** Locket + Apple Messages + WhatsApp · chat.reactions · quick reactions · SOURCED — token `chat.reactions.layout.quickReactions` */
         object ChatReactionsLayoutQuickReactions {
-            const val emoji: String = "🔥 💖"
-            const val then: String = "add-reaction button (chat.reactions.icon.add)"
-            const val place: String = "inside the right end of the reply field, after the text"
+            const val emoji: String = "🔥 then 💖, then the add-reaction glyph (chat.reactions.icon.add)"
+            const val where: String = "a palette row at the top of the photo's native context menu (long press on a photo message or on the viewer photo)"
+            const val tap: String = "an emoji reacts at once; the glyph opens the picker"
         }
-        /** Locket · chat.reactions · emoji-rain path and layering · SOURCED — token `chat.reactions.layout.rainPath` */
-        object ChatReactionsLayoutRainPath {
-            const val direction: String = "upward"
-            const val start: String = "just below the bottom screen edge"
-            const val end: String = "just above the top screen edge"
-            const val x: String = "random across the full screen width, one x per copy"
-            const val emoji: String = "the one emoji just sent, every copy"
-            const val layer: String = "behind the photo, in front of the background (2022 History screen = viewer)"
-            const val trigger: String = "on the reacting person's screen, when the reaction is sent"
-        }
-        /** Apple HIG / Material 3 · chat.reactions · Reduce Motion substitute for the emoji rain · PLATFORM — token `chat.reactions.layout.reduceMotion` */
-        object ChatReactionsLayoutReduceMotion {
-            const val rain: String = "not played (automatic, repeating, peripheral motion is dropped)"
-            const val cluster: String = "the new sticker appears in place"
-            const val haptics: String = "unchanged"
-        }
-        /** Apple HIG · chat.reactions · iOS Dynamic Type style for chat.reactions text roles · PLATFORM — token `chat.reactions.layout.textStyleMap` */
-        object ChatReactionsLayoutTextStyleMap {
-            const val pickerSection: String = "footnote"
-        }
-        /** Apple Messages (iMessage) + WhatsApp · chat.reactions · how you take back a reaction · SOURCED — token `chat.reactions.layout.unreact` */
+        /** Apple Messages + WhatsApp · chat.reactions · taking back a reaction · SOURCED — token `chat.reactions.layout.unreact` */
         object ChatReactionsLayoutUnreact {
-            const val where: String = "in the reaction picker (long press on the photo, or the add-reaction glyph): every emoji you already reacted with on this photo is highlighted"
-            const val highlight: String = "a filled circle behind the emoji in color.global.selection"
-            const val remove: String = "tap a highlighted emoji: unreact(p_post_id, p_emoji); the highlight goes and the sticker leaves the cluster when nobody else used that emoji"
-            const val a11y: String = "highlighted cells carry the platform selected trait"
-            const val haptic: String = "none (as reacting)"
+            const val sheet: String = "tap your own row in the Reactions sheet → unreact(post, emoji)"
+            const val picker: String = "tap an emoji highlighted as yours → unreact"
+            const val menu: String = "a quick reaction you already used shows selected in the palette row; tapping it unreacts"
         }
-        /** Apple Messages (iMessage) · chat.thread · how a message that failed to send is drawn and retried · SOURCED — token `chat.thread.layout.failedMessage` */
+        /** Retro + Apple Messages · chat.thread · own message whose send failed / is in flight · SOURCED — token `chat.thread.layout.failedMessage` */
         object ChatThreadLayoutFailedMessage {
-            const val indicator: String = "outlined exclamation-mark circle beside the bubble on its trailing side, vertically centred on the bubble"
-            const val indicatorIconIos: String = "exclamationmark.circle"
-            const val indicatorIconAndroid: String = "Rounded.ErrorOutline"
-            const val indicatorSize: Float = 22f
-            const val indicatorGap: Float = 14f
-            const val indicatorColor: String = "color.global.destructive"
-            const val indicatorPosition: String = "the indicator takes the trailing inset slot (chat.thread.dimension.bubbleInsetMine); the bubble moves toward the leading side by indicatorSize + indicatorGap"
-            const val label: String = "copy chat.thread.sendFailed under the bubble, trailing-aligned with the message column"
-            const val labelGap: Float = 2f
-            const val labelTextRole: String = "caption"
-            const val labelColor: String = "color.global.destructive"
-            const val retry: String = "tap the indicator, the label or the bubble: the message is sent again (the label says so); on success the indicator and label go away"
+            const val indicator: String = "one line under the failed message: chat.thread.sendFailed, text role caption, color.global.destructive; no glyph"
+            const val sending: String = "while the send is in flight, the same slot shows chat.thread.sending in color.global.textSecondary"
+            const val action: String = "tap the line or the message → send again (menu item chat.thread.menu.retry does the same)"
             const val haptic: String = "haptic.global.error when a send fails"
-            const val appliesTo: String = "my text and voice messages"
         }
-        /** Yope · chat.thread · how a photo fills the photo-message frame · SOURCED — token `chat.thread.layout.photoFit` */
+        /** Retro · chat.thread · photo message inside the thread · SOURCED — token `chat.thread.layout.photoFit` */
         object ChatThreadLayoutPhotoFit {
-            const val content: String = "aspect fill, centred"
-            const val frameWidthPt: Float = 323f
-            const val frameHeightPt: Float = 174f
-            const val timeOverlay: String = "centred on the photo (text role overlayTime)"
+            const val frame: String = "size.global.friendCardWidth × size.global.friendCardHeight (C-18 photo card, 2:3)"
+            const val corners: String = "radius.global.card (continuous)"
+            const val content: String = "aspect fill, centred; the full photo opens in photo.viewer"
+            const val position: String = "in the run's text column, chat.thread.dimension.itemGap below the name line or the previous item"
         }
-        /** Apple HIG · chat.thread · iOS Dynamic Type style each chat.thread text role scales with · PLATFORM — token `chat.thread.layout.textStyleMap` */
-        object ChatThreadLayoutTextStyleMap {
-            const val replyName: String = "subheadline"
-            const val replyLabel: String = "footnote"
-            const val caption: String = "title2"
-            const val emojiOnly: String = "largeTitle"
+        /** Retro · chat.thread · reply to a photo / reply to a message inside the thread · SOURCED — token `chat.thread.layout.replyQuote` */
+        object ChatThreadLayoutReplyQuote {
+            const val replyToPhoto: String = "a C-15 row above the reply: thumbnail size.global.rowThumbWidth × .rowThumbHeight, radius.global.thumbnail, then title chat.thread.reply.postTitle (text role listTitle) over chat.thread.reply.postWeek (listSubtitle, color.global.textSecondary); gap size.global.rowThumbGap"
+            const val replyToMessage: String = "one line above the reply text: the quoted sender's name in fontWeight.global.listTitle followed by the quoted text, text role listSubtitle, color.global.textSecondary, one line, tail truncation (C-15 subtitle form)"
+            const val defaults: String = "a quoted voice / photo message shows chat.thread.reply.defaultAttachment; empty text chat.thread.reply.defaultText"
+            const val tap: String = "photo quote → photo.viewer on that post; message quote → scrolls to the quoted message"
+            const val deleted: String = "reply_to_post_id / reply_to_message_id null → no quote part, the reply stays"
         }
-        /** Yope · chat.thread · time overlay on photo messages · SOURCED — token `chat.thread.layout.timeFormat` */
+        /** Apple Messages + WhatsApp · chat.thread · how messages are grouped and spaced in the group thread · SOURCED — token `chat.thread.layout.runs` */
+        object ChatThreadLayoutRuns {
+            const val rule: String = "consecutive messages from the same sender form a run; a run starts with the sender's avatar (size.global.avatarComment) and the name / time line; later messages of the run sit in the text column without avatar or name"
+            const val breaks: String = "another sender, a day divider, or a reply quote starts a new run"
+            const val spacing: String = "items inside a run: chat.thread.dimension.itemGap; run → next run: size.global.listGap; day divider: size.global.sectionGap above, size.global.sectionHeaderToContent below"
+            const val order: String = "oldest at the top, newest at the bottom above the composer"
+        }
+        /** Retro · chat.thread · time on a run's first row and the day dividers of the thread · SOURCED — token `chat.thread.layout.timeFormat` */
         object ChatThreadLayoutTimeFormat {
-            const val pattern: String = "h:mm a"
+            const val pattern: String = "locale short time (h:mm a in en-US)"
             const val example: String = "10:00 PM"
-            const val locale: String = "device locale short time"
+            const val where: String = "after the sender's name on the first row of a run, one space apart, text role caption in color.global.textSecondary (C-16 'elton 2h' slot)"
+            const val dayDividers: String = "a C-20 dated section header (no •••) before the first message of each day: chat.thread.divider.today, chat.thread.divider.yesterday, else the date as MMMM d, yyyy"
         }
-        /** Yope · chat.voice · voice duration format · SOURCED — token `chat.voice.layout.durationFormat` */
+        /** Retro · chat.voice · voice message in the thread, and a photo's voice note in the viewer · SOURCED — token `chat.voice.layout.capsule` */
+        object ChatVoiceLayoutCapsule {
+            const val component: String = "C-06 fill capsule with the anatomy of C-07: leading glyph, then the label"
+            const val height: String = "size.global.pillHeight"
+            const val corners: String = "radius.global.capsule"
+            const val fill: String = "page: color.global.control (iOS) / color.global.surfaceSecondary.android; on media (photo.viewer): color.global.controlOnDeep"
+            const val glyph: String = "icon.global.play (playing: icon.global.pause) at size.global.iconSmall, color.global.textPrimary"
+            const val label: String = "duration per chat.voice.layout.durationFormat, text role pill, color.global.textPrimary"
+            const val padding: String = "size.global.pillPaddingLeading → glyph → size.global.pillIconGap → label → size.global.pillPaddingTrailing"
+            const val width: String = "hugs its content (no width per duration)"
+        }
+        /** Retro · chat.voice · duration label of a voice message · SOURCED — token `chat.voice.layout.durationFormat` */
         object ChatVoiceLayoutDurationFormat {
-            const val pattern: String = "mm:ss"
-            const val example: String = "00:38"
+            const val pattern: String = "m:ss"
+            const val example: String = "0:38"
+            const val digits: String = "monospaced"
         }
-        /** WhatsApp (gesture, documented) + Telegram (row, 2026 panel) · chat.voice · voice recording UI: hold vs tap, lock, cancel, live waveform, timer · SOURCED — token `chat.voice.layout.recording` */
+        /** Telegram + WhatsApp · chat.voice · voice playback behaviour · SOURCED — token `chat.voice.layout.playback` */
+        object ChatVoiceLayoutPlayback {
+            const val tap: String = "the capsule toggles play / pause; one voice message plays at a time (starting another stops the first)"
+            const val label: String = "total duration when idle; elapsed time while playing or paused mid-way"
+            const val end: String = "back to the idle state at the end"
+        }
+        /** WhatsApp + Telegram · chat.voice · recording a voice message · SOURCED — token `chat.voice.layout.recording` */
         object ChatVoiceLayoutRecording {
-            const val start: String = "press and hold the mic circle: recording runs while the finger is down"
-            const val send: String = "lift the finger: the message is sent"
-            const val cancel: String = "slide left while holding: the recording is discarded and nothing is sent"
-            const val lock: String = "slide up onto the lock shown above the mic circle: recording continues hands-free"
-            const val locked: String = "while locked: chat.voice.icon.pause pauses and lets you play the draft; the mic circle shows icon.global.send and sends"
-            const val row: String = "while recording, the composer row shows leading → trailing: red recording dot, elapsed time, the centred hint (‹ slide to cancel); the mic circle stays at the trailing end under the finger"
-            const val dotColor: String = "color.global.destructive"
-            const val timerFormat: String = "chat.voice.layout.durationFormat"
-            const val timerColor: String = "color.global.textPrimary"
-            const val hintGlyph: String = "icon.global.back"
-            const val hintColor: String = "color.global.textSecondary"
-            const val hintCopy: String = "chat.voice.recording.slideToCancel"
-            const val lockGlyph: String = "icon.global.lock"
-            const val lockHintGlyphIos: String = "chevron.up"
-            const val lockHintGlyphAndroid: String = "Rounded.ExpandLess"
-            const val haptic: String = "none (HIG: haptics must not disrupt the microphone)"
+            const val start: String = "press and hold the composer's mic glyph: recording runs while the finger is down"
+            const val send: String = "lift the finger → the voice message is sent"
+            const val cancel: String = "slide left → recording discarded"
+            const val lock: String = "slide up onto the lock circle above the mic → keeps recording hands-free; then the send glyph sends, the trash glyph discards"
+            const val field: String = "while recording the field shows: icon.global.mic in color.global.destructive · elapsed time (chat.voice.layout.durationFormat, text role body, color.global.textPrimary) · icon.global.back + chat.voice.recording.slideToCancel in color.global.textSecondary"
+            const val lockCircle: String = "C-11 circle size.global.circleButton, color.global.control, icon.global.lock in color.global.textPrimary, centred over the mic glyph, size.global.pillGap above the field"
+            const val haptic: String = "none on start / stop (HIG: do not disturb the microphone); haptic.global.send when sent"
         }
         /** Meta developer docs (standards: accessibility thresholds, share-image specs) · collage.share · the image handed to the share sheet · VERIFIED — token `collage.share.layout.export` */
         object CollageShareLayoutExport {
@@ -1300,28 +807,17 @@ object Tokens {
             const val source: String = "collages.share_path page n (worker share-<n>.jpg)"
             const val watermark: String = "none"
         }
-        /** Yope · collage.share · 'share' pill, bottom centre over the collage page (glyph collage.share.icon.share and label, both color.global.textPrimary) · SOURCED — token `collage.share.layout.pill` */
+        /** Retro · collage.share · 'Share' light pill on the recap preview (C-09 light: fill color.global.surfaceLight, label color.global.onSurfaceLight text role button, no glyph) · SOURCED — token `collage.share.layout.pill` */
         object CollageShareLayoutPill {
-            const val width: Float = 126f
-            const val height: Float = 58f
-            const val cornerRadius: Float = 10f
-            const val bottomFromScreenBottom: Float = 36f
-            const val glyph: Float = 25.7f
+            const val height: Float = 43.5f
+            const val paddingHorizontal: Float = 23f
+            const val trailingInset: String = "size.global.buttonMarginH"
+            const val centreFromScreenBottom: Float = 59.2f
         }
         /** Apple HIG · collage.share · share entry point (system share sheet replaces Yope's third-party buttons) · PLATFORM — token `collage.share.layout.sheet` */
         object CollageShareLayoutSheet {
             const val ios: String = "ShareLink(item:preview: SharePreview(title, image))"
             const val android: String = "Intent.createChooser(ACTION_SEND image/jpeg content:// + FLAG_GRANT_READ_URI_PERMISSION, title)"
-        }
-        /** Apple HIG · collage.share · Dynamic Type style of the 'share' label (18 pt bold) · PLATFORM — token `collage.share.layout.textStyleMap` */
-        object CollageShareLayoutTextStyleMap {
-            const val label: String = "headline"
-        }
-        /** Yope · collage.view · loading HUD: dark rounded square with the platform activity indicator over 'Loading' · SOURCED — token `collage.view.layout.hud` */
-        object CollageViewLayoutHud {
-            const val width: Float = 100f
-            const val height: Float = 99f
-            const val cornerRadius: Float = 8.5f
         }
         /** Yope · collage.view · option B 'wall pages': 9:16 pages of 3 × 4 dual tiles that touch; more than 12 answers continue on further pages; empty cells and the matte color.global.backgroundDeep · SOURCED — token `collage.view.layout.page` */
         object CollageViewLayoutPage {
@@ -1332,23 +828,18 @@ object Tokens {
             const val canvasAspect: Float = 0.5625f
             const val canvasWidthPx: Float = 1080f
         }
-        /** Yope · collage.view · page indicator under the header (Android draws these dots; iOS uses the native control Yope uses) · SOURCED — token `collage.view.layout.pageDots` */
-        object CollageViewLayoutPageDots {
-            const val diameter: Float = 7.6f
-            const val pitch: Float = 15.5f
-            const val inactive: String = "color.global.controlRaised"
-            const val ios: String = "native page control (UIPageControl / TabView .page index)"
-        }
-        /** Yope · collage.view · day-view screen: back circle + date title, page dots, then the page · SOURCED — token `collage.view.layout.screen` */
+        /** Retro · collage.view · recap-preview layout around the collage: rounded media page with a blurred backdrop, close circle, card, bottom row with page dots and Share · SOURCED — token `collage.view.layout.screen` */
         object CollageViewLayoutScreen {
-            const val headerCenterFromTop: Float = 81f
-            const val dotsCenterFromTop: Float = 125f
-            const val pageTop: Float = 145f
-            const val pageFit: String = "9:16, aspect-fit in the space above the home indicator, centred"
-        }
-        /** Apple HIG · collage.view · Dynamic Type style of the date title · PLATFORM — token `collage.view.layout.textStyleMap` */
-        object CollageViewLayoutTextStyleMap {
-            const val title: String = "callout"
+            const val mediaPage: String = "the page-1 image blurred full-bleed inside a rounded media page (layout.global.materials.backdrop)"
+            const val mediaPageTop: String = "safe-area top"
+            const val mediaPageSideInset: Float = 0f
+            const val mediaPageBottomFromScreenBottom: Float = 94.8f
+            const val mediaPageCornerRadius: Float = 26.5f
+            const val closeCentreFromTrailing: Float = 37.7f
+            const val closeCentreBelowPageTop: Float = 38f
+            const val card: String = "the composed page, aspect-fit and centred in the media page inset by 76 pt top and bottom (close-circle centre 38 + size.global.circleButton ÷ 2 + the 20-pt circle → photo gap of camera.sendto.layout.preview) and at least 32 pt at the sides; clipped to collage.view.layout.page.outerRadiusRatio × its width (393 × 852: 307 × 546 pt)"
+            const val bottomRowCentreFromScreenBottom: Float = 59.2f
+            const val bottomRow: String = "page dots (C-31) centred; 'Share' pill (collage.share.layout.pill) at size.global.buttonMarginH from the trailing edge"
         }
         /** Apple HIG · global.system · semantic colours of native components on iOS (alerts, menus, share sheet, pickers, keyboard, system permission prompts); dynamic — they follow Light / Dark · PLATFORM — token `color.global.system.ios` */
         object GlobalSystemIos {
@@ -1361,86 +852,15 @@ object Tokens {
             const val tint: String = "systemBlue"
             const val destructive: String = "systemRed"
         }
-        /** BeReal · daily.capture · audience chip (icon.global.group + group name) centred near the bottom of the preview image (shape radius.global.capsule) · SOURCED — token `daily.capture.layout.audienceChip` */
-        object DailyCaptureLayoutAudienceChip {
-            const val height: Float = 37.4f
-            const val paddingLeading: Float = 15.7f
-            const val paddingTrailing: Float = 18f
-            const val glyphToText: Float = 7.6f
-            const val bottomInset: Float = 12.5f
-        }
-        /** BeReal · daily.capture · shutter press → controls leave → black + spinner + prompt → back photo fades in → front capture → preview (ms) · SOURCED — token `daily.capture.layout.captureSequence` */
-        object DailyCaptureLayoutCaptureSequence {
-            const val pressScale: Float = 0.912f
-            const val press: Float = 133f
-            const val controlsOut: Float = 370f
-            const val viewfinderFadeOut: Float = 267f
-            const val betweenShots: Float = 500f
-            const val backPhotoFadeIn: Float = 200f
-        }
-        /** BeReal · daily.capture · countdown position: centred, digits top from the screen top · SOURCED — token `daily.capture.layout.countdown` */
-        object DailyCaptureLayoutCountdown {
-            const val digitsTop: Float = 92.3f
-            const val gapAboveViewfinder: Float = 16.2f
-        }
-        /** BeReal · daily.capture · countdown roll: only changed digits move; old digit slides up and fades out, new digit rises from 3 pt below and fades in (ms; travel pt) · SOURCED — token `daily.capture.layout.countdownTick` */
-        object DailyCaptureLayoutCountdownTick {
-            const val tick: Float = 1000f
-            const val digitOut: Float = 100f
-            const val digitIn: Float = 300f
-            const val digitFadeIn: Float = 550f
-            const val travel: Float = 3f
-        }
-        /** BeReal · daily.capture · dismiss chevron (icon.global.chevronDown, color daily.capture.color.text) centre · SOURCED — token `daily.capture.layout.dismiss` */
-        object DailyCaptureLayoutDismiss {
-            const val centerFromLeading: Float = 31.7f
-            const val centerFromTop: Float = 74.5f
-        }
-        /** BeReal · daily.capture · one centred prompt line under the spinner · SOURCED — token `daily.capture.layout.prompt` */
-        object DailyCaptureLayoutPrompt {
-            const val gapBelowSpinner: Float = 11.4f
-        }
-        /** BeReal · daily.capture · retake ✕ circle (icon.global.close) inside the preview image, top-trailing · SOURCED — token `daily.capture.layout.retake` */
-        object DailyCaptureLayoutRetake {
-            const val diameter: Float = 34f
-            const val inset: Float = 12f
-            const val glyph: Float = 14f
-        }
-        /** BeReal · daily.capture · SEND label + right-pointing triangle (icon.global.play), centred under the preview image · SOURCED — token `daily.capture.layout.send` */
-        object DailyCaptureLayoutSend {
-            const val capTopBelowImage: Float = 69f
-            const val glyphGap: Float = 11.4f
-            const val glyph: Float = 19.5f
-        }
-        /** BeReal · daily.capture · shutter: white ring (color.global.surfaceLight), black gap, white disc; horizontally centred · SOURCED — token `daily.capture.layout.shutter` */
-        object DailyCaptureLayoutShutter {
-            const val outer: Float = 74f
-            const val ring: Float = 4f
-            const val gap: Float = 2.75f
-            const val disc: Float = 60.5f
-            const val centerFromBottom: Float = 148f
-        }
-        /** BeReal · daily.capture · flash (icon.global.flashOff / .flashOn) and flip (icon.global.flip) glyph centres, vertically centred on the shutter · SOURCED — token `daily.capture.layout.sideControls` */
-        object DailyCaptureLayoutSideControls {
-            const val flashCenterFromLeading: Float = 59.2f
-            const val flipCenterFromTrailing: Float = 60.1f
-        }
-        /** Apple HIG · daily.capture · Dynamic Type style each daily.capture font size scales with · PLATFORM — token `daily.capture.layout.textStyleMap` */
-        object DailyCaptureLayoutTextStyleMap {
-            const val countdown: String = "title2"
-            const val prompt: String = "body"
-            const val chip: String = "footnote"
-            const val send: String = "largeTitle"
-        }
-        /** BeReal · daily.capture · live viewfinder: 3:4, centred, rounded · SOURCED — token `daily.capture.layout.viewfinder` */
+        /** Retro · daily.capture · live viewfinder and preview frame of the daily capture (Retro photo container under the sheet header) · SOURCED — token `daily.capture.layout.viewfinder` */
         object DailyCaptureLayoutViewfinder {
-            const val width: Float = 378.7f
-            const val sideMargin: Float = 7f
-            const val top: Float = 124.4f
             const val aspect: Float = 0.75f
-            const val cornerRadius: Float = 16f
+            const val width: String = "screen width − 2 × size.global.screenMargin"
+            const val corners: String = "radius.global.viewfinder"
+            const val top: String = "20 pt below the header circle's bottom (camera.sendto.layout.preview.topBelowHeaderCircle)"
+            const val shrink: String = "as camera.capture.layout.viewfinder"
         }
-        /** BeReal · daily.dualimage · back photo 3:4 with the front photo inset top-leading; every value is a ratio of the main image width except the inset radius (ratio of the inset width) · SOURCED — token `daily.dualimage.layout.composition` */
+        /** BeReal · daily.dualimage · one answer: back photo 3:4 with the front photo inset top-leading; every value a ratio of the main width (the worker composes collage tiles with it) · SOURCED — token `daily.dualimage.layout.composition` */
         object DailyDualimageLayoutComposition {
             const val mainAspect: Float = 0.75f
             const val mainRadiusRatio: Float = 0.0455f
@@ -1450,14 +870,14 @@ object Tokens {
             const val insetBorderRatio: Float = 0.0051f
             const val insetOuterRadiusRatio: Float = 0.126f
         }
-        /** Apple HIG · daily.liveactivity · colors of the Live Activity · PLATFORM — token `daily.liveactivity.layout.colors` */
+        /** Retro · daily.liveactivity · colours of the Live Activity (media surface: black page, white text — Retro has no brand colour in chrome) · SOURCED — token `daily.liveactivity.layout.colors` */
         object DailyLiveactivityLayoutColors {
             const val islandBackground: String = "system black (not customizable)"
             const val lockScreenBackground: String = "color.global.backgroundDeep"
-            const val countdown: String = "color.global.accent"
-            const val text: String = "color.global.textPrimary"
-            const val keyLine: String = "color.global.accent"
-            const val systemActionForeground: String = "color.global.textPrimary"
+            const val countdown: String = "color.global.textOnMedia"
+            const val text: String = "color.global.textOnMedia"
+            const val keyLine: String = "color.global.textOnMedia"
+            const val systemActionForeground: String = "color.global.textOnMedia"
         }
         /** Apple HIG · daily.liveactivity · start, countdown and end of the activity · PLATFORM — token `daily.liveactivity.layout.lifecycle` */
         object DailyLiveactivityLayoutLifecycle {
@@ -1477,12 +897,13 @@ object Tokens {
             const val w430lockScreen: String = "408x84-160"
             const val limitedWidth: String = "28x28"
         }
-        /** Apple HIG · daily.liveactivity · text styles per presentation · PLATFORM — token `daily.liveactivity.layout.typography` */
+        /** Retro · daily.liveactivity · text styles per presentation: Retro roles where they fit the presentation, the system's in the minimal presentation · SOURCED — token `daily.liveactivity.layout.typography` */
         object DailyLiveactivityLayoutTypography {
-            const val groupName: String = "headline (17 pt semibold, Dynamic Type)"
-            const val countdownLockScreen: String = "daily.capture.fontSize.countdown (23 pt), monospaced digits"
-            const val countdownCompact: String = "headline, monospaced digits"
-            const val countdownMinimal: String = "caption1, semibold, monospaced digits"
+            const val groupNameLockScreen: String = "font.global.display, text role displaySmall (24, regular), color.global.textOnMedia"
+            const val countdownLockScreen: String = "text role sheetTitle (17 semibold), monospaced digits, color.global.textOnMedia"
+            const val groupNameExpanded: String = "text role sheetTitle (17 semibold)"
+            const val countdownCompact: String = "text role sheetTitle (17 semibold), monospaced digits"
+            const val countdownMinimal: String = "Caption 1 (12 pt) semibold, monospaced digits (system; Retro has no role this small)"
         }
         /** BeReal · daily.notification · how the one daily invitation is delivered · PLATFORM — token `daily.notification.layout.delivery` */
         object DailyNotificationLayoutDelivery {
@@ -1498,7 +919,7 @@ object Tokens {
             const val ongoing: String = "false (dismissible)"
             const val promoted: String = "no (Live Update only after an explicit opt-in, with an Unpin action)"
             const val channel: String = "daily_invitation"
-            const val color: String = "color.global.accent"
+            const val color: String = "not set (system default) — Retro's notification colour was not captured"
             const val tap: String = "app://daily?group=<id>&invitation=<id>"
         }
         /** Material 3 · global.system · M3 duration scale (ms) for custom transitions on Android system surfaces · PLATFORM — token `duration.global.system.scale` */
@@ -1532,42 +953,32 @@ object Tokens {
             const val segmentedControl: String = "system"
             const val toast: String = "Android Toast LENGTH_SHORT"
         }
-        /** Yope · groups.create · two-tone title ('create **new group**', 'create your / **first group**', 'Add friends to / **2025 dumps**') · SOURCED — token `groups.create.layout.titleAccent` */
-        object GroupsCreateLayoutTitleAccent {
-            const val line1: String = "color.global.textPrimary"
-            const val line2: String = "color.global.accent"
-            const val rule: String = "a two-line onboarding or sheet title draws its second part in lime"
-            const val font: String = "fontSize.global.onboardingTitle / fontWeight.global.onboardingTitle, centred"
-        }
         /** Apple HIG · groups.invite · invite from contacts · PLATFORM — token `groups.invite.layout.contacts` */
         object GroupsInviteLayoutContacts {
-            const val ios18: String = "ContactAccessButton(queryString:) under a search field: the person grants access per contact (limited access); granted contacts list below"
-            const val ios17: String = "button that presents CNContactPickerViewController (no contacts permission); the chosen contact gets the invite through MFMessageComposeViewController so the message is seen before it is sent"
-            const val android: String = "READ_CONTACTS granted: contact rows; not granted: Yope's inline contacts card (onboarding.permission.contacts.*); targetSdk ≥ 37 on API 37+: Contact Picker (Intent.ACTION_PICK_CONTACTS), no card"
+            const val ios18: String = "ContactAccessButton(queryString:) under the search field (C-12): the person grants access per contact (limited access); granted contacts listed as people rows (C-16)"
+            const val ios17: String = "outline capsule (C-06) that presents CNContactPickerViewController (no contacts permission); the chosen contact gets the invite through MFMessageComposeViewController"
+            const val android: String = "READ_CONTACTS granted: people rows (C-16); not granted: permission block (C-27, Retro's 'No Contacts Access' copy) inside the section; targetSdk ≥ 37 on API 37+: Contact Picker (Intent.ACTION_PICK_CONTACTS), no block"
             const val send: String = "SMS compose with the invite text (iOS MFMessageComposeViewController, Android ACTION_SENDTO smsto:)"
         }
-        /** Yope · groups.invite · system share sheet opened by 'share invite' · PLATFORM — token `groups.invite.layout.share` */
+        /** Apple HIG · groups.invite · what each share target opens · PLATFORM — token `groups.invite.layout.share` */
         object GroupsInviteLayoutShare {
-            const val ios: String = "ShareLink / UIActivityViewController with the invite text and URL"
+            const val ios: String = "ShareLink / UIActivityViewController with the invite text and URL ('Share to…' target)"
             const val android: String = "Intent.createChooser(ACTION_SEND text/plain) (Sharesheet)"
+            const val copy: String = "Copy Link → UIPasteboard / ClipboardManager, then confirmation (C-26)"
+            const val message: String = "Message → MFMessageComposeViewController / ACTION_SENDTO smsto: with the invite text (the person sees it before sending)"
         }
-        /** Yope · groups.list · floating tab bar on the home list · SOURCED — token `groups.list.layout.tabBar` */
+        /** Retro · groups.list · app tab bar shown on the root screens · SOURCED — token `groups.list.layout.tabBar` */
         object GroupsListLayoutTabBar {
-            const val order: String = "camera · groups (chats glyph) · walls (film-strip) · me (own avatar)"
-            const val selected: String = "pill color.global.controlRaised (size.global.tabBarSelectedWidth × .tabBarSelectedHeight), glyph color.global.textPrimary"
-            const val unselected: String = "glyph color.global.textSecondary"
-            const val labels: String = "none (icon-only)"
-            const val badges: String = "none (Yope's red count badges are do-not-copy)"
+            const val component: String = "design/components.md C-04 (icon-only, evenly distributed, page-coloured, no hairline, no labels)"
+            const val order: String = "camera · groups (home) · walls (people) · me (profile) — the app's four destinations, unchanged"
+            const val glyphs: String = "camera icon.global.camera · groups icon.global.home · walls icon.global.group · me icon.global.wall"
+            const val badges: String = "none: no unread dot on our tabs (Retro's dot sits on its Activity tab, which this app does not have)"
         }
-        /** Yope · groups.screen · screen background of the group feed and of the group profile page · SOURCED — token `groups.screen.layout.background` */
-        object GroupsScreenLayoutBackground {
-            const val feed: String = "color.global.background (#171717)"
-            const val profile: String = "color.global.backgroundDeep (#000000)"
-        }
-        /** Yope · groups.screen · group profile ••• menu (share invite, group settings, leave group, report) · PLATFORM — token `groups.screen.layout.menu` */
+        /** Apple HIG · groups.screen · long-press menu on the group's photos · PLATFORM — token `groups.screen.layout.menu` */
         object GroupsScreenLayoutMenu {
-            const val ios: String = "Menu (UIMenu) from the ••• circle; items with trailing SF Symbols; destructive items role .destructive (red)"
-            const val android: String = "DropdownMenu anchored to the ••• circle; destructive items in color.global.system.error"
+            const val ios: String = "contextMenu on a grid cell / strip tile (UIMenu with a preview); destructive items role .destructive (red)"
+            const val android: String = "DropdownMenu on long press of a grid cell / strip tile; destructive items in color.global.destructive"
+            const val items: String = "others' photos: 'Report Post' (safety.report), 'Block {first_name}' (safety.block); own photos: none (the viewer has the full menu)"
         }
         /** Apple HIG / Material 3 · global · a long press starts (context menu) · PLATFORM — token `haptic.global.longPressStart` */
         object GlobalLongPressStart {
@@ -1595,158 +1006,91 @@ object Tokens {
             const val header: String = "outline variant"
             const val states: String = "fill variant only for a state (selected check, play / pause, lock)"
         }
-        /** Partiful · invite.appclip · App Clip / universal link / App Link association · VERIFIED — token `invite.appclip.layout.association` */
+        /** Apple HIG · invite.appclip · how the App Clip is associated with and invoked from invite links · VERIFIED — token `invite.appclip.layout.association` */
         object InviteAppclipLayoutAssociation {
             const val aasaAppClips: String = "appclips.apps = [TEAM_ID.BUNDLE_ID.Clip]"
-            const val aasaAppLinks: String = "applinks.details[0].components: exclude /i/*/* (page sub-resources), then /i/*"
-            const val banner: String = "<meta name=apple-itunes-app content='app-id=…, app-clip-bundle-id=…, app-clip-display=card'>"
-            const val android: String = "assetlinks.json delegate_permission/common.handle_all_urls for the application id"
+            const val aasaAppLinks: String = "applinks.details[].components = [{\"/\": \"/i/*\"}] for the full app"
+            const val invocation: String = "Safari App Clip card from the invite page's apple-itunes-app meta tag (app-clip-display=card); Messages link previews; QR codes of the link"
+            const val defaultExperience: String = "App Store Connect default App Clip experience + an advanced experience for https://<domain>/i/ (prefix match)"
         }
-        /** Apple HIG · invite.appclip · App Clip card metadata limits (App Store Connect) · PLATFORM — token `invite.appclip.layout.cardLimits` */
+        /** Apple HIG · invite.appclip · App Clip card asset and text limits · PLATFORM — token `invite.appclip.layout.cardLimits` */
         object InviteAppclipLayoutCardLimits {
             const val headerImage: String = "1800×1200 px, no transparency, no text"
             const val titleMaxCharacters: Float = 30f
             const val subtitleMaxCharacters: Float = 56f
+            const val actions: String = "Open | View | Play (one of the preset verbs)"
         }
-        /** Apple HIG · invite.appclip · offer of the full app over the App Clip (SKOverlay.AppClipConfiguration) · PLATFORM — token `invite.appclip.layout.fullAppOverlay` */
+        /** Apple HIG · invite.appclip · prompt to get the full app from the App Clip · PLATFORM — token `invite.appclip.layout.fullAppOverlay` */
         object InviteAppclipLayoutFullAppOverlay {
             const val position: String = "bottom"
-            const val `when`: String = "after join_group succeeds (a natural pause); never before the person has joined"
+            const val `when`: String = "after join_group succeeds (a natural pause: the 'Welcome to {group_name}!' state), never before"
+            const val api: String = "SKOverlay(configuration: SKOverlay.AppClipConfiguration(position: .bottom))"
+            const val repeat: String = "once per launch of the clip"
         }
-        /** Partiful · invite.appclip · App Clip card in Messages (drawn by iOS) · SOURCED — token `invite.appclip.layout.messagesCard` */
+        /** Apple HIG · invite.appclip · App Clip card shown by Safari / Messages for an invite link · PLATFORM — token `invite.appclip.layout.messagesCard` */
         object InviteAppclipLayoutMessagesCard {
-            const val header: String = "cover on a blurred backdrop with a domain chip"
-            const val footer: String = "clip icon, title, subtitle, action button"
+            const val header: String = "the App Clip card image (App Store Connect header image) — no text in the image"
+            const val title: String = "App Store Connect card title (≤ 30 characters)"
+            const val subtitle: String = "copy invite.appclip.card.subtitle (≤ 56 characters)"
+            const val action: String = "copy invite.appclip.card.action (one of Apple's preset verbs)"
+            const val display: String = "app-clip-display=card on the invite page (Retro uses the card display, not the banner)"
         }
-        /** Partiful · invite.web · cover image · VERIFIED — token `invite.web.layout.cover` */
-        object InviteWebLayoutCover {
-            const val width: String = "full column width"
-            const val aspect: String = "own (intrinsic)"
-        }
-        /** Partiful · invite.web · text links ('Get the app' in the footer) · VERIFIED — token `invite.web.layout.link` */
-        object InviteWebLayoutLink {
-            const val textDecoration: String = "none"
-            const val footerLinkTarget: String = "new tab (target _blank, rel noopener noreferrer)"
-        }
-        /** Partiful · invite.web · link preview tags · VERIFIED — token `invite.web.layout.linkPreview` */
+        /** Retro · invite.web · link-preview and App Clip meta tags of the invite page · SOURCED — token `invite.web.layout.linkPreview` */
         object InviteWebLayoutLinkPreview {
-            const val titleTags: String = "<title>, og:title, twitter:title = copy invite.web.documentTitle"
-            const val imageAlt: String = "copy invite.web.cover.alt"
-            const val twitterCard: String = "summary_large_image"
-            const val robots: String = "noindex, nofollow"
-            const val description: String = "omitted (Partiful uses the event description; groups have none)"
+            const val titleTags: String = "<title> = copy invite.web.documentTitle; og:title and twitter:title = copy invite.web.og.title"
+            const val description: String = "og:description and twitter:description = copy invite.web.og.description"
+            const val image: String = "og:image = the 600 × 600 image (invite.web.layout.ogImage) with og:image:width / og:image:height; twitter:card summary_large_image"
+            const val appClip: String = "<meta name=\"apple-itunes-app\" content=\"app-id=<appStoreId>, app-clip-bundle-id=<bundleId>.Clip, app-clip-display=card, app-argument=<invite URL>\">"
+            const val robots: String = "noindex, noimageindex (meta and X-Robots-Tag)"
         }
-        /** Partiful · invite.web · link preview image (og:image / twitter:image) · VERIFIED — token `invite.web.layout.ogImage` */
+        /** Retro · invite.web · share / link-preview image of an invite link · SOURCED — token `invite.web.layout.ogImage` */
         object InviteWebLayoutOgImage {
-            const val width: Float = 1200f
-            const val height: Float = 630f
-            const val foreground: String = "cover fitted inside the frame (contain), centred"
-            const val background: String = "cover scaled to cover the frame (aspect kept, centre crop), Gaussian-blurred"
-            const val format: String = "JPEG"
+            const val width: Float = 600f
+            const val height: Float = 600f
+            const val background: String = "the group cover blurred to a colour field (C-34 backdrop) — Retro: a dark blurred gradient made from the profile photo; no cover → color.global.backgroundDeep"
+            const val avatar: String = "group cover in a circle, 83 px, centred; top at 208 px"
+            const val avatarToName: Float = 19f
+            const val name: String = "group name in font.global.display, #FFFFFF, centred, ink height 40 px for an ascender word (≈ 52 px type)"
+            const val nameToDomain: Float = 21f
+            const val domain: String = "{domain} in font.global.family, 20 px, white ≈ 70 % (reads #BBC5C9 over the dark backdrop), centred"
+            const val text: String = "no other text (no counts, no member names)"
         }
-        /** Partiful · invite.web · not found / link no longer works / error page layout · VERIFIED — token `invite.web.layout.state` */
-        object InviteWebLayoutState {
-            const val page: String = "column at least the viewport height"
-            const val content: String = "vertically centred: equal auto margins above the content, below it, and above the footer"
-            const val align: String = "center"
-        }
-        /** Partiful · invite.web · state title case and alignment · VERIFIED — token `invite.web.layout.state.title` */
-        object InviteWebLayoutStateTitle {
-            const val textTransform: String = "uppercase"
-            const val textAlign: String = "center"
-        }
-        /** Partiful · invite.web · text rendering · VERIFIED — token `invite.web.layout.text` */
-        object InviteWebLayoutText {
-            const val fontSmoothing: String = "antialiased"
-        }
-        /** Partiful · invite.web · page background (the per-invite theme) · SOURCED — token `invite.web.layout.theme` */
-        object InviteWebLayoutTheme {
-            const val source: String = "group cover"
-            const val colour: String = "mean sRGB colour of the cover image (solid page background)"
-            const val fallback: String = "invite.web.color.theme.default"
-        }
-        /** W3C WCAG 2.2 · invite.web · choice of light (.ptf-light) or dark (.ptf-dark) text set for a theme · PLATFORM — token `invite.web.layout.themeTextColour` */
-        object InviteWebLayoutThemeTextColour {
-            const val rule: String = "text colour is whichever of invite.web.color.text.light / .dark has the higher contrast ratio against the theme colour"
-            const val formula: String = "WCAG 2.2 relative luminance and contrast ratio"
-        }
-        /** Partiful · invite.web · title alignment · VERIFIED — token `invite.web.layout.title` */
-        object InviteWebLayoutTitle {
-            const val textAlign: String = "center"
-        }
-        /** Partiful · invite.web · title auto-fit: estimated text width = size × (0.9 × wide + 0.7 × normal + 0.4 × thin characters); line count by greedy wrap; widest word must fit · VERIFIED — token `invite.web.layout.title.fit` */
-        object InviteWebLayoutTitleFit {
-            const val widthWide: Float = 0.9f
-            const val widthNormal: Float = 0.7f
-            const val widthThin: Float = 0.4f
-            const val thinCharacters: String = " litjr.',!:;I"
-            const val normalCharacters: String = "abcdefghknopqsuvxyz/\"-"
-            const val words: String = "split on whitespace"
-            const val search: String = "integer binary search; returns the lower bound"
-        }
-        /** Yope · birthday.add · birthday shown back to the person (day and month only) · SOURCED — token `layout.birthday.add.dateFormat` */
+        /** Retro · birthday.add · saved birthday (day and month only) on the manage state · SOURCED — token `layout.birthday.add.dateFormat` */
         object BirthdayAddDateFormat {
-            const val pattern: String = "d MMMM"
-            const val example: String = "26 May"
+            const val pattern: String = "MMMM d"
+            const val example: String = "July 5"
+            const val ios: String = "Date.FormatStyle().month(.wide).day()"
+            const val android: String = "DateFormat.getBestDateTimePattern(locale, \"MMMMd\")"
         }
         /** VidDay · birthday.contribute · UI character limit of the one line · SOURCED — token `layout.birthday.contribute.lineMax` */
         object BirthdayContributeLineMax {
             const val maxCharacters: Float = 110f
         }
-        /** Tribute · birthday.contribute · step indicator · VERIFIED — token `layout.birthday.contribute.stepper` */
-        object BirthdayContributeStepper {
-            const val steps: Float = 3f
-            const val labels: String = "Photo, Message, Done"
-            const val distribution: String = "first circle 11 pt inside the margin, last circle 11 pt inside the opposite margin, the rest evenly spaced between"
-            const val labelGap: Float = 10f
-        }
-        /** Apple HIG · birthday.contribute · iOS Dynamic Type style each contribute text role scales with · PLATFORM — token `layout.birthday.contribute.textStyleMap` */
-        object BirthdayContributeTextStyleMap {
-            const val heading: String = "title3"
-            const val subheading: String = "callout"
-            const val label: String = "callout"
-            const val input: String = "callout"
-            const val button: String = "callout"
-            const val stepperNumber: String = "subheadline"
-            const val stepperLabel: String = "caption2"
-        }
-        /** Tribute · birthday.request · date in the 'Submit by {date}' line · SOURCED — token `layout.birthday.request.dueDate` */
+        /** Retro · birthday.request · the day before the birthday in the due line ('Add yours by {date}') — a date, never a countdown (P-BR-3) · SOURCED — token `layout.birthday.request.dueDate` */
         object BirthdayRequestDueDate {
-            const val style: String = "full date: weekday, month day, year"
-            const val example: String = "Wednesday, December 31, 2025"
-            const val value: String = "the day before tribute_requests.birthday_date (due_at is 00:00 on the birthday)"
+            const val pattern: String = "EEEE, MMMM d"
+            const val example: String = "Wednesday, July 5"
+            const val ios: String = "Date.FormatStyle().weekday(.wide).month(.wide).day()"
+            const val android: String = "DateFormat.getBestDateTimePattern(locale, \"EEEEMMMMd\")"
         }
-        /** Tribute + VidDay · birthday.request · request screen order · SOURCED — token `layout.birthday.request.structure` */
-        object BirthdayRequestStructure {
-            const val order: String = "hero (honoree photo behind title, due line, message), primary button, Message Ideas"
-            const val countdown: String = "none (do-not-copy)"
-        }
-        /** Apple HIG · birthday.request · iOS Dynamic Type style each request text role scales with · PLATFORM — token `layout.birthday.request.textStyleMap` */
-        object BirthdayRequestTextStyleMap {
-            const val title: String = "title2"
-            const val message: String = "callout"
-            const val cta: String = "title2"
-            const val promptsHeader: String = "subheadline"
-            const val prompt: String = "subheadline"
-        }
-        /** Tribute · birthday.tribute · first name + one line over each contribution photo (read by the worker) · SOURCED — token `layout.birthday.tribute.caption` */
+        /** Retro + Tribute · birthday.tribute · first name + one line over each contribution photo (read by the worker) · SOURCED — token `layout.birthday.tribute.caption` */
         object BirthdayTributeCaption {
             const val textColor: String = "#FFFFFF"
-            const val nameFontWeight: Float = 700f
+            const val nameFontWeight: Float = 600f
             const val nameFontSizeRatio: Float = 0.0463f
-            const val lineFontWeight: Float = 700f
+            const val lineFontWeight: Float = 400f
             const val lineFontSizeRatio: Float = 0.0795f
             const val leftRatio: Float = 0.0577f
             const val bottomRatio: Float = 0.0861f
             const val maxWidthRatio: Float = 0.8845f
             const val gapRatio: Float = 0.0099f
-            const val scrim: String = "#11202FC7"
+            const val scrim: String = "#00000099"
         }
-        /** VidDay · birthday.tribute · end card text layout (read by the worker) · SOURCED — token `layout.birthday.tribute.endCard` */
+        /** Retro + VidDay · birthday.tribute · end card text layout (read by the worker) · SOURCED — token `layout.birthday.tribute.endCard` */
         object BirthdayTributeEndCard {
-            const val background: String = "#EFEEF3"
-            const val textColor: String = "#444347"
-            const val fontWeight: Float = 500f
+            const val background: String = "#000000"
+            const val textColor: String = "#FFFFFF"
+            const val fontWeight: Float = 400f
             const val fontSizeRatio: Float = 0.084f
             const val maxWidthRatio: Float = 0.405f
             const val centerYRatio: Float = 0.5f
@@ -1763,11 +1107,11 @@ object Tokens {
             const val photoFit: String = "whole photo inside the 16:9 frame on color.birthday.tribute.pillarbox"
             const val audio: String = "none"
         }
-        /** VidDay · birthday.tribute · title card ('Happy birthday, {name}!') (read by the worker) · SOURCED — token `layout.birthday.tribute.titleCard` */
+        /** Retro + VidDay · birthday.tribute · title card ('Happy birthday, {name}!') (read by the worker) · SOURCED — token `layout.birthday.tribute.titleCard` */
         object BirthdayTributeTitleCard {
-            const val background: String = "#EFEEF3"
-            const val textColor: String = "#444347"
-            const val fontWeight: Float = 500f
+            const val background: String = "#000000"
+            const val textColor: String = "#FFFFFF"
+            const val fontWeight: Float = 400f
             const val fontSizeRatio: Float = 0.084f
             const val maxWidthRatio: Float = 0.405f
             const val centerYRatio: Float = 0.5f
@@ -1883,150 +1227,102 @@ object Tokens {
         object GlobalVariableWeightAndroid {
             const val body: Float = 450f
         }
-        /** Timehop · onthisday · years-ago banner geometry · SOURCED — token `layout.onthisday.banner` */
-        object OnthisdayBanner {
-            const val width: String = "full screen width"
-            const val top: String = "screen top edge, behind the status bar"
-            const val labelAlign: String = "centre"
-            const val labelCase: String = "uppercase"
-            const val colourPerMemory: String = "color.onthisday.banner"
+        /** Retro · onthisday · bottom control row of the Rewind page · SOURCED — token `layout.onthisday.controls` */
+        object OnthisdayControls {
+            const val order: String = "share circle, dial, random circle"
+            const val arrangement: String = "equal gaps across the screen width: edge | share | dial | random | edge (the dial's box = dimension.onthisday.dial.diameter)"
+            const val circles: String = "size.global.circleButtonLarge, fill color.global.glass, glyphs icon.global.share / icon.global.random in a size.global.icon box, color.global.textOnMedia"
+            const val paused: String = "share, dial (icon.global.play) and random shown"
+            const val playing: String = "share and random hidden (fade duration.global.fade, easing.global.standard); the dial shows icon.global.pause"
+            const val scrim: String = "layout.global.photoScrim behind the controls"
+        }
+        /** Retro · onthisday · the memory's date shown as the display title over the photo (and in its accessibility label) · SOURCED — token `layout.onthisday.dateFormat` */
+        object OnthisdayDateFormat {
+            const val style: String = "medium date (the locale's abbreviated month, day, year)"
+            const val ios: String = "Date.FormatStyle(date: .abbreviated, time: .omitted)"
+            const val android: String = "DateFormat.getDateInstance(DateFormat.MEDIUM)"
+            const val example: String = "Jul 22, 2022"
         }
         /** Timehop · onthisday · when the on-this-day set rolls over to the next date · SOURCED — token `layout.onthisday.dayBoundary` */
         object OnthisdayDayBoundary {
             const val hour: Float = 5f
             const val clock: String = "group time zone (groups.time_zone)"
         }
-        /** Timehop · onthisday · memory with several photos from that date · SOURCED — token `layout.onthisday.grid` */
-        object OnthisdayGrid {
-            const val columns: Float = 2f
-            const val arrangement: String = "masonry: every photo keeps its aspect ratio and goes to the shorter column"
-            const val scroll: String = "vertical"
-            const val background: String = "color.global.background"
+        /** Retro · onthisday · Rewind dial geometry and behaviour · SOURCED — token `layout.onthisday.dial` */
+        object OnthisdayDial {
+            const val slots: Float = 44f
+            const val pitchDegrees: Float = 8.18f
+            const val firstSlotDegrees: Float = 6f
+            const val angleReference: String = "measured clockwise from 3 o'clock (screen y grows downward)"
+            const val longTicks: String = "even slots (0, 2, 4 …); odd slots short"
+            const val indicator: String = "drawn on the current memory's slot instead of that slot's tick"
+            const val startSlot: Float = 0f
+            const val step: String = "one slot per memory; dragging around the centre moves one memory per slot crossed; clockwise = next (older), counter-clockwise = previous"
+            const val playback: String = "while playing, the indicator moves one slot each time the memory changes"
+            const val haptic: String = "haptic.global.select once per slot crossed (and per automatic step while playing)"
         }
-        /** Timehop · onthisday · moving between years of one day · SOURCED — token `layout.onthisday.navigation` */
-        object OnthisdayNavigation {
-            const val order: String = "one memory screen per year, newest first (1 YEAR AGO, then 2, 3 ...)"
-            const val next: String = "tap or swipe on the right half of the screen (older)"
-            const val previous: String = "tap or swipe on the left half (back)"
-            const val autoAdvance: String = "none"
+        /** Retro · year.story · date of a photo or everyone-was-there day (display title of photo and collage cards); the year is the story's · SOURCED — token `layout.year.story.dateFormat` */
+        object YearStoryDateFormat {
+            const val pattern: String = "EEEE, MMMM d"
+            const val example: String = "Wednesday, July 5"
+            const val ios: String = "Date.FormatStyle().weekday(.wide).month(.wide).day()"
+            const val android: String = "DateFormat.getBestDateTimePattern(locale, \"EEEEMMMMd\")"
         }
-        /** Timehop · onthisday · memory with one photo · SOURCED — token `layout.onthisday.photo.single` */
-        object OnthisdayPhotoSingle {
-            const val width: String = "full screen width"
-            const val top: String = "banner bottom"
-            const val bottom: String = "screen bottom"
-            const val fit: String = "fill (cropped to the area)"
-            const val cornerRadius: Float = 0f
-        }
-        /** Timehop · onthisday · progress bar structure · SOURCED — token `layout.onthisday.progress` */
-        object OnthisdayProgress {
-            const val position: String = "top edge of the banner, directly below the status bar"
-            const val width: String = "full screen width"
-            const val sideInset: Float = 0f
-            const val fill: String = "fraction of the day's years reached: (index + 1) / years"
-            const val gaps: String = "none"
-        }
-        /** Apple HIG · onthisday · iOS Dynamic Type style each on-this-day text role scales with · PLATFORM — token `layout.onthisday.textStyleMap` */
-        object OnthisdayTextStyleMap {
-            const val bannerLabel: String = "title1"
-            const val meta: String = "caption2"
-        }
-        /** Spotify Wrapped · year.story · story canvas · SOURCED — token `layout.year.story.canvas` */
-        object YearStoryCanvas {
+        /** Retro · year.story · the story frame: every card is shown inside Retro's recap-preview media page · SOURCED — token `layout.year.story.frame` */
+        object YearStoryFrame {
+            const val frame: String = "the recap-preview media page of collage.view.layout.screen: full screen width, from the safe-area top to mediaPageBottomFromScreenBottom above the screen bottom, corners mediaPageCornerRadius (layout.global.cornerStyle), content clipped"
+            const val content: String = "each card is laid out in a 9:16 box (aspectWidth 9, aspectHeight 16) as wide as the frame, centred vertically; backdrops and full-bleed photos fill the whole frame"
             const val aspectWidth: Float = 9f
             const val aspectHeight: Float = 16f
-            const val width: String = "screen width"
-            const val vertical: String = "centred in the safe area"
-            const val outside: String = "letterbox bands (color.year.story.letterbox)"
-            const val background: String = "color.global.backgroundDeep"
+            const val close: String = "C-11 on media (size.global.circleButton, color.global.controlOnDeep, icon.global.close) at closeCentreFromTrailing / closeCentreBelowPageTop of collage.view.layout.screen"
+            const val bottomRow: String = "centre bottomRowCentreFromScreenBottom of collage.view.layout.screen above the screen bottom: leading C-11 circle on media at size.global.buttonMarginH, trailing Share pill collage.share.layout.pill"
+            const val page: String = "color.global.backgroundDeep around the frame, both appearances (media)"
+            const val contentScale: String = "the share image (layout.year.story.shareCard) is the 9:16 box rendered at 1080 px wide: pt values inside it scale by 1080 ÷ box width"
         }
-        /** Spotify Wrapped · year.story · day shown on a card · SOURCED — token `layout.year.story.dateFormat` */
-        object YearStoryDateFormat {
-            const val pattern: String = "MMMM d"
-            const val example: String = "February 25"
-        }
-        /** Spotify Wrapped · year.story · month shown on a card · SOURCED — token `layout.year.story.monthFormat` */
+        /** Retro · year.story · busiest month in 'December was the most memorable' · SOURCED — token `layout.year.story.monthFormat` */
         object YearStoryMonthFormat {
             const val pattern: String = "MMMM"
-            const val example: String = "January"
+            const val example: String = "December"
         }
-        /** Spotify Wrapped · year.story · story navigation · SOURCED — token `layout.year.story.navigation` */
+        /** Spotify Wrapped · year.story · story navigation inside the frame · SOURCED — token `layout.year.story.navigation` */
         object YearStoryNavigation {
-            const val next: String = "tap the right half of the canvas"
-            const val previous: String = "tap the left half"
+            const val next: String = "tap the right half of the frame"
+            const val previous: String = "tap the left half of the frame"
             const val hold: String = "none"
-            const val model: String = "2024 tap-through (one card per fact)"
+            const val model: String = "tap-through, one card per fact (Wrapped 2024 pacing)"
+            const val summary: String = "swipe between the share styles (pager with page dots)"
         }
-        /** Spotify Wrapped · year.story · card showing one photo or collage (Wrapped 'Your top song' card) · SOURCED — token `layout.year.story.photoCard` */
-        object YearStoryPhotoCard {
-            const val box: String = "square"
-            const val boxWidthRatio: Float = 0.66f
-            const val boxCenterYRatio: Float = 0.412f
-            const val cornerRadius: Float = 0f
-            const val textGap: Float = 24.6f
-            const val text: String = "headline below the box, centred"
-            const val photoFit: String = "fill the square"
-            const val collageFit: String = "fit inside the square on the canvas colour"
+        /** Retro · year.story · the yearly recap card (summary style 1 and the year share image): photo grid card on the blurred backdrop · SOURCED — token `layout.year.story.recapCard` */
+        object YearStoryRecapCard {
+            const val widthRatio: Float = 0.825f
+            const val paddingRatio: Float = 0.0241f
+            const val columns: Float = 4f
+            const val maxRows: Float = 6f
+            const val cellAspect: Float = 1.12f
+            const val gap: String = "size.global.stripGap"
+            const val cornerRadiusRatio: Float = 0.051f
+            const val footerHeightRatio: Float = 0.21f
+            const val background: String = "color.global.surfaceElevated"
+            const val backdrop: String = "the cover photo blurred, full frame (layout.global.materials.backdrop)"
+            const val footer: String = "year: font.global.display, text role headerTitle, color.global.textPrimary at the card padding, bottom-left; group name: text role listTitle, color.global.textPrimary, right-aligned; app line below it: text role meta, color.global.textSecondary"
         }
-        /** Spotify Wrapped · year.story · segmented progress bar behaviour · SOURCED — token `layout.year.story.progress` */
-        object YearStoryProgress {
-            const val segments: String = "one per card"
-            const val completed: String = "filled (color.year.story.progress.fill)"
-            const val current: String = "fills left to right over duration.year.story.card"
-            const val upcoming: String = "track (white at opacity.year.story.progress.track)"
-        }
-        /** Spotify Wrapped · year.story · normalised distance travelled at 25 / 50 / 75 % of the reveal time (S-curve) · SOURCED — token `layout.year.story.reveal.samples` */
-        object YearStoryRevealSamples {
-            const val t25: Float = 0.125f
-            const val t50: Float = 0.725f
-            const val t75: Float = 0.925f
-        }
-        /** Spotify Wrapped · year.story · per-card 'Share this story' row · SOURCED — token `layout.year.story.share` */
-        object YearStoryShare {
-            const val align: String = "centre of the canvas"
-            const val content: String = "share glyph, then label"
-            const val shownOn: String = "every card that states a fact (not the intro, teaser or outro cards)"
-        }
-        /** Spotify Wrapped + Meta developer docs · year.story · exported share image · SOURCED — token `layout.year.story.shareCard` */
+        /** Retro + Spotify Wrapped + Meta developer docs · year.story · exported share image · SOURCED — token `layout.year.story.shareCard` */
         object YearStoryShareCard {
             const val width: Float = 1080f
             const val height: Float = 1920f
-            const val content: String = "the card's canvas without progress bar, chrome or share row"
+            const val content: String = "the frame's content of the card in view (no close circle, position pill or bottom bar), rendered at 1080 px wide"
         }
-        /** Apple HIG / Material 3 · year.story · share sheet opened by 'Share this story' and 'Share' · PLATFORM — token `layout.year.story.shareSheet` */
+        /** Apple HIG / Material 3 · year.story · share sheet opened by the Share pill · PLATFORM — token `layout.year.story.shareSheet` */
         object YearStoryShareSheet {
             const val ios: String = "ShareLink(item:preview:) / UIActivityViewController"
             const val android: String = "Intent.createChooser(ACTION_SEND, content:// URI + FLAG_GRANT_READ_URI_PERMISSION)"
         }
-        /** Spotify Wrapped · year.story · last screen (summary) · SOURCED — token `layout.year.story.summary` */
+        /** Retro · year.story · the story's last page (summary): recap preview with styles · SOURCED — token `layout.year.story.summary` */
         object YearStorySummary {
-            const val order: String = "share-card carousel, Share pill, Replay from beginning"
-            const val previewWidthRatio: Float = 0.6f
-            const val carousel: String = "horizontal paging through the story's share cards"
-        }
-        /** Spotify Wrapped · year.story · page dots under the share-card carousel · SOURCED — token `layout.year.story.summary.dots` */
-        object YearStorySummaryDots {
-            const val count: String = "one per share card"
-            const val diameter: Float = 8.4f
-            const val pitch: Float = 16.8f
-            const val selectedColor: String = "#FFFFFF"
-            const val unselectedColor: String = "#666666"
-            const val centerBelowCarousel: Float = 20.4f
-            const val centerAboveShare: Float = 29.3f
-            const val animation: String = "none observed (static render)"
-        }
-        /** Spotify Wrapped · year.story · text card arrangement · SOURCED — token `layout.year.story.text` */
-        object YearStoryText {
-            const val align: String = "centre"
-            const val block: String = "centred horizontally and vertically on the canvas"
-            const val order: String = "headline, then subline"
-        }
-        /** Apple HIG · year.story · iOS Dynamic Type style each year-story text role scales with · PLATFORM — token `layout.year.story.textStyleMap` */
-        object YearStoryTextStyleMap {
-            const val headline: String = "largeTitle"
-            const val body: String = "subheadline"
-            const val share: String = "callout"
-            const val sharePill: String = "headline"
+            const val styles: String = "two share styles in a horizontal pager inside the frame: 1 = recap card on the blurred backdrop (layout.year.story.recapCard); 2 = the cover photo full-bleed with the footer (dimension.year.story.footer.baseline)"
+            const val dots: String = "page dots under the frame (dimension.year.story.dots.offset), one per style"
+            const val bar: String = "leading circle = replay (icon.year.story.replay) → card 1; trailing Share pill shares the style in view"
+            const val cover: String = "the first photo of data.most_reacted, else the first id of year_stories.post_ids"
         }
         /** Material 3 · notifications.push · Android notification channels that carry the push texts (one per kind of event) · PLATFORM — token `notifications.push.layout.channels` */
         object NotificationsPushLayoutChannels {
@@ -2044,77 +1340,101 @@ object Tokens {
             const val newPostAttachment: String = "widget rendition attached by the notification service extension"
             const val sound: String = "default"
         }
-        /** Yope · onboarding.permission.camera · when and how camera access is requested · SOURCED — token `onboarding.permission.camera.layout.request` */
+        /** Apple HIG · onboarding.permission.camera · when and how camera access is requested, and the denied state · PLATFORM — token `onboarding.permission.camera.layout.request` */
         object OnboardingPermissionCameraLayoutRequest {
-            const val ios: String = "no pre-alert screen: AVCaptureDevice.requestAccess(for: .video) the first time camera.capture opens; the system alert shows NSCameraUsageDescription over the camera"
-            const val android: String = "Manifest.permission.CAMERA requested the first time camera.capture opens; rationale = M3 basic dialog only when shouldShowRequestPermissionRationale() is true"
-            const val denied: String = "inline permission card (onboarding.permission.contacts.* tokens) centred in the viewfinder area of camera.capture"
+            const val ios: String = "no pre-alert page: AVCaptureDevice.requestAccess(for: .video) the first time camera.capture opens; the system alert shows NSCameraUsageDescription"
+            const val android: String = "Manifest.permission.CAMERA requested the first time camera.capture opens; rationale = native dialog (C-29) only when shouldShowRequestPermissionRationale() is true"
+            const val denied: String = "permission-denied variant of the empty-state block (C-27) centred in the camera area, drawn with the media colours (color.global.textOnMedia, color.global.textSecondary, outline capsule border color.global.textOnMedia)"
         }
-        /** Yope · onboarding.permission.contacts · inline permission card structure · SOURCED — token `onboarding.permission.contacts.layout.card` */
-        object OnboardingPermissionContactsLayoutCard {
-            const val leading: String = "none (Yope's contacts-app-like illustration with a red '!' is do-not-copy)"
-            const val text: String = "title then detail, left-aligned, 16 pt from the card's leading edge (groups.list.size.avatarInset)"
-            const val trailing: String = "white button vertically centred, 16 pt from the trailing edge"
-            const val dismiss: String = "icon.global.close at the top-trailing corner, color.global.textPrimary (only where the card may be dismissed)"
-        }
-        /** Apple HIG · onboarding.permission.notifications · notifications pre-alert screen · VERIFIED — token `onboarding.permission.notifications.layout.preAlert` */
+        /** Apple HIG · onboarding.permission.notifications · notifications pre-alert page · VERIFIED — token `onboarding.permission.notifications.layout.preAlert` */
         object OnboardingPermissionNotificationsLayoutPreAlert {
-            const val ios: String = "one button ('continue') that triggers UNUserNotificationCenter.requestAuthorization; no close, skip or back on this screen"
-            const val android: String = "API 33+: same screen, plus a dark secondary button ('maybe later') under the lime one; then the POST_NOTIFICATIONS runtime dialog; API ≤ 32: screen skipped (no runtime permission)"
-            const val structure: String = "title (fontSize.global.onboardingTitle, centred, near the top as in Yope's notifications pre-prompt) · detail · primary button pinned to the bottom (size.global.buttonHeightSheet, size.global.buttonMarginHSheet)"
+            const val structure: String = "onboarding page (C-33 variant): display title (text role displayMedium) + explanation (text role body, color.global.textSecondary) leading-aligned at size.global.screenMargin, primary capsule C-05 pinned to the bottom"
+            const val ios: String = "one capsule ('Enable notifications') that triggers UNUserNotificationCenter.requestAuthorization; no close, skip or back (HIG pre-alert rule)"
+            const val android: String = "API 33+: the same page plus a text button 'Maybe later' (C-08 secondary link) under the capsule; then the POST_NOTIFICATIONS runtime dialog; API ≤ 32: page skipped (no runtime permission)"
         }
         /** Apple HIG · onboarding.permission.photos · photo library access · VERIFIED — token `onboarding.permission.photos.layout.request` */
         object OnboardingPermissionPhotosLayoutRequest {
-            const val ios: String = "no screen: PhotosPicker / PHPickerViewController need no permission; saving asks add-only access (PHPhotoLibrary.requestAuthorization(for: .addOnly)) at the first save, alert text NSPhotoLibraryAddUsageDescription"
-            const val android: String = "no screen: Photo Picker (PickVisualMedia); no READ_MEDIA_* permission; saving through MediaStore needs no permission on API 29+"
-            const val limited: String = "only if PhotoKit reading is ever added: handle .limited with PHPhotoLibraryPreventAutomaticLimitedAccessAlert = YES and presentLimitedLibraryPicker from an in-app control"
+            const val ios: String = "no page: PhotosPicker / PHPickerViewController need no permission; saving asks add-only access (PHPhotoLibrary.requestAuthorization(for: .addOnly)) at the first save, alert text NSPhotoLibraryAddUsageDescription"
+            const val android: String = "no page: Photo Picker (PickVisualMedia); no READ_MEDIA_* permission; saving through MediaStore needs no permission on API 29+"
+            const val denied: String = "permission-denied block (C-27) in place of the save result (photo.viewer places it)"
         }
-        /** Locket · paywall · 'Subscribe to …' plan sheet container · PLATFORM — token `paywall.layout.planSheet` */
-        object PaywallLayoutPlanSheet {
-            const val ios: String = "sheet with presentationDetents([.medium]) and presentationDragIndicator(.visible); system corner radius"
-            const val android: String = "ModalBottomSheet with the M3 drag handle; top corners radius.global.sheet.android"
-            const val measuredCorner: Float = 46f
-            const val measuredGrabber: String = "34 × 5 pt, #5D5C58"
+        /** Retro · paywall · plan card on the blurred backdrop · SOURCED — token `paywall.layout.planCard` */
+        object PaywallLayoutPlanCard {
+            const val fill: String = "color.global.surfaceLight (#FFFFFF) in both appearances (Retro's card reads translucent white over the backdrop; its alpha is not derivable — C-34 Gap)"
+            const val corners: String = "radius.global.cardLarge (36)"
+            const val padding: String = "size.global.planCardPadding (27); its capsule (C-05, color.global.accent / onAccent light values: #000000 / #FFFFFF) 16 from the card sides and bottom"
+            const val width: String = "screen − 2 × size.global.buttonMarginH"
+            const val pager: String = "horizontal; the next card peeks after size.global.planCardGap (8)"
+            const val order: String = "title (planTitle) + optional premium pill (C-25) trailing · subtitle (planSubtitle, planTextSecondary) · bullets (planBullet, planText) · price (planPrice, planText) · footnote (planFootnote, planTextTertiary) · capsule"
         }
-        /** Locket · paywall · when the paywall may appear · SOURCED — token `paywall.layout.promptRule` */
+        /** Retro · paywall · when the paywall may appear · SOURCED — token `paywall.layout.promptRule` */
         object PaywallLayoutPromptRule {
             const val settingsEntry: String = "always opens (navigation the person chose; not counted)"
-            const val lockedFeature: String = "the first tap on a locked perk per session opens the paywall (SessionPromptGate.consumePrompt); later taps that session only show the 'Premium' badge already on the control"
+            const val lockedFeature: String = "the first tap on a locked perk per session opens the paywall at that perk's benefit (SessionPromptGate.consumePrompt); later taps that session only show the 'Premium' pill already on the control"
             const val never: String = "during capture or onboarding (SessionPromptGate.Blocker), on launch, after a post, or on a timer"
             const val core: String = "nothing free is ever gated or interrupted"
         }
-        /** Apple HIG · paywall · store-required elements on the paywall and plan sheet · VERIFIED — token `paywall.layout.requiredDisclosures` */
+        /** Apple HIG · paywall · store-required elements on the paywall · VERIFIED — token `paywall.layout.requiredDisclosures` */
         object PaywallLayoutRequiredDisclosures {
             const val price: String = "the store's localized price for each plan's period (StoreKit Product.displayPrice + subscription.subscriptionPeriod / Play ProductDetails.SubscriptionOfferDetails pricing phases), read at runtime; never a hard-coded price"
-            const val prominence: String = "the billed amount for the period is the most prominent price on each plan card; any per-month breakdown sits in the detail line"
-            const val renewal: String = "auto-renewal sentence + cancellation path (paywall.legal.*) under the Subscribe button"
-            const val restore: String = "'Restore Purchases' (StoreKit AppStore.sync / RevenueCat restorePurchases)"
-            const val links: String = "Terms of Use and Privacy Policy (config/app.json legal.termsUrl / legal.privacyUrl)"
-            const val optional: String = "a line saying the app is usable without a subscription (Google Play)"
-            const val dismiss: String = "'No thanks!' always visible on the paywall"
+            const val prominence: String = "the billed amount for the period is the most prominent price on each plan card (paywall.fontSize.planPrice); the 'Billed …' footnote repeats it"
+            const val renewal: String = "the platform billing line (paywall.legal.billing.*) under the card pager"
+            const val restore: String = "'Restore purchase' (StoreKit AppStore.sync / RevenueCat restorePurchases) in the footer"
+            const val links: String = "'Terms' and 'Privacy' (config/app.json legal.termsUrl / legal.privacyUrl) in the footer"
+            const val optional: String = "paywall.legal.optional (the app is usable without a subscription; Google Play)"
+            const val dismiss: String = "the close circle (C-11 glass small) is always visible"
         }
-        /** Yope · photo.viewer · date line under the viewer title · SOURCED — token `photo.viewer.layout.dateFormat` */
+        /** Retro · photo.viewer · moving between photos · SOURCED — token `photo.viewer.layout.advance` */
+        object PhotoViewerLayoutAdvance {
+            const val next: String = "tap the photo → next photo of the context the viewer was opened from"
+            const val previous: String = "tap its leading part → previous photo (zone width: photo.viewer.layout.backZone)"
+            const val autoAdvance: String = "none"
+            const val progress: String = "no progress bars; position pill photo.viewer.position when the context holds more than one photo"
+            const val end: String = "tapping past the last photo closes the viewer"
+        }
+        /** Retro · photo.viewer · appearance of the media viewer · SOURCED — token `photo.viewer.layout.appearance` */
+        object PhotoViewerLayoutAppearance {
+            const val appearance: String = "the viewer renders in the dark appearance in both system appearances: page color.global.backgroundDeep; every themed token inside resolves to its dark value"
+            const val ios: String = "environment colorScheme .dark on the viewer's root view"
+            const val android: String = "DsTheme(dark = true) around the viewer"
+            const val sheets: String = "menus, alerts and sheets presented over it follow the system appearance"
+        }
+        /** Retro · photo.viewer · replies listed under the photo · SOURCED — token `photo.viewer.layout.comments` */
+        object PhotoViewerLayoutComments {
+            const val content: String = "replies to this photo in the group chat (messages with reply_to_post_id = this post), oldest first"
+            const val row: String = "the chat.thread message row (C-16): size.global.avatarComment, chat.thread.dimension.rowAvatarToText, .rowLinePitch; name text role listTitle, time caption, text body in color.global.textOnMedia"
+            const val spacing: String = "photo.viewer.dimension.dividerToComments below the divider; size.global.listGap between rows; photo.viewer.dimension.commentsToField above the field"
+        }
+        /** Retro · photo.viewer · date line in the viewer footer · SOURCED — token `photo.viewer.layout.dateFormat` */
         object PhotoViewerLayoutDateFormat {
-            const val pattern: String = "MMM d yyyy"
-            const val example: String = "Oct 30 2025"
+            const val pattern: String = "EEEE, MMMM d"
+            const val example: String = "Wednesday, July 5"
+            const val otherYear: String = "EEEE, MMMM d, yyyy"
         }
-        /** Apple HIG / Material 3 · photo.viewer · confirmation before deleting your own photo everywhere · PLATFORM — token `photo.viewer.layout.deleteConfirm` */
+        /** Apple HIG / Material 3 · photo.viewer · confirmation before a photo is deleted everywhere · PLATFORM — token `photo.viewer.layout.deleteConfirm` */
         object PhotoViewerLayoutDeleteConfirm {
-            const val ios: String = "confirmationDialog (action sheet): title, message, destructive button, Cancel at the bottom"
-            const val android: String = "M3 AlertDialog: title, text, dismiss + confirm buttons"
+            const val ios: String = "confirmationDialog (action sheet): title, message, destructive button, Cancel"
+            const val android: String = "AlertDialog: title, message, confirm (color.global.system.error), dismiss"
         }
-        /** Yope + Apple HIG / Material 3 · photo.viewer · ••• menu in the viewer · PLATFORM — token `photo.viewer.layout.menu` */
+        /** Retro + Apple HIG / Material 3 · photo.viewer · the viewer's actions menu · SOURCED — token `photo.viewer.layout.menu` */
         object PhotoViewerLayoutMenu {
-            const val ios: String = "Menu (pull-down) from the ••• glyph, items with trailing SF Symbols, destructive items in the system red"
-            const val android: String = "DropdownMenu anchored to the ••• glyph"
-            const val order: String = "save, then destructive: delete (own) or report, block (others)"
+            const val trigger: String = "the reply field's trailing icon.global.more (C-13, TC-2B) while the field is empty; also the photo's long-press context menu (with the quick-reaction palette, chat.reactions.layout.quickReactions)"
+            const val component: String = "native menu (C-29): iOS Menu / contextMenu, Android DropdownMenu; destructive items in red"
+            const val items: String = "photo.viewer.menu.save (always) · photo.viewer.menu.delete (your photo, destructive) · photo.viewer.menu.report (others', destructive) · photo.viewer.menu.block (others')"
+            const val glyphs: String = "icon.global.download · icon.global.trash · icon.global.report · none"
         }
-        /** Yope · photo.viewer · photo frame in the viewer · SOURCED — token `photo.viewer.layout.photo` */
+        /** Retro · photo.viewer · the photo in the viewer · SOURCED — token `photo.viewer.layout.photo` */
         object PhotoViewerLayoutPhoto {
             const val width: String = "full screen width"
-            const val height: String = "the photo's own aspect (3:4 observed)"
-            const val corners: String = "radius.global.photo on all four corners"
-            const val swipe: String = "horizontal paging to the adjacent photo"
+            const val height: String = "the photo's own aspect ratio, never cropped"
+            const val tall: String = "a photo taller than the space between the header and the footer is scaled down to fit and centred (letterboxed on color.global.backgroundDeep)"
+            const val corners: String = "radius.global.photo (square)"
+            const val live: String = "a Live Photo plays while pressed (platform Live Photo view); a dual capture shows as daily.dualimage"
+        }
+        /** Retro · photo.viewer · a photo's voice note in the viewer · SOURCED — token `photo.viewer.layout.voiceNote` */
+        object PhotoViewerLayoutVoiceNote {
+            const val position: String = "footer text block, after the date / tags line: capsule top photo.viewer.dimension.footerLinePitch below that line's baseline"
+            const val component: String = "chat.voice.layout.capsule on media (color.global.controlOnDeep)"
         }
         /** Retro · global · buttons (60 / 37 / 36), pills, badges, position pill; circles for avatars and circle buttons · SOURCED — token `radius.global.capsule` */
         object GlobalCapsule {
@@ -2128,52 +1448,48 @@ object Tokens {
         }
         /** Apple HIG · safety.block · block confirmation · VERIFIED — token `safety.block.layout.confirm` */
         object SafetyBlockLayoutConfirm {
-            const val ios: String = "confirmationDialog(titleVisibility: .visible) with message; 'Block' role .destructive at the top, Cancel at the bottom"
-            const val android: String = "M3 AlertDialog (settings.account.layout.alert) with 'Block' as the confirming action"
+            const val ios: String = "confirmationDialog(titleVisibility: .visible) with message; 'Yes, block' role .destructive at the top, Cancel at the bottom"
+            const val android: String = "M3 AlertDialog (settings.account.layout.alert) with 'Yes, block' as the confirming action"
         }
-        /** Apple HIG · safety.block · 'Block' / 'Report…' items in overflow menus · VERIFIED — token `safety.block.layout.menu` */
+        /** Apple HIG · safety.block · 'Block Profile' / 'Block {first_name}' items in overflow and long-press menus · VERIFIED — token `safety.block.layout.menu` */
         object SafetyBlockLayoutMenu {
             const val ios: String = "Menu (UIMenu) item with role .destructive"
-            const val android: String = "DropdownMenu item (M3 baseline: 48 dp items, 4 dp container corner, labelLarge) in color.global.system.error"
+            const val android: String = "DropdownMenu item (M3 baseline: 48 dp items, labelLarge) in color.global.destructive"
         }
-        /** Yope · safety.block · confirmation toast after block / unblock / report (Yope lime toast) · SOURCED — token `safety.block.layout.toast` */
-        object SafetyBlockLayoutToast {
-            const val fill: String = "color.global.accent"
-            const val content: String = "icon.global.checkmark + label in color.global.onAccent, text role button"
-            const val shape: String = "radius.global.capsule, full width minus size.global.screenMargin"
-            const val position: String = "top, under the status bar"
-            const val enter: String = "spring.global.platformDefault.ios / .android (global rule for custom motion whose Yope curve was not measured); Reduce Motion: cross-fade"
-            const val dwell: String = "safety.block.duration.toast (BLOCKED)"
-        }
-        /** Apple HIG · safety.report · report flow container · VERIFIED — token `safety.report.layout.flow` */
+        /** Retro · safety.report · report flow · SOURCED — token `safety.report.layout.flow` */
         object SafetyReportLayoutFlow {
-            const val entry: String = "a menu item 'Report…' (ellipsis: more input follows)"
-            const val ios: String = "sheet with presentationDetents([.medium, .large]) and a visible grabber: title + explanation (Yope voice), an optional multi-line details field, then 'Report' (destructive role) and 'Cancel' in the navigation bar"
-            const val android: String = "ModalBottomSheet (top corners 28 dp, drag handle 32 × 4 dp in onSurfaceVariant at 0.4 opacity, container color.global.system.surfaceContainerLow, initial height ≤ 50 % of the screen) with the same content; 'Report' as a TextButton in color.global.system.error"
-            const val after: String = "the sheet content changes to the 'report sent' state; for a person or their content it offers Block (destructive) and Done"
+            const val entry: String = "menu item 'Report Post' / 'Report Message' / 'Report Profile' / 'Report Group' (C-29 native menu)"
+            const val reasons: String = "native action sheet (iOS confirmationDialog with a visible title; Android ModalBottomSheet list) titled with Retro's question; one row per reason (safety.report.layout.reasons), Cancel last"
+            const val submit: String = "choosing a reason files report(kind, id, reason) at once — no second screen; confirmation 'Submitted!' (C-26)"
+            const val dontLike: String = "'I don't like it' files nothing: it opens a second action sheet 'Next Steps' with 'Leave the group' and 'Block {first_name}' (safety.block)"
         }
-        /** Apple HIG · settings.account · confirmation alerts / dialogs (delete account; also leave group, remove member, block, turn off link) · VERIFIED — token `settings.account.layout.alert` */
+        /** Retro · safety.report · report reasons per target kind · SOURCED — token `safety.report.layout.reasons` */
+        object SafetyReportLayoutReasons {
+            const val post: String = "I don't like it · Nudity or sexual activity · Other"
+            const val message: String = "I don't like it · Nudity or sexual activity · Other"
+            const val user: String = "It's impersonating someone · It's inappropriate · Other"
+            const val group: String = "It's impersonating someone · It's inappropriate · Other"
+            const val sent: String = "the reason's English text is sent as p_reason (docs/API.md report)"
+        }
+        /** Apple HIG · settings.account · confirmation alerts / dialogs (delete account, sign out, leave group, remove member, turn off link) · VERIFIED — token `settings.account.layout.alert` */
         object SettingsAccountLayoutAlert {
-            const val ios: String = "alert(_:isPresented:actions:message:): destructive-role button + Cancel; at most 3 buttons; Cancel is never the default; Cancel on the leading side"
-            const val android: String = "M3 AlertDialog: container color.global.system.surfaceContainerHigh, corner 28 dp, headline headlineSmall, text bodyMedium, actions labelLarge; at most 2 actions; dismissive leading, confirming trailing (closest to the edge); destructive confirm label color.global.system.error"
+            const val ios: String = "alert(_:isPresented:actions:message:): destructive-role button + Cancel; at most 3 buttons; Cancel is never the default"
+            const val android: String = "M3 AlertDialog: container color.global.system.surfaceContainerHigh, corner 28 dp, headline headlineSmall, text bodyMedium, actions labelLarge; at most 2 actions; dismissive leading, confirming trailing; destructive confirm label color.global.system.error"
             const val androidCornerDp: Float = 28f
             const val iosMaxButtons: Float = 3f
             const val androidMaxActions: Float = 2f
         }
-        /** Apple HIG · settings.account · 'Manage Subscription' destination · VERIFIED — token `settings.account.layout.manageSubscription` */
+        /** Apple HIG · settings.account · 'Your Subscription' destination · VERIFIED — token `settings.account.layout.manageSubscription` */
         object SettingsAccountLayoutManageSubscription {
             const val ios: String = "AppStore.showManageSubscriptions(in:) (manageSubscriptionsSheet)"
             const val android: String = "open https://play.google.com/store/account/subscriptions?sku={productId}&package={applicationId} (Play Subscription Center)"
         }
-        /** Apple HIG · settings.blocked · empty state of the blocked list · PLATFORM — token `settings.blocked.layout.empty` */
-        object SettingsBlockedLayoutEmpty {
-            const val ios: String = "ContentUnavailableView(title, systemImage: nil, description)"
-            const val android: String = "centred Column: headline in MaterialTheme.typography.bodyLarge, color.global.system.onSurface; supporting text bodyMedium, color.global.system.onSurfaceVariant"
-        }
-        /** Apple HIG · settings.root · settings list container (also settings.notifications, settings.account, settings.blocked, groups.settings) · PLATFORM — token `settings.root.layout.list` */
+        /** Retro · settings.root · settings sheet structure · SOURCED — token `settings.root.layout.list` */
         object SettingsRootLayoutList {
-            const val ios: String = "List with .listStyle(.insetGrouped); Section(header:footer:); NavigationLink rows show the system disclosure indicator; colours color.global.system.ios"
-            const val android: String = "LazyColumn of M3 ListItem rows on color.global.system.surface; section headers and footers in MaterialTheme.typography.bodyMedium, color.global.system.onSurfaceVariant; HorizontalDivider (settings.root.size.divider.android, color.global.system.outline) between groups"
+            const val component: String = "design/components.md C-14 on both platforms (custom rows; not List(.insetGrouped) / M3 ListItem)"
+            const val sheet: String = "page sheet (C-29) with its own navigation: header = centred title (text role sheetTitle) + trailing close circle (C-11 circle on the page); sub-pages push inside the sheet with the native back button and the same centred title"
+            const val page: String = "color.global.background (iOS) / color.global.background.android"
+            const val sectionGap: String = "size.global.sectionGap between a group's bottom and the next section header"
         }
         /** Apple HIG · settings.root · haptic of every switch on settings surfaces · PLATFORM — token `settings.root.layout.toggleHaptic` */
         object SettingsRootLayoutToggleHaptic {
@@ -2185,71 +1501,129 @@ object Tokens {
             const val ios: String = "1 device pixel (1 / displayScale pt)"
             const val android: String = "1 device pixel"
         }
-        /** Yope · walls.mine · how wall items fill the grid · SOURCED — token `walls.mine.layout.gridOrder` */
-        object WallsMineLayoutGridOrder {
-            const val order: String = "wall() items newest first, filled left to right, row by row"
-            const val items: String = "photos and same-moment collages, each in one tile, aspect fill"
-            const val rows: String = "every row has gridColumns tiles; the last row keeps tile size"
+        /** Retro · walls.browse · the people grid of walls.browse · SOURCED — token `walls.browse.layout.grid` */
+        object WallsBrowseLayoutGrid {
+            const val grid: String = "C-21 people grid: 3 columns of size.global.avatarGrid avatars, column pitch walls.browse.dimension.columnPitch, centred on the screen; row pitch walls.browse.dimension.rowPitch; name text role listTitle centred, baseline walls.browse.dimension.nameBaseline below the avatar, one line, tail truncation"
+            const val scroll: String = "vertical; the grid continues down the screen"
+            const val people: String = "everyone who shares at least one group with you, without you; order walls.browse.layout.rowOrder"
+            const val search: String = "C-12 search field above the grid filters by name"
         }
-        /** Apple HIG / Material 3 · week.edit · a dragged tile settles into a new slot · PLATFORM — token `week.edit.haptic.dragAlign` */
+        /** Retro · walls.mine · profile header of a wall (C-19 adapted) · SOURCED — token `walls.mine.layout.header` */
+        object WallsMineLayoutHeader {
+            const val name: String = "display name in the display serif, text role headerTitle (C-19), baseline size.global.titleTop below the top safe area (walls.mine) or on the C-02 back-chevron line (walls.member); one line, tail truncation"
+            const val avatar: String = "size.global.avatarProfile at the trailing margin, centred on the name's cap middle"
+            const val realName: String = "not shown (profiles hold one display name)"
+            const val infoRows: String = "not shown ('Weeks Posted: N' is a count; homebase / last-photo place are not product data)"
+            const val actions: String = "action row (C-06) walls.mine.dimension.nameToActions below the name baseline: one icon-only outline capsule (size.global.iconPillWidth × size.global.pillHeight) at the trailing margin — walls.mine: icon.global.settings → settings.root; walls.member: icon.global.more → native menu (Report Profile / Block Profile)"
+        }
+        /** Retro · walls.mine · a wall as week sections (Retro profile) · SOURCED — token `walls.mine.layout.weeks` */
+        object WallsMineLayoutWeeks {
+            const val source: String = "wall(p_user_id) items, grouped by week in the device's time zone, weeks starting on app_config week_start_isodow (Monday)"
+            const val sections: String = "C-20 section header ('Week {n}' + date range + •••-less) and C-17 strip per week, newest first"
+            const val currentWeek: String = "always first: week.history.layout.currentWeek (walls.mine: add tile → camera.capture; walls.member: no add tile, only the person's photo tiles and placeholder / empty-day tiles)"
+            const val pastWeeks: String = "only weeks that have items; photo tiles in time order, Mon → Sun, weekday label from created_at"
+            const val collage: String = "a collage item is a photo tile showing the collage image (aspect fill) → collage.view"
+            const val paging: String = "wall() pages of 50 by p_before; sections extend as pages arrive"
+        }
+        /** Apple HIG / Material 3 + Retro · week.edit · a dragged tile settles into a new slot · PLATFORM — token `week.edit.haptic.dragAlign` */
         object WeekEditHapticDragAlign {
             const val ios: String = "sensoryFeedback(.alignment) (iOS 17)"
-            const val android: String = "SEGMENT_TICK"
+            const val android: String = "SEGMENT_FREQUENT_TICK (API 34+; CLOCK_TICK below)"
         }
-        /** Apple HIG / Material 3 · week.edit · a recap tile is picked up to reorder · PLATFORM — token `week.edit.haptic.dragStart` */
+        /** Apple HIG / Material 3 · week.edit · a tile is picked up for reordering · PLATFORM — token `week.edit.haptic.dragStart` */
         object WeekEditHapticDragStart {
-            const val ios: String = "system (List / drag reordering plays its own feedback; no custom generator)"
-            const val android: String = "DRAG_START"
+            const val ios: String = "system (drag-and-drop lift plays its own feedback; no custom generator)"
+            const val android: String = "DRAG_START (API 34+; none below)"
         }
-        /** Yope · week.edit · week.edit screen built from documented Yope components · SOURCED — token `week.edit.layout.composition` */
+        /** Retro · week.edit · recap editor · SOURCED — token `week.edit.layout.composition` */
         object WeekEditLayoutComposition {
-            const val header: String = "close circle (icon.global.close, size.global.headerButton) at the left, sheet title centred (text role sheetTitle)"
-            const val body: String = "the week's photos in the pics grid (week.recap.count.picsColumns, .picsGap, .picsTile) with a check circle on each tile"
-            const val check: String = "icon.global.check (selected) / icon.global.uncheck, size.global.checkCircle, color.global.selection"
-            const val footer: String = "lime primary button at the sheet bottom (size.global.buttonHeightSheet, size.global.buttonMarginHSheet, radius.global.button)"
+            const val presentation: String = "page sheet (C-29) with the native toolbar: leading week.edit.cancel, centred week.edit.title, trailing week.edit.save (system tint, C-08)"
+            const val strip: String = "the recap's chosen photos as a C-17 strip at the top (photo tiles in recap order, weekday labels), size.global.screenMargin inset; reorder per week.edit.layout.reorder"
+            const val actions: String = "action row (C-06, equal widths, size.global.pillGap): outline capsule with icon.global.edit + week.edit.message.add (week.edit.message.edit when text exists) → week.edit.layout.message; outline capsule week.edit.saveAsAlbum → album sheet"
+            const val header: String = "week.edit.header line (text role listSubtitle, color.global.textSecondary) above the grid"
+            const val grid: String = "every visible post of the recap's week in time order: week.edit.count.gridColumns columns of square cells, size.global.stripGap gaps; tap toggles in / out of the recap (selection mark week.edit.layout.selectionMark); a checked photo joins the strip's end"
+            const val spacing: String = "between blocks size.global.sectionGap; header line → grid size.global.sectionHeaderToContent"
         }
-        /** Apple Photos + Google Photos · week.edit · how a recap is reordered (gesture, handles, layout while dragging) · SOURCED — token `week.edit.layout.reorder` */
+        /** Retro · week.edit · writing the recap text · SOURCED — token `week.edit.layout.message` */
+        object WeekEditLayoutMessage {
+            const val presentation: String = "sheet (C-29) on color.global.background: centred title week.edit.message.title (sheetTitle), trailing text button week.edit.message.done (C-08, text role textButton, color.global.textPrimary)"
+            const val field: String = "multi-line text from size.global.screenMargin, text role placeholder (typed text color.global.textPrimary, placeholder week.edit.textPlaceholder in color.global.textSecondary), keyboard up"
+            const val counter: String = "week.edit.message.counter at the trailing margin above the keyboard, text role body with monospaced digits, color.global.textSecondary"
+            const val limit: String = "2000 characters (weekly_recaps.text)"
+        }
+        /** Apple Photos + Google Photos + Retro · week.edit · how the recap is reordered · SOURCED — token `week.edit.layout.reorder` */
         object WeekEditLayoutReorder {
-            const val gesture: String = "touch and hold a checked tile, then drag it into a new position; release to drop it there"
-            const val scope: String = "the checked tiles (the recap’s items); their order becomes p_items’ order"
-            const val during: String = "the dragged tile follows the finger; the platform drag-and-drop moves the other checked tiles to show the drop position"
+            const val gesture: String = "touch and hold a photo in the top strip, drag it to a new place in the strip, release to drop"
+            const val scope: String = "the strip (the recap's items); its order becomes p_items' order"
+            const val during: String = "the dragged tile follows the finger; the others shift with duration.global.stripInsert (easing.global.standard)"
             const val haptics: String = "week.edit.haptic.dragStart on pick-up, week.edit.haptic.dragAlign on each slot change"
-            const val reduceMotion: String = "the drag tracks the finger (allowed by layout.global.reduceMotion)"
+            const val reduceMotion: String = "the drag tracks the finger; the shifts cross-fade (layout.global.reduceMotion)"
         }
-        /** Apple HIG · week.history · iOS Dynamic Type style for week.history text roles · PLATFORM — token `week.history.layout.textStyleMap` */
-        object WeekHistoryLayoutTextStyleMap {
-            const val header: String = "subheadline"
-            const val weekday: String = "footnote"
-            const val emptyDay: String = "title1"
-            const val emptyDayLabel: String = "subheadline"
-            const val title: String = "largeTitle"
+        /** Retro · week.history · the current week's strip (empty-day, add and placeholder tiles) · SOURCED — token `week.history.layout.currentWeek` */
+        object WeekHistoryLayoutCurrentWeek {
+            const val empty: String = "no photos yet: the add tile first, then one empty-day tile per day Monday → Sunday (dated: month / day / weekday)"
+            const val withPhotos: String = "photo tiles in time order, then the add tile, then one placeholder tile (blank fill) per remaining day without a photo"
+            const val addTile: String = "C-17 add tile → camera.capture with this group (walls.mine: any group)"
+            const val readOnly: String = "where the viewer cannot post (walls.member) the add tile is left out"
         }
-        /** Retro · week.history · week sections and strips · SOURCED — token `week.history.layout.weeks` */
+        /** Retro + Apple HIG / Material 3 · week.history · the week section's '•••' menu · SOURCED — token `week.history.layout.weekMenu` */
+        object WeekHistoryLayoutWeekMenu {
+            const val trigger: String = "the C-20 header's icon.global.more"
+            const val component: String = "native menu (C-29), items Sentence case"
+            const val items: String = "week.history.menu.viewRecap (only when that week has a ready recap) → week.recap preview · week.history.menu.saveAsAlbum → week.edit album sheet with that week's photos"
+        }
+        /** Retro · week.history · the group's weeks, scrolled back · SOURCED — token `week.history.layout.weeks` */
         object WeekHistoryLayoutWeeks {
-            const val order: String = "newest week first, scrolling back without end"
-            const val weekNumber: String = "ISO-8601 week number, Monday start"
-            const val range: String = "locale date interval Monday–Sunday (month once within a month), omitted for a current week with no photos"
-            const val strip: String = "one tile per photo in chronological order Mon→Sun; several photos on one day = several tiles with the same weekday"
-            const val currentWeek: String = "photo tiles, then the add tile, then one empty-day tile for each day of the week that has no photo"
+            const val order: String = "newest week first, scrolling back without end; pages of 8 (group_history_weeks)"
+            const val weekNumber: String = "ISO-8601 week of week_start in the group's time zone (week_start_isodow, Monday)"
+            const val section: String = "C-20 header: week.history.header.title + the date range (locale interval Monday–Sunday; omitted for the current week without photos) + icon.global.more → week.history.layout.weekMenu; C-17 strip under it"
+            const val strip: String = "one photo tile per post in time order (several photos on a day = several tiles), weekday label from created_at; current week per week.history.layout.currentWeek"
+            const val limit: String = "if app_config free_history_days limits browsing (owner), the list ends there with no message"
         }
-        /** Yope · week.recap · where the row with fewer than three photos goes · CAPTURED — token `week.recap.layout.shortRow` */
-        object WeekRecapLayoutShortRow {
-            const val position: String = "first row of the card"
-            const val span: String = "the full card width"
-            const val tiles: String = "the photos that do not fill a row of three"
+        /** Retro · week.recap · list of the group's recaps (Retro 'Create Recap') · SOURCED — token `week.recap.layout.list` */
+        object WeekRecapLayoutList {
+            const val presentation: String = "page sheet (C-29) over the group; header: C-11 close circle (size.global.circleButton, color.global.control) at the leading margin, centred title week.recap.list.title (text role sheetTitle)"
+            const val cards: String = "one card per ready recap, newest first, full width inside size.global.screenMargin, size.global.cardGap apart"
+            const val card: String = "cover = the recap's first item (aspect fill), shape week.recap.aspectRatio.weekCard, corners week.recap.radius.card; text at week.recap.dimension.weekCardTextInset / .weekCardTextTop: 'Week {n}' (font.global.display, text role displayMedium) over the date range (listSubtitle), both color.global.textOnMedia; icon.global.chevron at the trailing top in color.global.textOnMedia"
+            const val pending: String = "a recap with status pending shows as a C-17 placeholder fill card with week.recap.pending"
+            const val segmented: String = "none: only weekly recaps exist (Retro's Yearly / Monthly / Weekly / All Posts control has nothing to switch)"
         }
-        /** Apple HIG · week.recap · iOS Dynamic Type style for week.recap text roles · PLATFORM — token `week.recap.layout.textStyleMap` */
+        /** Retro · week.recap · the recap's text (weekly_recaps.text) · SOURCED — token `week.recap.layout.note` */
+        object WeekRecapLayoutNote {
+            const val component: String = "Retro's journal note: rounded box, the text in text role body, color.global.textOnMedia, on color.global.controlOnDeep"
+            const val corners: String = "week.recap.radius.note"
+            const val padding: String = "week.recap.dimension.notePaddingV vertical, week.recap.dimension.notePaddingH horizontal"
+            const val attribution: String = "leading: avatar (size.global.avatarComment) of weekly_recaps.edited_by and the name (text role listTitle) before the text, on the first line"
+            const val place: String = "page 1, under the collage card, card width, week.recap.dimension.noteGap below the card; the card + note block is centred in the panel"
+        }
+        /** Retro · week.recap · the recap's pages (styles) · SOURCED — token `week.recap.layout.pages` */
+        object WeekRecapLayoutPages {
+            const val page1: String = "collage card: white card (color.global.surfaceLight in both appearances) centred in the panel, week.recap.dimension.cardInsetH from the panel sides, shape week.recap.aspectRatio.card, corners week.recap.radius.card; photo grid week.recap.dimension.gridInset from the card's top and sides: week.recap.count.gridColumns columns, size.global.stripGap gaps, cells week.recap.aspectRatio.gridCell (aspect fill), outer corners week.recap.radius.grid, inner square; footer: 'Week {n}' (font.global.display, text role headerTitle, color.global.onSurfaceLight) leading at week.recap.dimension.footerInset, baseline week.recap.dimension.footerBaseline above the card bottom; trailing stack right-aligned at the same inset: group name (week.recap.fontSize.cardName / .fontWeight.cardName, color.global.onSurfaceLight) over the date range (text role meta, color.global.textSecondary), the range's baseline on the week's baseline, week.recap.dimension.footerLinePitch apart; the recap text (if any) as a note under the card (week.recap.layout.note)"
+            const val page2: String = "cover: the first item fills the panel (aspect fill, panel corners) under layout.global.photoScrim; 'Week {n}' (headerTitle serif, color.global.textOnMedia) leading at week.recap.dimension.coverTextInset, baseline week.recap.dimension.coverTextBaseline above the panel bottom; group name / date range stack trailing at the same inset (as page 1, color.global.textOnMedia / color.global.textSecondary)"
+            const val dots: String = "C-31 with two pages"
+        }
+        /** Retro · week.recap · one recap: preview screen (Retro recap preview) · SOURCED — token `week.recap.layout.preview` */
+        object WeekRecapLayoutPreview {
+            const val page: String = "color.global.backgroundDeep in both appearances (photo.viewer.layout.appearance rule)"
+            const val panel: String = "a rounded panel inset week.recap.dimension.panelInset from the screen sides, from the top safe area to week.recap.dimension.panelToControls above the controls row; corners week.recap.radius.panel; filled with the blurred cover photo (layout.global.materials.backdrop)"
+            const val close: String = "C-11 glass circle (size.global.circleButtonSmall, color.global.glass, icon.global.close in color.global.textOnMedia) at week.recap.dimension.closeInsetLeading / .closeInsetTop inside the panel"
+            const val pages: String = "week.recap.layout.pages, swiped sideways"
+            const val controls: String = "row under the panel, height week.recap.dimension.controlHeight: leading C-11 circle (diameter = controlHeight, color.global.controlOnDeep, icon.global.gallery) → week.edit; centre C-31 page dots (on media); trailing C-09 light pill week.recap.saveAsAlbum (height = controlHeight, padding week.recap.dimension.pillPaddingH) → album sheet; both week.recap.dimension.controlInset from the screen sides"
+        }
+        /** Apple HIG · week.recap · Dynamic Type style the card-name size scales with · PLATFORM — token `week.recap.layout.textStyleMap` */
         object WeekRecapLayoutTextStyleMap {
-            const val title: String = "headline"
-            const val label: String = "title3"
-            const val segmented: String = "headline"
+            const val cardName: String = "footnote"
         }
-        /** Yope · week.recap · week label formats · CAPTURED — token `week.recap.layout.weekFormat` */
-        object WeekRecapLayoutWeekFormat {
-            const val title: String = "d MMM-d MMM, lowercase, bare hyphen"
-            const val label: String = "the title in uppercase"
-            const val example: String = "18 aug-24 aug / 18 AUG-24 AUG"
-            const val week: String = "Monday–Sunday in the group's time zone"
+        /** Retro · widget.android · AppWidgetProviderInfo of the Glance widget (default 2 × 2, resizable down to 100 dp) · SOURCED — token `widget.android.layout.provider` */
+        object WidgetAndroidLayoutProvider {
+            const val minWidth: Float = 200f
+            const val minHeight: Float = 200f
+            const val minResizeWidth: Float = 100f
+            const val minResizeHeight: Float = 100f
+            const val targetCellWidth: Float = 2f
+            const val targetCellHeight: Float = 2f
+            const val resizeMode: String = "horizontal|vertical"
+            const val reconfigurable: Boolean = true
         }
         /** Material 3 · widget.android · handheld size ranges the same layout must fill edge to edge · VERIFIED — token `widget.android.layout.sizes` */
         object WidgetAndroidLayoutSizes {
@@ -2285,28 +1659,21 @@ object Tokens {
             const val w360h780: String = "329x155"
             const val w320h568: String = "292x141"
         }
-        /** Locket · widget.home.small · empty state centred stack: translucent circle with a photo glyph inside a ring, then one label line (default 'md' variant) · SOURCED — token `widget.home.small.layout.empty` */
-        object WidgetHomeSmallLayoutEmpty {
-            const val circle: Float = 72f
-            const val ring: Float = 82f
-            const val ringStroke: Float = 3f
-            const val glyphWidth: Float = 32f
-            const val glyphHeight: Float = 28f
-            const val label: Float = 19f
-            const val labelGap: Float = 9f
+        /** Retro · widget.home.small · white text stack bottom-trailing over the photo (Retro 'Albums' widget: name over album title) · SOURCED — token `widget.home.small.layout.overlay` */
+        object WidgetHomeSmallLayoutOverlay {
+            const val lines: String = "line 1: the poster's first name; line 2: the group name (collage: the group name alone, one line)"
+            const val align: String = "trailing-aligned stack at the bottom-trailing corner"
+            const val trailingInset: Float = 11f
+            const val lastBaselineFromBottom: Float = 15f
+            const val linePitch: Float = 13f
+            const val colour: String = "color.global.textOnMedia"
+            const val scrim: String = "layout.global.photoScrim"
         }
-        /** Locket · widget.home.small · newest photo (or the collage page 1) filling the whole widget · SOURCED — token `widget.home.small.layout.photo` */
+        /** Retro · widget.home.small · newest photo of the configured group (or the collage's first page) filling the whole widget; bottom scrim layout.global.photoScrim under the text stack · SOURCED — token `widget.home.small.layout.photo` */
         object WidgetHomeSmallLayoutPhoto {
             const val fill: String = "aspect-fill, full bleed"
             const val ios: String = "containerBackground(for: .widget) with the image; contentMarginsDisabled"
             const val android: String = "ImageView centerCrop"
-        }
-        /** Locket · widget.home.small · loading placeholder content: up to 3 member avatars in a row at the bottom-leading corner, not overlapping · SOURCED — token `widget.home.small.layout.placeholderAvatars` */
-        object WidgetHomeSmallLayoutPlaceholderAvatars {
-            const val diameter: Float = 25f
-            const val gap: Float = 2.5f
-            const val max: Float = 3f
-            const val inset: Float = 6f
         }
         /** Apple HIG · widget.home.small · systemSmall size by iPhone screen (pt; the system sizes the widget, for comps only) · VERIFIED — token `widget.home.small.layout.size` */
         object WidgetHomeSmallLayoutSize {
@@ -2321,10 +1688,9 @@ object Tokens {
             const val w360h780: String = "155x155"
             const val w320h568: String = "141x141"
         }
-        /** Apple HIG · widget.home.small · Dynamic Type style of the widget caption (12 pt) and the empty label (19 pt) — widgets support Large to AX5 (HIG Widgets) · PLATFORM — token `widget.home.small.layout.textStyleMap` */
+        /** Apple HIG · widget.home.small · Dynamic Type style of the widget text (11 pt = Caption 2); widgets support Large–AX5 and the two lines truncate · PLATFORM — token `widget.home.small.layout.textStyleMap` */
         object WidgetHomeSmallLayoutTextStyleMap {
-            const val caption: String = "caption"
-            const val emptyLabel: String = "title3"
+            const val overlay: String = "caption2"
         }
         /** Apple HIG · widget.home.xl · systemExtraLarge size (iPad only; HIG: 'System extra large | iPhone: Not supported') · VERIFIED — token `widget.home.xl.layout.size` */
         object WidgetHomeXlLayoutSize {
@@ -2358,11 +1724,12 @@ object Tokens {
             const val w375h667: String = "225x26"
             const val w360h780: String = "225x26"
         }
-        /** Locket · widget.lock.rect · what the Lock Screen widgets show in the two cases Locket's small-widget anatomy cannot fill: the newest photo has no caption (rectangular, inline) and the newest item is a collage (all three) · SOURCED — token `widget.lock.rect.layout.content` */
+        /** Retro · widget.lock.rect · what the Lock Screen widgets show (Retro has no Lock Screen widget: its home-widget text stack, name over group, drawn with Retro's people-row roles) · SOURCED — token `widget.lock.rect.layout.content` */
         object WidgetLockRectLayoutContent {
-            const val noCaptionRectangular: String = "the sender avatar alone, in its 24-pt leading slot (Locket's small widget without a caption shows only the avatar)"
-            const val noCaptionInline: String = "the sentence of widget.home.small.a11y.photo ('{name}’s photo in {group}') as the inline text (the inline widget has no avatar slot)"
-            const val newestIsCollage: String = "keep showing the newest single photo's sender (avatar, and its caption if any): Locket's widget always shows one sender's newest photo and has no collage state"
+            const val rectangular: String = "C-16 people row in vibrant rendering: the newest poster's avatar size.global.avatarPicker, then name (text role listTitle) over the group name (text role listSubtitle)"
+            const val circular: String = "the newest poster's avatar filling the circle (C-23)"
+            const val inline: String = "one line '{name} · {group}' (copy widget.lock.inline.text)"
+            const val newestIsCollage: String = "rectangular / inline show the group name alone; circular shows icon.global.camera"
         }
         /** Apple HIG · widget.lock.rect · how every Lock Screen widget renders (circular, rectangular, inline) · VERIFIED — token `widget.lock.rect.layout.rendering` */
         object WidgetLockRectLayoutRendering {
@@ -2385,16 +1752,12 @@ object Tokens {
         }
     }
     object LineHeights {
-        /** Partiful · invite.web · default line height (× font size) for all text except the title · VERIFIED — token `invite.web.lineHeight.default` */
-        val inviteWebLineHeightDefault: TextUnit = 1.4.sp
-        /** Partiful · invite.web · title line height (× size) · VERIFIED — token `invite.web.lineHeight.title` */
-        val inviteWebLineHeightTitle: TextUnit = 1.2.sp
-        /** Tribute · birthday.request · welcome message · VERIFIED — token `lineHeight.birthday.request.message` */
-        val birthdayRequestMessage: TextUnit = 28.sp
-        /** Tribute · birthday.request · prompt text · VERIFIED — token `lineHeight.birthday.request.prompt` */
-        val birthdayRequestPrompt: TextUnit = 18.75.sp
-        /** Tribute · birthday.request · title · VERIFIED — token `lineHeight.birthday.request.title` */
-        val birthdayRequestTitle: TextUnit = 28.8.sp
+        /** Retro · invite.web · mobile page: body line height · SOURCED — token `invite.web.lineHeight.body` */
+        val inviteWebLineHeightBody: TextUnit = 19.6.sp
+        /** Retro · invite.web · desktop page: body line height · SOURCED — token `invite.web.lineHeight.bodyDesktop` */
+        val inviteWebLineHeightBodyDesktop: TextUnit = 28.sp
+        /** Retro · invite.web · mobile headline ('{first_name} Invited You!') line height; size is fontSize.global.displayMedium (32), family font.global.display, weight regular, colour #FFFFFF · SOURCED — token `invite.web.lineHeight.headline` */
+        val inviteWebLineHeightHeadline: TextUnit = 32.sp
         /** Retro · global · Android badge line height (Inter 11/11 W600) · SOURCED — token `lineHeight.global.badge.android` */
         val globalBadgeAndroid: TextUnit = 11.sp
         /** Retro · global · Android body line height · SOURCED — token `lineHeight.global.body.android` */
@@ -2405,112 +1768,22 @@ object Tokens {
         val globalHeaderTitle: TextUnit = 48.sp
         /** Retro · global · Android name / row title line height (Inter 15/18 W600) · SOURCED — token `lineHeight.global.listTitle.android` */
         val globalListTitleAndroid: TextUnit = 18.sp
-        /** Spotify Wrapped · year.story · subline line pitch · SOURCED — token `lineHeight.year.story.body` */
-        val yearStoryBody: TextUnit = 21.4.sp
-        /** Spotify Wrapped · year.story · headline line pitch · SOURCED — token `lineHeight.year.story.headline` */
-        val yearStoryHeadline: TextUnit = 36.4.sp
-        /** Locket · onboarding.widget · step line pitch · SOURCED — token `onboarding.widget.lineHeight.step` */
-        val onboardingWidgetLineHeightStep: TextUnit = 32.sp
-        /** Locket · paywall · plan sheet title line pitch · SOURCED — token `paywall.lineHeight.planSheetTitle` */
-        val paywallLineHeightPlanSheetTitle: TextUnit = 29.sp
-        /** Locket · paywall · subtitle line pitch · SOURCED — token `paywall.lineHeight.subtitle` */
-        val paywallLineHeightSubtitle: TextUnit = 22.sp
     }
     object Opacities {
-        /** Partiful · invite.appclip · join sheet helper alpha on dark themes · VERIFIED — token `invite.appclip.opacity.sheetHelper.dark` */
-        val inviteAppclipOpacitySheetHelperDark: Float = 0.4f
-        /** Partiful · invite.appclip · join sheet helper alpha on light themes · VERIFIED — token `invite.appclip.opacity.sheetHelper.light` */
-        val inviteAppclipOpacitySheetHelperLight: Float = 0.3f
-        /** Partiful · invite.appclip · join sheet placeholder alpha on dark themes · VERIFIED — token `invite.appclip.opacity.sheetPlaceholder.dark` */
-        val inviteAppclipOpacitySheetPlaceholderDark: Float = 0.4f
-        /** Partiful · invite.appclip · join sheet placeholder alpha on light themes · VERIFIED — token `invite.appclip.opacity.sheetPlaceholder.light` */
-        val inviteAppclipOpacitySheetPlaceholderLight: Float = 0.3f
-        /** Partiful · invite.web · initials disc fill alpha (white) on dark themes · VERIFIED — token `invite.web.opacity.avatar.minimal.fill.dark` */
-        val inviteWebOpacityAvatarMinimalFillDark: Float = 0.25f
-        /** Partiful · invite.web · initials disc fill alpha (black) on light themes — member without a photo · VERIFIED — token `invite.web.opacity.avatar.minimal.fill.light` */
-        val inviteWebOpacityAvatarMinimalFillLight: Float = 0.1f
-        /** Partiful · invite.web · initials text alpha · VERIFIED — token `invite.web.opacity.avatar.minimal.text` */
-        val inviteWebOpacityAvatarMinimalText: Float = 0.8f
-        /** Partiful · invite.web · every button: opacity while pressed · VERIFIED — token `invite.web.opacity.button.active` */
-        val inviteWebOpacityButtonActive: Float = 0.4f
-        /** Partiful · invite.web · every button: opacity on hover (devices that hover) · VERIFIED — token `invite.web.opacity.button.hover` */
-        val inviteWebOpacityButtonHover: Float = 0.6f
-        /** Partiful · invite.web · outlined button border alpha while pressed · VERIFIED — token `invite.web.opacity.button.outlined.active.border` */
-        val inviteWebOpacityButtonOutlinedActiveBorder: Float = 0.4f
-        /** Partiful · invite.web · outlined button fill alpha while pressed · VERIFIED — token `invite.web.opacity.button.outlined.active.fill` */
-        val inviteWebOpacityButtonOutlinedActiveFill: Float = 0.25f
-        /** Partiful · invite.web · outlined button border alpha on dark themes · VERIFIED — token `invite.web.opacity.button.outlined.border.dark` */
-        val inviteWebOpacityButtonOutlinedBorderDark: Float = 0.4f
-        /** Partiful · invite.web · outlined button border alpha on light themes · VERIFIED — token `invite.web.opacity.button.outlined.border.light` */
-        val inviteWebOpacityButtonOutlinedBorderLight: Float = 0.25f
-        /** Partiful · invite.web · outlined button fill alpha (text colour) · VERIFIED — token `invite.web.opacity.button.outlined.fill` */
-        val inviteWebOpacityButtonOutlinedFill: Float = 0.05f
-        /** Partiful · invite.web · outlined button fill alpha on hover · VERIFIED — token `invite.web.opacity.button.outlined.hover.fill` */
-        val inviteWebOpacityButtonOutlinedHoverFill: Float = 0.1f
-        /** Partiful · invite.web · arrow glyph alpha · VERIFIED — token `invite.web.opacity.footer.arrow` */
-        val inviteWebOpacityFooterArrow: Float = 0.8f
-        /** Partiful · invite.web · footer divider alpha (text colour, 1 pt) · VERIFIED — token `invite.web.opacity.footer.divider` */
-        val inviteWebOpacityFooterDivider: Float = 0.1f
-        /** Partiful · invite.web · members-only card fill alpha on dark themes · VERIFIED — token `invite.web.opacity.gateCard.dark` */
-        val inviteWebOpacityGateCardDark: Float = 0.8f
-        /** Partiful · invite.web · members-only card fill alpha on light themes · VERIFIED — token `invite.web.opacity.gateCard.light` */
-        val inviteWebOpacityGateCardLight: Float = 0.7f
-        /** Partiful · invite.web · body text alpha ('Invited by' row, gate card body, initials) · VERIFIED — token `invite.web.opacity.text.body` */
-        val inviteWebOpacityTextBody: Float = 0.8f
-        /** Tribute · birthday.contribute · sub-heading (white at this opacity) · VERIFIED — token `opacity.birthday.contribute.subheading` */
-        val birthdayContributeSubheading: Float = 0.72f
-        /** Tribute · birthday.request · honoree photo over the black hero background · VERIFIED — token `opacity.birthday.request.hero.image` */
-        val birthdayRequestHeroImage: Float = 0.7f
-        /** Tribute · birthday.request · welcome message (white at this opacity) · VERIFIED — token `opacity.birthday.request.message` */
-        val birthdayRequestMessage: Float = 0.9f
-        /** Spotify Wrapped · year.story · upcoming segment: white at this opacity · SOURCED — token `opacity.year.story.progress.track` */
-        val yearStoryProgressTrack: Float = 0.43f
+        /** Retro · invite.web · mobile page: pill opacity while busy ('Opening…') · SOURCED — token `invite.web.opacity.pillDisabled` */
+        val inviteWebOpacityPillDisabled: Float = 0.75f
     }
     object Radii {
-        /** Yope · camera.capture · library thumbnail corner radius · SOURCED — token `camera.capture.radius.libraryThumb` */
-        val cameraCaptureRadiusLibraryThumb: Dp = 8.dp
-        /** Yope · chat.thread · text bubble corner radius (all four corners, no tail) · SOURCED — token `chat.thread.radius.bubble` */
-        val chatThreadRadiusBubble: Dp = 16.dp
-        /** Yope · chat.thread · caption box corner radius · SOURCED — token `chat.thread.radius.caption` */
-        val chatThreadRadiusCaption: Dp = 13.dp
-        /** Yope · chat.thread · loading HUD corner radius (the HUD's other values are groups.create.color.hud / .size.hud / .fontSize.hudLabel) · SOURCED — token `chat.thread.radius.loadingHud` */
-        val chatThreadRadiusLoadingHud: Dp = 10.5.dp
-        /** Yope · chat.thread · corner radius of the lime quote part (top corners; the text part overlaps its bottom) · SOURCED — token `chat.thread.radius.replyQuote` */
-        val chatThreadRadiusReplyQuote: Dp = 18.2.dp
-        /** Yope · chat.thread · reply thumbnail corner radius · SOURCED — token `chat.thread.radius.replyThumb` */
-        val chatThreadRadiusReplyThumb: Dp = 7.dp
-        /** Yope · chat.voice · voice bubble corner radius · SOURCED — token `chat.voice.radius.bubble` */
-        val chatVoiceRadiusBubble: Dp = 14.dp
-        /** Yope · groups.create · cover-photo placeholder corner radius · SOURCED — token `groups.create.radius.cover` */
-        val groupsCreateRadiusCover: Dp = 7.dp
-        /** Yope · groups.screen · photo card corner radius · SOURCED — token `groups.screen.radius.card` */
-        val groupsScreenRadiusCard: Dp = 20.dp
-        /** Yope · groups.screen · white secondary pill ('invite more friends') corner radius · SOURCED — token `groups.screen.radius.lightPill` */
-        val groupsScreenRadiusLightPill: Dp = 11.dp
-        /** Partiful · invite.web · avatar corners (circle) · VERIFIED — token `invite.web.radius.avatar` */
-        val inviteWebRadiusAvatar: Dp = 800.dp
-        /** Partiful · invite.web · large button corners · VERIFIED — token `invite.web.radius.button.large` */
-        val inviteWebRadiusButtonLarge: Dp = 4.dp
-        /** Partiful · invite.web · medium button corners (pill) · VERIFIED — token `invite.web.radius.button.medium` */
-        val inviteWebRadiusButtonMedium: Dp = 800.dp
-        /** Partiful · invite.web · cover image corners · VERIFIED — token `invite.web.radius.cover` */
-        val inviteWebRadiusCover: Dp = 0.dp
-        /** Partiful · invite.web · members-only card corners · VERIFIED — token `invite.web.radius.gateCard` */
-        val inviteWebRadiusGateCard: Dp = 4.dp
-        /** Locket · paywall · inner corners between stacked perk cards · SOURCED — token `paywall.radius.perkInner` */
-        val paywallRadiusPerkInner: Dp = 6.dp
-        /** Locket · paywall · outer corners of the perk stack (top of the first card, bottom of the last) · SOURCED — token `paywall.radius.perkOuter` */
-        val paywallRadiusPerkOuter: Dp = 23.dp
-        /** Tribute · birthday.contribute · step button corners · VERIFIED — token `radius.birthday.contribute.button` */
-        val birthdayContributeButton: Dp = 8.dp
-        /** Tribute · birthday.contribute · field corners · VERIFIED — token `radius.birthday.contribute.input` */
-        val birthdayContributeInput: Dp = 8.dp
-        /** Tribute · birthday.request · primary button corners · VERIFIED — token `radius.birthday.request.cta` */
-        val birthdayRequestCta: Dp = 8.dp
-        /** Tribute · birthday.request · prompts block corners (top corners of the header bar) · VERIFIED — token `radius.birthday.request.prompts` */
-        val birthdayRequestPrompts: Dp = 8.dp
-        /** Tribute · birthday.tribute · secondary button corners · VERIFIED — token `radius.birthday.tribute.button` */
-        val birthdayTributeButton: Dp = 8.dp
+        /** Retro · albums.view · outer corners of the album photo grid (inner corners square) · SOURCED — token `albums.view.radius.grid` */
+        val albumsViewRadiusGrid: Dp = 12.dp
+        /** Retro · invite.web · mobile page: corner radius of the blurred-photo card · SOURCED — token `invite.web.radius.card` */
+        val inviteWebRadiusCard: Dp = 36.dp
+        /** Retro · onboarding.widget · corner radius of the widget preview tile · SOURCED — token `onboarding.widget.radius.preview` */
+        val onboardingWidgetRadiusPreview: Dp = 22.dp
+        /** Retro · paywall · corner radius of the benefit media card · SOURCED — token `paywall.radius.mediaCard` */
+        val paywallRadiusMediaCard: Dp = 27.dp
+        /** Retro · birthday.contribute · photo corners on the message step · SOURCED — token `radius.birthday.contribute.photo` */
+        val birthdayContributePhoto: Dp = 8.5.dp
         /** Retro · global · full-width 60 pt capsule (radius = height ÷ 2) · SOURCED — token `radius.global.button` */
         val globalButton: Dp = 30.dp
         /** Retro · global · photo containers: week-strip outer corners, friend card — continuous corner (layout.global.cornerStyle) · SOURCED — token `radius.global.card` */
@@ -2529,478 +1802,220 @@ object Tokens {
         val globalThumbnail: Dp = 4.dp
         /** Retro · global · camera viewfinder corners — composition: the viewfinder is drawn as Retro's photo container (radius.global.card) · SOURCED — token `radius.global.viewfinder` */
         val globalViewfinder: Dp = 18.dp
-        /** Yope · walls.mine · wall grid tile corner radius · SOURCED — token `walls.mine.radius.gridTile` */
-        val wallsMineRadiusGridTile: Dp = 6.5.dp
-        /** Retro · week.history · outer corners of a strip only (first tile's left corners, last tile's right corners); inner corners square · SOURCED — token `week.history.radius.strip` */
-        val weekHistoryRadiusStrip: Dp = 14.dp
-        /** Yope · week.recap · recap card corner radius (the outer corners; tiles inside are square) · CAPTURED — token `week.recap.radius.card` */
-        val weekRecapRadiusCard: Dp = 12.dp
-        /** Locket · widget.android · widget corner radius before Android 12 (theme attr appWidgetRadius); 12+ uses @android:dimen/system_app_widget_background_radius · SOURCED — token `widget.android.radius.fallback` */
-        val widgetAndroidRadiusFallback: Dp = 8.dp
+        /** Retro · week.recap · corners of the recap list cards and of the recap collage card · SOURCED — token `week.recap.radius.card` */
+        val weekRecapRadiusCard: Dp = 14.dp
+        /** Retro · week.recap · outer corners of the collage card's photo grid (inner corners square) · SOURCED — token `week.recap.radius.grid` */
+        val weekRecapRadiusGrid: Dp = 7.9.dp
+        /** Retro · week.recap · recap note corners · SOURCED — token `week.recap.radius.note` */
+        val weekRecapRadiusNote: Dp = 18.dp
+        /** Retro · week.recap · recap preview: corners of the blurred panel · SOURCED — token `week.recap.radius.panel` */
+        val weekRecapRadiusPanel: Dp = 23.dp
+        /** Retro · widget.android · Glance widget corner radius (root container), every Android version · SOURCED — token `widget.android.radius.widget` */
+        val widgetAndroidRadiusWidget: Dp = 22.dp
+    }
+    object Shadows {
+        /** Retro · groups.screen · drop shadow of the 'book' cover (Retro's one shadow on a non-photo surface; also used by the cover on groups.invite and groups.create) · SOURCED — token `groups.screen.shadow.cover` */
+        val groupsScreenShadowCover: DSShadow = DSShadow(color = Color(0x40000000), blur = 8.5.dp, x = 3.dp, y = 10.dp)
     }
     object Sizes {
-        /** Yope · albums.list · album card height (Yope home list card) · SOURCED — token `albums.list.dimension.cardHeight` */
-        val albumsListDimensionCardHeight: Dp = 100.dp
-        /** Yope · albums.list · cover circle left inset inside the card · SOURCED — token `albums.list.dimension.coverInset` */
-        val albumsListDimensionCoverInset: Dp = 16.dp
-        /** Yope · albums.list · cover circle right edge to the album name ink · SOURCED — token `albums.list.dimension.coverToTitle` */
-        val albumsListDimensionCoverToTitle: Dp = 15.dp
-        /** Yope · auth.profile · large avatar circle (name + avatar step) · SOURCED — token `auth.profile.size.avatar` */
-        val authProfileSizeAvatar: Dp = 92.dp
-        /** Yope · camera.capture · flip-camera circle button diameter · SOURCED — token `camera.capture.size.flipButton` */
-        val cameraCaptureSizeFlipButton: Dp = 47.dp
-        /** Yope · camera.capture · photo-library thumbnail (last photo) square, left of the shutter · SOURCED — token `camera.capture.size.libraryThumb` */
-        val cameraCaptureSizeLibraryThumb: Dp = 46.dp
-        /** Yope · camera.capture · white border around the library thumbnail (color.global.textPrimary) · SOURCED — token `camera.capture.size.libraryThumbBorder` */
-        val cameraCaptureSizeLibraryThumbBorder: Dp = 1.dp
-        /** Yope · camera.capture · light pill action in empty / permission-denied states ('invite more friends' empty-state pill) · SOURCED — token `camera.capture.size.permissionButtonHeight` */
-        val cameraCaptureSizePermissionButtonHeight: Dp = 45.dp
-        /** Locket · camera.capture · outline drawn around the viewfinder while a video records (color.global.accent) · SOURCED — token `camera.capture.size.recordingOutline` */
+        /** Retro · albums.view · album cover height · SOURCED — token `albums.view.dimension.coverHeight` */
+        val albumsViewDimensionCoverHeight: Dp = 246.dp
+        /** Retro · albums.view · sheet top → cover top · SOURCED — token `albums.view.dimension.coverTop` */
+        val albumsViewDimensionCoverTop: Dp = 74.dp
+        /** Retro · albums.view · cover bottom → album name cap top · SOURCED — token `albums.view.dimension.coverToTitle` */
+        val albumsViewDimensionCoverToTitle: Dp = 36.7.dp
+        /** Retro · albums.view · album cover (book-like) at the top of the album sheet · SOURCED — token `albums.view.dimension.coverWidth` */
+        val albumsViewDimensionCoverWidth: Dp = 172.5.dp
+        /** Retro · albums.view · meta line baseline → action capsules top · SOURCED — token `albums.view.dimension.metaToActions` */
+        val albumsViewDimensionMetaToActions: Dp = 28.5.dp
+        /** Retro · albums.view · album name baseline → meta line baseline · SOURCED — token `albums.view.dimension.titleToMeta` */
+        val albumsViewDimensionTitleToMeta: Dp = 23.7.dp
+        /** Retro · auth.phone · 'Get started' capsule bottom → 'already have an account?' ink top · SOURCED — token `auth.phone.size.capsuleToLink` */
+        val authPhoneSizeCapsuleToLink: Dp = 20.7.dp
+        /** Retro · auth.phone · fine-print last line ink bottom → screen bottom (the fine print sits just above the home indicator) · SOURCED — token `auth.phone.size.legalToBottom` */
+        val authPhoneSizeLegalToBottom: Dp = 40.dp
+        /** Retro · auth.phone · 'already have an account?' ink bottom → fine-print first line ink top · SOURCED — token `auth.phone.size.linkToLegal` */
+        val authPhoneSizeLinkToLegal: Dp = 28.4.dp
+        /** Retro · auth.phone · wordmark baseline → tagline ink top on the landing · SOURCED — token `auth.phone.size.wordmarkToTagline` */
+        val authPhoneSizeWordmarkToTagline: Dp = 19.3.dp
+        /** Retro · auth.profile · profile-photo circle centred on the 'Add a profile photo' step · SOURCED — token `auth.profile.size.avatar` */
+        val authProfileSizeAvatar: Dp = 112.dp
+        /** Locket · camera.capture · progress stroke traced around the viewfinder (radius.global.viewfinder) while a video records, colour color.global.surfaceLight · SOURCED — token `camera.capture.size.recordingOutline` */
         val cameraCaptureSizeRecordingOutline: Dp = 6.dp
-        /** Yope · camera.capture · white shutter disc diameter (color.global.surfaceLight) · SOURCED — token `camera.capture.size.shutterDisc` */
-        val cameraCaptureSizeShutterDisc: Dp = 59.dp
-        /** Yope · camera.capture · black gap between ring and disc (color.global.backgroundDeep) · SOURCED — token `camera.capture.size.shutterGap` */
-        val cameraCaptureSizeShutterGap: Dp = 5.5.dp
-        /** Yope · camera.capture · shutter outer diameter (lime ring outer edge) · SOURCED — token `camera.capture.size.shutterOuter` */
-        val cameraCaptureSizeShutterOuter: Dp = 80.dp
-        /** Yope · camera.capture · shutter ring stroke (color.global.accent) · SOURCED — token `camera.capture.size.shutterRing` */
-        val cameraCaptureSizeShutterRing: Dp = 3.5.dp
-        /** Yope · camera.capture · viewfinder bottom edge → shutter ring top · SOURCED — token `camera.capture.size.shutterTopGap` */
-        val cameraCaptureSizeShutterTopGap: Dp = 38.dp
-        /** Yope · camera.capture · horizontal distance shutter centre → library thumbnail centre and → flip button centre · SOURCED — token `camera.capture.size.sideControlOffset` */
-        val cameraCaptureSizeSideControlOffset: Dp = 110.dp
-        /** Yope · camera.sendto · hour-overlay baseline → caption baseline · SOURCED — token `camera.sendto.size.captionBaselineOffset` */
-        val cameraSendtoSizeCaptionBaselineOffset: Dp = 31.dp
-        /** Yope · camera.sendto · black disc after 'send' holding the number of selected groups (fill color.global.onAccent, number color.global.accent) · SOURCED — token `camera.sendto.size.countDisc` */
-        val cameraSendtoSizeCountDisc: Dp = 18.5.dp
-        /** Yope · camera.sendto · 'send' label → count disc · SOURCED — token `camera.sendto.size.countDiscGap` */
-        val cameraSendtoSizeCountDiscGap: Dp = 7.dp
-        /** Yope · camera.sendto · send button bottom edge → screen bottom · SOURCED — token `camera.sendto.size.sendButtonBottom` */
-        val cameraSendtoSizeSendButtonBottom: Dp = 41.5.dp
-        /** WhatsApp + Instagram · chat.composer · distance from the composer row to the bottom safe area / keyboard · SOURCED — token `chat.composer.dimension.bottomInset` */
-        val chatComposerDimensionBottomInset: Dp = 8.dp
-        /** Yope · chat.composer · lime camera circle at the left of the composer · SOURCED — token `chat.composer.dimension.cameraButton` */
-        val chatComposerDimensionCameraButton: Dp = 40.6.dp
-        /** Yope · chat.composer · camera glyph height on the lime circle (glyph 24 pt wide) · SOURCED — token `chat.composer.dimension.cameraGlyph` */
-        val chatComposerDimensionCameraGlyph: Dp = 19.5.dp
-        /** Yope · chat.composer · text field height (capsule; radius.global.capsule) · SOURCED — token `chat.composer.dimension.fieldHeight` */
-        val chatComposerDimensionFieldHeight: Dp = 39.5.dp
-        /** Yope · chat.composer · field left edge to the placeholder / text ink · SOURCED — token `chat.composer.dimension.fieldPaddingLeading` */
-        val chatComposerDimensionFieldPaddingLeading: Dp = 17.8.dp
-        /** Yope · chat.composer · rim stroke width of the text field · SOURCED — token `chat.composer.dimension.fieldRim` */
-        val chatComposerDimensionFieldRim: Dp = 0.44.dp
-        /** Yope · chat.composer · gap between the lime camera circle and the field · SOURCED — token `chat.composer.dimension.gapCameraField` */
-        val chatComposerDimensionGapCameraField: Dp = 6.2.dp
-        /** Yope · chat.composer · gap between the field and the next circle to its right · SOURCED — token `chat.composer.dimension.gapFieldButton` */
-        val chatComposerDimensionGapFieldButton: Dp = 7.1.dp
-        /** Yope · chat.composer · screen edge to the camera circle · SOURCED — token `chat.composer.dimension.insetLeading` */
-        val chatComposerDimensionInsetLeading: Dp = 22.8.dp
-        /** Yope · chat.composer · last circle to the screen edge · SOURCED — token `chat.composer.dimension.insetTrailing` */
-        val chatComposerDimensionInsetTrailing: Dp = 23.4.dp
-        /** Yope · chat.composer · mic glyph height on the dark circle (glyph 15.5 pt wide) · SOURCED — token `chat.composer.dimension.micGlyph` */
-        val chatComposerDimensionMicGlyph: Dp = 21.8.dp
-        /** Yope · chat.composer · dark circle buttons beside the field (mic in the chat; camera in the photo viewer's reply row) · SOURCED — token `chat.composer.dimension.sideButton` */
-        val chatComposerDimensionSideButton: Dp = 39.5.dp
-        /** Locket · chat.reactions · one emoji sticker in the reaction cluster on a photo (white outline included) · SOURCED — token `chat.reactions.dimension.clusterEmoji` */
-        val chatReactionsDimensionClusterEmoji: Dp = 39.dp
-        /** Locket · chat.reactions · cluster bottom to the photo's bottom edge · SOURCED — token `chat.reactions.dimension.clusterInsetBottom` */
-        val chatReactionsDimensionClusterInsetBottom: Dp = 20.dp
-        /** Locket · chat.reactions · cluster left edge to the photo's left edge · SOURCED — token `chat.reactions.dimension.clusterInsetLeading` */
-        val chatReactionsDimensionClusterInsetLeading: Dp = 17.dp
-        /** Locket · chat.reactions · white sticker outline around each cluster emoji · SOURCED — token `chat.reactions.dimension.clusterOutline` */
-        val chatReactionsDimensionClusterOutline: Dp = 2.dp
-        /** Locket · chat.reactions · centre-to-centre step between overlapping cluster stickers (overlap ≈7 pt) · SOURCED — token `chat.reactions.dimension.clusterStep` */
-        val chatReactionsDimensionClusterStep: Dp = 27.dp
-        /** Locket · chat.reactions · emoji glyph size in the picker grid · SOURCED — token `chat.reactions.dimension.pickerEmoji` */
-        val chatReactionsDimensionPickerEmoji: Dp = 40.dp
-        /** Locket · chat.reactions · size of each rain copy · SOURCED — token `chat.reactions.dimension.rainEmoji` */
-        val chatReactionsDimensionRainEmoji: Dp = 52.dp
-        /** Yope · chat.thread · sender avatar right edge to the bubble / photo left edge · SOURCED — token `chat.thread.dimension.avatarGap` */
-        val chatThreadDimensionAvatarGap: Dp = 6.7.dp
-        /** Yope · chat.thread · sender avatar left edge to the screen edge · SOURCED — token `chat.thread.dimension.avatarInset` */
-        val chatThreadDimensionAvatarInset: Dp = 11.2.dp
-        /** Yope · chat.thread · single-line text bubble height · SOURCED — token `chat.thread.dimension.bubbleHeight` */
-        val chatThreadDimensionBubbleHeight: Dp = 35.6.dp
-        /** Yope · chat.thread · my bubble's right edge to the screen edge (also my voice and photo-reply bubbles) · SOURCED — token `chat.thread.dimension.bubbleInsetMine` */
-        val chatThreadDimensionBubbleInsetMine: Dp = 23.dp
-        /** Yope · chat.thread · another member's bubble left edge to the screen edge (= avatarInset + size.global.avatarSmall + avatarGap) · SOURCED — token `chat.thread.dimension.bubbleInsetTheirs` */
-        val chatThreadDimensionBubbleInsetTheirs: Dp = 50.5.dp
-        /** Apple Messages (iMessage) · chat.thread · maximum text bubble width before wrapping · SOURCED — token `chat.thread.dimension.bubbleMaxWidth` */
-        val chatThreadDimensionBubbleMaxWidth: Dp = 256.dp
-        /** Yope · chat.thread · horizontal padding from the bubble edge to the text ink · SOURCED — token `chat.thread.dimension.bubblePaddingH` */
-        val chatThreadDimensionBubblePaddingH: Dp = 11.5.dp
-        /** Yope · chat.thread · rim stroke width of text bubbles (one pixel of the reference) · SOURCED — token `chat.thread.dimension.bubbleRim` */
-        val chatThreadDimensionBubbleRim: Dp = 0.44.dp
-        /** Yope · chat.thread · caption box height · SOURCED — token `chat.thread.dimension.captionHeight` */
-        val chatThreadDimensionCaptionHeight: Dp = 45.8.dp
-        /** Yope · chat.thread · caption box bottom to the photo's bottom edge · SOURCED — token `chat.thread.dimension.captionInsetBottom` */
-        val chatThreadDimensionCaptionInsetBottom: Dp = 7.8.dp
-        /** Yope · chat.thread · caption box horizontal padding to the text · SOURCED — token `chat.thread.dimension.captionPaddingH` */
-        val chatThreadDimensionCaptionPaddingH: Dp = 20.dp
-        /** Yope · chat.thread · rendered width of one emoji in an emoji-only message (no bubble) · SOURCED — token `chat.thread.dimension.emojiOnlyGlyph` */
-        val chatThreadDimensionEmojiOnlyGlyph: Dp = 47.5.dp
-        /** Yope · chat.thread · vertical gap between runs of different senders · SOURCED — token `chat.thread.dimension.gapBetweenSenders` */
-        val chatThreadDimensionGapBetweenSenders: Dp = 15.dp
-        /** Yope · chat.thread · vertical gap between consecutive text bubbles of one sender · SOURCED — token `chat.thread.dimension.gapSameSender` */
-        val chatThreadDimensionGapSameSender: Dp = 3.6.dp
-        /** Yope · chat.thread · vertical gap between a text bubble and the next voice bubble of the same sender · SOURCED — token `chat.thread.dimension.gapTextToVoice` */
-        val chatThreadDimensionGapTextToVoice: Dp = 4.7.dp
-        /** Yope · chat.thread · group capsule height in the chat header (avatar · name · ›) · SOURCED — token `chat.thread.dimension.headerCapsuleHeight` */
-        val chatThreadDimensionHeaderCapsuleHeight: Dp = 43.3.dp
-        /** Yope · chat.thread · vertical gap between two consecutive photo messages · SOURCED — token `chat.thread.dimension.photoGap` */
-        val chatThreadDimensionPhotoGap: Dp = 15.3.dp
-        /** Yope · chat.thread · photo message height (landscape crop, aspect 1.86) · SOURCED — token `chat.thread.dimension.photoHeight` */
-        val chatThreadDimensionPhotoHeight: Dp = 174.dp
-        /** Yope · chat.thread · photo message right edge to the screen edge · SOURCED — token `chat.thread.dimension.photoInsetTrailing` */
-        val chatThreadDimensionPhotoInsetTrailing: Dp = 18.7.dp
-        /** Yope · chat.thread · photo message width · SOURCED — token `chat.thread.dimension.photoWidth` */
-        val chatThreadDimensionPhotoWidth: Dp = 323.dp
-        /** Yope · chat.thread · baseline of the word 'pic' below the top of the lime block · SOURCED — token `chat.thread.dimension.replyLabelBaseline` */
-        val chatThreadDimensionReplyLabelBaseline: Dp = 44.9.dp
-        /** Yope · chat.thread · top of the quoted name's capitals below the top of the lime block · SOURCED — token `chat.thread.dimension.replyNameCapTop` */
-        val chatThreadDimensionReplyNameCapTop: Dp = 18.9.dp
-        /** Yope · chat.thread · width of the black quote bar inside the lime block · SOURCED — token `chat.thread.dimension.replyQuoteBar` */
-        val chatThreadDimensionReplyQuoteBar: Dp = 1.5.dp
-        /** Yope · chat.thread · quote bar left edge from the bubble's left edge · SOURCED — token `chat.thread.dimension.replyQuoteBarInset` */
-        val chatThreadDimensionReplyQuoteBarInset: Dp = 16.dp
-        /** Yope · chat.thread · height of the lime quote part of a reply · SOURCED — token `chat.thread.dimension.replyQuoteHeight` */
-        val chatThreadDimensionReplyQuoteHeight: Dp = 64.dp
-        /** Yope · chat.thread · quoted name / 'pic' text left edge from the bubble's left edge · SOURCED — token `chat.thread.dimension.replyTextInset` */
-        val chatThreadDimensionReplyTextInset: Dp = 29.dp
-        /** Yope · chat.thread · square photo thumbnail at the right of the reply quote · SOURCED — token `chat.thread.dimension.replyThumb` */
-        val chatThreadDimensionReplyThumb: Dp = 41.7.dp
-        /** Yope · chat.thread · thumbnail top below the lime block top · SOURCED — token `chat.thread.dimension.replyThumbInsetTop` */
-        val chatThreadDimensionReplyThumbInsetTop: Dp = 12.2.dp
-        /** Yope · chat.thread · thumbnail right edge to the bubble's right edge · SOURCED — token `chat.thread.dimension.replyThumbInsetTrailing` */
-        val chatThreadDimensionReplyThumbInsetTrailing: Dp = 14.5.dp
-        /** Yope · chat.thread · reply-to-a-photo bubble width (quote part and text part share it) · SOURCED — token `chat.thread.dimension.replyWidth` */
-        val chatThreadDimensionReplyWidth: Dp = 142.dp
-        /** Yope · chat.voice · tallest waveform bar · SOURCED — token `chat.voice.dimension.barMaxHeight` */
-        val chatVoiceDimensionBarMaxHeight: Dp = 31.5.dp
-        /** Yope · chat.voice · shortest waveform bar observed · SOURCED — token `chat.voice.dimension.barMinHeight` */
-        val chatVoiceDimensionBarMinHeight: Dp = 9.3.dp
-        /** Yope · chat.voice · waveform bar pitch (≈3 pt gap) · SOURCED — token `chat.voice.dimension.barPitch` */
-        val chatVoiceDimensionBarPitch: Dp = 6.1.dp
-        /** Yope · chat.voice · waveform bar width (rounded ends) · SOURCED — token `chat.voice.dimension.barWidth` */
-        val chatVoiceDimensionBarWidth: Dp = 3.1.dp
-        /** Yope · chat.voice · duration text to the bubble's right edge · SOURCED — token `chat.voice.dimension.durationTrailing` */
-        val chatVoiceDimensionDurationTrailing: Dp = 9.7.dp
-        /** Yope · chat.voice · voice bubble height · SOURCED — token `chat.voice.dimension.height` */
-        val chatVoiceDimensionHeight: Dp = 44.9.dp
-        /** Yope · chat.voice · play circle diameter (vertically centred: 6.7 pt top inset) · SOURCED — token `chat.voice.dimension.playButton` */
-        val chatVoiceDimensionPlayButton: Dp = 31.5.dp
-        /** Yope · chat.voice · play triangle width (white) · SOURCED — token `chat.voice.dimension.playGlyph` */
-        val chatVoiceDimensionPlayGlyph: Dp = 11.5.dp
-        /** Yope · chat.voice · bubble left edge to the play circle · SOURCED — token `chat.voice.dimension.playInsetLeading` */
-        val chatVoiceDimensionPlayInsetLeading: Dp = 8.dp
-        /** Yope · chat.voice · play circle right edge to the first waveform bar · SOURCED — token `chat.voice.dimension.playToWaveform` */
-        val chatVoiceDimensionPlayToWaveform: Dp = 7.8.dp
-        /** Yope · chat.voice · last bar to the duration text · SOURCED — token `chat.voice.dimension.waveformToDuration` */
-        val chatVoiceDimensionWaveformToDuration: Dp = 8.9.dp
-        /** Yope · chat.voice · voice bubble width (observed for a 0:38 message) · SOURCED — token `chat.voice.dimension.width` */
-        val chatVoiceDimensionWidth: Dp = 271.8.dp
-        /** BeReal · daily.capture · spinner shown between the two captures (platform progress indicator), centred in the viewfinder · SOURCED — token `daily.capture.size.progress` */
-        val dailyCaptureSizeProgress: Dp = 34.7.dp
+        /** Locket · camera.capture · shutter disc diameter (color.global.surfaceLight) · SOURCED — token `camera.capture.size.shutterDisc` */
+        val cameraCaptureSizeShutterDisc: Dp = 70.dp
+        /** Locket · camera.capture · gap between ring and disc (color.global.backgroundDeep shows through) · SOURCED — token `camera.capture.size.shutterGap` */
+        val cameraCaptureSizeShutterGap: Dp = 3.dp
+        /** Locket · camera.capture · shutter outer diameter (outer edge of the ring) · SOURCED — token `camera.capture.size.shutterOuter` */
+        val cameraCaptureSizeShutterOuter: Dp = 86.dp
+        /** Locket · camera.capture · shutter ring stroke (color.global.surfaceLight) · SOURCED — token `camera.capture.size.shutterRing` */
+        val cameraCaptureSizeShutterRing: Dp = 4.5.dp
+        /** Retro · camera.sendto · bottom capsule (C-05 on media, 'Send') bottom edge → screen bottom · SOURCED — token `camera.sendto.size.sendButtonBottom` */
+        val cameraSendtoSizeSendButtonBottom: Dp = 44.5.dp
+        /** Retro · chat.composer · reply / message field (C-13): field leading edge → own avatar · SOURCED — token `chat.composer.dimension.avatarInset` */
+        val chatComposerDimensionAvatarInset: Dp = 8.6.dp
+        /** Retro · chat.composer · reply / message field: own avatar → placeholder / typed text · SOURCED — token `chat.composer.dimension.avatarToText` */
+        val chatComposerDimensionAvatarToText: Dp = 10.9.dp
+        /** Retro · chat.composer · field bottom → bottom safe-area inset (keyboard down); with the keyboard up the field sits on the keyboard's top · SOURCED — token `chat.composer.dimension.bottomInset` */
+        val chatComposerDimensionBottomInset: Dp = 0.dp
+        /** Retro · chat.composer · reply / message field: ink of the last trailing glyph → field trailing edge · SOURCED — token `chat.composer.dimension.glyphInsetTrailing` */
+        val chatComposerDimensionGlyphInsetTrailing: Dp = 17.7.dp
+        /** Retro · chat.reactions · photo bottom → top of the reaction chip (thread) · SOURCED — token `chat.reactions.dimension.chipTop` */
+        val chatReactionsDimensionChipTop: Dp = 12.dp
+        /** Retro · chat.thread · gap between stacked items inside one run (text block, photo card, voice capsule, post attachment, reaction chip) · SOURCED — token `chat.thread.dimension.itemGap` */
+        val chatThreadDimensionItemGap: Dp = 8.dp
+        /** Retro · chat.thread · message row (C-16 comment row): avatar right edge → name / text ink · SOURCED — token `chat.thread.dimension.rowAvatarToText` */
+        val chatThreadDimensionRowAvatarToText: Dp = 16.7.dp
+        /** Retro · chat.thread · message row: baseline of the name / time line → baseline of the first text line (and text line → text line) · SOURCED — token `chat.thread.dimension.rowLinePitch` */
+        val chatThreadDimensionRowLinePitch: Dp = 19.dp
         /** Apple HIG · daily.liveactivity · Lock Screen presentation margin · VERIFIED — token `daily.liveactivity.size.lockScreenMargin` */
         val dailyLiveactivitySizeLockScreenMargin: Dp = 14.dp
-        /** Tribute · birthday.contribute · last field bottom to the button · VERIFIED — token `dimension.birthday.contribute.button.gap` */
-        val birthdayContributeButtonGap: Dp = 24.dp
-        /** Tribute · birthday.contribute · step button height ('Submit', 'Done') · VERIFIED — token `dimension.birthday.contribute.button.height` */
-        val birthdayContributeButtonHeight: Dp = 50.dp
-        /** Tribute · birthday.contribute · field bottom to the next label · VERIFIED — token `dimension.birthday.contribute.group.gap` */
-        val birthdayContributeGroupGap: Dp = 16.dp
-        /** Tribute · birthday.contribute · step captions bottom to step heading top · VERIFIED — token `dimension.birthday.contribute.heading.gap` */
-        val birthdayContributeHeadingGap: Dp = 107.dp
-        /** Tribute · birthday.contribute · one-line field height · VERIFIED — token `dimension.birthday.contribute.input.height` */
-        val birthdayContributeInputHeight: Dp = 46.dp
-        /** Tribute · birthday.contribute · label bottom to field top · VERIFIED — token `dimension.birthday.contribute.label.gap` */
-        val birthdayContributeLabelGap: Dp = 10.dp
-        /** Tribute · birthday.contribute · side margin of every step · VERIFIED — token `dimension.birthday.contribute.margin` */
-        val birthdayContributeMargin: Dp = 20.dp
-        /** Tribute · birthday.contribute · step circle diameter · VERIFIED — token `dimension.birthday.contribute.stepper.circle` */
-        val birthdayContributeStepperCircle: Dp = 40.dp
-        /** Tribute · birthday.contribute · heading bottom to sub-heading · VERIFIED — token `dimension.birthday.contribute.subheading.gap` */
-        val birthdayContributeSubheadingGap: Dp = 12.dp
-        /** Tribute · birthday.request · hero bottom to primary button · VERIFIED — token `dimension.birthday.request.cta.gap` */
-        val birthdayRequestCtaGap: Dp = 15.dp
-        /** Tribute · birthday.request · primary button height ('Add Your Photo') · VERIFIED — token `dimension.birthday.request.cta.height` */
-        val birthdayRequestCtaHeight: Dp = 62.dp
-        /** Tribute · birthday.request · hero (photo band) height · VERIFIED — token `dimension.birthday.request.hero.height` */
-        val birthdayRequestHeroHeight: Dp = 365.8.dp
-        /** Tribute · birthday.request · side margin of title, message, button and prompts · VERIFIED — token `dimension.birthday.request.margin` */
-        val birthdayRequestMargin: Dp = 15.dp
-        /** Tribute · birthday.request · title bottom to message top · VERIFIED — token `dimension.birthday.request.message.gap` */
-        val birthdayRequestMessageGap: Dp = 20.8.dp
-        /** Tribute · birthday.request · gap between prompts · VERIFIED — token `dimension.birthday.request.prompt.gap` */
-        val birthdayRequestPromptGap: Dp = 19.9.dp
-        /** Tribute · birthday.request · block left edge to prompt text (bullet in between) · VERIFIED — token `dimension.birthday.request.prompt.indent` */
-        val birthdayRequestPromptIndent: Dp = 39.dp
-        /** Tribute · birthday.request · header bar bottom to first prompt · VERIFIED — token `dimension.birthday.request.prompt.top` */
-        val birthdayRequestPromptTop: Dp = 24.dp
-        /** Tribute · birthday.request · space above the Message Ideas block · VERIFIED — token `dimension.birthday.request.prompts.gap` */
-        val birthdayRequestPromptsGap: Dp = 20.dp
-        /** Tribute · birthday.request · header bar height · VERIFIED — token `dimension.birthday.request.prompts.headerHeight` */
-        val birthdayRequestPromptsHeaderHeight: Dp = 42.dp
-        /** Tribute · birthday.request · header bar horizontal padding · VERIFIED — token `dimension.birthday.request.prompts.headerPadding` */
-        val birthdayRequestPromptsHeaderPadding: Dp = 24.dp
-        /** Tribute · birthday.request · hero top to title top · VERIFIED — token `dimension.birthday.request.title.top` */
-        val birthdayRequestTitleTop: Dp = 84.dp
-        /** Tribute · birthday.tribute · gap between stacked secondary buttons · VERIFIED — token `dimension.birthday.tribute.button.gap` */
-        val birthdayTributeButtonGap: Dp = 10.dp
-        /** Tribute · birthday.tribute · secondary button height ('Download', 'Share') · VERIFIED — token `dimension.birthday.tribute.button.height` */
-        val birthdayTributeButtonHeight: Dp = 44.dp
-        /** Timehop · onthisday · banner bottom edge measured from the screen top (the banner runs behind the status bar) · SOURCED — token `dimension.onthisday.banner.height` */
-        val onthisdayBannerHeight: Dp = 96.8.dp
-        /** Timehop · onthisday · label baseline to banner bottom edge · SOURCED — token `dimension.onthisday.banner.labelBaseline` */
-        val onthisdayBannerLabelBaseline: Dp = 25.4.dp
-        /** Timehop · onthisday · gap between grid photos (columns and rows) · SOURCED — token `dimension.onthisday.grid.gutter` */
-        val onthisdayGridGutter: Dp = 4.2.dp
-        /** Timehop · onthisday · grid outer margin (left / right) · SOURCED — token `dimension.onthisday.grid.margin` */
-        val onthisdayGridMargin: Dp = 3.8.dp
-        /** Timehop · onthisday · gap between banner bottom and the first grid row · SOURCED — token `dimension.onthisday.grid.top` */
-        val onthisdayGridTop: Dp = 5.5.dp
-        /** Timehop · onthisday · meta row leading circle (Timehop's source icon; here the poster's avatar) · SOURCED — token `dimension.onthisday.meta.avatar` */
-        val onthisdayMetaAvatar: Dp = 19.dp
-        /** Timehop · onthisday · banner bottom edge to the meta row's vertical centre · SOURCED — token `dimension.onthisday.meta.centerY` */
-        val onthisdayMetaCenterY: Dp = 25.7.dp
-        /** Timehop · onthisday · leading circle to weekday text · SOURCED — token `dimension.onthisday.meta.gap` */
-        val onthisdayMetaGap: Dp = 11.5.dp
-        /** Timehop · onthisday · screen edge to the meta row's leading circle · SOURCED — token `dimension.onthisday.meta.inset` */
-        val onthisdayMetaInset: Dp = 16.2.dp
-        /** Timehop · onthisday · progress bar thickness · SOURCED — token `dimension.onthisday.progress.height` */
-        val onthisdayProgressHeight: Dp = 4.3.dp
-        /** Spotify Wrapped · year.story · pause / close circle diameter (visual; hit area extends to size.global.minTouchTarget) · SOURCED — token `dimension.year.story.chrome.button` */
-        val yearStoryChromeButton: Dp = 29.6.dp
-        /** Spotify Wrapped · year.story · canvas top to the chrome row's centre · SOURCED — token `dimension.year.story.chrome.centerY` */
-        val yearStoryChromeCenterY: Dp = 48.3.dp
-        /** Spotify Wrapped · year.story · pause / close glyph height · SOURCED — token `dimension.year.story.chrome.glyph` */
-        val yearStoryChromeGlyph: Dp = 14.9.dp
-        /** Spotify Wrapped · year.story · canvas right edge to the close circle · SOURCED — token `dimension.year.story.chrome.insetRight` */
-        val yearStoryChromeInsetRight: Dp = 10.5.dp
-        /** Spotify Wrapped · year.story · centre-to-centre distance of the chrome circles · SOURCED — token `dimension.year.story.chrome.pitch` */
-        val yearStoryChromePitch: Dp = 45.9.dp
-        /** Spotify Wrapped · year.story · gap between progress segments · SOURCED — token `dimension.year.story.progress.gap` */
-        val yearStoryProgressGap: Dp = 3.6.dp
-        /** Spotify Wrapped · year.story · progress segment thickness · SOURCED — token `dimension.year.story.progress.height` */
-        val yearStoryProgressHeight: Dp = 1.8.dp
-        /** Spotify Wrapped · year.story · progress bar side inset · SOURCED — token `dimension.year.story.progress.inset` */
-        val yearStoryProgressInset: Dp = 11.dp
-        /** Spotify Wrapped · year.story · canvas top to progress bar · SOURCED — token `dimension.year.story.progress.top` */
-        val yearStoryProgressTop: Dp = 8.dp
+        /** Retro · birthday.contribute · counter baseline → top of the keyboard · SOURCED — token `dimension.birthday.contribute.counterAboveKeyboard` */
+        val birthdayContributeCounterAboveKeyboard: Dp = 18.5.dp
+        /** Retro · birthday.contribute · character counter ('58/250'): screen right edge → counter ink · SOURCED — token `dimension.birthday.contribute.counterInset` */
+        val birthdayContributeCounterInset: Dp = 20.7.dp
+        /** Retro · birthday.contribute · 'Add a Message' modal: screen edge → text (leading) and → 'Done' ink (trailing ≈ 20.7) · SOURCED — token `dimension.birthday.contribute.messageInset` */
+        val birthdayContributeMessageInset: Dp = 21.9.dp
+        /** Retro · birthday.contribute · photo box height (the photo is fitted inside the box, centred) · SOURCED — token `dimension.birthday.contribute.photoMaxHeight` */
+        val birthdayContributePhotoMaxHeight: Dp = 422.8.dp
+        /** Retro · birthday.contribute · photo box width (centred) on the message step · SOURCED — token `dimension.birthday.contribute.photoWidth` */
+        val birthdayContributePhotoWidth: Dp = 297.4.dp
+        /** Retro · birthday.contribute · 'Add a message' pill (components C-09 glass variant) bottom → photo bottom; pill centred horizontally · SOURCED — token `dimension.birthday.contribute.pillBottom` */
+        val birthdayContributePillBottom: Dp = 20.9.dp
+        /** Retro · birthday.contribute · sheet title baseline → photo top (message step) · SOURCED — token `dimension.birthday.contribute.titleToPhoto` */
+        val birthdayContributeTitleToPhoto: Dp = 32.6.dp
+        /** Retro · birthday.request · between the card's blocks: detail line → first prompt row, last prompt row → capsule · SOURCED — token `dimension.birthday.request.card.blockGap` */
+        val birthdayRequestCardBlockGap: Dp = 29.3.dp
+        /** Retro · birthday.request · numbered marker circle before each prompt row · SOURCED — token `dimension.birthday.request.card.marker` */
+        val birthdayRequestCardMarker: Dp = 17.3.dp
+        /** Retro · birthday.request · marker → prompt text · SOURCED — token `dimension.birthday.request.card.markerGap` */
+        val birthdayRequestCardMarkerGap: Dp = 5.dp
+        /** Retro · birthday.request · prompt rows: centre-to-centre · SOURCED — token `dimension.birthday.request.card.rowPitch` */
+        val birthdayRequestCardRowPitch: Dp = 32.dp
+        /** Retro · birthday.request · card title baseline → detail line ascender top · SOURCED — token `dimension.birthday.request.card.titleToDetail` */
+        val birthdayRequestCardTitleToDetail: Dp = 11.dp
+        /** Retro · birthday.request · card bottom → due line (ascender top) under the card · SOURCED — token `dimension.birthday.request.cardToFooter` */
+        val birthdayRequestCardToFooter: Dp = 15.3.dp
+        /** Retro · birthday.request · close circle centre below the safe-area top · SOURCED — token `dimension.birthday.request.close.centerY` */
+        val birthdayRequestCloseCenterY: Dp = 21.8.dp
+        /** Retro · birthday.request · close circle (glass, size.global.circleButtonSmall): screen right edge → circle edge · SOURCED — token `dimension.birthday.request.close.inset` */
+        val birthdayRequestCloseInset: Dp = 26.2.dp
+        /** Retro · birthday.request · serif headline baseline → first message line's ascender top · SOURCED — token `dimension.birthday.request.headlineToMessage` */
+        val birthdayRequestHeadlineToMessage: Dp = 19.3.dp
+        /** Retro · birthday.request · last message line (descender) → card top · SOURCED — token `dimension.birthday.request.messageToCard` */
+        val birthdayRequestMessageToCard: Dp = 29.dp
+        /** Retro · onthisday · dial centre (and the centres of the share / random circles) above the safe-area bottom · SOURCED — token `dimension.onthisday.controls.centerY` */
+        val onthisdayControlsCenterY: Dp = 139.2.dp
+        /** Retro · onthisday · Rewind dial: outer diameter of the tick ring · SOURCED — token `dimension.onthisday.dial.diameter` */
+        val onthisdayDialDiameter: Dp = 150.dp
+        /** Retro · onthisday · play / pause glyph in the dial centre: ink height · SOURCED — token `dimension.onthisday.dial.glyph` */
+        val onthisdayDialGlyph: Dp = 35.dp
+        /** Retro · onthisday · indicator (the current memory's slot): solid tick from the ring's outer edge inward · SOURCED — token `dimension.onthisday.dial.indicatorLength` */
+        val onthisdayDialIndicatorLength: Dp = 16.7.dp
+        /** Retro · onthisday · long tick (even slots) length, measured from the ring's outer edge inward · SOURCED — token `dimension.onthisday.dial.tickLong` */
+        val onthisdayDialTickLong: Dp = 19.8.dp
+        /** Retro · onthisday · short tick (odd slots) length, from the ring's outer edge inward · SOURCED — token `dimension.onthisday.dial.tickShort` */
+        val onthisdayDialTickShort: Dp = 11.8.dp
+        /** Retro · onthisday · width (stroke) of every tick and of the indicator · SOURCED — token `dimension.onthisday.dial.tickWidth` */
+        val onthisdayDialTickWidth: Dp = 3.2.dp
+        /** Retro · onthisday · date title baseline → subtitle baseline · SOURCED — token `dimension.onthisday.subtitleBaseline` */
+        val onthisdaySubtitleBaseline: Dp = 26.4.dp
+        /** Retro · year.story · frame bottom → page-dot centre (summary pager only) · SOURCED — token `dimension.year.story.dots.offset` */
+        val yearStoryDotsOffset: Dp = 16.1.dp
+        /** Retro · year.story · full-bleed card footer: year (display serif, text role headerTitle) baseline above the frame bottom; name and app line right-aligned on the same block · SOURCED — token `dimension.year.story.footer.baseline` */
+        val yearStoryFooterBaseline: Dp = 24.8.dp
+        /** Retro · year.story · frame edge → content: close circle edge, footer text ink, position pill edge, text blocks · SOURCED — token `dimension.year.story.frame.padding` */
+        val yearStoryFramePadding: Dp = 19.5.dp
         /** Spotify Wrapped · year.story · distance the headline moves up · SOURCED — token `dimension.year.story.reveal.headlineShift` */
         val yearStoryRevealHeadlineShift: Dp = 18.2.dp
         /** Spotify Wrapped · year.story · subline start offset below its final position · SOURCED — token `dimension.year.story.reveal.sublineOffset` */
         val yearStoryRevealSublineOffset: Dp = 25.dp
-        /** Spotify Wrapped · year.story · share row bottom to canvas bottom · SOURCED — token `dimension.year.story.share.bottomInset` */
-        val yearStoryShareBottomInset: Dp = 29.dp
-        /** Spotify Wrapped · year.story · share glyph to label · SOURCED — token `dimension.year.story.share.glyphGap` */
-        val yearStoryShareGlyphGap: Dp = 15.5.dp
-        /** Spotify Wrapped · year.story · share row height (= glyph height) · SOURCED — token `dimension.year.story.share.rowHeight` */
-        val yearStoryShareRowHeight: Dp = 18.6.dp
-        /** Spotify Wrapped · year.story · summary 'Share' pill height · SOURCED — token `dimension.year.story.summary.shareHeight` */
-        val yearStorySummaryShareHeight: Dp = 50.dp
-        /** Spotify Wrapped · year.story · summary 'Share' pill width · SOURCED — token `dimension.year.story.summary.shareWidth` */
-        val yearStorySummaryShareWidth: Dp = 148.dp
-        /** Spotify Wrapped · year.story · widest line of card text (text block width) · SOURCED — token `dimension.year.story.text.maxWidth` */
-        val yearStoryTextMaxWidth: Dp = 274.dp
-        /** Yope · groups.create · cover-photo placeholder height · SOURCED — token `groups.create.size.cover.height` */
-        val groupsCreateSizeCoverHeight: Dp = 221.dp
-        /** Yope · groups.create · cover-photo placeholder width (centred) · SOURCED — token `groups.create.size.cover.width` */
-        val groupsCreateSizeCoverWidth: Dp = 330.dp
-        /** Yope · groups.create · camera glyph (icon.global.camera, white) centred in the cover placeholder: glyph height · SOURCED — token `groups.create.size.coverGlyph` */
-        val groupsCreateSizeCoverGlyph: Dp = 21.dp
-        /** Yope · groups.create · form field bottom to the primary button top · SOURCED — token `groups.create.size.fieldToButton` */
-        val groupsCreateSizeFieldToButton: Dp = 18.dp
-        /** Yope · groups.create · Loading HUD square side · SOURCED — token `groups.create.size.hud` */
-        val groupsCreateSizeHud: Dp = 100.dp
-        /** Yope · groups.create · cover placeholder bottom to the name field top · SOURCED — token `groups.create.size.mediaToField` */
-        val groupsCreateSizeMediaToField: Dp = 23.dp
-        /** Yope · groups.create · sheet top edge to the title's cap top (also the safe-area top to the title on full-screen onboarding steps) · SOURCED — token `groups.create.size.sheetTopToTitle` */
-        val groupsCreateSizeSheetTopToTitle: Dp = 71.dp
-        /** Yope · groups.create · title text bottom (descender) to the first content element · SOURCED — token `groups.create.size.titleToContent` */
-        val groupsCreateSizeTitleToContent: Dp = 34.dp
-        /** Yope · groups.invite · contact row pitch (avatar 40, bold name, trailing action) · SOURCED — token `groups.invite.size.pickerRowPitch` */
-        val groupsInviteSizePickerRowPitch: Dp = 54.5.dp
-        /** Yope · groups.list · avatar left inset inside the card (and its vertical centring) · SOURCED — token `groups.list.size.avatarInset` */
-        val groupsListSizeAvatarInset: Dp = 16.dp
-        /** Yope · groups.list · trailing camera glyph on a card (opens the camera for that group) · SOURCED — token `groups.list.size.cameraGlyph` */
-        val groupsListSizeCameraGlyph: Dp = 16.dp
-        /** Yope · groups.list · group card height · SOURCED — token `groups.list.size.cardHeight` */
-        val groupsListSizeCardHeight: Dp = 100.dp
-        /** Yope · groups.list · home cover header (newest photo across groups, full-bleed from the top edge) height · SOURCED — token `groups.list.size.coverHeight` */
-        val groupsListSizeCoverHeight: Dp = 205.dp
-        /** Yope · groups.screen · vertical gap between photo cards · SOURCED — token `groups.screen.size.cardGap` */
-        val groupsScreenSizeCardGap: Dp = 8.5.dp
-        /** Yope · groups.screen · photo card height on the group screen (one card per post, photo cropped to fill) · SOURCED — token `groups.screen.size.cardHeight` */
-        val groupsScreenSizeCardHeight: Dp = 152.dp
-        /** Yope · groups.screen · photo card side margin · SOURCED — token `groups.screen.size.cardMarginH` */
-        val groupsScreenSizeCardMarginH: Dp = 7.6.dp
-        /** Yope · groups.screen · floating 'chat' pill height · SOURCED — token `groups.screen.size.chatPillHeight` */
-        val groupsScreenSizeChatPillHeight: Dp = 51.dp
-        /** Yope · groups.screen · floating 'chat' pill width (bottom centre) · SOURCED — token `groups.screen.size.chatPillWidth` */
-        val groupsScreenSizeChatPillWidth: Dp = 88.dp
-        /** Yope · groups.screen · white secondary pill height ('invite more friends', 205 pt wide = hug + leading icon.global.link) · SOURCED — token `groups.screen.size.lightPillHeight` */
-        val groupsScreenSizeLightPillHeight: Dp = 45.dp
-        /** Yope · groups.screen · group avatar on the group profile page · SOURCED — token `groups.screen.size.profileAvatar` */
-        val groupsScreenSizeProfileAvatar: Dp = 92.dp
-        /** Yope · groups.screen · segmented control track height ('pics | wall | recaps'); also the group-type picker in groups.create · SOURCED — token `groups.screen.size.segmentHeight` */
-        val groupsScreenSizeSegmentHeight: Dp = 41.5.dp
-        /** Yope · groups.screen · inset of the selected pill inside the track (selected pill height 33.5 pt) · SOURCED — token `groups.screen.size.segmentInset` */
-        val groupsScreenSizeSegmentInset: Dp = 4.dp
-        /** Yope · groups.screen · segmented control side margin · SOURCED — token `groups.screen.size.segmentMarginH` */
-        val groupsScreenSizeSegmentMarginH: Dp = 6.dp
-        /** Partiful · invite.web · member avatar (row and list) · VERIFIED — token `invite.web.dimension.avatar` */
-        val inviteWebDimensionAvatar: Dp = 48.dp
-        /** Partiful · invite.web · gap between avatars (also between wrapped rows) · VERIFIED — token `invite.web.dimension.avatarGap` */
-        val inviteWebDimensionAvatarGap: Dp = 4.dp
-        /** Partiful · invite.web · gap between a button's icon and label · VERIFIED — token `invite.web.dimension.button.gap` */
-        val inviteWebDimensionButtonGap: Dp = 4.dp
-        /** Partiful · invite.web · large button height (gate card action, error retry) · VERIFIED — token `invite.web.dimension.button.large.height` */
-        val inviteWebDimensionButtonLargeHeight: Dp = 48.dp
-        /** Partiful · invite.web · large button horizontal padding · VERIFIED — token `invite.web.dimension.button.large.paddingH` */
-        val inviteWebDimensionButtonLargePaddingH: Dp = 24.dp
-        /** Partiful · invite.web · medium (pill) button height ('View all') · VERIFIED — token `invite.web.dimension.button.medium.height` */
-        val inviteWebDimensionButtonMediumHeight: Dp = 36.dp
-        /** Partiful · invite.web · medium button horizontal padding (outlined: minus the 1-pt border) · VERIFIED — token `invite.web.dimension.button.medium.paddingH` */
-        val inviteWebDimensionButtonMediumPaddingH: Dp = 16.dp
-        /** Partiful · invite.web · outlined button border width; also the footer divider and the focus ring width · VERIFIED — token `invite.web.dimension.button.outlined.border` */
-        val inviteWebDimensionButtonOutlinedBorder: Dp = 1.dp
-        /** Partiful · invite.web · widest viewport the mobile layout is used for; the page column stops growing here · VERIFIED — token `invite.web.dimension.columnMaxWidth` */
-        val inviteWebDimensionColumnMaxWidth: Dp = 720.dp
-        /** Partiful · invite.web · cover bottom → next element · VERIFIED — token `invite.web.dimension.coverToNext` */
-        val inviteWebDimensionCoverToNext: Dp = 16.dp
-        /** Partiful · invite.web · vertical padding of an event-field row ('Invited by') · VERIFIED — token `invite.web.dimension.fieldRow.paddingV` */
-        val inviteWebDimensionFieldRowPaddingV: Dp = 4.dp
-        /** Partiful · invite.web · focus ring offset (ring = 1-pt outline in the text colour) · VERIFIED — token `invite.web.dimension.focus.offset` */
-        val inviteWebDimensionFocusOffset: Dp = 2.dp
-        /** Partiful · invite.web · arrow glyph after 'Get the app' · VERIFIED — token `invite.web.dimension.footer.arrow` */
-        val inviteWebDimensionFooterArrow: Dp = 16.dp
-        /** Partiful · invite.web · footer content padding above and below · VERIFIED — token `invite.web.dimension.footer.contentPaddingV` */
-        val inviteWebDimensionFooterContentPaddingV: Dp = 40.dp
-        /** Partiful · invite.web · 'Get the app' label → arrow glyph · VERIFIED — token `invite.web.dimension.footer.linkGap` */
-        val inviteWebDimensionFooterLinkGap: Dp = 2.dp
-        /** Partiful · invite.web · space above the footer divider · VERIFIED — token `invite.web.dimension.footer.paddingTop` */
-        val inviteWebDimensionFooterPaddingTop: Dp = 24.dp
-        /** Partiful · invite.web · card body → button · VERIFIED — token `invite.web.dimension.gateCard.bodyToButton` */
-        val inviteWebDimensionGateCardBodyToButton: Dp = 16.dp
-        /** Partiful · invite.web · lock glyph size · VERIFIED — token `invite.web.dimension.gateCard.glyph` */
-        val inviteWebDimensionGateCardGlyph: Dp = 64.dp
-        /** Partiful · invite.web · lock glyph → card title · VERIFIED — token `invite.web.dimension.gateCard.glyphToTitle` */
-        val inviteWebDimensionGateCardGlyphToTitle: Dp = 8.dp
-        /** Partiful · invite.web · members-only card padding · VERIFIED — token `invite.web.dimension.gateCard.padding` */
-        val inviteWebDimensionGateCardPadding: Dp = 24.dp
-        /** Partiful · invite.web · card title → body; also state title → body · VERIFIED — token `invite.web.dimension.gateCard.titleToBody` */
-        val inviteWebDimensionGateCardTitleToBody: Dp = 4.dp
-        /** Partiful · invite.web · members header row bottom → avatar row · VERIFIED — token `invite.web.dimension.headerToAvatars` */
-        val inviteWebDimensionHeaderToAvatars: Dp = 8.dp
-        /** Partiful · invite.web · screen side margin (column padding) · VERIFIED — token `invite.web.dimension.margin` */
-        val inviteWebDimensionMargin: Dp = 16.dp
-        /** Partiful · invite.web · gap between page sections · VERIFIED — token `invite.web.dimension.sectionGap` */
-        val inviteWebDimensionSectionGap: Dp = 24.dp
-        /** Partiful · invite.web · state body → action button · VERIFIED — token `invite.web.dimension.state.bodyToAction` */
-        val inviteWebDimensionStateBodyToAction: Dp = 24.dp
-        /** Partiful · invite.web · emoji → state title · VERIFIED — token `invite.web.dimension.state.glyphToTitle` */
-        val inviteWebDimensionStateGlyphToTitle: Dp = 20.dp
-        /** Partiful · invite.web · space at the top of a state page (where Partiful's header row is) · VERIFIED — token `invite.web.dimension.state.headerSpace` */
-        val inviteWebDimensionStateHeaderSpace: Dp = 60.dp
-        /** Partiful · invite.web · title block bottom → cover top · VERIFIED — token `invite.web.dimension.titleToCover` */
-        val inviteWebDimensionTitleToCover: Dp = 25.8.dp
-        /** Partiful · invite.web · top of the title block from the top of the page · VERIFIED — token `invite.web.dimension.titleTop` */
-        val inviteWebDimensionTitleTop: Dp = 109.1.dp
-        /** Partiful · invite.web · avatar → name gap in a member row · VERIFIED — token `invite.web.dimension.userRow.columnGap` */
-        val inviteWebDimensionUserRowColumnGap: Dp = 12.dp
-        /** Partiful · invite.web · gap between member rows · VERIFIED — token `invite.web.dimension.userRow.listGap` */
-        val inviteWebDimensionUserRowListGap: Dp = 4.dp
-        /** Partiful · invite.web · member row vertical padding in the expanded list · VERIFIED — token `invite.web.dimension.userRow.paddingV` */
-        val inviteWebDimensionUserRowPaddingV: Dp = 12.dp
-        /** Yope · onboarding.permission.contacts · white 'enable' button height · SOURCED — token `onboarding.permission.contacts.size.cardButtonHeight` */
-        val onboardingPermissionContactsSizeCardButtonHeight: Dp = 37.dp
-        /** Yope · onboarding.permission.contacts · white 'enable' button width (color.global.surfaceLight, label color.global.onSurfaceLight) · SOURCED — token `onboarding.permission.contacts.size.cardButtonWidth` */
-        val onboardingPermissionContactsSizeCardButtonWidth: Dp = 91.dp
-        /** Yope · onboarding.permission.contacts · inline permission card height · SOURCED — token `onboarding.permission.contacts.size.cardHeight` */
-        val onboardingPermissionContactsSizeCardHeight: Dp = 101.dp
-        /** Yope · onboarding.permission.contacts · inline permission card side margin · SOURCED — token `onboarding.permission.contacts.size.cardMarginH` */
-        val onboardingPermissionContactsSizeCardMarginH: Dp = 18.dp
-        /** Yope · onboarding.permission.notifications · vertical gap between the stacked dark and lime buttons (Android) · SOURCED — token `onboarding.permission.notifications.size.buttonGap` */
-        val onboardingPermissionNotificationsSizeButtonGap: Dp = 8.dp
-        /** Locket · onboarding.widget · CTA arrow glyph width · SOURCED — token `onboarding.widget.size.ctaArrow` */
-        val onboardingWidgetSizeCtaArrow: Dp = 17.dp
-        /** Locket · onboarding.widget · gap between the CTA label and the arrow · SOURCED — token `onboarding.widget.size.ctaArrowGap` */
-        val onboardingWidgetSizeCtaArrowGap: Dp = 17.dp
-        /** Locket · onboarding.widget · content-width yellow capsule CTA height · SOURCED — token `onboarding.widget.size.ctaHeight` */
-        val onboardingWidgetSizeCtaHeight: Dp = 54.dp
-        /** Locket · onboarding.widget · CTA horizontal padding (capsule edge to label / to arrow) · SOURCED — token `onboarding.widget.size.ctaPaddingH` */
-        val onboardingWidgetSizeCtaPaddingH: Dp = 18.dp
-        /** Locket · paywall · primary CTA capsule height (full width, margins paywall.size.perkMarginH) · SOURCED — token `paywall.size.ctaHeight` */
-        val paywallSizeCtaHeight: Dp = 56.dp
-        /** Locket · paywall · app-icon tile at the top (rounded square) · SOURCED — token `paywall.size.iconTile` */
-        val paywallSizeIconTile: Dp = 76.dp
-        /** Locket · paywall · gap between perk cards · SOURCED — token `paywall.size.perkGap` */
-        val paywallSizePerkGap: Dp = 4.dp
-        /** Locket · paywall · perk card height · SOURCED — token `paywall.size.perkHeight` */
-        val paywallSizePerkHeight: Dp = 78.dp
-        /** Locket · paywall · perk emoji size (centre 39 pt from the card's leading edge) · SOURCED — token `paywall.size.perkIcon` */
-        val paywallSizePerkIcon: Dp = 30.dp
-        /** Locket · paywall · perk card side margin (card width 353 pt on 393) · SOURCED — token `paywall.size.perkMarginH` */
-        val paywallSizePerkMarginH: Dp = 20.dp
-        /** Locket · paywall · perk text leading inset from the card edge · SOURCED — token `paywall.size.perkTextInset` */
-        val paywallSizePerkTextInset: Dp = 73.dp
-        /** Locket · paywall · selected plan card border width (paywall.color.planBorder) · SOURCED — token `paywall.size.planBorder` */
-        val paywallSizePlanBorder: Dp = 3.dp
-        /** Locket · paywall · plan card height without a detail line · SOURCED — token `paywall.size.planHeight` */
-        val paywallSizePlanHeight: Dp = 58.dp
-        /** Locket · paywall · plan card side margin (370 pt wide on a 402-pt screen) · SOURCED — token `paywall.size.planMarginH` */
-        val paywallSizePlanMarginH: Dp = 16.dp
-        /** Locket · paywall · plan card height with a detail line (selected plan) · SOURCED — token `paywall.size.planSelectedHeight` */
-        val paywallSizePlanSelectedHeight: Dp = 81.dp
-        /** Locket · paywall · 'Subscribe' capsule height on the plan sheet (margins paywall.size.planMarginH) · SOURCED — token `paywall.size.subscribeHeight` */
-        val paywallSizeSubscribeHeight: Dp = 58.dp
-        /** Yope · photo.viewer · vertical centre of the top-right action chip below the photo's top edge (level with the sender avatar's centre, 31.6) · SOURCED — token `photo.viewer.dimension.actionCenterTop` */
-        val photoViewerDimensionActionCenterTop: Dp = 33.1.dp
-        /** Yope · photo.viewer · right edge of the action chip at the photo's top-right (Yope's chip slot; holds the 'i'm in this' toggle) to the photo's right edge · SOURCED — token `photo.viewer.dimension.actionTrailing` */
-        val photoViewerDimensionActionTrailing: Dp = 23.8.dp
-        /** Yope · photo.viewer · ✕ glyph centre from the left screen edge (bare glyph, no circle) · SOURCED — token `photo.viewer.dimension.closeCenterX` */
-        val photoViewerDimensionCloseCenterX: Dp = 39.dp
-        /** Yope · photo.viewer · ✕ glyph height · SOURCED — token `photo.viewer.dimension.closeGlyph` */
-        val photoViewerDimensionCloseGlyph: Dp = 14.1.dp
-        /** Yope · photo.viewer · vertical centre of the header row (✕, two-line title, •••) below the top safe-area inset · SOURCED — token `photo.viewer.dimension.headerCenterY` */
-        val photoViewerDimensionHeaderCenterY: Dp = 20.dp
-        /** Yope · photo.viewer · ••• glyph centre from the right screen edge (bare glyph, no circle) · SOURCED — token `photo.viewer.dimension.moreCenterTrailing` */
-        val photoViewerDimensionMoreCenterTrailing: Dp = 36.dp
-        /** Yope · photo.viewer · ••• glyph width · SOURCED — token `photo.viewer.dimension.moreGlyphWidth` */
-        val photoViewerDimensionMoreGlyphWidth: Dp = 25.3.dp
-        /** Yope · photo.viewer · gap between two photos while swiping · SOURCED — token `photo.viewer.dimension.pageGap` */
-        val photoViewerDimensionPageGap: Dp = 0.dp
-        /** Yope · photo.viewer · photo top edge below the top safe-area inset (59 pt status bar on the recorded device) · SOURCED — token `photo.viewer.dimension.photoTop` */
-        val photoViewerDimensionPhotoTop: Dp = 107.dp
-        /** Yope · photo.viewer · sender avatar on the photo, top-left · SOURCED — token `photo.viewer.dimension.senderAvatar` */
-        val photoViewerDimensionSenderAvatar: Dp = 38.7.dp
-        /** Yope · photo.viewer · sender avatar left edge to the photo's left edge · SOURCED — token `photo.viewer.dimension.senderInsetLeading` */
-        val photoViewerDimensionSenderInsetLeading: Dp = 13.8.dp
-        /** Yope · photo.viewer · sender avatar top to the photo's top edge · SOURCED — token `photo.viewer.dimension.senderInsetTop` */
-        val photoViewerDimensionSenderInsetTop: Dp = 12.3.dp
-        /** Yope · photo.viewer · avatar right edge to the sender name ink · SOURCED — token `photo.viewer.dimension.senderNameGap` */
-        val photoViewerDimensionSenderNameGap: Dp = 13.dp
-        /** Yope · photo.viewer · baseline of the title line to the baseline of the date line · SOURCED — token `photo.viewer.dimension.titleToDate` */
-        val photoViewerDimensionTitleToDate: Dp = 20.9.dp
-        /** Material 3 · settings.root · M3 list divider thickness · VERIFIED — token `settings.root.size.divider.android` */
-        val settingsRootSizeDividerAndroid: Dp = 1.dp
-        /** Material 3 · settings.root · M3 list item leading avatar size (blocked people, members) · VERIFIED — token `settings.root.size.listItemAvatar.android` */
-        val settingsRootSizeListItemAvatarAndroid: Dp = 40.dp
-        /** Material 3 · settings.root · M3 space between list item slots · VERIFIED — token `settings.root.size.listItemGap.android` */
-        val settingsRootSizeListItemGapAndroid: Dp = 12.dp
-        /** Material 3 · settings.root · M3 list item leading icon size · VERIFIED — token `settings.root.size.listItemIcon.android` */
-        val settingsRootSizeListItemIconAndroid: Dp = 24.dp
-        /** Material 3 · settings.root · M3 one-line list item height · VERIFIED — token `settings.root.size.listItemOneLine.android` */
-        val settingsRootSizeListItemOneLineAndroid: Dp = 56.dp
-        /** Material 3 · settings.root · M3 list item leading and trailing space · VERIFIED — token `settings.root.size.listItemPaddingH.android` */
-        val settingsRootSizeListItemPaddingHAndroid: Dp = 16.dp
-        /** Material 3 · settings.root · M3 list item top and bottom space · VERIFIED — token `settings.root.size.listItemPaddingV.android` */
-        val settingsRootSizeListItemPaddingVAndroid: Dp = 10.dp
-        /** Material 3 · settings.root · M3 three-line list item height · VERIFIED — token `settings.root.size.listItemThreeLine.android` */
-        val settingsRootSizeListItemThreeLineAndroid: Dp = 88.dp
-        /** Material 3 · settings.root · M3 two-line list item height · VERIFIED — token `settings.root.size.listItemTwoLine.android` */
-        val settingsRootSizeListItemTwoLineAndroid: Dp = 72.dp
+        /** Retro · groups.invite · group cover height on the link-sharing sheet · SOURCED — token `groups.invite.size.coverHeight` */
+        val groupsInviteSizeCoverHeight: Dp = 393.5.dp
+        /** Retro · groups.invite · cover bottom → link note ('Anyone with this link can …') ink top · SOURCED — token `groups.invite.size.coverToNote` */
+        val groupsInviteSizeCoverToNote: Dp = 29.dp
+        /** Retro · groups.invite · group cover ('book') width on the link-sharing sheet, centred · SOURCED — token `groups.invite.size.coverWidth` */
+        val groupsInviteSizeCoverWidth: Dp = 281.8.dp
+        /** Retro · groups.invite · grouped menu: group edge → leading glyph ink · SOURCED — token `groups.invite.size.menuGlyphInset` */
+        val groupsInviteSizeMenuGlyphInset: Dp = 17.9.dp
+        /** Retro · groups.invite · row height of the grouped link menu ('Reset link' / turn off) under the note · SOURCED — token `groups.invite.size.menuRowHeight` */
+        val groupsInviteSizeMenuRowHeight: Dp = 58.7.dp
+        /** Retro · groups.invite · grouped menu: group edge → row label ink (label text role textButton, 17 regular: 'R' cap 12.1 pt) · SOURCED — token `groups.invite.size.menuTextInset` */
+        val groupsInviteSizeMenuTextInset: Dp = 52.7.dp
+        /** Retro · groups.invite · eye glyph ink → note text ink · SOURCED — token `groups.invite.size.noteGlyphGap` */
+        val groupsInviteSizeNoteGlyphGap: Dp = 6.3.dp
+        /** Retro · groups.invite · share-target circle bottom → label ink top (label text role meta, color.global.textPrimary, centred) · SOURCED — token `groups.invite.size.targetLabelGap` */
+        val groupsInviteSizeTargetLabelGap: Dp = 11.6.dp
+        /** Retro · groups.invite · centre-to-centre distance of the share-target circles (64 pt Fill circles = size.global.circleButtonLarge, color.global.control) · SOURCED — token `groups.invite.size.targetPitch` */
+        val groupsInviteSizeTargetPitch: Dp = 90.4.dp
+        /** Retro · groups.screen · group cover height (book proportion ≈ 0.71 width ÷ height) · SOURCED — token `groups.screen.size.coverHeight` */
+        val groupsScreenSizeCoverHeight: Dp = 246.dp
+        /** Retro · groups.screen · cover bottom → group-name cap top · SOURCED — token `groups.screen.size.coverToTitle` */
+        val groupsScreenSizeCoverToTitle: Dp = 36.7.dp
+        /** Retro · groups.screen · group cover ('book' cover) width at the top of the group screen, centred · SOURCED — token `groups.screen.size.coverWidth` */
+        val groupsScreenSizeCoverWidth: Dp = 173.5.dp
+        /** Retro · groups.screen · bottom of the line under the name → top of the action capsules · SOURCED — token `groups.screen.size.metaToActions` */
+        val groupsScreenSizeMetaToActions: Dp = 26.6.dp
+        /** Retro · groups.screen · group-name baseline → top of the line under it (Retro: grey meta line; ours: the member avatar stack) · SOURCED — token `groups.screen.size.titleToMeta` */
+        val groupsScreenSizeTitleToMeta: Dp = 16.dp
+        /** Retro · invite.web · mobile page: inviter's avatar circle above the headline · SOURCED — token `invite.web.size.avatar` */
+        val inviteWebSizeAvatar: Dp = 112.dp
+        /** Retro · invite.web · desktop page: avatar circle · SOURCED — token `invite.web.size.avatarDesktop` */
+        val inviteWebSizeAvatarDesktop: Dp = 70.dp
+        /** Retro · invite.web · desktop page: body line max width · SOURCED — token `invite.web.size.bodyMaxWidthDesktop` */
+        val inviteWebSizeBodyMaxWidthDesktop: Dp = 300.dp
+        /** Retro · invite.web · mobile page: body line → 'Let's go' pill · SOURCED — token `invite.web.size.bodyToPill` */
+        val inviteWebSizeBodyToPill: Dp = 38.dp
+        /** Retro · invite.web · desktop page: body line → QR code · SOURCED — token `invite.web.size.bodyToQrDesktop` */
+        val inviteWebSizeBodyToQrDesktop: Dp = 30.dp
+        /** Retro · invite.web · viewport width at and below which the mobile layout applies; above it the desktop layout · SOURCED — token `invite.web.size.breakpoint` */
+        val inviteWebSizeBreakpoint: Dp = 840.dp
+        /** Retro · invite.web · mobile page: inset of the rounded blurred-photo card from the viewport edges · SOURCED — token `invite.web.size.cardInset` */
+        val inviteWebSizeCardInset: Dp = 6.dp
+        /** Retro · invite.web · mobile page: margin around the footer line · SOURCED — token `invite.web.size.footerMargin` */
+        val inviteWebSizeFooterMargin: Dp = 18.dp
+        /** Retro · invite.web · mobile page: headline → body line · SOURCED — token `invite.web.size.headlineToBody` */
+        val inviteWebSizeHeadlineToBody: Dp = 16.dp
+        /** Retro · invite.web · desktop page: space above the headline · SOURCED — token `invite.web.size.headlineTopDesktop` */
+        val inviteWebSizeHeadlineTopDesktop: Dp = 70.dp
+        /** Retro · invite.web · mobile page: 'Let's go' pill height (capsule, radius 28) · SOURCED — token `invite.web.size.pillHeight` */
+        val inviteWebSizePillHeight: Dp = 56.dp
+        /** Retro · invite.web · mobile page: pill inset from each card edge (width = card − 76) · SOURCED — token `invite.web.size.pillInset` */
+        val inviteWebSizePillInset: Dp = 38.dp
+        /** Retro · invite.web · mobile page: pill → footer · SOURCED — token `invite.web.size.pillToFooter` */
+        val inviteWebSizePillToFooter: Dp = 20.dp
+        /** Retro · invite.web · desktop page: QR code of the invite link · SOURCED — token `invite.web.size.qrDesktop` */
+        val inviteWebSizeQrDesktop: Dp = 250.dp
+        /** Retro · invite.web · mobile page: maximum width of the headline and the body line (centred) · SOURCED — token `invite.web.size.textMaxWidth` */
+        val inviteWebSizeTextMaxWidth: Dp = 260.dp
+        /** Retro · onboarding.widget · widget preview tile on the add-the-widget page (square) · SOURCED — token `onboarding.widget.size.preview` */
+        val onboardingWidgetSizePreview: Dp = 158.dp
+        /** Retro · paywall · benefit media card (the locked feature's preview) centred under the title · SOURCED — token `paywall.size.mediaCardWidth` */
+        val paywallSizeMediaCardWidth: Dp = 248.dp
+        /** Retro · photo.viewer · close circle in the viewer header (fill color.global.controlOnDeep) · SOURCED — token `photo.viewer.dimension.closeCircle` */
+        val photoViewerDimensionCloseCircle: Dp = 23.7.dp
+        /** Retro · photo.viewer · × ink inside the viewer close circle (icon.global.close, color.global.textOnMedia) · SOURCED — token `photo.viewer.dimension.closeGlyph` */
+        val photoViewerDimensionCloseGlyph: Dp = 6.8.dp
+        /** Retro · photo.viewer · last comment row bottom (avatar bottom) → reply field top · SOURCED — token `photo.viewer.dimension.commentsToField` */
+        val photoViewerDimensionCommentsToField: Dp = 24.4.dp
+        /** Retro · photo.viewer · divider → top of the first comment row's avatar · SOURCED — token `photo.viewer.dimension.dividerToComments` */
+        val photoViewerDimensionDividerToComments: Dp = 16.7.dp
+        /** Retro · photo.viewer · photo bottom → baseline of the first footer line · SOURCED — token `photo.viewer.dimension.footerFirstBaseline` */
+        val photoViewerDimensionFooterFirstBaseline: Dp = 25.4.dp
+        /** Retro · photo.viewer · footer: baseline → baseline of the next footer line (caption / date / tags) · SOURCED — token `photo.viewer.dimension.footerLinePitch` */
+        val photoViewerDimensionFooterLinePitch: Dp = 18.6.dp
+        /** Retro · photo.viewer · last footer baseline → divider (C-32) · SOURCED — token `photo.viewer.dimension.footerToDivider` */
+        val photoViewerDimensionFooterToDivider: Dp = 15.8.dp
+        /** Retro · photo.viewer · header avatar right edge → name / week text · SOURCED — token `photo.viewer.dimension.headerAvatarToText` */
+        val photoViewerDimensionHeaderAvatarToText: Dp = 11.8.dp
+        /** Retro · photo.viewer · screen leading edge → header avatar (outer edge of its ring) · SOURCED — token `photo.viewer.dimension.headerInset` */
+        val photoViewerDimensionHeaderInset: Dp = 11.3.dp
+        /** Retro · photo.viewer · header: name baseline → second line (week) baseline · SOURCED — token `photo.viewer.dimension.headerLinePitch` */
+        val photoViewerDimensionHeaderLinePitch: Dp = 19.9.dp
+        /** Retro · photo.viewer · header avatar bottom → photo top · SOURCED — token `photo.viewer.dimension.headerToPhoto` */
+        val photoViewerDimensionHeaderToPhoto: Dp = 9.1.dp
+        /** Retro · settings.root · minimum height of a one-line grouped row (C-14) on the settings surfaces; two-line rows (title + subtitle) grow with their text · SOURCED — token `settings.root.size.rowHeight` */
+        val settingsRootSizeRowHeight: Dp = 58.7.dp
         /** Retro · global · avatar in a comment row and inside the reply / comment field · SOURCED — token `size.global.avatarComment` */
         val globalAvatarComment: Dp = 30.dp
         /** Retro · global · avatar in a 3-column people grid (name centred below) · SOURCED — token `size.global.avatarGrid` */
@@ -3143,104 +2158,58 @@ object Tokens {
         val globalTitleToContent: Dp = 30.dp
         /** Retro · global · safe-area top → baseline of the display title on a root screen · SOURCED — token `size.global.titleTop` */
         val globalTitleTop: Dp = 64.dp
-        /** Yope · walls.browse · person circle in the 'me & friends' row · SOURCED — token `walls.browse.dimension.avatar` */
-        val wallsBrowseDimensionAvatar: Dp = 60.dp
-        /** Yope · walls.browse · centre-to-centre pitch of the person circles · SOURCED — token `walls.browse.dimension.avatarPitch` */
-        val wallsBrowseDimensionAvatarPitch: Dp = 77.7.dp
-        /** Yope · walls.browse · circle bottom to the first-name label baseline · SOURCED — token `walls.browse.dimension.labelBaselineGap` */
-        val wallsBrowseDimensionLabelBaselineGap: Dp = 22.dp
-        /** Yope · walls.browse · person-row centre below the top safe-area inset · SOURCED — token `walls.browse.dimension.rowCenter` */
-        val wallsBrowseDimensionRowCenter: Dp = 93.5.dp
-        /** Yope · walls.browse · screen edge to the first circle · SOURCED — token `walls.browse.dimension.rowInset` */
-        val wallsBrowseDimensionRowInset: Dp = 19.7.dp
-        /** Yope · walls.browse · 'me & friends' title baseline below the top safe-area inset · SOURCED — token `walls.browse.dimension.titleBaseline` */
-        val wallsBrowseDimensionTitleBaseline: Dp = 23.6.dp
-        /** Yope · walls.browse · top of the selected person's wall below the top safe-area inset · SOURCED — token `walls.browse.dimension.wallTop` */
-        val wallsBrowseDimensionWallTop: Dp = 173.dp
-        /** Yope · walls.mine · gap between wall grid tiles, both directions · SOURCED — token `walls.mine.dimension.gridGap` */
-        val wallsMineDimensionGridGap: Dp = 4.dp
-        /** Yope · walls.mine · wall grid side inset · SOURCED — token `walls.mine.dimension.gridInset` */
-        val wallsMineDimensionGridInset: Dp = 24.dp
-        /** Yope · walls.mine · title baseline to the top of the wall grid · SOURCED — token `walls.mine.dimension.titleToGrid` */
-        val wallsMineDimensionTitleToGrid: Dp = 23.5.dp
-        /** Retro · week.history · '+' glyph size in the add tile (centred) · SOURCED — token `week.history.dimension.addGlyph` */
-        val weekHistoryDimensionAddGlyph: Dp = 20.dp
-        /** Retro · week.history · week header baseline to the strip top · SOURCED — token `week.history.dimension.headerToStrip` */
-        val weekHistoryDimensionHeaderToStrip: Dp = 11.7.dp
-        /** Retro · week.history · leading inset of the week header and the strip (the strip has no trailing inset; it scrolls and clips at the screen edge) · SOURCED — token `week.history.dimension.inset` */
-        val weekHistoryDimensionInset: Dp = 20.dp
-        /** Retro · week.history · '•••' right ink edge to the screen edge; vertically centred on the header text · SOURCED — token `week.history.dimension.moreTrailing` */
-        val weekHistoryDimensionMoreTrailing: Dp = 22.dp
-        /** Retro · week.history · ink gap between 'Week N' and the date range · SOURCED — token `week.history.dimension.rangeGap` */
-        val weekHistoryDimensionRangeGap: Dp = 7.5.dp
-        /** Retro · week.history · strip bottom to the next week header's cap top · SOURCED — token `week.history.dimension.sectionGap` */
-        val weekHistoryDimensionSectionGap: Dp = 36.4.dp
-        /** Retro · week.history · gap between adjacent tiles in a strip (the background shows through) · SOURCED — token `week.history.dimension.tileGap` */
-        val weekHistoryDimensionTileGap: Dp = 2.dp
-        /** Retro · week.history · day tile height · SOURCED — token `week.history.dimension.tileHeight` */
-        val weekHistoryDimensionTileHeight: Dp = 112.dp
-        /** Retro · week.history · day tile width (photo, add and empty-day tiles) · SOURCED — token `week.history.dimension.tileWidth` */
-        val weekHistoryDimensionTileWidth: Dp = 84.5.dp
-        /** Retro · week.history · left ink inset of the display title · SOURCED — token `week.history.dimension.titleInset` */
-        val weekHistoryDimensionTitleInset: Dp = 16.dp
-        /** Retro · week.history · display title baseline to the first strip top · SOURCED — token `week.history.dimension.titleToStrip` */
-        val weekHistoryDimensionTitleToStrip: Dp = 17.6.dp
-        /** Retro · week.history · weekday label baseline above the tile bottom · SOURCED — token `week.history.dimension.weekdayBaseline` */
-        val weekHistoryDimensionWeekdayBaseline: Dp = 13.4.dp
-        /** Yope · week.recap · card bottom to the top of the page dots · CAPTURED — token `week.recap.dimension.cardToDots` */
-        val weekRecapDimensionCardToDots: Dp = 20.9.dp
-        /** Yope · week.recap · recap card width, centred · CAPTURED — token `week.recap.dimension.cardWidth` */
-        val weekRecapDimensionCardWidth: Dp = 334.dp
-        /** Yope · week.recap · page dots bottom to the pics grid top · CAPTURED — token `week.recap.dimension.dotsToPics` */
-        val weekRecapDimensionDotsToPics: Dp = 40.dp
-        /** Yope · week.recap · gap between recap card tiles (they touch, no border) · CAPTURED — token `week.recap.dimension.gridGap` */
-        val weekRecapDimensionGridGap: Dp = 0.dp
-        /** Yope · week.recap · label baseline to the card bottom · CAPTURED — token `week.recap.dimension.labelBaselineBottom` */
-        val weekRecapDimensionLabelBaselineBottom: Dp = 27.5.dp
-        /** Yope · week.recap · card left edge to the label · CAPTURED — token `week.recap.dimension.labelInsetLeading` */
-        val weekRecapDimensionLabelInsetLeading: Dp = 25.3.dp
-        /** Yope · week.recap · page dot diameter under the card · CAPTURED — token `week.recap.dimension.pageDot` */
-        val weekRecapDimensionPageDot: Dp = 8.dp
-        /** Yope · week.recap · page dot centre pitch · CAPTURED — token `week.recap.dimension.pageDotPitch` */
-        val weekRecapDimensionPageDotPitch: Dp = 17.3.dp
-        /** Yope · week.recap · gap between pics-grid tiles, both directions · CAPTURED — token `week.recap.dimension.picsGap` */
-        val weekRecapDimensionPicsGap: Dp = 1.dp
-        /** Yope · week.recap · capsule bottom above the screen bottom · CAPTURED — token `week.recap.dimension.segmentedBottom` */
-        val weekRecapDimensionSegmentedBottom: Dp = 42.6.dp
-        /** Yope · week.recap · floating capsule height · CAPTURED — token `week.recap.dimension.segmentedHeight` */
-        val weekRecapDimensionSegmentedHeight: Dp = 47.5.dp
-        /** Yope · week.recap · pill inset inside the capsule · CAPTURED — token `week.recap.dimension.segmentedInset` */
-        val weekRecapDimensionSegmentedInset: Dp = 3.5.dp
-        /** Yope · week.recap · selected segment pill height · CAPTURED — token `week.recap.dimension.segmentedPillHeight` */
-        val weekRecapDimensionSegmentedPillHeight: Dp = 40.4.dp
-        /** Yope · week.recap · selected segment pill width (white) · CAPTURED — token `week.recap.dimension.segmentedPillWidth` */
-        val weekRecapDimensionSegmentedPillWidth: Dp = 83.dp
-        /** Yope · week.recap · floating 'recap | pics' capsule width · CAPTURED — token `week.recap.dimension.segmentedWidth` */
-        val weekRecapDimensionSegmentedWidth: Dp = 160.dp
-        /** Locket · widget.android · sender avatar diameter · SOURCED — token `widget.android.size.avatar` */
-        val widgetAndroidSizeAvatar: Dp = 32.dp
-        /** Locket · widget.android · avatar → caption gap · SOURCED — token `widget.android.size.captionGap` */
-        val widgetAndroidSizeCaptionGap: Dp = 6.dp
-        /** Locket · widget.android · minWidth and minHeight · SOURCED — token `widget.android.size.minSize` */
-        val widgetAndroidSizeMinSize: Dp = 110.dp
-        /** Locket · widget.android · avatar start / bottom margin; caption bottom and end margins · SOURCED — token `widget.android.size.overlayMargin` */
-        val widgetAndroidSizeOverlayMargin: Dp = 8.dp
-        /** Locket · widget.home.small · sender avatar circle, bottom-leading corner of the photo · SOURCED — token `widget.home.small.size.avatar` */
-        val widgetHomeSmallSizeAvatar: Dp = 24.dp
-        /** Locket · widget.home.small · avatar inset from the widget's leading and bottom edges · SOURCED — token `widget.home.small.size.avatarInset` */
-        val widgetHomeSmallSizeAvatarInset: Dp = 6.dp
-        /** Locket · widget.home.small · ring around the avatar · SOURCED — token `widget.home.small.size.avatarRing` */
-        val widgetHomeSmallSizeAvatarRing: Dp = 1.dp
-        /** Locket · widget.home.small · avatar → caption pill gap · SOURCED — token `widget.home.small.size.captionGap` */
-        val widgetHomeSmallSizeCaptionGap: Dp = 5.dp
-        /** Locket · widget.home.small · caption pill height (pill right of the avatar, vertically centred on it) · SOURCED — token `widget.home.small.size.captionHeight` */
-        val widgetHomeSmallSizeCaptionHeight: Dp = 23.dp
-        /** Locket · widget.home.small · caption pill horizontal padding · SOURCED — token `widget.home.small.size.captionPadding` */
-        val widgetHomeSmallSizeCaptionPadding: Dp = 7.dp
+        /** Retro · walls.browse · people grid: avatar centre → avatar centre of the next column (three columns, centred on the screen) · SOURCED — token `walls.browse.dimension.columnPitch` */
+        val wallsBrowseDimensionColumnPitch: Dp = 124.3.dp
+        /** Retro · walls.browse · people grid: avatar bottom → name baseline · SOURCED — token `walls.browse.dimension.nameBaseline` */
+        val wallsBrowseDimensionNameBaseline: Dp = 27.2.dp
+        /** Retro · walls.browse · people grid: avatar top → avatar top of the next row · SOURCED — token `walls.browse.dimension.rowPitch` */
+        val wallsBrowseDimensionRowPitch: Dp = 131.1.dp
+        /** Retro · walls.mine · action row bottom → cap top of the first week section header · SOURCED — token `walls.mine.dimension.actionsToWeeks` */
+        val wallsMineDimensionActionsToWeeks: Dp = 30.1.dp
+        /** Retro · walls.mine · last header text baseline → action row top · SOURCED — token `walls.mine.dimension.nameToActions` */
+        val wallsMineDimensionNameToActions: Dp = 23.dp
+        /** Retro · week.recap · collage card: panel side → card side · SOURCED — token `week.recap.dimension.cardInsetH` */
+        val weekRecapDimensionCardInsetH: Dp = 32.4.dp
+        /** Retro · week.recap · recap preview: panel leading edge → close circle · SOURCED — token `week.recap.dimension.closeInsetLeading` */
+        val weekRecapDimensionCloseInsetLeading: Dp = 20.6.dp
+        /** Retro · week.recap · recap preview: panel top → close circle · SOURCED — token `week.recap.dimension.closeInsetTop` */
+        val weekRecapDimensionCloseInsetTop: Dp = 23.6.dp
+        /** Retro · week.recap · recap preview: diameter of the leading circle and height of the light pill · SOURCED — token `week.recap.dimension.controlHeight` */
+        val weekRecapDimensionControlHeight: Dp = 41.6.dp
+        /** Retro · week.recap · recap preview: screen side → leading circle / trailing pill · SOURCED — token `week.recap.dimension.controlInset` */
+        val weekRecapDimensionControlInset: Dp = 28.9.dp
+        /** Retro · week.recap · cover page: 'Week {n}' baseline → panel bottom · SOURCED — token `week.recap.dimension.coverTextBaseline` */
+        val weekRecapDimensionCoverTextBaseline: Dp = 28.3.dp
+        /** Retro · week.recap · cover page: panel side → 'Week {n}' ink and → name stack ink · SOURCED — token `week.recap.dimension.coverTextInset` */
+        val weekRecapDimensionCoverTextInset: Dp = 19.5.dp
+        /** Retro · week.recap · collage card footer: 'Week {n}' baseline (and the range baseline) → card bottom · SOURCED — token `week.recap.dimension.footerBaseline` */
+        val weekRecapDimensionFooterBaseline: Dp = 18.3.dp
+        /** Retro · week.recap · collage card footer: card side → 'Week {n}' ink and → name / range ink · SOURCED — token `week.recap.dimension.footerInset` */
+        val weekRecapDimensionFooterInset: Dp = 15.3.dp
+        /** Retro · week.recap · collage card footer: group-name baseline → date-range baseline · SOURCED — token `week.recap.dimension.footerLinePitch` */
+        val weekRecapDimensionFooterLinePitch: Dp = 18.3.dp
+        /** Retro · week.recap · collage card: card edge → photo grid (top and sides) · SOURCED — token `week.recap.dimension.gridInset` */
+        val weekRecapDimensionGridInset: Dp = 7.1.dp
+        /** Retro · week.recap · collage card bottom → note top · SOURCED — token `week.recap.dimension.noteGap` */
+        val weekRecapDimensionNoteGap: Dp = 20.dp
+        /** Retro · week.recap · recap note: horizontal padding · SOURCED — token `week.recap.dimension.notePaddingH` */
+        val weekRecapDimensionNotePaddingH: Dp = 18.dp
+        /** Retro · week.recap · recap note: vertical padding · SOURCED — token `week.recap.dimension.notePaddingV` */
+        val weekRecapDimensionNotePaddingV: Dp = 16.dp
+        /** Retro · week.recap · recap preview: screen side → blurred panel · SOURCED — token `week.recap.dimension.panelInset` */
+        val weekRecapDimensionPanelInset: Dp = 11.2.dp
+        /** Retro · week.recap · recap preview: panel bottom → controls row top · SOURCED — token `week.recap.dimension.panelToControls` */
+        val weekRecapDimensionPanelToControls: Dp = 12.4.dp
+        /** Retro · week.recap · recap preview: light pill side → label ink · SOURCED — token `week.recap.dimension.pillPaddingH` */
+        val weekRecapDimensionPillPaddingH: Dp = 23.5.dp
+        /** Retro · week.recap · recap list card: 'Week {n}' baseline → date-range baseline · SOURCED — token `week.recap.dimension.weekCardLinePitch` */
+        val weekRecapDimensionWeekCardLinePitch: Dp = 20.6.dp
+        /** Retro · week.recap · recap list card: card leading edge → 'Week {n}' ink · SOURCED — token `week.recap.dimension.weekCardTextInset` */
+        val weekRecapDimensionWeekCardTextInset: Dp = 21.2.dp
+        /** Retro · week.recap · recap list card: card top → cap top of 'Week {n}' · SOURCED — token `week.recap.dimension.weekCardTextTop` */
+        val weekRecapDimensionWeekCardTextTop: Dp = 21.8.dp
     }
     object Springs {
-        /** Locket · camera.capture · shutter press: scale to camera.capture.layout.shutterPress.scale and dim the disc · SOURCED — token `camera.capture.spring.shutterPress` */
-        val cameraCaptureSpringShutterPress: DSSpring = DSSpring(dampingRatio = 1f, stiffness = 727.19f)
         /** Material 3 · global · Android default spring (Compose spring() defaults: stiffness 1500, damping 1) · PLATFORM — token `spring.global.platformDefault.android` */
         val globalPlatformDefaultAndroid: DSSpring = DSSpring(dampingRatio = 1f, stiffness = 1500.0212f)
         /** Apple HIG · global · iOS default animation (SwiftUI Animation.default) for motion Retro shows no value for · PLATFORM — token `spring.global.platformDefault.ios` */
@@ -3251,8 +2220,8 @@ object Tokens {
         val globalSheetPresent: DSSpring = DSSpring(dampingRatio = 1f, stiffness = 327.8693f)
     }
     object Tracking {
-        /** Partiful · invite.web · title tracking · VERIFIED — token `invite.web.letterSpacing.title` */
-        val inviteWebLetterSpacingTitle: TextUnit = -0.02.sp
+        /** Retro · invite.web · mobile and desktop page: body line tracking · SOURCED — token `invite.web.letterSpacing.body` */
+        val inviteWebLetterSpacingBody: TextUnit = -0.4.sp
         /** Retro · global · Android badge tracking — Latin script only · SOURCED — token `letterSpacing.global.badge.android` */
         val globalBadgeAndroid: TextUnit = -0.2.sp
         /** Retro · global · Android body tracking — only when the locale's script is Latin (hh3.p0), else 0 · SOURCED — token `letterSpacing.global.body.android` */
@@ -3261,35 +2230,6 @@ object Tokens {
         val globalListTitleAndroid: TextUnit = -0.35.sp
     }
     object ColorsLight {
-        val albumsListColorCard: Color = Color(0xFF181818)
-        val cameraCaptureColorFlipButton: Color = Color(0xFF1F1F1F)
-        val cameraCaptureColorShutterDiscPressed: Color = Color(0xFFE0DEDF)
-        val cameraSendtoColorMessageField: Color = Color(0x7A000000)
-        val chatComposerColorFieldRimBottom: Color = Color(0xFF474747)
-        val chatComposerColorFieldRimTop: Color = Color(0xFF4B4B4B)
-        val chatReactionsColorClusterOutline: Color = Color(0xFFFFFFFF)
-        val chatThreadColorBubbleMine: Color = Color(0xFF232323)
-        val chatThreadColorBubbleRimMineBottom: Color = Color(0xFF343434)
-        val chatThreadColorBubbleRimMineTop: Color = Color(0xFF393939)
-        val chatThreadColorBubbleRimTheirsBottom: Color = Color(0xFF363636)
-        val chatThreadColorBubbleRimTheirsTop: Color = Color(0xFF414141)
-        val chatThreadColorBubbleTheirs: Color = Color(0xFF2B2B2B)
-        val chatVoiceColorBubble: Color = Color(0xFF262626)
-        val chatVoiceColorBubbleTheirs: Color = Color(0xFF2B2B2B)
-        val chatVoiceColorDuration: Color = Color(0xFF929292)
-        val chatVoiceColorPlayButton: Color = Color(0xFF333333)
-        val chatVoiceColorWaveform: Color = Color(0xFF919191)
-        val chatVoiceColorWaveformPlayed: Color = Color(0xFFFFFFFF)
-        val collageShareColorPill: Color = Color(0xA89A9489)
-        val collageViewColorHud: Color = Color(0xFF0C0C0C)
-        val collageViewColorPageDotActive: Color = Color(0xFFF4F4F4)
-        val birthdayContributeInputFill: Color = Color(0x14FFFFFF)
-        val birthdayContributeInputText: Color = Color(0xEBE7E8E8)
-        val birthdayContributeStepperActive: Color = Color(0xFFB8B9B9)
-        val birthdayContributeStepperInactive: Color = Color(0x38FFFFFF)
-        val birthdayContributeStepperInactiveLabel: Color = Color(0x8CFFFFFF)
-        val birthdayRequestPromptsHeader: Color = Color(0xFF292D34)
-        val birthdayTributeButtonLabel: Color = Color(0xFF292D34)
         val birthdayTributePillarbox: Color = Color(0xFF000000)
         val globalAccent: Color = Color(0xFF000000)
         val globalBackground: Color = Color(0xFFFFFFFF)
@@ -3331,107 +2271,20 @@ object Tokens {
         val globalTextSecondary: Color = Color(0xFF999999)
         val globalTextSecondaryAndroid: Color = Color(0x80000000)
         val globalTextTertiary: Color = Color(0xFFC1C1C1)
-        val onthisdayBanner: Color = Color(0xFFFC5F33)
-        val onthisdayBannerLabel: Color = Color(0xFFFFFFFF)
-        val onthisdayMetaText: Color = Color(0xFFFFFFFF)
-        val onthisdayProgressFill: Color = Color(0xFFF7D23E)
-        val onthisdayProgressTrack: Color = Color(0xFF93140A)
-        val yearStoryChromeFill: Color = Color(0x80000000)
-        val yearStoryLetterbox: Color = Color(0xFF111111)
-        val yearStoryProgressFill: Color = Color(0xFFFFFFFF)
-        val dailyCaptureColorOverlayControl: Color = Color(0x75000000)
-        val dailyCaptureColorText: Color = Color(0xFFFAFAFA)
-        val groupsCreateColorButtonDisabledFill: Color = Color(0xFF201D21)
-        val groupsCreateColorButtonDisabledLabel: Color = Color(0xFF49464A)
-        val groupsCreateColorCover: Color = Color(0xFF494949)
-        val groupsCreateColorField: Color = Color(0xFF141414)
-        val groupsCreateColorHud: Color = Color(0xFF0C0C0C)
-        val groupsListColorCard: Color = Color(0xFF181818)
-        val groupsListColorHeaderCircleOverPhoto: Color = Color(0x94000000)
-        val groupsScreenColorChatPill: Color = Color(0xFF080808)
-        val groupsScreenColorSegmentTrack: Color = Color(0xFF111111)
-        val inviteWebColorButtonFilledFillDark: Color = Color(0xFFFFFFFF)
-        val inviteWebColorButtonFilledFillLight: Color = Color(0xFF000000)
-        val inviteWebColorButtonFilledLabelDark: Color = Color(0xFF000000)
-        val inviteWebColorButtonFilledLabelLight: Color = Color(0xFFFFFFFF)
-        val inviteWebColorGateCardDark: Color = Color(0xFF000000)
-        val inviteWebColorGateCardLight: Color = Color(0xFFFFFFFF)
-        val inviteWebColorTextDark: Color = Color(0xFFFFFFFF)
-        val inviteWebColorTextLight: Color = Color(0xFF000000)
-        val inviteWebColorThemeDefault: Color = Color(0xFF111111)
-        val onboardingPermissionContactsColorCard: Color = Color(0xFF131313)
-        val onboardingPermissionNotificationsColorSecondaryButton: Color = Color(0xFF171717)
-        val onboardingWidgetColorBackgroundBottom: Color = Color(0xFF0B090B)
-        val onboardingWidgetColorBackgroundTop: Color = Color(0xFF0E0A07)
-        val onboardingWidgetColorCta: Color = Color(0xFFFFB800)
-        val onboardingWidgetColorCtaLabel: Color = Color(0xFF332500)
-        val onboardingWidgetColorStep: Color = Color(0xFFB8B6B2)
-        val onboardingWidgetColorTitle: Color = Color(0xFFFFFFFF)
-        val paywallColorBackgroundBottom: Color = Color(0xFF372805)
-        val paywallColorBackgroundLower: Color = Color(0xFF1E1404)
-        val paywallColorBackgroundTop: Color = Color(0xFF030101)
-        val paywallColorBackgroundUpper: Color = Color(0xFF0E0803)
-        val paywallColorCta: Color = Color(0xFFFEB900)
-        val paywallColorCtaLabel: Color = Color(0xFF2A1E05)
-        val paywallColorDismiss: Color = Color(0xFFBAAA82)
-        val paywallColorPerk: Color = Color(0xFF211B13)
-        val paywallColorPerkSubtitle: Color = Color(0xFF918A80)
-        val paywallColorPerkTitle: Color = Color(0xFFF5F1EB)
-        val paywallColorPlan: Color = Color(0xFF3B3627)
-        val paywallColorPlanBorder: Color = Color(0xFFFFB800)
-        val paywallColorPlanDetail: Color = Color(0xFFBFB598)
-        val paywallColorPlanSelected: Color = Color(0xFF2C2922)
-        val paywallColorPlanSheetBottom: Color = Color(0xFF312C1F)
-        val paywallColorPlanSheetTop: Color = Color(0xFF292824)
-        val paywallColorSubscribe: Color = Color(0xFFF4BB40)
-        val paywallColorSubscribeLabel: Color = Color(0xFF302506)
-        val paywallColorSubtitle: Color = Color(0xFFB2AA8C)
-        val paywallColorTitle: Color = Color(0xFFFDEAB8)
-        val photoViewerColorBackground: Color = Color(0xFF1C191D)
-        val weekHistoryColorEmptyTile: Color = Color(0xFF262626)
-        val weekHistoryColorEmptyTileText: Color = Color(0xFF515151)
-        val widgetAndroidColorAvatarPlaceholderBottom: Color = Color(0xF5828282)
-        val widgetAndroidColorAvatarPlaceholderTop: Color = Color(0xF5A0A0A0)
-        val widgetHomeSmallColorAvatarRing: Color = Color(0x1A000000)
-        val widgetHomeSmallColorCaptionPill: Color = Color(0xCC333333)
-        val widgetHomeSmallColorEmptyBottom: Color = Color(0xFF1B1B1B)
-        val widgetHomeSmallColorEmptyCircle: Color = Color(0x3DFFFFFF)
-        val widgetHomeSmallColorEmptyLabel: Color = Color(0xFF969696)
-        val widgetHomeSmallColorEmptyRing: Color = Color(0xFFFFB800)
-        val widgetHomeSmallColorEmptyTop: Color = Color(0xFF2E2E2E)
-        val widgetHomeSmallColorPlaceholderBottom: Color = Color(0xFF201E21)
-        val widgetHomeSmallColorPlaceholderTop: Color = Color(0xFF2D2B2F)
+        val onthisdayDialTick: Color = Color(0x4DFFFFFF)
+        val onthisdaySubtitle: Color = Color(0xC2FFFFFF)
+        val groupsInviteColorNote: Color = Color(0xFF767676)
+        val inviteWebColorAvatarPlaceholder: Color = Color(0xFFEDEDED)
+        val inviteWebColorBody: Color = Color(0x9EFFFFFF)
+        val inviteWebColorBodyDesktop: Color = Color(0x80000000)
+        val inviteWebColorPill: Color = Color(0x33FFFFFF)
+        val inviteWebColorPillHover: Color = Color(0x4DFFFFFF)
+        val paywallColorPlanText: Color = Color(0xFF090A0A)
+        val paywallColorPlanTextSecondary: Color = Color(0xFF757A7D)
+        val paywallColorPlanTextTertiary: Color = Color(0xFFA5ABAF)
+        val widgetHomeSmallColorStateTint: Color = Color(0xD9FFFFFF)
     }
     object ColorsDark {
-        val albumsListColorCard: Color = Color(0xFF181818)
-        val cameraCaptureColorFlipButton: Color = Color(0xFF1F1F1F)
-        val cameraCaptureColorShutterDiscPressed: Color = Color(0xFFE0DEDF)
-        val cameraSendtoColorMessageField: Color = Color(0x7A000000)
-        val chatComposerColorFieldRimBottom: Color = Color(0xFF474747)
-        val chatComposerColorFieldRimTop: Color = Color(0xFF4B4B4B)
-        val chatReactionsColorClusterOutline: Color = Color(0xFFFFFFFF)
-        val chatThreadColorBubbleMine: Color = Color(0xFF232323)
-        val chatThreadColorBubbleRimMineBottom: Color = Color(0xFF343434)
-        val chatThreadColorBubbleRimMineTop: Color = Color(0xFF393939)
-        val chatThreadColorBubbleRimTheirsBottom: Color = Color(0xFF363636)
-        val chatThreadColorBubbleRimTheirsTop: Color = Color(0xFF414141)
-        val chatThreadColorBubbleTheirs: Color = Color(0xFF2B2B2B)
-        val chatVoiceColorBubble: Color = Color(0xFF262626)
-        val chatVoiceColorBubbleTheirs: Color = Color(0xFF2B2B2B)
-        val chatVoiceColorDuration: Color = Color(0xFF929292)
-        val chatVoiceColorPlayButton: Color = Color(0xFF333333)
-        val chatVoiceColorWaveform: Color = Color(0xFF919191)
-        val chatVoiceColorWaveformPlayed: Color = Color(0xFFFFFFFF)
-        val collageShareColorPill: Color = Color(0xA89A9489)
-        val collageViewColorHud: Color = Color(0xFF0C0C0C)
-        val collageViewColorPageDotActive: Color = Color(0xFFF4F4F4)
-        val birthdayContributeInputFill: Color = Color(0x14FFFFFF)
-        val birthdayContributeInputText: Color = Color(0xEBE7E8E8)
-        val birthdayContributeStepperActive: Color = Color(0xFFB8B9B9)
-        val birthdayContributeStepperInactive: Color = Color(0x38FFFFFF)
-        val birthdayContributeStepperInactiveLabel: Color = Color(0x8CFFFFFF)
-        val birthdayRequestPromptsHeader: Color = Color(0xFF292D34)
-        val birthdayTributeButtonLabel: Color = Color(0xFF292D34)
         val birthdayTributePillarbox: Color = Color(0xFF000000)
         val globalAccent: Color = Color(0xFFFFFFFF)
         val globalBackground: Color = Color(0xFF000000)
@@ -3473,75 +2326,17 @@ object Tokens {
         val globalTextSecondary: Color = Color(0xFF999999)
         val globalTextSecondaryAndroid: Color = Color(0x99FFFFFF)
         val globalTextTertiary: Color = Color(0x4DFFFFFF)
-        val onthisdayBanner: Color = Color(0xFFFC5F33)
-        val onthisdayBannerLabel: Color = Color(0xFFFFFFFF)
-        val onthisdayMetaText: Color = Color(0xFFFFFFFF)
-        val onthisdayProgressFill: Color = Color(0xFFF7D23E)
-        val onthisdayProgressTrack: Color = Color(0xFF93140A)
-        val yearStoryChromeFill: Color = Color(0x80000000)
-        val yearStoryLetterbox: Color = Color(0xFF111111)
-        val yearStoryProgressFill: Color = Color(0xFFFFFFFF)
-        val dailyCaptureColorOverlayControl: Color = Color(0x75000000)
-        val dailyCaptureColorText: Color = Color(0xFFFAFAFA)
-        val groupsCreateColorButtonDisabledFill: Color = Color(0xFF201D21)
-        val groupsCreateColorButtonDisabledLabel: Color = Color(0xFF49464A)
-        val groupsCreateColorCover: Color = Color(0xFF494949)
-        val groupsCreateColorField: Color = Color(0xFF141414)
-        val groupsCreateColorHud: Color = Color(0xFF0C0C0C)
-        val groupsListColorCard: Color = Color(0xFF181818)
-        val groupsListColorHeaderCircleOverPhoto: Color = Color(0x94000000)
-        val groupsScreenColorChatPill: Color = Color(0xFF080808)
-        val groupsScreenColorSegmentTrack: Color = Color(0xFF111111)
-        val inviteWebColorButtonFilledFillDark: Color = Color(0xFFFFFFFF)
-        val inviteWebColorButtonFilledFillLight: Color = Color(0xFF000000)
-        val inviteWebColorButtonFilledLabelDark: Color = Color(0xFF000000)
-        val inviteWebColorButtonFilledLabelLight: Color = Color(0xFFFFFFFF)
-        val inviteWebColorGateCardDark: Color = Color(0xFF000000)
-        val inviteWebColorGateCardLight: Color = Color(0xFFFFFFFF)
-        val inviteWebColorTextDark: Color = Color(0xFFFFFFFF)
-        val inviteWebColorTextLight: Color = Color(0xFF000000)
-        val inviteWebColorThemeDefault: Color = Color(0xFF111111)
-        val onboardingPermissionContactsColorCard: Color = Color(0xFF131313)
-        val onboardingPermissionNotificationsColorSecondaryButton: Color = Color(0xFF171717)
-        val onboardingWidgetColorBackgroundBottom: Color = Color(0xFF0B090B)
-        val onboardingWidgetColorBackgroundTop: Color = Color(0xFF0E0A07)
-        val onboardingWidgetColorCta: Color = Color(0xFFFFB800)
-        val onboardingWidgetColorCtaLabel: Color = Color(0xFF332500)
-        val onboardingWidgetColorStep: Color = Color(0xFFB8B6B2)
-        val onboardingWidgetColorTitle: Color = Color(0xFFFFFFFF)
-        val paywallColorBackgroundBottom: Color = Color(0xFF372805)
-        val paywallColorBackgroundLower: Color = Color(0xFF1E1404)
-        val paywallColorBackgroundTop: Color = Color(0xFF030101)
-        val paywallColorBackgroundUpper: Color = Color(0xFF0E0803)
-        val paywallColorCta: Color = Color(0xFFFEB900)
-        val paywallColorCtaLabel: Color = Color(0xFF2A1E05)
-        val paywallColorDismiss: Color = Color(0xFFBAAA82)
-        val paywallColorPerk: Color = Color(0xFF211B13)
-        val paywallColorPerkSubtitle: Color = Color(0xFF918A80)
-        val paywallColorPerkTitle: Color = Color(0xFFF5F1EB)
-        val paywallColorPlan: Color = Color(0xFF3B3627)
-        val paywallColorPlanBorder: Color = Color(0xFFFFB800)
-        val paywallColorPlanDetail: Color = Color(0xFFBFB598)
-        val paywallColorPlanSelected: Color = Color(0xFF2C2922)
-        val paywallColorPlanSheetBottom: Color = Color(0xFF312C1F)
-        val paywallColorPlanSheetTop: Color = Color(0xFF292824)
-        val paywallColorSubscribe: Color = Color(0xFFF4BB40)
-        val paywallColorSubscribeLabel: Color = Color(0xFF302506)
-        val paywallColorSubtitle: Color = Color(0xFFB2AA8C)
-        val paywallColorTitle: Color = Color(0xFFFDEAB8)
-        val photoViewerColorBackground: Color = Color(0xFF1C191D)
-        val weekHistoryColorEmptyTile: Color = Color(0xFF262626)
-        val weekHistoryColorEmptyTileText: Color = Color(0xFF515151)
-        val widgetAndroidColorAvatarPlaceholderBottom: Color = Color(0xF5828282)
-        val widgetAndroidColorAvatarPlaceholderTop: Color = Color(0xF5A0A0A0)
-        val widgetHomeSmallColorAvatarRing: Color = Color(0x1A000000)
-        val widgetHomeSmallColorCaptionPill: Color = Color(0xCC333333)
-        val widgetHomeSmallColorEmptyBottom: Color = Color(0xFF1B1B1B)
-        val widgetHomeSmallColorEmptyCircle: Color = Color(0x3DFFFFFF)
-        val widgetHomeSmallColorEmptyLabel: Color = Color(0xFF969696)
-        val widgetHomeSmallColorEmptyRing: Color = Color(0xFFFFB800)
-        val widgetHomeSmallColorEmptyTop: Color = Color(0xFF2E2E2E)
-        val widgetHomeSmallColorPlaceholderBottom: Color = Color(0xFF201E21)
-        val widgetHomeSmallColorPlaceholderTop: Color = Color(0xFF2D2B2F)
+        val onthisdayDialTick: Color = Color(0x4DFFFFFF)
+        val onthisdaySubtitle: Color = Color(0xC2FFFFFF)
+        val groupsInviteColorNote: Color = Color(0xFF767676)
+        val inviteWebColorAvatarPlaceholder: Color = Color(0xFFEDEDED)
+        val inviteWebColorBody: Color = Color(0x9EFFFFFF)
+        val inviteWebColorBodyDesktop: Color = Color(0x80000000)
+        val inviteWebColorPill: Color = Color(0x33FFFFFF)
+        val inviteWebColorPillHover: Color = Color(0x4DFFFFFF)
+        val paywallColorPlanText: Color = Color(0xFF090A0A)
+        val paywallColorPlanTextSecondary: Color = Color(0xFF757A7D)
+        val paywallColorPlanTextTertiary: Color = Color(0xFFA5ABAF)
+        val widgetHomeSmallColorStateTint: Color = Color(0xD9FFFFFF)
     }
 }

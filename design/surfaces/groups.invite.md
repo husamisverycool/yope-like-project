@@ -1,111 +1,129 @@
 # `groups.invite` — invite by link or from contacts
 
-Reference: **Yope** (2026 entry pill "invite more friends"; 2024 "Add friends to {group}" sheet). Research:
-`design/research/yope-a.md` §2.11; platform: `docs/PLATFORM_CONSTRAINTS.md` Summary (contacts), §6;
-`design/research/platform.md` §system.permissions (5.1.2(v)). API: `docs/API.md` §5.5, §6.1 (`create_invite`,
-`revoke_invite`), §9.2. Tokens: `groups.invite.*`, `onboarding.permission.contacts.*`. Copy: `groups.invite.*`.
-
-The 2026 sheet behind "invite more friends" was not filmed; the 2024 sheet is the only full reference (older than 12
-months; its third-party app row is do-not-copy). The link itself is shared through the system share sheet, which Yope
-uses on this surface ("Other app" → iOS share sheet → Copy).
+Visual reference: Retro **album link-sharing flow** (inventory #14, TC-J5 phones 1–2: sheet with the book cover and its
+shadow, eye note, black capsule "Turn on link sharing"; then a grouped menu with "Reset link" and a red destructive row,
+and a row of circular share targets) and Retro's Invite rows (#8–9: "Invite" / "Invited"). Mechanics: system share
+sheet, SMS compose, contacts (PLATFORM). Tokens: `groups.invite.*`, `groups.screen.shadow.cover` + `global.*`.
+Copy: `groups.invite.*`, `onboarding.permission.contacts.*`.
 
 ## References
 
 | id | file | used for |
 |---|---|---|
-| I24 | `references/auto/yope/frames/a-yrrah-7452976839846382855-t10.73-add-friends-share-link-2024.png` | title "Add friends to / {group}" (group name lime), "Share this group link to invite" label with glyph, share row → share sheet |
-| E26 | `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png` | white pill with link glyph ("invite more friends"), 205 × 45, r 11 |
-| M24 | `references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png` | "share invite" label |
-| NG2 | `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png` | picker rows (avatar 40, bold name, 54.5 pt pitch) for contact rows |
-| CC | `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png` | contacts card (Android), section label style ("suggested friends") |
-| SF | `references/auto/yope/frames/a-virgi-7686278541255642390-t44.23-suggested-friends-es.png`, `-t52.23-request-pending-es.png` | add pill / pending state on contact rows (es) |
+| TC-J5 | `references/auto/retro/press/tc-2024-04-retro-journals-5.png` (2.0687 px/pt) | cover 281.8 × 393.5, cover → note 29, note colour #767676 + eye glyph, 60 pt capsule, grouped menu (rows 58.7, glyph inset 17.9, text inset 52.7, inset 19.8 ≈ 20, red row #EA3337), 64 pt Fill share circles 90.4 apart, labels 11.6 below |
+| TC-J1 | `references/auto/retro/press/tc-2024-04-journals-1.webp` | cover drop shadow (`groups.screen.shadow.cover`) |
+| TC-1B | `references/auto/retro/press/tc-2023-07-retro-1b.webp` | people rows with capsule actions (C-16) |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | `journal_invite_members_screen_title`, `journal_settings_link_sharing_*`, `journal_broadcast_invite_*`, `invite_journal_share_text_short_template`, `friend_tab_contact_*`, `invites_no_contacts_empty_message` |
 
-## Structure (sheet on black `color.global.backgroundDeep`, scrolls)
+## Structure (page sheet, C-29; page `color.global.background`; scrolls)
 
-1. Header row: ✕ circle leading (`size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.close`).
-2. Title, two lines, centred: line 1 "add {members} to", line 2 the group name in lime (`groups.create.layout.titleAccent`).
-3. Gap `groups.create.size.titleToContent`.
-4. **Link section**: label `groups.invite.link.label` with leading `icon.global.link` (section-label style), then the white
-   pill `groups.invite.link.share` (leading `icon.global.link`), centred; under it `groups.invite.link.expiry` (caption,
-   gray); under that, for the link's creator and admins, the lime text link `groups.invite.link.turnOff`.
-5. Gap `groups.create.size.titleToContent`.
-6. **Contacts section** (`groups.invite.layout.contacts`): label `groups.invite.contacts.label`; then per platform:
-   iOS 18 search field + `ContactAccessButton` + granted rows; iOS 17 white pill `onboarding.permission.contacts.choose`;
-   Android rows, or the contacts card when `READ_CONTACTS` is not granted.
-7. Contact rows (pitch `groups.invite.size.pickerRowPitch`, side margin `size.global.screenMargin`): avatar
-   `size.global.avatarPicker` (initials-free gray circle `color.global.controlRaised` + `icon.global.person` when the
-   contact has no photo) · name · trailing white pill `groups.invite.contacts.invite` (→ "invited" text after sending).
+1. Sheet header (C-29): centred title `groups.invite.title` (`sheetTitle`) + trailing close circle (C-11 on the page).
+2. **Cover**, centred: `groups.invite.size.coverWidth` × `.coverHeight`, `radius.global.thumbnail`, shadow
+   `groups.screen.shadow.cover`; no cover → `color.global.control` fill.
+3. `groups.invite.size.coverToNote` (29) below: **note**, centred: `groups.invite.icon.note` (`size.global.iconSmall`)
+   + `groups.invite.size.noteGlyphGap` + `groups.invite.link.label` (text role `meta`); colour `groups.invite.color.note`
+   (light) / `color.global.textSecondary` (dark). Link on: second line `groups.invite.link.expiry` (same style).
+4. **Link off** (no live invite of yours): primary capsule C-05 `groups.invite.link.turnOn` at `size.global.buttonMarginH`,
+   `size.global.titleToContent` below the note.
+   **Link on**: `size.global.titleToContent` below the note —
+   - grouped menu (C-14 group, fill `color.global.control` / `.surfaceSecondary.android`, `radius.global.groupedRow`,
+     inset `size.global.buttonMarginH`, rows `groups.invite.size.menuRowHeight`, hairline between them): row 1
+     `groups.invite.link.reset` (glyph `groups.invite.icon.reset` at `groups.invite.size.menuGlyphInset`,
+     label at `groups.invite.size.menuTextInset`, text role `textButton`, `color.global.textPrimary`); row 2
+     `groups.invite.link.turnOff` (glyph `icon.global.lock`, label and glyph `color.global.destructive`, C-10);
+   - `size.global.titleToContent` below: **share targets**, centred row of three 64 pt circles (C-11:
+     `size.global.circleButtonLarge`, `color.global.control`, glyph `size.global.icon` in `color.global.textPrimary`),
+     centres `groups.invite.size.targetPitch` apart: Message (`icon.global.chats`), Copy Link (`icon.global.link`),
+     Share to… (`icon.global.share`); labels `groups.invite.size.targetLabelGap` below each (text role `meta`,
+     `color.global.textPrimary`, centred).
+5. `size.global.sectionGap` below: **Contacts** section — header `groups.invite.contacts.label` (text role `sectionLabel`)
+   at the margin, then per `groups.invite.layout.contacts` (iOS 18 search + system button; iOS 17 capsule; Android rows or
+   the permission block, `onboarding.permission.contacts.md`); people rows C-16 (avatar `size.global.avatarPicker`,
+   name `listTitle`, trailing outline capsule C-06 `groups.invite.contacts.invite` → after sending, the value
+   `groups.invite.contacts.invited` in `listSubtitle` `color.global.textSecondary`).
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| ✕ | `size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.close` | `groups.invite.close.accessibilityLabel` | dismiss |
-| title | `fontSize.global.onboardingTitle`, `fontWeight.global.onboardingTitle`, `groups.create.layout.titleAccent` | `groups.invite.title.friends` / `.family` / `.roommates` / `.custom` (by `groups.kind`) | static; long names wrap |
-| link label | `fontSize.global.sectionLabel`, `fontWeight.global.sectionLabel`, `color.global.textSecondary`, `icon.global.link` | `groups.invite.link.label` | static |
-| share pill | `color.global.surfaceLight`, label `color.global.onSurfaceLight` text role `button`, height `groups.screen.size.lightPillHeight`, corners `groups.screen.radius.lightPill`, `icon.global.link` | `groups.invite.link.share`; shared text `groups.invite.link.message` | first tap: `create_invite` if no live invite of the caller exists; then the system share sheet (`groups.invite.layout.share`) |
-| expiry | `fontSize.global.caption`, `color.global.textSecondary` | `groups.invite.link.expiry` ({date} = `expires_at`, "Mmm d yyyy") | shown once an invite exists |
-| turn off link | `auth.code.fontSize.textLink`, `auth.code.fontWeight.textLink`, `color.global.accent` | `groups.invite.link.turnOff`; alert `groups.invite.link.turnOff.title`, `.message`, `.confirm`, `.cancel` | alert (`settings.account.layout.alert`) → `revoke_invite`; toast `groups.invite.link.turnedOff` |
-| contacts label | section-label style | `groups.invite.contacts.label` | static |
-| contact row | pitch `groups.invite.size.pickerRowPitch`; avatar `size.global.avatarPicker`; name `groups.invite.fontSize.pickerName` + `.fontWeight.pickerName` `color.global.textPrimary`; pill = `onboarding.permission.contacts.size.cardButtonWidth` / `.cardButtonHeight`, `color.global.surfaceLight` | `groups.invite.contacts.invite`, then `groups.invite.contacts.invited` (`color.global.textSecondary`) | pill → SMS compose with `groups.invite.link.message` addressed to that number (the person sees and sends it) |
-| contacts card (Android) | `onboarding.permission.contacts.*` | `onboarding.permission.contacts.card.*` | see `onboarding.permission.contacts.md` |
+| header | C-29, C-11 | `groups.invite.title` ({group_name}), `groups.invite.close.accessibilityLabel` | close |
+| cover | `groups.invite.size.coverWidth` / `.coverHeight`, `groups.screen.shadow.cover` | `groups.invite.cover.accessibilityLabel` | decorative image |
+| note | `groups.invite.icon.note`, `groups.invite.size.noteGlyphGap`, `meta`, `groups.invite.color.note` / `color.global.textSecondary` | `groups.invite.link.label`, `groups.invite.link.expiry` ({date} long date, `retro.voice.formats`) | static |
+| Turn on link sharing | C-05 | `groups.invite.link.turnOn` | `create_invite(p_group_id)` → link on |
+| Reset link | C-14 row | `groups.invite.link.reset` | `revoke_invite(old)` then `create_invite` (a new link; the old stops working) |
+| Turn off link sharing | C-14 row, C-10 red | `groups.invite.link.turnOff`; alert `.turnOff.title`, `.turnOff.message`, `.turnOff.confirm`, `.turnOff.cancel` | native alert (`settings.account.layout.alert`) → `revoke_invite` → link off; confirmation `groups.invite.link.turnedOff` (C-26) |
+| Message | C-11 64 circle + label | `groups.invite.link.messageTarget` | SMS compose with `groups.invite.link.message` (`groups.invite.layout.share.message`) |
+| Copy Link | C-11 + label | `groups.invite.link.copy`; confirmation `groups.invite.link.copied` (C-26) | pasteboard |
+| Share to… | C-11 + label | `groups.invite.link.share` | system share sheet with `groups.invite.link.message` |
+| contact row | C-16 + C-06 | `groups.invite.contacts.invite` / `.invited` | Invite → SMS compose addressed to that number (the person sees the message first) |
 
 ## States
 
 | state | when | design | copy |
 |---|---|---|---|
-| loading | `create_invite` in flight | Loading HUD | `groups.create.hud.loading` |
-| default | invite ready | as Structure | — |
-| group full | members = `max_group_members` | link and contacts sections replaced by the Yope empty-state layout (title `fontSize.global.emptyTitle` bold, detail `fontSize.global.emptyDetail` italic gray) | `groups.invite.full.title`, `groups.invite.full.detail` |
-| error | `create_invite` failed | same layout + white retry pill | `groups.invite.error.title`, `.detail`, `.retry` |
-| offline | no connection | same as error (the link cannot be created offline) | `groups.invite.error.*` |
-| empty contacts | permission granted, no contacts with a phone number | section shows only the label | — |
-| permission-denied | contacts denied | Android card stays / iOS system button | `onboarding.permission.contacts.*` |
-| link turned off | after revoke | expiry and "turn off link" hidden; the next share creates a new invite | toast `groups.invite.link.turnedOff` |
+| loading | reading `group_invites` | C-28 platform indicator under the note in place of 4 | — |
+| link off | no live invite created by you | capsule | `groups.invite.link.turnOn` |
+| link on | live invite (not revoked, not expired) | menu + targets | as above |
+| creating | `create_invite` in flight | capsule busy (C-05) | — |
+| group full | members = `max_group_members` | 4 and 5 replaced by the C-27 block (no glyph, no action) | `groups.invite.full.title`, `.full.detail` |
+| error | invite read / create failed | C-27 block with outline capsule C-06 | `groups.invite.error.title`, `.detail`, `.retry` |
+| offline | no connection | same as error | same |
+| no contacts | permission granted, nothing with a number | one line under the header (`body`, `textSecondary`) | `groups.invite.contacts.empty` |
+| permission-denied | contacts denied | `onboarding.permission.contacts.md` | `onboarding.permission.contacts.*` |
 
 ## Motion
 
-Native sheet presentation; share sheet and SMS compose are system. Toast as `auth.phone` (dwell BLOCKED). Reduce Motion:
-platform behaviour.
+Sheet: native (`spring.global.sheetPresent`). Link off ↔ on: cross-fade `duration.global.fade` (150 ms,
+`easing.global.standard`) between the capsule and the menu + targets. Share sheet, SMS compose, alerts: system.
+Reduce Motion: cross-fade only.
 
 ## Haptics
 
-Link turned off → `haptic.global.warning`. SMS sent (compose result `.sent`) → `haptic.global.send`. Share sheet: system.
+Presses (capsule, rows, targets, Invite) → `haptic.global.tap` (Android). Link turned off → `haptic.global.warning`;
+SMS sent (compose result `.sent`) → `haptic.global.send` (PLATFORM outcomes, R-12).
 
 ## Accessibility
 
-- Title read as one sentence. Share pill: button "share invite". Contact rows: name + "invite" button; after sending the
-  row's value becomes "invited".
-- Dynamic Type: title `largeTitle`; labels `callout`; pills `subheadline`; expiry `caption`; row names 13.5 → `footnote`.
-- Focus order: ✕ → title → link label → share → expiry → turn off → contacts label → rows.
-- Contrast: pill label 21:1; lime link on black 17.65:1; row name white on black 21:1 pass.
+- Cover hidden behind its label; note read as one sentence (+ expiry). Menu rows: buttons ("Turn off link sharing" is
+  announced as destructive by its alert, not by colour). Targets: one button each, label = visible text.
+- Dynamic Type: sheet title `headline`; note `footnote`; menu labels `body`; target labels `footnote`; section header
+  `subheadline`; capsule `headline`. Targets wrap to a second row before their labels truncate.
+- Focus order: close → title → cover → note → capsule | (menu rows → targets) → Contacts header → rows.
+- Contrast:
+
+| pair | light | dark |
+|---|---|---|
+| note `#767676` / `textSecondary` on page | 4.54:1 pass (`node tools/contrast.mjs '#767676' '#FFFFFF' text`) | 7.37:1 pass (row 3) |
+| menu label on fill | 18.59:1 pass (row 9) | 15.13:1 pass |
+| red row on fill | **3.70:1 FAIL** (row 32) | **3.62:1 FAIL** |
+| target glyph on 64 circle | 18.59:1 pass (row 10) | 15.13:1 pass |
+| target label `textPrimary` on page | 21:1 (row 1) | 21:1 |
+| menu / circle fill vs page (non-text) | **1.13:1 FAIL** (row 13) | **1.39:1 FAIL** |
 
 ## Data & actions
 
-- `group_invites` (members can read, docs/API.md §5.5): reuse a live invite created by the caller (not revoked, not
-  expired); else `create_invite(p_group_id)` → `{token, expires_at}`; link `https://<domain>/i/<token>` (domain = owner).
-- `revoke_invite(p_token)` (creator or admin; `not_group_admin` otherwise).
-- `group_members` count is read only to show the full state (never displayed as a number).
-- In: `groups.screen` created empty state ("invite more …"), `groups.screen` ••• "share invite", `groups.settings`
-  (invite row, "share invite"). Out: back to the caller.
+- `group_invites` (members read, docs/API.md §5.5): reuse a live invite created by the caller; else nothing is live
+  (link off). `create_invite(p_group_id)` → `{token, expires_at}`; link `https://<domain>/i/<token>` (domain = owner).
+- `revoke_invite(p_token)` (creator or admin; `not_group_admin` otherwise) for Reset / Turn off.
+- `group_members` count only to decide the full state (never shown as a number).
+- In: `groups.screen` ("Invite" capsule, created state), `groups.settings` (Invite row). Out: back.
 
 ## Platform notes
 
-- iOS: `ShareLink(item: url, message: Text(…))` / `UIActivityViewController`; contacts per `groups.invite.layout.contacts`
-  (`ContactAccessButton` needs iOS 18; the deployment target is 17.2, so the iOS 17 picker path is required too).
-  SMS: `MFMessageComposeViewController` (unavailable → the share sheet).
-- Android: Sharesheet `Intent.createChooser(ACTION_SEND)`; SMS `ACTION_SENDTO smsto:<number>` with `sms_body`.
+- iOS: `ShareLink` / `UIActivityViewController`; `MFMessageComposeViewController` (unavailable → the share sheet); contacts
+  per `groups.invite.layout.contacts` (iOS 18 `ContactAccessButton`, iOS 17 picker).
+- Android: Sharesheet `Intent.createChooser(ACTION_SEND)`; SMS `ACTION_SENDTO smsto:` with `sms_body`.
 
 ## Do-not-copy
 
-- The 2024 third-party app row (WhatsApp, Instagram, Snapchat, Messages logos), the blue 2024 card, forced invites before
-  using the app, "Select All" contacts, any count of invited people.
+- Retro's Instagram target and story sticker (third-party brand), its "Make journal private" / view-only link
+  (this app's links only join), referral counters, "Select All" contacts, any count of invited people.
 
 ## Gaps
 
 | item | status | smallest capture |
 |---|---|---|
-| 2026 invite sheet | not filmed → 2024 structure with 2026 components | one 15-s English recording of Yope's "invite more friends" tap in a 2026 group |
-| section spacing inside the sheet | `groups.create.size.titleToContent` reused (approximation) | same recording |
-| `{domain}` for the link | owner (config/app.json `domain`) | — |
-| contact matching ("on {app_name}" rows) | no backend RPC yet (ContactMatching.swift) | backend decision |
+| reset glyph | `groups.invite.icon.reset` (PLATFORM match of Retro's circular arrow) | — |
+| QR Code target | not built: Retro's QR card art and copy ("Retro.app - Photos with Friends") are brand assets; the owner may want one | owner decision |
+| `{domain}` | owner (`config/app.json` domain) | — |
+| dark appearance of the sheet | light renders only (TC-J5) | one dark screenshot of Retro's link-sharing sheet |

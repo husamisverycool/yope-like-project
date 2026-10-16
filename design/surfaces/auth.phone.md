@@ -1,123 +1,154 @@
-# `auth.phone` — phone number entry (sign up or log in)
+# `auth.phone` — landing and phone number entry
 
-Reference: **Yope onboarding** (`docs/SURFACES.md`). Research: `design/research/yope-a.md` §1, §2.1; platform:
-`docs/PLATFORM_CONSTRAINTS.md` §7. Tokens: `design/tokens/account.json` (`auth.phone.*`, the form tokens `groups.create.*`)
-and `design/tokens/global.json`. Copy: `design/copy/account.json` (`auth.phone.*`).
+Visual reference: **Retro sign-up landing** (inventory #26, RAW dark) and Retro's sign-up order PHONE_NUMBER → AUTH_CODE →
+USER_NAME → FULL_NAME (`docs/SURFACES.md`; RP §6.3). Retro's form screens were not captured as images (RV §2 rows 36–41),
+so the phone step is a **composition of Retro components C-02, C-12, C-05, C-08 in Retro's sign-up order**
+(`level: SOURCED`, `method: "composition of Retro components C-02, C-12, C-05, C-08 in Retro's sign-up order (APK enum e4b)"`).
+Tokens: `design/tokens/account.json` (`auth.phone.*`) + `global.*`. Copy: `design/copy/account.json` (`auth.phone.*`).
+Components: `design/components.md`.
 
-**Yope's phone screen was not found.** Every 2024–2026 source opens on social sign-in (Apple / Google / Facebook);
-the phone path sits behind "try other options" and was never filmed (yope-a §2.1, §6). This screen is assembled only
-from documented Yope parts: the sign-in screen (title, subtitle, legal footer, black background), the onboarding form
-stack (field + lime "continue", 2024–2025 builds) and Yope's voice. The country-code selector, the error presentation and
-the toast dwell are filled from Locket (gap fill 2026-10-15, MERGE_DECISIONS G2-4, G2-5, G2-7; see Gaps).
+Two states of one surface: **A. landing** (first launch, signed out) and **B. phone form** (after "Get started" or
+"already have an account?"). One-time-code sign-in serves new and returning accounts, so both entries open B.
 
 ## References
 
 | id | file | used for |
 |---|---|---|
-| S24 | `references/auto/yope/frames/a-yrrah-7454430216123862280-t6.73-signup-2024.png` | title "sign up or log in", italic subtitle, legal footer text (read in this pass), centred layout |
-| S26 | `references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png` | 2026 sign-in layout: black, 40 pt heavy title, footer gray with bold links, lime text link |
-| C24 | `references/auto/yope/frames/a-yrrah-7452976839846382855-t3.73-create-new-group-empty-2024.png` | onboarding form stack: title → content → field → "continue"; disabled button; gaps |
-| BI | `references/auto/yope/web/a-bi-2025-create-group-composite.jpg`, `a-bi-2025-onboarding-composite.jpg` | the same stack sitting directly above the system keyboard; lime "continue" |
-| NG | `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png` | 2026 form field (fill, height, radius, centred bold text, margins) |
-| HUD | `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png` | Loading HUD |
-| T | `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png` | lime toast ("posted in the wall") |
+| LAND | `references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png` (RAW iOS dark, 3.000 px/pt) | landing: wordmark block, grey tagline 30 pt, white 60 pt capsule at 20 pt margins, grey lower-case link, 14 pt fine print with underlined links; all vertical gaps (`auth.phone.size.*`) |
+| WEB | `references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css` (`.page_largeRetroWordmark` 4rem) | wordmark size `auth.phone.fontSize.wordmark` |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | form copy: `onboarding_form_input_hint_phone_number`, `onboarding_form_input_next`, `onboarding_landing_phone_number_error`, `onboarding_landing_welcome_*` |
+| H43 | `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png` | title baseline 64 below the safe area (C-01 metric used for the form title) |
+| LK | `references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt` | country-code mechanics (`auth.phone.layout.countryCode`) |
 
-## Structure (top to bottom, black `color.global.backgroundDeep`, everything centred on the vertical axis)
+## Structure
 
-1. Status bar (system, light content).
-2. No header circles (first screen; Yope's sign-in screen has none). When reached from an invite (`invite.web` /
-   `invite.appclip` → install → launch), the same screen is shown; the pending invite token is kept for after onboarding.
-3. Title `auth.phone.title`, cap top `groups.create.size.sheetTopToTitle` below the safe-area top; one line, centred.
-4. Subtitle `auth.phone.subtitle`, directly under the title with the platform's default leading (the gap was not
-   measured separately; S24 shows title and subtitle as one block), centred.
-5. Gap `groups.create.size.titleToContent`.
-6. Phone field: full width minus `size.global.buttonMarginH` on each side, centred text.
-7. Gap `groups.create.size.fieldToButton`.
-8. Primary button `auth.phone.continue`, full width minus `size.global.buttonMarginH`.
-9. Legal footer `auth.phone.legal.text`, centred, `size.global.screenMargin` side margins, pinned above the home
-   indicator; when the keyboard is up it sits under the button (it moves with the stack). Footer placement under a keyboard
-   was not observed (approximation, see Gaps).
-10. System phone keyboard (`auth.phone.layout.keyboard`), shown on appear; the stack (3–9) stays top-aligned as in BI.
+### A. Landing (page `color.global.background` iOS / `color.global.background.android`; C-33)
+1. Status bar (system; follows the appearance).
+2. **Wordmark block**, centred horizontally, block centre at `auth.phone.layout.landingBlock.centreY` × screen height:
+   - wordmark = the app's name in `font.global.display`, `auth.phone.fontSize.wordmark` (64), regular,
+     `color.global.textPrimary` — owner asset, **BLOCKED** until `config/app.json` `displayName` (or a logo) exists;
+   - `auth.phone.size.wordmarkToTagline` (19.3) below its baseline: tagline `auth.phone.tagline`, text role
+     `onboardingTitle` (30 regular), `color.global.textSecondary`, centred.
+3. Flexible space.
+4. **Primary capsule** C-05 `auth.phone.getStarted`, full width minus `size.global.buttonMarginH` (20) each side,
+   `size.global.buttonHeight` (60).
+5. `auth.phone.size.capsuleToLink` (20.7) below: secondary link C-08 `auth.phone.signIn` (text role `listTitle`,
+   `color.global.textSecondary`, lower case as written), centred.
+6. `auth.phone.size.linkToLegal` (28.4) below: fine print `auth.phone.legal.text`, text role `caption` (14, line
+   `lineHeight.global.caption` 21.7), `color.global.textSecondary`, centred, side margins `size.global.screenMargin`;
+   the ranges `auth.phone.legal.terms` and `auth.phone.legal.privacy` underlined (LAND); last line's ink bottom
+   `auth.phone.size.legalToBottom` (40) above the screen bottom.
+
+### B. Phone form (same page colour; onboarding form composition, used by every `auth.*` step)
+1. C-02 header row: back chevron `icon.global.back` at `size.global.backInset` → returns to A (no title in the row).
+2. Title `auth.phone.title`: `font.global.display`, text role `displayMedium` (32), `color.global.textPrimary`,
+   leading at `size.global.screenMargin`, baseline `size.global.titleTop` (64) below the safe-area top (C-01 metric).
+3. Explanation `auth.phone.subtitle` directly under the title (text role `body`, `color.global.textSecondary`), the way
+   C-19 sets the real name under the serif name.
+4. `size.global.titleToContent` (30) below: phone field C-12 (full width inside `size.global.screenMargin`), placeholder
+   `auth.phone.field.placeholder`; country flag slot and inline calling code per `auth.phone.layout.countryCode`;
+   keyboard per `auth.phone.layout.keyboard`, raised on appear.
+5. Primary capsule C-05 `auth.phone.continue` ("Next") pinned `size.global.buttonMarginH` above the keyboard (or the
+   bottom safe area when the keyboard is down), full width minus `size.global.buttonMarginH`.
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| title | `fontSize.global.onboardingTitle`, `fontWeight.global.onboardingTitle`, `color.global.textPrimary`, `font.global.family` | `auth.phone.title` | static; one colour (S24 draws it all white) |
-| subtitle | `auth.phone.fontSize.subtitle`, `auth.phone.layout.subtitle` (italic, regular, `color.global.textPrimary`) | `auth.phone.subtitle` | static |
-| phone field | fill `groups.create.color.field`; height `size.global.fieldHeight`; corners `radius.global.field`; text `groups.create.fontSize.fieldText` + `groups.create.fontWeight.fieldText` in `color.global.textPrimary`; placeholder same size in `color.global.textSecondary`; keyboard/AutoFill `auth.phone.layout.keyboard`; country code `auth.phone.layout.countryCode` (Locket: 20 × 13 flag slot 20 pt from the leading edge, 5 pt before the text; calling code typed inline) | `auth.phone.field.placeholder`, `auth.phone.field.accessibilityLabel` | pre-filled with "+" and the device region's calling code; the flag follows the code as it is typed (auto-formatted); tapping the flag opens the country list in a sheet and replaces the code; normalised to E.164 before sending |
-| continue | `color.global.accent` / `color.global.onAccent`; height `size.global.buttonHeight`; corners `radius.global.button`; label `fontSize.global.button` + `fontWeight.global.button`; disabled `groups.create.color.buttonDisabledFill` / `.buttonDisabledLabel` | `auth.phone.continue` | disabled until the field holds digits after the calling code; tap → `signInWithOTP`; HUD while the request runs |
-| legal footer | `auth.phone.layout.legalFooter` (`fontSize.global.caption`, `lineHeight.global.caption`, `color.global.textSecondary`, links bold) | `auth.phone.legal.text` with link ranges `auth.phone.legal.terms`, `auth.phone.legal.privacy` | links open `config/app.json` `legal.termsUrl` / `legal.privacyUrl` in the in-app browser (SFSafariViewController / Custom Tabs) |
-| Loading HUD | `groups.create.color.hud`, `groups.create.size.hud`, label `groups.create.fontSize.hudLabel` in `color.global.textPrimary`, spinner `easing.global.native` (activityIndicator) | `groups.create.hud.loading` | centred over the screen while sending; blocks input |
-| toast | `safety.block.layout.toast`, `safety.block.duration.toast` (2000 ms) | `auth.phone.toast.codeSent`; after an account deletion `settings.account.deleted.toast` | top of the screen for 2 s |
+| wordmark | `font.global.display`, `auth.phone.fontSize.wordmark`, `color.global.textPrimary`, `auth.phone.layout.landingBlock` | app name (BLOCKED) | static |
+| tagline | text role `onboardingTitle`, `color.global.textSecondary`, `auth.phone.size.wordmarkToTagline` | `auth.phone.tagline` | static |
+| Get started | C-05 (`color.global.accent` / `color.global.onAccent`, `size.global.buttonHeight`, `radius.global.button`, text role `button`) | `auth.phone.getStarted` | → state B (page transition, Motion) |
+| already have an account? | C-08 secondary link (text role `listTitle`, `color.global.textSecondary`), hit area ≥ `size.global.minTouchTarget.*` | `auth.phone.signIn` | → state B |
+| fine print | text role `caption`, `lineHeight.global.caption`, `color.global.textSecondary`; links underlined, same colour | `auth.phone.legal.text` with ranges `auth.phone.legal.terms`, `auth.phone.legal.privacy` | links open `config/app.json` `legal.termsUrl` / `legal.privacyUrl` in SFSafariViewController / Custom Tabs |
+| back | C-02 (`icon.global.back`, `color.global.textPrimary`, `size.global.backInset`, hit `size.global.headerButton`) | `auth.code.back.accessibilityLabel` | → state A |
+| title / explanation | `font.global.display` + `displayMedium`; `body` + `color.global.textSecondary` | `auth.phone.title`, `auth.phone.subtitle` | static |
+| phone field | C-12: `color.global.control`, `size.global.fieldHeight`, `radius.global.field`, text role `placeholder` (typed text `color.global.textPrimary`, placeholder `color.global.textSecondary`); `auth.phone.layout.countryCode`, `auth.phone.layout.keyboard` | `auth.phone.field.placeholder`, `auth.phone.field.accessibilityLabel` | pre-filled "+" and the region's calling code; auto-formats; flag tap → country list (native sheet, C-29); normalised to E.164 before sending |
+| Next | C-05; disabled = `color.global.controlRaised` fill, `color.global.onAccent` label (C-05 disabled); busy = platform activity indicator in the label colour (C-05 busy) | `auth.phone.continue` | enabled when digits follow the calling code; tap → `signInWithOTP`; on success push `auth.code` |
+| error alert | `auth.phone.layout.inlineError` (native, C-29) | `auth.phone.error.invalidNumber` / `.rateLimited` / `.sendFailed` + `auth.phone.error.dismiss` | message-only alert; field keeps its text |
 
 ## States
 
 | state | when | design | copy | source |
 |---|---|---|---|---|
-| default | launch without a session | as Structure | as above | S24, S26, C24 |
-| sending | `signInWithOTP` in flight | Loading HUD | `groups.create.hud.loading` | HUD (SOURCED) |
-| invalid number | number fails E.164 parsing, or Supabase rejects it | system alert, message only, one button (`auth.phone.layout.inlineError`) | `auth.phone.error.invalidNumber` + `auth.phone.error.dismiss` | copy SOURCED (pattern); presentation Locket (gap fill) |
-| rate limited | second request within 60 s / provider limit | error alert (`auth.phone.layout.inlineError`) | `auth.phone.error.rateLimited` + `auth.phone.error.dismiss` | PLATFORM_CONSTRAINTS §7 |
-| send failed | 5xx / provider error | error alert (`auth.phone.layout.inlineError`) | `auth.phone.error.sendFailed` + `auth.phone.error.dismiss` | — |
-| offline | no connection (NWPathMonitor / ConnectivityManager) | Yope empty-state layout replacing 3–8: title `fontSize.global.emptyTitle` bold, detail `fontSize.global.emptyDetail` italic `color.global.textSecondary`, white pill (`color.global.surfaceLight`, `groups.screen.radius.lightPill`, height `groups.screen.size.lightPillHeight`) | `auth.phone.offline.title`, `auth.phone.offline.detail`, `auth.phone.offline.retry` | layout V-mthu t51.23 (SOURCED) |
-| empty / permission-denied | — | not applicable (no list, no permission) | — | — |
+| landing | signed out, first screen | A | as above | LAND (RAW) |
+| form (default) | after Get started / the link | B, keyboard up | as above | composition (C-02, C-12, C-05) |
+| sending | `signInWithOTP` in flight | Next shows the activity indicator (C-05 busy, C-28); field and back disabled | — | C-05 / C-28 |
+| invalid number | E.164 parse fails or Supabase rejects it | error alert | `auth.phone.error.invalidNumber` + `auth.phone.error.dismiss` | APK-S `onboarding_landing_phone_number_error` |
+| rate limited | second request within 60 s (HTTP 429) | error alert | `auth.phone.error.rateLimited` + dismiss | PLATFORM_CONSTRAINTS §7 |
+| send failed | 5xx / provider error | error alert | `auth.phone.error.sendFailed` + dismiss | APK-S `error_message_generic` |
+| offline | no connection (NWPathMonitor / ConnectivityManager) on B | the title block stays; field and capsule are replaced by the C-27 block (no glyph), centred in the remaining space: title `auth.phone.offline.title` (text role `emptyTitle`), explanation `auth.phone.offline.detail` (`emptyDetail`, `color.global.textSecondary`), outline capsule C-06 `auth.phone.offline.retry` | `auth.phone.offline.*` | C-27 error / offline variant |
+| loading / empty / permission-denied | — | not applicable (no list, no permission) | — | — |
+
+Light and dark: both appearances use the same layout; LAND is the only capture (dark). In light, the page is
+`color.global.background` #FFFFFF with black text and a black capsule (C-05 light values).
 
 ## Motion
 
-- Push to `auth.code`: native navigation push (`easing.global.native` navigationPush; Yope's measured push
-  `duration.global.navigationPush` cannot be applied to a native push, F-11). Reduce Motion: platform behaviour.
-- Keyboard: system (`easing.global.native` keyboard). HUD spinner: system.
-- Toast enter: `spring.global.platformDefault.ios` / `.android`; Reduce Motion → cross-fade (`layout.global.reduceMotion`).
+- A → B and back: Retro's onboarding page transition — enter fade + expand, exit fade + shrink, `duration.global.pageTransition`
+  (500 ms) with `easing.global.standard` (APK-X; C-33). Reduce Motion (`layout.global.reduceMotion`): cross-fade of the same duration.
+- B → `auth.code`: native navigation push (`easing.global.native` navigationPush — Retro's push not captured, R-14).
+- Keyboard, alerts, the country sheet (`spring.global.sheetPresent`): system.
 
 ## Haptics
 
 | interaction | token |
 |---|---|
-| typing | none (system keyboard; platform proposal `haptic.auth.keypad` = none with the system keyboard) |
-| code sent | `haptic.global.success` |
-| request failed | `haptic.global.error` |
+| Get started, link, Next, back (press) | `haptic.global.tap` (Android VIRTUAL_KEY before the action; iOS none) |
+| typing | none (system keyboard) |
+| request failed | `haptic.global.error` (PLATFORM outcome, R-12) |
 
 ## Accessibility
 
-- Labels: field `auth.phone.field.accessibilityLabel` (the placeholder disappears once typing starts); links are separate
-  link elements (`.link` trait / `Role.Button` + `LinkAnnotation`).
-- Dynamic Type (`layout.global.textStyleMap`): title `largeTitle`; subtitle 14 pt → `subheadline` (F-13 tie rule:
-  13 vs 15 → larger); field text 15 pt → `subheadline`; button `subheadline`; footer `caption`. The title may wrap
-  to two lines at large sizes; the stack scrolls when it no longer fits above the keyboard.
-- Focus order: title → subtitle → field → continue → footer (Terms of Use, Privacy Policy links).
-- Contrast (`node tools/contrast.mjs`): white on field #141414 18.42:1 pass; placeholder #969696 on #141414 6.23:1 pass;
-  black on lime 17.65:1 pass; footer #969696 on black 7.10:1 pass; field fill vs black 1.14:1 **FAIL** (non-text,
-  the placeholder identifies the field); disabled button 1.79:1 / 1.26:1 (inactive control, exempt from SC 1.4.3/1.4.11).
+- Wordmark: header trait, read as the app's name. Tagline: static text. Fine print: one text element with two link
+  elements ("Terms", "Privacy Policy"; `.link` trait / `LinkAnnotation`).
+- Form: title has the header trait; field label `auth.phone.field.accessibilityLabel`; Next announces its busy state.
+- Dynamic Type (`layout.global.textStyleMap`): wordmark and title `largeTitle`; tagline `title`; link `subheadline`;
+  fine print `subheadline`; field `body`; capsule `headline`. The landing block may wrap; the form scrolls above the keyboard.
+- Focus order A: wordmark → tagline → Get started → link → fine print (Terms, Privacy Policy). B: back → title →
+  explanation → field → Next.
+- Contrast (`node tools/contrast.mjs`, `design/CONTRAST.md`):
+
+| pair | light | dark |
+|---|---|---|
+| wordmark / title `textPrimary` on page | 21:1 pass (row 1) | 21:1 pass (Android 17.01:1, row 2) |
+| tagline `textSecondary` 30 pt on page (large) | **2.85:1 FAIL** (row 4) | 7.37:1 pass |
+| link 15 semibold / fine print 14 `textSecondary` on page | **2.85:1 FAIL** (row 3) | 7.37:1 pass |
+| capsule label on fill | 21:1 pass (row 17) | 21:1 pass |
+| typed text on field | 18.59:1 pass (row 9) | 15.13:1 pass |
+| placeholder `textSecondary` on field | **2.52:1 FAIL** (row 11) | 5.31:1 pass |
+| field fill vs page (non-text) | **1.13:1 FAIL** (row 13) | **1.39:1 FAIL** |
+
+  Failures are Retro's own light palette (R-13), reported, not adjusted; the field's label carries its purpose.
 
 ## Data & actions
 
-- `supabase.auth.signInWithOTP(phone:)` (docs/API.md §2; Twilio Verify). Errors are Supabase Auth errors, not the
-  PostgREST codes of §3: map "invalid phone" → invalid number, HTTP 429 → rate limited, other → send failed.
-- No table reads. The minimum-age config is not read here.
-- In: cold launch without a session; after `settings.account` deletion / sign-out; after installing from an invite
-  (`DeepLink.invite(token:)` stored until onboarding ends, then `join_group`, docs/API.md §9.3).
-- Out: `auth.code` (with the normalised number).
+- `supabase.auth.signInWithOTP(phone:)` (docs/API.md §2; Twilio Verify). Error mapping: "invalid phone" → invalid
+  number; HTTP 429 → rate limited; other → send failed.
+- In: cold launch without a session; after sign-out (`settings.root`) or account deletion (`settings.account`, toast
+  `settings.account.deleted.toast` on Android); installing from an invite (`DeepLink.invite(token:)` /
+  `DeepLink.Invite` stored until onboarding ends, then `join_group`, docs/API.md §9.3).
+- Out: `auth.code` with the normalised number.
 
 ## Platform notes
 
-- iOS: `keyboardType(.phonePad)`, `textContentType(.telephoneNumber)` (system AutoFill offers the person's own number).
-- Android: `KeyboardType.Phone`, `ContentType.PhoneNumber` autofill. No SMS Retriever hash (Twilio composes the SMS).
-- App Clip: `invite.appclip` uses its own join sheet and then `auth.code` (see `design/surfaces/invite.appclip.md`).
+- iOS: `.keyboardType(.phonePad)`, `.textContentType(.telephoneNumber)`; status bar follows the appearance (the forced
+  dark appearance is removed in Pass 3).
+- Android: `KeyboardType.Phone`, `ContentType.PhoneNumber`; page `color.global.background.android` (#1C1C1E dark);
+  Inter for UI text (`font.global.family`).
+- App Clip: `invite.appclip` runs the same B → `auth.code` → `auth.agegate` → `auth.profile` (name step) screens.
 
 ## Do-not-copy
 
-- Yope's ATT tracking alert during sign-up (ads; V-virgi), the "YOPE" logotype above the title, social sign-in buttons
-  (phone OTP only: docs/API.md §2), "continue as <username>".
+- Retro's wordmark, 3-D "R" mark and Roslindale files (LAND); "Continue with Apple / Google" (phone OTP only,
+  docs/API.md §2); the age statement inside the fine print ("I confirm that I am 13 or older") — the neutral age
+  screen `auth.agegate` must not reveal the cutoff first (MERGE RA-4).
 
 ## Gaps
 
-| item | status | smallest owner capture |
+| item | status | smallest capture / owner input |
 |---|---|---|
-| country-code selector (`auth.phone.layout.countryCode`) | SOURCED (gap fill, Locket 1.243.0 source; single source, MERGE G2-4) — Yope's own selector not observed | one ~40 s English screen recording of a fresh Yope install up to the first camera screen, tapping "try other options" |
-| error presentation (`auth.phone.layout.inlineError`) | SOURCED (gap fill, Locket: native alert; the call site is inferred, MERGE G2-5) — Yope's own not observed | same recording, entering one wrong code |
-| toast dwell time (`safety.block.duration.toast`) | SOURCED 2000 ms (Locket SHORT toast = AOSP SHORT_DELAY, MERGE G2-7); Yope's own dwell is cut by the video edit | one 10-s recording of a Yope post until the "posted in the wall" toast disappears |
-| title–subtitle gap, footer position with the keyboard up | approximation (platform leading; footer moves with the stack) | the ~40 s recording above |
-| footer weight | open item of F-24 (global caption role used) | lossless screenshot of the sign-up screen |
-| whole-screen arrangement | approximation: Yope sign-in parts + Yope onboarding form stack | the ~40 s recording above |
-| SMS/carrier disclosure under the field | not researched (counsel) | — |
+| wordmark | BLOCKED: owner's name or logo (`config/app.json` displayName) | owner decision 0.1 / 0.2 |
+| Retro's phone form (title, field, button placement) | composition of C-02 / C-12 / C-05 | raw screenshots of the first 4 sign-up steps on a fresh install (RV §6) |
+| light landing | dark geometry reused | one raw light screenshot of the landing |
+| country selector | Locket mechanics in C-12 | same sign-up capture |
+| SMS / carrier disclosure under the field | not researched (counsel) | — |

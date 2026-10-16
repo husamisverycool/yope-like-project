@@ -5,59 +5,27 @@ import SwiftUI
 
 /// BLOCKED values: available in DEBUG builds only, so a release build that uses one fails to compile.
 public enum BlockedTokens {
-    public enum Counts {
-        /// Locket · chat.reactions · how many distinct emoji the cluster shows before it stops growing · BLOCKED
-        /// token: `chat.reactions.count.clusterMaxVisible`
-        public static var chatReactionsCountClusterMaxVisible: Never { fatalError("BLOCKED token chat.reactions.count.clusterMaxVisible") }
-    }
     public enum Layouts {
-        /// Locket · chat.reactions · list of who reacted with what on one photo (row layout, order) · BLOCKED
-        /// token: `chat.reactions.layout.activitySheet`
-        public static var chatReactionsLayoutActivitySheet: Never { fatalError("BLOCKED token chat.reactions.layout.activitySheet") }
-        /// Yope · chat.voice · whether and how the voice bubble width depends on the duration · BLOCKED
-        /// token: `chat.voice.layout.widthRule`
-        public static var chatVoiceLayoutWidthRule: Never { fatalError("BLOCKED token chat.voice.layout.widthRule") }
-        /// Locket · paywall · artwork inside the icon tile (our app icon) · BLOCKED
-        /// token: `paywall.layout.iconTileArt`
-        public static var paywallLayoutIconTileArt: Never { fatalError("BLOCKED token paywall.layout.iconTileArt") }
-        /// Yope · photo.viewer · where a photo's voice note plays in the viewer · BLOCKED
-        /// token: `photo.viewer.layout.voiceNote`
-        public static var photoViewerLayoutVoiceNote: Never { fatalError("BLOCKED token photo.viewer.layout.voiceNote") }
-        /// Apple HIG · safety.report · list of report reasons shown before the details field · BLOCKED
-        /// token: `safety.report.layout.reasons`
-        public static var safetyReportLayoutReasons: Never { fatalError("BLOCKED token safety.report.layout.reasons") }
-        /// Yope · walls.browse · order of the people after 'me' in the row · BLOCKED
+        /// Retro · chat.reactions · order of the rows in the Reactions sheet · BLOCKED
+        /// token: `chat.reactions.layout.listOrder`
+        public static var chatReactionsLayoutListOrder: Never { fatalError("BLOCKED token chat.reactions.layout.listOrder") }
+        /// Retro · photo.viewer · width of the leading tap zone that goes back · BLOCKED
+        /// token: `photo.viewer.layout.backZone`
+        public static var photoViewerLayoutBackZone: Never { fatalError("BLOCKED token photo.viewer.layout.backZone") }
+        /// Retro · walls.browse · order of people in the grid · BLOCKED
         /// token: `walls.browse.layout.rowOrder`
         public static var wallsBrowseLayoutRowOrder: Never { fatalError("BLOCKED token walls.browse.layout.rowOrder") }
-        /// Yope · walls.browse · how the selected person's circle is marked in the row · BLOCKED
-        /// token: `walls.browse.layout.selection`
-        public static var wallsBrowseLayoutSelection: Never { fatalError("BLOCKED token walls.browse.layout.selection") }
-        /// Yope · walls.mine · Yope's free-form wall canvas (9:16, photos of mixed sizes, overlap, rotation) · BLOCKED
-        /// token: `walls.mine.layout.freeformWall`
-        public static var wallsMineLayoutFreeformWall: Never { fatalError("BLOCKED token walls.mine.layout.freeformWall") }
-        /// Yope · walls.mine · whether rows after the first change tile count or width (mosaic) on the profile grid · BLOCKED
-        /// token: `walls.mine.layout.mosaic`
-        public static var wallsMineLayoutMosaic: Never { fatalError("BLOCKED token walls.mine.layout.mosaic") }
-        /// Yope · week.edit · where the recap text is shown and edited · BLOCKED
-        /// token: `week.edit.layout.recapText`
-        public static var weekEditLayoutRecapText: Never { fatalError("BLOCKED token week.edit.layout.recapText") }
-        /// Retro · week.history · contents of the per-week '•••' menu · BLOCKED
-        /// token: `week.history.layout.weekMenu`
-        public static var weekHistoryLayoutWeekMenu: Never { fatalError("BLOCKED token week.history.layout.weekMenu") }
-        /// Yope · week.recap · content of the recap card's second page (two page dots are shown) · BLOCKED
-        /// token: `week.recap.layout.page2`
-        public static var weekRecapLayoutPage2: Never { fatalError("BLOCKED token week.recap.layout.page2") }
-        /// Yope · week.recap · dark gradient at the card bottom under the label (colours, height) · BLOCKED
-        /// token: `week.recap.layout.scrim`
-        public static var weekRecapLayoutScrim: Never { fatalError("BLOCKED token week.recap.layout.scrim") }
-        /// Yope · week.recap · how the short row splits its width between its tiles · BLOCKED
-        /// token: `week.recap.layout.shortRowSplit`
-        public static var weekRecapLayoutShortRowSplit: Never { fatalError("BLOCKED token week.recap.layout.shortRowSplit") }
+        /// Retro · week.edit · the in / out mark on a grid photo (position, size, colours) · BLOCKED
+        /// token: `week.edit.layout.selectionMark`
+        public static var weekEditLayoutSelectionMark: Never { fatalError("BLOCKED token week.edit.layout.selectionMark") }
+        /// Retro · week.recap · how the 4 × 6 collage grid is filled when the recap has fewer than 24 photos (or more) · BLOCKED
+        /// token: `week.recap.layout.gridFill`
+        public static var weekRecapLayoutGridFill: Never { fatalError("BLOCKED token week.recap.layout.gridFill") }
     }
-    public enum Sizes {
-        /// Yope · week.recap · height of the short first row · BLOCKED
-        /// token: `week.recap.dimension.shortRowHeight`
-        public static var weekRecapDimensionShortRowHeight: Never { fatalError("BLOCKED token week.recap.dimension.shortRowHeight") }
+    public enum Shadows {
+        /// Retro · albums.view · drop shadow under the book-like album cover · BLOCKED
+        /// token: `albums.view.shadow.cover`
+        public static var albumsViewShadowCover: Never { fatalError("BLOCKED token albums.view.shadow.cover") }
     }
 }
 #endif

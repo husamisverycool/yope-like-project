@@ -36,7 +36,8 @@ import kotlinx.coroutines.flow.Flow
 /**
  * The app shell: the navigation graph (destinations registered per feature module,
  * `android/feature/<group>/<Group>Navigation.kt`), the root flow (signed out → sign-up → onboarding →
- * home, `RootGate`), the floating tab bar over the tab destinations, the toast host, and deep links (invite App Links,
+ * home, `RootGate`), the tab bar under the tab destinations (C-04), the confirmation toasts (C-26, platform
+ * toasts), and deep links (invite App Links,
  * widget and notification taps) turned into full back stacks (`DeepLinkRouting`).
  */
 @Composable
@@ -46,7 +47,7 @@ fun AppNavHost(
     env: AccountEnvironment = AccountEnvironments.get(LocalContext.current),
 ) {
     CompositionLocalProvider(LocalAccountEnvironment provides env) {
-        Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep)) {
+        Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundAndroid)) {
             NavHost(navController = navController, startDestination = DeepLinkRouting.home) {
                 // One registration file per feature group, so each group's screens are built independently
                 // (docs/SURFACES.md groups: account, capture, social, memory).
@@ -58,13 +59,14 @@ fun AppNavHost(
             ShellTabBar(navController, env, Modifier.align(Alignment.BottomCenter))
             val ready = RootGate(navController, env)
             // Until the session is known nothing shows, so no screen flashes before sign-up / home.
-            if (!ready) Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep))
+            if (!ready) Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundAndroid))
             // The capture pass's send toasts ("posted in …", "saved to your library", send failures)
             // over groups.list, where the camera returns to (its own screens place their own host).
             val current by navController.currentBackStackEntryAsState()
             if (current?.destination?.hasRoute<AppRoute.GroupsList>() == true) CaptureToastHost()
-            // Yope's lime toast over every screen (it outlives the navigation that follows it).
-            ToastHost(env.toasts, Modifier.align(Alignment.TopCenter))
+            // Confirmations raised by the account flows, shown as platform toasts (C-26); they outlive the
+            // navigation that follows them.
+            ToastHost(env.toasts)
         }
         LaunchedEffect(navController, deepLinks) {
             deepLinks.collect { link -> navController.show(DeepLinkRouting.backStack(link)) }

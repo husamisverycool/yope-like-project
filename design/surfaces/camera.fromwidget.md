@@ -1,68 +1,72 @@
 # camera.fromwidget — a widget tap opens straight into the camera
 
-Reference: **Locket** ("Tap the widget to open the camera"). No screen of its own: it is the route from any
-home-screen or Lock Screen widget into `camera.capture`, with the widget's group preselected in `camera.sendto`.
+**Mechanics: Locket** ("Tap the widget to open the camera"). No screen of its own: the route from any widget
+(`widget.home.*`, `widget.lock.*`, `widget.android`) into `camera.capture` with the widget's group preselected in
+`camera.sendto`. **Visual reference: none** — the destination is drawn as `camera.capture` (Retro components on the
+media surface). Retro's own widget tap reloads the widget (its "Tap to reload" states); our tap opens the camera
+(RC-9). Decisions: `design/MERGE_DECISIONS.md` RC-9.
 
 ## References
 
-| image | what it verifies |
+| image / source | what it verifies |
 |---|---|
-| `references/auto/locket/store/locket-store-07.png` (headline "Tap the widget to open the camera") | behavior |
-| `references/auto/locket/play/locket-play-05.png` | same on Android |
-| Locket APK 1.243.0 Hermes strings 'logOpenedFromWidget', 'Failed to parse widget launch URL' (locket.md §5) | the widget launches the app with a URL |
+| `references/auto/locket/store/locket-store-07.png` ("Tap the widget to open the camera"), `references/auto/locket/play/locket-play-05.png` | the mechanic on iOS and Android |
+| Locket APK 1.243.0 Hermes strings 'logOpenedFromWidget', 'Failed to parse widget launch URL' (design/research/locket.md §5) | the widget launches the app with a URL |
+| `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` `app_widget_empty_message` ("No media. Tap to reload") | Retro's tap behaviour (not used — RC-9) |
 
 ## Structure
 
-1. The member taps a widget (`widget.home.*`, `widget.lock.*`, `widget.android`).
+1. The member taps a widget.
 2. The app opens (cold or warm) directly on `camera.capture` — no splash, intro or interstitial.
-3. When the member captures, `camera.sendto` opens with the widget's group selected.
+3. After a capture, `camera.sendto` opens with the widget's group selected.
 
 ## Elements
 
-| element | tokens | copy | behavior |
+| element | tokens | copy | behaviour |
 |---|---|---|---|
-| tap target | `camera.fromwidget.layout.target` | none (the widget's accessibility label describes the photo; see widget specs) | iOS: `widgetURL(app://camera?group=<id>)` on the whole widget (a `Button(intent:)` must "do more than open the app", so a URL); Android: a `PendingIntent` (ACTION_VIEW, same URI) on the widget root |
-| group preselection | — | — | `DeepLink.camera(groupID:)`; an unreadable or missing id still opens the camera with nothing preselected (DeepLinkParser) — then `camera.sendto` uses its no-context default |
+| tap target | `camera.fromwidget.layout.target` | none (the widget's own accessibility label, `widget.home.small.a11y.*`) | iOS: `widgetURL(app://camera?group=<id>)` on the whole widget; Android: a `PendingIntent` (ACTION_VIEW, same URI) on the Glance root (`actionStartActivity`) |
+| group preselection | — | — | `DeepLink.camera(groupID:)`; a missing or unreadable id still opens the camera with nothing preselected; `camera.sendto` then uses its no-context default |
 
 ## States
 
-| state | behavior |
+| state | behaviour |
 |---|---|
-| signed out | the app opens on its sign-in flow (auth surfaces); the camera opens after sign-in |
-| group left / deleted | camera opens; nothing preselected (the id no longer matches a membership) |
-| camera permission denied | `camera.capture` denied state |
+| signed out | the app opens on its sign-in flow (`auth.*`); the camera after sign-in (the widget shows `widget.home.small.empty.signedOut`) |
+| group left / deleted | camera opens; nothing preselected |
+| camera permission denied | `camera.capture` permission-denied state |
 | offline | camera works; sending handled in `camera.sendto` |
 | loading / empty / error | none of its own (no screen) |
 
 ## Motion
 
-The system app-launch animation (zoom from the widget) — PLATFORM; nothing custom. Reduce Motion: the system's.
+The system app-launch animation (zoom from the widget) — PLATFORM. Reduce Motion: the system's.
 
 ## Haptics
 
-None (system launch).
+None (system launch; Retro's tap haptic applies to in-app presses only).
 
 ## Accessibility
 
-The widget element announces its photo label (`widget.home.small.a11y.*`) and is a button; activating it opens the
-camera. Focus lands on the camera's first control (flash) — `camera.capture` focus order.
+The widget element announces its label (`widget.home.small.a11y.photo` / `.a11y.collage` or its state text) with the
+button trait; activating it opens the camera. Focus lands on the camera page's title (`camera.capture` focus order).
 
 ## Data & actions
 
 Deep link `app://camera?group=<group_id>` (`ios/Packages/AppCore/Sources/AppModels/DeepLink.swift` `.camera`,
-`android/core/model/.../DeepLink.kt` `Camera`). No API call on open. Out: `camera.capture` → `camera.sendto`.
+`android/core/model/src/main/kotlin/app/model/DeepLink.kt` `Camera`). No API call on open. Out: `camera.capture` →
+`camera.sendto`.
 
 ## Platform notes
 
-- Android's `DeepLink.Camera(groupId: String)` requires an id; it must accept none (MERGE_DECISIONS C-24).
-- Locked iPhone: the tap first asks for unlock (the system). A camera on the locked device would need a
-  LockedCameraCapture extension + Control widget (iOS 18); not in any reference → not built.
-- Android lock-screen hub: activities launched from it need authentication (the default) — PLATFORM_CONSTRAINTS §4.2.
+- Android `DeepLink.Camera(groupId: String)` requires an id; it must accept none (MERGE_DECISIONS C-24, still open).
+- Locked iPhone: the tap first asks for unlock (system). A camera on the locked device (LockedCameraCapture + Control
+  widget) is in no reference → not built.
+- Android lock-screen hub: launched activities require authentication (default) — PLATFORM_CONSTRAINTS §4.2.
 
 ## Do-not-copy
 
-Locket's analytics event names; nothing visual.
+Locket's analytics event names; Retro's "Tap to reload" behaviour.
 
 ## Gaps
 
-None BLOCKED. Locket's iOS mechanism is not observable (native app); the URL route is the platform's documented way.
+None BLOCKED.

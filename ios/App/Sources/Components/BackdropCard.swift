@@ -1,0 +1,80 @@
+// Shared component — C-34 card on a blurred backdrop (recap card, plan card) (design/components.md). Evidence: TC-REC
+// phones 2–3, ST-04, TC-H, PAY (card x60–1144 y1386–2456; TL corner); RV §3.4, §3.5, §3.7, §4 #23.
+import DesignSystem
+import SwiftUI
+
+/// A full-screen, colour-rich blurred version of `backdrop` (`layout.global.materials.backdrop`) with a card centred on
+/// it: fill `color.global.surfaceElevated` (#FFFFFF / #181818; the paywall's iOS card is translucent, alpha not
+/// derivable — Gap — so the APK's opaque value is used), corners `cornerRadius` (continuous), padding `padding`, width =
+/// screen − 2 × `size.global.buttonMarginH`. Below the card, `below` (page dots C-31 and a light pill C-09 on the recap
+/// preview; the plan pager on the paywall). The close circle (C-11 `.glassSmall`) is the caller's.
+///
+/// - Plan card (defaults): `radius.global.cardLarge`, `size.global.planCardPadding`; its capsule (C-05 `.media` or
+///   `.page`) sits 16 pt from the card sides and bottom (`size.global.screenMargin` — no token of its own, Gap).
+/// - Recap card: Retro's corner (≈4.5–5 % of the card width) has no token (Gap — one lossless share-image export); pass
+///   the recap surface's radius.
+///
+/// The blur radius is not measurable from stills (Gap): the backdrop is the photo under the platform's thinnest material
+/// (system blur, PLATFORM), which keeps its colours and follows the appearance. Accessibility: the backdrop is
+/// decorative; the card's content reads in order.
+struct BackdropCard<Content: View, Below: View>: View {
+    let backdrop: PhotoSource?
+    var cornerRadius: CGFloat
+    var padding: CGFloat
+    @ViewBuilder let content: () -> Content
+    @ViewBuilder let below: () -> Below
+
+    init(
+        backdrop: PhotoSource?,
+        cornerRadius: CGFloat = Tokens.Radii.globalCardLarge,
+        padding: CGFloat = Tokens.Sizes.globalPlanCardPadding,
+        @ViewBuilder content: @escaping () -> Content,
+        @ViewBuilder below: @escaping () -> Below
+    ) {
+        self.backdrop = backdrop
+        self.cornerRadius = cornerRadius
+        self.padding = padding
+        self.content = content
+        self.below = below
+    }
+
+    var body: some View {
+        ZStack {
+            BlurredBackdrop(source: backdrop)
+            VStack {
+                content()
+                    .padding(padding)
+                    .frame(maxWidth: .infinity)
+                    .background(Tokens.Colors.globalSurfaceElevated, in: DSShape.rounded(cornerRadius))
+                    .padding(.horizontal, Tokens.Sizes.globalButtonMarginH)
+                below()
+            }
+        }
+    }
+}
+
+extension BackdropCard where Below == EmptyView {
+    init(
+        backdrop: PhotoSource?,
+        cornerRadius: CGFloat = Tokens.Radii.globalCardLarge,
+        padding: CGFloat = Tokens.Sizes.globalPlanCardPadding,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self.init(backdrop: backdrop, cornerRadius: cornerRadius, padding: padding, content: content) { EmptyView() }
+    }
+}
+
+/// The full-screen blurred photo behind a C-34 card (on `color.global.backgroundDeep` while it loads).
+struct BlurredBackdrop: View {
+    let source: PhotoSource?
+
+    var body: some View {
+        ZStack {
+            Tokens.Colors.globalBackgroundDeep
+            PhotoView(source: source)
+            Rectangle().fill(.ultraThinMaterial)
+        }
+        .ignoresSafeArea()
+        .accessibilityHidden(true)
+    }
+}

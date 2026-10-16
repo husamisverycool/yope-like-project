@@ -1,4 +1,5 @@
-// Shared component — a row toggled by Yope's check circle (auth.agegate opt-in; pickers).
+// Shared component — a row toggled by a selection circle (auth.agegate opt-in; pickers): `icon.global.uncheck` /
+// `icon.global.check` (filled only as a state, `icon.global.variantRule`) in the system tint `color.global.selection`.
 import DesignSystem
 import SwiftUI
 

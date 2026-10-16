@@ -1,95 +1,99 @@
 # `auth.agegate` — birthday / age gate at sign-up
 
-Reference: **Yope onboarding**. Research: `design/research/yope-a.md` §2.3 (Terms 13+, privacy policy on birthdays);
-platform: `docs/PLATFORM_CONSTRAINTS.md` §9 (COPPA neutral age screen, Declared Age Range, Play Age Signals);
-API: `docs/API.md` §2, §6.3 (`confirm_age`, `set_birthday`), §12 item 6. Tokens: `auth.agegate.*` + the shared
-sign-up/form tokens. Copy: `auth.agegate.*`.
+Visual reference: Retro sign-up (inventory #26; Retro confirms age in its landing fine print, "I confirm that I am %1$d
+or older", LAND / APK-S `onboarding_landing_welcome_by_continuing`). This app keeps a **neutral age screen** (FTC COPPA
+FAQ, `docs/PLATFORM_CONSTRAINTS.md` §9), drawn as the onboarding form composition of `auth.phone` B:
+`level: SOURCED`, `method: "composition of Retro components C-02, C-12, C-14, C-05 in Retro's sign-up order"`
+(MERGE RA-4). API: `docs/API.md` §2, §6.3 (`confirm_age`, `set_birthday`), §12 item 6. Tokens: `auth.agegate.*`.
+Copy: `auth.agegate.*`.
 
-**Yope's birthday screen was not found** (no 2024–2026 source; Apple/Google sign-in may skip it). The entry field is
-Yope's form field; the entry rules are the FTC's; nothing else is invented.
-
-**Minimum age:** Yope's Terms say 13+, but `app_config.min_age_years` is unset (owner decision). No age number appears
-in any string: the refusal uses `{min_age}` from `public_app_config.min_age_years`, and while it is null `confirm_age`
-fails closed with `age_gate_not_configured` (the "not open yet" state).
+**Minimum age:** `app_config.min_age_years` is unset (owner decision). No age appears before submission; the refusal
+uses `{min_age}` from `public_app_config.min_age_years`; while it is null `confirm_age` fails closed
+(`age_gate_not_configured`, the "not open yet" state).
 
 ## References
 
-As `auth.phone` (S24, S26, C24, BI, NG, HUD), plus NG check circles (`…-t49.23-new-group-selected-create.png`) for the
-opt-in row, and `docs/PLATFORM_CONSTRAINTS.md` §9 for the entry rules.
+| id | file / URL | used for |
+|---|---|---|
+| LAND | `references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png` | page and capsule; Retro's age sentence (not copied, RA-4) |
+| VID-SET | `references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png` | grouped row with a switch (C-14) for the opt-in |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | `error_message_invalid_auth_code` (error pattern), `error_message_not_available_in_country` (refusal pattern), `settings_title_lock_friend_requests` (row label pattern) |
+| FTC | docs/PLATFORM_CONSTRAINTS.md §9 | neutral entry rules (`auth.agegate.layout.dateEntry`) |
 
-## Structure (black, centred)
+## Structure (page `color.global.background` / `.background.android`)
 
-1. Status bar. 2. Header row: none — back is not offered (the account exists after `auth.code`; going back would not undo
-   it). 3. Title `auth.agegate.title`. 4. Subtitle `auth.agegate.subtitle` (italic subtitle style).
-5. Gap `groups.create.size.titleToContent`. 6. Birthday field. 7. Gap `groups.create.size.fieldToButton`.
-8. Opt-in row (full width minus `size.global.buttonMarginH`). 9. Gap `groups.create.size.fieldToButton`.
-10. Primary button `auth.agegate.continue`. 11. System number keyboard.
+1. C-02 header row without a back chevron (the account exists after `auth.code`; going back would not undo it).
+2. Title `auth.agegate.title` (`font.global.display`, `displayMedium`), leading, baseline `size.global.titleTop`.
+3. Explanation `auth.agegate.subtitle` directly under it (`body`, `color.global.textSecondary`).
+4. `size.global.titleToContent` below: birthday field C-12 (`auth.agegate.layout.dateEntry`), placeholder
+   `auth.agegate.field.placeholder` (the locale's numeric date format).
+5. `size.global.titleToContent` below: opt-in group `auth.agegate.layout.optIn` — C-14 single row: title
+   `auth.agegate.optIn.label`, subtitle `auth.agegate.optIn.detail`, trailing native switch (off).
+6. Primary capsule C-05 `auth.agegate.continue`, pinned `size.global.buttonMarginH` above the number keyboard.
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| title / subtitle | onboarding title tokens; `auth.phone.fontSize.subtitle`, `auth.phone.layout.subtitle` | `auth.agegate.title`, `auth.agegate.subtitle` | static; no minimum age shown |
-| birthday field | `auth.agegate.layout.dateEntry` (Yope form field: `groups.create.color.field`, `size.global.fieldHeight`, `radius.global.field`, `groups.create.fontSize.fieldText`) | `auth.agegate.field.placeholder` ({date_format}), `auth.agegate.field.accessibilityLabel` | free entry, numeric keyboard, separators inserted in the locale's order as the person types; empty by default; no default year |
-| opt-in row | `auth.agegate.layout.optIn`: `icon.global.uncheck` / `icon.global.check` in `color.global.selection`, `size.global.checkCircle`; label `fontSize.global.listSubtitle` `color.global.textPrimary`; detail `fontSize.global.listSubtitle` `color.global.textSecondary` | `auth.agegate.optIn.label`, `auth.agegate.optIn.detail`, `auth.agegate.optIn.accessibilityLabel` | unchecked by default; the whole row toggles it |
-| continue | lime primary + disabled tokens (as `auth.phone`) | `auth.agegate.continue` | enabled when the field holds a complete date; tap → `confirm_age(p_birthdate)`; when checked, then `set_birthday(p_birthday, true)` |
-| HUD | `groups.create.color.hud`, `.size.hud`, `.fontSize.hudLabel` | `groups.create.hud.loading` | while the RPCs run |
+| title / explanation | `displayMedium`; `body` + `color.global.textSecondary` | `auth.agegate.title`, `auth.agegate.subtitle` | static; no age shown |
+| birthday field | C-12 (`color.global.control`, `size.global.fieldHeight`, `radius.global.field`, text role `placeholder`), `auth.agegate.layout.dateEntry` | `auth.agegate.field.placeholder` ({date_format}), `auth.agegate.field.accessibilityLabel` | free numeric entry, separators inserted in locale order; empty by default; no default year |
+| opt-in row | C-14: fill `color.global.control` (iOS) / `color.global.surfaceSecondary.android`, `radius.global.groupedRow`, inset `size.global.screenMargin`, title `body`, subtitle `meta` `color.global.textSecondary`; switch tint `color.global.selection` / `color.global.system.primary`; min height `settings.root.size.rowHeight` | `auth.agegate.optIn.label`, `auth.agegate.optIn.detail`, `auth.agegate.optIn.accessibilityLabel` | off by default; the whole row toggles |
+| Next | C-05 (disabled until the date is complete; busy as C-05) | `auth.agegate.continue` | `confirm_age(p_birthdate)`; if the switch is on, then `set_birthday(p_birthday, true)` |
+| error alert | `auth.phone.layout.inlineError` (message only) | `auth.agegate.error.invalidDate` + `auth.phone.error.dismiss` | — |
 
 ## States
 
 | state | when | design | copy |
 |---|---|---|---|
 | default | after `auth.code` for a new account | as Structure | — |
-| checking | RPC in flight | HUD | `groups.create.hud.loading` |
-| invalid date | `invalid_birthdate` or unparseable | error alert (`auth.phone.layout.inlineError`) | `auth.agegate.error.invalidDate` + `auth.phone.error.dismiss` |
-| not configured | `age_gate_not_configured` (503; `min_age_years` null) | Yope empty-state layout replacing 3–10 (title `fontSize.global.emptyTitle` bold, detail `fontSize.global.emptyDetail` italic `color.global.textSecondary`, white pill `color.global.surfaceLight` / `groups.screen.radius.lightPill` / `groups.screen.size.lightPillHeight`) | `auth.agegate.notConfigured.title`, `.detail`, `.retry` |
-| under age | `under_minimum_age` (403) | same empty-state layout, no button; the session is signed out; the refusal is remembered on the device (Keychain / Android Keystore-backed preference) so the screen cannot be retried by going back | `auth.agegate.underAge.title` ({min_age}, {app_name}), `auth.agegate.underAge.detail` |
-| offline | no connection | empty-state layout + retry pill | `auth.phone.offline.title`, `auth.agegate.offline.detail`, `auth.phone.offline.retry` |
-| permission-denied | — | none | — |
+| checking | RPCs in flight | Next busy (C-05 / C-28) | — |
+| invalid date | `invalid_birthdate` or unparseable | error alert | `auth.agegate.error.invalidDate` |
+| not configured | `age_gate_not_configured` (503) | C-27 block (no glyph) replacing 2–6, centred: title `emptyTitle`, explanation `emptyDetail` `textSecondary`, outline capsule C-06 | `auth.agegate.notConfigured.title`, `.detail`, `.retry` |
+| under age | `under_minimum_age` (403) | C-27 block without an action; the session is signed out; the refusal is remembered on the device (Keychain / Keystore-backed preference) so going back cannot retry | `auth.agegate.underAge.title` ({min_age}), `auth.agegate.underAge.detail` |
+| offline | no connection | title stays; C-27 block replaces 4–6 | `auth.phone.offline.*` |
+| loading / empty / permission-denied | — | not applicable | — |
 
 ## Motion
 
-Native push in; replacement by `auth.profile` with a native push. State changes swap content without animation
-(no measured Yope transition); Reduce Motion: unchanged.
+Push in from `auth.code`; out by native push to `auth.profile`. State swaps cross-fade `duration.global.crossfade`
+(100 ms, `easing.global.standard`). Reduce Motion: unchanged (cross-fade only).
 
 ## Haptics
 
-Opt-in toggled → `haptic.global.select`. Confirmed → `haptic.global.success`. Refused / failed → `haptic.global.error`.
+Press → `haptic.global.tap` (Android). Switch → system (`settings.root.layout.toggleHaptic`). Confirmed →
+`haptic.global.success`; refused / failed → `haptic.global.error`.
 
 ## Accessibility
 
-- Field label `auth.agegate.field.accessibilityLabel`; the placeholder's format is also read as the hint.
-- Opt-in row: one element, label `auth.agegate.optIn.accessibilityLabel`, trait toggle (iOS `.isToggle`, Android
-  `Role.Checkbox` with `toggleableState`), detail as its hint.
-- Dynamic Type: title `largeTitle`; subtitle, field, row text `subheadline`.
-- Focus order: title → subtitle → field → opt-in → continue.
-- Contrast: as `auth.phone`; check circle #0091FF on black (global pair, non-text) pass.
+- Field label `auth.agegate.field.accessibilityLabel`, the format read as its hint. Opt-in: one toggle element
+  (`auth.agegate.optIn.accessibilityLabel`), detail as hint (iOS `.isToggle`; Android `Role.Switch`).
+- Dynamic Type: title `largeTitle`; explanation, row title `subheadline`; row subtitle `footnote`; field `body`.
+- Focus order: title → explanation → field → opt-in → Next.
+- Contrast: rows 1, 3, 9, 11, 12, 13 of `design/CONTRAST.md` (as `auth.phone` B); switch tint on the row: system;
+  row subtitle `textSecondary` on #F1F1F1 **2.52:1 FAIL** (light, row 11), 5.31:1 dark.
 
 ## Data & actions
 
 - `rpc("confirm_age", { p_birthdate })` → `profile_private` (sets `age_confirmed_at`; the date is not stored).
-- When opted in: `rpc("set_birthday", { p_birthday, p_opt_in: true })` (stores the date for tributes).
-- `public_app_config` `min_age_years` (anon read) only to fill `{min_age}` in the refusal.
-- iOS 26: also request the Declared Age Range (`com.apple.developer.declared-age-range`) and honour its result where the
-  law requires (PLATFORM_CONSTRAINTS §9); Android: Play Age Signals (beta). Their own sheets are system UI.
+- Opted in: `rpc("set_birthday", { p_birthday, p_opt_in: true })`.
+- `public_app_config.min_age_years` (anon) only for `{min_age}` in the refusal.
+- iOS 26: Declared Age Range (`com.apple.developer.declared-age-range`) where the law requires; Android: Play Age
+  Signals (beta) — system sheets (PLATFORM_CONSTRAINTS §9).
 - In: `auth.code` (new account) or any launch where `age_confirmed_at` is null. Out: `auth.profile`.
 
 ## Platform notes
 
-- iOS numeric entry: `.keyboardType(.numberPad)`; Android `KeyboardType.Number`. Do not use a wheel `DatePicker` (it
-  shows a default date, against the neutral-screen rule, and Yope evidence for it is absent).
+- Numeric entry: iOS `.keyboardType(.numberPad)`, Android `KeyboardType.Number`. No wheel `DatePicker` (it shows a
+  default date, against the neutral-screen rule).
 
 ## Do-not-copy
 
-- Any 13+ dropdown, default year, or wording that reveals the cutoff before entry (FTC). Yope's store ratings
-  (4+ / 12+) and Terms (13+) conflict; none of those numbers is written into the copy.
+- Retro's age sentence in the landing fine print (reveals the cutoff); any 13+ dropdown or default year.
 
 ## Gaps
 
 | item | status | owner action / capture |
 |---|---|---|
 | `min_age_years` | owner decision (docs/API.md §12 item 6) | set the value; the copy needs no change |
-| deletion of the entered data on refusal | backend: `confirm_age` stores nothing, but the auth user (phone number) exists; the "we didn’t save … your number" detail is true only if the client calls a delete (e.g. `delete_account`) on `under_minimum_age` | backend/owner confirmation |
-| error presentation | SOURCED by gap fill (Locket native alert, `auth.phone.layout.inlineError`); Yope's own not observed | ~40 s English recording of a fresh Yope install via "try other options" |
-| Yope's own birthday screen | not found | same recording |
-| back-button retry prevention method | counsel to confirm (PLATFORM_CONSTRAINTS §9) | — |
+| auth user on refusal | `confirm_age` stores nothing, but the phone account exists | backend / owner confirmation |
+| Retro form layout | composition | raw screenshots of the first sign-up steps (RV §6) |

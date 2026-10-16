@@ -13,6 +13,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import app.billing.Billing
 import app.data.DataGraph
+import app.designsystem.DsAppearance
 import app.designsystem.generated.Tokens
 import app.feature.account.AccountEnvironments
 import app.feature.account.invite.InstallReferrerReader
@@ -27,8 +28,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 
 /**
  * Process start: data layer, billing, notification channels (names from `R.string`,
- * `notifications.push.channel.*`), `NotificationAppearance` (accent `color.global.accent`, per
- * daily.ongoing; the small icon is an owner asset, BLOCKED), feature start-up hooks (the capture
+ * `notifications.push.channel.*`), `NotificationAppearance` (accent `color.global.accent` in the system
+ * appearance, per daily.ongoing; the small icon is an owner asset, BLOCKED), feature start-up hooks (the capture
  * group's `PhotoWidgetSlots` / `WidgetConfigureUi` / notification UI, registered through
  * `META-INF/services/app.ui.startup.AppStartupHook`), and the one-time Play install referrer read
  * (invite.web install path: `invite_token=<token>` becomes the pending invite).
@@ -41,7 +42,9 @@ class App : Application() {
         DataGraph.install(this)
         AppNotificationChannels.register(this)
         NotificationAppearance.current = object : NotificationAppearance {
-            override val accentColor: Int = Tokens.Colors.globalAccent.toArgb()
+            // Read when a notification is posted, outside composition: the accent of the system appearance.
+            override val accentColor: Int
+                get() = DsAppearance.pickSystem(Tokens.ColorsLight.globalAccent, Tokens.ColorsDark.globalAccent).toArgb()
         }
         AppStartupHook.runAll(this)
         readInstallReferrerOnce()
@@ -59,8 +62,11 @@ class App : Application() {
 
 /**
  * The single activity. Every way in — launcher, invite App Link, widget tap, notification tap —
- * arrives as an intent and is routed into the navigation graph. Dark only
- * (`layout.global.appearance`): light system-bar content over `color.global.backgroundDeep`.
+ * arrives as an intent and is routed into the navigation graph. The appearance follows the system
+ * (`layout.global.appearance`): edge-to-edge with system-bar icons that contrast with the page
+ * (`SystemBarStyle.auto`, scrims in the page colour `color.global.background.android` of each appearance),
+ * the window background in the page colour of the current appearance, and the Compose content in
+ * [AppTheme] (which provides `DsTheme` with the system setting).
  */
 class MainActivity : ComponentActivity() {
     private val deepLinks = Channel<DeepLink>(Channel.BUFFERED)
@@ -70,10 +76,11 @@ class MainActivity : ComponentActivity() {
         private set
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val dark = Tokens.Colors.globalBackgroundDeep.toArgb()
-        enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(dark), navigationBarStyle = SystemBarStyle.dark(dark))
+        val light = Tokens.ColorsLight.globalBackgroundAndroid.toArgb()
+        val dark = Tokens.ColorsDark.globalBackgroundAndroid.toArgb()
+        enableEdgeToEdge(statusBarStyle = SystemBarStyle.auto(light, dark), navigationBarStyle = SystemBarStyle.auto(light, dark))
         super.onCreate(savedInstanceState)
-        window.setBackgroundDrawable(ColorDrawable(dark))
+        window.setBackgroundDrawable(ColorDrawable(DsAppearance.pick(this, light, dark)))
         // After a configuration change the back stack is restored; route the launch intent once.
         if (savedInstanceState == null) route(intent)
         setContent {

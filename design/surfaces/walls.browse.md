@@ -1,107 +1,104 @@
-# `walls.browse` — browse the walls of people in your groups
+# `walls.browse` — the people in your groups
 
-Reference app: **Yope** "me & friends" walls browser (`docs/SURFACES.md`). Research: `design/research/yope-b.md` §5.
-Tokens: `design/tokens/social.json` (`walls.browse.*`, grid from `walls.mine.*`) + `global.*`. Copy:
-`design/copy/social.json` (`walls.browse.*`). Opened by the **walls** tab (film-strip, `groups.list.layout.tabBar`).
+Redesign on **Retro**: visual reference Retro's **Friends tab** (screen 8 — TC-1B 2023: serif "Friends", search field,
+3-column grid of 81-pt avatars with names under them). Tapping a person opens their wall (`walls.member`), as Retro opens a
+profile. Tokens: `design/tokens/social.json` (`walls.browse.*`) + `global.*`. Copy: `design/copy/social.json`
+(`walls.browse.*`). Decisions: `design/MERGE_DECISIONS.md` → Redesign — Social (RS-16). Tab root: the Friends item of the tab
+bar (C-04, `icon.global.group`; tab items owned by `groups.list`, account group).
 
 ## References
 
 | id | file | used for |
 |---|---|---|
-| S5-b | `references/auto/yope/frames/b-yopeapp-7591560669967682847-t116.00-me-and-friends.png` (Dec 2025 build) | **primary**: title "me & friends", row of person circles with first names, selected wall below |
-| S5-f | `references/auto/yope/frames/b-yopeapp-7591560669967682847-t118.00-friends-wall.png` | wall scrolled (free-form canvas; label "friends wall") |
-| S4-p | `references/auto/yope/frames/b-presskit-profile.png` | grid used for the selected wall (S-11) |
+| TC-1B | `references/auto/retro/press/tc-2023-07-retro-1b.webp` phone 2 (2.204 px/pt) | **primary**: title, search field, grid (avatar 81, `walls.browse.dimension.columnPitch`, `.rowPitch`, `.nameBaseline`) |
+| H43 | `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png` | root header metrics (C-01) |
+| ED-W3 | `references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png` | 2025 search field (52 pt, r 19 — C-12) |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | "Friends", "Search", "Error loading friends. Tap here to try again.", "Nothing to see here yet" |
 
-## Structure (top → bottom)
+## Structure (top → bottom; page `color.global.background` / `.background.android`)
 
-Background `color.global.backgroundDeep` (S5-b reads #010002 on black).
-
-1. **Title** `walls.browse.title` ("me & friends"), centred, text role `sheetTitle` (19.5 bold; measured ≈19.8 pt,
-   x-height method), `color.global.textPrimary`, baseline `walls.browse.dimension.titleBaseline` (23.6) below the top
-   safe-area inset.
-2. **Person row** (horizontal scroll), centre `walls.browse.dimension.rowCenter` (93.5) below the top safe-area inset:
-   circles `walls.browse.dimension.avatar` (60) at pitch `walls.browse.dimension.avatarPitch` (77.7), the first at
-   `walls.browse.dimension.rowInset` (19.7) from the left edge. First circle = **me** (my avatar, label `walls.browse.me`);
-   then everyone who shares a group with me, order **BLOCKED** (`walls.browse.layout.rowOrder`). Under each circle the first
-   name (data), text role `caption` (12 semibold — measured ≈11.6 pt), `color.global.textPrimary`, centred, baseline
-   `walls.browse.dimension.labelBaselineGap` (22) below the circle, one line no wider than the pitch, tail-truncated with
-   "..." (S5-b "Our ban...", "friends..."). The selected person's marking is **BLOCKED** (`walls.browse.layout.selection`).
-   Yope's first yellow "friends..." circle (everyone's combined wall) is not built: the API has no combined wall (Gaps).
-3. **Selected person's wall**, top `walls.browse.dimension.wallTop` (173) below the top safe-area inset: the wall grid of
-   `walls.mine.md` §Structure 2 for that person (me → `walls.mine` content; others → `walls.member` content). Scrolls
-   vertically under the row (the title and row scroll away with it — S5-f shows the wall scrolled).
-4. Floating tab bar overlays the bottom.
+1. **Header** (C-01 root): `walls.browse.title` ("Friends") in the display serif, baseline `size.global.titleTop` below the
+   top safe area. No trailing text buttons (Retro's "Invite" is group-scoped here and lives in `groups.invite`; "Keys" is
+   do-not-copy).
+2. **Search field** (C-12): `size.global.titleToContent` below the title baseline, full width inside
+   `size.global.screenMargin`, `size.global.fieldHeight`, `radius.global.field`, `color.global.control`, `icon.global.search`
+   + placeholder `walls.browse.search` (`color.global.textSecondary`). Filters the grid by display name as you type.
+3. **People grid** (`walls.browse.layout.grid`, C-21), `size.global.sectionGap` below the field: everyone who shares at least
+   one group with you (not you), three columns centred on the screen, `walls.browse.dimension.columnPitch` apart (C-21); each cell: avatar
+   `size.global.avatarGrid` (C-23), the display name centred under it (text role `listTitle`, `color.global.textPrimary`,
+   baseline `walls.browse.dimension.nameBaseline` below the avatar, one line, tail truncation within the column pitch);
+   rows `walls.browse.dimension.rowPitch` apart. Order `walls.browse.layout.rowOrder` (**BLOCKED**). The grid scrolls
+   vertically (RS-16).
+4. The tab bar (C-04) at the bottom.
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | component · tokens | copy | behaviour |
 |---|---|---|---|
-| title | text role `sheetTitle`, `color.global.textPrimary`, `walls.browse.dimension.titleBaseline` | `walls.browse.title` | header trait |
-| person circle | `walls.browse.dimension.avatar`, `.avatarPitch`, `.rowInset`, `.rowCenter`; avatar image or `icon.global.person` | first name (data) / `walls.browse.me`; label `walls.member.a11y.wall` | tap → selects that person; the wall below switches |
-| name label | text role `caption`, `color.global.textPrimary`, `walls.browse.dimension.labelBaselineGap` | first name (data) | — |
-| wall grid | `walls.mine.*` grid tokens | tile labels `photo.viewer.a11y.photo` / `walls.browse.a11y.collage` | tap → `photo.viewer` / `collage.view` |
+| title | C-01; text role `headerTitle`, `font.global.display`, `size.global.titleTop` | `walls.browse.title` | header trait |
+| search | C-12; `size.global.fieldHeight`, `radius.global.field`, `color.global.control`, `icon.global.search`, text role `placeholder` | `walls.browse.search` | filters; clear button native |
+| person cell | C-21 people grid + C-23; `size.global.avatarGrid`, `walls.browse.dimension.columnPitch`, `.rowPitch`, `.nameBaseline`, text role `listTitle` | name (data); label `walls.member.a11y.wall` | tap → `walls.member` |
 
 ## States
 
-| state | what shows | tokens / copy | source |
+| state | what shows | components · tokens · copy | source |
 |---|---|---|---|
-| loading (people) | platform activity indicator centred | `easing.global.native.activityIndicator` | PLATFORM |
-| loading (wall) | indicator under the row | same | PLATFORM |
-| empty (no groups / nobody else) | the row shows only "me"; below: bold title, gray detail, white pill | `walls.browse.empty.title`, `.empty.detail`, `.empty.action` ("create group" → `groups.create`); text roles `emptyTitle` / `emptyDetail`; pill `color.global.surfaceLight`, `color.global.onSurfaceLight`, `groups.screen.size.lightPillHeight`, `groups.screen.radius.lightPill` | `yope.voice.empty-state` |
-| selected person's wall empty | `walls.member.empty.*` (or `walls.mine.empty.*` for me) | as those specs | — |
-| error | `walls.mine.error.title`, `chat.thread.error.detail`, retry pill `chat.thread.error.retry` | — | `yope.voice.error` |
-| offline | cached content; nothing cached → `chat.thread.offline.title` / `.detail` | — | `yope.voice.error` |
+| loading | C-28 activity indicator centred under the search field | `easing.global.native.activityIndicator`; `week.history.a11y.loading` | C-28 |
+| empty (no groups / nobody else) | no search field; C-27 block centred between the title and the tab bar: `icon.global.group`, title, detail, C-06 outline capsule | `walls.browse.empty.title`, `.empty.detail`, `.empty.action` (→ `groups.create`) | C-27; APK-S |
+| no search results | C-27 title only, under the field | `walls.browse.search.empty` | `retro.voice.empty-state` |
+| error | one tappable line under the title at `size.global.screenMargin`, text role `body`, `color.global.textSecondary` | `walls.browse.error.title` (tap reloads) | APK-S `friends_tab_loading_error` (verbatim) |
+| offline | cached grid; nothing cached → the error line | — | — |
 | permission-denied | not applicable | — | — |
 
 ## Motion
 
-Switching person: the wall content is replaced (no Yope transition observed; no custom motion). Scrolling: native.
-Reduce Motion: system.
+Grid appears with `duration.global.fade`; search filtering re-lays the grid without animation (Retro's not captured); tab
+switch and push native. Reduce Motion: system.
 
 ## Haptics
 
 | interaction | token |
 |---|---|
-| person selected in the row | `haptic.global.select` |
+| tap a person (Android) | `haptic.global.tap` (iOS none) |
 
 ## Accessibility
 
-- Row: each circle is a button labelled `walls.member.a11y.wall` ("{name}’s wall"; for me `walls.mine.title`), with the
-  selected trait on the current one.
-- Focus order: title → row (left → right) → wall tiles.
-- Dynamic Type: title → `layout.global.textStyleMap.sheetTitle`; labels → `.caption` (labels keep one line, truncate).
-- Hit targets: 60-pt circles exceed the minimum.
+- The grid is a list; each cell is one button labelled `walls.member.a11y.wall` ("Maya's profile"); avatars decorative.
+- Dynamic Type: title largeTitle; names `listTitle` → subheadline (one line, truncation; the label carries the full name).
+- Focus order: title → search → cells row by row.
 - Contrast (`node tools/contrast.mjs`):
 
-| foreground | background | kind | ratio | result | pair |
+| foreground | background | kind | light | dark | pair |
 |---|---|---|---|---|---|
-| `color.global.textPrimary` #FFFFFF | `color.global.backgroundDeep` #000000 | text | 21.00:1 | pass | first-name labels 12 semibold, title |
+| `color.global.textPrimary` | `color.global.background` | text | 21.00:1 pass | 21.00:1 pass | title, names |
+| `color.global.textPrimary` | `color.global.background.android` | text | 21.00:1 pass | 17.01:1 pass | the same on Android |
+| `color.global.textSecondary` | `color.global.control` | text | **2.52:1 FAIL** | 5.31:1 pass | search placeholder (C-12 failure 1) |
+| `color.global.textPrimary` | `color.global.control` | text | 18.59:1 pass | 15.13:1 pass | typed search text |
+| `color.global.textSecondary` | `color.global.background` | text | **2.85:1 FAIL** | 7.37:1 pass | error line (iOS) |
 
 ## Data & actions
 
-- People: `profiles` (§5.1: everyone sharing a group with me) via `group_members` of my groups.
-- Wall: `wall(p_user_id)` (§6.4) for the selected person, paged by `p_before`.
-- Realtime: `post_deleted` → drop tiles; refetch on foreground.
-- Navigation in: walls tab. Out: `photo.viewer`, `collage.view`, `groups.create`. No deep link.
+- People: `group_members` of my groups → `profiles` (§5.1), distinct, minus me. No RPC.
+- Realtime: none (memberships change through group screens); refetch on appear / foreground.
+- Navigation in: Friends tab. Out: `walls.member`, `groups.create`. No deep link.
 
 ## Platform notes
 
-- iOS: `ScrollView(.horizontal)` row inside the vertical `ScrollView`; Android: `LazyRow` as the first item of the
-  `LazyVerticalGrid` (full span).
+- iOS: `LazyVGrid` with three fixed columns at `walls.browse.dimension.columnPitch` inside a `ScrollView`; `.searchable` is not used (Retro's field is
+  in the content, C-12).
+- Android: `LazyVerticalGrid(GridCells.Fixed(3))`; the field as the first full-span item.
 
 ## Do-not-copy
 
-- Red "new" dots on circles; the numeric chat-tab badge ("3").
-- Yellow "friends..." combined-wall circle (no combined wall in the API; also a stack glyph unrelated to our icons).
-- Floating camera / share ↗ circles over the wall (camera is the tab bar's; wall export is not a product feature here).
-- Free-form canvas with cut-outs and outlines.
+- Key badges on avatars, "Keys", "Friend Requests" with "Expires in …" urgency, "Hidden (%1$d)" counts, "Getting Started"
+  invite goals, "Find Your Friends" contact suggestions.
+- Yope's "me & friends" circle row and combined wall.
 
 ## Gaps
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `walls.browse.layout.selection` | BLOCKED (gap fill: no comparable person row with a visible selected state found) | one screenshot of the row after tapping a person |
-| `walls.browse.layout.rowOrder` | BLOCKED; approximation: newest wall item first (gap fill: no documented order in a comparable row) | one screenshot of the row before and after a friend posts |
-| combined "friends wall" | not built (no API) | owner decision |
-| title noun "friends" for family / roommates groups | verbatim kept (S-12) | owner decision |
-| measurements from one Dec 2025 video frame | ±1.5–2 pt | 20-s recording (yope-b §14 capture 3) |
+| `walls.browse.layout.rowOrder` | **BLOCKED** (development approximation: newest wall item first, then name) | one raw screenshot of Retro's current Friends tab with 7 or more friends |
+| `walls.browse.layout.selection` (old BLOCKED) | closed: no selected state — a tap opens the person's wall (Retro grid behaviour) | — |
+| current Friends tab (2023 render only) | 2023 values (±0.6 pt) | same screenshot |
+| title noun "Friends" for family / roommates groups | verbatim Retro; owner decision S-12 carried | owner |

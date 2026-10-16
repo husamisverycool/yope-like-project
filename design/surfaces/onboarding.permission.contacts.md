@@ -1,90 +1,79 @@
 # `onboarding.permission.contacts` — optional contacts
 
-Reference: **Yope** (skippable), under the platform rules. Research: `design/research/yope-a.md` §2.8;
-`design/research/platform.md` §system.permissions; `docs/PLATFORM_CONSTRAINTS.md` Summary + §6. Tokens:
-`onboarding.permission.contacts.*`, `groups.invite.layout.contacts`. Copy: `onboarding.permission.contacts.*`,
-`system.permissions.contacts.purpose`, `system.permissions.rationale.contacts.*`.
+Visual reference: Retro's contacts upsell ("No Contacts Access" / "Connect your phone contacts to find friends to invite
+here. We will never spam your contacts." / "Connect Contacts", APK-S `contact_permission_upsell_*`) drawn as the C-27
+permission-denied variant inside the invite sheet. Mechanics: Apple HIG / Material 3 (contacts are optional; on iOS
+the system's own controls). Composition: `level: SOURCED`, `method: "composition of Retro components C-27, C-12,
+C-16, C-06 inside groups.invite, in the platform's contacts flow"`. Tokens: `groups.invite.layout.contacts`. Copy:
+`onboarding.permission.contacts.*`, `system.permissions.contacts.purpose`, `system.permissions.rationale.contacts.*`.
 
-Yope asks for contacts with a **dismissible inline card** on the home list ("can’t see your friends?" / "enable contacts" /
-"enable" / ✕). On iOS a dismissible pre-alert view is non-compliant (HIG: one button, no way to leave without the system
-alert) — so **on iOS there is no onboarding screen and no card**: contacts are offered inside `groups.invite` with the
-system's own controls. **On Android the Yope card is kept** (Android requires a way to cancel), inside `groups.invite`.
-Contacts stay optional everywhere; nothing requires them (Yope's forced invites are do-not-copy).
+Contacts are offered **only inside `groups.invite`** ("Contacts" section); there is no onboarding page (an iOS
+pre-alert that can be dismissed is non-compliant — HIG; PLATFORM_CONSTRAINTS Summary). Nothing requires contacts.
 
 ## References
 
-| id | file | used for |
+| id | file / URL | used for |
 |---|---|---|
-| CC | `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png` | card: #131313, 101 pt tall, 18 pt margins, card radius, title 17 bold (2 lines), detail 14 gray, white "enable" 91 × 37, ✕ |
-| SF | `references/auto/yope/frames/a-virgi-7686278541255642390-t44.23-suggested-friends-es.png` | contact-derived suggestions "de tus contactos" (es) |
-| PC | `docs/PLATFORM_CONSTRAINTS.md` Summary row "Skippable iOS pre-permission screens" | compliant alternative |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | `contact_permission_upsell_*`, `search_bar_default_placeholder`, `friend_tab_contact_invite_cta`, `friend_tab_contact_invited_label`, `invites_no_contacts_empty_message` |
+| TC-1B | `references/auto/retro/press/tc-2023-07-retro-1b.webp` | people rows with capsule actions (C-16) |
+| PC | docs/PLATFORM_CONSTRAINTS.md Summary + §6 | compliant contacts paths per platform |
 
-## Structure
+## Structure (inside `groups.invite` → section "Contacts")
 
-**iOS** (`groups.invite.layout.contacts`), inside `groups.invite` → "from your contacts":
-- iOS 18+: a search field (Yope form field, placeholder `onboarding.permission.contacts.search.placeholder`) and the
-  system `ContactAccessButton(queryString:)` under it; contacts the person grants appear as rows (limited access).
-- iOS 17.2–17.x: a white pill `onboarding.permission.contacts.choose` opens `CNContactPickerViewController` (no
-  permission, one contact at a time).
-
-**Android**, inside `groups.invite` → "from your contacts", when `READ_CONTACTS` is not granted — the inline card
-(`onboarding.permission.contacts.layout.card`), left to right: text block (title, detail), white "enable" pill; ✕ at the
-top-trailing corner. "enable" → runtime request (rationale first when `shouldShowRequestPermissionRationale`); ✕ hides the
-card for this group screen session. When targeting API 37+, the Contact Picker (`Intent.ACTION_PICK_CONTACTS`) replaces
-the card and the permission.
+- **iOS 18+**: search field C-12 (placeholder `onboarding.permission.contacts.search.placeholder`) and the system
+  `ContactAccessButton(queryString:)` under it; contacts the person grants appear as people rows (C-16).
+- **iOS 17.2–17.x**: outline capsule C-06 `onboarding.permission.contacts.choose` → `CNContactPickerViewController`
+  (no permission; one contact at a time).
+- **Android, `READ_CONTACTS` not granted**: the C-27 block, left-aligned inside the section (glyph `icon.global.group`,
+  title `onboarding.permission.contacts.card.title`, explanation `.card.detail`, outline capsule C-06 `.card.button`).
+  The block is part of the scrolling sheet, so the person can ignore it (no dismiss control needed).
+- **Android, targetSdk ≥ 37 on API 37+**: the system Contact Picker (`Intent.ACTION_PICK_CONTACTS`) replaces the block.
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| card container | `onboarding.permission.contacts.color.card`, `.size.cardHeight`, `.size.cardMarginH`, `radius.global.card`, `.layout.card` | — | Android only |
-| card title | `.fontSize.cardTitle`, `.fontWeight.cardTitle`, `color.global.textPrimary`, max 2 lines | `onboarding.permission.contacts.card.title.friends` / `.family` / `.roommates` / `.custom` (by `groups.kind`) | — |
-| card detail | `.fontSize.cardDetail`, `color.global.textSecondary` | `onboarding.permission.contacts.card.detail` | — |
-| enable pill | `.size.cardButtonWidth`, `.size.cardButtonHeight`, `color.global.surfaceLight`, `color.global.onSurfaceLight`, `radius.global.capsule`, text role `button` | `onboarding.permission.contacts.card.button` | runtime permission |
-| dismiss ✕ | `icon.global.close`, `color.global.textPrimary`, hit area `size.global.minTouchTarget.android` | `onboarding.permission.contacts.card.dismissAccessibilityLabel` | hides the card |
-| iOS 17 button | white pill: `color.global.surfaceLight`, `groups.screen.size.lightPillHeight`, `groups.screen.radius.lightPill` | `onboarding.permission.contacts.choose` | contact picker |
-| iOS 18 search | Yope form field tokens | `onboarding.permission.contacts.search.placeholder` | feeds `ContactAccessButton` |
-| Android rationale | `settings.account.layout.alert` (M3 dialog) | `system.permissions.rationale.contacts.title`, `.message`, `system.permissions.rationale.notNow`, `.continue` | — |
+| permission block (Android) | C-27: `size.global.emptyIcon`, `.emptyIconToTitle`, `.emptyTitleToAction`, text roles `emptyTitle` / `emptyDetail`, `color.global.textPrimary` / `.textSecondary`, C-06 outline capsule | `onboarding.permission.contacts.card.title`, `.card.detail`, `.card.button` | Connect Contacts → runtime request (rationale first when `shouldShowRequestPermissionRationale`) |
+| Android rationale | C-29 dialog | `system.permissions.rationale.contacts.title`, `.message`, `system.permissions.rationale.notNow`, `.continue` | — |
+| iOS 17 button | C-06 outline capsule | `onboarding.permission.contacts.choose` | contact picker |
+| iOS 18 search | C-12 | `onboarding.permission.contacts.search.placeholder` | feeds `ContactAccessButton` |
 
 ## States
 
 | state | design | copy |
 |---|---|---|
-| not asked (Android) | card | card strings |
-| granted (Android) / chosen (iOS) | contact rows in `groups.invite` | `groups.invite.contacts.*` |
-| denied (permission-denied) | Android: card stays (after two denials "enable" opens Settings); iOS 18: the system button explains itself | card strings / `system.permissions.openSettings` |
-| loading / empty / error / offline | covered by `groups.invite` | — |
+| not asked (Android) | block | block strings |
+| granted (Android) / chosen (iOS) | people rows in `groups.invite` | `groups.invite.contacts.*` |
+| denied (permission-denied) | Android: the block stays; after two denials Connect Contacts opens Settings; iOS 18: the system button explains itself | block strings / `system.permissions.openSettings` |
+| no contacts with a number | `groups.invite.contacts.empty` line | — |
+| loading / error / offline | covered by `groups.invite` | — |
 
 ## Motion · Haptics
 
-None of our own (system pickers and dialogs). Card dismiss: removed without animation (no measured Yope motion).
+System pickers and dialogs; rows appear with `duration.global.fade`. Capsule press → `haptic.global.tap` (Android).
 
 ## Accessibility
 
-- Card: title + detail one element; pill a button; ✕ a button with its label (touch target ≥ 44 pt / 48 dp).
-- Dynamic Type: title `headline`, detail `subheadline`, pill `subheadline`.
-- Contrast: white on #131313 18.58:1, #969696 on #131313 6.28:1, pill 18.58:1 pass; card vs black 1.13:1 **FAIL** (non-text).
+- Block: glyph decorative; title header; capsule labelled. Dynamic Type: title `title3`, explanation `subheadline`.
+- Contrast (sheet page): title 21:1 (rows 1 / 2); explanation `textSecondary` light **2.85:1 FAIL** (row 3), dark 7.37:1;
+  outline capsule border 21:1 (row 20).
 
 ## Data & actions
 
-- No API for contacts themselves. `ContactMatching.swift` (hash matching) has no backend RPC yet; until it exists, rows
-  are local contacts only and inviting sends the link by SMS (`groups.invite`).
-- Purpose string `system.permissions.contacts.purpose` (`NSContactsUsageDescription`) — needed for `ContactAccessButton`
-  limited access; must mention matching if matching ships.
+- No contacts API on the backend (no matching RPC yet); inviting sends the link by SMS compose (`groups.invite`).
+- `NSContactsUsageDescription` (`system.permissions.contacts.purpose`) for `ContactAccessButton` limited access.
 
 ## Platform notes
 
-- App Review 5.1.2(v): no "Select All", no contact pre-selected; the person sees the invite message before it is sent.
-- Play Contact Permissions policy: apps targeting Android 17+ must use the picker unless they declare a use (from 2027-01-27).
+- App Review 5.1.2(v): no "Select All", nothing pre-selected; the person sees the message before it is sent.
+- Play Contact Permissions policy: apps targeting Android 17+ use the picker unless they declare a use (from 2027-01-27).
 
 ## Do-not-copy
 
-- The card's contacts-app-like illustration with a red "!" (resembles Apple's Contacts icon).
-- Forcing a number of invites before using the app; "suggested friends" from public discovery.
+- Forced invites, invite counts, "N friends joined", referral rewards (Retro's invite counters).
 
 ## Gaps
 
 | item | status | smallest capture |
 |---|---|---|
-| card inner insets | approximation (16 pt home-card inset) | one lossless screenshot of the Yope contacts card |
-| Yope's contacts purpose string | not found (system purpose follows `platform.purposeString`) | one screenshot of Yope's iOS contacts alert |
+| Retro's "No Contacts Access" screen as an image | strings only | screenshot of Retro's contacts upsell (RV §6) |

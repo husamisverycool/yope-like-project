@@ -1,75 +1,77 @@
 # collage.share — share a collage page as a Stories-sized image
 
-Reference: **Yope** share (the frosted "share" pill on a recap collage; the "share with friends" sheet) + the platform
-share sheet (third-party buttons are not copied) + Meta's Stories image spec.
+**Visual reference: Retro's recap preview "Share" pill** (ST-04 2026: white capsule, black 17-pt semibold label, at
+the bottom-trailing of the recap preview) and Retro's use of the **system share sheet** (TC-RWP phone 3: share sheet
+titled with the date). **Mechanics:** the worker's 9:16 share image (Meta Stories spec) handed to the platform share
+sheet. Decisions: `design/MERGE_DECISIONS.md` RC-15.
 
 ## References
 
 | image | what it verifies |
 |---|---|
-| `references/auto/yope/store/yope-store-04.png` (S2) / `references/auto/yope/frames/b-derot-store-04-rot-3.65.png`, `references/owner/yope-03-recaps-collage.webp` | 'share' pill on a collage |
-| `references/auto/yope/frames/b-yopeapp-7591560669967682847-t66.00-share-with-friends.png` | 'share with friends' sheet, 9:16 export preview |
-| `references/auto/yope/frames/b-itsaubrey-7521021527354068255-t9.50-exported-wall.png` | exported 9:16 wall (watermark = do-not-copy) |
+| `references/auto/retro/store/retro-store-04.png` (ST-04) | Share pill size, padding, label role, position (`collage.share.layout.pill`) |
+| `references/auto/retro/press/tc-2023-12-recaps.png` phones 2–3 | the same pill in 2023 (85 × 42) on black |
+| `references/auto/retro/press/tc-2025-12-rewind-panels.png` phone 3 | Retro hands sharing to the system share sheet, titled with the date ("Tuesday, December 2") |
 | `design/collage-options/option-B.jpg` | the pages that are shared |
 
 ## Structure
 
-1. **Share pill** on `collage.view`, bottom centre, bottom edge 36 pt above the screen bottom
-   (`collage.share.layout.pill`): 126 × 58 pt, corner 10, fill `collage.share.color.pill` (#9A9489 at 0.66 over a backdrop blur, frosted), glyph
-   `collage.share.icon.share` 25.7 pt + label `collage.share.button` (`collage.share.fontSize.label` /
-   `.fontWeight.label`), both `color.global.textPrimary`, centred together.
+1. **Share pill** on `collage.view` (bottom row): C-09 light pill — height 43.5, horizontal padding 23, width hugs the
+   label (`collage.share.layout.pill`), `radius.global.capsule`, fill `color.global.surfaceLight`, label
+   `collage.share.button` text role `button` (17 semibold) `color.global.onSurfaceLight`, no glyph; trailing edge at
+   `size.global.buttonMarginH` (20), centre 59.2 pt above the screen bottom.
 2. Tap → the **system share sheet** (`collage.share.layout.sheet`) with the current page's `share-<n>.jpg`
-   (`collage.share.layout.export`: 9:16, 1080 × 1920 px) and the preview title `collage.share.sheetTitle`.
+   (`collage.share.layout.export`: 9:16, 1080 × 1920 px) and the preview title `collage.share.sheetTitle` ({date}).
 
 ## Elements
 
-| element | tokens | copy | behavior |
+| element | component · tokens | copy | behaviour |
 |---|---|---|---|
-| pill | `collage.share.layout.pill`, `collage.share.color.pill`, `collage.share.icon.share`, `.fontSize.label`, `.fontWeight.label` | `collage.share.button` | hidden until `collages.share_path` is set; tap downloads the page (signed URL) and opens the sheet |
-| share sheet | `collage.share.layout.sheet` | `collage.share.sheetTitle` (iOS `SharePreview` title, Android `Intent.EXTRA_TITLE`) | system UI; includes save to library on iOS |
+| pill | C-09 light · `collage.share.layout.pill`, `color.global.surfaceLight` / `.onSurfaceLight`, text role `button` | `collage.share.button` | hidden until `collages.share_path` is set; tap downloads the page (signed URL) and opens the sheet; busy: the label is replaced by the platform indicator in `color.global.onSurfaceLight` (C-05 busy rule) |
+| share sheet | native · `collage.share.layout.sheet` | `collage.share.sheetTitle` (iOS `SharePreview` title, Android `Intent.EXTRA_TITLE`) | system UI (includes save to Photos on iOS) |
 | export | `collage.share.layout.export` | — | the worker's page JPEG as is: no watermark, no text |
 
 ## States
 
-| state | behavior |
+| state | behaviour |
 |---|---|
 | share image not ready | pill hidden |
-| downloading | the system sheet's own preview loading (iOS `ShareLink` with a lazily exported file); Android: the chooser opens after the download |
-| error / offline | the download fails → no sheet opens; the pill stays and the next tap retries (no reference shows a share error; when the page itself cannot load, `collage.view` shows its offline / error state) |
+| downloading | pill busy; then the sheet opens |
+| error / offline | no sheet; Android toast / iOS announcement `camera.sendto.error.offline` (offline) or `camera.sendto.error.generic`; the pill stays and the next tap retries |
 | empty / permission-denied | n/a |
 
 ## Motion
 
-System sheet presentation (`easing.global.native.sheet`).
+System sheet presentation (`easing.global.native.sheet`). Pill label ↔ busy: `duration.global.crossfade`.
 
 ## Haptics
 
-None (system sheet).
+Pill press: `haptic.global.tap` (Android VIRTUAL_KEY; iOS none). Sheet: system.
 
 ## Accessibility
 
-Pill: button, label = its visible text `collage.share.button`; glyph hidden. Dynamic Type: label → headline
-(`collage.share.layout.textStyleMap`). Contrast: white on the frosted fill is backdrop-dependent: 6.07:1 over black, **1.98:1 over white — FAIL** (as Yope draws it; reported, not adjusted).
+Pill: button, label = its visible text. Dynamic Type: `button` → headline (fixed pill height grows with the text
+size; the label never truncates). Contrast: `onSurfaceLight` on `surfaceLight` 21.00:1 pass; pill vs black page 21.00:1
+pass (non-text) — both appearances.
 
 ## Data & actions
 
-`collages.share_path` / `share-<n>.jpg` (worker, option B pages are 9:16 at 1080 px). No writes. Out: the system share
-sheet; back to `collage.view`.
+`collages.share_path` / `share-<n>.jpg`. No writes. Out: the system share sheet; back to `collage.view`.
 
 ## Platform notes
 
-iOS `ShareLink(item:preview:)`; Android `Intent.createChooser(ACTION_SEND, image/jpeg, content:// +
-FLAG_GRANT_READ_URI_PERMISSION)`. Instagram Stories direct sharing (Meta SDK, App ID) is not built — the system sheet
-covers it.
+iOS `ShareLink(item:preview:)` with a lazily exported file; Android `Intent.createChooser(ACTION_SEND, image/jpeg,
+content:// + FLAG_GRANT_READ_URI_PERMISSION)`. No third-party share buttons (Retro's share targets row — Instagram,
+Snapchat, … — is a third-party list; the system sheet covers them).
 
 ## Do-not-copy
 
-Yope's wordmark watermark; Instagram / Snapchat / WhatsApp brand buttons; the orange gradient sheet.
+Retro: "Check out my … on Retro!" message, share-target brand buttons, "retro.app" footer, wordmark. Yope: frosted
+"share" pill with glyph, watermark, orange gradient sheet.
 
 ## Gaps
 
-| item | status | capture |
+| item | status | capture / decision |
 |---|---|---|
-| `collage.share.color.pill` | SOURCED by gap fill: two-background solve on Yope's lossless store PNG, tint ±8, alpha ±0.08 (MERGE G2-16) | one lossless screenshot of Yope's share pill over flat white and flat black (would tighten it) |
-| `{app_name}` watermark on shared images | owner decision (none built) | owner |
-| options A / C share layout | needs a 9:16 layout no reference shows (README) | owner choice |
+| `{app_name}` mark on shared images (Retro's footer carries its domain) | owner decision (none built) | owner |
+| options A / C share layout | owner choice | owner |

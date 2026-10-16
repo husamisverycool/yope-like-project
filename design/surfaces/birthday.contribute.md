@@ -1,160 +1,176 @@
-# `birthday.contribute` — pick a photo, write one line, send
+# `birthday.contribute` — pick a photo, add one line, send
 
-Reference: **Tribute / VidDay** (docs/SURFACES.md). Geometry, colours and type from Tribute's live upload flow step 1
-(VERIFIED computed styles); step sequence and words from Tribute's and VidDay's help centres. Voice: `P-BC-1`,
-`P-BC-2`, `P-BC-3`; states use the app default voice. Tokens: `design/tokens/memory.json`
-(`*.birthday.contribute.*`, `font.birthday`). Copy: `design/copy/memory.json` (`birthday.contribute.*`).
+Visual reference: **Retro screens 30, 17 and 18** (docs/SURFACES.md): the "Add to Your Week" composer sheet (native
+toolbar Cancel / title / action, grey line, 4-column grid — components C-29, C-21), the dark **postcard composer**
+(sheet title + close circle, rounded photo with the glass "Add a message" pill, 60-pt capsule —
+`references/auto/retro/store/retro-store-03.png`) and the **"Add a Message"** modal (title + "Done", free text,
+counter "58/250" — `references/auto/retro/press/tc-2023-12-retro3.png` phone 3). Retro has no birthday video, so the
+flow is these Retro screens in Tribute / VidDay's order (choose a photo → write a line → send). Voice: Retro set +
+`P-BC-1`, `P-BC-2`. Tokens: `design/tokens/memory.json` (`*.birthday.contribute.*`) + global. Copy:
+`design/copy/memory.json` (`birthday.contribute.*`). Decisions: `design/MERGE_DECISIONS.md` → "Redesign — Memory
+(RM-*)".
 
-Rule from the product spec: a contributor can only pick a photo **they posted, or are self-tagged in**
-(`tagging`), from the group of the request. One contribution per person; sending again replaces it until the due
-time. No face recognition.
+Rule from the product spec: a contributor can only pick a photo **they posted, or are self-tagged in** (`tagging`),
+from the group of the request. One contribution per person; sending again replaces it until the due time.
 
 ## References
 
 | image / source | what it verifies |
 |---|---|
-| `references/auto/tribute/web/tribute-web-testimonials-upload-step1-info.png` + `tribute-web-testimonials-upload-step1.computed-styles.json` | stepper (40 circles at x31/127/223/319; active #B8B9B9 + white 14/600; others white 0.22 + white 0.55; captions 10 px, 10 below); heading 20/500 centred; sub-heading 16/400 white 0.72; label 16/600; field 350 × 46 r8 white 0.08, text 16/400; button 350 × 50 r8 16/600; margin 20 |
-| https://www.tribute.co/help/creators/how-do-i-upload-a-video/ | Record → watch back → "Retake" → "Submit" → "Video Upload Complete!" |
-| https://help.vidday.com/how-to-record-a-video-with-a-phone/ | "Retake", "Use Video", confirmation page |
-| `references/auto/vidday/frames/vidday-tour-t102-phone.png` | "Let's add media!" greeting |
+| `references/auto/retro/video/ig-DDbA_F7x-j7-composer-f130-147-f188-197.png` (VID-COMP) | composer sheet: Cancel / title / Update, grey line, 4-column square grid with ≈2-pt gaps |
+| `references/auto/retro/store/retro-store-03.png` (ST-03, 2.389 px/pt) | dark sheet: 'Postcard' 17 semibold centred + close 36 circle #262626; title baseline → photo 32.6 pt; photo 297.4 × 422.8 box, r 8.5, centred; 'Add a message' pill (C-09 glass) 20.9 above the photo bottom; 60-pt white capsule at 20 pt margins |
+| `references/auto/retro/press/tc-2023-12-retro3.png` phone 3 (1.595 px/pt) | 'Add a Message' (17 semibold) + 'Done' (17 regular, 20.7 from the edge); text 21.9 from the edge; counter '58/250' bottom-right, 20.7 from the edge, 18.5 above the keyboard; light appearance |
+| Retro strings `postcard_composer_message_cta_add` / `_edit`, `postcard_composer_add_message_*`, `composer_header_template_current_week` | words |
 
 ## Structure
 
-Full screen on `color.global.backgroundDeep`, side margin `dimension.birthday.contribute.margin`, pushed from
-`birthday.request`. Header: back / close circle (`size.global.headerButton`, `size.global.headerInset`,
-`color.global.controlOnDeep`, `icon.global.back` on step 2, `icon.global.close` on steps 1 and 3).
+A page sheet (C-29) opened from `birthday.request` ("Add your photo" / "Change photo"), holding a navigation stack of
+two steps; a toast confirms at the end.
 
-**Stepper** (all steps), below the header (`layout.birthday.contribute.stepper`): three circles
-`dimension.birthday.contribute.stepper.circle`, the first and last 11 pt inside the margins, the middle one centred;
-number `fontSize/fontWeight.birthday.contribute.stepper.number`; caption 10 pt below
-(`fontSize.birthday.contribute.stepper.label`) — `birthday.contribute.step.photo`, `.message`, `.done`. Current step:
-fill `color.birthday.contribute.stepper.active`, number and caption `color.global.textPrimary`, caption weight
-`fontWeight.birthday.contribute.stepper.labelActive`. Other steps: fill `color.birthday.contribute.stepper.inactive`,
-number and caption `color.birthday.contribute.stepper.inactiveLabel`, caption weight
-`fontWeight.birthday.contribute.stepper.label`. Done steps look like other steps (Tribute shows no done style).
+**Step 1 — Choose a photo** (sheet follows the appearance; page `color.global.background` /
+`color.global.background.android`):
+1. Native sheet toolbar: leading `birthday.contribute.picker.cancel` ("Cancel"), centred title
+   `birthday.contribute.picker.title` ("Choose a Photo", text role `sheetTitle`), trailing
+   `birthday.contribute.picker.next` ("Next"), system tint (C-08 / C-29), disabled until a photo is chosen.
+2. Grey line `birthday.contribute.picker.subtitle` ("Photos you posted or are in"), text role `body`,
+   `color.global.textSecondary` (Android `.textSecondary.android`), leading at `size.global.screenMargin`.
+3. **Grid** (C-21 composer picker grid): 4 columns, square cells, `size.global.stripGap` gaps,
+   `radius.global.photo`, full width; the group's posts where `author_id` = you, plus posts with your `post_tags` row,
+   newest first, deduplicated; thumbnails (`thumb_path`). Tap selects one photo (single choice): the cell shows the
+   check `icon.global.check` in `color.global.selection` at `size.global.checkCircle` in its top-right corner, inset
+   `size.global.badgeInset` (where Retro places a marker on a photo, C-24; C-17's selection mark is not captured, so
+   the platform picker's filled check is used: PLATFORM); unselected cells show nothing. Opened from "Change photo", your current photo starts selected.
+4. Next → step 2.
 
-**Step 1 — Photo.**
-1. `dimension.birthday.contribute.heading.gap` below the captions: heading `birthday.contribute.greeting`, centred,
-   `fontSize/fontWeight.birthday.contribute.heading`, `color.global.textPrimary`.
-2. `dimension.birthday.contribute.subheading.gap` below: `birthday.contribute.thanks`, centred,
-   `fontSize.birthday.contribute.subheading`, white at `opacity.birthday.contribute.subheading`.
-3. `dimension.birthday.contribute.group.gap` below: the **eligible photos grid** — the group's posts where
-   `author_id` = you, plus posts with your `post_tags` row, newest first, deduplicated. Grid component of the Yope
-   wall (`walls.mine` spec: columns, gutter, `radius.global.photo`) with the global selection check
-   (`icon.global.uncheck` / `icon.global.check`, `color.global.selection`, `size.global.checkCircle`) in the cell's
-   top-right corner. Tap selects one photo (single choice; tapping another moves the check).
-4. Pinned to the bottom (safe area + `dimension.birthday.contribute.margin`): primary **Use Photo**
-   (`birthday.contribute.review.use`, VidDay's confirm after choosing) — same style as Submit below; enabled once a
-   photo is selected → step 2. Opened from "Retake" on the request, the member's current photo starts selected.
+**Step 2 — Add a message** (dark media composer in both appearances, `layout.global.appearance.media`; page
+`color.global.backgroundDeep`):
+1. Sheet header (C-29): centred title `birthday.contribute.composer.title` ("Birthday Video"), text role
+   `sheetTitle`, `color.global.textOnMedia`; leading native back (to step 1); trailing close circle on media (C-11:
+   `size.global.circleButton`, `color.global.controlOnDeep`, `icon.global.close`, `color.global.textOnMedia`) →
+   dismisses the whole sheet.
+2. **Photo** `dimension.birthday.contribute.titleToPhoto` below the title's baseline: the chosen photo fitted (own
+   aspect) inside a `dimension.birthday.contribute.photoWidth` × `dimension.birthday.contribute.photoMaxHeight` box,
+   centred, corners `radius.birthday.contribute.photo`.
+3. **Pill** (C-09 glass variant) on the photo, centred, bottom `dimension.birthday.contribute.pillBottom` above the
+   photo's bottom: `icon.global.edit` + `birthday.contribute.message.add` ("Add a message") — or, once there is a line,
+   `birthday.contribute.message.edit` ("Edit message"); fill `color.global.controlOnDeep`, label text role `pill`,
+   `color.global.textOnMedia`, `size.global.pillHeight`. Opens the modal (step 2a).
+4. When a line exists: the line under the photo, `size.global.listGap` below it, text role `body`,
+   `color.global.textOnMedia`, centred, side margins `size.global.buttonMarginH`.
+5. Pinned to the bottom: primary capsule (C-05 on media: `color.global.surfaceLight` / `color.global.onSurfaceLight`,
+   `size.global.buttonHeight`, `size.global.buttonMarginH`, `radius.global.button`, text role `button`)
+   `birthday.contribute.submit` ("Add to video"); disabled (C-05 disabled, `color.global.controlRaised` with
+   `color.global.onAccent` — Retro's captured dark disabled capsule) until the line has a non-space character.
 
-**Step 2 — Message.**
-1. The chosen photo, content width, aspect preserved, `radius.global.photo`.
-2. `dimension.birthday.contribute.group.gap` below: label `birthday.contribute.line.label`
-   (`fontSize/fontWeight.birthday.contribute.label`, `color.global.textPrimary`); `dimension.birthday.contribute.label.gap`
-   below it the one-line field: `dimension.birthday.contribute.input.height`, `radius.birthday.contribute.input`, fill
-   `color.birthday.contribute.input.fill`, text `fontSize.birthday.contribute.input`,
-   `color.birthday.contribute.input.text`, horizontal padding = `dimension.birthday.contribute.label.gap`. No
-   placeholder (not found). Grows to more lines when the text wraps. Character limit: 110
-   (`layout.birthday.contribute.lineMax`, VidDay's text-card limit; the API bound 280 stays the server check), no visible counter.
-3. `dimension.birthday.contribute.group.gap` below: **Message Ideas** exactly as in `birthday.request` (header bar +
-   the two prompts) — helps write the line.
-4. `dimension.birthday.contribute.button.gap` below: primary **Submit** — full content width,
-   `dimension.birthday.contribute.button.height`, `radius.birthday.contribute.button`, fill `color.global.accent`,
-   label `birthday.contribute.submit` in `fontSize/fontWeight.birthday.contribute.button`, `color.global.onAccent`;
-   disabled (opacity of the platform disabled state) until the line has a non-space character.
-5. `dimension.birthday.contribute.group.gap` below: secondary **Retake** (`birthday.contribute.review.retake`) — same
-   size, fill `color.global.surfaceLight`, label `color.global.onSurfaceLight` → back to step 1 (selection kept).
+**Step 2a — "Add a Message" modal** (C-29 page sheet over the composer, follows the appearance):
+1. Header: centred title `birthday.contribute.message.title` ("Add a Message", text role `sheetTitle`); trailing
+   app-drawn text button (C-08) `birthday.contribute.message.done` ("Done", text role `textButton`,
+   `color.global.textPrimary`) at `dimension.birthday.contribute.counterInset` from the edge.
+2. Free text, insets `dimension.birthday.contribute.messageInset`: text role `placeholder` (17), typed text
+   `color.global.textPrimary`, placeholder `birthday.contribute.message.placeholder` ("Add a message…") in
+   `color.global.textSecondary`; no field fill (Retro's modal is the page). Keyboard up on open.
+3. Counter bottom-right: `birthday.contribute.message.counter` ("{count}/{max}", `{max}` =
+   `layout.birthday.contribute.lineMax` 110), text role `placeholder`, monospaced digits, `color.global.textSecondary`,
+   right ink `dimension.birthday.contribute.counterInset` from the edge, baseline
+   `dimension.birthday.contribute.counterAboveKeyboard` above the keyboard. Input stops at 110 characters.
+4. Done → back to the composer with the line.
 
-**Step 3 — Done.**
-1. Heading `birthday.contribute.done.title` (same role as the step 1 heading), centred.
-2. The chosen photo thumbnail and the line (`fontSize.birthday.request.message`, `color.global.textPrimary`).
-3. Primary button `birthday.contribute.done.button` (same as Submit) → back to `birthday.request`, which now shows the
-   member's own block.
+**Sent:** "Add to video" calls `contribute_tribute`; on success the sheet closes, toast
+`birthday.contribute.done.title` ("Added to video!") (C-26), and `birthday.request` shows your contribution.
 
 ## Elements
 
-| element | tokens | copy keys | behaviour |
+| element | component · tokens | copy keys | behaviour |
 |---|---|---|---|
-| stepper | `layout.birthday.contribute.stepper`, `dimension.birthday.contribute.stepper.circle`, `color.birthday.contribute.stepper.active` / `.inactive` / `.inactiveLabel`, `fontSize/fontWeight.birthday.contribute.stepper.number`, `fontSize.birthday.contribute.stepper.label`, `fontWeight.birthday.contribute.stepper.labelActive` / `.label`, `color.global.textPrimary` | `birthday.contribute.step.photo`, `.message`, `.done` | not tappable |
-| heading / thanks | `fontSize/fontWeight.birthday.contribute.heading`, `dimension.birthday.contribute.heading.gap`, `fontSize.birthday.contribute.subheading`, `opacity.birthday.contribute.subheading`, `dimension.birthday.contribute.subheading.gap` | `birthday.contribute.greeting` (`{name}`), `birthday.contribute.thanks`, `birthday.contribute.done.title` | thanks only on step 1 |
-| photo grid + Use Photo | Yope wall grid (`walls.mine`), `radius.global.photo`, `icon.global.check` / `.uncheck`, `color.global.selection`, `size.global.checkCircle`; button as Submit | `birthday.contribute.a11y.photo`, `birthday.contribute.review.use` | single selection; thumbnails `thumb_path` |
-| line field | `fontSize/fontWeight.birthday.contribute.label`, `dimension.birthday.contribute.label.gap`, `dimension.birthday.contribute.input.height`, `radius.birthday.contribute.input`, `color.birthday.contribute.input.fill` / `.text`, `fontSize.birthday.contribute.input`, `layout.birthday.contribute.lineMax` (110) | `birthday.contribute.line.label` | trimmed before sending |
-| Message Ideas | as `birthday.request` | `birthday.request.prompts.title`, `birthday.request.prompt.*` | — |
-| Submit / Done | `dimension.birthday.contribute.button.height` / `.gap`, `radius.birthday.contribute.button`, `fontSize/fontWeight.birthday.contribute.button`, `color.global.accent`, `color.global.onAccent` | `birthday.contribute.submit`, `birthday.contribute.done.button`, `birthday.contribute.review.use` | Submit → `contribute_tribute` |
-| Retake | same size, `color.global.surfaceLight`, `color.global.onSurfaceLight` | `birthday.contribute.review.retake` | back to step 1 |
+| toolbar | C-29 / C-08 native toolbar | `birthday.contribute.picker.cancel`, `.picker.title`, `.picker.next` | Cancel dismisses |
+| grey line | text role `body`, `color.global.textSecondary` | `birthday.contribute.picker.subtitle` | — |
+| grid | C-21: 4 columns, `size.global.stripGap`, `radius.global.photo`; check `icon.global.check`, `color.global.selection`, `size.global.checkCircle` | `birthday.contribute.a11y.photo` | single selection |
+| composer header | C-29 sheet header on media, C-11 on media | `birthday.contribute.composer.title`, `birthday.contribute.a11y.close` | close dismisses the sheet |
+| photo | `dimension.birthday.contribute.titleToPhoto`, `.photoWidth`, `.photoMaxHeight`, `radius.birthday.contribute.photo` | — | display rendition |
+| message pill | C-09 glass: `color.global.controlOnDeep`, `icon.global.edit`, text role `pill`, `color.global.textOnMedia`, `size.global.pillHeight`, `dimension.birthday.contribute.pillBottom` | `birthday.contribute.message.add` / `.message.edit` | opens 2a |
+| line preview | text role `body`, `color.global.textOnMedia`, `size.global.listGap` | — (the user's line) | — |
+| Add to video | C-05 on media | `birthday.contribute.submit` | `contribute_tribute` |
+| modal | C-29 page sheet, C-08 | `birthday.contribute.message.title`, `.message.done`, `.message.placeholder` | — |
+| counter | text role `placeholder`, monospaced digits, `color.global.textSecondary`, `dimension.birthday.contribute.counterInset`, `.counterAboveKeyboard`, `layout.birthday.contribute.lineMax` | `birthday.contribute.message.counter` | live |
+| toast | C-26 | `birthday.contribute.done.title` | after success |
 
 ## States
 
-| state | design | copy | source |
+| state | design (components) | copy | source |
 |---|---|---|---|
-| loading (grid) | platform activity indicator centred under the thanks line | `birthday.contribute.loading` | Yope HUD word |
-| empty (no eligible photos) | Yope empty state under the thanks line: text roles `emptyTitle` / `emptyDetail`, light pill (`color.global.surfaceLight`, `color.global.onSurfaceLight`, `radius.global.capsule`) | `birthday.contribute.picker.empty.title` (`{group}`), `.detail`, `.action` (→ `groups.screen` of that group) | `yope.voice.empty-state` |
-| sending | Submit shows the platform activity indicator in place of its label | — | PLATFORM |
-| not eligible (`post_not_eligible`) | inline under the field, `fontSize.global.listSubtitle`, `color.global.textSecondary`; back to step 1 | `birthday.contribute.notEligible` | app voice |
-| closed (`tribute_closed`) | replaces the step content (text roles `emptyTitle` / `emptyDetail`) | `birthday.contribute.closed` (`{name}`) | app voice |
-| error | inline under Submit + retry stays on Submit | `birthday.contribute.error.title`, `.detail`, `.retry` | app voice |
-| offline | inline under Submit | `birthday.contribute.offline` | app voice |
+| loading (grid) | C-17 placeholder tiles in the grid cells (`color.global.control`) | `birthday.contribute.loading` (announcement) | C-28 |
+| empty (no eligible photos) | C-27 empty block in the sheet: title `emptyTitle`, detail `emptyDetail`, outline CTA (C-07 without glyph / C-06 outline) | `birthday.contribute.picker.empty.title`, `.empty.detail`, `.empty.action` (→ `groups.screen` of that group) | `retro.voice.empty-state` |
+| sending | the capsule shows the platform activity indicator in its label colour (C-05 busy) | — | C-05 |
+| not eligible (`post_not_eligible`) | inline line under the photo (text role `meta`, `color.global.destructive`); back to step 1 | `birthday.contribute.notEligible` | `retro.voice.error` |
+| closed (`tribute_closed`) | C-27 block replaces the step content | `birthday.contribute.closed` | never "late" |
+| error | C-27 error variant under the photo: title `emptyTitle`, detail `emptyDetail`; the capsule stays as retry | `birthday.contribute.error.title`, `.error.detail`, `.error.retry` | `retro.voice.error` |
+| offline | inline line under the photo (`meta`, `color.global.textSecondary`) | `birthday.contribute.offline` | `retro.voice.error` |
 | permission-denied | n/a (photos come from the group, not the photo library) | — | — |
 
 ## Motion
 
-Native navigation push between steps (`easing.global.native`); `duration.global.navigationPush` where the platform
-allows (MERGE F-11). Reduce Motion: `layout.global.reduceMotion`.
+Sheet and modal: native (`spring.global.sheetPresent`, `duration.global.sheetPresent`); step 1 → 2: native push.
+Selection check appears: fade `duration.global.fade`. Pill label change: crossfade `duration.global.crossfade`. Reduce
+Motion: `layout.global.reduceMotion`.
 
 ## Haptics
 
-Photo selected → `haptic.global.select`. Submit succeeded → `haptic.global.send`. Failed → `haptic.global.error`.
+Photo selected → `haptic.global.select`. Next, pill, Done, capsule → `haptic.global.tap` (Android). Sent →
+`haptic.global.send`. Failed → `haptic.global.error`.
 
 ## Accessibility
 
-- Stepper: one element, label = the current step caption (e.g. "Message"), not interactive. Grid cells:
-  `birthday.contribute.a11y.photo` ("Photo from {date}") with the selected trait. Field: label
-  `birthday.contribute.line.label`. Close / back: `birthday.contribute.a11y.close` / the platform back label.
-- Dynamic Type (`layout.birthday.contribute.textStyleMap`): heading `title3`, sub-heading / label / field / button
-  `callout`, stepper number `subheadline`, stepper caption `caption2`.
-- Focus order: close → stepper → heading → thanks → grid (or photo → label → field → Message Ideas → Submit → Retake).
-- Contrast:
+- Grid cells: `birthday.contribute.a11y.photo` ("Photo from {date}") with the selected trait; the grid is a list.
+  Pill, capsule, Done, Next: visible text. Close `birthday.contribute.a11y.close`. Message field: label
+  `birthday.contribute.message.title`, value = the text; the counter is its hint ("12/110").
+- Dynamic Type: `sheetTitle` → headline, `body` → subheadline, `placeholder` → body, `pill` → subheadline, `button`
+  → headline.
+- Focus order: Cancel → title → Next → line → grid (step 1); back → title → close → photo → pill → line → capsule (step
+  2); title → Done → field → counter (2a).
+- Contrast (`node tools/contrast.mjs`):
 
   | pair | ratio | needs | result |
   |---|---|---|---|
-  | number white on `color.birthday.contribute.stepper.active` (14 pt semibold) | 1.97 | 4.5 | **FAIL** (reported; no sourced alternative) |
-  | `color.birthday.contribute.stepper.inactiveLabel` on `.inactive` over black | 4.77 | 4.5 | pass |
-  | caption `color.birthday.contribute.stepper.inactiveLabel` on black (10 pt) | 6.25 | 4.5 | pass |
-  | `color.birthday.contribute.stepper.inactive` circle vs black | 1.79 | 3 | **FAIL** (non-text; reported) |
-  | `color.birthday.contribute.stepper.active` circle vs black | 10.68 | 3 | pass |
-  | sub-heading white 0.72 on black (#B8B8B8) | 10.59 | 4.5 | pass |
-  | field text `color.birthday.contribute.input.text` on `.fill` over black | 12.82 | 4.5 | pass |
-  | `color.birthday.contribute.input.fill` vs black (field boundary) | 1.14 | 3 | **FAIL** (non-text; the label above identifies the field — reported) |
-  | `color.global.onAccent` on `color.global.accent` | 17.65 | 4.5 | pass |
+  | step 1 / 2a text `color.global.textPrimary` on `color.global.background` | light 21.00 · dark 21.00 | 4.5 | pass |
+  | grey line / placeholder / counter `color.global.textSecondary` on `color.global.background` | light 2.85 · dark 7.37 | 4.5 | **FAIL in light** (reported; C-12 failure 1) |
+  | check `color.global.selection` on white / over photos | 3.52 / 3.23; photo-dependent | 3 | pass on white; over photos not guaranteed |
+  | step 2 `color.global.textOnMedia` on `color.global.backgroundDeep` | 21.00 | 4.5 | pass |
+  | pill label on `color.global.controlOnDeep` | 15.13 | 4.5 | pass |
+  | capsule label `color.global.onSurfaceLight` on `color.global.surfaceLight` | 21.00 | 4.5 | pass |
+  | close fill `color.global.controlOnDeep` vs black page | 1.39 | 3 | **FAIL** (non-text; glyph identifies it) |
 
 ## Data & actions
 
-- **Read:** the request (`tribute_requests` by id), the group name; eligible posts:
+- **Read:** the request (`tribute_requests` by id), the group's name; eligible posts:
   `from("posts").select().eq("group_id", g).eq("author_id", uid)` ∪ posts whose ids come from
-  `from("post_tags").select("post_id").eq("group_id", g).eq("user_id", uid)`; `media` renditions; own contribution
-  (to pre-select on "Retake" from the request).
+  `from("post_tags").select("post_id").eq("group_id", g).eq("user_id", uid)`; `media` renditions; own contribution (to
+  preselect on "Change photo").
 - **Write:** `rpc("contribute_tribute", p_request_id, p_post_id, p_line)` → `tribute_contributions`. Errors:
   `request_not_found`, `tribute_closed`, `post_not_found`, `post_not_eligible`, `invalid_line`.
 - **Realtime:** `group:<group_id>` `post_deleted` → drop the cell; if it was the chosen photo, back to step 1.
-- **Navigation in:** `birthday.request` ("Add Your Photo" / "Retake"). **Out:** Done / close → `birthday.request`;
-  empty-state action → `groups.screen`.
+- **Navigation in:** `birthday.request`. **Out:** sent / Cancel / close → `birthday.request`; empty-state action →
+  `groups.screen`.
 
 ## Platform notes
 
-- iOS: steps in the request sheet's `NavigationStack`; Android: nested navigation graph inside the sheet / destination.
-- The field: iOS `TextField(axis: .vertical)`, Android `BasicTextField`, both drawn with the tokens above; the
-  return key is "done" (one line of meaning; long text wraps).
+- iOS: `.sheet` with a `NavigationStack` (step 1 light / dark by appearance; step 2 `.environment(\.colorScheme,
+  .dark)`); grid `LazyVGrid` 4 flexible columns; modal `.sheet` with a `TextField(axis: .vertical)` without
+  background; counter `.monospacedDigit()`.
+- Android: `ModalBottomSheet` (skipPartiallyExpanded) hosting a nested nav graph; `LazyVerticalGrid(GridCells.Fixed(4))`;
+  modal = full-height sheet with `BasicTextField`; counter `FontFeatureSettings "tnum"`.
+- The line is trimmed before sending; emoji allowed (the worker renders with Roboto: colour emoji show as missing glyphs
+  in the video — worker hand-off, MERGE RM-12).
 
 ## Do-not-copy
 
-Tribute's step "Info" (name and email of people already in the group) and its pre-ticked "Send me offers & updates!";
-video recording, minimum lengths, audio requirement; uploading from the camera roll (only group photos you posted or
-are in); "Submit Another" (one contribution per person, replaced instead); seeing anyone else's contribution.
+Tribute's "Info" step (name / email), its pre-ticked offers box and stepper; video recording; uploading from the camera
+roll; "Submit Another"; seeing anyone else's contribution; Retro's postcard stamp, mailing address, price rows and
+"Send Postcard".
 
 ## Gaps
 
-| item | status | owner capture |
+| item | status | smallest capture that closes it |
 |---|---|---|
-| line placeholder and character limit | placeholder not found (none); limit SOURCED by gap fill: 110 (VidDay 'Text cards have a 110-character limit', MERGE G2-21) | research capture 4: a real Tribute / VidDay invitation opened on a phone up to the recorder / upload screen |
-| photo picker layout | no reference has an "only your own photos" picker; the Yope wall grid is reused | — (owner decision) |
-| step 2 / 3 screens of the references | not observed (would need a live submission) | same capture 4 |
+| selection mark in Retro's composer grid | platform check used (C-17 gap) | 1 RAW screenshot of "Add to Your Week" with 2 photos selected |
+| composer / modal values from renders (2023, ±3 %) | SOURCED, render | 1 RAW screenshot each of the postcard composer and the "Add a Message" modal |
+| real Tribute / VidDay step 2–3 screens | not observed | research capture 4 |

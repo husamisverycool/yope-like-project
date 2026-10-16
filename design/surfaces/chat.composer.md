@@ -1,118 +1,129 @@
 # `chat.composer` — group chat composer
 
-Reference app: **Yope** group chat composer (`docs/SURFACES.md`). Research: `design/research/yope-b.md` §2,
-`design/research/yope-a.md` §1.1, §1.4. Tokens: `design/tokens/social.json` (`chat.composer.*`) + `global.*`.
-Copy: `design/copy/social.json` (`chat.composer.*`). Decisions: `design/MERGE_DECISIONS.md` → Social.
+Redesign on **Retro**: the composer is Retro's **reply / comment field** (C-13, screen 15: 48-pt rounded field, own
+avatar leading, grey placeholder, trailing glyph) on a page surface, with Retro's own thread placeholders. Mechanics:
+**Apple Messages / WhatsApp** (camera and mic beside the text; send replaces them while typing; hold the mic to record).
+Tokens: `design/tokens/social.json` (`chat.composer.*`) + `global.*`. Copy: `design/copy/social.json` (`chat.composer.*`).
+Decisions: `design/MERGE_DECISIONS.md` → Redesign — Social (RS-6, RS-25). Composition record: `level: SOURCED`,
+`method: "composition of Retro component C-13 with Apple Messages / WhatsApp's glyph order"`.
 
 ## References
 
 | id | file | used for |
 |---|---|---|
-| S1 | `references/auto/yope/store/yope-store-05.png` (lossless); coordinates in `references/auto/yope/frames/b-derot-store-05-rot-1.68.png` | **primary**: group-chat composer row (lime camera · field "start typing..." · sticker · mic) |
-| S3 | `references/auto/yope/frames/b-play-04.png` | same design (cross-check) |
-| S5 / O4 | `references/auto/yope/frames/b-yopeapp-7591560669967682847-t48.50-1on1-thread.png`, `references/owner/yope-1on1-feed.jpg` | 1:1 space composer (49–51 pt, different screen; F-19, S-1) |
+| TC-2B | `references/auto/retro/press/tc-2023-07-retro-2b.jpg` phone 2 (2.209 px/pt) | the field: x 1357–2152 (16-pt margins), rows 1821–1934, own avatar x 1376–1445, placeholder from x 1469, "•••" ink x 2077–2113, field bottom on the bottom safe area |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | "Send a message…" (`message_thread_composer_placeholder`), "Reply…" (`…_reply_placeholder`), "Take photo", "Send" |
+| APK-X | `references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt` | m6a.java:1213–1240 message composer: fade 150 ms + slide (the house default) |
+| WA / GP | `references/auto/whatsapp/store/whatsapp-store-04.png`; Google Photos panels showing Messages (Gap fill G-6) | mechanics: camera + mic beside the idle field; send replaces the mic while text is present |
 
-## Structure (one row, left → right, one shared centre line)
+## Structure (one row, pinned to the bottom)
 
-1. **Lime camera circle** at `chat.composer.dimension.insetLeading` (22.8) from the left edge.
-2. Gap `chat.composer.dimension.gapCameraField` (6.2).
-3. **Text field** (flexes to fill): height `chat.composer.dimension.fieldHeight` (39.5), `radius.global.capsule`,
-   fill `color.global.control`, hairline rim (`chat.composer.dimension.fieldRim`) shading from
-   `chat.composer.color.fieldRimTop` to `chat.composer.color.fieldRimBottom`; text / placeholder start at
-   `chat.composer.dimension.fieldPaddingLeading`.
-4. Gap `chat.composer.dimension.gapFieldButton` (7.1).
-5. **Mic circle** (`chat.composer.dimension.sideButton`, 39.5) at `chat.composer.dimension.insetTrailing` (23.4) from the
-   right edge.
-
-The sticker circle between the field and the mic is removed (stickers are do-not-build). The row's bottom sits
-`chat.composer.dimension.bottomInset` (8 pt; WhatsApp + Instagram, Gap fill G-5) above the bottom safe area, and the same
-distance above the keyboard when it is up. The field grows with multi-line text (line
-height not measured → platform default leading, `design/tokens/README.md`).
+1. **Field** (C-13 on a page): fill `color.global.control` (iOS) / `color.global.surfaceSecondary.android` (Android), height
+   `size.global.commentFieldHeight` (grows with multi-line text), corners `radius.global.commentField`, inset
+   `size.global.screenMargin` on both sides; bottom edge `chat.composer.dimension.bottomInset` (0) above the bottom safe area,
+   on the keyboard's top edge while the keyboard is up.
+2. Inside the field, left → right on one centre line (top-aligned to the first line once the field grows):
+   - own avatar `size.global.avatarComment` at `chat.composer.dimension.avatarInset` (C-23; no photo → `icon.global.person` on
+     `color.global.controlRaised`);
+   - text / placeholder starting `chat.composer.dimension.avatarToText` after the avatar: placeholder `chat.composer.placeholder`
+     (replying: `chat.composer.placeholderReply`), text role `body` (C-13), placeholder `color.global.textSecondary`, typed text
+     `color.global.textPrimary`;
+   - trailing glyphs (`chat.composer.layout.typingState`), bare, `size.global.icon` box: `icon.global.camera` then
+     `icon.global.mic` in `color.global.textSecondary`, the mic's ink `chat.composer.dimension.glyphInsetTrailing` from the
+     field's trailing edge and the camera centred `size.global.headerIconPitch` to its left. While the field holds text both
+     give way to `icon.global.send` in `color.global.textPrimary` at the mic's place.
+3. While replying, the reply bar (`chat.thread.md`) sits above the field.
+4. While recording a voice message the field's content is replaced by the recording row (`chat.voice.layout.recording`).
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | component · tokens | copy | behaviour |
 |---|---|---|---|
-| camera circle | `chat.composer.dimension.cameraButton`, `color.global.accent`, `icon.global.camera` in `color.global.onAccent` sized `chat.composer.dimension.cameraGlyph` | `chat.composer.a11y.camera` | opens `camera.capture` with this group preselected (`DeepLink.camera(groupID:)`); the photo is sent with `create_post` to this group only and appears as a photo message |
-| text field | `chat.composer.dimension.fieldHeight`, `color.global.control`, rim tokens, `radius.global.capsule`, `chat.composer.dimension.fieldPaddingLeading`; typed text: text role `body` in `color.global.textPrimary`; placeholder: `fontSize.global.placeholder` in `color.global.textSecondary` | placeholder `chat.composer.placeholder` ("start typing..."); `chat.composer.a11y.field` | multi-line; `invalid_body` limit 4000 characters is an integrity bound, the UI limit is not sourced |
-| send control | `chat.composer.layout.typingState`: while the field holds text the mic circle is replaced in place by a send circle (`chat.composer.dimension.sideButton`, `color.global.accent`, `icon.global.send` in `color.global.onAccent`); empty field → mic again (Apple Messages, G-6) | `chat.composer.a11y.send` ("send") | sends `send_message(p_kind: text)`; the field clears |
-| mic circle | `chat.composer.dimension.sideButton`, `color.global.controlRaised` (lossless median #414141, S-2), `icon.global.mic` in `color.global.textPrimary` sized `chat.composer.dimension.micGlyph` | `chat.composer.a11y.mic` | starts voice recording (`chat.voice.md`; recording UI **BLOCKED**); first use asks for the microphone (system prompt, `system.permissions`) |
+| field | C-13; `color.global.control` / `color.global.surfaceSecondary.android`, `size.global.commentFieldHeight`, `radius.global.commentField`, `size.global.screenMargin`, `chat.composer.dimension.bottomInset` | `chat.composer.a11y.field`; placeholder `chat.composer.placeholder` / `.placeholderReply` | multi-line; 4000-character integrity limit (`invalid_body`); return inserts a line break (send is the glyph) |
+| own avatar | C-23; `size.global.avatarComment`, `chat.composer.dimension.avatarInset`, `.avatarToText` | decorative | — |
+| camera glyph | `icon.global.camera`, `color.global.textSecondary`, `size.global.headerIconPitch`; hit area `size.global.headerButton` | `chat.composer.a11y.camera` | opens `camera.capture` with this group only (`DeepLink.camera(groupID:)`); the photo is sent with `create_post` and appears as a photo message (as a reply to the quoted photo when the reply bar is up) |
+| mic glyph | `icon.global.mic`, `color.global.textSecondary`, `chat.composer.dimension.glyphInsetTrailing` | `chat.composer.a11y.mic` | press and hold → recording (`chat.voice.md`); first use asks for the microphone (`system.permissions`) |
+| send glyph | `icon.global.send`, `color.global.textPrimary` (replaces camera + mic while text is present) | `chat.composer.a11y.send` | `send_message(p_kind: text, p_body)` (+ reply ids); the field clears; the reply bar closes |
 
 ## States
 
-| state | what shows | tokens / copy | source |
+| state | what shows | tokens · copy | source |
 |---|---|---|---|
-| idle | row as above | — | S1 |
-| typing | mic circle → lime send circle (`chat.composer.layout.typingState`) | `chat.composer.a11y.send` | Apple Messages empty vs filled composer (G-6); not observed in Yope |
-| sending | the message appears in the thread; failure → `chat.thread.sendFailed` | `haptic.global.send` / `haptic.global.error` | — |
-| offline | the field stays editable; send fails as above | `chat.thread.sendFailed` | `yope.voice.error` |
-| loading / empty / error | not applicable (the composer has no content of its own) | — | — |
-| permission-denied (microphone) | the inline card of `chat.voice.md` (Permission) | `chat.voice.permission.*` | `chat.voice.md` |
-| permission-denied (camera) | handled by `camera.capture` | — | capture group |
+| idle | field with placeholder, camera + mic | — | TC-2B, WA |
+| typing | send glyph in place of camera + mic (cross-fade `duration.global.crossfade`) | `chat.composer.a11y.send` | Messages (G-6) |
+| replying | reply bar above; placeholder `chat.composer.placeholderReply` | `chat.thread.reply.bar` | APK-S |
+| sending / failed | the message appears in the thread with `chat.thread.sending`; failure → `chat.thread.sendFailed` | `haptic.global.send` / `haptic.global.error` | `chat.thread.layout.failedMessage` |
+| offline | the field stays editable; sends fail as above | — | — |
+| permission-denied (microphone) | `chat.voice.md` (alert with Settings link) | `chat.voice.permission.*` | — |
+| permission-denied (camera) | `camera.capture` (capture group) | — | — |
+| loading / empty / error | not applicable (no content of its own) | — | — |
 
 ## Motion
 
-Keyboard raise / lower: native (`easing.global.native.keyboard`); the row rides on the keyboard. No other motion observed.
-Reduce Motion: system.
+| transition | tokens | Reduce Motion |
+|---|---|---|
+| glyph swap (camera + mic ↔ send) | cross-fade `duration.global.crossfade` | same |
+| composer / reply bar appear | fade `duration.global.fade` + `easing.global.standard` (Retro's message composer, APK-X m6a) | same fade |
+| keyboard raise / lower | native (`easing.global.native.keyboard`); the field rides on the keyboard | system |
 
 ## Haptics
 
 | interaction | token |
 |---|---|
+| tap camera / send (Android) | `haptic.global.tap` (iOS none) |
 | text sent | `haptic.global.send` |
 | send failed | `haptic.global.error` |
-| tap camera / mic | none (HIG "Avoid overusing haptics"; "don't disrupt … the camera … or microphone") |
+| mic pressed | none (HIG: no haptics that disturb the microphone) |
 
 ## Accessibility
 
-- Labels: `chat.composer.a11y.camera`, `chat.composer.a11y.field`, `chat.composer.a11y.mic`, `chat.composer.a11y.send`.
-  Traits: buttons; the field is a text field with the placeholder as hint.
-- Dynamic Type: typed text → `layout.global.textStyleMap.body`; placeholder → `.placeholder`. The row grows in height
-  with the text; circles stay at their size and align to the bottom line.
-- Hit targets: circles are 39.5–40.6 pt: extend the hit area to `size.global.minTouchTarget.ios` (44) /
-  `.android` (48 dp) without changing the drawn size.
-- Focus order: camera → field → mic (→ send).
+- Labels: `chat.composer.a11y.field` (text field; the placeholder is the hint), `.a11y.camera`, `.a11y.mic`, `.a11y.send`.
+  The mic is also exposed with a custom action "Record" for switch / VoiceOver users (press-and-hold is not required:
+  double-tap starts recording in the locked state, `chat.voice.layout.recording.lock`).
+- Dynamic Type: typed text / placeholder `body` → subheadline; the field grows; glyphs keep `size.global.icon`.
+- Hit targets: each glyph 44 pt / 48 dp (`size.global.headerButton`, `size.global.minTouchTarget.android`).
+- Focus order: field → camera → mic (→ send).
 - Contrast (`node tools/contrast.mjs`):
 
-| foreground | background | kind | ratio | result | pair |
+| foreground | background | kind | light | dark | pair |
 |---|---|---|---|---|---|
-| `color.global.textSecondary` #969696 | `color.global.control` #2E2E2E | text | 4.59:1 | pass | placeholder 'start typing...' 17 regular |
-| `color.global.textPrimary` #FFFFFF | `color.global.control` #2E2E2E | text | 13.58:1 | pass | typed text 17 regular |
-| `color.global.control` #2E2E2E | `color.global.background` #171717 | nontext | 1.32:1 | **FAIL** | field fill against the background |
-| `chat.composer.color.fieldRimTop` #4B4B4B | `color.global.background` #171717 | nontext | 2.06:1 | **FAIL** | field top rim against the background |
-| `color.global.accent` #CDFD07 | `color.global.background` #171717 | nontext | 15.07:1 | pass | lime camera circle |
-| `color.global.onAccent` #000000 | `color.global.accent` #CDFD07 | nontext | 17.65:1 | pass | camera glyph on lime |
-| `color.global.controlRaised` #434343 | `color.global.background` #171717 | nontext | 1.81:1 | **FAIL** | mic circle against the background |
-| `color.global.textPrimary` #FFFFFF | `color.global.controlRaised` #434343 | nontext | 9.89:1 | pass | mic glyph on its circle |
+| `color.global.textPrimary` | `color.global.control` | text | 18.59:1 pass | 15.13:1 pass | typed text (iOS) |
+| `color.global.textPrimary` | `color.global.surfaceSecondary.android` | text | 19.60:1 pass | 15.13:1 pass | typed text (Android) |
+| `color.global.textSecondary` | `color.global.control` | text | **2.52:1 FAIL** | 5.31:1 pass | placeholder, idle glyphs (iOS) |
+| `color.global.textSecondary.android` | `color.global.surfaceSecondary.android` | text | **3.95:1 FAIL** | 6.38:1 pass | placeholder (Android) |
+| `color.global.textPrimary` | `color.global.control` | nontext | 18.59:1 pass | 15.13:1 pass | send glyph |
+| `color.global.control` | `color.global.background` | nontext | **1.13:1 FAIL** | **1.39:1 FAIL** | field boundary (iOS) |
+| `color.global.surfaceSecondary.android` | `color.global.background.android` | nontext | **1.07:1 FAIL** | **1.12:1 FAIL** | field boundary (Android) |
 
-  The field and mic fills fail SC 1.4.11 as boundaries; the glyph / placeholder inside each passes, which identifies the
-  control. Reported; no sourced alternative (foundations found the same, design/CONTRAST.md).
+  Retro's palette (design/CONTRAST.md failures 1–2); reported, not adjusted. The field is identified by its placeholder
+  and avatar; the idle glyphs fail as text-size graphics in light (they carry labels).
 
 ## Data & actions
 
-- `send_message(p_group_id, p_kind: 'text', p_body)` (docs/API.md §6.2); errors `invalid_body`, `not_group_member`.
+- `send_message(p_group_id, p_kind: 'text', p_body, p_reply_to_post_id?, p_reply_to_message_id?)` (docs/API.md §6.2);
+  errors `invalid_body`, `not_group_member`, `post_not_found`, `message_not_found`, `reply_group_mismatch`.
 - Voice: upload `u/<uid>/voice/<uuid>.m4a`, then `send_message(p_kind: 'voice', p_voice_path, p_voice_duration_ms)` (`chat.voice.md`).
-- Photo: `camera.capture` → `create_post(p_group_ids: [this group])` (§6.2, recipe §9.4); a reply to a photo comes from
-  `photo.viewer` (`p_reply_to_post_id`).
+- Photo: `camera.capture` → `create_post(p_group_ids: [this group], p_reply_to_post_id?)` (§6.2, recipe §9.4).
 - Realtime: the sent message arrives through the thread's `messages` INSERT subscription (§8.1).
 
 ## Platform notes
 
-- iOS: `TextField(axis: .vertical)`; `.submitLabel(.send)` for the return-key approximation; mic / camera as `Button`s with
-  enlarged `contentShape`.
-- Android: `BasicTextField` in a capsule `Surface`; `imeAction = ImeAction.Send`; RECORD_AUDIO runtime permission asked
-  at the first voice message (design/research/platform.md §system.permissions).
-- Microphone access is never asked before a photo can be posted (App Review 5.1.1(iv)).
+- iOS: `TextField(axis: .vertical)` inside the field shape; glyphs as `Button`s with a 44-pt `contentShape`; the mic uses a
+  `LongPressGesture` + `DragGesture` sequence for hold / slide.
+- Android: `BasicTextField` in a `Surface` with `RoundedCornerShape(radius.global.commentField)`; `imeAction = ImeAction.Default`
+  (line breaks); RECORD_AUDIO runtime permission at the first recording.
+- Microphone access is never asked before a photo or text can be sent (App Review 5.1.1(iv)).
 
 ## Do-not-copy
 
-- The sticker circle (stickers / cut-outs are do-not-build).
-- 1:1 quick reactions ❤️ 😂 🔥 inside the field (1:1 space only; reactions on photos are `chat.reactions`).
+- Retro's sticker / GIF comment attachments (premium; stickers are do-not-build here).
+- Yope's lime camera circle, sticker circle and rimmed capsule (superseded).
 
 ## Gaps
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `chat.composer.layout.typingState` (send control) | **SOURCED (gap fill)**: the mic circle swaps in place to a lime send circle while the field has text — Apple Messages (Google Photos panels 13 / 14 + iOS 27 guide glyphs), WhatsApp mic-beside-field (G-6) | a Yope screenshot with typed text would supersede |
-| `chat.composer.dimension.bottomInset` | **SOURCED (gap fill)**: 8 pt above the bottom safe area — WhatsApp (42.0 pt to the screen bottom) and Instagram (42.3 pt) minus the 34-pt safe area (G-5). Keyboard-up gap not measured: same value against the keyboard (flagged) | one device screenshot of a Yope group chat, keyboard down and up |
-| multi-line field behaviour (max lines) | not observed | same screenshot with a long text |
+| field internals (avatar inset, text start, glyph inset) | measured on a 2023 render (±0.5 pt); not yet in C-13 — reported to the foundations (RS-25) | one raw screenshot of Retro's comment field with text typed |
+| `size.global.commentFieldHeight` | the foundations' 48 pt used the 2.298 px/pt scale; at the verified 2.209 px/pt the field is 51.2 pt (RS-25) | same screenshot |
+| maximum lines before the field scrolls | not captured | same screenshot with a long text |
+| Retro's DM composer (vs the viewer's comment field) | not captured; C-13 used | one raw screenshot of a Retro DM thread |

@@ -1,62 +1,65 @@
 # widget.home.small — iOS home-screen widget (systemSmall), and the anatomy every home size shares
 
-Reference: **Locket** (iOS small widget: App Store panels and help drawing; exact Android values for the same
-elements where iOS was not measurable) + **Apple HIG Widgets** (sizes, container, rendering). This file also holds
-the shared copy (gallery name and description, empty texts, accessibility labels, configuration) used by
-`widget.home.medium`, `.large`, `.xl` and `widget.android`.
+**Visual reference: Retro's Glance widgets** (Friend Updates / Your Memories / Albums — APK 2026.10.1150 provider and
+code constants, mdpi preview art): full-bleed photo, rounded container, white two-line text stack at the
+bottom-trailing corner (name over album title / place), states with a white-85 % glyph and one line. Our widget is
+Retro's **Albums** variant: name over the **group** name. **Mechanics: Locket** — the group's newest photo (or, after
+a daily invitation, the collage), tap opens the camera (`camera.fromwidget`). Size and container: **Apple HIG Widgets**
+(PLATFORM). This file holds the shared copy and anatomy used by `widget.home.medium`, `.large`, `.xl`,
+`widget.lock.*` and `widget.android`. Decisions: `design/MERGE_DECISIONS.md` RC-9 … RC-11.
 
 ## References
 
-| image | what it verifies |
+| image / source | what it verifies |
 |---|---|
-| `references/auto/locket/store/locket-store-03.png` | photo fill, avatar 24 pt at 6 pt, caption pill, count badge (do-not-copy) |
-| `references/auto/locket/store/locket-store-06.png`, `references/owner/locket-01-widget.webp`, `references/owner/locket-05-receive.webp` | photo fill + avatar, no caption |
-| `references/auto/locket/help/locket-help-7914857-widget-with-avatar-crop.png` | Locket's own drawing of the widget |
-| `references/auto/locket/frames/locket-tt-7182656074468674859-00.500s-homescreen-widget-and-rewind-2022.jpg` | avatar + caption on a live Home Screen |
-| `references/auto/locket/frames/locket-tt-7168613044728155438-15.133s-widget-placeholder-just-added.jpg` → `15.167s-widget-photo-arrived.jpg` | loading placeholder, arrival |
-| `references/auto/locket/frames/locket-tt-7168613044728155438-11.900s-widget-gallery-card.jpg`, `references/owner/locket-widget-gallery.jpg`, `…-7532209311150329102-13.750s-gallery-locket-widget-3-friends.jpg` | gallery name / description |
-| `references/auto/platform/hig-widgets-ios-dimensions.png` | sizes |
+| `references/auto/retro/apk/widget_preview_journals.webp` (Albums), `…_friends.webp`, `…_memories.webp` | full-bleed photo; text stack 'cheryl' / 'Seoul 2024' (`widget.home.small.layout.overlay`, `.fontSize.overlay`, `.fontWeight.overlay`) |
+| `references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt` §"Glance widget" (qmh.java), §"WIDGET PROVIDERS" | 22-dp corners, state glyph 48-dp box tinted white 85 % (`.color.stateTint`), 2 × 2 default, hourly refresh |
+| `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` `widget_title_*`, `widget_description_*`, `app_widget_*` | gallery names, descriptions, state lines, configuration title |
+| `references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png` (VID-SET) | Retro iOS ships the same widgets ("Memories", "Friend Updates" in Settings → Widgets) |
+| `references/auto/locket/store/locket-store-03.png`, `locket-store-06.png` | mechanics: newest photo of one circle, tap → camera |
+| `references/auto/platform/hig-widgets-ios-dimensions.png` | sizes (`widget.home.small.layout.size`) |
 
 ## Structure
 
-158 × 158 pt on a 393 × 852 screen (`widget.home.small.layout.size`); corners from the system (`ContainerRelativeShape`).
+158 × 158 pt on 393 × 852 (`widget.home.small.layout.size`); corners from the system (`ContainerRelativeShape`).
 
-1. **Photo** — the group's newest photo, or after a daily invitation the collage's first page, filling the whole
+1. **Photo** — the group's newest photo, or the newest collage's first page when it is newer, filling the whole
    widget (aspect-fill, `widget.home.small.layout.photo`) as the removable container background; content margins
    disabled.
-2. **Bottom row** (photo only, not on the collage), bottom-leading:
-   - **sender avatar** 24 pt circle, 6 pt from the leading and bottom edges (`widget.home.small.size.avatar`,
-     `.avatarInset`), 1-pt ring `widget.home.small.color.avatarRing`; no avatar → Locket's avatar placeholder: a
-     vertical gradient `widget.android.color.avatarPlaceholderTop` → `.avatarPlaceholderBottom`, no glyph;
-   - **caption pill** (only when the post has a caption) 5 pt after the avatar, vertically centred on it: height 23,
-     horizontal padding 7, shape `radius.global.capsule`, fill `widget.home.small.color.captionPill`; text
-     `widget.home.small.fontSize.caption` / `.fontWeight.caption`, `color.global.textPrimary`, one line, truncated
-     at the trailing widget edge minus 6 pt.
+2. **Scrim** — `layout.global.photoScrim` (black from 55 % of the height to `color.global.scrim` at the bottom).
+3. **Text stack** (`widget.home.small.layout.overlay`), bottom-trailing, trailing-aligned: line 1 the poster's first
+   name, line 2 the group name; `widget.home.small.fontSize.overlay` (11) / `.fontWeight.overlay` (regular),
+   `color.global.textOnMedia`; trailing inset 11, last baseline 15 above the bottom edge, line pitch 13; each line one
+   line, truncated at the leading inset `size.global.screenMargin`. Collage: one line, the group name.
 
 ## Elements
 
-| element | tokens | copy | behavior |
+| element | tokens | copy | behaviour |
 |---|---|---|---|
-| photo / collage | `widget.home.small.layout.photo` | a11y `widget.home.small.a11y.photo`, `.photoWithCaption`, `.collage` | newest item of the configured group: the latest post, or the latest collage when it is newer (`collages.composed_at`); muted groups still update |
-| avatar | `widget.home.small.size.avatar`, `.avatarInset`, `.size.avatarRing`, `.color.avatarRing` | — | the poster's avatar (`profiles.avatar_path`) |
-| caption pill | `widget.home.small.size.captionHeight`, `.captionPadding`, `.captionGap`, `.fontSize.caption`, `.fontWeight.caption`, `.color.captionPill`, `radius.global.capsule` | post caption (user content) | absent without a caption |
+| photo / collage | `widget.home.small.layout.photo`, `layout.global.photoScrim` | a11y `widget.home.small.a11y.photo` / `.a11y.collage` | newest item of the configured group (`media.widget_path` / `collages.widget_path`); muted groups still update |
+| text stack | `widget.home.small.layout.overlay`, `.fontSize.overlay`, `.fontWeight.overlay`, `color.global.textOnMedia` | data: first name (first word of `display_name`), group name | — |
 | tap | `camera.fromwidget.layout.target` | — | opens `camera.capture` with the group preselected |
-| configuration | — | `widget.home.small.configuration.title`, `.group`, `.groupType` | iOS `AppIntentConfiguration` with one group parameter (default: the first group) |
-| gallery | — | `widget.home.small.gallery.name`, `.gallery.description` | one widget kind, families small / medium / large (+ extra large on iPad); one description for all sizes (HIG) |
+| configuration | AppIntentConfiguration | `widget.home.small.configuration.title`, `.configuration.group`, `.configuration.groupType` | one group parameter (default: the first group) |
+| gallery | — | `widget.home.small.gallery.name`, `.gallery.description` | one widget kind, families small / medium / large (+ extra large on iPad), one description (HIG) |
 
 ## States
 
+All non-photo states: background `color.global.backgroundDeep` (composition, RC-10); centred column: `icon.global.camera`
+at `size.global.icon` in a 48-pt box (12 padding, APK) tinted `widget.home.small.color.stateTint`, then the line in
+`widget.home.small.fontSize.overlay`, same tint, centred, up to 2 lines.
+
 | state | design | copy | source |
 |---|---|---|---|
-| loading (just added, no rendition cached yet) | vertical gradient `widget.home.small.color.placeholderTop` → `.placeholderBottom`; up to three member avatars, 25 pt, 2.5 pt apart, bottom-leading at 6 pt (`widget.home.small.layout.placeholderAvatars`); also the gallery preview when no photo exists | — | Locket 2022 placeholder (LP) |
-| empty (configured group has no photo yet) | gradient `widget.home.small.color.emptyTop` → `.emptyBottom`; centred stack: 72-pt circle `widget.home.small.color.emptyCircle` holding the 32 × 28 photo glyph (`icon.global.gallery`, `color.global.textPrimary`) inside an 82-pt ring (3 pt, `widget.home.small.color.emptyRing`), then the label 9 pt below, 19 pt (`widget.home.small.layout.empty`), color `widget.home.small.color.emptyLabel` (#969696 = `color.global.textSecondary`) | `widget.home.small.empty.noPhotos` | Locket APK `widget_empty` (md) |
-| not set up (no group: none chosen, left, deleted, signed out) | same empty layout | `widget.home.small.empty.setUp` | APK `tap_to_set_up` |
-| error (rendition download failed) / offline | keep the last photo shown (HIG: "show content quickly without hiding stale data behind placeholder content") | — | HIG Widgets |
+| loading (just added, nothing cached) | `color.global.backgroundDeep`, no content | — | HIG ("show content quickly"); Retro's loading not captured |
+| empty (the group has no photo yet) | state column | `widget.home.small.empty.noPhotos` | `app_widget_empty_message` pattern |
+| not set up (no group chosen, group left / deleted) | state column | `widget.home.small.empty.setUp` | `retro.voice.widget` |
+| signed out | state column | `widget.home.small.empty.signedOut` | `app_widget_not_logged_in_message` |
+| error / offline | keep the last photo (HIG: don't hide stale data); nothing cached → loading | — | HIG Widgets |
 | permission-denied | n/a | — | — |
 
 ## Motion
 
-New photo: instant swap, `widget.arrival.duration.transition` (0 ms) — see `widget.arrival`. No other motion.
+New photo: instant swap (`widget.arrival.duration.transition` 0 ms). No other motion.
 
 ## Haptics
 
@@ -64,44 +67,44 @@ None (system widget).
 
 ## Accessibility
 
-- One element per widget: label `widget.home.small.a11y.photoWithCaption` (with caption) / `.a11y.photo` / `.a11y.collage`
-  / the visible empty label; trait button (opens the camera). Avatar and pill are combined into it (HIG: group an
-  image with its caption).
-- Dynamic Type: caption → caption, empty label → title3 (`widget.home.small.layout.textStyleMap`); widgets support
-  Large–AX5 — the caption stays one line and truncates.
-- Contrast: caption white on `#333333CC` over a white photo → #5C5C5C, 6.71:1 pass; over black 14.59:1 pass;
-  empty ring #FFB800 on #2E2E2E 7.83:1, on #1B1B1B 9.93:1 pass; glyph white on the circle (#606060 composite) 6.29:1
-  pass; **empty circle vs its background 2.16:1 FAIL** (decorative container, no sourced alternative); **avatar ring
-  over white 1.26:1 FAIL** (decorative edge); placeholder avatars white-on-#2D2B2F 14.02:1 pass; empty label #969696 on #2E2E2E 4.59:1, on #1B1B1B 5.82:1 pass.
+- One element per widget, button trait: label `widget.home.small.a11y.photo` ("{name}'s photo in {group}") /
+  `.a11y.collage` / the visible state line.
+- Dynamic Type: the text stack scales with Caption 2 (`widget.home.small.layout.textStyleMap`); widgets support
+  Large–AX5 and the lines truncate.
+- Contrast (identical in light and dark — the widget is a media surface):
+
+| pair | ratio | result |
+|---|---|---|
+| name line (white) over the scrim (≈ 33 % black at that height) on a white photo | 2.32:1 | **FAIL** (photo-dependent) |
+| group line (≈ 44 % black) on a white photo | 3.23:1 | **FAIL** (photo-dependent) |
+| same lines on a mid-grey photo (#808080) | 7.42:1 | pass |
+| state glyph / line `stateTint` (#FFFFFFD9) on `backgroundDeep` | 14.88:1 | pass |
+
+Reported, not adjusted (Retro draws its widget text this way; no sourced alternative).
 
 ## Data & actions
 
-- The app writes per-group snapshots to the App Group (newest post: `media.widget_path` signed URL downloaded, poster
-  name / avatar, caption; or `collages.widget_path`); the timeline provider reads the cache first
-  (docs/PLATFORM_CONSTRAINTS.md §1.6).
-- Refresh: widget push (iOS 26+), notification service extension download, background push, timeline `.after`
-  15–60 min with jitter, app foreground reload — see `widget.arrival`.
-- Out: `camera.fromwidget`.
+- The app writes per-group snapshots to the App Group (newest post: `media.widget_path` downloaded, poster first name,
+  group name; or `collages.widget_path`); the timeline provider reads the cache first (PLATFORM_CONSTRAINTS §1.6).
+- Refresh: see `widget.arrival` (widget push iOS 26+, notification service extension, background push, timeline
+  `.after` 15–60 min, app foreground). Out: `camera.fromwidget`.
 
 ## Platform notes
 
-- `containerBackground(for: .widget)` holds the photo (removable, required for StandBy / vibrant contexts);
-  `contentMarginsDisabled()`; overlay inside the 6-pt inset (C-6).
-- Tinted / clear Home Screen appearances: `widgetAccentedRenderingMode(.fullColor)` on the photo (HIG reserves full
-  color for media such as album art).
-- StandBy: the system scales the small widget and removes the background; the overlay remains.
-- Android: `widget.android` (same anatomy, Locket APK values).
+- `containerBackground(for: .widget)` holds the photo (removable for StandBy / vibrant); `contentMarginsDisabled()`.
+- Tinted / clear Home Screen: `widgetAccentedRenderingMode(.fullColor)` on the photo (HIG: full colour for media).
+- Font: system (`font.global.family` iOS "system"); Android Glance cannot load Inter (system sans) — `widget.android`.
+- Android: `widget.android` (same anatomy, Retro Glance constants).
 
 ## Do-not-copy
 
-Unseen-photo count badge ('9', yellow); streak pill / 'Streak on widget'; '20 Friends' gallery preview as a score;
-Gold 'widget frames'; Locket's icon and heart art.
+Retro: "Post to see" lock state and its black-70 % overlay, "Keyholders" picker item, the refresh-on-tap behaviour,
+wordmark. Locket: count badge, streak pill, avatar + caption pill, yellow empty ring, gold frames, "20 Friends" preview.
 
 ## Gaps
 
-| item | status | capture |
+| item | status | smallest capture |
 |---|---|---|
-| `widget.home.small.color.emptyLabel` | SOURCED by gap fill: Yope's secondary text colour (Locket's label bitmap colour is not in its APK; role rule, MERGE G2-12) | one screenshot of a just-added, empty Locket Android widget |
-| iOS caption-pill blur radius | approximated by the APK fill | lossless iOS Home Screen screenshot of a captioned Locket widget |
-| caption weight (semibold vs bold) | visual | side-by-side verification |
-| gallery name | BLOCKED until `{app_name}` | owner names the app |
+| widget text on a device (sizes at @3x, weight) | measured on mdpi preview art (±1 dp) | one home-screen screenshot with Retro's Friend Updates widget at 2 × 2 (RP §9) |
+| Retro's empty / error widget as rendered (background, text size) | composed (RC-10) | one screenshot of an empty Retro widget |
+| Retro iOS widget at full resolution | Settings carousel only (VID-SET, 640 × 800) | one iPhone home-screen screenshot with a Retro widget |

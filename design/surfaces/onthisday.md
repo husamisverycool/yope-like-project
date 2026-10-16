@@ -1,168 +1,218 @@
 # `onthisday` — photos from this date in past years
 
-Reference: **Timehop** (docs/SURFACES.md). Voice: `timehop.voice.uppercase-labels`, `timehop.voice.title-case-names`,
-`timehop.voice.years-ago`, `timehop.voice.no-emoji`; states without a Timehop string use the app default voice
-(`yope.voice.error`). Tokens: `design/tokens/memory.json` (`*.onthisday.*`) + `design/tokens/global.json`. Copy:
-`design/copy/memory.json` (`onthisday.*`). Decisions: `design/MERGE_DECISIONS.md` → "Memory" (M-n below).
+Visual reference: **Retro Rewind** (docs/SURFACES.md; `design/research/retro-visual.md` §2 rows 22–25, §4 #19;
+components C-35). Retro has the analog, so structure and look are Retro's; Timehop is no longer referenced. Voice:
+`retro.voice.rewind` + the Retro set (`design/copy-patterns.md`). Tokens: `design/tokens/memory.json`
+(`*.onthisday.*`) + `design/tokens/global.json`. Copy: `design/copy/memory.json` (`onthisday.*`). Decisions:
+`design/MERGE_DECISIONS.md` → "Redesign — Memory (RM-*)".
 
 What it is: when a group has photos posted on today's month and day in earlier years, the group screen shows an
-entry; tapping it opens a full-screen, tap-through "day": one screen per year, newest year first. It is **not** a
-push notification (not in the directive's notification list) and Timehop's daily reminder is not built.
+entry card; it opens a full-bleed page that shows one memory at a time — Retro's Rewind page: the memory's date in
+the display serif, a dial to spin through the memories (one tick per memory), play / pause, share and shuffle. It is
+**not** a push notification (not in the directive's notification list).
 
 ## References
 
-| image | what it verifies |
-|---|---|
-| `references/auto/timehop/store/timehop-store-01.png` | single-photo memory: orange banner "3 YEARS AGO", photo fills the rest of the screen |
-| `references/auto/timehop/store/timehop-store-02.png` | banner height from screen top (96.8 pt), label baseline 25.4 pt above banner bottom |
-| `references/auto/timehop/store/timehop-store-05.png` | several photos: 2-column masonry, margins 3.8, gutter 4.2, 5.5 below the banner |
-| `references/auto/timehop/store/timehop-store-03.png` | second sample of the orange banner colour |
-| `references/auto/timehop/play/timehop-play-01.png`, `-02.png`, `-05.png` | Android build, same layout |
-| `references/auto/timehop/help/th-help-2023-04-memory-view-hide.png` | progress bar at the top of the banner; meta row (source icon, "TUE  10:34 PM") over the photo; ✕ at the banner's right |
-| `references/auto/timehop/help/th-help-2024-03-intro-day-in-history.jpg` | "VERONICA'S DAY IN HISTORY" (entry title wording) |
-| `references/auto/timehop/help/th-help-2024-02-panel-share-1-year-ago.png` | singular "1 YEAR AGO" |
+| id | image (`references/auto/retro/…`) | what it verifies |
+|---|---|---|
+| RWB | `press/tc-2025-12-rewind-device-b.jpg` (RAW iOS, 3.000 px/pt) | dial at rest: 150 pt ring, 44 slots (8.18°), long 19.8 / short 11.8 / width 3.2 pt, ticks white 30 %, indicator 16.7 pt solid white, play glyph 35 pt; share / random 64 pt glass circles, equal gaps; date 'Jul 22, 2022' (abbreviated month); dial centre 139.2 pt above the safe-area bottom |
+| RWA | `press/tc-2025-12-rewind-device-a.png` (RAW iOS, 3.000 px/pt) | 'May 1, 2019 ⌄' title at the margin, baseline 63.3 pt below the safe-area top (≈ `size.global.titleTop`); '•••' glass 40 pt, ink 16.3 pt from the right, centred on the title's cap middle; second dial state (143 pt ring, 28 pt indicator) |
+| RWP | `press/tc-2025-12-rewind-panels.png` | phone 1 playing (pause glyph, no side circles); phone 2 paused + native '•••' menu (red destructive item); phone 3 native share sheet 'Tuesday, December 2' / 'Memory' |
+| ST-05 | `store/retro-store-05.png` | 'July 5, 2021' + 'On this week' subtitle (baseline 26.4 pt below the date's), subtitle white ≈ 76 % |
+| APK | `apk/retro-android-2026.10.1150-strings.txt` | `rewind_home_*`, `rewind_mode_selection_sheet_*`, `media_viewer_comment_overflow_*` copy; package: tick haptic per dial step (`apk/…-excerpts.txt` w9e / lh2) |
 
 ## Structure
 
-**A. Entry (placed by `groups.screen`).** A row in the group screen, visible only while
-`on_this_day(group, localDate)` returns at least one row. `onthisday` supplies the copy; the row component, its
-position and tokens belong to the `groups.screen` pass (Yope).
-1. Title: `onthisday.entry.title` ("{group}'s Day in History").
-2. Second line: the newest memory's banner label (`onthisday.banner.yearsAgo.one` / `.other`).
-Tap → opens the day (B) at the newest year.
+**A. Entry (placed by `groups.screen`).** A Retro feed card in the group screen, visible only while
+`on_this_day(group, localDate)` returns rows. `onthisday` supplies its copy; the card component, position and
+tokens belong to the `groups.screen` pass: title `onthisday.entry.title` ("On this day"), line
+`onthisday.entry.subtitle` ("Revisit memories from {date} over the years", `{date}` = today as
+`layout.birthday.add.dateFormat`, e.g. "July 5"), action `onthisday.entry.button` ("View memories"). Tap → pushes B
+at the newest memory. The first time a member opens B, the feature-intro sheet (C below) shows first.
 
-**B. The day (full screen, one screen per year, newest first).** Top to bottom, edge to edge:
-1. **Banner** — full screen width, from the screen top edge (behind the status bar) down to
-   `dimension.onthisday.banner.height` (96.8 pt from the top). Fill `color.onthisday.banner`.
-   - **Progress bar** on the banner's top edge directly below the status bar: full width, no inset, height
-     `dimension.onthisday.progress.height`; reached part `color.onthisday.progress.fill`, rest
-     `color.onthisday.progress.track`; reached fraction = (index + 1) / number of years (`layout.onthisday.progress`).
-   - **Label** "N YEARS AGO", horizontally centred, baseline `dimension.onthisday.banner.labelBaseline` above the
-     banner bottom; `fontSize.onthisday.banner.label` / `fontWeight.onthisday.banner.label`, `color.onthisday.banner.label`.
-   - **Close** — header circle at the banner's right end, vertically centred on the label's row:
-     `size.global.headerButton`, inset `size.global.headerInset` from the right edge, fill `color.global.controlOnDeep`,
-     glyph `icon.global.close` in `color.global.textPrimary` (MERGE M-29: Timehop's 2023 ✕ sits there; its size was
-     not measurable).
-2. **Content** — one of:
-   - **One photo** (`layout.onthisday.photo.single`): full width, from the banner bottom to the screen bottom,
-     aspect-fill (cropped), no corner radius. Over its top-left, the **meta row**: the poster's avatar
-     (`dimension.onthisday.meta.avatar` circle, `icon.global.person` on `color.global.control` when they have none)
-     at `dimension.onthisday.meta.inset` from the left edge, centred `dimension.onthisday.meta.centerY` below the
-     banner bottom; then, after `dimension.onthisday.meta.gap`, `onthisday.memory.meta` ("TUE 10:34 PM") in
-     `fontSize.onthisday.meta` / `fontWeight.onthisday.meta`, `color.onthisday.meta.text`.
-   - **Two or more photos** (`layout.onthisday.grid`): 2-column masonry, each photo at its own aspect ratio, placed in
-     the shorter column, newest first (API order). First row `dimension.onthisday.grid.top` below the banner; outer
-     margin `dimension.onthisday.grid.margin`; gutter `dimension.onthisday.grid.gutter` between columns and rows; gaps
-     show `color.global.background`; no corner radius; no meta row (store-05 shows none). The content scrolls
-     vertically under a fixed banner.
-3. **Tap zones** over the content (`layout.onthisday.navigation`): right half → next (older) year; left half →
-   previous (newer) year; on the newest year the left half does nothing; on the oldest year the right half closes the
-   day. In the grid a tap on a photo is a zone tap too (the day is a pure tap-through, as in the reference); vertical
-   drags scroll the grid; long-press is not used. No tap opens another screen.
+**B. The memory page** (pushed; full bleed; media surface, dark in both appearances — render the subtree in the dark
+appearance, `layout.global.appearance.media`). Top to bottom:
 
-Rows used for the day: `on_this_day` returns posts newest first with `years_ago`; group them by `years_ago`
-ascending (1 year ago first), keeping API order inside a year.
+1. **Photo** — the current memory's display rendition, full bleed (edge to edge, under the status bar), aspect-fill,
+   `radius.global.photo` (0), on `color.global.backgroundDeep`. No top scrim (Retro shows none).
+2. **Header (components C-02 on media)** — back chevron `icon.global.back` in `color.global.textOnMedia`, ink at
+   `size.global.backInset`; the **date title** after `size.global.headerGap`: the memory's date as
+   `layout.onthisday.dateFormat` ("Jul 22, 2022"), `font.global.display`, text role `headerTitle`
+   (`fontSize.global.headerTitle` / `fontWeight.global.headerTitle` / `lineHeight.global.headerTitle`),
+   `color.global.textOnMedia`, baseline `size.global.titleTop` below the safe-area top. No expand chevron (one mode;
+   Retro's mode menu "On this week… / Pick a date… / Shuffle" is not built — the dice starts shuffle).
+3. **Subtitle** — baseline `dimension.onthisday.subtitleBaseline` below the date's baseline, aligned with the date's
+   leading edge: `onthisday.subtitle.day` ("On this day · {name}") or, after a shuffle, `onthisday.subtitle.shuffle`
+   ("Memories · {name}"); `{name}` = the poster's first name. Text role `textButton` (17 regular),
+   `color.onthisday.subtitle`.
+4. **More** — glass circle (C-11) `size.global.circleButtonPhoto`, fill `color.global.glass`, `icon.global.more` in
+   `color.global.textOnMedia`, ink of the circle at `size.global.headerInset` from the right edge, centred on the
+   date title's cap middle. Opens the native menu (D).
+5. **Bottom scrim** — `layout.global.photoScrim` (black 0 → `color.global.scrim` from 55 % of the height).
+6. **Control row** (`layout.onthisday.controls`), centres `dimension.onthisday.controls.centerY` above the
+   safe-area bottom, distributed with equal gaps across the width: **share** circle, **dial**, **random** circle.
+   - Share / random: glass circles (C-11 large) `size.global.circleButtonLarge`, `color.global.glass`, glyphs
+     `icon.global.share` / `icon.global.random` in a `size.global.icon` box, `color.global.textOnMedia`. Hidden
+     while playing.
+   - **Dial** (`layout.onthisday.dial`): `count.onthisday.dial.ticks` (44) slots on a ring of outer diameter
+     `dimension.onthisday.dial.diameter`; slot 0 at 6° clockwise from 3 o'clock, pitch 8.18°; even slots long
+     (`dimension.onthisday.dial.tickLong`), odd slots short (`dimension.onthisday.dial.tickShort`), every tick
+     `dimension.onthisday.dial.tickWidth` wide, measured inward from the outer edge, colour
+     `color.onthisday.dial.tick`. The **indicator** is drawn on the current memory's slot instead of its tick:
+     `dimension.onthisday.dial.indicatorLength` long, same width, `color.global.textOnMedia`. Centre: `icon.global.play`
+     (paused) / `icon.global.pause` (playing), ink height `dimension.onthisday.dial.glyph`,
+     `color.global.textOnMedia`.
+7. No tab bar (our page is pushed from a group; Retro's Rewind is a tab — the controls keep Retro's distance from the
+   bottom).
+
+**Memory order.** `on_this_day` returns posts newest first with `years_ago`; that order is the dial's order (slot 0 =
+the newest). One post = one memory. The indicator starts on slot 0; slot index = memory index mod 44.
+
+**Interactions.**
+- **Drag the dial** (a circular drag anywhere on the dial): each slot crossed moves one memory (clockwise = next,
+  older; counter-clockwise = previous) with `haptic.global.select`; the photo cross-fades over
+  `duration.global.crossfade`. Stops at the first and last memory (no wrap).
+- **Tap the dial centre**: play / pause. Playing advances every `duration.onthisday.playHold` with a cross-fade of
+  `duration.onthisday.memoryChange`, one tick each step, and stops after the last memory (play glyph again). Share
+  and random fade out while playing and back in when paused (`duration.global.fade`, `easing.global.standard`).
+- **Share**: native share sheet with the memory's photo (original); preview title = today's date as
+  `layout.year.story.dateFormat` ("Tuesday, December 2"), subtitle `onthisday.share.subtitle` ("Memory") — as Retro.
+- **Random (dice) = shuffle**: shows a random memory from the group's whole history (data below); the subtitle
+  switches to `onthisday.subtitle.shuffle`; the dial then steps through further random memories (each slot = one new
+  random pick; previous = back through the picks already shown). Going back to the day: the back chevron (pops) or
+  reopening from the entry.
+- No swipe or tap-to-advance on the photo (Retro advances only by the dial).
+
+**C. Feature intro (first open, once per account)** — components C-29 feature-intro sheet over the page: title
+`onthisday.nux.title` ("Introducing On This Day"), text `onthisday.nux.message`, primary capsule (C-05)
+`onthisday.nux.button` ("Try it out") which closes it. Retro shows the same intro for Rewind (`rewind_home_nux_*`).
+Never shown again (no nagging).
+
+**D. Menu ('•••', native — C-29 context menu)**, items in this order: `onthisday.menu.save` ("Save to Camera
+Roll", every memory); `onthisday.menu.report` ("Report Post", someone else's memory, destructive red) → `safety.report`;
+`onthisday.menu.delete` ("Delete Post", your own memory, destructive red) → native confirmation
+(`onthisday.delete.title` / `.message` / `.confirm` "Yes, delete" / `.cancel`) → `delete_post` → toast
+`onthisday.toast.deleted`, the memory leaves the dial. Save → toast `onthisday.toast.saved`; failure
+`onthisday.saveFailed`; add-only photo access denied → native alert `onthisday.saveDenied.title` / `.message` /
+`.button` (opens Settings).
 
 ## Elements
 
-| element | tokens | copy keys | behaviour |
+| element | component · tokens | copy keys | behaviour |
 |---|---|---|---|
-| entry title / second line | (row component: `groups.screen`) | `onthisday.entry.title`, `onthisday.banner.yearsAgo.one` / `.other` | shown only when the day has rows; tap opens the day |
-| banner | `color.onthisday.banner`, `dimension.onthisday.banner.height`, `layout.onthisday.banner` | — | same colour for every year (M-9) |
-| progress bar | `dimension.onthisday.progress.height`, `color.onthisday.progress.fill`, `color.onthisday.progress.track`, `layout.onthisday.progress` | — | fraction updates on each year change; hidden from accessibility (the banner label states the year) |
-| years-ago label | `fontSize.onthisday.banner.label`, `fontWeight.onthisday.banner.label`, `color.onthisday.banner.label`, `dimension.onthisday.banner.labelBaseline`, `font.onthisday` | `onthisday.banner.yearsAgo.one` (years_ago = 1), `.other` (`{count}` = years_ago) | uppercase as stored |
-| close | `size.global.headerButton`, `size.global.headerInset`, `color.global.controlOnDeep`, `icon.global.close`, `color.global.textPrimary` | `onthisday.a11y.close` | dismisses the day |
-| single photo | `layout.onthisday.photo.single` | `onthisday.a11y.photo` | display rendition (`media.display_path`, original until `renditions_ready_at`) |
-| meta row | `dimension.onthisday.meta.avatar`, `.inset`, `.centerY`, `.gap`, `fontSize.onthisday.meta`, `fontWeight.onthisday.meta`, `color.onthisday.meta.text`, `icon.global.person`, `color.global.control` | `onthisday.memory.meta` (`{weekday}` TUE, `{time}` 10:34 PM, group time zone) | single-photo memories only |
-| grid | `layout.onthisday.grid`, `dimension.onthisday.grid.margin`, `.gutter`, `.top`, `color.global.background` | `onthisday.a11y.photo` per cell | thumb rendition (`thumb_path`) |
-| tap zones | `layout.onthisday.navigation` | `onthisday.a11y.next`, `onthisday.a11y.previous` (accessibility actions) | no auto-advance |
+| entry card | `groups.screen` feed card | `onthisday.entry.title`, `.entry.subtitle`, `.entry.button` | shown only when the day has rows |
+| photo | `layout.global.appearance` (media), `color.global.backgroundDeep`, `radius.global.photo` | `onthisday.a11y.photo` ("Photo by {name}, {date}") | `media.display_path` (original until `renditions_ready_at`) |
+| back | C-02: `icon.global.back`, `size.global.backInset`, `color.global.textOnMedia`, hit `size.global.minTouchTarget.*` | `onthisday.a11y.back` | pops to the group screen |
+| date title | C-35: `font.global.display`, text role `headerTitle`, `size.global.titleTop`, `size.global.headerGap`, `color.global.textOnMedia`, `layout.onthisday.dateFormat` | — (data) | changes with the memory (cross-fade) |
+| subtitle | text role `textButton`, `color.onthisday.subtitle`, `dimension.onthisday.subtitleBaseline` | `onthisday.subtitle.day`, `.subtitle.shuffle` | `{name}` = poster |
+| more | C-11 glass: `size.global.circleButtonPhoto`, `color.global.glass`, `icon.global.more`, `size.global.headerInset` | `onthisday.a11y.more`; menu `onthisday.menu.*`, `onthisday.delete.*`, `onthisday.toast.*`, `onthisday.saveFailed`, `onthisday.saveDenied.*` | native menu (D) |
+| scrim | `layout.global.photoScrim`, `color.global.scrim` | — | decorative |
+| share | C-11 large glass: `size.global.circleButtonLarge`, `color.global.glass`, `icon.global.share`, `size.global.icon`, `layout.onthisday.controls` | `onthisday.a11y.share`, `onthisday.share.subtitle` | native share sheet |
+| random | same, `icon.global.random` | `onthisday.a11y.shuffle` | shuffle |
+| dial | `layout.onthisday.dial`, `dimension.onthisday.dial.*`, `count.onthisday.dial.ticks`, `color.onthisday.dial.tick`, `color.global.textOnMedia`, `icon.global.play` / `.pause`, `dimension.onthisday.controls.centerY` | `onthisday.a11y.dial`, `.a11y.dialValue`, `.a11y.play`, `.a11y.pause`, `.a11y.next`, `.a11y.previous` | drag = step, centre tap = play / pause |
+| feature intro | C-29 feature-intro sheet, C-05 | `onthisday.nux.*` | once per account |
 
 ## States
 
-| state | design | copy | source |
+| state | design (components) | copy | source |
 |---|---|---|---|
-| loading | banner area in `color.onthisday.banner`; centred platform activity indicator (`easing.global.native` activityIndicator) and the loading text in `fontSize.global.listSubtitle`, `color.global.textSecondary` on `color.global.background` | `onthisday.loading` "Collecting Memories" | Timehop help 812 (text); indicator PLATFORM |
-| empty | not a screen: the entry is not shown when `on_this_day` returns no rows | — | caller brief; Timehop's empty state wording not found |
-| error | `yope.voice.error` layout from foundations: text roles `emptyTitle` / `emptyDetail` centred on `color.global.background`, light pill `color.global.surfaceLight` / `color.global.onSurfaceLight`, `radius.global.capsule` | `onthisday.error.title` "Time Travel Failed", `onthisday.error.detail`, `onthisday.error.retry` | title Timehop help 767; rest app default voice |
-| offline | same layout as error | `onthisday.offline.title`, `onthisday.offline.detail`, `onthisday.error.retry` | app default voice |
-| photo missing (deleted while open, `post_deleted` broadcast) | drop the photo; drop the year when it was its last photo; close the day when none remain | — | docs/API.md 8.2 |
-| permission-denied | n/a (no permission used) | — | — |
+| loading | page `color.global.backgroundDeep`; platform activity indicator centred (C-28, `color.global.textSecondary`); header with back only | `onthisday.loading` (announcement) | C-28 |
+| playing / paused | dial glyph pause / play; share + random hidden / shown | `onthisday.a11y.pause` / `.play` | RWP phones 1–2 |
+| empty | not a screen: the entry is hidden when `on_this_day` returns nothing. If every memory is deleted while the page is open: C-27 empty block on the black page (no glyph; title text role `emptyTitle`, `color.global.textOnMedia`) | `onthisday.empty.title` | `rewind_home_empty_state_message` |
+| error | C-27 error variant on the black page: title `emptyTitle` `color.global.textOnMedia`, detail `emptyDetail` `color.global.textSecondary`, light pill (C-09: `color.global.surfaceLight` / `color.global.onSurfaceLight`, `size.global.pillHeight`, label text role `pill`) | `onthisday.error.title`, `.error.detail`, `.error.retry` | `retro.voice.error` |
+| offline | same block | `onthisday.offline.title`, `.offline.detail`, `.error.retry` | `retro.voice.error` |
+| permission-denied (save) | native alert, button opens Settings | `onthisday.saveDenied.*` | `retro.voice.permission` |
+| memory deleted while open (`post_deleted`) | drop it from the dial; if it was shown, show the next (or previous) one | — | docs/API.md 8.2 |
 
 ## Motion
 
 | transition | token | Reduce Motion |
 |---|---|---|
-| open / close the day | native full-screen presentation (`easing.global.native` navigationPush / sheet) | system handles |
-| year → year | cross-fade over `duration.onthisday.memoryChange` (700 ms, VidDay's photo-to-photo crossfade; curve `easing.global.native`) | same (a cross-fade is already the Reduce Motion substitute, `layout.global.reduceMotion`) |
-| progress fill change | none (jumps with the year) | same |
+| push / pop | native (`easing.global.native.navigationPush`) | system |
+| step by dragging | cross-fade `duration.global.crossfade`, `easing.global.standard` | same (a cross-fade already) |
+| step while playing | cross-fade `duration.onthisday.memoryChange`, every `duration.onthisday.playHold` | same; playing still allowed (it is user-started and pausable) |
+| indicator move | jumps to the new slot with the photo change | same |
+| share / random hide-show | fade `duration.global.fade`, `easing.global.standard` | fade (no movement) |
+| feature intro, menu, share sheet, alerts | native (`spring.global.sheetPresent` / platform) | system |
 
 ## Haptics
 
-None. Timehop's tap-through has no observed haptic, and HIG asks for haptics only where they add meaning.
+Each slot crossed on the dial and each automatic step while playing → `haptic.global.select` (Retro: one tick per
+dial step, SEGMENT_FREQUENT_TICK / CLOCK_TICK). Taps on back, more, share, random, play / pause →
+`haptic.global.tap` (Android VIRTUAL_KEY; iOS none). Save succeeded → `haptic.global.success`; delete confirmed →
+`haptic.global.warning`; save / delete failed → `haptic.global.error`. Menu and share sheet play their own.
 
 ## Accessibility
 
-- **Labels / traits.** Banner label: header trait, read as stored ("3 YEARS AGO"). Close: `onthisday.a11y.close`,
-  button. Each photo: `onthisday.a11y.photo` ("Photo by {name}, {weekday} {time}", spoken weekday in full), image
-  trait. Meta row: hidden (its content is in the photo label). Progress bar: hidden.
-- **Tap zones** are not reachable by VoiceOver / TalkBack: expose `onthisday.a11y.next` ("Older") and
-  `onthisday.a11y.previous` ("Back") as custom accessibility actions on the content (iOS `accessibilityAction(named:)`,
-  Android `CustomAccessibilityAction`); after a change, post a screen-changed notification so the new banner label is
-  read.
-- **Dynamic Type** (`layout.onthisday.textStyleMap`): banner label → `title1`; meta → `caption2`. The banner grows in
-  height with the label (minimum `dimension.onthisday.banner.height`).
-- **Focus order:** banner label → close → photo(s) top-left to bottom-right.
-- **Contrast** (`node tools/contrast.mjs`):
+- **Labels / traits.** Photo: image, `onthisday.a11y.photo` ("Photo by Maya, Jul 22, 2022"). Date title: header.
+  Subtitle: static text (read after the title). Back, more, share, random, play / pause: buttons with
+  `onthisday.a11y.*`. Scrim and ticks: hidden.
+- **Dial** is one adjustable element (iOS `.accessibilityAdjustableAction`, Android `Modifier.semantics {
+  progressBarRangeInfo; customActions }` with `onthisday.a11y.next` / `.previous`): label `onthisday.a11y.dial`
+  ("Memories"), value `onthisday.a11y.dialValue` ("2 of 5"); increment = next, decrement = previous; after a change
+  the new date title is announced. Play / pause is a separate button.
+- **Focus order:** back → date title → subtitle → more → photo → share → dial → play / pause → random.
+- **Dynamic Type:** title `headerTitle` → largeTitle; subtitle `textButton` → body (`layout.global.textStyleMap`);
+  the title wraps to two lines at large sizes and pushes the subtitle down; the control row does not scale.
+- **Touch targets:** circles ≥ 40 pt; the back chevron and dial centre get ≥ `size.global.minTouchTarget.ios` /
+  `.android` hit areas.
+- **Contrast** (`node tools/contrast.mjs`; the page is dark in both appearances, so one row covers both):
 
   | pair | ratio | needs | result |
   |---|---|---|---|
-  | `color.onthisday.banner.label` on `color.onthisday.banner` (25.8 pt bold) | 3.08 | 3 | pass |
-  | `color.onthisday.progress.fill` vs `color.onthisday.progress.track` | 6.07 | 3 | pass |
-  | `color.onthisday.progress.track` vs `color.onthisday.banner` | 2.91 | 3 | **FAIL** (reported; no sourced alternative) |
-  | `color.onthisday.progress.fill` vs `color.onthisday.banner` | 2.09 | 3 | **FAIL** (reported) |
-  | `color.global.surfaceLight` (error pill) on `color.global.background` | 17.93 | 3 | pass |
-  | meta text `#FFFFFF` over a photo | photo-dependent | 4.5 | not guaranteed (no scrim in the reference) |
-  | rejected v5 banner colours with the white label: `#FFC700` 1.56, `#14B6EF` 2.34 | — | 3 | **FAIL** → not used (M-9) |
+  | `color.global.textOnMedia` (date, glyphs) on `color.global.backgroundDeep` | 21.00 | 3 (40 pt) / 4.5 | pass |
+  | `color.global.textOnMedia` over the photo, top of the page (no scrim) | photo-dependent (1.00 on white) | 3 | **not guaranteed** — Retro draws it so (reported) |
+  | `color.onthisday.subtitle` on `color.global.backgroundDeep` (#C2C2C2) | 11.79 | 4.5 | pass; over a light photo **not guaranteed** (1.00 on white) |
+  | `color.global.textOnMedia` (indicator, play glyph) on the scrim end over white (#666666) | 5.74 | 3 | pass |
+  | `color.onthisday.dial.tick` (white 30 %) over the scrim end on white (#949494 on #666666) | 1.90 | 3 | **FAIL** (non-text; the indicator carries the position — reported) |
+  | `color.onthisday.dial.tick` on `color.global.backgroundDeep` (#4D4D4D on #000000) | 2.48 | 3 | **FAIL** (same; reported) |
+  | glass circle `color.global.glass` on black (#1F1F1F) | 1.27 | 3 | **FAIL** (non-text; identified by its glyph: white on glass over black 16.48, over mid-grey #808080 3.22 pass, over white 1.00 fail — photo-dependent, C-11) |
+  | error pill `color.global.onSurfaceLight` on `color.global.surfaceLight` | 21.00 | 4.5 | pass |
+  | error detail `color.global.textSecondary` on `color.global.backgroundDeep` | 7.37 | 4.5 | pass |
 
 ## Data & actions
 
-- **Read:** `rpc("on_this_day", p_group_id, p_local_date)` where `p_local_date` = the date of (now in
-  `groups.time_zone` − 5 h) (`layout.onthisday.dayBoundary`). Not limited by `free_history_days` (docs/SPEC_FLAGS.md T1).
-  Then `posts` / `media` by id for renditions, `profiles` (`display_name` first word, `avatar_path`) for the meta
-  row and labels. Signed URLs, 1 h.
-- **Realtime:** private broadcast `group:<group_id>` `post_deleted` → remove that post (States).
-- **No writes.** No RPC is called.
-- **Navigation in:** the entry on `groups.screen` (no deep link and no push for this surface). **Out:** close → back
-  to the group screen.
-- Blocks are already applied by `on_this_day` (rows from blocked authors are not returned).
+- **Read:** `rpc("on_this_day", p_group_id, p_local_date)` with `p_local_date` = the date of (now in
+  `groups.time_zone` − 5 h) (`layout.onthisday.dayBoundary`). Not limited by `free_history_days`
+  (docs/SPEC_FLAGS.md T1). Then `posts` / `media` by id (renditions; originals for save / share) and `profiles`
+  (`display_name` first word) for the subtitle and labels. Signed URLs, 1 h. Blocked authors are already filtered.
+- **Shuffle (dice):** `rpc("group_history_weeks", p_group_id, p_limit: 52)` paged with `p_before_week` until a page
+  has fewer than 52 rows (cache per session); pick a random week, then a random `post_id` of it; then `posts` /
+  `media` / `profiles` as above. Respects `free_history_days` (older weeks are left out for free users — T1).
+- **Writes:** save (download the original to the photo library; no API call); `rpc("delete_post", p_post_id)` (own
+  post); report → `safety.report` (target kind `post`).
+- **Realtime:** private broadcast `group:<group_id>` `post_deleted` → drop that memory.
+- **Navigation in:** the entry card on `groups.screen` (no deep link, no push). **Out:** back → group screen; menu →
+  `safety.report`; share sheet.
 
 ## Platform notes
 
-- iOS: present with `.fullScreenCover`; status bar text in light style over the banner. Android: full-screen
-  destination, edge-to-edge (`WindowCompat.setDecorFitsSystemWindows(false)`), light status-bar icons over the banner.
-- The banner bottom is measured from the screen top (not from the safe area) as in the reference; on devices with a
-  taller status area the label still clears it (cap top ≈ 53 pt from the top).
-- Masonry: iOS has no native masonry, so a two-column SwiftUI `Layout` that appends each photo to the shorter column;
-  Android `LazyVerticalStaggeredGrid(StaggeredGridCells.Fixed(2))`, which places items the same way.
+- iOS: pushed in the group's `NavigationStack` with the system bar hidden (`.toolbar(.hidden)`), back chevron drawn
+  per C-02 and the interactive pop gesture kept; status bar light content. The dial is a custom view: a
+  `DragGesture` converted to the angle around the dial centre (`atan2`), stepping when the accumulated angle passes
+  8.18°; `UISelectionFeedbackGenerator` per step. Share: `ShareLink(item:preview: SharePreview(date, image:))`;
+  menu: SwiftUI `Menu`; save: `PHPhotoLibrary` add-only.
+- Android: destination in the group graph, edge-to-edge, light status-bar icons; dial = `pointerInput {
+  detectDragGestures }` with the same angle stepping; `view.performHapticFeedback(SEGMENT_FREQUENT_TICK)` on API 34+,
+  else `CLOCK_TICK`; menu `DropdownMenu` (destructive items `color.global.system.error`); share
+  `Intent.createChooser(ACTION_SEND)` via `FileProvider`; save via `MediaStore.Images`.
+- The control row's equal gaps: iOS `HStack` with equal `Spacer()`s, Android `Arrangement.SpaceEvenly`.
 
 ## Do-not-copy
 
-Timehop streaks and streak screen ("2200", "6 YEAR CLUB", "ONE YEAR DOWN 365", Streak Pause); the mascot Abe and
-news / sticker cards; ads, "Remove Ads", watermark and "Remove Watermark"; nag pushes (afternoon "haven't opened",
-"finish your day … (you're so close!)") and the 8 am daily reminder (not in the directive's list); habit and expiry
-framing ("it only lasts for 24 hours!", "your new daily habit"); "OPEN IN INSTAGRAM" and third-party source icons;
-the Timehop wordmark. Not built either (MERGE M-20): the share screen (SQUARE / FULL, other members' photos leaving the
-group), Then & Now ("AND NOW" blue fails contrast at 2.34:1; not in the product spec), "HIDE FROM {app_name}" (no API),
-Timeskip, the intro card (white date on yellow).
+Retro's own camera-roll source and "Delete from camera roll"; "Share to my week" / "Add to Album" / "Send as
+Postcard" (no such features); the mode menu's "Pick a date…"; Retro's share frame (Helvetica / PP Fraktion Mono type,
+'retro.app' footer); Retro's 'Relive %1$d memories' notification (count; no on-this-day push); Timehop's "N YEARS AGO"
+banners, progress bar, streaks, mascot, watermark and nag pushes; any count of memories in visible text.
 
 ## Gaps
 
-| item | status | owner capture that closes it |
+| item | status | smallest capture that closes it |
 |---|---|---|
-| per-memory banner colour rule | BLOCKED → one colour (`color.onthisday.banner`) | 15-20 s screen recording tapping through three years of one day on Timehop v5 (research capture 5) |
-| `duration.onthisday.memoryChange` | SOURCED by gap fill: 700 ms from VidDay's memory montage (MERGE G2-17); Timehop's own not obtainable | same recording |
-| progress bar in v5 | taken from the 2023 help composite (v5 renders show none) | same recording |
-| banner height without the status bar | measured from the screen top on a marketing mockup (±5 %) | same recording |
-| grid background in dark appearance | `color.global.background` (Timehop light #F5F0ED not used, M-8) | one Timehop dark-mode screenshot of a multi-photo day |
-| empty-state wording | not needed (entry hidden) | research capture 4 if an empty screen is ever wanted |
-| close button size / exact position | foundations header circle (M-29) | same recording |
+| dial states (RWA: smaller ring, longer indicator, larger glyph, controls 20 pt higher) | RWB's resting values used (MERGE RM-3) | 10 s screen recording of Retro's Rewind: drag the dial, release, tap play |
+| indicator start slot and drag direction | slot 0 (RWA), clockwise = next (RM-4) | same recording |
+| subtitle colour | white 76 % ±6 % (channel mismatch) | one RAW screenshot of Rewind in 'On this week' mode over a dark, flat photo |
+| photo change animation | cross-fades (global crossfade when scrubbing; VidDay 700 ms while playing) | same recording |
+| play cadence | 4 s (VidDay) | 20 s recording of Rewind playing |
+| top legibility over bright photos | no top scrim, as Retro (contrast not guaranteed) | — (owner / verification) |
+| shuffle source and sharing others' photos | built (RM-5, RM-6) | owner decision |

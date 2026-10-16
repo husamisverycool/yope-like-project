@@ -1,543 +1,868 @@
 {
-  "$comment": "Capture group strings (camera.*, widget.*, daily.*, collage.*, notifications.push). Push keys follow backend/worker/COPY_KEYS.md exactly. Consolidated 2026-10-15; see design/MERGE_DECISIONS.md 'Capture'.",
+  "$comment": "Capture group strings (camera.*, widget.*, daily.*, collage.*, notifications.push) — redesign Pass 2, Retro voice (design/copy-patterns.md), 2026-10-16. Push keys and their placeholders are exactly backend/worker/COPY_KEYS.md. Retro strings are cited by APK key (references/auto/retro/apk/retro-android-2026.10.1150-strings.txt). Decisions: design/MERGE_DECISIONS.md 'Redesign — Capture (RC-*)'.",
   "strings": {
-    "camera.capture.hourOverlay": {
-      "text": "{time}",
+    "camera.capture.title": {
+      "text": "Week {number}",
       "origin": "adapted",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) ('5:00 PM'); references/auto/yope/store/yope-store-05.png ('10:00 PM')",
-      "pattern": "yope.voice.formats — time 'h:mm AM/PM', no leading zero ('5:00 PM', '10:00 PM')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `header_title_week_number_template` 'Week %1$d'; H43 'Week 43' (references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png)",
+      "pattern": "retro.voice.terse-numbers — 'Week %1$d' with a capital W, digits",
       "level": "SOURCED",
-      "notes": "{time} = the start of the current hour, formatted with the device's short-time style (en-US renders '5:00 PM' as in Yope); minutes are always :00."
+      "notes": "Placeholder rename %1$d → {number} (the current week number as week.history numbers weeks). Serif root title of the camera page (C-01), replacing Yope's hour overlay (camera.capture.hourOverlay, removed)."
     },
     "camera.capture.coach.holdToRecord": {
-      "text": "hold down to record",
-      "origin": "verbatim",
-      "source_app": "Yope",
+      "text": "Hold to record a video",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30); references/auto/yope/frames/a-alexaa-7684388619099933966-t5.23-camera-hold-to-record-tabbar.png (@5.23 s, 2026-09-11)",
+      "evidence": "design/copy-patterns.md `retro.voice.coach`: 'Tap to advance' (`viewer_nux_tap_forward`), 'Tap left to go back' (`viewer_nux_tap_back`)",
+      "pattern": "retro.voice.coach — short imperative, Sentence case, no period",
       "level": "SOURCED",
-      "notes": "First-use coach tooltip pointing at the shutter (yope.voice.coach). Shown once, and only when video is available to the member (premium)."
+      "notes": "First-use hint in a C-09 pill above the shutter; shown only to members who can record video."
     },
     "camera.capture.a11y.shutter": {
-      "text": "take a pic",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Take photo",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "evidence": "references/auto/yope/frames/a-virgi-7686278541255642390-t35.23-camera-permission-alert.png ('Allow camera access. So you can take and share pics with friends')",
-      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong); noun 'pic' as in Yope's camera purpose string",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_profile_take_photo`",
       "level": "SOURCED",
-      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
+      "notes": "Accessibility label of the shutter (platform.a11yLabel: the purpose)."
     },
     "camera.capture.a11y.recordVideo": {
-      "text": "record a video",
+      "text": "Record video",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) ('hold down to record')",
-      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`; design/copy-patterns.md `retro.voice.button` ('Take photo' — `journal_profile_take_photo`)",
+      "pattern": "platform.a11yLabel — purpose, verb first, Sentence case, no 'button'",
       "level": "SOURCED",
-      "notes": "Accessibility custom action on the shutter (VoiceOver / TalkBack users cannot discover the long press). Premium only. Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
+      "notes": "Custom accessibility action on the shutter (hold to record)."
     },
     "camera.capture.a11y.flip": {
-      "text": "flip camera",
+      "text": "Flip camera",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) (flip circle)",
-      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
-      "level": "SOURCED",
-      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`; Retro verb-first labels ('Take photo', 'Choose from Library' — `journal_profile_take_photo`, `edit_profile_picture_choice_choose_from_library`)",
+      "pattern": "platform.a11yLabel — purpose, verb first",
+      "level": "SOURCED"
     },
     "camera.capture.a11y.flash": {
-      "text": "flash",
+      "text": "Flash",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) (flash-off glyph)",
-      "pattern": "yope.voice.lowercase — 1-word control name",
-      "level": "SOURCED",
-      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button'). Paired with camera.capture.a11y.flashOn / .flashOff as the value (iOS accessibilityValue, Android stateDescription)."
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`",
+      "pattern": "platform.a11yLabel — the control's name; its state is the accessibility value (.flashOn / .flashOff)",
+      "level": "SOURCED"
     },
     "camera.capture.a11y.flashOn": {
-      "text": "on",
+      "text": "On",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30)",
-      "pattern": "yope.voice.lowercase",
-      "level": "SOURCED",
-      "notes": "Value of the flash control."
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`",
+      "pattern": "platform.a11yLabel — accessibility value, one word",
+      "level": "SOURCED"
     },
     "camera.capture.a11y.flashOff": {
-      "text": "off",
+      "text": "Off",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30)",
-      "pattern": "yope.voice.lowercase",
-      "level": "SOURCED",
-      "notes": "Value of the flash control."
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`",
+      "pattern": "platform.a11yLabel — accessibility value, one word",
+      "level": "SOURCED"
     },
     "camera.capture.a11y.library": {
-      "text": "choose from library",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Choose from Library",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "evidence": "references/auto/yope/frames/a-yrrah-7454430216123862280-t21.23-photos-permission-alert-2024.png ('This lets you share memories from your library.')",
-      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong); noun 'library' from Yope's photo-library purpose string",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `edit_profile_picture_choice_choose_from_library`",
       "level": "SOURCED",
-      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
-    },
-    "camera.capture.a11y.close": {
-      "text": "close",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "camera.capture",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) (✕ on the coach tooltip)",
-      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
-      "level": "SOURCED",
-      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button'). Shared by every coach-tooltip ✕ in this group."
+      "notes": "Retro's own label for picking from the photo library (Title Case 'Library' as in Retro)."
     },
     "camera.capture.a11y.recording": {
-      "text": "recording",
+      "text": "Recording",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "evidence": "https://help.locket.com/en/articles/7915017 ('indicates that capture is in progress')",
-      "pattern": "yope.voice.lowercase",
-      "level": "SOURCED",
-      "notes": "Announced when a hold-to-record starts (HIG: inform VoiceOver of visible changes; the recording outline is visual only)."
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`",
+      "pattern": "platform.a11yLabel — announcement posted when a video starts",
+      "level": "SOURCED"
     },
     "camera.capture.denied.title": {
-      "text": "can’t take pics?",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "No Camera Access",
+      "origin": "adapted",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png ('can’t see your friends?' / 'enable contacts' / 'enable')",
-      "pattern": "yope.voice.permission — a question about the benefit + plain action ('can’t see your friends?' / 'enable contacts' / 'enable')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `contact_permission_upsell_title` 'No Contacts Access'",
+      "pattern": "retro.voice.permission — Title Case naming the access",
       "level": "SOURCED",
-      "notes": "Camera permission denied. Bold title of the empty-state layout inside the viewfinder."
+      "notes": "Noun swap: Contacts → Camera."
     },
     "camera.capture.denied.detail": {
-      "text": "enable camera access in settings",
+      "text": "Turn on camera access in Settings to take photos for your groups.",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png ('can’t see your friends?' / 'enable contacts' / 'enable')",
-      "pattern": "yope.voice.permission ('enable contacts')",
-      "level": "SOURCED"
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `composer_permission_upsell_message` ('Retro needs permission to access your photo library so you can select and post photos.'); design/copy-patterns.md `retro.voice.permission`",
+      "pattern": "retro.voice.permission — what the access is used for, one sentence with a period",
+      "level": "SOURCED",
+      "notes": "No {app_name} so the string ships before the app is named."
     },
     "camera.capture.denied.button": {
-      "text": "open settings",
+      "text": "Open Settings",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png ('can’t see your friends?' / 'enable contacts' / 'enable')",
-      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
+      "evidence": "design/copy-patterns.md `retro.voice.permission` (buttons: Title-Case verb — 'Give Permission', 'Connect Contacts', 'Allow Photo Access')",
+      "pattern": "retro.voice.permission — Title-Case verb naming where the access is changed",
       "level": "SOURCED",
-      "notes": "Opens the app's page in the system Settings (iOS UIApplication.openSettingsURLString; Android ACTION_APPLICATION_DETAILS_SETTINGS)."
+      "notes": "Opens the app's page in the system Settings (the system prompt cannot be shown again after a denial)."
     },
     "camera.capture.unavailable.title": {
-      "text": "camera isn’t available right now",
+      "text": "Camera Unavailable",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
-      "pattern": "yope.voice.error — calm, blame-free, names the next step ('This invite has expired' / 'Ask your friend to send you a new link.')",
-      "level": "SOURCED",
-      "notes": "Capture session interrupted or failed (another app is using the camera, system pressure)."
+      "evidence": "design/copy-patterns.md `retro.voice.error`: Title-Case name of the error ('Code Expired' — `error_message_expired_auth_code_title`, 'Phone Number In Use')",
+      "pattern": "retro.voice.error — Title-Case name of the error, no '!'",
+      "level": "SOURCED"
     },
     "camera.capture.unavailable.detail": {
-      "text": "try again in a moment",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "The camera couldn't start. Please try again.",
+      "origin": "adapted",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
-      "pattern": "yope.voice.error",
-      "level": "SOURCED"
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `error_message_generic` 'There was a problem. Please try again.'",
+      "pattern": "retro.voice.error — what happened, then what to do",
+      "level": "SOURCED",
+      "notes": "Subject swap: 'There was a problem' → 'The camera couldn't start' (straight apostrophe, retro.voice.punctuation); second sentence verbatim."
     },
     "camera.capture.unavailable.button": {
-      "text": "try again",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Try Again",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
-      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
-      "level": "SOURCED"
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_comment_send_failed_retry`",
+      "level": "SOURCED",
+      "notes": "Retry action of the error block (Retro capitalises it)."
     },
     "camera.sendto.title": {
-      "text": "send to...",
-      "origin": "verbatim",
-      "source_app": "Yope",
+      "text": "Share Photo",
+      "origin": "adapted",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10); references/auto/yope/frames/a-savannahclooney-7683341732695592206-t5.73-sendto-caption-keyboard.png (@5.73 s, 2026-09-09); references/auto/yope/frames/a-jacob-7691153057177931039-t4.73-sendto-voice-tooltip.png (@4.73 s, 2026-09-30)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_shareout_title` 'Share Post'",
+      "pattern": "retro.voice.title-case — tool-screen title",
       "level": "SOURCED",
-      "notes": "Three periods, no space (yope.voice.title)."
+      "notes": "Noun swap: Post → Photo. Centred sheet title on the black composer (Retro 'Postcard')."
     },
     "camera.sendto.caption.placeholder": {
-      "text": "add a message",
+      "text": "Add a message…",
       "origin": "verbatim",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10); references/auto/yope/frames/a-jacob-7691153057177931039-t4.73-sendto-voice-tooltip.png (@4.73 s, 2026-09-30)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `postcard_composer_add_message_placeholder`",
       "level": "SOURCED",
-      "notes": "Field on the preview card; the typed caption renders on the photo under the hour overlay."
+      "notes": "Placeholder of the field in the 'Add a Message' sheet (ellipsis character)."
     },
-    "camera.sendto.coach.voice": {
-      "text": "add a voice memo on this pic",
+    "camera.sendto.message.add": {
+      "text": "Add a message",
       "origin": "verbatim",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10); references/auto/yope/frames/a-jacob-7691153057177931039-t4.73-sendto-voice-tooltip.png (@4.73 s, 2026-09-30)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `postcard_composer_message_cta_add`",
       "level": "SOURCED",
-      "notes": "First-use coach tooltip pointing at the mic (yope.voice.coach)."
+      "notes": "Label of the pill on the photo before a message exists."
+    },
+    "camera.sendto.message.edit": {
+      "text": "Edit message",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `postcard_composer_message_cta_edit`",
+      "level": "SOURCED",
+      "notes": "Label of the same pill once a message exists."
+    },
+    "camera.sendto.message.title": {
+      "text": "Add a Message",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `postcard_composer_add_message_screen_title`",
+      "level": "SOURCED",
+      "notes": "Title of the message sheet."
+    },
+    "camera.sendto.message.done": {
+      "text": "Done",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `postcard_composer_add_message_done`",
+      "level": "SOURCED",
+      "notes": "Trailing text button of the message sheet (C-08)."
+    },
+    "camera.sendto.message.counter": {
+      "text": "{count}/{max}",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/retro/press/tc-2023-12-retro3.png phone 3 counter '58/250'",
+      "pattern": "retro.voice.formats — digits, no spaces around the slash",
+      "level": "SOURCED",
+      "notes": "Numbers → placeholders: {count} = characters typed, {max} = camera.sendto.size.captionMaxLength (250). A field limit, not a social count."
+    },
+    "camera.sendto.groupsLabel": {
+      "text": "Groups",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "camera.sendto",
+      "evidence": "design/copy-patterns.md `retro.voice.title-case` (field labels: 'Mailing Address', 'Total' — `postcard_composer_address_input_title`, `postcard_composer_field_title_price`)",
+      "pattern": "retro.voice.title-case — one-word field label",
+      "level": "SOURCED",
+      "notes": "Section label above the group rows (Postcard 'Mailing Address' position)."
     },
     "camera.sendto.send": {
-      "text": "send",
-      "origin": "verbatim",
-      "source_app": "Yope",
+      "text": "Send",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10); references/auto/yope/frames/a-chuongxetank-7694968408424582452-t3.73-sendto-more-friends.png",
+      "evidence": "design/copy-patterns.md `retro.voice.button` ('Send again', 'Send reminder', 'Send Postcard' — `onboarding_form_input_*`, RP §4.1)",
+      "pattern": "retro.voice.button — 1–3 words, verb first, no punctuation",
       "level": "SOURCED",
-      "notes": "Followed by the count disc (number of selected groups — a selection count, not a social count)."
+      "notes": "Label of the bottom capsule (C-05 on media). No count disc (Yope's selected-group count is dropped)."
+    },
+    "camera.sendto.sending": {
+      "text": "Sending…",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `postcard_composer_screen_title_sending` 'Ordering postcard…' (the composer title while sending); `message_thread_delivery_status_sending` 'Sending'",
+      "pattern": "retro.voice.progress — gerund + '…'",
+      "level": "SOURCED",
+      "notes": "Replaces the sheet title while the upload and create_post run (Retro's Postcard does the same)."
     },
     "camera.sendto.toast.postedOne": {
-      "text": "posted in {group}",
+      "text": "Added to {group}!",
       "origin": "adapted",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (@7.73 s, 2026-10-10) ('posted in the wall')",
-      "pattern": "yope.voice.confirmation — past-tense statement, lowercase, no exclamation",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_suggested_tag_added_to_album` 'Added to Album!'",
+      "pattern": "retro.voice.confirmation — short past tense, '!' on success toasts",
       "level": "SOURCED",
-      "notes": "Noun swap: 'the wall' → {group} (the one group the photo went to). {group} keeps its own case."
+      "notes": "Noun swap: Album → {group} (the group's name). Android Toast LENGTH_SHORT; iOS: accessibility announcement (C-26)."
     },
     "camera.sendto.toast.postedMany": {
-      "text": "posted in your groups",
+      "text": "Added to your groups!",
       "origin": "adapted",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (@7.73 s, 2026-10-10) ('posted in the wall')",
-      "pattern": "yope.voice.confirmation",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_suggested_tag_added_to_album` 'Added to Album!'",
+      "pattern": "retro.voice.confirmation",
       "level": "SOURCED",
-      "notes": "Noun swap: 'the wall' → 'your groups' (sent to two or more groups)."
+      "notes": "Noun swap: Album → your groups."
     },
     "camera.sendto.toast.saved": {
-      "text": "saved to your library",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Saved",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (@7.73 s, 2026-10-10); references/auto/yope/frames/a-yrrah-7454430216123862280-t21.23-photos-permission-alert-2024.png ('This lets you share memories from your library.')",
-      "pattern": "yope.voice.confirmation ('posted in the wall'); noun 'library' from Yope's purpose string",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_shareout_save_success_message`",
       "level": "SOURCED",
-      "notes": "After the download circle saved the photo (add-only access: NSPhotoLibraryAddUsageDescription, owned by system.permissions)."
+      "notes": "After saving the photo to the device (Retro's share-out save, no '!')."
     },
     "camera.sendto.error.sendFailed": {
-      "text": "your pic didn’t send",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Couldn't send photo",
+      "origin": "adapted",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
-      "pattern": "yope.voice.error — calm, blame-free; the next step is the retry action",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_comment_send_failed_title` 'Couldn't send comment'",
+      "pattern": "retro.voice.error — Title of a failed send, no '!'",
       "level": "SOURCED",
-      "notes": "Shown in the toast layout with camera.sendto.error.retry; the captured photo, caption and voice note stay until sent or discarded (docs/API.md recipe 9.4)."
+      "notes": "Noun swap: comment → photo. Native alert title (C-29)."
     },
     "camera.sendto.error.offline": {
-      "text": "you’re offline",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Check your connection and try again.",
+      "origin": "adapted",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
-      "pattern": "yope.voice.error",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `error_message_auth_code_service` 'We couldn't verify the code. Check your connection and try again.'",
+      "pattern": "retro.voice.error — what to do",
       "level": "SOURCED",
-      "notes": "Send attempted without a connection; shown with camera.sendto.error.retry."
+      "notes": "Second sentence of the Retro string, alone (the first names a different failure). Alert message when the device is offline."
+    },
+    "camera.sendto.error.generic": {
+      "text": "There was a problem. Please try again.",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `error_message_generic`",
+      "level": "SOURCED",
+      "notes": "Alert message for any other send failure."
     },
     "camera.sendto.error.retry": {
-      "text": "try again",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Try Again",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
-      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
-      "level": "SOURCED"
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_comment_send_failed_retry`",
+      "level": "SOURCED",
+      "notes": "Alert retry button."
+    },
+    "camera.sendto.cancel": {
+      "text": "Cancel",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `cancel`",
+      "level": "SOURCED",
+      "notes": "Cancel button of the send-failure and discard dialogs (keeps the photo in the sheet)."
+    },
+    "camera.sendto.discard.title": {
+      "text": "Discard photo?",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "camera.sendto",
+      "evidence": "design/copy-patterns.md `retro.voice.confirm` ('Unfriend %1$s?', 'Delete address?' — `user_profile_confirm_unfriend_title_template`, `edit_address_delete_confirmation_title`)",
+      "pattern": "retro.voice.confirm — the action as a question naming its object",
+      "level": "SOURCED",
+      "notes": "Asked only when a message or a voice note was added (Retro's lost-changes rule, `composer_lost_changes_warning_*`)."
+    },
+    "camera.sendto.discard.message": {
+      "text": "Your message and voice note will not be added.",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `composer_lost_changes_warning_messages` 'Any media you selected will not be added'",
+      "pattern": "retro.voice.confirm — the consequence in one line",
+      "level": "SOURCED",
+      "notes": "Noun swap: 'Any media you selected' → 'Your message and voice note'; period added (a full sentence, retro.voice.punctuation)."
+    },
+    "camera.sendto.discard.confirm": {
+      "text": "Yes, go back",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `composer_lost_changes_warning_cta`",
+      "level": "SOURCED",
+      "notes": "Destructive confirm of the discard dialog."
     },
     "camera.sendto.empty.title": {
-      "text": "no groups yet",
+      "text": "No groups yet",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (@51.23 s, 2026-05-28) ('you created group' / 'and added mẹ, Anh' / 'invite more friends')",
-      "pattern": "yope.voice.empty-state — bold statement + gray detail naming people + one light pill",
+      "evidence": "design/copy-patterns.md `retro.voice.empty-state` ('Nothing to see here yet' — `activity_tab_empty_message`; 'No postcards sent' — `postcard_orders_empty_state_title`)",
+      "pattern": "retro.voice.empty-state — Sentence-case statement",
       "level": "SOURCED"
     },
     "camera.sendto.empty.detail": {
-      "text": "start one and share this pic with your people",
+      "text": "Create a group to share your photos with friends and family.",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (@51.23 s, 2026-05-28); references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
-      "pattern": "yope.voice.empty-state (detail names people; 'your people' from 'Life’s better with your people.')",
+      "evidence": "design/copy-patterns.md `retro.voice.empty-state` ('Add some photos or videos to your album!' — `journal_profile_empty_state_message`; 'Postcards that you send to yourself or a friend will appear here')",
+      "pattern": "retro.voice.empty-state — one-sentence explanation with a period",
       "level": "SOURCED"
     },
     "camera.sendto.empty.button": {
-      "text": "create group",
-      "origin": "verbatim",
-      "source_app": "Yope",
+      "text": "Create Group",
+      "origin": "adapted",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png (@49.23 s, 2026-05-28)",
+      "evidence": "design/copy-patterns.md `retro.voice.title-case`: 'Create Album' (product-object button, RP §4.1)",
+      "pattern": "retro.voice.title-case — button naming a product object",
       "level": "SOURCED",
-      "notes": "Opens groups.create; the captured photo stays in send-to."
+      "notes": "Noun swap: Album → Group."
     },
     "camera.sendto.a11y.close": {
-      "text": "close",
+      "text": "Close",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10) (✕ header circle)",
-      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
-      "level": "SOURCED",
-      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button'). Discards the capture and returns to the camera."
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`",
+      "pattern": "platform.a11yLabel — the purpose of the close circle",
+      "level": "SOURCED"
     },
     "camera.sendto.a11y.save": {
-      "text": "save",
+      "text": "Save to Camera Roll",
       "origin": "verbatim",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t66.00-share-with-friends.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847 @66.00 s; 'share with friends', 'share', 'save') (blue 'save' share target)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_comment_overflow_save`",
       "level": "SOURCED",
-      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button'). Label of the download circle."
+      "notes": "Accessibility label of the save circle (Retro uses this wording on Android too)."
     },
     "camera.sendto.a11y.voice": {
-      "text": "add a voice memo",
+      "text": "Add a voice note",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10) ('add a voice memo on this pic')",
-      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`; design/copy-patterns.md `retro.voice.button` ('Add a message' — `postcard_composer_message_cta_add`)",
+      "pattern": "platform.a11yLabel — purpose, verb first",
       "level": "SOURCED",
-      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button'). Label of the mic circle."
+      "notes": "Label of the icon-only voice capsule."
     },
     "widget.home.small.gallery.name": {
-      "text": "{app_name} Widget",
+      "text": "Group Updates",
       "origin": "adapted",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.home.small",
-      "evidence": "references/auto/locket/frames/locket-tt-7168613044728155438-11.900s-widget-gallery-card.jpg (iOS widget gallery, 2022-11-21) ('Locket Widget'); references/auto/locket/frames/locket-tt-7532209311150329102-13.750s-gallery-locket-widget-3-friends.jpg",
-      "pattern": "locket.voice.title-case-names — '<Name> Widget'",
+      "evidence": "design/copy-patterns.md `retro.voice.widget`: 'Friend Updates' (`widget_title_friends`, design/research/retro-package-copy-motion.md §6.1)",
+      "pattern": "retro.voice.widget — gallery name, Title Case",
       "level": "SOURCED",
-      "notes": "Trademark → {app_name}. Widget kind name (configurationDisplayName) shared by small, medium, large and xl. BLOCKED until the app has a name."
+      "notes": "Noun swap: Friend → Group. Retro names its widgets by what they show, so no {app_name}: this closes the BLOCKED gallery name."
     },
     "widget.home.small.gallery.description": {
-      "text": "See live pics from your group right on your Home Screen",
+      "text": "See live updates from your group",
       "origin": "adapted",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.home.small",
-      "evidence": "references/auto/locket/frames/locket-tt-7168613044728155438-11.900s-widget-gallery-card.jpg (iOS widget gallery, 2022-11-21) ('See live pics from all your friends right on your Home Screen')",
-      "pattern": "locket.widget.gallery; also platform.widgetDescription (begins with a verb)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `widget_description_friends` 'See live updates from your friends'",
+      "pattern": "retro.voice.widget + platform.widgetDescription — begins with a verb, Sentence case, no period",
       "level": "SOURCED",
-      "notes": "Noun swap: 'all your friends' → 'your group'. One description for every home size (HIG)."
+      "notes": "Noun swap: your friends → your group."
     },
     "widget.home.small.empty.noPhotos": {
-      "text": "No pics yet",
-      "origin": "verbatim",
-      "source_app": "Locket",
+      "text": "No photos yet. Tap to add one",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "widget.home.small",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) string no_pics_yet",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `app_widget_empty_message` 'No media. Tap to reload'",
+      "pattern": "retro.voice.widget — a short line + the action, no final period",
       "level": "SOURCED",
-      "notes": "locket.widget.empty. Configured widget whose group has no photo yet."
+      "notes": "Our tap opens the camera (Locket mechanic), so the action names that, not reload."
     },
     "widget.home.small.empty.setUp": {
-      "text": "Tap to set up",
-      "origin": "verbatim",
-      "source_app": "Locket",
+      "text": "Tap to choose a group",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "widget.home.small",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) string tap_to_set_up",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `app_widget_empty_message` ('… Tap to reload'); `app_widget_config_screen_title_journal_picker` 'See photos from…'",
+      "pattern": "retro.voice.widget — the action as a short line",
       "level": "SOURCED",
-      "notes": "locket.widget.empty. Widget with no group chosen (or the group is gone / left)."
+      "notes": "Shown when no group is chosen, or the chosen group was left or deleted."
+    },
+    "widget.home.small.empty.signedOut": {
+      "text": "Log in to see your content",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `app_widget_not_logged_in_message`",
+      "level": "SOURCED",
+      "notes": "Widget state when signed out."
     },
     "widget.home.small.a11y.photo": {
-      "text": "{name}’s photo in {group}",
+      "text": "{name}'s photo in {group}",
       "origin": "new",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.home.small",
-      "evidence": "https://developer.apple.com/design/human-interface-guidelines/voiceover ('Provide alternative labels for all key interface elements'; design/research/platform.md §Accessibility)",
-      "pattern": "locket.voice.sentence-case; HIG: describe who and where, not visual details",
+      "evidence": "design/copy-patterns.md `platform.a11yLabel` (images of people: the person and context)",
+      "pattern": "platform.a11yLabel — who and where, Sentence case",
       "level": "SOURCED",
-      "notes": "VoiceOver / TalkBack label of the widget when the newest item is a photo without a caption."
-    },
-    "widget.home.small.a11y.photoWithCaption": {
-      "text": "{name}’s photo in {group}, {caption}",
-      "origin": "new",
-      "source_app": "Locket",
-      "surface": "widget.home.small",
-      "evidence": "https://developer.apple.com/design/human-interface-guidelines/voiceover ('Provide alternative labels for all key interface elements'; design/research/platform.md §Accessibility)",
-      "pattern": "locket.voice.sentence-case; HIG: group an image with its caption so VoiceOver reads them together",
-      "level": "SOURCED"
+      "notes": "Accessibility label of the whole widget when it shows a photo (straight apostrophe)."
     },
     "widget.home.small.a11y.collage": {
       "text": "Photos from {group}, {date}",
       "origin": "new",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.home.small",
-      "evidence": "https://developer.apple.com/design/human-interface-guidelines/voiceover ('Provide alternative labels for all key interface elements'; design/research/platform.md §Accessibility)",
-      "pattern": "locket.voice.sentence-case",
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`",
+      "pattern": "platform.a11yLabel — what and where",
       "level": "SOURCED",
-      "notes": "When the widget shows a same-moment collage. {date} = the invitation's local date, platform medium date style."
+      "notes": "When the newest item is the group's same-moment collage."
     },
     "widget.home.small.configuration.title": {
-      "text": "Customize the widget",
+      "text": "See photos from…",
       "origin": "verbatim",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.home.small",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) Hermes string 'Customize the widget'",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `app_widget_config_screen_title_journal_picker`",
       "level": "SOURCED",
-      "notes": "iOS WidgetConfigurationIntent title (code key 'widget.configuration.title' in ios/Widgets/Sources/GroupSelection.swift) and Android WidgetConfigureActivity title."
+      "notes": "Widget configuration title (iOS intent title, Android configure activity)."
     },
     "widget.home.small.configuration.group": {
       "text": "Group",
       "origin": "new",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.home.small",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) ('Everyone' / 'Edit' / 'Create' widget rows, references/auto/locket/lazyweb/locket-lazyweb-20260803-autocap-21.png)",
-      "pattern": "locket.voice.sentence-case",
-      "level": "SOURCED",
-      "notes": "Parameter title of the widget's group choice (code key 'widget.configuration.group')."
+      "evidence": "design/copy-patterns.md `retro.voice.title-case`",
+      "pattern": "retro.voice.title-case — parameter name",
+      "level": "SOURCED"
     },
     "widget.home.small.configuration.groupType": {
       "text": "Group",
       "origin": "new",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.home.small",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md)",
-      "pattern": "locket.voice.sentence-case",
-      "level": "SOURCED",
-      "notes": "App Intents TypeDisplayRepresentation of a group (code key 'widget.configuration.group.type')."
+      "evidence": "design/copy-patterns.md `retro.voice.title-case`",
+      "pattern": "retro.voice.title-case — entity type name",
+      "level": "SOURCED"
     },
     "widget.lock.rect.gallery.name": {
-      "text": "{app_name} Widget",
+      "text": "Group Updates",
       "origin": "adapted",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.lock.rect",
-      "evidence": "references/auto/locket/frames/locket-tt-7168613044728155438-11.900s-widget-gallery-card.jpg (iOS widget gallery, 2022-11-21) ('Locket Widget')",
-      "pattern": "locket.voice.title-case-names — '<Name> Widget'",
+      "evidence": "design/copy-patterns.md `retro.voice.widget`: 'Friend Updates'",
+      "pattern": "retro.voice.widget — gallery name, Title Case",
       "level": "SOURCED",
-      "notes": "Kind name of the Lock Screen widget (accessoryCircular, accessoryRectangular, accessoryInline). BLOCKED until the app has a name."
+      "notes": "Noun swap: Friend → Group. The Lock Screen widget kind; closes the BLOCKED name."
     },
     "widget.lock.rect.gallery.description": {
-      "text": "See who shared the newest pic in your group",
+      "text": "See who shared the newest photo in your group",
       "origin": "new",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.lock.rect",
-      "evidence": "references/auto/locket/frames/locket-tt-7168613044728155438-11.900s-widget-gallery-card.jpg (iOS widget gallery, 2022-11-21); https://developer.apple.com/design/human-interface-guidelines/widgets ('Begin a description with an action verb')",
-      "pattern": "locket.widget.gallery + platform.widgetDescription (begins with a verb, sentence case, no 'This widget shows…')",
+      "evidence": "design/copy-patterns.md `retro.voice.widget` ('See live updates from your friends', 'See memories from your profile')",
+      "pattern": "retro.voice.widget + platform.widgetDescription — begins with a verb",
+      "level": "SOURCED"
+    },
+    "widget.lock.inline.text": {
+      "text": "{name} · {group}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "widget.lock.inline",
+      "evidence": "design/copy-patterns.md `retro.voice.formats` (meta separator ' · ': 'Muted · Seen')",
+      "pattern": "retro.voice.formats — meta line with ' · '",
       "level": "SOURCED",
-      "notes": "One description for the three Lock Screen sizes."
+      "notes": "The inline Lock Screen widget's line (the home widget's two lines on one line)."
     },
     "widget.arrival.help.delay": {
-      "text": "When someone in your group sends a photo, it will appear on your Home Screen, but there may be a slight delay of up to a few minutes. This delay helps conserve your phone’s battery.",
+      "text": "New photos can take a few minutes to show up on your widget. This helps save your battery.",
       "origin": "new",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.arrival",
-      "evidence": "https://help.locket.com/en/articles/5859739-why-isn-t-my-locket-widget-updating (updated 2026-05-05): 'When a friend sends you a photo on Locket, it will appear on your Home Screen, but there may be a slight delay of up to 5 minutes. This delay helps conserve your phone’s battery.'",
-      "pattern": "locket.voice.second-person",
+      "evidence": "design/copy-patterns.md `retro.voice.explanation` ('Retro is a social photo journal for moments big and small. Add to any week, any time.')",
+      "pattern": "retro.voice.explanation — Sentence case, final period, second person",
       "level": "SOURCED",
-      "notes": "'a friend … on Locket' → 'someone in your group'; '5 minutes' → 'a few minutes' (our budget differs, docs/PLATFORM_CONSTRAINTS.md §1). Help / FAQ text; never 'instantly'."
+      "notes": "Never claims 'instant' (expected delay widget.arrival.duration.expectedDelay)."
     },
     "widget.arrival.android.refreshTitle": {
-      "text": "Updating widget...",
-      "origin": "verbatim",
-      "source_app": "Locket",
+      "text": "Updating widgets…",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "widget.arrival",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) notification_widget_refresh_title",
+      "evidence": "design/copy-patterns.md `retro.voice.progress` ('Updating…' — `add_journal_media_to_week_success_message`; 'Adding media…' — `notification_content_foreground_upload`)",
+      "pattern": "retro.voice.progress — gerund + '…'",
       "level": "SOURCED",
-      "notes": "locket.voice.ellipsis. Android only, while a refresh runs as a foreground job (expedited WorkManager on Android 11 and lower)."
+      "notes": "Content of the short foreground notification while a widget refresh runs (Android 11 and lower)."
     },
     "widget.arrival.android.refreshChannelName": {
-      "text": "Widget Updating",
+      "text": "Background Work",
       "origin": "verbatim",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.arrival",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) notification_channel_widget_refresh_name",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `notification_channel_display_name_foreground_work`",
       "level": "SOURCED",
-      "notes": "locket.push.channel."
+      "notes": "Retro's channel for its own background updates."
     },
     "widget.arrival.android.refreshChannelDescription": {
-      "text": "Shown briefly while the home screen widget refreshes",
-      "origin": "verbatim",
-      "source_app": "Locket",
+      "text": "Updates your widgets in the background",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "widget.arrival",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) notification_channel_widget_refresh_description",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `notification_channel_display_description_foreground_work` 'Get alerted when Retro is updating in the background'",
+      "pattern": "retro.voice.push-channel — one Sentence-case line",
       "level": "SOURCED",
-      "notes": "locket.push.channel."
+      "notes": "Written without the app name so it ships before the app is named."
     },
     "widget.android.label": {
-      "text": "{app_name}",
+      "text": "Group Updates",
       "origin": "adapted",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.android",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) widget receiver label = the app name",
-      "pattern": "locket.voice.title-case-names (trademark → {app_name})",
+      "evidence": "design/copy-patterns.md `retro.voice.widget`: 'Friend Updates' (`widget_title_friends`)",
+      "pattern": "retro.voice.widget — gallery name",
       "level": "SOURCED",
-      "notes": "android:label of the widget receiver (picker title). BLOCKED until the app has a name."
+      "notes": "Noun swap: Friend → Group. Closes the BLOCKED label."
     },
     "widget.android.description": {
-      "text": "Live pics from your group, on your home screen",
+      "text": "See live updates from your group",
       "origin": "adapted",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.android",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) app_widget_description ('Live pics from your friends, on your home screen')",
-      "pattern": "locket.widget.gallery",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `widget_description_friends` 'See live updates from your friends'",
+      "pattern": "retro.voice.widget + platform.widgetDescription",
       "level": "SOURCED",
-      "notes": "Noun swap: 'your friends' → 'your group'. android:description in widget_info.xml (Tier 1 quality: a description is required)."
+      "notes": "Noun swap: your friends → your group."
     },
     "widget.android.configure.empty": {
-      "text": "Once you join a group, you can add it to a widget.",
+      "text": "Join a group to see its photos here.",
       "origin": "new",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.android",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) Hermes 'Once a friend accepts your friend request, you can add them to a widget.'",
-      "pattern": "locket.voice.second-person (sentence with a period, as in the source)",
+      "evidence": "design/copy-patterns.md `retro.voice.empty-state` ('Your chats will show up here.' — `message_inbox_empty_state_message`)",
+      "pattern": "retro.voice.empty-state — one sentence with a period",
       "level": "SOURCED",
-      "notes": "Configure screen when the member has no group yet."
+      "notes": "Configure activity with no groups."
     },
     "notifications.push.dailyInvitation.title": {
-      "text": "Time to share a photo.",
-      "origin": "adapted",
-      "source_app": "BeReal",
+      "text": "{group}",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "daily.notification",
-      "evidence": "references/auto/bereal/help/help-21089073691933_time-to-bereal-push.png; references/auto/bereal/frames/appstore-preview-2026_t0.30s_notification.png ('⚠️ Time to BeReal. ⚠️' / '2 min left to capture a BeReal and see what your friends are up to!')",
-      "pattern": "bereal.voice.push with the mandatory tenet-5 adaptation (design/copy-patterns.md 'BeReal → daily invitation')",
+      "evidence": "design/copy-patterns.md `retro.voice.push` and 'Daily invitation (tenet 5)': title = the context ('Week %1$d' — `post_reminder_notification_title_template`)",
+      "pattern": "retro.voice.push — title: the context",
       "level": "SOURCED",
-      "notes": "⚠️ markers dropped; brand verb ('BeReal') → a plain verb of sharing a photo; Sentence case and the trailing period kept. Worker key (backend/worker/COPY_KEYS.md): iOS Live Activity start alert, iOS alert, Android countdown notification title."
+      "notes": "The worker fills only {group} for this key (backend/worker/COPY_KEYS.md), so the context is the group, not 'Week N'."
     },
     "notifications.push.dailyInvitation.body": {
-      "text": "Capture a photo and see what {group} is up to!",
-      "origin": "adapted",
-      "source_app": "BeReal",
+      "text": "What are you up to right now?",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "daily.notification",
-      "evidence": "references/auto/bereal/help/help-21089073691933_time-to-bereal-push.png; references/auto/bereal/frames/appstore-preview-2026_t0.30s_notification.png ('⚠️ Time to BeReal. ⚠️' / '2 min left to capture a BeReal and see what your friends are up to!')",
-      "pattern": "bereal.voice.push with the tenet-5 adaptation ('see what your group is up to', noun swap)",
+      "evidence": "design/copy-patterns.md `retro.voice.push` and 'Daily invitation (tenet 5)': body a retro.voice.prompt question ('Anything from today you want to remember?' — `post_reminder_notification_message`)",
+      "pattern": "retro.voice.prompt — a question about a moment, second person, '?'",
       "level": "SOURCED",
-      "notes": "'2 min left to' deadline dropped; 'a BeReal' → 'a photo'; 'your friends' → {group}. No time, no 'late', no follow-up message."
+      "notes": "Invitation, never an obligation: no deadline, no countdown, no 'late', no brand verb (SPEC_FLAGS T4). 'Right now' names the same-moment mechanic."
     },
     "notifications.push.channel.dailyInvitation.name": {
       "text": "Daily Invitation",
       "origin": "new",
-      "source_app": "BeReal",
+      "source_app": "Retro",
       "surface": "daily.notification",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channel names ('New Lockets', 'Groups', 'Widget Updating')",
-      "pattern": "locket.push.channel — 1–3 words, Title Case, ≤ 40 characters",
-      "level": "SOURCED",
-      "notes": "Android channel daily_invitation. Locket's 'Daily Reminders' is do-not-copy (nag)."
+      "evidence": "design/copy-patterns.md `retro.voice.push-channel` ('New Posts', 'Friend Activity')",
+      "pattern": "retro.voice.push-channel — 1–3 words, Title Case",
+      "level": "SOURCED"
     },
     "notifications.push.channel.dailyInvitation.description": {
-      "text": "Notifications when your group’s daily photo invitation starts",
+      "text": "The daily invitation to share a photo with your group",
       "origin": "new",
-      "source_app": "BeReal",
+      "source_app": "Retro",
       "surface": "daily.notification",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) ('Notifications when friends post new Lockets')",
-      "pattern": "locket.push.channel — one Sentence-case line, no period, ≤ 300 characters",
+      "evidence": "design/copy-patterns.md `retro.voice.push-channel` ('Recent posts from users you care about')",
+      "pattern": "retro.voice.push-channel — one Sentence-case line",
+      "level": "SOURCED"
+    },
+    "notifications.push.newPost.title": {
+      "text": "{group}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push` and 'Daily invitation (tenet 5)' (title: the context or the sender)",
+      "pattern": "retro.voice.push — title: the context",
+      "level": "SOURCED",
+      "notes": "Thread / stack per group."
+    },
+    "notifications.push.newPost.body": {
+      "text": "{name} just posted.",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `notification_settings_description_posts` '%1$s just posted.'",
+      "pattern": "retro.voice.push — activity as a plain statement with a period",
+      "level": "SOURCED",
+      "notes": "Placeholder rename %1$s → {name}. No counts."
+    },
+    "notifications.push.reaction.title": {
+      "text": "{group}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push` and 'Daily invitation (tenet 5)'",
+      "pattern": "retro.voice.push — title: the context",
+      "level": "SOURCED"
+    },
+    "notifications.push.reaction.body": {
+      "text": "{name} reacted {emoji} to your post.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `locket.push.reaction` (content) + Retro activity lines ('%1$s commented on your post: …', '%1$s liked your post.' — `notification_settings_description_*`)",
+      "pattern": "locket.push.reaction (content: name, emoji inline, no count) with retro.voice.push case and punctuation (statement with a period, noun 'post')",
+      "level": "SOURCED",
+      "notes": "Never a number of reactions."
+    },
+    "notifications.push.reply.title": {
+      "text": "{group}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push` and 'Daily invitation (tenet 5)'",
+      "pattern": "retro.voice.push — title: the context",
+      "level": "SOURCED"
+    },
+    "notifications.push.reply.body.text": {
+      "text": "{name} replied: \"{message}\"",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `notification_settings_description_comments` '%1$s commented on your post: \"Wow this looks yummy!\"'",
+      "pattern": "retro.voice.push — a quoted comment after a colon",
+      "level": "SOURCED",
+      "notes": "Verb swap commented → replied (a reply can answer a photo or a message), quote = {message}."
+    },
+    "notifications.push.reply.body.voice": {
+      "text": "{name} replied with a voice message.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push` and 'Daily invitation (tenet 5)' ('%1$s just posted.', '%1$s reshared your post.')",
+      "pattern": "retro.voice.push — activity as a plain statement with a period",
+      "level": "SOURCED"
+    },
+    "notifications.push.reply.body.photo": {
+      "text": "{name} replied with a photo.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push` and 'Daily invitation (tenet 5)'",
+      "pattern": "retro.voice.push — activity as a plain statement with a period",
+      "level": "SOURCED"
+    },
+    "notifications.push.recapReady.title": {
+      "text": "{group}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push` and 'Daily invitation (tenet 5)'",
+      "pattern": "retro.voice.push — title: the context",
+      "level": "SOURCED"
+    },
+    "notifications.push.recapReady.body": {
+      "text": "This week's recap is ready.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push` and 'Daily invitation (tenet 5)'; design/copy-patterns.md `retro.voice.retrospective` ('Create Recap', 'Share Recap')",
+      "pattern": "retro.voice.push — a plain statement with a period",
+      "level": "SOURCED"
+    },
+    "notifications.push.birthdayRequest.title": {
+      "text": "{group}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push` and 'Daily invitation (tenet 5)'",
+      "pattern": "retro.voice.push — title: the context",
+      "level": "SOURCED",
+      "notes": "Never sent to the birthday person; once, no reminders (SPEC_FLAGS T5)."
+    },
+    "notifications.push.birthdayRequest.body": {
+      "text": "You're invited to add a photo and a line for {name}'s birthday. No pressure.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `P-BR-1` ('You're invited to {action} for {name}.' + a bar-lowering line); Retro's bar-lowering phrase 'no pressure' (`nux_card_message_tips_from_retro_first_week_friends`)",
+      "pattern": "P-BR-1 (content) with retro.voice.second-person ('no pressure')",
+      "level": "SOURCED"
+    },
+    "notifications.push.tribute.title": {
+      "text": "Happy birthday!",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `P-BT-1` ('Happy birthday, {name}!')",
+      "pattern": "P-BT-1 — greeting with '!' (retro.voice.punctuation)",
+      "level": "SOURCED",
+      "notes": "The worker fills only {group} for this key, so the name is left out."
+    },
+    "notifications.push.tribute.body": {
+      "text": "{group} made you a birthday video.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push` and 'Daily invitation (tenet 5)'",
+      "pattern": "retro.voice.push — a plain statement with a period",
+      "level": "SOURCED",
+      "notes": "No number of contributors."
+    },
+    "notifications.push.channel.newPost.name": {
+      "text": "New Posts",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `notification_channel_display_name_posts`",
+      "level": "SOURCED",
+      "notes": "Android channel new_post."
+    },
+    "notifications.push.channel.newPost.description": {
+      "text": "Recent posts from your groups",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `notification_channel_display_description_posts` 'Recent posts from users you care about'",
+      "pattern": "retro.voice.push-channel — one Sentence-case line",
+      "level": "SOURCED",
+      "notes": "Noun swap: users you care about → your groups."
+    },
+    "notifications.push.channel.reactionsReplies.name": {
+      "text": "Post Activity",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push-channel` ('Friend Activity', 'Media Feedback' — `notification_channel_display_name_*`)",
+      "pattern": "retro.voice.push-channel — 1–3 words, Title Case",
+      "level": "SOURCED",
+      "notes": "Retro's 'Media Feedback' description names likes (do-not-copy)."
+    },
+    "notifications.push.channel.reactionsReplies.description": {
+      "text": "Reactions and replies to your posts",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push-channel`",
+      "pattern": "retro.voice.push-channel — one Sentence-case line",
+      "level": "SOURCED"
+    },
+    "notifications.push.channel.recap.name": {
+      "text": "Weekly Recaps",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push-channel`",
+      "pattern": "retro.voice.push-channel — 1–3 words, Title Case",
+      "level": "SOURCED"
+    },
+    "notifications.push.channel.recap.description": {
+      "text": "When your group's weekly recap is ready",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push-channel`",
+      "pattern": "retro.voice.push-channel — one Sentence-case line",
+      "level": "SOURCED"
+    },
+    "notifications.push.channel.birthdayRequest.name": {
+      "text": "Birthday Requests",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push-channel`",
+      "pattern": "retro.voice.push-channel — 1–3 words, Title Case",
+      "level": "SOURCED"
+    },
+    "notifications.push.channel.birthdayRequest.description": {
+      "text": "Invitations to add to a birthday video",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push-channel`",
+      "pattern": "retro.voice.push-channel — one Sentence-case line",
+      "level": "SOURCED"
+    },
+    "notifications.push.channel.tribute.name": {
+      "text": "Birthday Videos",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push-channel`",
+      "pattern": "retro.voice.push-channel — 1–3 words, Title Case",
+      "level": "SOURCED"
+    },
+    "notifications.push.channel.tribute.description": {
+      "text": "Birthday videos your group made for you",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push-channel`",
+      "pattern": "retro.voice.push-channel — one Sentence-case line",
       "level": "SOURCED"
     },
     "daily.capture.countdown": {
@@ -547,484 +872,213 @@
       "surface": "daily.capture",
       "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png ('01:28'); references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t17.63s_black-spinner-prompt.png ('00:59')",
       "level": "SOURCED",
-      "notes": "bereal.format.countdown: both fields zero-padded, no label. Shown only while the window is open; hidden at closes_at (no 'late', SPEC_FLAGS T4)."
+      "notes": "Shown in the sheet-title slot while the window is open; removed at closes_at (SPEC_FLAGS T4).",
+      "pattern": "bereal.format.countdown — MM:SS, both zero-padded, no label"
     },
     "daily.capture.send": {
-      "text": "SEND",
-      "origin": "verbatim",
-      "source_app": "BeReal",
+      "text": "Send",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "daily.capture",
-      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (2024: 'My friends only', 'Off', 'SEND'); references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png",
+      "evidence": "design/copy-patterns.md `retro.voice.button` ('Send again', 'Send Postcard')",
+      "pattern": "retro.voice.button — verb first, Sentence case",
       "level": "SOURCED",
-      "notes": "bereal.voice.capture-labels (capitals). Followed by the triangle glyph."
+      "notes": "BeReal's 'SEND' capitals and ➤ are not copied; the bottom capsule (C-05 on media) as in camera.sendto."
     },
     "daily.capture.audience": {
       "text": "{group} only",
       "origin": "adapted",
-      "source_app": "BeReal",
+      "source_app": "Retro",
       "surface": "daily.capture",
-      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (2024: 'My friends only', 'Off', 'SEND')",
-      "pattern": "bereal.voice.capture-labels — chip in Sentence case, 1–3 words ('My friends only')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `recap_composer_members_only_pill` 'Members only'",
+      "pattern": "retro.voice.sentence-case — pill label",
       "level": "SOURCED",
-      "notes": "Noun swap: 'My friends' → {group}. Non-interactive: the answer goes to the invitation's group."
+      "notes": "Noun swap: Members → {group}. C-09 pill on the preview; not interactive."
     },
     "daily.capture.prompt": {
-      "text": "Getting both sides",
+      "text": "Taking the front photo…",
       "origin": "new",
-      "source_app": "BeReal",
+      "source_app": "Retro",
       "surface": "daily.capture",
-      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t17.63s_black-spinner-prompt.png (layout: spinner + one centred line)",
-      "pattern": "bereal.voice.capture-prompt — one short line, Sentence case, no final period; smile directives are do-not-copy",
+      "evidence": "design/copy-patterns.md `retro.voice.progress` ('Updating…', 'Creating your collage…')",
+      "pattern": "retro.voice.progress — gerund + '…'",
       "level": "SOURCED",
-      "notes": "Under the spinner while the back and front photos are taken."
+      "notes": "Shown while the second photo is taken; BeReal's smile directives are do-not-copy."
     },
     "daily.capture.a11y.dismiss": {
       "text": "Close",
       "origin": "new",
-      "source_app": "BeReal",
+      "source_app": "Retro",
       "surface": "daily.capture",
-      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (down chevron)",
-      "pattern": "bereal.voice.capture-labels (Sentence case, 1–3 words)",
-      "level": "SOURCED",
-      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`",
+      "pattern": "platform.a11yLabel — the close circle's purpose",
+      "level": "SOURCED"
     },
     "daily.capture.a11y.shutter": {
       "text": "Take photo",
-      "origin": "new",
-      "source_app": "BeReal",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "daily.capture",
-      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (shutter)",
-      "pattern": "bereal.voice.capture-labels",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_profile_take_photo`",
       "level": "SOURCED",
-      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
+      "notes": "Takes both photos."
     },
     "daily.capture.a11y.flash": {
       "text": "Flash",
       "origin": "new",
-      "source_app": "BeReal",
+      "source_app": "Retro",
       "surface": "daily.capture",
-      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (flash-off glyph)",
-      "pattern": "bereal.voice.capture-labels",
-      "level": "SOURCED",
-      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button'). Value: daily.capture.a11y.flashOn / .flashOff."
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`",
+      "pattern": "platform.a11yLabel — name; state in the value",
+      "level": "SOURCED"
     },
     "daily.capture.a11y.flashOn": {
       "text": "On",
       "origin": "new",
-      "source_app": "BeReal",
+      "source_app": "Retro",
       "surface": "daily.capture",
-      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (2024: 'My friends only', 'Off', 'SEND') ('Off' chip)",
-      "pattern": "bereal.voice.capture-labels ('Off')",
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`",
+      "pattern": "platform.a11yLabel — accessibility value",
       "level": "SOURCED"
     },
     "daily.capture.a11y.flashOff": {
       "text": "Off",
-      "origin": "verbatim",
-      "source_app": "BeReal",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "daily.capture",
-      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (2024: 'My friends only', 'Off', 'SEND') ('Off' chip)",
-      "level": "SOURCED",
-      "notes": "Value of the flash control."
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`",
+      "pattern": "platform.a11yLabel — accessibility value",
+      "level": "SOURCED"
     },
     "daily.capture.a11y.flip": {
       "text": "Flip camera",
       "origin": "new",
-      "source_app": "BeReal",
+      "source_app": "Retro",
       "surface": "daily.capture",
-      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (flip glyph)",
-      "pattern": "bereal.voice.capture-labels",
-      "level": "SOURCED",
-      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`",
+      "pattern": "platform.a11yLabel — purpose, verb first",
+      "level": "SOURCED"
     },
     "daily.capture.a11y.retake": {
       "text": "Retake",
       "origin": "new",
-      "source_app": "BeReal",
+      "source_app": "Retro",
       "surface": "daily.capture",
-      "evidence": "references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (✕ retake circle); help 7350386715165 ('You can retake …')",
-      "pattern": "bereal.voice.capture-labels",
-      "level": "SOURCED",
-      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
-    },
-    "daily.capture.a11y.send": {
-      "text": "Send",
-      "origin": "new",
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (2024: 'My friends only', 'Off', 'SEND') ('SEND')",
-      "pattern": "bereal.voice.capture-labels",
-      "level": "SOURCED",
-      "notes": "Spoken label of the SEND control (avoids the all-capitals visible text being read letter by letter)."
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`; design/copy-patterns.md `retro.voice.button`",
+      "pattern": "platform.a11yLabel — purpose, one word",
+      "level": "SOURCED"
     },
     "daily.dualimage.a11y.label": {
       "text": "Back and front photos from {name}",
       "origin": "new",
-      "source_app": "BeReal",
+      "source_app": "Retro",
       "surface": "daily.dualimage",
-      "evidence": "references/auto/bereal/help/help-21083730354333_feed-bonus-3x.png (main + inset); https://developer.apple.com/design/human-interface-guidelines/voiceover ('Provide alternative labels for all key interface elements'; design/research/platform.md §Accessibility)",
-      "pattern": "bereal.voice.capture-labels (Sentence case)",
-      "level": "SOURCED",
-      "notes": "One combined label for the main image and its inset. A single-camera answer uses widget.home.small.a11y.photo wording instead (owner of that surface's copy is this group)."
-    },
-    "collage.view.title": {
-      "text": "{date}",
-      "origin": "adapted",
-      "source_app": "Yope",
-      "surface": "collage.view",
-      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png ('26 May', 2026-06-17)",
-      "pattern": "yope.voice.formats — day title 'd Month' ('26 May')",
-      "level": "SOURCED",
-      "notes": "{date} = the invitation's group-local date; en renders '26 May'."
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`",
+      "pattern": "platform.a11yLabel — what and whose, Sentence case",
+      "level": "SOURCED"
     },
     "collage.view.loading": {
-      "text": "Loading",
+      "text": "Creating your collage…",
       "origin": "verbatim",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "collage.view",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png (@50.60 s, 2026-05-28)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `recap_sticker_collage_loading_message`",
       "level": "SOURCED",
-      "notes": "Yope's HUD word (a documented exception to lowercase, yope.voice.lowercase). Shown while the collage is composing (status pending)."
+      "notes": "While the collage is pending or its pages download (C-28 progress text with the platform indicator)."
     },
     "collage.view.empty.title": {
-      "text": "no photos from this moment",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Nothing to see here yet",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "collage.view",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (@51.23 s, 2026-05-28)",
-      "pattern": "yope.voice.empty-state — bold statement + gray detail naming people + one light pill",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `activity_tab_empty_message`",
       "level": "SOURCED",
-      "notes": "The window closed with no answer, so no collage exists. No guilt, no 'missed'."
+      "notes": "No one shared during the moment (no collage row)."
     },
     "collage.view.empty.detail": {
-      "text": "share one with {group} anytime",
+      "text": "When your group shares at the same moment, you'll see the collage here.",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "collage.view",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (@51.23 s, 2026-05-28)",
-      "pattern": "yope.voice.empty-state (detail names the people: {group})",
-      "level": "SOURCED",
-      "notes": "Answers after the window post normally (SPEC_FLAGS T4)."
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `recap_time_selector_empty_message` 'When you fill in your weeks on Retro, you'll see recaps here.'",
+      "pattern": "retro.voice.empty-state — one-sentence explanation with a period",
+      "level": "SOURCED"
     },
     "collage.view.empty.button": {
-      "text": "open camera",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Take photo",
+      "origin": "verbatim",
+      "source_app": "Retro",
       "surface": "collage.view",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (@51.23 s, 2026-05-28) ('invite more friends' pill)",
-      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
-      "level": "SOURCED"
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_profile_take_photo`",
+      "level": "SOURCED",
+      "notes": "Opens camera.capture with the group preselected."
     },
     "collage.view.error.title": {
-      "text": "these photos didn’t load",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "Error loading collage. Tap here to try again.",
+      "origin": "adapted",
+      "source_app": "Retro",
       "surface": "collage.view",
-      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
-      "pattern": "yope.voice.error",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `friends_tab_loading_error` 'Error loading friends. Tap here to try again.'",
+      "pattern": "retro.voice.error — list / page errors are one tappable line",
       "level": "SOURCED",
-      "notes": "Collage status failed, or the image could not be downloaded."
-    },
-    "collage.view.error.button": {
-      "text": "try again",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "collage.view",
-      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
-      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
-      "level": "SOURCED"
+      "notes": "Noun swap: friends → collage. The whole line is the retry action."
     },
     "collage.view.offline.title": {
-      "text": "you’re offline",
+      "text": "No connection. Tap here to try again.",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "collage.view",
-      "evidence": "references/auto/yope/web/a-yope-tv-invite-expired-393w.png ('This invite has expired' / 'Ask your friend to send you a new link.' / 'Your next memories are waiting.' / 'Life’s better with your people.')",
-      "pattern": "yope.voice.error",
-      "level": "SOURCED",
-      "notes": "Shown with collage.view.error.button."
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `friends_tab_loading_error` (one tappable line); `error_message_auth_code_service` ('Check your connection and try again.')",
+      "pattern": "retro.voice.error — one tappable line, no '!'",
+      "level": "SOURCED"
     },
-    "collage.view.a11y.back": {
-      "text": "back",
+    "collage.view.a11y.close": {
+      "text": "Close",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "collage.view",
-      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png ('26 May', 2026-06-17) (back circle)",
-      "pattern": "yope.voice.button — 1–3 words, lowercase, verb first, no punctuation ('create group', 'send', 'enable' — V-mthu, V-chuong)",
-      "level": "SOURCED",
-      "notes": "Accessibility label (VoiceOver / TalkBack) for an icon-only control; HIG VoiceOver: label every key element, no control type in the label ('Submit', not 'Submit button')."
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`",
+      "pattern": "platform.a11yLabel — the close circle's purpose",
+      "level": "SOURCED"
     },
     "collage.view.a11y.page": {
-      "text": "page {page} of {pages}",
-      "origin": "new",
-      "source_app": "Yope",
+      "text": "{page} of {pages}",
+      "origin": "adapted",
+      "source_app": "Retro",
       "surface": "collage.view",
-      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png ('26 May', 2026-06-17) (page dots)",
-      "pattern": "yope.voice.lowercase",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_progress_badge_template` '%1$d of %2$d'",
+      "pattern": "retro.voice.terse-numbers — position, digits",
       "level": "SOURCED",
-      "notes": "Android page-dot indicator (iOS's native page control speaks its own value). Page numbers, not a social count."
+      "notes": "Placeholders renamed. Android page-dot value (iOS page control speaks its own)."
     },
     "collage.view.a11y.collage": {
-      "text": "photos from {group}, {date}",
+      "text": "Photos from {group}, {date}",
       "origin": "new",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "collage.view",
-      "evidence": "https://developer.apple.com/design/human-interface-guidelines/voiceover ('Provide alternative labels for all key interface elements'; design/research/platform.md §Accessibility)",
-      "pattern": "yope.voice.lowercase",
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`",
+      "pattern": "platform.a11yLabel — what and where",
       "level": "SOURCED",
-      "notes": "Label of one collage page."
+      "notes": "Label of each page image."
     },
     "collage.share.button": {
-      "text": "share",
+      "text": "Share",
       "origin": "verbatim",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "collage.share",
-      "evidence": "references/auto/yope/store/yope-store-04.png ('share' pill); references/auto/yope/frames/b-yopeapp-7591560669967682847-t66.00-share-with-friends.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847 @66.00 s; 'share with friends', 'share', 'save')",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `recap_composer_share_cta`",
       "level": "SOURCED",
-      "notes": "Label of the share pill (yope.voice.button)."
+      "notes": "Light pill on the recap-preview layout."
     },
     "collage.share.sheetTitle": {
-      "text": "share with friends",
-      "origin": "verbatim",
-      "source_app": "Yope",
+      "text": "{date}",
+      "origin": "new",
+      "source_app": "Retro",
       "surface": "collage.share",
-      "evidence": "references/auto/yope/frames/b-yopeapp-7591560669967682847-t66.00-share-with-friends.png (https://www.tiktok.com/@yopeapp/video/7591560669967682847 @66.00 s; 'share with friends', 'share', 'save')",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-panels.png phone 3 (Retro's share sheet preview titled 'Tuesday, December 2'); design/copy-patterns.md `retro.voice.formats`",
+      "pattern": "retro.voice.formats — full weekday and date ('Tuesday, December 2')",
       "level": "SOURCED",
-      "notes": "Title of the share preview (iOS SharePreview title, Android Intent.EXTRA_TITLE). 'friends' kept: it names who the person shares with outside the app."
-    },
-    "notifications.push.newPost.title": {
-      "text": "{group}",
-      "origin": "new",
-      "source_app": "Locket",
-      "surface": "notifications.push",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) moment_notif_body_one_user_one_moment 'Sent you a Locket!', moment_notif_body_two_users '%1$s and %2$s sent you Lockets!'",
-      "pattern": "locket.push.newPost",
-      "level": "SOURCED",
-      "notes": "The group name is the title so a member of several groups knows where it happened (Locket's title is not observed; its 'Groups' channel groups by conversation). Worker key (backend/worker/COPY_KEYS.md)."
-    },
-    "notifications.push.newPost.body": {
-      "text": "{name} sent you a photo!",
-      "origin": "adapted",
-      "source_app": "Locket",
-      "surface": "notifications.push",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) moment_notif_body_one_user_one_moment 'Sent you a Locket!', moment_notif_body_two_users '%1$s and %2$s sent you Lockets!'",
-      "pattern": "locket.push.newPost — names who sent, one exclamation mark",
-      "level": "SOURCED",
-      "notes": "Single-sender form of '{name1} and {name2} sent you Lockets!'; noun swap 'Lockets' → 'a photo'. No '{n} other friends'."
-    },
-    "notifications.push.reaction.title": {
-      "text": "{group}",
-      "origin": "new",
-      "source_app": "Locket",
-      "surface": "notifications.push",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) Hermes '{{contactName}} reacted {{emoji}} to your Locket'",
-      "pattern": "locket.push.reaction",
-      "level": "SOURCED",
-      "notes": "The group name is the title so a member of several groups knows where it happened (Locket's title is not observed; its 'Groups' channel groups by conversation). Worker key (backend/worker/COPY_KEYS.md)."
-    },
-    "notifications.push.reaction.body": {
-      "text": "{name} reacted {emoji} to your photo",
-      "origin": "adapted",
-      "source_app": "Locket",
-      "surface": "notifications.push",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) Hermes '{{contactName}} reacted {{emoji}} to your Locket'",
-      "pattern": "locket.push.reaction — emoji inline, no count, no period",
-      "level": "SOURCED",
-      "notes": "Noun swap: 'your Locket' → 'your photo'. Repeated reactions to one photo replace each other on the device (worker); never a number."
-    },
-    "notifications.push.reply.title": {
-      "text": "{group}",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "notifications.push",
-      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-* t6.73 ('new pic added · 9:43 AM', design/research/yope-a.md §3.2)",
-      "pattern": "yope.voice.confirmation",
-      "level": "SOURCED",
-      "notes": "The group name is the title so a member of several groups knows where it happened (Locket's title is not observed; its 'Groups' channel groups by conversation). Worker key (backend/worker/COPY_KEYS.md)."
-    },
-    "notifications.push.reply.body.text": {
-      "text": "{name} replied · {message}",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "notifications.push",
-      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-* t6.73 ('new pic added · 9:43 AM', design/research/yope-a.md §3.2); references/auto/yope/frames/b-yrrah-7673901254787009810-t11.30-sent-to-wall.png ('yrrah sent a pic to the wall · 9:00 PM')",
-      "pattern": "yope.voice.confirmation — past tense, lowercase, no exclamation; ' · ' separator (yope.voice.punctuation)",
-      "level": "SOURCED",
-      "notes": "{message} = the reply text (user content, shortened by the worker only over the push size limit)."
-    },
-    "notifications.push.reply.body.voice": {
-      "text": "{name} replied with a voice message",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "notifications.push",
-      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-* t6.73 ('new pic added · 9:43 AM', design/research/yope-a.md §3.2); App Store release notes 1.210.0 ('send voice messages in chat')",
-      "pattern": "yope.voice.confirmation",
-      "level": "SOURCED"
-    },
-    "notifications.push.reply.body.photo": {
-      "text": "{name} replied with a pic",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "notifications.push",
-      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-* t6.73 ('new pic added · 9:43 AM', design/research/yope-a.md §3.2) ('new pic added')",
-      "pattern": "yope.voice.confirmation",
-      "level": "SOURCED"
-    },
-    "notifications.push.recapReady.title": {
-      "text": "{group}",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "notifications.push",
-      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-* t6.73 ('new pic added · 9:43 AM', design/research/yope-a.md §3.2)",
-      "pattern": "yope.voice.confirmation",
-      "level": "SOURCED",
-      "notes": "The group name is the title so a member of several groups knows where it happened (Locket's title is not observed; its 'Groups' channel groups by conversation). Worker key (backend/worker/COPY_KEYS.md)."
-    },
-    "notifications.push.recapReady.body": {
-      "text": "new recap added",
-      "origin": "adapted",
-      "source_app": "Yope",
-      "surface": "notifications.push",
-      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-* t6.73 ('new pic added · 9:43 AM', design/research/yope-a.md §3.2) ('new pic added')",
-      "pattern": "yope.voice.confirmation",
-      "level": "SOURCED",
-      "notes": "Noun swap: 'pic' → 'recap'. Sent once, when the recap is ready."
-    },
-    "notifications.push.birthdayRequest.title": {
-      "text": "{group}",
-      "origin": "new",
-      "source_app": "VidDay",
-      "surface": "notifications.push",
-      "evidence": "design/research/wrapped-tribute-partiful.md §3 (VidDay V3)",
-      "pattern": "P-BR-1",
-      "level": "SOURCED",
-      "notes": "The group name is the title so a member of several groups knows where it happened (Locket's title is not observed; its 'Groups' channel groups by conversation). Worker key (backend/worker/COPY_KEYS.md). Never sent to {name}."
-    },
-    "notifications.push.birthdayRequest.body": {
-      "text": "You’re invited to add a photo and a line for {name}’s birthday. It’s quick and easy.",
-      "origin": "new",
-      "source_app": "VidDay",
-      "surface": "notifications.push",
-      "evidence": "design/research/wrapped-tribute-partiful.md §3.5 (VidDay V3: 'Hi everyone! You're invited to submit a video message and join in on the fun of making a personalized video for Amelia. It's quick and easy.')",
-      "pattern": "P-BR-1 — 'You're invited to {action} for {name}.' + a bar-lowering line",
-      "level": "SOURCED",
-      "notes": "Noun swap 'video message' → 'a photo and a line'. One request, no reminders, no countdown (SPEC_FLAGS T5)."
-    },
-    "notifications.push.tribute.title": {
-      "text": "Happy birthday!",
-      "origin": "new",
-      "source_app": "VidDay",
-      "surface": "notifications.push",
-      "evidence": "design/research/wrapped-tribute-partiful.md §4 (VidDay V7 'HAPPY BIRTHDAY, AMELIA!')",
-      "pattern": "P-BT-1 — 'Happy birthday, {name}!' (case normalised)",
-      "level": "SOURCED",
-      "notes": "Addressed to the birthday person, so the name is left out (the worker provides only {group})."
-    },
-    "notifications.push.tribute.body": {
-      "text": "{group} made you a birthday video.",
-      "origin": "new",
-      "source_app": "Tribute",
-      "surface": "notifications.push",
-      "evidence": "design/research/wrapped-tribute-partiful.md §4.4–4.5 (the 'video is ready' text was not found)",
-      "pattern": "P-BT-1 (Tribute / VidDay general voice: warm, second person, full sentences end with a period, no emoji)",
-      "level": "SOURCED",
-      "notes": "No number of contributors."
-    },
-    "notifications.push.channel.newPost.name": {
-      "text": "New Photos",
-      "origin": "adapted",
-      "source_app": "Locket",
-      "surface": "notifications.push",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
-      "pattern": "locket.push.channel",
-      "level": "SOURCED",
-      "notes": "Noun swap 'Lockets' → 'Photos'. Channel new_post."
-    },
-    "notifications.push.channel.newPost.description": {
-      "text": "Notifications when your groups post new photos",
-      "origin": "adapted",
-      "source_app": "Locket",
-      "surface": "notifications.push",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
-      "pattern": "locket.push.channel",
-      "level": "SOURCED",
-      "notes": "Noun swaps: 'friends' → 'your groups', 'Lockets' → 'photos'."
-    },
-    "notifications.push.channel.reactionsReplies.name": {
-      "text": "Reactions and Replies",
-      "origin": "new",
-      "source_app": "Locket",
-      "surface": "notifications.push",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
-      "pattern": "locket.push.channel — 1–3 words, Title Case",
-      "level": "SOURCED",
-      "notes": "Channel reactions_replies."
-    },
-    "notifications.push.channel.reactionsReplies.description": {
-      "text": "Notifications for reactions and replies to you in groups",
-      "origin": "adapted",
-      "source_app": "Locket",
-      "surface": "notifications.push",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
-      "pattern": "locket.push.channel",
-      "level": "SOURCED",
-      "notes": "From 'Notifications for new messages and reactions in groups': 'new messages and reactions' → 'reactions and replies to you' (only those are sent)."
-    },
-    "notifications.push.channel.recap.name": {
-      "text": "Weekly Recaps",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "notifications.push",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
-      "pattern": "locket.push.channel",
-      "level": "SOURCED",
-      "notes": "Channel recap."
-    },
-    "notifications.push.channel.recap.description": {
-      "text": "Notifications when your group’s weekly recap is ready",
-      "origin": "new",
-      "source_app": "Yope",
-      "surface": "notifications.push",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
-      "pattern": "locket.push.channel",
-      "level": "SOURCED"
-    },
-    "notifications.push.channel.birthdayRequest.name": {
-      "text": "Birthday Requests",
-      "origin": "new",
-      "source_app": "VidDay",
-      "surface": "notifications.push",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
-      "pattern": "locket.push.channel",
-      "level": "SOURCED",
-      "notes": "Channel birthday_request."
-    },
-    "notifications.push.channel.birthdayRequest.description": {
-      "text": "Notifications when you’re invited to add to a birthday video",
-      "origin": "new",
-      "source_app": "VidDay",
-      "surface": "notifications.push",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
-      "pattern": "locket.push.channel",
-      "level": "SOURCED"
-    },
-    "notifications.push.channel.tribute.name": {
-      "text": "Birthday Videos",
-      "origin": "new",
-      "source_app": "Tribute",
-      "surface": "notifications.push",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
-      "pattern": "locket.push.channel",
-      "level": "SOURCED",
-      "notes": "Channel tribute."
-    },
-    "notifications.push.channel.tribute.description": {
-      "text": "Notifications when your group made a birthday video for you",
-      "origin": "new",
-      "source_app": "Tribute",
-      "surface": "notifications.push",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09) resources.arsc / Hermes string table (design/research/locket.md) channels 'New Lockets' / 'Notifications when friends post new Lockets', 'Groups' / 'Notifications for new messages and reactions in groups'",
-      "pattern": "locket.push.channel",
-      "level": "SOURCED"
+      "notes": "{date} = the invitation's local date in the locale's long weekday-month-day format. iOS SharePreview title / Android EXTRA_TITLE."
     }
   }
 }

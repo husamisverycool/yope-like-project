@@ -1,9 +1,12 @@
 # `birthday.tribute` — the birthday video and the screen it plays on
 
-Reference: **Tribute / VidDay** (docs/SURFACES.md). The video is rendered server-side by the worker
-(`backend/worker/src/tribute/render.ts`, ffmpeg + sharp, Roboto) from the tokens below, read **by name**; the app
-plays it. Voice: `P-BT-1`; Title Case labels as the references; states use the app default voice. Tokens:
-`design/tokens/memory.json` (`*.birthday.tribute.*`). Copy: `design/copy/memory.json` (`birthday.tribute.*`).
+Visual reference: **Retro screens 22 / 23 and 20** (docs/SURFACES.md): a media page (black in both appearances) with
+the display serif title at the margin (Rewind, C-35) and Retro's recap-preview bottom bar (circle + white "Share"
+pill, `references/auto/retro/store/retro-store-04.png`, `press/tc-2023-12-recaps.png`). Mechanics reference: **Tribute / VidDay** (the video's
+structure and timings; the worker renders it). The video's own colours and weights are restyled on Retro's media look;
+its geometry stays the references'. Voice: Retro set + `P-BT-1`. Tokens: `design/tokens/memory.json`
+(`*.birthday.tribute.*`; the bottom row is the recap preview's, `collage.view.layout.screen` / `collage.share.layout.pill`) + global. Copy: `design/copy/memory.json`
+(`birthday.tribute.*`). Decisions: `design/MERGE_DECISIONS.md` → "Redesign — Memory (RM-*)".
 
 Flow: requests close at 00:00 group-local on the birthday (`due_at`); if anyone contributed, the worker renders the
 video and, at or after `due_at`, delivers it (`delivered_at`) and sends the honoree one push. The honoree can read it
@@ -13,15 +16,11 @@ only after delivery; other members (not blocked with the honoree) can read it at
 
 | image / video | what it verifies |
 |---|---|
-| https://website.tribute.co/6KY_IZ1tLME.mp4 (Tess, 640 × 360, 30000/1001 fps) and https://website.tribute.co/QQe5RpbFIyI.mp4 (Doug) | 16:9 frame; hard cuts between clips (28 + 22) and into the end slot (94.201 s / 62.400 s); end slot 10.003 / 10.006 s; portrait content pillarboxed on black |
-| `references/auto/tribute/frames/tribute-sample-tess-t007.080-first-clip.png` | pillarbox #000000 beside a portrait clip |
-| `references/auto/tribute/frames/tribute-sample-tess-clips-7.2-94.0s-every2s.png`, `tribute-sample-doug-clips-7.2-62.2s-every2s.png` | no automatic name captions in either sample |
-| https://static.vidday.com/videos/vidday-group-videos-getting-started-2-minute-tour.mp4 → `references/auto/vidday/frames/vidday-tour-t118.300-phone.png`, `-t119.300-phone.png`, `-t120.000-phone.png` | title card "HAPPY BIRTHDAY, AMELIA!" (layout measured this pass), static 117.767-118.933 s, crossfade ≈0.6 s to the first photo |
-| `references/auto/vidday/frames/vidday-tour-t115.000-phone.png`, `-t116.500-phone.png`, `-t117.400-phone.png` | gift-wrap unwrap (not built) |
-| `references/auto/vidday/store/vidday-store-08.png`, `-09.png` | recipient page: "Download", standard player controls |
-| `references/auto/tribute/mockups/tribute-home-phone-step-3-completed-page.png` | finished page: player, share, "Download" |
-| `references/auto/tribute/web/tribute-web-testimonials.computed-styles.json` | secondary buttons 360 × 44, r8, 14/600, #292D34 on white, 10 apart |
-| https://help.vidday.com/what-features-do-finalized-video-gifts-get/ | "1080p" |
+| `references/auto/retro/press/tc-2025-12-rewind-device-a.png` (RAW) | serif title on a black / media page at the margin, `size.global.titleTop` |
+| `references/auto/retro/store/retro-store-04.png` (recap preview, 2026) | bottom row: leading control + white "Share" pill (43.5 high, label 17 semibold, padding 23) at the 20-pt margin, row centre 59.2 pt above the bottom (`collage.view.layout.screen`, `collage.share.layout.pill`) |
+| `references/auto/retro/press/tc-2023-07-retro-2b.jpg` phone 2 | media shown at full width, native aspect, letterboxed on black (C-22) |
+| Tribute samples https://website.tribute.co/6KY_IZ1tLME.mp4, https://website.tribute.co/QQe5RpbFIyI.mp4; VidDay tour + theme render (`references/auto/vidday/frames/…`) | video structure, 16:9, hard cuts, title hold / crossfade, 4-s photo slots, end slot (mechanics) |
+| `references/auto/tribute/web/tribute-web-video-editor-name-badge*` | caption position / sizes (name badge + caption text) |
 
 ## A. The video (worker contract)
 
@@ -29,103 +28,109 @@ only after delivery; other members (not blocked with the honoree) can read it at
 
 | # | segment | content | timing |
 |---|---|---|---|
-| 1 | title card | `layout.birthday.tribute.titleCard`: solid `background`, text `birthday.tribute.titleCard` ("Happy birthday, {name}!") in Roboto `fontWeight`, size `fontSizeRatio` × video height, wrapped inside `maxWidthRatio` × video width, centred horizontally, block centre at `centerYRatio` × height | visible `duration.birthday.tribute.titleHold`, then crossfade `duration.birthday.tribute.titleCrossfade` into card 2 |
-| 2…n | contribution | the contributor's photo (display rendition), whole photo fitted inside the 16:9 frame on `color.birthday.tribute.pillarbox`; contributor's first name + their line laid out by `layout.birthday.tribute.caption` (Tribute name badge + caption text, bottom-left, on a band in the badge's fill) | `duration.birthday.tribute.photoHold` (4000 ms, VidDay) each; `duration.birthday.tribute.clipTransition` (0 = hard cut) between them |
-| n+1 | end card | `layout.birthday.tribute.endCard` (the title card's style, as VidDay draws its end text card) with `birthday.tribute.endCard` ("We love you!") | `duration.birthday.tribute.endTransition` (0 = hard cut) in, then `duration.birthday.tribute.endHold` |
+| 1 | title card | `layout.birthday.tribute.titleCard`: `background` #000000, `textColor` #FFFFFF (Retro media), weight 400 (Retro display role); text `birthday.tribute.titleCard` ("Happy birthday, {name}!") sized `fontSizeRatio` × video height, wrapped inside `maxWidthRatio` × width, centred, block centre at `centerYRatio` × height (VidDay geometry) | visible `duration.birthday.tribute.titleHold`, then crossfade `duration.birthday.tribute.titleCrossfade` into card 2 |
+| 2…n | contribution | the contributor's photo (display rendition), whole photo fitted inside the 16:9 frame on `color.birthday.tribute.pillarbox`; contributor's first name + their line laid out by `layout.birthday.tribute.caption` (Tribute geometry; band `scrim` #00000099 = `color.global.scrim`, name weight 600, line weight 400, white) | `duration.birthday.tribute.photoHold` each; `duration.birthday.tribute.clipTransition` (0 = hard cut) between them |
+| n+1 | end card | `layout.birthday.tribute.endCard` (as the title card) with `birthday.tribute.endCard` ("We love you!") | `duration.birthday.tribute.endTransition` (0 = hard cut) in, then `duration.birthday.tribute.endHold` |
 
-Canvas: `layout.birthday.tribute.video` = 1920 × 1080 at 29.97 fps. Contribution order: worker order (`created_at`).
+Canvas `layout.birthday.tribute.video` = 1920 × 1080 at 29.97 fps. Contribution order: worker order (`created_at`).
 
-**Token names the worker reads** (`TRIBUTE_TOKEN_NAMES` in `backend/worker/src/tribute/render.ts`):
+**Token names and copy keys the worker reads** (`TRIBUTE_TOKEN_NAMES` in `backend/worker/src/tribute/render.ts`;
+`WORKER_COPY_KEYS` in `backend/worker/src/copy.ts`) — **all kept with the same names and shapes**:
 
 | name | value | level |
 |---|---|---|
 | `layout.birthday.tribute.video` | `{ width: 1920, height: 1080, fps: 29.97 }` | SOURCED |
-| `duration.birthday.tribute.titleHold` | 1167 ms | SOURCED |
-| `duration.birthday.tribute.titleCrossfade` | 600 ms | SOURCED |
-| `duration.birthday.tribute.photoHold` | 4000 ms | SOURCED (gap fill) |
-| `duration.birthday.tribute.clipTransition` | 0 ms | SOURCED |
-| `duration.birthday.tribute.endTransition` | 0 ms | SOURCED |
-| `duration.birthday.tribute.endHold` | 10003 ms | SOURCED |
+| `duration.birthday.tribute.titleHold` / `.titleCrossfade` / `.photoHold` / `.clipTransition` / `.endTransition` / `.endHold` | 1167 / 600 / 4000 / 0 / 0 / 10003 ms | SOURCED |
 | `color.birthday.tribute.pillarbox` | `#000000` | SOURCED |
-| `layout.birthday.tribute.titleCard` | `{ background: "#EFEEF3", textColor: "#444347", fontWeight: 500, fontSizeRatio: 0.084, maxWidthRatio: 0.405, centerYRatio: 0.5 }` | SOURCED |
-| `layout.birthday.tribute.endCard` | `{ background: "#EFEEF3", textColor: "#444347", fontWeight: 500, fontSizeRatio: 0.084, maxWidthRatio: 0.405, centerYRatio: 0.5 }` | SOURCED (gap fill) |
-| `layout.birthday.tribute.caption` | `{ textColor: "#FFFFFF", nameFontWeight: 700, nameFontSizeRatio: 0.0463, lineFontWeight: 700, lineFontSizeRatio: 0.0795, leftRatio: 0.0577, bottomRatio: 0.0861, maxWidthRatio: 0.8845, gapRatio: 0.0099, scrim: "#11202FC7" }` | SOURCED (gap fill) |
+| `layout.birthday.tribute.titleCard`, `.endCard` | `{ background: "#000000", textColor: "#FFFFFF", fontWeight: 400, fontSizeRatio: 0.084, maxWidthRatio: 0.405, centerYRatio: 0.5 }` | SOURCED (Retro + VidDay) |
+| `layout.birthday.tribute.caption` | `{ textColor: "#FFFFFF", nameFontWeight: 600, nameFontSizeRatio: 0.0463, lineFontWeight: 400, lineFontSizeRatio: 0.0795, leftRatio: 0.0577, bottomRatio: 0.0861, maxWidthRatio: 0.8845, gapRatio: 0.0099, scrim: "#00000099" }` | SOURCED (Retro + Tribute) |
+| copy `birthday.tribute.titleCard`, `birthday.tribute.endCard` | "Happy birthday, {name}!", "We love you!" | SOURCED |
 
-Copy keys the worker reads: `birthday.tribute.titleCard` (`{name}`, SOURCED) and `birthday.tribute.endCard`
-("We love you!", SOURCED; the worker still passes `{group}`, which this text does not use). Every token and string the
-worker reads is now sourced (gap fill 2026-10-15), so `tribute.render` renders. Worker hand-offs: two worker tests still
-assert that these tokens are missing (`test/unit/copy-tokens.test.ts`, `test/unit/media-render.test.ts`,
-`test/handlers/tribute-year.test.ts`), and `COPY_KEYS.md` still lists them as missing; the caption is drawn as a full-width
-band because `CaptionLayout` has no box mode (Tribute draws a rounded badge, radius 10 / 302 of the frame height).
+Worker hand-offs (MERGE RM-12): render the card text in the display serif (Noto Serif, OFL — `font.global.display`
+Android) and the caption in Inter (OFL — `font.global.family` Android) instead of Roboto; weight 600 maps to Roboto
+Medium until then. `backend/worker/COPY_KEYS.md` still describes the previous values (paper / navy band) in its status
+column.
 
 ## B. The tribute screen (in the app)
 
-Full screen on `color.global.backgroundDeep`, side margin `dimension.birthday.request.margin`:
-1. Header: close circle top-left (`size.global.headerButton`, `size.global.headerInset`, `color.global.controlOnDeep`,
-   `icon.global.close`).
-2. Title `birthday.tribute.title` ("Birthday Video") — `fontSize/fontWeight/lineHeight.birthday.request.title`
-   (Tribute page title role), `color.global.textPrimary`; under it the group name (data) in
-   `fontSize.birthday.request.message`, `color.global.textSecondary`.
-3. `dimension.birthday.request.message.gap` below: the **player** (`layout.birthday.tribute.player`), full content
-   width, 16:9, native controls, poster = `poster_path` (the title card). The video has no audio; it starts playing
-   once when the screen opens (see Motion for the autoplay setting).
-4. `dimension.birthday.request.cta.gap` below: **Download** and **Share**, stacked
-   `dimension.birthday.tribute.button.gap` apart, each full width, `dimension.birthday.tribute.button.height`,
-   `radius.birthday.tribute.button`, fill `color.global.surfaceLight`, label `fontSize/fontWeight.birthday.tribute.button`
-   in `color.birthday.tribute.button.label` with a leading glyph (`icon.global.download`, `icon.global.share`) in the
-   same colour.
+Full-screen cover; media page `color.global.backgroundDeep`, dark in both appearances (render the subtree dark):
+1. **Header (C-35 / C-01 placement on media):** title `birthday.tribute.title` ("Your birthday video") for the
+   honoree, `birthday.tribute.title.member` ("{name}'s birthday video") for anyone else — `font.global.display`, text
+   role `headerTitle`, `color.global.textOnMedia`, leading `size.global.screenMargin`, baseline
+   `size.global.titleTop` below the safe-area top, up to two lines; under it the group name (data) in text role
+   `textButton`, `color.global.textSecondary`, baseline `dimension.onthisday.subtitleBaseline` below the title's.
+   Close circle on media (C-11: `size.global.circleButton`, `color.global.controlOnDeep`, `icon.global.close`,
+   `color.global.textOnMedia`) at the trailing margin (`size.global.headerInset`), centred on the title's first-line
+   cap middle.
+2. **Player** (`layout.birthday.tribute.player`): full screen width, 16:9, centred vertically in the space between the
+   header and the bar (C-22 photo placement), native controls, poster = `poster_path` (the title card). No audio.
+3. **Bottom row** (Retro recap preview, as `year.story`): centre `bottomRowCentreFromScreenBottom` of
+   `collage.view.layout.screen` (59.2 pt) above the screen bottom; leading circle (C-11 on media:
+   `size.global.circleButton`, `color.global.controlOnDeep`, `icon.global.download` in a `size.global.icon` box,
+   `color.global.textOnMedia`) at `size.global.buttonMarginH` — label `birthday.tribute.download` ("Save to Camera
+   Roll"); trailing Share pill (`collage.share.layout.pill`, `radius.global.capsule`, `color.global.surfaceLight` /
+   `color.global.onSurfaceLight`, text role `button`) `birthday.tribute.share` ("Share").
 
 ## Elements
 
-| element | tokens | copy keys | behaviour |
+| element | component · tokens | copy keys | behaviour |
 |---|---|---|---|
-| close | `size.global.headerButton`, `size.global.headerInset`, `color.global.controlOnDeep`, `icon.global.close` | `birthday.tribute.a11y.close` | dismiss |
-| title / group | `fontSize/fontWeight/lineHeight.birthday.request.title`, `fontSize.birthday.request.message`, `color.global.textPrimary`, `color.global.textSecondary`, `font.birthday` | `birthday.tribute.title` | — |
-| player | `layout.birthday.tribute.player`, `layout.birthday.tribute.video` (aspect) | — | signed URL of `video_path` (1 h) |
-| Download | `dimension.birthday.tribute.button.*`, `radius.birthday.tribute.button`, `fontSize/fontWeight.birthday.tribute.button`, `color.birthday.tribute.button.label`, `color.global.surfaceLight`, `icon.global.download` | `birthday.tribute.download`, toast `birthday.tribute.saved` | saves the MP4 to the photo library (add-only access; purpose string owned by `system.permissions`) |
-| Share | same + `icon.global.share` | `birthday.tribute.share` | system share sheet with the MP4 file |
-| push (honoree) | — | `notifications.push.tribute.title`, `notifications.push.tribute.body` (`{group}`; owned by notifications.push, MERGE L-1) | once, at delivery; tap → this screen |
+| page | `color.global.backgroundDeep`, `layout.global.appearance` (media) | — | — |
+| title / group | `font.global.display`, text role `headerTitle`, `size.global.titleTop`, `size.global.screenMargin`, `color.global.textOnMedia`; text role `textButton`, `color.global.textSecondary`, `dimension.onthisday.subtitleBaseline` | `birthday.tribute.title`, `.title.member` | — |
+| close | C-11 on media | `birthday.tribute.a11y.close` | dismiss |
+| player | `layout.birthday.tribute.player`, `layout.birthday.tribute.video` | — | signed URL of `video_path` (1 h); plays once on open (Motion) |
+| save circle | C-11 on media: `size.global.circleButton`, `color.global.controlOnDeep`, `size.global.buttonMarginH`, `icon.global.download` | `birthday.tribute.download`, `.saved`, `.saveFailed`, `.saveDenied.*` | saves the MP4 (add-only photo access) |
+| Share pill | `collage.share.layout.pill`, `color.global.surfaceLight`, `color.global.onSurfaceLight`, text role `button` | `birthday.tribute.share` | share sheet with the MP4 |
+| push (honoree) | — | `notifications.push.tribute.title` / `.body` (owned by `notifications.push`, MERGE L-1) | once at delivery; tap → this screen |
 
 ## States
 
-| state | design | copy | source |
+| state | design (components) | copy | source |
 |---|---|---|---|
-| loading | player area shows the platform activity indicator; buttons disabled | `birthday.tribute.loading` | Yope HUD word |
-| re-rendering (`status = 'pending'` after a photo was deleted) | same as loading; refetch when `status = 'ready'` | `birthday.tribute.loading` | docs/API.md 6.2 `delete_media` |
-| not found (tribute deleted) | text roles `emptyTitle` / `emptyDetail` centred | `birthday.tribute.notFound.title`, `.detail` | app voice |
-| error | same + light pill retry | `birthday.tribute.error.title`, `.detail`, `.retry` | app voice |
-| offline | inline under the title, `fontSize.global.listSubtitle`, `color.global.textSecondary` | `birthday.tribute.offline` | app voice |
-| save failed / photo access denied | toast | `birthday.tribute.saveFailed` | app voice; settings link per `system.permissions` |
+| loading | player area: the platform activity indicator (C-28); bar disabled | `birthday.tribute.loading` (announcement) | C-28 |
+| re-rendering (`status = 'pending'` after a photo was deleted) | as loading; refetch when `status = 'ready'` | `birthday.tribute.loading` | docs/API.md 6.2 |
+| not found (deleted) | C-27 title centred on the black page | `birthday.tribute.notFound.title` | `retro.voice.error` |
+| error | C-27 error variant + light pill (C-09) retry | `birthday.tribute.error.title`, `.error.detail`, `.error.retry` | `retro.voice.error` |
+| offline | same block | `birthday.tribute.offline.title`, `birthday.tribute.offline`, `.error.retry` | `retro.voice.error` |
+| save failed / photo access denied | toast (C-26) / native alert with a Settings button | `birthday.tribute.saveFailed`; `birthday.tribute.saveDenied.*` | `retro.voice.error`, `retro.voice.permission` |
 | empty | n/a: no tribute exists without a contribution (`due_tributes`) | — | docs/API.md 10 |
 
 ## Motion
 
-Screen: native presentation (`easing.global.native`). Video motion is rendered (title crossfade 600 ms; hard cuts).
-VidDay's gift-wrap unwrap (`UNWRAP VIDEO`, ribbons clear in ≈470 ms) is not built (wrap art is VidDay's asset).
-Reduce Motion: the video has no camera moves (VidDay's slow zoom is not used); the app does not autoplay when
-"Auto-play video previews" is off on iOS (`UIAccessibility.isVideoAutoplayEnabled`) — the poster shows with the play
-control.
+Screen: native full-screen presentation (`easing.global.native`). Video motion is rendered (title crossfade 600 ms;
+hard cuts). The app does not autoplay when "Auto-play video previews" is off on iOS
+(`UIAccessibility.isVideoAutoplayEnabled`) or animations are removed on Android (`layout.global.reduceMotion`): the
+poster shows with the play control. VidDay's gift-wrap unwrap is not built.
 
 ## Haptics
 
-Download saved → `haptic.global.success`; failed → `haptic.global.error`.
+Close, save, Share → `haptic.global.tap` (Android). Saved → `haptic.global.success`; failed → `haptic.global.error`.
 
 ## Accessibility
 
-- Close `birthday.tribute.a11y.close`; player: native controls carry their own labels; buttons: visible text.
-- The names and lines are burned into the video and cannot be read by VoiceOver / TalkBack, and the honoree cannot
-  read `tribute_contributions` (RLS: own rows only) — reported in Gaps.
-- Dynamic Type: title `title2` and group name `callout` (`layout.birthday.request.textStyleMap`); button label 14 pt
-  → `subheadline` (nearest Large size, tie with footnote → larger, MERGE F-13).
-- Focus order: close → title → group → player → Download → Share.
-- Contrast: title white on black 21.00 pass; group `textSecondary` on black 7.10 pass;
-  `color.birthday.tribute.button.label` on `color.global.surfaceLight` 13.82 pass; video title card
-  `#444347` on `#EFEEF3` 8.50 pass (large text).
+- Close `birthday.tribute.a11y.close`; save circle `birthday.tribute.download`; player: native controls; Share: visible
+  text. Title: header.
+- The names and lines are burned into the video; the honoree cannot read `tribute_contributions` (RLS: own rows only)
+  — no transcript (Gaps).
+- Dynamic Type: title `headerTitle` → largeTitle (wraps to two lines), group `textButton` → body.
+- Focus order: title → group → close → player → save → Share.
+- Contrast (`node tools/contrast.mjs`; dark in both appearances):
+
+  | pair | ratio | needs | result |
+  |---|---|---|---|
+  | title `color.global.textOnMedia` on `color.global.backgroundDeep` | 21.00 | 3 | pass |
+  | group `color.global.textSecondary` on `color.global.backgroundDeep` | 7.37 | 4.5 | pass |
+  | Share label on `color.global.surfaceLight` | 21.00 | 4.5 | pass |
+  | save glyph `color.global.textOnMedia` on `color.global.controlOnDeep` | 15.13 | 3 | pass |
+  | `color.global.controlOnDeep` circle vs the page | 1.39 | 3 | **FAIL** (non-text; glyph identifies it — C-11, reported) |
+  | video title / end card #FFFFFF on #000000 | 21.00 | 3 | pass |
+  | caption white on the band (#00000099) over a white photo (#666666) | 5.74 | 3 / 4.5 | pass |
 
 ## Data & actions
 
 - **Read:** `from("tributes").select().eq("id", tributeId).single()` → `video_path`, `poster_path`, `status`,
-  `delivered_at`, `group_id`; group name from `groups`. Signed URLs from `g/<group_id>/tributes/<id>/…`.
+  `delivered_at`, `group_id`, `honoree_id`; group name from `groups`; honoree first name from `profiles` (member view).
+  Signed URLs from `g/<group_id>/tributes/<id>/…`.
 - **Writes:** none. **Worker:** `tribute.render` / `tribute.rerender`, then `push.tribute` (payload `type = tribute`,
   `tribute_id`, `group_id`).
 - **Navigation in:** push → `DeepLink.tribute(tributeID:groupID:)` / `app://tribute?tribute=<id>&group=<id>`
@@ -134,27 +139,23 @@ Download saved → `haptic.global.success`; failed → `haptic.global.error`.
 
 ## Platform notes
 
-- iOS: `VideoPlayer` / `AVPlayerViewController`; save with `PHPhotoLibrary.shared().performChanges` +
-  `PHAssetCreationRequest` (add-only authorization `NSPhotoLibraryAddUsageDescription`). Android: Media3 `PlayerView`;
-  save with `MediaStore.Video` insert (no permission on API 29+; `WRITE_EXTERNAL_STORAGE` maxSdk 28).
-- Share: `ShareLink(item: URL)` with the downloaded file / Android `ACTION_SEND` `video/mp4` via `FileProvider`.
-- The worker's push keys today are `notifications.push.tribute.*`; the texts are `notifications.push.tribute.*` (MERGE L-1)
-  (MERGE memory M-22).
+- iOS: `VideoPlayer` / `AVPlayerViewController` (system controls); save with `PHPhotoLibrary` +
+  `PHAssetCreationRequest` (add-only, `NSPhotoLibraryAddUsageDescription` owned by `system.permissions`); share with
+  `ShareLink(item: URL)` of the downloaded file.
+- Android: Media3 `PlayerView`; save via `MediaStore.Video` (no permission on API 29+); share `ACTION_SEND`
+  `video/mp4` via `FileProvider`.
 
 ## Do-not-copy
 
-Tribute and VidDay intro / outro brand stings, watermarks, logos and theme art; "From Russell and 36 others" (count);
-gift money ("Funds were collected…", "Redeem"); paid upsells (custom intro, Video Book, DVD / USB); "Present Now"
-(creator-side); "Send a special link" / public links; background music (timings not found); contributor counts.
+Tribute / VidDay intro / outro stings, watermarks, logos, theme art (VidDay paper card and hand-lettering, Tribute's
+navy badge), music; "From Russell and 36 others" (count); gift money; paid upsells; "Present Now"; public links;
+contributor counts.
 
 ## Gaps
 
-| item | status | owner capture |
+| item | status | smallest capture that closes it |
 |---|---|---|
-| `layout.birthday.tribute.caption` (first name + line over each photo) | SOURCED by gap fill: Tribute's own editor (name badge default ↙ / Dark + Classic caption text), computed styles of its live demo (MERGE G2-24); band instead of a badge box (worker shape) | one finished Tribute in which the creator added "text on a clip" (name at the bottom of the frame), or a VidDay with contributor names on photos: its share link or a 10 s screen recording |
-| `duration.birthday.tribute.photoHold` | SOURCED by gap fill: 4000 ms (VidDay documented default, confirmed by its theme render; MERGE G2-22) | one finished Tribute or VidDay containing photos: share link, or a 20 s recording playing three photo contributions (research capture 5) |
-| `layout.birthday.tribute.endCard`, copy `birthday.tribute.endCard` | SOURCED by gap fill: VidDay's end text card "We Love You!" in its title-card style (MERGE G2-23); end slot length stays Tribute's 10.0 s (VidDay holds its end card for a 4-s slot) | the last 15 s of a finished (non-marketing) VidDay or Tribute (research capture 5) |
-| title card `maxWidthRatio` | measured assuming VidDay's 16:9 frame is cropped to fill the square gift-page player | the same finished video at full frame |
-| title-card hold | 1167 ms static span; up to 1667 ms if playback starts at the unwrap tap | the same finished video from its first frame |
-| burned-in text not accessible | no transcript (honoree cannot read contributions) | owner / API decision: expose names + lines to the honoree after delivery |
-| tribute video aspect | 16:9 landscape as both references; portrait photos are pillarboxed | owner decision if a 9:16 video is wanted |
+| title / caption type in the video | Roboto (worker) until the hand-off; Retro's faces are the display serif / Inter | worker change (RM-12) |
+| photo hold, end card, caption | SOURCED (VidDay / Tribute gap fill, G2-22…G2-24) | one finished Tribute or VidDay with photos and names (research capture 5) |
+| burned-in text not accessible | no transcript | owner / API decision: expose names + lines to the honoree after delivery |
+| tribute video aspect | 16:9 landscape, portrait photos pillarboxed | owner decision if a 9:16 video is wanted |

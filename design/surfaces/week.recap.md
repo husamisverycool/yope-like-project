@@ -1,153 +1,173 @@
-# `week.recap` — Sunday recap of the group's week
+# `week.recap` — the group's weekly recaps
 
-Reference app: **Yope** recaps, organised by **week** (Monday–Sunday, per Retro) (`docs/SURFACES.md`). Research:
-`design/research/yope-b.md` §6, §8 (C1, C2); `design/research/retro-timehop.md` (week boundaries); docs/API.md §5.14, §11.
-Tokens: `design/tokens/social.json` (`week.recap.*`) + `global.*`. Copy: `design/copy/social.json` (`week.recap.*`).
-The recap is created by the worker on **Sunday** (`weekly_recap_isodow` = 7) at `weekly_recap_local_time` (owner, NULL
-until set — recaps are off until then) for groups that posted that week.
-
-Yope's 2026 builds present recaps as free-form "walls" (v1.214.0 "recaps are now walls"), whose composition is not
-observable; the only measured recap screen is the owner's week-recap frame (O3), so O3 is the reference (S-15).
+Redesign on **Retro**: visual reference Retro's **recaps** — screen 19 "Create Recap" (close circle, title, month cards:
+cover photo, serif month, grey year, chevron), screen 20 the **recap preview** (blurred photo panel, close glass circle, the
+recap card / full-bleed styles in a pager, page dots, a circle and a white "Share" pill) and screen 21 the **recap card**
+(white card, photo grid, serif "2023" + name / domain footer). Our recaps are weekly only (created by the worker on Sunday,
+`weekly_recap_isodow` = 7, at `weekly_recap_local_time`; off until the owner sets it). Two levels: the **recap list**
+(`week.recap.layout.list`) and one **recap preview** (`week.recap.layout.preview`). Tokens: `design/tokens/social.json`
+(`week.recap.*`) + `global.*`. Copy: `design/copy/social.json` (`week.recap.*`). Decisions: `design/MERGE_DECISIONS.md` →
+Redesign — Social (RS-17 … RS-19).
 
 ## References
 
 | id | file | used for |
 |---|---|---|
-| O3 | `references/owner/yope-week-recap.jpg` (CAPTURED, ≈Dec 2025 / Jan 2026, 0.888 pt/px) | **primary**: header title, recap card grid, label, page dots, full-bleed pics grid, floating "recap \| pics" capsule |
-| O2 / S2 | `references/owner/yope-03-recaps-collage.webp`, `references/auto/yope/store/yope-store-04.png` | recap scrapbook marketing panel ("today", "share") — context only |
-| S6 | `references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png` | "view recap" entry pill (2026-06) |
-| S1 | `references/auto/yope/store/yope-store-05.png` | film-strip header circle that opens recaps |
-| collage options | `design/collage-options/README.md` Option A | the same recap-card grid rules (and the same open gaps) |
+| TC-REC | `references/auto/retro/press/tc-2023-12-recaps.png` (render, 1.695 px/pt) | **primary**: phone 1 list (month cards: `week.recap.aspectRatio.weekCard`, `.radius.card`, text insets); phone 2 preview (panel, close, card, grid, footer, dots, circle, pill); phone 3 full-bleed page |
+| TC-H | `references/auto/retro/press/tc-2023-12-retro-header.png` | card footer ("2023 / nathan / retro.app") |
+| ST-04 | `references/auto/retro/store/retro-store-04.png` | 2026 recap preview with "Share" light pill (C-09) |
+| ST-02 | `references/auto/retro/store/retro-store-02.png` | "Recaps" (feature name) |
+| WEB | `references/auto/retro/web/retro.app-42b38811bebcd07d.css` | note box (`.mediaGrid_noteContainer`) used for the recap text |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | "Select photos", "Creating your collage…", "When you fill in your weeks on Retro, you'll see recaps here.", "Add a memory" |
 
-## Structure (top → bottom; one vertical scroll)
+## Structure A — recap list (`week.recap.layout.list`)
 
-Background `color.global.background` (O3 JPEG #121011, within ±6).
+Page sheet (C-29) over the group, content on `color.global.background`.
+1. **Sheet header**: C-11 close circle (`size.global.circleButton`, `color.global.control`, `icon.global.close`) at the leading
+   margin; centred `week.recap.list.title` ("Recaps", text role `sheetTitle`).
+2. **Week cards**, newest first, full width inside `size.global.screenMargin`, `size.global.cardGap` apart, starting
+   `size.global.titleToContent` below the header: shape `week.recap.aspectRatio.weekCard`, corners `week.recap.radius.card`
+   (continuous), cover = the recap's first item (aspect fill). On the cover, `week.recap.dimension.weekCardTextInset` from the
+   leading edge and `week.recap.dimension.weekCardTextTop` from the top (cap top): "Week {n}" (`photo.viewer.header.week`
+   text; `font.global.display`, text role `displayMedium`, `color.global.textOnMedia`) and, `week.recap.dimension.weekCardLinePitch`
+   below its baseline, the date range ("Jul 3 - 9", text role `listSubtitle`, `color.global.textOnMedia`); `icon.global.chevron`
+   (`color.global.textOnMedia`) at the trailing top, aligned to the serif line's cap middle.
+3. A recap still being made (`status = pending`) shows as a card filled with `color.global.control` (C-17 placeholder fill)
+   with `week.recap.pending` in text role `body`, `color.global.textSecondary`, centred.
+No segmented control: only weekly recaps exist (Retro's Yearly / Monthly / Weekly / All Posts has nothing to switch, RS-17).
 
-1. **Header** (floats): ‹ circle top-left (`size.global.headerButton`, `color.global.controlOnDeep` — O3 #0A0809 —
-   `icon.global.back`, `size.global.headerInset`); title centred: the week label in `week.recap.layout.weekFormat` title
-   form ("18 aug-24 aug"), `week.recap.fontSize.title` / `.fontWeight.title`, `color.global.textPrimary`; pencil circle
-   top-right (same circle, `icon.global.edit`) → `week.edit` (composition flagged, S-13: Yope's edit control was not
-   observed; the pencil circle is Yope's send-to header button).
-2. **Recap card** (page 1 of a horizontally paged card), width `week.recap.dimension.cardWidth` (334) centred, corners
-   `week.recap.radius.card` (12) outside, square inside:
-   - grid of the recap's items in `weekly_recaps.items` order: the row holding the leftover 1–2 photos first, spanning the
-     full card width (`week.recap.layout.shortRow`; its split **BLOCKED** `week.recap.layout.shortRowSplit`, its height
-     **BLOCKED** `week.recap.dimension.shortRowHeight`), then full rows of `week.recap.count.gridColumns` (3) tiles shaped
-     `week.recap.aspectRatio.gridTile` (111 : 167), gaps `week.recap.dimension.gridGap` (0), aspect fill;
-   - bottom scrim (**BLOCKED** `week.recap.layout.scrim`) and the week label in uppercase (`week.recap.layout.weekFormat`
-     label form, "18 AUG-24 AUG"), `week.recap.fontSize.label` / `.fontWeight.label`, `color.global.textPrimary`, at
-     `week.recap.dimension.labelInsetLeading` from the left, baseline `week.recap.dimension.labelBaselineBottom` above the
-     card bottom. No wordmark / @handle.
-   - Page 2 (two page dots in O3): **BLOCKED** (`week.recap.layout.page2`); the recap text (`weekly_recaps.text`) is shown
-     there once captured. Until then the card has one page and the dots are hidden.
-3. **Page dots** `week.recap.dimension.cardToDots` below the card, centred: `week.recap.dimension.pageDot` circles at
-   `week.recap.dimension.pageDotPitch`; current `color.global.textPrimary`, others `color.global.controlRaised`.
-4. **Week pics grid**, `week.recap.dimension.dotsToPics` below the dots, full screen width (no side inset):
-   `week.recap.count.picsColumns` (3) columns, gaps `week.recap.dimension.picsGap` (1), tiles
-   `week.recap.aspectRatio.picsTile` (131 : 175, 3:4), square corners; every visible post of that week in chronological
-   order (`group_history_weeks.post_ids`), not only the recap's items.
-5. **Floating segmented capsule** "recap | pics", centred, bottom `week.recap.dimension.segmentedBottom` above the screen
-   bottom: track `week.recap.dimension.segmentedWidth` × `.segmentedHeight`, `radius.global.capsule`, fill
-   `color.global.control` (O3 #292526–#2B292A, within ±6); selected pill `week.recap.dimension.segmentedPillWidth` ×
-   `.segmentedPillHeight`, inset `week.recap.dimension.segmentedInset`, `color.global.surfaceLight`, capsule; labels
-   `week.recap.segment.recap` / `week.recap.segment.pics`, `week.recap.fontSize.segmented` / `.fontWeight.segmented`,
-   selected `color.global.onSurfaceLight`, unselected `color.global.textPrimary`. "recap" = scroll to the card; "pics" =
-   scroll to the pics grid; scrolling updates the selection (approximation, Gaps).
+## Structure B — recap preview (`week.recap.layout.preview`)
+
+Full-screen, **dark in both appearances** (as `photo.viewer.layout.appearance`): page `color.global.backgroundDeep`.
+1. **Panel**: rounded `week.recap.radius.panel`, `week.recap.dimension.panelInset` from the screen sides, from the top safe
+   area down to `week.recap.dimension.panelToControls` above the controls row; filled with the cover photo blurred
+   (`layout.global.materials.backdrop`).
+2. **Close**: C-11 glass circle (`size.global.circleButtonSmall`, `color.global.glass`, `icon.global.close` in
+   `color.global.textOnMedia`) at `week.recap.dimension.closeInsetLeading` / `.closeInsetTop` inside the panel.
+3. **Pages** (`week.recap.layout.pages`, swiped sideways inside the panel):
+   - **page 1 — card**: a white card (`color.global.surfaceLight` in both appearances), `week.recap.dimension.cardInsetH` from
+     the panel sides, shape `week.recap.aspectRatio.card`, corners `week.recap.radius.card`, vertically centred (with the note,
+     below) in the panel. Photo grid `week.recap.dimension.gridInset` from the card's top and sides:
+     `week.recap.count.gridColumns` columns, `size.global.stripGap` gaps, cells `week.recap.aspectRatio.gridCell` (aspect fill),
+     outer corners `week.recap.radius.grid`, inner square; fill rule for other photo counts `week.recap.layout.gridFill`
+     (**BLOCKED**). Footer: "Week {n}" (`font.global.display`, text role `headerTitle`, `color.global.onSurfaceLight`) at
+     `week.recap.dimension.footerInset`, baseline `week.recap.dimension.footerBaseline` above the card bottom; trailing,
+     right-aligned at the same inset: the group name (`week.recap.fontSize.cardName` / `.fontWeight.cardName`,
+     `color.global.onSurfaceLight`) over the date range (text role `meta`, `color.global.textSecondary`), the range on the
+     week's baseline, `week.recap.dimension.footerLinePitch` apart.
+     **Note** (only when the recap has text — `week.recap.layout.note`): a box the card's width, `week.recap.dimension.noteGap`
+     under the card, corners `week.recap.radius.note`, padding `week.recap.dimension.notePaddingV` / `.notePaddingH`, fill
+     `color.global.controlOnDeep`; the last editor's avatar (`size.global.avatarComment`) and name (`listTitle`) lead the first
+     line, then the text (text role `body`, `color.global.textOnMedia`).
+   - **page 2 — cover**: the cover photo fills the panel (aspect fill, panel corners) under `layout.global.photoScrim`; "Week {n}"
+     (`headerTitle` serif, `color.global.textOnMedia`) at `week.recap.dimension.coverTextInset`, baseline
+     `week.recap.dimension.coverTextBaseline` above the panel bottom; the name / range stack trailing at the same inset
+     (`color.global.textOnMedia` / `color.global.textSecondary`).
+4. **Controls row** (below the panel, height `week.recap.dimension.controlHeight`, `week.recap.dimension.controlInset` from the
+   screen sides): leading C-11 circle (diameter `week.recap.dimension.controlHeight`, `color.global.controlOnDeep`,
+   `icon.global.gallery` in `color.global.textOnMedia`) → `week.edit`; centred C-31 page dots (on media: active
+   `color.global.textOnMedia`, inactive `color.global.pageDotInactive` dark); trailing C-09 light pill
+   (`color.global.surfaceLight`, label `week.recap.saveAsAlbum` in text role `pill`, `color.global.onSurfaceLight`, height
+   `week.recap.dimension.controlHeight`, padding `week.recap.dimension.pillPaddingH`) → the album sheet of `week.edit` with the
+   recap's photos selected.
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | component · tokens | copy | behaviour |
 |---|---|---|---|
-| ‹ circle | `size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.back` | `chat.thread.a11y.back` | pops |
-| title | `week.recap.fontSize.title`, `.fontWeight.title`, `color.global.textPrimary`, `week.recap.layout.weekFormat` | week label (data) | header trait |
-| pencil circle | `size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.edit` | `week.recap.a11y.edit` | opens `week.edit` (status `ready` only) |
-| recap card | card tokens above | `week.recap.a11y.card` | tile tap → `photo.viewer` (context = recap items in order) |
-| week label | `week.recap.fontSize.label`, `.fontWeight.label`, `.dimension.labelInsetLeading`, `.labelBaselineBottom` | week label uppercase (data) | — |
-| page dots | `week.recap.dimension.pageDot`, `.pageDotPitch`, `.cardToDots`; `color.global.textPrimary` / `color.global.controlRaised` | — | hidden while one page |
-| pics grid | `week.recap.count.picsColumns`, `.dimension.picsGap`, `.aspectRatio.picsTile`, `.dimension.dotsToPics` | `photo.viewer.a11y.photo` | tap → `photo.viewer` (context = the week's posts) |
-| segmented capsule | segmented tokens above | `week.recap.segment.recap`, `week.recap.segment.pics` | see Structure 5 |
+| list close | C-11; `size.global.circleButton`, `color.global.control` | `week.recap.a11y.close` | dismisses the sheet |
+| list title | C-29 sheet header; text role `sheetTitle` | `week.recap.list.title` | header trait |
+| week card | `week.recap.aspectRatio.weekCard`, `.radius.card`, `.dimension.weekCardTextInset`, `.weekCardTextTop`, `.weekCardLinePitch`; text roles `displayMedium` / `listSubtitle`; `icon.global.chevron` | `photo.viewer.header.week` ("Week {n}"), range (data); label `week.recap.a11y.card` | → preview |
+| preview close | C-11 glass small; `week.recap.dimension.closeInsetLeading` / `.closeInsetTop` | `week.recap.a11y.close` | back to the list / opener |
+| card grid cell | `week.recap.count.gridColumns`, `.aspectRatio.gridCell`, `.radius.grid`, `size.global.stripGap` | `photo.viewer.a11y.photo` | → `photo.viewer` (context = recap items in order) |
+| card footer | text roles `headerTitle` / `meta`; `week.recap.fontSize.cardName`, `.fontWeight.cardName`, `.dimension.footerInset`, `.footerBaseline`, `.footerLinePitch` | "Week {n}", group name, range (data) | — |
+| note | `week.recap.layout.note`, `.radius.note`, `.dimension.notePaddingV` / `.notePaddingH` / `.noteGap` | recap text (data) | — |
+| page dots | C-31 (on media) | page position (platform) | swipe pages |
+| select-photos circle | C-11 on media; `week.recap.dimension.controlHeight`, `icon.global.gallery` | `week.recap.a11y.edit` | → `week.edit` |
+| Save as Album pill | C-09; `week.recap.dimension.controlHeight`, `.pillPaddingH`, text role `pill` | `week.recap.saveAsAlbum` | → album sheet (`week.edit.md`) |
 
 ## States
 
-| state | what shows | tokens / copy | source |
+| state | what shows | components · tokens · copy | source |
 |---|---|---|---|
-| loading | Yope loading HUD centred | `groups.create.size.hud`, `groups.create.color.hud`, `groups.create.fontSize.hudLabel`, `chat.thread.radius.loadingHud` (10.5); `groups.create.hud.loading` | yope-a §1.8 |
-| pending (`status = pending`) | centred bold line, no pill | text role `emptyTitle`; `week.recap.pending` | `yope.voice.confirmation` |
-| empty (no ready recap yet) | centred bold title, gray detail, white pill | `week.recap.empty.title`, `.empty.detail`, `.empty.action` ("share a pic" → `camera.capture`); text roles `emptyTitle` / `emptyDetail`; pill `color.global.surfaceLight` / `.onSurfaceLight`, `groups.screen.size.lightPillHeight`, `groups.screen.radius.lightPill` | `yope.voice.empty-state` (Yope's "Add 20 pics more to get a recap" is a progress count: do-not-copy) |
-| error | same layout as empty, retry pill | `week.recap.error.title`, `chat.thread.error.detail`, pill `chat.thread.error.retry` | `yope.voice.error` |
-| offline | cached recap; nothing cached → `chat.thread.offline.title` / `.offline.detail` | — | `yope.voice.error` |
+| loading (list) | two C-17-fill placeholder cards | C-28; `week.history.a11y.loading` | C-28 |
+| loading (preview) | panel with the blurred cover; card cells as `color.global.control` placeholders until images load (`duration.global.fade` in) | C-28 | C-28 |
+| pending (`status = pending`) | list: placeholder card with `week.recap.pending`; preview opened by link: the panel with the line centred | `week.recap.pending` | `retro.voice.progress` |
+| empty (no recaps yet) | C-27 in the sheet: `icon.global.recap` → title → detail → C-07 outline CTA with `icon.global.add` | `week.recap.empty.title`, `.empty.detail`, `.empty.action` (→ `camera.capture` for this group) | APK-S |
+| error | list: one tappable line under the header (text role `body`, `color.global.textSecondary`); preview: the same line centred in the panel | `week.recap.error.title` (tap reloads) | `retro.voice.error` |
+| offline | cached recaps; nothing cached → error line + `chat.thread.offline.detail` | — | — |
 | permission-denied | not applicable | — | — |
 
 ## Motion
 
 | transition | tokens | Reduce Motion |
 |---|---|---|
-| push / pop | native (`easing.global.native.navigationPush`) | system |
-| card paging (when page 2 exists) | native paging (`easing.global.photoSwipe` rule: system paging physics) | finger-tracking stays |
-| segment change | not observed: the pill moves with the platform default spring (`spring.global.platformDefault.ios` / `.android`), scroll uses the system scroll animation | pill jumps; scroll without animation |
+| list sheet in / out | native sheet (`spring.global.sheetPresent`, `duration.global.sheetPresent`) | system |
+| list → preview | `duration.global.photoOpen` + `easing.global.standard` (cover opens like a photo) | cross-fade |
+| page swipe | native pager (finger-tracked) | allowed |
+| images appear | `duration.global.fade` | same |
 
 ## Haptics
 
 | interaction | token |
 |---|---|
-| segment selected | `haptic.global.select` |
+| tap card / circle / pill (Android) | `haptic.global.tap` (iOS none) |
+| page swipe | none (Retro's recap pager haptic not captured; the tick is reserved for dials and segmented choices) |
 
 ## Accessibility
 
-- Card: one element labelled `week.recap.a11y.card` with a "photos" rotor / custom action to step tiles; each tile
-  `photo.viewer.a11y.photo`. Segmented capsule exposed as a segmented control (2 items, selected trait). Page dots as a
-  page control (adjustable) once there are two pages.
-- Dynamic Type: title → `week.recap.layout.textStyleMap.title` (headline); label → `.label` (title3); segments → `.segmented`
-  (headline). The card label stays one line (shrinks to fit within the card width).
-- Focus order: back → title → pencil → card → dots → pics grid → segmented capsule.
+- List: each card one button, label `week.recap.a11y.card` ("Recap of Week 27, July 3 to 9").
+- Preview: the card is a group labelled `week.recap.a11y.card`; cells are buttons (`photo.viewer.a11y.photo`); the pager
+  announces "page 1 of 2" (platform page control); close `week.recap.a11y.close`; circle `week.recap.a11y.edit`.
+- Dynamic Type: `sheetTitle`, `displayMedium`, `listSubtitle`, `body` scale; the card footer keeps the card's proportions
+  (its text scales inside the fixed card up to the footer height, then truncates — labels carry the full text).
 - Contrast (`node tools/contrast.mjs`):
 
-| foreground | background | kind | ratio | result | pair |
+| foreground | background | kind | light | dark | pair |
 |---|---|---|---|---|---|
-| `color.global.textPrimary` #FFFFFF | `color.global.background` #171717 | text | 17.93:1 | pass | title 17 semibold |
-| `color.global.textPrimary` #FFFFFF | `color.global.controlOnDeep` #101010 | nontext | 19.03:1 | pass | ‹ / pencil glyphs |
-| `color.global.controlOnDeep` #101010 | `color.global.background` #171717 | nontext | 1.06:1 | **FAIL** | header circle against the background |
-| `color.global.controlRaised` #434343 | `color.global.background` #171717 | nontext | 1.81:1 | **FAIL** | inactive page dot |
-| `color.global.textPrimary` #FFFFFF | `color.global.background` #171717 | nontext | 17.93:1 | pass | active page dot |
-| `color.global.onSurfaceLight` #000000 | `color.global.surfaceLight` #FFFFFF | text | 21.00:1 | pass | selected segment label |
-| `color.global.textPrimary` #FFFFFF | `color.global.control` #2E2E2E | text | 13.58:1 | pass | unselected segment label |
-| `color.global.surfaceLight` #FFFFFF | `color.global.control` #2E2E2E | nontext | 13.58:1 | pass | selected pill against the track |
+| `color.global.onSurfaceLight` | `color.global.surfaceLight` | text | 21.00:1 pass | 21.00:1 pass | "Week 27", group name on the white card |
+| `color.global.textSecondary` | `color.global.surfaceLight` | text | **2.85:1 FAIL** | **2.85:1 FAIL** | date range on the card (meta 13) |
+| `color.global.textOnMedia` | `color.global.controlOnDeep` | text | 15.13:1 pass | 15.13:1 pass | note text, gallery glyph |
+| `color.global.onSurfaceLight` | `color.global.surfaceLight` | text | 21.00:1 pass | 21.00:1 pass | "Save as Album" pill |
+| `color.global.textPrimary` | `color.global.background` | text | 21.00:1 pass | 21.00:1 pass | list title |
+| #808080 (`color.global.pageDotInactive` dark) | `color.global.backgroundDeep` | nontext | 5.32:1 pass | 5.32:1 pass | inactive page dot (preview is dark) |
+| `color.global.textOnMedia` | `color.global.glass` over #000000 | nontext | 16.48:1 pass (on black; varies with the photo) | — | close glyph |
 
-  The inactive dot fails 3:1; the current page is also conveyed by the page control's accessibility value. Card label on
-  the BLOCKED scrim: not computable.
+  Text on cover photos (list cards, page 2) has no fixed backdrop (photo-dependent; Retro draws none on month cards).
 
 ## Data & actions
 
-- **Reads**: `weekly_recaps` (§5.14: `items` ordered post ids — fetch from `posts`, RLS drops hidden ones; `text`; `status`;
-  `week_start`); `group_history_weeks(p_group_id, …)` (§6.4) for the week's `post_ids` (pics grid); `posts` / `media`
-  (`thumb_path`).
-- **Realtime**: `post_deleted` → drop the item from card and grid (§8.2); the recap row itself is not published — refetch
-  on foreground.
-- **Push**: `notifications.push.recapReady.title` / `.body` ("new recap added"; design/copy/capture.json), push type
-  `recap_ready`.
-- **Navigation in**: chat header film-strip circle (`chat.thread`), "view recap" pill (`groups.screen`), `week.history` week
-  menu, `albums.list` empty action, deep link `DeepLink.recap(groupID:recapID:)` (`app://recap?group=…&recap=…`).
-- **Navigation out**: `week.edit`, `photo.viewer`.
+- **Reads**: `weekly_recaps` (§5.14) of the group: `id`, `week_start`, `items` (ordered post ids; fetch from `posts` — RLS
+  drops hidden ones), `text`, `status`, `edited_by`; `posts` / `media` (`thumb_path`, `display_path`); `profiles`
+  (`edited_by`); `groups.name`, `groups.time_zone` (week number and range).
+- **Realtime**: `post_deleted` → drop the item (§8.2); recap rows are not published — refetch on appear / foreground.
+- **Push**: `notifications.push.recapReady.*` (capture group), push type `recap_ready`.
+- **Navigation in**: `groups.screen` (recaps entry → list; its label may use `week.recap.open`), `week.history` week menu
+  (→ preview), `albums.list` empty action (→ list), `DeepLink.recap(groupID:recapID:)` (`app://recap?group=…&recap=…` → preview).
+- **Navigation out**: `photo.viewer`, `week.edit` (editor; album sheet).
 
 ## Platform notes
 
-- iOS: one `ScrollView` with the card (`TabView(.page)` once page 2 exists) and a `LazyVGrid`; floating capsule in
-  `.safeAreaInset(edge: .bottom)`. Android: `LazyVerticalGrid` with the card as a full-span item; capsule in a `Box` overlay.
-- Week label from the group's time zone (`groups.time_zone`), Monday start (`week_start_isodow` = 1).
+- iOS: list `.sheet`; preview `.fullScreenCover` with `.environment(\.colorScheme, .dark)`; pager `TabView(.page)` with its
+  own dots hidden (C-31 drawn by the app); backdrop blur = a blurred copy of the cover image (`.blur`, radius not measurable —
+  C-34 Gap) clipped to the panel shape.
+- Android: `ModalBottomSheet(skipPartiallyExpanded = true)` for the list; preview route in `DsTheme(dark = true)`;
+  `HorizontalPager`; blur via `Modifier.blur` (API 31+) or a pre-blurred bitmap below.
+- Week label: group time zone, Monday start.
 
 ## Do-not-copy
 
-- Wordmark + "@handle" watermark on the card.
-- "Add {n} pics more to get a recap" progress bar / count; "skip the queue and create one now" (on-demand recaps do not exist).
-- Streaks; Wrapped-style counts.
+- Retro's "Share" export targets (Stories, Reels, TikTok, Postcard), recap styles behind a paywall ("Recaps Pro"), sticker
+  collage tools, the "retro.app" domain line, Retro's year / month / all-posts recaps.
+- Yope's grid card with uppercase label, "recap | pics" capsule, "Add {n} pics more to get a recap" progress.
 
 ## Gaps
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `week.recap.layout.shortRowSplit`, `week.recap.dimension.shortRowHeight` | BLOCKED (gap fill: Yope-specific card; no other app shows it) | one screen recording of a Yope weekly recap card for a week with only 2–5 photos (also closes collage Option A) |
-| `week.recap.layout.page2` (+ where the recap text shows) | BLOCKED (Yope-specific content) | 20-s recording: open a weekly recap, swipe pages, toggle recap/pics, tap edit/remix, save (yope-b §14 capture 4) |
-| `week.recap.layout.scrim` | BLOCKED (gap fill: Apple Photos / Google Photos title gradients sit on photo content and cannot be separated) | one lossless export of a Yope recap card |
-| segmented behaviour (scroll vs filter) and its motion | approximation | same 20-s recording |
-| pencil entry to edit | composition from the send-to header (S-13) | same recording |
-| 2026 wall-style recaps | not built (free-form; S-15) | same recording |
+| `week.recap.layout.gridFill` | **BLOCKED** (development approximation: fill row by row, empty cells blank, beyond 24 not drawn) | one Retro recap preview (Week style) for a week with 5 photos |
+| old BLOCKED `shortRowSplit`, `shortRowHeight`, `scrim`, `page2` | closed: Yope's card replaced by Retro's card and full-bleed page (RS-17) | — |
+| panel top under the status bar; controls row vs the home indicator | composition (top safe area / bottom safe area) | one raw screenshot of Retro's recap preview |
+| backdrop blur radius | not measurable (C-34 Gap) | Retro's iOS internals |
+| recap text placement | composition: Retro's journal note under the card (RS-19) | — (Retro recaps carry no text) |
+| list card values are a 2023 render (±1 %) | — | one raw screenshot of "Create Recap" |

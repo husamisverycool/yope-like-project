@@ -1,4 +1,4 @@
-// Shared component — images from the private `media` bucket, and avatars.
+// Shared component — images from the private `media` bucket (avatars: Avatar.swift, C-23).
 import DesignSystem
 import ImageIO
 import SwiftUI
@@ -13,7 +13,7 @@ private struct StorageURLResolverKey: EnvironmentKey {
 }
 
 extension EnvironmentValues {
-    /// Resolves storage paths for `StorageImage` / `AvatarView`. Nil (previews, snapshots): placeholders are shown.
+    /// Resolves storage paths for `StorageImage` / `PhotoView` / `AvatarView`. Nil (previews, snapshots): placeholders are shown.
     var storageURLResolver: StorageURLResolver? {
         get { self[StorageURLResolverKey.self] }
         set { self[StorageURLResolverKey.self] = newValue }
@@ -159,58 +159,6 @@ struct StorageImage<Placeholder: View>: View {
         guard let url = try? await resolver(path),
               let image = await ImagePipeline.shared.image(path: path, url: url, pixels: pixels) else { return }
         loaded = (key, image)
-    }
-}
-
-/// A circular avatar.
-///
-/// Shows, in order of preference: a local image (just picked), the image at `path` (signed URL), else the default
-/// look — a `color.global.controlRaised` circle with `placeholderIcon` (`icon.global.person` for people,
-/// `icon.global.group` for groups) in `color.global.textSecondary` (`auth.profile.layout.avatarPicker`,
-/// groups.list avatar). The glyph is drawn at the platform's default symbol size (its size was not measured).
-/// Decorative by default: callers label the control that contains it.
-struct AvatarView: View {
-    var path: String?
-    var localImage: Image?
-    let diameter: CGFloat
-    var placeholderIcon: String = Tokens.Icons.globalPerson
-
-    var body: some View {
-        Group {
-            if let localImage {
-                localImage.resizable().aspectRatio(contentMode: .fill)
-            } else if path != nil {
-                StorageImage(path: path) { fallback }
-            } else {
-                fallback
-            }
-        }
-        .frame(width: diameter, height: diameter)
-        .clipShape(Circle())
-        .accessibilityHidden(true)
-    }
-
-    private var fallback: some View {
-        ZStack {
-            Circle().fill(Tokens.Colors.globalControlRaised)
-            Image(systemName: placeholderIcon)
-                .foregroundStyle(Tokens.Colors.globalTextSecondary)
-        }
-    }
-}
-
-/// Avatars overlapping in a row (group profile members row; `size.global.avatarSmall`). No count is ever shown.
-/// The overlap (a quarter of the diameter) is an **approximation**: Yope's overlap was not measured.
-struct AvatarStack: View {
-    let paths: [String?]
-    var diameter: CGFloat = Tokens.Sizes.globalAvatarSmall
-
-    var body: some View {
-        HStack(spacing: -diameter / 4) {
-            ForEach(Array(paths.enumerated()), id: \.offset) { _, path in
-                AvatarView(path: path, diameter: diameter)
-            }
-        }
     }
 }
 

@@ -1,34 +1,35 @@
 # widget.lock.circular — iOS Lock Screen circular widget (accessoryCircular)
 
-Reference: **Locket** small-widget anatomy (the anatomy's one circular element is the sender avatar) + **Apple HIG
-Widgets** (vibrant Lock Screen rendering). Shared kind, copy and rendering: `widget.lock.rect`.
+**Visual reference: Retro** has no Lock Screen widget; the circle shows the newest poster's **avatar** (Retro C-23
+circle) in **HIG vibrant rendering** (PLATFORM). **Mechanics: Locket.** Shared kind, copy and rendering:
+`widget.lock.rect`. Decisions: `design/MERGE_DECISIONS.md` RC-11.
 
 ## References
 
 | image / doc | what it verifies |
 |---|---|
-| `references/auto/locket/store/locket-store-03.png`, `references/auto/locket/help/locket-help-7914857-widget-with-avatar-crop.png` | round sender avatar |
-| `references/auto/platform/hig-widgets-ios-dimensions.png`; HIG Widgets §Appearances / §Vibrant | 72 × 72 pt; monochrome |
+| `references/auto/retro/store/retro-store-02.png`, `references/auto/retro/press/tc-2023-07-retro-1b.webp` (C-23) | Retro avatars are plain circles, aspect-fill |
+| `references/auto/platform/hig-widgets-ios-dimensions.png`; HIG Widgets §Vibrant | 72 × 72 pt; monochrome |
 
 ## Structure
 
 72 × 72 pt on 393 × 852 (`widget.lock.circular.layout.size`), rendering `widget.lock.rect.layout.rendering`.
 
-1. The newest photo's **sender avatar**, filling the circle (the anatomy's circular avatar, scaled to the family),
-   full opacity — the system desaturates it.
+1. The newest photo's **poster avatar**, aspect-fill, filling the circle (C-23), full opacity — the system desaturates
+   it. No avatar photo: `icon.global.person` centred (C-23 fallback).
 
 ## Elements
 
-| element | tokens | copy | behavior |
+| element | tokens | copy | behaviour |
 |---|---|---|---|
-| avatar | `widget.lock.circular.layout.size` | a11y `widget.home.small.a11y.photo` | newest post's poster; when the newest item is a collage: the newest single photo's poster (`widget.lock.rect.layout.content`) |
+| avatar | `widget.lock.circular.layout.size`, `widget.lock.rect.layout.content` (circular) | a11y `widget.home.small.a11y.photo` | newest single photo's poster; newest is a collage → `icon.global.camera` |
 | tap | `camera.fromwidget.layout.target` | — | opens the camera, group preselected |
 
 ## States
 
 | state | design | copy |
 |---|---|---|
-| loading / empty / not set up | `icon.global.gallery` centred, white | spoken: `widget.home.small.empty.noPhotos` / `.setUp` |
+| loading / empty / not set up / signed out | `icon.global.camera` centred (`size.global.icon`), white | spoken: `widget.home.small.empty.noPhotos` / `.setUp` / `.signedOut` |
 | error / offline | last content kept | — |
 
 ## Motion
@@ -41,16 +42,15 @@ None.
 
 ## Accessibility
 
-One element, label `widget.home.small.a11y.photo` ("{name}’s photo in {group}") or the empty text; button trait.
+One element, button trait; label `widget.home.small.a11y.photo` or the state line.
 
 ## Data & actions
 
-As `widget.lock.rect` (avatar from the App Group snapshot).
+As `widget.lock.rect`.
 
 ## Platform notes
 
-iOS only (no Android accessory widgets). `widgetAccentedRenderingMode` does not apply on the Lock Screen (vibrant).
-Limited-width contexts do not apply to widgets.
+iOS only. `widgetAccentedRenderingMode` does not apply on the Lock Screen (vibrant).
 
 ## Do-not-copy
 
@@ -58,6 +58,4 @@ As `widget.home.small`.
 
 ## Gaps
 
-| item | status | capture |
-|---|---|---|
-| collage as the newest item | SOURCED by gap fill as a composition (`widget.lock.rect.layout.content`) | see `widget.lock.rect` |
+None BLOCKED.
