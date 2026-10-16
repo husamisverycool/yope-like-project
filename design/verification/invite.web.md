@@ -8,7 +8,7 @@ setups of Retro's references: mobile 390 × 664 CSS px @3x with an iPhone user a
 (`references/auto/retro/web/retro.app-u-nathan-iphone.png`), desktop 1440 × 900 @1x (`retro.app-u-nathan-desktop.png`).
 Values are `getComputedStyle` / `getBoundingClientRect` read back from the page and pixels of the served images.
 
-**Result: 86 matched, 11 approximated, 3 not matched.**
+**Result: 90 matched, 11 approximated, 3 not matched.**
 
 Renders (git-ignored PNGs, written by `test/render/invite.render.test.ts` on every `npm test`):
 `design/verification/invite.web/<state>-<mobile|desktop>-<light|dark>.png` for the states `valid`, `valid-no-cover`, `valid-no-photos`, `unavailable`, `not-found`, `error`, `rate-limited`;
@@ -28,7 +28,10 @@ is the platform UI face; Retro's Roslindale Display Narrow is narrower, so line 
 | matched | `invite.web.size.cardInset` (card x, y) | 6, 6 | 6, 6 |  |
 | matched | card height (full viewport − 2 × inset) | 652px | 652px |  |
 | matched | `invite.web.radius.card` | 36px | 36px |  |
-| approximated | card fill: cover blurred to a colour field (C-34) | blur radius not measurable (C-34 Gap) | cover → 80-px PNG (natural width 80), Gaussian σ = 5 % of its width, object-fit cover | σ estimated from the fall-off of Retro's stock backdrop bg2.jpeg (≈4–6 %); see src/design.ts BACKDROP_BLUR_OF_WIDTH |
+| matched | card fill: C-34 backdrop blur `size.global.backdropBlur` (σ) | blur(1.8px) | blur(1.8px) | CSS blur() takes σ; the image extends 3σ past the card (clipped) so its edges stay photo |
+| matched | card fill: C-34 dim `color.global.backdropDim` (black 22 %) | rgba(0, 0, 0, 0.224) | rgba(0, 0, 0, 0.224) |  |
+| matched | backdrop bleed (3σ each side) | 388.8px | 388.8px |  |
+| approximated | card fill reads as a colour field | spec: 'the group cover blurred to a colour field (C-34 backdrop)' | C-34 as measured (L-5): σ 1.8 pt + 22 % black — the cover stays recognisable | Retro's /u/ card is a stock image blurred far more (bg2.jpeg); C-34's σ was fitted on the recap preview (ST-04). If the invite card should stay a colour field it needs its own blur token |
 | matched | card fill fallbacks | no cover → inviter's avatar blurred; neither → `color.global.backgroundDeep` | as spec (renders valid-no-cover-*, valid-no-photos-*) | the inviter is the one member whose first name is inviter_first_name (the RPC returns no inviter avatar); ambiguous → placeholder |
 | matched | `invite.web.size.avatar` | 112 × 112 | 112 × 112 |  |
 | approximated | avatar position | centred above the text block (approximated in the spec — the capture lost the photo) | centre 199.91px; space above the text 6px–393.81px → centre 199.91px | Retro's broken-image alt text ('athan', clipped by the 112-pt circle) puts the box top ≈ 152 CSS px → centre ≈ 208 on Retro's page; the space-centre rule gives ≈ 209 there |
@@ -156,7 +159,8 @@ is the platform UI face; Retro's Roslindale Display Narrow is narrower, so line 
 | matched | avatar circle 83 px, top 208 (Retro x 258–340, y 208–290; anti-aliased edge included) | x 258–340, y 208–290 | x 258–340, y 208–290 |  |
 | matched | name baseline: ink rows end at 348 (Retro 'nathan' 309–348) | 348 | 348 | 'Roommates' has no descender, so its last ink row is the baseline row |
 | matched | domain ink from row 369 (name baseline + `nameToDomain` 21) | 369 | 369 |  |
-| approximated | background | cover blurred (C-34); no cover → `color.global.backgroundDeep` | no cover: #000000; with a cover: σ = 5 % of 600 (og-cover.png) | blur radius Gap; Retro's field is also darker than its photo (no darkening is sourced, none applied) |
+| matched | background without a cover: `color.global.backgroundDeep` | #000000 | #000000 |  |
+| approximated | background with a cover (C-34) | cover blurred to a colour field (C-34 backdrop); Retro: a dark blurred gradient | C-34: σ 1.8 px (1 px = 1 pt of the layout token) + `color.global.backdropDim` (og-cover.png) | Retro's share image is a much softer, darker field; C-34's mild blur keeps the cover recognisable behind the name |
 | approximated | name face | `font.global.display`, ≈ 52 px; weight not measurable (Gap) | Noto Serif Regular 52 px (bundled, OFL) | Retro's OG name reads bold; the display role's weight (regular) is used |
 | matched | domain line | `font.global.family` 20 px, white ≈ 70 % (#BBC5C9 over Retro's navy) | Inter 20 px, #FFFFFF at 0.7 (brightest 179 on black = #B3B3B3) | colour over a black field; Retro's reading includes its backdrop |
 | approximated | cover circle when there is no cover | not specified | `invite.web.color.avatarPlaceholder` circle | the page's no-photo avatar |
@@ -176,16 +180,16 @@ Large text = 24 CSS px, or 18.66 CSS px bold (WCAG's 18 pt / 14 pt). Sourced val
 | pill fill vs backdrop | #6E4A45 on #4A1D17 | 1.85:1 | 3:1 (nontext) | **FAIL** |
 | footer links (8 px, color.global.textOnMedia) | #FFFFFF on #4A1D17 | 14.20:1 | 4.5:1 (text) | pass |
 
-**Mobile card over this render's backdrop** (`fixtures/photos/family-dinner-4x3.jpg` blurred; mean of the lower half #3E250E)
+**Mobile card over this render's backdrop** (`fixtures/photos/family-dinner-4x3.jpg`: mean of its lower half under `color.global.backdropDim` = #311D0B)
 
 | pair | colours | ratio | needs | result |
 |---|---|---|---|---|
-| headline (32 px regular, color.global.textOnMedia) | #FFFFFF on #3E250E | 14.28:1 | 3:1 (large) | pass |
-| line (14 px, invite.web.color.body) | #B6ACA3 on #3E250E | 6.39:1 | 4.5:1 (text) | pass |
-| 'Let's go' label (16 px 600) on invite.web.color.pill | #FFFFFF on #65503E | 7.57:1 | 4.5:1 (text) | pass |
-| 'Let's go' label on invite.web.color.pillHover | #FFFFFF on #786757 | 5.44:1 | 4.5:1 (text) | pass |
-| pill fill vs backdrop | #65503E on #3E250E | 1.89:1 | 3:1 (nontext) | **FAIL** |
-| footer links (8 px, color.global.textOnMedia) | #FFFFFF on #3E250E | 14.28:1 | 4.5:1 (text) | pass |
+| headline (32 px regular, color.global.textOnMedia) | #FFFFFF on #311D0B | 16.04:1 | 3:1 (large) | pass |
+| line (14 px, invite.web.color.body) | #B1A9A2 on #311D0B | 6.92:1 | 4.5:1 (text) | pass |
+| 'Let's go' label (16 px 600) on invite.web.color.pill | #FFFFFF on #5A4A3C | 8.46:1 | 4.5:1 (text) | pass |
+| 'Let's go' label on invite.web.color.pillHover | #FFFFFF on #6F6155 | 5.96:1 | 4.5:1 (text) | pass |
+| pill fill vs backdrop | #5A4A3C on #311D0B | 1.90:1 | 3:1 (nontext) | **FAIL** |
+| footer links (8 px, color.global.textOnMedia) | #FFFFFF on #311D0B | 16.04:1 | 4.5:1 (text) | pass |
 
 **State card (`color.global.backgroundDeep`)**
 
@@ -215,8 +219,10 @@ In development the server logs the failing pairs of each invite's own backdrop.
 
 ## Not built / open
 
-- **Backdrop blur radius** (C-34 Gap): σ = 5 % of the backdrop width, an estimate from Retro's stock backdrop; needs a token
-  (`src/design.ts` `BACKDROP_BLUR_OF_WIDTH` is the one approximated constant).
+- **Colour field vs C-34**: the spec asks for the cover "blurred to a colour field (C-34 backdrop)". C-34 is now measured
+  (L-5: σ 1.8 pt + 22 % black, fitted on the recap preview), and the page and share image use exactly that, so the cover
+  stays recognisable; Retro's own /u/ card (a stock image) and share image are much softer. A separate invite blur token
+  would be needed to make them colour fields.
 - **Member stack ring** (C-23 Gap): not drawn, as in the native components.
 - **Initials avatar** (C-23 Gap): the no-photo member shows `icon.global.person`; the inviter without a photo shows the
   `invite.web.color.avatarPlaceholder` circle (spec).

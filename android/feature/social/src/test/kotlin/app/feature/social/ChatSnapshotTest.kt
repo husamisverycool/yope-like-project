@@ -79,7 +79,7 @@ class ChatSnapshotTest : SnapshotBase() {
     @Test fun offlineCachedSendFailed() {
         val data = FakeSocialData().apply { seedThread() }
         data.chatCache[GROUP] = data.messages.sortedByDescending { it.createdAt }
-        val vm = ChatViewModel(data, GROUP)
+        val vm = ChatViewModel(data, GROUP, CLOCK)
         data.offline = true
         vm.setDraft("running late, sorry")
         vm.send()
@@ -89,7 +89,7 @@ class ChatSnapshotTest : SnapshotBase() {
     /** In flight: `chat.thread.sending` under your message. */
     @Test fun sending() {
         val data = FakeSocialData().apply { seedThread() }
-        val vm = ChatViewModel(data, GROUP)
+        val vm = ChatViewModel(data, GROUP, CLOCK)
         data.gate = kotlinx.coroutines.CompletableDeferred()
         vm.setDraft("on my way")
         vm.send()
@@ -187,6 +187,8 @@ class ChatSnapshotTest : SnapshotBase() {
         const val RECORDED_MS = 7_000L
         const val PROGRESS = 0.4f
         val TODAY: LocalDate = LocalDate.parse("2026-10-12")
+        /** Optimistic sends are stamped with this clock (ten minutes after the seed thread's start). */
+        val CLOCK: java.time.Clock = java.time.Clock.fixed(BASE.plusSeconds(600), ZoneOffset.UTC)
     }
 }
 

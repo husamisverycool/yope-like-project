@@ -1046,6 +1046,13 @@ component passes r = (σ − 0.5) / 0.57735), `color.global.backdropDim` #000000
 Retro's look: iOS used `.ultraThinMaterial` (a frosted, tinted material) and Android a 32-dp placeholder radius; both
 C-34 components (`BlurredBackdrop`) now draw the measured blur and dim, and the recap preview reads the token.
 
+**L-6 — The invite card blur is a colour field, not the recap blur (web RA over L-5).** The web pass applied L-5's
+σ 1.8 pt to the invite card, which left the cover photo recognisable and busy behind white text, unlike Retro's `/u/`
+card (a stock photo blurred to a soft colour field) and the spec's own share image ("blurred to a colour field").
+Measured: edge-spread fits on `bg2.jpeg` bound σ at ≤ 7.0 % of the width (sharpest edge; high-contrast edges 9.3–10.6 %),
+and the share image's backdrop fits the avatar photo best at σ 8.3 % of the width. Token `invite.web.layout.backdrop`
+σ = 0.08 × the card / image width under `color.global.backdropDim`; the App Clip card uses the same.
+
 ---
 
 ## Redesign — Account (RA-*)

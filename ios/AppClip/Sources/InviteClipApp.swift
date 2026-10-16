@@ -1,9 +1,11 @@
-// Surface: invite.appclip — iOS App Clip: the invite preview, then join. Reference: Partiful (App Clip card, invite
-// page, RSVP sheet) + Apple HIG (App Clips); design/surfaces/invite.appclip.md. Reference images:
-// references/auto/partiful/store/partiful-store-04.png (C1), references/auto/partiful/web/pf-web-private-past-01.png (P3),
-// pf-web-public-light-rsvp-sheet.png / pf-web-public-dark-rsvp-sheet.png (P4), pf-web-notfound-01.png (NF).
-// Flow: invocation URL → `preview.json` → "Join" → join sheet (name, phone) → SMS code (auth.code) → `join_group` →
-// hand-off to the full app (App Group) → SKOverlay offering the full app.
+// Surface: invite.appclip — iOS App Clip: the invite card, sign-in, join. Visual reference: Retro's `/u/[username]` page
+// and its App Clip card (`io.lonepalm.Retro.Clip`, `app-clip-display=card`; references/auto/retro/web/
+// retro.app-u-nathan-iphone.png, WEBU; references/auto/retro/web/retro.app-web-copy-excerpts.txt, WEBX) + Apple HIG (App
+// Clips: SKOverlay after the task); design/surfaces/invite.appclip.md.
+// Flow: invocation URL → `preview.json` → the invite card → "Let's go" → auth.phone B → auth.code → auth.agegate (new
+// accounts) → auth.profile step 1 (name), pushed in the clip's NavigationStack → `join_group` (the last form capsule
+// stays busy) → the card's joined state + the full-app overlay (once per launch); the invite is handed to the full app
+// through the App Group container.
 import AppData
 import AppModels
 import DesignSystem
@@ -19,7 +21,7 @@ struct InviteClipApp: App {
     var body: some Scene {
         WindowGroup {
             InviteClipContainer(model: model)
-                // App Clip invocations (QR, NFC, Safari banner, Messages) arrive as web activities.
+                // App Clip invocations (QR, Safari card, Messages) arrive as web activities.
                 .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
                     model.open(activity.webpageURL)
                 }
@@ -34,37 +36,47 @@ struct InviteClipApp: App {
 @MainActor
 @Observable
 final class InviteClipModel {
-    struct CodeStep: Identifiable {
-        let phone: String
-        let sentAt: Date
-        var id: String { phone }
+    /// The sign-in screens pushed over the card.
+    enum Step: Hashable {
+        case phone
+        case code(phone: String, sentAt: Date)
+        case ageGate
+        case name
     }
 
+    var path: [Step] = []
     private(set) var inviteToken: String?
     private(set) var preview: InvitePreviewState = .loading
-    var showsJoinSheet = false
-    var name = ""
-    var phone = PhoneNumberInput.initialText()
-    private(set) var isSending = false
-    /// The join sheet's last send failure, shown as the form error alert (`auth.phone.layout.inlineError`).
-    private(set) var sendFailure: AuthFailure?
-    private(set) var sendErrorCount = 0
-    var codeStep: CodeStep?
     private(set) var joined = false
-    /// Offer the full app once the person has joined (`invite.appclip.layout.fullAppOverlay.when`).
+    /// `join_group` is running (the card's pill when already signed in; otherwise the last form capsule).
+    private(set) var isJoining = false
+    /// `under_minimum_age`: the refusal replaces the clip (auth.agegate).
+    private(set) var refusedMinAge: Int??
+    /// The full-app overlay (`invite.appclip.layout.fullAppOverlay`): after the join, once per launch.
     var showsFullAppOverlay = false
+    @ObservationIgnored private var offeredFullApp = false
+    private(set) var successCount = 0
+    private(set) var errorCount = 0
 
     let data: AccountDataSource
     let network: NetworkMonitor
+    let configuration: AppConfiguration
     let toasts = ToastCenter()
+    let phoneModel: PhoneModel
+    let ageGateModel: AgeGateModel
+    let profileModel: ProfileModel
     private let parser: DeepLinkParser
     private let loader: InvitePreviewLoader
 
-    init(parser: DeepLinkParser, loader: InvitePreviewLoader, data: AccountDataSource, network: NetworkMonitor) {
+    init(configuration: AppConfiguration, parser: DeepLinkParser, loader: InvitePreviewLoader, data: AccountDataSource, network: NetworkMonitor) {
+        self.configuration = configuration
         self.parser = parser
         self.loader = loader
         self.data = data
         self.network = network
+        phoneModel = PhoneModel(data: data)
+        ageGateModel = AgeGateModel(data: data)
+        profileModel = ProfileModel(data: data)
     }
 
     /// App Clips get no background networking: foreground uploads only (docs/PLATFORM_CONSTRAINTS.md §3).
@@ -75,16 +87,12 @@ final class InviteClipModel {
         let network = NetworkMonitor(status: data.networkStatus)
         network.follow(data.networkUpdates())
         return InviteClipModel(
+            configuration: configuration,
             parser: DeepLinkParser(configuration: configuration),
             loader: InvitePreviewLoader(domain: configuration.domain),
             data: data,
             network: network
         )
-    }
-
-    var theme: InviteTheme {
-        if case let .valid(preview) = preview { return InviteTheme(preview.theme) }
-        return .standard
     }
 
     func open(_ url: URL?) {
@@ -96,7 +104,7 @@ final class InviteClipModel {
         Task { await load() }
     }
 
-    /// A launch without an invocation URL (e.g. from a notification) shows "Invite not found".
+    /// A launch without an invocation URL (e.g. from the App Library) shows "Couldn't find invite".
     func launchedWithoutURL() {
         if inviteToken == nil, preview == .loading { preview = .notFound }
     }
@@ -110,57 +118,81 @@ final class InviteClipModel {
         preview = await loader.load(token: token)
     }
 
-    func join() {
-        showsJoinSheet = true
-    }
-
-    /// Join sheet "Continue": the code is sent with the name (it becomes the account's display name).
-    func sendCode() async {
-        guard let number = PhoneNumberInput.normalized(phone) else {
-            failSending(.invalidNumber)
+    /// "Let's go": the sign-in screens, or straight to the remaining step / the join when the clip is signed in already.
+    func letsGo() async {
+        guard !isJoining else { return }
+        guard data.currentUserID != nil else {
+            path = [.phone]
             return
         }
-        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        isSending = true
-        defer { isSending = false }
+        await continueSignedIn()
+    }
+
+    /// auth.phone sent the code.
+    func codeSent(to phone: String) {
+        path.append(.code(phone: phone, sentAt: Date()))
+    }
+
+    /// auth.code verified (and "Let's go" when signed in): `age_confirmed_at` null → auth.agegate; empty name →
+    /// auth.profile step 1; else the join.
+    func continueSignedIn() async {
         do {
-            try await data.sendCode(phone: number, displayName: trimmedName.isEmpty ? nil : trimmedName)
-            sendFailure = nil
-            showsJoinSheet = false
-            codeStep = CodeStep(phone: number, sentAt: Date())
-        } catch {
-            guard let failure = AuthFailure.sending(error) else {
-                showsJoinSheet = false
-                preview = .offline
+            let privateProfile = try await data.myPrivateProfile()
+            guard privateProfile?.ageConfirmedAt != nil else {
+                path.append(.ageGate)
                 return
             }
-            failSending(failure)
+            let profile = try await data.myProfile()
+            guard !profile.displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                path.append(.name)
+                return
+            }
+            await join()
+        } catch {
+            show(InvitePreviewState.state(for: error))
         }
     }
 
-    private func failSending(_ failure: AuthFailure) {
-        sendFailure = failure
-        sendErrorCount += 1
+    /// auth.agegate confirmed: the name step.
+    func ageConfirmed() {
+        path.append(.name)
     }
 
-    /// After the code: `join_group`; errors map to the state pages.
-    func verified() async {
-        codeStep = nil
-        guard let token = inviteToken else { return }
+    /// `under_minimum_age`: the account is removed (signed out if that fails) and the refusal shown.
+    func refuseUnderAge(minAge: Int?) async {
+        do {
+            try await data.deleteAccount()
+        } catch {
+            await data.signOut()
+        }
+        path = []
+        refusedMinAge = .some(minAge)
+    }
+
+    /// `join_group`: the card returns in its joined state and the full-app overlay rises; errors show their card.
+    func join() async {
+        guard let token = inviteToken, !isJoining else { return }
+        isJoining = true
+        defer { isJoining = false }
         do {
             let group = try await data.joinGroup(token: token)
-            joined = true
             InviteHandoff(token: token, joinedGroupID: group.id.rawValue).save(to: InviteHandoff.defaults())
-            showsFullAppOverlay = true
-        } catch {
-            switch DataError.from(error) {
-            case .api(.groupFull, _): preview = .full
-            case .api(.inviteExpired, _), .api(.inviteRevoked, _): preview = .unavailable
-            case .api(.inviteNotFound, _): preview = .notFound
-            case .offline: preview = .offline
-            default: preview = .error
+            joined = true
+            path = []
+            successCount += 1
+            if !offeredFullApp {
+                offeredFullApp = true
+                showsFullAppOverlay = true
             }
+        } catch {
+            show(InvitePreviewState.state(for: error))
         }
+    }
+
+    private func show(_ state: InvitePreviewState) {
+        errorCount += 1
+        preview = state
+        path = []
     }
 
     /// `invite.appclip.layout.fullAppOverlay.position`.
@@ -169,71 +201,88 @@ final class InviteClipModel {
     }
 }
 
-/// The App Clip's only screen: the preview (or a state page), the join sheet and the code step.
+/// The App Clip: the invite card at the root of a NavigationStack, the sign-in screens pushed over it (native push), the
+/// refusal when under age.
 struct InviteClipContainer: View {
     @Bindable var model: InviteClipModel
 
     var body: some View {
-        InvitePreviewScreen(
-            state: model.preview,
-            showsJoin: !model.joined,
-            onJoin: { model.join() },
-            onRetry: { Task { await model.load() } }
-        )
-        .sheet(isPresented: $model.showsJoinSheet) {
-            InviteJoinSheet(
-                theme: model.theme,
-                name: $model.name,
-                phone: $model.phone,
-                isSending: model.isSending,
-                onCancel: { model.showsJoinSheet = false },
-                onContinue: { Task { await model.sendCode() } }
-            )
-            .formErrorAlert(model.sendFailure?.message, trigger: model.sendErrorCount)
-            .preferredColorScheme(model.theme.isDark ? .dark : .light)
-        }
-        .fullScreenCover(item: $model.codeStep) { step in
-            NavigationStack {
-                CodeScreen(
-                    model: CodeModel(phone: step.phone, data: model.data, displayName: model.name, codeSentAt: step.sentAt),
-                    network: model.network,
-                    toasts: model.toasts,
-                    onVerified: { _ in await model.verified() },
-                    onBack: { model.codeStep = nil }
-                )
+        Group {
+            if let minAge = model.refusedMinAge {
+                AgeGateRefusedScreen(minAge: minAge)
+            } else {
+                NavigationStack(path: $model.path) {
+                    InvitePreviewScreen(
+                        state: model.preview,
+                        isJoined: model.joined,
+                        isBusy: model.isJoining && model.path.isEmpty,
+                        termsURL: model.configuration.termsURL,
+                        privacyURL: model.configuration.privacyURL,
+                        onContinue: { Task { await model.letsGo() } },
+                        onRetry: { Task { await model.load() } }
+                    )
+                    .toolbar(.hidden, for: .navigationBar)
+                    .navigationDestination(for: InviteClipModel.Step.self) { step in
+                        destination(step)
+                    }
+                }
+                // The card is drawn on dark photos in both appearances: while it is on screen the status bar is light.
+                // The sign-in screens follow the system appearance.
+                .preferredColorScheme(model.path.isEmpty ? .dark : nil)
             }
-            .toastHost(model.toasts)
         }
+        .toastHost(model.toasts)
         .fullAppOverlay(isPresented: $model.showsFullAppOverlay, position: model.overlayPosition)
+        .dsHaptic(Tokens.Haptics.globalSuccess, trigger: model.successCount)
+        .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
         .task {
             await Task.yield()
             model.launchedWithoutURL()
         }
         .accessibilityIdentifier("invite.appclip")
     }
+
+    @ViewBuilder
+    private func destination(_ step: InviteClipModel.Step) -> some View {
+        switch step {
+        case .phone:
+            PhoneForm(model: model.phoneModel, network: model.network, onBack: { popStep() }) { phone in
+                model.codeSent(to: phone)
+            }
+        case let .code(phone, sentAt):
+            CodeScreen(
+                model: CodeModel(phone: phone, data: model.data, codeSentAt: sentAt),
+                network: model.network,
+                toasts: model.toasts,
+                onVerified: { _ in await model.continueSignedIn() },
+                onBack: { popStep() }
+            )
+        case .ageGate:
+            AgeGateForm(
+                model: model.ageGateModel,
+                network: model.network,
+                onConfirmed: { model.ageConfirmed() },
+                onUnderAge: { minAge in await model.refuseUnderAge(minAge: minAge) }
+            )
+        case .name:
+            ProfileNameForm(model: model.profileModel, network: model.network) {
+                await model.join()
+            }
+        }
+    }
+
+    private func popStep() {
+        if !model.path.isEmpty { model.path.removeLast() }
+    }
 }
 
 // MARK: - Offering the full app
 
 extension View {
-    /// Shows the App Store overlay for the full app over the App Clip. `position` comes from the
-    /// invite.appclip spec.
+    /// Shows the App Store overlay for the full app over the App Clip. `position` comes from the invite.appclip spec.
     func fullAppOverlay(isPresented: Binding<Bool>, position: SKOverlay.Position) -> some View {
         appStoreOverlay(isPresented: isPresented) {
             SKOverlay.AppClipConfiguration(position: position)
         }
-    }
-}
-
-/// UIKit presentation of the same overlay, for flows that hold a window scene.
-enum FullAppOverlay {
-    @MainActor
-    static func present(in scene: UIWindowScene, position: SKOverlay.Position) {
-        SKOverlay(configuration: SKOverlay.AppClipConfiguration(position: position)).present(in: scene)
-    }
-
-    @MainActor
-    static func dismiss(in scene: UIWindowScene) {
-        SKOverlay.dismiss(in: scene)
     }
 }

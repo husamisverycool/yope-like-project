@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -188,7 +189,7 @@ private fun androidx.compose.foundation.layout.BoxScope.Page(state: TributeState
 
 @Composable
 private fun Header(title: String?, group: String?, onClose: () -> Unit) {
-    val style = TextRoles.headerTitle
+    val style = TextRoles.headerTitle.copy(lineBreak = LineBreak.Heading)
     val capMiddle = Tokens.Sizes.globalTitleTop - CapTop.height(style) / 2
     Box(Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars)) {
         if (title != null) {

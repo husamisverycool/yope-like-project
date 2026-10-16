@@ -127,7 +127,6 @@ fun MessageField(
     val style = TextRoles.body.copy(color = textColor)
     val typing = value.text.isNotBlank() && recording == null
     val sendGlyph = FieldGlyph(Tokens.Icons.globalSend, stringRes(R.string.chat_composer_a11y_send), Tokens.Colors.globalTextPrimary, onSend)
-    val shown = if (typing) listOf(sendGlyph) else glyphs
     Row(
         modifier
             .fillMaxWidth()
@@ -158,8 +157,9 @@ fun MessageField(
                 },
             )
         }
-        AnimatedContent(shown, transitionSpec = { fadeIn(DsMotion.crossfade()) togetherWith fadeOut(DsMotion.crossfade()) }, label = "glyphs") { list ->
-            FieldGlyphs(list, height)
+        // Keyed by the typing state only (the glyph objects are rebuilt every composition): idle ↔ send cross-fade.
+        AnimatedContent(typing, transitionSpec = { fadeIn(DsMotion.crossfade()) togetherWith fadeOut(DsMotion.crossfade()) }, label = "glyphs") { t ->
+            FieldGlyphs(if (t) listOf(sendGlyph) else glyphs, height)
         }
     }
 }

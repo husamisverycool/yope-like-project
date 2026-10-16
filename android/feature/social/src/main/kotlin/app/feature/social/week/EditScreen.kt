@@ -304,35 +304,37 @@ private fun ChosenStrip(state: EditState, onMove: (String, Int) -> Unit, modifie
     fun itemAt(x: Float) = listState.layoutInfo.visibleItemsInfo.firstOrNull { x >= it.offset && x < it.offset + it.size }
     val dragStart = namedHaptic(Tokens.Layouts.WeekEditHapticDragStart.android, noneBelow34 = true)
     val dragAlign = namedHaptic(Tokens.Layouts.WeekEditHapticDragAlign.android)
+    // Each tile handles its own touch-and-hold drag (the strip's own horizontal scroll would otherwise take the move);
+    // the finger is tracked in strip coordinates.
+    fun Modifier.reorderable(id: String): Modifier = pointerInput(id) {
+        detectDragGesturesAfterLongPress(
+            onDragStart = { local ->
+                val info = listState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == id }
+                if (info != null && id in checked) {
+                    dragging = id
+                    pointer = Offset(info.offset + local.x, local.y)
+                    grab = local
+                    haptics.perform(dragStart)
+                }
+            },
+            onDrag = { change, delta ->
+                if (dragging != id) return@detectDragGesturesAfterLongPress
+                change.consume()
+                pointer += delta
+                val target = itemAt(pointer.x)?.key as? String ?: return@detectDragGesturesAfterLongPress
+                val to = checked.indexOf(target)
+                if (target != id && to >= 0) {
+                    onMove(id, to)
+                    haptics.perform(dragAlign)
+                }
+            },
+            onDragEnd = { dragging = null },
+            onDragCancel = { dragging = null },
+        )
+    }
     LazyRow(
         state = listState,
-        modifier = modifier.pointerInput(Unit) {
-            detectDragGesturesAfterLongPress(
-                onDragStart = { offset ->
-                    val item = itemAt(offset.x)
-                    val id = item?.key as? String
-                    if (item != null && id != null && id in checked) {
-                        dragging = id
-                        pointer = offset
-                        grab = Offset(offset.x - item.offset, offset.y)
-                        haptics.perform(dragStart)
-                    }
-                },
-                onDrag = { change, delta ->
-                    val id = dragging ?: return@detectDragGesturesAfterLongPress
-                    change.consume()
-                    pointer += delta
-                    val target = itemAt(pointer.x)?.key as? String ?: return@detectDragGesturesAfterLongPress
-                    val to = checked.indexOf(target)
-                    if (target != id && to >= 0) {
-                        onMove(id, to)
-                        haptics.perform(dragAlign)
-                    }
-                },
-                onDragEnd = { dragging = null },
-                onDragCancel = { dragging = null },
-            )
-        },
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalStripGap),
     ) {
         itemsIndexed(tiles, key = { _, t -> t.key }) { index, tile ->
@@ -342,6 +344,7 @@ private fun ChosenStrip(state: EditState, onMove: (String, Int) -> Unit, modifie
                 tile,
                 stripTileShape(index, tiles.size),
                 Modifier
+                    .then(if (id != null && tile is DayTile.Photo) Modifier.reorderable(id) else Modifier)
                     .then(
                         if (lifted) Modifier.zIndex(1f).graphicsLayer {
                             val info = listState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == id }

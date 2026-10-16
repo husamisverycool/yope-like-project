@@ -23,7 +23,7 @@ final class InviteJoinModel {
         self.loader = loader
     }
 
-    /// `preview.json` (images and theme); without a configured domain the `invite_preview` RPC gives the text alone.
+    /// `preview.json` (signed image URLs); without a configured domain the `invite_preview` RPC (storage paths).
     func load() async {
         state = .loading
         if loader.previewURL(token: token) != nil {
@@ -31,15 +31,7 @@ final class InviteJoinModel {
             return
         }
         do {
-            let preview = try await data.invitePreview(token: token)
-            state = .valid(WebInvitePreview(
-                groupName: preview.groupName,
-                groupKind: preview.groupKind.rawValue,
-                inviterFirstName: preview.inviterFirstName,
-                cover: nil,
-                members: preview.members.map { WebInvitePreview.Member(firstName: $0.firstName, avatarURL: nil) },
-                theme: nil
-            ))
+            state = .valid(WebInvitePreview(try await data.invitePreview(token: token)))
         } catch {
             state = Self.state(for: error)
         }
@@ -62,12 +54,6 @@ final class InviteJoinModel {
     }
 
     static func state(for error: Error) -> InvitePreviewState {
-        switch DataError.from(error) {
-        case .api(.groupFull, _): return .full
-        case .api(.inviteExpired, _), .api(.inviteRevoked, _): return .unavailable
-        case .api(.inviteNotFound, _): return .notFound
-        case .offline: return .offline
-        default: return .error
-        }
+        InvitePreviewState.state(for: error)
     }
 }

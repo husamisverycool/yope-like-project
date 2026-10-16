@@ -1,10 +1,12 @@
 // Account group — the invite preview the App Clip and the installed app show before joining
-// (invite.appclip "Data & actions" 2): `GET https://<domain>/i/<token>/preview.json` from the web service (images on its
-// origin, re-encoded; theme = mean colour of the cover). HTTP 404 / 410 / 429 / 5xx map to the states of
-// design/surfaces/invite.appclip.md.
+// (invite.appclip "Data & actions"): `GET https://<domain>/i/<token>/preview.json` from the web service (images signed on
+// its origin). HTTP 404 / 410 / 429 / 5xx map to the card states of design/surfaces/invite.appclip.md / invite.web.md.
+// Without a configured domain the installed app reads the `invite_preview` RPC instead (storage paths, not URLs).
+import AppData
 import Foundation
 
-/// `preview.json`.
+/// `preview.json` (web/src/app.ts): `group_name`, `group_kind`, `inviter_first_name`, `cover {url, width, height}`,
+/// `members [{first_name, avatar_url}]` in joining order.
 struct WebInvitePreview: Decodable, Equatable, Sendable {
     struct Cover: Decodable, Equatable, Sendable {
         var url: URL
@@ -15,6 +17,8 @@ struct WebInvitePreview: Decodable, Equatable, Sendable {
     struct Member: Decodable, Equatable, Sendable {
         var firstName: String?
         var avatarURL: URL?
+        /// The storage path when the preview came from the RPC (installed app without a web domain).
+        var avatarPath: String? = nil
 
         enum CodingKeys: String, CodingKey {
             case firstName = "first_name"
@@ -22,29 +26,68 @@ struct WebInvitePreview: Decodable, Equatable, Sendable {
         }
     }
 
-    struct Theme: Decodable, Equatable, Sendable {
-        /// "#RRGGBB"
-        var background: String
-        /// "light" (black text) or "dark" (white text).
-        var scheme: String
-    }
-
     var groupName: String
     var groupKind: String?
     var inviterFirstName: String?
     var cover: Cover?
     var members: [Member]
-    var theme: Theme?
+    /// The cover's storage path when the preview came from the RPC.
+    var coverPath: String? = nil
 
     enum CodingKeys: String, CodingKey {
         case groupName = "group_name"
         case groupKind = "group_kind"
         case inviterFirstName = "inviter_first_name"
-        case cover, members, theme
+        case cover, members
     }
 }
 
-/// What the preview area shows.
+extension WebInvitePreview {
+    /// The `invite_preview` RPC's answer (docs/API.md §6.1), with storage paths for the images.
+    init(_ preview: InvitePreview) {
+        self.init(
+            groupName: preview.groupName,
+            groupKind: preview.groupKind.rawValue,
+            inviterFirstName: preview.inviterFirstName,
+            cover: nil,
+            members: preview.members.map { Member(firstName: $0.firstName, avatarURL: nil, avatarPath: $0.avatarPath) },
+            coverPath: preview.coverPath
+        )
+    }
+
+    /// The inviter among the members: the one member whose first name is the inviter's (web/src/inviteService.ts
+    /// `inviterIndex`); nil when there is no inviter name or the name is not unique.
+    var inviterIndex: Int? {
+        guard let name = inviterFirstName else { return nil }
+        let matches = members.indices.filter { members[$0].firstName == name }
+        return matches.count == 1 ? matches.first : nil
+    }
+
+    var coverSource: PhotoSource? {
+        if let cover { return .url(cover.url) }
+        return coverPath.map { PhotoSource.storage($0) }
+    }
+
+    func avatarSource(of index: Int) -> PhotoSource? {
+        guard members.indices.contains(index) else { return nil }
+        let member = members[index]
+        if let url = member.avatarURL { return .url(url) }
+        return member.avatarPath.map { PhotoSource.storage($0) }
+    }
+
+    /// The inviter's photo, when there is one.
+    var inviterAvatarSource: PhotoSource? {
+        inviterIndex.flatMap { avatarSource(of: $0) }
+    }
+
+    /// The card's backdrop (invite.web Structure 1): the cover, else the inviter's photo, else none
+    /// (`color.global.backgroundDeep`).
+    var backdropSource: PhotoSource? {
+        coverSource ?? inviterAvatarSource
+    }
+}
+
+/// What the invite card shows.
 enum InvitePreviewState: Equatable {
     case loading
     case valid(WebInvitePreview)
@@ -60,6 +103,19 @@ enum InvitePreviewState: Equatable {
     case offline
     /// `join_group` → `group_full`.
     case full
+}
+
+extension InvitePreviewState {
+    /// The card for a failed `invite_preview` / `join_group` (docs/API.md §6.1, §9.3).
+    static func state(for error: Error) -> InvitePreviewState {
+        switch DataError.from(error) {
+        case .api(.groupFull, _): return .full
+        case .api(.inviteExpired, _), .api(.inviteRevoked, _): return .unavailable
+        case .api(.inviteNotFound, _): return .notFound
+        case .offline: return .offline
+        default: return .error
+        }
+    }
 }
 
 /// Loads `preview.json` for a token.

@@ -43,6 +43,7 @@ enum AccountModal: Hashable {
     /// (photo.viewer, chat.thread, walls.member) present it with `router.modal = .account(.report(…))`.
     case report(ReportTarget)
 
+    /// Sheet or full screen when the shell presents it (`AppModal.presentation`; `.report` is shown as action sheets).
     var presentsAsSheet: Bool {
         switch self {
         case .paywall, .report: return false

@@ -120,7 +120,7 @@ internal data class CachedReaction(val userId: String, val emoji: String)
  * (`observeMessages`), older pages by `created_at`, realtime inserts / updates / deletions
  * (docs/API.md §8), and the thread's actions.
  */
-class ChatViewModel(private val data: SocialData, val groupId: String) : ViewModel() {
+class ChatViewModel(private val data: SocialData, val groupId: String, private val clock: java.time.Clock = java.time.Clock.systemUTC()) : ViewModel() {
     private val _state = MutableStateFlow(ChatState(me = data.currentUserId()))
     val state: StateFlow<ChatState> = _state.asStateFlow()
     private val _effects = MutableSharedFlow<ChatEffect>(extraBufferCapacity = 16, onBufferOverflow = BufferOverflow.DROP_OLDEST)
@@ -309,7 +309,7 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
         replyToPostId: String? = null,
         replyToMessageId: String? = null,
     ): Message {
-        val now = java.time.Instant.now().let { n -> messages.lastOrNull()?.createdAt?.let { last -> if (last.isAfter(n)) last.plusMillis(1) else n } ?: n }
+        val now = clock.instant().let { n -> messages.lastOrNull()?.createdAt?.let { last -> if (last.isAfter(n)) last.plusMillis(1) else n } ?: n }
         val message = Message(
             id = LOCAL_PREFIX + java.util.UUID.randomUUID(),
             groupId = groupId,

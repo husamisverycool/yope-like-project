@@ -13,10 +13,11 @@ import SwiftUI
 struct ProfileNameForm: View {
     @Bindable var model: ProfileModel
     let network: NetworkMonitor
-    /// The name was saved.
-    let onSaved: () -> Void
+    /// The name was saved. "Next" stays busy while it runs (the App Clip joins the group here, invite.appclip 4).
+    let onSaved: () async -> Void
 
     @FocusState private var fieldFocused: Bool
+    @State private var finishing = false
 
     var body: some View {
         SignUpLayout(
@@ -35,7 +36,7 @@ struct ProfileNameForm: View {
                     onSubmit: { Task { await save() } }
                 )
                 .focused($fieldFocused)
-                .disabled(model.isSaving)
+                .disabled(model.isSaving || finishing)
                 .accessibilityIdentifier("auth.profile.field")
                 Text(Copy.authProfileFieldNote)
                     .dsTextRole(TextRole.caption)
@@ -45,7 +46,7 @@ struct ProfileNameForm: View {
             }
             .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
         } bottom: {
-            PrimaryButton(Copy.authProfileContinue, isEnabled: !model.trimmedName.isEmpty && !model.isNameTooLong, isBusy: model.isSaving) {
+            PrimaryButton(Copy.authProfileContinue, isEnabled: !model.trimmedName.isEmpty && !model.isNameTooLong, isBusy: model.isSaving || finishing) {
                 Task { await save() }
             }
             .accessibilityIdentifier("auth.profile.continue")
@@ -58,6 +59,9 @@ struct ProfileNameForm: View {
     }
 
     private func save() async {
-        if await model.saveName() { onSaved() }
+        guard !finishing, await model.saveName() else { return }
+        finishing = true
+        await onSaved()
+        finishing = false
     }
 }

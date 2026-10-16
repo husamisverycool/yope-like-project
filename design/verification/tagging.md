@@ -1,34 +1,39 @@
 # Verification — `tagging` (iOS)
 
-The “i'm in this” self-tag control (placed by photo.viewer) — `ios/App/Sources/Features/Memory/Tagging/`.
+The self-tag run in the viewer footer ('I'm in this' / 'with {names}') and the 'In this photo' sheet — `ios/App/Sources/Features/Memory/Tagging/ (TagRun, TagRunModel)`.
 
-Checklist written from the spec (`design/surfaces/tagging.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/memory/<surface>-<state>.png` (`ios/AppTests/Memory/MemorySnapshotTests.swift`), then `tools/sidebyside.py` makes `design/verification/tagging.png` next to the reference image(s) below. Values in the third column are read from `design/tokens/*.json` / `design/copy/*.json` (value and evidence level).
+Pass 4 (Retro redesign). Checklist written from the spec (`design/surfaces/tagging.md`, MERGE "Redesign — Memory (RM-*)", lead L-4 / L-5) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/memory/<surface>-<state>-<light|dark>.png` (`ios/AppTests/Memory/MemorySnapshotTests.swift`: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/tagging.png` next to the Retro reference(s) below. Values in the third column are read from `design/tokens/*.json` / `design/copy/*.json` (value and evidence level). Components are the Pass 3 library (`ios/App/Sources/Components`, C-01…C-35).
 
-Reference image(s): `references/auto/yope/store/yope-store-04.png`, `references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png`, `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png`
+Retro reference(s): `references/auto/retro/press/tc-2023-07-retro-2b.jpg phone 2 (footer)`, `references/auto/retro/press/tc-2023-07-retro-1b.webp phone 2 (people rows)`
 
-Snapshots (CI): `tagging-off.png`, `tagging-on.png`, `tagging-pending.png`, `tagging-coach.png`, `tagging-error-toast.png`
+Snapshots (CI): `tagging-run-untagged-light.png`, `tagging-run-untagged-dark.png`, `tagging-run-tagged-light.png`, `tagging-run-tagged-dark.png`, `tagging-run-truncated-light.png`, `tagging-run-pending-light.png`, `tagging-sheet-tagged-light.png`, `tagging-sheet-tagged-dark.png`, `tagging-sheet-not-tagged-light.png`, `tagging-sheet-empty-light.png`
 
-**Summary: 7 matched · 2 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 12 matched · 1 approximated · 0 not matched (BLOCKED or not buildable).**
 
-## Toggle
-
-| status | token / copy | reference value | element | iOS implementation |
-|---|---|---|---|---|
-| matched | `radius.global.capsule`<br>`color.global.surfaceLight` | shape: capsule; radius: height / 2 (SOURCED)<br>#FFFFFF (SOURCED) | white capsule | SelfTagToggleControl |
-| matched | `icon.global.uncheck`<br>`icon.global.check`<br>`color.global.onSurfaceLight`<br>`color.global.selection`<br>`size.global.checkCircle` | ios: circle; android: Rounded.RadioButtonUnchecked (PLATFORM)<br>ios: checkmark.circle.fill; android: Rounded.CheckCircle (PLATFORM)<br>#000000 (SOURCED)<br>#0091FF (PLATFORM)<br>24 pt (SOURCED) | off ring / on check | glyph swap without animation |
-| matched | `size.global.headerGap`<br>`tagging.toggle`<br>`fontSize.global.button`<br>`fontWeight.global.button` | 7.3 pt (SOURCED)<br>“i'm in this” (SOURCED)<br>15 pt (SOURCED)<br>semibold (SOURCED) | glyph, gap 7.3, ‘i'm in this’ | DSTextStyle (subheadline); capsule grows with the text |
-| approximated | `size.global.buttonHeight`<br>`size.global.minTouchTarget.ios` | 45 pt (SOURCED)<br>44 pt (VERIFIED) | capsule height / insets | white-pill height 45 (≥ 44), label inset by the capsule radius (not measured) |
-| matched | `—` | — (no token) | VoiceOver: button ‘i'm in this’, selected when on | accessibilityAddTraits(.isSelected) |
-| matched | `haptic.global.select`<br>`haptic.global.error` | ios: selection; android: SEGMENT_TICK (PLATFORM)<br>ios: notification.error; android: REJECT (PLATFORM) | changed / failed | unit-tested |
-| matched | `—` | — (no token) | optimistic, ≤ one call per photo, rollback on error | SelfTagModel (unit-tested) |
-
-## Coach and messages
+## Footer run (A)
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| approximated | `tagging.coach`<br>`color.global.accent`<br>`color.global.onAccent`<br>`icon.global.close` | “tap if you're in this pic” (SOURCED)<br>#CDFD07 (SOURCED)<br>#000000 (SOURCED)<br>ios: xmark; android: Rounded.Close (PLATFORM) | first-use coach on others' photos, once per account | geometry of the measured Yope coach (camera.capture.layout.coach, camera.capture.fontSize/fontWeight.coach); ✕ labelled photo.viewer.a11y.close (no tagging key) |
-| matched | `tagging.error`<br>`tagging.notFound`<br>`tagging.offline` | “couldn't save that — try again in a moment” (SOURCED)<br>“this pic isn't here anymore” (SOURCED)<br>“you're offline — try again when you're connected” (SOURCED) | toasts; the toggle reverts | lines handed to the host (onMessage / PhotoViewerModel) for its ToastCenter (shown for safety.block.duration.toast) + announced |
+| matched | `tagging.toggle`<br>`fontSize.global.listSubtitle`<br>`color.global.textOnMedia` | “I'm in this” (SOURCED)<br>15 pt (SOURCED)<br>#FFFFFF (SOURCED) | nobody tagged: 'I'm in this' in white after ' · ' | `TagRun` / `TagRunLine` (the date in `color.global.textSecondary`, Retro's separator) |
+| matched | `tagging.with`<br>`color.global.textSecondary`<br>`fontWeight.global.listTitle` | “with {names}” (SOURCED)<br>#999999 (SOURCED)<br>semibold (SOURCED) | someone tagged: 'with {names}' grey, names semibold, platform list formatter, one line, tail-truncated, never a count | Text runs with `.fontWeight` per name; `ListFormatter` |
+| matched | `size.global.minTouchTarget.ios`<br>`tagging.a11y.people` | 44 pt (VERIFIED)<br>“People in this photo” (PLATFORM) | one button ≥ 44; VoiceOver label / value, selected when you are tagged | accessibilityElement(children: .ignore) |
+| matched | `duration.global.crossfade` | 100 ms (SOURCED) | text change cross-fades | `ComponentMotion.crossfade` |
 
-## Notes
+## 'In this photo' sheet (B)
 
-API for the photo viewer: `SelfTagToggleControl(isOn:isPending:showsCoach:onToggle:onDismissCoach:)` when the host owns the state (PhotoViewerModel.toggleTag), or `SelfTagToggle(postID:isTagged:isOthersPhoto:onMessage:onPostGone:onChange:)` to let the control call tag_self / untag_self itself.
+| status | token / copy | reference value | element | iOS implementation |
+|---|---|---|---|---|
+| matched | `tagging.sheet.title`<br>`fontSize.global.sheetTitle`<br>`size.global.circleButton`<br>`color.global.control`<br>`icon.global.close` | “In this photo” (SOURCED)<br>17 pt (SOURCED)<br>36 pt (SOURCED)<br>light: #F1F1F1; dark: #262626 (SOURCED)<br>ios: xmark; android: Rounded.Close (PLATFORM) | C-29 page sheet (medium detent, follows the appearance), title + close circle on the page | C-29 `SheetHeader`; close labelled `photo.viewer.a11y.close` (no tagging key) |
+| matched | `size.global.avatarPicker`<br>`fontSize.global.listTitle`<br>`size.global.screenMargin` | 37 pt (SOURCED)<br>15 pt (SOURCED)<br>16 pt (SOURCED) | people rows | C-16 `PeopleRow` |
+| matched | `tagging.remove`<br>`size.global.pillHeight`<br>`radius.global.capsule`<br>`fontSize.global.pill` | “Remove tag” (SOURCED)<br>37 pt (SOURCED)<br>shape: capsule; radius: height / 2 (SOURCED)<br>15 pt (SOURCED) | your row: outline 'Remove tag' | C-06 `CapsuleButton(.outline)` |
+| matched | `tagging.toggle`<br>`color.global.accent`<br>`color.global.onAccent`<br>`size.global.buttonHeight`<br>`size.global.buttonMarginH` | “I'm in this” (SOURCED)<br>light: #000000; dark: #FFFFFF (SOURCED)<br>light: #FFFFFF; dark: #000000 (SOURCED)<br>60 pt (SOURCED)<br>20 pt (SOURCED) | not tagged: C-05 'I'm in this' at the bottom | PrimaryButton (sheet height) |
+| matched | `tagging.sheet.empty` | “No one is tagged” (SOURCED) | empty: C-27 title | EmptyStateView |
+| matched | `duration.global.fade` | 150 ms (SOURCED) | rows appear / leave | fade |
+
+## Behaviour
+
+| status | token / copy | reference value | element | iOS implementation |
+|---|---|---|---|---|
+| matched | `haptic.global.select`<br>`haptic.global.error` | ios: selection; android: SEGMENT_FREQUENT_TICK (PLATFORM)<br>ios: notification.error; android: REJECT (PLATFORM) | tag / untag applied: tick; failure: error | TagRunModel (optimistic, one call at a time, reverted on failure; unit-tested) |
+| matched | `tagging.error`<br>`tagging.removeError`<br>`tagging.notFound`<br>`tagging.offline` | “Unable to add tag” (SOURCED)<br>“Unable to remove tag” (SOURCED)<br>“Couldn't find post” (SOURCED)<br>“Check your connection and try again.” (SOURCED) | failure lines; photo gone → the viewer closes it | C-26 announcement + `onMessage` / `onPostGone` for the host |
+| approximated | `—` | — (no token) | placement in the photo.viewer footer's second line | the social pass hosts `TagRunControl(postID:taggedUserIDs:leadingText:)`; a deprecated `SelfTagToggleControl` keeps its old call site compiling until then |

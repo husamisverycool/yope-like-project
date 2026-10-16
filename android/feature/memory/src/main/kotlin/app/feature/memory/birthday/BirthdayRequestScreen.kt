@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import app.designsystem.R
 import app.designsystem.dsTextStyle
@@ -169,7 +170,7 @@ private fun Ready(state: RequestState.Ready, actions: RequestActions) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Avatar(memoryModel(info.honoreeAvatarUrl), Tokens.Sizes.globalAvatarProfile)
-            val headline = TextRoles.displayMedium
+            val headline = TextRoles.displayMedium.copy(lineBreak = LineBreak.Heading)
             Text(
                 stringResource(R.string.birthday_request_title, info.honoreeName),
                 style = headline,

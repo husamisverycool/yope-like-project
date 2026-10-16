@@ -175,6 +175,9 @@ class YearStoryFlowTest : SnapshotTest() {
         compose.onNodeWithText("Year in Photos").assertExists()
         compose.onNodeWithText("Sunday Lunch · 2026").assertExists()
         compose.onNodeWithContentDescription("1 of 14").assertExists()
+        // Paused, so the cards stay while the share image renders.
+        compose.onNodeWithContentDescription("Pause").performClick()
+        step()
         compose.onNodeWithText("Share").assertDoesNotExist()
         tap(right = false)
         compose.onNodeWithText("Year in Photos").assertExists()
@@ -204,7 +207,8 @@ class YearStoryFlowTest : SnapshotTest() {
         // Most-reacted photos: who and when, in order; on to the summary; replay.
         repeat(3) { tap(right = true) }
         compose.onNodeWithText("Post by Ana").assertExists()
-        repeat(20) { tap(right = true) }
+        // Photo 1 of 5 → the summary (cards 6 … 14, then the summary takes no taps).
+        repeat(9) { tap(right = true) }
         compose.onNodeWithText("2 of 2", substring = false).assertDoesNotExist()
         compose.onNodeWithContentDescription("Watch again").performClick()
         step()

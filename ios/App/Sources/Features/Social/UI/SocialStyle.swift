@@ -95,6 +95,17 @@ enum SocialNav {
         router.modal = modal
     }
 
+    /// A route whose spec presents it modally (`collage.view` and the recap preview full screen): the shell's
+    /// `PresentedRoute` when it lists the route (account's `PresentedRoute.modal(for:)`), else a push the shell moves
+    /// off the stack itself (`ShellState.presentModalRoute`).
+    static func presentRoute(_ route: AppRoute) {
+        if let presented = PresentedRoute.modal(for: route), let shell = ShellState.active {
+            shell.presentedRoute = presented
+        } else {
+            push(route)
+        }
+    }
+
     /// `safety.report` (account group's sheet).
     static func report(_ target: ReportTarget) {
         router.modal = .account(.report(target))

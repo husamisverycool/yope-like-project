@@ -1,5 +1,6 @@
-// Surface: invite.appclip — reference app: Partiful + Apple HIG (App Clips). Inside the installed app: the same preview as
-// the App Clip, then join (design/surfaces/invite.appclip.md). Reference images: listed in InvitePreviewView.swift.
+// Surface: invite.appclip — inside the installed app: the same invite card as the App Clip (invite.web mobile, Retro's
+// `/u/[username]` page; references listed in InvitePreviewView.swift), then join (design/surfaces/invite.appclip.md).
+// "Let's go" joins at once (the person is signed in) and opens the group; the pill shows `invite.web.opening` meanwhile.
 // Right after onboarding with a pending invite, the join happens at once (onboarding.widget "Out": pending invite →
 // `join_group` → groups.screen).
 import AppData
@@ -33,14 +34,13 @@ struct InviteJoinView: View {
     var body: some View {
         InvitePreviewScreen(
             state: model.state,
-            onJoin: { Task { await join() } },
+            isBusy: model.isJoining,
+            termsURL: dependencies.configuration.termsURL,
+            privacyURL: dependencies.configuration.privacyURL,
+            onContinue: { Task { await join() } },
             onRetry: { Task { await model.load() } }
         )
-        .overlay {
-            if model.isJoining {
-                ProgressView()
-            }
-        }
+        .interactiveDismissDisabled(model.isJoining)
         .presentationDetents([.large])
         .dsHaptic(Tokens.Haptics.globalSuccess, trigger: model.successCount)
         .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)

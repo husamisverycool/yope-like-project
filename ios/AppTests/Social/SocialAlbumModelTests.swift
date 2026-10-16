@@ -15,6 +15,28 @@ final class SocialAlbumModelTests: XCTestCase {
         XCTAssertEqual(album.album.name, "weekend")
         XCTAssertEqual(model.cover(of: album)?.id, SocialDemo.p1)
         XCTAssertEqual(model.savedByName(album), "Ana")
+        XCTAssertFalse(model.isMine(album))
+        XCTAssertEqual(model.me, SocialDemo.me)
+    }
+
+    func testAlbumsListSearchFiltersByName() async {
+        let data = SocialDemo.makeData()
+        data.update { state in
+            state.albums.append(AlbumWithItems(
+                album: Album(id: AlbumID("00000000-0000-4000-8000-00000000e002"), groupID: SocialDemo.groupID, name: "Picnic day",
+                             createdBy: SocialDemo.me, createdAt: SocialDemo.monday, updatedAt: SocialDemo.monday),
+                postIDs: [SocialDemo.p6]
+            ))
+        }
+        let model = AlbumsListModel(groupID: SocialDemo.groupID, data: data)
+        await model.load()
+        XCTAssertEqual(model.visibleAlbums.count, 2)
+        model.search = " PICNIC "
+        XCTAssertEqual(model.visibleAlbums.map(\.album.name), ["Picnic day"], "case-insensitive, trimmed")
+        XCTAssertTrue(model.isMine(model.visibleAlbums[0]))
+        model.search = "zzz"
+        XCTAssertTrue(model.visibleAlbums.isEmpty, "no search results; the list itself is not empty")
+        XCTAssertEqual(model.phase, .ready)
     }
 
     func testAlbumsListStates() async {
@@ -52,6 +74,8 @@ final class SocialAlbumModelTests: XCTestCase {
         XCTAssertEqual(model.postIDs, [SocialDemo.p1, SocialDemo.p2])
         XCTAssertEqual(model.album?.name, "weekend")
         XCTAssertFalse(model.canDelete, "Sam neither created the album nor is an admin")
+        XCTAssertFalse(model.isMine)
+        XCTAssertEqual(model.creatorName, "Ana", "the meta line names who saved it")
     }
 
     func testCreatorOrAdminMayDelete() async {

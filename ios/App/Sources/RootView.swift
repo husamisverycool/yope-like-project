@@ -59,6 +59,10 @@ struct MainShell: View {
                             ShellNavigation.select(tab, router: router, shell: shell)
                         }
                     }
+                    // The camera tab is part of the main window: while it is on screen the window takes the dark
+                    // appearance so the status bar is light on the black camera. Scoped to this branch, the other
+                    // tabs keep the system appearance (`layout.global.appearance`).
+                    .preferredColorScheme(.dark)
             default:
                 NavigationStack(path: $router.path) {
                     GroupsHomeScreen()
@@ -94,7 +98,13 @@ struct MainShell: View {
                     }
             }
         }
-        .captureSendStatus(CaptureEnvironment.shared.sendCenter)
+        // safety.report: Retro's native action sheets over whatever is on screen (`safety.report.layout.flow`).
+        .reportFlow(target: reportTarget, dependencies: dependencies) {
+            router.modal = nil
+            shell.presentedRoute = nil
+            router.path = []
+            shell.showGroups()
+        }
         .onChange(of: router.modal) { _, modal in openCameraTabIfNeeded(modal) }
         .onAppear {
             ShellState.active = shell
@@ -132,6 +142,23 @@ struct MainShell: View {
         guard case let .camera(groupID, nil)? = modal else { return }
         router.modal = nil
         shell.showCamera(groupID: groupID)
+    }
+
+    /// `router.modal` when it is `.account(.report)`: the report flow's action sheets (`AppModal.Presentation.dialog`).
+    private var reportTarget: Binding<ReportTarget?> {
+        Binding(
+            get: {
+                if case let .account(.report(target))? = router.modal { return target }
+                return nil
+            },
+            set: { newValue in
+                if let newValue {
+                    router.modal = .account(.report(newValue))
+                } else if router.modal?.presentation == .dialog {
+                    router.modal = nil
+                }
+            }
+        )
     }
 
     /// `router.modal` when it is presented as a sheet.
@@ -206,22 +233,25 @@ extension AppModal {
         case fullScreen
         /// The camera tab (`MainShell`), not a modal.
         case tab
+        /// Native action sheets over the current screen (safety.report, `MainShell.reportFlow`).
+        case dialog
     }
 
-    /// Account surfaces follow their specs (groups.create / groups.invite / safety.report: sheets; paywall: full
-    /// screen); the in-app invite preview is a sheet so it can be swiped away; the camera without an invitation is
+    /// Account surfaces follow their specs (groups.create / groups.invite: sheets; paywall: full screen; safety.report:
+    /// action sheets); the in-app invite card is a sheet so it can be swiped away; the camera without an invitation is
     /// the camera tab (camera.capture structure item 6). Other groups' modals stay full screen.
     var presentation: Presentation {
         switch self {
         case .camera(_, nil): return .tab
         case .invite: return .sheet
+        case .account(.report): return .dialog
         case let .account(modal): return modal.presentsAsSheet ? .sheet : .fullScreen
         default: return .fullScreen
         }
     }
 }
 
-/// Black screen while a stored session is checked (only for an instant at launch).
+/// The platform activity indicator on the page while a stored session is checked (only for an instant at launch).
 struct LaunchingView: View {
     var body: some View {
         SignUpStateView(title: nil, detail: nil)
@@ -261,8 +291,8 @@ struct RouteDestination: View {
     }
 }
 
-/// `birthday.add` pushed from the settings.account "birthday" row; shows `birthday.add.added` as the lime toast after
-/// adding (birthday.add.md).
+/// `birthday.add` pushed from the settings.account "Birthday" row (inside the Settings sheet); announces
+/// `birthday.add.added` after adding (birthday.add.md; iOS toasts are an accessibility announcement, C-26).
 struct BirthdayAddRoute: View {
     @Environment(AccountDependencies.self) private var dependencies
 

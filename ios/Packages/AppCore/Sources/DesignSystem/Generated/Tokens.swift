@@ -1225,6 +1225,13 @@ public enum Tokens {
             public static let action: String = "copy invite.appclip.card.action (one of Apple's preset verbs)"
             public static let display: String = "app-clip-display=card on the invite page (Retro uses the card display, not the banner)"
         }
+        /// Retro · invite.web · mobile card and share image: the blurred-photo colour field behind the invite text (App Clip card too) · SOURCED
+        /// token: `invite.web.layout.backdrop`
+        public enum InviteWebLayoutBackdrop {
+            public static let blurSigmaToWidth: CGFloat = 0.08
+            public static let dim: String = "color.global.backdropDim"
+            public static let source: String = "the group cover photo, object-fit cover, extended 3σ past the card so the blur has no faded edge"
+        }
         /// Retro · invite.web · link-preview and App Clip meta tags of the invite page · SOURCED
         /// token: `invite.web.layout.linkPreview`
         public enum InviteWebLayoutLinkPreview {
@@ -1239,7 +1246,7 @@ public enum Tokens {
         public enum InviteWebLayoutOgImage {
             public static let width: CGFloat = 600
             public static let height: CGFloat = 600
-            public static let background: String = "the group cover blurred to a colour field (C-34 backdrop) — Retro: a dark blurred gradient made from the profile photo; no cover → color.global.backgroundDeep"
+            public static let background: String = "the group cover blurred to a colour field (invite.web.layout.backdrop: σ = 0.08 × the image width, under color.global.backdropDim) — Retro: a dark blurred gradient made from the profile photo; no cover → color.global.backgroundDeep"
             public static let avatar: String = "group cover in a circle, 83 px, centred; top at 208 px"
             public static let avatarToName: CGFloat = 19
             public static let name: String = "group name in font.global.display, #FFFFFF, centred, ink height 40 px for an ascender word (≈ 52 px type)"

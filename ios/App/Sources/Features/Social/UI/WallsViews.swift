@@ -141,7 +141,7 @@ struct WallWeekList: View {
                 openPhoto(PhotoViewerContext(postIDs: model.photoPostIDs, start: post.id, showsGroupName: true))
             case let .collage(collage)?:
                 if let invitationID = collage.invitationID {
-                    SocialNav.push(.capture(.collage(groupID: collage.groupID.rawValue, invitationID: invitationID.rawValue)))
+                    SocialNav.presentRoute(.capture(.collage(groupID: collage.groupID.rawValue, invitationID: invitationID.rawValue)))
                 }
             case nil:
                 break

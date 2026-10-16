@@ -13,6 +13,8 @@ import app.feature.account.auth.PhoneError
 import app.feature.account.auth.PhoneNumbers
 import app.feature.account.auth.PhoneViewModel
 import app.feature.account.auth.ProfileError
+import app.feature.account.auth.ProfileStep
+import app.feature.account.auth.ProfileUiState
 import app.feature.account.auth.ProfileViewModel
 import app.feature.account.platform.AgeRefusal
 import app.feature.account.testing.FakeAccountBackend
@@ -57,9 +59,24 @@ class AuthViewModelsTest {
         assertEquals(listOf("requestOtp"), backend.calls)
         assertEquals("+14155550100", env.signUp.phoneE164)
         assertEquals(AppRoute.AuthCode, events.navigations().single().route)
-        assertTrue(Tokens.Haptics.globalSuccess in events.haptics())
-        assertEquals(listOf(AccountEvent.Toast(R.string.auth_phone_toast_codesent)), events.toasts())
+        // Retro shows no "code sent" toast: the code screen is the confirmation.
+        assertTrue(events.toasts().isEmpty())
         assertFalse(vm.state.value.sending)
+    }
+
+    @Test fun landingLeadsToTheFormAndBackKeepsTheNumber() = runTest(main.dispatcher) {
+        val env = fakeEnvironment(FakeAccountBackend())
+        val vm = PhoneViewModel(env)
+        assertTrue(vm.state.value.landing)
+        vm.showForm()
+        assertFalse(vm.state.value.landing)
+        vm.showLanding()
+        assertTrue(vm.state.value.landing)
+        // Back from auth.code (the number was sent): straight to the form with the number kept.
+        env.signUp.phoneDisplay = "+1 415-555-0100"
+        val back = PhoneViewModel(env).state.value
+        assertFalse(back.landing)
+        assertEquals("+1 415-555-0100", back.phone)
     }
 
     @Test fun phoneFormatsAsTypedAndTheFlagFollowsTheCallingCode() = runTest(main.dispatcher) {
@@ -234,14 +251,19 @@ class AuthViewModelsTest {
 
     // auth.profile ----------------------------------------------------------------------------------
 
-    @Test fun profileSavesTheNameThenAsksForNotificationsOnAndroid13() = runTest(main.dispatcher) {
+    @Test fun profileSavesTheNameThenThePhotoStepThenNotificationsOnAndroid13() = runTest(main.dispatcher) {
         val backend = FakeAccountBackend().apply { signIn(); profile(meId, "") }
         val vm = ProfileViewModel(fakeEnvironment(backend, sdkInt = 33))
         val events = vm.recordEvents(backgroundScope)
         vm.onName("  Ana Lima ")
         vm.submit()
         assertEquals("Ana Lima", backend.profiles.getValue(backend.meId).displayName)
+        assertEquals(ProfileStep.Photo, vm.state.value.step)
+        assertTrue(events.navigations().isEmpty())
+        // "Maybe Later": on without a photo (no nudge).
+        vm.skipPhoto()
         assertEquals(AppRoute.PermissionNotifications, events.navigations().single().route)
+        assertFalse("setAvatar" in backend.calls)
     }
 
     @Test fun profileSkipsTheNotificationsStepBeforeAndroid13() = runTest(main.dispatcher) {
@@ -250,22 +272,46 @@ class AuthViewModelsTest {
         val events = vm.recordEvents(backgroundScope)
         vm.onName("Ana")
         vm.submit()
+        vm.onPicked(android.net.Uri.parse("content://picked/1"))
+        vm.submit()
+        assertTrue("setAvatar" in backend.calls)
         assertEquals(AppRoute.OnboardingWidget, events.navigations().single().route)
     }
 
-    @Test fun avatarUploadFailureEmptiesTheAvatarAndKeepsContinue() = runTest(main.dispatcher) {
+    @Test fun namesPast80CharactersAreTooLong() {
+        val state = ProfileUiState(name = "a".repeat(81))
+        assertTrue(state.tooLong)
+        assertFalse(state.canContinue)
+        assertFalse(ProfileUiState(name = "a".repeat(80)).tooLong)
+    }
+
+    @Test fun avatarUploadFailureEmptiesTheAvatarAndStaysOnThePhotoStep() = runTest(main.dispatcher) {
         val backend = FakeAccountBackend().apply {
             signIn()
             profile(meId, "")
             failures["setAvatar"] = DataError.Storage(app.data.error.StorageFailure.Forbidden, 403, null)
         }
         val vm = ProfileViewModel(fakeEnvironment(backend))
+        val events = vm.recordEvents(backgroundScope)
         vm.onName("Ana")
+        vm.submit()
         vm.onPicked(android.net.Uri.parse("content://picked/1"))
         assertTrue(vm.state.value.avatar != null)
         vm.submit()
         assertNull(vm.state.value.avatar)
         assertEquals(ProfileError.Upload, vm.state.value.error)
-        assertTrue(vm.state.value.canContinue)
+        assertEquals(ProfileStep.Photo, vm.state.value.step)
+        assertTrue(events.navigations().isEmpty())
+    }
+
+    // auth.code: errors -----------------------------------------------------------------------------
+
+    @Test fun codeServiceFailureIsTheTitledServiceError() = runTest(main.dispatcher) {
+        val backend = FakeAccountBackend().apply { failures["verifyOtp"] = DataError.Unexpected("x") }
+        val vm = CodeViewModel(codeEnv(backend))
+        vm.onCodeChange("123456")
+        vm.submit()
+        assertEquals(CodeError.Service, vm.state.value.error)
+        assertEquals("123456", vm.state.value.code)
     }
 }

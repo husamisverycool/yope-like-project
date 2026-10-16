@@ -7,7 +7,51 @@ import XCTest
 
 @MainActor
 final class SocialWeekModelTests: XCTestCase {
-    // MARK: week.recap
+    // MARK: week.recap list
+
+    func testRecapListShowsReadyAndPendingRecapsNewestFirstWithCovers() async {
+        let model = WeekRecapListModel(groupID: SocialDemo.groupID, data: SocialDemo.makeData())
+        XCTAssertFalse(model.showsLoading, "nothing drawn before the cache was looked at")
+        await model.load()
+        XCTAssertEqual(model.phase, .ready)
+        XCTAssertEqual(model.recaps.map(\.id), [SocialDemo.pendingRecapID, SocialDemo.recapID], "newest week first")
+        XCTAssertEqual(model.recaps.map(\.status), [.pending, .ready])
+        let ready = model.recaps[1]
+        XCTAssertEqual(model.cover(of: ready)?.id, SocialDemo.p6, "the cover is the recap's first item")
+        XCTAssertEqual(model.weekNumber(of: ready), 41)
+    }
+
+    func testRecapListCoverFallsBackToTheNextVisibleItem() async {
+        let data = SocialDemo.makeData()
+        data.update { $0.posts.removeAll { $0.id == SocialDemo.p6 } }
+        let model = WeekRecapListModel(groupID: SocialDemo.groupID, data: data)
+        await model.load()
+        XCTAssertEqual(model.recaps.first { $0.id == SocialDemo.recapID }.flatMap(model.cover)?.id, SocialDemo.p5)
+    }
+
+    func testRecapListEmptyErrorAndOffline() async {
+        let empty = WeekRecapListModel(groupID: SocialDemo.groupID, data: SocialDemo.makeEmptyData())
+        await empty.load()
+        XCTAssertEqual(empty.phase, .empty)
+
+        let failingData = SocialDemo.makeData()
+        failingData.update { $0.mode = .failing }
+        let failing = WeekRecapListModel(groupID: SocialDemo.groupID, data: failingData)
+        await failing.load()
+        XCTAssertEqual(failing.phase, .failed)
+        failingData.update { $0.mode = .normal }
+        await failing.retry()
+        XCTAssertEqual(failing.phase, .ready)
+
+        let offlineData = SocialDemo.makeData()
+        offlineData.update { $0.mode = .offline }
+        let offline = WeekRecapListModel(groupID: SocialDemo.groupID, data: offlineData)
+        await offline.load()
+        XCTAssertEqual(offline.phase, .offline)
+        XCTAssertTrue(offline.isOffline)
+    }
+
+    // MARK: week.recap preview
 
     func testReadyRecapShowsItemsAndTheWholeWeek() async {
         let model = WeekRecapModel(groupID: SocialDemo.groupID, recapID: SocialDemo.recapID, data: SocialDemo.makeData())
@@ -15,7 +59,25 @@ final class SocialWeekModelTests: XCTestCase {
         XCTAssertEqual(model.phase, .ready)
         XCTAssertEqual(model.cardPosts.map(\.id), [SocialDemo.p6, SocialDemo.p5], "recap order")
         XCTAssertEqual(model.weekPosts.map(\.id), [SocialDemo.p5, SocialDemo.p6], "chronological")
+        XCTAssertEqual(model.cover?.id, SocialDemo.p6)
+        XCTAssertEqual(model.weekNumber, 41)
+        XCTAssertEqual(model.group?.name, "roommates")
         XCTAssertTrue(model.canEdit)
+        XCTAssertNil(model.note, "no text: no note box")
+    }
+
+    func testTheNoteNamesItsLastEditor() async {
+        let data = SocialDemo.makeData()
+        data.update { state in
+            if let index = state.recaps.firstIndex(where: { $0.id == SocialDemo.recapID }) {
+                state.recaps[index].text = "  best week  "
+                state.recaps[index].editedBy = SocialDemo.ana
+            }
+        }
+        let model = WeekRecapModel(groupID: SocialDemo.groupID, recapID: SocialDemo.recapID, data: data)
+        await model.load()
+        XCTAssertEqual(model.note?.text, "best week")
+        XCTAssertEqual(model.note?.editor?.socialFirstName, "Ana")
     }
 
     func testPendingEmptyAndFailedRecaps() async {
@@ -23,6 +85,7 @@ final class SocialWeekModelTests: XCTestCase {
         await pending.load()
         XCTAssertEqual(pending.phase, .pending)
         XCTAssertFalse(pending.canEdit)
+        XCTAssertNil(pending.editSeed)
 
         let missing = WeekRecapModel(groupID: SocialDemo.groupID, recapID: RecapID("00000000-0000-4000-8000-00000000d0ff"), data: SocialDemo.makeData())
         await missing.load()
@@ -53,7 +116,7 @@ final class SocialWeekModelTests: XCTestCase {
         let task = Task { await model.load() }
         let shown = await socialEventually { model.phase == .ready }
         XCTAssertTrue(shown, "the recap fetched earlier shows while the server is asked")
-        XCTAssertFalse(model.showsLoading, "no HUD over cached content")
+        XCTAssertFalse(model.showsLoading, "no indicator over cached content")
         XCTAssertEqual(model.cardPosts.map(\.id), [SocialDemo.p6, SocialDemo.p5])
 
         data.update { $0.holds.remove("recap") }
@@ -80,55 +143,76 @@ final class SocialWeekModelTests: XCTestCase {
         await recap.load()
         let editor = WeekEditModel(groupID: SocialDemo.groupID, mode: .recap(SocialDemo.recapID), data: data, seed: recap.editSeed)
         XCTAssertEqual(editor.phase, .ready, "no loading state when opened from the recap")
-        XCTAssertEqual(editor.gridPosts.map(\.id), [SocialDemo.p6, SocialDemo.p5])
-        XCTAssertEqual(editor.checked, [SocialDemo.p6, SocialDemo.p5])
+        XCTAssertEqual(editor.gridPosts.map(\.id), [SocialDemo.p5, SocialDemo.p6], "the week's photos in time order")
+        XCTAssertEqual(editor.chosen, [SocialDemo.p6, SocialDemo.p5], "the strip in recap order")
+        XCTAssertFalse(editor.hasChanges)
         XCTAssertEqual(data.read { $0.calls.filter { $0 == "recap" }.count }, 1, "the editor fetched nothing")
+
+        let album = WeekEditModel(groupID: SocialDemo.groupID, mode: .recapAlbum(SocialDemo.recapID), data: data, seed: recap.editSeed)
+        XCTAssertTrue(album.isAlbumOnly)
+        XCTAssertTrue(album.isAlbumSheetPresented, "Save as Album opens the album sheet")
+        XCTAssertEqual(album.checkedInOrder, [SocialDemo.p6, SocialDemo.p5], "with the recap's photos selected")
     }
 
-    func testSegmentAndDeletion() async {
+    func testDeletionLeavesTheCard() async {
         let model = WeekRecapModel(groupID: SocialDemo.groupID, recapID: SocialDemo.recapID, data: SocialDemo.makeData())
         await model.load()
-        model.setSegment(.pics)
-        XCTAssertEqual(model.segment, .pics)
-        XCTAssertEqual(model.signals.feedback?.kind, .select)
-        model.setSegment(.recap, fromScroll: true)
-        XCTAssertEqual(model.signals.feedback?.id, 1, "scrolling into a part plays no haptic")
-        model.handle(.postDeleted(postID: SocialDemo.p5, mediaID: nil))
-        XCTAssertEqual(model.cardPosts.map(\.id), [SocialDemo.p6])
-        XCTAssertEqual(model.weekPosts.map(\.id), [SocialDemo.p6])
+        model.handle(.postDeleted(postID: SocialDemo.p6, mediaID: nil))
+        XCTAssertEqual(model.cardPosts.map(\.id), [SocialDemo.p5])
+        XCTAssertEqual(model.weekPosts.map(\.id), [SocialDemo.p5])
+        XCTAssertEqual(model.cover?.id, SocialDemo.p5, "the next item becomes the cover")
     }
 
     // MARK: week.edit
 
-    func testEditGridPutsRecapItemsFirstAndSavesCheckedInOrder() async {
+    func testEditStripAppendsCheckedPhotosAndSavesTheStripOrder() async {
         let data = SocialDemo.makeData()
         let extra = PostID("00000000-0000-4000-8000-00000000c007")
         data.update { $0.posts.append(SocialDemo.post(extra, by: SocialDemo.ben, at: SocialDemo.monday.addingTimeInterval(-3 * SocialDemo.day))) }
         let model = WeekEditModel(groupID: SocialDemo.groupID, mode: .recap(SocialDemo.recapID), data: data)
         await model.load()
         XCTAssertEqual(model.phase, .ready)
-        XCTAssertEqual(model.gridPosts.map(\.id), [SocialDemo.p6, SocialDemo.p5, extra])
-        XCTAssertEqual(model.checked, [SocialDemo.p6, SocialDemo.p5])
+        XCTAssertEqual(model.gridPosts.map(\.id), [SocialDemo.p5, SocialDemo.p6, extra], "the grid in time order")
+        XCTAssertEqual(model.chosen, [SocialDemo.p6, SocialDemo.p5])
+        XCTAssertEqual(model.weekNumber, 41)
 
         model.toggle(SocialDemo.p6)
         model.toggle(extra)
         XCTAssertEqual(model.signals.feedback?.kind, .select)
-        XCTAssertEqual(model.checkedInOrder, [SocialDemo.p5, extra])
+        XCTAssertEqual(model.checkedInOrder, [SocialDemo.p5, extra], "a checked photo joins the strip's end")
+        XCTAssertEqual(model.chosenPosts.map(\.id), [SocialDemo.p5, extra])
+        XCTAssertTrue(model.isChecked(extra))
+        XCTAssertFalse(model.isChecked(SocialDemo.p6))
+        XCTAssertTrue(model.hasChanges)
         model.text = "best week"
         await model.save()
         XCTAssertTrue(model.isFinished)
+        XCTAssertFalse(model.hasChanges, "saved")
         XCTAssertEqual(data.read { $0.recaps.first { $0.id == SocialDemo.recapID } }?.items, [SocialDemo.p5, extra])
         XCTAssertEqual(data.read { $0.recaps.first { $0.id == SocialDemo.recapID } }?.text, "best week")
         XCTAssertEqual(model.signals.notice?.notice, .recapSaved)
     }
 
-    func testReorderMovesOnlyBetweenCheckedTiles() async {
+    func testReorderMovesWithinTheStrip() async {
         let model = WeekEditModel(groupID: SocialDemo.groupID, mode: .recap(SocialDemo.recapID), data: SocialDemo.makeData())
         await model.load()
         XCTAssertTrue(model.move(SocialDemo.p5, to: SocialDemo.p6))
         XCTAssertEqual(model.checkedInOrder, [SocialDemo.p5, SocialDemo.p6])
+        XCTAssertTrue(model.hasChanges, "a new order is a change")
+        XCTAssertTrue(model.move(SocialDemo.p5, by: 1), "accessibility: move later")
+        XCTAssertEqual(model.checkedInOrder, [SocialDemo.p6, SocialDemo.p5])
+        XCTAssertFalse(model.hasChanges, "back to the saved order")
+        XCTAssertFalse(model.move(SocialDemo.p5, by: 1), "nothing after the last tile")
         model.toggle(SocialDemo.p6)
-        XCTAssertFalse(model.move(SocialDemo.p5, to: SocialDemo.p6))
+        XCTAssertFalse(model.move(SocialDemo.p5, to: SocialDemo.p6), "only tiles in the strip move")
+    }
+
+    func testTextAloneIsAChange() async {
+        let model = WeekEditModel(groupID: SocialDemo.groupID, mode: .recap(SocialDemo.recapID), data: SocialDemo.makeData())
+        await model.load()
+        XCTAssertFalse(model.hasChanges)
+        model.text = "hello"
+        XCTAssertTrue(model.hasChanges, "Cancel asks first")
     }
 
     func testSaveFailureKeepsTheSelection() async {
@@ -141,6 +225,7 @@ final class SocialWeekModelTests: XCTestCase {
         XCTAssertFalse(model.isFinished)
         XCTAssertEqual(model.saveError, .other)
         XCTAssertEqual(model.checkedInOrder, [SocialDemo.p5])
+        XCTAssertEqual(model.signals.feedback?.kind, .failed)
     }
 
     func testPendingRecapIsNotEditable() async {
@@ -153,6 +238,7 @@ final class SocialWeekModelTests: XCTestCase {
         let data = SocialDemo.makeData()
         let model = WeekEditModel(groupID: SocialDemo.groupID, mode: .recap(SocialDemo.recapID), data: data)
         await model.load()
+        XCTAssertFalse(model.isAlbumOnly)
         XCTAssertFalse(model.isAlbumSheetPresented)
         model.isAlbumSheetPresented = true
         XCTAssertFalse(model.canSaveAlbum)
@@ -173,6 +259,20 @@ final class SocialWeekModelTests: XCTestCase {
         model.toggle(SocialDemo.p5)
         model.albumName = "nothing"
         XCTAssertFalse(model.canSaveAlbum, "no photo checked")
+    }
+
+    func testAlbumSaveFailureShowsItsAlertAndKeepsTheSheet() async {
+        let data = SocialDemo.makeData()
+        let model = WeekEditModel(groupID: SocialDemo.groupID, mode: .album(weekStart: SocialDemo.thisWeek), data: data)
+        await model.load()
+        model.albumName = "this week"
+        data.update { $0.failOnce.insert("saveAlbum") }
+        await model.saveAlbum()
+        XCTAssertNotNil(model.albumError)
+        XCTAssertTrue(model.isAlbumSheetPresented)
+        XCTAssertFalse(model.isFinished)
+        model.dismissAlbumError()
+        XCTAssertNil(model.albumError)
     }
 
     func testAlbumModeFromHistoryChecksTheWeek() async {
@@ -204,6 +304,8 @@ final class SocialWeekModelTests: XCTestCase {
         XCTAssertEqual(model.readyRecaps[SocialDemo.lastWeek], SocialDemo.recapID)
         XCTAssertNil(model.readyRecaps[SocialDemo.thisWeek], "pending recaps are not offered")
         XCTAssertEqual(SocialCalendar.weekNumber(of: SocialDemo.thisWeek, in: model.timeZone), 42)
+        XCTAssertEqual(model.currentWeekNumber, 42)
+        XCTAssertEqual(model.weekNumber(of: model.weeks[1]), 41)
         XCTAssertEqual(SocialCalendar.weekNumber(of: LocalDate(year: 2026, month: 12, day: 28)!, in: model.timeZone), 53)
         XCTAssertEqual(SocialCalendar.weekNumber(of: LocalDate(year: 2027, month: 1, day: 4)!, in: model.timeZone), 1)
     }

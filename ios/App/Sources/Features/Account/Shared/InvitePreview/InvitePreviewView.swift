@@ -1,318 +1,344 @@
-// Surface: invite.appclip — the invite preview (the invite.web page anatomy rendered natively) and the Partiful-style
-// state pages. Reference apps: Partiful (event invite page, App Clip card, RSVP sheet) + Apple HIG (App Clips);
-// design/surfaces/invite.appclip.md and invite.web.md. Reference images:
-// references/auto/partiful/web/pf-web-private-past-01.png … -03.png (P3), pf-web-public-light-01.png (P1),
-// pf-web-public-dark-01.png (P2), pf-web-notfound-01.png (NF), pf-web-public-light-rsvp-sheet.png /
-// pf-web-public-dark-rsvp-sheet.png (P4), references/auto/partiful/store/partiful-store-04.png (C1).
-// Shared by the App Clip and the installed app (`InviteScreen`).
+// Surface: invite.appclip (and the installed app's invite sheet) — the invite card of invite.web (mobile), drawn
+// natively. Visual reference: Retro's `/u/[username]` page (references/auto/retro/web/retro.app-u-nathan-iphone.png,
+// WEBU: card inset 6 / radius ≈ 36, 112-pt avatar, serif "Nathan Invited You!", 62 %-white line, translucent 56-pt pill
+// "Let's go", tiny white footer; CSS .page_mobileProfilePageContent, .page_invitePillButton, .page_mobileInviteFooter)
+// and its App Clip card (RP §7). design/surfaces/invite.appclip.md, invite.web.md. Shared by the App Clip and
+// `InviteScreen`.
 import DesignSystem
 import SwiftUI
 
-/// Text styles of the invite page (`invite.web.*`; px = pt). Dynamic Type follows the foundations' role mechanism:
-/// each size scales with the nearest platform style (F-13 rule).
-enum InviteStyle {
-    private static func style(_ size: CGFloat, _ weight: Font.Weight, _ textStyle: Font.TextStyle, lineHeight: CGFloat? = nil) -> DSTextStyle {
-        DSTextStyle(family: Tokens.Fonts.inviteWebFont, size: size, weight: weight, relativeTo: textStyle, lineHeight: lineHeight)
+/// Text styles of the card (`invite.web.*` + `global.*`). Dynamic Type: headline `largeTitle`, line `subheadline`,
+/// pill `headline` (invite.appclip Accessibility); the footer scales with `caption2`.
+enum InviteCardStyle {
+    /// `font.global.display`, `fontSize.global.displayMedium` (32) / `invite.web.lineHeight.headline` (32), regular.
+    static let headline = DSTextStyle(
+        family: Tokens.Fonts.globalDisplay,
+        size: Tokens.FontSizes.globalDisplayMedium,
+        weight: Tokens.FontWeights.fontWeightGlobalDisplayMedium,
+        relativeTo: Font.TextStyle(tokenName: Tokens.Layouts.GlobalTextStyleMap.displayMedium),
+        lineHeight: Tokens.LineHeights.inviteWebLineHeightHeadline
+    )
+    /// `invite.web.fontSize.body` (14) / `invite.web.lineHeight.body` (19.6), tracking `invite.web.letterSpacing.body`.
+    static let line = DSTextStyle(
+        family: Tokens.Fonts.globalFamily,
+        size: Tokens.FontSizes.inviteWebFontSizeBody,
+        weight: Tokens.FontWeights.fontWeightGlobalBody,
+        relativeTo: .subheadline,
+        lineHeight: Tokens.LineHeights.inviteWebLineHeightBody,
+        tracking: Tokens.Tracking.inviteWebLetterSpacingBody
+    )
+    /// `invite.web.fontSize.pill` (16) / `invite.web.fontWeight.pill`.
+    static let pill = DSTextStyle(
+        family: Tokens.Fonts.globalFamily,
+        size: Tokens.FontSizes.inviteWebFontSizePill,
+        weight: Tokens.FontWeights.inviteWebFontWeightPill,
+        relativeTo: .headline
+    )
+    /// `invite.web.fontSize.footer` (8), `fontWeight.global.body`.
+    static let footer = DSTextStyle(
+        family: Tokens.Fonts.globalFamily,
+        size: Tokens.FontSizes.inviteWebFontSizeFooter,
+        weight: Tokens.FontWeights.fontWeightGlobalBody,
+        relativeTo: .caption2
+    )
+}
+
+/// What the card's column shows (invite.web Structure, States).
+struct InviteCardContent: Hashable {
+    /// The blurred photo behind the card; nil → `color.global.backgroundDeep`.
+    var backdrop: PhotoSource?
+    /// `invite.web.cover.alt` when the backdrop is the group's cover.
+    var backdropLabel: String?
+    /// The inviter's avatar circle (the placeholder circle when `avatar` is nil); state cards show none.
+    var showsAvatar: Bool
+    var avatar: PhotoSource?
+    var avatarLabel: String?
+    var headline: String
+    var line: String?
+    /// Members in joining order (C-23 stack, as many as fit `invite.web.size.textMaxWidth`).
+    var members: [PhotoSource?]
+    var membersLabel: String?
+
+    /// A valid invite (`joined`: the App Clip's joined state — `invite.appclip.joined.*`, no pill).
+    static func invite(_ preview: WebInvitePreview, joined: Bool = false) -> InviteCardContent {
+        let headline: String
+        let line: String
+        if joined {
+            headline = Copy.inviteAppclipJoinedTitle(groupName: preview.groupName)
+            line = Copy.inviteAppclipJoinedBody
+        } else {
+            headline = preview.inviterFirstName.map { Copy.inviteWebInvitedBy(firstName: $0) } ?? Copy.inviteWebInvitedFallback
+            line = Copy.inviteWebBody(groupName: preview.groupName)
+        }
+        return InviteCardContent(
+            backdrop: preview.backdropSource,
+            backdropLabel: preview.coverSource == nil ? nil : Copy.inviteWebCoverAlt(groupName: preview.groupName),
+            showsAvatar: true,
+            avatar: preview.inviterAvatarSource,
+            avatarLabel: preview.inviterFirstName.map { Copy.inviteWebAvatarAlt(firstName: $0) },
+            headline: headline,
+            line: line,
+            members: preview.members.indices.map { preview.avatarSource(of: $0) },
+            membersLabel: preview.members.isEmpty ? nil : Copy.inviteWebMembersTitle(groupName: preview.groupName)
+        )
     }
 
-    /// Body text: `invite.web.fontSize.body`, `invite.web.lineHeight.default` × size.
-    static let body = style(Tokens.FontSizes.inviteWebFontSizeBody, Tokens.FontWeights.inviteWebFontWeightBody, .callout,
-                            lineHeight: Tokens.FontSizes.inviteWebFontSizeBody * Tokens.LineHeights.inviteWebLineHeightDefault)
-    static let bodyButton = style(Tokens.FontSizes.inviteWebFontSizeBody, Tokens.FontWeights.inviteWebFontWeightButton, .callout)
-    static let userRowName = style(Tokens.FontSizes.inviteWebFontSizeBody, Tokens.FontWeights.inviteWebFontWeightUserRowName, .callout)
-    static let sectionHeader = style(Tokens.FontSizes.inviteWebFontSizeSectionHeader, Tokens.FontWeights.inviteWebFontWeightSectionHeader, .headline)
-    static let detail = style(Tokens.FontSizes.inviteWebFontSizeDetail, Tokens.FontWeights.inviteWebFontWeightBody, .subheadline,
-                              lineHeight: Tokens.FontSizes.inviteWebFontSizeDetail * Tokens.LineHeights.inviteWebLineHeightDefault)
-    static let buttonMedium = style(Tokens.FontSizes.inviteWebFontSizeButtonMedium, Tokens.FontWeights.inviteWebFontWeightButton, .subheadline)
-    static let stateGlyph = style(Tokens.FontSizes.inviteWebFontSizeStateGlyph, Tokens.FontWeights.inviteWebFontWeightBody, .largeTitle,
-                                  lineHeight: Tokens.FontSizes.inviteWebFontSizeStateGlyph * Tokens.LineHeights.inviteWebLineHeightDefault)
-    static let stateTitle = style(Tokens.FontSizes.inviteWebFontSizeStateTitle, Tokens.FontWeights.inviteWebFontWeightStateTitle, .title2)
-
-    /// The title at its auto-fitted size (`invite.web.lineHeight.title`, `invite.web.letterSpacing.title` em).
-    static func title(size: CGFloat) -> DSTextStyle {
-        style(size, Tokens.FontWeights.inviteWebFontWeightTitle, .largeTitle,
-              lineHeight: size * Tokens.LineHeights.inviteWebLineHeightTitle)
+    /// A state card: the state's title and explanation on `color.global.backgroundDeep`, no avatar, no members.
+    static func state(_ state: InvitePreviewState) -> InviteCardContent {
+        let headline: String
+        let line: String?
+        switch state {
+        case .unavailable:
+            headline = Copy.inviteWebUnavailableTitle
+            line = Copy.inviteWebUnavailableBody
+        case .notFound:
+            headline = Copy.inviteWebNotFoundTitle
+            line = nil
+        case .rateLimited:
+            headline = Copy.inviteWebErrorTitle
+            line = Copy.inviteWebRateLimitedBody
+        case .offline:
+            headline = Copy.inviteWebErrorTitle
+            line = Copy.inviteAppclipOfflineBody
+        case .full:
+            headline = Copy.inviteAppclipFullTitle
+            line = Copy.inviteAppclipFullBody
+        case .loading, .valid, .error:
+            headline = Copy.inviteWebErrorTitle
+            line = Copy.inviteWebErrorBody
+        }
+        return InviteCardContent(
+            backdrop: nil, backdropLabel: nil, showsAvatar: false, avatar: nil, avatarLabel: nil,
+            headline: headline, line: line, members: [], membersLabel: nil
+        )
     }
 }
 
-/// Partiful's button feedback: pressed opacity `invite.web.opacity.button.active`, animated over
-/// `invite.web.duration.button.opacity` with `invite.web.easing.button`.
-struct InvitePressStyle: ButtonStyle {
+/// The card's pill: "Let's go" (`invite.web.cta`; busy `invite.web.opening`) or "Try again" (`invite.web.error.retry`).
+struct InviteCardPill {
+    let title: String
+    var busyTitle: String?
+    var isBusy = false
+    var identifier: String
+    let action: () -> Void
+}
+
+/// Pill background `invite.web.color.pill`, `invite.web.color.pillHover` while pressed (the web's hover), over
+/// `invite.web.duration.pill` with `invite.web.easing.pill`; Reduce Motion: no transition.
+private struct InvitePillStyle: ButtonStyle {
+    private static let press = DSAnimation.timing(duration: Tokens.Durations.inviteWebDurationPill, easing: Tokens.Easings.inviteWebEasingPill)
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .opacity(configuration.isPressed ? Tokens.Opacities.inviteWebOpacityButtonActive : 1)
-            .dsAnimation(.timing(duration: Tokens.Durations.inviteWebDurationButtonOpacity, easing: Tokens.Easings.inviteWebEasingButton),
-                         value: configuration.isPressed)
+            .background(configuration.isPressed ? Tokens.Colors.inviteWebColorPillHover : Tokens.Colors.inviteWebColorPill, in: Capsule())
+            .dsAnimation(Self.press, value: configuration.isPressed)
     }
 }
 
-/// The large filled button (`invite.web.dimension.button.large.*`, `invite.web.radius.button.large`,
-/// `invite.web.color.button.filled.*`, body size at the button weight).
-struct InviteFilledButton: View {
-    let title: String
-    let theme: InviteTheme
-    var fullWidth = true
-    let action: () -> Void
+/// The invite card on the white page (invite.web mobile): inset `invite.web.size.cardInset` from every screen edge,
+/// corners `invite.web.radius.card`, filled with the C-34 blurred backdrop (`BlurredBackdrop`) or
+/// `color.global.backgroundDeep`. A centred column: the inviter's avatar centred in the space above the text block;
+/// the headline, the line and the member stack anchored `invite.web.size.bodyToPill` above the pill; the pill
+/// `invite.web.size.pillToFooter` above the footer "Terms & Privacy" (`invite.web.size.footerMargin` around it).
+/// Retro's web page has no dark scheme: the card is the same in both appearances.
+struct InviteCard: View {
+    let content: InviteCardContent
+    var pill: InviteCardPill?
+    /// Loading: the empty card with the white platform activity indicator centred (C-28).
+    var isLoading = false
+    var termsURL: URL?
+    var privacyURL: URL?
+
+    @State private var browserLink: BrowserLink?
 
     var body: some View {
-        Button(action: action) {
-            Text(title)
-                .dsTextStyle(InviteStyle.bodyButton)
-                .foregroundStyle(theme.buttonLabel)
-                .padding(.horizontal, Tokens.Sizes.inviteWebDimensionButtonLargePaddingH)
-                .frame(maxWidth: fullWidth ? .infinity : nil, minHeight: Tokens.Sizes.inviteWebDimensionButtonLargeHeight)
-                .background(theme.buttonFill, in: RoundedRectangle(cornerRadius: Tokens.Radii.inviteWebRadiusButtonLarge))
-        }
-        .buttonStyle(InvitePressStyle())
-    }
-}
-
-/// The preview of a valid invite: title, cover, "Invited by", Member List, members-only card with "Join".
-struct InvitePreviewContent: View {
-    let preview: WebInvitePreview
-    /// Hidden once the person has joined.
-    var showsJoin = true
-    let onJoin: () -> Void
-
-    @State private var showsAllMembers = false
-
-    private var theme: InviteTheme { InviteTheme(preview.theme) }
-
-    var body: some View {
-        GeometryReader { proxy in
-            let column = min(proxy.size.width - Tokens.Sizes.inviteWebDimensionMargin * 2, Tokens.Sizes.inviteWebDimensionColumnMaxWidth)
-            ScrollView {
-                VStack(spacing: 0) {
-                    title(column: column)
-                    if let cover = preview.cover {
-                        URLImage(url: cover.url) { theme.text.opacity(Tokens.Opacities.inviteWebOpacityButtonOutlinedFill) }
-                            .aspectRatio(cover.width / max(cover.height, 1), contentMode: .fit)
-                            .clipShape(RoundedRectangle(cornerRadius: Tokens.Radii.inviteWebRadiusCover))
-                            .accessibilityLabel(Text(Copy.inviteWebCoverAlt(groupName: preview.groupName)))
-                            .padding(.top, Tokens.Sizes.inviteWebDimensionTitleToCover)
-                    }
-                    VStack(alignment: .leading, spacing: Tokens.Sizes.inviteWebDimensionSectionGap) {
-                        if let inviter = preview.inviterFirstName {
-                            Text(Copy.inviteWebInvitedBy(firstName: inviter))
-                                .dsTextStyle(InviteStyle.body)
-                                .foregroundStyle(theme.text.opacity(Tokens.Opacities.inviteWebOpacityTextBody))
-                                .padding(.vertical, Tokens.Sizes.inviteWebDimensionFieldRowPaddingV)
-                        }
-                        memberList
-                        if showsJoin { gateCard }
-                    }
-                    .padding(.top, preview.cover == nil ? Tokens.Sizes.inviteWebDimensionTitleToCover : Tokens.Sizes.inviteWebDimensionCoverToNext)
-                }
-                .frame(width: max(column, 0))
-                .frame(maxWidth: .infinity)
-                .padding(.top, Tokens.Sizes.inviteWebDimensionTitleTop)
-                .padding(.bottom, Tokens.Sizes.inviteWebDimensionSectionGap)
-            }
-        }
-        .background(theme.background.ignoresSafeArea())
-        .accessibilityIdentifier("invite.preview")
-    }
-
-    private func title(column: CGFloat) -> some View {
-        let size = InviteTitleFit.size(for: preview.groupName, width: column)
-        return Text(preview.groupName)
-            .dsTextStyle(InviteStyle.title(size: size))
-            .tracking(size * Tokens.Tracking.inviteWebLetterSpacingTitle)
-            .foregroundStyle(theme.text)
-            .multilineTextAlignment(.center)
-            .frame(maxWidth: .infinity)
-            .accessibilityAddTraits(.isHeader)
-    }
-
-    // MARK: Member List
-
-    private var memberList: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text(Copy.inviteWebMembersTitle)
-                    .dsTextStyle(InviteStyle.sectionHeader)
-                    .accessibilityAddTraits(.isHeader)
-                Spacer(minLength: 0)
-                Button {
-                    showsAllMembers.toggle()
-                } label: {
-                    Text(Copy.inviteWebMembersViewAll)
-                        .dsTextStyle(InviteStyle.buttonMedium)
-                        .padding(.horizontal, Tokens.Sizes.inviteWebDimensionButtonMediumPaddingH)
-                        .frame(minHeight: Tokens.Sizes.inviteWebDimensionButtonMediumHeight)
-                        .background(theme.text.opacity(Tokens.Opacities.inviteWebOpacityButtonOutlinedFill), in: Capsule())
-                        .overlay(Capsule().strokeBorder(theme.text.opacity(theme.outlinedBorderOpacity), lineWidth: Tokens.Sizes.inviteWebDimensionButtonOutlinedBorder))
-                }
-                .buttonStyle(InvitePressStyle())
-            }
-            .frame(minHeight: Tokens.Sizes.inviteWebDimensionButtonMediumHeight)
-            LazyVGrid(
-                columns: [GridItem(.adaptive(minimum: Tokens.Sizes.inviteWebDimensionAvatar, maximum: Tokens.Sizes.inviteWebDimensionAvatar),
-                                   spacing: Tokens.Sizes.inviteWebDimensionAvatarGap, alignment: .leading)],
-                alignment: .leading,
-                spacing: Tokens.Sizes.inviteWebDimensionAvatarGap
-            ) {
-                ForEach(Array(preview.members.enumerated()), id: \.offset) { _, member in
-                    InviteMemberAvatar(member: member, theme: theme)
-                        .accessibilityLabel(Text(member.firstName ?? ""))
-                        .accessibilityHidden(member.firstName == nil)
-                }
-            }
-            .padding(.top, Tokens.Sizes.inviteWebDimensionHeaderToAvatars)
-            if showsAllMembers {
-                VStack(alignment: .leading, spacing: Tokens.Sizes.inviteWebDimensionUserRowListGap) {
-                    ForEach(Array(preview.members.enumerated()), id: \.offset) { _, member in
-                        HStack(spacing: Tokens.Sizes.inviteWebDimensionUserRowColumnGap) {
-                            InviteMemberAvatar(member: member, theme: theme)
-                                .accessibilityHidden(true)
-                            Text(member.firstName ?? "")
-                                .dsTextStyle(InviteStyle.userRowName)
-                        }
-                        .padding(.vertical, Tokens.Sizes.inviteWebDimensionUserRowPaddingV)
-                    }
-                }
-            }
-        }
-        .foregroundStyle(theme.text)
-    }
-
-    // MARK: Members-only card (Partiful "Restricted Access")
-
-    private var gateCard: some View {
-        VStack(spacing: 0) {
-            Image(systemName: Tokens.Icons.inviteWebIconLock)
-                .resizable()
-                .scaledToFit()
-                .frame(height: Tokens.Sizes.inviteWebDimensionGateCardGlyph)
-                .accessibilityHidden(true)
-            Text(Copy.inviteWebGateTitle)
-                .dsTextStyle(InviteStyle.sectionHeader)
-                .padding(.top, Tokens.Sizes.inviteWebDimensionGateCardGlyphToTitle)
-            Text(Copy.inviteWebGateBody)
-                .dsTextStyle(InviteStyle.detail)
-                .foregroundStyle(theme.text.opacity(Tokens.Opacities.inviteWebOpacityTextBody))
-                .padding(.top, Tokens.Sizes.inviteWebDimensionGateCardTitleToBody)
-            InviteFilledButton(title: Copy.inviteAppclipJoin, theme: theme, action: onJoin)
-                .accessibilityIdentifier("invite.join")
-                .padding(.top, Tokens.Sizes.inviteWebDimensionGateCardBodyToButton)
-        }
-        .multilineTextAlignment(.center)
-        .foregroundStyle(theme.text)
-        .padding(Tokens.Sizes.inviteWebDimensionGateCardPadding)
-        .frame(maxWidth: .infinity)
-        .background(theme.gateCard, in: RoundedRectangle(cornerRadius: Tokens.Radii.inviteWebRadiusGateCard))
-    }
-}
-
-/// A member's photo, or the initials disc (first grapheme on `invite.web.opacity.avatar.minimal.fill.*`).
-struct InviteMemberAvatar: View {
-    let member: WebInvitePreview.Member
-    let theme: InviteTheme
-
-    var body: some View {
-        Group {
-            if let url = member.avatarURL {
-                URLImage(url: url) { disc }
-            } else {
-                disc
-            }
-        }
-        .frame(width: Tokens.Sizes.inviteWebDimensionAvatar, height: Tokens.Sizes.inviteWebDimensionAvatar)
-        .clipShape(Circle())
-    }
-
-    private var disc: some View {
         ZStack {
-            Circle().fill(theme.text.opacity(theme.initialsFillOpacity))
-            Text(member.firstName.map { String($0.prefix(1)) } ?? "")
-                .dsTextStyle(InviteStyle.body)
-                .foregroundStyle(theme.text.opacity(Tokens.Opacities.inviteWebOpacityAvatarMinimalText))
+            Tokens.Colors.globalBackground
+                .ignoresSafeArea()
+            card
+                .clipShape(DSShape.rounded(Tokens.Radii.inviteWebRadiusCard))
+                .padding(Tokens.Sizes.inviteWebSizeCardInset)
+                .ignoresSafeArea()
+            if isLoading {
+                ProgressView()
+                    .tint(Tokens.Colors.globalTextOnMedia)
+                    .accessibilityLabel(Text(Copy.globalA11yLoading))
+                    .accessibilityAddTraits(.updatesFrequently)
+                    .accessibilityIdentifier("invite.loading")
+            } else {
+                column
+                    .id(content)
+                    .dsTransition(.opacity)
+            }
+        }
+        // invite.appclip Motion: the joined state cross-fades the card content (`duration.global.fade`).
+        .dsAnimation(ComponentMotion.fade, value: content)
+        .environment(\.colorScheme, .light)
+        .sheet(item: $browserLink) { link in
+            SafariView(url: link.url)
+                .ignoresSafeArea()
         }
     }
-}
 
-/// Partiful's state page (NF): header space, centred glyph, uppercase title, body, optional large filled action.
-struct InviteStateView: View {
-    let state: InvitePreviewState
-    var onRetry: (() -> Void)?
+    @ViewBuilder
+    private var card: some View {
+        if let backdrop = content.backdrop {
+            BlurredBackdrop(source: backdrop)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text(content.backdropLabel ?? ""))
+                .accessibilityAddTraits(.isImage)
+                .accessibilityHidden(content.backdropLabel == nil)
+        } else {
+            Tokens.Colors.globalBackgroundDeep
+        }
+    }
 
-    private var theme: InviteTheme { .standard }
-
-    var body: some View {
+    private var column: some View {
         VStack(spacing: 0) {
-            Spacer(minLength: Tokens.Sizes.inviteWebDimensionStateHeaderSpace)
-            Text(glyph)
-                .dsTextStyle(InviteStyle.stateGlyph)
-                .accessibilityLabel(Text(glyphLabel))
-            Text(title)
-                .textCase(.uppercase)
-                .dsTextStyle(InviteStyle.stateTitle)
-                .foregroundStyle(theme.text)
-                .padding(.top, Tokens.Sizes.inviteWebDimensionStateGlyphToTitle)
-                .accessibilityAddTraits(.isHeader)
-            if let detail = bodyText {
-                Text(detail)
-                    .dsTextStyle(InviteStyle.detail)
-                    .foregroundStyle(theme.text.opacity(Tokens.Opacities.inviteWebOpacityTextBody))
-                    .padding(.top, Tokens.Sizes.inviteWebDimensionGateCardTitleToBody)
+            ZStack {
+                if content.showsAvatar { avatar }
             }
-            if let onRetry, showsRetry {
-                InviteFilledButton(title: Copy.inviteWebErrorRetry, theme: theme, fullWidth: false, action: onRetry)
-                    .padding(.top, Tokens.Sizes.inviteWebDimensionStateBodyToAction)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            textBlock
+            if let pill {
+                pillButton(pill)
+                    .padding(.horizontal, Tokens.Sizes.inviteWebSizePillInset)
+                    .padding(.top, Tokens.Sizes.inviteWebSizeBodyToPill)
+                footer
+                    .padding(.top, Tokens.Sizes.inviteWebSizePillToFooter)
+            } else {
+                footer
+                    .padding(.top, Tokens.Sizes.inviteWebSizeBodyToPill)
             }
-            Spacer(minLength: 0)
         }
+        .padding(.horizontal, Tokens.Sizes.inviteWebSizeCardInset)
         .multilineTextAlignment(.center)
-        .padding(.horizontal, Tokens.Sizes.inviteWebDimensionMargin)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(theme.background.ignoresSafeArea())
-        .accessibilityIdentifier("invite.state")
     }
 
-    private var glyph: String { state == .full ? Copy.inviteAppclipFullGlyph : Copy.inviteWebStateGlyph }
-    private var glyphLabel: String { state == .full ? Copy.inviteAppclipFullGlyphLabel : Copy.inviteWebStateGlyphLabel }
+    /// `invite.web.size.avatar` circle, aspect-fill; `invite.web.color.avatarPlaceholder` without a photo.
+    private var avatar: some View {
+        ZStack {
+            Circle().fill(Tokens.Colors.inviteWebColorAvatarPlaceholder)
+            if let source = content.avatar {
+                PhotoView(source: source)
+            }
+        }
+        .frame(width: Tokens.Sizes.inviteWebSizeAvatar, height: Tokens.Sizes.inviteWebSizeAvatar)
+        .clipShape(Circle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(content.avatarLabel ?? ""))
+        .accessibilityAddTraits(.isImage)
+        .accessibilityHidden(content.avatarLabel == nil)
+    }
 
-    private var title: String {
-        switch state {
-        case .unavailable: return Copy.inviteWebUnavailableTitle
-        case .notFound: return Copy.inviteWebNotFoundTitle
-        case .full: return Copy.inviteAppclipFullTitle
-        default: return Copy.inviteWebErrorTitle
+    private var textBlock: some View {
+        VStack(spacing: Tokens.Sizes.inviteWebSizeHeadlineToBody) {
+            Text(content.headline)
+                .dsTextStyle(InviteCardStyle.headline)
+                .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                .frame(maxWidth: Tokens.Sizes.inviteWebSizeTextMaxWidth)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityIdentifier("invite.headline")
+            if let line = content.line {
+                Text(line)
+                    .dsTextStyle(InviteCardStyle.line)
+                    .foregroundStyle(Tokens.Colors.inviteWebColorBody)
+                    .frame(maxWidth: Tokens.Sizes.inviteWebSizeTextMaxWidth)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if !content.members.isEmpty {
+                AvatarStack(sources: content.members, maxWidth: Tokens.Sizes.inviteWebSizeTextMaxWidth)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text(content.membersLabel ?? ""))
+                    .accessibilityHidden(content.membersLabel == nil)
+            }
         }
     }
 
-    private var bodyText: String? {
-        switch state {
-        case .unavailable: return Copy.inviteWebUnavailableBody
-        case .notFound: return nil
-        case .full: return Copy.inviteAppclipFullBody
-        case .rateLimited: return Copy.inviteWebRateLimitedBody
-        case .offline: return Copy.inviteAppclipOfflineBody
-        default: return Copy.inviteWebErrorBody
+    /// Height `invite.web.size.pillHeight`, width = card − 2 × `invite.web.size.pillInset`, capsule; label white
+    /// (`color.global.textOnMedia`); busy: the busy label at `invite.web.opacity.pillDisabled`.
+    private func pillButton(_ pill: InviteCardPill) -> some View {
+        Button(action: pill.action) {
+            Text(pill.isBusy ? pill.busyTitle ?? pill.title : pill.title)
+                .dsTextStyle(InviteCardStyle.pill)
+                .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.inviteWebSizePillHeight)
+                .contentShape(Capsule())
         }
+        .buttonStyle(InvitePillStyle())
+        .opacity(pill.isBusy ? Tokens.Opacities.inviteWebOpacityPillDisabled : 1)
+        .disabled(pill.isBusy)
+        .accessibilityAddTraits(pill.isBusy ? .updatesFrequently : [])
+        .accessibilityIdentifier(pill.identifier)
     }
 
-    private var showsRetry: Bool { state == .error || state == .offline }
+    /// "Terms & Privacy": `invite.web.fontSize.footer`, white, each link padded to a 44 × 44 hit area; opens the legal
+    /// URL (config/app.json) in the in-app browser. A link whose URL is not configured yet (owner) does nothing.
+    private var footer: some View {
+        HStack(spacing: 0) {
+            legalLink(Copy.inviteWebFooterTerms, url: termsURL)
+            Text(verbatim: "\u{00A0}&\u{00A0}") // provenance-ok: the spec's joining ampersand between the two copy strings ("Terms & Privacy", web footer)
+                .accessibilityHidden(true)
+            legalLink(Copy.inviteWebFooterPrivacy, url: privacyURL)
+        }
+        .dsTextStyle(InviteCardStyle.footer)
+        .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+        .padding(Tokens.Sizes.inviteWebSizeFooterMargin)
+    }
+
+    private func legalLink(_ title: String, url: URL?) -> some View {
+        Button {
+            if let url { browserLink = BrowserLink(url: url) }
+        } label: {
+            Text(title)
+        }
+        .buttonStyle(.plain)
+        .minimumHitArea(drawn: .zero)
+        .accessibilityAddTraits(.isLink)
+    }
 }
 
-/// The preview area for any state: platform progress while loading, the preview, or the state page.
+/// The invite card for any state: loading, the invite (pill "Let's go"), the joined state (no pill) or a state card
+/// (retry pill for errors and offline).
 struct InvitePreviewScreen: View {
     let state: InvitePreviewState
-    var showsJoin = true
-    let onJoin: () -> Void
+    /// The App Clip's joined state (`invite.appclip.joined.*`).
+    var isJoined = false
+    /// "Let's go" is busy (`invite.web.opening`) while the installed app joins.
+    var isBusy = false
+    var termsURL: URL?
+    var privacyURL: URL?
+    let onContinue: () -> Void
     let onRetry: () -> Void
 
     var body: some View {
+        InviteCard(content: content, pill: pill, isLoading: state == .loading, termsURL: termsURL, privacyURL: privacyURL)
+            .accessibilityIdentifier(identifier)
+    }
+
+    private var content: InviteCardContent {
+        if case let .valid(preview) = state { return .invite(preview, joined: isJoined) }
+        return .state(state)
+    }
+
+    private var pill: InviteCardPill? {
         switch state {
-        case .loading:
-            ProgressView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(InviteTheme.standard.background.ignoresSafeArea())
-                .accessibilityIdentifier("invite.loading")
-        case let .valid(preview):
-            InvitePreviewContent(preview: preview, showsJoin: showsJoin, onJoin: onJoin)
-        default:
-            InviteStateView(state: state, onRetry: onRetry)
+        case .valid:
+            guard !isJoined else { return nil }
+            return InviteCardPill(title: Copy.inviteWebCta, busyTitle: Copy.inviteWebOpening, isBusy: isBusy, identifier: "invite.join", action: onContinue)
+        case .error, .offline:
+            return InviteCardPill(title: Copy.inviteWebErrorRetry, identifier: "invite.retry", action: onRetry)
+        case .loading, .unavailable, .notFound, .rateLimited, .full:
+            return nil
+        }
+    }
+
+    private var identifier: String {
+        switch state {
+        case .loading: return "invite.loadingCard"
+        case .valid: return isJoined ? "invite.joined" : "invite.preview"
+        default: return "invite.state"
         }
     }
 }

@@ -1,44 +1,42 @@
 # Verification — `birthday.add` (iOS)
 
-Add / manage your birthday for tributes (opened from the settings row) — `ios/App/Sources/Features/Memory/Birthday/BirthdayAdd*.swift, BirthdayDateField.swift`.
+Add or manage your birthday — composition of C-33, C-12, C-05, C-08, C-14, C-10, C-29 in the age gate's order — `ios/App/Sources/Features/Memory/Birthday/ (BirthdayAddScreen, BirthdayAddModel)`.
 
-Checklist written from the spec (`design/surfaces/birthday.add.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/memory/<surface>-<state>.png` (`ios/AppTests/Memory/MemorySnapshotTests.swift`), then `tools/sidebyside.py` makes `design/verification/birthday.add.png` next to the reference image(s) below. Values in the third column are read from `design/tokens/*.json` / `design/copy/*.json` (value and evidence level).
+Pass 4 (Retro redesign). Checklist written from the spec (`design/surfaces/birthday.add.md`, MERGE "Redesign — Memory (RM-*)", lead L-4 / L-5) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/memory/<surface>-<state>-<light|dark>.png` (`ios/AppTests/Memory/MemorySnapshotTests.swift`: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/birthday.add.png` next to the Retro reference(s) below. Values in the third column are read from `design/tokens/*.json` / `design/copy/*.json` (value and evidence level). Components are the Pass 3 library (`ios/App/Sources/Components`, C-01…C-35).
 
-Reference image(s): `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png`, `references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png`, `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png`
+Retro reference(s): `references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png (LAND)`, `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png (H43)`, `references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png (ED-W3)`
 
-Snapshots (CI): `birthday.add-loading.png`, `birthday.add-empty-field.png`, `birthday.add-filled.png`, `birthday.add-saving.png`, `birthday.add-invalid.png`, `birthday.add-error.png`, `birthday.add-offline.png`, `birthday.add-manage.png`, `birthday.add-removed-toast.png`
+Snapshots (CI): `birthday.add-loading-light.png`, `birthday.add-empty-field-light.png`, `birthday.add-empty-field-dark.png`, `birthday.add-filled-light.png`, `birthday.add-saving-light.png`, `birthday.add-invalid-light.png`, `birthday.add-error-light.png`, `birthday.add-offline-light.png`, `birthday.add-manage-light.png`, `birthday.add-manage-dark.png`
 
-**Summary: 15 matched · 3 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 14 matched · 2 approximated · 0 not matched (BLOCKED or not buildable).**
 
-## Add (not opted in)
-
-| status | token / copy | reference value | element | iOS implementation |
-|---|---|---|---|---|
-| matched | `size.global.headerButton`<br>`size.global.headerInset`<br>`color.global.controlOnDeep`<br>`icon.global.close`<br>`birthday.add.a11y.close` | 44 pt (SOURCED)<br>11.5 pt (SOURCED)<br>#101010 (SOURCED)<br>ios: xmark; android: Rounded.Close (PLATFORM)<br>“Close” (PLATFORM) | close circle top-left | MemoryHeaderCircle → ‘maybe later’ outcome |
-| matched | `birthday.add.title`<br>`fontSize.global.onboardingTitle`<br>`fontWeight.global.onboardingTitle`<br>`color.global.textPrimary`<br>`size.global.buttonMarginH` | “want a birthday video?” (SOURCED)<br>40 pt (SOURCED)<br>heavy (SOURCED)<br>#FFFFFF (SOURCED)<br>19 pt (SOURCED) | title, centred, margins 19 | DSTextStyle (largeTitle); header trait |
-| matched | `size.global.listGap`<br>`birthday.add.detail`<br>`birthday.add.privacy`<br>`fontSize.global.listSubtitle`<br>`fontWeight.global.listSubtitle`<br>`color.global.textSecondary` | 7.5 pt (SOURCED)<br>“a week before your birthday, your groups get asked for a pic & a line. on the day, you get the video” (SOURCED)<br>“only the day & month are shared, never your age” (SOURCED)<br>14 pt (SOURCED)<br>regular (SOURCED)<br>#969696 (SOURCED) | detail + privacy lines 7.5 apart | VStack(spacing: listGap) |
-| approximated | `auth.agegate.layout.dateEntry`<br>`groups.create.color.field`<br>`size.global.fieldHeight`<br>`radius.global.field`<br>`groups.create.fontSize.fieldText`<br>`groups.create.fontWeight.fieldText`<br>`auth.agegate.field.placeholder`<br>`auth.agegate.field.accessibilityLabel` | control: the Yope form field (groups.create.color.field, size.global.fieldHeight, radius.global.field, groups.create.fontSize.fieldText) … (VERIFIED)<br>#141414 (SOURCED)<br>44 pt (SOURCED)<br>12 pt (SOURCED)<br>15 pt (SOURCED)<br>bold (SOURCED)<br>“birthday ({date_format})” (SOURCED)<br>“birthday” (SOURCED) | the auth.agegate birthday field | built locally (BirthdayDateField) from the same tokens: numeric keyboard, separators in the locale's order, empty, no default year; gap above it = listGap (not specified) |
-| matched | `birthday.add.confirm`<br>`color.global.accent`<br>`color.global.onAccent`<br>`size.global.buttonHeight`<br>`radius.global.button`<br>`fontSize.global.button`<br>`fontWeight.global.button` | “add my birthday” (SOURCED)<br>#CDFD07 (SOURCED)<br>#000000 (SOURCED)<br>45 pt (SOURCED)<br>14 pt (SOURCED)<br>15 pt (SOURCED)<br>semibold (SOURCED) | primary, pinned to the bottom (safe area + 19) | MemoryFilledButton.yopePrimary; disabled until a complete date |
-| approximated | `—` | — (no token) | disabled look | platform disabled state of the plain button style (Yope's groups.create disabled colours not used — not named by this spec) |
-| matched | `birthday.add.later`<br>`color.global.surfaceLight`<br>`color.global.onSurfaceLight`<br>`radius.global.capsule` | “maybe later” (SOURCED)<br>#FFFFFF (SOURCED)<br>#000000 (SOURCED)<br>shape: capsule; radius: height / 2 (SOURCED) | ‘maybe later’ pill 7.5 below | no call; closes; never asked again |
-
-## Manage (opted in)
+## Not opted in
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `birthday.add.manage.title`<br>`fontSize.global.sheetTitle`<br>`fontWeight.global.sheetTitle` | “your birthday” (SOURCED)<br>19.5 pt (SOURCED)<br>bold (SOURCED) | title | DSTextStyle (title3) |
-| matched | `layout.birthday.add.dateFormat`<br>`fontSize.global.listTitle`<br>`fontWeight.global.listTitle` | pattern: d MMMM; example: 26 May (SOURCED)<br>17.5 pt (SOURCED)<br>bold (SOURCED) | ‘26 May’ — day and month only | DateFormatter with the token pattern (unit-tested) |
-| matched | `birthday.add.manage.remove` | “remove my birthday” (SOURCED) | remove pill | optimistic: the add form shows at once, rolls back with the error state on failure |
+| matched | `birthday.add.manage.title` | “Birthday” (SOURCED) | native back, inline title 'Birthday' | `.navigationTitle` inline in the settings stack |
+| matched | `birthday.add.title`<br>`font.global.display`<br>`fontSize.global.displayMedium`<br>`color.global.textPrimary` | “Want a birthday video?” (SOURCED)<br>ios: system-serif; android: serif (PLATFORM)<br>32 pt (SOURCED)<br>light: #000000; dark: #FFFFFF (SOURCED) | serif headline, centred, screen margins | C-33 role; header trait |
+| matched | `birthday.add.detail`<br>`birthday.add.privacy`<br>`fontSize.global.body`<br>`color.global.textSecondary`<br>`size.global.emptyIconToTitle`<br>`size.global.listGap` | “A week before your birthday, your groups get a private invite to add a photo and a line. On the day, you get the video.” (SOURCED)<br>“Only the day and month are shared, never your age.” (SOURCED)<br>15 pt (SOURCED)<br>#999999 (SOURCED)<br>26 pt (SOURCED)<br>22.5 pt (SOURCED) | two grey lines under the headline | MetricStack: headline baseline → detail cap top 26, detail → privacy 22.5 (C-27 measures baseline → cap top) |
+| matched | `size.global.emptyTitleToAction`<br>`auth.agegate.field.placeholder`<br>`size.global.fieldHeight`<br>`radius.global.field`<br>`color.global.control`<br>`fontSize.global.placeholder` | 25 pt (SOURCED)<br>“{date_format}” (SOURCED)<br>52 pt (SOURCED)<br>19 pt (SOURCED)<br>light: #F1F1F1; dark: #262626 (SOURCED)<br>17 pt (SOURCED) | the age gate's date field (C-12), 25 below, full width inside the margins | C-12 `FormField` + account's `BirthdayEntry` (locale order, separators, no default year) |
+| matched | `birthday.add.invalid`<br>`fontSize.global.meta`<br>`color.global.destructive` | “Invalid date” (SOURCED)<br>13 pt (SOURCED)<br>#EA3337 (SOURCED) | C-12 inline error | FormField errorMessage |
+| matched | `birthday.add.offline` | “Check your connection and try again.” (SOURCED) | offline: inline line under the field (meta, grey) | Text under the field |
+| matched | `birthday.add.confirm`<br>`color.global.accent`<br>`color.global.onAccent`<br>`size.global.buttonHeight`<br>`size.global.buttonMarginH`<br>`radius.global.button`<br>`fontSize.global.button`<br>`color.global.controlRaised`<br>`duration.global.crossfade` | “Add my birthday” (SOURCED)<br>light: #000000; dark: #FFFFFF (SOURCED)<br>light: #FFFFFF; dark: #000000 (SOURCED)<br>60 pt (SOURCED)<br>20 pt (SOURCED)<br>30 pt (SOURCED)<br>17 pt (SOURCED)<br>light: #CCCCCC; dark: #4D4D4D (SOURCED)<br>100 ms (SOURCED) | capsule pinned to the bottom, disabled until the date is complete; busy while saving | C-05 `PrimaryButton` in `.safeAreaInset(edge: .bottom)`; cross-fade on enable |
+| matched | `birthday.add.later`<br>`fontSize.global.listTitle` | “Maybe later” (SOURCED)<br>15 pt (SOURCED) | secondary link 'Maybe later' → pops, never asked again | C-08 `TextButton(.link)` |
+| matched | `birthday.add.error.title`<br>`birthday.add.error.detail`<br>`birthday.add.error.retry` | “Something went wrong” (SOURCED)<br>“There was a problem. Please try again.” (SOURCED)<br>“Try Again” (SOURCED) | error: C-27 block above the capsule; the capsule retries | EmptyStateView + capsule label switch |
+| matched | `birthday.add.added`<br>`haptic.global.success`<br>`haptic.global.error` | “Saved!” (SOURCED)<br>ios: notification.success; android: CONFIRM (PLATFORM)<br>ios: notification.error; android: REJECT (PLATFORM) | added → presenter's toast, pop | onFinish(.added) (RootView `BirthdayAddRoute` shows it via C-26) |
 
-## States and feedback
+## Opted in (manage)
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `easing.global.native` | keyboard: system; alert: system; activityIndicator: system (ProgressView / CircularProgressIndicator); scrollIndicator: system; navigatio… (PLATFORM) | saving: indicator in the primary, buttons disabled | ProgressView in place of the label |
-| matched | `birthday.add.invalid` | “that date doesn't look right” (SOURCED) | invalid_birthday / impossible date under the field | inline listSubtitle line |
-| matched | `birthday.add.error.title`<br>`birthday.add.error.detail`<br>`birthday.add.error.retry` | “couldn't save your birthday” (SOURCED)<br>“try again in a moment” (SOURCED)<br>“try again” (SOURCED) | error above the buttons; primary becomes retry | MemoryStateMessage + label swap |
-| matched | `birthday.add.offline` | “you're offline — connect to add your birthday” (SOURCED) | offline under the field | inline line |
-| approximated | `—` | — (no token) | loading (not in the spec) | platform indicator while profile_private is read the first time; cached opt-in state afterwards |
-| matched | `birthday.add.added`<br>`safety.block.duration.toast` | “birthday added” (SOURCED)<br>2000 ms (SOURCED) | toast ‘birthday added’, then close | the screen closes with onFinish(.added); the presenter (BirthdayAddRoute) shows it in the window's ToastCenter for 2 s, announced |
-| matched | `birthday.add.removed`<br>`safety.block.duration.toast` | “birthday removed” (SOURCED)<br>2000 ms (SOURCED) | toast after remove | foundations toast look, shown for safety.block.duration.toast (tap dismisses), announced; every build |
-| matched | `haptic.global.success`<br>`haptic.global.error` | ios: notification.success; android: CONFIRM (PLATFORM)<br>ios: notification.error; android: REJECT (PLATFORM) | add / remove succeeded; failed | dependencies.haptics (unit-tested) |
+| approximated | `layout.birthday.add.dateFormat`<br>`radius.global.groupedRow`<br>`color.global.control`<br>`fontSize.global.body` | pattern: MMMM d; example: July 5; ios: Date.FormatStyle().month(.wide).day(); android: DateFormat.getBestDateTimePattern(locale, "MMMMd") (SOURCED)<br>12 pt (SOURCED)<br>light: #F1F1F1; dark: #262626 (SOURCED)<br>15 pt (SOURCED) | C-14 row 'Birthday' with the value 'July 5' (no year) | `MemoryValueRow`: C-14's look with a trailing value — `GroupedRow` has no value accessory (component gap) |
+| matched | `birthday.add.detail`<br>`fontSize.global.meta` | “A week before your birthday, your groups get a private invite to add a photo and a line. On the day, you get the video.” (SOURCED)<br>13 pt (SOURCED) | detail as the section footer | Text under the group at the rows' text inset |
+| matched | `birthday.add.manage.remove`<br>`color.global.destructive` | “Remove Birthday” (SOURCED)<br>#EA3337 (SOURCED) | separate group: destructive row | C-14 `GroupedSection` + `GroupedRow(role: .destructive)` |
+| matched | `birthday.add.remove.title`<br>`birthday.add.remove.message`<br>`birthday.add.remove.confirm`<br>`birthday.add.remove.cancel`<br>`birthday.add.removed`<br>`haptic.global.warning` | “Remove your birthday?” (SOURCED)<br>“Your groups won't be asked to make you a birthday video” (SOURCED)<br>“Yes, remove” (SOURCED)<br>“Cancel” (SOURCED)<br>“Removed” (SOURCED)<br>ios: notification.warning; android: CONFIRM (PLATFORM) | native confirmation → removed toast → not-opted-in state | `.alert`; optimistic, reverted with the error on failure |
+| approximated | `size.global.sectionGap` | 36.4 pt (SOURCED) | spacing between the two groups | not specified — the section gap token |
+
+## States
+
+| status | token / copy | reference value | element | iOS implementation |
+|---|---|---|---|---|
+| matched | `—` | — (no token) | loading (reading profile_private) | C-28 `LoadingHUD` centred |

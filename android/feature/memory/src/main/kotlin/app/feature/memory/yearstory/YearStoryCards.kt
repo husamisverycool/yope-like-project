@@ -35,6 +35,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -164,7 +165,8 @@ private fun TextBlock(card: StoryCard, headline: String, subline: String?, revea
     Column(modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.yearStoryFramePadding), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             headline,
-            style = TextRoles.displayMedium,
+            // Balanced lines for the serif headline (the platform's heading line breaking).
+            style = TextRoles.displayMedium.copy(lineBreak = LineBreak.Heading),
             color = Tokens.Colors.globalTextOnMedia,
             textAlign = TextAlign.Center,
             modifier = Modifier

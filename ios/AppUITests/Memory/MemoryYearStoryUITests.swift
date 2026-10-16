@@ -1,6 +1,6 @@
 // year.story: auto-advance (`duration.year.story.card`) with pause / play, tap-through (right half
 // next, left half previous), the Share pill on fact cards, the summary with page dots, replay, close — inside the
-// shared recap preview (capture's `RecapPreviewScreen`: close `recap.preview.close`, dots `recap.preview.dots`).
+// shared recap preview (capture's `RecapPreviewScreen`: close `year.story.close` (`RecapPreviewClose`), dots `recap.preview.dots`).
 import XCTest
 
 final class MemoryYearStoryUITests: XCTestCase {
@@ -14,7 +14,7 @@ final class MemoryYearStoryUITests: XCTestCase {
         app.launchArguments += MemoryUITestLaunch.arguments(open: "yearStory")
         app.launch()
         let story = try MemoryUITestLaunch.waitForScreen(app, "year.story")
-        let close = MemoryUITestLaunch.element(app, "recap.preview.close")
+        let close = MemoryUITestLaunch.element(app, "year.story.close")
         XCTAssertTrue(close.waitForExistence(timeout: 10))
 
         // Pause first so the cards only change on taps (the story advances on its own otherwise).

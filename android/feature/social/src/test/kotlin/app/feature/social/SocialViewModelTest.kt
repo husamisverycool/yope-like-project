@@ -245,7 +245,8 @@ class SocialViewModelTest {
     /** `chat.reactions.layout.clusterOrder`: newest distinct emoji first; a repeat keeps its place. */
     @Test fun clusterOrderIsNewestDistinctFirst() {
         val entries = listOf(ReactionEntry(BEN, "😍"), ReactionEntry(ME, "🔥"), ReactionEntry(ANA, "😍"), ReactionEntry(ANA, "😂"))
-        assertEquals(listOf("😂", "🔥", "😍"), app.feature.social.reactions.clusterEmoji(entries))
+        // `chat.reactions.layout.clusterOrder`: newest first; 😍 used again (Ana, after 🔥) moves ahead of 🔥.
+        assertEquals(listOf("😂", "😍", "🔥"), app.feature.social.reactions.clusterEmoji(entries))
     }
 
     @Test fun chatReactIsOptimisticAndRollsBack() {

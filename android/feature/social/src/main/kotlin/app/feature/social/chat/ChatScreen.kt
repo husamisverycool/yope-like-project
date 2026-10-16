@@ -120,7 +120,9 @@ import app.ui.permissions.findActivity
 import app.ui.system.DsDropdownMenu
 import app.ui.system.DsMenuItem
 import app.ui.system.SystemAlertDialog
+import app.ui.text.CapTop
 import app.ui.text.TextRoles
+import app.ui.text.capTopAt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -648,6 +650,9 @@ private fun MessageList(
     // Older pages load when the oldest loaded message comes into view.
     val nearTop by remember(items) { derivedStateOf { (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) >= items.size - 2 } }
     LaunchedEffect(nearTop) { if (nearTop) onLoadOlder() }
+    // The newest message stays in view: when one arrives while the bottom of the thread is showing, scroll to it.
+    val newest = items.firstOrNull()?.key
+    LaunchedEffect(newest) { if (newest != null && listState.firstVisibleItemIndex <= 1) listState.scrollToItem(0) }
     LaunchedEffect(focusMessageId, items.isNotEmpty()) {
         val i = items.indexOfFirst { it is ThreadItem.Item && it.row.id == focusMessageId }
         if (focusMessageId != null && i >= 0) listState.scrollToItem(i)
@@ -664,8 +669,11 @@ private fun MessageList(
     ) {
         items(items, key = { it.key }, contentType = { it::class }) { item ->
             when (item) {
+                // C-20 dated header: `size.global.sectionGap` above (the first one's cap top on the header's
+                // `size.global.titleToContent`), `size.global.sectionHeaderToContent` below its baseline.
                 is ThreadItem.Divider -> SectionHeader(
                     Formats.dayDivider(item.date, today, todayText, yesterdayText),
+                    if (item.first) Modifier.capTopAt(0.dp, CapTop.height(TextRoles.sectionLabel)) else Modifier,
                     afterContent = !item.first,
                 )
                 is ThreadItem.Item -> MessageItem(
@@ -738,8 +746,10 @@ private fun MessageItem(
                 if (item.startsRun) Spacer(Modifier.height(Tokens.Sizes.chatThreadDimensionItemGap))
                 QuoteView(q, nav, scrollTo)
             }
-            val afterHeader = item.startsRun || row.quote != null
-            MessageBody(row, afterHeader, state, ui, nav, voice, labels, onReact, onUnreact, onRetrySend, onReply, onCopy, onSave)
+            // Right under the name line the first text's baseline sits `chat.thread.dimension.rowLinePitch` below the
+            // name's; after a quote the item follows at `chat.thread.dimension.itemGap` (the quote's own spacer).
+            val afterName = item.startsRun && row.quote == null
+            MessageBody(row, afterName, state, ui, nav, voice, labels, onReact, onUnreact, onRetrySend, onReply, onCopy, onSave)
             if (row.mine && (row.pending || row.failed)) StatusLine(row, onRetrySend)
         }
     }
@@ -832,7 +842,7 @@ private const val ZWJ = 0x200D
 @Composable
 private fun MessageBody(
     row: ChatRow,
-    afterHeader: Boolean,
+    afterName: Boolean,
     state: ChatState,
     ui: ChatUiState,
     nav: ChatNav,
@@ -874,7 +884,7 @@ private fun MessageBody(
                     else TextRoles.body.copy(lineHeight = Tokens.Sizes.chatThreadDimensionRowLinePitch.value.sp),
                     color = Tokens.Colors.globalTextPrimary,
                     modifier = Modifier
-                        .then(if (afterHeader && !big) Modifier.paddingFromBaseline(top = Tokens.Sizes.chatThreadDimensionRowLinePitch) else Modifier)
+                        .then(if (afterName && !big) Modifier.paddingFromBaseline(top = Tokens.Sizes.chatThreadDimensionRowLinePitch) else if (afterName) Modifier.padding(top = Tokens.Sizes.chatThreadDimensionItemGap) else Modifier)
                         .combinedClickable(onClick = tap, onLongClick = { ui.menuFor = row.key })
                         .then(semantics),
                 )
@@ -882,12 +892,12 @@ private fun MessageBody(
             MessageKind.Voice -> {
                 val path = row.message.voicePath
                 val duration = (row.message.voiceDurationMs ?: 0).toLong()
-                if (afterHeader) Spacer(Modifier.height(Tokens.Sizes.chatThreadDimensionItemGap))
+                if (afterName) Spacer(Modifier.height(Tokens.Sizes.chatThreadDimensionItemGap))
                 Box(Modifier.combinedClickable(onClick = tap, onLongClick = { ui.menuFor = row.key }).then(semantics)) {
                     VoiceCapsule(duration, voice.elapsedOf(path, duration), voice.stateOf(path), label, onClick = tap)
                 }
             }
-            MessageKind.Photo -> PhotoMessage(row, afterHeader, ui, nav, voice, labels, semantics, tap)
+            MessageKind.Photo -> PhotoMessage(row, afterName, ui, nav, voice, labels, semantics, tap)
         }
         if (row.kind == MessageKind.Photo) {
             val mine = row.reactions.filter { it.userId == state.me }.map { it.emoji }.toSet()
@@ -990,7 +1000,6 @@ private fun StatusLine(row: ChatRow, onRetrySend: (String) -> Unit) {
         maxLines = 1,
         modifier = Modifier
             .padding(top = Tokens.Sizes.chatThreadDimensionItemGap)
-            .then(if (failed) Modifier.tapClickable { onRetrySend(row.id) } else Modifier)
-            .clearAndSetSemantics { },
+            .then(if (failed) Modifier.tapClickable { onRetrySend(row.id) } else Modifier),
     )
 }

@@ -45,7 +45,7 @@ struct WeekRecapListScreen: View {
             await model.run()
         }
         .fullScreenCover(item: $preview) { target in
-            WeekRecapPreviewScreen(groupID: model.groupID.rawValue, recapID: target.recapID.rawValue)
+            WeekRecapPreviewScreen(groupID: model.groupID.rawValue, recapID: target.recapID.rawValue, isPresentedModally: true)
         }
         .accessibilityIdentifier("week.recap.list") // provenance-ok: accessibility identifier for UI tests
     }
@@ -196,11 +196,16 @@ struct PendingWeekCard: View {
 
 // MARK: - Recap preview (`week.recap.layout.preview`)
 
-/// One recap, full screen and dark in both appearances: capture's recap-preview chrome (`collage.view.layout.screen`)
-/// holding memory's recap card (page 1, with the note) and the full-bleed cover (page 2); bottom row: the
-/// select-photos thumbnail (→ `week.edit`) and "Save as Album" (→ the album sheet with the recap's photos).
+/// One recap, full screen and dark in both appearances: capture's recap-preview chrome (`RecapPreviewScreen`,
+/// `collage.view.layout.screen`) holding, on the blurred cover (C-34 `BlurredBackdrop`, L-5), memory's recap card
+/// (page 1, with the note) and the full-bleed cover (page 2) in a pager; the close circle on the page; the dots below
+/// it; bottom row: the select-photos thumbnail (→ `week.edit`) and the "Save as Album" pill (→ the album sheet with the
+/// recap's photos).
 struct WeekRecapPreviewScreen: View {
     @State private var model: WeekRecapModel
+    /// True when presented as a full-screen cover (from the recap list): the cover then asks for light status-bar
+    /// content (`.preferredColorScheme(.dark)`), as capture's `CollageView`.
+    let isPresentedModally: Bool
     @State private var page = 0
     @State private var viewer: PhotoViewerContext?
     @State private var editing = false
@@ -208,12 +213,16 @@ struct WeekRecapPreviewScreen: View {
     @State private var toasts = ToastCenter()
     @Environment(\.dismiss) private var dismiss
 
-    init(groupID: String, recapID: String) {
-        self.init(model: WeekRecapModel(groupID: GroupID(groupID), recapID: RecapID(recapID), data: SocialServices.shared.data))
+    init(groupID: String, recapID: String, isPresentedModally: Bool = false) {
+        self.init(
+            model: WeekRecapModel(groupID: GroupID(groupID), recapID: RecapID(recapID), data: SocialServices.shared.data),
+            isPresentedModally: isPresentedModally
+        )
     }
 
-    init(model: WeekRecapModel) {
+    init(model: WeekRecapModel, isPresentedModally: Bool = false) {
         _model = State(initialValue: model)
+        self.isPresentedModally = isPresentedModally
     }
 
     private enum Page: Equatable {
@@ -235,20 +244,29 @@ struct WeekRecapPreviewScreen: View {
     var body: some View {
         let pages = pages
         RecapPreviewScreen(
-            backdrop: SocialImages.source(model.cover?.media?.displayImagePath),
-            pageCount: max(1, pages.count),
-            currentPage: $page,
-            closeAccessibilityLabel: Copy.weekRecapA11yClose,
-            onClose: { dismiss() },
-            page: { index in pageView(pages.indices.contains(index) ? pages[index] : nil) },
-            topLeading: { EmptyView() },
-            bottomLeading: { selectThumbnail },
-            pill: {
-                if model.phase == .ready {
-                    RecapPill(Copy.weekRecapSaveAsAlbum, textRole: TextRole.pill) { savingAlbum = true }
-                }
+            dots: pages.count > 1 ? RecapPreviewDots(
+                count: pages.count,
+                index: min(page, pages.count - 1),
+                accessibilityValue: Copy.globalA11yPagePosition(position: String(min(page, pages.count - 1) + 1), count: String(pages.count))
+            ) : nil,
+            onSelectPage: { page = $0 }
+        ) { _ in
+            mediaPage(pages)
+                .accessibilitySortPriority(3)
+        } overlay: { geometry in
+            RecapPreviewClose(geometry: geometry, accessibilityLabel: Copy.weekRecapA11yClose) { dismiss() }
+                .accessibilitySortPriority(4)
+                .accessibilityIdentifier("week.recap.close") // provenance-ok: accessibility identifier for UI tests
+        } leading: {
+            selectThumbnail
+                .accessibilitySortPriority(2)
+        } trailing: {
+            if model.phase == .ready {
+                RecapPill(Copy.weekRecapSaveAsAlbum, textRole: TextRole.pill) { savingAlbum = true }
+                    .accessibilitySortPriority(1)
             }
-        )
+        }
+        .preferredColorScheme(isPresentedModally ? .dark : nil)
         .socialHidesNavigationBar()
         .task {
             if model.phase == .loading { await model.load() }
@@ -274,24 +292,48 @@ struct WeekRecapPreviewScreen: View {
 
     // MARK: Pages
 
-    @ViewBuilder
-    private func pageView(_ page: Page?) -> some View {
-        switch model.phase {
-        case .loading:
-            LoadingHUD()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        case .pending:
-            centredLine(Copy.weekRecapPending)
-        case .failed, .offline, .empty:
-            Button { Task { await model.retry() } } label: { centredLine(Copy.weekRecapErrorTitle) }
-                .buttonStyle(.plain)
-        case .ready:
-            switch page {
-            case let .card(items)?:
-                cardPage(items)
-            case .cover?, nil:
-                coverPage
+    /// The media page: the blurred cover (C-34 backdrop: σ `size.global.backdropBlur` under `color.global.backdropDim`)
+    /// under the swiped pages once ready (native pager, its own dots hidden — the chrome draws C-31); the state centred
+    /// in the frame otherwise.
+    private func mediaPage(_ pages: [Page]) -> some View {
+        ZStack {
+            BlurredBackdrop(source: SocialImages.source(model.cover?.media?.displayImagePath))
+            switch model.phase {
+            case .loading:
+                if model.showsLoading {
+                    LoadingHUD()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            case .pending:
+                centredLine(Copy.weekRecapPending)
+            case .failed, .offline, .empty:
+                Button { Task { await model.retry() } } label: { centredLine(Copy.weekRecapErrorTitle) }
+                    .buttonStyle(.plain)
+            case .ready:
+                if pages.count > 1 {
+                    TabView(selection: $page) {
+                        ForEach(pages.indices, id: \.self) { index in
+                            pageView(pages[index])
+                                .tag(index)
+                        }
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .accessibilityIdentifier("week.recap.pages") // provenance-ok: accessibility identifier for UI tests
+                } else if let only = pages.first {
+                    pageView(only)
+                        .accessibilityIdentifier("week.recap.pages") // provenance-ok: accessibility identifier for UI tests
+                }
             }
+        }
+    }
+
+    @ViewBuilder
+    private func pageView(_ page: Page) -> some View {
+        switch page {
+        case let .card(items):
+            cardPage(items)
+        case .cover:
+            coverPage
         }
     }
 
@@ -310,8 +352,9 @@ struct WeekRecapPreviewScreen: View {
         model.recap.map { SocialFormat.weekRange($0.weekStart, timeZone: model.timeZone) } ?? ""
     }
 
-    /// Page 1: memory's recap card (white in both appearances) — footer "Week {n}" with the group name over the range —
-    /// and, when the recap has text, the note `week.recap.dimension.noteGap` under it; card and note centred together.
+    /// Page 1: memory's recap card (white in both appearances, L-4) — footer "Week {n}" with the group name over the
+    /// range — and, when the recap has text, the note `week.recap.dimension.noteGap` under it; card and note centred
+    /// together in the frame.
     private func cardPage(_ items: [PostWithMedia]) -> some View {
         GeometryReader { proxy in
             VStack(spacing: Tokens.Sizes.weekRecapDimensionNoteGap) {
@@ -331,7 +374,10 @@ struct WeekRecapPreviewScreen: View {
                     viewer = PhotoViewerContext(postIDs: model.cardPosts.map(\.id), start: PostID(photo.id), groupID: model.groupID)
                 }
                 .accessibilityElement(children: .contain)
-                .accessibilityLabel(Text(Copy.weekRecapA11yCard(weekNumber: String(model.weekNumber ?? 0), dateRange: model.recap.map { SocialFormat.spokenWeekRange($0.weekStart, timeZone: model.timeZone) } ?? "")))
+                .accessibilityLabel(Text(Copy.weekRecapA11yCard(
+                    weekNumber: String(model.weekNumber ?? 0),
+                    dateRange: model.recap.map { SocialFormat.spokenWeekRange($0.weekStart, timeZone: model.timeZone) } ?? ""
+                )))
                 if let note = model.note {
                     RecapNote(text: note.text, editor: note.editor)
                         .frame(width: RecapCard.width(frameWidth: proxy.size.width))
@@ -371,7 +417,7 @@ struct WeekRecapPreviewScreen: View {
 
     /// The select-photos thumbnail: `week.recap.dimension.selectThumb` square, corners `week.recap.radius.selectThumb`,
     /// a `week.recap.dimension.selectThumbBorder` border in `color.global.surfaceLight`, the recap's first item; no count
-    /// badge. → `week.edit` (ready recaps only).
+    /// badge. → `week.edit` (ready recaps only). The chrome places it at `size.global.buttonMarginH`.
     @ViewBuilder
     private var selectThumbnail: some View {
         if model.canEdit {
@@ -387,7 +433,6 @@ struct WeekRecapPreviewScreen: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel(Text(Copy.weekRecapA11yEdit))
-            .padding(.leading, Tokens.Sizes.globalButtonMarginH)
         }
     }
 }

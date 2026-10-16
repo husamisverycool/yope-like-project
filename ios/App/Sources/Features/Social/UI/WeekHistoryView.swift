@@ -14,6 +14,7 @@ struct WeekHistoryScreen: View {
     @State private var model: WeekHistoryModel
     @State private var viewer: PhotoViewerContext?
     @State private var albumWeek: AlbumWeek?
+    @State private var recapPreview: RecapPreviewTarget?
     @State private var toasts = ToastCenter()
     @Environment(\.dismiss) private var dismiss
 
@@ -53,6 +54,10 @@ struct WeekHistoryScreen: View {
         .sheet(item: $albumWeek) { item in
             WeekEditView(groupID: model.groupID, mode: .album(weekStart: item.weekStart), toasts: toasts)
         }
+        .fullScreenCover(item: $recapPreview) { target in
+            // week.recap.md platform notes: the preview is a `.fullScreenCover`, dark in both appearances.
+            WeekRecapPreviewScreen(groupID: model.groupID.rawValue, recapID: target.recapID.rawValue, isPresentedModally: true)
+        }
         .accessibilityIdentifier("week.history") // provenance-ok: accessibility identifier for UI tests
     }
 
@@ -80,7 +85,11 @@ struct WeekHistoryScreen: View {
             }
             WeekSectionList {
                 ForEach(model.weeks) { week in
-                    WeekHistorySection(model: model, week: week, open: open, saveAsAlbum: { albumWeek = AlbumWeek(weekStart: week.weekStart) })
+                    WeekHistorySection(
+                        model: model, week: week, open: open,
+                        viewRecap: { recapPreview = RecapPreviewTarget(recapID: $0) },
+                        saveAsAlbum: { albumWeek = AlbumWeek(weekStart: week.weekStart) }
+                    )
                         .onAppear {
                             if week.id == model.weeks.last?.id { Task { await model.loadMore() } }
                         }
@@ -118,7 +127,7 @@ struct WeekHistoryScreen: View {
             header
             WeekSectionList {
                 ForEach(model.weeks.filter(\.isCurrent)) { week in
-                    WeekHistorySection(model: model, week: week, open: open, saveAsAlbum: {})
+                    WeekHistorySection(model: model, week: week, open: open, viewRecap: { _ in }, saveAsAlbum: {})
                 }
             }
             .padding(.top, firstSectionOffset)
@@ -152,6 +161,7 @@ struct WeekHistorySection: View {
     let model: WeekHistoryModel
     let week: WeekHistoryModel.Week
     let open: (WeekHistoryModel.Week, PostID) -> Void
+    let viewRecap: (RecapID) -> Void
     let saveAsAlbum: () -> Void
 
     var body: some View {
@@ -180,9 +190,7 @@ struct WeekHistorySection: View {
         ) {
             // `week.history.layout.weekMenu`: native menu, Sentence case.
             if let recapID {
-                Button(Copy.weekHistoryMenuViewRecap) {
-                    SocialNav.push(.recap(groupID: model.groupID.rawValue, recapID: recapID.rawValue))
-                }
+                Button(Copy.weekHistoryMenuViewRecap) { viewRecap(recapID) }
             }
             if !week.postIDs.isEmpty {
                 Button(Copy.weekHistoryMenuSaveAsAlbum, action: saveAsAlbum)

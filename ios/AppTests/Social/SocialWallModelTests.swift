@@ -7,22 +7,74 @@ import XCTest
 
 @MainActor
 final class SocialWallModelTests: XCTestCase {
+    private let utc = TimeZone(identifier: "UTC")!
+    /// Friday 16 Oct 2026, 09:00 UTC: the demo's current week starts Monday 12 Oct.
+    private let friday: @Sendable () -> Date = { SocialDemo.monday.addingTimeInterval(4 * SocialDemo.day) }
+
+    private func wall(_ owner: WallModel.Owner, _ data: FakeSocialData = SocialDemo.makeData()) -> WallModel {
+        WallModel(owner: owner, data: data, timeZone: utc, now: friday)
+    }
+
     func testMyWallIsNewestFirstAndOnePerPhoto() async {
-        let model = WallModel(owner: .me, data: SocialDemo.makeData())
+        let model = wall(.me)
         await model.load()
         XCTAssertEqual(model.phase, .ready)
         XCTAssertEqual(model.photoPostIDs, [SocialDemo.p3, SocialDemo.p6], "p3 was sent to two groups: one tile")
     }
 
+    func testWeeksStartWithTheCurrentWeekAndListItsEmptyDays() async {
+        let model = wall(.me)
+        await model.load()
+        XCTAssertEqual(model.currentWeekStart, SocialDemo.thisWeek)
+        XCTAssertEqual(model.currentWeekNumber, 42)
+        XCTAssertEqual(model.weeks.map(\.weekStart), [SocialDemo.thisWeek, SocialDemo.lastWeek])
+        XCTAssertEqual(model.weeks.map(\.isCurrent), [true, false])
+        XCTAssertEqual(model.weeks.map { $0.tiles.map(\.id) }, [["p" + SocialDemo.p3.rawValue], ["p" + SocialDemo.p6.rawValue]])
+        let current = model.weeks[0]
+        XCTAssertEqual(model.emptyDays(of: current), [12, 13, 15, 16, 17, 18].map { LocalDate(year: 2026, month: 10, day: $0)! }, "Wednesday has a photo")
+        XCTAssertTrue(model.emptyDays(of: model.weeks[1]).isEmpty, "past weeks show their photos only")
+    }
+
+    func testAWallWithoutPhotosThisWeekStillShowsTheCurrentWeek() async {
+        let data = SocialDemo.makeData()
+        data.update { state in state.posts.removeAll { $0.id == SocialDemo.p3 || $0.id == SocialDemo.p3b } }
+        let model = wall(.me, data)
+        await model.load()
+        XCTAssertEqual(model.weeks.map(\.weekStart), [SocialDemo.thisWeek, SocialDemo.lastWeek])
+        XCTAssertTrue(model.weeks[0].tiles.isEmpty)
+        XCTAssertEqual(model.emptyDays(of: model.weeks[0]).count, 7)
+    }
+
+    func testTilesInsideAWeekAreInTimeOrder() async {
+        let data = SocialDemo.makeData()
+        let early = PostID("00000000-0000-4000-8000-00000000c021")
+        data.update { state in
+            state.posts.append(SocialDemo.post(early, by: SocialDemo.me, at: SocialDemo.monday.addingTimeInterval(SocialDemo.hour)))
+        }
+        let model = wall(.me, data)
+        await model.load()
+        XCTAssertEqual(model.weeks[0].tiles.map(\.id), ["p" + early.rawValue, "p" + SocialDemo.p3.rawValue], "Monday before Wednesday")
+        XCTAssertEqual(model.photoPostIDs, [early, SocialDemo.p3, SocialDemo.p6], "the viewer moves in the wall's order")
+    }
+
     func testMemberWallAndEmptyWall() async {
-        let model = WallModel(owner: .member(SocialDemo.ana), data: SocialDemo.makeData())
+        let model = wall(.member(SocialDemo.ana))
         await model.load()
         XCTAssertEqual(model.photoPostIDs, [SocialDemo.p2, SocialDemo.p5])
         XCTAssertEqual(model.displayName, "Ana Lima")
 
-        let stranger = WallModel(owner: .member(SocialDemo.stranger), data: SocialDemo.makeData())
+        let stranger = wall(.member(SocialDemo.stranger))
         await stranger.load()
         XCTAssertEqual(stranger.phase, .empty, "no shared group, a block or no pics: the empty state")
+    }
+
+    func testBlockingEmptiesTheWall() async {
+        let model = wall(.member(SocialDemo.ana))
+        await model.load()
+        model.blocked()
+        XCTAssertEqual(model.phase, .empty)
+        XCTAssertTrue(model.photoPostIDs.isEmpty)
+        XCTAssertFalse(model.hasMore)
     }
 
     func testPagingByFifty() async {
@@ -35,7 +87,7 @@ final class SocialWallModelTests: XCTestCase {
                                 createdAt: SocialDemo.monday.addingTimeInterval(-Double(index) * 60))
             }
         }
-        let model = WallModel(owner: .me, data: data)
+        let model = wall(.me, data)
         await model.load()
         XCTAssertEqual(model.tiles.count, 50)
         XCTAssertTrue(model.hasMore)
@@ -60,7 +112,7 @@ final class SocialWallModelTests: XCTestCase {
                 WallItem(itemKind: .collage, postID: nil, mediaID: nil, collageID: ready, groupIDs: [SocialDemo.groupID], createdAt: SocialDemo.monday),
             ]
         }
-        let model = WallModel(owner: .me, data: data)
+        let model = wall(.me, data)
         await model.load()
         XCTAssertEqual(model.tiles.map(\.id), ["c" + ready.rawValue])
     }
@@ -74,7 +126,7 @@ final class SocialWallModelTests: XCTestCase {
                          groupIDs: [SocialDemo.groupID], createdAt: SocialDemo.monday),
             ]
         }
-        let model = WallModel(owner: .me, data: data)
+        let model = wall(.me, data)
         await model.load()
         XCTAssertTrue(model.isOffline)
         XCTAssertEqual(model.items.count, 1, "cached grid stays")
@@ -93,7 +145,7 @@ final class SocialWallModelTests: XCTestCase {
     }
 
     func testPostDeletedDropsEveryTileOfThatPhoto() async {
-        let model = WallModel(owner: .me, data: SocialDemo.makeData())
+        let model = wall(.me)
         await model.load()
         // The other group's post of the same photo: matched by media id.
         model.handle(.postDeleted(postID: SocialDemo.p3b, mediaID: SocialDemo.mediaID(SocialDemo.p3)))
@@ -102,25 +154,37 @@ final class SocialWallModelTests: XCTestCase {
         XCTAssertEqual(model.phase, .empty)
     }
 
-    func testBrowseListsMeFirstThenNewestWallFirst() async {
-        let model = WallsBrowseModel(data: SocialDemo.makeData())
+    func testBrowseListsEveryoneElseNewestWallFirst() async {
+        let model = WallsBrowseModel(data: SocialDemo.makeData(), ordersByNewestWall: true)
         await model.load()
         XCTAssertEqual(model.phase, .ready)
-        // Newest wall items: Cleo (Thu), Ana (Tue), Ben (Mon).
-        XCTAssertEqual(model.people.map(\.id), [SocialDemo.me, SocialDemo.cleo, SocialDemo.ana, SocialDemo.ben])
-        XCTAssertEqual(model.selectedID, SocialDemo.me)
-        XCTAssertEqual(model.selectedWall?.owner, .me)
-        XCTAssertNil(model.signals.feedback, "the initial selection plays no haptic")
+        // Newest wall items: Cleo (Thu), Ana (Tue), Ben (Mon); never me.
+        XCTAssertEqual(model.people.map(\.id), [SocialDemo.cleo, SocialDemo.ana, SocialDemo.ben])
+        XCTAssertEqual(model.people.map(\.name), ["Cleo Park", "Ana Lima", "Ben Ortiz"])
 
-        await model.select(SocialDemo.ana)
-        XCTAssertEqual(model.signals.feedback?.kind, .select)
-        XCTAssertEqual(model.selectedWall?.photoPostIDs, [SocialDemo.p2, SocialDemo.p5])
+        let release = WallsBrowseModel(data: SocialDemo.makeData(), ordersByNewestWall: false)
+        await release.load()
+        XCTAssertEqual(Set(release.people.map(\.id)), [SocialDemo.cleo, SocialDemo.ana, SocialDemo.ben], "rowOrder BLOCKED: the data's order")
+    }
+
+    func testBrowseSearchFiltersByName() async {
+        let model = WallsBrowseModel(data: SocialDemo.makeData(), ordersByNewestWall: true)
+        await model.load()
+        model.search = "  an "
+        XCTAssertEqual(model.visiblePeople.map(\.id), [SocialDemo.ana], "case-insensitive, trimmed")
+        model.search = "o"
+        XCTAssertEqual(model.visiblePeople.map(\.id), [SocialDemo.cleo, SocialDemo.ben])
+        model.search = "zed"
+        XCTAssertTrue(model.visiblePeople.isEmpty, "no search results")
+        XCTAssertEqual(model.phase, .ready)
+        model.search = ""
+        XCTAssertEqual(model.visiblePeople.count, 3)
     }
 
     func testBrowseScopedToOneGroup() async {
         let model = WallsBrowseModel(data: SocialDemo.makeData(), groupID: SocialDemo.otherGroupID)
         await model.load()
-        XCTAssertEqual(model.people.map(\.id), [SocialDemo.me, SocialDemo.ben])
+        XCTAssertEqual(model.people.map(\.id), [SocialDemo.ben])
     }
 
     func testBrowseWithNobodyElse() async {
@@ -128,8 +192,8 @@ final class SocialWallModelTests: XCTestCase {
         data.update { $0.profiles[SocialDemo.me] = SocialDemo.profiles[0] }
         let model = WallsBrowseModel(data: data)
         await model.load()
-        XCTAssertTrue(model.hasNobodyElse)
-        XCTAssertEqual(model.people.map(\.id), [SocialDemo.me])
+        XCTAssertEqual(model.phase, .empty)
+        XCTAssertTrue(model.people.isEmpty)
     }
 
     func testBrowseShowsCachedPeopleFirstThenRefreshesInPlace() async {
@@ -139,20 +203,17 @@ final class SocialWallModelTests: XCTestCase {
             state.cachedGroups = state.groups.filter { $0.id == SocialDemo.otherGroupID }
             state.cachedMembers[SocialDemo.otherGroupID] = state.members[SocialDemo.otherGroupID]
         }
-        let model = WallsBrowseModel(data: data)
+        let model = WallsBrowseModel(data: data, ordersByNewestWall: true)
         XCTAssertFalse(model.showsLoading)
         let task = Task { await model.load() }
         let cachedReady = await socialEventually { model.phase == .ready }
         XCTAssertTrue(cachedReady, "the cached people show while the server is asked")
         XCTAssertFalse(model.showsLoading, "no indicator over cached content")
-        XCTAssertEqual(model.people.map(\.id), [SocialDemo.me, SocialDemo.ben])
-        XCTAssertEqual(model.selectedID, SocialDemo.me)
+        XCTAssertEqual(model.people.map(\.id), [SocialDemo.ben])
 
         data.update { $0.holds.remove("myGroups") }
         await task.value
-        XCTAssertEqual(model.people.map(\.id), [SocialDemo.me, SocialDemo.cleo, SocialDemo.ana, SocialDemo.ben])
-        XCTAssertEqual(model.selectedID, SocialDemo.me, "the selection survives the refresh")
-        XCTAssertNil(model.signals.feedback)
+        XCTAssertEqual(model.people.map(\.id), [SocialDemo.cleo, SocialDemo.ana, SocialDemo.ben])
     }
 
     func testBrowseOfflineKeepsTheCachedPeople() async {
@@ -166,20 +227,25 @@ final class SocialWallModelTests: XCTestCase {
         await model.load()
         XCTAssertEqual(model.phase, .ready)
         XCTAssertTrue(model.isOffline)
-        XCTAssertEqual(model.people.first?.id, SocialDemo.me)
-        XCTAssertEqual(Set(model.people.map(\.id)), [SocialDemo.me, SocialDemo.ana, SocialDemo.ben, SocialDemo.cleo])
+        XCTAssertEqual(Set(model.people.map(\.id)), [SocialDemo.ana, SocialDemo.ben, SocialDemo.cleo])
 
         let nothing = SocialDemo.makeData()
         nothing.update { $0.mode = .offline }
         let empty = WallsBrowseModel(data: nothing)
         await empty.load()
         XCTAssertEqual(empty.phase, .offline)
+
+        let failing = SocialDemo.makeData()
+        failing.update { $0.mode = .failing }
+        let failed = WallsBrowseModel(data: failing)
+        await failed.load()
+        XCTAssertEqual(failed.phase, .failed)
     }
 
     func testLoadingIndicatorOnlyWithoutACachedCopy() async {
         let data = SocialDemo.makeData()
         data.update { $0.holds.insert("wall") }
-        let model = WallModel(owner: .me, data: data)
+        let model = wall(.me, data)
         XCTAssertFalse(model.showsLoading)
         let task = Task { await model.load() }
         let shown = await socialEventually { model.showsLoading }

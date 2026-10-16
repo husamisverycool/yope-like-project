@@ -13,7 +13,8 @@ final class ShellState {
     private(set) var cameraGroupID: String?
 
     /// A route whose spec presents it modally when it arrives as a push from a link (`AppRouter` pushes every link
-    /// route): birthday.request is a sheet, birthday.tribute is full screen. `MainShell` presents it.
+    /// route): birthday.request, settings.root and groups.settings are sheets; birthday.tribute and collage.view are
+    /// full screen. `MainShell` presents it.
     var presentedRoute: PresentedRoute?
 
     /// The shell on screen (the paywall entry closes the camera before prompting): the latest one created, and the
@@ -68,6 +69,9 @@ struct PresentedRoute: Identifiable, Hashable {
             return PresentedRoute(route: route, style: .sheet)
         case .tribute:
             // birthday.tribute.md structure: full screen.
+            return PresentedRoute(route: route, style: .fullScreen)
+        case .capture(.collage):
+            // collage.view: a media cover, presented full screen like send-to and the daily capture.
             return PresentedRoute(route: route, style: .fullScreen)
         case .account(.settings), .account(.groupSettings), .account(.groupProfile):
             // settings.root / groups.settings: page sheets with their own navigation (`settings.root.layout.list.sheet`).

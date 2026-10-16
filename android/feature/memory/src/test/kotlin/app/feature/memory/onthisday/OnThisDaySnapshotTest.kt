@@ -123,18 +123,18 @@ class OnThisDayFlowTest : SnapshotTest() {
         val title = compose.onNodeWithTag(OnThisDayTags.TITLE, useUnmergedTree = true)
         title.assertTextEquals("Dec 5, 2025")
         compose.onNodeWithText("On this day · Ana").assertExists()
-        // Clockwise: two slots (8.18° each) → two memories, one tick each.
+        // Clockwise: one memory per 8.18° slot crossed (after the touch slop), one tick each; it stops at the last.
         val ticksBefore = haptics.count { it == Tokens.Haptics.globalSelect }
-        spin(-60f, -60f + 8.18f * 2 + 1f)
+        spin(-60f, -60f + 8.18f * 6)
         title.assertTextEquals("Dec 5, 2023")
-        compose.onNodeWithText("On this day · Ana").assertExists()
-        assertEquals(2, haptics.count { it == Tokens.Haptics.globalSelect } - ticksBefore)
-        // Counter-clockwise past the first memory stops there.
-        spin(-60f, -60f - 8.18f * 5 - 1f)
+        compose.onNodeWithText("On this day · Jesus").assertExists()
+        assertEquals("three steps to the last memory, no wrap", 3, haptics.count { it == Tokens.Haptics.globalSelect } - ticksBefore)
+        // Counter-clockwise back past the first memory stops there.
+        spin(-60f, -60f - 8.18f * 8)
         title.assertTextEquals("Dec 5, 2025")
         // Play: the next memory after `duration.onthisday.playHold`; the side circles hide.
         compose.onNodeWithContentDescription("Play").performClick()
-        compose.mainClock.advanceTimeBy(Tokens.Durations.onthisdayPlayHold.toLong() + STEP_SETTLE)
+        compose.mainClock.advanceTimeBy(Tokens.Durations.onthisdayPlayHold.toLong() + Tokens.Durations.onthisdayMemoryChange + STEP_SETTLE)
         title.assertTextEquals("Dec 5, 2023")
         compose.onNodeWithContentDescription("Pause").performClick()
         compose.mainClock.advanceTimeBy(STEP_SETTLE)

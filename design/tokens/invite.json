@@ -26,6 +26,22 @@
       "precision": "±1 pt",
       "notes": "Equals radius.global.cardLarge (36, the paywall plan card)."
     },
+    "invite.web.layout.backdrop": {
+      "type": "layout",
+      "value": {
+        "blurSigmaToWidth": 0.08,
+        "dim": "color.global.backdropDim",
+        "source": "the group cover photo, object-fit cover, extended 3σ past the card so the blur has no faded edge"
+      },
+      "source_app": "Retro",
+      "surface": "invite.web",
+      "element": "mobile card and share image: the blurred-photo colour field behind the invite text (App Clip card too)",
+      "evidence": "references/auto/retro/web/retro.app-invite-background-bg2.jpeg (673 × 1280, the mobile card background); references/auto/retro/web/retro.app-og-userogsquare-nathan.png (600 × 600) — MERGE_DECISIONS L-6",
+      "method": "bg2.jpeg: edge-spread fits (erf + linear term) across the 22 strongest gradient maxima, 3-px pre-smooth; 6 fits with R² > 0.97: σ 47.1 / 62.8 / 68.4 / 68.8 / 69.5 / 71.1 px — the sharpest edge bounds σ from above at 7.0 % of the width, the high-contrast edges give 9.3–10.6 %. OG image: per-channel affine fit of the avatar photo scaled ×8.67 and Gaussian-blurred, best σ 50 px = 8.3 % of the width (weak fit, 1 − R² 0.59; 40 → 6.7 % and 60 → 10 % within 2 %). Value 0.08 of the width.",
+      "precision": "±0.02 of the width",
+      "level": "SOURCED",
+      "notes": "Retro's invite page shows a stock pre-blurred photo (bg1–bg6) and its share image a gradient from the profile photo; this app blurs the group's cover to the same strength. The recap backdrop (size.global.backdropBlur, σ 1.8 pt) is a different, much milder treatment and does not apply here."
+    },
     "invite.web.size.avatar": {
       "type": "dimension",
       "value": 112,
@@ -383,7 +399,7 @@
       "value": {
         "width": 600,
         "height": 600,
-        "background": "the group cover blurred to a colour field (C-34 backdrop) — Retro: a dark blurred gradient made from the profile photo; no cover → color.global.backgroundDeep",
+        "background": "the group cover blurred to a colour field (invite.web.layout.backdrop: σ = 0.08 × the image width, under color.global.backdropDim) — Retro: a dark blurred gradient made from the profile photo; no cover → color.global.backgroundDeep",
         "avatar": "group cover in a circle, 83 px, centred; top at 208 px",
         "avatarToName": 19,
         "name": "group name in font.global.display, #FFFFFF, centred, ink height 40 px for an ascender word (≈ 52 px type)",

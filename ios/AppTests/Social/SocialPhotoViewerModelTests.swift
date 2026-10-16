@@ -11,17 +11,15 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         _ data: FakeSocialData = SocialDemo.makeData(),
         start: PostID = SocialDemo.p2,
         ids: [PostID] = [SocialDemo.p1, SocialDemo.p2, SocialDemo.p3, SocialDemo.p4],
-        flags: SocialFlags? = nil,
-        name: String = #function
+        showsGroupName: Bool = false
     ) -> PhotoViewerModel {
         PhotoViewerModel(
-            context: PhotoViewerContext(postIDs: ids, start: start, groupID: SocialDemo.groupID),
-            data: data,
-            flags: flags ?? socialTestFlags(name)
+            context: PhotoViewerContext(postIDs: ids, start: start, groupID: SocialDemo.groupID, showsGroupName: showsGroupName),
+            data: data
         )
     }
 
-    func testLoadShowsThePhotoWithReactionsTagAndCoach() async {
+    func testLoadShowsThePhotoWithReactionsTagsAndComments() async {
         let data = SocialDemo.makeData()
         data.update { $0.tags = [PostTag(postID: SocialDemo.p2, userID: SocialDemo.me, groupID: SocialDemo.groupID, createdAt: SocialDemo.monday)] }
         let model = makeModel(data)
@@ -32,8 +30,41 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         XCTAssertEqual(model.current.flatMap(model.group)?.name, "roommates")
         XCTAssertEqual(model.reactions[SocialDemo.p2]?.distinctEmoji, ["😍"])
         XCTAssertTrue(model.isCurrentTagged)
+        XCTAssertEqual(model.taggedPeople(on: SocialDemo.p2), [SocialDemo.me])
         XCTAssertFalse(model.isCurrentOwn)
-        XCTAssertTrue(model.coachVisible, "first photo someone else posted: the coach shows")
+        XCTAssertEqual(model.currentComments.map(\.body), ["so pretty"], "replies to the photo show as comments, oldest first")
+        XCTAssertEqual(model.profiles[SocialDemo.ben]?.socialFirstName, "Ben", "comment authors are loaded")
+        XCTAssertNotNil(model.profiles[SocialDemo.me], "my avatar leads the reply field")
+        XCTAssertEqual(model.position?.index, 2)
+        XCTAssertEqual(model.position?.total, 4)
+        XCTAssertEqual(model.current.map(model.weekNumber), 42, "ISO week of Tue 13 Oct 2026 in the group's zone")
+        XCTAssertFalse(model.showsGroupName)
+    }
+
+    func testOpenedFromAWallTheHeaderNamesTheGroup() async {
+        let model = makeModel(showsGroupName: true)
+        await model.load()
+        XCTAssertTrue(model.showsGroupName)
+        XCTAssertNil(makeModel(ids: [SocialDemo.p2]).position, "one photo: no position pill")
+    }
+
+    func testTapsAdvanceAndGoBackAndCloseAfterTheLast() async {
+        let model = makeModel(start: SocialDemo.p3)
+        await model.load()
+        model.goBack()
+        XCTAssertEqual(model.selection, SocialDemo.p2)
+        model.advance()
+        model.advance()
+        XCTAssertEqual(model.selection, SocialDemo.p4)
+        XCTAssertFalse(model.isClosed)
+        model.advance()
+        XCTAssertTrue(model.isClosed, "past the last photo the viewer closes")
+
+        let first = makeModel(start: SocialDemo.p1)
+        await first.load()
+        first.goBack()
+        XCTAssertEqual(first.selection, SocialDemo.p1, "nothing before the first photo")
+        XCTAssertEqual(first.neighbours.map(\.id), [SocialDemo.p2])
     }
 
     func testPhotosOnTheDeviceShowWithoutABlankFrameThenRefresh() async {
@@ -58,21 +89,15 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         XCTAssertEqual(model.current?.id, SocialDemo.p2)
     }
 
-    func testCoachShowsOncePerAccountAndNeverOnOwnPhotos() async {
+    func testRecentEmojiAreKeptNewestFirstPerDevice() {
         let flags = socialTestFlags()
-        let own = makeModel(start: SocialDemo.p3, flags: flags)
-        await own.load()
-        XCTAssertFalse(own.coachVisible)
-
-        let first = makeModel(flags: flags)
-        await first.load()
-        XCTAssertTrue(first.coachVisible)
-        first.dismissCoach()
-        XCTAssertFalse(first.coachVisible)
-
-        let second = makeModel(flags: flags)
-        await second.load()
-        XCTAssertFalse(second.coachVisible, "dismissed for good")
+        XCTAssertTrue(flags.recentEmoji().isEmpty)
+        flags.recordEmoji("🔥", keep: 3)
+        flags.recordEmoji("😍", keep: 3)
+        flags.recordEmoji("🔥", keep: 3)
+        XCTAssertEqual(flags.recentEmoji(), ["🔥", "😍"])
+        flags.recordEmoji("😂", keep: 2)
+        XCTAssertEqual(flags.recentEmoji(), ["😂", "🔥"])
     }
 
     func testPagingLoadsTheTagStateOfTheNewPhoto() async {
@@ -84,6 +109,7 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         await model.select(SocialDemo.p4)
         XCTAssertEqual(model.selection, SocialDemo.p4)
         XCTAssertTrue(model.isCurrentTagged)
+        XCTAssertTrue(model.currentComments.isEmpty)
     }
 
     func testMissingPhotoShowsGone() async {
@@ -124,10 +150,8 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         let data = SocialDemo.makeData()
         let model = makeModel(data)
         await model.load()
-        XCTAssertTrue(model.coachVisible)
         await model.toggleTag()
         XCTAssertTrue(model.isCurrentTagged)
-        XCTAssertFalse(model.coachVisible, "a tap on the toggle dismisses the coach")
         XCTAssertEqual(model.signals.feedback?.kind, .select)
         XCTAssertTrue(data.read { $0.tags }.contains { $0.postID == SocialDemo.p2 && $0.userID == SocialDemo.me })
         await model.toggleTag()
@@ -145,6 +169,25 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         XCTAssertEqual(model.signals.notice?.notice, .tagError)
         XCTAssertEqual(model.signals.feedback?.kind, .failed)
         XCTAssertTrue(model.tagPending.isEmpty)
+
+        await model.toggleTag()
+        XCTAssertTrue(model.isCurrentTagged)
+        data.update { $0.failOnce.insert("setTagged") }
+        await model.toggleTag()
+        XCTAssertTrue(model.isCurrentTagged, "a failed removal keeps me tagged")
+        XCTAssertEqual(model.signals.notice?.notice, .tagRemoveError)
+    }
+
+    func testOtherPeoplesTagsStayWhenITagMyself() async {
+        let data = SocialDemo.makeData()
+        data.update { $0.tags = [SocialDemo.tag(SocialDemo.p2, SocialDemo.ben, minutes: 1), SocialDemo.tag(SocialDemo.p2, SocialDemo.cleo, minutes: 2)] }
+        let model = makeModel(data)
+        await model.load()
+        XCTAssertEqual(model.taggedPeople(on: SocialDemo.p2), [SocialDemo.ben, SocialDemo.cleo])
+        await model.toggleTag()
+        XCTAssertEqual(model.taggedPeople(on: SocialDemo.p2), [SocialDemo.ben, SocialDemo.cleo, SocialDemo.me], "I am added at the end of the run")
+        await model.toggleTag()
+        XCTAssertEqual(model.taggedPeople(on: SocialDemo.p2), [SocialDemo.ben, SocialDemo.cleo])
     }
 
     func testTagOnAGonePhotoAndOffline() async {
@@ -177,7 +220,6 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         await model.load()
         await model.react("🔥")
         XCTAssertEqual(model.reactions[SocialDemo.p2]?.distinctEmoji, ["🔥", "😍"], "newest first")
-        XCTAssertEqual(model.sentReaction?.emoji, "🔥")
 
         data.update { $0.failOnce.insert("react") }
         await model.react("💖")
@@ -187,11 +229,16 @@ final class SocialPhotoViewerModelTests: XCTestCase {
 
         // Taking it back from the picker (`chat.reactions.layout.unreact`).
         XCTAssertEqual(model.myEmojiOnCurrent, ["🔥"])
-        let sent = model.sentReaction
         await model.unreact("🔥")
         XCTAssertEqual(model.reactions[SocialDemo.p2]?.distinctEmoji, ["😍"])
         XCTAssertTrue(model.myEmojiOnCurrent.isEmpty)
-        XCTAssertEqual(model.sentReaction, sent, "no rain for taking a reaction back")
+
+        // The context menu's quick row toggles.
+        await model.toggleReaction("😍")
+        XCTAssertEqual(model.myEmojiOnCurrent, ["😍"])
+        await model.toggleReaction("😍")
+        XCTAssertTrue(model.myEmojiOnCurrent.isEmpty)
+        XCTAssertEqual(model.reactions[SocialDemo.p2]?.distinctEmoji, ["😍"], "Ben's stays")
     }
 
     func testRealtimeReactionsAndDeletion() async {
@@ -297,5 +344,56 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         await model.sendReply()
         XCTAssertEqual(model.replyDraft, "again")
         XCTAssertEqual(model.signals.notice?.notice, .sendFailed)
+        XCTAssertEqual(model.currentComments.last?.body, "love this", "the sent reply shows as a comment")
+    }
+
+    // MARK: Comments
+
+    func testRealtimeCommentsArriveAndGo() async {
+        let model = makeModel()
+        await model.load()
+        let comment = SocialDemo.message(95, by: SocialDemo.cleo, at: SocialDemo.monday.addingTimeInterval(2 * SocialDemo.day), text: "wow", replyTo: SocialDemo.p2)
+        await model.handle(.messageInserted(comment))
+        await model.handle(.messageInserted(comment))
+        XCTAssertEqual(model.currentComments.map(\.body), ["so pretty", "wow"])
+        XCTAssertEqual(model.profiles[SocialDemo.cleo]?.socialFirstName, "Cleo")
+        await model.handle(.messageDeleted(comment.id))
+        XCTAssertEqual(model.currentComments.map(\.body), ["so pretty"])
+        let unrelated = SocialDemo.message(96, by: SocialDemo.cleo, at: SocialDemo.monday, text: "hi")
+        await model.handle(.messageInserted(unrelated))
+        XCTAssertEqual(model.currentComments.count, 1, "messages that do not reply to the photo are not comments")
+    }
+
+    func testUnsendingMyCommentIsOptimistic() async {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data)
+        await model.load()
+        model.replyDraft = "mine"
+        await model.sendReply()
+        let mine = try! XCTUnwrap(model.currentComments.last)
+        data.update { $0.failOnce.insert("deleteMessage") }
+        await model.deleteComment(mine)
+        XCTAssertTrue(model.currentComments.contains { $0.id == mine.id }, "put back when the call fails")
+        XCTAssertEqual(model.signals.feedback?.kind, .failed)
+        await model.deleteComment(mine)
+        XCTAssertFalse(model.currentComments.contains { $0.id == mine.id })
+        let theirs = try! XCTUnwrap(model.currentComments.first)
+        await model.deleteComment(theirs)
+        XCTAssertTrue(model.currentComments.contains { $0.id == theirs.id }, "only my own comments")
+        model.copied()
+        XCTAssertEqual(model.signals.notice?.notice, .copied)
+    }
+
+    func testCommentsLoadingIsHeldWithoutBlockingThePhoto() async {
+        let data = SocialDemo.makeData()
+        data.update { $0.holds.insert("replies") }
+        let model = makeModel(data)
+        let task = Task { await model.load() }
+        let ready = await socialEventually { model.phase == .ready && model.reactions[SocialDemo.p2] != nil }
+        XCTAssertTrue(ready)
+        XCTAssertTrue(model.currentComments.isEmpty)
+        data.update { $0.holds.remove("replies") }
+        await task.value
+        XCTAssertEqual(model.currentComments.count, 1)
     }
 }

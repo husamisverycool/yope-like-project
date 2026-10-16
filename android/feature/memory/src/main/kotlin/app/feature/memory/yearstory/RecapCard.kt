@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +30,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -80,7 +82,8 @@ object RecapCardMetrics {
  * The card fills the width it is given ([modifier]); inside a recap frame give it [RecapCardMetrics.width] of the
  * frame width — or use [RecapCardPage]. Photos beyond the full rows are left out (only full rows: TC-REC); offer the
  * card only when [RecapCardMetrics.offered]. Read in order: each photo (its label; a button with [RecapCardPhoto.onClick]),
- * then the footer as one element. [image] draws one cell (default: core:ui `DsImage`, aspect fill, the
+ * then the footer as one element. [shown]: how many photos the grid draws (default: whole rows only, the year
+ * card's rule; a caller with its own fill rule passes its count — a short last row keeps its blank places). [image] draws one cell (default: core:ui `DsImage`, aspect fill, the
  * `color.global.control` light placeholder while loading); a share renderer passes its own software-decoded image.
  */
 @Composable
@@ -91,6 +94,7 @@ fun RecapCard(
     name: String? = null,
     detail: String? = null,
     nameStyle: TextStyle = TextRoles.listTitle,
+    shown: Int = RecapCardMetrics.shown(photos.size),
     image: @Composable (photo: RecapCardPhoto, modifier: Modifier) -> Unit = { photo, m -> DsImage(photo.image, null, m, placeholder = Tokens.ColorsLight.globalControl) },
 ) {
     BoxWithConstraints(modifier) {
@@ -99,7 +103,7 @@ fun RecapCard(
         val corner = RecapCardMetrics.corner(width)
         val gap = Tokens.Sizes.globalStripGap
         val columns = RecapCardMetrics.columns
-        val shown = photos.take(RecapCardMetrics.shown(photos.size))
+        val drawn = photos.take(shown.coerceIn(0, RecapCardMetrics.columns * RecapCardMetrics.maxRows))
         val ink = Tokens.Colors.globalOnSurfaceLight
         Column(
             Modifier
@@ -108,9 +112,9 @@ fun RecapCard(
                 .background(Tokens.Colors.globalSurfaceLight)
                 .padding(start = padding, top = padding, end = padding),
         ) {
-            if (shown.isNotEmpty()) {
+            if (drawn.isNotEmpty()) {
                 Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(corner - padding)), verticalArrangement = Arrangement.spacedBy(gap)) {
-                    shown.chunked(columns).forEach { row ->
+                    drawn.chunked(columns).forEach { row ->
                         Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
                             row.forEach { photo ->
                                 image(
@@ -122,6 +126,8 @@ fun RecapCard(
                                         .clearAndSetSemantics { contentDescription = photo.accessibilityLabel },
                                 )
                             }
+                            // A last row that is not full (a caller's own fill rule, e.g. week.recap's) keeps its cells' places.
+                            repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
                         }
                     }
                 }
@@ -152,12 +158,13 @@ fun RecapCardPage(
     modifier: Modifier = Modifier,
     name: String? = null,
     detail: String? = null,
+    shown: Int = RecapCardMetrics.shown(photos.size),
     backdrop: @Composable () -> Unit = {},
     image: @Composable (photo: RecapCardPhoto, modifier: Modifier) -> Unit = { photo, m -> DsImage(photo.image, null, m, placeholder = Tokens.ColorsLight.globalControl) },
 ) {
     BoxWithConstraints(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         backdrop()
-        RecapCard(photos, title, Modifier.width(RecapCardMetrics.width(maxWidth)), name = name, detail = detail, image = image)
+        RecapCard(photos, title, Modifier.width(RecapCardMetrics.width(maxWidth)), name = name, detail = detail, shown = shown, image = image)
     }
 }
 
@@ -197,7 +204,7 @@ internal fun RecapFooter(title: String, name: String?, detail: String?, titleSty
         verticalAlignment = Alignment.Bottom,
     ) {
         // The title wraps when it is long ("Wednesday, February 25"); the trailing name keeps its width.
-        Text(title, style = titleStyle, color = titleColor, modifier = Modifier.weight(1f).paddingFrom(LastBaseline, after = baseline))
+        Text(title, style = titleStyle.copy(lineBreak = LineBreak.Heading), color = titleColor, modifier = Modifier.weight(1f).paddingFrom(LastBaseline, after = baseline))
         Column(Modifier.paddingFrom(LastBaseline, after = baseline), horizontalAlignment = Alignment.End) {
             if (name != null) Text(name, style = TextRoles.listTitle, color = Tokens.Colors.globalTextOnMedia, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.End)
             if (detail != null) Text(detail, style = TextRoles.meta, color = Tokens.Colors.globalTextOnMedia, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.End)

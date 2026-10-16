@@ -24,24 +24,15 @@ final class SocialChatThreadModelTests: XCTestCase {
         XCTAssertEqual(model.profile(SocialDemo.ana)?.socialFirstName, "Ana")
         XCTAssertEqual(model.group?.name, "roommates")
         XCTAssertFalse(model.hasOlder)
-        XCTAssertEqual(model.latestRecapID, SocialDemo.recapID, "film-strip circle opens the latest ready recap")
+        XCTAssertEqual(model.timeZone.identifier, "UTC", "times and day dividers in the group's time zone")
     }
 
-    func testEmptyThreadNamesCreatorAndAddedMembers() async {
+    func testEmptyThread() async {
         let model = makeModel(SocialDemo.makeEmptyData(creator: SocialDemo.ana))
         await model.load()
         XCTAssertEqual(model.phase, .empty)
-        XCTAssertFalse(model.viewerCreatedGroup)
-        XCTAssertEqual(model.creatorFirstName, "Ana")
-        XCTAssertEqual(model.addedMemberNames, ["Sam", "Ben"])
-        XCTAssertNil(model.latestRecapID, "no recap: the film-strip circle is hidden")
-    }
-
-    func testEmptyThreadCreatedByViewer() async {
-        let model = makeModel(SocialDemo.makeEmptyData(creator: SocialDemo.me))
-        await model.load()
-        XCTAssertEqual(model.phase, .empty)
-        XCTAssertTrue(model.viewerCreatedGroup)
+        XCTAssertTrue(model.entries().isEmpty)
+        XCTAssertEqual(model.group?.name, "roommates", "the header names the group")
     }
 
     func testErrorWhenNothingCached() async {
@@ -434,14 +425,26 @@ final class SocialChatThreadModelTests: XCTestCase {
         XCTAssertFalse(data.read { $0.calls }.contains("deleteMessage"))
     }
 
-    func testReactShowsStickerAtOnceAndStartsRain() async {
+    func testReactShowsTheChipAtOnce() async {
         let data = SocialDemo.makeData()
         let model = makeModel(data)
         await model.load()
         await model.react(postID: SocialDemo.p3, emoji: "🥹")
         XCTAssertEqual(model.reactions[SocialDemo.p3]?.distinctEmoji, ["🥹"])
-        XCTAssertEqual(model.sentReaction?.emoji, "🥹")
         XCTAssertTrue(data.read { $0.reactions }.contains { $0.postID == SocialDemo.p3 && $0.emoji == "🥹" })
+    }
+
+    func testQuickReactionTogglesMyEmoji() async {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data)
+        await model.load()
+        XCTAssertEqual(model.myEmoji(on: SocialDemo.p1), ["💖"])
+        await model.toggleReaction(postID: SocialDemo.p1, emoji: "💖")
+        XCTAssertTrue(model.myEmoji(on: SocialDemo.p1).isEmpty, "an emoji I already used is taken back")
+        XCTAssertEqual(model.reactions[SocialDemo.p1]?.distinctEmoji, ["🔥"])
+        await model.toggleReaction(postID: SocialDemo.p1, emoji: "😂")
+        XCTAssertEqual(model.myEmoji(on: SocialDemo.p1), ["😂"])
+        XCTAssertEqual(model.reactions[SocialDemo.p1]?.distinctEmoji, ["😂", "🔥"], "a new emoji enters at the leading end")
     }
 
     func testFailedReactionRemovesTheOptimisticSticker() async {
@@ -486,23 +489,204 @@ final class SocialChatThreadModelTests: XCTestCase {
         XCTAssertNil(SocialEmojiText.emojiOnlyCount("  "))
     }
 
-    func testRepeatEmojiKeepsItsPlaceInTheCluster() {
+    func testAnEmojiUsedAgainMovesToTheFrontOfTheCluster() {
         var summary = ReactionSummary()
         summary.insert(SocialDemo.reaction(SocialDemo.p1, SocialDemo.ana, "✌️", minutes: 1))
         summary.insert(SocialDemo.reaction(SocialDemo.p1, SocialDemo.ben, "😍", minutes: 2))
         XCTAssertEqual(summary.distinctEmoji, ["😍", "✌️"])
         summary.insert(SocialDemo.reaction(SocialDemo.p1, SocialDemo.cleo, "✌️", minutes: 3))
-        XCTAssertEqual(summary.distinctEmoji, ["😍", "✌️"], "a repeat adds no sticker")
+        XCTAssertEqual(summary.distinctEmoji, ["✌️", "😍"], "chat.reactions.layout.clusterOrder: used again → front; no second chip")
+        summary.insert(SocialDemo.reaction(SocialDemo.p1, SocialDemo.cleo, "✌️", minutes: 4))
+        XCTAssertEqual(summary.rows.count, 3, "react is idempotent per person and emoji")
     }
 
-    func testRowsPutTheAvatarOnTheLastMessageOfARunAndPickTheGaps() {
-        let rows = ChatRowLayout.rows(SocialDemo.messages, me: SocialDemo.me)
-        XCTAssertEqual(rows.map(\.gap), [.none, .sameSender, .betweenSenders, .betweenSenders, .textToVoice, .betweenSenders, .betweenSenders, .betweenSenders, .betweenSenders])
-        XCTAssertEqual(rows.map(\.showsAvatar), [false, true, true, false, false, true, true, false, true])
-        XCTAssertEqual(rows.map(\.isMine), [false, false, false, true, true, false, false, true, false])
-        let photo = SocialDemo.message(60, by: SocialDemo.ben, at: SocialDemo.monday, post: SocialDemo.p1)
-        let next = SocialDemo.message(61, by: SocialDemo.ben, at: SocialDemo.monday, post: SocialDemo.p3)
-        XCTAssertEqual(ChatRowLayout.gap(from: photo, to: next), .photo)
-        XCTAssertEqual(ChatRowLayout.gap(from: photo, to: SocialDemo.message(62, by: SocialDemo.ben, at: SocialDemo.monday, text: "x")), .photo)
+    func testReactionsSheetListsOneRowPerPersonAndEmojiNewestFirst() {
+        let summary = ReactionSummary([
+            SocialDemo.reaction(SocialDemo.p1, SocialDemo.ana, "🔥", minutes: 1),
+            SocialDemo.reaction(SocialDemo.p1, SocialDemo.ben, "😍", minutes: 5),
+            SocialDemo.reaction(SocialDemo.p1, SocialDemo.ana, "😂", minutes: 3),
+        ])
+        XCTAssertEqual(summary.listRows(newestFirst: true).map(\.emoji), ["😍", "😂", "🔥"])
+        XCTAssertEqual(summary.listRows(newestFirst: false).map(\.emoji), ["🔥", "😍", "😂"], "release: the data's order (listOrder BLOCKED)")
+    }
+
+    // MARK: Runs and day dividers
+
+    private var utc: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        return calendar
+    }
+
+    private enum Shape: Equatable {
+        case day(ChatGap)
+        case message(Int, startsRun: Bool, isMine: Bool, gap: ChatGap)
+    }
+
+    private func shape(_ entries: [ChatEntry]) -> [Shape] {
+        entries.map { entry in
+            switch entry {
+            case let .day(_, gap):
+                return .day(gap)
+            case let .message(row):
+                let index = SocialDemo.messages.firstIndex { $0.id == row.id }.map { $0 + 1 } ?? 0
+                return .message(index, startsRun: row.startsRun, isMine: row.isMine, gap: row.gap)
+            }
+        }
+    }
+
+    func testEntriesPutADividerBeforeEachDayAndStartARunPerSenderOrQuote() {
+        let quoted: Set<MessageID> = [SocialDemo.messageID(7)]
+        let entries = ChatThreadLayout.entries(SocialDemo.messages, me: SocialDemo.me, calendar: utc) { quoted.contains($0.id) }
+        XCTAssertEqual(shape(entries), [
+            .day(.none),
+            .message(1, startsRun: true, isMine: false, gap: .afterDivider),
+            .message(2, startsRun: false, isMine: false, gap: .item),
+            .message(3, startsRun: true, isMine: false, gap: .run),
+            .message(4, startsRun: true, isMine: true, gap: .run),
+            .message(5, startsRun: false, isMine: true, gap: .item),
+            .day(.divider),
+            .message(6, startsRun: true, isMine: false, gap: .afterDivider),
+            .message(7, startsRun: true, isMine: false, gap: .run),
+            .day(.divider),
+            .message(8, startsRun: true, isMine: true, gap: .afterDivider),
+            .day(.divider),
+            .message(9, startsRun: true, isMine: false, gap: .afterDivider),
+        ])
+        XCTAssertEqual(Set(entries.map(\.id)).count, entries.count, "stable, unique ids for the lazy list")
+    }
+
+    func testAReplyQuoteBreaksARunOfOneSender() {
+        let first = SocialDemo.message(70, by: SocialDemo.ben, at: SocialDemo.monday, text: "look")
+        let reply = SocialDemo.message(71, by: SocialDemo.ben, at: SocialDemo.monday.addingTimeInterval(60), text: "this one", replyTo: SocialDemo.p1)
+        let plain = SocialDemo.message(72, by: SocialDemo.ben, at: SocialDemo.monday.addingTimeInterval(120), text: "and")
+        let rows = ChatThreadLayout.entries([first, reply, plain], me: SocialDemo.me, calendar: utc) { $0.replyToPostID != nil }
+            .compactMap { entry -> ChatRow? in if case let .message(row) = entry { return row } else { return nil } }
+        XCTAssertEqual(rows.map(\.startsRun), [true, true, false])
+        XCTAssertEqual(rows.map(\.gap), [.afterDivider, .run, .item])
+    }
+
+    func testDayLabelsAreTodayYesterdayOrTheDate() {
+        let now = SocialDemo.monday.addingTimeInterval(2 * SocialDemo.day)
+        XCTAssertEqual(ChatThreadLayout.dayLabel(now, now: now, calendar: utc), .today)
+        XCTAssertEqual(ChatThreadLayout.dayLabel(now.addingTimeInterval(-SocialDemo.day), now: now, calendar: utc), .yesterday)
+        XCTAssertEqual(ChatThreadLayout.dayLabel(SocialDemo.monday, now: now, calendar: utc), .date(SocialDemo.monday))
+    }
+
+    func testModelEntriesUseTheThreadsQuotes() async {
+        let model = makeModel()
+        await model.load()
+        let reply = try! XCTUnwrap(model.messages.first { $0.body == "so pretty" })
+        XCTAssertTrue(model.hasQuote(reply))
+        XCTAssertEqual(model.quotedPost(of: reply)?.id, SocialDemo.p2)
+        let rows = model.entries(calendar: utc).compactMap { entry -> ChatRow? in if case let .message(row) = entry { return row } else { return nil } }
+        XCTAssertTrue(rows.first { $0.id == reply.id }?.startsRun ?? false)
+    }
+
+    // MARK: Replies
+
+    func testReplyToAPhotoQuotesThePostAndSendsItsID() async {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data)
+        await model.load()
+        let photo = try! XCTUnwrap(model.messages.first { $0.postID == SocialDemo.p2 })
+        model.startReply(to: photo)
+        XCTAssertEqual(model.replyTarget, .post(SocialDemo.p2, author: SocialDemo.ana))
+        XCTAssertEqual(model.replyPostID, SocialDemo.p2, "the camera glyph replies to this photo with a photo")
+        model.draft = "love it"
+        await model.sendDraft()
+        XCTAssertNil(model.replyTarget, "the reply bar closes on send")
+        let sent = try! XCTUnwrap(data.read { $0.messages.last })
+        XCTAssertEqual(sent.body, "love it")
+        XCTAssertEqual(sent.replyToPostID, SocialDemo.p2)
+        XCTAssertNil(sent.replyToMessageID)
+        XCTAssertEqual(model.quotedPost(of: model.messages.last!)?.id, SocialDemo.p2)
+    }
+
+    func testReplyToATextMessageQuotesTheMessage() async {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data)
+        await model.load()
+        let text = try! XCTUnwrap(model.messages.first { $0.body == "i can do pasta" })
+        model.startReply(to: text)
+        XCTAssertEqual(model.replyTarget, .message(text.id, author: SocialDemo.ana))
+        XCTAssertNil(model.replyPostID)
+        model.draft = "yes!"
+        await model.sendDraft()
+        let sent = try! XCTUnwrap(data.read { $0.messages.last })
+        XCTAssertEqual(sent.replyToMessageID, text.id)
+        XCTAssertNil(sent.replyToPostID)
+        XCTAssertEqual(model.quotedMessage(of: model.messages.last!)?.id, text.id)
+    }
+
+    func testCancellingAReplyAndLosingItsTarget() async {
+        let model = makeModel()
+        await model.load()
+        let text = model.messages[0]
+        model.startReply(to: text)
+        model.cancelReply()
+        XCTAssertNil(model.replyTarget)
+
+        model.startReply(to: text)
+        await model.handle(.messageDeleted(text.id))
+        XCTAssertNil(model.replyTarget, "the quoted message was unsent")
+
+        let photo = try! XCTUnwrap(model.messages.first { $0.postID == SocialDemo.p1 })
+        model.startReply(to: photo)
+        await model.handle(.postDeleted(postID: SocialDemo.p1, mediaID: nil))
+        XCTAssertNil(model.replyTarget, "the quoted photo was deleted")
+    }
+
+    func testQuotedMessageOutsideTheLoadedPagesIsFetched() async {
+        let data = SocialDemo.makeData()
+        let old = SocialDemo.message(80, by: SocialDemo.cleo, at: SocialDemo.monday.addingTimeInterval(-10 * SocialDemo.day), text: "long ago")
+        let reply = SocialDemo.message(81, by: SocialDemo.ana, at: SocialDemo.monday.addingTimeInterval(4 * SocialDemo.day), text: "remember?", replyToMessage: old.id)
+        data.update { state in
+            state.messages.insert(old, at: 0)
+            state.messages.append(reply)
+            state.messagePageSize = 4
+        }
+        let model = makeModel(data)
+        await model.load()
+        XCTAssertFalse(model.messages.contains { $0.id == old.id }, "older than the first page")
+        XCTAssertEqual(model.quotedMessage(of: reply)?.body, "long ago")
+        XCTAssertNotNil(model.profile(SocialDemo.cleo))
+    }
+
+    func testCopyIsAnnouncedOnly() async {
+        let model = makeModel()
+        await model.load()
+        model.copied()
+        XCTAssertEqual(model.signals.notice?.notice, .copied)
+    }
+
+    func testDeletingMyPhotoFromTheThreadRemovesItAndPutsItBackOnFailure() async {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data)
+        await model.load()
+        let mine = try! XCTUnwrap(model.messages.first { $0.postID == SocialDemo.p3 })
+        data.update { $0.failOnce.insert("deleteMedia") }
+        await model.deletePhoto(mine)
+        XCTAssertTrue(model.messages.contains { $0.id == mine.id }, "put back when the call fails")
+        await model.deletePhoto(mine)
+        XCTAssertFalse(model.messages.contains { $0.id == mine.id })
+        XCTAssertNil(model.posts[SocialDemo.p3])
+        XCTAssertTrue(data.read { $0.deletedMedia }.contains(SocialDemo.mediaID(SocialDemo.p3)))
+
+        let theirs = try! XCTUnwrap(model.messages.first { $0.postID == SocialDemo.p1 })
+        await model.deletePhoto(theirs)
+        XCTAssertTrue(model.messages.contains { $0.id == theirs.id }, "only my own photos")
+    }
+
+    func testSavingAPhotoAskForPermissionWhenDenied() async {
+        let model = makeModel()
+        await model.load()
+        let photo = try! XCTUnwrap(model.messages.first { $0.postID == SocialDemo.p2 })
+        let saver = RecordingPhotoSaver()
+        await model.savePhoto(photo, using: saver)
+        XCTAssertEqual(saver.savedCount, 1)
+        XCTAssertFalse(model.saveDenied)
+        await model.savePhoto(photo, using: RecordingPhotoSaver(denied: true))
+        XCTAssertTrue(model.saveDenied, "the permission alert shows")
     }
 }

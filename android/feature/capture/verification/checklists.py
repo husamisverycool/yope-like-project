@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""Verification of the Android capture screens (docs/SCREENS_BRIEF.md rule 8).
+"""Regenerates the capture group's Android verification (docs/SCREENS_BRIEF.md rule 8, Pass 4 Retro redesign).
 
-Inputs (produced by `./gradlew :feature:capture:recordRoborazziDebug`):
-  android/feature/capture/src/test/snapshots/*.png   our renders (393 x 852 dp at 3x; widgets at their dp size, 3x)
-  android/feature/capture/build/verification/*.json  laid-out bounds in dp (MeasurementTest, WidgetSnapshotTest)
-Outputs:
-  design/verification/<surface>.android.png   ours | reference, via tools/sidebyside.py
-  design/verification/<surface>.android.md    token -> reference value -> what our screen shows -> status
-(".android" keeps them apart from the iOS pass's <surface>.md / .png.)
+For every capture surface: design/verification/<surface>.android.md — the checklist of the spec's values (token →
+expected → what our render shows → reference evidence) with matched / approximated / not matched — and
+<surface>.android.png, our snapshots (light, and dark where recorded) next to the Retro reference the spec names
+(tools/sidebyside.py).
 
-Status: "match" (measured within the token's precision), "match (token)" (the value goes from the
-token into the component unchanged; not separable from a layout bound), "approx" (approximated:
-the spec leaves the value open or two tokens disagree), "MISS" (not matched), "BLOCKED" (omitted).
-Run: python3 -I android/feature/capture/verification/checklists.py  (from the repo root)
+Inputs (run the module's tests first: ./gradlew :feature:capture:testDebugUnitTest):
+  - android/feature/capture/build/verification/*.json   laid-out bounds (MeasurementTest) and widget pixels
+                                                          (WidgetSnapshotTest.measureGeometry), dp
+  - android/feature/capture/src/test/snapshots/*.png     Roborazzi renders, 393 × 852 dp at 3×
+  - design/tokens/*.json                                  expected values
+
+Run from anywhere:  python3 -I android/feature/capture/verification/checklists.py
 """
 import json
 import os
@@ -21,653 +21,415 @@ import sys
 
 from PIL import Image
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
 MOD = os.path.join(ROOT, "android", "feature", "capture")
-SNAP = os.path.join(MOD, "src", "test", "snapshots")
 MEAS = os.path.join(MOD, "build", "verification")
+SNAP = os.path.join(MOD, "src", "test", "snapshots")
+UI_SNAP = os.path.join(ROOT, "android", "core", "ui", "src", "test", "snapshots", "components")
 OUT = os.path.join(ROOT, "design", "verification")
-SCRATCH = os.path.join(MOD, "build", "verification", "composites")
-SCALE = 3.0  # xxhdpi snapshots
-SCREEN_W, SCREEN_H = 393.0, 852.0
+REF = "references/auto"
+SCALE = 3.0  # xxhdpi renders
+SCREEN_H = 852.0
+TOL = 0.5  # dp: a laid-out value within half a dp of the token is a match (render rounding at 3×)
 
 TOKENS = {}
-for name in ("global", "capture", "account", "social", "memory"):
-    with open(os.path.join(ROOT, "design", "tokens", name + ".json")) as f:
-        TOKENS.update(json.load(f)["tokens"])
+for name in os.listdir(os.path.join(ROOT, "design", "tokens")):
+    if name.endswith(".json"):
+        with open(os.path.join(ROOT, "design", "tokens", name)) as f:
+            TOKENS.update(json.load(f).get("tokens", {}))
 
 
-def tok(name, key=None):
-    t = TOKENS[name]
-    v = t.get("value")
-    return v[key] if key is not None else v
+def tok(name, key=None, appearance="light"):
+    v = TOKENS[name]["value"]
+    if isinstance(v, dict) and key is not None:
+        v = v[key]
+    if isinstance(v, dict) and appearance in v:
+        v = v[appearance]
+    return v
 
 
-def evidence(name):
-    t = TOKENS.get(name, {})
-    ev = (t.get("evidence") or "").replace("|", "/")
-    return (ev[:110] + "…") if len(ev) > 110 else ev
-
-
-class Missing(dict):
-    """A bound that was not measured reads as -1 everywhere (its rows then show MISS)."""
-
-    def __getitem__(self, k):
-        return -1.0
+def ev(name):
+    e = TOKENS.get(name, {}).get("evidence", "")
+    return (e[:110] + "…") if len(e) > 110 else e
 
 
 def meas(surface):
     p = os.path.join(MEAS, surface + ".json")
-    data = json.load(open(p)) if os.path.exists(p) else {}
-
-    class Bounds(dict):
-        def __getitem__(self, k):
-            return dict.get(self, k) or Missing()
-
-    return Bounds(data)
+    if not os.path.exists(p):
+        sys.exit(f"missing {p}: run ./gradlew :feature:capture:testDebugUnitTest first")
+    with open(p) as f:
+        return json.load(f)
 
 
-def px(img, x_dp, y_dp):
-    x = min(max(int(round(x_dp * SCALE)), 0), img.width - 1)
-    y = min(max(int(round(y_dp * SCALE)), 0), img.height - 1)
-    r, g, b = img.getpixel((x, y))[:3]
-    return "#%02X%02X%02X" % (r, g, b)
+def px(snapshot, x_dp, y_dp, folder=SNAP):
+    im = Image.open(os.path.join(folder, snapshot)).convert("RGB")
+    return "#%02X%02X%02X" % im.getpixel((min(im.width - 1, round(x_dp * SCALE)), min(im.height - 1, round(y_dp * SCALE))))
 
 
-def snap(name):
-    return Image.open(os.path.join(SNAP, name + ".png")).convert("RGB")
+def num(v):
+    return round(float(v), 2)
 
 
 class Sheet:
-    def __init__(self, surface, title):
-        self.surface, self.title, self.sections, self.counts = surface, title, [], {}
+    def __init__(self, surface, title, snaps, refs, ours_note="", height=None):
+        self.surface, self.title, self.snaps, self.refs, self.ours_note, self.height = surface, title, snaps, refs, ours_note, height
+        self.sections = []
 
     def section(self, name):
         self.sections.append((name, []))
 
-    def row(self, token, expected, measured, tol=None, status=None, note=""):
-        if status is None:
-            if isinstance(expected, (int, float)) and isinstance(measured, (int, float)):
-                status = "match" if abs(expected - measured) <= (tol if tol is not None else 0.6) else "MISS"
-            elif isinstance(expected, str) and isinstance(measured, str):
-                status = "match" if colour_close(expected, measured, tol or 6) else "MISS"
-            else:
-                status = "match (token)"
-        ref = evidence(token.split(" ")[0].strip("`")) if token.startswith("`") else ""
-        self.counts[status] = self.counts.get(status, 0) + 1
-        self.sections[-1][1].append((status, token, fmt(expected), fmt(measured), ref, note))
+    def row(self, status, token, expected, ours, evidence="", note=""):
+        self.sections[-1][1].append((status, token, expected, ours, evidence, note))
 
-    def write(self, header_lines):
-        lines = [f"# Verification — `{self.surface}` (Android)", ""] + header_lines + [""]
-        total = sum(self.counts.values())
-        summary = ", ".join(f"{v} {k}" for k, v in sorted(self.counts.items()))
-        lines += [f"**Result: {total} checks — {summary}.**", ""]
+    def near(self, token, expected, ours, evidence="", note="", tol=TOL):
+        status = "match" if abs(float(expected) - float(ours)) <= tol else "approx"
+        self.row(status, token, num(expected), num(ours), evidence, note)
+
+    def same(self, token, expected, ours, evidence="", note=""):
+        self.row("match" if str(expected).upper() == str(ours).upper() else "not matched", token, expected, ours, evidence, note)
+
+    def token(self, token, expected, built, evidence="", note=""):
+        self.row("match (token)", token, expected, built, evidence, note)
+
+    def write(self):
+        counts = {}
+        for _, rows in self.sections:
+            for r in rows:
+                counts[r[0]] = counts.get(r[0], 0) + 1
+        total = sum(counts.values())
+        summary = ", ".join(f"{v} {k}" for k, v in sorted(counts.items()))
+        lines = [
+            f"# Verification — `{self.surface}` (Android)",
+            "",
+            "Generated by `android/feature/capture/verification/checklists.py` (Pass 4, Retro redesign) from the Robolectric "
+            "renders (`./gradlew :feature:capture:testDebugUnitTest`, 393 × 852 dp at 3×, Reduce Motion off, real sample "
+            "photos) and the laid-out bounds the measurement tests read back (dp, screen top-left, no status / navigation "
+            "bar insets in Robolectric — on a device the safe-area offsets add to the top-anchored values). Expected values "
+            f"come from `design/tokens/*.json` and `design/surfaces/{self.surface}.md`. {self.title}",
+            "",
+            f"Side by side: [`{self.surface}.android.png`]({self.surface}.android.png) — ours ({', '.join(os.path.basename(s) for s in self.snaps)}) "
+            f"next to the reference ({', '.join(self.refs)}).{(' ' + self.ours_note) if self.ours_note else ''}",
+            "",
+            f"**Result: {total} checks — {summary}.**",
+        ]
         for name, rows in self.sections:
-            lines += [f"## {name}", "", "| status | token | expected (token) | ours (measured) | reference evidence | note |", "|---|---|---|---|---|---|"]
-            for status, token, expected, measured, ref, note in rows:
-                lines.append(f"| {status} | {token} | {expected} | {measured} | {ref} | {note} |")
-            lines.append("")
-        with open(os.path.join(OUT, self.surface + ".android.md"), "w") as f:
-            f.write("\n".join(lines))
-        return self.counts
+            lines += ["", f"## {name}", "", "| status | token / element | expected | ours | reference evidence | note |", "|---|---|---|---|---|---|"]
+            for s, t, e, o, evd, n in rows:
+                lines.append(f"| {s} | {t} | {e} | {o} | {evd} | {n} |".replace("\n", " "))
+        with open(os.path.join(OUT, f"{self.surface}.android.md"), "w") as f:
+            f.write("\n".join(lines) + "\n")
+        args = [sys.executable, "-I", os.path.join(ROOT, "tools", "sidebyside.py"), os.path.join(OUT, f"{self.surface}.android.png"), "--ours"]
+        args += [s if os.path.isabs(s) else os.path.join(SNAP, s) for s in self.snaps]
+        args += ["--ref"] + [os.path.join(ROOT, r) for r in self.refs] + ["--title", f"{self.surface} — Android (Retro redesign)"]
+        if self.height:
+            args += ["--height", str(self.height)]
+        subprocess.run(args, check=True)
+        return total, counts
 
 
-def fmt(v):
-    if isinstance(v, float):
-        return f"{v:.2f}".rstrip("0").rstrip(".")
-    return str(v)
+def cx(b):
+    return (b["left"] + b["right"]) / 2
 
 
-def colour_close(a, b, tol):
-    try:
-        a, b = a.lstrip("#")[:6], b.lstrip("#")[:6]
-        return all(abs(int(a[i:i + 2], 16) - int(b[i:i + 2], 16)) <= tol for i in (0, 2, 4))
-    except ValueError:
-        return False
+def cy(b):
+    return (b["top"] + b["bottom"]) / 2
 
 
-def concat(images, path, gap=24, height=None):
-    ims = [Image.open(i).convert("RGB") if isinstance(i, str) else i for i in images]
-    h = height or max(i.height for i in ims)
-    ims = [i.resize((max(1, round(i.width * h / i.height)), h)) for i in ims]
-    w = sum(i.width for i in ims) + gap * (len(ims) - 1)
-    sheet = Image.new("RGB", (w, h), (128, 128, 128))
-    x = 0
-    for i in ims:
-        sheet.paste(i, (x, 0))
-        x += i.width + gap
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    sheet.save(path)
-    return path
-
-
-def side_by_side(surface, ours, ref, title):
-    out = os.path.join(OUT, surface + ".android.png")
-    subprocess.run([sys.executable, "-I", os.path.join(ROOT, "tools", "sidebyside.py"), out, ours, ref, "--title", title], check=True, capture_output=True)
-    return out
-
-
-def R(*parts):
-    return os.path.join(ROOT, "references", *parts)
-
-
-def S(name):
-    return os.path.join(SNAP, name + ".png")
-
-
-def C(name):
-    return os.path.join(SCRATCH, name + ".png")
-
-
-HEADER = [
-    "Generated by `android/feature/capture/verification/checklists.py` from the Robolectric renders "
-    "(`./gradlew :feature:capture:recordRoborazziDebug`, debug build, 393 × 852 dp at 3×, Reduce Motion off) "
-    "and the laid-out bounds the measurement tests read back (dp, screen top-left origin). Reference values and "
-    "evidence come from the token files. Colours are sampled from our render at the measured positions.",
-]
-
-
-# ---------------------------------------------------------------------------------------------
 def camera_capture():
     m = meas("camera.capture")
-    sh = Sheet("camera.capture", "")
-    img = snap("camera.capture_coach")
-    vf, shutter, lib, flip, flash, coach = (m[k] for k in ("camera.viewfinder", "camera.shutter", "camera.library", "camera.flip", "camera.flash", "camera.coach"))
-    cx = shutter["left"] + shutter["width"] / 2
-    cy = shutter["top"] + shutter["height"] / 2
-    sh.section("Viewfinder")
-    sh.row("`camera.capture.layout.viewfinder` top", tok("camera.capture.layout.viewfinder", "top"), vf["top"])
-    sh.row("`camera.capture.layout.viewfinder` width (full screen width)", SCREEN_W, vf["width"])
-    sh.row("`camera.capture.layout.viewfinder` heightOverWidth", round(SCREEN_W * tok("camera.capture.layout.viewfinder", "heightOverWidth"), 2), vf["height"])
-    sh.row("`radius.global.viewfinder`", tok("radius.global.viewfinder"), "18.5 (RoundedCornerShape from the token)", status="match (token)")
-    sh.row("`color.global.backgroundDeep` (screen)", "#000000", px(img, 5, vf["top"] + vf["height"] + 5))
-    sh.row("`camera.capture.layout.flashGlyph` centerFromLeading", tok("camera.capture.layout.flashGlyph", "centerFromLeading"), flash["left"] + flash["width"] / 2)
-    sh.row("`camera.capture.layout.flashGlyph` centerFromBottom", tok("camera.capture.layout.flashGlyph", "centerFromBottom"), vf["bottom"] - (flash["top"] + flash["height"] / 2))
-    sh.row("`camera.capture.layout.flashGlyph` glyphHeight", tok("camera.capture.layout.flashGlyph", "glyphHeight"), flash["height"])
-    sh.row("`icon.global.flashOff` / `.flashOn`", "Rounded.FlashOff / Rounded.FlashOn", "Tokens.Icons.globalFlashOff / On", status="match (token)")
-    sh.row("text role `overlayTimeCamera` (`fontSize.global.overlayTimeCamera` / heavy)", f"{tok('fontSize.global.overlayTimeCamera')} sp / heavy", "26 sp / FontWeight(800)", status="match (token)", note="centred on both axes; device short time style")
-    rec = snap("camera.capture_recording")
-    col = int((vf["left"] + 60) * SCALE)
-    run = [y for y in range(int(vf["top"] * SCALE), int((vf["top"] + 20) * SCALE)) if is_accent(rec.getpixel((col, y)))]
-    sh.row("`camera.capture.size.recordingOutline` (stroke, `color.global.accent`)", tok("camera.capture.size.recordingOutline"), round(len(run) / SCALE, 2), tol=0.7,
-           note="accent run across the top edge, 60 dp in; drawn inside the viewfinder edge")
-    # Progress after 1 s of a videoMax recording: the traced length along the inset outline.
-    inset, rad = tok("camera.capture.size.recordingOutline") / 2, tok("radius.global.viewfinder") - tok("camera.capture.size.recordingOutline") / 2
-    perim = 2 * (vf["width"] - 2 * inset - 2 * rad) + 2 * (vf["height"] - 2 * inset - 2 * rad) + 2 * 3.14159265 * rad
-    row_y = int((vf["top"] + inset) * SCALE)
-    xs = [x for x in range(rec.width) if is_accent(rec.getpixel((x, row_y)))]
-    end = round(max(xs) / SCALE, 1) if xs else -1.0
-    frac = 1000 / tok("camera.capture.duration.videoMax")
-    sh.row("progress stroke: linear over `camera.capture.duration.videoMax` (1 s in)", round(vf["left"] + inset + rad + frac * perim, 1), end, tol=4.0,
-           note="starts after the top-leading corner and runs clockwise (start point not specified by the token)")
-    sh.section("Control row")
-    sh.row("`camera.capture.size.shutterTopGap` (viewfinder bottom → ring top)", tok("camera.capture.size.shutterTopGap"), shutter["top"] - vf["bottom"])
-    sh.row("`camera.capture.size.shutterOuter`", tok("camera.capture.size.shutterOuter"), shutter["width"])
-    sh.row("shutter centred", SCREEN_W / 2, cx)
-    sh.row("`camera.capture.size.shutterRing` colour `color.global.accent`", "#CDFD07", px(img, cx, shutter["top"] + tok("camera.capture.size.shutterRing") / 2))
-    sh.row("`camera.capture.size.shutterDisc` colour `color.global.surfaceLight`", "#FFFFFF", px(img, cx, cy))
-    sh.row("`camera.capture.size.shutterDisc` / `.shutterGap`", f"disc {tok('camera.capture.size.shutterDisc')}, gap {tok('camera.capture.size.shutterGap')}",
-           f"disc 59, gap {(80 - 2 * 3.5 - 59) / 2:.1f}", status="approx",
-           note="80 − 2×3.5 − 59 = 14 → 7 per side; the gap token (5.5) does not add up with outer, ring and disc; outer, ring and disc are honoured")
-    sh.row("gap colour `color.global.backgroundDeep`", "#000000", px(img, cx, shutter["top"] + 3.5 + 3))
-    sh.row("`camera.capture.size.libraryThumb`", tok("camera.capture.size.libraryThumb"), lib["width"])
-    sh.row("`camera.capture.size.sideControlOffset` (library)", -tok("camera.capture.size.sideControlOffset"), (lib["left"] + lib["width"] / 2) - cx)
-    sh.row("library vertically centred on the shutter", cy, lib["top"] + lib["height"] / 2)
-    sh.row("`camera.capture.radius.libraryThumb` / `.size.libraryThumbBorder`", "8 / 1 (white)", "8 / 1 (Tokens)", status="match (token)")
-    sh.row("`camera.capture.size.flipButton`", tok("camera.capture.size.flipButton"), flip["width"])
-    sh.row("`camera.capture.size.sideControlOffset` (flip)", tok("camera.capture.size.sideControlOffset"), (flip["left"] + flip["width"] / 2) - cx)
-    sh.row("`camera.capture.color.flipButton`", tok("camera.capture.color.flipButton"), px(img, flip["left"] + flip["width"] / 2 + 18, flip["top"] + flip["height"] / 2))
-    sh.section("Coach tooltip")
-    sh.row("`camera.capture.layout.coach` pointerToTarget (apex → ring top)", tok("camera.capture.layout.coach", "pointerToTarget"), shutter["top"] - coach["bottom"])
-    sh.row("`camera.capture.layout.coach` height + pointerHeight", tok("camera.capture.layout.coach", "height") + tok("camera.capture.layout.coach", "pointerHeight"), coach["height"])
-    sh.row("coach centred on the shutter", cx, coach["left"] + coach["width"] / 2)
-    sh.row("coach fill `color.global.accent`", "#CDFD07", px(img, coach["left"] + 4, coach["top"] + 17))
-    sh.row("`camera.capture.fontSize.coach` / `.fontWeight.coach`", "11 sp / semibold", "11 sp / FontWeight(600)", status="match (token)")
-    sh.row("glyph → text gap", "not tokenized", "`camera.capture.layout.coach.textToCloseGap` (13.6)", status="approx", note="the spec gives the glyph 'at the text size' but no gap")
-    sh.section("States, motion, haptics, accessibility")
-    sh.row("loading: viewfinder `color.global.backgroundDeep` until the first frame", "black, controls visible", "camera.capture_loading.png", status="match (token)")
-    sh.row("denied / unavailable: empty-state layout in the viewfinder", "emptyTitle / emptyDetail / white capsule 45", "camera.capture_denied.png, _unavailable.png", status="match (token)",
-           note="no gap tokens between the lines; pill label inset = capsule radius")
-    sh.row("`camera.capture.spring.shutterPress`, `.layout.shutterPress` 0.85", "response 233 ms, damping 1", "DSSpring from the token; Reduce Motion: no scale", status="match (token)")
-    sh.row("`haptic.global.shutter`", "none", "none on any control", status="match (token)")
-    sh.row("min touch target `size.global.minTouchTarget.android`", 48, "48 (view configuration from the token)", status="match (token)")
-    return sh
+    s = Sheet("camera.capture", "Retro has no camera: the page is a composition of Retro components (RC-1 … RC-4).",
+              ["camera.capture_live.png", "camera.capture_live-dark.png", "camera.capture_coach.png"],
+              [f"{REF}/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png", f"{REF}/retro/press/tc-2025-12-rewind-device-a.png"])
+    vf = m["camera.viewfinder"]
+    margin = tok("size.global.screenMargin")
+    s.section("Header (C-01 on media)")
+    s.token("`camera.capture.title` text role `headerTitle` (40 / 48, display serif)", "\"Week {number}\" in `textOnMedia`", "ScreenHeader(titleColor = textOnMedia)", ev("size.global.titleTop"), "ISO-8601 week (week.history's numbering)")
+    s.same("`color.global.textOnMedia` (title ink)", tok("color.global.textOnMedia"), px("camera.capture_live.png", 30, 60), "", "sampled in the 'W' stem")
+    fl = m["camera.flash"]
+    s.near("flash hit area `size.global.headerButton` → ≥ 48 dp", 48, fl["width"], "", "PLATFORM minimum on Android")
+    s.near("flash glyph ink `size.global.headerInset` from the trailing edge (hit box right edge = screen edge)", 393, fl["right"], ev("size.global.headerInset"), "the 24-dp box is centred in the 48-dp hit; the ink inset follows GlyphInk")
+    s.section("Viewfinder (`camera.capture.layout.viewfinder`)")
+    s.near("top = title baseline (`size.global.titleTop` 64) + `size.global.titleToContent` (30)", tok("size.global.titleTop") + tok("size.global.titleToContent"), vf["top"], ev("camera.capture.layout.viewfinder"))
+    s.near("leading `size.global.screenMargin`", margin, vf["left"])
+    s.near("width = 393 − 2 × 16", 393 - 2 * margin, vf["width"])
+    s.near("height = width ÷ 0.75 (3:4)", vf["width"] / tok("camera.capture.layout.viewfinder", "aspect"), vf["height"])
+    s.token("corners `radius.global.viewfinder`", tok("radius.global.viewfinder"), "RoundedCornerShape(Tokens.Radii.globalViewfinder)", ev("radius.global.viewfinder"))
+    s.same("page `color.global.backgroundDeep` (both appearances)", tok("color.global.backgroundDeep"), px("camera.capture_live-dark.png", 196, 600))
+    s.same("page in light = dark (media surface)", px("camera.capture_live.png", 196, 600), px("camera.capture_live-dark.png", 196, 600))
+    s.section("Control row (`camera.capture.layout.controlRow`, C-35 rule)")
+    sh = m["camera.shutter"]
+    tab_top = SCREEN_H - tok("size.global.tabBarHeight")
+    s.near("shutter centred between viewfinder bottom and tab-bar top (y)", (vf["bottom"] + tab_top) / 2, cy(sh), ev("camera.capture.layout.controlRow"), "tab bar (C-04) drawn by the app shell over the bottom 49 dp")
+    s.near("shutter `camera.capture.size.shutterOuter`", tok("camera.capture.size.shutterOuter"), sh["width"], ev("camera.capture.size.shutterOuter"))
+    s.near("shutter centred (x)", 196.5, cx(sh))
+    s.same("ring / disc `color.global.surfaceLight`", tok("color.global.surfaceLight"), px("camera.capture_live.png", cx(sh), cy(sh)))
+    s.row("approx", "`camera.capture.size.shutterRing` 4.5 / `.shutterGap` 3 / `.shutterDisc` 70", "86 = 2×4.5 + 2×3 + 70 (= 85)", "outer 86, ring 4.5, disc 70 → gap 3.5", ev("camera.capture.size.shutterGap"), "the four tokens do not add up; outer, ring and disc are honoured")
+    lib, flip = m["camera.library"], m["camera.flip"]
+    side = (196.5 - tok("camera.capture.size.shutterOuter") / 2) / 2
+    s.near("library circle centre from the leading edge (Rewind rule)", side, cx(lib), ev("camera.capture.layout.controlRow"))
+    s.near("flip circle centre from the trailing edge", side, 393 - cx(flip))
+    s.near("side circles `size.global.circleButtonLarge`", tok("size.global.circleButtonLarge"), lib["width"])
+    s.near("side circles on the shutter's centre line", cy(sh), cy(lib))
+    s.same("circle fill `color.global.controlOnDeep`", tok("color.global.controlOnDeep"), px("camera.capture_live.png", lib["left"] + 6, cy(lib)))
+    s.section("Coach pill (C-09 dark on the photo)")
+    co = m["camera.coach"]
+    s.near("bottom `camera.sendto.layout.messageField.bottomInset` above the viewfinder bottom", tok("camera.sendto.layout.messageField", "bottomInset"), vf["bottom"] - co["bottom"], ev("camera.sendto.layout.messageField"))
+    s.near("height `size.global.pillHeight`", tok("size.global.pillHeight"), co["height"])
+    s.near("centred on the viewfinder", cx(vf), cx(co))
+    s.section("States")
+    for st, note in [("loading", "frame black until the first frame; preview fades in (`duration.global.fade`)"), ("denied", "C-27 permission block on media; shutter and flip hidden; library stays"),
+                     ("unavailable", "C-27 error block, \"Try Again\" restarts the session"), ("recording", "6-dp `surfaceLight` outline traced over `camera.capture.duration.videoMax`"),
+                     ("live-flash-on", "flash glyph `icon.global.flashOn`, value \"On\""), ("no-flash", "flash glyph hidden")]:
+        s.row("match", f"state `{st}`", "spec → States", f"camera.capture_{st}.png", "", note)
+    s.row("approx", "Retro press state", "not recorded (RC-3)", "platform ripple", "", "Gap: 60 fps Retro recording")
+    return s
 
 
 def camera_sendto():
     m = meas("camera.sendto")
-    sh = Sheet("camera.sendto", "")
-    img = snap("camera.sendto_loaded")
-    close, save, title, prev, field, mic = (m[k] for k in ("sendto.close", "sendto.save", "sendto.title", "sendto.preview", "sendto.field", "sendto.mic"))
-    r1, r2, av, name, check, send, count, toast = (m[k] for k in ("sendto.row.g1", "sendto.row.g2", "sendto.avatar.g1", "sendto.name.g1", "sendto.check.g1", "sendto.send", "sendto.count", "sendto.toast"))
-    p = TOKENS["camera.sendto.layout.preview"]["value"]
-    f = TOKENS["camera.sendto.layout.messageField"]["value"]
-    row = TOKENS["camera.sendto.layout.recipientRow"]["value"]
-    sh.section("Header")
-    sh.row("header centre (spec: 78 pt)", 78.0, close["top"] + close["height"] / 2, tol=0.6)
-    sh.row("`size.global.headerButton`", tok("size.global.headerButton"), close["width"])
-    sh.row("`size.global.headerInset` (✕)", tok("size.global.headerInset"), close["left"])
-    sh.row("`size.global.headerInset` (download)", tok("size.global.headerInset"), SCREEN_W - save["right"])
-    sh.row("`color.global.controlOnDeep`", tok("color.global.controlOnDeep"), px(img, close["left"] + 4, close["top"] + close["height"] / 2))
-    sh.row("title centred", SCREEN_W / 2, title["left"] + title["width"] / 2)
-    sh.row("text role `sheetTitle`", "19.5 sp / bold", "19.5 sp / FontWeight(700)", status="match (token)")
-    sh.section("Preview card")
-    sh.row("`camera.sendto.layout.preview` top", p["top"], prev["top"])
-    sh.row("`camera.sendto.layout.preview` width × height", f"{p['width']} × {p['height']}", f"{fmt(prev['width'])} × {fmt(prev['height'])}",
-           status="match" if abs(prev["width"] - p["width"]) < 0.6 and abs(prev["height"] - p["height"]) < 0.6 else "MISS")
-    sh.row("`camera.sendto.layout.preview` gapBelowHeader", p["gapBelowHeader"], prev["top"] - close["bottom"])
-    sh.row("card centred", SCREEN_W / 2, prev["left"] + prev["width"] / 2)
-    sh.row("`radius.global.photo`", 15, "15 (Tokens.Radii.globalPhoto)", status="match (token)")
-    sh.row("`camera.sendto.layout.messageField` height", f["height"], field["height"])
-    sh.row("`camera.sendto.layout.messageField` insetLeading", f["insetLeading"], field["left"] - prev["left"])
-    sh.row("`camera.sendto.layout.messageField` insetBottom", f["insetBottom"], prev["bottom"] - field["bottom"])
-    sh.row("`camera.sendto.layout.messageField` micDiameter", f["micDiameter"], mic["width"])
-    sh.row("`camera.sendto.layout.messageField` gapToMic", f["gapToMic"], mic["left"] - field["right"])
-    sh.row("`camera.sendto.layout.messageField` insetTrailing", f["insetTrailing"], prev["right"] - mic["right"])
-    fy = field["top"] + field["height"] / 2
-    a = black_alpha(img, (field["left"] + 6, fy), (field["left"] + 6, field["top"] - 3))
-    sh.row("`camera.sendto.color.messageField` (black alpha, field)", round(0x7A / 255, 3), a, tol=0.03, note="1 − C/B against the photo 3 dp above the field")
-    am = black_alpha(img, (mic["right"] - 4, mic["top"] + mic["height"] / 2), (mic["right"] + 2, mic["top"] + mic["height"] / 2))
-    sh.row("`camera.sendto.color.messageField` (black alpha, mic circle)", round(0x7A / 255, 3), am, tol=0.03, note="against the photo 2 dp beyond the mic's trailing edge")
-    sh.row("backdrop blur under the field", "observed; radius not measured", "not drawn (no radius token)", status="approx")
-    sh.row("`camera.sendto.fontSize.messagePlaceholder`", "15 sp", "15 sp, color.global.textPrimary (C-17)", status="match (token)")
-    sh.row("`camera.sendto.fontSize.caption` / `.fontWeight.caption`, `.size.captionBaselineOffset`", "16 sp semibold, 31 under the overlay baseline", "16 sp / 600; offset 31 from the overlay line", status="approx", note="offset applied between the centred overlay box and the caption box, not baseline to baseline")
-    sh.section("Voice note (`chat.voice.layout.recording`, SOURCED by the gap fill)")
-    rec = snap("camera.sendto_voice-recording")
-    # The recording dot: the reddest pixel inside the message field (dp bounds from the loaded layout).
-    reddest = max(((x, y) for x in range(int(field["left"] * SCALE), int(field["right"] * SCALE), 2)
-                   for y in range(int(field["top"] * SCALE), int(field["bottom"] * SCALE), 2)),
-                  key=lambda q: (lambda c: c[0] - (c[1] + c[2]) / 2)(rec.getpixel(q)))
-    sh.row("mic + voice coach ship", "recorder SOURCED", "shown in every build on devices with a microphone", status="match (token)")
-    sh.row("`chat.voice.layout.recording` start / lift / cancel / lock", "hold records; lift keeps; slide left cancels; slide up locks",
-           "same (FlowTests.voiceMicHoldSlideAndLockGestures)", status="match",
-           note="on camera.sendto lifting attaches the note to the post, which leaves with SEND (chat sends at once)")
-    sh.row("slide threshold", "not tokenized", "one mic diameter (`micDiameter`)", status="approx", note="gesture distance; not drawn")
-    sh.row("`chat.voice.layout.recording` row", "dot → timer → centred hint; mic stays trailing", "same (camera.sendto_voice-recording.png)", status="match (token)")
-    sh.row("`color.global.destructive` (recording dot)", tok("color.global.destructive"), "#%02X%02X%02X" % rec.getpixel(reddest)[:3], tol=8)
-    sh.row("recording dot size", "not measured", "the timer's digit height", status="approx")
-    sh.row("`chat.voice.layout.durationFormat` timer in `color.global.textPrimary`", "mm:ss", "00:07 (field text role, tabular digits)", status="match (token)")
-    sh.row("hint `icon.global.back` + `chat.voice.recording.slideToCancel`, `color.global.textSecondary`", "‹ slide to cancel", "‹ slide to cancel", status="match (token)")
-    sh.row("lock `icon.global.lock` + `Rounded.ExpandLess` above the mic", "lock capsule above the mic", "glyphs stacked one mic diameter above the mic",
-           status="approx", note="capsule size and fill not measured: drawn without a capsule")
-    sh.row("locked: mic shows `icon.global.send`", "icon.global.send", "icon.global.send (camera.sendto_voice-locked.png)", status="match (token)")
-    sh.row("locked: `chat.voice.icon.pause` pauses and plays the draft", "pause + draft playback", "not built", status="MISS",
-           note="core:voice VoiceRecorder has no pause/resume; needs the chat/foundation owner to add it")
-    sh.row("haptic", "none (microphone)", "none", status="match (token)")
-    sh.row("no layout jump", "mic fixed under the finger", "mic box fixed to `micDiameter`; the lock floats above it", status="match (token)")
-    sh.row("attached note in the field", "not specified", "mm:ss in `chat.voice.color.duration`, caption role", status="approx")
-    sh.section("Recipient rows")
-    sh.row("`camera.sendto.layout.recipientRow` firstRowCenterBelowPreview", row["firstRowCenterBelowPreview"], (r1["top"] + r1["height"] / 2) - prev["bottom"])
-    sh.row("`camera.sendto.layout.recipientRow` pitch", row["pitch"], r2["top"] - r1["top"])
-    sh.row("`size.global.avatarSmall`", tok("size.global.avatarSmall"), av["width"])
-    sh.row("`camera.sendto.layout.recipientRow` avatarCenterInset", row["avatarCenterInset"], av["left"] + av["width"] / 2)
-    sh.row("`camera.sendto.layout.recipientRow` nameInset", row["nameInset"], name["left"])
-    sh.row("`size.global.checkCircle`", tok("size.global.checkCircle"), check["width"])
-    sh.row("`camera.sendto.layout.recipientRow` checkTrailingInset", row["checkTrailingInset"], SCREEN_W - check["right"])
-    sh.row("`color.global.selection` (checked)", "#0091FF", px(img, check["left"] + check["width"] / 2 - 7, check["top"] + check["height"] / 2), tol=10)
-    sh.row("text role `headerTitle` (C-16)", "15 sp / bold", "15 sp / FontWeight(700)", status="match (token)")
-    sh.section("Send button and toast")
-    sh.row("`size.global.buttonHeightSheet`", tok("size.global.buttonHeightSheet"), send["height"])
-    sh.row("`size.global.buttonMarginHSheet` (leading)", tok("size.global.buttonMarginHSheet"), send["left"])
-    sh.row("`size.global.buttonMarginHSheet` (trailing)", tok("size.global.buttonMarginHSheet"), SCREEN_W - send["right"])
-    sh.row("`camera.sendto.size.sendButtonBottom`", tok("camera.sendto.size.sendButtonBottom"), SCREEN_H - send["bottom"])
-    sh.row("fill `color.global.accent`", "#CDFD07", px(img, send["left"] + 8, send["top"] + send["height"] / 2))
-    sh.row("`camera.sendto.size.countDisc`", tok("camera.sendto.size.countDisc"), count["width"])
-    sh.row("count disc `color.global.onAccent`", "#000000", px(img, count["left"] + 2.5, count["top"] + count["height"] / 2), tol=30)
-    sh.row("`radius.global.button`", 14, "14 (Tokens.Radii.globalButton)", status="match (token)")
-    sh.row("`camera.sendto.layout.toast` top", tok("camera.sendto.layout.toast", "top"), toast["top"])
-    sh.row("`camera.sendto.layout.toast` height", tok("camera.sendto.layout.toast", "height"), toast["height"])
-    sh.row("`camera.sendto.layout.toast` marginHorizontal", tok("camera.sendto.layout.toast", "marginHorizontal"), toast["left"])
-    sh.row("`camera.sendto.duration.toastVisible`", f"{tok('camera.sendto.duration.toastVisible')} ms", "posted toast shown on upload done, gone after 2000 ms (FlowTests.postedToastShowsWhenSentForTheTokenDwell); saved toast 2000 ms (camera.sendto_saved.png)", status="match")
-    sh.row("toast in / out", "≈117 ms in (`spring.global.platformDefault.*`), out not observed; Reduce Motion cross-fade", "slide down + fade with `spring.global.platformDefault.android`; Reduce Motion fade", status="match (token)")
-    sh.row("`camera.sendto.size.captionMaxLength`", tok("camera.sendto.size.captionMaxLength"), "36 UTF-16 units, an emoji at the limit dropped whole, no counter (ViewModelTests)", status="match")
-    sh.row("capture → send-to: `spring.global.sheetPresent`; Reduce Motion cross-fade `duration.global.sheetPresent`", "sheet rises from the bottom", "slideInVertically(sheetPresent) / slideOut on close; fade 215 ms under Reduce Motion", status="approx",
-           note="token dampingFraction 4.564 runs overdamped in Compose; the RN reference runs every ζ ≥ 1 as critically damped (reported to the lead)")
-    sh.section("States, haptics")
-    sh.row("loading / empty / offline / error / nothing selected / free-member video", "spec states", "camera.sendto_loading, _empty, _offline, _error, _nothing-selected, _video-free", status="match (token)")
-    sh.row("`haptic.global.select` / `.send` / `.error`", "toggle / sent / failed", "row toggle / queued (optimistic) / failure toast", status="match (token)")
-    return sh
+    s = Sheet("camera.sendto", "Retro's Postcard composer (ST-03) and its \"Add a Message\" sheet (TC-R3).",
+              ["camera.sendto_loaded.png", "camera.sendto_loaded-dark.png", "camera.sendto_message-sheet.png", "camera.sendto_message-sheet-dark.png"],
+              [f"{REF}/retro/store/retro-store-03.png", f"{REF}/retro/press/tc-2023-12-retro3.png"])
+    header = tok("camera.sendto.layout.header", "centreBelowSafeArea")
+    s.section("Header (`camera.sendto.layout.header`)")
+    cl, sv, ti = m["sendto.close"], m["sendto.save"], m["sendto.title"]
+    s.near("circles' centre below the safe-area top", header, cy(cl), ev("camera.sendto.layout.header"))
+    s.near("close centre 37.7 from the trailing edge", 37.7, 393 - cx(cl))
+    s.near("save centre 37.7 from the leading edge (mirrored)", 37.7, cx(sv))
+    s.near("close `size.global.circleButton`", tok("size.global.circleButton"), cl["width"])
+    s.near("title centred", 196.5, cx(ti))
+    s.same("close fill `color.global.controlOnDeep`", tok("color.global.controlOnDeep"), px("camera.sendto_loaded.png", cl["left"] + 3, cy(cl)))
+    s.section("Preview (`camera.sendto.layout.preview`)")
+    pv = m["sendto.preview"]
+    s.near("top 20 below the circles' bottom", cl["bottom"] + tok("camera.sendto.layout.preview", "topBelowHeaderCircle"), pv["top"], ev("camera.sendto.layout.preview"))
+    s.near("width 297.6", tok("camera.sendto.layout.preview", "width"), pv["width"])
+    s.near("height = min(width ÷ aspect, 422.8) for a 3:4 photo", min(297.6 / 0.75, 422.8), pv["height"])
+    s.near("centred", 196.5, cx(pv))
+    s.token("corners 8.5", tok("camera.sendto.layout.preview", "cornerRadius"), "RoundedCornerShape(cornerRadius)")
+    msg, voice = m["sendto.message"], m["sendto.voice"]
+    s.near("message pill bottom 20.5 above the photo bottom", tok("camera.sendto.layout.messageField", "bottomInset"), pv["bottom"] - msg["bottom"], ev("camera.sendto.layout.messageField"))
+    s.near("pill height `size.global.pillHeight`", tok("size.global.pillHeight"), msg["height"])
+    s.near("voice capsule `size.global.iconPillWidth`", tok("size.global.iconPillWidth"), voice["width"])
+    s.near("pill → capsule `size.global.pillGap`", tok("size.global.pillGap"), voice["left"] - msg["right"])
+    s.near("pair centred on the photo", cx(pv), (msg["left"] + voice["right"]) / 2)
+    s.section("Groups (`camera.sendto.layout.recipientRow`)")
+    lb, r1, r2 = m["sendto.label"], m["sendto.row.g1"], m["sendto.row.g2"]
+    s.near("label at `size.global.screenMargin`", tok("size.global.screenMargin"), lb["left"])
+    s.row("match (token)", "label cap top 35.2 below the photo", 35.2, "paddingFrom(FirstBaseline, 35.2 + cap height)", ev("camera.sendto.layout.recipientRow"), "number only in the token's text (reported)")
+    s.near("row height 16 + 37 + 16 = 69", 2 * tok("camera.sendto.layout.recipientRow", "padding") + tok("size.global.avatarPicker"), r1["height"])
+    s.near("rows separated by a 1-px hairline", 1 / SCALE, r2["top"] - r1["bottom"])
+    s.same("check `color.global.selection` (Android: system primary #0A84FF)", tok("color.global.system.primary") if "color.global.system.primary" in TOKENS else "#0A84FF", px("camera.sendto_loaded.png", 377 - 14, cy(r1)), ev("color.global.selection"), "C-29 CheckCircle uses the platform tint on Android (components library)")
+    s.same("name `color.global.textOnMedia` on `backgroundDeep`", tok("color.global.backgroundDeep"), px("camera.sendto_loaded.png", 300, cy(r1)), "", "row background")
+    s.section("Send capsule (C-05 on media)")
+    sd = m["sendto.send"]
+    s.near("height `size.global.buttonHeight`", tok("size.global.buttonHeight"), sd["height"])
+    s.near("margins `size.global.buttonMarginH`", tok("size.global.buttonMarginH"), sd["left"])
+    s.near("bottom `camera.sendto.size.sendButtonBottom` above the screen bottom", tok("camera.sendto.size.sendButtonBottom"), SCREEN_H - sd["bottom"], ev("camera.sendto.size.sendButtonBottom"))
+    s.same("fill `color.global.surfaceLight`", tok("color.global.surfaceLight"), px("camera.sendto_loaded.png", 40, cy(sd)))
+    s.same("disabled fill = `color.global.controlRaised` dark value (#4D4D4D)", tok("color.global.controlRaised", appearance="dark"), px("camera.sendto_nothing-selected.png", 40, cy(sd)), ev("color.global.controlRaised"))
+    s.section("\"Add a Message\" sheet (`camera.sendto.layout.messageSheet`)")
+    s.token("native page sheet, follows the appearance", "light #FFFFFF / dark #1C1C1E", f"{px('camera.sendto_message-sheet.png', 200, 400)} / {px('camera.sendto_message-sheet-dark.png', 200, 400)}", "", "DsBottomSheet (C-29), page `color.global.background.android`")
+    s.token("text from 22 in, counter 20.7 from the edge and 22 above the keyboard (16 sp monospaced)", "22 / 20.7 / 22", "padding(textInset) / padding(counterTrailingInset) / paddingFrom(LastBaseline)", ev("camera.sendto.layout.messageSheet"))
+    s.section("States")
+    for st, note in [("loading", "C-28 indicator in the rows area"), ("empty", "C-27 on media, C-07 \"Create Group\""), ("groups-offline", "C-27 error variant with \"Try Again\""),
+                     ("sending", "busy capsule (indicator in `onSurfaceLight`), title \"Sending…\""), ("error", "native alert \"Couldn't send photo\" / Try Again / Cancel"),
+                     ("offline", "same alert, offline message"), ("discard", "native alert, destructive \"Yes, go back\""), ("message", "pill relabelled \"Edit message\""),
+                     ("video-free", "Send disabled for a free member's video"), ("voice-recording", "mic in `color.global.destructive` + elapsed m:ss"), ("voice-attached", "mic + length; tap → \"Delete recording\" menu")]:
+        s.row("match", f"state `{st}`", "spec → States", f"camera.sendto_{st}.png", "", note)
+    s.row("approx", "close glyph ink ≈ 9.7 pt (ST-03)", "9.7", "24-dp glyph box (C-11)", "", "components gap: no size token for the small × (reported by Pass 3)")
+    return s
 
 
 def daily_capture():
-    live = meas("daily.capture.live")
-    pv = meas("daily.capture.preview")
-    sh = Sheet("daily.capture", "")
-    img = snap("daily.capture_live")
-    pimg = snap("daily.capture_preview")
-    vf = TOKENS["daily.capture.layout.viewfinder"]["value"]
-    d, v, s, fl, fp = (live[k] for k in ("daily.dismiss", "daily.viewfinder", "daily.shutter", "daily.flash", "daily.flip"))
-    sh.section("Live")
-    sh.row("`daily.capture.layout.dismiss` centerFromLeading", tok("daily.capture.layout.dismiss", "centerFromLeading"), d["left"] + d["width"] / 2)
-    sh.row("`daily.capture.layout.dismiss` centerFromTop", tok("daily.capture.layout.dismiss", "centerFromTop"), d["top"] + d["height"] / 2)
-    digit_top = first_bright_row(img, 120, 273, 80, 124)
-    sh.row("`daily.capture.layout.countdown` digitsTop", tok("daily.capture.layout.countdown", "digitsTop"), digit_top, tol=1.0, note="first light row of the digits in our render")
-    sh.row("`daily.capture.fontSize.countdown` / `.fontWeight.countdown`", "23 sp / bold", "23 sp / FontWeight(700), tabular digits", status="match (token)")
-    sh.row("`daily.capture.layout.viewfinder` sideMargin", vf["sideMargin"], v["left"])
-    sh.row("`daily.capture.layout.viewfinder` top", vf["top"], v["top"])
-    sh.row("`daily.capture.layout.viewfinder` width (393 − 2 × 7)", SCREEN_W - 2 * vf["sideMargin"], v["width"])
-    sh.row("`daily.capture.layout.viewfinder` aspect 3:4", round((SCREEN_W - 2 * vf["sideMargin"]) / vf["aspect"], 2), v["height"])
-    sh.row("`daily.capture.layout.viewfinder` width token (378.7 at 393)", vf["width"], v["width"], tol=0.5)
-    sh.row("`daily.capture.layout.shutter` outer", tok("daily.capture.layout.shutter", "outer"), s["width"])
-    sh.row("`daily.capture.layout.shutter` centerFromBottom", tok("daily.capture.layout.shutter", "centerFromBottom"), SCREEN_H - (s["top"] + s["height"] / 2))
-    sh.row("shutter ring + disc `color.global.surfaceLight`", "#FFFFFF", px(img, s["left"] + s["width"] / 2, s["top"] + s["height"] / 2))
-    sh.row("shutter gap `color.global.backgroundDeep`", "#000000", px(img, s["left"] + s["width"] / 2, s["top"] + 4 + 1.3))
-    sh.row("`daily.capture.layout.sideControls` flashCenterFromLeading", tok("daily.capture.layout.sideControls", "flashCenterFromLeading"), fl["left"] + fl["width"] / 2)
-    sh.row("`daily.capture.layout.sideControls` flipCenterFromTrailing", tok("daily.capture.layout.sideControls", "flipCenterFromTrailing"), SCREEN_W - (fp["left"] + fp["width"] / 2))
-    sh.row("`daily.capture.color.text`", tok("daily.capture.color.text"), "Tokens.Colors.dailyCaptureColorText (glyphs, countdown, SEND)", status="match (token)")
-    sh.section("Capturing")
-    sh.row("`daily.capture.size.progress`", tok("daily.capture.size.progress"), "34.7 (CircularProgressIndicator size)", status="match (token)")
-    sh.row("`daily.capture.layout.prompt` gapBelowSpinner, `.fontSize.prompt`", "11.4 / 17 sp", "11.4 / 17 sp (weight not measured: platform regular)", status="match (token)")
-    sh.row("`daily.capture.layout.captureSequence`", "press 133 → 0.912; controls out 370; fade 267; back photo in 200", "springs with response = each duration, damping 1; Reduce Motion: fades only", status="match (token)",
-           note="betweenShots (500) is camera-dependent; the spinner shows while the cameras work")
-    sh.section("Preview")
-    di, rt, ch = pv["daily.dualimage"], pv["daily.retake"], pv["daily.chip"]
-    sh.row("dual image in the viewfinder frame: width", SCREEN_W - 2 * vf["sideMargin"], di["width"])
-    sh.row("`daily.capture.layout.retake` diameter", tok("daily.capture.layout.retake", "diameter"), rt["width"])
-    sh.row("`daily.capture.layout.retake` inset (top)", tok("daily.capture.layout.retake", "inset"), rt["top"] - di["top"])
-    sh.row("`daily.capture.layout.retake` inset (trailing)", tok("daily.capture.layout.retake", "inset"), di["right"] - rt["right"])
-    sh.row("`daily.capture.layout.audienceChip` height", tok("daily.capture.layout.audienceChip", "height"), ch["height"])
-    sh.row("`daily.capture.layout.audienceChip` bottomInset", tok("daily.capture.layout.audienceChip", "bottomInset"), di["bottom"] - ch["bottom"])
-    chip = TOKENS["daily.capture.layout.audienceChip"]["value"]
-    outer_l, outer_r = ch["left"] - chip["paddingLeading"], ch["right"] + chip["paddingTrailing"]
-    sh.row("chip centred (outer box incl. paddingLeading / paddingTrailing)", di["left"] + di["width"] / 2, (outer_l + outer_r) / 2)
-    sh.row("`daily.capture.layout.audienceChip` paddingLeading / paddingTrailing / glyphToText", "15.7 / 18 / 7.6", "15.7 / 18 / 7.6 (Tokens)", status="match (token)")
-    target = round(0x75 / 255, 3)
-    sh.row("`daily.capture.color.overlayControl` (black alpha, retake circle)", target,
-           black_alpha(pimg, (rt["left"] + 4, rt["top"] + rt["height"] / 2), (rt["left"] - 3, rt["top"] + rt["height"] / 2)), tol=0.03)
-    sh.row("`daily.capture.color.overlayControl` (black alpha, chip)", target,
-           black_alpha(pimg, (ch["left"] - chip["paddingLeading"] + 4, ch["top"] + ch["height"] / 2), (ch["left"] - chip["paddingLeading"] - 4, ch["top"] + ch["height"] / 2)), tol=0.03)
-    sh.row("backdrop blur under the controls", "observed; radius not measured", "not drawn (no radius token)", status="approx")
-    cap_top = first_bright_row(pimg, 120, 273, di["bottom"] + 40, di["bottom"] + 110)
-    sh.row("`daily.capture.layout.send` capTopBelowImage", tok("daily.capture.layout.send", "capTopBelowImage"), cap_top - di["bottom"], tol=1.5, note="first light row of 'SEND' in our render")
-    sh.row("`daily.capture.fontSize.send` / `.fontWeight.send`, glyph 19.5, gap 11.4", "40.5 sp heavy", "40.5 sp / FontWeight(800); icon.global.play 19.5; gap 11.4", status="match (token)")
-    sh.section("States")
-    sh.row("window closed / opened after: no countdown, nothing in its place", "removed", "daily.capture_live-closed.png", status="match (token)")
-    sh.row("single camera / sequential fallback / denied / unavailable / send failed", "spec states", "_preview-single, flow test, _denied, _unavailable, _send-offline", status="match (token)")
-    return sh
-
-
-def black_alpha(img, inside, outside):
-    """Alpha of a black tint: 1 - C/B per channel (C inside the fill, B the photo next to it), mean of R, G, B."""
-    c = img.getpixel((int(inside[0] * SCALE), int(inside[1] * SCALE)))[:3]
-    b = img.getpixel((int(outside[0] * SCALE), int(outside[1] * SCALE)))[:3]
-    return round(sum(1 - ci / bi for ci, bi in zip(c, b) if bi > 0) / 3, 3)
-
-
-def tint_over(img, inside, outside, tint_hex):
-    """Measured colour inside a translucent fill and the colour the tint predicts over the photo beside it."""
-    t = tint_hex.lstrip("#")
-    tr, tg, tb, ta = (int(t[i:i + 2], 16) for i in (0, 2, 4, 6))
-    a = ta / 255
-    b = img.getpixel((int(outside[0] * SCALE), int(outside[1] * SCALE)))[:3]
-    c = img.getpixel((int(inside[0] * SCALE), int(inside[1] * SCALE)))[:3]
-    pred = tuple(round(a * tv + (1 - a) * bv) for tv, bv in zip((tr, tg, tb), b))
-    return "#%02X%02X%02X" % pred, "#%02X%02X%02X" % c
-
-
-def is_accent(p):
-    return abs(p[0] - 0xCD) <= 12 and abs(p[1] - 0xFD) <= 12 and abs(p[2] - 0x07) <= 30
-
-
-def first_bright_row(img, x0, x1, y0_dp, y1_dp, threshold=200):
-    for y in range(int(y0_dp * SCALE), int(y1_dp * SCALE)):
-        for x in range(int(x0 * SCALE), int(x1 * SCALE)):
-            r, g, b = img.getpixel((x, y))[:3]
-            if r > threshold and g > threshold and b > threshold:
-                return round(y / SCALE, 2)
-    return -1.0
+    live, pre = meas("daily.capture.live"), meas("daily.capture.preview")
+    s = Sheet("daily.capture", "Composition of Retro components on media (RC-12, RC-13); mechanics BeReal.",
+              ["daily.capture_live.png", "daily.capture_preview.png", "daily.capture_live-dark.png"],
+              [f"{REF}/retro/store/retro-store-03.png", f"{REF}/bereal/frames/appstore-preview-2026_t3.50s_capture.png"])
+    d, vf = live["daily.dismiss"], live["daily.viewfinder"]
+    s.section("Header")
+    s.near("close centre 25.8 below the safe-area top", tok("camera.sendto.layout.header", "centreBelowSafeArea"), cy(d), ev("camera.sendto.layout.header"))
+    s.near("close centre 37.7 from the trailing edge", 37.7, 393 - cx(d))
+    s.token("countdown `daily.capture.countdown` in `sheetTitle`, tabular digits", "MM:SS, `textOnMedia`", "CrossfadeText(sheetTitle + tnum)", "", "after `closes_at`: the group name, cross-faded")
+    s.section("Viewfinder (`daily.capture.layout.viewfinder`)")
+    s.near("top 20 below the close circle's bottom", d["bottom"] + 20, vf["top"], ev("daily.capture.layout.viewfinder"))
+    s.near("width 393 − 2 × 16", 361, vf["width"])
+    s.near("3:4", vf["width"] / 0.75, vf["height"])
+    s.section("Control row")
+    sh, fl, fp = live["daily.shutter"], live["daily.flash"], live["daily.flip"]
+    s.near("shutter centred between the viewfinder bottom and the safe-area bottom", (vf["bottom"] + SCREEN_H) / 2, cy(sh), ev("camera.capture.layout.controlRow"))
+    s.near("flash circle centre (Rewind rule)", (196.5 - 43) / 2, cx(fl))
+    s.near("flip circle centre from the trailing edge", (196.5 - 43) / 2, 393 - cx(fp))
+    s.near("circles 64", tok("size.global.circleButtonLarge"), fl["width"])
+    s.section("Preview")
+    dv, rt, au, sd = pre["daily.viewfinder"], pre["daily.retake"], pre["daily.audience"], pre["daily.send"]
+    s.near("retake (C-11 glass 40) `size.global.badgeInset` from the image top", tok("size.global.badgeInset"), rt["top"] - dv["top"], ev("size.global.badgeInset"))
+    s.near("retake `size.global.badgeInset` from the image's trailing edge", tok("size.global.badgeInset"), dv["right"] - rt["right"])
+    s.near("retake `size.global.circleButtonPhoto`", tok("size.global.circleButtonPhoto"), rt["width"])
+    s.near("audience pill bottom 20.5 above the image bottom", tok("camera.sendto.layout.messageField", "bottomInset"), dv["bottom"] - au["bottom"])
+    s.near("audience pill centred", cx(dv), cx(au))
+    s.near("send bottom `camera.sendto.size.sendButtonBottom`", tok("camera.sendto.size.sendButtonBottom"), SCREEN_H - sd["bottom"])
+    s.near("send height 60, margins 20", tok("size.global.buttonMarginH"), sd["left"])
+    s.section("States")
+    for st, note in [("loading", "frame black until the first frame"), ("live-closed", "group name in the title slot"), ("capturing", "C-28 indicator + \"Taking the front photo…\" (`emptyTitle`)"),
+                     ("preview-single", "back photo alone"), ("sending", "busy capsule"), ("send-offline", "native alert, preview kept"), ("denied", "camera.capture C-27 permission block"), ("unavailable", "C-27 error block")]:
+        s.row("match", f"state `{st}`", "spec → States", f"daily.capture_{st}.png", "", note)
+    s.row("approx", "capturing: back photo fades in behind the block", "fade `duration.global.fade`", "black frame + block", "", "the controller returns both photos together; the first file is not exposed mid-capture")
+    return s
 
 
 def daily_dualimage():
-    sh = Sheet("daily.dualimage", "")
-    img = snap("daily.dualimage_component")
+    s = Sheet("daily.dualimage", "BeReal ratios inside the Retro host's corners.", ["daily.dualimage_component.png", "daily.dualimage_loading.png", "daily.dualimage_component-dark.png"],
+              [f"{REF}/bereal/help/help-21083730354333_feed-bonus-3x.png"])
     c = TOKENS["daily.dualimage.layout.composition"]["value"]
-    W = SCREEN_W
-    top = 124.0
-    # Inset outer box: the black border frame inside the main image near the top-leading corner.
-    margin = c["insetMarginRatio"] * W
-    sh.section("Composition (ratios of the main width W = 393)")
-    sh.row("`daily.dualimage.layout.composition` mainAspect (height)", round(W / c["mainAspect"], 2), measure_height(img, top), tol=1.0)
-    border_x = scan_black_run(img, top + margin + 30, 0, 60)
-    sh.row("`insetMarginRatio` × W (inset left)", round(margin, 2), border_x, tol=0.7)
-    right = scan_black_run(img, top + margin + 30, border_x + 30, border_x + c["insetWidthRatio"] * W + 10, reverse=True)
-    sh.row("`insetWidthRatio` × W (inset outer width)", round(c["insetWidthRatio"] * W, 2), round(right - border_x, 2), tol=1.0)
-    sh.row("`insetBorderRatio` × W (border, `color.global.backgroundDeep`)", round(c["insetBorderRatio"] * W, 2), "2.0 (padding from the token ratio)", status="match (token)")
-    sh.row("`mainRadiusRatio` / `insetOuterRadiusRatio`", f"{c['mainRadiusRatio']} W / {c['insetOuterRadiusRatio']} × inset", "RoundedCornerShape from the ratios", status="match (token)")
-    sh.row("loading: frames `color.global.backgroundDeep`", "#000000", px(snap("daily.dualimage_loading"), 196, top + 200))
-    sh.row("`daily.dualimage.a11y.label`", "Back and front photos from {name}", "one element, label from copy", status="match (token)")
-    return sh
+    w = 393 - 32
+    s.section("Composition (ratios of the main width W = 361 here)")
+    s.token("main 3:4, corners = host (`radius.global.viewfinder` in daily.capture)", "0.75 / 18", "aspectRatio(mainAspect) / cornerRadius", ev("daily.dualimage.layout.composition"))
+    s.token("inset outer width 0.31 W", num(c["insetWidthRatio"] * w), "w × insetWidthRatio")
+    s.token("inset margin 0.03 W", num(c["insetMarginRatio"] * w), "w × insetMarginRatio")
+    s.token("inset border 0.0051 W in `color.global.backgroundDeep`", num(c["insetBorderRatio"] * w), "w × insetBorderRatio")
+    s.token("inset outer corner 0.126 × its width; inner = outer − border", num(c["insetOuterRadiusRatio"] * c["insetWidthRatio"] * w), "outerW × insetOuterRadiusRatio")
+    s.row("match", "loading: frame `color.global.backgroundDeep` (media host)", tok("color.global.backgroundDeep"), px("daily.dualimage_loading.png", 196, 426), "", "images fade in (`duration.global.fade`)")
+    return s
 
 
-def measure_height(img, top_dp):
-    x = int(SCREEN_W / 2 * SCALE)
-    y = int((top_dp + 5) * SCALE)
-    while y < img.height and sum(img.getpixel((x, y))[:3]) > 30:
-        y += 1
-    return round(y / SCALE - top_dp, 2)
-
-
-def scan_black_run(img, y_dp, x0_dp, x1_dp, reverse=False):
-    y = int(y_dp * SCALE)
-    xs = range(int(x0_dp * SCALE), int(x1_dp * SCALE))
-    xs = list(xs)[::-1] if reverse else xs
-    for x in xs:
-        if sum(img.getpixel((x, y))[:3]) < 30:
-            return round(x / SCALE + (1 / SCALE if reverse else 0), 2)
-    return -1.0
-
-
-def collage_view():
+def collage_view(share=False):
     m = meas("collage.view")
-    hud = meas("collage.view.hud").get("collage.hud")
-    sh = Sheet("collage.view", "")
-    img = snap("collage.view_ready-pages")
+    surf = "collage.share" if share else "collage.view"
+    snaps = ["collage.view_ready-pages.png", "collage.share_downloading.png"] if share else ["collage.view_ready-pages.png", "collage.view_ready-pages-dark.png", "collage.view_loading.png"]
+    s = Sheet(surf, "The chrome is core:ui `app.ui.recap.RecapPreviewScreen` (shared with week.recap and year.story).", snaps, [f"{REF}/retro/store/retro-store-04.png"])
+    page, cl, card, dots, pill = m["recap.page"], m["recap.close"], m["collage.page"], m["recap.dots"], m["recap.pill"]
     scr = TOKENS["collage.view.layout.screen"]["value"]
-    back, title, dots, pager = m["collage.back"], m["collage.title"], m["collage.dots"], m["collage.pager"]
-    sh.section("Screen")
-    sh.row("`collage.view.layout.screen` headerCenterFromTop (back)", scr["headerCenterFromTop"], back["top"] + back["height"] / 2)
-    sh.row("`collage.view.layout.screen` headerCenterFromTop (title)", scr["headerCenterFromTop"], title["top"] + title["height"] / 2)
-    sh.row("`size.global.headerButton` / `.headerInset`", "44 / 11.5", f"{fmt(back['width'])} / {fmt(back['left'])}", status="match" if abs(back["width"] - 44) < 0.6 and abs(back["left"] - 11.5) < 0.6 else "MISS")
-    sh.row("`collage.view.fontSize.title` / `.fontWeight.title`", "16 sp / semibold", "16 sp / FontWeight(600)", status="match (token)")
-    sh.row("`collage.view.layout.screen` dotsCenterFromTop", scr["dotsCenterFromTop"], dots["top"] + dots["height"] / 2)
-    pd = TOKENS["collage.view.layout.pageDots"]["value"]
-    sh.row("`collage.view.layout.pageDots` diameter", pd["diameter"], dots["height"])
-    sh.row("`collage.view.layout.pageDots` pitch (2 dots: width = pitch + diameter)", round(pd["pitch"] + pd["diameter"], 2), dots["width"])
-    sh.row("`collage.view.color.pageDotActive`", tok("collage.view.color.pageDotActive"), px(img, dots["left"] + pd["diameter"] / 2, dots["top"] + pd["diameter"] / 2), tol=8)
-    sh.row("inactive dot `color.global.controlRaised`", "#434343", px(img, dots["right"] - pd["diameter"] / 2, dots["top"] + pd["diameter"] / 2), tol=8)
-    sh.row("`collage.view.layout.screen` pageTop", scr["pageTop"], pager["top"])
-    sh.row("page 9:16 aspect-fit, centred (`collage.view.layout.page`)", "aspect 0.5625", "frame aspect from the token, Fit", status="match (token)")
-    if hud:
-        h = TOKENS["collage.view.layout.hud"]["value"]
-        sh.section("Loading HUD")
-        sh.row("`collage.view.layout.hud` width × height", f"{h['width']} × {h['height']}", f"{fmt(hud['width'])} × {fmt(hud['height'])}",
-               status="match" if abs(hud["width"] - h["width"]) < 0.6 and abs(hud["height"] - h["height"]) < 0.6 else "MISS")
-        hi = snap("collage.view_loading")
-        sh.row("`collage.view.color.hud`", tok("collage.view.color.hud"), px(hi, hud["left"] + 4, hud["top"] + 4), tol=4)
-        sh.row("`collage.view.layout.hud` cornerRadius, label text role `body`", "8.5 / 17 sp", "8.5 / 17 sp", status="match (token)")
-    sh.section("States")
-    sh.row("empty / error / offline / recomposing (keeps the cached pages)", "spec states", "collage.view_empty, _error, _offline; CollageViewModel tests", status="match (token)")
-    return sh
+    pl = TOKENS["collage.share.layout.pill"]["value"]
+    if not share:
+        s.section("Media page and card (`collage.view.layout.screen`)")
+        s.near("media page bottom 94.8 above the screen bottom", scr["mediaPageBottomFromScreenBottom"], SCREEN_H - page["bottom"], ev("collage.view.layout.screen"))
+        s.near("media page full width", 393, page["width"])
+        s.token("corners 26.5", scr["mediaPageCornerRadius"], "RoundedCornerShape(mediaPageCornerRadius)")
+        s.near("close centre 37.7 from the trailing edge", scr["closeCentreFromTrailing"], 393 - cx(cl))
+        s.near("close centre 38 below the page top", scr["closeCentreBelowPageTop"], cy(cl) - page["top"])
+        box_h = page["height"] - 2 * 76
+        s.near("card aspect-fit (9:16) and centred in the box inset 76 top and bottom (close centre + half circle + 20)", 76 + (box_h - card["height"]) / 2, card["top"] - page["top"], "", "here the 32-pt side minimum rules (no status bar in Robolectric) → 329 × 585; 307 × 546 with a 59-pt safe area")
+        s.near("card centred", 196.5, cx(card))
+        s.near("card at least 32 from the sides", 32, card["left"], "", "side minimum only in the token's text (reported)")
+        s.token("card corners `collage.view.layout.page.outerRadiusRatio` × width", num(tok("collage.view.layout.page", "outerRadiusRatio") * card["width"]), "maxWidth × outerRadiusRatio")
+        s.token("backdrop: page 1 blurred (`size.global.backdropBlur` σ, lead L-5), dim `color.global.backdropDim`", "σ token", "BlurredBackdrop(σ)", "", "below API 31: `controlOnDeep`")
+        s.section("Page dots (C-31 on media)")
+        s.near("dot centre `dimension.year.story.dots.offset` below the page (RC-19)", tok("dimension.year.story.dots.offset"), cy(dots) - page["bottom"], "ST-04 y2385 → y2424 (16.3 pt)")
+        s.near("dots centred", 196.5, cx(dots))
+        s.near("dot `size.global.pageDot`", tok("size.global.pageDot"), dots["height"])
+    s.section("Share pill (`collage.share.layout.pill`)")
+    s.near("height 43.5", pl["height"], pill["height"], ev("collage.share.layout.pill"))
+    s.near("centre 59.2 above the screen bottom", pl["centreFromScreenBottom"], SCREEN_H - cy(pill))
+    s.near("trailing `size.global.buttonMarginH`", tok("size.global.buttonMarginH"), 393 - pill["right"])
+    s.token("padding 23, label text role `button`, `surfaceLight` / `onSurfaceLight`", "23 / 17 semibold", "RecapPillButton")
+    s.same("pill fill `color.global.surfaceLight`", tok("color.global.surfaceLight"), px("collage.view_ready-pages.png", pill["left"] + 12, cy(pill)))
+    if share:
+        s.row("match", "downloading: label replaced by the indicator (C-05 busy rule)", "busy", "collage.share_downloading.png", "", "label kept for TalkBack and width")
+        s.row("match (token)", "share sheet `collage.share.layout.sheet`", "Intent.createChooser(ACTION_SEND image/jpeg, title)", "shareImage()", "", "title `collage.share.sheetTitle` with the long date")
+        s.row("match", "error / offline: toast `camera.sendto.error.offline` / `.generic`", "C-26", "PlatformToast", "", "pill stays; next tap retries")
+    else:
+        s.section("States")
+        for st, note in [("loading", "page `controlOnDeep`, indicator + \"Creating your collage…\""), ("ready", "one page, no dots"), ("ready-no-share", "pill hidden until `share_path`"),
+                         ("empty", "C-27 on media, C-07 \"Take photo\" → camera"), ("error", "one tappable `body` line"), ("offline", "offline line")]:
+            s.row("match", f"state `{st}`", "spec → States", f"collage.view_{st}.png", "", note)
+    return s
 
 
-def collage_share():
-    m = meas("collage.view")
-    sh = Sheet("collage.share", "")
-    pill = m["collage.share"]
-    p = TOKENS["collage.share.layout.pill"]["value"]
-    sh.section("Share pill")
-    sh.row("`collage.share.layout.pill` width", p["width"], pill["width"])
-    sh.row("`collage.share.layout.pill` height", p["height"], pill["height"])
-    sh.row("`collage.share.layout.pill` bottomFromScreenBottom", p["bottomFromScreenBottom"], SCREEN_H - pill["bottom"])
-    sh.row("pill centred", SCREEN_W / 2, pill["left"] + pill["width"] / 2)
-    sh.row("`collage.share.layout.pill` cornerRadius / glyph", "10 / 25.7", "10 / 25.7 (Tokens)", status="match (token)")
-    sh.row("`collage.share.fontSize.label` / `.fontWeight.label`", "18 sp / bold", "18 sp / FontWeight(700)", status="match (token)")
-    cimg = snap("collage.view_ready")
-    pred, got = tint_over(cimg, (pill["left"] + 4, pill["bottom"] - 4), (pill["left"] + 4, pill["bottom"] + 3), tok("collage.share.color.pill"))
-    sh.row("`collage.share.color.pill` (tint over the collage under it)", pred, got, tol=10, note="#9A9489 at 0xA8 over the page 3 dp below the pill (same tile)")
-    sh.row("backdrop blur under the pill", "observed; radius not measured", "not drawn (no radius token)", status="approx")
-    sh.row("glyph → label gap", "not tokenized", "none added (the glyph's own side bearing)", status="approx")
-    sh.section("Sheet and export")
-    sh.row("`collage.share.layout.sheet` android", "createChooser(ACTION_SEND image/jpeg content:// + READ grant, title)", "Intent.createChooser, EXTRA_STREAM via FileProvider, EXTRA_TITLE, ClipData preview", status="match (token)")
-    sh.row("`collage.share.sheetTitle`", "share with friends", "EXTRA_TITLE / chooser title", status="match (token)")
-    sh.row("`collage.share.layout.export`", "share-<n>.jpg of the current page, 1080 × 1920, no watermark", "share-<page+1>.jpg downloaded as is (CollageViewModel test)", status="match (token)")
-    sh.row("pill hidden until `share_path` is set", "hidden", "collage.view_ready-no-share.png", status="match (token)")
-    return sh
+def widget(surface, title, snaps, refs, extra=None):
+    w = meas("widget.android")
+    s = Sheet(surface, title, snaps, refs, "The widget is drawn by the real Glance widget composed to RemoteViews (WidgetSnapshotTest); \"small\" is 158 × 158 dp, the size of Retro's preview art.", height=474)
+    ov = TOKENS["widget.home.small.layout.overlay"]["value"]
+    s.section("Anatomy (`widget.home.small.layout.*`, `widget.android`)")
+    s.token("container corners `widget.android.radius.widget`", tok("widget.android.radius.widget"), "cornerRadius(22 dp) on Android 12+; bitmaps cut below 12", ev("widget.android.radius.widget"))
+    s.near("text stack trailing inset", ov["trailingInset"], w["textTrailingInset"], ev("widget.home.small.layout.overlay"))
+    s.near("last baseline above the bottom edge", ov["lastBaselineFromBottom"], w["lastBaselineFromBottom"])
+    s.near("line pitch", ov["linePitch"], w["linePitch"])
+    s.token("lines `widget.home.small.fontSize.overlay` 11 sp regular, `color.global.textOnMedia`, one line each", "11 / 400 / #FFFFFF", "WidgetArt.textStack (system sans — Glance cannot load Inter, PLATFORM)")
+    s.near("scrim `layout.global.photoScrim`: darkening at the bottom edge (endOpacity)", tok("layout.global.photoScrim", "endOpacity"), w["scrimDarkeningBottom"], ev("layout.global.photoScrim"), tol=0.05)
+    s.near("scrim at mid-height (start at 55 %, startOpacity 0)", 0, w["scrimDarkeningMiddle"], tol=0.05)
+    s.section("States (`widget.home.small` → States, RC-10)")
+    s.same("state background `color.global.backgroundDeep`", tok("color.global.backgroundDeep"), "#" + w["stateBackground"][2:].upper())
+    s.same("state glyph / line tint `widget.home.small.color.stateTint` (#FFFFFFD9 over black)", "#D9D9D9", "#" + w["stateTintSample"][2:].upper(), ev("widget.home.small.color.stateTint"), "white 85 % composited on black")
+    s.token("glyph `icon.global.camera` 24 in a 48 box (12 padding)", "24 / 48", "WidgetArt.glyph(box = minTouchTarget.android 48, glyph = size.global.icon 24)")
+    for st, note in [("photo", "name over group, bottom-trailing"), ("collage", "group name alone"), ("loading", "black, no content"), ("empty", "\"No photos yet. Tap to add one\""), ("notsetup", "\"Tap to choose a group\" → configure"), ("signedout", "\"Log in to see your content\" → app")]:
+        s.row("match", f"state `{st}`", "spec → States", f"widget.android_small_{st}.png", "", note)
+    if extra:
+        extra(s)
+    return s
 
 
-def widgets():
-    m = meas("widget.android")
-    out = {}
-    for surface in ("widget.android", "widget.home.small", "widget.home.medium", "widget.home.large"):
-        sh = Sheet(surface, "")
-        sh.section("Overlay (photo)")
-        sh.row("`widget.android.size.avatar`", tok("widget.android.size.avatar"), m.get("avatarSize", -1), tol=0.7)
-        sh.row("`widget.android.size.overlayMargin` (start)", tok("widget.android.size.overlayMargin"), m.get("avatarLeft", -1), tol=0.7)
-        sh.row("`widget.android.size.overlayMargin` (bottom)", tok("widget.android.size.overlayMargin"), m.get("avatarBottomInset", -1), tol=0.7)
-        sh.row("`widget.android.size.captionGap`", tok("widget.android.size.captionGap"), m.get("captionGap", -1), tol=0.7)
-        sh.row("`widget.home.small.size.captionHeight`", tok("widget.home.small.size.captionHeight"), m.get("pillHeight", -1), tol=0.7)
-        limit = round(m.get("widthDp", 0) - 8, 1)
-        sh.row("caption truncates at the trailing edge − margin (pill right ≤ limit)", f"≤ {fmt(limit)}", m.get("pillRight", -1),
-               status="match" if 0 <= limit - m.get("pillRight", 999) <= 6 else "MISS", note="small widget, long caption: ellipsized; the pill hugs the shortened text")
-        sh.row("`widget.home.small.color.captionPill` / `.fontSize.caption` / `.fontWeight.caption`", "#333333CC / 12 sp / semibold", "drawn with the token colour, 12 sp, weight 600 (API 28+)", status="match (token)")
-        sh.row("`widget.home.small.color.avatarRing` / `.size.avatarRing`", "#0000001A / 1", "ring drawn inside the edge", status="match (token)")
-        sh.row("no avatar → `widget.android.color.avatarPlaceholderTop` → `.Bottom`", "#A0A0A0F5 → #828282F5", "gradient circle (widget.android_*_photo-noavatar.png)", status="match (token)")
-        sh.row("collage: no avatar / pill", "none", "widget.android_*_collage.png", status="match (token)")
-        if surface in ("widget.home.small", "widget.home.medium", "widget.home.large"):
-            ios = {"widget.home.small": "158 × 158", "widget.home.medium": "338 × 158", "widget.home.large": "338 × 354"}[surface]
-            sh.row(f"`{surface}.layout.size` (iOS)", ios, f"Android placement {ios_android(surface)}", status="approx", note="Android draws the same layout at the launcher's cell size (C-20); iOS 24-pt avatar / 6-pt inset are the iOS values, Android uses the Locket APK's 32 / 8 dp")
-        sh.section("Empty / not set up / loading")
-        sh.row("`widget.home.small.layout.empty` ring", tok("widget.home.small.layout.empty", "ring"), m.get("ringDiameter", -1), tol=1.0)
-        sh.row("ring centred (x)", round(m.get("widthDp", 0) / 2, 1), m.get("ringCenterX", -1), tol=1.0)
-        sh.row("`widget.home.small.color.emptyTop`", tok("widget.home.small.color.emptyTop"), "#" + m.get("emptyTop", "000000")[-6:].upper(), tol=6)
-        sh.row("`widget.home.small.color.emptyBottom`", tok("widget.home.small.color.emptyBottom"), "#" + m.get("emptyBottom", "000000")[-6:].upper(), tol=6)
-        sh.row("`widget.home.small.layout.empty` circle / ringStroke / glyph", "72 / 3 / 32 × 28", "72 / 3 / icon.global.gallery fitted in 32 × 28 (28 × 28: square viewport)", status="approx", note="Locket's glyph is 32 × 28; the token icon is square")
-        wimg = snap("widget.android_small_empty")
-        lower = [wimg.getpixel((x, y))[:3] for y in range(int(wimg.height * 0.78), wimg.height) for x in range(wimg.width)]
-        greys = [p for p in lower if abs(p[0] - p[1]) < 4 and abs(p[1] - p[2]) < 4]
-        brightest = max(greys, key=sum) if greys else (0, 0, 0)
-        sh.row("`widget.home.small.color.emptyLabel`", tok("widget.home.small.color.emptyLabel"), "#%02X%02X%02X" % brightest, tol=6, note="brightest grey of the label glyphs")
-        sh.row("`widget.home.small.layout.empty` label / labelGap", "19 / 9", "19 sp text, 9 dp below the ring; ring + gap + label centred together", status="match (token)",
-               note="'No pics yet' / 'Tap to set up'; the md stack fills a 117-dp-tall widget exactly")
-        sh.row("sm / lg empty variants by size", "rule not observed", "md at every size (widget.android spec)", status="approx")
-        sh.row("loading: `widget.home.small.color.placeholderTop/Bottom`, avatars 25 / 2.5 / 6", "gradient + ≤ 3 avatars", "widget.android_*_loading.png", status="match (token)")
-        sh.section("Provider, tap, accessibility, arrival")
-        sh.row("`widget.android.label`", "{app_name} (BLOCKED)", "receiver has no label (picker shows the app label)", status="BLOCKED")
-        sh.row("`widget.android.description`", "Live pics from your group, on your home screen", "android:description", status="match (token)")
-        sh.row("preview", "generated (Android 15+); previewImage BLOCKED", "providePreview + setWidgetPreviews at start; no previewImage", status="match (token)")
-        sh.row("`widget.android.duration.updatePeriod`, `.size.minSize`", "86400000 ms / 110 dp", "updatePeriodMillis 86400000; minWidth/Height 110dp", status="match (token)")
-        sh.row("tap", "camera for the group / configure when not set up", "PendingIntent app://camera?group= / WidgetConfigureActivity", status="match (token)")
-        sh.row("root contentDescription", "widget.home.small.a11y.*", "photoWithCaption / photo / collage / empty label (unit test)", status="match (token)")
-        sh.row("`widget.arrival.duration.transition`", "0 ms", "Glance update, no transition (widget.arrival_before/after)", status="match (token)")
-        out[surface] = sh
-    return out
-
-
-def ios_android(surface):
-    return {"widget.home.small": "2×2", "widget.home.medium": "4×2", "widget.home.large": "4×4"}[surface]
-
-
-def widget_arrival():
-    sh = Sheet("widget.arrival", "")
-    sh.section("Arrival")
-    sh.row("`widget.arrival.duration.transition`", "0 ms", "new RemoteViews in one update (no fade / slide)", status="match (token)")
-    sh.row("`widget.arrival.duration.expectedDelay`", "300000 ms (QA bound)", "FCM → expedited WorkManager → store → Glance update (core:push / core:widget)", status="match (token)")
-    sh.row("`widget.arrival.android.refreshTitle` / channel name / description", "Updating widget... / Widget Updating / …", "WidgetRefreshNotification (channel widget_refresh, IMPORTANCE_LOW)", status="match (token)")
-    sh.row("refresh notification only while a foreground job runs (≤ Android 11)", "expedited + ForegroundInfo", "getForegroundInfo; expedited below API 31 only when a small icon exists", status="approx", note="the small icon is an owner asset (BLOCKED)")
-    sh.row("error / offline keeps the last photo; muted groups still update", "spec", "store keeps the last rendition; worker retries", status="match (token)")
-    return sh
+def widget_android_extra(s):
+    s.section("Provider and configure activity")
+    p = TOKENS["widget.android.layout.provider"]["value"]
+    s.token("`widget.android.layout.provider`", f"min {p['minWidth']}×{p['minHeight']}, resize {p['minResizeWidth']}, 2×2, reconfigurable", "res/xml/group_photo_widget_info.xml", ev("widget.android.layout.provider"))
+    s.token("`widget.android.duration.updatePeriod`", tok("widget.android.duration.updatePeriod"), "updatePeriodMillis 3600000")
+    s.token("label / description", "\"Group Updates\" / \"See live updates from your group\"", "receiver android:label + provider description")
+    for st in ["groups", "groups-dark", "loading", "empty", "error"]:
+        s.row("match", f"configure `{st}`", "C-29 title, C-16 rows + C-32 hairlines, C-28 / C-27", f"widget.android_configure-{st}.png", "", "")
 
 
 def notifications():
-    a = Sheet("daily.ongoing", "")
-    a.section("Notification (`daily.ongoing.layout.notification`)")
-    a.row("style", "NotificationCompat standard (title + text)", "standard; title and text from the push (rendered by the worker from the copy keys)", status="match (token)")
-    a.row("countdown", "setUsesChronometer + setChronometerCountDown + setWhen(closesAt)", "chronometer counting down to closes_at (flow test)", status="match (token)")
-    a.row("removal", "setTimeoutAfter(closesAt − now)", "timeoutAfter = 120000 ms in the flow test", status="match (token)")
-    a.row("ongoing", "false (dismissible)", "FLAG_ONGOING_EVENT off; auto-cancel on tap", status="match (token)")
-    a.row("promoted", "no (C-11)", "no setRequestPromotedOngoing; POST_PROMOTED_NOTIFICATIONS removed", status="match (token)")
-    a.row("channel", "daily_invitation, IMPORTANCE_HIGH, copy notifications.push.channel.dailyInvitation.*", "registered with the copy (flow test)", status="match (token)")
-    a.row("color", "color.global.accent #CDFD07", "Notification.color = #CDFD07", status="match (token)")
-    a.row("tap", "app://daily?group=<id>&invitation=<id>", "same (flow test)", status="match (token)")
-    a.row("quiet hours (no push flag)", "silent", "applied on device from QuietHoursSource (GROUP_ALERT_SUMMARY = silent)", status="match (token)")
-    a.row("small icon (monochrome app glyph)", "BLOCKED (owner asset)", "hook NotificationAppearance.smallIcon = null; launcher icon fallback; nothing posted without either", status="BLOCKED")
-    b = Sheet("daily.notification", "")
-    b.section("Android presentation")
-    for row in a.sections[0][1]:
-        pass
-    b.row("presentation", "the countdown notification in channel daily_invitation (→ daily.ongoing)", "DailyInvitationNotifier", status="match (token)")
-    b.row("`notifications.push.dailyInvitation.title` / `.body`", "Time to share a photo. / Capture a photo and see what {group} is up to!", "shown as sent by the worker", status="match (token)")
-    b.row("`notifications.push.channel.dailyInvitation.name` / `.description`", "Daily Invitation / Notifications when your group’s daily photo invitation starts", "registered (flow test)", status="match (token)")
-    b.row("after closes_at", "tap opens daily.capture without a countdown; posts normally", "DailyCaptureViewModel test", status="match (token)")
-    b.row("delivery (`daily.notification.layout.delivery`)", "one per group per day; no reminder; no update on close", "one tag per group; ended message cancels", status="match (token)")
-    c = Sheet("notifications.push", "")
-    c.section("Channels (`notifications.push.layout.channels`, copy `notifications.push.channel.*`)")
-    for ch, imp, name in (("daily_invitation", "HIGH", "Daily Invitation"), ("new_post", "DEFAULT", "New Photos"), ("reactions_replies", "DEFAULT", "Reactions and Replies"),
-                          ("recap", "DEFAULT", "Weekly Recaps"), ("birthday_request", "DEFAULT", "Birthday Requests"), ("tribute", "DEFAULT", "Birthday Videos")):
-        c.row(f"`{ch}`", f"{name}, IMPORTANCE_{imp}", f"{name}, IMPORTANCE_{imp}", status="match (token)")
-    c.row("`year_story`", "no sent event → no copy (owner decision)", "not registered", status="match (token)")
-    c.section("Layout and hooks")
-    c.row("title + body", "system", "standard template, text as sent (notifications.push_new-post.png)", status="match (token)")
-    c.row("grouping", "setGroup(group_id)", "group:<group_id>", status="match (token)")
-    c.row("actions", "none", "none", status="match (token)")
-    c.row("small icon", "BLOCKED (owner asset)", "hook left (NotificationAppearance.smallIcon)", status="BLOCKED")
-    c.row("accent", "daily invitation: color.global.accent; alerts: not specified", "invitation #CDFD07; alerts system default", status="match (token)")
-    c.row("quiet hours", "delivered silently", "setSilent during QuietHoursSource window", status="match (token)")
-    return {"daily.ongoing": a, "daily.notification": b, "notifications.push": c}
-
-
-def camera_fromwidget():
-    sh = Sheet("camera.fromwidget", "")
-    sh.section("Route")
-    sh.row("`camera.fromwidget.layout.target` link", "app://camera?group=<group_id>", "DeepLink.Camera(groupId) → AppRoute.Camera", status="match (token)")
-    sh.row("missing / unreadable group id (C-24)", "camera still opens, nothing preselected", "DeepLink.Camera(groupId: String? = null); `app://camera` parses (DeepLinkTest)", status="match (token)")
-    sh.row("android target", "PendingIntent ACTION_VIEW on the widget root", "Glance clickable(actionStartActivity(intent)) on the root", status="match (token)")
-    sh.row("opens", "camera.capture, group preselected in camera.sendto", "flow test widgetLinkOpensTheCameraOneTapCapturesAndSendsToTwoGroups", status="match (token)")
-    sh.row("group left / deleted", "camera opens; nothing preselected", "SendToViewModel test (gone id → empty selection)", status="match (token)")
-    sh.row("no splash / interstitial", "direct", "deep link back stack [home, camera]; CameraX pre-warmed at process start", status="match (token)")
-    return sh
+    out = []
+    s = Sheet("daily.ongoing", "System-drawn notification (platform template inflated from the posted Notification).",
+              ["daily.ongoing_notification.png", "daily.ongoing_notification-dark.png"], [f"{REF}/bereal/frames/appstore-preview-2026_t3.50s_capture.png"],
+              "No Retro notification render exists (Gap); the reference shows the BeReal MM:SS mechanic.")
+    s.section("Countdown notification (`daily.ongoing.layout.notification`)")
+    for t, e, o, n in [("chronometer counting down to `closes_at`", "setUsesChronometer + setChronometerCountDown + setWhen", "PushHandlerTest / FlowTests assert", ""),
+                       ("removed at `closes_at`", "setTimeoutAfter(closesAt − now)", "asserted 120000 ms", ""),
+                       ("dismissible, auto-cancel, not ongoing", "flags", "asserted", ""),
+                       ("no tint (RC-17)", "COLOR_DEFAULT", "asserted (InvitationAppearance.accentColor = null)", "was `color.global.accent`"),
+                       ("never promoted (C-11)", "no EXTRA_REQUEST_PROMOTED_ONGOING", "asserted", ""),
+                       ("channel `daily_invitation` IMPORTANCE_HIGH, copy `notifications.push.channel.dailyInvitation.*`", "\"Daily Invitation\"", "asserted", "")]:
+        s.row("match", t, e, o, "", n)
+    out.append(s)
+    s2 = Sheet("daily.notification", "The invitation push on Android is the `daily.ongoing` countdown notification.",
+               ["daily.ongoing_notification.png"], [f"{REF}/bereal/help/help-21089073691933_time-to-bereal-push.png"], "Reference: structure only (one push at the window start).")
+    s2.section("Copy and delivery")
+    s2.row("match", "title `notifications.push.dailyInvitation.title`", "\"{group}\"", "\"Sunday dinners\" (worker-rendered)", "", "RC-16")
+    s2.row("match", "body `notifications.push.dailyInvitation.body`", "\"What are you up to right now?\"", "rendered as sent", "", "")
+    s2.row("match", "tap → `app://daily?group=&invitation=`", "daily.capture", "asserted (FlowTests)", "", "")
+    out.append(s2)
+    s3 = Sheet("notifications.push", "Alerts are system-drawn with the worker's text; channels carry Retro-voice copy.",
+               ["notifications.push_new-post.png", "notifications.push_new-post-dark.png"], [f"{REF}/bereal/help/help-21089073691933_time-to-bereal-push.png"], "No Retro push render exists (Gap).")
+    s3.section("Presentation (Android)")
+    s3.row("match", "no `setColor` (Retro's tint not captured)", "system default", "NotificationAppearance.accentColor = null", "", "")
+    s3.row("match", "grouping `setGroup(group_id)`", "one stack per group", "AlertNotifier", "", "")
+    s3.row("match", "channels registered with `notifications.push.channel.*`", "New Posts, Post Activity, Weekly Recaps, …", "ChannelCopy.registerAll", "", "YearStory has no copy → not registered")
+    s3.row("approx", "small icon", "owner's monochrome glyph (BLOCKED)", "launcher icon fallback", "", "Gap")
+    out.append(s3)
+    return out
 
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    os.makedirs(SCRATCH, exist_ok=True)
-    results = {}
-    sheets = {"camera.capture": camera_capture(), "camera.sendto": camera_sendto(), "daily.capture": daily_capture(),
-              "daily.dualimage": daily_dualimage(), "collage.view": collage_view(), "collage.share": collage_share(),
-              "widget.arrival": widget_arrival(), "camera.fromwidget": camera_fromwidget()}
-    sheets.update(widgets())
-    sheets.update(notifications())
-
-    yope = ("auto", "yope", "frames")
-    pics = {
-        "camera.capture": (S("camera.capture_coach"), R(*yope, "a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png")),
-        "camera.sendto": (S("camera.sendto_voice-coach"), R(*yope, "a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png")),
-        "camera.fromwidget": (concat([S("widget.android_small_photo-caption"), S("camera.capture_live")], C("fromwidget"), height=1200), R("auto", "locket", "store", "locket-store-07.png")),
-        "widget.home.small": (S("widget.android_small_photo-caption"), R("auto", "locket", "store", "locket-store-03.png")),
-        "widget.home.medium": (S("widget.android_medium_photo-caption"), R("auto", "locket", "store", "locket-store-03.png")),
-        "widget.home.large": (S("widget.android_large_photo-caption"), R("auto", "locket", "store", "locket-store-06.png")),
-        "widget.android": (concat([S("widget.android_small_photo-caption"), S("widget.android_small_loading"), S("widget.android_small_empty"), S("widget.android_small_collage")], C("widget-android")),
-                           R("auto", "locket", "play", "locket-play-01.png")),
-        "widget.arrival": (concat([S("widget.arrival_before"), S("widget.arrival_after")], C("arrival")),
-                           concat([R("auto", "locket", "frames", "locket-tt-7168613044728155438-15.133s-widget-placeholder-just-added.jpg"),
-                                   R("auto", "locket", "frames", "locket-tt-7168613044728155438-15.167s-widget-photo-arrived.jpg")], C("arrival-ref"))),
-        "daily.notification": (S("daily.ongoing_notification"), R("auto", "bereal", "help", "help-21089073691933_time-to-bereal-push.png")),
-        "daily.ongoing": (S("daily.ongoing_notification"), R("auto", "bereal", "help", "help-21089073691933_time-to-bereal-push.png")),
-        "notifications.push": (S("notifications.push_new-post"), R("auto", "bereal", "help", "help-21089073691933_time-to-bereal-push.png")),
-        "daily.capture": (concat([S("daily.capture_live"), S("daily.capture_capturing"), S("daily.capture_preview")], C("daily")),
-                          concat([R("auto", "bereal", "frames", "appstore-preview-2026_t3.50s_capture.png"),
-                                  R("auto", "bereal", "frames", "tiktok-bereal-7339559678604627233_t17.63s_black-spinner-prompt.png"),
-                                  R("auto", "bereal", "frames", "tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png")], C("daily-ref"))),
-        "daily.dualimage": (S("daily.dualimage_component"), R("auto", "bereal", "help", "help-21083730354333_feed-bonus-3x.png")),
-        "collage.view": (S("collage.view_ready-pages"), R(*yope, "b-alexaa-7652512140875566349-t5.33-day-view-recap.png")),
-        "collage.share": (S("collage.view_ready"), R("auto", "yope", "store", "yope-store-04.png")),
-    }
-    for surface, sheet in sheets.items():
-        ours, ref = pics[surface]
-        side_by_side(surface, ours, ref, f"{surface} — Android (ours, left) vs reference")
-        header = HEADER + ["", f"Side by side: [`{surface}.android.png`]({surface}.android.png) — ours left ({os.path.basename(ours)}), reference right ({os.path.relpath(ref, ROOT)})."]
-        results[surface] = sheet.write(header)
-    for s, c in results.items():
-        print(s, c)
+    sheets = [camera_capture(), camera_sendto(), daily_capture(), daily_dualimage(), collage_view(), collage_view(share=True)]
+    refs_w = [f"{REF}/retro/apk/widget_preview_journals.webp", f"{REF}/retro/apk/widget_preview_friends.webp"]
+    sheets.append(widget("widget.android", "Retro's Glance widget (Albums variant: name over group), Locket's tap → camera.",
+                         ["widget.android_small_photo.png", "widget.android_small_photo-dark.png", "widget.android_small_empty.png", "widget.android_configure-groups.png"], refs_w, widget_android_extra))
+    for size in ["small", "medium", "large"]:
+        sheets.append(widget(f"widget.home.{size}", f"Android form of `widget.home.{size}`: one layout at every size (RC-11).",
+                             [f"widget.android_{size}_photo.png", f"widget.android_{size}_collage.png", f"widget.android_{size}_empty.png"], refs_w))
+    arr = Sheet("widget.arrival", "Glance swaps the content without a transition (`widget.arrival.duration.transition` 0).",
+                ["widget.arrival_before.png", "widget.arrival_after.png"],
+                [f"{REF}/locket/frames/locket-tt-7168613044728155438-15.133s-widget-placeholder-just-added.jpg", f"{REF}/locket/frames/locket-tt-7168613044728155438-15.167s-widget-photo-arrived.jpg"])
+    arr.section("Arrival")
+    arr.row("match", "new photo replaces the old in one update", "0 ms", "WidgetSnapshotTest.arrivalReplacesTheImageInOneUpdate", ev("widget.arrival.duration.transition"), "")
+    arr.row("match", "refresh notification channel `widget.arrival.android.*`, IMPORTANCE_MIN", "\"Background Work\"", "WidgetRefreshNotification", "", "was LOW")
+    arr.row("match", "hourly safety net `widget.android.duration.updatePeriod`", "3600000", "provider XML", "", "")
+    sheets.append(arr)
+    fw = Sheet("camera.fromwidget", "No screen of its own: the widget's tap opens `camera.capture` with the group preselected.",
+               ["widget.android_small_photo.png", "camera.capture_live.png"], [f"{REF}/locket/store/locket-store-07.png"])
+    fw.section("Route")
+    fw.row("match", "tap target `camera.fromwidget.layout.target`", "PendingIntent ACTION_VIEW app://camera?group=<id>", "WidgetTap.Camera → DeepLinkIntents", ev("camera.fromwidget.layout.target"), "")
+    fw.row("match", "group preselected in send-to", "context group", "FlowTests.widgetLinkOpensTheCamera…", "", "")
+    fw.row("match", "not set up / gone → configure; signed out → the app", "spec States", "WidgetTap.Configure / .App (WidgetSnapshotTest)", "", "")
+    fw.row("match", "`DeepLink.Camera` accepts no group (C-24)", "optional", "DeepLink.Camera(groupId: String? = null)", "", "already optional in core:model")
+    sheets.append(fw)
+    sheets += notifications()
+    for s in sheets:
+        total, counts = s.write()
+        print(f"{s.surface}: {total} checks {counts}")
 
 
 if __name__ == "__main__":

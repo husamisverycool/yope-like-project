@@ -19,6 +19,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.printToString
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performSemanticsAction
@@ -113,6 +115,7 @@ class SocialFlowTest {
         compose.waitForIdle()
         compose.onNodeWithContentDescription("Send").performClick()
         compose.waitForIdle()
+        println("TREE>>" + compose.onRoot(useUnmergedTree = true).printToString(maxDepth = 60))
         compose.onNodeWithText("Couldn't send. Tap to retry").assertExists().performClick()
         compose.waitForIdle()
         assertEquals(2, data.calls.count { it == "sendText:on my way:" })
