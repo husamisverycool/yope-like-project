@@ -67,8 +67,12 @@ function withoutFallback(svg: Buffer): Buffer {
   );
   fs.writeFileSync(path.join(dir, "in.svg"), svg);
   const script = `const sharp = require(${JSON.stringify(path.join(WEB, "node_modules", "sharp"))}); sharp(process.argv[1]).png().toFile(process.argv[2]).then(() => {}, (e) => { console.error(e); process.exit(1); });`;
-  execFileSync(process.execPath, ["-e", script, path.join(dir, "in.svg"), path.join(dir, "out.png")], { env: { ...process.env, FONTCONFIG_FILE: path.join(dir, "fonts.conf") } });
-  return fs.readFileSync(path.join(dir, "out.png"));
+  try {
+    execFileSync(process.execPath, ["-e", script, path.join(dir, "in.svg"), path.join(dir, "out.png")], { env: { ...process.env, FONTCONFIG_FILE: path.join(dir, "fonts.conf") } });
+    return fs.readFileSync(path.join(dir, "out.png"));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 async function raw(png: Buffer): Promise<Buffer> {
