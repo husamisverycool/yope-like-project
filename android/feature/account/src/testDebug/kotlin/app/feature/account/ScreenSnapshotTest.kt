@@ -394,6 +394,13 @@ class ScreenSnapshotTest {
     @Test fun inviteTurnOff() = snap("groups.invite", "turnOffAlert", content = inviteScreen(linkOn.copy(confirmTurnOff = true)))
     @Test fun inviteNoCover() = snap("groups.invite", "linkOn-noCover-family", content = inviteScreen(linkOn.copy(coverUrl = null, kind = GroupKind.Family, groupName = "Lima Family")))
 
+    // The QR card (owner decision 17): the recap preview over the sheet — the group's cover blurred, the card, Save, Share.
+    private val qrLink = "https://example.test/i/AbCdEfGhIjKlMnOpQrStUvWx"
+    private fun qrScreen(state: GroupInviteUiState) = @Composable { GroupInviteScreen(state, zone, GroupInviteActions(), qrLink = qrLink) }
+    @Test fun inviteQr() = snap("groups.invite", "qr", content = qrScreen(linkOn))
+    @Test fun inviteQrDark() = snap("groups.invite", "qr", dark = true, content = qrScreen(linkOn))
+    @Test fun inviteQrNoCover() = snap("groups.invite", "qr-noCover", content = qrScreen(linkOn.copy(coverUrl = null, groupName = "Lima Family")))
+
     // groups.screen ---------------------------------------------------------------------------------
     private val group = Group("g1", "Sunday Dinners", GroupKind.Friends, "covers/g1.jpg", "UTC", LocalTime.of(9, 0), LocalTime.of(21, 0), false, "u-me", now.minusSeconds(40 * 86400L), now)
     private val members = listOf(photo("avatar-01"), photo("avatar-02"), photo("avatar-06"), photo("avatar-04"), null, photo("avatar-09"))

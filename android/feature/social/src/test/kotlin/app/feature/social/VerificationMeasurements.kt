@@ -297,7 +297,7 @@ class VerificationMeasurements {
         for (dark in listOf(false, true)) {
             val p = if (dark) "dark." else ""
             render(people, dark) { WallsBrowseContent(browse, wallNav, {}, {}) }
-            box("${p}browse.title", text("Friends"))
+            box("${p}browse.title", text("Members"))
             box("${p}browse.search", desc("Search", false))
             box("${p}browse.cell1", desc("Ana Lima's profile", false))
             box("${p}browse.cell2", desc("Ben Okafor's profile", false))

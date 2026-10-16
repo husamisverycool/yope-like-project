@@ -353,8 +353,8 @@ class SocialFlowTest {
         assertEquals(listOf("Move photo right"), actions(0))
         assertEquals(listOf("Move photo left", "Move photo right"), actions(1))
         // "Move photo right" on the first tile swaps it with the second.
-        val first = compose.onAllNodes(withActions).onFirst()
-        first.performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.CustomActions) { list -> list.single { it.label == "Move photo right" }.action() }
+        val firstTile = compose.onAllNodes(withActions).onFirst().fetchSemanticsNode()
+        compose.runOnIdle { firstTile.config[androidx.compose.ui.semantics.SemanticsActions.CustomActions].single { it.label == "Move photo right" }.action() }
         compose.waitForIdle()
         assertEquals(listOf(order[1], order[0]) + order.drop(2), vm.state.value.checked)
     }

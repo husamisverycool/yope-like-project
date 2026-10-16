@@ -21,7 +21,10 @@ Placeholders used below:
 1. **App name** (`APP_DISPLAY_NAME`). Every string that names the app uses `{app_name}`; the app
    cannot ship until this is set (it is the one BLOCKED copy value by design).
 2. **App icon.** The directive forbids us from inventing imagery; provide a 1024×1024 PNG
-   (no transparency) at `config/AppIcon-1024.png`, or ask for one to be commissioned.
+   (no transparency) at `config/AppIcon-1024.png`, or ask for one to be commissioned. When it is added to iOS as an
+   `AppIcon.appiconset` in `ios/App/Resources/Assets.xcassets`, set `ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon` in
+   `ios/project.yml` (App target → `settings.base`; it is `""` until then so the catalog of template covers builds without
+   an icon set).
 3. **Same-moment collage option** — pick one of the options in `design/collage-options/`.
 4. **Premium price** — default in `config/app.json`: $3.99/month, $35.99/year. Change if you want.
 5. **Free history window** — see "Open decisions" in the final session report: the spec asks for

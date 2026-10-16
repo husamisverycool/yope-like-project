@@ -78,6 +78,24 @@ final class CodingTests: XCTestCase {
         XCTAssertEqual(decoded.wakingEnd, LocalTime(hour: 21, minute: 30))
     }
 
+    func testVoiceLevelsDecodeAndOlderRowsWithoutThem() throws {
+        let levels = (0..<100).map { $0 % 32 }
+        let json = """
+        {"id":"0f8fad5b-d9cb-469f-a165-70867728950f","group_id":"9f1c1d2e-0000-4000-8000-000000000001",
+         "author_id":"9f1c1d2e-0000-4000-8000-000000000002","kind":"voice","body":null,"post_id":null,
+         "voice_path":"u/x/voice/a.m4a","voice_duration_ms":4100,"voice_levels":\(levels),
+         "reply_to_post_id":null,"reply_to_message_id":null,"created_at":"2026-10-16T08:00:00+00:00"}
+        """
+        let message = try DataCoding.makeDecoder().decode(Message.self, from: Data(json.utf8))
+        XCTAssertEqual(message.voiceLevels, levels)
+        let older = json.replacingOccurrences(of: #""voice_levels":\#(levels),"#, with: "")
+        XCTAssertNil(try DataCoding.makeDecoder().decode(Message.self, from: Data(older.utf8)).voiceLevels)
+        let none = json.replacingOccurrences(of: #""voice_levels":\#(levels),"#, with: #""voice_levels":null,"#)
+        XCTAssertNil(try DataCoding.makeDecoder().decode(Message.self, from: Data(none.utf8)).voiceLevels)
+        XCTAssertEqual(AnyJSON.levels([3, 31]), .array([.integer(3), .integer(31)]))
+        XCTAssertEqual(AnyJSON.levels(nil), .null)
+    }
+
     func testCollagePagesAndOlderRowsWithoutPageCount() throws {
         let json = """
         {"id":"c1","group_id":"g1","invitation_id":null,"option":"B","post_ids":["p1"],"page_count":3,
