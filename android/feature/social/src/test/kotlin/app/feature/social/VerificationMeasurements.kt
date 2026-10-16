@@ -3,13 +3,20 @@ package app.feature.social
 import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onAllNodes
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.DpRect
@@ -105,18 +112,35 @@ class VerificationMeasurements {
         bitmap = compose.onRoot().captureToImage().asAndroidBitmap()
     }
 
-    private fun desc(text: String, substring: Boolean = true): SemanticsNodeInteraction =
-        compose.onAllNodesWithContentDescription(text, substring = substring, useUnmergedTree = true).onFirst()
+    private fun desc(text: String, substring: Boolean = true, index: Int = 0): SemanticsNodeInteraction =
+        compose.onAllNodesWithContentDescription(text, substring = substring, useUnmergedTree = true)[index]
 
     private fun text(text: String): SemanticsNodeInteraction = compose.onAllNodesWithText(text, useUnmergedTree = true).onFirst()
 
+    /** A button by its label: the merged (clickable) node, so the bounds are the control's, not its text's. */
+    private fun button(text: String): SemanticsNodeInteraction = compose.onAllNodesWithText(text, useUnmergedTree = false).onFirst()
+
+    /** The [index]th checkbox (week.edit grid cells). */
+    private fun checkbox(index: Int): SemanticsNodeInteraction =
+        compose.onAllNodes(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Checkbox), useUnmergedTree = true)[index]
+
     private fun tag(tag: String): SemanticsNodeInteraction = compose.onAllNodesWithTag(tag, useUnmergedTree = true).onFirst()
 
+    /** Bounds in dp; for a text node also its first and last baselines (dp from the screen top). */
     private fun box(name: String, n: SemanticsNodeInteraction) {
         val r: DpRect = runCatching { n.getBoundsInRoot() }.getOrNull() ?: return
+        val layout = runCatching {
+            val results = mutableListOf<TextLayoutResult>()
+            n.fetchSemanticsNode().config.getOrNull(SemanticsActions.GetTextLayoutResult)?.action?.invoke(results)
+            results.firstOrNull()
+        }.getOrNull()
         out[name] = buildJsonObject {
             put("left", r.left.value); put("top", r.top.value); put("right", r.right.value); put("bottom", r.bottom.value)
             put("width", (r.right - r.left).value); put("height", (r.bottom - r.top).value)
+            if (layout != null) {
+                put("baseline", r.top.value + layout.firstBaseline / density)
+                put("lastBaseline", r.top.value + layout.lastBaseline / density)
+            }
         }
     }
 

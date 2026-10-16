@@ -233,9 +233,7 @@ def denied_block(surface):
             rows.append(("glyph size", "size.global.emptyIcon", t("size.global.emptyIcon"), max(glyph[2] - glyph[0], glyph[3] - glyph[1]), {"tol": 3.0, "note": "the Material glyph's ink inside its 22 dp box"}))
         if glyph and title:
             rows.append(("glyph → title (cap top)", "size.global.emptyIconToTitle", t("size.global.emptyIconToTitle"), title[1] - glyph[3], {"tol": 3.0, "note": "measured glyph ink bottom → title ink top"}))
-        outline = M.extent(im, light_ink, (60, 560, 333, 700))
         rows.append(("title / outline capsule colour", "color.global.textOnMedia", t("color.global.textOnMedia"), color_at(im, (title[0] + 1) if title else 0, (title[1] + title[3]) / 2) if title else None, {"status": "approx", "note": "sampled on a glyph; anti-aliasing lowers the peak"}))
-        _ = outline
         return [(f"Denied block ({surface}/denied-light)", rows)]
     return run
 
@@ -258,25 +256,17 @@ def groups_list():
     title = line_box(im, (0, 20, 300, 120), dark_ink)
     rows = [("title baseline below the safe-area top", "size.global.titleTop", t("size.global.titleTop"), title[3] if title else None, {"tol": 1.5}),
             ("title leading inset (ink)", "size.global.screenMargin", t("size.global.screenMargin"), title[0] if title else None, {"tol": 2.0})]
-    thumbs = []
-    y = 100
-    while y < 700 and len(thumbs) < 3:
-        runs = [r for r in M.row_runs(im, y, lambda p: max(p[:3]) - min(p[:3]) > 25 or max(p[:3]) < 200, 0, 120) if r[1] - r[0] >= 60]
-        if runs:
-            b = M.extent(im, lambda p: max(p[:3]) < 252, (0, y - 1, 110, y + 110))
-            top = y
-            bottom = next(yy for yy in [y + i * 0.5 for i in range(400)] if not [r for r in M.row_runs(im, yy, lambda p: max(p[:3]) < 252, 0, 120) if r[1] - r[0] >= 60])
-            thumbs.append((runs[0][0], top, runs[0][1], bottom))
-            y = bottom + 2
-        else:
-            y += 0.5
+    # Cover thumbnails: runs down a column through them (anything that is not the white page).
+    thumbs = M.col_runs(im, 50, lambda p: max(p[:3]) < 250, 90, 560, min_len=40)
     if thumbs:
         th = thumbs[0]
-        rows += [("cover thumbnail width", "size.global.rowThumbWidth", t("size.global.rowThumbWidth"), th[2] - th[0], {"tol": 1.0}),
-                 ("cover thumbnail height", "size.global.rowThumbHeight", t("size.global.rowThumbHeight"), th[3] - th[1], {"tol": 1.0}),
-                 ("thumbnail leading inset", "size.global.screenMargin", t("size.global.screenMargin"), th[0], {"tol": 1.0})]
+        left = M.row_runs(im, (th[0] + th[1]) / 2, lambda p: max(p[:3]) < 250, 0, 120, min_len=40)
+        rows.append(("cover thumbnail height", "size.global.rowThumbHeight", t("size.global.rowThumbHeight"), th[1] - th[0], {"tol": 1.0}))
+        if left:
+            rows += [("cover thumbnail width", "size.global.rowThumbWidth", t("size.global.rowThumbWidth"), left[0][1] - left[0][0], {"tol": 1.0}),
+                     ("thumbnail leading inset", "size.global.screenMargin", t("size.global.screenMargin"), left[0][0], {"tol": 1.0})]
     if len(thumbs) > 1:
-        rows.append(("row pitch − thumbnail height (gap)", "size.global.listGap", t("size.global.listGap"), thumbs[1][1] - thumbs[0][3], {"tol": 1.5}))
+        rows.append(("gap between rows (thumbnail to thumbnail)", "size.global.listGap", t("size.global.listGap"), thumbs[1][0] - thumbs[0][1], {"tol": 1.5}))
     return [("List (groups.list/default-light)", rows)]
 
 

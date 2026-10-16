@@ -142,7 +142,7 @@ fun MessageField(
             Row(Modifier.weight(1f).heightIn(min = height), verticalAlignment = Alignment.CenterVertically, content = recording)
         } else {
             Spacer(Modifier.width(Tokens.Sizes.chatComposerDimensionAvatarInset))
-            PersonAvatar(avatarPath, Tokens.Sizes.globalAvatarComment, Modifier.padding(top = avatarTop))
+            PersonAvatar(avatarPath, Tokens.Sizes.globalAvatarComment, Modifier.padding(top = avatarTop).testTag("message.avatar"))
             Spacer(Modifier.width(Tokens.Sizes.chatComposerDimensionAvatarToText))
             BasicTextField(
                 value = value,

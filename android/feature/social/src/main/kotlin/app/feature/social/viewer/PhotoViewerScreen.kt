@@ -307,7 +307,7 @@ private fun ViewerHeaderRow(state: ViewerState, nav: ViewerNav) {
                 .semantics(mergeDescendants = true) { heading() },
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            PersonAvatar(photo?.author?.avatarPath, Tokens.Sizes.globalAvatarHeader)
+            PersonAvatar(photo?.author?.avatarPath, Tokens.Sizes.globalAvatarHeader, Modifier.testTag("viewer.avatar"))
             Spacer(Modifier.width(Tokens.Sizes.photoViewerDimensionHeaderAvatarToText))
             Column {
                 Text(photo?.author?.displayName.orEmpty(), style = TextRoles.listTitle, color = Tokens.Colors.globalTextOnMedia, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.endAtLastBaseline())
