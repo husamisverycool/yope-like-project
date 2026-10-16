@@ -32,6 +32,7 @@ NOTES = {
     ("*", "auth.agegate.layout.optIn"): (B, "C-14 single-row group with an M3 Switch under the field", ""),
     ("*", "auth.profile.layout.avatarPicker"): (B, "ActivityResultContracts.PickVisualMedia (single image), no permission", "PLATFORM"),
     ("*", "onboarding.permission.notifications.layout.preAlert"): (B, "OnboardingForm page (title, explanation, capsule + 'Maybe later' link on API 33+)", ""),
+    ("*", "haptic.global.shutter"): (NA, "no haptic (the value is none); the shutter is camera.capture's", "capture pass"),
     ("*", "onboarding.permission.camera.layout.request"): (NA, "camera.capture requests CAMERA on first open (capture pass)", "another pass's surface"),
     ("*", "onboarding.permission.photos.layout.request"): (B, "pickers need no permission (PickVisualMedia); API 29+ MediaStore saves need none", "PLATFORM"),
     ("*", "icon.global.download"): (B, "the denied-save block's glyph (drawn by photo.viewer, social pass; rendered here as the same composition)", ""),

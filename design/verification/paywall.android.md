@@ -8,16 +8,20 @@ Side by side: [`paywall.android.png`](paywall.android.png) — ours left (`paywa
 
 States rendered (`android/feature/account/src/test/snapshots/paywall/`): `default-dark`, `default-light`, `default-noPhoto-historyLimited-light`, `loading-light`, `nothingToRestore-light`, `offline-light`, `pending-light`, `productsUnavailable-light`, `purchaseFailed-light`, `purchasing-light`, `welcome-light`, `welcome-restored-light`.
 
-**Result: 66 checks — 55 match, 6 MISS, 2 BLOCKED, 3 n/a.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 70 checks — 63 match, 2 MISS, 2 BLOCKED, 3 n/a.** (`match` includes measured, token, behaviour and copy rows.)
 
 ## Default (paywall/default-light, -dark)
 
 | status | token / copy | expected (spec) | ours | reference evidence | note |
 |---|---|---|---|---|---|
-| MISS | plan card leading inset (light): `size.global.buttonMarginH` | 20 | 37 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
-| MISS | plan card fill (light; light in both appearances): `paywall.layout.planCard` | #FFFFFF | #20140A | references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png card x 60–1144… |  |
-| MISS | plan card leading inset (dark): `size.global.buttonMarginH` | 20 | 37 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
-| MISS | plan card fill (dark; light in both appearances): `paywall.layout.planCard` | #FFFFFF | #20140A | references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png card x 60–1144… |  |
+| match | plan card leading inset (light): `size.global.buttonMarginH` | 20 | 20 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
+| match | plan card fill (light; light in both appearances): `paywall.layout.planCard` | #FFFFFF | #FFFFFF | references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png card x 60–1144… |  |
+| match | Continue height (light): `size.global.buttonHeight` | 60 | 60 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png y2032–2211 (180… |  |
+| match | Continue fill (light): `color.global.onSurfaceLight` | #000000 | #000000 | references/auto/retro/press/tc-2023-12-recaps.png 'Share' label; references/aut… |  |
+| match | plan card leading inset (dark): `size.global.buttonMarginH` | 20 | 20 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
+| match | plan card fill (dark; light in both appearances): `paywall.layout.planCard` | #FFFFFF | #FFFFFF | references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png card x 60–1144… |  |
+| match | Continue height (dark): `size.global.buttonHeight` | 60 | 60 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png y2032–2211 (180… |  |
+| match | Continue fill (dark): `color.global.onSurfaceLight` | #000000 | #000000 | references/auto/retro/press/tc-2023-12-recaps.png 'Share' label; references/aut… |  |
 
 ## Tokens named in the spec
 

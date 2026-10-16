@@ -8,7 +8,7 @@ Side by side: [`settings.root.android.png`](settings.root.android.png) — ours 
 
 States rendered (`android/feature/account/src/test/snapshots/settings.root/`): `default-dark`, `default-light`, `permissionsDenied-scrolled-light`, `signOutAlert-light`, `signingOut-scrolled-light`, `subscriber-annual-light`, `subscriptionLoading-light`.
 
-**Result: 45 checks — 41 match, 1 MISS, 1 BLOCKED, 2 n/a.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 45 checks — 42 match, 1 BLOCKED, 2 n/a.** (`match` includes measured, token, behaviour and copy rows.)
 
 ## List (settings.root/default)
 
@@ -20,7 +20,7 @@ States rendered (`android/feature/account/src/test/snapshots/settings.root/`): `
 | match | grouped row fill: `color.global.surfaceSecondary.android` | #F7F7F7 | #F7F7F7 | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt vv3.l / vv3.f… |  |
 | match | grouped row (dark) fill: `color.global.surfaceSecondary.android` | #262626 | #262626 | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt vv3.l / vv3.f… |  |
 | match | page (dark): `color.global.background.android` | #1C1C1E | #1C1C1E | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Retro palett… |  |
-| MISS | single-row group height (smallest group): `settings.root.size.rowHeight` | 58.7 | 41 | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2 (grouped ro… |  |
+| match | single-row group height (smallest group): `settings.root.size.rowHeight` | 58.7 | 58.5 | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2 (grouped ro… |  |
 
 ## Tokens named in the spec
 

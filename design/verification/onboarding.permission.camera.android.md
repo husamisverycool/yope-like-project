@@ -8,7 +8,7 @@ Side by side: [`onboarding.permission.camera.android.png`](onboarding.permission
 
 States rendered (`android/feature/account/src/test/snapshots/onboarding.permission.camera/`): `denied-dark`, `denied-light`, `rationale-light`.
 
-**Result: 25 checks — 20 match, 1 approx, 3 n/a, 1 UNREVIEWED.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 25 checks — 20 match, 1 approx, 4 n/a.** (`match` includes measured, token, behaviour and copy rows.)
 
 ## Denied block (onboarding.permission.camera/denied-light)
 
@@ -35,7 +35,7 @@ States rendered (`android/feature/account/src/test/snapshots/onboarding.permissi
 | match (token) | `duration.global.fade` | 150 ms | Tokens.Durations.globalFade | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'APP-CODE MOT… |  |
 | match (token) | `easing.global.standard` | x1: 0.4; y1: 0; x2: 0.2; y2: 1 | Tokens.Easings.globalStandard | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt qh4.a FastOut… |  |
 | match (token) | `haptic.global.tap` | VIRTUAL_KEY | Tokens.Layouts.GlobalTap | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Tap haptic w… |  |
-| UNREVIEWED | `haptic.global.shutter` | none | not referenced | HIG Playing haptics: 'Ensure that haptic vibrations don't disrupt experiences i… |  |
+| n/a | `haptic.global.shutter` | none | no haptic (the value is none); the shutter is camera.capture's | HIG Playing haptics: 'Ensure that haptic vibrations don't disrupt experiences i… | capture pass |
 
 ## Copy named in the spec
 

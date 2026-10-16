@@ -313,7 +313,8 @@ def widget():
     col = [max(cols, key=lambda c: c[1] - c[0])] if cols else []
     if col:
         mid = (col[0][0] + col[0][1]) / 2
-        row = [r for r in M.row_runs(im, mid, notpage, min_len=100)]
+        ext = M.extent(im, notpage, (100, mid - 0.5, 293, mid + 0.5))
+        row = [(ext[0], ext[2])] if ext else []
         rows += [("preview tile height (tallest clean column)", "onboarding.widget.size.preview", t("onboarding.widget.size.preview"), col[0][1] - col[0][0], {"tol": 2.0}),
                  ("preview tile width", "onboarding.widget.size.preview", t("onboarding.widget.size.preview"), row[0][1] - row[0][0] if row else None, {"tol": 2.0}),
                  ("preview centred", "onboarding.widget.size.preview", M.W / 2, (row[0][0] + row[0][1]) / 2 if row else None, {"tol": 1.5})]
@@ -434,7 +435,8 @@ def settings_rows_height(surface, state):
             b = wide_fill(im, fill, y, 845, min_w=300, tol=2)
             if not b:
                 break
-            heights.append(b["height"])
+            if b["bottom"] < 850:  # a group cut by the screen edge is not a whole group
+                heights.append(b["height"])
             y = b["bottom"] + 2
         if heights:
             sections[0][1].append(("single-row group height (smallest group)", "settings.root.size.rowHeight", t("settings.root.size.rowHeight"), min(heights), {"tol": 1.5}))

@@ -8,7 +8,7 @@ Side by side: [`onboarding.widget.android.png`](onboarding.widget.android.png) �
 
 States rendered (`android/feature/account/src/test/snapshots/onboarding.widget/`): `default-dark`, `default-light`, `fromSettings-light`, `noPhotoYet-light`.
 
-**Result: 44 checks — 40 match, 2 MISS, 2 n/a.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 44 checks — 42 match, 2 n/a.** (`match` includes measured, token, behaviour and copy rows.)
 
 ## Page (default-light)
 
@@ -18,8 +18,8 @@ States rendered (`android/feature/account/src/test/snapshots/onboarding.widget/`
 | match | title leading inset (ink): `size.global.screenMargin` | 16 | 16.5 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… | the first glyph's side bearing (≈ 1 dp) is inside the measure |
 | match | page: `color.global.background.android` | #FFFFFF | #FFFFFF | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Retro palett… |  |
 | match | preview tile height (tallest clean column): `onboarding.widget.size.preview` | 158 | 158 | references/auto/retro/apk/widget_preview_friends.webp (158 × 158 px at mdpi = 1… |  |
-| MISS | preview tile width: `onboarding.widget.size.preview` | 158 | — | references/auto/retro/apk/widget_preview_friends.webp (158 × 158 px at mdpi = 1… |  |
-| MISS | preview centred: `onboarding.widget.size.preview` | 196.5 | — | references/auto/retro/apk/widget_preview_friends.webp (158 × 158 px at mdpi = 1… |  |
+| match | preview tile width: `onboarding.widget.size.preview` | 158 | 158 | references/auto/retro/apk/widget_preview_friends.webp (158 × 158 px at mdpi = 1… |  |
+| match | preview centred: `onboarding.widget.size.preview` | 196.5 | 196.5 | references/auto/retro/apk/widget_preview_friends.webp (158 × 158 px at mdpi = 1… |  |
 | match | Add Widget height: `size.global.buttonHeight` | 60 | 60 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png y2032–2211 (180… |  |
 | match | Add Widget side inset: `size.global.buttonMarginH` | 20 | 20.5 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
 | match | Add Widget corner radius: `radius.global.button` | 30 | 29.03 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png, references/aut… |  |
