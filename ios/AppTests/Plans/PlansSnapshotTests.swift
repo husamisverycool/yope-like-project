@@ -248,12 +248,13 @@ final class PlansSnapshotTests: XCTestCase {
 
     /// The widget: container background + overlay, clipped like the system container (Retro's widget corner
     /// `widget.android.radius.widget` for the comp, as the group-photo widget's snapshots), on `color.global.controlRaised`.
+    /// The background goes behind the overlay's frame, as WidgetKit's container background does: in a ZStack an
+    /// aspect-filled photo taller than the widget grew the stack and pushed the text out of the clip (run 91's medium
+    /// snapshots showed the photo alone).
     private func widget(_ content: PlanCountdownContent, size: CGSize, medium: Bool) -> some View {
-        ZStack {
-            PlanCountdownBackground(content: content)
-            PlanCountdownOverlay(content: content, showsGroup: medium)
-        }
-        .frame(width: size.width, height: size.height)
+        PlanCountdownOverlay(content: content, showsGroup: medium)
+            .frame(width: size.width, height: size.height)
+            .background { PlanCountdownBackground(content: content) }
         .clipShape(RoundedRectangle(cornerRadius: Tokens.Radii.widgetAndroidRadiusWidget, style: .continuous))
         .padding(Tokens.Sizes.globalScreenMargin)
         .background(Tokens.Colors.globalControlRaised)
