@@ -161,36 +161,49 @@ struct SendToView: View {
     }
 
     /// The message pill (C-09 on media: `icon.global.edit` + "Add a message" / "Edit message") then, `size.global.pillGap`
-    /// after it, the voice capsule. While a voice note records (or a draft is paused) the recording capsule takes the
-    /// pill's place (chat.voice).
+    /// after it, the voice capsule. While a voice note records the recording capsule takes the pill's place (chat.voice);
+    /// locked or paused it spans the photo's width less `size.global.pillGap` on each side, the voice capsule and the gap
+    /// (its waveform takes what is left). A kept note is the note capsule (C-36 waveform) `size.global.pillGap` above the
+    /// pair (`camera.sendto.layout.messageField` `.note`).
     private var pillRow: some View {
-        HStack(spacing: Tokens.Sizes.globalPillGap) {
-            ZStack {
-                if model.voicePhase == .idle {
-                    LightPill(model.hasMessage ? Copy.cameraSendtoMessageEdit : Copy.cameraSendtoMessageAdd, icon: Tokens.Icons.globalEdit, style: .dark) {
-                        isEditingMessage = true
-                    }
-                    .contentTransition(.opacity)
-                    .dsAnimation(ComponentMotion.crossfade, value: model.hasMessage)
-                    .disabled(model.isSending)
+        let recordingWidth = Preview.width - 2 * Tokens.Sizes.globalPillGap - Tokens.Sizes.globalIconPillWidth - Tokens.Sizes.globalPillGap
+        let fillsWidth = model.voicePhase == .locked || model.voicePhase == .paused
+        return VStack(spacing: Tokens.Sizes.globalPillGap) {
+            if let note = model.voiceNote {
+                SendToVoiceNoteCapsule(model: model, note: note)
                     .accessibilitySortPriority(7)
-                    .accessibilityIdentifier("camera.sendto.message")
                     .dsTransition(.opacity)
-                } else {
-                    SendToRecordingCapsule(model: model, slide: voiceSlide)
-                        .dsTransition(.opacity)
-                }
             }
-            .dsAnimation(ComponentMotion.fade, value: model.voicePhase == .idle)
-            // The recording capsule can take the photo's width less the voice capsule and the gap; sliding left past
-            // half of it cancels (chat.voice "slide left past the hint").
-            SendToVoiceCapsule(
-                model: model,
-                rowWidth: Preview.width - Tokens.Sizes.globalIconPillWidth - Tokens.Sizes.globalPillGap,
-                slide: $voiceSlide
-            )
-            .accessibilitySortPriority(6)
+            HStack(spacing: Tokens.Sizes.globalPillGap) {
+                ZStack {
+                    if model.voicePhase == .idle {
+                        LightPill(model.hasMessage ? Copy.cameraSendtoMessageEdit : Copy.cameraSendtoMessageAdd, icon: Tokens.Icons.globalEdit, style: .dark) {
+                            isEditingMessage = true
+                        }
+                        .contentTransition(.opacity)
+                        .dsAnimation(ComponentMotion.crossfade, value: model.hasMessage)
+                        .disabled(model.isSending)
+                        .accessibilitySortPriority(7)
+                        .accessibilityIdentifier("camera.sendto.message")
+                        .dsTransition(.opacity)
+                    } else {
+                        SendToRecordingCapsule(model: model, slide: voiceSlide)
+                            .frame(width: fillsWidth ? recordingWidth : nil)
+                            .dsTransition(.opacity)
+                    }
+                }
+                .dsAnimation(ComponentMotion.fade, value: model.voicePhase == .idle)
+                // The recording capsule can take the photo's width less the voice capsule and the gap; sliding left past
+                // half of it cancels (chat.voice "slide left past the hint").
+                SendToVoiceCapsule(
+                    model: model,
+                    rowWidth: Preview.width - Tokens.Sizes.globalIconPillWidth - Tokens.Sizes.globalPillGap,
+                    slide: $voiceSlide
+                )
+                .accessibilitySortPriority(6)
+            }
         }
+        .dsAnimation(ComponentMotion.fade, value: model.voiceNote != nil)
     }
 
     @ViewBuilder

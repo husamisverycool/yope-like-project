@@ -70,7 +70,7 @@ enum SocialDemo {
 
     static func post(
         _ id: PostID, by author: UserID, at date: Date, in group: GroupID = groupID, caption: String? = nil,
-        voiceMs: Int? = nil, kind: MediaKind = .photo, media: MediaID? = nil, replyTo: PostID? = nil
+        voiceMs: Int? = nil, voiceLevels: [Int]? = nil, kind: MediaKind = .photo, media: MediaID? = nil, replyTo: PostID? = nil
     ) -> PostWithMedia {
         let mediaID = media ?? Self.mediaID(id)
         let path = "fake/photo/\(mediaID.rawValue.suffix(2))"
@@ -78,7 +78,7 @@ enum SocialDemo {
             post: Post(
                 id: id, mediaID: mediaID, groupID: group, authorID: author, caption: caption,
                 voicePath: voiceMs.map { _ in "fake/voice/\(id.rawValue.suffix(2))" }, voiceDurationMs: voiceMs,
-                replyToPostID: replyTo, createdAt: date
+                voiceLevels: voiceLevels, replyToPostID: replyTo, createdAt: date
             ),
             media: Media(
                 id: mediaID, ownerID: author, kind: kind, originalPath: path,
@@ -94,16 +94,31 @@ enum SocialDemo {
 
     static func message(
         _ n: Int, by author: UserID, at date: Date, text: String? = nil, post: PostID? = nil, voiceMs: Int? = nil,
-        replyTo: PostID? = nil, replyToMessage: MessageID? = nil, in group: GroupID = groupID
+        voiceLevels: [Int]? = nil, replyTo: PostID? = nil, replyToMessage: MessageID? = nil, in group: GroupID = groupID
     ) -> Message {
         let kind: MessageKind = post != nil ? .photo : (voiceMs != nil ? .voice : .text)
         return Message(
             id: messageID(n),
             groupID: group, authorID: author, kind: kind, body: text, postID: post,
-            voicePath: voiceMs.map { _ in "fake/voice/m\(n)" }, voiceDurationMs: voiceMs,
+            voicePath: voiceMs.map { _ in "fake/voice/m\(n)" }, voiceDurationMs: voiceMs, voiceLevels: voiceLevels,
             replyToPostID: replyTo, replyToMessageID: replyToMessage, createdAt: date
         )
     }
+
+    /// Sample waveforms (100 levels of 0…31, C-36): 38 s of speech-like peaks — syllables in words, pauses between —
+    /// reduced with `VoiceLevels.reduce` (demo data, not a design value).
+    static let voiceLevelsMessage = [
+        23, 25, 26, 14, 10, 21, 22, 22, 23, 0, 15, 18, 12, 11, 3, 15, 31, 15, 4, 20, 31, 10, 16, 0, 31, 14, 21, 31, 1, 12, 15, 31,
+        31, 7, 4, 24, 25, 31, 11, 0, 13, 22, 0, 19, 27, 31, 14, 0, 0, 24, 31, 14, 31, 31, 0, 27, 18, 12, 31, 0, 0, 16, 17, 27,
+        0, 0, 21, 31, 30, 26, 0, 0, 0, 27, 29, 28, 0, 31, 20, 31, 22, 0, 0, 14, 16, 24, 9, 0, 28, 24, 21, 19, 0, 0, 0, 18,
+        21, 31, 19, 0,
+    ] // provenance-ok: demo data (sample voice levels)
+    static let voiceLevelsNote = [
+        26, 29, 26, 31, 31, 25, 18, 1, 10, 12, 9, 0, 0, 21, 17, 15, 31, 22, 17, 1, 0, 0, 18, 23, 0, 0, 31, 31, 26, 0, 31, 21,
+        14, 19, 0, 0, 28, 31, 31, 25, 0, 0, 20, 21, 14, 11, 1, 5, 22, 18, 0, 0, 17, 31, 31, 0, 23, 31, 10, 31, 1, 14, 23, 31,
+        20, 31, 21, 28, 19, 0, 0, 28, 31, 18, 0, 18, 31, 11, 0, 17, 17, 30, 18, 31, 0, 0, 17, 31, 31, 15, 1, 0, 0, 22, 25, 0,
+        0, 3, 24, 21,
+    ] // provenance-ok: demo data (sample voice levels)
 
     static func tag(_ post: PostID, _ user: UserID, minutes: Double) -> PostTag {
         PostTag(postID: post, userID: user, groupID: groupID, createdAt: monday.addingTimeInterval(minutes * 60))
@@ -116,7 +131,7 @@ enum SocialDemo {
     static var posts: [PostWithMedia] {
         [
             post(p1, by: ben, at: monday.addingTimeInterval(1 * hour)),
-            post(p2, by: ana, at: monday.addingTimeInterval(1 * day + 10 * hour), caption: "first snow", voiceMs: 38_000),
+            post(p2, by: ana, at: monday.addingTimeInterval(1 * day + 10 * hour), caption: "first snow", voiceMs: 38_000, voiceLevels: voiceLevelsNote),
             post(p3, by: me, at: monday.addingTimeInterval(2 * day + 4 * hour)),
             post(p3b, by: me, at: monday.addingTimeInterval(2 * day + 4 * hour), in: otherGroupID, media: mediaID(p3)),
             post(p4, by: cleo, at: monday.addingTimeInterval(3 * day + 8 * hour), kind: .livePhoto),
@@ -131,7 +146,7 @@ enum SocialDemo {
             message(2, by: ana, at: monday.addingTimeInterval(0.3 * hour), text: "i can do pasta"),
             message(3, by: ben, at: monday.addingTimeInterval(1 * hour), post: p1),
             message(4, by: me, at: monday.addingTimeInterval(1.2 * hour), text: "yes please"),
-            message(5, by: me, at: monday.addingTimeInterval(1.3 * hour), voiceMs: 38_000),
+            message(5, by: me, at: monday.addingTimeInterval(1.3 * hour), voiceMs: 38_000, voiceLevels: voiceLevelsMessage),
             message(6, by: ana, at: monday.addingTimeInterval(1 * day + 10 * hour), post: p2),
             message(7, by: ben, at: monday.addingTimeInterval(1 * day + 11 * hour), text: "so pretty", replyTo: p2),
             message(8, by: me, at: monday.addingTimeInterval(2 * day + 4 * hour), post: p3),

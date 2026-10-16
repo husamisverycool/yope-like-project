@@ -167,7 +167,7 @@ class WidgetSnapshotTest {
         snap("widget.android_keyguard_collage", render(hub, "g2"))
         snap("widget.android_keyguard_empty", render(hub, "g3"))
         meta.setSignedOut(true)
-        snap("widget.android_keyguard_signedout", render(hub, "g1"))
+        snap("widget.android_keyguard_signedout", render(hub, "g3"))
     }
 
     @Test fun stateRulesTapTargetsAndTheWidgetLabel() {

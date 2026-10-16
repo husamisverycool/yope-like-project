@@ -316,9 +316,15 @@ final class SocialSnapshotTests: XCTestCase {
         holding.showRecordingForSnapshot(.holding)
         record(composer(holding), "chat.voice", "recording")
 
+        // Locked (`chat.voice.layout.locked`): the live waveform in the field, delete · pause · send under it.
         let locked = SocialVoiceRecorder()
-        locked.showRecordingForSnapshot(.locked)
-        record(composer(locked), "chat.voice", "recording-locked")
+        locked.showRecordingForSnapshot(.locked, elapsedMs: 7_000, levels: SocialDemo.voiceLevelsMessage)
+        record(composer(locked), "chat.voice", "recording-locked", both)
+
+        // Paused draft, previewing part-way: preview glyph · played / unplayed bars · elapsed; delete · continue · send.
+        let paused = SocialVoiceRecorder()
+        paused.showRecordingForSnapshot(.paused, elapsedMs: 11_000, levels: SocialDemo.voiceLevelsNote, previewProgress: 0.45)
+        record(composer(paused), "chat.voice", "recording-paused", both)
 
         // The audio could not be fetched: `chat.voice.error.play` in the capsule.
         let broken = use(SocialDemo.makeData())

@@ -235,7 +235,9 @@ final class FakeCaptureVoiceRecorder: CaptureVoiceRecorder {
     private(set) var isPlaying = false
     private(set) var playedFiles: [URL] = []
     private(set) var playingFile: URL?
-    var playbackProgress: Double? { playingFile == nil ? nil : 0 }
+    /// The progress the fake reports while a file plays or is paused part-way (snapshots draw the played bars).
+    var reportedProgress = 0.0
+    var playbackProgress: Double? { playingFile == nil ? nil : reportedProgress }
     /// Drafts handed out for previews.
     private(set) var draftsMade = 0
 

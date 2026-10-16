@@ -1,4 +1,4 @@
-// One snapshot per component (design/components.md C-01…C-35) per state, in the light AND the dark appearance, recorded
+// One snapshot per component (design/components.md C-01…C-36) per state, in the light AND the dark appearance, recorded
 // into ios/build/snapshots/components/<test>.<cNN-component-state>-<light|dark>.png for the Pass 5 design review (each
 // component next to its Retro evidence). Photos and avatars are the real sample photos in fixtures/photos/
 // (`SamplePhotos`). Strings are fixtures (the components take every string from their caller's copy).
@@ -712,6 +712,45 @@ final class ComponentSnapshotTests: XCTestCase {
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 AppTabBar(selected: .groups, surface: .overPhoto) { _ in }
             }
+        }
+    }
+
+    // MARK: C-36 voice waveform (owner decision 16)
+
+    /// Idle (every bar unplayed), playing part-way (played bars, the bar under the edge split), the dots fallback for a
+    /// note without levels, and a short note's few distinct levels — in the 37-pt capsule's height, 154 pt long.
+    func testC36VoiceWaveform() {
+        let levels = SocialDemo.voiceLevelsMessage
+        let states: [(levels: [Int]?, progress: Double?)] = [(levels, nil), (levels, 0.43), (nil, nil), ([4, 31, 12, 0, 22, 8], 0.5)]
+        record("c36-waveform-page") {
+            VStack(alignment: .leading, spacing: Tokens.Sizes.globalPillGap) {
+                ForEach(states.indices, id: \.self) { index in
+                    VoiceWaveform(levels: states[index].levels, progress: states[index].progress, holderHeight: Tokens.Sizes.globalPillHeight)
+                        .frame(width: Tokens.Sizes.chatVoiceDimensionWaveform)
+                        .frame(height: Tokens.Sizes.globalPillHeight)
+                        .background(Tokens.Colors.globalControl, in: Capsule())
+                }
+            }
+            .padding()
+        }
+        record("c36-waveform-media", surface: .media) {
+            VStack(alignment: .leading, spacing: Tokens.Sizes.globalPillGap) {
+                ForEach(states.indices, id: \.self) { index in
+                    VoiceWaveform(levels: states[index].levels, progress: states[index].progress, onMedia: true, holderHeight: Tokens.Sizes.globalPillHeight)
+                        .frame(width: Tokens.Sizes.chatVoiceDimensionWaveform)
+                        .frame(height: Tokens.Sizes.globalPillHeight)
+                        .background(Tokens.Colors.globalControlOnDeep, in: Capsule())
+                }
+            }
+            .padding()
+        }
+        record("c11-circles-primary-and-red-glyph") {
+            HStack {
+                CircleButton(icon: Tokens.Icons.globalSend, accessibilityLabel: "Send", style: .primary) {}
+                CircleButtonFace(icon: Tokens.Icons.globalPause, style: .page, glyphColor: Tokens.Colors.globalDestructive)
+                CircleButtonFace(icon: Tokens.Icons.globalMic, style: .page, glyphColor: Tokens.Colors.globalDestructive)
+            }
+            .padding()
         }
     }
 }

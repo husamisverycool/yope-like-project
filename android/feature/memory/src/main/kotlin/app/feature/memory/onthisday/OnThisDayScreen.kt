@@ -372,7 +372,7 @@ private fun ModeTitle(menu: ModeMenu, capMiddle: Dp, title: @Composable (Modifie
             Modifier
                 // No ripple: the touch area reaches up to the header's top (the title's baseline padding); the menu
                 // itself is the feedback.
-                .clickable(interactionSource = null, indication = null, role = Role.DropdownList) { menu.open.value = true }
+                .clickable(interactionSource = null, indication = null, role = Role.DropdownList) { println("DBGCLICK"); menu.open.value = true }
                 .semantics(mergeDescendants = true) { heading() }
                 .testTag(OnThisDayTags.MODE),
         ) {
@@ -388,6 +388,7 @@ private fun ModeTitle(menu: ModeMenu, capMiddle: Dp, title: @Composable (Modifie
             )
         }
         SystemAppearance {
+            println("DBGMENU " + menu.open.value)
             DsDropdownMenu(menu.open.value, { menu.open.value = false }, menu.items)
         }
     }

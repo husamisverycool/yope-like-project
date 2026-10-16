@@ -243,39 +243,29 @@ final class SocialVoiceRecorder {
     let preview = VoicePlayer(progressInterval: .milliseconds(50)) // provenance-ok: progress refresh rate (engineering), at least once per bar of a 2-s draft
     private(set) var phase: Phase = .idle
     private(set) var permission: PermissionStatus = VoiceRecorder.permission()
-    #if DEBUG
-    /// Snapshot tests: the elapsed time and waveform without a microphone.
+    /// Snapshot tests (`showRecordingForSnapshot`, DEBUG): the elapsed time and waveform without a microphone.
     @ObservationIgnored private var snapshotElapsedMs: Int?
     @ObservationIgnored private var snapshotLevels: [Int]?
     @ObservationIgnored private var snapshotPreviewProgress: Double?
-    #endif
 
     var isActive: Bool { phase != .idle }
     /// Hands-free: the field shows the waveform and the controls row shows (`chat.voice.layout.locked`).
     var isLocked: Bool { phase == .locked || phase == .paused }
 
     var elapsedMs: Int {
-        #if DEBUG
-        if let snapshotElapsedMs { return snapshotElapsedMs }
-        #endif
-        return recorder.elapsedMs
+        snapshotElapsedMs ?? recorder.elapsedMs
     }
 
     /// The live (recording) or draft (paused) waveform.
     var levels: [Int] {
-        #if DEBUG
-        if let snapshotLevels { return snapshotLevels }
-        #endif
-        return recorder.levels
+        snapshotLevels ?? recorder.levels
     }
 
     var isPreviewing: Bool { preview.isPlaying }
 
     /// 0…1 of the draft while it plays or is paused part-way; nil otherwise.
     var previewProgress: Double? {
-        #if DEBUG
         if let snapshotPreviewProgress { return snapshotPreviewProgress }
-        #endif
         guard preview.currentURL != nil else { return nil }
         if preview.isPlaying { return preview.progress }
         return preview.progress > 0 && preview.progress < 1 ? preview.progress : nil

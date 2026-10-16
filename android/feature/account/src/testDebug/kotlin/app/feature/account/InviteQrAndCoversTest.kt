@@ -17,6 +17,8 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.printToString
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -131,6 +133,7 @@ class InviteQrAndCoversTest {
         compose.onNodeWithText(context.getString(R.string.groups_invite_link_qr)).performClick()
         compose.waitForIdle()
         assertTrue("QR Code → the card", opened)
+        println(compose.onRoot(useUnmergedTree = true).printToString())
         compose.onNodeWithTag(GROUP_INVITE_QR_CARD_TAG).assertExists()
         compose.onNodeWithContentDescription(context.getString(R.string.groups_invite_qr_save)).performClick()
         compose.waitUntil(timeoutMillis = 5_000) { saved != null }

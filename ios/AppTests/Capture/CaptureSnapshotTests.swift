@@ -137,8 +137,13 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         assertRecorded(CaptureSnapshot.record(SendToView(model: holding), surface: "camera.sendto", state: "voice-locked"))
         holding.pauseVoiceRecording()
         assertRecorded(CaptureSnapshot.record(SendToView(model: holding), surface: "camera.sendto", state: "voice-paused"))
-        holding.keepVoiceRecording()
-        assertRecorded(CaptureSnapshot.record(SendToView(model: holding), surface: "camera.sendto", state: "voice-attached"))
+        voiceRig.voice.reportedProgress = 0.45
+        await holding.toggleDraftPreview()
+        assertRecorded(CaptureSnapshot.record(SendToView(model: holding), surface: "camera.sendto", state: "voice-paused-preview"))
+        await holding.keepVoiceRecording()
+        assertRecorded(CaptureSnapshot.record(SendToView(model: holding), surface: "camera.sendto", state: "voice-attached", appearances: CaptureSnapshot.both))
+        holding.toggleVoicePlayback()
+        assertRecorded(CaptureSnapshot.record(SendToView(model: holding), surface: "camera.sendto", state: "voice-attached-playing"))
 
         let sendingRig = photoRig()
         sendingRig.posting.suspendsPublish = true

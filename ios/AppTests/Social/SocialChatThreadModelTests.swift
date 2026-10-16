@@ -276,6 +276,19 @@ final class SocialChatThreadModelTests: XCTestCase {
         XCTAssertFalse(model.isSending)
     }
 
+    func testVoiceMessageCarriesItsWaveform() async {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data)
+        await model.load()
+        let levels = SocialDemo.voiceLevelsMessage
+        await model.sendVoice(fileURL: URL(fileURLWithPath: "/tmp/levels.m4a"), durationMs: 3200, levels: levels)
+        XCTAssertEqual(data.read { $0.sentVoiceLevels.last }, levels, "p_voice_levels goes with the upload")
+        XCTAssertEqual(model.messages.last?.voiceLevels, levels, "the row draws the recorded bars")
+
+        await model.sendVoice(fileURL: URL(fileURLWithPath: "/tmp/bad.m4a"), durationMs: 3200, levels: [1, 2, 3])
+        XCTAssertEqual(data.read { $0.sentVoiceLevels.last }, .some(nil), "malformed levels are not sent (the API would refuse them)")
+    }
+
     func testOptimisticVoiceMessageKeepsItsLocalFile() async {
         let data = SocialDemo.makeData()
         let model = makeModel(data)

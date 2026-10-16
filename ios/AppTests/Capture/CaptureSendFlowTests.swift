@@ -160,7 +160,7 @@ final class CaptureSendToModelTests: XCTestCase {
         await model.load()
         model.caption = "hello"
         await model.beginVoiceRecording()
-        model.keepVoiceRecording()
+        await model.keepVoiceRecording()
         await model.send()
         XCTAssertEqual(model.sendFailure, .offline)
         XCTAssertEqual(CaptureSendCenter.Failure.offline.message, Copy.cameraSendtoErrorOffline)
@@ -202,7 +202,7 @@ final class CaptureSendToModelTests: XCTestCase {
         XCTAssertTrue(model.needsDiscardConfirmation)
         model.caption = ""
         await model.beginVoiceRecording()
-        model.keepVoiceRecording()
+        await model.keepVoiceRecording()
         XCTAssertTrue(model.needsDiscardConfirmation)
     }
 
@@ -214,12 +214,13 @@ final class CaptureSendToModelTests: XCTestCase {
         XCTAssertTrue(started)
         XCTAssertEqual(model.voicePhase, .holding)
         XCTAssertTrue(model.showsVoiceRow, "the recording capsule replaces the message pill")
-        model.keepVoiceRecording()
+        await model.keepVoiceRecording()
         XCTAssertEqual(model.voicePhase, .idle)
         XCTAssertEqual(model.voiceNote?.durationMs, 1000)
-        XCTAssertTrue(model.showsVoiceRow, "attached: the voice capsule shows ▶ and the length")
+        XCTAssertTrue(model.showsVoiceRow, "attached: the note capsule shows ▶, the waveform and the length")
         model.toggleVoicePlayback()
         XCTAssertTrue(model.isPlayingVoice)
+        XCTAssertTrue(model.isPlayingNote)
     }
 
     func testTooShortRecordingIsNotANote() async {
@@ -227,7 +228,7 @@ final class CaptureSendToModelTests: XCTestCase {
         rig.voice.recordedDurationMs = 400
         let model = rig.sendToModel()
         await model.beginVoiceRecording()
-        model.keepVoiceRecording()
+        await model.keepVoiceRecording()
         XCTAssertNil(model.voiceNote, "reads 00:00: not a voice note")
         XCTAssertFalse(model.showsVoiceRow)
     }
@@ -242,7 +243,7 @@ final class CaptureSendToModelTests: XCTestCase {
         XCTAssertFalse(rig.voice.isRecording)
     }
 
-    func testLockPauseThenKeep() async {
+    func testLockPausePreviewContinueThenKeep() async {
         let rig = CaptureTestRig()
         let model = rig.sendToModel()
         await model.beginVoiceRecording()
@@ -250,13 +251,63 @@ final class CaptureSendToModelTests: XCTestCase {
         XCTAssertEqual(model.voicePhase, .locked)
         model.pauseVoiceRecording()
         XCTAssertEqual(model.voicePhase, .paused)
-        XCTAssertNotNil(model.voiceDraft)
-        model.toggleVoicePlayback()
-        XCTAssertEqual(rig.voice.playedFiles.count, 1, "the draft can be played")
-        model.keepVoiceRecording()
+        XCTAssertTrue(rig.voice.isPaused, "pause uses the recorder's pause (chat.voice.layout.locked)")
+        XCTAssertTrue(rig.voice.isRecording, "the draft is kept")
+        await model.toggleDraftPreview()
+        XCTAssertEqual(rig.voice.draftsMade, 1, "the preview plays the finished draft")
+        XCTAssertEqual(rig.voice.playedFiles.count, 1)
+        XCTAssertTrue(model.isPlayingVoice)
+        await model.toggleDraftPreview()
+        XCTAssertFalse(model.isPlayingVoice, "a second tap pauses the preview")
+        model.resumeVoiceRecording()
+        XCTAssertEqual(model.voicePhase, .locked, "continue records at the end of the draft")
+        XCTAssertFalse(rig.voice.isPaused)
+        XCTAssertFalse(model.isPlayingVoice, "continuing stops the preview")
+        model.pauseVoiceRecording()
+        await model.keepVoiceRecording()
         XCTAssertEqual(model.voicePhase, .idle)
         XCTAssertNotNil(model.voiceNote)
-        XCTAssertNil(model.voiceDraft)
+        XCTAssertEqual(model.voiceNote?.levels, rig.voice.levels, "the note keeps its waveform")
+    }
+
+    func testPauseOnlyWhileLockedAndContinueOnlyWhilePaused() async {
+        let rig = CaptureTestRig()
+        let model = rig.sendToModel()
+        await model.beginVoiceRecording()
+        model.pauseVoiceRecording()
+        XCTAssertEqual(model.voicePhase, .holding, "holding has no pause")
+        model.resumeVoiceRecording()
+        XCTAssertEqual(model.voicePhase, .holding)
+        model.lockVoiceRecording()
+        model.resumeVoiceRecording()
+        XCTAssertEqual(model.voicePhase, .locked)
+        await model.toggleDraftPreview()
+        XCTAssertEqual(rig.voice.draftsMade, 0, "no preview while recording")
+    }
+
+    func testDeletingAPausedDraftDiscardsIt() async {
+        let rig = CaptureTestRig()
+        let model = rig.sendToModel()
+        await model.beginVoiceRecording(locked: true)
+        model.pauseVoiceRecording()
+        model.cancelVoiceRecording()
+        XCTAssertEqual(model.voicePhase, .idle)
+        XCTAssertNil(model.voiceNote)
+        XCTAssertFalse(rig.voice.isRecording)
+    }
+
+    func testANewRecordingReplacesTheAttachedNote() async {
+        let rig = CaptureTestRig()
+        let model = rig.sendToModel()
+        await model.beginVoiceRecording()
+        await model.keepVoiceRecording()
+        let first = model.voiceNote
+        rig.voice.recordedDurationMs = 2500
+        await model.beginVoiceRecording()
+        XCTAssertEqual(model.voiceNote, first, "the note stays while the new one records")
+        await model.keepVoiceRecording()
+        XCTAssertEqual(model.voiceNote?.durationMs, 2500)
+        XCTAssertNotEqual(model.voiceNote?.fileURL, first?.fileURL)
     }
 
     func testVoiceOverStartsHandsFree() async {
@@ -282,7 +333,7 @@ final class CaptureSendToModelTests: XCTestCase {
         let model = rig.sendToModel(onClose: { closed += 1 })
         await model.load()
         await model.beginVoiceRecording()
-        model.keepVoiceRecording()
+        await model.keepVoiceRecording()
         XCTAssertNotNil(model.voiceNote)
         model.close()
         XCTAssertNil(model.voiceNote)
@@ -298,6 +349,7 @@ final class CaptureSendToModelTests: XCTestCase {
         XCTAssertEqual(rig.posting.published.count, 1)
         XCTAssertEqual(rig.posting.published.first?.voice?.contentType, ContentType.m4a)
         XCTAssertEqual(rig.posting.published.first?.voiceDurationMs, 1000, "a recording in progress is kept on send")
+        XCTAssertEqual(rig.posting.published.first?.voiceLevels, rig.voice.levels, "the waveform goes with the note (p_voice_levels)")
     }
 
     func testMicrophoneDeniedOpensSettings() async {
