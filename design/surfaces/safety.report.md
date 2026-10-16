@@ -1,94 +1,85 @@
-# `safety.report` — report flow
+# `safety.report` — report a post, message, person or group
 
-Reference: **Apple HIG / Material 3** (Yope voice for titles and explanations; F-21). Research:
-`design/research/platform.md` §safety (App Review 1.2: reporting with timely responses is mandatory);
-API `docs/API.md` §5.23, §6.3 `report`. Tokens: `safety.report.layout.flow`, `safety.report.layout.reasons` (BLOCKED),
-`safety.block.layout.menu`, `safety.block.layout.toast`. Copy: `safety.report.*`.
-
-## Where Report is exposed
-
-| surface | entry | target |
-|---|---|---|
-| `groups.screen` feed | photo card ••• → `groups.screen.photo.menu.report` | post |
-| `groups.screen` profile | ••• → `groups.screen.menu.report` ("report", Yope verbatim) | group |
-| `groups.settings` | actions row `groups.settings.report`; member ••• → `groups.settings.members.menu.report` | group; user |
-| `photo.viewer`, `chat.thread` (message long-press), `walls.member` header ••• | `safety.report.menuItem` ("Report…") — placed by those passes | post; message; user |
-| after reporting a person or their content | `safety.report.sent.block` | → `safety.block` |
+Visual reference: Retro's report flow (APK-S `media_viewer_report_*`, `profile_report_*`: "Why are you reporting this
+post?" / "What's wrong with this profile?", reason lists, "Next Steps" for "I don't like it", "Submitted!") shown in
+native menus and action sheets as Retro does (inventory #24, TC-RWP: native menu with red destructive items).
+System surface (PLATFORM) in Retro's voice. Tokens: `safety.report.layout.flow`, `safety.report.layout.reasons`.
+Copy: `safety.report.*`.
 
 ## References
 
-| id | URL | used for |
+| id | file / URL | used for |
 |---|---|---|
-| HIG-M | https://developer.apple.com/design/human-interface-guidelines/menus | "Report…" (ellipsis: more input follows) |
-| HIG-AS / HIG-SH | …/action-sheets ; …/sheets | sheet with detents and grabber; destructive actions |
-| M3-BS | https://m3.material.io/components/bottom-sheets/specs | modal bottom sheet values |
-| RG 1.2 | https://developer.apple.com/app-store/review/guidelines/ | report + block mandatory |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | titles, reasons, next steps, "Submitted!", "Report Post" / "Report Profile" |
+| TC-RWP | `references/auto/retro/press/tc-2025-12-rewind-panels.png` | native menu look, destructive red (C-29, C-10) |
+| HIG | https://developer.apple.com/design/human-interface-guidelines/action-sheets ; App Review 1.2 | action sheet for a list of choices; reporting is required for user content |
 
-## Structure (`safety.report.layout.flow`)
+## Structure
 
-Sheet (iOS `.presentationDetents([.medium, .large])` + visible grabber; Android `ModalBottomSheet`):
-1. Navigation bar: leading `safety.report.cancel`; trailing `safety.report.submit` (destructive, enabled at once).
-2. Title (Yope voice): `safety.report.title.post` / `.message` / `.user` / `.group`.
-3. Explanation `safety.report.explanation`.
-4. Reason list `safety.report.layout.reasons` — **BLOCKED** (owner categories; not shown in release builds). Sourced presentation for
-   this state: Locket 1.243.0 reports a friend's photo / message / comment with no reason list at all (native "Report?" alert with
-   an explanation, Cancel / Report, then a short toast) — so shipping without the list matches a close-friends reference. If the
-   owner adds categories: one single-select list of rows above the details field, in this sheet.
-5. Details: multi-line text field, placeholder `safety.report.details.placeholder`, ≤ 1000 characters.
-
-After submit, the same sheet shows: title `safety.report.sent.title`; message `safety.report.sent.message` ({first_name})
-or `safety.report.sent.messageGroup`; buttons `safety.report.sent.block` (destructive; person or their content only) and
-`safety.report.sent.done`.
+1. **Entry**: a menu item (C-29) on the content: `safety.report.menuItem.post` (photo long-press menu, viewer menu),
+   `.message` (chat message menu), `.user` (member "More Options" in `groups.settings`, walls), `.group`
+   (`groups.settings` "Report Group" row uses `groups.settings.report`).
+2. **Reasons** (`safety.report.layout.flow`): native action sheet titled `safety.report.title.<kind>`; one button per
+   reason from `safety.report.layout.reasons` (`safety.report.reason.*`), then `safety.report.cancel`.
+   - iOS: `confirmationDialog(titleVisibility: .visible)`; Android: `ModalBottomSheet` with the title (text role
+     `sheetTitle`) and one C-14-style row per reason (`body`), Cancel as the last row.
+3. **Choosing a reason** files `report(kind, id, reason)` and closes the sheet; confirmation `safety.report.sent.title`
+   (C-26: Android Toast; iOS accessibility announcement — no custom toast is drawn).
+4. **"I don't like it"** (posts and messages) files nothing and opens a second action sheet titled
+   `safety.report.nextSteps.title` with `safety.report.nextSteps.leave` (destructive) and
+   `safety.report.nextSteps.block` (destructive), then Cancel. Leave → the leave alert of `groups.settings`
+   (`groups.settings.leave.*`), then confirmation `safety.report.left`; Block → `safety.block`.
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| sheet | `safety.report.layout.flow`; Android container `color.global.system.surfaceContainerLow`, `radius.global.sheet` (android 28), drag handle on-surface-variant @0.4 | — | swipe down = cancel (iOS: `interactiveDismissDisabled` only while sending) |
-| title / explanation | iOS `.headline` / `.subheadline` text styles; Android `titleLarge` / `bodyMedium` (`layout.global.system.typography`) | as above | static |
-| details field | system `TextField(axis: .vertical)` / M3 `OutlinedTextField` | `safety.report.details.placeholder` | optional |
-| Report | iOS toolbar button role .destructive; Android TextButton in `color.global.system.error` | `safety.report.submit` | `report(p_target_kind, p_target_id, p_reason)`; empty details → `p_reason` = the target kind |
-| Done / Block | system buttons | `safety.report.sent.done`, `safety.report.sent.block` | Done closes; Block opens `safety.block` confirmation |
+| menu item | C-29 menu (destructive role not used for Report; Block items are destructive) | `safety.report.menuItem.*` | opens the reasons sheet |
+| reasons sheet | C-29 action sheet / M3 bottom sheet; `safety.report.layout.flow` | `safety.report.title.post` / `.message` / `.user` / `.group`; `safety.report.reason.*`; `safety.report.cancel` | one tap files the report |
+| next steps | C-29 action sheet | `safety.report.nextSteps.title`, `.nextSteps.leave`, `.nextSteps.block` | as Structure 4 |
+| confirmation | C-26 | `safety.report.sent.title`; `safety.report.left` | — |
 
 ## States
 
 | state | design | copy |
 |---|---|---|
-| default | as Structure | — |
-| sending | Report replaced by a native progress indicator; fields disabled | — |
-| sent | result content in the same sheet | `safety.report.sent.*` |
-| error / offline | inline footer under the field; details kept | `safety.report.error.title`, `safety.report.error.detail` |
-| target gone | `target_not_found` | `safety.report.error.notFound` + Done |
-| loading / empty / permission-denied | not applicable | — |
+| sending | the sheet closes at once; the request runs in the background | — |
+| sent | confirmation | `safety.report.sent.title` |
+| failed / offline | message-only alert (`auth.phone.layout.inlineError`) titled | `safety.report.error.title`, `safety.report.error.detail` + `auth.phone.error.dismiss` |
+| target gone | `target_not_found` | message-only alert | `safety.report.error.notFound` |
+| loading / empty / permission-denied | — | not applicable | — |
 
 ## Motion · Haptics
 
-Native sheet. Sent → `haptic.global.success`; failed → `haptic.global.error`.
+Native sheets and menus (system motion). Reason chosen → `haptic.global.tap` (Android); report sent → `haptic.global.success`;
+failed → `haptic.global.error`.
 
 ## Accessibility
 
-Sheet title is the accessibility heading; the field has the placeholder as label; Report announced as destructive by
-role. Dynamic Type: system styles. Focus order: Cancel → title → explanation → field → Report.
+Native semantics (sheet title read first, each reason a button). Dynamic Type: system styles in native sheets; the
+Android sheet uses `sheetTitle` / `body` roles (`headline` / `subheadline`). Contrast: system colours (C-29); Android
+rows 12 (19.60:1 / 15.13:1).
 
 ## Data & actions
 
-- `report(p_target_kind: post | message | user | group, p_target_id, p_reason)` → report id; job `moderation.report`.
-- A block does not stop reporting (API). Reports are not readable by clients.
-- In: the entries above. Out: back to the caller, or `safety.block`.
+- `report(p_target_kind, p_target_id, p_reason)` (docs/API.md §6.3); `p_reason` = the reason's text
+  (`safety.report.layout.reasons.sent`). A block does not stop reporting.
+- Leave: `leave_group`. Block: `block_user` (via `safety.block`).
+- In: `photo.viewer`, `groups.screen` (cell menu), `chat.thread`, `groups.settings`, `walls.member`. Out: back.
 
 ## Platform notes
 
-iOS uses a sheet (the reason list is a longer flow, HIG); Android uses the modal bottom sheet (M3: alternative to menus
-or dialogs for longer content).
+- iOS: `confirmationDialog` for both sheets. Android: `ModalBottomSheet` (`color.global.system.surfaceContainerLow`,
+  top corners `radius.global.sheet.android`) — M3's own action-sheet form.
 
 ## Do-not-copy
 
-None observed (Yope's report content was not captured).
+- Retro's "Send a message" and "Unfriend" next steps (no direct messages or friendships here: mapped to Block, MERGE RA-12).
 
 ## Gaps
 
 | item | status | owner input |
 |---|---|---|
-| report reasons (`safety.report.layout.reasons`) | BLOCKED: categories are an owner decision (no platform taxonomy; Yope's not captured). Presentation sourced (gap fill, MERGE G2-8): Locket reports friends' content without reasons | the moderation categories (docs/API.md §12 item 19) |
-| moderation destination and response time | backend/owner (`moderation.report` jobs need a destination) | owner |
-| toast after block from here | `safety.block.duration.toast` 2000 ms (gap fill: Locket's report toast is the platform SHORT toast) | one 10-s recording of a Yope toast lifetime |
+| moderation categories | Retro's lists used (`safety.report.layout.reasons`, was BLOCKED) | owner may extend the categories for moderation (docs/API.md §12 item 19) |
+| free-text details | not offered (Retro offers none) | owner, if moderation needs details |
+| Retro's report sheets as images | strings only | screenshot of Retro's report sheet |

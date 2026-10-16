@@ -1,90 +1,96 @@
 # `albums.list` — a group's saved albums
 
-Reference app: **Yope** (`docs/SURFACES.md`). **No Yope album screen was found**: only the release note "make your own
-memory albums" (v1.214.0, yope-b §7). Under the owner decision of 2026-10-15 (any successful app may fill a gap) the album
-list itself now follows **Apple Photos' Albums collection** (`albums.list.layout.yopeAlbums`, iOS 27 guide image; Gap fill
-G-17); header, states and colours stay Yope's. Yope's own album screens (yope-b §14 capture 5) would supersede it.
-Tokens: `design/tokens/social.json` (`albums.list.*`) + `global.*`. Copy: `design/copy/social.json` (`albums.list.*`).
+Redesign on **Retro**: visual reference Retro's **Albums list** (screen 10 / 11 — ED-W3 pushed variant: back chevron +
+serif "Albums", 52-pt search field, rows with a 3:4 cover thumbnail, semibold title, grey context line with the actor's name
+in semibold). Our albums are named selections of a group's photos saved from a recap (`week.edit`). Tokens:
+`design/tokens/social.json` (`albums.list.*`) + `global.*`. Copy: `design/copy/social.json` (`albums.list.*`). Decisions:
+`design/MERGE_DECISIONS.md` → Redesign — Social (RS-21).
 
 ## References
 
 | id | file | used for |
 |---|---|---|
-| W1 | `references/auto/yope/store/listing.html` (v1.214.0) | "memory albums" |
-| V-sav | `references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png` | home list card: #181818 on black, ≈100 pt, 64-pt circle at 16 pt, name bold, gray subtitle, 12-pt margins, 17-pt corners |
-| V-virgi | `references/auto/yope/frames/a-virgi-7686278541255642390-t40.23-home-list-es.png` | second card-height sample |
-| O3 | `references/owner/yope-week-recap.jpg` | centred header title style (‹ + 17 semibold title) |
+| ED-W3 | `references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png` (render, 3.89 px/pt; geometry only) | **primary**: pushed header, search field, rows (C-15: thumbnail 72 × 97, gap 17, pitch 119.5) |
+| ED-A | `references/auto/retro/store/editorial/retro-appstore-story-1840659619-albums.png` | root Albums list (rows, avatar stack, "+" circle) |
+| TC-J1 | `references/auto/retro/press/tc-2024-04-journals-1.webp` phone 2 | rows "**daniel** shared 2 posts" (count is do-not-copy) |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | "Albums", "%1$s created the album", "you created the album", "Error retrieving your albums. Tap here to try again" |
 
-## Structure (top → bottom)
+## Structure (top → bottom; page `color.global.background` / `.background.android`)
 
-Background `color.global.backgroundDeep`.
-
-1. **Header**: ‹ circle (`size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.back`,
-   `size.global.headerInset`); title `albums.list.title` ("memory albums") centred, `week.recap.fontSize.title` /
-   `.fontWeight.title`, `color.global.textPrimary`.
-2. **Album covers** (`albums.list.layout.yopeAlbums`): a grid of 2 columns (`columns`), side margins `marginH` (23), gap
-   `gap` (12.4) both ways, newest album first (`albums.created_at`). Each cover is square (`coverAspect` 1, ≈168 pt wide on a
-   393-pt screen), corners `coverRadius` (18.5), the album's first photo (`thumb_path`), aspect fill. Over its bottom-leading
-   corner: the album name, one line, tail truncation, `titleFontSize` 15 (weight not measured: platform default),
-   `color.global.textPrimary`, ink `titleInsetLeading` (14) from the cover's leading edge, baseline `titleBaselineBottom`
-   (17) above its bottom. The subtitle `albums.list.row.subtitle` is not drawn (the reference shows the name only); it joins
-   the accessibility label. The home-card composition (`albums.list.layout.composition`, S-14) is superseded.
+`albums.list.layout.composition`:
+1. **Header** (C-02 pushed): back chevron + `albums.list.title` ("Albums") in the display serif.
+2. **Search field** (C-12) `size.global.titleToContent` below the title baseline, inside `size.global.screenMargin`:
+   `icon.global.search` + `albums.list.search`; filters by album name. Shown when the group has albums.
+3. **Rows** (C-15), newest album first, the first `size.global.titleToContent` below the field, rows `size.global.listGap`
+   apart: cover thumbnail (`size.global.rowThumbWidth` × `.rowThumbHeight`, `radius.global.thumbnail`, the album's first item,
+   aspect fill) at the margin; text block `size.global.rowThumbGap` after it, top-aligned with the thumbnail: album name (text
+   role `listTitle`, `color.global.textPrimary`, up to two lines) over the context line `albums.list.row.subtitle`
+   ("{name} created the album", the name in `fontWeight.global.listTitle`; yours `albums.list.row.subtitleMine`), text role
+   `listSubtitle`, `color.global.textSecondary`. No avatar stack and no "+" circle (RS-21).
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | component · tokens | copy | behaviour |
 |---|---|---|---|
-| ‹ circle | `size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.back` | `chat.thread.a11y.back` | pops |
-| title | `week.recap.fontSize.title`, `.fontWeight.title` | `albums.list.title` | header trait |
-| album cover | `albums.list.layout.yopeAlbums` (columns, marginH, gap, coverAspect, coverRadius) | album name (data) on the cover; label "{album name}, {subtitle}" with `albums.list.row.subtitle` | tap → `albums.view` |
-| album name | `albums.list.layout.yopeAlbums` (titleFontSize, titleInsetLeading, titleBaselineBottom), `color.global.textPrimary` | album name (data) | — |
+| back + title | C-02; text role `headerTitle` | `chat.thread.a11y.back`; `albums.list.title` | pops to `groups.screen` |
+| search | C-12 | `albums.list.search` | filters |
+| row | C-15; `size.global.rowThumbWidth`, `.rowThumbHeight`, `.rowThumbGap`, `.listGap`, `radius.global.thumbnail`; text roles `listTitle` / `listSubtitle` | album name (data), `albums.list.row.subtitle` / `.row.subtitleMine` | tap → `albums.view` (sheet) |
 
 ## States
 
-| state | what shows | tokens / copy | source |
+| state | what shows | components · tokens · copy | source |
 |---|---|---|---|
-| loading | Loading HUD | `groups.create.size.hud`, `.color.hud`, `.fontSize.hudLabel`; `groups.create.hud.loading` | yope-a §1.8 |
-| empty | centred bold title, gray detail, white pill | `albums.list.empty.title`, `.empty.detail`, `.empty.action` ("view recap" → `week.recap`); text roles `emptyTitle` / `emptyDetail`; pill `color.global.surfaceLight` / `.onSurfaceLight`, `groups.screen.size.lightPillHeight`, `groups.screen.radius.lightPill` | `yope.voice.empty-state` |
-| error | same layout as empty, retry pill | `albums.list.error.title`, `chat.thread.error.detail`, pill `chat.thread.error.retry` | `yope.voice.error` |
-| offline | cached cards; nothing cached → `chat.thread.offline.title` / `.offline.detail` | — | `yope.voice.error` |
+| loading | three C-15 rows with `color.global.control` thumbnails and no text | C-28; `week.history.a11y.loading` | C-28 |
+| empty | no search field; C-27 centred below the header: `icon.global.albums` → title → detail → C-06 outline capsule | `albums.list.empty.title`, `.empty.detail`, `.empty.action` (→ `week.recap` list) | APK-S |
+| no search results | C-27 title only under the field | `albums.list.search.empty` | `retro.voice.empty-state` |
+| error | one tappable line under the header (text role `body`, `color.global.textSecondary`) | `albums.list.error.title` (verbatim Retro) | APK-S |
+| offline | cached rows; nothing cached → the error line | — | — |
 | permission-denied | not applicable | — | — |
 
 ## Motion
 
-Push / pop native; list scroll native. Reduce Motion: system.
+Push / pop native; rows appear with `duration.global.fade`; opening an album: native sheet. Reduce Motion: system.
 
 ## Haptics
 
-None.
+| interaction | token |
+|---|---|
+| tap a row (Android) | `haptic.global.tap` (iOS none) |
 
 ## Accessibility
 
-- Cover: one button, label "{album name}, {subtitle}" (name data + `albums.list.row.subtitle`); the photo is decorative.
-- Dynamic Type: the name on the cover scales with `layout.global.textStyleMap.listSubtitle` (subheadline, nearest style to
-  15 pt) and stays one line (tail truncation); covers keep their size. Header title → `week.recap.layout.textStyleMap.title`.
-- Contrast: the album name sits on photo content (no fixed backdrop; the reference's treatment under it is not measurable):
-  not computable — flagged (MERGE_DECISIONS Gap fill G-17). Header title #FFFFFF on #000000: 21.00:1 pass.
+- Each row is one button: "{album name}, {name} created the album" (title + subtitle combined; C-15); thumbnail decorative.
+- Dynamic Type: `listTitle` / `listSubtitle` → subheadline; the thumbnail keeps its size, text wraps.
+- Contrast (`node tools/contrast.mjs`):
+
+| foreground | background | kind | light | dark | pair |
+|---|---|---|---|---|---|
+| `color.global.textPrimary` | `color.global.background` | text | 21.00:1 pass | 21.00:1 pass | title, album names |
+| `color.global.textSecondary` | `color.global.background` | text | **2.85:1 FAIL** | 7.37:1 pass | context line, error line (iOS) |
+| `color.global.textSecondary.android` | `color.global.background.android` | text | **4.00:1 FAIL** | 6.85:1 pass | the same on Android |
+| `color.global.textSecondary` | `color.global.control` | text | **2.52:1 FAIL** | 5.31:1 pass | search placeholder |
 
 ## Data & actions
 
 - `albums` (docs/API.md §5.15) `eq(group_id).order(created_at desc)`; first `album_items` row (`position = 0`) per album →
   `posts` → `media.thumb_path`; `profiles` for `created_by`.
-- Realtime: none for albums (not published): refetch on appear / foreground.
-- Navigation in: the group's albums entry on `groups.screen` (account group), after `week.edit`'s album save. Out:
-  `albums.view`, `week.recap`.
+- Realtime: none (albums are not published) — refetch on appear / foreground.
+- Navigation in: the group's albums entry on `groups.screen` (account group); after a `week.edit` album save. Out:
+  `albums.view`, `week.recap` (empty action).
 
 ## Platform notes
 
-iOS `LazyVStack` of cards; Android `LazyColumn`. Dark only.
+iOS `LazyVStack` in a `ScrollView` (search field in the content, C-12); Android `LazyColumn`.
 
 ## Do-not-copy
 
-Streak pills, unread badges, presence dots and the camera glyph of Yope's home cards (not meaningful for albums).
+- Post counts in the context line ("shared 2 posts"), "N new" badges, the "+" post-to-album circle, member avatar stacks
+  (albums have no members of their own), "Ideas to Get Started" templates (group creation lives in `groups.create`).
+- Apple Photos' 2-column cover grid (old gap fill G-17, superseded by Retro's own list).
 
 ## Gaps
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `albums.list.layout.yopeAlbums` | **SOURCED (gap fill)**: Apple Photos Albums collection, iOS 27 guide image (2 columns, square covers, name over the bottom-leading corner; ±1 pt) — G-17 | two screenshots: Yope's album list and one open album (yope-b §14 capture 5) would supersede |
-| album name legibility on covers | not measurable (Apple's treatment under the name sits on photo content); contrast not computable | same capture |
-| album order | approximation: newest first | same |
+| rows without the stack and "+" | composition (RS-21) | — |
+| current Albums list in light / dark (renders only) | ED-W3 is an editorial render (geometry only) | one raw screenshot of Retro's Albums list, light + dark |

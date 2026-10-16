@@ -1,78 +1,110 @@
 # `settings.root` — Settings
 
-Reference: **Apple HIG / Material 3** (system surface). Research: `design/research/platform.md` §settings;
-`docs/PLATFORM_CONSTRAINTS.md` §8 (sign-up opportunity in settings; Play Subscription Center), §9 (privacy policy,
-contact information). Premium row: **Locket** profile row ("Locket Gold / Unlock the best of Locket ›").
-Tokens: `settings.root.*`, `settings.account.layout.manageSubscription`, global system tokens. Copy: `settings.root.*`.
+Visual reference: Retro **Settings sheet** (inventory #28, VID-SET frames 42–44): centred "Settings" with a close circle,
+a profile card in a Fill group, small grey section headers (Subscription, Notifications, Widgets …), grouped Fill rows
+with grey subtitles and chevrons; Retro's section list from APK-S (`settings_section_header_*`, `settings_title_*`).
+Native switches / alerts: Apple HIG / Material 3 (PLATFORM). Tokens: `settings.root.*` + `global.*`. Copy: `settings.root.*`.
 
 ## References
 
-| id | file / URL | used for |
+| id | file | used for |
 |---|---|---|
-| HIG-L | https://developer.apple.com/design/human-interface-guidelines/lists-and-tables | inset-grouped list, sections, disclosure |
-| HIG-S | https://developer.apple.com/design/human-interface-guidelines/settings | "general, infrequently changed settings"; no redundant system settings |
-| M3-L | https://m3.material.io/components/lists/specs | list item sizes and roles |
-| LZ21 | `references/auto/locket/lazyweb/locket-lazyweb-20260803-autocap-21.png` | premium entry row wording |
+| VID-SET | `references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png` (640 × 800 frames, layout only) | sheet header, profile card (name, grey line, avatar right), section headers, rows "Your Subscription / Lifetime · Free", "Notification Settings", Widgets section |
+| TC-J5 | `references/auto/retro/press/tc-2024-04-retro-journals-5.png` | grouped row height `settings.root.size.rowHeight` (58.7) |
+| ST-02 | `references/auto/retro/store/retro-store-02.png` | profile header pattern (C-19: name, grey real name, 64 avatar right) for the profile card |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | section headers and row titles (`settings_section_header_*`, `settings_title_*`, `settings_description_retro_membership_*`, `settings_page_denied`, `widget_add`) |
 
-## Structure (`settings.root.layout.list`; navigation title `settings.root.title`, large on iOS)
+## Structure (page sheet, C-29; `settings.root.layout.list`; scrolls)
 
-1. Section (no header): premium row — title `settings.root.premium.title`, subtitle `settings.root.premium.subtitle`,
-   disclosure → `paywall` (never counted as a prompt, `paywall.layout.promptRule`). While premium is active the row is
-   `settings.root.manageSubscription` → `settings.account.layout.manageSubscription`.
-2. Section: `settings.root.notifications` → `settings.notifications`; `settings.root.account` → `settings.account`;
-   `settings.root.blocked` → `settings.blocked`.
-3. Section: `settings.root.privacy`, `settings.root.terms` (open `config/app.json` `legal.*Url` in an in-app browser);
-   `settings.root.contact` (mailto: the owner's support address).
-4. Section: `settings.root.signOut` (plain row, system tint).
+Header: centred `settings.root.title` (`sheetTitle`) + trailing close circle (C-11 on the page,
+`settings.root.close.accessibilityLabel`).
 
-No in-app Dynamic Type, appearance or language switches (HIG: respect system settings).
+1. **Profile card** (C-14 single row, C-19 content): display name (`listTitle`), phone number under it (`listSubtitle`,
+   `color.global.textSecondary`), avatar `size.global.avatarProfile` (64) at the trailing edge (C-23 fallback when none);
+   whole card → `settings.account` (`settings.root.account` as its label).
+2. **Subscription** (`settings.root.subscription.header`): non-subscriber — row `settings.root.premium.title` with subtitle
+   `settings.root.premium.subtitle` + chevron → `paywall`; subscriber — row `settings.root.manageSubscription` with
+   subtitle `settings.root.premium.annual` / `.monthly` + chevron → `settings.account.layout.manageSubscription`.
+3. **Notifications** (`settings.root.notifications.header`): row `settings.root.notifications` + chevron → `settings.notifications`.
+4. **Widgets** (`settings.root.widgets.header`): row `settings.root.widgets.add` with subtitle `settings.root.widgets.detail`
+   + chevron → `onboarding.widget` (which shows the widget preview). Retro shows a carousel of its three widget kinds
+   here; this app has one kind, so the section is one row (Gaps).
+5. **Privacy** (`settings.root.privacy.header`): row `settings.root.blocked` + chevron → `settings.blocked`.
+6. **System Permissions** (`settings.root.permissions.header`): rows `settings.root.permissions.camera`, `.photos` (iOS),
+   `.microphone`, `.contacts`, `.notifications`; trailing value `settings.root.permissions.denied` (`listSubtitle`,
+   `color.global.textSecondary`) when denied, else none; chevron; each row → the app's page in system Settings.
+7. **About** (`settings.root.about.header`): rows `settings.root.contact` (mailto: owner support address),
+   `settings.root.privacy`, `settings.root.terms` (in-app browser), `settings.root.version` (trailing value = version,
+   no chevron, not tappable).
+8. Last group (no header): row `settings.root.signOut` (text `color.global.textPrimary`).
+
+Sections follow `settings.root.layout.list` (C-14; rows ≥ `settings.root.size.rowHeight`; sections `size.global.sectionGap` apart).
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| list | `settings.root.layout.list`; iOS `color.global.system.ios`; Android `color.global.system.surface` / `.onSurface` / `.onSurfaceVariant` / `.outline`, `settings.root.size.listItemOneLine.android`, `.listItemTwoLine.android` (premium row), `.listItemPaddingH.android`, `.listItemPaddingV.android`, `.divider.android`; type `layout.global.system.typography` | — | — |
-| rows | system (disclosure indicator on iOS) | as Structure | — |
-| entry circle (on `walls.mine`, social pass) | `size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.settings` | `walls.mine.a11y.settings` | → this screen |
+| header | C-29 + C-11 | `settings.root.title`, `settings.root.close.accessibilityLabel` | close the sheet |
+| profile card | C-14 + C-19 content (`listTitle`, `listSubtitle`, `size.global.avatarProfile`) | name / phone (data), `settings.root.account` | → `settings.account` |
+| section header | C-14 header (`meta`, `color.global.textSecondary`) | `settings.root.*.header` | header trait |
+| navigation row | C-14 row (`body` title, `meta` subtitle, `icon.global.chevron` in `color.global.textSecondary`) | row keys above | push inside the sheet |
+| permission row | C-14 row + value | `settings.root.permissions.*`, `.denied` | opens system Settings |
+| Sign Out | C-14 row | `settings.root.signOut`; alert `settings.root.signOut.title`, `.signOut.confirm`, `settings.root.alert.cancel` | `unregister_device` → `auth.signOut()` → `auth.phone` landing |
 
 ## States
 
-| state | design | copy |
-|---|---|---|
-| default | as Structure | — |
-| premium active | row 1 = Manage Subscription | `settings.root.manageSubscription` |
-| loading (entitlement unknown) | premium row shown as the not-subscribed row until `entitlements` loads | — |
-| offline / error | the list works; links and sign-out need a connection (sign-out clears local state regardless) | — |
-| empty / permission-denied | not applicable | — |
+| state | when | design | copy |
+|---|---|---|---|
+| default | — | as Structure | — |
+| subscription loading | entitlements / store not answered yet | Subscription row shows the platform activity indicator as its trailing value (C-28) | — |
+| subscriber / not | `entitlements` (docs/API.md §5.22) | row 2 variant | as above |
+| permission states | system status | "Denied" value or none | `settings.root.permissions.denied` |
+| signing out | RPCs in flight | Sign Out row shows the activity indicator | — |
+| sign-out failed (offline) | `unregister_device` failed | sign out locally anyway (the token is cleared on the next registration) | — |
+| empty / error / permission-denied | — | not applicable at the root | — |
 
-## Motion · Haptics
+## Motion
 
-Native push/pop. No haptics.
+Sheet presentation: native, Retro's measured curve (`spring.global.sheetPresent`, settled `duration.global.sheetPresent`
+567 ms; the presenting screen scales back on iOS). Pushes inside the sheet: native. Reduce Motion: platform.
+
+## Haptics
+
+Row presses → `haptic.global.tap` (Android). Switches (none here). Sign-out confirmed → none (navigation is the feedback).
 
 ## Accessibility
 
-System list semantics; iOS large title; rows read their labels; the premium row reads title then subtitle. Dynamic Type
-by the system styles. Focus order = list order.
+- Rows are buttons (title + subtitle + value); the version row is static text; section headers are headers.
+- Dynamic Type: rows `subheadline` / `footnote`; rows grow; the avatar keeps 64.
+- Focus order: close → title → profile card → sections top to bottom.
+- Contrast: as `groups.settings` (rows 9, 11, 12, 13, 14 of `design/CONTRAST.md`); chevron `textSecondary` on group
+  **2.52:1 FAIL** light (non-text 3:1 needed; dark 5.31:1); section headers on page **2.85:1 FAIL** light (row 3).
 
 ## Data & actions
 
-- `entitlements` (own rows, docs/API.md §5.22) for the premium row.
-- Sign out: `unregister_device(p_push_token)` then `auth.signOut()` → `auth.phone`.
-- In: `walls.mine` header settings circle (the 'me' tab; Yope's own settings entry was not captured). Out: `paywall`,
-  `settings.notifications`, `settings.account`, `settings.blocked`, browser, mail.
+- `profiles` (own name, avatar), `auth.user.phone`, `entitlements` (own rows), RevenueCat customer info.
+- Permission status: `AVCaptureDevice.authorizationStatus`, `PHPhotoLibrary.authorizationStatus(for: .addOnly)`,
+  `AVAudioApplication.recordPermission`, `CNContactStore.authorizationStatus`, `UNUserNotificationCenter.notificationSettings`
+  / Android `ContextCompat.checkSelfPermission` + `NotificationManagerCompat.areNotificationsEnabled`.
+- Sign out: `unregister_device(p_push_token)` then `auth.signOut()` (docs/API.md §2).
+- In: `walls.mine` (settings capsule, C-19). Out: `settings.account`, `settings.notifications`, `settings.blocked`,
+  `paywall`, `onboarding.widget`, system Settings, legal pages, `auth.phone` (after sign-out).
 
 ## Platform notes
 
-iOS `NavigationStack` + `List(.insetGrouped)`; Android `Scaffold` + `LargeTopAppBar` + `LazyColumn` of `ListItem`.
+- iOS: one `.sheet` with its own `NavigationStack`; legal pages in `SFSafariViewController`.
+- Android: `ModalBottomSheet` (expanded) or a full-screen destination with an inner nav host; Custom Tabs for legal pages;
+  rows `color.global.surfaceSecondary.android`.
 
 ## Do-not-copy
 
-Badges with counts on rows (HIG badge = unread counts; tenets forbid counts).
+- Retro's referral rows ("Your Referrals", "Refer N friends…"), Postcards, "Follow Retro" socials, "Lock My Friend Requests",
+  "Neighborhood Captions", membership expiry countdowns ("Expiring in N days"), "Upgrade" upsell badges.
 
 ## Gaps
 
-| item | status | owner input |
+| item | status | smallest capture |
 |---|---|---|
-| where the settings entry sits | `walls.mine` header circle (placed by the social pass, `walls.mine.md`) | — |
-| support e-mail for "Contact Us" | not in `config/app.json` | owner (App Review 1.2 requires published contact information) |
-| legal URLs | `config/app.json` `legal.privacyUrl` / `legal.termsUrl` are null | owner |
+| Settings at full resolution | video frames only | raw screenshots of Retro's Settings (top + scrolled), light and dark (RV §6) |
+| Widgets carousel | one widget kind here → one row with a preview | — |
+| support e-mail, legal URLs | owner (`config/app.json`) | — |

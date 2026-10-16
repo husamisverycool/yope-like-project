@@ -737,3 +737,114 @@ widget), RC-14 (collage option, now including a Retro recap-card composition), R
 dots); owner: default audience with no context (all groups), Android lock-screen hub eligibility, static widget
 `previewImage`, notification small icon, `{app_name}` mark on shared collages; captures: Retro widget on a device at
 2 × 2, raw "Add to Your Week" with 2 photos selected, raw "Add a Message", Retro notifications as rendered.
+
+---
+
+## Redesign — Memory (RM-*)
+
+Pass: redesign Pass 2, memory group, 2026-10-16 (docs/REDESIGN_BRIEF.md "Pass 2"). Owns `design/tokens/memory.json`
+(74 tokens: 71 SOURCED, 3 PLATFORM, 0 BLOCKED — was 170), `design/copy/memory.json` (168 strings: 146 SOURCED, 21
+PLATFORM, 1 BLOCKED; 58 verbatim, 39 adapted, 71 new — was 127), `design/surfaces/{onthisday, year.story, birthday.add,
+birthday.request, birthday.contribute, birthday.tribute, tagging}.md` and this section. Inputs: `design/components.md`
+(C-01 … C-35), `design/copy-patterns.md`, `design/research/retro-visual.md`, `…/retro-package-copy-motion.md`,
+`…/retro-timehop.md`, `references/auto/retro/` (RAW Rewind and paywall captures, store / press renders, APK strings and
+excerpts), the mechanics research (`design/research/wrapped-tribute-partiful.md`, earlier "Memory" / "Gap fill"
+sections) and `backend/worker/{COPY_KEYS.md, src/tribute/render.ts, src/copy.ts}`. Rule: Retro is the identity; Wrapped
+(year-story pacing), Tribute / VidDay (birthday flow and video) keep the mechanics; native components are PLATFORM.
+All Timehop, Wrapped, Tribute and Yope visual tokens were removed (136; list in "Problems found").
+
+### Evidence gathered in this pass
+
+All measurements with `python3 -I` (PIL + numpy) on the files below.
+
+| what | source (coordinates) | used for |
+|---|---|---|
+| Rewind dial at rest: centre (630, 2217.5); ticks at 5.7° + k × 8.19° (44 slots), long ticks inner radius 167 px, short 191 px, outer 226.5 px; tick width ≈ 9–10 px; tick alpha white 0.30–0.33; indicator at slot 21 (178°), radius 176.5–226 px, solid white; play glyph ink 31.7 × 35.0 pt; share x107–299 / random x959–1151 (64 pt) on 1260 px; dial centre 739.2 pt on a 912-pt screen | `references/auto/retro/press/tc-2025-12-rewind-device-b.jpg` (RAW, 3.000 px/pt) | `*.onthisday.dial.*`, `count.onthisday.dial.ticks`, `layout.onthisday.dial`, `.controls`, `dimension.onthisday.controls.centerY` |
+| Rewind dial, second state: centre (660, 2288.5); ticks 6.0° + k × 8.19°, long 155.5–214.5 px, short 179.5–214.5 px, outer 214.5 px (143 pt ring), indicator slot 0 (6°) radius 130–214 px; 26 ticks alpha 0.295–0.307 (median 0.300); play glyph 33.7 × 37.3 pt; share x118.5–310.5, random x1009.5–1201.5; '•••' x1152–1271 y276–396; date '1' cap y285–376 | `references/auto/retro/press/tc-2025-12-rewind-device-a.png` (RAW PNG) | tick colour, slot geometry, RM-3 |
+| 'On this week' subtitle: glyph core (218,204,197) over (38–39,65–66,52) → white 0.83 / 0.73 / 0.71; date baseline y823 → subtitle baseline y886 | `references/auto/retro/press/tc-2025-12-rewind-panels.png` phone 1, `references/auto/retro/store/retro-store-05.png` | `color.onthisday.subtitle`, `dimension.onthisday.subtitleBaseline` |
+| Recap preview 2023: frame x1075–1702 y320.5–1448.5 (corner fit R 40.6 px = 24 pt), card x1129.5–1647.5 y494.5–1274.5, grid 4 × 6, cells 121.5 × 108.5 px, gaps 2–3 px, padding 12.5 px, corner fit 26.4 px (rms 0.5), footer 109 px; close fill 143 over 90, bar circle 76 on 0 (white 0.30); Share x1529.5–1673 y1468.5–1539.5, label 'S' 1495–1514; dots y1474; phone 3 footer '2023' y1352–1401, name / app right ink x2530 | `references/auto/retro/press/tc-2023-12-recaps.png` (1.695 px/pt) | `layout.year.story.recapCard`, `dimension.year.story.frame.padding`, `.footer.baseline`; chrome superseded by the 2026 render (RM-8) |
+| Recap preview 2026: page bottom y2385.5, dots y2417–2431, leading thumbnail x216–306 | `references/auto/retro/store/retro-store-04.png` (2.389 px/pt) | `dimension.year.story.dots.offset`; other values = capture's `collage.view.layout.screen` / `collage.share.layout.pill` |
+| Yearly recap card: card x1650–2503, padding 16 px, gaps 6 px, 3 × 3 cells 3:4, footer 191 px, '2023' cap 66 px | `references/auto/retro/press/tc-2023-12-retro-header.png` | `layout.year.story.recapCard` (variant) |
+| Paywall plan card (RAW): close x1031.5–1127.5 y203.5–299.5; headline baseline y1121 → line 1179; line 2 bottom 1299 → card top 1386; title 1464–1515; detail 1548–1588; steps 1668 / 1764 / 1860 (52 px markers, text from x210); footnote 2101–2141 → capsule 2229; card bottom 2456 → line under it 2502 | `references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png` (3.000 px/pt) | `*.birthday.request.*` |
+| Postcard composer: 'Postcard' baseline y792, photo y870–1880 x285.5–996, pill bottom 1830 | `references/auto/retro/store/retro-store-03.png` (2.389 px/pt) | `*.birthday.contribute.titleToPhoto`, `.photoWidth`, `.photoMaxHeight`, `.pillBottom` |
+| 'Add a Message' modal: screen x1937–2564 (1.595 px/pt), text from x1972, 'Done' right 2531, counter x2439–2531 y1006–1029, keyboard top 1058.5 | `references/auto/retro/press/tc-2023-12-retro3.png` phone 3 | `*.birthday.contribute.messageInset`, `.counterInset`, `.counterAboveKeyboard` |
+| Retro strings (keys cited per entry): `rewind_home_*`, `rewind_mode_selection_sheet_shuffle`, `add_to_user_profile_week_sheet_badge_text_rewind_memory`, `home_rewind_upsell_feed_card_*`, `home_feed_card_annual_recap_title`, `home_feed_card_annual_retrospective_attribution_template`, `retrospective_page_title_*`, `recap_composer_share_cta`, `media_viewer_comment_overflow_*`, `media_viewer_footer_tagged_users_*`, `media_viewer_tagged_user_*`, `media_viewer_view_tagged_users_empty`, `media_viewer_tag_user_permission_denied_error_tag_title`, `postcard_composer_*`, `error_message_*`, `edit_address_success_message`, `delete_media_confirmation_action_delete` | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | `design/copy/memory.json` |
+
+### Conflicts and resolutions
+
+| # | topic | values and sources | resolution | rule / evidence | status |
+|---|---|---|---|---|---|
+| RM-1 | Visual references | onthisday: Timehop banner + masonry; year.story: Wrapped canvas, progress segments, chrome; birthday.*: Tribute web pages and stepper; tagging / birthday.add: Yope roles | Retro: Rewind (onthisday), recap preview + Year in Photos copy (year.story), paywall card / postcard composer / 'Add a Message' (birthday.request / .contribute), C-35 + recap row (birthday.tribute), viewer tag footer + 'In this photo' (tagging), C-33 / C-14 (birthday.add); mechanics tokens kept (Wrapped reveal and tap-through, VidDay card time and line limit, Tribute / VidDay video contract, day boundary) | docs/REDESIGN_BRIEF.md three layers | resolved |
+| RM-2 | Rewind copy for a day-matching feature | Retro 'On this week' (camera roll, week match); our `on_this_day` matches month and day in the group | 'On this day' (noun swap) with ' · {name}' for the member who posted; shuffle → Retro's 'Memories'; entry 'Revisit memories from {date} over the years' / 'View memories' | docs/API.md `on_this_day`; copy-patterns adaptation rules | resolved |
+| RM-3 | Two dial states | RWB: ring 150, indicator 16.7, glyph 35, centre 139.2 above the safe-area bottom; RWA (same month): ring 143, indicator 28, glyph 37.3, centre 159.2 | RWB = the resting dial (matches research's 150 ±2); RWA recorded as another state (pressed / dragging — not identifiable from a still) | both RAW; the resting state is the one a static spec draws | open: 10 s recording of the dial dragged and released |
+| RM-4 | Dial semantics | Retro: 'Drag the dial to take a spin through your memories', one tick haptic per step (APK); indicator seen on slots 0, 21 and others (renders) | one slot per memory, indicator on the current memory's slot, start slot 0 (RWA), clockwise = next; playing advances one slot per memory | Retro's own string and package; clock convention for direction | open (same recording) |
+| RM-5 | Dice (random) | Retro 'Shuffle' mode over the camera roll; our API has no random RPC and `on_this_day` is per date | shuffle = random post of the group's history via `group_history_weeks` (pages of 52); respects `free_history_days` (T1) | lead's group notes ('share + dice buttons'); API 6.4 | **owner**: keep shuffle beyond today's date? |
+| RM-6 | Share on Rewind | Retro shares the user's own camera-roll photo (share frame with 'retro.app'); M-20 had dropped share (other members' photos leave the group) | native share sheet with the photo for every memory (as `photo.viewer`'s "save" already allows); Retro's frame not built (Helvetica / Fraktion Mono type, brand line); preview 'Tuesday, December 2' (today) / 'Memory' | RWP phone 3; consistency with the viewer | **owner**: restrict to your own photos? |
+| RM-7 | Rewind as a pushed page | Retro: a tab with the tab bar over the photo; our feature opens from a group | pushed page with C-02 back + date title; no tab bar; the controls keep Retro's distance from the bottom (139.2 pt) | C-02, C-35 | resolved |
+| RM-8 | Recap-preview chrome (year.story frame, bottom row; tribute bottom row) | TC-REC 2023 (frame 11.5 inset, r 24, close top-left white 30 %, bar circle 41.9, Share 84.7 × 41.9) vs ST-04 2026 (full-width page, r 26.5, close #262626 top-right, Share 90.8 × 43.5) — the capture group took ST-04 (RC-15) for `collage.view` / `collage.share` | ST-04 via the capture tokens `collage.view.layout.screen` and `collage.share.layout.pill` (referenced, not duplicated); TC-REC kept only for the recap card's inner layout and the full-bleed footer (not shown in ST-04); 9:16 content box (ST-04 page = 393 × 698) | newer beats older (R-* rule); one definition per Retro screen | resolved; **lead / Pass 5**: promote the recap preview (page, close, row, Share pill, dots offset) to a global component — `week.recap` (social) uses the same screen |
+| RM-9 | Tagging affordance | Yope-era white pill toggle + lime coach; Retro: footer run 'Tag friends' / ' · with {names}', 'In this photo' sheet, 'Remove tag' | Retro's footer run ('I'm in this' when untagged → tags you; 'with {names}' → sheet) and sheet; only self-tags; tags shown to members (API 5.11); no coach (Retro has none) | Retro strings; tenet: no counts ('%1$d friends' not used) | resolved; **hand-off `photo.viewer` (social)**: append the run to the C-22 footer's second line |
+| RM-10 | Birthday request composition | Tribute: photo hero at 0.7, 24/600 title, 62-pt r8 button, prompts on #292D34; Retro paywall: blurred backdrop, serif headline, plan card with numbered steps | PAY composition: honoree avatar (C-23 64) in place of PAY's feature media, serif headline, invitation line, card with 'Message ideas' + numbered prompt rows + C-05, due date under the card | SURFACES (screen 27 assigned); C-34 | resolved |
+| RM-11 | Contribution flow | Tribute 3-step stepper, 46-pt translucent field, 'Use Photo' / 'Retake'; VidDay 'no visible counter' | Retro composer sheet (grid) → dark postcard-style composer ('Add a message' pill) → 'Add a Message' modal with Retro's counter ('{count}/110'); stepper removed | SURFACES (screens 17, 18, 30); TC-R3 shows the counter | resolved |
+| RM-12 | Tribute video look | VidDay paper title / end cards (#EFEEF3 / #444347, Medium), Tribute navy badge (#11202FC7, bold) | Retro media: black cards, white text, weight 400; caption band = `color.global.scrim` (#00000099), name 600, line 400; geometry (ratios, timings) unchanged; token names and shapes unchanged | identity = Retro; worker contract kept | resolved; **worker hand-off**: serif (Noto Serif, OFL) for card text and Inter (OFL) for captions instead of Roboto; update `COPY_KEYS.md` status text; colour emoji in lines render as missing glyphs with Roboto |
+| RM-13 | Year-story copy | Wrapped verbatim lines ('We're ready for you.', 'Come on down.', 'Long live the moment.', 'Luckily, we took notes.', 'One more thing...', 'Until we meet again...', 'Replay from beginning'); Retro Year in Photos ('Let’s look back at your 52 weeks', '… was the most memorable', 'You didn’t go through these moments alone —', 'Here’s to another year in the books') | Retro's lines; counts only where T3 allows ('{group} shared {count} photos this year'); most-reacted framed as 'The moments you reacted to most' (T2; Retro's 'loved the most' is do-not-copy) | copy-patterns `retro.voice.retrospective` + tenet filters | resolved; T2 / T3 stay owner decisions |
+| RM-14 | Date formats | Timehop 'TUE 10:34 PM', Wrapped 'February 25', Tribute 'Wednesday, December 31, 2025', Yope '26 May' | Retro: Rewind 'Jul 22, 2022' (medium), within the year 'Wednesday, July 5', birthday 'July 5', month 'December' | RWA / RWB, TC-2B, RWP, TC-REC | resolved |
+| RM-15 | Research corrections | retro-timehop: '≈45 ticks', long tick 18 (p50 inner radius); C-35 subtitle 'not measurable' | 44 ticks (constant 8.19° pitch on both RAW captures); long 19.8 / short 11.8 measured on the ticks; subtitle white 76 % ±6 % (channel mismatch noted) | direct measurement | resolved |
+| RM-16 | Media pages in light appearance | themed tokens on always-dark pages (e.g. page-dot inactive #DDDDDD in light = 1.36:1 against white active dots) | media pages render their subtree in the dark appearance (iOS `.environment(\.colorScheme, .dark)`, Android `DsTheme(dark = true)`); sheets over them follow the system | `layout.global.appearance.media`; capture RC-1 does the same | resolved; Pass 3 / 4 |
+| RM-17 | Removed surfaces' states (empty / error / offline) | Yope lowercase lines, Timehop 'Collecting Memories' / 'Time Travel Failed' | C-27 / C-28 states with Retro's error strings ('Something went wrong' / 'There was a problem. Please try again.' / 'Try Again'); offline 'No Connection' + 'Check your connection and try again.' | copy-patterns `retro.voice.error` | resolved |
+
+### BLOCKED re-examined
+
+- Closed by Retro: the Timehop items M-9 (banner colour rule) and M-10 (progress bar) no longer exist (Rewind has no
+  banner); M-23 (Wrapped text width) replaced by the frame padding; M-20 share (built, RM-6) — Retro's 'Hide photo'
+  stays unbuilt (no API).
+- Still BLOCKED: copy `year.story.card.app` (the app line on the recap card, Retro's 'retro.app') — owner names the app
+  and its domain. No token is BLOCKED.
+- Still open (not BLOCKED, captures listed in each spec's Gaps): RM-3 / RM-4 (dial recording), M-24 (tap halves —
+  Wrapped capture 1), T2 / T3 / T5 (owner), everyone-days selection (owner).
+
+### Problems found (for other passes)
+
+- **Removed tokens still referenced by code (Pass 4)** — 129 of 136 (unreferenced: `layout.onthisday.navigation`,
+  `.progress`, `.photo.single`, `layout.year.story.progress`, `.reveal.samples`, `.text`,
+  `layout.birthday.request.structure`): `ios/App/Sources/Features/Memory/{OnThisDay/OnThisDayScreen,
+  YearStory/YearStoryCanvas, YearStory/YearStoryScreen, Birthday/BirthdayRequestScreen, Birthday/BirthdayContributeScreen,
+  Birthday/TributeScreen, Shared/MemoryControls}.swift`, `ios/AppTests/Memory/MemoryYearStoryTests.swift`,
+  `android/feature/memory/…/{onthisday/OnThisDayScreen, yearstory/YearStoryScreen, yearstory/YearStoryCards,
+  yearstory/ShareCards, birthday/BirthdayRequestScreen, birthday/BirthdayContributeScreen, birthday/BirthdayParts,
+  birthday/TributeScreen}.kt`. Kept layout tokens that lost fields: `layout.year.story.summary.previewWidthRatio`
+  (`ios/…/YearStory/YearStoryScreen.swift:253`, `android/…/yearstory/YearStoryScreen.kt:326`),
+  `layout.birthday.request.dueDate.style` (no code use).
+- **Removed copy keys still referenced by code** (all 26): `onthisday.banner.yearsAgo.one` / `.other`,
+  `onthisday.memory.meta`, `onthisday.a11y.close`, `year.story.moments.title`, `.moments.aside`, `.busiestMonth.aside`,
+  `.mostReacted.aside`, `.outro.teaser`, `.outro.subtitle`, `.summary.share`, `birthday.add.a11y.close`,
+  `birthday.request.ease`, `.thanks`, `.notFound.detail`, `birthday.contribute.step.photo` / `.message` / `.done`,
+  `.greeting`, `.thanks`, `.review.use`, `.review.retake`, `.line.label`, `.done.button`,
+  `birthday.tribute.notFound.detail`, `tagging.coach` — in the memory screens, `ios/…/Memory/Shared/MemoryStyle.swift`,
+  `android/…/memory/common/Formats.kt`, `…/tagging/SelfTagToggle.{swift,kt}` and the memory tests.
+- **Cross-group token use:** `year.story` and `birthday.tribute` read the capture group's `collage.view.layout.screen`
+  and `collage.share.layout.pill` (RM-8); `year.story` reads `dimension.birthday.request.headlineToMessage` and
+  `birthday.tribute` reads `dimension.onthisday.subtitleBaseline` (same group). The capture pass notes that
+  `SelfTagToggle` and `MemoryControls` used its removed coach / toast tokens — the new tagging spec needs neither.
+- **groups.screen (account):** the entry cards change copy — on-this-day card title / line / action
+  (`onthisday.entry.title`, `.entry.subtitle`, `.entry.button`; the years-ago keys are gone), year story
+  (`year.story.entry.*`: 'Year in Photos' / '{year} Recap' / 'View memories'), birthday request row
+  (`birthday.request.title`, `.due`).
+- **photo.viewer (social):** host the tag run in the C-22 footer's second line (RM-9) and expose it to assistive
+  technology as one button.
+- **settings.account (account):** the 'Birthday' row pushes `birthday.add` (title `birthday.add.manage.title`).
+- **notifications.push (capture):** the birthday request / tribute pushes are the capture group's
+  (`notifications.push.birthdayRequest.*`, `.tribute.*`, already in Retro voice with "No pressure."); the request
+  screen's line (`birthday.request.body`) matches them.
+- **Worker:** no key or token name the worker reads changed; values of `layout.birthday.tribute.titleCard`, `.endCard`,
+  `.caption` changed (RM-12) — re-render the tribute test fixtures; `backend/worker/COPY_KEYS.md` status column still
+  quotes the old values.
+- **Foundations (lead):** `color.onthisday.dial.tick` and the recap-preview values are candidates for global tokens if
+  another surface needs them; C-35's subtitle opacity gap is closed by `color.onthisday.subtitle` (±6 %).
+
+### Unresolved (owner, capture or verification)
+
+RM-3 / RM-4 (10 s recording of Retro's Rewind dial), RM-5 (shuffle scope) and RM-6 (sharing others' photos) — owner;
+RM-8 (promote the recap preview to a global component — lead); RM-12 (worker fonts — worker team); copy
+`year.story.card.app` (app name); docs/SPEC_FLAGS.md T2 / T3 / T5; captures: one RAW Retro Year in Photos recording
+(December), one RAW recap preview, one RAW screenshot of a tagged photo with its 'In this photo' sheet, RAW
+'Add to Your Week' with 2 photos selected.

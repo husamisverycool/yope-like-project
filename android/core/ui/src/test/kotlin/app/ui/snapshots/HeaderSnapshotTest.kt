@@ -80,7 +80,7 @@ class HeaderSnapshotTest(appearance: Appearance) : SnapshotTest(appearance) {
 
     @Composable
     private fun CircleRow(content: @Composable () -> Unit) {
-        Row(Modifier.padding(horizontal = Tokens.Sizes.globalScreenMargin), horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalCardGap)) { content() }
+        Row(Modifier.padding(horizontal = Tokens.Sizes.globalScreenMargin), horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalCardGap), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) { content() }
     }
 
     @Test fun c11BareGlyphs() = snap("c11-icon-buttons", "bare-glyphs") {

@@ -1,138 +1,154 @@
-# `groups.screen` — group screen (photos, members, entry to chat, walls, week, settings)
+# `groups.screen` — the group (photos, members, chat, weeks, settings)
 
-Reference: **Yope** group screen (header, hour cards, "chat" pill) and group profile page. Research:
-`design/research/yope-a.md` §2.12–2.13; `design/research/yope-b.md` §1 (header values). API: `docs/API.md` §5.3–5.4,
-§5.8, §8, §9.6. Tokens: `groups.screen.*` + global. Copy: `groups.screen.*`.
-
-Two views: **A. feed** (the group's photos as stacked cards, header, floating "chat" pill) and **B. profile page**
-(tap the header capsule: avatar, name, segmented "pics | wall | recaps", ••• menu).
+Visual reference: Retro **album detail** (inventory #13, TC-J1 phone 3: book cover with its shadow, serif title, grey
+meta line, outline capsules Settings / Share + "+", dated sections with "•••", 3-column grid with 2 pt gaps) with
+Retro's **home week strip** for the group's current week (#1 / #2: C-20 header + C-17 strip, add tile) and its
+**friend cards** for the members' weeks (#2: C-18). Header glyphs follow Retro's home header (book + chat, H22).
+Tokens: `groups.screen.*` + `global.*`. Copy: `groups.screen.*`.
 
 ## References
 
 | id | file | used for |
 |---|---|---|
-| G1 | `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t43.73-group-screen-hourly.png` (2026-05) | header (‹, capsule, calendar, recap), photo cards 378 × 152 pt r 20, gap 8.5, "chat" pill 88 × 51 |
-| G2 | `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png` | created empty state, white pill r 11 |
-| G3 | `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.73-group-profile-add-20-pics.png` | profile page: ‹, •••, avatar 92, name 25 bold, segmented control |
-| S1 | `references/auto/yope/store/yope-store-01.png` (lossless) | header capsule geometry (avatar 28, name 15 bold, ›), background #171717 |
-| M24 | `references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png` | ••• native menu: "share invite", "leave group" (red), "report" (red) |
-| BI | `references/auto/yope/web/a-bi-2025-create-group-composite.jpg` | "Kailyn joined" system pill between photos |
-| G4 | `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t8.73-group-wall-header.png` (2026-10, 1:1 space) | conflict only (taller cards, black background) |
+| TC-J1 | `references/auto/retro/press/tc-2024-04-journals-1.webp` phone 3 (2.0687 px/pt) | cover 173.5 × 246 + shadow, cover → title 36.7, title cap 23.2 (≈ displayMedium), title → meta 16, meta → capsules 26.6, capsules 36.7 high, dated header + "•••", 3-column grid |
+| H43, H22 | `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png`, `…-20260528-week22-dark-a.png` | header glyphs 48 apart (C-01), week strip and tiles (C-17), empty-week block (C-27) |
+| ST-01, ST-02 | `references/auto/retro/store/retro-store-01.png`, `…-02.png` | populated strip with weekday labels; week header "Week 27  Jul 3 - 9" (C-20); friend cards (C-18); profile action row with gear capsule (C-19 / C-06) |
+| ED-A | `references/auto/retro/store/editorial/retro-appstore-story-1840659619-albums.png` | friend-card pager geometry |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | `journal_profile_*` empty / non-member states, `journal_tab_loading_error`, `header_title_week_number_template`, `self_profile_header_recaps`, `friends_tab_invite` |
 
-## A. Feed — structure (background per `groups.screen.layout.background` → feed)
+## Structure (pushed screen; page `color.global.background` / `.background.android`; one vertical scroll)
 
-1. Header row (S1, matches yope-b header values): ‹ circle (`size.global.headerButton`, fill `color.global.control`,
-   `icon.global.back`, inset `size.global.headerInset`); gap `size.global.headerGap`; **capsule** (height
-   `size.global.headerButton`, fill `color.global.control`, `radius.global.capsule`, hugs content up to the space left):
-   group avatar `size.global.avatarHeader` · name (`fontSize.global.headerTitle`, `fontWeight.global.headerTitle`,
-   `color.global.textPrimary`, one line) · `icon.global.chevron` in `color.global.textSecondary`; trailing circles:
-   calendar (`icon.global.calendar`) and recap (`icon.global.recap`), each `size.global.headerButton`, `color.global.control`,
-   `size.global.headerGap` apart, inset `size.global.headerInset`.
-2. Photo cards, newest at the top, one per post: full width minus `groups.screen.size.cardMarginH` each side, height
-   `groups.screen.size.cardHeight`, corners `groups.screen.radius.card`, gap `groups.screen.size.cardGap`; photo
-   `scaledToFill`. On the card: time centred (`fontSize.global.overlayTime`, `fontWeight.global.overlayTime`, white,
-   `h:mm AM/PM`); caption under the time (`fontSize.global.listSubtitle`, white); author avatar
-   (`size.global.avatarHeader`) + first name (`fontSize.global.listSubtitle`, `fontWeight.global.listSubtitle`, white) at the
-   bottom-leading corner, `groups.screen.size.cardGap` from the card edges (insets not measured, see Gaps); ••• circle at
-   the bottom-trailing corner. A dual-capture post shows its back
-   image; Live Photos and videos follow `photo.viewer`.
-3. "{first_name} joined" system pills between cards at the joining time (`groups.screen.memberJoined`; pill = capsule,
-   fill `color.global.control`, text `fontSize.global.listSubtitle` `color.global.textPrimary`, avatar
-   `size.global.avatarSmall` leading — from BI, sizes not measured).
-4. Floating "chat" pill, bottom centre above the home indicator: `groups.screen.size.chatPillWidth` ×
-   `.chatPillHeight`, fill `groups.screen.color.chatPill`, corners `radius.global.button` (approximation: rounded square
-   ends, not measured), `icon.global.chats` + label `groups.screen.chat` (`groups.screen.fontSize.chatPill`, bold, white).
-
-## B. Profile page — structure (background → profile, black)
-
-1. Header row: ‹ circle (fill `color.global.controlOnDeep`) leading; ••• circle (`icon.global.more`) trailing.
-2. Group avatar `groups.screen.size.profileAvatar`, centred (cover, or the gray + `icon.global.group` fallback).
-3. Name `groups.screen.fontSize.profileName` / `.fontWeight.profileName`, white, centred, up to 2 lines.
-4. Member avatars row (overlapping circles, `size.global.avatarSmall`, no count) → `groups.settings` members.
-5. Segmented control (`groups.screen.size.segmentHeight`, `.segmentMarginH`, `.segmentInset`, track
-   `groups.screen.color.segmentTrack`, selected `color.global.surfaceLight` / `color.global.onSurfaceLight`, labels
-   `groups.screen.fontSize.segmentLabel` / `.fontWeight.segmentLabel`): pics → grid of the group's photos
-   (`radius.global.photo`); wall → `walls.browse` scoped to this group's members; recaps → `week.history`.
-6. ••• menu (`groups.screen.layout.menu`, native): `groups.screen.menu.shareInvite` (`icon.global.share`),
-   `groups.screen.menu.settings` (`icon.global.settings`), `groups.screen.menu.leave` (`icon.global.leave`, destructive),
-   `groups.screen.menu.report` (`icon.global.report`, destructive).
+1. **Header row (C-02 without a title)**: back chevron `icon.global.back` at `size.global.backInset`; trailing glyphs
+   (C-01 metrics: `size.global.icon` box, `size.global.headerIconPitch` 48 apart, last ink at `size.global.headerInset`):
+   `icon.global.calendar` → `week.history`, then `icon.global.chats` → `chat.thread`. The row sits where C-01 centres its
+   glyphs (on the cap middle of a title at `size.global.titleTop`).
+2. **Cover** (C-24): `size.global.titleToContent` below the title baseline line, centred, `groups.screen.size.coverWidth` ×
+   `.coverHeight`, `radius.global.thumbnail`, shadow `groups.screen.shadow.cover`; aspect-fill; no cover →
+   `color.global.control` fill with `icon.global.group` centred in `color.global.textSecondary`.
+3. **Name**: `groups.screen.size.coverToTitle` (36.7) below the cover, the group name in `font.global.display`,
+   `displayMedium` (32), `color.global.textPrimary`, centred, up to 2 lines.
+4. **Members**: `groups.screen.size.titleToMeta` (16) below the name baseline: avatar stack (C-23,
+   `size.global.avatarSmall`, overlap `size.global.avatarStackOverlap`), joining order, centred, as many as fit the
+   screen width minus 2 × `size.global.screenMargin` (no "+N", no count) → tap = members in `groups.settings`.
+5. **Actions**: `groups.screen.size.metaToActions` (26.6) below: action row (C-19 / C-06 metrics) inside
+   `size.global.screenMargin`: outline capsule `groups.screen.recap.accessibilityLabel` ("Recaps") and outline capsule
+   `groups.screen.invite` ("Invite"), equal widths, then the icon-only outline capsule (`size.global.iconPillWidth` 49,
+   `icon.global.settings` `size.global.iconSmall`), all `size.global.pillHeight` high, `size.global.pillGap` apart.
+6. **This week** — `size.global.sectionGap` (36.4) below the capsules:
+   - C-20 header: `groups.screen.week.title` (text role `sectionLabel`) + date range (`listSubtitle`,
+     `color.global.textSecondary`; locale range format); the current week shows no range when it has no photos (C-20);
+   - `size.global.sectionHeaderToContent` (11.7) below: **week strip (C-17)** at the margin: the group's photos posted
+     this week (group time zone, Monday start), oldest → newest, photo tiles 84 × 112 with the weekday label;
+     **add tile last** (→ `camera.capture` for this group); when the week has no photos yet: add tile **first**, then
+     empty-day tiles for each remaining day of the week (Retro's empty week, H43 / H22) and the C-27 block below
+     (see States).
+7. **Members' weeks** — shown when at least one member shared this week: `size.global.sectionGap` below the strip,
+   a horizontal pager of **friend cards (C-18)**, one per member who shared this week (newest first): avatar
+   `size.global.avatarList` + first name (`listTitle`) above a 240 × 361 card showing that member's newest photo of the
+   week; cards `size.global.cardGap` apart, the next card peeking; no badge (Retro's "N new" / "Seen" are do-not-copy).
+8. **Earlier** — photos from before this week, newest first, paged: dated sections (C-20 dated variant: the day in
+   the long date format, text role `sectionLabel`; no "•••") over a 3-column grid of square cells (C-21, `radius.global.photo`
+   0, `size.global.stripGap` 2 gaps, full width inside the margins); `size.global.sectionGap` between sections.
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| ‹ | as Structure | `groups.screen.back.accessibilityLabel` | pop |
-| capsule | as Structure | `groups.screen.header.accessibilityLabel` | → B (profile) |
-| calendar | `icon.global.calendar` | `groups.screen.weeks.accessibilityLabel` | → `week.history` |
-| recap | `icon.global.recap` | `groups.screen.recap.accessibilityLabel` | → latest `week.recap` (or `week.history` when none) |
-| photo card | card tokens above | `groups.screen.photo.accessibilityLabel` ({first_name}, {time}) | tap → `photo.viewer`; long press = `photo.viewer` reactions (that pass) |
-| ••• on card | circle `size.global.avatarHeader`-sized hit area ≥ `size.global.minTouchTarget.*`, `icon.global.more`, fill `color.global.controlRaised` (approximation) | `groups.screen.photo.more.accessibilityLabel`; menu `groups.screen.photo.menu.report`, `.block` (others' photos) / `.open` (own) | native menu (`safety.block.layout.menu`) → `safety.report` (post) / `safety.block` (author) |
-| chat pill | `groups.screen.size.chatPill*`, `.color.chatPill`, `.fontSize.chatPill`, `icon.global.chats` | `groups.screen.chat` | → `chat.thread` |
-| created empty state | `fontSize.global.emptyTitle` / `fontWeight.global.emptyTitle`; `fontSize.global.emptyDetail` italic `color.global.textSecondary`; pill `color.global.surfaceLight`, `groups.screen.size.lightPillHeight`, `groups.screen.radius.lightPill`, `icon.global.link`, label text role `button` | `groups.screen.created.title`, `.detail` ({names}), `groups.screen.created.invite.friends` / `.family` / `.roommates` / `.custom` | pill → `groups.invite` |
-| segmented | as B.5 | `groups.screen.profile.segment.pics`, `.wall`, `.recaps` | switches the page content |
-| ••• (profile) | `size.global.headerButton`, `icon.global.more` | `groups.screen.profile.more.accessibilityLabel`; items `groups.screen.menu.*` | leave → `groups.settings` leave alert; report → `safety.report` (group) |
+| back | C-02 | `groups.screen.back.accessibilityLabel` | pop |
+| calendar glyph | C-01 glyph `icon.global.calendar` | `groups.screen.weeks.accessibilityLabel` | → `week.history` |
+| chat glyph | C-01 glyph `icon.global.chats` | `groups.screen.chat` | → `chat.thread` |
+| cover | `groups.screen.size.coverWidth` / `.coverHeight`, `radius.global.thumbnail`, `groups.screen.shadow.cover` | `groups.screen.cover.accessibilityLabel` | decorative (no action) |
+| name | `font.global.display`, `displayMedium`, `groups.screen.size.coverToTitle` | group name (data) | header trait |
+| members | C-23 stack, `groups.screen.size.titleToMeta` | `groups.screen.members.accessibilityLabel` | → `groups.settings` (members section) |
+| Recaps | C-06 outline | `groups.screen.recap.accessibilityLabel` | → latest `week.recap` (or `week.history` when none) |
+| Invite | C-06 outline | `groups.screen.invite` | → `groups.invite` |
+| settings capsule | C-06 icon-only (`size.global.iconPillWidth`, `icon.global.settings`) | `groups.screen.settings.accessibilityLabel` | → `groups.settings` (sheet) |
+| week header | C-20 | `groups.screen.week.title` ({number} ISO week) + range | static |
+| strip tiles | C-17 (`size.global.stripTileWidth` / `.stripTileHeight`, `size.global.stripGap`, `radius.global.card` outer, `layout.global.photoScrim`, `tileLabel`; empty-day `color.global.control` + `color.global.emptyTileText`) | photo tile `groups.screen.photo.accessibilityLabel` ({date}, {first_name}); add tile `groups.screen.week.add.accessibilityLabel` | photo → `photo.viewer` (this week, this group); add → `camera.capture` (`DeepLink.camera(groupID:)`); long press → `groups.screen.layout.menu` |
+| friend card | C-18 | name (data); card label `groups.screen.photo.accessibilityLabel` | → `photo.viewer` on that member's photos of the week |
+| grid cell | C-21 dated grid | `groups.screen.photo.accessibilityLabel` | → `photo.viewer`; long press → menu (`groups.screen.photo.menu.report`, `.block`) |
 
 ## States
 
 | state | when | design | copy |
 |---|---|---|---|
-| loading | first fetch | Loading HUD centred | `groups.create.hud.loading` |
-| created (empty) | the viewer created it and no posts exist | Yope created empty state centred in the feed (G2) | `groups.screen.created.*` (+ per-type invite pill) |
-| empty | joined group without posts | same layout; pill with `icon.global.camera` | `groups.screen.empty.title`, `.detail`, `.button` (→ `camera.capture`) |
-| error | fetch failed | same layout + retry pill | `groups.screen.error.*` |
-| offline | no connection | cached cards stay; with no cache, the layout without pill | `groups.screen.offline.*` |
-| removed | `not_group_member` | layout without pill; ‹ returns home | `groups.screen.removed.title`, `.detail` |
-| blocked author | posts of a blocked person are absent (RLS) | nothing shown, no placeholder | — |
-| permission-denied | — | none | — |
+| loading | first fetch, nothing cached | header, cover placeholder (`color.global.control`), name; strip of C-17 placeholder tiles; no members' weeks; grid of `color.global.control` cells (C-28 placeholder form) | — |
+| created (empty) | you created it and nobody posted yet | strip = add tile + empty-day tiles; under the strip the C-27 block: glyph `icon.global.calendar` → title → explanation → outline CTA C-07 with `icon.global.add` → `groups.invite` | `groups.screen.created.title`, `.created.detail`, `.created.invite.friends` / `.family` / `.roommates` / `.custom` (by `groups.kind`) |
+| empty | joined group without posts | same strip; C-27 block whose CTA → `camera.capture` | `groups.screen.empty.title`, `.empty.detail`, `.empty.button` |
+| quiet week | earlier photos exist, none this week | strip = add tile + empty-day tiles; no block (Retro's empty week shows the block only on an empty home) ; members' weeks hidden | — |
+| error | fetch failed, nothing cached | header + cover + name; one tappable line under the actions (`body`, `color.global.textSecondary`) | `groups.screen.error.title` (tap = retry) |
+| offline | no connection | cached content stays; with no cache, C-27 block without glyph or action under the name | `groups.screen.offline.title`, `.offline.detail` |
+| removed | `not_group_member` | header (back only) + C-27 block centred | `groups.screen.removed.title`, `.removed.detail` |
+| blocked author | RLS hides their posts | nothing shown, no placeholder | — |
+| permission-denied | — | not applicable | — |
 
 ## Motion
 
-Push in from `groups.list`; profile page = native push; menu = native. New post insert (realtime): the card appears at
-the top with `spring.global.platformDefault.*` (Yope's arrival motion not measured); Reduce Motion → cross-fade.
+- Push in from `groups.list` (native). Settings: sheet (`spring.global.sheetPresent`).
+- Opening a photo from a tile / card / cell: `duration.global.photoOpen` (250 ms, `easing.global.standard`; C-22).
+- A new post (realtime): its strip tile inserts with `duration.global.stripInsert` (250 ms), fading in from scale ≤ 0.875
+  with `duration.global.fade` (C-17, VM §D); a new friend card fades in `duration.global.fade`; grid cells cross-fade
+  `duration.global.crossfade`. Reduce Motion: no scale or slide; cross-fades of the same durations.
 
 ## Haptics
 
-Menu open: system (`haptic.global.longPressStart`). Segment change → `haptic.global.select`. No haptic on new posts.
+Presses (glyphs, capsules, tiles, cards, cells) → `haptic.global.tap` (Android). Long press → system
+(`haptic.global.longPressStart`). No haptic on arriving posts.
 
 ## Accessibility
 
-- Header: three buttons + capsule button. Cards: image elements with `groups.screen.photo.accessibilityLabel`, caption as
-  value; ••• a separate button. Announce new cards (`UIAccessibility.post(.layoutChanged)` / `announceForAccessibility`)
-  only while the screen is focused.
-- Dynamic Type: header title `subheadline`; time overlay `title2`; caption/name `subheadline`; chat label `subheadline`;
-  profile name 25 → `title1`; segments `subheadline`.
-- Focus order (feed): ‹ → capsule → calendar → recap → cards (top to bottom: image, •••) → chat.
-- Contrast: white on #2E2E2E (header, global pairs) pass; white on chat pill 20.03:1 pass; chat pill vs #171717 1.12:1 and
-  vs black 1.05:1 **FAIL** (non-text; label identifies it); white segment label on track 18.88:1; track vs black 1.11:1
-  **FAIL**; time overlay on photos: photo-dependent (no scrim is sourced: `color.global.scrim` BLOCKED).
+- Header glyphs: buttons with labels. Name: header. Avatar stack: one button "Members" (names not read individually).
+- Strip: horizontally scrolling list; each tile a button labelled with its date and person ("Monday, June 26, photo by
+  Ana") — the label carries what the empty-tile text and photo labels cannot (CONTRAST failures 3 and 8).
+- Friend cards: one button each ("{first_name}, this week"); grid cells: buttons with date and person; menu exposed as a
+  custom action ("Report Post", "Block Ana").
+- Announce new photos (`.layoutChanged` / `announceForAccessibility`) only while the screen has focus.
+- Dynamic Type: name `largeTitle`; capsules `subheadline`; section headers `subheadline`; tile labels `footnote`;
+  empty-day day number `title`; card names `subheadline`.
+- Focus order: back → calendar → chat → name → members → Recaps → Invite → settings → week header → strip tiles →
+  friend cards → dated sections (header, cells).
+- Contrast (`design/CONTRAST.md`):
+
+| pair | light | dark |
+|---|---|---|
+| name / headers / capsule labels on page | 21:1 (row 1) | 21:1 (row 1; Android 17.01:1 row 2) |
+| outline capsule border | 21:1 (row 20) | 21:1 |
+| week range `textSecondary` | **2.85:1 FAIL** (row 3) | 7.37:1 |
+| empty-day tile text | **1.25:1 FAIL** (rows 15–16) | **1.91:1 FAIL** |
+| weekday label on photo | photo-dependent (failure 8) | same |
+| tile / placeholder fill vs page | **1.13:1 FAIL** (row 13) | **1.39:1 FAIL** |
 
 ## Data & actions
 
-- Reads: `groups` (+ cover signed URL), `group_members` + `profiles` (avatars, first names, admin), `posts` + `media`
-  (`display_path` / `thumb_path` signed URLs), newest first, paged (docs/API.md §5.8, §7).
-- Realtime: channel `group-<id>` postgres inserts (`posts`, `messages`, `reactions`) and private broadcast
-  `group:<id>` (`post_deleted`, `message_deleted`, `reactions_changed`) (§8). Refetch on foreground / reconnect.
-- In: `groups.list`, `groups.create` (new group), invite join, deep links via `DeepLinkRouting` (`post`, `chat`, `recap`
-  put this screen in the back stack). Out: `chat.thread`, `photo.viewer`, `week.history`, `week.recap`, `walls.browse`,
-  `groups.invite`, `groups.settings`, `safety.report`, `safety.block`, `camera.capture`.
+- Reads: `groups` (+ cover signed URL), `group_members` + `profiles` (avatars, first names), `posts` + `media`
+  (`display_path` / `thumb_path` signed URLs) newest first and paged (docs/API.md §5.8, §7); the current week's range from
+  `groups.time_zone` and `app_config.week_start_isodow` (Monday); `group_history_weeks` for `week.history` (§6.4).
+- Realtime: channel `group-<id>` inserts (`posts`) and private broadcast `group:<id>` (`post_deleted`) (§8); refetch on
+  foreground / reconnect.
+- In: `groups.list`, `groups.create`, invite join, deep links (`DeepLink.post`, `.chatMessage`, `.recap` put this screen
+  in the back stack). Out: `chat.thread`, `week.history`, `week.recap`, `photo.viewer`, `groups.invite`, `groups.settings`,
+  `camera.capture`, `safety.report`, `safety.block`.
 
 ## Platform notes
 
-- Background: the feed uses `color.global.background` (#171717) — Yope draws the 2026-10 1:1 space black; see MERGE A-6.
-- iOS menu `Menu` with `Button(role: .destructive)`; Android `DropdownMenu`.
+- iOS: `ScrollView` with a horizontal strip (`ScrollView(.horizontal)`), `TabView(.page)`-free pager for cards
+  (`ScrollView` + `scrollTargetBehavior(.viewAligned)`), `LazyVGrid` with 3 flexible columns, `contextMenu` on cells.
+- Android: `LazyColumn` with a `LazyRow` strip, `HorizontalPager` (peeking via `pageSize`), `LazyVerticalGrid`
+  inside sections, `combinedClickable` long press → `DropdownMenu`.
+- Retro presents its album detail as a page sheet (TC-J1); this screen is pushed because it is the hub other surfaces
+  and deep links return to (MERGE RA-9).
 
 ## Do-not-copy
 
-- Placeholder hour slots with a member's avatar for hours they have not posted (an implied obligation), the streak pill in
-  the capsule, the red count on the chat pill, "Add 20 pics more to get a recap" progress bar, "new recap" sticker art,
-  "friends only see your wall pics" banner (no public walls), the "WALL" wordmark.
+- Retro's meta counts ("6 members · 307 photos"), "N new" / "Seen" badges, the "Post to see" lock, the album cover's
+  user-styled title fonts, and empty-day tiles between photos (they would read as days nobody posted — Retro shows them
+  only for an empty week).
 
 ## Gaps
 
 | item | status | smallest capture |
 |---|---|---|
-| on-card author avatar / name / ••• insets and sizes | not measured (G1 video; values above are role reuse) | one lossless screenshot of a 2026 Yope group screen with a filled hour card |
-| chat pill corner radius | not measured (`radius.global.button` approximation) | same screenshot |
-| feed background in the newest build | conflict (#171717 vs black, MERGE A-6) | same screenshot |
-| "joined" pill sizes | not measured (BI JPEG) | same screenshot or BI-quality frame |
-| card arrival motion | not measured | one 10-s recording of a Yope group while a friend posts |
+| Retro's dated-header "•••" menu | not built (contents not captured, RV §2 row 7) | one screenshot with an album section menu open |
+| cover shadow in dark mode | invisible on black (light-only measurement) | dark screenshot of a Retro album |
+| scrolled header (title collapsing) | not captured: the header row scrolls with the content (C-01 Gap) | one screenshot of a scrolled Retro album |
+| group name placement under the cover | TC-J1 render values (±2.5 %) | raw screenshot of an album detail |

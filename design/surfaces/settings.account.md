@@ -1,86 +1,87 @@
-# `settings.account` — account, delete account
+# `settings.account` — profile fields, delete account
 
-Reference: **Apple HIG / Material 3** (system surface). Research: `design/research/platform.md` §settings (delete account);
-`docs/PLATFORM_CONSTRAINTS.md` §8, §9 (5.1.1(v), Apple deletion FAQ, Google Play in-app + web deletion).
-Directive: deleting the account is **permanent** and deletes **all** the person's data. API: `docs/API.md` §2,
-§6.3 `delete_account`. Tokens: `settings.account.*`, `settings.root.layout.list`. Copy: `settings.account.*`.
+Visual reference: Retro **Account** section and **Edit Profile** page (inventory #28; APK-S `settings_section_header_account`,
+`edit_profile_row_title_fullname`, `edit_full_name_screen_title`, `edit_profile_picture_*`, `settings_title_delete_account`,
+`delete_account_page_*`). Alerts, pickers and the subscription sheet are native (PLATFORM). Tokens:
+`settings.account.layout.*`, `settings.root.size.rowHeight`, `settings.root.layout.list` + `global.*`. Copy: `settings.account.*`.
 
 ## References
 
-| id | URL | used for |
+| id | file | used for |
 |---|---|---|
-| ADF | https://developer.apple.com/support/offering-account-deletion-in-your-app/ | easy to find; deletion (not deactivation); includes shared photos; re-auth allowed; say when it completes; subscription note |
-| HIG-MA | https://developer.apple.com/design/human-interface-guidelines/managing-accounts#Deleting-accounts | alert, timing, billing continues until cancelled |
-| HIG-A | https://developer.apple.com/design/human-interface-guidelines/alerts | destructive + Cancel, Cancel not default |
-| M3-D | https://m3.material.io/components/dialogs/specs | dialog values |
-| GP | https://support.google.com/googleplay/android-developer/answer/13327111 | in-app deletion + web link (store listing) |
+| VID-SET | `references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png` | grouped rows |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | row titles, photo choice sheet, "Name too long", delete copy, "Yes, delete" |
+| TC-J5 | `references/auto/retro/press/tc-2024-04-retro-journals-5.png` | red destructive row (C-10), row height |
 
-## Structure (`settings.root.layout.list`; title `settings.account.title`)
+## Structure (pushed inside the Settings sheet; native back + centred `settings.account.title`)
 
-1. Section: `settings.account.name` (value = display name; tap → inline `TextField` row, saved on submit),
-   `settings.account.photo` (value = avatar thumbnail; tap → system photo picker, `auth.profile.layout.avatarPicker`),
-   `settings.account.phone` (value = phone number, read-only), `settings.account.birthday` (→ `birthday.add`).
-2. Section (only while premium is active): `settings.root.manageSubscription` → `settings.account.layout.manageSubscription`.
-3. Section: `settings.account.delete` (destructive role, centred text on iOS); footer `settings.account.delete.footer`.
+1. Group 1 (no header): avatar row — `size.global.avatarProfile` circle leading (C-23), title `settings.account.photo`
+   + chevron → native action sheet `settings.account.photo.sheetTitle` with `settings.account.photo.library`,
+   `.photo.camera`, `.photo.remove` (destructive, only with a photo), Cancel; row `settings.account.name` with the name as
+   trailing value + chevron → **Edit Full Name** page; row `settings.account.phone` with the number as value (read-only,
+   no chevron); row `settings.account.birthday` with the date or nothing + chevron → `birthday.add`.
+2. Group 2 (no header): row `settings.account.delete` in `color.global.destructive` (C-10); footer
+   `settings.account.delete.footer`.
 
-## Delete flow
-
-1. Tap → alert / dialog (`settings.account.layout.alert`): title `settings.account.delete.title`; message
-   `settings.account.delete.message` (+ `settings.account.delete.subscriptionNote` while premium is active); buttons
-   `settings.account.alert.cancel` and `settings.account.delete.confirm` (destructive). While premium is active a third
-   button `settings.root.manageSubscription` is offered on iOS (≤ 3 buttons); Android keeps 2 actions and shows the
-   Manage Subscription row in section 2.
-2. Confirm → HUD-free native progress on the row → `rpc("delete_account")` → `unregister_device` → `auth.signOut()` →
-   `auth.phone` with the toast `settings.account.deleted.toast`.
+**Edit Full Name** (pushed): native back + centred `settings.account.name.title`; C-12 field (prefilled) at
+`size.global.titleToContent` under the bar; inline `settings.account.name.tooLong` when needed; C-05
+`settings.account.name.save` pinned above the keyboard.
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| list | `settings.root.layout.list` + Android sizes | — | — |
-| delete row | iOS `color.global.destructive` (role .destructive); Android `color.global.system.error` | `settings.account.delete`, `settings.account.delete.footer` | opens the alert |
-| alert | `settings.account.layout.alert` (Android 28 dp corner, surfaceContainerHigh, headlineSmall/bodyMedium/labelLarge) | `settings.account.delete.*`, `settings.account.alert.cancel` | Cancel is never the default |
+| photo row | C-14 + C-23 64 | `settings.account.photo`; sheet `settings.account.photo.*` | library → `PhotosPicker` / `PickVisualMedia`; camera → system camera (`UIImagePickerController(.camera)` / `ActivityResultContracts.TakePicture`), asks camera permission; remove → clears `avatar_path` |
+| name row / page | C-14; C-12 + C-05 | `settings.account.name`, `.name.title`, `.name.save`, `.name.tooLong`, `.name.error` | `update profiles set display_name` |
+| phone row | C-14 value | `settings.account.phone` | none (no change-number flow) |
+| birthday row | C-14 value | `settings.account.birthday` | → `birthday.add` (memory group) |
+| Delete Account | C-14 row, C-10 | `settings.account.delete`, `.delete.footer`; alert `.delete.title`, `.delete.message` (+ `.delete.subscriptionNote` when subscribed), `.delete.confirm`, `settings.account.alert.cancel` | `delete_account()` → sign out → `auth.phone` landing; Android Toast `settings.account.deleted.toast` |
+| Your Subscription | — | — | `settings.account.layout.manageSubscription` (opened from `settings.root`) |
 
 ## States
 
 | state | design | copy |
 |---|---|---|
 | default | as Structure | — |
-| deleting | native progress indicator in the delete row; list disabled | — |
-| error | alert with the error message + Cancel | `settings.account.delete.error` |
-| name save error | section footer | `settings.account.name.error` |
-| offline | delete row disabled with the footer kept; name/photo edits disabled | — |
-| loading / empty / permission-denied | values load with the list; photo picker needs no permission | — |
+| saving (name / photo) | capsule busy (C-05) / avatar shows the platform indicator over it | — |
+| save failed / offline | message-only alert | `settings.account.name.error` + `auth.phone.error.dismiss` |
+| deleting | the alert closes; the Delete row shows the activity indicator; the sheet is not dismissible | — |
+| delete failed | message-only alert | `settings.account.delete.error` |
+| empty / permission-denied | camera denied from the photo sheet → `onboarding.permission.camera` denied copy in an alert | `onboarding.permission.camera.denied.*` |
 
-## Motion · Haptics
+## Motion
 
-Native alert/dialog motion. Confirmed deletion → `haptic.global.warning`; failure → `haptic.global.error`.
+Native pushes, action sheet and alerts (system). Photo change: cross-fade `duration.global.crossfade`. Reduce Motion: platform.
+
+## Haptics
+
+Presses → `haptic.global.tap` (Android). Delete confirmed → `haptic.global.warning`. Saved → `haptic.global.success`;
+failed → `haptic.global.error`.
 
 ## Accessibility
 
-System semantics; the delete row is announced by its text (destructive colour is not the only cue). Dynamic Type: system.
+- Rows: buttons with title + value; the phone row is static text. Destructive alert button role `.destructive`.
+- Dynamic Type: rows `subheadline`; footer `footnote`; field `body`.
+- Contrast: as `groups.settings` (rows 9, 11–14); red row **3.70:1 / 3.62:1 FAIL** (row 32); footer on page **2.85:1 FAIL** light.
 
 ## Data & actions
 
-- Reads: `profiles` (own), the session's phone, `entitlements` (own).
-- Writes: `update profiles` (name, avatar path), avatar upload (§7), `delete_account()` (deletes media with full cascade,
-  messages, reactions, tags, tribute data, memberships with admin hand-off, invites, devices, quiet hours, blocks,
-  reports, entitlements, profile; files and the auth user by the worker).
-- In: `settings.root`. Out: `birthday.add`, Manage Subscription, `auth.phone`.
+- `profiles` (name, avatar), `auth.user.phone`, `profile_private` (birthday, docs/API.md §5.2).
+- `update profiles` (§5.0); avatar upload `avatars/<uid>/<uuid>.jpg` (§7); `delete_account()` then `auth.signOut()` (§6.3).
+- In: `settings.root` (profile card). Out: `birthday.add`, `auth.phone` (after deletion).
 
 ## Platform notes
 
-- Google Play also needs a **web** deletion link in the store listing / Data safety form (owner, not in-app).
-- No deactivation option (Apple: insufficient).
+- iOS: action sheet = `confirmationDialog`; alert = `settings.account.layout.alert`.
+- Android: M3 `ModalBottomSheet` list for the photo choices; `AlertDialog`.
 
-## Report and block
+## Do-not-copy
 
-Not applicable (own account).
+- Retro's delete page that makes the person type their username, and its "WARNING:" capitals; username / homebase rows.
 
 ## Gaps
 
-| item | status |
-|---|---|
-| when deletion completes | the database part is immediate; file removal and the auth user are worker jobs (`storage.delete`, `auth.delete_user`) with retries up to ~1 h backoff — if the owner wants a stated time, add it to the message (Apple: "tell people when account deletion will complete") |
-| tenet "Nothing gets lost" vs deleting shared photos | owner decision (PLATFORM_CONSTRAINTS §9); the copy states that shared photos are deleted |
-| pre-deletion export / save prompt | allowed by Apple; not specified (owner) |
+| item | status | smallest capture |
+|---|---|---|
+| Retro's Edit Profile page as an image | strings only | screenshot of Retro's Edit Profile (light + dark) |
+| account deletion completion statement | owner (legal) | — |

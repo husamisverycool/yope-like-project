@@ -541,6 +541,9 @@ public enum Tokens {
         /// Retro · groups.invite · eye glyph before the link note · PLATFORM
         /// token: `groups.invite.icon.note`
         public static let groupsInviteIconNote: String = "eye"
+        /// Retro · groups.invite · glyph of the 'Reset link' row (circular arrow) · PLATFORM
+        /// token: `groups.invite.icon.reset`
+        public static let groupsInviteIconReset: String = "arrow.clockwise"
         /// Retro · global · activity tab · PLATFORM
         /// token: `icon.global.activity`
         public static let globalActivity: String = "bell"
@@ -2292,7 +2295,7 @@ public enum Tokens {
         /// Retro · year.story · full-bleed card footer: year (display serif, text role headerTitle) baseline above the frame bottom; name and app line right-aligned on the same block · SOURCED
         /// token: `dimension.year.story.footer.baseline`
         public static let yearStoryFooterBaseline: CGFloat = 24.8
-        /// Retro · year.story · frame edge → content: close circle edge, footer text ink, position pill edge, text blocks · SOURCED
+        /// Retro · year.story · frame edge → content: footer text ink, text-block sides, position pill leading edge · SOURCED
         /// token: `dimension.year.story.frame.padding`
         public static let yearStoryFramePadding: CGFloat = 19.5
         /// Spotify Wrapped · year.story · distance the headline moves up · SOURCED

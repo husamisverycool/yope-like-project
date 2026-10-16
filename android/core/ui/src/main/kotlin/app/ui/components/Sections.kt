@@ -64,7 +64,15 @@ fun SectionHeader(
 ) {
     val style = TextRoles.sectionLabel
     val secondary = PageRoles.secondaryText()
-    Row(modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalScreenMargin), verticalAlignment = Alignment.CenterVertically) {
+    // The rhythm paddings go on the row, so the "•••" centres on the text line, not on the padded box.
+    Row(
+        modifier
+            .fillMaxWidth()
+            .capTopAt(if (afterContent) Tokens.Sizes.globalSectionGap else Dp.Unspecified, CapTop.height(style))
+            .paddingFrom(LastBaseline, after = Tokens.Sizes.globalSectionHeaderToContent)
+            .padding(horizontal = Tokens.Sizes.globalScreenMargin),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Text(
             buildAnnotatedString {
                 append(title)
@@ -77,8 +85,6 @@ fun SectionHeader(
             color = Tokens.Colors.globalTextPrimary,
             modifier = Modifier
                 .weight(1f)
-                .capTopAt(if (afterContent) Tokens.Sizes.globalSectionGap else Dp.Unspecified, CapTop.height(style))
-                .paddingFrom(LastBaseline, after = Tokens.Sizes.globalSectionHeaderToContent)
                 .semantics(mergeDescendants = true) {
                     heading()
                     if (accessibilityLabel != null) contentDescription = accessibilityLabel

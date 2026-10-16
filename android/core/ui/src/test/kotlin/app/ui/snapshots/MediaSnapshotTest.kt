@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
@@ -58,7 +59,7 @@ class MediaSnapshotTest(appearance: Appearance) : SnapshotTest(appearance) {
         ViewerPage(
             header = { ViewerHeader("olson", avatar(2), {}, "Close", week = "Week 49", position = "3 of 4", menu = menu, moreContentDescription = "More") },
             photo = { ViewerPhoto(portrait(11), "Photo by olson, Tuesday", {}, {}, "Next", "Previous", previousFraction = PREVIOUS_ZONE) },
-            footer = { ViewerFooter(location = "Mexico City", date = "Tuesday, December 5") },
+            footer = { ViewerFooter(Modifier.padding(vertical = Tokens.Sizes.globalScreenMargin), location = "Mexico City", date = "Tuesday, December 5") },
             comments = {
                 CommentRow("elton", "so good", avatar(4), Modifier.padding(vertical = Tokens.Sizes.globalScreenMargin), timestamp = "2h")
                 ReplyBar(TextFieldValue(""), {}, "Add a comment…", "Comment", avatar(0), trailing = HeaderAction(Tokens.Icons.globalMore, "More", {}))
@@ -110,7 +111,7 @@ class MediaSnapshotTest(appearance: Appearance) : SnapshotTest(appearance) {
         Box(Modifier.fillMaxWidth().height(Tokens.Sizes.globalFriendCardHeight + Tokens.Sizes.globalFriendCardWidth / 2)) {
             BlurredBackdrop(portrait(3), blurRadius = Tokens.Sizes.globalScreenMargin * 2)
             Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalScreenMargin)) {
-                RecapCard(List(6) { square(it + 10) }, columns = 3, cornerRadius = Tokens.Radii.globalCard, modifier = Modifier.size(Tokens.Sizes.globalFriendCardWidth, Tokens.Sizes.globalFriendCardWidth + Tokens.Sizes.globalButtonHeight), year = "2023", name = "isareyes", domain = "example.app")
+                RecapCard(List(6) { square(it + 10) }, columns = 3, cornerRadius = Tokens.Radii.globalCard, modifier = Modifier.width(Tokens.Sizes.globalFriendCardWidth), year = "2023", name = "isareyes", domain = "example.app")
                 PageDots(3, 0, "Page 1 of 3", onMedia = true)
                 MediaPill("Share", {})
             }

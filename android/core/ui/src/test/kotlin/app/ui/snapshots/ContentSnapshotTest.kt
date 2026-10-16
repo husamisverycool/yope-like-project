@@ -2,6 +2,7 @@ package app.ui.snapshots
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import app.designsystem.generated.Tokens
 import app.ui.components.Capsule
 import app.ui.components.CapsuleStyle
@@ -140,7 +141,7 @@ class ContentSnapshotTest(appearance: Appearance) : SnapshotTest(appearance) {
         }
     }
 
-    @Test fun c21PickerGrid() = snap("c21-grids", "picker-grid-4") { PhotoGrid(List(8) { GridCell(it, square(it + 3), "Photo $it", {}) }, columns = 4, contentPadding = Tokens.Radii.globalPhoto) }
+    @Test fun c21PickerGrid() = snap("c21-grids", "picker-grid-4") { PhotoGrid(List(8) { GridCell(it, square(it + 3), "Photo $it", {}) }, columns = 4, contentPadding = 0.dp) }
 
     @Test fun c21PeopleGrid() = snap("c21-grids", "people-grid") { PeopleGrid(List(5) { PersonCell(it, listOf("olson", "isareyes", "daniel", "elton", "ana")[it], if (it == 4) null else avatar(it), {}) }) }
 }

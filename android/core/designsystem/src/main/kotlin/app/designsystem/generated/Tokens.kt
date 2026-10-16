@@ -61,6 +61,7 @@ import androidx.compose.material.icons.rounded.Pause as RoundedPause
 import androidx.compose.material.icons.rounded.Person as RoundedPerson
 import androidx.compose.material.icons.rounded.PlayArrow as RoundedPlayArrow
 import androidx.compose.material.icons.rounded.RadioButtonUnchecked as RoundedRadioButtonUnchecked
+import androidx.compose.material.icons.rounded.Refresh as RoundedRefresh
 import androidx.compose.material.icons.rounded.Replay as RoundedReplay
 import androidx.compose.material.icons.rounded.Search as RoundedSearch
 import androidx.compose.material.icons.rounded.Sync as RoundedSync
@@ -456,6 +457,8 @@ object Tokens {
         val chatReactionsIconAdd: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedAddReaction
         /** Retro · groups.invite · eye glyph before the link note · PLATFORM — token `groups.invite.icon.note` */
         val groupsInviteIconNote: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedVisibility
+        /** Retro · groups.invite · glyph of the 'Reset link' row (circular arrow) · PLATFORM — token `groups.invite.icon.reset` */
+        val groupsInviteIconReset: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedRefresh
         /** Retro · global · activity tab · PLATFORM — token `icon.global.activity` */
         val globalActivity: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedNotifications
         /** Retro · global · add ('+' on the add tile, '+' circle, CTA icon) · PLATFORM — token `icon.global.add` */
@@ -1924,7 +1927,7 @@ object Tokens {
         val yearStoryDotsOffset: Dp = 16.1.dp
         /** Retro · year.story · full-bleed card footer: year (display serif, text role headerTitle) baseline above the frame bottom; name and app line right-aligned on the same block · SOURCED — token `dimension.year.story.footer.baseline` */
         val yearStoryFooterBaseline: Dp = 24.8.dp
-        /** Retro · year.story · frame edge → content: close circle edge, footer text ink, position pill edge, text blocks · SOURCED — token `dimension.year.story.frame.padding` */
+        /** Retro · year.story · frame edge → content: footer text ink, text-block sides, position pill leading edge · SOURCED — token `dimension.year.story.frame.padding` */
         val yearStoryFramePadding: Dp = 19.5.dp
         /** Spotify Wrapped · year.story · distance the headline moves up · SOURCED — token `dimension.year.story.reveal.headlineShift` */
         val yearStoryRevealHeadlineShift: Dp = 18.2.dp

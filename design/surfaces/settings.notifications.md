@@ -1,78 +1,90 @@
 # `settings.notifications` — per-group mute, quiet hours
 
-Reference: **Apple HIG / Material 3** (system surface). Research: `design/research/platform.md` §settings, §daily.liveactivity,
-§Haptics; `docs/PLATFORM_CONSTRAINTS.md` §2 (Live Activity off switch), §4.6 (channels); `docs/SPEC_FLAGS.md` T6;
-`docs/WIDGET_REFRESH.md` (mute and quiet-hours behaviour). Android channel names and descriptions are owned by the
-`notifications.push` pass (`notifications.push.channel.*`, `design/copy/capture.json`) and only referenced here. Tokens: `settings.root.layout.list`, `settings.root.layout.toggleHaptic`. Copy: `settings.notifications.*`.
+Visual reference: Retro **Notification Settings** (inventory #28 row → page; APK-S `notification_settings_page_title`,
+section headers `notification_settings_section_header_*`, Title-Case rows, the off-permission upsell
+`notification_settings_enable_permission_*`, "Pause All — Turn off all notifications for the day"). Switches and time
+pickers native (PLATFORM). Tokens: `settings.root.size.rowHeight`, `settings.root.layout.*` + `global.*`.
+Copy: `settings.notifications.*`.
 
 ## References
 
-| id | file / URL | used for |
+| id | file | used for |
 |---|---|---|
-| HIG-L / M3-L | list guidance (as `settings.root`) | container |
-| HIG-LA | https://developer.apple.com/design/human-interface-guidelines/live-activities | "offer an in-app control to turn the invitation Live Activity off" |
-| WR | `docs/WIDGET_REFRESH.md` | quiet hours = silent delivery; muted groups still update widgets |
+| VID-SET | `references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png` | grouped rows, section headers |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | `notification_settings_*`, `notification_setting_title_pause_all` / `_description_pause_all` |
+| H43 | `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png` | C-27 / outline capsule in dark |
 
-## Structure (`settings.root.layout.list`; title `settings.notifications.title`)
+## Structure (pushed inside the Settings sheet; native back + centred `settings.notifications.title`; scrolls)
 
-1. **System off** (only when the OS authorization is denied/not determined): footer-only section
-   `settings.notifications.off.footer` + row `settings.notifications.openSettings`.
-2. **Groups** (header `settings.notifications.groups.header`): one Toggle row per group, label = group name, on = not muted;
-   footer `settings.notifications.groups.footer`.
-3. **Quiet hours**: Toggle `settings.notifications.quietHours`; when on, rows `settings.notifications.quietHours.start`
-   and `.end` with native time pickers (iOS compact `DatePicker(.hourAndMinute)`; Android M3 `TimePicker` dialog);
-   footer `settings.notifications.quietHours.footer`.
-4. **Live Activity** (iOS only): Toggle `settings.notifications.liveActivity`; footer `settings.notifications.liveActivity.footer`.
-5. **Android only**: row `settings.notifications.categories` → system channel settings.
+1. **Permission off** (only when the system permission is off): C-27 block at the top, left-aligned inside the margins,
+   no glyph: title `settings.notifications.off.title` (`emptyTitle`), explanation `settings.notifications.off.footer`
+   (`emptyDetail`, `color.global.textSecondary`), outline capsule C-06 `settings.notifications.openSettings` → system Settings.
+   The rows below stay visible and editable (they apply once notifications are on).
+2. **Groups** (`settings.notifications.groups.header`): one row per group: group cover in a 30 pt circle
+   (`size.global.avatarComment`; no cover → C-23 fallback with `icon.global.group`), group name (`body`), trailing native
+   switch (on = notifications on). Footer `settings.notifications.groups.footer`.
+3. **Quiet Hours**: row `settings.notifications.quietHours` with a switch; when on, two rows `settings.notifications.quietHours.start`
+   / `.end` with trailing time values (`listSubtitle`, `color.global.textSecondary`) → native time pickers. Footer
+   `settings.notifications.quietHours.footer`.
+4. iOS only: row `settings.notifications.liveActivity` with a switch; footer `settings.notifications.liveActivity.footer`.
+5. Android only: row `settings.notifications.categories` + chevron → the app's notification channel settings.
+
+All groups follow `settings.root.layout.list` (C-14, rows ≥ `settings.root.size.rowHeight`, sections `size.global.sectionGap` apart).
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| list | `settings.root.layout.list` and its Android sizes; system colours | headers / footers | — |
-| group toggles | system Toggle / Switch; `settings.root.layout.toggleHaptic` | group names (data); `settings.notifications.groups.footer` | `set_group_muted(p_group_id, !isOn)`; optimistic |
-| quiet hours | Toggle + two time rows | `settings.notifications.quietHours*` | `set_quiet_hours(p_start, p_end, p_time_zone: device zone)`; off → both null |
-| Live Activity toggle | Toggle | `settings.notifications.liveActivity`, `.footer` | device-local preference read by the push-to-start registration (when off, the push-to-start token is not registered: `register_device(… p_push_to_start_token: null)`) |
-| open settings | system row | `settings.notifications.openSettings` | iOS `UIApplication.openNotificationSettingsURLString`; Android `ACTION_APP_NOTIFICATION_SETTINGS` |
-| Android channels | system channel UI | `notifications.push.channel.<id>.name` / `.description` (capture pass) for `dailyInvitation`, `newPost`, `reactionsReplies`, `recap`, `birthdayRequest`, `tribute`; `yearStory` has no string yet (see Gaps) | registered by `NotificationChannels.register` |
+| off block | C-27 (no glyph) + C-06 | `settings.notifications.off.title`, `.off.footer`, `.openSettings` | `UIApplication.openNotificationSettingsURLString` / `Settings.ACTION_APP_NOTIFICATION_SETTINGS` |
+| group row | C-14 + C-23 30 pt + native switch (`color.global.selection` / `color.global.system.primary`) | group name (data); section `settings.notifications.groups.header`, footer | `set_group_muted(group, !on)`; optimistic, reverts on error |
+| quiet hours | C-14 rows + switch + native time pickers | `settings.notifications.quietHours`, `.start`, `.end`, `.footer` | `set_quiet_hours(p_start, p_end, p_time_zone)`; off = both null |
+| Live Activity (iOS) | C-14 + switch | `settings.notifications.liveActivity`, `.footer` | local preference read by `daily.liveactivity` |
+| categories (Android) | C-14 + chevron | `settings.notifications.categories` | `Settings.ACTION_APP_NOTIFICATION_SETTINGS` |
 
 ## States
 
 | state | design | copy |
 |---|---|---|
-| loading | native progress until `group_members` and `notification_settings` load | — |
-| default | as Structure | — |
-| permission-denied (system notifications off) | section 1 shown; toggles stay usable (they apply when notifications return) | `settings.notifications.off.footer`, `.openSettings` |
-| error (save) | the toggle reverts; section footer shows | `settings.notifications.error` |
-| offline | toggles disabled, cached values shown | — |
-| empty (no groups) | Groups section hidden | — |
+| loading | each group shows one row with the platform activity indicator (C-28) | — |
+| permission off (permission-denied) | off block at the top | `settings.notifications.off.*` |
+| no groups | Groups section hidden | — |
+| change failed / offline | the control returns; message-only alert | `settings.notifications.error` + `auth.phone.error.dismiss` |
+| empty / error (read) | the read uses cached `group_members.muted`; on failure the section shows the error alert on load | `settings.notifications.error` |
 
-## Motion · Haptics
+## Motion
 
-Native. Toggles `settings.root.layout.toggleHaptic`.
+Native push; quiet-hours rows expand / collapse with the platform list animation (iOS) / `AnimatedVisibility` default
+(`spring.global.platformDefault.android`); off block fades `duration.global.fade`. Reduce Motion: cross-fade.
+
+## Haptics
+
+Switches: `settings.root.layout.toggleHaptic`. Presses → `haptic.global.tap` (Android). Failure → `haptic.global.error`.
 
 ## Accessibility
 
-System semantics; each toggle is labelled by its row text; time rows read "Start, 10:00 PM". Dynamic Type: system styles.
+- Each switch row is one toggle (name + state); the off block's title is a header.
+- Dynamic Type: rows `subheadline`; footers `footnote`; block title `title3`.
+- Contrast: as `groups.settings` (rows 9, 11–14); switch tint on the group: system (iOS) / Retro blue #0A84FF (Android,
+  CONTRAST failure 6 for dialog text only).
 
 ## Data & actions
 
-- Reads: `group_members.muted` (own rows) + `groups.name`; `notification_settings` (own row; none = no quiet hours).
-- Writes: `set_group_muted`, `set_quiet_hours` (errors `invalid_quiet_hours`, `invalid_time_zone`), `register_device`.
-- In: `settings.root`; `groups.settings` "quiet hours". Out: system settings.
+- `group_members.muted` (own rows) per group; `notification_settings` (own row, docs/API.md §5.21).
+- Writes: `set_group_muted`, `set_quiet_hours` (§6.3).
+- In: `settings.root`; `groups.settings` ("Quiet Hours" row). Out: system notification settings.
 
 ## Platform notes
 
-- Android channel importance is fixed at creation (daily invitation HIGH, others DEFAULT — `android/core/push` `AppChannel`);
-  names ≤ 40 characters, descriptions ≤ 300 (all strings comply).
-- No "reminder" channel exists (tenet 5).
+- iOS: switches `Toggle`, times `DatePicker(.hourAndMinute)` (compact style in the row).
+- Android: `Switch`, M3 `TimePicker` in a dialog; channels for categories (owned by `notifications.push.channel.*`).
 
 ## Do-not-copy
 
-Locket's "Daily Reminders" channel ("Reminders to share a Locket with your friends"); badge counts.
+- Retro's per-type toggles for likes / comment likes / keys / friend requests (no such notifications here); "Pause All"
+  for the day (no API); reminder cadence rows (the daily invitation is per group, in `groups.settings`).
 
 ## Gaps
 
-| item | status |
-|---|---|
-| Android channel for year stories (`AppChannel.YearStory`) | no `notifications.push.channel.yearStory.*` string exists; owned by the `notifications.push` pass (MERGE account A-12) |
+| item | status | smallest capture |
+|---|---|---|
+| Retro's Notification Settings page as an image | strings only | screenshot of Retro's Notification Settings (light + dark) |

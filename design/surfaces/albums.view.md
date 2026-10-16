@@ -1,98 +1,132 @@
 # `albums.view` — one saved album
 
-Reference app: **Yope** (`docs/SURFACES.md`). No Yope album screen was found (yope-b §7); built from documented Yope
-components (header, week pics grid, native ••• menu, "new group"-style name sheet; S-14). Tokens: `design/tokens/social.json`
-(grid from `week.recap.*`) + `global.*`. Copy: `design/copy/social.json` (`albums.view.*`).
+Redesign on **Retro**: visual reference Retro's **album detail** (screen 13 — TC-J1 2024: a sheet with a book-like cover, the
+serif album name centred, a grey meta line, outline capsules "Settings / Share" + a "+" capsule, then the photo grid with
+2-pt gaps and rounded outer corners) and the shared-album **web grid** (retro.app `/j/`: rounded outer corners .75rem = 12 px,
+4 px gaps on desktop, 2 px on mobile). Tokens: `design/tokens/social.json` (`albums.view.*`) + `global.*`. Copy:
+`design/copy/social.json` (`albums.view.*`). Decisions: `design/MERGE_DECISIONS.md` → Redesign — Social (RS-21).
 
 ## References
 
 | id | file | used for |
 |---|---|---|
-| O3 | `references/owner/yope-week-recap.jpg` | header (‹ + centred 17 semibold title) and the full-bleed 3-column pics grid (C2) |
-| YR | `references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png` | native ••• menu, lowercase items, destructive in red |
-| V-mthu | `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png` | name sheet (title, field, lime button) |
-| W1 | `references/auto/yope/store/listing.html` (v1.214.0) | "memory albums" |
+| TC-J1 | `references/auto/retro/press/tc-2024-04-journals-1.webp` phone 3 (render, 2.069 px/pt) | **primary**: cover (`albums.view.dimension.cover*`), name (displayMedium), meta, capsule row, grid (3 columns, `albums.view.aspectRatio.gridCell`, 2-pt gaps, `albums.view.radius.grid`) |
+| WEB | `references/auto/retro/web/retro.app-42b38811bebcd07d.css`, `references/auto/retro/web/retro.app-j-welcome-iphone-full.png` | grid outer radius 12, gaps 4 / 2 px, day headers; outline pill 1 px #0D0D0D |
+| TC-J5 | `references/auto/retro/press/tc-2024-04-retro-journals-5.png` | album menu with a red destructive row |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | "Delete Album", "Nothing has been added to this album", "Couldn't find album", "Yes, delete", "Saved!", "Deleted" |
 
 ## Structure (top → bottom)
 
-Background `color.global.background` (group-level screens; the recap screen it mirrors).
+Page sheet (C-29) over `albums.list`, content on `color.global.background`, scrolling as one column:
+1. **Cover** centred, `albums.view.dimension.coverTop` below the sheet top: `albums.view.dimension.coverWidth` ×
+   `.coverHeight`, corners `radius.global.thumbnail` (C-15 cover), the album's first item, aspect fill; drop shadow
+   `albums.view.shadow.cover` **BLOCKED** — drawn flat until captured (`layout.global.elevation`).
+2. **Name** centred, cap top `albums.view.dimension.coverToTitle` below the cover: the album name in the display serif (text role
+   `displayMedium`, `font.global.display`, `color.global.textPrimary`), up to two lines.
+3. **Meta** centred, baseline `albums.view.dimension.titleToMeta` below the name's baseline: `albums.list.row.subtitle` /
+   `.row.subtitleMine` (text role `listSubtitle`, `color.global.textSecondary`) — no counts.
+4. **Action row** (C-06) `albums.view.dimension.metaToActions` below the meta baseline, inside `size.global.screenMargin`:
+   outline capsule `albums.view.menu.rename` ("Rename", fills the row) and — for the album's creator and group admins — an
+   outline icon capsule (`size.global.iconPillWidth`, `icon.global.more`) `size.global.pillGap` after it → native menu with
+   `albums.view.menu.delete` (red).
+5. **Grid** `walls.mine.dimension.actionsToWeeks` below the capsules: the album's items in `position` order (the saved order;
+   no date headers — RS-21), `albums.view.count.gridColumns` columns inside `size.global.screenMargin`,
+   `size.global.stripGap` gaps, cells `albums.view.aspectRatio.gridCell` (aspect fill). The grid's outer contour rounds at
+   `albums.view.radius.grid`: the top corners of the first row's end cells, the bottom-leading corner of the last row's first
+   cell and the bottom-trailing corner of its last cell; when the last row is short, the trailing cell of the row above also
+   rounds its bottom-trailing corner (the web page's `topRightCornerRounded` / `bottomRightCornerRounded` cells). Inner corners
+   stay square.
 
-1. **Header**: ‹ circle (`size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.back`,
-   `size.global.headerInset`); the album name centred (`week.recap.fontSize.title` / `.fontWeight.title`,
-   `color.global.textPrimary`, one line, tail truncation); ••• circle at the right (same circle, `icon.global.more`) opening
-   the native menu (`photo.viewer.layout.menu` component).
-2. **Grid** of the album's items in `position` order: `week.recap.count.picsColumns` (3), `week.recap.dimension.picsGap`
-   (1), `week.recap.aspectRatio.picsTile` (3:4), full width, square corners, aspect fill.
+### Rename sheet
 
-### Menu
+Sheet (C-29): C-11 close circle + centred `albums.view.rename.title` (`sheetTitle`); C-12 field prefilled with the name
+(`size.global.titleToContent` below); inline error `week.edit.error.albumName` (C-12 error); C-05 primary capsule
+`albums.view.rename.save` ("Save"), disabled while empty → `rename_album` → Android Toast `albums.view.toast.renamed` /
+iOS announcement.
 
-| item | shown | glyph | copy | action |
-|---|---|---|---|---|
-| rename | every member | `icon.global.edit` | `albums.view.menu.rename` | rename sheet: Yope name sheet (`week.edit.md` album sheet) titled `albums.view.rename.title`, field prefilled, button `week.edit.save` → `rename_album` → toast `albums.view.toast.renamed` |
-| delete album | the album's creator and group admins | `photo.viewer.icon.delete` (destructive) | `albums.view.menu.delete` | confirmation (`photo.viewer.layout.deleteConfirm` component): title `albums.view.delete.title`, message `albums.view.delete.message` ("the pics stay in your group — only the album goes away."), buttons `albums.view.delete.confirm` / `photo.viewer.delete.cancel` → `delete_album` → pop + toast `albums.view.toast.deleted` |
+### Delete confirmation (C-29 alert, `photo.viewer.layout.deleteConfirm`)
+
+Title `albums.view.delete.title`, message `albums.view.delete.message`, destructive `albums.view.delete.confirm` ("Yes,
+delete"), cancel `photo.viewer.delete.cancel` → `delete_album` → the sheet closes, Android Toast `albums.view.toast.deleted`.
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | component · tokens | copy | behaviour |
 |---|---|---|---|
-| ‹ circle | header tokens | `chat.thread.a11y.back` | pops |
-| title | `week.recap.fontSize.title`, `.fontWeight.title` | album name (data) | header trait |
-| ••• circle | `size.global.headerButton`, `color.global.controlOnDeep`, `icon.global.more` | `photo.viewer.a11y.more` | menu above |
-| tile | week pics grid tokens | `photo.viewer.a11y.photo` | tap → `photo.viewer` (context = album order) |
-| toast | `camera.sendto.layout.toast` (dwell BLOCKED) | `albums.view.toast.renamed`, `.toast.deleted` | — |
+| cover | `albums.view.dimension.coverWidth`, `.coverHeight`, `.coverTop`, `radius.global.thumbnail`; shadow BLOCKED | `albums.view.a11y.cover` | → `photo.viewer` on the first item |
+| name | text role `displayMedium`, `font.global.display`; `albums.view.dimension.coverToTitle` | album name (data) | header trait |
+| meta | text role `listSubtitle`; `albums.view.dimension.titleToMeta` | `albums.list.row.subtitle` / `.row.subtitleMine` | — |
+| Rename capsule | C-06 outline; `size.global.pillHeight`, `albums.view.dimension.metaToActions` | `albums.view.menu.rename` | rename sheet |
+| more capsule | C-06 outline icon capsule; `size.global.iconPillWidth`, `icon.global.more` | `albums.view.a11y.more` | menu: `albums.view.menu.delete` |
+| grid cell | C-21 album grid; `albums.view.count.gridColumns`, `.aspectRatio.gridCell`, `.radius.grid`, `size.global.stripGap` | `photo.viewer.a11y.photo` | → `photo.viewer` (context = album order) |
 
 ## States
 
-| state | what shows | tokens / copy | source |
+| state | what shows | components · tokens · copy | source |
 |---|---|---|---|
-| loading | Loading HUD | `groups.create.size.hud`, `.color.hud`, `.fontSize.hudLabel`; `groups.create.hud.loading` | yope-a §1.8 |
-| empty (every item deleted or hidden) | centred bold title + gray detail, no pill | `albums.view.empty.title`, `.empty.detail`; text roles `emptyTitle` / `emptyDetail` | `yope.voice.empty-state` |
-| not found (`album_not_found`: deleted meanwhile) | same layout | `albums.view.empty.title` | `yope.voice.error` |
-| error | same layout + retry | `albums.list.error.title`, `chat.thread.error.detail`, pill `chat.thread.error.retry` | `yope.voice.error` |
-| rename name empty | inline under the field | `week.edit.error.albumName` | `yope.voice.error` |
-| offline | cached grid; actions fail with `week.edit.error.save` | — | `yope.voice.error` |
+| loading | cover and cells as `color.global.control` placeholders; name from the list row | C-28 | C-28 |
+| empty (every item deleted or hidden) | cover placeholder; name, meta, capsules; C-27 title + detail in place of the grid | `albums.view.empty.title`, `.empty.detail` | APK-S |
+| not found (`album_not_found`) | C-27 title only, centred | `albums.view.notFound` | APK-S |
+| error | one tappable line in place of the grid | `albums.list.error.title` | APK-S |
+| rename name empty | inline under the field | `week.edit.error.albumName` | APK-S |
+| offline | cached grid; rename / delete fail with `week.edit.error.save` | — | — |
 | permission-denied | not applicable | — | — |
 
 ## Motion
 
-Push / pop, menu, confirmation, sheet: native (`easing.global.native`). Reduce Motion: system.
+Sheet in / out native (`spring.global.sheetPresent`); photo open `duration.global.photoOpen`; menu, alert native; images fade
+in with `duration.global.fade`. Reduce Motion: system / cross-fades.
 
 ## Haptics
 
 | interaction | token |
 |---|---|
+| tap a cell / capsule (Android) | `haptic.global.tap` (iOS none) |
 | rename saved | `haptic.global.success` |
 | delete confirmed | `haptic.global.warning` |
 | failed | `haptic.global.error` |
 
 ## Accessibility
 
-- Tiles `photo.viewer.a11y.photo`; ••• `photo.viewer.a11y.more`; menu items are native (destructive role announced).
-- Dynamic Type: title → `week.recap.layout.textStyleMap.title`.
-- Contrast: header and title pairs as `week.recap.md` (white on #171717 17.93:1 pass; header circle #101010 on #171717
-  1.06:1 FAIL as a boundary, glyph 19.03:1 pass). Android destructive label `color.global.system.error` on
-  `color.global.system.surfaceContainerHigh`: 8.41:1 pass. iOS menu material is a system colour (not a token): not computed.
+- Cover `albums.view.a11y.cover`; cells `photo.viewer.a11y.photo`; "•••" `albums.view.a11y.more`; menu items native
+  (destructive role announced).
+- Dynamic Type: `displayMedium` → largeTitle; `listSubtitle`, `pill` → subheadline.
+- Focus order: cover → name → meta → Rename → more → cells.
+- Contrast (`node tools/contrast.mjs`):
+
+| foreground | background | kind | light | dark | pair |
+|---|---|---|---|---|---|
+| `color.global.textPrimary` | `color.global.background` | text | 21.00:1 pass | 21.00:1 pass | name, capsule labels / borders |
+| `color.global.textSecondary` | `color.global.background` | text | **2.85:1 FAIL** | 7.37:1 pass | meta line (iOS) |
+| `color.global.textSecondary.android` | `color.global.background.android` | text | **4.00:1 FAIL** | 6.85:1 pass | meta line (Android) |
+| `color.global.onAccent` | `color.global.accent` | text | 21.00:1 pass | 21.00:1 pass | "Save" (rename sheet) |
 
 ## Data & actions
 
 - **Reads**: `albums` + `album_items` (§5.15; items need the post to be visible), `posts` / `media` (`thumb_path`),
-  `group_members.role` (admin) to show "delete album".
+  `profiles` (`created_by`), `group_members.role` (admin) for the more capsule.
 - **RPCs**: `rename_album(p_album_id, p_name)` (any member; `invalid_name`, `album_not_found`), `delete_album(p_album_id)`
   (creator or admin; `not_album_owner`). Posts are never deleted by these.
-- Realtime: `post_deleted` → drop the tile.
+- Realtime: `post_deleted` → drop the cell.
 - Navigation in: `albums.list`. Out: `photo.viewer`, back.
 
 ## Platform notes
 
-iOS: `Menu` on the ••• circle, `confirmationDialog`; Android: `DropdownMenu`, `AlertDialog`. Rename sheet: as `week.edit.md`.
+iOS `.sheet` (`.presentationDetents([.large])`), `LazyVGrid` with three flexible columns, the grid clipped by a shape that
+rounds only its outer corners; `Menu` on the capsule; `confirmationDialog`. Android `ModalBottomSheet(skipPartiallyExpanded
+= true)`, `LazyVerticalGrid(GridCells.Fixed(3))` with per-cell corner shapes; `DropdownMenu`; `AlertDialog`.
 
 ## Do-not-copy
 
-Watermarks, share-to-socials buttons (export is not a product feature here), counts of photos ("12 pics").
+- "6 members · 307 photos" counts; "Share" / link sharing / QR / Instagram story sticker (albums are private to the group);
+  the "+" add capsule (no API to add items); notes composer, sort order, download-all, admin permission settings.
+- The user-styled cover title on the cover image; the book overlay texture (`/journal-overlay.webp`).
 
 ## Gaps
 
 | item | status | smallest owner capture |
 |---|---|---|
-| Yope's own album screen (`albums.list.layout.yopeAlbums`) | BLOCKED; composition flagged (S-14) | two screenshots: Yope's album list and one open album (yope-b §14 capture 5) |
-| album reorder / remove items | not offered (no API besides re-saving; no Yope evidence) | same |
+| `albums.view.shadow.cover` | **BLOCKED** (cover drawn flat) | one raw screenshot of a Retro album sheet on a white background |
+| cell aspect | TC-J1 measures 4:5; components C-21 says square, the web uses 3:4 — the in-app capture is used (RS-21) | one raw screenshot of a Retro album grid |
+| date headers | not used: our albums keep their saved order (RS-21) | — |
+| capsule row contents | composition: Rename + more (Retro: Settings / Share / +) | — |
