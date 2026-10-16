@@ -16,12 +16,16 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onAllNodes
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.DpRect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.designsystem.generated.Tokens
+import app.data.repo.ReactionEntry
+import app.data.model.MessageKind
+import app.feature.social.FakeSocialData.Companion.ANA
+import app.feature.social.FakeSocialData.Companion.BEN
+import app.feature.social.FakeSocialData.Companion.BASE
 import app.feature.social.FakeSocialData.Companion.GROUP
 import app.feature.social.FakeSocialData.Companion.ME
 import app.feature.social.albums.AlbumUiState
@@ -115,7 +119,7 @@ class VerificationMeasurements {
     private fun desc(text: String, substring: Boolean = true, index: Int = 0): SemanticsNodeInteraction =
         compose.onAllNodesWithContentDescription(text, substring = substring, useUnmergedTree = true)[index]
 
-    private fun text(text: String): SemanticsNodeInteraction = compose.onAllNodesWithText(text, useUnmergedTree = true).onFirst()
+    private fun text(text: String): SemanticsNodeInteraction = compose.onAllNodesWithText(text, substring = true, useUnmergedTree = true).onFirst()
 
     /** A button by its label: the merged (clickable) node, so the bounds are the control's, not its text's. */
     private fun button(text: String): SemanticsNodeInteraction = compose.onAllNodesWithText(text, useUnmergedTree = false).onFirst()
@@ -174,6 +178,16 @@ class VerificationMeasurements {
         )
     }
 
+    /** A short thread whose photo card is fully on screen: card, chip, caption, then Ben's text. */
+    private fun photoThread(dual: Boolean) = FakeSocialData().apply {
+        seedGroup()
+        val photo = addPhoto("p-1", ANA, BASE, caption = "face masks night")
+        if (dual) makeDual(photo.id)
+        reactions[photo.id] = mutableListOf(ReactionEntry(BEN, "😍"), ReactionEntry(ME, "🔥"))
+        messages += FakeSocialData.message("m-1", GROUP, ANA, MessageKind.Photo, postId = photo.id, at = BASE)
+        messages += FakeSocialData.message("m-2", GROUP, BEN, MessageKind.Text, body = "the selfie in the corner", at = BASE.plusSeconds(120))
+    }
+
     /** chat.thread / chat.composer / chat.voice / chat.reactions. */
     @Test fun chat() {
         val data = FakeSocialData().apply { seedThread() }
@@ -182,18 +196,29 @@ class VerificationMeasurements {
             render(data, dark) { Chat(data) }
             box("${p}back", desc("Back", false))
             box("${p}title", text("Sunday dinners"))
-            box("${p}text1", desc("Ben, strictly vibes only tonight", false))
-            box("${p}text2", desc("Ben, who's in for sunday?", false))
-            box("${p}photo", desc("Ana's photo"))
-            box("${p}chip", desc("Reactions:"))
+            box("${p}name1", text("Ben"))
+            box("${p}text1", text("strictly vibes only tonight"))
+            box("${p}text2", text("who's in for sunday?"))
+            box("${p}today", text("Today"))
             box("${p}voice", desc("Ben's voice message"))
             box("${p}field", tag("message.field"))
+            box("${p}fieldAvatar", tag("message.avatar"))
+            box("${p}placeholder", text("Send a message…"))
             box("${p}mic", desc("Record a voice message", false))
             box("${p}camera", desc("Take photo", false))
             colour("${p}page", 4f, 300f)
             b("${p}field")?.let { f -> colour("${p}fieldFill", (f.f("left") + f.f("right")) / 2, f.f("top") + 4f) }
             b("${p}voice")?.let { v -> colour("${p}voiceFill", v.f("left") + 6f, (v.f("top") + v.f("bottom")) / 2) }
-            b("${p}chip")?.let { c -> colour("${p}chipFill", c.f("left") + 3f, c.f("top") + 3f) }
+        }
+        for (dual in listOf(false, true)) {
+            val p = if (dual) "dual." else "card."
+            val thread = photoThread(dual)
+            render(thread) { Chat(thread) }
+            box("${p}photo", desc("Ana's photo"))
+            box("${p}chip", desc("Reactions"))
+            box("${p}caption", text("face masks night"))
+            box("${p}name", text("Ana"))
+            b("${p}chip")?.let { c -> colour("${p}chipFill", c.f("left") + 5f, (c.f("top") + c.f("bottom")) / 2) }
         }
         val box = Tokens.Sizes.globalIcon
         val hit = maxOf(Tokens.Sizes.globalHeaderButton, Tokens.Sizes.globalMinTouchTargetAndroid)
@@ -211,21 +236,32 @@ class VerificationMeasurements {
             render(data, dark) {
                 PhotoViewerContent(PhotoViewerViewModel(data, GROUP, "v-1", PhotoContext.Album, "a-v", null).state.value, ViewerUiState(), nav, VoiceUi.Idle, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
             }
-            box("${p}header", text("Ana Lima"))
+            box("${p}avatar", tag("viewer.avatar"))
+            box("${p}name", text("Ana Lima"))
+            box("${p}week", text("Week 41"))
             box("${p}pill", desc("1 of 3", false))
             box("${p}close", desc("Close", false))
             box("${p}photo", tag("viewer.photo"))
+            box("${p}caption", text("sunday sunsets"))
+            box("${p}date", text("Saturday, October 10"))
             box("${p}divider", tag("viewer.divider"))
-            box("${p}comment", desc("Ben, whoa!", false))
+            box("${p}comment", text("Ben"))
             box("${p}field", tag("message.field"))
-            box("${p}chip", desc("Reactions:"))
+            box("${p}chip", desc("Reactions"))
+            box("${p}add", desc("Add reaction", false))
             box("${p}voice", desc("Ana's voice message"))
             colour("${p}page", 4f, 760f)
             b("${p}field")?.let { f -> colour("${p}fieldFill", (f.f("left") + f.f("right")) / 2, f.f("top") + 4f) }
             b("${p}close")?.let { c -> colour("${p}closeFill", c.f("left") + 3f, (c.f("top") + c.f("bottom")) / 2) }
             b("${p}pill")?.let { c -> colour("${p}pillFill", c.f("left") + 4f, (c.f("top") + c.f("bottom")) / 2) }
             b("${p}divider")?.let { d -> colour("${p}dividerInk", (d.f("left") + d.f("right")) / 2, d.f("top") + 0.25f) }
+            b("${p}chip")?.let { c -> colour("${p}chipFill", c.f("left") + 5f, (c.f("top") + c.f("bottom")) / 2) }
         }
+        val dual = viewerData().apply { makeDual("v-3") }
+        render(dual) {
+            PhotoViewerContent(PhotoViewerViewModel(dual, GROUP, "v-3", PhotoContext.Album, "a-v", null).state.value, ViewerUiState(), nav, VoiceUi.Idle, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+        }
+        box("dual.photo", tag("viewer.photo"))
         write("viewer")
     }
 
@@ -244,19 +280,32 @@ class VerificationMeasurements {
             box("${p}tile1", desc("Your photo, October 12, 2026", false))
             box("${p}tile2", desc("Your photo, October 13, 2026", false))
             box("${p}add", desc("Add photos", false))
-            box("${p}header", desc("Week 42"))
-            box("${p}header2", desc("Week 41"))
+            box("${p}week", text("Week 42"))
+            box("${p}week2", text("Week 41"))
             colour("${p}page", 4f, 400f)
             b("${p}add")?.let { a -> colour("${p}addFill", a.f("left") + 6f, a.f("top") + 6f) }
         }
+        val member = FakeSocialData().apply { seedWallWeeks(ANA) }
+        val memberState = WallViewModel(member, ANA).state.value
+        render(member) { app.feature.social.walls.WallMemberContent(memberState, ANA, wallNav, {}, {}, zone = ZoneOffset.UTC, today = LocalDate.parse("2026-10-14")) }
+        box("member.back", desc("Back", false))
+        box("member.name", text("Ana Lima"))
+        box("member.avatar", tag("wall.avatar"))
+        box("member.more", desc("More Options", false))
         val people = FakeSocialData().apply { seedPeople() }
         val browse = BrowseViewModel(people, approximations = false).state.value
-        render(people) { WallsBrowseContent(browse, wallNav, {}, {}) }
-        box("browse.title", text("Friends"))
-        box("browse.search", desc("Search", false))
-        box("browse.cell1", desc("Ana Lima's profile", false))
-        box("browse.cell2", desc("Ben Okafor's profile", false))
-        box("browse.cell4", desc("Chloe Martin's profile", false))
+        for (dark in listOf(false, true)) {
+            val p = if (dark) "dark." else ""
+            render(people, dark) { WallsBrowseContent(browse, wallNav, {}, {}) }
+            box("${p}browse.title", text("Friends"))
+            box("${p}browse.search", desc("Search", false))
+            box("${p}browse.cell1", desc("Ana Lima's profile", false))
+            box("${p}browse.cell2", desc("Ben Okafor's profile", false))
+            box("${p}browse.cell4", desc("Dev Patel's profile", false))
+            box("${p}browse.name1", text("Ana Lima"))
+            colour("${p}browse.page", 4f, 600f)
+            b("${p}browse.search")?.let { f -> colour("${p}browse.searchFill", f.f("left") + 40f, f.f("top") + 4f) }
+        }
         write("walls")
     }
 
@@ -268,8 +317,11 @@ class VerificationMeasurements {
         for (dark in listOf(false, true)) {
             val p = if (dark) "dark." else ""
             render(data, dark) { WeekHistoryContent(history, historyNav, {}, {}) }
+            box("${p}h.back", desc("Back", false))
             box("${p}h.title", text("Sunday dinners"))
-            box("${p}h.header", desc("Week 42"))
+            box("${p}h.week", text("Week 42"))
+            box("${p}h.range", text("Oct 12 – 18"))
+            box("${p}h.week2", text("Week 41"))
             box("${p}h.more", desc("More Options", false))
             box("${p}h.tile1", desc("Monday, October 12, 2026", true))
             box("${p}h.tile2", desc("Tuesday, October 13, 2026", true))
@@ -277,32 +329,44 @@ class VerificationMeasurements {
         }
         val recapNav = RecapNav({}, {}, {}, {}, { _, _ -> }, {})
         val list = RecapListViewModel(data, GROUP).state.value
-        render(data) { RecapListContent(list, recapNav, {}) }
-        box("r.close", desc("Close", false))
-        box("r.title", text("Recaps"))
-        box("r.card1", desc("Recap of Week 42"))
-        box("r.card2", desc("Recap of Week 41"))
+        for (dark in listOf(false, true)) {
+            val p = if (dark) "dark." else ""
+            render(data, dark) { RecapListContent(list, recapNav, {}) }
+            box("${p}r.close", desc("Close", false))
+            box("${p}r.title", text("Recaps"))
+            box("${p}r.card1", desc("Week 42"))
+            box("${p}r.card2", desc("Week 41"))
+            box("${p}r.week1", text("Week 42"))
+            box("${p}r.range1", text("Oct 12 – 18"))
+            b("${p}r.close")?.let { c -> colour("${p}r.closeFill", c.f("left") + 3f, (c.f("top") + c.f("bottom")) / 2) }
+        }
         val preview = RecapViewModel(data, GROUP, "r-w").state.value
         for (dark in listOf(false, true)) {
             val p = if (dark) "dark." else ""
             render(data, dark) { WeekRecapPreview(preview, recapNav, {}) }
             box("${p}p.close", desc("Close", false))
-            box("${p}p.pill", text("Save as Album"))
+            box("${p}p.pill", button("Save as Album"))
             box("${p}p.thumb", desc("Select photos", false))
             box("${p}p.cell1", desc("Sam's photo"))
-            box("${p}p.cell2", desc("Ana's photo"))
+            box("${p}p.note", text("the best week"))
             colour("${p}p.page", 4f, 830f)
             b("${p}p.cell1")?.let { c -> colour("${p}p.card", c.f("left") - 1f, c.f("top") - 1f) }
             b("${p}p.pill")?.let { c -> colour("${p}p.pillFill", c.f("left") + 6f, (c.f("top") + c.f("bottom")) / 2) }
+            b("${p}p.close")?.let { c -> colour("${p}p.closeFill", c.f("left") + 3f, (c.f("top") + c.f("bottom")) / 2) }
         }
         val edit = WeekEditViewModel(data, GROUP, "r-w", null, false).state.value
         render(data) { WeekEditContent(edit, {}, {}, {}, { _, _ -> }, {}, {}) }
         box("e.strip1", desc("Monday, October 12, 2026"))
+        box("e.strip2", desc("Tuesday, October 13, 2026"))
+        box("e.title", text("Edit Recap"))
         box("e.cancel", text("Cancel"))
         box("e.update", text("Update"))
-        box("e.message", text("Edit message"))
-        box("e.album", text("Save as Album"))
+        box("e.message", button("Edit message"))
+        box("e.album", button("Save as Album"))
         box("e.header", text("Photos taken in Week 42"))
+        box("e.cell1", checkbox(0))
+        box("e.cell2", checkbox(1))
+        box("e.cell5", checkbox(4))
         write("week")
     }
 
@@ -313,10 +377,13 @@ class VerificationMeasurements {
         for (dark in listOf(false, true)) {
             val p = if (dark) "dark." else ""
             render(data, dark) { AlbumsListContent(list, {}, {}, {}, {}, {}) }
+            box("${p}l.back", desc("Back", false))
             box("${p}l.title", text("Albums"))
             box("${p}l.search", desc("Search", false))
-            box("${p}l.row1", desc("birthday dinner, you created the album", false))
-            box("${p}l.row2", desc("lake weekend, Ana created the album", false))
+            box("${p}l.row1", desc("birthday dinner, ", true))
+            box("${p}l.row2", desc("lake weekend, ", true))
+            box("${p}l.name1", text("birthday dinner"))
+            box("${p}l.meta1", text("you created the album"))
             colour("${p}l.page", 4f, 600f)
         }
         val view = AlbumViewModel(data, GROUP, "a-2").state.value
@@ -326,9 +393,11 @@ class VerificationMeasurements {
             box("${p}v.cover", desc("Cover of birthday dinner", false))
             box("${p}v.name", text("birthday dinner"))
             box("${p}v.meta", text("you created the album"))
-            box("${p}v.rename", text("Rename"))
+            box("${p}v.rename", button("Rename"))
             box("${p}v.more", desc("More Options", false))
             box("${p}v.cell1", desc("Sam's photo"))
+            box("${p}v.cell2", desc("photo", true, 1))
+            colour("${p}v.page", 4f, 40f)
         }
         write("albums")
     }

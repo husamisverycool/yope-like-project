@@ -8,14 +8,14 @@ Side by side: [`tagging.android.png`](tagging.android.png) — ours (footer ligh
 
 Snapshots (real sample photos, `fixtures/photos/`): `tagging/footer-untagged-dark.png`, `tagging/footer-untagged-light.png`, `tagging/footer-with-light.png`, `tagging/footer-with-truncated-light.png`, `tagging/footer-with-you-light.png`, `tagging/sheet-empty-light.png`, `tagging/sheet-not-tagged-light.png`, `tagging/sheet-tagged-dark.png`, `tagging/sheet-tagged-light.png`
 
-**Result: 18 checks — 15 match, 2 match (token), 1 not matched.**
+**Result: 18 checks — 16 match, 2 match (token).**
 
 ## Footer run
 
 | status | token / element | expected | ours | reference evidence | note |
 |---|---|---|---|---|---|
 | match (token) | run text role `listSubtitle` |  | TextRoles.listSubtitle; toggle in `textOnMedia`, 'with …' in `textSecondary` with semibold names |  |  |
-| not matched | hit area ≥ `size.global.minTouchTarget.android` | 48 × 48 | 139.5 × 18 (the line) | M3 Accessibility: touch targets at least 48×48 dp (MERGE_DECISIONS Foundations) | the run is one button the size of its text: growing it to 48 would grow the viewer's footer line; needs a touch-bounds expansion in core:ui or a 48-dp footer row in photo.viewer (reported) |
+| match | hit area ≥ `size.global.minTouchTarget.android` | 48 × 48 | 139.5 wide; layout 18 high, touches across 48 (TouchBoundsExpansion 15 above and below) | M3 Accessibility: touch targets at least 48×48 dp (MERGE_DECISIONS Foundations) | the line keeps its height in the footer; TaggingSnapshotTest.theRunTakesTapsAboveAndBelowItsLine taps inside and just outside the band |
 | match | one line, tail-truncated, never a count | ListFormatter names | footer-with-truncated-light.png |  | android.icu ListFormatter |
 | match | "I'm in this" tags at once; run opens the sheet | optimistic + `tag_self` | TaggingSnapshotTest flow; TagRunControllerTest (revert on failure, ≤ 1 call) |  | select haptic; error toast + revert |
 

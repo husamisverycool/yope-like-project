@@ -760,8 +760,9 @@ def tagging():
     s.section("Footer run")
     r = m("tagging-run")["run"]
     s.token("run text role `listSubtitle`", "TextRoles.listSubtitle; toggle in `textOnMedia`, 'with …' in `textSecondary` with semibold names")
-    s.check("not matched", "hit area ≥ `size.global.minTouchTarget.android`", "48 × 48", f"{fmt(r['width'])} × {fmt(r['height'])} (the line)",
-            "the run is one button the size of its text: growing it to 48 would grow the viewer's footer line; needs a touch-bounds expansion in core:ui or a 48-dp footer row in photo.viewer (reported)", ev("size.global.minTouchTarget.android"))
+    s.check("match" if r["width"] >= tok("size.global.minTouchTarget.android") else "approx", "hit area ≥ `size.global.minTouchTarget.android`", "48 × 48",
+            f"{fmt(r['width'])} wide; layout {fmt(r['height'])} high, touches across 48 (TouchBoundsExpansion {fmt((48 - r['height']) / 2)} above and below)",
+            "the line keeps its height in the footer; TaggingSnapshotTest.theRunTakesTapsAboveAndBelowItsLine taps inside and just outside the band", ev("size.global.minTouchTarget.android"))
     s.check("match", "one line, tail-truncated, never a count", "ListFormatter names", "footer-with-truncated-light.png", "android.icu ListFormatter")
     s.check("match", "\"I'm in this\" tags at once; run opens the sheet", "optimistic + `tag_self`", "TaggingSnapshotTest flow; TagRunControllerTest (revert on failure, ≤ 1 call)", "select haptic; error toast + revert")
     s.section("'In this photo' sheet (C-29 medium detent)")
@@ -799,7 +800,7 @@ PAIRS = [
     ("birthday.request", ["birthday.request/open-light.png", "birthday.request/open-dark.png", "birthday.request/contributed-light.png"],
      [("lazyweb/retro-lazyweb-20260529-paywall.png", None)]),
     ("birthday.contribute", ["birthday.contribute/photo-selected-light.png", "birthday.contribute/photo-selected-dark.png", "birthday.contribute/composer-line-light.png", "birthday.contribute/message-light.png"],
-     [("video/ig-DDbA_F7x-j7-composer-f130-147-f188-197.png", "0,0,900,1116"), ("store/retro-store-03.png", None), ("press/tc-2023-12-retro3.png", "1900,200,700,1445")]),
+     [("video/ig-DDbA_F7x-j7-composer-f130-147-f188-197.png", "0,372,720,744"), ("store/retro-store-03.png", None), ("press/tc-2023-12-retro3.png", "1900,200,700,1445")]),
     ("birthday.tribute", ["birthday.tribute/ready-light.png", "birthday.tribute/ready-dark.png", "birthday.tribute/honoree-light.png"],
      [("press/tc-2025-12-rewind-device-a.png", None), ("store/retro-store-04.png", None), ("press/tc-2023-07-retro-2b.jpg", "1290,100,920,1940")]),
     ("tagging", ["tagging/footer-with-light.png", "tagging/footer-untagged-dark.png", "tagging/sheet-tagged-light.png", "tagging/sheet-tagged-dark.png"],

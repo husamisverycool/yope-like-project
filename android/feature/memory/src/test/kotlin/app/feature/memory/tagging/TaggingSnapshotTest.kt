@@ -20,6 +20,8 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.click
 import app.designsystem.generated.Tokens
 import app.feature.memory.FakeMemoryBackend
 import app.feature.memory.FakeMemoryBackend.Companion.ANA
@@ -86,6 +88,34 @@ class TaggingSnapshotTest : SnapshotTest() {
     @Test fun sheetTaggedDark() = sheet("sheet-tagged", listOf(ana, me), dark = true)
     @Test fun sheetNotTagged() = sheet("sheet-not-tagged", listOf(ana, ben))
     @Test fun sheetEmpty() = sheet("sheet-empty", emptyList())
+
+    /** The run stays one line high but takes taps across `size.global.minTouchTarget.android` (48 dp). */
+    @Test fun theRunTakesTapsAboveAndBelowItsLine() {
+        val backend = Scenario.backend().apply { tags.clear() }
+        compose.setContent {
+            MemoryTestContent(backend) {
+                val scope = rememberCoroutineScope()
+                val c = remember { TagRunController("p-other", backend, scope, emptyList(), me) }
+                ViewerFooterHost(c)
+            }
+        }
+        val run = compose.onNodeWithTag(TagRunTags.RUN)
+        val bounds = run.fetchSemanticsNode().boundsInRoot
+        val slack = (with(compose.density) { Tokens.Sizes.globalMinTouchTargetAndroid.toPx() } - bounds.height) / 2
+        assertTrue("a one-line run", slack > 0f)
+        // Outside the 48-dp band: nothing.
+        run.performTouchInput { click(androidx.compose.ui.geometry.Offset(centerX, -slack - 6f)) }
+        compose.waitForIdle()
+        assertTrue(("p-other" to ME) !in backend.tags)
+        // Just inside the expanded area above the line: tags you.
+        run.performTouchInput { click(androidx.compose.ui.geometry.Offset(centerX, -slack + 2f)) }
+        compose.waitForIdle()
+        assertTrue(("p-other" to ME) in backend.tags)
+        // Below the line (inside the expansion) opens the sheet now that you are tagged.
+        run.performTouchInput { click(androidx.compose.ui.geometry.Offset(centerX, height + slack - 2f)) }
+        compose.waitForIdle()
+        compose.onNodeWithText("In this photo").assertExists()
+    }
 
     /** Flow: "I'm in this" tags you at once; the run opens the sheet; "Remove tag" takes you out. */
     @Test fun tagOpenTheSheetAndRemove() {

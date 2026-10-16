@@ -39,6 +39,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.AnnotatedString
@@ -53,6 +55,7 @@ import app.feature.memory.common.FadeInItem
 import app.feature.memory.common.MemoryBackend
 import app.feature.memory.common.SystemAppearance
 import app.feature.memory.common.attempt
+import app.feature.memory.common.expandedTap
 import app.feature.memory.common.failureOf
 import app.feature.memory.common.memoryModel
 import app.feature.memory.common.rememberMemoryBackend
@@ -64,7 +67,6 @@ import app.ui.components.PeopleRow
 import app.ui.components.PlatformToast
 import app.ui.components.PrimaryButton
 import app.ui.foundation.DsMotion
-import app.ui.foundation.tapClickable
 import app.ui.haptics.rememberHaptics
 import app.ui.system.DsBottomSheet
 import app.ui.system.SheetHeader
@@ -240,15 +242,23 @@ fun TagRun(
     val peopleLabel = stringResource(R.string.tagging_a11y_people)
     val locale = LocalConfiguration.current.locales[0]
     val withText = if (tagged.isEmpty()) null else withNames(stringResource(R.string.tagging_with, joinNames(tagged, locale)), tagged)
+    val haptics = rememberHaptics()
+    val activate = {
+        haptics.tap()
+        if (withText == null) controller.tag() else controller.sheetOpen = true
+    }
     AnimatedContent(
         targetState = withText,
         label = "tagRun",
         transitionSpec = { DsMotion.fadeIn togetherWith DsMotion.fadeOut },
         modifier = modifier
             .testTag(TagRunTags.RUN)
-            .tapClickable(enabled = !controller.pending) { if (withText == null) controller.tag() else controller.sheetOpen = true }
+            // One text line high in the footer, but taps land within `size.global.minTouchTarget.android`.
+            .expandedTap(Tokens.Sizes.globalMinTouchTargetAndroid, enabled = !controller.pending, onTap = activate)
             .clearAndSetSemantics {
                 role = Role.Button
+                if (controller.pending) disabled()
+                onClick { activate(); true }
                 if (withText == null) {
                     contentDescription = toggle
                 } else {

@@ -12,7 +12,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.hasScrollToIndexAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.data.error.DataError
@@ -274,8 +277,9 @@ class ScreenSnapshotTest {
 
     // onboarding.permission.contacts lives in groups.invite (its Contacts section).
     // The Contacts section sits under the link controls: each render scrolls the sheet to it.
-    private fun scrollTo(text: Int): () -> Unit = { compose.onNodeWithText(context.getString(text)).performScrollTo() }
-    private fun scrollToText(text: String): () -> Unit = { compose.onNodeWithText(text).performScrollTo() }
+    // The sheet is a lazy list: scroll it until the node is composed and shown.
+    private fun scrollTo(text: Int): () -> Unit = scrollToText(context.getString(text))
+    private fun scrollToText(text: String): () -> Unit = { compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText(text)) }
     @Test fun contactsNotAsked() = snap("onboarding.permission.contacts", "notAsked", act = scrollTo(R.string.onboarding_permission_contacts_card_button), content = inviteScreen(linkOn))
     @Test fun contactsNotAskedDark() = snap("onboarding.permission.contacts", "notAsked", dark = true, act = scrollTo(R.string.onboarding_permission_contacts_card_button), content = inviteScreen(linkOn))
     @Test fun contactsGranted() = snap("onboarding.permission.contacts", "granted", act = scrollToText("Zoe Park"), content = inviteScreen(withContacts))
