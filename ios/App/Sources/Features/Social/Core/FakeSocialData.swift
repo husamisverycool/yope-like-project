@@ -55,6 +55,8 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         var blocked: [UserID] = []
         var deletedMedia: [MediaID] = []
         var sentVoice: [(URL, Int)] = []
+        /// The waveform sent with each voice message, in `sentVoice`'s order.
+        var sentVoiceLevels: [[Int]?] = []
         var calls: [String] = []
         var messagePageSize = SocialPaging.messages
         /// Runs inside `sendText` / `sendVoice` before they return (e.g. the realtime echo arriving first).
@@ -207,15 +209,16 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         return message
     }
 
-    func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int) async throws -> Message {
+    func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int, levels: [Int]?) async throws -> Message {
         try call("sendVoice")
         let message = Message(
             id: MessageID(nextID()), groupID: groupID, authorID: read { $0.me } ?? UserID("me"), kind: .voice,
-            voicePath: "fake/voice/\(fileURL.lastPathComponent)", voiceDurationMs: durationMs, createdAt: tick()
+            voicePath: "fake/voice/\(fileURL.lastPathComponent)", voiceDurationMs: durationMs, voiceLevels: levels, createdAt: tick()
         )
         update {
             $0.messages.append(message)
             $0.sentVoice.append((fileURL, durationMs))
+            $0.sentVoiceLevels.append(levels)
         }
         if let hook = read({ $0.beforeSendReturns }) { await hook(message) }
         return message

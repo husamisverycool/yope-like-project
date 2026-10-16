@@ -487,13 +487,11 @@ class ScreenSnapshotTest {
     private fun root(state: SettingsRootUiState, permissions: List<PermissionRow> = granted) = @Composable { SettingsRootScreen(state, legal, permissions, "1.0 (1)", SettingsRootActions()) }
     @Test fun settingsRoot() = snap("settings.root", "default", content = root(rootState))
     @Test fun settingsRootDark() = snap("settings.root", "default", dark = true, content = root(rootState))
-    /** The Appearance section with True Black on, in the true-black dark appearance it selects (owner decision 21). */
-    @Test fun settingsRootTrueBlack() = snap("settings.root", "trueBlack-scrolled", dark = true, trueBlack = true, act = {
-        compose.onNodeWithText(context.getString(R.string.settings_root_trueblack)).performScrollTo()
-    }) { root(rootState.copy(trueBlack = true))() }
-    @Test fun settingsRootTrueBlackOffDark() = snap("settings.root", "appearance-scrolled", dark = true, act = {
-        compose.onNodeWithText(context.getString(R.string.settings_root_trueblack)).performScrollTo()
-    }) { root(rootState)() }
+    /**
+     * The Appearance section (Android only) with True Black on, in the true-black dark appearance it selects (owner
+     * decision 21); `default-dark` shows it off on Retro's default #1C1C1E page.
+     */
+    @Test fun settingsRootTrueBlack() = snap("settings.root", "trueBlackOn", dark = true, trueBlack = true, content = root(rootState.copy(trueBlack = true)))
     @Test fun settingsRootLoading() = snap("settings.root", "subscriptionLoading", content = root(rootState.copy(subscription = SubscriptionState.Loading)))
     @Test fun settingsRootSubscriber() = snap("settings.root", "subscriber-annual", content = root(rootState.copy(subscription = SubscriptionState.Annual)))
     @Test fun settingsRootDenied() = snap("settings.root", "permissionsDenied-scrolled", act = { compose.onNodeWithText(context.getString(R.string.settings_root_permissions_notifications)).performScrollTo() }) {

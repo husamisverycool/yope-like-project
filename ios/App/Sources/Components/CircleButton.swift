@@ -18,10 +18,13 @@ enum CircleButtonStyle {
     case glassLarge
     /// Small glass over colour (the paywall close): `size.global.circleButtonSmall`.
     case glassSmall
+    /// A page circle in the primary fill (the locked voice recording's send, `chat.voice.layout.locked`: C-11's shape
+    /// in C-06's primary colours): `size.global.circleButton`, fill `color.global.accent`, glyph `color.global.onAccent`.
+    case primary
 
     var diameter: CGFloat {
         switch self {
-        case .page, .media: return Tokens.Sizes.globalCircleButton
+        case .page, .media, .primary: return Tokens.Sizes.globalCircleButton
         case .glass: return Tokens.Sizes.globalCircleButtonPhoto
         case .glassLarge: return Tokens.Sizes.globalCircleButtonLarge
         case .glassSmall: return Tokens.Sizes.globalCircleButtonSmall
@@ -33,6 +36,7 @@ enum CircleButtonStyle {
         case .page: return Tokens.Colors.globalControl
         case .media: return Tokens.Colors.globalControlOnDeep
         case .glass, .glassLarge, .glassSmall: return Tokens.Colors.globalGlass
+        case .primary: return Tokens.Colors.globalAccent
         }
     }
 
@@ -40,6 +44,7 @@ enum CircleButtonStyle {
         switch self {
         case .page: return Tokens.Colors.globalTextPrimary
         case .media, .glass, .glassLarge, .glassSmall: return Tokens.Colors.globalTextOnMedia
+        case .primary: return Tokens.Colors.globalOnAccent
         }
     }
 
@@ -49,7 +54,7 @@ enum CircleButtonStyle {
     /// circles over photos keep `size.global.icon` (RWB share / random ink fills the 24-pt box).
     func glyphSize(for icon: String) -> CGFloat {
         switch self {
-        case .page, .media, .glassSmall:
+        case .page, .media, .glassSmall, .primary:
             let ink = icon == Tokens.Icons.globalClose ? Tokens.Sizes.globalCircleCloseGlyph : Tokens.Sizes.globalCircleGlyph
             return ink * diameter / Tokens.Sizes.globalCircleButton
         case .glass, .glassLarge:
@@ -65,10 +70,12 @@ struct CircleButtonFace: View {
     let icon: String
     var style: CircleButtonStyle = .page
     var glyphSize: CGFloat?
+    /// Overrides the style's glyph colour (a red C-10 glyph in a page circle: `chat.voice.layout.locked`).
+    var glyphColor: Color?
 
     var body: some View {
         Glyph(icon, size: glyphSize ?? style.glyphSize(for: icon))
-            .foregroundStyle(style.glyph)
+            .foregroundStyle(glyphColor ?? style.glyph)
             .frame(width: style.diameter, height: style.diameter)
             .background(style.fill, in: Circle())
             .minimumHitArea(drawn: CGSize(width: style.diameter, height: style.diameter))

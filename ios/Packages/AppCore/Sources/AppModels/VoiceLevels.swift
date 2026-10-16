@@ -12,9 +12,10 @@ public enum VoiceLevels {
     public static let sampleCount = 100
     /// The largest stored value: 5 bits (`layout.global.waveform.levelMax`).
     public static let maxLevel = 31
-    /// How often the recorder's peak level is read: 3 s of speech fill the 100 buckets
+    /// How often the recorder's peak level is read, in milliseconds: 3 s of speech fill the 100 buckets
     /// (`layout.global.waveform.sampling`).
-    public static let samplingInterval: Duration = .milliseconds(30)
+    public static let samplingIntervalMs = 30
+    public static var samplingInterval: Duration { .milliseconds(samplingIntervalMs) }
     /// Telegram's scale floor, 2500 on the 16-bit range.
     static let scaleFloor: Float = 2500 / 32767
     /// Telegram's scale: 1.8 × the mean bucket peak.

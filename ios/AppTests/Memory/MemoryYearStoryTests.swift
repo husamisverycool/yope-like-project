@@ -64,7 +64,7 @@ final class MemoryYearStoryTests: XCTestCase {
 
     func testMissingDataSkipsCardsAndListsStopAtListLength() {
         let data = YearStoryData(json: .object(["year": .number(2026)]), fallbackYear: 2026)!
-        let cards = YearStoryCard.build(data: data, groupName: "g", photos: (1...7).map(photo), collages: [])
+        let cards = YearStoryCard.build(data: data, groupName: "g", photos: (1...7).map { photo($0) }, collages: [])
         XCTAssertFalse(cards.contains { $0.id == "moments" }, "no number → no moments card")
         XCTAssertFalse(cards.contains(.togetherSetup), "no everyone-days → no together cards")
         XCTAssertTrue(cards.contains(.lookBack))
@@ -75,7 +75,7 @@ final class MemoryYearStoryTests: XCTestCase {
 
     func testRankedPhotosCarryNoNumbersOrRanks() {
         let data = YearStoryData(json: .object(["year": .number(2026)]), fallbackYear: 2026)!
-        let cards = YearStoryCard.build(data: data, groupName: "g", photos: (1...5).map(photo), collages: [])
+        let cards = YearStoryCard.build(data: data, groupName: "g", photos: (1...5).map { photo($0) }, collages: [])
         let photos = cards.compactMap { card -> YearStoryPhoto? in
             if case let .mostReacted(photo) = card { return photo }
             return nil

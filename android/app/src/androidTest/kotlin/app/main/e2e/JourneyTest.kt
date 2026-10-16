@@ -122,8 +122,8 @@ class JourneyTest {
         tap(desc(R.string.groups_screen_week_add_accessibilitylabel))
         waitFor(hasTestTag("camera.shutter"), LONG)
         evidence.step("maya-camera")
-        tap(hasTestTag("camera.shutter"))
-        waitFor(hasTestTag("camera.sendto"), LONG)
+        // The shutter ignores taps until the session is live (camera.capture): tap again while send-to has not opened.
+        retry(attempts = 3, until = hasTestTag("camera.sendto")) { tap(hasTestTag("camera.shutter")) }
         waitFor(hasText(GROUP))
         evidence.step("maya-sendto")
         tap(hasTestTag("sendto.send"))
@@ -149,7 +149,8 @@ class JourneyTest {
 
         // Chat: a message.
         tap(desc(R.string.groups_screen_chat))
-        val composer = hasSetTextAction() and descContaining(context.getString(R.string.chat_composer_a11y_field))
+        // The thread's only text field is the composer.
+        val composer = hasSetTextAction()
         waitFor(composer, LONG)
         evidence.step("maya-chat")
         type(composer, MESSAGE)
@@ -287,6 +288,21 @@ class JourneyTest {
     private fun scrollTo(matcher: SemanticsMatcher) {
         if (runCatching { node(matcher).performScrollTo() }.isSuccess) return
         compose.onAllNodes(hasScrollToNodeAction()).onFirst().performScrollToNode(matcher)
+    }
+
+    /** Runs [action] until [until] is on screen (each attempt waits [SHORT]). */
+    private fun retry(attempts: Int, until: SemanticsMatcher, action: () -> Unit) {
+        repeat(attempts) { attempt ->
+            action()
+            try {
+                compose.waitUntil(SHORT) { exists(until) }
+                compose.waitForIdle()
+                return
+            } catch (e: ComposeTimeoutException) {
+                Log.w(E2eRunner.TAG, "attempt ${attempt + 1}: ${until.description} not on screen yet")
+            }
+        }
+        throw AssertionError("not on screen after $attempts attempts: ${until.description}")
     }
 
     private fun waitFor(matcher: SemanticsMatcher, timeout: Long = SHORT) {

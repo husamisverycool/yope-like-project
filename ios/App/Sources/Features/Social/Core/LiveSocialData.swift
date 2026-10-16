@@ -75,9 +75,9 @@ struct LiveSocialData: SocialDataSource {
         try await replyRows(postID: postID)
     }
 
-    func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int) async throws -> Message {
+    func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int, levels: [Int]?) async throws -> Message {
         let path = try await environment.uploader.uploadChatVoice(fileURL: fileURL)
-        return try await environment.chat.sendVoice(groupID: groupID, voicePath: path, durationMs: durationMs)
+        return try await environment.chat.sendVoice(groupID: groupID, voicePath: path, durationMs: durationMs, levels: levels)
     }
 
     func deleteMessage(id: MessageID, groupID: GroupID) async throws {
@@ -254,7 +254,7 @@ struct UnconfiguredSocialData: SocialDataSource {
     func sendText(groupID: GroupID, body: String, replyToPostID: PostID?, replyToMessageID: MessageID?) async throws -> Message { try fail() }
     func message(id: MessageID) async throws -> Message? { try fail() }
     func replies(postID: PostID) async throws -> [Message] { try fail() }
-    func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int) async throws -> Message { try fail() }
+    func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int, levels: [Int]?) async throws -> Message { try fail() }
     func deleteMessage(id: MessageID, groupID: GroupID) async throws { try fail() as Void }
     func posts(ids: [PostID]) async throws -> [PostWithMedia] { try fail() }
     func cachedPosts(groupID: GroupID) async -> [PostWithMedia] { [] }

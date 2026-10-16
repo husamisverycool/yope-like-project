@@ -378,7 +378,7 @@ final class ChatThreadModel {
     /// What a local message sends (kept for a retry after a failure).
     private enum Outgoing {
         case text(String, replyToPost: PostID?, replyToMessage: MessageID?)
-        case voice(URL, durationMs: Int)
+        case voice(URL, durationMs: Int, levels: [Int]?)
     }
 
     /// Sends the composer text (`send_message`, kind text, with the reply ids): the message shows at once (optimistic)
@@ -404,14 +404,17 @@ final class ChatThreadModel {
         await deliver(local.id)
     }
 
-    /// Uploads and sends a recorded voice message (`chat.voice`); shown at once, playable from the local file.
-    func sendVoice(fileURL: URL, durationMs: Int) async {
+    /// Uploads and sends a recorded voice message with its waveform (`chat.voice`, C-36); shown at once, playable from
+    /// the local file.
+    func sendVoice(fileURL: URL, durationMs: Int, levels: [Int]? = nil) async {
         guard durationMs > 0, let me else { return }
+        let waveform = levels.flatMap { VoiceLevels.isValid($0) ? $0 : nil }
         let local = makeLocal(Message(
-            id: nextLocalID(), groupID: groupID, authorID: me, kind: .voice, voiceDurationMs: durationMs, createdAt: Date()
+            id: nextLocalID(), groupID: groupID, authorID: me, kind: .voice, voiceDurationMs: durationMs, voiceLevels: waveform,
+            createdAt: Date()
         ))
         localVoiceFiles[local.id] = fileURL
-        outgoing[local.id] = .voice(fileURL, durationMs: durationMs)
+        outgoing[local.id] = .voice(fileURL, durationMs: durationMs, levels: waveform)
         await deliver(local.id)
     }
 
@@ -432,8 +435,8 @@ final class ChatThreadModel {
                 message = try await data.sendText(
                     groupID: groupID, body: body, replyToPostID: replyToPost, replyToMessageID: replyToMessage
                 )
-            case let .voice(fileURL, durationMs):
-                message = try await data.sendVoice(groupID: groupID, fileURL: fileURL, durationMs: durationMs)
+            case let .voice(fileURL, durationMs, levels):
+                message = try await data.sendVoice(groupID: groupID, fileURL: fileURL, durationMs: durationMs, levels: levels)
                 localVoiceFiles[message.id] = fileURL
             }
             outgoing[localID] = nil

@@ -34,8 +34,9 @@ protocol SocialDataSource: Sendable {
     func message(id: MessageID) async throws -> Message?
     /// The group-chat replies to a photo (`messages.reply_to_post_id = post`), oldest first (`photo.viewer.layout.comments`).
     func replies(postID: PostID) async throws -> [Message]
-    /// Uploads the `.m4a` (`u/<uid>/voice/<uuid>.m4a`), then sends it.
-    func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int) async throws -> Message
+    /// Uploads the `.m4a` (`u/<uid>/voice/<uuid>.m4a`), then sends it with its waveform (`levels`: 100 values of 0…31,
+    /// `p_voice_levels`; nil sends none).
+    func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int, levels: [Int]?) async throws -> Message
     func deleteMessage(id: MessageID, groupID: GroupID) async throws
 
     // MARK: Posts (§5.7, §5.8)
