@@ -652,7 +652,12 @@ private fun MessageList(
     LaunchedEffect(nearTop) { if (nearTop) onLoadOlder() }
     // The newest message stays in view: when one arrives while the bottom of the thread is showing, scroll to it.
     val newest = items.firstOrNull()?.key
-    LaunchedEffect(newest) { if (newest != null && listState.firstVisibleItemIndex <= 1) listState.scrollToItem(0) }
+    var shownNewest by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(newest) {
+        val previous = shownNewest
+        shownNewest = newest
+        if (newest != null && previous != null && previous != newest && listState.layoutInfo.visibleItemsInfo.any { it.key == previous }) listState.scrollToItem(0)
+    }
     LaunchedEffect(focusMessageId, items.isNotEmpty()) {
         val i = items.indexOfFirst { it is ThreadItem.Item && it.row.id == focusMessageId }
         if (focusMessageId != null && i >= 0) listState.scrollToItem(i)

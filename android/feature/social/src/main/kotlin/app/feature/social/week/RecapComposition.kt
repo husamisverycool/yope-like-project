@@ -42,108 +42,40 @@ import app.feature.social.common.PersonAvatar
 import app.feature.social.common.RemotePhoto
 import app.ui.foundation.PhotoScrimOverlay
 import app.ui.foundation.tapClickable
+import app.feature.memory.yearstory.RecapCard
+import app.feature.memory.yearstory.RecapCardMetrics
+import app.feature.memory.yearstory.RecapCardPhoto
 import app.ui.text.TextRoles
 
 /*
  * week.recap's preview composes three groups' definitions (lead decision, MERGE RS-17 / L-4):
- *  - the chrome: core:ui `app.ui.recap.RecapPreviewScreen` (capture group, `collage.view.layout.screen`) — used directly;
- *  - the pages: the memory group's recap card and cover styles (`layout.year.story.recapCard`, `dimension.year.story.*`).
- *    `:feature:memory` has not published them yet, so they are drawn here from year.story.md — this file is the one
- *    place to switch to the memory group's composables.
+ *  - the chrome: core:ui `app.ui.recap.RecapPreviewScreen` (capture group, `collage.view.layout.screen`);
+ *  - the pages: the memory group's `app.feature.memory.yearstory.RecapCard` / `RecapCardPage` / `RecapCoverPage`
+ *    (`layout.year.story.recapCard`, white in both appearances, and the full-bleed cover);
+ *  - this surface's own parts: the note under the card (`week.recap.layout.note`) and the select-photos thumbnail.
  */
-
-/** A cell of the recap card: a photo, its label (copy) and tap. */
-data class RecapCell(val key: String, val path: String?, val label: String, val onClick: () -> Unit)
 
 /**
  * How many of [count] photos the card draws (4 columns × up to 6 rows, `layout.year.story.recapCard`). The fill rule
  * for counts that do not fill a row is `week.recap.layout.gridFill` (BLOCKED): with [approximation] the development
- * approximation (row by row, empty cells left blank, beyond 24 not drawn); otherwise the year card's own rule (only
- * full rows).
+ * approximation (row by row, a short last row keeps its blank places, beyond 24 not drawn); otherwise the year card's
+ * own rule (whole rows only — `RecapCardMetrics.shown`).
  */
-fun recapCardCells(count: Int, approximation: Boolean): Int {
-    val card = Tokens.Layouts.YearStoryRecapCard
-    val columns = card.columns.toInt()
-    val max = columns * card.maxRows.toInt()
-    return if (approximation) count.coerceAtMost(max) else (count / columns * columns).coerceAtMost(max)
-}
+fun recapCardCells(count: Int, approximation: Boolean): Int =
+    if (approximation) count.coerceAtMost(RecapCardMetrics.columns * RecapCardMetrics.maxRows) else RecapCardMetrics.shown(count)
 
 /**
- * Page 1 — the recap card (`layout.year.story.recapCard`, white in both appearances — L-4): laid out in a 9:16 box as
- * wide as the media page and centred in it; the card `widthRatio` of the page, corners `cornerRadiusRatio` of its
- * width, padding `paddingRatio`; 4 columns of `cellAspect` cells `size.global.stripGap` apart; footer `footerHeightRatio`
- * of its width — "Week {n}" (`font.global.display`, `headerTitle`, `color.global.onSurfaceLight`) bottom-leading, the group
- * name (`listTitle`, `color.global.onSurfaceLight`) over the date range (`meta`, `color.global.textSecondary`) trailing.
- * Under it, when the recap has text, the note (`week.recap.layout.note`). [loading]: cells as `color.global.control`
- * placeholders.
+ * Page 1 with a note: the memory group's [RecapCard] at `widthRatio` of the page and, `week.recap.dimension.noteGap`
+ * under it, the note box the card's width — the two centred together in the page (`week.recap.layout.note`).
  */
 @Composable
-fun BoxScope.RecapCardPage(
-    cells: List<RecapCell>,
-    shown: Int,
-    title: String,
-    groupName: String,
-    range: String,
-    cardLabel: String,
-    note: RecapNote?,
-    loading: Boolean = false,
-) {
-    val spec = Tokens.Layouts.YearStoryRecapCard
-    val columns = spec.columns.toInt()
+fun BoxScope.RecapCardWithNote(photos: List<RecapCardPhoto>, title: String, name: String, detail: String, shown: Int, note: RecapNote) {
     BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        val frame = Tokens.Layouts.YearStoryFrame
-        val boxHeight = maxWidth * (frame.aspectHeight / frame.aspectWidth)
-        val cardWidth = maxWidth * spec.widthRatio
-        val padding = cardWidth * spec.paddingRatio
-        val corner = cardWidth * spec.cornerRadiusRatio
-        val footer = cardWidth * spec.footerHeightRatio
-        val gap = Tokens.Sizes.globalStripGap
-        Column(Modifier.height(boxHeight.coerceAtMost(maxHeight)), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-            Column(
-                Modifier
-                    .width(cardWidth)
-                    .clip(RoundedCornerShape(corner))
-                    .background(Tokens.Colors.globalSurfaceLight)
-                    .padding(start = padding, top = padding, end = padding)
-                    .semantics(mergeDescendants = false) { contentDescription = cardLabel },
-                verticalArrangement = Arrangement.spacedBy(gap),
-            ) {
-                val rows = (if (loading) List(columns * 2) { null } else cells.take(shown)).chunked(columns)
-                rows.forEach { row ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
-                        row.forEach { cell ->
-                            val m = Modifier.weight(1f).aspectRatio(spec.cellAspect)
-                            if (cell == null) Box(m.background(Tokens.Colors.globalControl))
-                            else RemotePhoto(
-                                cell.path,
-                                null,
-                                m.tapClickable(onClick = cell.onClick).clearAndSetSemantics {
-                                    contentDescription = cell.label
-                                    role = Role.Button
-                                },
-                            )
-                        }
-                        repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
-                    }
-                }
-                CardFooter(title, groupName, range, footer, padding)
-            }
-            if (note != null) {
-                Spacer(Modifier.height(Tokens.Sizes.weekRecapDimensionNoteGap))
-                NoteBox(note, Modifier.width(cardWidth))
-            }
-        }
-    }
-}
-
-/** The card footer: "Week {n}" bottom-leading at the card padding; name over range trailing, right-aligned. */
-@Composable
-private fun CardFooter(title: String, groupName: String, range: String, height: Dp, padding: Dp) {
-    Row(Modifier.fillMaxWidth().height(height).padding(bottom = padding), verticalAlignment = Alignment.Bottom) {
-        Text(title, style = TextRoles.headerTitle, color = Tokens.Colors.globalOnSurfaceLight, maxLines = 1, modifier = Modifier.weight(1f).clearAndSetSemantics { })
-        Column(horizontalAlignment = Alignment.End, modifier = Modifier.clearAndSetSemantics { }) {
-            Text(groupName, style = TextRoles.listTitle, color = Tokens.Colors.globalOnSurfaceLight, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.End)
-            Text(range, style = TextRoles.meta, color = Tokens.Colors.globalTextSecondary, maxLines = 1, textAlign = TextAlign.End)
+        val width = RecapCardMetrics.width(maxWidth)
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            RecapCard(photos, title, Modifier.width(width), name = name, detail = detail, shown = shown)
+            Spacer(Modifier.height(Tokens.Sizes.weekRecapDimensionNoteGap))
+            NoteBox(note, Modifier.width(width))
         }
     }
 }
@@ -181,32 +113,6 @@ private fun NoteBox(note: RecapNote, modifier: Modifier) {
             style = TextRoles.body,
             color = Tokens.Colors.globalTextOnMedia,
         )
-    }
-}
-
-/**
- * Page 2 — the cover (`week.recap.layout.pages` page2, year.story full-bleed style): the first item fills the page
- * (aspect fill) under `layout.global.photoScrim`; "Week {n}" (`headerTitle` serif) leading and the name / range stack
- * trailing, at `dimension.year.story.frame.padding`, baselines `dimension.year.story.footer.baseline` above the bottom.
- */
-@Composable
-fun BoxScope.RecapCoverPage(coverPath: String?, title: String, groupName: String, range: String, label: String) {
-    RemotePhoto(coverPath, null, Modifier.fillMaxSize().clearAndSetSemantics { contentDescription = label }, placeholder = Tokens.Colors.globalControlOnDeep)
-    PhotoScrimOverlay()
-    Row(
-        Modifier
-            .align(Alignment.BottomStart)
-            .fillMaxWidth()
-            .padding(horizontal = Tokens.Sizes.yearStoryFramePadding)
-            .paddingFrom(LastBaseline, after = Tokens.Sizes.yearStoryFooterBaseline)
-            .clearAndSetSemantics { },
-        verticalAlignment = Alignment.Bottom,
-    ) {
-        Text(title, style = TextRoles.headerTitle, color = Tokens.Colors.globalTextOnMedia, maxLines = 1, modifier = Modifier.weight(1f))
-        Column(horizontalAlignment = Alignment.End) {
-            Text(groupName, style = TextRoles.listTitle, color = Tokens.Colors.globalTextOnMedia, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(range, style = TextRoles.meta, color = Tokens.Colors.globalTextOnMedia, maxLines = 1)
-        }
     }
 }
 

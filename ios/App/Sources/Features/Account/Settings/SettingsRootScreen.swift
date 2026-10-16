@@ -76,7 +76,7 @@ struct SettingsRootScreen: View {
                 RouteDestination(route: route)
             }
         }
-        .environment(\.settingsPush) { route in path.append(route) }
+        .environment(\.settingsPush, SettingsPushAction(path: $path))
         .dsSheetBackground()
         .sheet(item: $link) { link in
             SafariView(url: link.url)

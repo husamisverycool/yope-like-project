@@ -117,11 +117,38 @@ describe('invites', () => {
       group_kind: 'friends',
       cover_path: null,
       inviter_first_name: 'Alice',
+      inviter_avatar_path: null,
       members: [
         { first_name: 'Alice', avatar_path: null },
         { first_name: b.name.split(' ')[0], avatar_path: null },
       ],
     });
+  });
+
+  it('invite_preview returns the avatar of the invite creator (a current member), not a first-name guess', async () => {
+    const g = await createGroup(a, [b, c]);
+    const avatar = (u: TestUser) => `avatars/${u.id}/${randomUUID()}.jpg`;
+    const [pa, pb] = [avatar(a), avatar(b)];
+    await a.client.from('profiles').update({ display_name: 'Sam One', avatar_path: pa }).eq('id', a.id);
+    await b.client.from('profiles').update({ display_name: 'Sam Two', avatar_path: pb }).eq('id', b.id);
+    // two members share the first name: the creator decides whose photo it is
+    const byB = await rpc(b.client, 'create_invite', { p_group_id: g.id });
+    const p = await rpc(anon, 'invite_preview', { p_token: byB.token });
+    expect([p.inviter_first_name, p.inviter_avatar_path]).toEqual(['Sam', pb]);
+    // it is one of the member avatars the preview already exposes
+    expect(p.members.map((m: any) => m.avatar_path)).toContain(pb);
+    const byA = await rpc(a.client, 'create_invite', { p_group_id: g.id });
+    expect((await rpc(anon, 'invite_preview', { p_token: byA.token })).inviter_avatar_path).toBe(pa);
+    // a creator without a photo: null
+    const byC = await rpc(c.client, 'create_invite', { p_group_id: g.id });
+    expect((await rpc(anon, 'invite_preview', { p_token: byC.token })).inviter_avatar_path).toBeNull();
+    // a creator who is no longer a member: the link is revoked, so nothing about them is shown
+    await rpc(b.client, 'leave_group', { p_group_id: g.id });
+    await expectRpcError(rpc(anon, 'invite_preview', { p_token: byB.token }), 'invite_revoked', 410);
+    // and the rule holds even for an invite row whose creator left without the revocation (defence in depth)
+    await sql(`update public.group_invites set revoked_at = null where token = $1`, [byB.token]);
+    expect((await rpc(anon, 'invite_preview', { p_token: byB.token })).inviter_avatar_path).toBeNull();
+    for (const u of [a, b]) await u.client.from('profiles').update({ avatar_path: null }).eq('id', u.id);
   });
 
   it('revoked, expired and unknown tokens are refused', async () => {

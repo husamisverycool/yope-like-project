@@ -201,12 +201,13 @@ describe('group isolation: RPCs', () => {
 
   it('invite_preview exposes only the documented projection', async () => {
     const p = await rpc(outsider.client, 'invite_preview', { p_token: seeded.inviteToken });
-    expect(Object.keys(p).sort()).toEqual(['cover_path', 'group_kind', 'group_name', 'inviter_first_name', 'members']);
+    expect(Object.keys(p).sort()).toEqual(['cover_path', 'group_kind', 'group_name', 'inviter_avatar_path', 'inviter_first_name', 'members']);
     for (const m of p.members) expect(Object.keys(m).sort()).toEqual(['avatar_path', 'first_name']);
     // Storage paths embed their owner's user id (path convention); nothing else may.
     const withoutPaths = JSON.stringify({
       ...p,
       cover_path: null,
+      inviter_avatar_path: null,
       members: p.members.map((m: any) => ({ ...m, avatar_path: null })),
     });
     for (const u of gUsers) expect(withoutPaths).not.toContain(u.id);

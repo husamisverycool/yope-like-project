@@ -41,7 +41,7 @@ final class SettingsAccountModel {
             nameDraft = profile.displayName
         }
         if let privateProfile = try? await data.myPrivateProfile() {
-            birthday = privateProfile?.birthday
+            birthday = privateProfile.birthday
         }
         if let server = try? await data.hasPremium() { isPremium = server || premium }
     }

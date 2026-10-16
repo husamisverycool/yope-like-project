@@ -50,6 +50,10 @@ import app.feature.social.common.MediaAppearance
 import app.feature.social.common.RemotePhoto
 import app.feature.social.common.SocialBlocked
 import app.feature.social.common.photoModel
+import app.feature.memory.yearstory.RecapCardMetrics
+import app.feature.memory.yearstory.RecapCardPage
+import app.feature.memory.yearstory.RecapCardPhoto
+import app.feature.memory.yearstory.RecapCoverPage
 import app.feature.social.common.stringRes
 import app.feature.social.walls.ErrorLine
 import app.ui.components.CircleButtonStyle
@@ -223,9 +227,9 @@ fun WeekRecapPreview(state: RecapState, nav: RecapNav, onRetry: () -> Unit, init
     val cover = state.card.firstOrNull()?.thumbPath
     val ready = state.phase == RecapState.Phase.Ready && recap != null
     val approximation = SocialBlocked.recapGridFill || LocalApproximations.current
-    val cells = state.card.map { p ->
+    val photos = state.card.map { p ->
         val date = Formats.viewerDate(p.post.createdAt, state.zone)
-        RecapCell(p.post.id, p.thumbPath, stringRes(R.string.photo_viewer_a11y_photo, p.authorName.orEmpty(), date)) { recap?.let { nav.cardPhoto(it.id, p.post.id) } }
+        RecapCardPhoto(photoModel(p.thumbPath), stringRes(R.string.photo_viewer_a11y_photo, p.authorName.orEmpty(), date)) { recap?.let { nav.cardPhoto(it.id, p.post.id) } }
     }
     val note = recap?.text?.takeIf { it.isNotBlank() }?.let { RecapNote(it, state.editor?.firstName, state.editor?.avatarPath) }
     MediaAppearance {
@@ -242,11 +246,19 @@ fun WeekRecapPreview(state: RecapState, nav: RecapNav, onRetry: () -> Unit, init
             bottomLeading = if (ready) ({ SelectPhotosThumb(cover, stringRes(R.string.week_recap_a11y_edit)) { nav.edit(recap!!.id) } }) else null,
         ) { index ->
             when {
-                state.phase == RecapState.Phase.Loading -> RecapCardPage(emptyList(), 0, title, groupName, range, cardLabel, null, loading = true)
+                // Loading: the card's cells as `color.global.control` placeholders (two rows) until the images load.
+                state.phase == RecapState.Phase.Loading -> RecapCardPage(List(RecapCardMetrics.columns * 2) { RecapCardPhoto(null, "") }, title)
                 state.phase == RecapState.Phase.Pending -> FrameLine(stringRes(R.string.week_recap_pending), null)
                 !ready -> FrameLine(stringRes(R.string.week_recap_error_title), onRetry)
-                index == 0 -> RecapCardPage(cells, recapCardCells(cells.size, approximation), title, groupName, range, cardLabel, note)
-                else -> RecapCoverPage(cover, title, groupName, range, cardLabel)
+                index == 0 -> {
+                    val shown = recapCardCells(photos.size, approximation)
+                    val labelled = Modifier.semantics { contentDescription = cardLabel }
+                    if (note != null) Box(labelled) { RecapCardWithNote(photos, title, groupName, range, shown, note) }
+                    else RecapCardPage(photos, title, labelled, name = groupName, detail = range, shown = shown)
+                }
+                else -> RecapCoverPage(title, Modifier.semantics { contentDescription = cardLabel }, name = groupName, detail = range) {
+                    RemotePhoto(cover, null, Modifier.fillMaxSize(), placeholder = Tokens.Colors.globalControlOnDeep)
+                }
             }
         }
     }

@@ -160,7 +160,7 @@ struct SettingsAccountView: View {
 
     /// Pushes inside the Settings sheet (its own stack): the hosting `NavigationStack` handles `AppRoute`s.
     private func pushInSheet(_ route: AppRoute) {
-        settingsPush?(route)
+        settingsPush?.callAsFunction(route)
     }
 
     /// The birthday as `layout.birthday.add.dateFormat` ("July 5").
@@ -269,13 +269,24 @@ struct CameraPhotoPicker: UIViewControllerRepresentable {
     }
 }
 
-/// How a settings page pushes inside its sheet's own navigation stack (set by `SettingsRootScreen`).
+/// How a settings page pushes inside its sheet's own navigation stack (set by `SettingsRootScreen` and
+/// `GroupSettingsScreen` on their `NavigationStack` path).
+/// `@unchecked`: the binding is only read and written on the main actor (`callAsFunction`).
+struct SettingsPushAction: @unchecked Sendable {
+    let path: Binding<[AppRoute]>
+
+    @MainActor
+    func callAsFunction(_ route: AppRoute) {
+        path.wrappedValue.append(route)
+    }
+}
+
 private struct SettingsPushKey: EnvironmentKey {
-    static let defaultValue: ((AppRoute) -> Void)? = nil
+    static let defaultValue: SettingsPushAction? = nil
 }
 
 extension EnvironmentValues {
-    var settingsPush: ((AppRoute) -> Void)? {
+    var settingsPush: SettingsPushAction? {
         get { self[SettingsPushKey.self] }
         set { self[SettingsPushKey.self] = newValue }
     }

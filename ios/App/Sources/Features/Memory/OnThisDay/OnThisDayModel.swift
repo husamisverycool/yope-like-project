@@ -234,7 +234,7 @@ final class OnThisDayModel {
                 authorID: post.post.authorID,
                 authorName: names[post.post.authorID] ?? "",
                 displayURL: post.media?.imagePath(for: .display).flatMap { urls[$0] },
-                originalURL: post.media?.originalPath.flatMap { urls[$0] },
+                originalURL: post.media.flatMap { urls[$0.originalPath] },
                 createdAt: post.post.createdAt,
                 isMine: post.post.authorID == me
             )
