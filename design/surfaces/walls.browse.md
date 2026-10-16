@@ -13,6 +13,7 @@ bar (C-04, `icon.global.group`; tab items owned by `groups.list`, account group)
 | TC-1B | `references/auto/retro/press/tc-2023-07-retro-1b.webp` phone 2 (2.204 px/pt) | **primary**: title, search field, grid (avatar 81, `walls.browse.dimension.columnPitch`, `.rowPitch`, `.nameBaseline`) |
 | H43 | `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png` | root header metrics (C-01) |
 | ED-W3 | `references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png` | 2025 search field (52 pt, r 19 — C-12) |
+| AP-P | `references/auto/apple-photos/apple-support/page-find-and-name-people-and-pets.txt`, `references/auto/apple-photos/store/photos-store-03.png` | people grid sorted by name ("Sort alphabetically: Tap Sort by Name") — `walls.browse.layout.rowOrder` |
 | APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | "Members" (`journal_edit_members_screen_title`), "Search", "Error loading friends. Tap here to try again." (noun → members), "Nothing to see here yet" |
 
 ## Structure (top → bottom; page `color.global.background` / `.background.android`)
@@ -27,7 +28,8 @@ bar (C-04, `icon.global.group`; tab items owned by `groups.list`, account group)
    one group with you (not you), three columns centred on the screen, `walls.browse.dimension.columnPitch` apart (C-21); each cell: avatar
    `size.global.avatarGrid` (C-23), the display name centred under it (text role `listTitle`, `color.global.textPrimary`,
    baseline `walls.browse.dimension.nameBaseline` below the avatar, one line, tail truncation within the column pitch);
-   rows `walls.browse.dimension.rowPitch` apart. Order `walls.browse.layout.rowOrder` (**BLOCKED**). The grid scrolls
+   rows `walls.browse.dimension.rowPitch` apart. Order `walls.browse.layout.rowOrder`: display name A to Z in the device
+   locale's collation, ignoring case and accents (Apple Photos' people grid "Sort by Name", AP-P). The grid scrolls
    vertically (RS-16).
 4. The tab bar (C-04) at the bottom.
 
@@ -98,7 +100,7 @@ switch and push native. Reduce Motion: system.
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `walls.browse.layout.rowOrder` | **BLOCKED** (development approximation: newest wall item first, then name) | one raw screenshot of Retro's current Friends tab with 7 or more friends |
+| `walls.browse.layout.rowOrder` (old BLOCKED) | closed 2026-10-16: by name (Apple Photos' People & Pets "Sort by Name"; this product has no hand-made order); Retro's own rule stays uncaptured | one raw screenshot of Retro's current Friends tab with 7 or more people would show Retro's rule |
 | `walls.browse.layout.selection` (old BLOCKED) | closed: no selected state — a tap opens the person's wall (Retro grid behaviour) | — |
 | current Friends tab (2023 render only) | 2023 values (±0.6 pt) | same screenshot |
 | title noun for family / roommates groups | closed by owner decision 10 (2026-10-16): "Members" (Retro's journal word, `journal_edit_members_screen_title`; retro.app /j/ "7 members • 24 photos") | — |

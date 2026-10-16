@@ -345,8 +345,10 @@ first when the week is empty, last otherwise (H22 / ST-01).
 | **add tile** | fill `color.global.control`; `icon.global.add` 23 pt (2.3 stroke) centred, `color.global.textPrimary` |
 | **placeholder tile** (loading / composer slot) | fill `color.global.control`, no content (VID-COMP grey placeholders) |
 
-**States.** Pressed: platform default + Android tap haptic. Selected (composer): **Gap** (selection mark not
-legible in VID-COMP). Insert motion: `duration.global.stripInsert` (250) with `easing.global.standard`; a new
+**States.** Pressed: platform default + Android tap haptic. Selected (composer grid): `week.edit.layout.selectionMark`
+(closed 2026-10-16, PLATFORM: the system photo picker's mark — the photo inset 0.089 × the cell on a
+`color.global.control` cell, corners 0.119 ×, a filled check circle on a white disc at the top-leading corner; Retro's
+own mark is not legible in VID-COMP). Insert motion: `duration.global.stripInsert` (250) with `easing.global.standard`; a new
 tile fades in with `duration.global.fade` from scale ≤0.875 (VM §D; RP §5.1).
 **Accessibility.** Each tile is a button labelled with its full date and content ("Monday, June 26, photo by
 {name}" / "Thursday, June 29, no photos" / "Add a photo") — the empty-tile text fails contrast (failure 3) and
@@ -430,7 +432,7 @@ back"); Retro shows no progress bars.
 | part | token |
 |---|---|
 | page | `color.global.backgroundDeep` #000000 |
-| header avatar | `size.global.avatarHeader` (39 incl. a white ring with a gap; ring width not measured — **Gap**) |
+| header avatar | `size.global.avatarHeader` (40.7 incl. the ring): `photo.viewer.layout.avatarRing` (closed 2026-10-16, TC-2B) — a white 2.0-pt progress arc with round caps 3.0 pt outside the photo, from 12 o'clock clockwise through the position over the total ("3 of 4" → three quarters) |
 | header name / week | stacked: name text role `listTitle` `color.global.textOnMedia`; "Week 49" text role `listSubtitle` `color.global.textSecondary` |
 | position pill (optional) | `size.global.positionPillHeight` (22) capsule `color.global.controlOnDeep`, label text role `badge` `color.global.textOnMedia` ("3 of 4") — position only, never a count of views or likes; the red 2023-12 variant ("2 of 9" in red) is do-not-copy |
 | close | circle (C-11) on media, glyph `icon.global.close` |

@@ -705,10 +705,11 @@ final class SocialChatThreadModelTests: XCTestCase {
         XCTAssertTrue(model.messages.contains { $0.id == theirs.id }, "only my own photos")
     }
 
+    /// Saving is offered on your own photo only (owner decision 12: the camera roll is outside the app); p3 is mine.
     func testSavingAPhotoAskForPermissionWhenDenied() async {
         let model = makeModel()
         await model.load()
-        let photo = try! XCTUnwrap(model.messages.first { $0.postID == SocialDemo.p2 })
+        let photo = try! XCTUnwrap(model.messages.first { $0.postID == SocialDemo.p3 })
         let saver = RecordingPhotoSaver()
         await model.savePhoto(photo, using: saver)
         XCTAssertEqual(saver.savedCount, 1)

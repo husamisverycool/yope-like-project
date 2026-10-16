@@ -17,6 +17,7 @@ Redesign — Social (RS-17 … RS-19).
 | TC-H | `references/auto/retro/press/tc-2023-12-retro-header.png` | card footer ("2023 / nathan / retro.app") |
 | ST-04 | `references/auto/retro/store/retro-store-04.png` (render, 2.389 px/pt) | **primary** for the preview chrome (2026): full-width media page, close top-right, leading photo thumbnail (`week.recap.dimension.selectThumb`), page dots, "Share" pill — via the capture group's `collage.view.layout.screen` / `collage.share.layout.pill` |
 | ST-02 | `references/auto/retro/store/retro-store-02.png` | "Recaps" (feature name) |
+| WEB-H | `references/auto/retro/web/retro.app-viewer-and-hero-js-excerpts.txt` §2 | retro.app hero recap card with one photo filling the grid area (`week.recap.layout.gridFill`) |
 | WEB | `references/auto/retro/web/retro.app-42b38811bebcd07d.css` | note box (`.mediaGrid_noteContainer`) used for the recap text |
 | APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | "Select photos", "Creating your collage…", "When you fill in your weeks on Retro, you'll see recaps here.", "Add a memory" |
 
@@ -52,7 +53,10 @@ chrome is the **same screen the capture group measured on Retro's 2026 recap pre
    - **page 1 — card**: `layout.year.story.recapCard` centred in the frame — width ratio, padding, `size.global.stripGap` gaps,
      4 columns up to 6 rows, cell aspect, corner ratio, footer; footer text: "Week {n}" (`font.global.display`, text role
      `headerTitle`) bottom-leading; trailing, right-aligned, the group name over the date range (text role `meta`,
-     `color.global.textSecondary`). Fill rule for other photo counts: `week.recap.layout.gridFill` (**BLOCKED**).
+     `color.global.textSecondary`). Grid (`week.recap.layout.gridFill`, Retro's cards with 1, 9 and 24 photos): ⌊√n⌋
+     columns (1 … 4) and ⌈n ÷ columns⌉ rows (≤ 6) share a fixed photo area as wide as the card minus its padding and 4 ⁄ 3
+     of that tall (TC-H 3 × 3 and TC-REC 4 × 6 both 0.75); a short last row stays leading-aligned with the card fill
+     after it; photos past 24 stay in the recap and the viewer but are not drawn on the card.
      **Note** (only when the recap has text — `week.recap.layout.note`): a box the card's width, `week.recap.dimension.noteGap`
      under the card, corners `week.recap.radius.note`, padding `week.recap.dimension.notePaddingV` / `.notePaddingH`, fill
      `color.global.controlOnDeep`; the last editor's avatar (`size.global.avatarComment`) and name (`listTitle`) lead the first
@@ -163,7 +167,7 @@ chrome is the **same screen the capture group measured on Retro's 2026 recap pre
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `week.recap.layout.gridFill` | **BLOCKED** (development approximation: fill row by row, empty cells blank, beyond 24 not drawn) | one Retro recap preview (Week style) for a week with 5 photos |
+| `week.recap.layout.gridFill` (old BLOCKED) | closed 2026-10-16: Retro's cards with 1 photo (retro.app hero, WEB-H), 9 (TC-H 3 × 3) and 24 (TC-REC 4 × 6) over one 3:4 area; other counts follow the same rule | one Retro recap preview for a week with 5 photos would confirm the short-row case |
 | old BLOCKED `shortRowSplit`, `shortRowHeight`, `scrim`, `page2` | closed: Yope's card replaced by Retro's card and full-bleed page (RS-17) | — |
 | preview chrome | 2026 render values via the capture group (RC-15); this pass's TC-REC 2023 readings (inset panel, top-left glass close, 41.9-pt circle) superseded (RS-17) | one raw screenshot of Retro's recap preview |
 | backdrop blur radius | closed: σ 1.8 pt + 22 % dim fitted on ST-04 (MERGE L-5) | — |

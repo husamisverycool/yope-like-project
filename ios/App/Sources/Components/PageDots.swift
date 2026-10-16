@@ -4,7 +4,8 @@ import DesignSystem
 import SwiftUI
 
 /// `count` dots of `size.global.pageDot`, centres `size.global.pageDotPitch` apart, centred; the active one
-/// `color.global.textPrimary` (on media `color.global.textOnMedia`), the others `color.global.pageDotInactive`.
+/// `color.global.textPrimary` (on media `color.global.textOnMedia`), the others `color.global.pageDotInactive` — on media
+/// its dark value in both appearances (C-31 on media: media surfaces stay dark), as Android's `Tokens.ColorsDark`.
 /// Accessibility: one adjustable element whose value is "page N of M" from copy (`accessibilityValue`); swiping up / down
 /// calls `onSelect` when given (platform page-control semantics). Contrast: inactive on white 1.36:1 FAIL (failure 9),
 /// reported, not changed.
@@ -14,6 +15,7 @@ struct PageDots: View {
     var onMedia: Bool = false
     let accessibilityValue: String
     var onSelect: ((Int) -> Void)?
+    @Environment(\.colorScheme) private var colorScheme
 
     init(count: Int, index: Int, onMedia: Bool = false, accessibilityValue: String, onSelect: ((Int) -> Void)? = nil) {
         self.count = count
@@ -31,6 +33,7 @@ struct PageDots: View {
                     .frame(width: Tokens.Sizes.globalPageDot, height: Tokens.Sizes.globalPageDot)
             }
         }
+        .environment(\.colorScheme, onMedia ? .dark : colorScheme)
         .dsAnimation(ComponentMotion.crossfade, value: index)
         .accessibilityElement(children: .ignore)
         .accessibilityValue(Text(accessibilityValue))

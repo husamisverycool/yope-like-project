@@ -17,6 +17,8 @@ hold + drag (Apple Photos / Google Photos, Gap fill G-16). Tokens: `design/token
 | TC-R3 | `references/auto/retro/press/tc-2023-12-retro3.png` phones 2–3 | "Add Message" pill (`icon.global.edit` + label); "Add a Message" modal with "Done" and counter |
 | APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | "Update", "Add a message", "Edit message", "Add a Message", "Add a message…", "Done", "New Album", "Name your album", "Create Album", "Yes, go back", "Name missing", "Saved!", "Added to Album!" |
 | AP / GP | `references/auto/apple-photos/apple-support/page-filter-sort-albums.png`, `references/auto/google-photos/help/page-create-edit-albums-ios.png` | reorder gesture |
+| PP | `references/auto/platform/android-photopicker-selected-f200.png`, `…-unselected-f150.png` (developer.android.com photo picker, Figure 1) | selection mark geometry and colours (`week.edit.layout.selectionMark`) |
+| CR | `references/auto/platform/chromium-tab-reorder-a11y-strings-excerpt.txt` | "Move tab left / right" → `week.edit.a11y.moveLeft` / `.moveRight` |
 
 ## Structure — editor (`week.edit.layout.composition`)
 
@@ -34,7 +36,12 @@ buttons in the system tint (`color.global.selection` / `color.global.system.prim
    `color.global.textSecondary`) at the margin.
 4. **Grid** `size.global.sectionHeaderToContent` below the line's baseline: every visible post of the recap's week in time
    order, `week.edit.count.gridColumns` columns of square cells, `size.global.stripGap` gaps, full width inside the margins,
-   aspect fill. Each cell carries the in / out mark (`week.edit.layout.selectionMark`, **BLOCKED**). Tap toggles: a checked
+   aspect fill. Each cell carries the in / out mark (`week.edit.layout.selectionMark`, the platform photo picker's, PP):
+   out — the photo fills the cell, no mark; in — the cell fills with `color.global.control`, the photo insets 0.089 × the
+   cell width with corners 0.119 × the width, and the filled check circle (`icon.global.check` in the
+   `size.global.checkCircle` box, the circle in `color.global.selection` (iOS) / `color.global.system.primary` (Android), the
+   check in white on a white disc 1.5 pt wider in radius) sits centred 0.148 × the width from the top-leading corner; the
+   change cross-fades (`duration.global.crossfade`). Tap toggles: a checked
    photo joins the strip's end (insert motion C-17); unchecking removes it from the strip.
 
 ### Message sheet (`week.edit.layout.message`)
@@ -63,11 +70,11 @@ their current order (from the editor: the strip; from `week.recap`: the recap's 
 |---|---|---|---|
 | Cancel / Update | C-29 toolbar, C-08 (system tint) | `week.edit.cancel`, `week.edit.save` | Cancel with changes → confirmation below; Update → `update_recap` → Android Toast `week.edit.toast.saved` / iOS announcement, closes |
 | title | system toolbar title | `week.edit.title` | — |
-| strip tile | C-17 photo tile; `week.edit.layout.reorder`, `week.edit.haptic.dragStart` / `.dragAlign` | `week.history.a11y.tile`; actions "move earlier / later" (platform reorder) | drag reorders |
+| strip tile | C-17 photo tile; `week.edit.layout.reorder`, `week.edit.haptic.dragStart` / `.dragAlign` | `week.history.a11y.tile`; actions `week.edit.a11y.moveLeft` / `.moveRight` ("Move photo left / right", Chrome's tab reorder actions) | drag reorders; the actions swap with the neighbour on that side |
 | message capsule | C-06 outline + `icon.global.edit` (C-07 anatomy) | `week.edit.message.add` / `.message.edit` | → message sheet |
 | Save as Album capsule | C-06 outline | `week.edit.saveAsAlbum` | → album sheet |
 | header line | text role `listSubtitle` | `week.edit.header` | — |
-| grid cell | C-21 composer grid; `week.edit.count.gridColumns`, `size.global.stripGap`; mark `week.edit.layout.selectionMark` (BLOCKED) | `week.history.a11y.tile` + value `week.edit.a11y.inRecap` / `.a11y.notInRecap` | tap toggles |
+| grid cell | C-21 composer grid; `week.edit.count.gridColumns`, `size.global.stripGap`; mark `week.edit.layout.selectionMark` | `week.history.a11y.tile` + value `week.edit.a11y.inRecap` / `.a11y.notInRecap` | tap toggles |
 | message sheet | C-29, C-08; `week.edit.layout.message` | `week.edit.message.title`, `.message.done`, `week.edit.textPlaceholder`, `week.edit.message.counter` | edits `text` |
 | album sheet | C-29, C-11, C-12, C-05 | `week.edit.album.title`, `.album.namePlaceholder`, `.album.create`, `week.edit.error.albumName` | `save_album` → Android Toast `week.edit.toast.albumSaved` / iOS announcement |
 | discard confirmation | C-29 alert | `week.edit.lostChanges.title`, `.lostChanges.message`, `.lostChanges.confirm`, cancel `photo.viewer.delete.cancel` | discards and closes |
@@ -106,7 +113,9 @@ their current order (from the editor: the strip; from `week.recap`: the recap's 
 ## Accessibility
 
 - Grid cells: label `week.history.a11y.tile`, value `week.edit.a11y.inRecap` / `.a11y.notInRecap`, toggle trait. Strip
-  tiles expose move-earlier / move-later actions (iOS `accessibilityDragPoint` + reorder actions; Android custom actions).
+  tiles expose `week.edit.a11y.moveLeft` / `.moveRight` ("Move photo left" / "Move photo right", adapted from Chrome for
+  Android's tab-grid reorder actions) where a neighbour exists on that side — in right-to-left layouts "left" is later in
+  the recap (iOS `accessibilityActions` + drag / drop points; Android custom actions).
 - The counter is read after the field ("58 of 2000" is the platform's reading of "58/2000").
 - Dynamic Type: `listSubtitle`, `pill`, `placeholder`, `button` scale; tiles keep their size.
 - Focus order: Cancel → title → Update → strip → message capsule → Save as Album → header line → grid.
@@ -151,7 +160,8 @@ their current order (from the editor: the strip; from `week.recap`: the recap's 
 
 | item | status | smallest owner capture |
 |---|---|---|
-| `week.edit.layout.selectionMark` | **BLOCKED** (development approximation: check circle top-right, 6 pt in) | one raw screenshot of Retro's "Add to Your Week" with 2 photos selected |
+| `week.edit.layout.selectionMark` (old BLOCKED) | closed 2026-10-16: the Android system photo picker's mark, measured (PLATFORM; Apple's guide figures show no selection state, so both platforms draw it — one behaviour) | one raw screenshot of Retro's "Add to Your Week" with 2 photos selected would show Retro's own mark |
+| reorder action names | closed 2026-10-16: `week.edit.a11y.moveLeft` / `.moveRight` (Chrome for Android, `references/auto/platform/chromium-tab-reorder-a11y-strings-excerpt.txt`) | — |
 | `week.edit.layout.recapText` (old BLOCKED) | closed: Retro's "Add a Message" modal (RS-22) | — |
 | spacing between the strip, the action row and the grid | composition with `size.global.sectionGap` (VID-COMP is 640 × 800) | same raw screenshot |
 | reorder inside Retro's composer strip | not observed (Retro adds / removes only); gesture from Apple / Google Photos | — |

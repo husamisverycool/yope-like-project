@@ -8,7 +8,7 @@ Retro reference(s): `references/auto/retro/press/tc-2023-07-retro-1b.webp (Frien
 
 Snapshots (CI): `walls.browse-ready-light.png`, `walls.browse-ready-dark.png`, `walls.browse-no-results-light.png`, `walls.browse-loading-light.png`, `walls.browse-empty-light.png`, `walls.browse-error-light.png`, `walls.browse-offline-light.png`, `walls.browse-group-light.png`
 
-**Summary: 10 matched · 1 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 11 matched · 1 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Elements
 
@@ -16,7 +16,8 @@ Snapshots (CI): `walls.browse-ready-light.png`, `walls.browse-ready-dark.png`, `
 |---|---|---|---|---|
 | matched | `font.global.display`<br>`size.global.titleTop`<br>`walls.browse.title` | ios: system-serif; android: serif (PLATFORM)<br>64 pt (SOURCED)<br>“Members” (SOURCED; owner decision 10) | title | C-01 `ScreenHeader` "Members" at the tab root; C-02 with back when pushed for one group |
 | matched | `size.global.fieldHeight`<br>`radius.global.field`<br>`color.global.control`<br>`icon.global.search`<br>`walls.browse.search` | 52 pt (SOURCED)<br>19 pt (SOURCED)<br>light #F1F1F1 / dark #262626 (SOURCED)<br>ios: magnifyingglass; android: Rounded.Search (PLATFORM)<br>“Search” (SOURCED) | search | C-12 `SearchField` inside `screenMargin` `titleToContent` below the title baseline (from the component); filters by name (unit-tested) |
-| approximated | `size.global.avatarGrid`<br>`walls.browse.dimension.columnPitch`<br>`walls.browse.dimension.rowPitch`<br>`walls.browse.dimension.nameBaseline`<br>`walls.member.a11y.wall` | 81 pt (SOURCED)<br>124.3 pt (SOURCED)<br>131.1 pt (SOURCED)<br>27.2 pt (SOURCED)<br>“{name}'s profile” (SOURCED) | person cell | `PeopleColumns`: fixed columns `columnPitch` wide (count read from `layout.grid` — "3 columns"), rows `rowPitch`, `AvatarView` (`avatarGrid`), name (`listTitle`, one line) baseline `nameBaseline` below the avatar; tap → walls.member; label `walls.member.a11y.wall`. A local grid: the shared `PeopleGrid` shares the width between flexible columns with platform spacing (component gap C-21). Row order BLOCKED (`rowOrder`): DEBUG newest wall first, release the data's order |
+| approximated | `size.global.avatarGrid`<br>`walls.browse.dimension.columnPitch`<br>`walls.browse.dimension.rowPitch`<br>`walls.browse.dimension.nameBaseline`<br>`walls.member.a11y.wall` | 81 pt (SOURCED)<br>124.3 pt (SOURCED)<br>131.1 pt (SOURCED)<br>27.2 pt (SOURCED)<br>“{name}'s profile” (SOURCED) | person cell | `PeopleColumns`: fixed columns `columnPitch` wide (count read from `layout.grid` — "3 columns"), rows `rowPitch`, `AvatarView` (`avatarGrid`), name (`listTitle`, one line) baseline `nameBaseline` below the avatar; tap → walls.member; label `walls.member.a11y.wall`. A local grid: the shared `PeopleGrid` shares the width between flexible columns with platform spacing (component gap C-21). Row order: next row |
+| matched | `walls.browse.layout.rowOrder` | order: by display name, A to Z, in the device locale's collation, ignoring case and accents; tie: profile id (SOURCED) | order of people | `SocialOrdering.byName` (`.caseInsensitive` + `.diacriticInsensitive`, the device locale — the comparison Android's `Collator` makes; unit-tested `testBrowseListsEveryoneElseByName`, `testPeopleOrderIgnoresCaseAndAccentsAndBreaksTiesByID`) |
 | matched | `—` | — | tab bar (C-04) | `AppTabBar(selected: .walls)` when Friends is the tab root |
 
 ## States

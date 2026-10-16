@@ -933,6 +933,17 @@ All measurements with `python3 -I` (PIL + numpy) on the files below.
   `week.recap.layout.gridFill` (one Retro Week-style recap preview for a week with 5 photos), `week.edit.layout.selectionMark`
   (one raw screenshot of "Add to Your Week" with 2 photos selected), `albums.view.shadow.cover` (one raw screenshot of a Retro
   album sheet on white). Each carries a development approximation in its `notes`; release builds cannot use them.
+- **All six closed 2026-10-16** (social finishing pass; OWNER_DECISIONS 2026-10-15 lets any widely used app supply the
+  evidence; tokens and specs carry it): `chat.reactions.layout.listOrder` newest first (Stream Chat's "who reacted" list);
+  `photo.viewer.layout.backZone` the leading 20 % (Retro's own album-page viewer script: `clientX < 0.2 × width` → previous);
+  `walls.browse.layout.rowOrder` by name (Apple Photos' People & Pets "Sort by Name"); `week.recap.layout.gridFill` ⌊√n⌋
+  columns × ⌈n ÷ columns⌉ rows over one 3:4 area (Retro's cards with 1, 9 and 24 photos — retro.app hero, TC-H, TC-REC);
+  `week.edit.layout.selectionMark` the Android system photo picker's mark (PLATFORM, measured; both platforms);
+  `albums.view.shadow.cover` the TC-J1 fit already used for `groups.screen.shadow.cover`. New: `photo.viewer.layout.avatarRing`
+  (TC-2B: the header ring is a progress arc, "3 of 4" = three quarters) and the reorder action names
+  `week.edit.a11y.moveLeft` / `.moveRight` (Chrome for Android's tab reorder actions, noun swap). Found on the way: Compose's
+  shadow radius is a blur radius (σ = 0.57735 r + 0.5 px), so `dsShadow` now converts the token's σ through the shared
+  `blurRadiusForSigma` (core:designsystem) — Android cover shadows were drawn at σ ≈ 4.9 instead of 8.5.
 
 ### Contrast failures (reported, not adjusted — Retro's palette, design/CONTRAST.md)
 

@@ -8,13 +8,13 @@ Retro reference(s): `references/auto/retro/press/tc-2024-04-journals-1.webp (pri
 
 Snapshots (CI): `albums.view-ready-light.png`, `albums.view-ready-dark.png`, `albums.view-ready-mine-light.png`, `albums.view-loading-light.png`, `albums.view-empty-light.png`, `albums.view-not-found-light.png`, `albums.view-error-light.png`, `albums.view-offline-light.png`, `albums.view-rename-light.png`, `albums.view-rename-missing-light.png`
 
-**Summary: 15 matched · 1 approximated · 1 not matched (BLOCKED or not buildable).**
+**Summary: 16 matched · 1 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Elements
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| not matched | `albums.view.dimension.coverWidth`<br>`albums.view.dimension.coverHeight`<br>`albums.view.dimension.coverTop`<br>`radius.global.thumbnail`<br>`albums.view.a11y.cover` | 172.5 pt (SOURCED)<br>246 pt (SOURCED)<br>74 pt (SOURCED)<br>4 pt (SOURCED)<br>“Cover of {album_name}” (SOURCED) | cover | first item `coverWidth × coverHeight`, `radius.global.thumbnail`, centred `coverTop` below the sheet top; tap → viewer on the first item. Its shadow `albums.view.shadow.cover` is BLOCKED — drawn flat |
+| matched | `albums.view.dimension.coverWidth`<br>`albums.view.dimension.coverHeight`<br>`albums.view.dimension.coverTop`<br>`radius.global.thumbnail`<br>`albums.view.shadow.cover`<br>`albums.view.a11y.cover` | 172.5 pt (SOURCED)<br>246 pt (SOURCED)<br>74 pt (SOURCED)<br>4 pt (SOURCED)<br>color: #000000; blur: 8.5; x: 3; y: 10; opacity: 0.25 (SOURCED)<br>“Cover of {album_name}” (SOURCED) | cover | first item `coverWidth × coverHeight`, `radius.global.thumbnail`, centred `coverTop` below the sheet top; tap → viewer on the first item. with Retro's book-cover drop shadow `.dsShadow(Tokens.Shadows.albumsViewShadowCover)` (SwiftUI radius = the token's σ) |
 | matched | `font.global.display`<br>`albums.view.dimension.coverToTitle` | ios: system-serif; android: serif (PLATFORM)<br>36.7 pt (SOURCED) | name | `displayMedium` (display serif), centred, up to two lines, cap top `coverToTitle` below the cover; header trait; name from the list row while loading |
 | matched | `albums.view.dimension.titleToMeta`<br>`albums.list.row.subtitle`<br>`albums.list.row.subtitleMine` | 23.7 pt (SOURCED)<br>“{name} created the album” (SOURCED)<br>“you created the album” (SOURCED) | meta | "{name} created the album" / "you created the album" (`listSubtitle`, `textSecondary`), baseline `titleToMeta` below the name's |
 | matched | `size.global.pillHeight`<br>`albums.view.dimension.metaToActions`<br>`albums.view.menu.rename` | 37 pt (SOURCED)<br>28.5 pt (SOURCED)<br>“Rename” (SOURCED) | Rename capsule | C-06 `CapsuleButton` "Rename" filling the row, `metaToActions` below the meta baseline → rename sheet |
