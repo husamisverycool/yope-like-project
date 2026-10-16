@@ -221,18 +221,22 @@ internal fun SendToVoiceCapsule(
                             return@awaitEachGesture
                         }
                         gestures.down()
+                        // Cancel or lock settles the gesture: the rest of the drag does nothing more.
+                        var settled = false
                         while (true) {
                             val event = awaitPointerEvent()
                             val change = event.changes.firstOrNull { it.id == down.id } ?: break
                             change.consume()
                             val dx = change.position.x - down.position.x
                             val dy = change.position.y - down.position.y
-                            if (currentPhase.value == VoicePhase.Holding) {
+                            if (!settled && currentPhase.value == VoicePhase.Holding) {
                                 onSlide(dx.coerceAtMost(0f))
                                 if (cancelPx > 0 && dx < -cancelPx) {
+                                    settled = true
                                     onSlide(0f)
                                     gestures.cancel()
                                 } else if (dy < -lockPx) {
+                                    settled = true
                                     onSlide(0f)
                                     gestures.lock()
                                 }
@@ -243,13 +247,14 @@ internal fun SendToVoiceCapsule(
                         gestures.release()
                     }
                 }
+                // The tag before clearAndSetSemantics (it clears what follows it).
+                .testTag("sendto.voice")
                 .clearAndSetSemantics {
                     contentDescription = label
                     role = Role.Button
                     if (phase == VoicePhase.Holding || phase == VoicePhase.Locked) stateDescription = recordingState
                     if (enabled) onClick { if (showsSend) onKeep() else onA11y(); true }
-                }
-                .testTag("sendto.voice"),
+                },
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -392,12 +397,12 @@ private fun GlyphButton(icon: ImageVector, label: String, tint: Color, onClick: 
         Modifier
             .size(Tokens.Sizes.globalIconSmall)
             .tapClickable(onClick = onClick)
+            .testTag(tag)
             .clearAndSetSemantics {
                 contentDescription = label
                 role = Role.Button
                 onClick { onClick(); true }
-            }
-            .testTag(tag),
+            },
         contentAlignment = Alignment.Center,
     ) {
         Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(Tokens.Sizes.globalIconSmall))
@@ -431,6 +436,7 @@ internal fun SendToNoteCapsule(
             .clip(CircleShape)
             .background(Tokens.Colors.globalControlOnDeep, CircleShape)
             .then(if (enabled) Modifier.tapLongPressable(onClick = onToggle, onLongClick = onMenu) else Modifier)
+            .testTag("sendto.voice.attached")
             // One button: its play / pause label (the waveform is decorative, the duration is in the label).
             .clearAndSetSemantics {
                 contentDescription = label
@@ -440,8 +446,7 @@ internal fun SendToNoteCapsule(
                     customActions = listOf(CustomAccessibilityAction(delete) { onDelete(); true })
                 }
             }
-            .padding(PaddingValues(start = Tokens.Sizes.globalPillPaddingLeading, end = Tokens.Sizes.globalPillPaddingTrailing))
-            .testTag("sendto.voice.attached"),
+            .padding(PaddingValues(start = Tokens.Sizes.globalPillPaddingLeading, end = Tokens.Sizes.globalPillPaddingTrailing)),
         horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalPillIconGap),
         verticalAlignment = Alignment.CenterVertically,
     ) {

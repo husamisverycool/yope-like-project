@@ -839,7 +839,7 @@
       "evidence": "https://help.locket.com/en/articles/7914857 (Android steps, read 2026-10-16): 'From your Home Screen, touch and hold on an empty space.'",
       "pattern": "locket.onboarding.widgetSteps",
       "level": "SOURCED",
-      "notes": "Re-sourced from Locket’s public help page (owner decision 22: the app’s string table was read from its decompiled bundle)."
+      "notes": "Re-sourced from Locket’s public help page (owner decision 22)."
     },
     "onboarding.widget.step.android.2": {
       "text": "Tap Widgets.",

@@ -61,7 +61,10 @@ appearance (it is not a media surface).
      a run carry no avatar or name. Your own messages use the same row (Retro shows everyone's comments the same way).
 3. **Composer** pinned at the bottom (`chat.composer.md`; C-13 field). When replying, the reply bar sits above the field.
 4. The message list's bottom content inset = the composer's height + `chat.composer.dimension.bottomInset`; the list keeps
-   the newest message in view when the keyboard rises.
+   the newest message in view when the keyboard rises. New messages (`chat.thread.layout.followNewest`, MUI X Chat / Stream
+   Chat, as Messages and WhatsApp): a message I send — from the composer or from the photo viewer's reply field — brings
+   the thread to it wherever the reader was (sent while the viewer covers the thread: as the viewer closes); someone
+   else's is followed only while the newest message is in view — scrolled up, the list keeps its place.
 
 ## Elements
 
@@ -87,7 +90,7 @@ appearance (it is not a media surface).
 |---|---|---|---|
 | any text message | Reply · Copy · (others') Report Message · (yours) Unsend | `chat.thread.menu.reply`, `.menu.copy`, `.menu.report`, `.menu.delete` | Reply → reply bar + `chat.composer.placeholderReply`; Copy → clipboard + Android Toast `chat.thread.toast.copied`; Report → `safety.report` (kind `message`); Unsend → confirmation below → `delete_message` |
 | voice message | Reply · (others') Report Message · (yours) Unsend | as above | as above |
-| photo message | quick-reaction row (`chat.reactions.layout.quickReactions`) · Reply · Save · (others') Report Message · (yours) Delete | + `chat.thread.menu.save`, `.menu.deletePhoto` | Save → as `photo.viewer` save; Delete → `photo.viewer` delete confirmation → `delete_media` |
+| photo message | quick-reaction row (`chat.reactions.layout.quickReactions`) · Reply · (yours) Save · (others') Report Message · (yours) Delete | + `chat.thread.menu.save`, `.menu.deletePhoto` | Save → as `photo.viewer` save, your own photo only (owner decision 12: saving to the camera roll takes a photo out of the app); Delete → `photo.viewer` delete confirmation → `delete_media` |
 | your failed message | Retry · Unsend | `chat.thread.menu.retry`, `.menu.delete` | send again / remove locally |
 
 **Unsend confirmation** (C-29 alert; `photo.viewer.layout.deleteConfirm` component): title `chat.thread.deleteMessage.title`,

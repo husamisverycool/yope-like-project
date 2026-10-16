@@ -407,6 +407,16 @@ def groups_invite():
                 q.append(("module size in whole pixels (2 px/dp render)", "groups.invite.layout.qrCard", round(module * M.SCALE), round(module * M.SCALE, 2), {"tol": 0.01}))
                 q.append(("quiet zone ≥ quietZoneModules (modules, left)", "groups.invite.layout.qrCard", t("groups.invite.layout.qrCard", "quietZoneModules"), round(quiet, 2), {"status": "match" if quiet >= 4 - 0.05 else "MISS", "note": "leftover pixels of the whole-pixel module grid widen it"}))
             q.append(("code square centred in the card", "groups.invite.layout.qrCard", round((left + right) / 2, 1), round((code[0] + code[2]) / 2, 1), {"tol": 1.0}))
+        # Footer baselines (TC-REC ratios): the bottom of the tagline's 'P' and of the name's 'S' ink (their first few dp,
+        # in bands around the expected baselines); the card's bottom edge is where its white ends.
+        bottom = M.col_runs(qr, right - corner - 2, white, top, 852, min_len=5)[0][1]
+        name_ink = M.extent(qr, lambda p: max(p[:3]) < 100, (left + padding, bottom - 70, left + padding + 8, bottom - 31))
+        tag_ink = M.extent(qr, lambda p: max(p[:3]) < 200, (left + padding, bottom - 30, left + padding + 6, bottom - 5))
+        w = right - left
+        if tag_ink:
+            q.append(("tagline baseline above the card bottom", "groups.invite.layout.qrCard", round(t("groups.invite.layout.qrCard", "lastBaselineFromBottomRatio") * w, 1), round(bottom - tag_ink[3], 1), {"tol": 1.0}))
+        if tag_ink and name_ink:
+            q.append(("name baseline above the tagline baseline", "groups.invite.layout.qrCard", round(t("groups.invite.layout.qrCard", "baselinePitchRatio") * w, 1), round(tag_ink[3] - name_ink[3], 1), {"tol": 1.0}))
     sections.append(("QR card (groups.invite/qr-light)", q))
     return sections
 

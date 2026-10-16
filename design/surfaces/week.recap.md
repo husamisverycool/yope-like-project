@@ -73,6 +73,9 @@ chrome is the **same screen the capture group measured on Retro's 2026 recap pre
    - trailing: C-09 light pill `week.recap.saveAsAlbum` (`color.global.surfaceLight` / `color.global.onSurfaceLight`, text role
      `pill`) laid out as `collage.share.layout.pill` (height, `paddingHorizontal`, `trailingInset`) → the album sheet of
      `week.edit` with the recap's photos selected.
+   The recap has no action that takes photos outside the app ("Save as Album" makes an in-app album), so owner
+   decision 12 (single photos leave the app only when they are the viewer's own) changes nothing here; as a group piece
+   it is in the same class as the collage pages and the year story's recap images, which keep their Share.
 
 ## Elements
 

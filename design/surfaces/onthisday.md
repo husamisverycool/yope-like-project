@@ -105,8 +105,8 @@ offered (owner decision 12; the camera roll is outside the app). Report → `saf
 **E. Mode menu (native — C-29 pull-down menu anchored to the date title; Retro's Rewind mode selection)**, items in
 this order: `onthisday.mode.day` ("On this day…", Retro's 'On this week…' with the noun swapped as RM-2) → the day's
 memories from the newest (from shuffle; nothing changes in day mode), and `onthisday.mode.shuffle` ("Shuffle",
-verbatim) → as the dice. Retro's third item 'Pick a date…' is not built (Do-not-copy; its picker and subtitle were never
-captured). Presentation: iOS SwiftUI `Menu` over the title (HIG pull-down buttons), Android M3 `DropdownMenu` anchored
+verbatim) → as the dice. Retro's third item 'Pick a date…' is not built: its date picker and the subtitle it leaves were
+never captured, so nothing in it is sourced (Gaps). Presentation: iOS SwiftUI `Menu` over the title (HIG pull-down buttons), Android M3 `DropdownMenu` anchored
 under the title; no haptic of its own (the platform menu's). For VoiceOver / TalkBack the title is the menu button
 (header trait, pop-up / dropdown role), read as the date.
 
@@ -159,14 +159,16 @@ dial step, SEGMENT_FREQUENT_TICK / CLOCK_TICK). Taps on back, more, share, rando
 
 ## Accessibility
 
-- **Labels / traits.** Photo: image, `onthisday.a11y.photo` ("Photo by Maya, Jul 22, 2022"). Date title: header.
-  Subtitle: static text (read after the title). Back, more, share, random, play / pause: buttons with
-  `onthisday.a11y.*`. Scrim and ticks: hidden.
+- **Labels / traits.** Photo: image, `onthisday.a11y.photo` ("Photo by Maya, Jul 22, 2022"). Date title: header
+  and the mode menu's button (iOS `Menu` label, Android `Role.DropdownList`), read as the date. Subtitle: static text
+  (read after the title). Back, more, share, random, play / pause: buttons with `onthisday.a11y.*`. Scrim, ticks and
+  the mode chevron: hidden.
 - **Dial** is one adjustable element (iOS `.accessibilityAdjustableAction`, Android `Modifier.semantics {
   progressBarRangeInfo; customActions }` with `onthisday.a11y.next` / `.previous`): label `onthisday.a11y.dial`
   ("Memories"), value `onthisday.a11y.dialValue` ("2 of 5"); increment = next, decrement = previous; after a change
   the new date title is announced. Play / pause is a separate button.
-- **Focus order:** back → date title → subtitle → more → photo → share → dial → play / pause → random.
+- **Focus order:** back → date title (mode menu) → subtitle → more → photo → share (your own memory) → dial →
+  play / pause → random.
 - **Dynamic Type:** title `headerTitle` → largeTitle; subtitle `textButton` → body (`layout.global.textStyleMap`);
   the title wraps to two lines at large sizes and pushes the subtitle down; the control row does not scale.
 - **Touch targets:** circles ≥ 40 pt; the back chevron and dial centre get ≥ `size.global.minTouchTarget.ios` /
@@ -216,7 +218,7 @@ dial step, SEGMENT_FREQUENT_TICK / CLOCK_TICK). Taps on back, more, share, rando
 ## Do-not-copy
 
 Retro's own camera-roll source and "Delete from camera roll"; "Share to my week" / "Add to Album" / "Send as
-Postcard" (no such features); the mode menu's "Pick a date…"; Retro's share frame (Helvetica / PP Fraktion Mono type,
+Postcard" (no such features); Retro's share frame (Helvetica / PP Fraktion Mono type,
 'retro.app' footer); Retro's 'Relive %1$d memories' notification (count; no on-this-day push); Timehop's "N YEARS AGO"
 banners, progress bar, streaks, mascot, watermark and nag pushes; any count of memories in visible text.
 

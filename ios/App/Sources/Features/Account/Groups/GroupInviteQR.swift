@@ -186,7 +186,8 @@ struct InviteQRCard: View {
                     .alignmentGuide(.bottom) { line in line[.lastTextBaseline] + taglineBaseline + namePitch }
             }
             .padding(.horizontal, padding)
-            .frame(width: width, height: width * Card.footerHeightRatio)
+            // Bottom-aligned: the name's line box may rise above the footer (its ink stays inside), never push it down.
+            .frame(width: width, height: width * Card.footerHeightRatio, alignment: .bottomLeading)
         }
         .frame(width: width)
         .background(Tokens.Colors.globalSurfaceLight, in: DSShape.rounded(width * Card.cornerRadiusRatio))

@@ -16,6 +16,8 @@ enum AccountUITestScenario: String, CaseIterable {
     case withGroups = "with-groups"
 
     static let argument = "-account-ui-test-scenario" // provenance-ok: launch argument, not user-facing
+    /// Invite host of the UI-test scenarios while the owner's domain is unset (DEBUG only).
+    static let inviteTestHost = "invite.e2e.test" // provenance-ok: reserved test host (RFC 6761), not user-facing
 
     static func fromLaunchArguments(_ arguments: [String] = ProcessInfo.processInfo.arguments) -> AccountUITestScenario? {
         guard let index = arguments.firstIndex(of: argument), arguments.indices.contains(index + 1) else { return nil }
@@ -45,6 +47,10 @@ enum AccountUITestScenario: String, CaseIterable {
         let defaults = UserDefaults(suiteName: "account.uitest") ?? .standard // provenance-ok: defaults suite name
         defaults.removePersistentDomain(forName: "account.uitest") // provenance-ok: defaults suite name
         let purchases = InMemoryPurchases()
+        // config/app.json `domain` is the owner's (BLOCKED): UI tests build invite links on a reserved test host
+        // (RFC 6761 `.test`, as the Android on-device journey) so link sharing, the share targets and the QR card show.
+        var configuration = configuration
+        if configuration.domain == nil { configuration.domain = Self.inviteTestHost }
         return AccountDependencies.live(
             data: makeData(),
             router: router,

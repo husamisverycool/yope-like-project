@@ -475,7 +475,7 @@ was used only to measure, and is not stored).
 
 | what | source | used for |
 |---|---|---|
-| Locket Android 1.243.0 JS bundle (Hermes, decompiled) | `references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt` | G2-1, G2-2, G2-4, G2-5, G2-7, G2-8, G2-9, G2-11 |
+| Locket Android 1.243.0 JS bundle (Hermes, decompiled) — **withdrawn as evidence** by owner decision 22; the values it gave were re-sourced or replaced (OD22-*) | `references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt` | G2-1, G2-2, G2-4, G2-5, G2-7, G2-8, G2-9, G2-11 |
 | VidDay help: photos and text cards 4 s by default; text cards 110 characters | `references/auto/vidday/help/*.png` (both updated 07.02.2025) | G2-18, G2-21, G2-22 |
 | VidDay birthday theme sample render (1080p30, 135.7 s): title card, photo slots, 0.7-s crossfades, end text card "We Love You!" | `references/auto/vidday/frames/vidday-theme-happy-birthday-*` | G2-17, G2-18, G2-22, G2-23, G2-25 |
 | Tribute video editor: name badge (default ↙ / Dark) and caption styles, computed | `references/auto/tribute/web/tribute-web-video-editor-name-badge*` | G2-24 |
@@ -780,23 +780,24 @@ All measurements with `python3 -I` (PIL + numpy) on the files below.
 | RM-3 | Two dial states | RWB: ring 150, indicator 16.7, glyph 35, centre 139.2 above the safe-area bottom; RWA (same month): ring 143, indicator 28, glyph 37.3, centre 159.2 | RWB = the resting dial (matches research's 150 ±2); RWA recorded as another state (pressed / dragging — not identifiable from a still) | both RAW; the resting state is the one a static spec draws | open: 10 s recording of the dial dragged and released |
 | RM-4 | Dial semantics | Retro: 'Drag the dial to take a spin through your memories', one tick haptic per step (APK); indicator seen on slots 0, 21 and others (renders) | one slot per memory, indicator on the current memory's slot, start slot 0 (RWA), clockwise = next; playing advances one slot per memory | Retro's own string and package; clock convention for direction | open (same recording) |
 | RM-5 | Dice (random) | Retro 'Shuffle' mode over the camera roll; our API has no random RPC and `on_this_day` is per date | shuffle = random post of the group's history via `group_history_weeks` (pages of 52); respects `free_history_days` (T1) | lead's group notes ('share + dice buttons'); API 6.4 | **owner**: keep shuffle beyond today's date? |
-| RM-6 | Share on Rewind | Retro shares the user's own camera-roll photo (share frame with 'retro.app'); M-20 had dropped share (other members' photos leave the group) | native share sheet with the photo for every memory (as `photo.viewer`'s "save" already allows); Retro's frame not built (Helvetica / Fraktion Mono type, brand line); preview 'Tuesday, December 2' (today) / 'Memory' | RWP phone 3; consistency with the viewer | **owner**: restrict to your own photos? |
+| RM-6 | Share on Rewind | Retro shares the user's own camera-roll photo (share frame with 'retro.app'); M-20 had dropped share (other members' photos leave the group) | native share sheet with the photo for every memory (as `photo.viewer`'s "save" already allows); Retro's frame not built (Helvetica / Fraktion Mono type, brand line); preview 'Tuesday, December 2' (today) / 'Memory' | RWP phone 3; consistency with the viewer | **closed** by owner decision 12: your own photos only (OD12-1) |
 | RM-7 | Rewind as a pushed page | Retro: a tab with the tab bar over the photo; our feature opens from a group | pushed page with C-02 back + date title; no tab bar; the controls keep Retro's distance from the bottom (139.2 pt) | C-02, C-35 | resolved |
 | RM-8 | Recap-preview chrome (year.story frame, bottom row; tribute bottom row) | TC-REC 2023 (frame 11.5 inset, r 24, close top-left white 30 %, bar circle 41.9, Share 84.7 × 41.9) vs ST-04 2026 (full-width page, r 26.5, close #262626 top-right, Share 90.8 × 43.5) — the capture group took ST-04 (RC-15) for `collage.view` / `collage.share` | ST-04 via the capture tokens `collage.view.layout.screen` and `collage.share.layout.pill` (referenced, not duplicated); TC-REC kept only for the recap card's inner layout and the full-bleed footer (not shown in ST-04); 9:16 content box (ST-04 page = 393 × 698) | newer beats older (R-* rule); one definition per Retro screen | resolved; **lead / Pass 5**: promote the recap preview (page, close, row, Share pill, dots offset) to a global component — `week.recap` (social) uses the same screen |
 | RM-9 | Tagging affordance | Yope-era white pill toggle + lime coach; Retro: footer run 'Tag friends' / ' · with {names}', 'In this photo' sheet, 'Remove tag' | Retro's footer run ('I'm in this' when untagged → tags you; 'with {names}' → sheet) and sheet; only self-tags; tags shown to members (API 5.11); no coach (Retro has none) | Retro strings; tenet: no counts ('%1$d friends' not used) | resolved; **hand-off `photo.viewer` (social)**: append the run to the C-22 footer's second line |
 | RM-10 | Birthday request composition | Tribute: photo hero at 0.7, 24/600 title, 62-pt r8 button, prompts on #292D34; Retro paywall: blurred backdrop, serif headline, plan card with numbered steps | PAY composition: honoree avatar (C-23 64) in place of PAY's feature media, serif headline, invitation line, card with 'Message ideas' + numbered prompt rows + C-05, due date under the card | SURFACES (screen 27 assigned); C-34 | resolved |
 | RM-11 | Contribution flow | Tribute 3-step stepper, 46-pt translucent field, 'Use Photo' / 'Retake'; VidDay 'no visible counter' | Retro composer sheet (grid) → dark postcard-style composer ('Add a message' pill) → 'Add a Message' modal with Retro's counter ('{count}/110'); stepper removed | SURFACES (screens 17, 18, 30); TC-R3 shows the counter | resolved |
-| RM-12 | Tribute video look | VidDay paper title / end cards (#EFEEF3 / #444347, Medium), Tribute navy badge (#11202FC7, bold) | Retro media: black cards, white text, weight 400; caption band = `color.global.scrim` (#00000099), name 600, line 400; geometry (ratios, timings) unchanged; token names and shapes unchanged | identity = Retro; worker contract kept | resolved; **worker hand-off**: serif (Noto Serif, OFL) for card text and Inter (OFL) for captions instead of Roboto; update `COPY_KEYS.md` status text; colour emoji in lines render as missing glyphs with Roboto |
+| RM-12 | Tribute video look | VidDay paper title / end cards (#EFEEF3 / #444347, Medium), Tribute navy badge (#11202FC7, bold) | Retro media: black cards, white text, weight 400; caption band = `color.global.scrim` (#00000099), name 600, line 400; geometry (ratios, timings) unchanged; token names and shapes unchanged | identity = Retro; worker contract kept | resolved; worker hand-off done (Roboto Serif / Inter, then the fallback fonts for other scripts and colour emoji, OD12-F) |
 | RM-13 | Year-story copy | Wrapped verbatim lines ('We're ready for you.', 'Come on down.', 'Long live the moment.', 'Luckily, we took notes.', 'One more thing...', 'Until we meet again...', 'Replay from beginning'); Retro Year in Photos ('Let’s look back at your 52 weeks', '… was the most memorable', 'You didn’t go through these moments alone —', 'Here’s to another year in the books') | Retro's lines; counts only where T3 allows ('{group} shared {count} photos this year'); most-reacted framed as 'The moments you reacted to most' (T2; Retro's 'loved the most' is do-not-copy) | copy-patterns `retro.voice.retrospective` + tenet filters | resolved; T2 / T3 stay owner decisions |
 | RM-14 | Date formats | Timehop 'TUE 10:34 PM', Wrapped 'February 25', Tribute 'Wednesday, December 31, 2025', Yope '26 May' | Retro: Rewind 'Jul 22, 2022' (medium), within the year 'Wednesday, July 5', birthday 'July 5', month 'December' | RWA / RWB, TC-2B, RWP, TC-REC | resolved |
 | RM-15 | Research corrections | retro-timehop: '≈45 ticks', long tick 18 (p50 inner radius); C-35 subtitle 'not measurable' | 44 ticks (constant 8.19° pitch on both RAW captures); long 19.8 / short 11.8 measured on the ticks; subtitle white 76 % ±6 % (channel mismatch noted) | direct measurement | resolved |
 | RM-16 | Media pages in light appearance | themed tokens on always-dark pages (e.g. page-dot inactive #DDDDDD in light = 1.36:1 against white active dots) | media pages render their subtree in the dark appearance (iOS `.environment(\.colorScheme, .dark)`, Android `DsTheme(dark = true)`); sheets over them follow the system | `layout.global.appearance.media`; capture RC-1 does the same | resolved; Pass 3 / 4 |
 | RM-17 | Removed surfaces' states (empty / error / offline) | Yope lowercase lines, Timehop 'Collecting Memories' / 'Time Travel Failed' | C-27 / C-28 states with Retro's error strings ('Something went wrong' / 'There was a problem. Please try again.' / 'Try Again'); offline 'No Connection' + 'Check your connection and try again.' | copy-patterns `retro.voice.error` | resolved |
+| RM-18 | Rewind mode selection | Retro: tapping the date title opens a mode sheet ('On this week…', 'Shuffle', 'Pick a date…' — APK strings `rewind_mode_selection_sheet_*`; the sheet itself never captured); RWA shows a chevron after the title | a platform pull-down menu on the date title (iOS `Menu`, Android M3 `DropdownMenu`): 'On this day…' (RM-2 noun swap) → the day's memories, 'Shuffle' → as the dice; chevron `icon.global.chevronDown`, `dimension.onthisday.modeChevron.{width 19.7, gap 8.7, drop 2.0}` measured on RWA, weight medium (PLATFORM); 'Pick a date…' not built (picker and its subtitle never captured) | RWA; HIG pull-down buttons; M3 menus | resolved; open: one recording of Retro's mode sheet |
 
 ### BLOCKED re-examined
 
 - Closed by Retro: the Timehop items M-9 (banner colour rule) and M-10 (progress bar) no longer exist (Rewind has no
-  banner); M-23 (Wrapped text width) replaced by the frame padding; M-20 share (built, RM-6) — Retro's 'Hide photo'
+  banner); M-23 (Wrapped text width) replaced by the frame padding; M-20 share (built for your own memories, RM-6 / owner decision 12) — Retro's 'Hide photo'
   stays unbuilt (no API).
 - Still BLOCKED: copy `year.story.card.app` (the app line on the recap card, Retro's 'retro.app') — owner names the app
   and its domain. No token is BLOCKED.
@@ -844,7 +845,7 @@ All measurements with `python3 -I` (PIL + numpy) on the files below.
 
 ### Unresolved (owner, capture or verification)
 
-RM-3 / RM-4 (10 s recording of Retro's Rewind dial), RM-5 (shuffle scope) and RM-6 (sharing others' photos) — owner;
+RM-3 / RM-4 (10 s recording of Retro's Rewind dial), RM-5 (shuffle scope) — owner; RM-6 closed by owner decision 12;
 RM-8 (promote the recap preview to a global component — lead); RM-12 (worker fonts — worker team); copy
 `year.story.card.app` (app name); docs/SPEC_FLAGS.md T2 / T3 / T5; captures: one RAW Retro Year in Photos recording
 (December), one RAW recap preview, one RAW screenshot of a tagged photo with its 'In this photo' sheet, RAW
@@ -1376,7 +1377,7 @@ Surfaces: `groups.invite`, `groups.list`, `groups.create` (step A rows), `walls.
 | # | topic | values and sources | resolution | rule / evidence | status |
 |---|---|---|---|---|---|
 | OD17-1 | Where the QR lives | RA-11 left it to the owner; decision 17: in the invite sheet | a fourth share target, first as in TC-J5: QR Code · Copy Link · Message (in Instagram's place, the platform's own messages app) · Share to…; narrow screens share the width in quarters | TC-J5 | resolved |
-| OD17-2 | The card's look | Retro's QR card art never captured; its strings point to a card with tiny print, like its recap card "2023 / nathan / retro.app" (TC-H) | the recap card shell (`layout.year.story.recapCard`, white in both appearances, L-4) with the code in its grid area; footer = group name (`displayTitle`) over the 10-pt tagline in `groups.invite.color.note` (#767676: Retro's grey on this sheet, 4.54 : 1 on white); shown in the recap preview (ST-04: blurred cover, close, Save circle, Share pill) | composition of C-34, C-11, C-09 in Retro's recap-preview order | resolved |
+| OD17-2 | The card's look | Retro's QR card art never captured; its strings point to a card with tiny print, like its recap card "2023 / nathan / retro.app" (TC-H) | the recap card shell (`layout.year.story.recapCard`, white in both appearances, L-4) with the code in its grid area; footer = group name (`displayTitle`) over the 10-pt tagline in `groups.invite.color.note` (#767676: Retro's grey on this sheet, 4.54 : 1 on white), placed by Retro's recap-footer baselines (TC-REC: last baseline 0.0637 × width above the bottom edge, name → detail pitch 0.056 × width — the first build centred the line boxes and sat the tagline too low, lead review of run 64); shown in the recap preview (ST-04: blurred cover, close, Save circle, Share pill) | composition of C-34, C-11, C-09 in Retro's recap-preview order | resolved |
 | OD17-3 | Encoding | web: qrcode-generator EC H, whole-pixel modules, black on white (`web/src/render/qr.ts`); Retro's desktop QR has rounded modules | reuse the web's parameters (EC H, square whole-pixel modules, black on white) so both QR surfaces match; quiet zone made explicit (4 modules inside the white card); iOS CoreImage, Android ZXing core 3.5.3 (Apache-2.0) | task: reuse web encoding; DENSO WAVE | resolved |
 | OD17-4 | Centre image | web `/i/` puts the inviter's avatar over the code (Retro `/u/`) | none on the card: the footer names the group, and Save / Share export the card alone; EC H kept for printed wear | — | resolved |
 | OD17-5 | Copy from Retro's card | "Retro.app - Photos with Friends", "Member since %1$d" | tagline "Photos with friends and family" (domain dropped — owner's, BLOCKED; noun as `invite.appclip.card.subtitle`); "Member since" not copied (a person's join year) | copy-patterns `retro.voice.share` | resolved |
@@ -1388,3 +1389,65 @@ Surfaces: `groups.invite`, `groups.list`, `groups.create` (step A rows), `walls.
 ### Unresolved (capture)
 
 - One screenshot of Retro's journal "QR Code" sheet would replace the composed card with Retro's own layout.
+
+## Owner decisions 12 and 22 — your own photos leave the app; Locket evidence re-sourced; share-image fonts (OD12-*, OD22-*)
+
+Surfaces: `onthisday`, `year.story`, `birthday.tribute`, `photo.viewer`, `chat.thread` (decision 12); `collage.share`,
+`week.recap` (stated as group pieces); `auth.phone`, `camera.capture`, `camera.fromwidget`, `onboarding.widget`,
+`chat.reactions`, `notifications.push` (decision 22); worker tribute renders and the web invite image (fonts). Code:
+iOS `Features/Memory/{OnThisDay, YearStory, Birthday}`, `Features/Social/{UI/PhotoViewerView, Core/PhotoViewerModel,
+UI/ChatThreadView, Core/ChatThreadModel}`; Android `feature/memory/…/{onthisday, yearstory, birthday}`,
+`feature/social/…/{viewer/PhotoViewerScreen, chat/ChatScreen}`; `backend/worker/{fonts/fonts.conf, src/tribute/render.ts}`;
+`web/{assets/fonts/fonts.conf, src/images.ts}`; `fonts/fallback/` (+ `SOURCE.txt`).
+
+### Owner decision 12 — sharing outside the app
+
+| # | action | before | now | evidence | status |
+|---|---|---|---|---|---|
+| OD12-1 | On This Day share circle and menu "Save to Camera Roll" | every memory | your own memory only; on another member's memory the share circle's place stays empty (no layout shift) and the menu offers Report | Retro's Rewind and Timehop resurface only your own photos; BeReal offers no way to share another person's post | resolved (RM-6 closed) |
+| OD12-2 | Year story most-reacted photo cards (Share pill) | every photo card | your own photo only; the pill is not shown on another member's photo | same | resolved |
+| OD12-3 | Tribute video Save / Share | honoree and members | honoree only (the tribute is the honoree's gift, as Tribute / VidDay hand the video to the recipient); members get no bottom row and no local copy | same; Tribute / VidDay delivery | resolved |
+| OD12-4 | Photo viewer and chat photo message "Save to Camera Roll" | every photo | your own photo only: saving to the camera roll takes the photo out of the app; others' photos keep Report / Block | same | resolved |
+| OD12-5 | Group pieces made for sharing | — | keep Share for every member: same-moment collage pages (`collage.share`), the year story's text cards, everyone-was-there collages and summary styles (recap card, full-bleed cover); the week recap has no outside action ("Save as Album" is in-app) | Retro's recap preview and Spotify Wrapped share the recap as a whole | resolved |
+
+Tests: iOS `MemoryOnThisDayTests` (own-only save / share, mode menu), `MemoryYearStoryTests`, `MemoryTributeTests`,
+`SocialPhotoViewerModelTests`, `SocialChatThreadModelTests`, `MemoryOnThisDayUITests`; Android `OnThisDayViewModelTest`,
+`YearStoryViewModelTest`, `TributeAndAddViewModelTest`, snapshots `onthisday_*` (own / others), `year.story` (no Share on
+another member's card), `birthday.tribute` (member view), social viewer / chat menus.
+
+### OD12-F — fallback fonts for server-rendered text (closes the RM-12 colour-emoji hand-off)
+
+| what | worker (tribute title / end cards, captions) | web (invite share image `og.png`) |
+|---|---|---|
+| renderer | libvips `text` (Pango + cairo 1.18.6): draws COLRv1 colour emoji | librsvg: SVG text as filled outlines (a colour font comes out as a silhouette) |
+| emoji | Noto Color Emoji COLRv1 v2.051 (4.99 MB) | Noto Emoji, monochrome, wght 400 (0.89 MB) |
+| scripts | Noto Sans / Serif: Arabic (Naskh for the serif role), Hebrew, Devanagari, Thai; Noto Serif Greek (Roboto Serif has none); Noto Sans SC subset (16,507 Han of GB 2312 / Big5 / JIS X 0208 / KS X 1001 + kana, 6.14 MB); Noto Sans KR Hangul subset (2.70 MB); Cyrillic from the app faces | same `scripts/` folder |
+| config | `backend/worker/fonts/fonts.conf` (`FONTCONFIG_FILE`; aliases `serif` / `sans-serif` list the order) | `web/assets/fonts/fonts.conf` |
+| image size added | 15.2 MB (`scripts/` + `emoji-color/`) | 11.1 MB (`scripts/` + `emoji-mono/`) |
+
+All SIL OFL 1.1, licence files beside the fonts; how each file was made: `fonts/fallback/SOURCE.txt`. The two emoji
+fonts live in separate folders because Pango drew emoji from the monochrome font whenever fontconfig could see both.
+CJK renders in the sans regular weight in both roles (a serif CJK face would add ≈ 20 MB). Tests: worker
+`test/unit/fonts-render.test.ts` (47: each script against its cmap, no tofu, colour emoji pixels, ZWJ / flag
+sequences), web `test/unit/og-fonts.test.ts` (43). Deployment: both Dockerfiles copy the folders; `docs/DEPLOY.md`.
+
+### Owner decision 22 — Locket values re-sourced from public evidence
+
+The decompiled bundle (`references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt`, kept on disk as the record of
+what was read) is no longer cited by any token or string; the research files `design/research/locket.md` and
+`design/proposals/locket.*.json` are the history of that pass and are not canonical.
+
+| # | token / string | before (bundle) | now | public evidence | status |
+|---|---|---|---|---|---|
+| OD22-1 | `auth.phone.layout.countryCode` | flag 20 × 13, 20 leading, 5 to the text (G2-4) | flag 30 × 20 at the field's leading edge (19 = the field's own inset), 10 to the text | react-native-phone-input 1.4.1 (MIT, public npm package) `styles.js`; Android `PhoneNumberFormattingTextWatcher` for the inline formatting | changed (iOS / Android snapshots re-recorded) |
+| OD22-2 | `camera.capture.size.recordingOutline` | 6 (G2-9) | 4: Material 3's progress-indicator stroke; the outline itself from Locket's help centre ("The yellow outline around the viewfinder indicates that capture is in progress.") | help.locket.com 7915017; androidx material3 `CircularProgressIndicatorTokens` | changed; no public frame of Locket recording found (Gaps) |
+| OD22-3 | `auth.phone.layout.inlineError`, `camera.sendto.size.captionMaxLength` | Locket alert pattern (G2-5); 36 (G2-11) | Retro's titled error alerts; 250 (Retro's message counter "58/250") | Retro strings; TC 2023-12 phone 3 | already replaced; notes reworded |
+| OD22-4 | `camera.fromwidget.layout.target` | store screenshots + bundle strings (`logOpenedFromWidget`, widget launch URL) | bundle strings dropped; App Store / Play screenshots "Tap the widget to open the camera"; Apple WidgetKit docs (`widgetURL`) | store listings | evidence replaced, value unchanged |
+| OD22-5 | `widget.home.small.layout.photo`, `widget.android.layout.provider`, `notifications.push.layout.channels`, `camera.sendto.layout.header` | bundle mentions in evidence / notes | Retro's widget previews and providers, Android developer docs (app widgets, notification channels), Locket's capture-review frame | public | evidence replaced, values unchanged |
+| OD22-6 | copy `onboarding.widget.step.android.1`–`.3` | bundle string table | "From your Home Screen, touch and hold on an empty space." / "Tap Widgets." / "Search for “{app_name}”, tap on the widget, then tap Add." | help.locket.com 7914857 (verbatim, name swapped) | changed |
+| OD22-7 | copy `chat.reactions.activity.row` / `.rowMine`, `notifications.push.reaction.body`; pattern `locket.push.reaction` → `messaging.reaction` | bundle push string "{{contactName}} reacted {{emoji}} to your Locket" | same shape, sourced from WhatsApp's help and the Apple iPhone User Guide (tapbacks) | public help pages | evidence replaced, texts unchanged |
+| OD22-8 | `spring.global.sheetPresent` | — | Retro's measured spring; the React Navigation value it superseded is public source, not the bundle | — | note reworded |
+
+Not in scope and left for the lead: Retro's values read from its decompiled Android APK
+(`references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt`) are still cited widely (colours, type, widget
+providers); decision 22 names only Locket.

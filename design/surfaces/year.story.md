@@ -92,11 +92,19 @@ position belong to the `groups.screen` pass. Tap → B (full-screen).
 | 3 | photos shared (T3) | text | headline `year.story.moments.count` (`{group}`, `{count}` = `data.moments_shared`) | yes |
 | 4 | busiest month | text | headline `year.story.busiestMonth.title` (`{month}` = `data.busiest_month.month` as `layout.year.story.monthFormat`) | yes |
 | 5 | most-reacted, setup | text | headline `year.story.mostReacted.title` | no |
-| 6…10 | most-reacted photos | photo | the first `count.year.story.listLength` ids of `data.most_reacted`, in that order (T2) | yes |
+| 6…10 | most-reacted photos | photo | the first `count.year.story.listLength` ids of `data.most_reacted`, in that order (T2) | your own photo only |
 | 11 | together, setup | text | headline `year.story.together.title`, subline `year.story.together.aside` | no |
 | 12…16 | everyone-was-there days | collage | the first `count.year.story.listLength` entries of `data.everyone_days` (chronological) | yes |
 | 17 | outro | text | headline `year.story.outro.title` ("Here’s to another year in the books") | yes |
 | 18 | summary | C | — | yes |
+
+**Who can share what (owner decision 12).** A photo leaves the app only when it is the viewer's own: a most-reacted
+photo card shows the Share pill only on the viewer's own photo; on another member's photo the pill is not shown (its
+place stays empty, nothing moves). The pieces made for sharing as the group's — the text cards, the everyone-was-there
+collage cards and the summary's recap card and full-bleed cover — keep their Share, as do the other group pieces (the
+same-moment collage pages, `collage.share`; the week recap, `week.recap`). Evidence: Retro's Rewind and Timehop resurface
+only your own photos; BeReal offers no way to share another person's post; Retro's recap preview and Spotify Wrapped
+share the recap as a whole.
 
 **C. Summary** (`layout.year.story.summary`) — a horizontal pager of two share styles inside the frame, page dots
 below it, the leading circle = replay (`year.story.summary.replay` as its label; → card 1), Share = the style in view:
@@ -124,7 +132,7 @@ below it, the leading circle = replay (`year.story.summary.replay` as its label;
 | close | C-11 on media: `size.global.circleButton`, `color.global.controlOnDeep`, `icon.global.close`, `color.global.textOnMedia`, `collage.view.layout.screen` (close centre) | `year.story.a11y.close` | dismisses |
 | position pill | C-22: `size.global.positionPillHeight`, `color.global.controlOnDeep`, text role `badge`, `color.global.textOnMedia`, `dimension.year.story.frame.padding` | `year.story.position` | position only |
 | pause / play / replay | C-11 on media: `size.global.circleButton`, `color.global.controlOnDeep`, `size.global.buttonMarginH`, `icon.global.pause` / `.play`, `icon.year.story.replay`, `size.global.icon`; row centre `collage.view.layout.screen` | `year.story.a11y.pause`, `.a11y.play`, `year.story.summary.replay` | auto-advance on / off; replay → card 1 |
-| Share pill | C-09 recap size: `collage.share.layout.pill`, `radius.global.capsule`, `color.global.surfaceLight`, `color.global.onSurfaceLight`, text role `button` | `year.story.share` | renders D, opens the share sheet |
+| Share pill | C-09 recap size: `collage.share.layout.pill`, `radius.global.capsule`, `color.global.surfaceLight`, `color.global.onSurfaceLight`, text role `button` | `year.story.share` | renders D, opens the share sheet; not shown on another member's photo card (owner decision 12) |
 | text card | `layout.global.materials.backdrop`, `layout.global.photoScrim`, `font.global.display` + text role `displayMedium`, text role `textButton`, `color.global.textOnMedia`, `dimension.year.story.frame.padding`, `dimension.birthday.request.headlineToMessage` | card keys above | reveal |
 | photo card | `layout.global.photoScrim`, text roles `displaySmall` / `listTitle`, `dimension.year.story.footer.baseline`, `layout.year.story.dateFormat` | `year.story.mostReacted.photo`, `year.story.a11y.photo` | display rendition |
 | collage card | `layout.global.materials.backdrop`, text role `displaySmall`, `layout.year.story.dateFormat` | `year.story.a11y.collage` | fitted, never cropped |

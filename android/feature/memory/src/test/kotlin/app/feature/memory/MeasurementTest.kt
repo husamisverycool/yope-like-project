@@ -125,7 +125,7 @@ class MeasurementTest : SnapshotTest() {
     @Test fun onthisday() = measure(
         "onthisday",
         mapOf(
-            "back" to label("Back"), "title" to tag(OnThisDayTags.TITLE), "subtitle" to text("On this day · Maya"),
+            "back" to label("Back"), "title" to tag(OnThisDayTags.TITLE), "mode" to tag(OnThisDayTags.MODE), "subtitle" to text("On this day · Maya"),
             "more" to tag(OnThisDayTags.MORE), "share" to tag(OnThisDayTags.SHARE), "random" to tag(OnThisDayTags.SHUFFLE),
             "dial" to tag(DialTags.DIAL), "play" to tag(DialTags.PLAY), "photo" to label("Photo by Maya", substring = true),
         ),

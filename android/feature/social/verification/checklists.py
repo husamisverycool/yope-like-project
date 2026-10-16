@@ -269,6 +269,7 @@ def chat_thread():
     sh.row("`chat.reactions.dimension.chipTop` (photo → chip)", tok("chat.reactions.dimension.chipTop"), chip["top"] - card["bottom"])
     sh.section("States")
     sh.row("loading / empty / error / offline (nothing cached) / offline cached + send failed", "spec States", "renders `loading`, `empty`, `error`, `offlineNothingCached`, `offlineCachedSendFailed`", status="match (token)")
+    sh.row("`chat.thread.layout.followNewest` (my new message brought into view; others' followed only at the bottom)", "spec", "MessageList: newest-is-mine or previous newest visible → scroll to it; last newest shown kept across navigation (flow test `myNewMessageIsFollowedOthersAreNotWhenScrolledUp`)", status="match (token)")
     sh.row("`chat.thread.layout.failedMessage` (\"Sending\" → \"Couldn't send. Tap to retry\", tap retries)", "spec", "renders `sending`, `offlineCachedSendFailed`; flow test `failedSendRetries`", status="match (token)")
     sh.row("`chat.thread.layout.replyQuote` (photo quote: thumbnail + \"Post by …\" + week; text quote: sender + text)", "spec", "render `content` (Ana's photo reply, Sam's reply to Ben)", status="match (token)")
     sh.row("`chat.thread.count.emojiOnlyMax` (1–3 emoji large)", tok("chat.thread.count.emojiOnlyMax"), "render `emojiOnlyAndLongText`", status="match (token)")

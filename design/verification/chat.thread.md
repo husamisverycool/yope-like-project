@@ -8,7 +8,7 @@ Retro reference(s): `references/auto/retro/press/tc-2023-07-retro-2b.jpg (TC-2B,
 
 Snapshots (CI): `chat.thread-ready-light.png`, `chat.thread-ready-dark.png`, `chat.thread-loading-light.png`, `chat.thread-loading-older-light.png`, `chat.thread-empty-light.png`, `chat.thread-error-light.png`, `chat.thread-offline-light.png`, `chat.thread-offline-cached-light.png`, `chat.thread-reply-quotes-light.png`
 
-**Summary: 33 matched · 2 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 34 matched · 2 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Elements
 
@@ -50,6 +50,7 @@ Snapshots (CI): `chat.thread-ready-light.png`, `chat.thread-ready-dark.png`, `ch
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
 | matched | `—` | — | push in / back | NavigationStack push / pop (system) |
+| matched | `chat.thread.layout.followNewest` | ownMessage: brought into view wherever the reader was (also a reply sent from the photo viewer, as the viewer closes); othersMessage: followed only at the bottom (SOURCED) | new messages | `ChatThreadModel.followRequest` (set on my send, on a realtime insert of my message, on a refresh bringing one; unit-tested) → `ChatThreadView.follow` sets the scroll anchor once the viewer is closed; others' messages keep the at-bottom rule |
 | matched | `chat.thread.duration.entry`<br>`chat.thread.easing.entry` | 250 ms (SOURCED)<br>linear (SOURCED) | new message appears (sent or received) | entries `.transition(.opacity)` animated with `DSAnimation.timing(chat.thread.duration.entry, chat.thread.easing.entry)` on the message ids |
 | approximated | `duration.global.photoOpen`<br>`easing.global.standard` | 250 ms (SOURCED)<br>x1: 0.4; y1: 0; x2: 0.2; y2: 1 (SOURCED) | photo opens in the viewer | the viewer opens as a native `.fullScreenCover` (system curve), not a 250-ms custom transition from the card |
 | matched | `duration.global.fade`<br>`easing.global.standard` | 150 ms (SOURCED)<br>x1: 0.4; y1: 0; x2: 0.2; y2: 1 (SOURCED) | reply bar in / out | `.dsAnimation(ComponentMotion.fade, value: replyTarget)` + `.transition(.opacity)` |

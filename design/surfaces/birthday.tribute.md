@@ -70,6 +70,9 @@ Full-screen cover; media page `color.global.backgroundDeep`, dark in both appear
    `color.global.textOnMedia`) at `size.global.buttonMarginH` — label `birthday.tribute.download` ("Save to Camera
    Roll"); trailing Share pill (`collage.share.layout.pill`, `radius.global.capsule`, `color.global.surfaceLight` /
    `color.global.onSurfaceLight`, text role `button`) `birthday.tribute.share` ("Share").
+   **The bottom row is the honoree's only** (owner decision 12: a photo leaves the app only when it is the viewer's
+   own; the tribute is the honoree's gift, as Tribute / VidDay hand the finished video to the recipient). Other
+   members see the title, group, close and player, and no bottom row; the app downloads no local copy for them.
 
 ## Elements
 
@@ -79,8 +82,8 @@ Full-screen cover; media page `color.global.backgroundDeep`, dark in both appear
 | title / group | `font.global.display`, text role `headerTitle`, `size.global.titleTop`, `size.global.screenMargin`, `color.global.textOnMedia`; text role `textButton`, `color.global.textSecondary`, `dimension.onthisday.subtitleBaseline` | `birthday.tribute.title`, `.title.member` | — |
 | close | C-11 on media | `birthday.tribute.a11y.close` | dismiss |
 | player | `layout.birthday.tribute.player`, `layout.birthday.tribute.video` | — | signed URL of `video_path` (1 h); plays once on open (Motion) |
-| save circle | C-11 on media: `size.global.circleButton`, `color.global.controlOnDeep`, `size.global.buttonMarginH`, `icon.global.download` | `birthday.tribute.download`, `.saved`, `.saveFailed`, `.saveDenied.*` | saves the MP4 (add-only photo access) |
-| Share pill | `collage.share.layout.pill`, `color.global.surfaceLight`, `color.global.onSurfaceLight`, text role `button` | `birthday.tribute.share` | share sheet with the MP4 |
+| save circle | C-11 on media: `size.global.circleButton`, `color.global.controlOnDeep`, `size.global.buttonMarginH`, `icon.global.download` | `birthday.tribute.download`, `.saved`, `.saveFailed`, `.saveDenied.*` | honoree only; saves the MP4 (add-only photo access) |
+| Share pill | `collage.share.layout.pill`, `color.global.surfaceLight`, `color.global.onSurfaceLight`, text role `button` | `birthday.tribute.share` | honoree only; share sheet with the MP4 |
 | push (honoree) | — | `notifications.push.tribute.title` / `.body` (owned by `notifications.push`, MERGE L-1) | once at delivery; tap → this screen |
 
 ## States
@@ -113,7 +116,7 @@ Close, save, Share → `haptic.global.tap` (Android). Saved → `haptic.global.s
 - The names and lines are burned into the video; the honoree cannot read `tribute_contributions` (RLS: own rows only)
   — no transcript (Gaps).
 - Dynamic Type: title `headerTitle` → largeTitle (wraps to two lines), group `textButton` → body.
-- Focus order: title → group → close → player → save → Share.
+- Focus order: title → group → close → player → save → Share (save and Share: honoree only).
 - Contrast (`node tools/contrast.mjs`; dark in both appearances):
 
   | pair | ratio | needs | result |

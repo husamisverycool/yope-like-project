@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -186,7 +187,11 @@ fun InviteQrCard(link: String, groupName: String, width: Dp, modifier: Modifier 
                     color = Tokens.Colors.globalOnSurfaceLight,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.align(Alignment.BottomStart).paddingFromBaseline(bottom = taglineBaseline + namePitch),
+                    // Unbounded: the name's line box may rise above the footer (its ink stays inside) rather than push it down.
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .wrapContentHeight(Alignment.Bottom, unbounded = true)
+                        .paddingFromBaseline(bottom = taglineBaseline + namePitch),
                 )
             }
         }

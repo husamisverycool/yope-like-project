@@ -22,6 +22,9 @@ sheet. Decisions: `design/MERGE_DECISIONS.md` RC-15.
    `size.global.buttonMarginH` (20), centre 59.2 pt above the screen bottom.
 2. Tap → the **system share sheet** (`collage.share.layout.sheet`) with the current page's `share-<n>.jpg`
    (`collage.share.layout.export`: 9:16, 1080 × 1920 px) and the preview title `collage.share.sheetTitle` ({date}).
+3. **Every member can share a page** (owner decision 12): a collage page is a group piece made for sharing — the
+   moment as the whole group answered it, as Retro's recap preview shares a recap — so the rule "a photo leaves the app
+   only when it is the viewer's own" covers single photos and memories, not the pages.
 
 ## Elements
 
