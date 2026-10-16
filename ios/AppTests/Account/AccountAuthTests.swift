@@ -259,6 +259,26 @@ final class AccountAuthTests: XCTestCase {
         XCTAssertEqual(fixture.data.privateProfile?.birthdayOptIn, true)
     }
 
+    /// The field path: the TextField writes `text` on every key, `.onChange` formats it, and the model's own write comes
+    /// back through `.onChange` once more (CI run 75: the field held "01012000" while "Next" stayed disabled).
+    func testAgeGateTypedKeyByKeyFormatsAndEnablesNext() {
+        let model = AgeGateModel(data: AccountFixture().data, entry: BirthdayEntry(pattern: "MM/dd/y"))
+        for digit in "01012000" {
+            let typed = model.text + String(digit)
+            model.text = typed
+            model.fieldChanged(to: typed)
+            model.fieldChanged(to: model.text)
+        }
+        XCTAssertEqual(model.text, "01/01/2000")
+        XCTAssertTrue(model.canContinue)
+        // Deleting a separator removes a digit (BirthdayEntry.edit); the echo of the model's write changes nothing.
+        model.text = "01/012000"
+        model.fieldChanged(to: model.text)
+        model.fieldChanged(to: model.text)
+        XCTAssertEqual(model.text, "01/01/200")
+        XCTAssertFalse(model.canContinue)
+    }
+
     func testAgeGateWithoutOptInDoesNotStoreTheBirthday() async {
         let fixture = AccountFixture()
         let model = AgeGateModel(data: fixture.data, entry: BirthdayEntry(pattern: "MM/dd/y"))

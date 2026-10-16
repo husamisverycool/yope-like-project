@@ -17,7 +17,12 @@ final class AgeGateModel {
     }
 
     let entry: BirthdayEntry
-    private(set) var text = ""
+    /// The field's text, bound directly (`$model.text`) and re-formatted by `fieldChanged(to:)` from the form's `.onChange`
+    /// — the pattern the phone field uses. A `Binding(get:set:)` whose setter rewrote the text left the field and the
+    /// model out of step in CI run 75: "01012000" shown in the field, the model incomplete, "Next" disabled.
+    var text = ""
+    /// The last text this model formatted; the `.onChange` that its own write causes is skipped.
+    @ObservationIgnored private var lastFormatted = ""
     var optIn = false
     private(set) var phase: Phase = .form
     private(set) var isChecking = false
@@ -39,7 +44,17 @@ final class AgeGateModel {
     var canContinue: Bool { entry.isComplete(text) && !isChecking }
 
     func setText(_ newValue: String) {
-        text = entry.edit(from: text, to: newValue)
+        text = newValue
+        fieldChanged(to: newValue)
+    }
+
+    /// The field changed to `new` (typed, pasted, deleted): separators are inserted as the person types and deleting a
+    /// separator deletes the digit before it (`BirthdayEntry.edit`).
+    func fieldChanged(to new: String) {
+        guard new != lastFormatted else { return }
+        let formatted = entry.edit(from: lastFormatted, to: new)
+        lastFormatted = formatted
+        if formatted != new { text = formatted }
     }
 
     enum Outcome: Equatable {

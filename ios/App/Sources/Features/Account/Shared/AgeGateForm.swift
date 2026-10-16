@@ -33,10 +33,11 @@ struct AgeGateForm: View {
             MetricStack {
                 FormField(
                     model.placeholder,
-                    text: Binding(get: { model.text }, set: { model.setText($0) }),
+                    text: $model.text,
                     accessibilityLabel: Copy.authAgegateFieldAccessibilityLabel,
                     keyboard: .numberPad
                 )
+                .onChange(of: model.text) { _, new in model.fieldChanged(to: new) }
                 .accessibilityHint(Text(model.entry.placeholderFormat))
                 .focused($fieldFocused)
                 .disabled(model.isChecking)

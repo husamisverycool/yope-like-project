@@ -31,7 +31,12 @@ final class BirthdayAddModel {
 
     private(set) var phase: Phase = .idle
     /// The date field's text (`auth.agegate` entry rules: digits in the locale's order, separators inserted).
-    private(set) var dateText = ""
+    /// The field's text, bound directly (`$model.dateText`) and re-formatted by `fieldChanged(to:)` from the screen's
+    /// `.onChange` (the auth.agegate fix: a `Binding(get:set:)` whose setter rewrote the text left field and model out of
+    /// step, CI run 75).
+    var dateText = ""
+    /// The last text this model formatted; the `.onChange` that its own write causes is skipped.
+    @ObservationIgnored private var lastFormatted = ""
     private(set) var inline: Inline?
     /// The save failed: the C-27 error block above the capsule; the capsule retries.
     private(set) var showsError = false
@@ -55,9 +60,18 @@ final class BirthdayAddModel {
 
     /// The field's edit rules (`BirthdayEntry.edit`); a new edit clears the inline line.
     func setText(_ newValue: String) {
-        let formatted = entry.edit(from: dateText, to: newValue)
-        if formatted != dateText, inline == .invalid { inline = nil }
-        dateText = formatted
+        dateText = newValue
+        fieldChanged(to: newValue)
+    }
+
+    /// The field changed to `new`: separators inserted as the person types (`BirthdayEntry.edit`); an edit clears the
+    /// "invalid date" line.
+    func fieldChanged(to new: String) {
+        guard new != lastFormatted else { return }
+        let formatted = entry.edit(from: lastFormatted, to: new)
+        if formatted != lastFormatted, inline == .invalid { inline = nil }
+        lastFormatted = formatted
+        if formatted != new { dateText = formatted }
     }
 
     /// The typed day, when complete and valid.

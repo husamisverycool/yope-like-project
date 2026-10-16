@@ -100,12 +100,13 @@ struct BirthdayAddScreen: View {
             VStack(alignment: .leading) {
                 FormField(
                     model.placeholder,
-                    text: Binding(get: { model.dateText }, set: { model.setText($0) }),
+                    text: $model.dateText,
                     accessibilityLabel: Copy.authAgegateFieldAccessibilityLabel,
                     keyboard: .numberPad,
                     contentType: .birthdate,
                     errorMessage: model.inline == .invalid ? Copy.birthdayAddInvalid : nil
                 )
+                .onChange(of: model.dateText) { _, new in model.fieldChanged(to: new) }
                 .disabled(model.isSaving)
                 .accessibilityHint(Text(model.entry.placeholderFormat))
                 .accessibilityIdentifier("birthday.add.field")
