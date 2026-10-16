@@ -476,104 +476,34 @@ private const val MILLIS_PER_SECOND = 1000L // provenance-ok: unit conversion
 private const val SECONDS_PER_MINUTE = 60L // provenance-ok: unit conversion
 private const val VOICE_DURATION_FORMAT = "%d:%02d" // provenance-ok: chat.voice.layout.durationFormat pattern m:ss
 
-/** The hold gestures of [VoiceCapsule] (down starts, release keeps, cancel discards). */
+/** `chat.voice.a11y.play`'s duration in words ("7 seconds", "1 minute, 2 seconds"; the platform's measure format). */
+internal fun spokenDuration(ms: Long): String {
+    val total = ms.coerceAtLeast(0) / MILLIS_PER_SECOND
+    val minutes = total / SECONDS_PER_MINUTE
+    val seconds = total % SECONDS_PER_MINUTE
+    val format = android.icu.text.MeasureFormat.getInstance(java.util.Locale.getDefault(), android.icu.text.MeasureFormat.FormatWidth.WIDE)
+    return if (minutes > 0) {
+        format.formatMeasures(android.icu.util.Measure(minutes, android.icu.util.MeasureUnit.MINUTE), android.icu.util.Measure(seconds, android.icu.util.MeasureUnit.SECOND))
+    } else {
+        format.formatMeasures(android.icu.util.Measure(seconds, android.icu.util.MeasureUnit.SECOND))
+    }
+}
+
+/**
+ * The hold gestures of the send-to voice capsule (`chat.voice.layout.recording`): down starts, release keeps a held
+ * recording, cancel (slide left) discards, lock (slide up) goes hands-free.
+ */
 interface VoiceGestures {
     fun down()
     fun release()
     fun cancel()
+    fun lock() = Unit
 
     companion object {
         val None = object : VoiceGestures {
             override fun down() = Unit
             override fun release() = Unit
             override fun cancel() = Unit
-        }
-    }
-}
-
-/**
- * The voice capsule on the photo (`camera.sendto.layout.messageField.voice`): C-06 icon-only geometry —
- * `size.global.iconPillWidth` × `size.global.pillHeight`, capsule, fill `color.global.controlOnDeep`,
- * `icon.global.mic` (`size.global.iconSmall`) in `color.global.textOnMedia`. Recording (`chat.voice` mechanics:
- * press and hold, release keeps it, slide left past one capsule width discards): the C-07 anatomy with the mic
- * in `color.global.destructive` and the elapsed time (`chat.voice.layout.durationFormat`, text role `pill`,
- * monospaced digits). With a note: the mic and its length in `color.global.textOnMedia`. TalkBack cannot hold:
- * activating starts a hands-free recording and activating again keeps it ([onA11yToggle]); [onNoteTap]
- * (a recorded note) opens the note's menu. core:ui `IconCapsule` has no on-media fill (reported gap).
- */
-@Composable
-internal fun VoiceCapsule(
-    recording: Boolean,
-    recordingStartedAt: Long?,
-    noteDurationMs: Int?,
-    label: String,
-    gestures: VoiceGestures,
-    onA11yToggle: () -> Unit,
-    onNoteTap: () -> Unit,
-    now: () -> Long,
-    modifier: Modifier = Modifier,
-) {
-    val haptics = rememberHaptics()
-    val tick = rememberTicker(recording, now)
-    val elapsed = if (recording && recordingStartedAt != null) tick - recordingStartedAt else null
-    val showsText = recording || noteDurationMs != null
-    val density = androidx.compose.ui.platform.LocalDensity.current
-    val threshold = with(density) { Tokens.Sizes.globalIconPillWidth.toPx() }
-    Row(
-        modifier
-            .heightIn(min = Tokens.Sizes.globalPillHeight)
-            .then(if (showsText) Modifier else Modifier.widthIn(min = Tokens.Sizes.globalIconPillWidth))
-            .clip(CircleShape)
-            .background(Tokens.Colors.globalControlOnDeep, CircleShape)
-            .pointerInput(noteDurationMs != null && !recording) {
-                awaitEachGesture {
-                    val down = awaitFirstDown()
-                    haptics.tap()
-                    if (noteDurationMs != null && !recording) {
-                        if (waitForUpOrCancellation() != null) onNoteTap()
-                        return@awaitEachGesture
-                    }
-                    gestures.down()
-                    var settled = false
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        val change = event.changes.firstOrNull { it.id == down.id } ?: break
-                        change.consume()
-                        if (!settled && change.position.x - down.position.x < -threshold) {
-                            gestures.cancel()
-                            settled = true
-                        }
-                        if (!change.pressed) {
-                            if (!settled) gestures.release()
-                            break
-                        }
-                    }
-                }
-            }
-            .semantics {
-                contentDescription = label
-                role = Role.Button
-                if (noteDurationMs != null) stateDescription = voiceDuration(noteDurationMs.toLong())
-                onClick { if (noteDurationMs != null && !recording) onNoteTap() else onA11yToggle(); true }
-            }
-            .then(if (showsText) Modifier.padding(PaddingValues(start = Tokens.Sizes.globalPillPaddingLeading, end = Tokens.Sizes.globalPillPaddingTrailing)) else Modifier)
-            .testTag(if (recording) "sendto.voice.recording" else if (noteDurationMs != null) "sendto.voice.attached" else "sendto.voice"),
-        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalPillIconGap, Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            Tokens.Icons.globalMic,
-            contentDescription = null,
-            tint = if (recording) Tokens.Colors.globalDestructive else Tokens.Colors.globalTextOnMedia,
-            modifier = Modifier.size(Tokens.Sizes.globalIconSmall),
-        )
-        if (showsText) {
-            Text(
-                voiceDuration(elapsed ?: noteDurationMs?.toLong() ?: 0L),
-                style = TextRoles.pill.copy(fontFeatureSettings = TABULAR_DIGITS),
-                color = Tokens.Colors.globalTextOnMedia,
-                maxLines = 1,
-            )
         }
     }
 }

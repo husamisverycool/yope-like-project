@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -65,7 +66,6 @@ import app.feature.capture.ui.MediaEmptyState
 import app.feature.capture.ui.MediaSheetHeader
 import app.feature.capture.ui.OnMedia
 import app.feature.capture.ui.SheetTitleText
-import app.feature.capture.ui.VoiceCapsule
 import app.feature.capture.ui.VoiceGestures
 import app.feature.capture.ui.bottomClearance
 import app.ui.components.ActivityIndicator
@@ -79,6 +79,8 @@ import app.ui.components.HeaderTextButton
 import app.ui.components.MediaPill
 import app.ui.components.MediaPillStyle
 import app.ui.components.PrimaryButton
+import app.ui.foundation.DsMotion
+import app.ui.foundation.FadeVisibility
 import app.ui.foundation.PageRoles
 import app.ui.foundation.tickToggleable
 import app.ui.system.DsBottomSheet
@@ -98,13 +100,24 @@ data class SendToChrome(
     val covers: Map<String, Any?> = emptyMap(),
 )
 
-/** The voice note's callbacks besides the hold gestures. */
+/** The voice note's callbacks (`chat.voice.layout.recording` / `.locked`, `camera.sendto.layout.messageField`). */
 data class VoiceActions(
+    /** The voice capsule's press and hold: down, lift, slide left, slide up. */
     val gestures: VoiceGestures = VoiceGestures.None,
     /** TalkBack: start a hands-free recording, or keep the running one. */
     val onA11yToggle: () -> Unit = {},
     /** "Delete recording" from the note's menu. */
     val onDelete: () -> Unit = {},
+    /** The voice capsule's send glyph (locked / paused): the recording becomes the note. */
+    val onKeep: () -> Unit = {},
+    val onPause: () -> Unit = {},
+    val onResume: () -> Unit = {},
+    /** Paused: play / pause the draft. */
+    val onPreview: () -> Unit = {},
+    /** Paused: the trash glyph. */
+    val onDiscard: () -> Unit = {},
+    /** The attached note's play / pause. */
+    val onToggleNote: () -> Unit = {},
 )
 
 /**
@@ -129,7 +142,9 @@ fun SendToScreen(
     modifier: Modifier = Modifier,
     videoPreview: (@Composable () -> Unit)? = null,
     voice: VoiceActions = VoiceActions(),
-    now: () -> Long = android.os.SystemClock::elapsedRealtime,
+    /** Earlier callers' clock (the recorder now reports its elapsed time in [voiceLive]). */
+    @Suppress("UNUSED_PARAMETER") now: () -> Long = android.os.SystemClock::elapsedRealtime,
+    voiceLive: VoiceLive = VoiceLive(),
     messageSheetOpen: Boolean = false,
     onMessageSheet: (Boolean) -> Unit = {},
 ) {
@@ -160,7 +175,7 @@ fun SendToScreen(
         }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
             Spacer(Modifier.height(Dp(Tokens.Layouts.CameraSendtoLayoutPreview.topBelowHeaderCircle)))
-            Preview(state, chrome, videoPreview, voice, now, sending, onOpenMessage = { onMessageSheet(true) })
+            Preview(state, chrome, videoPreview, voice, voiceLive, sending, onOpenMessage = { onMessageSheet(true) })
             GroupsSection(state, chrome.covers, onToggle, onCreateGroup, onRetryGroups)
         }
         // C-05 on media, pinned: 20 from the sides, its bottom `camera.sendto.size.sendButtonBottom` above the screen bottom.
@@ -207,7 +222,10 @@ fun SendToScreen(
 /**
  * The photo frame (`camera.sendto.layout.preview`): 297.6 wide, centred, native aspect up to 422.8 tall,
  * aspect-fill, corners 8.5; on it, centred, its bottom 20.5 above the photo bottom, the message pill (C-09 dark,
- * `icon.global.edit`) and, `size.global.pillGap` after it, the voice capsule.
+ * `icon.global.edit`) and, `size.global.pillGap` after it, the voice capsule. While a voice note records the recording
+ * capsule takes the pill's place (chat.voice); locked or paused it spans the photo's width less `size.global.pillGap` on
+ * each side, the voice capsule and the gap (its waveform takes what is left). A kept note is the note capsule (C-36
+ * waveform) `size.global.pillGap` above the pair (`camera.sendto.layout.messageField` `.note`).
  */
 @Composable
 private fun Preview(
@@ -215,7 +233,7 @@ private fun Preview(
     chrome: SendToChrome,
     videoPreview: (@Composable () -> Unit)?,
     voice: VoiceActions,
-    now: () -> Long,
+    live: VoiceLive,
     sending: Boolean,
     onOpenMessage: () -> Unit,
 ) {
@@ -245,39 +263,83 @@ private fun Preview(
                     bitmap != null -> Image(BitmapPainter(bitmap), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                 }
             }
-            Row(
+            val gap = Tokens.Sizes.globalPillGap
+            val phase = state.voicePhase
+            val note = state.voice
+            val play = live.play
+            val notePlaying = note != null && play.file == note.file && play.isPlaying
+            val noteProgress = if (note != null && play.file == note.file) play.progress else null
+            // Paused: anything playing that is not the note is the draft's preview.
+            val draftPlay = phase == VoicePhase.Paused && play.file != null && play.file != note?.file
+            var slidePx by remember { mutableFloatStateOf(0f) }
+            Column(
                 Modifier.align(Alignment.BottomCenter).padding(bottom = Dp(field.bottomInset)),
-                horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalPillGap),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalArrangement = Arrangement.spacedBy(gap),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                if (!state.recordingVoice) {
-                    Crossfade(state.caption.isBlank(), animationSpec = app.ui.foundation.DsMotion.crossfade(), label = "messagePill") { empty ->
-                        MediaPill(
-                            text = stringResource(if (empty) R.string.camera_sendto_message_add else R.string.camera_sendto_message_edit),
-                            onClick = { if (!sending) onOpenMessage() },
-                            style = MediaPillStyle.Dark,
-                            icon = Tokens.Icons.globalEdit,
-                            modifier = Modifier.testTag("sendto.message"),
-                        )
-                    }
-                }
-                if (state.micAvailable) {
+                // The last note stays drawn while it fades out.
+                var shownNote by remember { mutableStateOf(note) }
+                if (note != null) shownNote = note
+                FadeVisibility(note != null) {
                     var menu by remember { mutableStateOf(false) }
                     Box {
-                        VoiceCapsule(
-                            recording = state.recordingVoice,
-                            recordingStartedAt = state.recordingStartedAt,
-                            noteDurationMs = state.voice?.durationMs,
-                            label = stringResource(R.string.camera_sendto_a11y_voice),
-                            gestures = if (sending) VoiceGestures.None else voice.gestures,
-                            onA11yToggle = { if (!sending) voice.onA11yToggle() },
-                            onNoteTap = { if (!sending) menu = true },
-                            now = now,
-                        )
+                        shownNote?.let {
+                            SendToNoteCapsule(
+                                note = it,
+                                playing = notePlaying,
+                                progress = noteProgress,
+                                enabled = !sending,
+                                onToggle = voice.onToggleNote,
+                                onMenu = { menu = true },
+                                onDelete = voice.onDelete,
+                            )
+                        }
                         DsDropdownMenu(
                             expanded = menu,
                             onDismissRequest = { menu = false },
                             items = listOf(DsMenuItem(stringResource(R.string.chat_voice_a11y_discard), voice.onDelete, Tokens.Icons.globalTrash, destructive = true)),
+                        )
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(gap), verticalAlignment = Alignment.CenterVertically) {
+                    Crossfade(phase == VoicePhase.Idle, animationSpec = DsMotion.fade(), label = "voiceRow") { idle ->
+                        if (idle) {
+                            Crossfade(state.caption.isBlank(), animationSpec = DsMotion.crossfade(), label = "messagePill") { empty ->
+                                MediaPill(
+                                    text = stringResource(if (empty) R.string.camera_sendto_message_add else R.string.camera_sendto_message_edit),
+                                    onClick = { if (!sending) onOpenMessage() },
+                                    style = MediaPillStyle.Dark,
+                                    icon = Tokens.Icons.globalEdit,
+                                    modifier = Modifier.testTag("sendto.message"),
+                                )
+                            }
+                        } else {
+                            val fills = phase == VoicePhase.Locked || phase == VoicePhase.Paused
+                            SendToRecordingCapsule(
+                                phase = phase,
+                                live = live,
+                                previewing = draftPlay && play.isPlaying,
+                                previewProgress = if (draftPlay) play.progress else null,
+                                slidePx = slidePx,
+                                onPause = voice.onPause,
+                                onResume = voice.onResume,
+                                onPreview = voice.onPreview,
+                                onDiscard = voice.onDiscard,
+                                modifier = if (fills) Modifier.width(width - gap * 2 - Tokens.Sizes.globalIconPillWidth - gap) else Modifier,
+                            )
+                        }
+                    }
+                    if (state.micAvailable) {
+                        SendToVoiceCapsule(
+                            phase = phase,
+                            // The recording capsule can take the photo's width less the voice capsule and the gap; sliding
+                            // left past half of it cancels (chat.voice "slide left").
+                            rowWidth = width - Tokens.Sizes.globalIconPillWidth - gap,
+                            enabled = !sending,
+                            gestures = voice.gestures,
+                            onSlide = { slidePx = it },
+                            onKeep = voice.onKeep,
+                            onA11y = voice.onA11yToggle,
                         )
                     }
                 }

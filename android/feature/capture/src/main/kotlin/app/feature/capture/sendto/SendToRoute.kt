@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.Dp
 import app.model.SessionPromptGate
 import app.ui.permissions.PermissionRationale
 import app.ui.permissions.rememberPermissionRequest
-import app.voice.VoiceRecorder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -64,13 +63,15 @@ fun SendToRoute(
     val context = LocalContext.current
     val haptics = rememberHaptics()
     val scope = rememberCoroutineScope()
+    val hasMicrophone = context.packageManager.hasSystemFeature(android.content.pm.PackageManager.FEATURE_MICROPHONE)
     val vm: SendToViewModel = viewModel {
         SendToViewModel(
             data = CaptureDataProvider.get(context),
             handoff = CaptureHandoff.process,
             gate = SessionPromptGate.process,
-            voiceRecorderAvailable = context.packageManager.hasSystemFeature(android.content.pm.PackageManager.FEATURE_MICROPHONE),
+            voiceRecorderAvailable = hasMicrophone,
             maxCaption = Tokens.Counts.cameraSendtoSizeCaptionMaxLength,
+            voiceIo = if (hasMicrophone) PlatformSendToVoice(context.applicationContext) else null,
         )
     }
     app.feature.capture.ui.MediaSystemBars()
@@ -94,9 +95,10 @@ fun SendToRoute(
         }
     }
 
-    // Voice note with the chat.voice recorder; the microphone is asked here at first use.
-    val recorder = remember { VoiceRecorder(context.applicationContext) }
-    DisposableEffect(recorder) { onDispose { recorder.release() } }
+    // Voice note with the chat.voice recorder (owned by the view model); the microphone is asked here at first use.
+    val voiceElapsed by vm.voiceElapsedMs.collectAsStateWithLifecycle()
+    val voiceLevels by vm.voiceLevels.collectAsStateWithLifecycle()
+    val voicePlay by vm.voicePlay.collectAsStateWithLifecycle()
     val microphone = rememberPermissionRequest(
         permission = Manifest.permission.RECORD_AUDIO,
         rationale = PermissionRationale(
@@ -165,58 +167,37 @@ fun SendToRoute(
         videoPreview = media?.takeIf { it.kind == MediaKind.Video }?.let { m -> { VideoLoop(m.file) } },
         messageSheetOpen = messageSheet,
         onMessageSheet = { messageSheet = it },
-        voice = remember(recorder, vm) {
+        voice = remember(vm) {
             VoiceActions(
                 gestures = object : VoiceGestures {
+                    // The first use asks for the microphone; recording starts on the next hold.
                     override fun down() {
-                        // The first use asks for the microphone; recording starts on the next hold.
-                        if (hasMic()) startVoice(context, recorder, vm) else microphone.launch()
+                        if (hasMic()) vm.beginVoice() else microphone.launch()
                     }
 
-                    override fun release() = finishVoice(recorder, vm)
-
-                    override fun cancel() {
-                        recorder.cancel()
-                        vm.onVoiceRecording(false)
-                    }
+                    override fun release() = vm.releaseVoice()
+                    override fun cancel() = vm.cancelVoice()
+                    override fun lock() = vm.lockVoice()
                 },
                 onA11yToggle = {
                     when {
-                        recorder.isRecording -> finishVoice(recorder, vm)
-                        hasMic() -> startVoice(context, recorder, vm)
+                        vm.ui.value.voicePhase != VoicePhase.Idle -> vm.keepVoice()
+                        hasMic() -> vm.beginVoice(locked = true)
                         else -> microphone.launch()
                     }
                 },
                 onDelete = vm::deleteVoice,
+                onKeep = vm::keepVoice,
+                onPause = vm::pauseVoice,
+                onResume = vm::resumeVoice,
+                onPreview = vm::toggleDraftPreview,
+                onDiscard = vm::cancelVoice,
+                onToggleNote = vm::toggleNote,
             )
         },
+        voiceLive = VoiceLive(voiceElapsed, voiceLevels, voicePlay),
     )
 }
-
-private fun startVoice(context: Context, recorder: VoiceRecorder, vm: SendToViewModel) {
-    if (recorder.isRecording) return
-    val file = File(CaptureHandoff.dir(context), "voice-${System.currentTimeMillis()}.m4a")
-    try {
-        recorder.start(file, samplingIntervalMs = VOICE_LEVEL_SAMPLING_MS)
-        vm.onVoiceRecording(true, startedAt = android.os.SystemClock.elapsedRealtime())
-    } catch (_: Exception) {
-        file.delete()
-        vm.onVoiceRecording(false)
-    }
-}
-
-/** Stops the recording and keeps the note for the post (replacing an earlier one). */
-private fun finishVoice(recorder: VoiceRecorder, vm: SendToViewModel) {
-    if (!recorder.isRecording) {
-        vm.onVoiceRecording(false)
-        return
-    }
-    val note = recorder.stop()
-    vm.onVoiceNote(note?.let { VoiceNoteFile(it.file, it.durationMs.toInt()) }?.takeIf { it.durationMs > 0 })
-}
-
-/** Waveform resolution of core:voice (no waveform is drawn here; transport value, not design). */
-private const val VOICE_LEVEL_SAMPLING_MS = 100L // provenance-ok: recorder level sampling interval, nothing is drawn from it
 
 /** The capture's video, muted, looping, centre-cropped into the photo frame (camera.sendto → preview). */
 @Composable

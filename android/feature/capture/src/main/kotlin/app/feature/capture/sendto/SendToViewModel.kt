@@ -119,6 +119,11 @@ class SendToViewModel(
     )
     val ui: StateFlow<UiState> = state.asStateFlow()
 
+    /** The recording's length so far (or the paused draft's), its waveform, and what plays. */
+    val voiceElapsedMs: StateFlow<Long> = voiceIo?.elapsedMs ?: MutableStateFlow(0L)
+    val voiceLevels: StateFlow<List<Int>> = voiceIo?.levels ?: MutableStateFlow(emptyList())
+    val voicePlay: StateFlow<VoicePlay> = voiceIo?.playback ?: MutableStateFlow(VoicePlay())
+
     // One-shot events, buffered until the screen collects them.
     private val events = Channel<Event>(Channel.BUFFERED)
     val event: Flow<Event> = events.receiveAsFlow()
@@ -238,6 +243,11 @@ class SendToViewModel(
         if (runCatching { io.start() }.isFailure) return false
         onVoicePhase(if (locked) VoicePhase.Locked else VoicePhase.Holding)
         return true
+    }
+
+    /** The finger lifts: a held recording becomes the note; locked or paused it goes on. */
+    fun releaseVoice() {
+        if (state.value.voicePhase == VoicePhase.Holding) keepVoice()
     }
 
     /** Slide up onto the lock: hands-free. */

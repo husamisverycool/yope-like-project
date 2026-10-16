@@ -41,17 +41,18 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.dp
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.capture.ui.TABULAR_DIGITS
@@ -429,8 +430,16 @@ internal fun SendToNoteCapsule(
             .heightIn(min = Tokens.Sizes.globalPillHeight)
             .clip(CircleShape)
             .background(Tokens.Colors.globalControlOnDeep, CircleShape)
-            .then(if (enabled) Modifier.tapLongPressable(onClick = onToggle, onLongClick = onMenu, menuActions = listOf(delete to onDelete)) else Modifier)
-            .semantics(label)
+            .then(if (enabled) Modifier.tapLongPressable(onClick = onToggle, onLongClick = onMenu) else Modifier)
+            // One button: its play / pause label (the waveform is decorative, the duration is in the label).
+            .clearAndSetSemantics {
+                contentDescription = label
+                role = Role.Button
+                if (enabled) {
+                    onClick { onToggle(); true }
+                    customActions = listOf(CustomAccessibilityAction(delete) { onDelete(); true })
+                }
+            }
             .padding(PaddingValues(start = Tokens.Sizes.globalPillPaddingLeading, end = Tokens.Sizes.globalPillPaddingTrailing))
             .testTag("sendto.voice.attached"),
         horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalPillIconGap),
@@ -452,14 +461,3 @@ internal fun SendToNoteCapsule(
         Text(voiceDuration(note.durationMs.toLong()), style = TextRoles.pill.copy(fontFeatureSettings = TABULAR_DIGITS), color = Tokens.Colors.globalTextOnMedia, maxLines = 1)
     }
 }
-
-/** The note capsule reads as one button: its play / pause label (the waveform and duration are inside it). */
-private fun Modifier.semantics(label: String): Modifier = this.then(
-    Modifier.clearAndSetSemanticsKeepingActions(label),
-)
-
-private fun Modifier.clearAndSetSemanticsKeepingActions(label: String): Modifier =
-    androidx.compose.ui.semantics.semantics(mergeDescendants = true) { contentDescription = label }
-
-@Suppress("unused")
-private val unusedDp = 0.dp // provenance-ok: keeps the dp import for previews

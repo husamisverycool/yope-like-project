@@ -50,7 +50,8 @@ final class AccountFlowUITests: XCTestCase {
     private func openPhoneForm(_ app: XCUIApplication) {
         XCTAssertTrue(element(app, "auth.phone").waitForExistence(timeout: 10))
         tap("auth.phone.getStarted", in: app)
-        XCTAssertTrue(element(app, "auth.phone.form").waitForExistence(timeout: 5))
+        // The form's own container does not surface as an element inside auth.phone; its field does.
+        XCTAssertTrue(app.textFields["auth.phone.field"].waitForExistence(timeout: 5), "the phone form")
     }
 
     // MARK: Sign-up → onboarding → home

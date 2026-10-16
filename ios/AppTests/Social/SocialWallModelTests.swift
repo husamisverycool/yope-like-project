@@ -206,7 +206,7 @@ final class SocialWallModelTests: XCTestCase {
             state.cachedGroups = state.groups.filter { $0.id == SocialDemo.otherGroupID }
             state.cachedMembers[SocialDemo.otherGroupID] = state.members[SocialDemo.otherGroupID]
         }
-        let model = WallsBrowseModel(data: data)
+        let model = WallsBrowseModel(data: data, locale: Locale(identifier: "en_US"))
         XCTAssertFalse(model.showsLoading)
         let task = Task { await model.load() }
         let cachedReady = await socialEventually { model.phase == .ready }
@@ -216,7 +216,9 @@ final class SocialWallModelTests: XCTestCase {
 
         data.update { $0.holds.remove("myGroups") }
         await task.value
-        XCTAssertEqual(model.people.map(\.id), [SocialDemo.cleo, SocialDemo.ana, SocialDemo.ben])
+        // Refreshed in place, in walls.browse.layout.rowOrder: display name A to Z.
+        XCTAssertEqual(model.people.map(\.name), ["Ana Lima", "Ben Ortiz", "Cleo Park"])
+        XCTAssertEqual(model.people.map(\.id), [SocialDemo.ana, SocialDemo.ben, SocialDemo.cleo])
     }
 
     func testBrowseOfflineKeepsTheCachedPeople() async {

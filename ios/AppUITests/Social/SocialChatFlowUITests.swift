@@ -39,8 +39,12 @@ final class SocialChatFlowUITests: XCTestCase {
     /// on the header that floats over the thread instead of the card's context menu.
     @MainActor
     private func reveal(_ element: XCUIElement, in app: XCUIApplication) {
-        XCTAssertTrue(element.waitForExistence(timeout: 10))
         let thread = app.descendants(matching: .any)["chat.thread"]
+        // The thread is lazy: older messages exist only once scrolled near.
+        for _ in 0..<6 where !element.waitForExistence(timeout: 2) {
+            thread.swipeDown()
+        }
+        XCTAssertTrue(element.exists, "\(element) in the thread")
         let screen = app.windows.firstMatch.frame
         let top = screen.minY + 150 // below the header (its controls end at y ≈ 137)
         let bottom = screen.maxY - 110 // above the composer (it starts at y ≈ 792)
@@ -105,7 +109,13 @@ final class SocialChatFlowUITests: XCTestCase {
         send.tap()
         XCTAssertTrue(app.descendants(matching: .any)["You, love this"].waitForExistence(timeout: 5), "the reply shows as a comment")
         app.buttons["close"].tap()
-        XCTAssertTrue(app.descendants(matching: .any)["You, love this"].waitForExistence(timeout: 5))
+        // The reply is the newest message, below the last one on screen when the viewer opened.
+        let sent = app.descendants(matching: .any)["You, love this"]
+        let thread = app.descendants(matching: .any)["chat.thread"]
+        for _ in 0..<3 where !sent.waitForExistence(timeout: 2) {
+            thread.swipeUp()
+        }
+        XCTAssertTrue(sent.exists, "the reply is in the thread")
         XCTAssertTrue(app.buttons["Reply to Ana's post"].exists, "the reply carries the quote of the photo")
     }
 
