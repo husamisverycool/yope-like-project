@@ -1341,6 +1341,14 @@ public enum Tokens {
             public static let android: String = "DsTheme(dark = isSystemInDarkTheme()) wraps the app and every test host; colour getters read LocalDsDarkTheme"
             public static let media: String = "photo / story viewer, camera, postcard-style composer, recap preview and full-bleed media stay dark (color.global.backgroundDeep) in both appearances; sheets over them follow the appearance"
         }
+        /// Retro · global · colour-field backdrop: the photo aspect-filled, extended 3σ past its frame, Gaussian-blurred at σ = 0.08 × the frame width, under color.global.backdropDim · SOURCED
+        /// token: `layout.global.colourFieldBackdrop`
+        public enum GlobalColourFieldBackdrop {
+            public static let blurSigmaToWidth: CGFloat = 0.08
+            public static let dim: String = "color.global.backdropDim"
+            public static let bleedSigmas: CGFloat = 3
+            public static let use: String = "photo backdrops Retro blurs to a colour field: the paywall (and the invite card, invite.web.layout.backdrop)"
+        }
         /// W3C WCAG 2.2 · global · minimum contrast ratio: text 18 pt and larger, or bold at any size · VERIFIED
         /// token: `layout.global.contrast.largeText`
         public enum GlobalContrastLargeText {
@@ -2049,6 +2057,9 @@ public enum Tokens {
         /// Retro · invite.web · mobile headline ('{first_name} Invited You!') line height; size is fontSize.global.displayMedium (32), family font.global.display, weight regular, colour #FFFFFF · SOURCED
         /// token: `invite.web.lineHeight.headline`
         public static let inviteWebLineHeightHeadline: CGFloat = 32
+        /// Retro · invite.web · desktop page: headline line height (font.global.displayNarrow at invite.web.fontSize.headlineDesktop) · SOURCED
+        /// token: `invite.web.lineHeight.headlineDesktop`
+        public static let inviteWebLineHeightHeadlineDesktop: CGFloat = 48
         /// Retro · global · Android badge line height (Inter 11/11 W600) · SOURCED
         /// token: `lineHeight.global.badge.android`
         public static let globalBadgeAndroid: CGFloat = 11

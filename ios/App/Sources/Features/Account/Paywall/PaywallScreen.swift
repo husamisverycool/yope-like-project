@@ -88,8 +88,8 @@ struct PaywallView: View {
 
     var body: some View {
         ZStack {
-            // C-34 backdrop: the benefit's media blurred to a colour field; none → the media black.
-            BlurredBackdrop(source: photo)
+            // The benefit's media blurred to a colour field (`layout.global.colourFieldBackdrop`, L-9); none → the media black.
+            ColourFieldBackdrop(source: photo)
                 .environment(\.colorScheme, .dark)
                 .dsAnimation(Self.pageFade, value: perkID)
             VStack(spacing: 0) {

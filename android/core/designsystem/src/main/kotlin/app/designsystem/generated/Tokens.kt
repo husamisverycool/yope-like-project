@@ -1137,6 +1137,13 @@ object Tokens {
             const val android: String = "DsTheme(dark = isSystemInDarkTheme()) wraps the app and every test host; colour getters read LocalDsDarkTheme"
             const val media: String = "photo / story viewer, camera, postcard-style composer, recap preview and full-bleed media stay dark (color.global.backgroundDeep) in both appearances; sheets over them follow the appearance"
         }
+        /** Retro · global · colour-field backdrop: the photo aspect-filled, extended 3σ past its frame, Gaussian-blurred at σ = 0.08 × the frame width, under color.global.backdropDim · SOURCED — token `layout.global.colourFieldBackdrop` */
+        object GlobalColourFieldBackdrop {
+            const val blurSigmaToWidth: Float = 0.08f
+            const val dim: String = "color.global.backdropDim"
+            const val bleedSigmas: Float = 3f
+            const val use: String = "photo backdrops Retro blurs to a colour field: the paywall (and the invite card, invite.web.layout.backdrop)"
+        }
         /** W3C WCAG 2.2 · global · minimum contrast ratio: text 18 pt and larger, or bold at any size · VERIFIED — token `layout.global.contrast.largeText` */
         object GlobalContrastLargeText {
             const val ratio: Float = 3f
@@ -1761,6 +1768,8 @@ object Tokens {
         val inviteWebLineHeightBodyDesktop: TextUnit = 28.sp
         /** Retro · invite.web · mobile headline ('{first_name} Invited You!') line height; size is fontSize.global.displayMedium (32), family font.global.display, weight regular, colour #FFFFFF · SOURCED — token `invite.web.lineHeight.headline` */
         val inviteWebLineHeightHeadline: TextUnit = 32.sp
+        /** Retro · invite.web · desktop page: headline line height (font.global.displayNarrow at invite.web.fontSize.headlineDesktop) · SOURCED — token `invite.web.lineHeight.headlineDesktop` */
+        val inviteWebLineHeightHeadlineDesktop: TextUnit = 48.sp
         /** Retro · global · Android badge line height (Inter 11/11 W600) · SOURCED — token `lineHeight.global.badge.android` */
         val globalBadgeAndroid: TextUnit = 11.sp
         /** Retro · global · Android body line height · SOURCED — token `lineHeight.global.body.android` */

@@ -80,3 +80,31 @@ struct BlurredBackdrop: View {
         .accessibilityHidden(true)
     }
 }
+
+/// A photo blurred to a colour field (`layout.global.colourFieldBackdrop`, MERGE L-9): aspect-filled, extended
+/// `bleedSigmas` σ past the frame so the blur has no faded edge, Gaussian-blurred at σ = `sigmaToWidth` × the frame
+/// width, under `color.global.backdropDim`; `color.global.backgroundDeep` while it loads. Used where Retro shows a
+/// structure-free wash (paywall, invite card) — not the recap's mild blur (`BlurredBackdrop`, L-5).
+struct ColourFieldBackdrop: View {
+    let source: PhotoSource?
+    var sigmaToWidth: CGFloat = Tokens.Layouts.GlobalColourFieldBackdrop.blurSigmaToWidth
+
+    var body: some View {
+        GeometryReader { proxy in
+            let sigma = proxy.size.width * sigmaToWidth
+            let bleed = sigma * Tokens.Layouts.GlobalColourFieldBackdrop.bleedSigmas
+            ZStack {
+                Tokens.Colors.globalBackgroundDeep
+                PhotoView(source: source)
+                    .frame(width: proxy.size.width + bleed * 2, height: proxy.size.height + bleed * 2)
+                    .blur(radius: sigma)
+                    .frame(width: proxy.size.width, height: proxy.size.height)
+                Tokens.Colors.globalBackdropDim
+            }
+            .frame(width: proxy.size.width, height: proxy.size.height)
+            .clipped()
+        }
+        .ignoresSafeArea()
+        .accessibilityHidden(true)
+    }
+}

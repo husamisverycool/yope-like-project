@@ -198,6 +198,7 @@ struct SettingsGroup: View {
             }
             .background(Tokens.Colors.globalControl)
             .clipShape(DSShape.rounded(Tokens.Radii.globalGroupedRow))
+            .environment(\.avatarFallbackFill, Tokens.Colors.globalControlRaised)
             ForEach(footer.indices, id: \.self) { index in
                 Text(footer[index])
                     .dsTextStyle(TextRole.meta)

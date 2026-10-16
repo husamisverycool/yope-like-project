@@ -211,7 +211,7 @@ async function main() {
       check("avatar centred on the QR", `${px(qr.box.x + q / 2)}, ${px(qr.box.y + q / 2)}`, `${px(avatar.box.x + avatar.box.w / 2)}, ${px(avatar.box.y + avatar.box.h / 2)}`);
       check("`invite.web.size.headlineTopDesktop`", px(t["invite.web.size.headlineTopDesktop"]), px(h1.box.y - qr.box.bottom));
       check("`invite.web.fontSize.headlineDesktop` (48 → 51.5, L-8 cap-height re-fit)", px(t["invite.web.fontSize.headlineDesktop"]), h1.s["font-size"]!);
-      row("desktop headline line height", "48 (Retro's computed 48px/48px; 'line heights stay Retro's', L-8)", h1.s["line-height"]!, "approximated", "Retro's reset line-height: 1 now gives 51.5 px with the re-fitted size; no token holds 48 (an invite.web.lineHeight.headlineDesktop of 48 would restore it)");
+      check("`invite.web.lineHeight.headlineDesktop` (Retro's 48px/48px line pitch)", px(t["invite.web.lineHeight.headlineDesktop"]), h1.s["line-height"]!);
       check("desktop headline family", '"Roboto Serif Headline", ui-serif, serif', (await m(".headline", ["font-family"])).s["font-family"]!);
       check("headline colour #000000", css(t["color.global.textPrimary"].light), h1.s.color!);
       check("`invite.web.fontSize.bodyDesktop` / `.lineHeight.bodyDesktop`", `${px(t["invite.web.fontSize.bodyDesktop"])} / ${px(t["invite.web.lineHeight.bodyDesktop"])}`, `${line.s["font-size"]} / ${line.s["line-height"]}`);
@@ -300,7 +300,7 @@ async function main() {
     check("background without a cover: `color.global.backgroundDeep`", "#000000", toHex(at(10, 10) as [number, number, number]));
     const ogBackdrop = inviteBackdrop();
     row("background with a cover", "`invite.web.layout.backdrop`: σ = 0.08 × 600 = 48 px under `color.global.backdropDim`", `σ ${ogBackdrop.blurSigmaToWidth * 600} px (sharp Gaussian, float precision) + ${css(colorHex(ogBackdrop.dim))} layer (og-cover.png)`, "matched", "Retro's own field is also darker overall (its profile photo is darker than this cover): photo-dependent");
-    row("name face", "`font.global.display`, ≈ 52 px (Roslindale estimate); weight not measurable (Gap)", "Roboto Serif Headline (`font.global.displayNarrow`, bundled TTF, OFL) sized so an ascender word's ink is 40 px", "approximated", "the face the page headline uses (L-8); the token text names font.global.display (the heavier title cut, roboto_serif_title), which reads closer to Retro's bold share-image name");
+    row("name face", "`font.global.display`; ink height 40 px for an ascender word", "Roboto Serif Title (`font.global.display`, bundled TTF, OFL), sized so an ascender word's ink is 40 px", "matched", "the title cut matched to Roslindale Retro (L-8); the token's “≈ 52 px” was Roslindale's size estimate, the 40-px ink is the measurement kept");
     row("domain line", "`font.global.family` 20 px, white ≈ 70 % (#BBC5C9 over Retro's navy)", `Inter 20 px, #FFFFFF at 0.7 (brightest ${brightest} on black = #${brightest.toString(16).toUpperCase().repeat(3)})`, "matched", "colour over a black field; Retro's reading includes its backdrop");
     row("cover circle when there is no cover", "not specified", "`invite.web.color.avatarPlaceholder` circle", "approximated", "the page's no-photo avatar");
 
@@ -406,7 +406,7 @@ ${contrast}
 - **App mark on the card**: none (owner's mark, decision 0.2).
 - **Document title**: \`invite.web.documentTitle\` is BLOCKED until the app is named.
 - **"Full" state**: not a web state in the spec; a full group is reported by \`join_group\` in the App Clip / app.
-- **Share-image glyph coverage**: the bundled Roboto Serif Headline / Inter cover Latin, Greek and Cyrillic; other scripts and emoji in
+- **Share-image glyph coverage**: the bundled Roboto Serif Title / Inter cover Latin, Greek and Cyrillic; other scripts and emoji in
   a group name need system fonts in the container (fonts.conf falls back to them; the slim image has none).
 `;
     fs.writeFileSync(OUT_MD, md);

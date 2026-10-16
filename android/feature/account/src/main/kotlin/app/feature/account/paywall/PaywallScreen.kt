@@ -60,7 +60,7 @@ import app.feature.account.common.newestGroupPhoto
 import app.feature.account.platform.ExternalActions
 import app.feature.account.platform.LegalLinks
 import app.ui.components.ActivityIndicator
-import app.ui.components.BlurredBackdrop
+import app.ui.components.ColourFieldBackdrop
 import app.ui.components.CircleButtonStyle
 import app.ui.components.CircleIconButton
 import app.ui.components.MediaPill
@@ -238,8 +238,8 @@ fun periodUnit(period: PlanPeriod, locale: Locale = Locale.getDefault()): String
     ).lowercase(locale)
 
 /**
- * The paywall (full-screen modal; a media surface — text white in both appearances): the C-34 backdrop (the person's
- * newest group photo, blurred and dimmed; none → `color.global.backgroundDeep`); the header (title `paywall.title`, text
+ * The paywall (full-screen modal; a media surface — text white in both appearances): the colour-field backdrop
+ * (`layout.global.colourFieldBackdrop`, L-9: the person's newest group photo, blurred and dimmed; none → `color.global.backgroundDeep`); the header (title `paywall.title`, text
  * role `sheetTitle`, centred — BLOCKED while it names the app, omitted in release — and the C-11 glass-small close circle at
  * the trailing margin, centred on the title); the benefit pager (media card, serif headline, description, page dots)
  * centred in the space above the plan cards; the C-34 plan-card pager (Annual, Monthly; drawn in the light appearance —
@@ -250,7 +250,7 @@ fun periodUnit(period: PlanPeriod, locale: Locale = Locale.getDefault()): String
 fun PaywallScreen(state: PaywallUiState, legal: LegalLinks, actions: PaywallActions) {
     val context = LocalContext.current
     Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep)) {
-        if (state.media != null) BlurredBackdrop(state.media)
+        if (state.media != null) ColourFieldBackdrop(state.media)
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
             Header(BlockedCopy.paywallTitle(context), actions.onClose)
             AnimatedContent(

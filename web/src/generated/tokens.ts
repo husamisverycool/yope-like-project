@@ -343,6 +343,7 @@ export const tokens = {
   "invite.web.lineHeight.body": 19.6, // Retro · invite.web · SOURCED
   "invite.web.lineHeight.bodyDesktop": 28, // Retro · invite.web · SOURCED
   "invite.web.lineHeight.headline": 32, // Retro · invite.web · SOURCED
+  "invite.web.lineHeight.headlineDesktop": 48, // Retro · invite.web · SOURCED
   "invite.web.opacity.pillDisabled": 0.75, // Retro · invite.web · SOURCED
   "invite.web.radius.card": 36, // Retro · invite.web · SOURCED
   "invite.web.size.avatar": 112, // Retro · invite.web · SOURCED
@@ -370,6 +371,7 @@ export const tokens = {
   "layout.birthday.tribute.titleCard": {"background":"#000000","textColor":"#FFFFFF","fontWeight":400,"fontSizeRatio":0.084,"maxWidthRatio":0.405,"centerYRatio":0.5}, // Retro + VidDay · birthday.tribute · SOURCED
   "layout.birthday.tribute.video": {"width":1920,"height":1080,"fps":29.97}, // Tribute + VidDay · birthday.tribute · SOURCED
   "layout.global.appearance": {"mode":"follows the system Light / Dark setting","ios":"no UIUserInterfaceStyle key and no preferredColorScheme override; colour tokens are dynamic (Color(light:dark:))","android":"DsTheme(dark = isSystemInDarkTheme()) wraps the app and every test host; colour getters read LocalDsDarkTheme","media":"photo / story viewer, camera, postcard-style composer, recap preview and full-bleed media stay dark (color.global.backgroundDeep) in both appearances; sheets over them follow the appearance"}, // Retro · global · SOURCED
+  "layout.global.colourFieldBackdrop": {"blurSigmaToWidth":0.08,"dim":"color.global.backdropDim","bleedSigmas":3,"use":"photo backdrops Retro blurs to a colour field: the paywall (and the invite card, invite.web.layout.backdrop)"}, // Retro · global · SOURCED
   "layout.global.contrast.largeText": {"ratio":3,"rule":"text 18 pt and larger, or bold at any size"}, // W3C WCAG 2.2 · global · VERIFIED
   "layout.global.contrast.nonText": {"ratio":3,"rule":"UI components and graphical objects against adjacent colors"}, // W3C WCAG 2.2 · global · VERIFIED
   "layout.global.contrast.text": {"ratio":4.5,"rule":"text up to 17 pt (iOS) / below 18 sp (Android), not bold"}, // W3C WCAG 2.2 · global · VERIFIED

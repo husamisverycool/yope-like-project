@@ -2393,6 +2393,23 @@
       "precision": "±0.01 alpha",
       "notes": "Same in both appearances (the recap preview is a media surface; ST-04 is its only capture)."
     },
+    "layout.global.colourFieldBackdrop": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global",
+      "type": "layout",
+      "value": {
+        "blurSigmaToWidth": 0.08,
+        "dim": "color.global.backdropDim",
+        "bleedSigmas": 3,
+        "use": "photo backdrops Retro blurs to a colour field: the paywall (and the invite card, invite.web.layout.backdrop)"
+      },
+      "element": "colour-field backdrop: the photo aspect-filled, extended 3σ past its frame, Gaussian-blurred at σ = 0.08 × the frame width, under color.global.backdropDim",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW, 3 px/pt): edge-spread fits over the backdrop find no edge sharper than the 250-px search window (σ ≳ 100 px = 8.3 % of 1206); references/auto/retro/web/retro.app-invite-background-bg2.jpeg and retro.app-og-userogsquare-nathan.png: σ ≈ 0.07–0.083 of the width (invite.web.layout.backdrop, MERGE_DECISIONS L-6)",
+      "method": "edge-spread fits (L-6 method) on the paywall RAW: lower bound only; value = the invite's measured ratio, which already leaves no visible structure",
+      "precision": "lower bound on the paywall; ±0.02 of the width on the invite",
+      "notes": "Not the recap's mild blur (size.global.backdropBlur, ST-04, L-5). MERGE_DECISIONS L-9."
+    },
     "layout.global.photoScrim": {
       "level": "SOURCED",
       "source_app": "Retro",

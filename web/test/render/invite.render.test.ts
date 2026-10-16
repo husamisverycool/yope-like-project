@@ -205,7 +205,7 @@ describe("desktop column (viewport > invite.web.size.breakpoint)", () => {
 
       const h1 = await measure(page, ".headline", ["font-size", "line-height", "color"]);
       near(h1.box.y - qr.box.bottom, t["invite.web.size.headlineTopDesktop"]);
-      expect([h1.s["font-size"], h1.s["line-height"], h1.s.color]).toEqual([PX(t["invite.web.fontSize.headlineDesktop"]), PX(t["invite.web.fontSize.headlineDesktop"]), rgba(t["color.global.textPrimary"].light)]);
+      expect([h1.s["font-size"], h1.s["line-height"], h1.s.color]).toEqual([PX(t["invite.web.fontSize.headlineDesktop"]), PX(t["invite.web.lineHeight.headlineDesktop"]), rgba(t["color.global.textPrimary"].light)]);
 
       const line = await measure(page, ".line.desktop-only", ["font-size", "line-height", "letter-spacing", "color", "max-width"]);
       expect([line.s["font-size"], line.s["line-height"], line.s["letter-spacing"], line.s.color, line.s["max-width"]]).toEqual([

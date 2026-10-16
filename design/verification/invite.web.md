@@ -8,7 +8,7 @@ setups of Retro's references: mobile 390 × 664 CSS px @3x with an iPhone user a
 (`references/auto/retro/web/retro.app-u-nathan-iphone.png`), desktop 1440 × 900 @1x (`retro.app-u-nathan-desktop.png`).
 Values are `getComputedStyle` / `getBoundingClientRect` read back from the page and pixels of the served images.
 
-**Result: 92 matched, 8 approximated, 3 not matched.**
+**Result: 96 matched, 6 approximated, 3 not matched.**
 
 Renders (git-ignored PNGs, written by `test/render/invite.render.test.ts` on every `npm test`):
 `design/verification/invite.web/<state>-<mobile|desktop>-<light|dark>.png` for the states `valid`, `valid-no-cover`, `valid-no-photos`, `unavailable`, `not-found`, `error`, `rate-limited`;
@@ -18,8 +18,8 @@ mobile card | iPhone capture (Retro's photo did not load in its capture), deskto
 
 By design (do-not-copy / no counterpart): no Retro mark top-left, wordmark, stock backdrops, "© Lone Palm Labs", store
 badges, page counts. Added by the spec: the members' avatar stack (SPEC_FLAGS T7). Fonts: no commercial face is used —
-the display role is the platform serif (ui-serif → New York on Apple; Noto Serif on Android and in these renders), text
-is the platform UI face; Retro's Roslindale Display Narrow is narrower, so line breaks differ.
+the headline is Roboto Serif Headline (`font.global.displayNarrow`, a static Roboto Serif instance matched to Retro's
+Roslindale Display Narrow, served by the page as WOFF2; MERGE_DECISIONS L-8), text is the platform UI face.
 
 ## Mobile card (390 × 664 CSS px @3x, iPhone; viewport ≤ invite.web.size.breakpoint 840)
 
@@ -34,8 +34,8 @@ is the platform UI face; Retro's Roslindale Display Narrow is narrower, so line 
 | matched | card fill fallbacks | no cover → inviter's avatar blurred; neither → `color.global.backgroundDeep` | as spec (renders valid-no-cover-*, valid-no-photos-*) | the inviter's avatar is invite_preview.inviter_avatar_path (migration 0016) |
 | matched | `invite.web.size.avatar` | 112 × 112 | 112 × 112 |  |
 | approximated | avatar position | centred above the text block (approximated in the spec — the capture lost the photo) | centre 199.91px; space above the text 6px–393.81px → centre 199.91px | Retro's broken-image alt text ('athan', clipped by the 112-pt circle) puts the box top ≈ 152 CSS px → centre ≈ 208 on Retro's page; the space-centre rule gives ≈ 209 there |
-| approximated | headline family `font.global.display` | display serif (Retro: Roslindale Display Narrow — commercial) | ui-serif, "Noto Serif", serif | PLATFORM stack: New York on Apple (ui-serif), Noto Serif on Android; this Linux render uses the bundled Noto Serif. Narrower Roslindale fits more per line |
-| matched | headline size `fontSize.global.displayMedium` | 32px | 32px |  |
+| matched | headline family `font.global.displayNarrow` (Roboto Serif Headline, L-8) | "Roboto Serif Headline", ui-serif, serif · served face loaded | "Roboto Serif Headline", ui-serif, serif · served face loaded | WOFF2 from /fonts/ (font-display: swap); the static Roboto Serif instance matched to Retro's Roslindale Display Narrow (L-8), not Retro's face |
+| matched | headline size `fontSize.global.displayMedium` | 34.4px | 34.4px |  |
 | matched | headline line `invite.web.lineHeight.headline` | 32px | 32px |  |
 | matched | headline weight `fontWeight.global.displayMedium` | 400 | 400 |  |
 | matched | headline colour (#FFFFFF, `color.global.textOnMedia`) | rgb(255, 255, 255) | rgb(255, 255, 255) |  |
@@ -100,7 +100,9 @@ is the platform UI face; Retro's Roslindale Display Narrow is narrower, so line 
 | matched | `invite.web.size.avatarDesktop` | 70 × 70 | 70 × 70 |  |
 | matched | avatar centred on the QR | 720px, 311.64px | 720px, 311.64px |  |
 | matched | `invite.web.size.headlineTopDesktop` | 70px | 70px |  |
-| matched | `invite.web.fontSize.headlineDesktop` (line 48) | 48px / 48px | 48px / 48px |  |
+| matched | `invite.web.fontSize.headlineDesktop` (48 → 51.5, L-8 cap-height re-fit) | 51.5px | 51.5px |  |
+| matched | `invite.web.lineHeight.headlineDesktop` (Retro's 48px/48px line pitch) | 48px | 48px |  |
+| matched | desktop headline family | "Roboto Serif Headline", ui-serif, serif | "Roboto Serif Headline", ui-serif, serif |  |
 | matched | headline colour #000000 | rgb(0, 0, 0) | rgb(0, 0, 0) |  |
 | matched | `invite.web.fontSize.bodyDesktop` / `.lineHeight.bodyDesktop` | 20px / 28px | 20px / 28px |  |
 | matched | tracking `invite.web.letterSpacing.body` | -0.4px | -0.4px |  |
@@ -160,7 +162,7 @@ is the platform UI face; Retro's Roslindale Display Narrow is narrower, so line 
 | matched | domain ink from row 369 (name baseline + `nameToDomain` 21) | 369 | 369 |  |
 | matched | background without a cover: `color.global.backgroundDeep` | #000000 | #000000 |  |
 | matched | background with a cover | `invite.web.layout.backdrop`: σ = 0.08 × 600 = 48 px under `color.global.backdropDim` | σ 48 px (sharp Gaussian, float precision) + rgba(0, 0, 0, 0.224) layer (og-cover.png) | Retro's own field is also darker overall (its profile photo is darker than this cover): photo-dependent |
-| approximated | name face | `font.global.display`, ≈ 52 px; weight not measurable (Gap) | Noto Serif Regular 52 px (bundled, OFL) | Retro's OG name reads bold; the display role's weight (regular) is used |
+| matched | name face | `font.global.display`; ink height 40 px for an ascender word | Roboto Serif Title (`font.global.display`, bundled TTF, OFL), sized so an ascender word's ink is 40 px | the title cut matched to Roslindale Retro (L-8); the token's “≈ 52 px” was Roslindale's size estimate, the 40-px ink is the measurement kept |
 | matched | domain line | `font.global.family` 20 px, white ≈ 70 % (#BBC5C9 over Retro's navy) | Inter 20 px, #FFFFFF at 0.7 (brightest 179 on black = #B3B3B3) | colour over a black field; Retro's reading includes its backdrop |
 | approximated | cover circle when there is no cover | not specified | `invite.web.color.avatarPlaceholder` circle | the page's no-photo avatar |
 
@@ -172,7 +174,7 @@ Large text = 24 CSS px, or 18.66 CSS px bold (WCAG's 18 pt / 14 pt). Sourced val
 
 | pair | colours | ratio | needs | result |
 |---|---|---|---|---|
-| headline (32 px regular, color.global.textOnMedia) | #FFFFFF on #4A1D17 | 14.20:1 | 3:1 (large) | pass |
+| headline (34.4 px regular, color.global.textOnMedia) | #FFFFFF on #4A1D17 | 14.20:1 | 3:1 (large) | pass |
 | line (14 px, invite.web.color.body) | #BAA9A7 on #4A1D17 | 6.30:1 | 4.5:1 (text) | pass |
 | 'Let's go' label (16 px 600) on invite.web.color.pill | #FFFFFF on #6E4A45 | 7.67:1 | 4.5:1 (text) | pass |
 | 'Let's go' label on invite.web.color.pillHover | #FFFFFF on #81615D | 5.52:1 | 4.5:1 (text) | pass |
@@ -183,7 +185,7 @@ Large text = 24 CSS px, or 18.66 CSS px bold (WCAG's 18 pt / 14 pt). Sourced val
 
 | pair | colours | ratio | needs | result |
 |---|---|---|---|---|
-| headline (32 px regular, color.global.textOnMedia) | #FFFFFF on #311D0B | 16.04:1 | 3:1 (large) | pass |
+| headline (34.4 px regular, color.global.textOnMedia) | #FFFFFF on #311D0B | 16.04:1 | 3:1 (large) | pass |
 | line (14 px, invite.web.color.body) | #B1A9A2 on #311D0B | 6.92:1 | 4.5:1 (text) | pass |
 | 'Let's go' label (16 px 600) on invite.web.color.pill | #FFFFFF on #5A4A3C | 8.46:1 | 4.5:1 (text) | pass |
 | 'Let's go' label on invite.web.color.pillHover | #FFFFFF on #6F6155 | 5.96:1 | 4.5:1 (text) | pass |
@@ -194,7 +196,7 @@ Large text = 24 CSS px, or 18.66 CSS px bold (WCAG's 18 pt / 14 pt). Sourced val
 
 | pair | colours | ratio | needs | result |
 |---|---|---|---|---|
-| headline (32 px regular, color.global.textOnMedia) | #FFFFFF on #000000 | 21.00:1 | 3:1 (large) | pass |
+| headline (34.4 px regular, color.global.textOnMedia) | #FFFFFF on #000000 | 21.00:1 | 3:1 (large) | pass |
 | line (14 px, invite.web.color.body) | #9E9E9E on #000000 | 7.84:1 | 4.5:1 (text) | pass |
 | 'Let's go' label (16 px 600) on invite.web.color.pill | #FFFFFF on #333333 | 12.63:1 | 4.5:1 (text) | pass |
 | 'Let's go' label on invite.web.color.pillHover | #FFFFFF on #4D4D4D | 8.45:1 | 4.5:1 (text) | pass |
@@ -205,7 +207,7 @@ Large text = 24 CSS px, or 18.66 CSS px bold (WCAG's 18 pt / 14 pt). Sourced val
 
 | pair | colours | ratio | needs | result |
 |---|---|---|---|---|
-| headline (48 px regular, color.global.textPrimary) | #000000 on #FFFFFF | 21.00:1 | 3:1 (large) | pass |
+| headline (51.5 px regular, color.global.textPrimary) | #000000 on #FFFFFF | 21.00:1 | 3:1 (large) | pass |
 | line (20 px, invite.web.color.bodyDesktop) | #7F7F7F on #FFFFFF | 4.00:1 | 4.5:1 (text) | **FAIL** |
 | 'Download the app' (17 px, color.global.textPrimary) | #000000 on #FFFFFF | 21.00:1 | 4.5:1 (text) | pass |
 | footer links (14 px, invite.web.color.bodyDesktop) | #7F7F7F on #FFFFFF | 4.00:1 | 4.5:1 (text) | **FAIL** |
@@ -224,5 +226,5 @@ In development the server logs the failing pairs of each invite's own backdrop.
 - **App mark on the card**: none (owner's mark, decision 0.2).
 - **Document title**: `invite.web.documentTitle` is BLOCKED until the app is named.
 - **"Full" state**: not a web state in the spec; a full group is reported by `join_group` in the App Clip / app.
-- **Share-image glyph coverage**: the bundled Noto Serif / Inter cover Latin, Greek and Cyrillic; other scripts and emoji in
+- **Share-image glyph coverage**: the bundled Roboto Serif Title / Inter cover Latin, Greek and Cyrillic; other scripts and emoji in
   a group name need system fonts in the container (fonts.conf falls back to them; the slim image has none).

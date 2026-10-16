@@ -307,6 +307,18 @@
       "method": "CSS constant; re-fitted to the bundled face (L-8): 48 × (0.7625 ÷ 0.71) = 51.5",
       "level": "SOURCED"
     },
+    "invite.web.lineHeight.headlineDesktop": {
+      "type": "lineHeight",
+      "value": 48,
+      "unit": "pt",
+      "source_app": "Retro",
+      "surface": "invite.web",
+      "element": "desktop page: headline line height (font.global.displayNarrow at invite.web.fontSize.headlineDesktop)",
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt computed styles (/u/nathan desktop 1440: h1 48px/48px); references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css .page_newProfilePageContent h1 under the body{line-height:1} reset (retro.app-c857ab11667cdfc8.css)",
+      "method": "CSS constant",
+      "level": "SOURCED",
+      "notes": "Keeps Retro's line pitch now that the size is re-fitted to the bundled face (48 → 51.5, MERGE_DECISIONS L-8); line-height 1 would give 51.5."
+    },
     "invite.web.size.headlineTopDesktop": {
       "type": "dimension",
       "value": 70,

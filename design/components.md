@@ -463,6 +463,8 @@ colour palette and the initials' type are not measurable (chromatic colours from
 **Accessibility.** Decorative next to a visible name (hidden from assistive technology); alone, labelled with
 the name. **Evidence.** ED-W3, ED-A, ST-01, ST-02, TC-1B, TC-2B; RV §4 #11.
 
+
+**Fallback on control-filled containers.** Inside a grouped row (whose fill is `color.global.control`), the placeholder circle uses `color.global.controlRaised` — the next step of Retro's control scale — so it stays visible in both appearances (Pass 5 review; both platforms set it from the grouped container).
 ## C-24 Badges: "new" and unread dot
 
 | part | token |

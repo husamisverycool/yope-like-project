@@ -68,9 +68,11 @@ struct AvatarView: View {
         }
     }
 
+    @Environment(\.avatarFallbackFill) private var fallbackFill
+
     private var fallback: some View {
         ZStack {
-            Circle().fill(Tokens.Colors.globalControl)
+            Circle().fill(fallbackFill)
             Image(systemName: placeholderIcon)
                 .foregroundStyle(Tokens.Colors.globalTextSecondary)
         }
@@ -138,4 +140,11 @@ struct AvatarStack: View {
         }
         .accessibilityHidden(true)
     }
+}
+
+extension EnvironmentValues {
+    /// Fill behind an avatar's placeholder glyph: `color.global.control`, raised to `color.global.controlRaised` inside
+    /// containers that are themselves filled with `color.global.control` (grouped rows), so the circle stays visible
+    /// there (C-23).
+    @Entry var avatarFallbackFill: Color = Tokens.Colors.globalControl
 }

@@ -9,12 +9,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
@@ -27,6 +29,12 @@ import androidx.compose.ui.unit.Dp
 import app.designsystem.generated.Tokens
 import app.ui.foundation.PageRoles
 import coil3.compose.AsyncImage
+
+/**
+ * Fill behind an avatar's fallback glyph: null = `color.global.control`; containers that are themselves filled with the
+ * control colour (grouped rows) provide `color.global.controlRaised` so the circle stays visible on them (C-23).
+ */
+val LocalAvatarFallbackFill = staticCompositionLocalOf<Color?> { null }
 
 /**
  * C-23 Avatar: a circle with the photo aspect-filled. Sizes (`size.global.*`): `avatarSmall` 22.6 (stack),
@@ -53,7 +61,7 @@ fun Avatar(
         modifier
             .size(size)
             .clip(shape)
-            .background(Tokens.Colors.globalControl, shape)
+            .background(LocalAvatarFallbackFill.current ?: Tokens.Colors.globalControl, shape)
             .then(
                 if (contentDescription != null) Modifier.clearAndSetSemantics { this.contentDescription = contentDescription }
                 else Modifier.clearAndSetSemantics { },

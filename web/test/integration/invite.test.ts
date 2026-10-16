@@ -138,7 +138,7 @@ describe("valid invite (local stack)", () => {
     const { app: a } = app();
     const res = await get(a, `/i/${g.token}`);
     expect(res.headers.get("cache-control")).toBe("private, max-age=60");
-    expect(res.headers.get("content-security-policy")).toMatch(/^default-src 'none'; img-src 'self'; style-src 'nonce-/);
+    expect(res.headers.get("content-security-policy")).toMatch(/^default-src 'none'; img-src 'self'; font-src 'self'; style-src 'nonce-/);
     expect(res.headers.get("x-content-type-options")).toBe("nosniff");
     expect(res.headers.get("referrer-policy")).toBe("no-referrer");
     expect(res.headers.get("x-robots-tag")).toBe("noindex, noimageindex");

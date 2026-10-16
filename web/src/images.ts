@@ -66,13 +66,13 @@ export async function backdropTone(jpeg: Buffer): Promise<Rgb> {
 // ---------- share image (invite.web.layout.ogImage) ----------
 
 // Fonts of the share image, the files the apps bundle (SIL OFL 1.1, in web/assets/fonts with their licences; no
-// Retro face is used): the name in font.global.displayNarrow — Roboto Serif Headline (ios value = its PostScript
-// name), the page headline's face (MERGE_DECISIONS L-8) — and the domain in font.global.family's Android value,
-// Inter. fonts.conf there makes them visible to librsvg (FONTCONFIG_FILE is read when fontconfig first initialises,
+// Retro face is used): the name in font.global.display, as invite.web.layout.ogImage names it — Roboto Serif Title
+// (ios value = its PostScript name), the heavier title cut matched to Roslindale Retro (MERGE_DECISIONS L-8), closer
+// to Retro's bold share-image name — and the domain in font.global.family's Android value, Inter. fonts.conf there makes them visible to librsvg (FONTCONFIG_FILE is read when fontconfig first initialises,
 // i.e. at the first text render), after the system fonts, which only supply missing glyphs.
 const FONT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "assets", "fonts");
 const FACES: Record<"display" | "text", { token: TokenName; platform: "ios" | "android"; value: string; family: string; file: string }> = {
-  display: { token: "font.global.displayNarrow", platform: "ios", value: "RobotoSerifHeadline-Regular", family: "Roboto Serif Headline", file: "RobotoSerifHeadline-Regular.ttf" },
+  display: { token: "font.global.display", platform: "ios", value: "RobotoSerifTitle-Regular", family: "Roboto Serif Title", file: "RobotoSerifTitle-Regular.ttf" },
   text: { token: "font.global.family", platform: "android", value: "Inter", family: "Inter Variable", file: "Inter-Variable.ttf" },
 };
 for (const f of Object.values(FACES)) {

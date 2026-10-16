@@ -14,6 +14,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -174,7 +175,9 @@ fun GroupedRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalCardNameGap),
         ) {
-            spec.leading?.invoke()
+            spec.leading?.let { leading ->
+                CompositionLocalProvider(LocalAvatarFallbackFill provides Tokens.Colors.globalControlRaised) { leading() }
+            }
             Column(Modifier.weight(1f)) {
                 Text(spec.title, style = TextRoles.body, color = titleColor)
                 if (spec.subtitle != null) Text(spec.subtitle, style = TextRoles.meta, color = secondary)

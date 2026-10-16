@@ -138,6 +138,7 @@ struct GroupedSection: View {
             }
             .background(Tokens.Colors.globalControl)
             .clipShape(DSShape.rounded(Tokens.Radii.globalGroupedRow))
+            .environment(\.avatarFallbackFill, Tokens.Colors.globalControlRaised)
         }
         .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
     }

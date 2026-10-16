@@ -1078,6 +1078,12 @@ tribute cards. Sizes are re-fitted so cap heights equal Retro's (Roboto Serif ca
 headerTitle 40 → 43, displayMedium 32 → 34.4, displaySmall 24 → 25.8, wordmark 64 → 71.4 (cap 50.7 pt measured),
 invite desktop headline 48 → 51.5; line heights stay Retro's. Licensing Roslindale (owner) remains the exact match.
 
+**L-9 — The paywall backdrop is a colour field (account review over C-34's recap blur).** Retro's paywall (PAY, RAW)
+shows a structure-free colour wash behind the plan card; edge-spread fits find no edge sharper than σ ≈ 100 px (8 % of
+the width). The recap's σ 1.8 pt (L-5) left the benefit photo readable behind the card. New token
+`layout.global.colourFieldBackdrop` (σ = 0.08 × the frame width, 3σ bleed, `color.global.backdropDim`) — the invite's
+measured ratio (L-6) — drives a shared `ColourFieldBackdrop` component on both platforms, used by the paywall.
+
 ---
 
 ## Redesign — Account (RA-*)

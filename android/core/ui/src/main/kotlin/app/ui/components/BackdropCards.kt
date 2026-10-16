@@ -50,6 +50,22 @@ fun BlurredBackdrop(photo: Any?, sigma: Dp = Tokens.Sizes.globalBackdropBlur, mo
 }
 
 /**
+ * A photo blurred to a colour field (`layout.global.colourFieldBackdrop`, MERGE L-9): Gaussian σ = [sigmaToWidth] × the
+ * frame width (edges clamped, so no bleed is needed), under `color.global.backdropDim`. Used where Retro shows a
+ * structure-free wash (paywall, invite card) — not the recap's mild blur ([BlurredBackdrop], L-5).
+ */
+@Composable
+fun ColourFieldBackdrop(
+    photo: Any?,
+    modifier: Modifier = Modifier,
+    sigmaToWidth: Float = Tokens.Layouts.GlobalColourFieldBackdrop.blurSigmaToWidth,
+) {
+    BoxWithConstraints(modifier.fillMaxSize()) {
+        BlurredBackdrop(photo, sigma = maxWidth * sigmaToWidth)
+    }
+}
+
+/**
  * `Modifier.blur` takes a "radius" r that hwui turns into a Gaussian σ = 0.57735·r + 0.5 px
  * (frameworks/base libs/hwui/utils/Blur.cpp, `Blur::convertRadiusToSigma`; PLATFORM), so a token σ is passed as
  * r = (σ − 0.5) / 0.57735.
