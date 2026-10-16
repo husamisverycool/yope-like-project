@@ -1,5 +1,5 @@
 {
-  "$comment": "Social surface group (redesign Pass 2 on Retro, 2026-10-16): chat.thread, chat.composer, chat.voice, chat.reactions, photo.viewer, walls.mine, walls.member, walls.browse, week.recap, week.edit, week.history, albums.list, albums.view. Only values Retro (or a mechanics reference) measured for these surfaces live here; everything else is a global.* token or a design/components.md component named in design/surfaces/<id>.md. Decisions: design/MERGE_DECISIONS.md → Redesign — Social (RS-*).",
+  "$comment": "Social surface group (redesign Pass 2 on Retro, 2026-10-16): chat.thread, chat.composer, chat.voice, chat.reactions, photo.viewer, viewer.selfiereaction (new-features consolidation, 2026-10-16), walls.mine, walls.member, walls.browse, week.recap, week.edit, week.history, albums.list, albums.view. Only values Retro (or a mechanics reference) measured for these surfaces live here; everything else is a global.* token or a design/components.md component named in design/surfaces/<id>.md. Decisions: design/MERGE_DECISIONS.md → Redesign — Social (RS-*).",
   "tokens": {
     "chat.thread.dimension.rowAvatarToText": {
       "type": "dimension",
@@ -1410,6 +1410,63 @@
       "level": "SOURCED",
       "precision": "±0.3 pt (JPEG render 2023)",
       "notes": "Retro's viewer avatar ring is the position indicator (3 of 4 → three quarters), not decoration; the components.md C-22 / C-23 'ring width not measured' gap is closed for the viewer. Decorative for VoiceOver / TalkBack: the position pill already names the position."
+    },
+    "viewer.selfiereaction.size.captureBorder": {
+      "type": "dimension",
+      "value": 3.4,
+      "unit": "pt",
+      "source_app": "BeReal",
+      "surface": "viewer.selfiereaction",
+      "element": "border of the live front-camera circle in the selfie-reaction capture layer, drawn outside the circular clip in color.global.backgroundDeep",
+      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t12.47s_instant-realmoji-capture.png (App Store App Preview of id1459645446, frame #375 at 1:1 screen scale, 2.2545 px/pt): border top 570.85→578.5 px, bottom 1340.5→1348.3 px (7.65–7.8 px), black (0–3) — design/research/selfie-reactions.md §2 'Measured values'",
+      "method": "half-maximum outer edge to inner edge on the row and column through the circle centre ÷ 2.2545 px/pt",
+      "level": "SOURCED",
+      "precision": "±0.5 pt (H.264 frame)",
+      "notes": "BeReal's border is black, the value of Retro's media black (color.global.backgroundDeep), so only the width is BeReal's. The capture layer has no Retro counterpart (MERGE_DECISIONS SR-4)."
+    },
+    "viewer.selfiereaction.layout.captureCircle": {
+      "type": "layout",
+      "value": {
+        "diameter": "screen width − 2 × size.global.screenMargin (361 at 393 pt; the camera.capture.layout.viewfinder width rule — BeReal's circle is 0.988 × its card)",
+        "centreX": "screen centre",
+        "centreY": "screen vertical middle (BeReal 425.6 of 852 pt = 0.4995 × height); when the panel is shorter than circle + ring + hint, the circle shrinks with its centre on the panel's middle",
+        "fill": "live front-camera preview, aspect-fill, circular clip",
+        "border": "viewer.selfiereaction.size.captureBorder in color.global.backgroundDeep, outside the clip",
+        "targetRing": "centred on the circle's bottom edge: outer diameter camera.capture.size.shutterOuter, stroke camera.capture.size.shutterRing, no disc, color.global.textSecondary (dark value on media)"
+      },
+      "source_app": "BeReal",
+      "surface": "viewer.selfiereaction",
+      "element": "live front-camera circle of the capture layer and the target ring centred on its bottom edge",
+      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t12.47s_instant-realmoji-capture.png (#375, 2.2545 px/pt): circle 762.5 px = 338.2 pt (0.988 × the 342.4-pt card), centre (434.0, 959.5) px = (192.5, 425.6) pt on an 852-pt screen; target ring centre y 1344.5 vs the border's bottom centre line 1344.4; BeReal's target ring 72.7 pt vs its own shutter 74.0 pt (design/research/bereal.md §2); help.bereal.com 17845941900445 'Drag your finger to the middle of the screen and release it once you're ready to capture' — design/research/selfie-reactions.md §2, §7",
+      "method": "composition: BeReal's placement (centre on the screen's vertical middle, ring on the circle's bottom edge) with Jolt's camera width rule (camera.capture.layout.viewfinder) and Jolt's shutter ring (BeReal's ring is its shutter's size)",
+      "level": "SOURCED",
+      "precision": "±0.5 pt",
+      "notes": "BeReal's grey card (#403934), 300-ms linear fade and white capture flash are not used (MERGE_DECISIONS SR-5, SR-6)."
+    },
+    "viewer.selfiereaction.layout.stack": {
+      "type": "layout",
+      "value": {
+        "anchor": "photo bottom-leading corner (for a letterboxed photo, the visible image's edges)",
+        "inset": "size.global.screenMargin on both axes",
+        "face": "size.global.avatarHeader (ring included), aspect-fill selfie",
+        "ring": {
+          "color": "color.global.textOnMedia",
+          "width": 2.0
+        },
+        "overlap": "size.global.avatarStackOverlap",
+        "maxVisible": "chat.reactions.count.clusterMaxVisible",
+        "order": "newest leading (chat.reactions.layout.clusterOrder)",
+        "zOrder": "each trailing face drawn over the one before it",
+        "counter": "none (no '+N', no number)",
+        "hitArea": "the whole stack is one button, at least size.global.minTouchTarget.*; a tap never advances the photo"
+      },
+      "source_app": "BeReal",
+      "surface": "viewer.selfiereaction",
+      "element": "selfie faces over the photo in photo.viewer",
+      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t14.20s_realmoji-stack.png (#427, 2026): stack at the image's bottom-left, newest at the leading end (#421–#423), each circle to the right drawn over the one to its left, 3 visible; references/auto/bereal/help/help-21088572284317_realpeople-realmoji-comments-3x.png (3x lossless, 2024): faces 16.3 pt from the photo's left and bottom edges, border 2.0–2.1 pt; references/auto/locket/store/locket-store-04.png (reactions at a photo's bottom-left, no numbers — design/research/locket.md l.423–457); design/components.md C-23 (stack, overlap 3, white ring); references/auto/retro/press/tc-2023-07-retro-2b.jpg (Retro viewer avatar ring 2.0 pt white, photo.viewer.layout.avatarRing) — design/research/selfie-reactions.md §3, §4, §7",
+      "method": "composition of Retro C-23 (overlap, white ring) and the C-22 header avatar size in BeReal's placement and order; inset = Retro's screen margin (BeReal 2024 lossless 16.3 / 16.3)",
+      "level": "SOURCED",
+      "notes": "Overlap and face size are Retro's (MERGE_DECISIONS SR-1, SR-2). Never a count (tenet 2)."
     },
     "chat.voice.dimension.waveform": {
       "level": "SOURCED",

@@ -1,7 +1,9 @@
-# `plans.page` — one plan: details, answers, who's coming, album (draft)
+# `plans.page` — one plan: details, answers, who's coming, album
 
-> **Draft, 2026-10-16.** Research: `design/research/plans.md`; data: `design/research/plans-data.md`. Copy keys are
-> proposals (not yet in `design/copy/*.json`); tokens are existing names only.
+Research: `design/research/plans.md`; data: `design/research/plans-data.md`; server: `docs/API.md` §14.2. Tokens:
+existing names only. Copy: `design/copy/plans.json` (`plans.page.*`) — canonical, with each string's evidence and level;
+pushes `notifications.push.plan*` in `design/copy/capture.json`. Decisions: `design/MERGE_DECISIONS.md` → New features
+(PL-*).
 
 Visual reference: Retro's **album detail** skeleton as used by `albums.view` / `groups.screen` (cover with its shadow,
 serif name centred, grey meta line, a row of C-06 capsules, sections, a 3-column dated grid). Mechanics: **Apple Invites**
@@ -72,7 +74,7 @@ Apple Invites' event-page order"`.
 | answer capsules | C-06 outline / primary, `haptic.global.select` | `plans.page.answer.*` | `answer_plan` / `clear_answer`; optimistic; failure reverts + toast `plans.page.error.answer` |
 | made by | C-16 + `body` | `plans.page.madeBy` | — |
 | list block | C-20 + C-23 + list formatter | `plans.page.going`, `.maybe` | → people sheet |
-| people sheet | C-29, C-14, C-16 | `plans.page.people.title`, `.going`, `.maybe`, `.cantGo` | rows are not tappable (no profile surface in scope) |
+| people sheet | C-29, C-14, C-16 | `plans.page.people.title`; sections `plans.page.going`, `plans.page.maybe`, `plans.page.people.cantGo` | rows are not tappable (no profile surface in scope) |
 | album | C-20 + C-21 | `plans.page.album` | cell → `photo.viewer` (album order); label → `albums.view` |
 
 ## States
@@ -110,47 +112,18 @@ Answer selection: `haptic.global.select` (both platforms; C-30 selection rule). 
 - Canceled: the strikethrough is announced through the line `plans.page.canceled` (strikethrough alone is not read).
 - Dynamic Type: title `largeTitle`, meta and names `subheadline`, capsules `subheadline` (labels may wrap to 2 lines at
   AX sizes; capsules grow in height — C rules).
-- Contrast: meta and names `textSecondary` on page **2.85:1 FAIL** light (CONTRAST failure 1, reported like every
-  `listSubtitle` line); capsule labels 21:1.
+- Contrast (`node tools/contrast.mjs`): meta and names `textSecondary` on the page 5.10:1 light / 7.37:1 dark (pass since
+  owner decision 20's #6E6E6E); capsule labels 21:1.
 
 ## Data & actions
 
 Reads `plans` (+ cover signed URL), `plan_answers` (RLS-filtered: Going / Maybe for all, Can't go for self + maker),
-`profiles` (first names, avatars), the plan's `albums` row and `album_items` → `posts` / `media` thumbnails. Writes
-`answer_plan`, `clear_answer`, `cancel_plan`, `restore_plan`. Realtime `group:<id>` `plan_*` events → refetch.
+`profiles` (first names, avatars), and the plan's photos — `plan_photos(p_plan_id)` (`docs/API.md` §14.2: the group's
+posts of the plan's local days; none for a cancelled plan; there is no `albums` row, so the "Photos" label's target is
+open — MERGE_DECISIONS "New features" → Problems found). Writes `answer_plan`, `clear_answer`, `cancel_plan`,
+`restore_plan`. Realtime: inserts and updates of `plans` and `plan_answers` → refetch.
 In: `groups.screen` plan row, `widget.countdown` (deep link), pushes `notifications.push.plan*`. Out: `plans.create`
 (edit), `albums.view`, `photo.viewer`.
-
-## Copy (proposed, English)
-
-| key | text | origin | pattern / source | level |
-|---|---|---|---|---|
-| `plans.page.answer.going` | Going | verbatim | Partiful (PF-W sheet), Apple (AI-S 04) | SOURCED |
-| `plans.page.answer.maybe` | Maybe | verbatim | same | SOURCED |
-| `plans.page.answer.cantGo` | Can't go | adapted | Partiful "Can't Go" → Retro sentence case (retro.voice.button) | SOURCED |
-| `plans.page.answer.groupLabel` | Your answer | new | platform.a11yLabel | SOURCED |
-| `plans.page.answer.clear` | Clear answer | new | platform.a11yLabel (verb first) | SOURCED |
-| `plans.page.madeBy` | Made by {first_name} | adapted | Apple "Hosted by {name}" / Partiful "Hosted by" — "hosted" dropped (no host role; tenet 3) | SOURCED |
-| `plans.page.going` | Going | verbatim | Apple guest-list section "Going" without its count (AI-S 07) | SOURCED |
-| `plans.page.maybe` | Maybe | verbatim | same | SOURCED |
-| `plans.page.people.title` | Who's Coming | new | retro.voice.title-case (sheet title); content of Apple "Guest List" | SOURCED |
-| `plans.page.people.cantGo` | Can't go | adapted | Partiful "Can't Go" | SOURCED |
-| `plans.page.album` | Photos | new | retro.voice.title-case section word; Apple "Shared Album" / Partiful "Photo Album" (the plan's album is already named after the plan) | SOURCED |
-| `plans.page.canceled` | Canceled | adapted | Apple "the event has been canceled" / Partiful "the event was canceled" (US spelling of both) | SOURCED |
-| `plans.page.menu.edit` | Edit Plan | adapted | Apple "Edit" + retro.voice.menu-labels; `plans.create.titleEdit` | SOURCED |
-| `plans.page.menu.cancel` | Cancel Plan | adapted | Partiful "Cancel Event" (PF-H image), Apple "Cancel Event" — noun swapped | SOURCED |
-| `plans.page.menu.restore` | Restore Plan | adapted | Apple "Restore Event" — noun swapped | VERIFIED |
-| `plans.page.cancel.title` | Cancel {plan_title}? | new | retro.voice.confirm (action question naming its object) | SOURCED |
-| `plans.page.cancel.message` | Everyone who's going or might go will be notified. | new | retro.voice.confirm (consequence in one line, "They will not be notified"); content: Apple "everyone on the guest list automatically receives a notification" | SOURCED |
-| `plans.page.cancel.confirm` | Yes, cancel | new | retro.voice.confirm ("Yes, delete") | SOURCED |
-| `plans.page.cancel.keep` | Keep Plan | new | retro.voice.button / title-case product object | SOURCED |
-| `plans.page.error.answer` | Couldn't save your answer | adapted | Retro "Couldn't send comment" (`media_viewer_comment_send_failed_*`) | SOURCED |
-| `plans.page.error.title` | Error loading plan. Tap here to try again. | adapted | Retro "Error loading friends. Tap here to try again." | SOURCED |
-| `plans.page.notFound.title` | Couldn't find plan | adapted | Retro "Couldn't find album" | SOURCED |
-| `plans.page.notFound.detail` | It may have been removed from the group. | new | retro.voice.explanation | SOURCED |
-| `plans.page.offline` | Could not connect. Check your connection and try again. | verbatim | `groups.create.offline` | SOURCED |
-| `plans.page.went` | — | — | past-tense list label: Partiful web shows "{n} Went" (count, do-not-copy); the word without a count is not evidenced as a label | BLOCKED |
-| `plans.page.back.accessibilityLabel`, `.more.accessibilityLabel`, `.cover.accessibilityLabel` | Back · More · Cover of {plan_title} | adapted | `groups.screen.back.*`, `albums.view.a11y.cover` | VERIFIED / SOURCED |
 
 ## Platform notes
 

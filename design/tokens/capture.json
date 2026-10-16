@@ -1,5 +1,5 @@
 {
-  "$comment": "Capture group (camera.*, widget.*, daily.*, collage.*, notifications.push) — redesign Pass 2 on Retro, 2026-10-16. Surface tokens exist only where Retro measured something specific to the surface (Postcard modal ST-03, recap preview ST-04, Rewind control row RWA/RWB, Glance widget APK/preview art) or where the mechanics reference defines the control (Locket shutter, BeReal dual image, worker composition). Everything else is a global token or a component (design/components.md) named in design/surfaces/*.md. Decisions: design/MERGE_DECISIONS.md 'Redesign — Capture (RC-*)'.",
+  "$comment": "Capture group (camera.*, widget.*, daily.*, collage.*, notifications.push) — redesign Pass 2 on Retro, 2026-10-16. Surface tokens exist only where Retro measured something specific to the surface (Postcard modal ST-03, recap preview ST-04, Rewind control row RWA/RWB, Glance widget APK/preview art) or where the mechanics reference defines the control (Locket shutter, BeReal dual image, worker composition). Everything else is a global token or a component (design/components.md) named in design/surfaces/*.md. Decisions: design/MERGE_DECISIONS.md 'Redesign — Capture (RC-*)'. camera.overnight added by the new-features consolidation (2026-10-16; MERGE_DECISIONS 'New features (ON-*)').",
   "tokens": {
     "camera.capture.layout.viewfinder": {
       "type": "layout",
@@ -255,6 +255,155 @@
       "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography (iOS Dynamic Type sizes: Callout 16 pt at Large)",
       "method": "nearest text style at the default size",
       "level": "PLATFORM"
+    },
+    "camera.overnight.layout.modeControl": {
+      "type": "layout",
+      "value": {
+        "component": "C-30 native segmented control (iOS Picker(.segmented), Android M3 SingleChoiceSegmentedButtonRow), drawn in the dark appearance on the media page; Android selection color.global.system.secondaryContainer (dark value)",
+        "width": "screen − 2 × size.global.screenMargin",
+        "top": "size.global.titleToContent below the header title baseline",
+        "toViewfinder": "size.global.sectionHeaderToContent (the viewfinder shrinks to fit, 3:4 kept)",
+        "height": "the platform control's (PLATFORM)",
+        "segments": [
+          "later",
+          "now"
+        ],
+        "default": "now",
+        "keep": "the choice holds while the camera stays in memory; Now again at every app launch",
+        "visibility": "shown in both modes so the layout does not jump",
+        "haptic": "haptic.global.select"
+      },
+      "source_app": "Retro",
+      "surface": "camera.overnight",
+      "element": "'9 AM · Now' mode control on the camera, between the header and the viewfinder",
+      "evidence": "references/auto/retro/press/tc-2023-12-recaps.png phone 1 (Retro 'Create Recap': system segmented control, full width inside the margins, between the header and the content); references/auto/dispo/store/dispo-store-X-1.png (Dispo 'DEVELOP 9AM · NOW' 2-segment control in the camera's top row, above the camera; 9AM selected); Dispo help 'Taking Photos on Dispo' ('decide whether you'd like your photos developed traditionally at 9 AM, or immediately') — design/research/overnight-and-questions.md §1, §7",
+      "method": "composition of Retro C-30 (TC-REC) in Dispo's segment order and position; default per MERGE_DECISIONS ON-1",
+      "level": "SOURCED",
+      "notes": "Dispo's palette (#B4CDE2 / #191D21), caps labels and the 'DEVELOP' header are not copied (ON-7). Default Now, not Dispo's 9AM (ON-1)."
+    },
+    "camera.overnight.layout.destinationPill": {
+      "type": "layout",
+      "value": {
+        "component": "C-09 pill on media",
+        "fill": "color.global.controlOnDeep",
+        "icon": "icon.global.group at size.global.iconSmall",
+        "label": "camera.overnight.destination.*, text role pill, color.global.textOnMedia, truncates at the end",
+        "height": "size.global.pillHeight",
+        "padding": "size.global.pillPaddingLeading / size.global.pillPaddingTrailing",
+        "iconGap": "size.global.pillIconGap",
+        "maxWidth": "viewfinder width − 2 × size.global.screenMargin",
+        "bottomInset": "camera.sendto.layout.messageField bottomInset (20.5 above the viewfinder bottom: the coach pill's slot; the video coach is never shown in 9 AM mode)",
+        "centred": true
+      },
+      "source_app": "Retro",
+      "surface": "camera.overnight",
+      "element": "destination pill on the viewfinder in 9 AM mode (which groups the next photos develop for)",
+      "evidence": "references/auto/retro/store/retro-store-03.png (Retro C-09 pill on a photo, 20.5 pt above its bottom — camera.sendto.layout.messageField); references/auto/dispo/help/help-4410178185492_userguide-nov21.png phone 2 (Dispo's chosen rolls shown on the camera's top bar) — design/research/overnight-and-questions.md §7",
+      "method": "composition of Retro C-09 on media in the coach-pill slot, carrying Dispo's roll chips",
+      "level": "SOURCED"
+    },
+    "camera.overnight.layout.destinationSheet": {
+      "type": "layout",
+      "value": {
+        "component": "C-29 native sheet (follows the appearance)",
+        "title": "camera.overnight.destination.title, text role sheetTitle",
+        "detail": "camera.overnight.destination.detail, text role body, color.global.textSecondary, at most 2 lines, size.global.screenMargin margins",
+        "rows": "camera.sendto.layout.recipientRow in the sheet's appearance colours",
+        "done": "C-08 text button in the toolbar (camera.overnight.destination.done)",
+        "default": "every group selected (owner decision 11, as camera.sendto)",
+        "keep": "app session",
+        "opens": "the first time 9 AM is chosen in an app session, and from the destination pill",
+        "nothingSelected": "Done switches the mode back to Now",
+        "noGroups": "camera.sendto empty state (C-27)"
+      },
+      "source_app": "Dispo",
+      "surface": "camera.overnight",
+      "element": "sheet that chooses the groups 9 AM photos develop for",
+      "evidence": "Dispo help 'Taking Photos on Dispo' (choose rolls before shooting; 'the selected roll(s) will be ready for you to shoot to') and Notion 'How do I use Dispo?' — URLs in references/auto/dispo/INDEX.md; docs/OWNER_DECISIONS.md #11 (default audience: every group) — design/research/overnight-and-questions.md §1.1, §7",
+      "method": "Dispo's roll-drawer mechanic drawn with camera.sendto's group rows in a C-29 sheet",
+      "level": "SOURCED"
+    },
+    "camera.overnight.layout.developingTile": {
+      "type": "layout",
+      "value": {
+        "component": "C-17 placeholder tile",
+        "size": "size.global.stripTileWidth × size.global.stripTileHeight",
+        "fill": "color.global.control",
+        "label": "camera.overnight.tile.label, text role tileLabel, color.global.textSecondary, centred horizontally and vertically",
+        "perGroup": 1,
+        "position": "groups.screen This week strip, just before the add tile (the newest position); also week.history (current week)",
+        "week": "the week the photos were taken",
+        "counter": "none (no number, no names)",
+        "notShown": "widgets, chat, photo.viewer"
+      },
+      "source_app": "Retro",
+      "surface": "camera.overnight",
+      "element": "one placeholder tile per group while photos develop",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png (Retro C-17 strip tiles incl. the placeholder fill color.global.control); references/auto/dispo/help/help-360097208771_library.png (Dispo: one 'photos developing' banner for all developing photos); references/auto/lapse/store/lapse-store-se-3.png (Lapse: marker centred in a developing tile) — design/research/overnight-and-questions.md §1.2 O-6, O-7",
+      "method": "composition of Retro C-17 placeholder; one tile (Dispo), label centred (Lapse)",
+      "level": "SOURCED",
+      "notes": "Lapse's per-photo tiles and lock glyph, Dispo's iridescent fields and both apps' numbers are not copied (ON-5)."
+    },
+    "camera.overnight.layout.reveal": {
+      "type": "layout",
+      "value": {
+        "time": "09:00",
+        "zone": "groups.time_zone",
+        "rule": "the first 09:00 after capture, wall clock (daylight-saving safe); a photo sent to groups in two zones reveals at each group's own 09:00",
+        "lateUpload": "a photo whose upload completes after its reveal time reveals on arrival",
+        "before": "nobody can read the photo before the reveal, the author included"
+      },
+      "source_app": "Dispo",
+      "surface": "camera.overnight",
+      "element": "when overnight photos develop",
+      "evidence": "Dispo App Store description (listing 4.6.0) 'Photos develop every day at 9am'; Dispo help 'wait for them to develop at 9 AM the next morning', Notion 'get access to your developed photos at 9 AM' (references/auto/dispo/INDEX.md) — design/research/overnight-and-questions.md §1.2 O-1",
+      "method": "documented reveal time; zone = the group's (groups.time_zone already drives invitations, weeks and on-this-day)",
+      "level": "SOURCED",
+      "notes": "Server: app_config overnight_reveal_local_time '09:00' (docs/API.md §14.3). The 08:59 edge is a reading of Dispo's text (ON-11)."
+    },
+    "camera.overnight.layout.push": {
+      "type": "layout",
+      "value": {
+        "perGroupPerReveal": 1,
+        "ios": "interruption level active (passive in quiet hours), thread = the group",
+        "androidChannel": "developed_photos (notifications.push.channel.developedPhotos.*), IMPORTANCE_DEFAULT",
+        "copy": "camera.overnight.push.title / .body",
+        "switch": "settings.notifications row camera.overnight.settings.row, default on",
+        "tap": "groups.screen of the group, then photo.viewer on the photos revealed at that time, oldest first, with the viewer's position badge",
+        "counter": "none"
+      },
+      "source_app": "Lapse",
+      "surface": "camera.overnight",
+      "element": "the one notification when a group's overnight photos develop",
+      "evidence": "references/auto/lapse/store/lapse-store-se-3.png (Lapse: one aggregated 'developed' banner per reveal); references/auto/lapse/store/lapse-store-03.png (developed photos reviewed one at a time, 'Your snaps · 2 of 9'); design/surfaces/daily.notification.md (interruption levels, tenet 5) — design/research/overnight-and-questions.md §1.2 O-8, O-9",
+      "method": "Lapse's aggregated alert and sequential review mapped onto Jolt's push levels and photo.viewer",
+      "level": "SOURCED",
+      "notes": "Payload and job: docs/API.md §14.3 (push.photos_developed). Lapse's count, caps and emoji are stripped."
+    },
+    "camera.overnight.layout.uploadQueue": {
+      "type": "layout",
+      "value": {
+        "offline": "capture works; the photo is stored in app storage and uploaded on reconnect; nothing extra is drawn on the camera",
+        "photoLibrary": "never written to the system photo library before its reveal",
+        "localFile": "deleted after upload",
+        "failure": "after retries: camera.sendto.error.sendFailed (C-26 toast on Android, announcement on iOS)"
+      },
+      "source_app": "Dispo",
+      "surface": "camera.overnight",
+      "element": "what the camera does with 9 AM photos it cannot upload yet",
+      "evidence": "Dispo help 360062068852 (capture works offline; 'cloud icon with an X' until the upload) — references/auto/dispo/INDEX.md; design/research/overnight-and-questions.md §1.1 'offline'",
+      "method": "Dispo's documented offline behaviour",
+      "level": "SOURCED"
+    },
+    "camera.overnight.layout.stackCards": {
+      "type": "layout",
+      "value": null,
+      "source_app": "Lapse",
+      "surface": "camera.overnight",
+      "element": "developing stack drawn in the camera's leading 64-pt slot in 9 AM mode (card size and fan)",
+      "evidence": "references/auto/lapse/store/lapse-store-01.png (stack bbox 111–419 × 2300–2580 px including its glow; also lapse-store-05, lapse-store-se-1) — design/research/overnight-and-questions.md §2, §9",
+      "level": "BLOCKED",
+      "notes": "Lapse's stack is measurable only as a whole (bounding box including its glow), so its cards and fan inside size.global.circleButtonLarge cannot be traced; until a capture closes it the leading slot stays empty in 9 AM mode (the library circle is hidden). Smallest capture: one raw screenshot of Lapse's stack and a 60 fps recording of its shutter press up to the stack update."
     },
     "camera.fromwidget.layout.target": {
       "type": "layout",
@@ -902,15 +1051,17 @@
         "reactions_replies": "IMPORTANCE_DEFAULT",
         "recap": "IMPORTANCE_DEFAULT",
         "birthday_request": "IMPORTANCE_DEFAULT",
-        "tribute": "IMPORTANCE_DEFAULT"
+        "tribute": "IMPORTANCE_DEFAULT",
+        "developed_photos": "IMPORTANCE_DEFAULT",
+        "plans": "IMPORTANCE_DEFAULT"
       },
       "source_app": "Material 3",
       "surface": "notifications.push",
       "element": "Android notification channels that carry the push texts (one per kind of event)",
-      "evidence": "android/core/push/src/main/kotlin/app/push/Notifications.kt (AppChannel); https://developer.android.com/develop/ui/views/notifications/channels (read 2026-10-16): ‘Create a channel for each type of notification you need to send.’, ‘Users can change these settings and decide which notification channels from your app can be intrusive or visible.’; names ≤ 40, descriptions ≤ 300 characters; importance immutable",
+      "evidence": "android/core/push/src/main/kotlin/app/push/Notifications.kt (AppChannel); https://developer.android.com/develop/ui/views/notifications/channels (read 2026-10-16): ‘Create a channel for each type of notification you need to send.’, ‘Users can change these settings and decide which notification channels from your app can be intrusive or visible.’; names ≤ 40, descriptions ≤ 300 characters; importance immutable; design/surfaces/camera.overnight.md (channel developed_photos, default importance); design/research/plans.md §7 (one Plans channel for the plan pushes)",
       "method": "existing channel ids; platform rule",
       "level": "PLATFORM",
-      "notes": "AppChannel.YearStory has no event the worker sends (backend/worker/COPY_KEYS.md) → no channel copy; owner decision whether to register it."
+      "notes": "AppChannel.YearStory has no event the worker sends (backend/worker/COPY_KEYS.md) → no channel copy; owner decision whether to register it. developed_photos and plans added by the new-features consolidation (2026-10-16): default importance like every event channel except the daily invitation (MERGE_DECISIONS ON-9, PL-12)."
     },
     "notifications.push.layout.ios": {
       "type": "layout",

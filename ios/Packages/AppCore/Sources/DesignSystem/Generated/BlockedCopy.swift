@@ -5,6 +5,10 @@ import Foundation
 
 /// BLOCKED strings: DEBUG builds only.
 public enum BlockedCopy {
+    /// "Went" — Partiful · plans.page · adapted · BLOCKED
+    public static var plansPageWent: String { CopyLookup.string("plans.page.went", default: "Went") }
+    /// "No plans yet. Tap to make one" — Retro · widget.countdown · new · BLOCKED
+    public static var widgetCountdownEmptyNoPlans: String { CopyLookup.string("widget.countdown.empty.noPlans", default: "No plans yet. Tap to make one") }
     /// "Jolt" — Retro · year.story · new · BLOCKED
     public static var yearStoryCardApp: String { CopyLookup.string("year.story.card.app", default: "Jolt") }
 }

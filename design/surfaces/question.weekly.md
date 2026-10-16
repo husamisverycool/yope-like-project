@@ -1,8 +1,10 @@
-# question.weekly — one light question for the group each week (DRAFT)
+# `question.weekly` — one light question for the group each week
 
-> **Draft, 2026-10-16.** Proposed tokens and copy live **only in this file** until a consolidation pass moves them into
-> `design/tokens/*.json` and `design/copy/*.json`. Research: `design/research/overnight-and-questions.md` (OQ) §3–§4.
-> Backend: `design/research/overnight-and-questions-data.md` §5–§7.
+Research: `design/research/overnight-and-questions.md` (OQ) §3–§4; data: `design/research/overnight-and-questions-data.md`
+§5–§7; server: `docs/API.md` §14.4. Tokens: `design/tokens/account.json` (`question.weekly.*`) + `global.*`. Copy:
+`design/copy/account.json` (`question.weekly.*`; the question catalogue is `question.weekly.q01` … `q09`, the keys the
+server stores in `app_config.weekly_question_keys`). The JSON files are canonical (values, evidence, levels). Decisions:
+`design/MERGE_DECISIONS.md` → New features (WQ-1 … WQ-7).
 
 **Visual reference: Retro** — the question is a **feed card in the group screen's pager** (`groups.screen` §8, the
 same pager and card geometry as the on-this-day and year-story cards: C-18, `layout.global.photoScrim`, display text
@@ -60,7 +62,7 @@ card alone. Card geometry: `size.global.friendCardWidth` × `.friendCardHeight` 
   text role `pill`, `color.global.textOnMedia`, width up to the viewfinder width − 2 × `size.global.screenMargin`, one
   line, truncated) — BeReal shows its prompt over the capture screen (bereal.md §2).
 - Shutter or library pick → `camera.sendto` with **this group preselected** and the others unselected; the post to this
-  group carries the question (`p_question_id`); posts to other groups do not.
+  group carries the question (`answer_question`, Data & actions); posts to other groups do not.
 - Switching to **9 AM** drops the question context (the pill disappears); answering is an ordinary photo flow.
 - Answers are allowed any time during the question's week; more than one per member is allowed (Retro and Apple set no
   limit).
@@ -81,7 +83,7 @@ action hides only one card for one week).
 ### E. Turning it off for the group
 
 A switch in `groups.settings` (`question.weekly.settings.row` / `.rowDetail`), with the same permission as the group's
-other settings. **Default for new groups: BLOCKED (lead decision)** — Apple asks at first launch; Retro asks the reminder
+other settings. **Default for new groups: BLOCKED (lead decision, `question.weekly.layout.defaultOn`)** — Apple asks at first launch; Retro asks the reminder
 cadence during onboarding.
 
 ## Elements
@@ -141,9 +143,11 @@ Button, pill, card: `haptic.global.tap` (Android). Long press: `haptic.global.lo
 
 ## Data & actions
 
-- Reads: `current_group_question(group_id)` → `{id, question_key, week_start, hidden_by_me}` (data note §5);
-  answers = `posts` where `question_id = id`, newest first, limit 1 for the card, all for the viewer.
-- Writes: `create_post(…, p_question_id)` (data note §6); `hide_group_question(id)`; `update_group(p_weekly_question)`.
+- Reads: `current_group_question(p_group_id)` → `(id, question_key, week_start, hidden_by_me)` (`docs/API.md` §14.4; no
+  row when the feature is off or no catalogue is configured); answers = `posts` where `question_id = id`, newest first,
+  limit 1 for the card, all for the viewer.
+- Writes: `answer_question(p_post_id, p_question_id)` after posting (links the post in this group to the question during
+  its week); `hide_question(p_question_id)` ("Remove"); `set_group_weekly_question(p_group_id, p_on)` (the switch).
 - Realtime: `posts` inserts on `group-<id>` (existing) refresh the card's photo.
 - In: `groups.screen`. Out: `camera.capture` (question context), `camera.sendto`, `photo.viewer`, `groups.settings`.
 - No push is sent for the question (OQ Q-5).
@@ -154,44 +158,12 @@ Button, pill, card: `haptic.global.tap` (Android). Long press: `haptic.global.lo
   `DropdownMenu`.
 - The question text comes from the app's copy (localised) by `question_key`; the server stores only the key.
 
-## Proposed tokens (not yet in `design/tokens/*.json`)
-
-| key | type | value | level | evidence / method |
-|---|---|---|---|---|
-| `question.weekly.layout.card` | layout | `{placement: "groups.screen pager, first feed card", geometry: "C-18", empty: {fill: "color.global.control", text: "displaySmall / font.global.displayNarrow / color.global.textPrimary", action: "C-06 primary"}, answered: {photo: "newest answer", scrim: "layout.global.photoScrim", text: "color.global.textOnMedia", action: "C-09 light pill"}, label: "listTitle above the card", maxLines: 4}` | SOURCED | composition of Retro feed cards (`groups.screen` §8; R-NUX: prompt cards in the home feed with one CTA) with Apple's eyebrow above the prompt (AJ2) |
-| `question.weekly.layout.schedule` | layout | `{cadence: "group week", zone: "groups.time_zone", start: "app_config.week_start_isodow 00:00", sameForAllMembers: true, push: "none", rotation: "BLOCKED (lead decision)"}` | SOURCED (rotation BLOCKED) | Retro weekly journal / ISO weeks; Apple notifications only on a user schedule (AJS) |
-| `question.weekly.layout.cameraPill` | layout | `{component: "C-09 on media", slot: "camera.sendto.layout.messageField", lines: 1}` | SOURCED | BeReal prompt over capture (bereal.md §2) in Retro's pill-on-photo slot (ST-03) |
-| `question.weekly.layout.defaultOn` | layout | — | **BLOCKED** | lead decision (Apple: opt-in at first launch; Retro: chosen at onboarding) |
-
-## Proposed copy (not yet in `design/copy/*.json`)
-
-| key | text | origin | pattern | evidence | level |
-|---|---|---|---|---|---|
-| `question.weekly.card.label` | This Week's Question | new | `retro.voice.title-case` (feature name) | Apple eyebrow "REFLECTION" names the feature (AJ2); Retro "This Week" (`weeks_ago_*`) | SOURCED |
-| `question.weekly.card.button` | Add a photo | adapted | `retro.voice.button` | Retro "Add a memory" (`nux_card_cta_what_to_share`), memory → photo | SOURCED |
-| `question.weekly.card.a11y` | This week's question: {question} | new | `retro.voice.sentence-case` | — (a11y label carrying the card's text) | SOURCED |
-| `question.weekly.card.a11y.answers` | See answers | new | `retro.voice.button` | Retro "View memories" (`home_rewind_upsell_feed_card_*`), verb + object | SOURCED |
-| `question.weekly.menu.remove` | Remove | verbatim | `platform.menuItem` / `retro.voice.menu-labels` | Apple Journal "tap Remove" (AJS) | VERIFIED |
-| `question.weekly.camera.a11y` | Answering: {question} | new | `retro.voice.sentence-case` | — | SOURCED |
-| `question.weekly.settings.row` | Weekly Question | new | `retro.voice.settings` | Retro settings rows (Title Case) | SOURCED |
-| `question.weekly.settings.rowDetail` | One light question for the group each week, answered with a photo. | new | `retro.voice.settings` | Retro "Show the neighborhood or city on photos you post with locations." | SOURCED |
-| `question.weekly.q01` | What made you laugh this week? | new | `retro.voice.prompt` | the feature brief's example; Retro prompt form (R-NUX) | SOURCED |
-| `question.weekly.q02` | Caught up with a friend this week? | adapted | `retro.voice.prompt` | Retro "Caught up with a friend?" (`nux_card_title_what_to_share_0`) + "this week" | SOURCED |
-| `question.weekly.q03` | Did something nice for yourself this week? | adapted | `retro.voice.prompt` | Retro `…_what_to_share_1` + "this week" | SOURCED |
-| `question.weekly.q04` | Ate something tasty this week? | adapted | `retro.voice.prompt` | Retro `…_what_to_share_3` + "this week" | SOURCED |
-| `question.weekly.q05` | Made something you're proud of this week? | adapted | `retro.voice.prompt` | Retro `…_what_to_share_5` + "this week" (straight apostrophe, `retro.voice.punctuation`) | SOURCED |
-| `question.weekly.q06` | Anything from this week you want to remember? | adapted | `retro.voice.prompt` | Retro "Anything from today you want to remember?" (`post_reminder_notification_message`), today → this week | SOURCED |
-| `question.weekly.q07` | What's something you love to do? | adapted | `retro.voice.prompt` | Apple "Think about something you love to do and why it brings you joy." (AJ2): imperative → question; the "why" dropped so a photo can answer it | SOURCED |
-| `question.weekly.q08` | What's something nice someone did for you this week? | new | `retro.voice.prompt` | Apple reflection themes "gratitude, kindness, purpose" (newsroom); Apple widget form "What's something nice …" (AJ7) | SOURCED |
-| `question.weekly.q09` | Where did you spend most of your time this week? | adapted | `retro.voice.prompt` | Retro "This is where you spent most of your time" (`retrospective_page_title_most_popular_places`), statement → question | SOURCED |
-
-Not used (tenet "Real, not performed" / light tone): Retro "Took a nice fit pic?", "Took a cute selfie?" (invite
-performance), "Something unfortunate happened?" (not light; could press for disclosure).
-
 ## Do-not-copy
 
 Apple Journal: streaks, insights, per-person refresh of the shared question, coral / lavender card fills, caps tracked
-eyebrow styling, the Journal icon. Retro: the "Post to see" lock, "Weeks Posted", NUX stock photos (`nux_card_*` art).
+eyebrow styling, the Journal icon. Retro prompts not used (tenet "Real, not performed" / light tone, WQ-6): "Took a nice
+fit pic?", "Took a cute selfie?" (invite performance), "Something unfortunate happened?" (not light; could press for
+disclosure). Retro: the "Post to see" lock, "Weeks Posted", NUX stock photos (`nux_card_*` art).
 BeReal: Bonus lock for late posters, "late" labels, in-capture instructions ("Smile now…"). Anywhere: "N answered",
 "waiting for {name}", "be the first", "last day to answer", reminders, badges on the card.
 
@@ -199,8 +171,8 @@ BeReal: Bonus lock for late posters, "late" labels, in-capture instructions ("Sm
 
 | item | status | smallest capture / decision |
 |---|---|---|
-| question rotation (order, repeats, per-group offset) | BLOCKED | lead decision; Retro shows its 8 prompts in a fixed order |
-| default on / off for new groups | BLOCKED | lead decision |
+| question rotation (order, repeats, per-group offset) | BLOCKED (`question.weekly.layout.rotation`, WQ-5) | lead decision; Retro shows its 8 prompts in a fixed order |
+| default on / off for new groups | BLOCKED (`question.weekly.layout.defaultOn`, WQ-4) | lead decision |
 | question shown in `photo.viewer` / `week.history` / recaps | BLOCKED (not shown) | one screenshot of any app labelling an answer photo with its prompt |
 | Retro's own prompt-card layout | not captured (strings + background only) | one iOS screenshot of Retro's "Ideas to share" card |
 | who may switch the feature off | follows `groups.settings` permissions | — |

@@ -1,8 +1,9 @@
-# `plans.create` — make a plan in a group (draft)
+# `plans.create` — make a plan in a group
 
-> **Draft, 2026-10-16.** Research: `design/research/plans.md`; data: `design/research/plans-data.md`. Not yet in
-> `docs/SURFACES.md`, `design/tokens/*.json` or `design/copy/*.json` — the copy keys below are proposals; tokens are
-> existing `global.*` / `groups.*` names only (no new visual value).
+Research: `design/research/plans.md`; data: `design/research/plans-data.md`; server: `docs/API.md` §14.2. Tokens:
+existing `global.*` / `groups.screen.*` names only (no new visual value). Copy: `design/copy/plans.json`
+(`plans.create.*`) — canonical, with each string's evidence and level. Decisions: `design/MERGE_DECISIONS.md` → New
+features (PL-*).
 
 Visual reference: Retro's **New Album** flow as already composed for `groups.create` step B (cover, C-07, C-12, C-05 on a
 C-29 page sheet). Mechanics: **Apple Invites** create-an-event (fields and their order, all-day option, edit with ✓ / ×)
@@ -89,42 +90,15 @@ no haptic on send — creating a plan is a send).
 - Rows: each row is one element read as label + value ("Date, Saturday, October 24"); All-day is a switch; place and note
   fields have labels from copy (the placeholder is not the label).
 - Dynamic Type: title field `body`, rows `subheadline`; the sheet scrolls; C-05 stays pinned.
-- Contrast: as `groups.create` (placeholder `textSecondary` on `control` **2.52:1 FAIL** light — CONTRAST failure 1).
+- Contrast: as `groups.create` — placeholder `textSecondary` on `control` 4.51:1 light / 5.31:1 dark (pass since owner
+  decision 20's #6E6E6E; `node tools/contrast.mjs`).
 
 ## Data & actions
 
-`create_plan` / `update_plan` (`design/research/plans-data.md`); cover upload to storage as group covers; after create →
-`plans.page` for the new plan; the group's members get one push (`notifications.push.planNew.*`).
-
-## Copy (proposed, English)
-
-| key | text | origin | pattern / source | level |
-|---|---|---|---|---|
-| `plans.create.entry` | Make a Plan | new | retro.voice.title-case (product-object button: "Create Album", "Send Postcard") | SOURCED |
-| `plans.create.title` | New Plan | adapted | Retro "New Album" (`journal_creation_flow_title`, APK-S) — noun swapped; Partiful "New Event" (PF-AP) | SOURCED |
-| `plans.create.titleEdit` | Edit Plan | adapted | `groups.create.titleEdit` "Edit Group" (Retro "Edit Profile") | SOURCED |
-| `plans.create.close.accessibilityLabel` | Close | verbatim | `groups.create.close.accessibilityLabel` (platform) | VERIFIED |
-| `plans.create.cover.add` | Add cover image | verbatim | Retro `journal_creation_profile_picture_primary_cta` via `groups.create.cover.add` | SOURCED |
-| `plans.create.cover.edit` | Edit cover image | verbatim | `groups.create.cover.edit` | SOURCED |
-| `plans.create.cover.accessibilityLabel` | Cover image | verbatim | `groups.create.cover.accessibilityLabel` | VERIFIED |
-| `plans.create.name.placeholder` | Name your plan | adapted | Retro "Name your album" (`journal_creation_name_placeholder`) — noun swapped | SOURCED |
-| `plans.create.name.accessibilityLabel` | Plan name | adapted | `groups.create.name.accessibilityLabel` "Group name" | SOURCED |
-| `plans.create.date` | Date | adapted | Apple "Date and Time" (AI-G) split into two rows | SOURCED |
-| `plans.create.date.none` | Choose | new | retro.voice.button ("Choose friends", RP §4.1) | SOURCED |
-| `plans.create.allDay` | All-day | verbatim | Apple "all-day event" (AI-G); iOS Calendar row "All-day" (PLATFORM) | VERIFIED |
-| `plans.create.time` | Time | adapted | Apple "Date and Time" | SOURCED |
-| `plans.create.place.placeholder` | Place name or address | adapted | Partiful "Place name, address, or link" (PF-AP t 7.250) — "link" dropped (place is plain text) | SOURCED |
-| `plans.create.note.placeholder` | Add a note… | adapted | Retro "Add a comment…" / "Add a caption…" (retro.voice.placeholder); Apple "Add Description" | SOURCED |
-| `plans.create.cta` | Create Plan | adapted | `groups.create.cta` "Create Group" (Retro "Create Album") | SOURCED |
-| `plans.create.save` | Save | verbatim | `groups.create.save` | SOURCED |
-| `plans.create.creating` | Creating… | verbatim | `groups.create.creating` (retro.voice.progress) | SOURCED |
-| `plans.create.error.failed` | Your plan wasn't created. Please try again. | adapted | `groups.create.error.failed` — noun swapped | SOURCED |
-| `plans.create.error.cover` | Your cover image didn't upload. Please try again. | verbatim | `groups.create.error.cover` | SOURCED |
-| `plans.create.error.tooLong` | Name too long | verbatim | `groups.create.error.tooLong` (Retro `error_full_name_too_long` pattern) | SOURCED |
-| `plans.create.offline` | Could not connect. Check your connection and try again. | verbatim | `groups.create.offline` | SOURCED |
-| `plans.create.discard.title` | Discard this plan? | new | retro.voice.confirm (action question naming its object: "Delete address?") | SOURCED |
-| `plans.create.discard.confirm` | Yes, discard | new | retro.voice.confirm ("Yes, delete", "Yes, go back") | SOURCED |
-| `plans.create.discard.cancel` | Cancel | verbatim | platform | PLATFORM |
+`create_plan(p_group_id, p_title, p_starts_at, p_all_day, p_place?, p_note?, p_cover_path?)` / `update_plan` (`docs/API.md`
+§14.2; no end time is sent — the server's optional `p_ends_at` has no row here); cover upload to storage as group covers;
+after create → `plans.page` for the new plan (the maker's answer starts as Going); the group's members get one push
+(`notifications.push.planNew.*`, channel "Plans" `notifications.push.channel.plans.*`).
 
 ## Do-not-copy
 

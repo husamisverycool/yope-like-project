@@ -47,6 +47,15 @@ playing, menu, share) · 26 sign-up landing · 27 paywall · 28 settings sheet �
 | `groups.invite` | Invite by link or from contacts | 14 (link sharing flow: cover sheet, black capsule, grouped menu with red destructive row, share targets), 8 ("Invite") | — |
 | `groups.screen` | Group screen (the group's photos, members, entry to chat, walls, week, settings) | 13 (album detail: cover, serif name, grey meta, outline pills, dated 3-column grid) + 2 (members' weeks as friend cards) | — |
 | `groups.settings` | Members (admin can remove), leave, mute, quiet hours, invitation hours / pause, report, block | 28 (settings sheet: grouped rows), 9 (people rows), 24 (native menu, red destructive) | Apple HIG / Material 3 (switches, pickers, alerts) |
+| `question.weekly` | One light question for the group each week, answered with a photo; the answers seen together; removable, no push, no tally | 2 (feed cards in the group screen's pager: C-18, scrim, C-09 light pill) + C-06; Retro "what to share" prompt cards (APK) | Retro prompt cards, Apple Journal (reflection prompts, Remove), BeReal (prompt over capture) |
+
+## Plans
+
+| id | surface | visual reference (Retro) | mechanics reference |
+|---|---|---|---|
+| `plans.create` | Make a plan in a group: cover, title, date / all-day / time, place (typed text), note | 12 / 13 (New Album flow as composed for `groups.create`: cover, C-07, C-12, C-05 on a C-29 sheet) | Apple Invites (create order, all-day), Partiful (New Event sheet, place row) |
+| `plans.page` | One plan: details, Going · Maybe · Can't go, who's coming (names, never a count), the plan's photos; edit, cancel, restore | 13 (album detail: cover, serif name, grey meta, C-06 capsules, 3-column grid), 9 (people rows) | Apple Invites (event page, cancel / restore), Partiful (answers, list visibility) |
+| `widget.countdown` | Home-screen widget: the next plan, in days (never hours) | 34 (Retro widgets: full-bleed photo, white stack bottom-trailing) as `widget.home.small` | Apple Invites widget ("count down the days"), Widgetsmith; WidgetKit / Glance (PLATFORM) |
 
 ## Posting
 
@@ -55,6 +64,7 @@ playing, menu, share) · 26 sign-up landing · 27 paywall · 28 settings sheet �
 | `camera.capture` | Opens to camera; one tap captures; Live Photo; video (premium) | no analog — media surface (black, C-11 glass / media circles, 22 Rewind controls layout) | Locket (camera), Yope |
 | `camera.sendto` | Choose one or more groups; optional caption and voice note; send (no mandatory edit) | 30 (composer sheet "Add to Your Week": Cancel / title / Update, strip, grid), 17 (postcard composer: "Add a message" pill, 60 pt capsule), 8 (avatar grid) | Locket, Yope (send-to flow) |
 | `camera.fromwidget` | Widget tap opens straight into the camera | no analog — as `camera.capture` | Locket |
+| `camera.overnight` | Camera mode "9 AM · Now": photos develop for the chosen groups at 9 AM in the group's time zone; nobody sees them before; one developing tile per group | 19 (native segmented control on black, TC-REC) on the `camera.capture` media surface; C-09 pill, C-17 placeholder tile, C-29 sheet | Dispo (switch, 9 AM reveal, shoot to rolls), Lapse (no preview, one alert, sequential review) |
 
 ## Photos coming to you
 
@@ -74,6 +84,7 @@ playing, menu, share) · 26 sign-up landing · 27 paywall · 28 settings sheet �
 | `chat.voice` | Voice message record + playback | no analog — composed of C-13, C-11, C-25 | Messages / WhatsApp, Yope |
 | `chat.reactions` | Any-emoji reactions on photos; never shown as numbers | 15 (reaction slot in the viewer footer; Retro's heart like is do-not-copy) | Locket (reactions) |
 | `photo.viewer` | Full photo: caption, voice note, reactions, reply, "I'm in this", delete, report, save | 15 (media viewer: black page, header avatar ring + name + "Week N", close, footer, comments, reply field), 24 (native menu) | Yope + Locket (actions) |
+| `viewer.selfiereaction` | React to a photo with a live front-camera selfie; faces on the photo's corner, never a count | 15 (media viewer) composed of C-09, C-11, C-16, C-22, C-23, C-29 | BeReal (Instant RealMoji) |
 
 ## Walls
 
@@ -128,4 +139,4 @@ playing, menu, share) · 26 sign-up landing · 27 paywall · 28 settings sheet �
 | `safety.report` | Report flow | 24 (native menu, red destructive) + Retro report sheet copy ("Why are you reporting this post?") | Apple HIG / Material 3 |
 | `safety.block` | Block flow | 24 + Retro confirm ("Block %1$s?") | Apple HIG / Material 3 |
 | `system.permissions` | System permission prompts and purpose strings | — | Apple HIG / Material 3 |
-| `notifications.push` | All push texts (daily invitation, new post, reaction/reply to you, recap ready, birthday request, tribute for you) | Retro notifications (post reminder, "%1$s just posted.", "%1$s commented on your post", "On This Week") | BeReal (daily timing), Locket (reaction content), Tribute / VidDay (birthday) |
+| `notifications.push` | All push texts (daily invitation, new post, reaction/reply to you, selfie reaction, recap ready, birthday request, tribute for you, plan made / tomorrow / changed / cancelled; photos developed is `camera.overnight`'s) | Retro notifications (post reminder, "%1$s just posted.", "%1$s commented on your post", "On This Week") | BeReal (daily timing), Locket (reaction content), Tribute / VidDay (birthday) |

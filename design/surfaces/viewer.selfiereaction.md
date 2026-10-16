@@ -1,8 +1,12 @@
-# `viewer.selfiereaction` — react to a photo with a live selfie (DRAFT, never a number)
+# `viewer.selfiereaction` — react to a photo with a live selfie (never a number)
 
-**Status: draft from research** (`design/research/selfie-reactions.md`, 2026-10-16). Tokens and copy below are
-**proposed**: they are not yet in `design/tokens/*.json` or `design/copy/*.json`, and the backend has no selfie
-reaction yet (see Data & actions). Lives inside `photo.viewer` next to the emoji reactions of `chat.reactions`.
+Lives inside `photo.viewer` next to the emoji reactions of `chat.reactions`. Research: `design/research/selfie-reactions.md`
+(2026-10-16). Tokens: `design/tokens/social.json` (`viewer.selfiereaction.*`) + `global.*`, `photo.viewer.*`,
+`chat.reactions.*`, `camera.capture.size.shutter*`. Copy: `design/copy/social.json` (`viewer.selfiereaction.*`); push
+`notifications.push.selfieReaction.*` in `design/copy/capture.json`; reused unchanged: `chat.reactions.list.removeHint`,
+`chat.reactions.a11y.add`, `photo.viewer.delete.cancel`, `camera.capture.denied.*`,
+`notifications.push.channel.reactionsReplies.*` (channel "Post Activity"). The JSON files are canonical (values, evidence,
+levels). Decisions: `design/MERGE_DECISIONS.md` → New features (SR-1 … SR-9). Server: `docs/API.md` §14.1.
 
 **Mechanics: BeReal's Instant RealMoji** — touch and hold the smiley, a live front-camera circle opens over the post,
 slide into the target ring, release to capture, and the selfie is sent at once and joins a stack of faces at the
@@ -175,57 +179,21 @@ No rising bubbles and no fly-to-stack (BeReal AP #413–#437; same rule as RS-8 
 | `color.global.textOnMedia` ring | the photo | nontext | photo-dependent | reported | face ring on the photo |
 | C-09 pill over the live image | the live image | — | camera-dependent | reported | pill is opaque, so its label pair above holds |
 
-## Copy (proposed — spec only)
+## Data & actions (`docs/API.md` §14.1)
 
-| key | text | origin | evidence | pattern | level |
-|---|---|---|---|---|---|
-| `viewer.selfiereaction.menu.react` | React with a selfie | adapted | AP 10.5 s title card "React with a RealMoji" and HC "React with RealMojis"; noun RealMoji (trademark) → "selfie" (BeReal Google Play: "a selfie and a frontal photo") | `retro.voice.menu-labels` | SOURCED |
-| `viewer.selfiereaction.coach.slideHere` | Slide here to react | verbatim | AP #375 | `retro.voice.coach` | SOURCED |
-| `viewer.selfiereaction.coach.slideToSend` | Slide in to send | verbatim | AP #375 | `retro.voice.coach` | SOURCED |
-| `viewer.selfiereaction.coach.tapRing` | Tap the circle to send | adapted | HC 7536240858653 "Tap the white button to capture your reaction"; "white button" → "circle" (Jolt's ring), "capture" → "send" (sent on capture, HC 17845941900445) | `retro.voice.coach` ("Tap to advance") | SOURCED |
-| `viewer.selfiereaction.activity.row` | {name} reacted with a selfie | new | `chat.reactions.activity.row` "{name} reacted {emoji}" with the emoji replaced by "with a selfie" | `messaging.reaction` | SOURCED |
-| `viewer.selfiereaction.activity.rowMine` | You reacted with a selfie | new | `chat.reactions.activity.rowMine` | `messaging.reaction` | SOURCED |
-| `viewer.selfiereaction.menu.remove` | Remove | new | HC 7545622582429 "Tap the option to delete" (author removes others'); Retro menu verbs | `retro.voice.menu-labels`, `platform.menuItem` | SOURCED |
-| `viewer.selfiereaction.menu.report` | Report Selfie | adapted | Retro "Report Post" (`photo.viewer.menu.report`, verbatim) with Post → Selfie; Retro's own casing kept (as "Add to Album", "Copy Link") | `retro.voice.menu-labels` | SOURCED |
-| `viewer.selfiereaction.remove.title` | Remove {name}'s selfie? | new | Retro confirm titles "Block %1$s?", "Delete address?" | `retro.voice.confirm` | SOURCED |
-| `viewer.selfiereaction.remove.message` | It will be removed from your photo. | new | `photo.viewer.delete.message` form ("It will be removed from …") | `retro.voice.confirm` | SOURCED |
-| `viewer.selfiereaction.remove.confirm` | Yes, remove | adapted | Retro "Yes, delete" (`photo.viewer.delete.confirm`), verb swapped | `platform.alertButton` | SOURCED |
-| `viewer.selfiereaction.error` | Couldn't send selfie | adapted | `chat.reactions.error` "Couldn't send reaction"; Retro "Couldn't send comment" | `retro.voice.error` | SOURCED |
-| `viewer.selfiereaction.a11y.action` | React with a selfie | adapted | same as `.menu.react` | `platform.a11yLabel` | SOURCED |
-| `viewer.selfiereaction.a11y.capture` | Take selfie | adapted | `camera.capture.a11y.shutter` "Take photo"; photo → selfie | `platform.a11yLabel` | SOURCED |
-| `viewer.selfiereaction.a11y.preview` | Front camera | new | names the live view; HIG labels name the element | `platform.a11yLabel` | SOURCED |
-| `viewer.selfiereaction.a11y.stack` | Selfie reactions: {names} | new | `chat.reactions.a11y.cluster` "Reactions: {emoji_names}" | `platform.a11yLabel` | SOURCED |
-| `viewer.selfiereaction.a11y.face` | {name}'s selfie | new | `photo.viewer.a11y.photo` "{name}'s photo, {date}" | `platform.a11yLabel` | SOURCED |
-| `viewer.selfiereaction.a11y.faceMine` | Your selfie | new | `photo.viewer.a11y.photoMine` "Your photo, {date}" | `platform.a11yLabel` | SOURCED |
-| `viewer.selfiereaction.a11y.sent` | Selfie sent | new | Retro confirmation lines "Saved!", "Copied!" (state line); no "!" in an announcement | `retro.voice.confirmation` | SOURCED |
-| `notifications.push.selfieReaction.title` | {group} | new | `notifications.push.reaction.title` | `retro.voice.push` | SOURCED |
-| `notifications.push.selfieReaction.body` | {name} reacted with a selfie to your post. | new | `notifications.push.reaction.body` "{name} reacted {emoji} to your post." | `messaging.reaction` | SOURCED |
-
-Reused unchanged: `chat.reactions.list.removeHint`, `chat.reactions.a11y.add`, `photo.viewer.delete.cancel`,
-`camera.capture.denied.*`, `notifications.push.channel.reactionsReplies.*` (channel "Post Activity").
-
-## Tokens (proposed — spec only)
-
-| token | value | level | evidence |
-|---|---|---|---|
-| `viewer.selfiereaction.size.captureBorder` | 3.4 pt | SOURCED | AP-375 border 7.65–7.8 px / 2.2545 |
-| `viewer.selfiereaction.layout.captureCircle` | {diameter: "screen − 2 × size.global.screenMargin", centreX: "screen centre", centreY: "screen vertical middle (0.4995 × height)", fill: "live front camera, aspect-fill", targetRing: "centred on the circle's bottom edge"} | SOURCED | AP-375; HC 17845941900445 |
-| `viewer.selfiereaction.layout.stack` | {anchor: "photo bottom-leading", inset: "size.global.screenMargin (both axes)", face: "size.global.avatarHeader", ring: {color: "color.global.textOnMedia", width: 2.0}, overlap: "size.global.avatarStackOverlap", maxVisible: "chat.reactions.count.clusterMaxVisible", order: "newest leading", zOrder: "trailing on top", counter: "none"} | SOURCED | AP-427, H-RP, LK, C-23, TC-2B |
-
-## Data & actions (needs backend work — nothing exists yet)
-
-- **Storage**: the selfie is a still JPEG uploaded under `u/<uid>/…` in the private `media` bucket (docs/API.md §7);
-  signed URLs only; square crop for the circle (resolution BLOCKED).
-- **New RPCs (proposal)**: `react_selfie(p_post_id, p_path) → selfie_reaction` (one row per post and user; a new call
-  replaces the old row and deletes the old object); `unreact_selfie(p_post_id)`; `remove_selfie_reaction(p_post_id,
-  p_user_id)` (post author only). Errors as `react`: `post_not_found`; plus `own_post`.
-- **Reads**: rows `(post_id, user_id, path, created_at)` with the `reactions` read rule (§5.10: members who can see the
-  post, minus blocks). Never a count (`Prefer: count` not requested, as §13).
-- **Report**: `report(p_target_kind, …)` needs a new `report_target_kind` value for a selfie reaction.
+- **Storage**: the selfie is a still JPEG uploaded first to `u/<uid>/selfies/<uuid>.jpg` in the private `media` bucket;
+  signed URLs only, readable by whoever can read its row; square crop for the circle (resolution BLOCKED).
+- **RPCs**: `react_with_selfie(p_post_id, p_image_path)` (one row per post and person; a new selfie replaces yours and
+  its old file is deleted; errors `post_not_found`, `invalid_image`, `own_post`); `remove_selfie_reaction(p_post_id,
+  p_user_id = null)` (yours, or anyone's on your own post; `not_allowed`).
+- **Reads**: `selfie_reactions(id, post_id, user_id, group_id, image_path, created_at)` with the `reactions` read rule
+  (members who can see the post, blocks hide both ways). Never a count.
+- **Report**: `report('selfie', <selfie_reactions.id>, reason)` → `safety.report`.
 - **Cascades**: removed with the reactor's account, with a block, and with the photo (`delete_media`).
-- **Push**: job `push.reaction` with the selfie strings, cancelled if the selfie is removed before it is sent; channel
-  "Post Activity".
-- **Realtime**: `reactions_changed` broadcast (or a sibling) → refetch the post's selfie rows.
+- **Push**: `push.selfie_reaction` (type `reaction`), once per person, with `notifications.push.selfieReaction.*`;
+  channel "Post Activity".
+- **Realtime**: inserts and updates published; removals arrive as the `reactions_changed` broadcast → refetch the
+  post's selfie rows.
 - **Navigation**: inside `photo.viewer`; a push opens `DeepLink.post(groupID:postID:)`. Selfies are never saved to the
   camera roll or shared out (owner decision 12).
 
@@ -255,7 +223,7 @@ WIDGETMOJI / BeReal, the wordmark and watermark; `5 min late`; double-tap to rea
 | selfie resolution / crop | BLOCKED (backend decision) | — |
 | hold timeout; release outside | outside = PLATFORM fill; timeout BLOCKED | 20-s recording: hold, slide out, release |
 | Android behaviour | iOS-only evidence | one Android recording of an Instant RealMoji |
-| reaction push wording | BeReal's not found; pattern-derived string above | one screenshot of the push after a friend reacts |
-| face overlap | conflict: Retro C-23 (3) used; BeReal 16.0 / Locket ≈ 12 pt step-derived overlaps are the alternative | lead decision in `design/MERGE_DECISIONS.md` |
+| reaction push wording | BeReal's not found; pattern-derived `notifications.push.selfieReaction.*` (SR-9) | one screenshot of the push after a friend reacts |
+| face overlap | resolved (MERGE_DECISIONS SR-1): Retro C-23 `size.global.avatarStackOverlap` (3); BeReal 16.0 / Locket ≈ 12 pt are the recorded alternatives | — |
 | armed-ring and landing curves | not used (Retro tokens instead); BeReal durations only | 60 fps recording |
 | author removal, report kind, selfie table | needs API changes (Data & actions) | — |

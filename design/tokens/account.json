@@ -1,5 +1,5 @@
 {
-  "$comment": "Account group (auth.*, onboarding.*, groups.*, settings.*, safety.*, system.permissions, paywall) — Redesign Pass 2 on Retro (docs/REDESIGN_BRIEF.md). Only values Retro measured for these surfaces, plus the platform rules they need; everything else is a global.* token or a component of design/components.md, named in design/surfaces/<id>.md. Conflicts: design/MERGE_DECISIONS.md → 'Redesign — Account (RA-*)'.",
+  "$comment": "Account group (auth.*, onboarding.*, groups.*, settings.*, safety.*, system.permissions, paywall) — Redesign Pass 2 on Retro (docs/REDESIGN_BRIEF.md). Only values Retro measured for these surfaces, plus the platform rules they need; everything else is a global.* token or a component of design/components.md, named in design/surfaces/<id>.md. Conflicts: design/MERGE_DECISIONS.md → 'Redesign — Account (RA-*)'. question.weekly added by the new-features consolidation (2026-10-16; MERGE_DECISIONS 'New features (WQ-*)').",
   "tokens": {
     "auth.phone.fontSize.wordmark": {
       "type": "fontSize",
@@ -408,6 +408,91 @@
       "element": "long-press menu on the group's photos",
       "evidence": "design/research/retro-visual.md §4 #20 (Retro keeps native menus; destructive items in #EA3337, TC-RWP); design/components.md C-29",
       "level": "PLATFORM"
+    },
+    "question.weekly.layout.card": {
+      "type": "layout",
+      "value": {
+        "placement": "groups.screen pager (§8), the first feed card, after the friend cards",
+        "geometry": "C-18: size.global.friendCardWidth × size.global.friendCardHeight, radius.global.card, layout.global.cornerStyle, size.global.cardGap between cards",
+        "label": "question.weekly.card.label above the card in the friend card's name slot: text role listTitle, color.global.textPrimary, size.global.cardHeaderGap to the card, from the card's leading edge, no glyph",
+        "empty": {
+          "fill": "color.global.control",
+          "text": "displaySmall / font.global.displayNarrow / color.global.textPrimary",
+          "action": "C-06 primary capsule (color.global.accent / color.global.onAccent, size.global.pillHeight)"
+        },
+        "answered": {
+          "photo": "newest answer, aspect-fill",
+          "scrim": "layout.global.photoScrim",
+          "text": "color.global.textOnMedia",
+          "action": "C-09 light pill (color.global.surfaceLight / color.global.onSurfaceLight, text role pill)"
+        },
+        "inset": "size.global.screenMargin at the bottom: question, then size.global.pillGap, then the action",
+        "maxLines": 4,
+        "counter": "none (no names, no number of answers, no 'you answered' mark)"
+      },
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "element": "weekly question card in the group screen's pager",
+      "evidence": "design/surfaces/groups.screen.md §8 (feed cards: C-18 geometry, layout.global.photoScrim, C-09 light pill); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `nux_card_title_what_to_share_0..7`, `nux_card_cta_what_to_share` 'Add a memory' and references/auto/retro/apk/nux_card_what_to_share_0.webp (prompt cards in Retro's feed: one CTA, dark bottom gradient); references/auto/apple-journal/store/journal-store-iPhone_2_Suggestions.png (Apple Journal REFLECTION card: eyebrow naming the feature above the prompt) — design/research/overnight-and-questions.md §3, §7",
+      "method": "composition of Retro's feed card (C-18), C-17 placeholder fill, C-06 primary capsule and C-09 light pill in Apple Journal's eyebrow → prompt → action order",
+      "level": "SOURCED",
+      "notes": "Apple's coral card, caps eyebrow and refresh glyph are not copied (WQ-2)."
+    },
+    "question.weekly.layout.schedule": {
+      "type": "layout",
+      "value": {
+        "cadence": "one question per group week",
+        "zone": "groups.time_zone",
+        "start": "app_config.week_start_isodow 00:00",
+        "sameForAllMembers": true,
+        "push": "none",
+        "answers": "ordinary posts of the group, any time during the week, more than one per member allowed",
+        "remove": "a member may hide the card for themselves until the next question"
+      },
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "element": "when the weekly question changes and who gets it",
+      "evidence": "Retro's weekly journal (ISO weeks, retro.voice.formats); Apple Journal notifications only on a schedule the person sets and 'touch and hold the suggestion, then tap Remove' (support.apple.com Journal pages, VERIFIED); BeReal one moment for everyone (design/research/bereal.md §2) — design/research/overnight-and-questions.md §3.1 Q-1, Q-5, Q-6",
+      "method": "Retro's week as the cadence; one shared question (BeReal) instead of Apple's per-person refresh",
+      "level": "SOURCED",
+      "notes": "Rotation is question.weekly.layout.rotation (BLOCKED)."
+    },
+    "question.weekly.layout.rotation": {
+      "type": "layout",
+      "value": null,
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "element": "order of the questions from week to week (order, repeats, per-group offset)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `nux_card_title_what_to_share_0..7` (Retro shows its 8 prompts in a fixed order); no reference rotates a weekly group question — design/research/overnight-and-questions.md §9",
+      "level": "BLOCKED",
+      "notes": "Lead decision. Split out of the draft's question.weekly.layout.schedule ('rotation: BLOCKED') so the schedule can ship. Server: app_config weekly_question_keys is NULL until decided, so no question is asked (docs/API.md §14.4)."
+    },
+    "question.weekly.layout.cameraPill": {
+      "type": "layout",
+      "value": {
+        "component": "C-09 pill on media",
+        "fill": "color.global.controlOnDeep",
+        "label": "the question, text role pill, color.global.textOnMedia, one line, truncated",
+        "slot": "camera.sendto.layout.messageField bottomInset (20.5 above the viewfinder bottom)",
+        "maxWidth": "viewfinder width − 2 × size.global.screenMargin",
+        "nineAm": "dropped when the camera switches to 9 AM (camera.overnight)"
+      },
+      "source_app": "BeReal",
+      "surface": "question.weekly",
+      "element": "the question shown on the camera while answering",
+      "evidence": "design/research/bereal.md §2 'On-screen prompts' (a prompt over the capture screen); references/auto/retro/store/retro-store-03.png (Retro pill on a photo in that slot) — design/research/overnight-and-questions.md §7",
+      "method": "BeReal's prompt-over-capture mechanic in Retro's pill-on-photo slot",
+      "level": "SOURCED"
+    },
+    "question.weekly.layout.defaultOn": {
+      "type": "layout",
+      "value": null,
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "element": "whether the weekly question is on for a new group",
+      "evidence": "Apple Journal: prompts opt-in at first launch; Retro: reminder cadence chosen during onboarding — design/research/overnight-and-questions.md §9",
+      "level": "BLOCKED",
+      "notes": "Lead decision; the references disagree and neither is a group setting. Server today: groups.weekly_question default off, turned on by an admin (docs/API.md §14.4)."
     },
     "groups.invite.size.coverWidth": {
       "type": "dimension",

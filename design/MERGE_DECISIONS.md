@@ -1451,3 +1451,114 @@ what was read) is no longer cited by any token or string; the research files `de
 Not in scope and left for the lead: Retro's values read from its decompiled Android APK
 (`references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt`) are still cited widely (colours, type, widget
 providers); decision 22 names only Locket.
+
+---
+
+## New features — selfie reactions, plans, countdown widget, overnight photos, weekly question (SR-*, PL-*, ON-*, WQ-*)
+
+Pass: new-features consolidation, 2026-10-16. Moves the values the six draft specs carried "only in this file" into the
+canonical files and finalises the specs. Owns: `design/tokens/social.json` `viewer.selfiereaction.*` (3 tokens) and
+`design/copy/social.json` `viewer.selfiereaction.*` (19 strings); `design/tokens/capture.json` `camera.overnight.*`
+(8 tokens) and the `developed_photos` / `plans` rows of `notifications.push.layout.channels`; `design/copy/capture.json`
+`camera.overnight.*` (17 strings) and `notifications.push.channel.developedPhotos.*` / `.plans.*` (4); the new
+`design/copy/plans.json` (`plans.create.*`, `plans.page.*`, `widget.countdown.*`, 60 strings); `design/tokens/account.json`
+`question.weekly.*` (5 tokens) and `design/copy/account.json` `question.weekly.*` (17 strings); the specs
+`design/surfaces/{viewer.selfiereaction, plans.create, plans.page, widget.countdown, camera.overnight, question.weekly}.md`;
+their rows in `docs/SURFACES.md` and in `design/copy-patterns.md` ("Which pattern governs which surface"); this section.
+Totals added: 16 tokens (13 SOURCED, 3 BLOCKED), 117 strings (107 SOURCED, 7 VERIFIED, 1 PLATFORM, 2 BLOCKED; 17 verbatim,
+41 adapted, 59 new). The push texts the server pass already made canonical (`notifications.push.selfieReaction.*`,
+`.planNew.*`, `.planTomorrow.*`, `.planChanged.*`, `.planCanceled.*`, `camera.overnight.push.*`) are unchanged.
+
+Inputs: the six drafts; `design/research/{selfie-reactions, plans, plans-data, overnight-and-questions,
+overnight-and-questions-data}.md`; `backend/worker/COPY_KEYS.md` (placeholder names); `docs/API.md` §14. Rule: Retro is
+the identity (colour, type, spacing, shape, motion, voice); each feature's mechanics reference keeps the mechanics
+(BeReal RealMoji; Apple Invites, Partiful and the countdown widgets; Dispo and Lapse; Retro's prompt cards and Apple
+Journal); a control Retro lacks keeps its mechanic's geometry (RC-3); when two references conflict on one surface, the
+reference assigned to that surface in `docs/SURFACES.md` wins; the tenets gate everything (CONVENTIONS §6).
+
+### Evidence gathered in this pass
+
+| what | source | used for |
+|---|---|---|
+| Contrast of the pairs the drafts quote | `node tools/contrast.mjs` (2026-10-16): `textSecondary` on `control` light 4.51:1, on the page light 5.10:1 (owner decision 20's #6E6E6E); `textOnMedia` on `controlOnDeep` 15.13:1; `textSecondary` on `controlOnDeep` 5.31:1; widget state tint on black 14.88:1; `control` vs page 1.13 / 1.39:1 (known C-17 failure); `backgroundDeep` vs `controlOnDeep` 1.39:1 | the drafts' "2.52:1 / 2.85:1 FAIL" lines in `plans.create` / `plans.page` predate decision 20 and were corrected; every other ratio in the six specs re-checked unchanged |
+| Retro string keys cited by the copy | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`: `home_invite_feed_card_cta` "Choose friends", `journal_profile_by_slug_does_not_exist_message` "Couldn't find album", `friends_tab_loading_error`, `media_viewer_comment_box_placeholder` "Add a comment…", `edit_address_delete_confirmation_*`, `edit_address_success_message` "Saved!", `weeks_ago_this_week` "This Week", `settings_description_lock_friend_requests` / `_neighborhood_captions`, `nux_card_*_what_to_share*`, `retrospective_page_title_most_popular_places` | `evidence` of the strings that the drafts cited by text only |
+| Server contract for the catalogue and placeholders | `backend/supabase/migrations/20261016000020_overnight_and_questions.sql` (`question_key ~ '^question\.weekly\.[a-z0-9]+$'`, `app_config.weekly_question_keys` NULL); `backend/worker/COPY_KEYS.md` placeholders `{name}`, `{group}`, `{title}`, `{time}`, `{when}`, `{place}` | key names `question.weekly.q01`…`q09`; PL-11 |
+
+### Conflicts and resolutions
+
+| # | topic | values and sources | resolution | rule / evidence | status |
+|---|---|---|---|---|---|
+| SR-1 | Face overlap in the stack | Retro C-23 `size.global.avatarStackOverlap` 3 pt (ED-W3 album rows, retro-visual §4 #10) vs BeReal 16.0 pt (step 26.6 pt on 42.6-pt faces, AP #427) vs Locket ≈12 pt (27-pt step on 39-pt items, AS-4) | 3 pt (`size.global.avatarStackOverlap`) | an overlap is a visual value → Retro; BeReal and Locket supply placement and order (mechanics) | resolved |
+| SR-2 | Face size | BeReal 42.6 pt (2026, AP #427) / 56.0 pt (2024, H-RP); Retro viewer avatar 40.7 pt | `size.global.avatarHeader` (40.7, ring included) | identity = Retro; BeReal 2026 within 2 pt | resolved |
+| SR-3 | Face ring | BeReal black 1.1–2.0 pt; Retro C-23 white stack ring, viewer ring 2.0 pt (TC-2B) | white `color.global.textOnMedia`, 2.0 | Retro colour; BeReal's lossless width is the same 2.0 | resolved |
+| SR-4 | Stack inset; capture-circle border | insets BeReal 6.0 / 15.2 pt (2026, H.264) vs 16.3 / 16.3 pt (2024, lossless 3x), Locket ≈17 / 20; border BeReal 3.4 pt black (no Retro counterpart) | inset `size.global.screenMargin` (16) on both axes; border `viewer.selfiereaction.size.captureBorder` 3.4 in `color.global.backgroundDeep` | lossless beats video and equals Retro's margin within 0.3 pt; a control Retro lacks keeps its mechanic's geometry (RC-3) in Retro's colour | resolved |
+| SR-5 | Target ring | BeReal 72.7 pt, 2.4-pt stroke, white ≈ 50 % (≈ its own 74.0-pt shutter) vs Jolt's shutter ring 86 / 4.5 | Jolt's shutter ring (`camera.capture.size.shutterOuter` / `.shutterRing`), no disc, `color.global.textSecondary` | BeReal's ring is its shutter; Jolt's shutter is the same control | resolved |
+| SR-6 | Layer look and motion | BeReal opaque #403934 card, 300-ms linear fade, 370–400-ms armed-ring growth, white capture flash, rising bubbles, fly-to-stack | `color.global.controlOnDeep` panel; `duration.global.fade` + `easing.global.standard`; armed ring `duration.global.crossfade`; no flash; face enters with `spring.global.playful` | identity = Retro; the effects are do-not-copy (RS-8 rule) | resolved |
+| SR-7 | Entry | BeReal: tap the smiley or double-tap the post; Instant = hold and slide | hold the add-reaction glyph (a tap keeps the emoji picker); context-menu item and accessibility action open tap mode; no double-tap | a viewer tap advances (`photo.viewer.layout.advance`); WCAG 2.2 SC 2.5.7 needs a single-pointer path (BeReal's own mood flow is tap-based) | resolved |
+| SR-8 | Mood set, unlock gate, counts | BeReal five stored moods + Instant; "Send 20 RealMoji to Unlock"; `RealMojis 5`, `+7`, `3+` | live selfies only, for everyone from the start; no number anywhere (stack, sheet, push, labels) | tenets 2 and 5 | resolved |
+| SR-9 | Reaction push | BeReal's RealMoji push text not found | `notifications.push.selfieReaction.*` (server pass) on the "Post Activity" channel | `messaging.reaction` pattern | resolved; a screenshot of BeReal's push would confirm |
+| PL-1 | Answer set and order | Apple Going · Not Going · Maybe; Partiful Going · Maybe · Can't Go | Going · Maybe · Can't go | Partiful (help 15525363, PF-W sheet); Retro Sentence case | resolved |
+| PL-2 | Answer control | Apple 80-pt segmented capsule, selected segment light, systemGreen label; Partiful 96-pt emoji circles (web) / one round button (app) | three C-06 capsules (`size.global.pillHeight`, `size.global.pillGap`), outline → primary on select; one tap commits | identity = Retro (C-06 toggle); one-tap commit = Partiful's app (PF-S 01) | resolved |
+| PL-3 | Who sees Can't go | Apple: guests see who is invited after replying; Partiful: guests see Going and Maybe, hosts see Can't Go | Can't go visible to its member and the plan's maker only | Partiful help 15525438; tenet 5 (an absence is not shown to the group) | resolved |
+| PL-4 | Reminders | Partiful events: Going 2 h before, Maybe / no answer "finalize your RSVP" 1 week before; Partiful Group Reminder: when added + 24 h before; Apple: none documented | one push when made (`planNew`), one 24 h before to Going + Maybe (`planTomorrow`) | Partiful Group Reminder (the lightweight plan, help 15774034); "finalize" and a second reminder fail tenet 5 | resolved |
+| PL-5 | Changes and cancel | Partiful: no notice for date changes, cancel notifies, no un-cancel; Apple: changes notified, cancel notifies, crossed-out name, restorable | changes and cancel notify Going + Maybe; "Restore Plan"; title struck through | Apple guide (VERIFIED); tenet 4 (nothing gets lost) | resolved |
+| PL-6 | Who edits and cancels | Apple host + co-hosts; Partiful Group Reminder anyone added | the plan's maker and group admins | Jolt's album rule (`albums.view`); no host role (tenet 3) | resolved |
+| PL-7 | "Hosted by" | Apple "Hosted by {name}"; Partiful "Hosted by" with a crown | "Made by {name}", no badge | tenet 3 | resolved |
+| PL-8 | Plan page type | Apple title ≈42 pt bold, date / place 17 pt (26.3 pitch); Retro album detail: serif `displayMedium`, `listSubtitle` 15 | Retro roles | identity = Retro | resolved |
+| PL-9 | Countdown widget layout | Apple Invites medium: square photo + text column, title ≈19–20 pt at 62 % white, countdown ≈24 pt bold; Widgetsmith full-bleed; Retro Glance: full-bleed photo + bottom-trailing stack | Retro anatomy at both sizes (`widget.home.small.*`), countdown in `displaySmall` (24) display face | identity = Retro; one layout at every size (RC-11); Apple's countdown line is the same 24 pt | resolved; Apple's split layout recorded in `plans.md` §9.1 for the owner |
+| PL-10 | Countdown wording | Apple "In 9 Days" (Title Case); Widgetsmith "4 DAYS"; countdown apps with hours / minutes / seconds | the platform relative formatter at day granularity, Sentence case ("In 3 days", "Tomorrow"); never hours or seconds | PLATFORM output, no typed string; `retro.voice.sentence-case`; SPEC_FLAGS T4 | resolved; the same-day word stays BLOCKED until a snapshot test pins it |
+| PL-11 | Placeholder names | drafts / research `{first_name}`, `{plan_title}`, `{group_name}`, `{date_time}` | `{name}`, `{title}`, `{group}`, `{when}` (`plans.page.madeBy`, `.cancel.title`, `.cover.accessibilityLabel`, `widget.countdown.a11y.plan`) | one vocabulary for app and worker (`backend/worker/COPY_KEYS.md`) | resolved |
+| PL-12 | Plans channel | research: one Android channel "Plans" for the four plan pushes; no id or importance stated | `notifications.push.channel.plans.*`; `notifications.push.layout.channels` `plans` = IMPORTANCE_DEFAULT | stored like the other channels; default importance as every event channel but the daily invitation (heads-up for the invitation only, `daily.ongoing`) | resolved |
+| PL-13 | Origin of strings reused from Jolt | drafts call copies of `groups.create.*` / `widget.home.small.*` strings "verbatim" or "adapted", but some sources are Jolt's own `new` strings | origin follows the source string: `plans.create.close.accessibilityLabel`, `.cover.accessibilityLabel`, `.name.accessibilityLabel`, `.error.failed`, `.error.cover`, `widget.countdown.configuration.group` are `new` with the source's pattern; levels as the drafts gave them | CONVENTIONS §4 (verbatim / adapted = a reference app's string) | resolved |
+| ON-1 | Default mode | Dispo: 9AM selected in every store image, "traditionally" in its help (DX1, DUG, DH-TP); Lapse: always delayed; `camera.capture` (mechanics reference Locket, docs/SURFACES.md): one tap captures and posts now | **Now**, at every app launch | the control sits on `camera.capture`, whose assigned reference posts at once; Dispo's default belongs to an app whose only camera is the delayed one; tenet 5 (a member who never touches the control never has a photo held back) | resolved; owner may choose Dispo's 9 AM |
+| ON-2 | Segment order | Dispo 9AM · NOW; Retro's TC-REC control does not put its selected segment first | "9 AM" · "Now", Now selected | Dispo (the only reference with the switch) | resolved |
+| ON-3 | Viewfinder | Dispo small 9:16 window in an illustrated body; Lapse full viewfinder | `camera.capture`'s viewfinder | Dispo's window is brand illustration (do-not-copy); Lapse shares with friends as Jolt does | resolved |
+| ON-4 | Review before sharing | Lapse: the author reviews developed snaps before they go anywhere; Dispo: shot to a roll, developed there for everyone | Dispo: revealed to the chosen groups at 09:00 | the feature's mechanic (a shared reveal) | resolved; risk F-2 (no delete before the reveal) → owner |
+| ON-5 | Developing placeholder | Lapse one tile per photo with a lock glyph; Dispo one banner "15 photos developing" | one C-17 tile per group, "Developing", no number, no names | tenets 2 / 3; Lapse's lock reads as Retro's "Post to see" (do-not-copy) | resolved |
+| ON-6 | Reveal time | Dispo 09:00 the next morning (documented); Lapse 24 h (2021 press) / hours (press) | 09:00 in the group's time zone, the first after capture | the only documented fixed time | resolved |
+| ON-7 | Control look | Dispo #B4CDE2 / #191D21, caps labels, 105.3 × 42.5 pt, "DEVELOP" header | C-30 native segmented control (TC-REC), no visible header (accessibility label "Develop") | identity = Retro | resolved; header comprehension → owner check |
+| ON-8 | Developing stack on the camera | Lapse stack in the leading slot, measurable only as a whole | `camera.overnight.layout.stackCards` BLOCKED; the slot stays empty | no traceable geometry | BLOCKED (capture) |
+| ON-9 | Channel copy keys | draft `camera.overnight.push.channel.name` / `.description` vs every channel string stored as `notifications.push.channel.<id>.*` (read by `android/app/…/AppNotificationChannels.kt`) | `notifications.push.channel.developedPhotos.*`; `notifications.push.layout.channels` `developed_photos` = IMPORTANCE_DEFAULT (the draft's "default importance") | one storage scheme for channel strings | resolved |
+| ON-10 | "9 AM" inside strings | draft texts "…photos taken for 9 AM…" with the note that the words are `{time}` | `{time}` in `camera.overnight.a11y.modeHint`, `.settings.rowDetail` and the channel description | the locale formats the time, as `camera.overnight.mode.later` | resolved |
+| ON-11 | Reveal edge | a photo taken at 08:59 reveals at 09:00 (first 09:00 after capture) vs the next day | first 09:00 after capture | a reading of Dispo's "9 AM the next morning" / "every day at 9am" | open (owner test in Dispo at 08:55) |
+| WQ-1 | Shared or personal question | Apple Journal: per-person prompts with refresh; BeReal: one moment for everyone | one question per group per week, the same for every member | "answers show together" needs one shared question | resolved |
+| WQ-2 | Card look | Apple REFLECTION card (#DD5A58, caps tracked eyebrow, refresh glyph, ≈14.5 corners); Retro prompt cards (photo + dark gradient, one CTA) | Retro feed card (C-18) in Apple's eyebrow → prompt → action order: label line above, question in `displaySmall`, C-06 primary / C-09 light pill | identity = Retro | resolved |
+| WQ-3 | Notifications | Apple: only on a schedule the person sets; Retro: member-chosen reminder cadence | no push for the question | tenet 5 (a second, unrequested alert) | resolved |
+| WQ-4 | Default for a new group | Apple: opt-in at first launch; Retro: cadence chosen during onboarding | `question.weekly.layout.defaultOn` BLOCKED | the references disagree and neither is a group setting | BLOCKED (lead) |
+| WQ-5 | Rotation | Retro's 8 prompts in a fixed order; no reference rotates a weekly group question | `question.weekly.layout.rotation` BLOCKED, split out of the draft's `question.weekly.layout.schedule` so the schedule (SOURCED) can ship | no evidence | BLOCKED (lead) |
+| WQ-6 | Question list | Retro's 8 NUX prompts include "Took a nice fit pic?", "Took a cute selfie?", "Something unfortunate happened?" | q02–q06 Retro (+ "this week"), q07–q08 Apple Journal, q01 the brief's example, q09 Retro's retrospective line; the three above not used | tenet "Real, not performed" and the light tone (OQ F-4) | resolved |
+| WQ-7 | Card action | Retro "Add a memory" | "Add a photo" | noun swap (answers are photos) | resolved |
+
+### BLOCKED items (debug-only outputs; `design/BLOCKED.md`)
+
+Tokens `camera.overnight.layout.stackCards` (ON-8), `question.weekly.layout.rotation` (WQ-5),
+`question.weekly.layout.defaultOn` (WQ-4); copy `plans.page.went` (past-plan list label: Partiful's word appears only as
+"{n} Went") and `widget.countdown.empty.noPlans` (no reference widget shows an empty plan state). Behaviour gaps with no
+proposed token stay in each spec's Gaps table: selfie enlarged view, stored-selfie mirroring, selfie resolution, hold
+timeout, Android capture layer; plan album day boundary, the same-day word (widget and plan page), answer-lock time,
+editing a past plan, capsule toggle motion, plan-row order on `groups.screen`; overnight reveal animation, capture →
+stack motion, a 9 AM capture haptic, "delete everything still developing"; the question inside `photo.viewer`.
+
+### Problems found (for other passes)
+
+- **Android channels (code):** `AppChannel` has no `DevelopedPhotos` / `Plans`; `AppNotificationChannels` and
+  `NotificationUi` should map them to `R.string.notifications_push_channel_developedphotos_*` (the description takes the
+  formatted 09:00 as its argument) and `R.string.notifications_push_channel_plans_*`, ids `developed_photos` and `plans`
+  (`Tokens.Layouts.NotificationsPushLayoutChannels`).
+- **Server (weekly question):** `groups.weekly_question` defaults off and `app_config.weekly_question_keys` is NULL
+  (docs/API.md §14.4), so nothing is asked — consistent with WQ-4 / WQ-5. When the lead decides, the list is
+  `question.weekly.q01` … `q09` (the migration's key check accepts them).
+- **Server (plans):** `create_plan` takes an optional `p_ends_at`; the design has no end-time row (research: not in the
+  brief). The create sheet sends none.
+- **Server (plan photos):** the research proposed an `albums` row per plan (`albums.plan_id`), so `plans.page`'s "Photos"
+  label opens `albums.view`; the server exposes `plan_photos(p_plan_id)` instead (no album row, docs/API.md §14.2). The
+  grid's cells still open `photo.viewer`; the label's target needs an album row or a lead decision.
+- **Server (overnight push):** `push.photos_developed` is sent as type `new_post` with the first photo's `post_id`
+  (docs/API.md §14.3); the spec's tap opens `groups.screen` and then the viewer on that reveal's photos, oldest first —
+  the app pass needs the reveal time on the client (the post's `revealed_at`).
+
+### Unresolved (owner, capture or verification)
+
+ON-1 (owner may prefer Dispo's 9 AM default), ON-4 / F-2 (no delete before the reveal), ON-7 (header label
+comprehension), ON-8, ON-11, WQ-4, WQ-5, PL-9 (Apple's split widget layout as the owner's alternative), PL-10 (same-day
+word), the two BLOCKED strings, and the captures listed in each spec's Gaps.

@@ -391,10 +391,44 @@ public enum Copy {
     public static var cameraCaptureUnavailableDetail: String { CopyLookup.string("camera.capture.unavailable.detail", default: "The camera couldn't start. Please try again.") }
     /// "Camera Unavailable" — Retro · camera.capture · new · SOURCED
     public static var cameraCaptureUnavailableTitle: String { CopyLookup.string("camera.capture.unavailable.title", default: "Camera Unavailable") }
+    /// "Photo taken. It develops {reveal}." — Dispo · camera.overnight · new · SOURCED
+    public static func cameraOvernightA11yCaptured(reveal: String) -> String { CopyLookup.format("camera.overnight.a11y.captured", default: "Photo taken. It develops {reveal}.", ["reveal": reveal]) }
+    /// "Choose which groups these photos develop for" — Dispo · camera.overnight · new · SOURCED
+    public static var cameraOvernightA11yDestinationHint: String { CopyLookup.string("camera.overnight.a11y.destinationHint", default: "Choose which groups these photos develop for") }
+    /// "Develop" — Dispo · camera.overnight · adapted · SOURCED
+    public static var cameraOvernightA11yMode: String { CopyLookup.string("camera.overnight.a11y.mode", default: "Develop") }
+    /// "Photos taken for {time} stay hidden from everyone, you too, until they develop." — Dispo · camera.overnight · new · SOURCED
+    public static func cameraOvernightA11yModeHint(time: String) -> String { CopyLookup.format("camera.overnight.a11y.modeHint", default: "Photos taken for {time} stay hidden from everyone, you too, until they develop.", ["time": time]) }
+    /// "Photos developing until {reveal}" — Lapse · camera.overnight · new · SOURCED
+    public static func cameraOvernightA11yStack(reveal: String) -> String { CopyLookup.format("camera.overnight.a11y.stack", default: "Photos developing until {reveal}", ["reveal": reveal]) }
+    /// "All groups" — Locket · camera.overnight · adapted · SOURCED
+    public static var cameraOvernightDestinationAll: String { CopyLookup.string("camera.overnight.destination.all", default: "All groups") }
+    /// "Photos you take now develop for these groups {reveal}." — Dispo · camera.overnight · new · SOURCED
+    public static func cameraOvernightDestinationDetail(reveal: String) -> String { CopyLookup.format("camera.overnight.destination.detail", default: "Photos you take now develop for these groups {reveal}.", ["reveal": reveal]) }
+    /// "Done" — Retro · camera.overnight · verbatim · SOURCED
+    public static var cameraOvernightDestinationDone: String { CopyLookup.string("camera.overnight.destination.done", default: "Done") }
+    /// "{group}" — Dispo · camera.overnight · new · SOURCED
+    public static func cameraOvernightDestinationOne(group: String) -> String { CopyLookup.format("camera.overnight.destination.one", default: "{group}", ["group": group]) }
+    /// "Selected groups" — Dispo · camera.overnight · new · SOURCED
+    public static var cameraOvernightDestinationSome: String { CopyLookup.string("camera.overnight.destination.some", default: "Selected groups") }
+    /// "Choose Groups" — Retro · camera.overnight · adapted · SOURCED
+    public static var cameraOvernightDestinationTitle: String { CopyLookup.string("camera.overnight.destination.title", default: "Choose Groups") }
+    /// "{time}" — Dispo · camera.overnight · adapted · SOURCED
+    public static func cameraOvernightModeLater(time: String) -> String { CopyLookup.format("camera.overnight.mode.later", default: "{time}", ["time": time]) }
+    /// "Now" — Dispo · camera.overnight · adapted · SOURCED
+    public static var cameraOvernightModeNow: String { CopyLookup.string("camera.overnight.mode.now", default: "Now") }
     /// "Photos have developed and are ready to view." — Lapse · camera.overnight · adapted · SOURCED
     public static var cameraOvernightPushBody: String { CopyLookup.string("camera.overnight.push.body", default: "Photos have developed and are ready to view.") }
     /// "{group}" — Retro · camera.overnight · adapted · SOURCED
     public static func cameraOvernightPushTitle(group: String) -> String { CopyLookup.format("camera.overnight.push.title", default: "{group}", ["group": group]) }
+    /// "Developed Photos" — Retro · camera.overnight · new · SOURCED
+    public static var cameraOvernightSettingsRow: String { CopyLookup.string("camera.overnight.settings.row", default: "Developed Photos") }
+    /// "A notification when photos taken for {time} are ready." — Retro · camera.overnight · new · SOURCED
+    public static func cameraOvernightSettingsRowDetail(time: String) -> String { CopyLookup.format("camera.overnight.settings.rowDetail", default: "A notification when photos taken for {time} are ready.", ["time": time]) }
+    /// "Photos developing, shown to everyone {reveal}" — Dispo · camera.overnight · new · SOURCED
+    public static func cameraOvernightTileA11y(reveal: String) -> String { CopyLookup.format("camera.overnight.tile.a11y", default: "Photos developing, shown to everyone {reveal}", ["reveal": reveal]) }
+    /// "Developing" — Dispo · camera.overnight · adapted · SOURCED
+    public static var cameraOvernightTileLabel: String { CopyLookup.string("camera.overnight.tile.label", default: "Developing") }
     /// "Close" — Retro · camera.sendto · new · SOURCED
     public static var cameraSendtoA11yClose: String { CopyLookup.string("camera.sendto.a11y.close", default: "Close") }
     /// "Save to Camera Roll" — Retro · camera.sendto · verbatim · SOURCED
@@ -1019,10 +1053,18 @@ public enum Copy {
     public static var notificationsPushChannelDailyInvitationDescription: String { CopyLookup.string("notifications.push.channel.dailyInvitation.description", default: "The daily invitation to share a photo with your group") }
     /// "Daily Invitation" — Retro · daily.notification · new · SOURCED
     public static var notificationsPushChannelDailyInvitationName: String { CopyLookup.string("notifications.push.channel.dailyInvitation.name", default: "Daily Invitation") }
+    /// "When photos taken for {time} are ready to view" — Retro · camera.overnight · new · SOURCED
+    public static func notificationsPushChannelDevelopedPhotosDescription(time: String) -> String { CopyLookup.format("notifications.push.channel.developedPhotos.description", default: "When photos taken for {time} are ready to view", ["time": time]) }
+    /// "Developed Photos" — Retro · camera.overnight · new · SOURCED
+    public static var notificationsPushChannelDevelopedPhotosName: String { CopyLookup.string("notifications.push.channel.developedPhotos.name", default: "Developed Photos") }
     /// "Recent posts from your groups" — Retro · notifications.push · adapted · SOURCED
     public static var notificationsPushChannelNewPostDescription: String { CopyLookup.string("notifications.push.channel.newPost.description", default: "Recent posts from your groups") }
     /// "New Posts" — Retro · notifications.push · verbatim · SOURCED
     public static var notificationsPushChannelNewPostName: String { CopyLookup.string("notifications.push.channel.newPost.name", default: "New Posts") }
+    /// "When someone makes, changes or cancels a plan, and the day before one you're going to" — Retro · notifications.push · new · SOURCED
+    public static var notificationsPushChannelPlansDescription: String { CopyLookup.string("notifications.push.channel.plans.description", default: "When someone makes, changes or cancels a plan, and the day before one you're going to") }
+    /// "Plans" — Retro · notifications.push · new · SOURCED
+    public static var notificationsPushChannelPlansName: String { CopyLookup.string("notifications.push.channel.plans.name", default: "Plans") }
     /// "Reactions and replies to your posts" — Retro · notifications.push · new · SOURCED
     public static var notificationsPushChannelReactionsRepliesDescription: String { CopyLookup.string("notifications.push.channel.reactionsReplies.description", default: "Reactions and replies to your posts") }
     /// "Post Activity" — Retro · notifications.push · new · SOURCED
@@ -1387,6 +1429,144 @@ public enum Copy {
     public static var photoViewerToastDeleted: String { CopyLookup.string("photo.viewer.toast.deleted", default: "Deleted") }
     /// "Saved!" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerToastSaved: String { CopyLookup.string("photo.viewer.toast.saved", default: "Saved!") }
+    /// "All-day" — Apple Invites · plans.create · verbatim · VERIFIED
+    public static var plansCreateAllDay: String { CopyLookup.string("plans.create.allDay", default: "All-day") }
+    /// "Close" — Retro · plans.create · new · VERIFIED
+    public static var plansCreateCloseAccessibilityLabel: String { CopyLookup.string("plans.create.close.accessibilityLabel", default: "Close") }
+    /// "Cover image" — Retro · plans.create · new · VERIFIED
+    public static var plansCreateCoverAccessibilityLabel: String { CopyLookup.string("plans.create.cover.accessibilityLabel", default: "Cover image") }
+    /// "Add cover image" — Retro · plans.create · verbatim · SOURCED
+    public static var plansCreateCoverAdd: String { CopyLookup.string("plans.create.cover.add", default: "Add cover image") }
+    /// "Edit cover image" — Retro · plans.create · verbatim · SOURCED
+    public static var plansCreateCoverEdit: String { CopyLookup.string("plans.create.cover.edit", default: "Edit cover image") }
+    /// "Creating…" — Retro · plans.create · verbatim · SOURCED
+    public static var plansCreateCreating: String { CopyLookup.string("plans.create.creating", default: "Creating…") }
+    /// "Create Plan" — Retro · plans.create · adapted · SOURCED
+    public static var plansCreateCta: String { CopyLookup.string("plans.create.cta", default: "Create Plan") }
+    /// "Date" — Apple Invites · plans.create · adapted · SOURCED
+    public static var plansCreateDate: String { CopyLookup.string("plans.create.date", default: "Date") }
+    /// "Choose" — Retro · plans.create · new · SOURCED
+    public static var plansCreateDateNone: String { CopyLookup.string("plans.create.date.none", default: "Choose") }
+    /// "Cancel" — Apple HIG · plans.create · verbatim · PLATFORM
+    public static var plansCreateDiscardCancel: String { CopyLookup.string("plans.create.discard.cancel", default: "Cancel") }
+    /// "Yes, discard" — Retro · plans.create · new · SOURCED
+    public static var plansCreateDiscardConfirm: String { CopyLookup.string("plans.create.discard.confirm", default: "Yes, discard") }
+    /// "Discard this plan?" — Retro · plans.create · new · SOURCED
+    public static var plansCreateDiscardTitle: String { CopyLookup.string("plans.create.discard.title", default: "Discard this plan?") }
+    /// "Make a Plan" — Retro · plans.create · new · SOURCED
+    public static var plansCreateEntry: String { CopyLookup.string("plans.create.entry", default: "Make a Plan") }
+    /// "Your cover image didn't upload. Please try again." — Retro · plans.create · new · SOURCED
+    public static var plansCreateErrorCover: String { CopyLookup.string("plans.create.error.cover", default: "Your cover image didn't upload. Please try again.") }
+    /// "Your plan wasn't created. Please try again." — Retro · plans.create · new · SOURCED
+    public static var plansCreateErrorFailed: String { CopyLookup.string("plans.create.error.failed", default: "Your plan wasn't created. Please try again.") }
+    /// "Name too long" — Retro · plans.create · verbatim · SOURCED
+    public static var plansCreateErrorTooLong: String { CopyLookup.string("plans.create.error.tooLong", default: "Name too long") }
+    /// "Plan name" — Retro · plans.create · new · SOURCED
+    public static var plansCreateNameAccessibilityLabel: String { CopyLookup.string("plans.create.name.accessibilityLabel", default: "Plan name") }
+    /// "Name your plan" — Retro · plans.create · adapted · SOURCED
+    public static var plansCreateNamePlaceholder: String { CopyLookup.string("plans.create.name.placeholder", default: "Name your plan") }
+    /// "Add a note…" — Retro · plans.create · adapted · SOURCED
+    public static var plansCreateNotePlaceholder: String { CopyLookup.string("plans.create.note.placeholder", default: "Add a note…") }
+    /// "Could not connect. Check your connection and try again." — Retro · plans.create · verbatim · SOURCED
+    public static var plansCreateOffline: String { CopyLookup.string("plans.create.offline", default: "Could not connect. Check your connection and try again.") }
+    /// "Place name or address" — Partiful · plans.create · adapted · SOURCED
+    public static var plansCreatePlacePlaceholder: String { CopyLookup.string("plans.create.place.placeholder", default: "Place name or address") }
+    /// "Save" — Retro · plans.create · verbatim · SOURCED
+    public static var plansCreateSave: String { CopyLookup.string("plans.create.save", default: "Save") }
+    /// "Time" — Apple Invites · plans.create · adapted · SOURCED
+    public static var plansCreateTime: String { CopyLookup.string("plans.create.time", default: "Time") }
+    /// "New Plan" — Retro · plans.create · adapted · SOURCED
+    public static var plansCreateTitle: String { CopyLookup.string("plans.create.title", default: "New Plan") }
+    /// "Edit Plan" — Retro · plans.create · adapted · SOURCED
+    public static var plansCreateTitleEdit: String { CopyLookup.string("plans.create.titleEdit", default: "Edit Plan") }
+    /// "Photos" — Retro · plans.page · new · SOURCED
+    public static var plansPageAlbum: String { CopyLookup.string("plans.page.album", default: "Photos") }
+    /// "Can't go" — Partiful · plans.page · adapted · SOURCED
+    public static var plansPageAnswerCantGo: String { CopyLookup.string("plans.page.answer.cantGo", default: "Can't go") }
+    /// "Clear answer" — Retro · plans.page · new · SOURCED
+    public static var plansPageAnswerClear: String { CopyLookup.string("plans.page.answer.clear", default: "Clear answer") }
+    /// "Going" — Partiful · plans.page · verbatim · SOURCED
+    public static var plansPageAnswerGoing: String { CopyLookup.string("plans.page.answer.going", default: "Going") }
+    /// "Your answer" — Retro · plans.page · new · SOURCED
+    public static var plansPageAnswerGroupLabel: String { CopyLookup.string("plans.page.answer.groupLabel", default: "Your answer") }
+    /// "Maybe" — Partiful · plans.page · verbatim · SOURCED
+    public static var plansPageAnswerMaybe: String { CopyLookup.string("plans.page.answer.maybe", default: "Maybe") }
+    /// "Back" — Retro · plans.page · new · VERIFIED
+    public static var plansPageBackAccessibilityLabel: String { CopyLookup.string("plans.page.back.accessibilityLabel", default: "Back") }
+    /// "Yes, cancel" — Retro · plans.page · new · SOURCED
+    public static var plansPageCancelConfirm: String { CopyLookup.string("plans.page.cancel.confirm", default: "Yes, cancel") }
+    /// "Keep Plan" — Retro · plans.page · new · SOURCED
+    public static var plansPageCancelKeep: String { CopyLookup.string("plans.page.cancel.keep", default: "Keep Plan") }
+    /// "Everyone who's going or might go will be notified." — Retro · plans.page · new · SOURCED
+    public static var plansPageCancelMessage: String { CopyLookup.string("plans.page.cancel.message", default: "Everyone who's going or might go will be notified.") }
+    /// "Cancel {title}?" — Retro · plans.page · new · SOURCED
+    public static func plansPageCancelTitle(title: String) -> String { CopyLookup.format("plans.page.cancel.title", default: "Cancel {title}?", ["title": title]) }
+    /// "Canceled" — Apple Invites · plans.page · adapted · SOURCED
+    public static var plansPageCanceled: String { CopyLookup.string("plans.page.canceled", default: "Canceled") }
+    /// "Cover of {title}" — Retro · plans.page · new · SOURCED
+    public static func plansPageCoverAccessibilityLabel(title: String) -> String { CopyLookup.format("plans.page.cover.accessibilityLabel", default: "Cover of {title}", ["title": title]) }
+    /// "Couldn't save your answer" — Retro · plans.page · adapted · SOURCED
+    public static var plansPageErrorAnswer: String { CopyLookup.string("plans.page.error.answer", default: "Couldn't save your answer") }
+    /// "Error loading plan. Tap here to try again." — Retro · plans.page · adapted · SOURCED
+    public static var plansPageErrorTitle: String { CopyLookup.string("plans.page.error.title", default: "Error loading plan. Tap here to try again.") }
+    /// "Going" — Apple Invites · plans.page · verbatim · SOURCED
+    public static var plansPageGoing: String { CopyLookup.string("plans.page.going", default: "Going") }
+    /// "Made by {name}" — Apple Invites · plans.page · adapted · SOURCED
+    public static func plansPageMadeBy(name: String) -> String { CopyLookup.format("plans.page.madeBy", default: "Made by {name}", ["name": name]) }
+    /// "Maybe" — Apple Invites · plans.page · verbatim · SOURCED
+    public static var plansPageMaybe: String { CopyLookup.string("plans.page.maybe", default: "Maybe") }
+    /// "Cancel Plan" — Partiful · plans.page · adapted · SOURCED
+    public static var plansPageMenuCancel: String { CopyLookup.string("plans.page.menu.cancel", default: "Cancel Plan") }
+    /// "Edit Plan" — Apple Invites · plans.page · adapted · SOURCED
+    public static var plansPageMenuEdit: String { CopyLookup.string("plans.page.menu.edit", default: "Edit Plan") }
+    /// "Restore Plan" — Apple Invites · plans.page · adapted · VERIFIED
+    public static var plansPageMenuRestore: String { CopyLookup.string("plans.page.menu.restore", default: "Restore Plan") }
+    /// "More" — Retro · plans.page · new · VERIFIED
+    public static var plansPageMoreAccessibilityLabel: String { CopyLookup.string("plans.page.more.accessibilityLabel", default: "More") }
+    /// "It may have been removed from the group." — Retro · plans.page · new · SOURCED
+    public static var plansPageNotFoundDetail: String { CopyLookup.string("plans.page.notFound.detail", default: "It may have been removed from the group.") }
+    /// "Couldn't find plan" — Retro · plans.page · adapted · SOURCED
+    public static var plansPageNotFoundTitle: String { CopyLookup.string("plans.page.notFound.title", default: "Couldn't find plan") }
+    /// "Could not connect. Check your connection and try again." — Retro · plans.page · verbatim · SOURCED
+    public static var plansPageOffline: String { CopyLookup.string("plans.page.offline", default: "Could not connect. Check your connection and try again.") }
+    /// "Can't go" — Partiful · plans.page · adapted · SOURCED
+    public static var plansPagePeopleCantGo: String { CopyLookup.string("plans.page.people.cantGo", default: "Can't go") }
+    /// "Who's Coming" — Retro · plans.page · new · SOURCED
+    public static var plansPagePeopleTitle: String { CopyLookup.string("plans.page.people.title", default: "Who's Coming") }
+    /// "Answering: {question}" — Retro · question.weekly · new · SOURCED
+    public static func questionWeeklyCameraA11y(question: String) -> String { CopyLookup.format("question.weekly.camera.a11y", default: "Answering: {question}", ["question": question]) }
+    /// "This week's question: {question}" — Retro · question.weekly · new · SOURCED
+    public static func questionWeeklyCardA11y(question: String) -> String { CopyLookup.format("question.weekly.card.a11y", default: "This week's question: {question}", ["question": question]) }
+    /// "See answers" — Retro · question.weekly · new · SOURCED
+    public static var questionWeeklyCardA11yAnswers: String { CopyLookup.string("question.weekly.card.a11y.answers", default: "See answers") }
+    /// "Add a photo" — Retro · question.weekly · adapted · SOURCED
+    public static var questionWeeklyCardButton: String { CopyLookup.string("question.weekly.card.button", default: "Add a photo") }
+    /// "This Week's Question" — Retro · question.weekly · new · SOURCED
+    public static var questionWeeklyCardLabel: String { CopyLookup.string("question.weekly.card.label", default: "This Week's Question") }
+    /// "Remove" — Apple Journal · question.weekly · verbatim · VERIFIED
+    public static var questionWeeklyMenuRemove: String { CopyLookup.string("question.weekly.menu.remove", default: "Remove") }
+    /// "What made you laugh this week?" — Retro · question.weekly · new · SOURCED
+    public static var questionWeeklyQ01: String { CopyLookup.string("question.weekly.q01", default: "What made you laugh this week?") }
+    /// "Caught up with a friend this week?" — Retro · question.weekly · adapted · SOURCED
+    public static var questionWeeklyQ02: String { CopyLookup.string("question.weekly.q02", default: "Caught up with a friend this week?") }
+    /// "Did something nice for yourself this week?" — Retro · question.weekly · adapted · SOURCED
+    public static var questionWeeklyQ03: String { CopyLookup.string("question.weekly.q03", default: "Did something nice for yourself this week?") }
+    /// "Ate something tasty this week?" — Retro · question.weekly · adapted · SOURCED
+    public static var questionWeeklyQ04: String { CopyLookup.string("question.weekly.q04", default: "Ate something tasty this week?") }
+    /// "Made something you're proud of this week?" — Retro · question.weekly · adapted · SOURCED
+    public static var questionWeeklyQ05: String { CopyLookup.string("question.weekly.q05", default: "Made something you're proud of this week?") }
+    /// "Anything from this week you want to remember?" — Retro · question.weekly · adapted · SOURCED
+    public static var questionWeeklyQ06: String { CopyLookup.string("question.weekly.q06", default: "Anything from this week you want to remember?") }
+    /// "What's something you love to do?" — Apple Journal · question.weekly · adapted · SOURCED
+    public static var questionWeeklyQ07: String { CopyLookup.string("question.weekly.q07", default: "What's something you love to do?") }
+    /// "What's something nice someone did for you this week?" — Apple Journal · question.weekly · new · SOURCED
+    public static var questionWeeklyQ08: String { CopyLookup.string("question.weekly.q08", default: "What's something nice someone did for you this week?") }
+    /// "Where did you spend most of your time this week?" — Retro · question.weekly · adapted · SOURCED
+    public static var questionWeeklyQ09: String { CopyLookup.string("question.weekly.q09", default: "Where did you spend most of your time this week?") }
+    /// "Weekly Question" — Retro · question.weekly · new · SOURCED
+    public static var questionWeeklySettingsRow: String { CopyLookup.string("question.weekly.settings.row", default: "Weekly Question") }
+    /// "One light question for the group each week, answered with a photo." — Retro · question.weekly · new · SOURCED
+    public static var questionWeeklySettingsRowDetail: String { CopyLookup.string("question.weekly.settings.rowDetail", default: "One light question for the group each week, answered with a photo.") }
     /// "Cancel" — Apple HIG · safety.block · verbatim · VERIFIED
     public static var safetyBlockCancel: String { CopyLookup.string("safety.block.cancel", default: "Cancel") }
     /// "Yes, block" — Retro · safety.block · adapted · SOURCED
@@ -1655,6 +1835,44 @@ public enum Copy {
     public static var taggingToggle: String { CopyLookup.string("tagging.toggle", default: "I'm in this") }
     /// "with {names}" — Retro · tagging · adapted · SOURCED
     public static func taggingWith(names: String) -> String { CopyLookup.format("tagging.with", default: "with {names}", ["names": names]) }
+    /// "React with a selfie" — BeReal · viewer.selfiereaction · adapted · SOURCED
+    public static var viewerSelfiereactionA11yAction: String { CopyLookup.string("viewer.selfiereaction.a11y.action", default: "React with a selfie") }
+    /// "Take selfie" — Retro · viewer.selfiereaction · adapted · SOURCED
+    public static var viewerSelfiereactionA11yCapture: String { CopyLookup.string("viewer.selfiereaction.a11y.capture", default: "Take selfie") }
+    /// "{name}'s selfie" — Retro · viewer.selfiereaction · new · SOURCED
+    public static func viewerSelfiereactionA11yFace(name: String) -> String { CopyLookup.format("viewer.selfiereaction.a11y.face", default: "{name}'s selfie", ["name": name]) }
+    /// "Your selfie" — Retro · viewer.selfiereaction · new · SOURCED
+    public static var viewerSelfiereactionA11yFaceMine: String { CopyLookup.string("viewer.selfiereaction.a11y.faceMine", default: "Your selfie") }
+    /// "Front camera" — Retro · viewer.selfiereaction · new · SOURCED
+    public static var viewerSelfiereactionA11yPreview: String { CopyLookup.string("viewer.selfiereaction.a11y.preview", default: "Front camera") }
+    /// "Selfie sent" — Retro · viewer.selfiereaction · new · SOURCED
+    public static var viewerSelfiereactionA11ySent: String { CopyLookup.string("viewer.selfiereaction.a11y.sent", default: "Selfie sent") }
+    /// "Selfie reactions: {names}" — Retro · viewer.selfiereaction · new · SOURCED
+    public static func viewerSelfiereactionA11yStack(names: String) -> String { CopyLookup.format("viewer.selfiereaction.a11y.stack", default: "Selfie reactions: {names}", ["names": names]) }
+    /// "{name} reacted with a selfie" — WhatsApp + Apple Messages · viewer.selfiereaction · new · SOURCED
+    public static func viewerSelfiereactionActivityRow(name: String) -> String { CopyLookup.format("viewer.selfiereaction.activity.row", default: "{name} reacted with a selfie", ["name": name]) }
+    /// "You reacted with a selfie" — WhatsApp + Apple Messages · viewer.selfiereaction · new · SOURCED
+    public static var viewerSelfiereactionActivityRowMine: String { CopyLookup.string("viewer.selfiereaction.activity.rowMine", default: "You reacted with a selfie") }
+    /// "Slide here to react" — BeReal · viewer.selfiereaction · verbatim · SOURCED
+    public static var viewerSelfiereactionCoachSlideHere: String { CopyLookup.string("viewer.selfiereaction.coach.slideHere", default: "Slide here to react") }
+    /// "Slide in to send" — BeReal · viewer.selfiereaction · verbatim · SOURCED
+    public static var viewerSelfiereactionCoachSlideToSend: String { CopyLookup.string("viewer.selfiereaction.coach.slideToSend", default: "Slide in to send") }
+    /// "Tap the circle to send" — BeReal · viewer.selfiereaction · adapted · SOURCED
+    public static var viewerSelfiereactionCoachTapRing: String { CopyLookup.string("viewer.selfiereaction.coach.tapRing", default: "Tap the circle to send") }
+    /// "Couldn't send selfie" — Retro · viewer.selfiereaction · adapted · SOURCED
+    public static var viewerSelfiereactionError: String { CopyLookup.string("viewer.selfiereaction.error", default: "Couldn't send selfie") }
+    /// "React with a selfie" — BeReal · viewer.selfiereaction · adapted · SOURCED
+    public static var viewerSelfiereactionMenuReact: String { CopyLookup.string("viewer.selfiereaction.menu.react", default: "React with a selfie") }
+    /// "Remove" — BeReal · viewer.selfiereaction · new · SOURCED
+    public static var viewerSelfiereactionMenuRemove: String { CopyLookup.string("viewer.selfiereaction.menu.remove", default: "Remove") }
+    /// "Report Selfie" — Retro · viewer.selfiereaction · adapted · SOURCED
+    public static var viewerSelfiereactionMenuReport: String { CopyLookup.string("viewer.selfiereaction.menu.report", default: "Report Selfie") }
+    /// "Yes, remove" — Retro · viewer.selfiereaction · adapted · SOURCED
+    public static var viewerSelfiereactionRemoveConfirm: String { CopyLookup.string("viewer.selfiereaction.remove.confirm", default: "Yes, remove") }
+    /// "It will be removed from your photo." — Retro · viewer.selfiereaction · new · SOURCED
+    public static var viewerSelfiereactionRemoveMessage: String { CopyLookup.string("viewer.selfiereaction.remove.message", default: "It will be removed from your photo.") }
+    /// "Remove {name}'s selfie?" — Retro · viewer.selfiereaction · new · SOURCED
+    public static func viewerSelfiereactionRemoveTitle(name: String) -> String { CopyLookup.format("viewer.selfiereaction.remove.title", default: "Remove {name}'s selfie?", ["name": name]) }
     /// "Collage, {date}" — Retro · walls.browse · new · SOURCED
     public static func wallsBrowseA11yCollage(date: String) -> String { CopyLookup.format("walls.browse.a11y.collage", default: "Collage, {date}", ["date": date]) }
     /// "Create a group" — Retro · walls.browse · adapted · SOURCED
@@ -1803,6 +2021,18 @@ public enum Copy {
     public static var widgetArrivalAndroidRefreshTitle: String { CopyLookup.string("widget.arrival.android.refreshTitle", default: "Updating widgets…") }
     /// "New photos can take a few minutes to show up on your widget. This helps save your battery." — Retro · widget.arrival · new · SOURCED
     public static var widgetArrivalHelpDelay: String { CopyLookup.string("widget.arrival.help.delay", default: "New photos can take a few minutes to show up on your widget. This helps save your battery.") }
+    /// "{title} with {group}, {countdown}" — Retro · widget.countdown · new · SOURCED
+    public static func widgetCountdownA11yPlan(title: String, group: String, countdown: String) -> String { CopyLookup.format("widget.countdown.a11y.plan", default: "{title} with {group}, {countdown}", ["title": title, "group": group, "countdown": countdown]) }
+    /// "All Groups" — Retro · widget.countdown · new · SOURCED
+    public static var widgetCountdownConfigurationAllGroups: String { CopyLookup.string("widget.countdown.configuration.allGroups", default: "All Groups") }
+    /// "Group" — Retro · widget.countdown · new · SOURCED
+    public static var widgetCountdownConfigurationGroup: String { CopyLookup.string("widget.countdown.configuration.group", default: "Group") }
+    /// "Show plans from…" — Retro · widget.countdown · adapted · SOURCED
+    public static var widgetCountdownConfigurationTitle: String { CopyLookup.string("widget.countdown.configuration.title", default: "Show plans from…") }
+    /// "See how many days until your group's next plan." — Retro · widget.countdown · new · SOURCED
+    public static var widgetCountdownGalleryDescription: String { CopyLookup.string("widget.countdown.gallery.description", default: "See how many days until your group's next plan.") }
+    /// "Next Plan" — Retro · widget.countdown · new · SOURCED
+    public static var widgetCountdownGalleryName: String { CopyLookup.string("widget.countdown.gallery.name", default: "Next Plan") }
     /// "Photos from {group}, {date}" — Retro · widget.home.small · new · SOURCED
     public static func widgetHomeSmallA11yCollage(group: String, date: String) -> String { CopyLookup.format("widget.home.small.a11y.collage", default: "Photos from {group}, {date}", ["group": group, "date": date]) }
     /// "{name}'s photo in {group}" — Retro · widget.home.small · new · SOURCED

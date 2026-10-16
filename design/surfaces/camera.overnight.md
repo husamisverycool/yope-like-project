@@ -1,8 +1,10 @@
-# camera.overnight — photos that develop at 9 AM (DRAFT)
+# `camera.overnight` — photos that develop at 9 AM
 
-> **Draft, 2026-10-16.** Proposed tokens and copy live **only in this file** until a consolidation pass moves them into
-> `design/tokens/capture.json` and `design/copy/capture.json`. Research: `design/research/overnight-and-questions.md`
-> (OQ). Backend: `design/research/overnight-and-questions-data.md`.
+Research: `design/research/overnight-and-questions.md` (OQ); data: `design/research/overnight-and-questions-data.md`;
+server: `docs/API.md` §14.3. Tokens: `design/tokens/capture.json` (`camera.overnight.*`; Android channel
+`developed_photos` in `notifications.push.layout.channels`) + `global.*`, `camera.capture.*`, `camera.sendto.*`. Copy:
+`design/copy/capture.json` (`camera.overnight.*`, channel `notifications.push.channel.developedPhotos.*`). The JSON files
+are canonical (values, evidence, levels). Decisions: `design/MERGE_DECISIONS.md` → New features (ON-1 … ON-11).
 
 **Visual reference: Retro**, by composition only — C-01 header, **C-30 native segmented control on a black page**
 (Retro's "Create Recap": system control, full width, between the header and the content — TC-REC), C-17 / C-18 photo
@@ -20,7 +22,7 @@ in group views, **C** the reveal (push, in-place reveal, sequence).
 
 | image | what it verifies |
 |---|---|
-| `references/auto/dispo/store/dispo-store-X-1.png` (DX1) | mechanics: a 2-segment `DEVELOP 9AM · NOW` control on the camera's top row, above the camera; 9AM default (conflict: ours is Now) |
+| `references/auto/dispo/store/dispo-store-X-1.png` (DX1) | mechanics: a 2-segment `DEVELOP 9AM · NOW` control on the camera's top row, above the camera; 9AM default (conflict resolved to Now: MERGE_DECISIONS ON-1) |
 | `references/auto/dispo/help/help-4410178185492_userguide-nov21.png` (DUG, phone 2) | mechanics: chosen rolls shown on the camera's top bar ("Planet plant-it · Private") |
 | `references/auto/dispo/help/help-360097208771_library.png` (DLIB) | mechanics: **one** "developing" banner for all developing photos (its number is not copied) |
 | `references/auto/lapse/store/lapse-store-01.png` (L01), `-05.png` (L05) | mechanics: full viewfinder kept; developing stack in the leading slot of the control row (number not copied); flash circle 64 pt |
@@ -84,7 +86,7 @@ nothing selected switches the mode back to Now.
 |---|---|---|---|
 | mode control | C-30 · `camera.overnight.layout.modeControl` | segments `camera.overnight.mode.later` ({time}), `camera.overnight.mode.now`; a11y label `camera.overnight.a11y.mode`, hint `camera.overnight.a11y.modeHint` | Now = `camera.capture` as specified. 9 AM = the next photos develop at the reveal (part C). First switch to 9 AM in a session opens the destination sheet |
 | destination pill | C-09 on media · `camera.overnight.layout.destinationPill` | `camera.overnight.destination.one` / `.all` / `.some`; a11y hint `camera.overnight.a11y.destinationHint` | tap → destination sheet |
-| shutter (9 AM) | `camera.capture.size.shutter*` unchanged | a11y `camera.capture.a11y.shutter` | **tap** = photo; **no preview, no `camera.sendto`**: the photo uploads and is posted to the chosen groups as developing (`create_post` with `p_develop = true` and the capture time, data note §1); the camera stays ready for the next photo. Live Photo motion is not captured in 9 AM mode (photo only). Hold = nothing |
+| shutter (9 AM) | `camera.capture.size.shutter*` unchanged | a11y `camera.capture.a11y.shutter` | **tap** = photo; **no preview, no `camera.sendto`**: the photo uploads and is posted to the chosen groups as developing (`create_overnight_post(p_media_id, p_group_ids)`, `docs/API.md` §14.3); the camera stays ready for the next photo. Live Photo motion is not captured in 9 AM mode (photo only). Hold = nothing |
 | developing stack | BLOCKED (slot empty meanwhile) | a11y `camera.overnight.a11y.stack` ({reveal}) once built | status, not a button |
 | flash, flip | unchanged | unchanged | unchanged |
 | library | hidden in 9 AM mode | — | a picked photo was already seen; neither reference imports in delayed mode |
@@ -122,7 +124,8 @@ were **taken** (photos are placed by capture time once revealed).
 
 - Reveal time: the **first 09:00 after capture in the group's time zone** (`groups.time_zone`) — Dispo (DAS, DH-W). A
   photo sent to two groups in different zones reveals at each group's own 09:00. Daylight-saving: wall-clock 09:00.
-- Before the reveal nobody can read the photo, the author included (server rule, data note §2).
+- Before the reveal nobody can read the photo, the author included (server rule: `developing_posts` has no client
+  access and its files are refused, `docs/API.md` §14.3).
 - A photo whose upload completes after its reveal time reveals on arrival.
 
 ### Push (`camera.overnight.layout.push`)
@@ -130,9 +133,10 @@ were **taken** (photos are placed by capture time once revealed).
 One notification per group per reveal, to every member who has not muted the group, only if the group had developing
 photos: title `camera.overnight.push.title` ({group}), body `camera.overnight.push.body`; iOS interruption level
 **active** (passive in quiet hours), thread = group; Android channel `developed_photos` (name
-`camera.overnight.push.channel.name`, description `.channel.description`, default importance). The member's switch is a
-row in `settings.notifications` (`camera.overnight.settings.row` / `.settings.rowDetail`, default on). Payload
-`type = overnight_revealed`, `group_id`, `reveal_at`. Tap → `groups.screen` of that group, then `photo.viewer` opens on
+`notifications.push.channel.developedPhotos.name`, description `.developedPhotos.description` with `{time}`, default
+importance). The member's switch is a row in `settings.notifications` (`camera.overnight.settings.row` /
+`.settings.rowDetail`, default on; `set_overnight_alerts`). Server job `push.photos_developed`, type `new_post` with the
+first revealed photo's `post_id` (`docs/API.md` §14.3). Tap → `groups.screen` of that group, then `photo.viewer` opens on
 the photos revealed at that time, oldest first (Lapse's sequential review, L03), with the viewer's existing position
 badge ("%1$d of %2$d").
 
@@ -178,11 +182,12 @@ a capture haptic has no reference (BLOCKED, Gaps). Reveal: none (system notifica
 
 ## Data & actions
 
-- Writes: `create_post(p_media_id, p_group_ids, p_develop => true, p_captured_at)` per photo (data note §1); upload
-  queue as `camera.sendto`. No caption, voice note or invitation id in 9 AM mode.
-- Reads: `my_developing()` (boolean + earliest reveal, for the stack); `group_developing(group_id)` (boolean +
-  `reveal_at`, for the tile) — never a number (data note §3).
-- Realtime: broadcast `overnight_revealed` on `group:<id>` → refetch posts (data note §4).
+- Writes: `create_overnight_post(p_media_id, p_group_ids) → (group_id, develops_at)` per photo (`docs/API.md` §14.3;
+  photos only, `develop_photo_only`); upload queue as `camera.sendto`. No caption, voice note or invitation id in 9 AM
+  mode. `set_overnight_alerts(p_on)` for the settings switch.
+- Reads: `my_developing()` (boolean + earliest reveal, for the stack); `group_developing(p_group_id)` (boolean +
+  `reveal_at`, for the tile) — never a number.
+- Realtime: broadcast `developing_changed` (no payload) on create and reveal → refetch posts and the developing state.
 - In: `camera.capture` (the control), push tap (`app://group/<id>?revealed=<reveal_at>` → `DeepLink.group`, then the
   viewer). Out: destination sheet, `groups.screen`, `photo.viewer`.
 
@@ -191,51 +196,12 @@ a capture haptic has no reference (BLOCKED, Gaps). Reveal: none (system notifica
 - iOS: `Picker(.segmented)` on the black camera page with the dark appearance forced (media rule); no Live Photo in 9 AM
   mode (`isLivePhotoCaptureEnabled = false` for these shots).
 - Android: M3 `SingleChoiceSegmentedButtonRow`; channel `developed_photos` created once.
+- `{time}` and `{reveal}` in the copy are formatted by the platform (iOS `Date.FormatStyle` / `RelativeDateTimeFormatter`,
+  Android `DateFormat.getTimeFormat` / `DateUtils.getRelativeDateTimeString`) — PLATFORM: `{time}` is 09:00 in the
+  locale's short time format (`camera.overnight.mode.later`, the hint, the settings detail and the channel
+  description), `{reveal}` the relative day + time ("tomorrow at 9 AM").
 - The camera must not write 9 AM photos to the system photo library before the reveal (Dispo since 3.0.0 saves to the
   camera roll — after developing); local files live in app storage until uploaded, then are deleted.
-
-## Proposed tokens (not yet in `design/tokens/*.json`)
-
-| key | type | value | level | evidence / method |
-|---|---|---|---|---|
-| `camera.overnight.layout.modeControl` | layout | `{component: "C-30", width: "screen − 2 × size.global.screenMargin", top: "size.global.titleToContent below the title baseline", toViewfinder: "size.global.sectionHeaderToContent", segments: ["later", "now"], default: "now", haptic: "haptic.global.select"}` | SOURCED | composition of Retro C-30 (TC-REC) in Dispo's order (DX1: control row above the camera); default from `camera.capture` (OQ §8) |
-| `camera.overnight.layout.destinationPill` | layout | `{component: "C-09 on media", icon: "icon.global.group", bottomInset: "camera.sendto.layout.messageField", centred: true}` | SOURCED | composition (ST-03 pill on photo) of Dispo's roll chips on the camera (DUG phone 2) |
-| `camera.overnight.layout.destinationSheet` | layout | `{component: "C-29 sheet", rows: "camera.sendto.layout.recipientRow", default: "all groups", keep: "app session"}` | SOURCED | Dispo roll drawer (DH-TP); owner decision 11 |
-| `camera.overnight.layout.developingTile` | layout | `{component: "C-17 placeholder", fill: "color.global.control", label: "tileLabel / color.global.textSecondary, centred", perGroup: 1, position: "before the add tile"}` | SOURCED | Retro C-17 (H43); one banner (DLIB); centring (LSE3) |
-| `camera.overnight.layout.reveal` | layout | `{time: "09:00", zone: "groups.time_zone", rule: "first 09:00 after capture", lateUpload: "reveal on arrival"}` | SOURCED | Dispo DAS, DH-W, DN |
-| `camera.overnight.layout.push` | layout | `{perGroupPerReveal: 1, ios: "active (passive in quiet hours)", androidChannel: "developed_photos", tap: "groups.screen → photo.viewer (revealed, oldest first)"}` | SOURCED | Lapse LSE3 (one aggregated alert), L03 (sequence); `daily.notification` levels |
-| `camera.overnight.layout.uploadQueue` | layout | `{offline: "store in app storage, retry on reconnect", photoLibrary: "never before reveal"}` | SOURCED | Dispo offline help 360062068852 |
-| `camera.overnight.layout.stackCards` | layout | — | **BLOCKED** | Lapse stack card geometry not measurable (Gaps) |
-
-## Proposed copy (not yet in `design/copy/*.json`)
-
-| key | text | origin | pattern | evidence | level |
-|---|---|---|---|---|---|
-| `camera.overnight.mode.later` | `{time}` (locale short time of 09:00: "9 AM", "09:00") | adapted | `retro.voice.formats` | Dispo segment "9AM" (DX1); casing / format by the locale formatter | SOURCED |
-| `camera.overnight.mode.now` | Now | adapted | `retro.voice.sentence-case` | Dispo segment "NOW" (DX1), caps → sentence case | SOURCED |
-| `camera.overnight.a11y.mode` | Develop | adapted | `retro.voice.sentence-case` | Dispo header "DEVELOP" (DX1) | SOURCED |
-| `camera.overnight.a11y.modeHint` | Photos taken for {time} stay hidden from everyone, you too, until they develop. | new | `retro.voice.explanation` | Dispo "wait for them to develop at 9 AM the next morning" (DH-W); Lapse "a mystery …until later" (LSE3) | SOURCED |
-| `camera.overnight.destination.title` | Choose Groups | adapted | `retro.voice.title-case` | Retro "Choose friends" (`home_invite_feed_card_*` CTA, RP §4.2), friends → groups; Dispo "choose which rolls you want to shoot to" (DN) | SOURCED |
-| `camera.overnight.destination.detail` | Photos you take now develop for these groups {reveal}. | new | `retro.voice.explanation` | Dispo "Select the roll(s) you'd like to shoot to" + "develop at 9 AM" (DH-TP, DH-W); {reveal} = platform relative date + time ("tomorrow at 9 AM") | SOURCED |
-| `camera.overnight.destination.done` | Done | verbatim | `retro.voice.button` | Retro "Done" (`camera.sendto.message.done`) | SOURCED |
-| `camera.overnight.destination.one` | {group} | new | `retro.voice.terse-numbers` | Dispo roll chip shows the roll's name (DUG phone 2) | SOURCED |
-| `camera.overnight.destination.all` | All groups | adapted | `retro.voice.sentence-case` | Locket send-to "All friends" (owner decision 11), friends → groups | SOURCED |
-| `camera.overnight.destination.some` | Selected groups | new | `retro.voice.sentence-case` | Dispo chips list only the chosen rolls (DUG); no count by tenet | SOURCED |
-| `camera.overnight.a11y.destinationHint` | Choose which groups these photos develop for | new | `retro.voice.coach` | Dispo DH-TP | SOURCED |
-| `camera.overnight.a11y.stack` | Photos developing until {reveal} | new | `retro.voice.explanation` (fragment) | Lapse stack (L01); Dispo "photos developing" (DLIB), number dropped | SOURCED |
-| `camera.overnight.a11y.captured` | Photo taken. It develops {reveal}. | new | `retro.voice.confirmation` | Dispo DH-W | SOURCED |
-| `camera.overnight.tile.label` | Developing | adapted | `retro.voice.sentence-case` | Dispo "developing" (DLIB banner), number dropped, capitalised | SOURCED |
-| `camera.overnight.tile.a11y` | Photos developing, shown to everyone {reveal} | new | `retro.voice.explanation` (fragment) | DLIB; DH-W | SOURCED |
-| `camera.overnight.push.title` | {group} | adapted | `retro.voice.push` | Retro context title ("Week %1$d", `post_reminder_notification_title_template`); Lapse one banner per reveal (LSE3) | SOURCED |
-| `camera.overnight.push.body` | Photos have developed and are ready to view. | adapted | `retro.voice.push` | Lapse "SNAPS DEVELOPED" / "5 snaps ready to view" (LSE3): count, caps and emoji removed, "snaps" → "Photos" | SOURCED |
-| `camera.overnight.push.channel.name` | Developed Photos | new | `retro.voice.push-channel` | Retro channel names ("New Posts", "Friend Activity") | SOURCED |
-| `camera.overnight.push.channel.description` | When photos taken for 9 AM are ready to view | new | `retro.voice.push-channel` | Retro "Recent posts from users you care about" | SOURCED |
-| `camera.overnight.settings.row` | Developed Photos | new | `retro.voice.settings` | Retro settings rows (Title Case) | SOURCED |
-| `camera.overnight.settings.rowDetail` | A notification when photos taken for 9 AM are ready. | new | `retro.voice.settings` | Retro "Others will not be able to send you friend requests." | SOURCED |
-
-`{time}` and `{reveal}` are formatted by the platform (iOS `Date.FormatStyle` / `RelativeDateTimeFormatter`, Android
-`DateFormat.getTimeFormat` / `DateUtils.getRelativeDateTimeString`) — PLATFORM. The words "9 AM" inside the channel and
-settings strings are `{time}` at build time of the string.
 
 ## Do-not-copy
 
@@ -249,7 +215,7 @@ labels, camera / film names, paid skins and prints, "dispos", "Ready to roll?", 
 | item | status | smallest capture / decision |
 |---|---|---|
 | dedicated reveal animation | BLOCKED; Retro insert motion used meanwhile | 60 fps screen recording of Dispo or Lapse at the moment photos develop |
-| capture → stack hand-off motion; stack card geometry | BLOCKED; leading slot empty meanwhile | 60 fps recording of Lapse's shutter press + one raw screenshot of its stack |
+| capture → stack hand-off motion; stack card geometry | BLOCKED (`camera.overnight.layout.stackCards`, ON-8); leading slot empty meanwhile | 60 fps recording of Lapse's shutter press + one raw screenshot of its stack |
 | capture haptic in 9 AM mode | BLOCKED (none meanwhile) | recording with haptics noted, or lead decision "none" |
 | reveal edge (photo at 08:59) | rule "first 09:00 after capture" is a reading of Dispo's text | owner test in Dispo at 08:55 |
 | "Develop" label above the control | dropped (space); a11y label carries it | check with two non-technical members |

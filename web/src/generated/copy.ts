@@ -196,8 +196,25 @@ const table = {
   "camera.capture.unavailable.button": "Try Again", // Retro · camera.capture · SOURCED
   "camera.capture.unavailable.detail": "The camera couldn't start. Please try again.", // Retro · camera.capture · SOURCED
   "camera.capture.unavailable.title": "Camera Unavailable", // Retro · camera.capture · SOURCED
+  "camera.overnight.a11y.captured": "Photo taken. It develops {reveal}.", // Dispo · camera.overnight · SOURCED
+  "camera.overnight.a11y.destinationHint": "Choose which groups these photos develop for", // Dispo · camera.overnight · SOURCED
+  "camera.overnight.a11y.mode": "Develop", // Dispo · camera.overnight · SOURCED
+  "camera.overnight.a11y.modeHint": "Photos taken for {time} stay hidden from everyone, you too, until they develop.", // Dispo · camera.overnight · SOURCED
+  "camera.overnight.a11y.stack": "Photos developing until {reveal}", // Lapse · camera.overnight · SOURCED
+  "camera.overnight.destination.all": "All groups", // Locket · camera.overnight · SOURCED
+  "camera.overnight.destination.detail": "Photos you take now develop for these groups {reveal}.", // Dispo · camera.overnight · SOURCED
+  "camera.overnight.destination.done": "Done", // Retro · camera.overnight · SOURCED
+  "camera.overnight.destination.one": "{group}", // Dispo · camera.overnight · SOURCED
+  "camera.overnight.destination.some": "Selected groups", // Dispo · camera.overnight · SOURCED
+  "camera.overnight.destination.title": "Choose Groups", // Retro · camera.overnight · SOURCED
+  "camera.overnight.mode.later": "{time}", // Dispo · camera.overnight · SOURCED
+  "camera.overnight.mode.now": "Now", // Dispo · camera.overnight · SOURCED
   "camera.overnight.push.body": "Photos have developed and are ready to view.", // Lapse · camera.overnight · SOURCED
   "camera.overnight.push.title": "{group}", // Retro · camera.overnight · SOURCED
+  "camera.overnight.settings.row": "Developed Photos", // Retro · camera.overnight · SOURCED
+  "camera.overnight.settings.rowDetail": "A notification when photos taken for {time} are ready.", // Retro · camera.overnight · SOURCED
+  "camera.overnight.tile.a11y": "Photos developing, shown to everyone {reveal}", // Dispo · camera.overnight · SOURCED
+  "camera.overnight.tile.label": "Developing", // Dispo · camera.overnight · SOURCED
   "camera.sendto.a11y.close": "Close", // Retro · camera.sendto · SOURCED
   "camera.sendto.a11y.save": "Save to Camera Roll", // Retro · camera.sendto · SOURCED
   "camera.sendto.a11y.voice": "Add a voice note", // Retro · camera.sendto · SOURCED
@@ -510,8 +527,12 @@ const table = {
   "notifications.push.channel.birthdayRequest.name": "Birthday Requests", // Retro · notifications.push · SOURCED
   "notifications.push.channel.dailyInvitation.description": "The daily invitation to share a photo with your group", // Retro · daily.notification · SOURCED
   "notifications.push.channel.dailyInvitation.name": "Daily Invitation", // Retro · daily.notification · SOURCED
+  "notifications.push.channel.developedPhotos.description": "When photos taken for {time} are ready to view", // Retro · camera.overnight · SOURCED
+  "notifications.push.channel.developedPhotos.name": "Developed Photos", // Retro · camera.overnight · SOURCED
   "notifications.push.channel.newPost.description": "Recent posts from your groups", // Retro · notifications.push · SOURCED
   "notifications.push.channel.newPost.name": "New Posts", // Retro · notifications.push · SOURCED
+  "notifications.push.channel.plans.description": "When someone makes, changes or cancels a plan, and the day before one you're going to", // Retro · notifications.push · SOURCED
+  "notifications.push.channel.plans.name": "Plans", // Retro · notifications.push · SOURCED
   "notifications.push.channel.reactionsReplies.description": "Reactions and replies to your posts", // Retro · notifications.push · SOURCED
   "notifications.push.channel.reactionsReplies.name": "Post Activity", // Retro · notifications.push · SOURCED
   "notifications.push.channel.recap.description": "When your group's weekly recap is ready", // Retro · notifications.push · SOURCED
@@ -694,6 +715,75 @@ const table = {
   "photo.viewer.reply.placeholder": "Add a comment…", // Retro · photo.viewer · SOURCED
   "photo.viewer.toast.deleted": "Deleted", // Retro · photo.viewer · SOURCED
   "photo.viewer.toast.saved": "Saved!", // Retro · photo.viewer · SOURCED
+  "plans.create.allDay": "All-day", // Apple Invites · plans.create · VERIFIED
+  "plans.create.close.accessibilityLabel": "Close", // Retro · plans.create · VERIFIED
+  "plans.create.cover.accessibilityLabel": "Cover image", // Retro · plans.create · VERIFIED
+  "plans.create.cover.add": "Add cover image", // Retro · plans.create · SOURCED
+  "plans.create.cover.edit": "Edit cover image", // Retro · plans.create · SOURCED
+  "plans.create.creating": "Creating…", // Retro · plans.create · SOURCED
+  "plans.create.cta": "Create Plan", // Retro · plans.create · SOURCED
+  "plans.create.date": "Date", // Apple Invites · plans.create · SOURCED
+  "plans.create.date.none": "Choose", // Retro · plans.create · SOURCED
+  "plans.create.discard.cancel": "Cancel", // Apple HIG · plans.create · PLATFORM
+  "plans.create.discard.confirm": "Yes, discard", // Retro · plans.create · SOURCED
+  "plans.create.discard.title": "Discard this plan?", // Retro · plans.create · SOURCED
+  "plans.create.entry": "Make a Plan", // Retro · plans.create · SOURCED
+  "plans.create.error.cover": "Your cover image didn't upload. Please try again.", // Retro · plans.create · SOURCED
+  "plans.create.error.failed": "Your plan wasn't created. Please try again.", // Retro · plans.create · SOURCED
+  "plans.create.error.tooLong": "Name too long", // Retro · plans.create · SOURCED
+  "plans.create.name.accessibilityLabel": "Plan name", // Retro · plans.create · SOURCED
+  "plans.create.name.placeholder": "Name your plan", // Retro · plans.create · SOURCED
+  "plans.create.note.placeholder": "Add a note…", // Retro · plans.create · SOURCED
+  "plans.create.offline": "Could not connect. Check your connection and try again.", // Retro · plans.create · SOURCED
+  "plans.create.place.placeholder": "Place name or address", // Partiful · plans.create · SOURCED
+  "plans.create.save": "Save", // Retro · plans.create · SOURCED
+  "plans.create.time": "Time", // Apple Invites · plans.create · SOURCED
+  "plans.create.title": "New Plan", // Retro · plans.create · SOURCED
+  "plans.create.titleEdit": "Edit Plan", // Retro · plans.create · SOURCED
+  "plans.page.album": "Photos", // Retro · plans.page · SOURCED
+  "plans.page.answer.cantGo": "Can't go", // Partiful · plans.page · SOURCED
+  "plans.page.answer.clear": "Clear answer", // Retro · plans.page · SOURCED
+  "plans.page.answer.going": "Going", // Partiful · plans.page · SOURCED
+  "plans.page.answer.groupLabel": "Your answer", // Retro · plans.page · SOURCED
+  "plans.page.answer.maybe": "Maybe", // Partiful · plans.page · SOURCED
+  "plans.page.back.accessibilityLabel": "Back", // Retro · plans.page · VERIFIED
+  "plans.page.cancel.confirm": "Yes, cancel", // Retro · plans.page · SOURCED
+  "plans.page.cancel.keep": "Keep Plan", // Retro · plans.page · SOURCED
+  "plans.page.cancel.message": "Everyone who's going or might go will be notified.", // Retro · plans.page · SOURCED
+  "plans.page.cancel.title": "Cancel {title}?", // Retro · plans.page · SOURCED
+  "plans.page.canceled": "Canceled", // Apple Invites · plans.page · SOURCED
+  "plans.page.cover.accessibilityLabel": "Cover of {title}", // Retro · plans.page · SOURCED
+  "plans.page.error.answer": "Couldn't save your answer", // Retro · plans.page · SOURCED
+  "plans.page.error.title": "Error loading plan. Tap here to try again.", // Retro · plans.page · SOURCED
+  "plans.page.going": "Going", // Apple Invites · plans.page · SOURCED
+  "plans.page.madeBy": "Made by {name}", // Apple Invites · plans.page · SOURCED
+  "plans.page.maybe": "Maybe", // Apple Invites · plans.page · SOURCED
+  "plans.page.menu.cancel": "Cancel Plan", // Partiful · plans.page · SOURCED
+  "plans.page.menu.edit": "Edit Plan", // Apple Invites · plans.page · SOURCED
+  "plans.page.menu.restore": "Restore Plan", // Apple Invites · plans.page · VERIFIED
+  "plans.page.more.accessibilityLabel": "More", // Retro · plans.page · VERIFIED
+  "plans.page.notFound.detail": "It may have been removed from the group.", // Retro · plans.page · SOURCED
+  "plans.page.notFound.title": "Couldn't find plan", // Retro · plans.page · SOURCED
+  "plans.page.offline": "Could not connect. Check your connection and try again.", // Retro · plans.page · SOURCED
+  "plans.page.people.cantGo": "Can't go", // Partiful · plans.page · SOURCED
+  "plans.page.people.title": "Who's Coming", // Retro · plans.page · SOURCED
+  "question.weekly.camera.a11y": "Answering: {question}", // Retro · question.weekly · SOURCED
+  "question.weekly.card.a11y": "This week's question: {question}", // Retro · question.weekly · SOURCED
+  "question.weekly.card.a11y.answers": "See answers", // Retro · question.weekly · SOURCED
+  "question.weekly.card.button": "Add a photo", // Retro · question.weekly · SOURCED
+  "question.weekly.card.label": "This Week's Question", // Retro · question.weekly · SOURCED
+  "question.weekly.menu.remove": "Remove", // Apple Journal · question.weekly · VERIFIED
+  "question.weekly.q01": "What made you laugh this week?", // Retro · question.weekly · SOURCED
+  "question.weekly.q02": "Caught up with a friend this week?", // Retro · question.weekly · SOURCED
+  "question.weekly.q03": "Did something nice for yourself this week?", // Retro · question.weekly · SOURCED
+  "question.weekly.q04": "Ate something tasty this week?", // Retro · question.weekly · SOURCED
+  "question.weekly.q05": "Made something you're proud of this week?", // Retro · question.weekly · SOURCED
+  "question.weekly.q06": "Anything from this week you want to remember?", // Retro · question.weekly · SOURCED
+  "question.weekly.q07": "What's something you love to do?", // Apple Journal · question.weekly · SOURCED
+  "question.weekly.q08": "What's something nice someone did for you this week?", // Apple Journal · question.weekly · SOURCED
+  "question.weekly.q09": "Where did you spend most of your time this week?", // Retro · question.weekly · SOURCED
+  "question.weekly.settings.row": "Weekly Question", // Retro · question.weekly · SOURCED
+  "question.weekly.settings.rowDetail": "One light question for the group each week, answered with a photo.", // Retro · question.weekly · SOURCED
   "safety.block.cancel": "Cancel", // Apple HIG · safety.block · VERIFIED
   "safety.block.confirm": "Yes, block", // Retro · safety.block · SOURCED
   "safety.block.done": "Blocked {first_name}", // Retro · safety.block · SOURCED
@@ -828,6 +918,25 @@ const table = {
   "tagging.sheet.title": "In this photo", // Retro · tagging · SOURCED
   "tagging.toggle": "I'm in this", // Retro · tagging · SOURCED
   "tagging.with": "with {names}", // Retro · tagging · SOURCED
+  "viewer.selfiereaction.a11y.action": "React with a selfie", // BeReal · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.a11y.capture": "Take selfie", // Retro · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.a11y.face": "{name}'s selfie", // Retro · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.a11y.faceMine": "Your selfie", // Retro · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.a11y.preview": "Front camera", // Retro · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.a11y.sent": "Selfie sent", // Retro · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.a11y.stack": "Selfie reactions: {names}", // Retro · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.activity.row": "{name} reacted with a selfie", // WhatsApp + Apple Messages · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.activity.rowMine": "You reacted with a selfie", // WhatsApp + Apple Messages · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.coach.slideHere": "Slide here to react", // BeReal · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.coach.slideToSend": "Slide in to send", // BeReal · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.coach.tapRing": "Tap the circle to send", // BeReal · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.error": "Couldn't send selfie", // Retro · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.menu.react": "React with a selfie", // BeReal · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.menu.remove": "Remove", // BeReal · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.menu.report": "Report Selfie", // Retro · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.remove.confirm": "Yes, remove", // Retro · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.remove.message": "It will be removed from your photo.", // Retro · viewer.selfiereaction · SOURCED
+  "viewer.selfiereaction.remove.title": "Remove {name}'s selfie?", // Retro · viewer.selfiereaction · SOURCED
   "walls.browse.a11y.collage": "Collage, {date}", // Retro · walls.browse · SOURCED
   "walls.browse.empty.action": "Create a group", // Retro · walls.browse · SOURCED
   "walls.browse.empty.detail": "People in your groups show up here.", // Retro · walls.browse · SOURCED
@@ -902,6 +1011,12 @@ const table = {
   "widget.arrival.android.refreshChannelName": "Background Work", // Retro · widget.arrival · SOURCED
   "widget.arrival.android.refreshTitle": "Updating widgets…", // Retro · widget.arrival · SOURCED
   "widget.arrival.help.delay": "New photos can take a few minutes to show up on your widget. This helps save your battery.", // Retro · widget.arrival · SOURCED
+  "widget.countdown.a11y.plan": "{title} with {group}, {countdown}", // Retro · widget.countdown · SOURCED
+  "widget.countdown.configuration.allGroups": "All Groups", // Retro · widget.countdown · SOURCED
+  "widget.countdown.configuration.group": "Group", // Retro · widget.countdown · SOURCED
+  "widget.countdown.configuration.title": "Show plans from…", // Retro · widget.countdown · SOURCED
+  "widget.countdown.gallery.description": "See how many days until your group's next plan.", // Retro · widget.countdown · SOURCED
+  "widget.countdown.gallery.name": "Next Plan", // Retro · widget.countdown · SOURCED
   "widget.home.small.a11y.collage": "Photos from {group}, {date}", // Retro · widget.home.small · SOURCED
   "widget.home.small.a11y.photo": "{name}'s photo in {group}", // Retro · widget.home.small · SOURCED
   "widget.home.small.configuration.group": "Group", // Retro · widget.home.small · SOURCED

@@ -790,6 +790,89 @@ public enum Tokens {
             public static let android: String = "PendingIntent ACTION_VIEW on the widget root"
             public static let opens: String = "camera.capture, group preselected in camera.sendto"
         }
+        /// Retro · camera.overnight · destination pill on the viewfinder in 9 AM mode (which groups the next photos develop for) · SOURCED
+        /// token: `camera.overnight.layout.destinationPill`
+        public enum CameraOvernightLayoutDestinationPill {
+            public static let component: String = "C-09 pill on media"
+            public static let fill: String = "color.global.controlOnDeep"
+            public static let icon: String = "icon.global.group at size.global.iconSmall"
+            public static let label: String = "camera.overnight.destination.*, text role pill, color.global.textOnMedia, truncates at the end"
+            public static let height: String = "size.global.pillHeight"
+            public static let padding: String = "size.global.pillPaddingLeading / size.global.pillPaddingTrailing"
+            public static let iconGap: String = "size.global.pillIconGap"
+            public static let maxWidth: String = "viewfinder width − 2 × size.global.screenMargin"
+            public static let bottomInset: String = "camera.sendto.layout.messageField bottomInset (20.5 above the viewfinder bottom: the coach pill's slot; the video coach is never shown in 9 AM mode)"
+            public static let centred: Bool = true
+        }
+        /// Dispo · camera.overnight · sheet that chooses the groups 9 AM photos develop for · SOURCED
+        /// token: `camera.overnight.layout.destinationSheet`
+        public enum CameraOvernightLayoutDestinationSheet {
+            public static let component: String = "C-29 native sheet (follows the appearance)"
+            public static let title: String = "camera.overnight.destination.title, text role sheetTitle"
+            public static let detail: String = "camera.overnight.destination.detail, text role body, color.global.textSecondary, at most 2 lines, size.global.screenMargin margins"
+            public static let rows: String = "camera.sendto.layout.recipientRow in the sheet's appearance colours"
+            public static let done: String = "C-08 text button in the toolbar (camera.overnight.destination.done)"
+            public static let `default`: String = "every group selected (owner decision 11, as camera.sendto)"
+            public static let keep: String = "app session"
+            public static let opens: String = "the first time 9 AM is chosen in an app session, and from the destination pill"
+            public static let nothingSelected: String = "Done switches the mode back to Now"
+            public static let noGroups: String = "camera.sendto empty state (C-27)"
+        }
+        /// Retro · camera.overnight · one placeholder tile per group while photos develop · SOURCED
+        /// token: `camera.overnight.layout.developingTile`
+        public enum CameraOvernightLayoutDevelopingTile {
+            public static let component: String = "C-17 placeholder tile"
+            public static let size: String = "size.global.stripTileWidth × size.global.stripTileHeight"
+            public static let fill: String = "color.global.control"
+            public static let label: String = "camera.overnight.tile.label, text role tileLabel, color.global.textSecondary, centred horizontally and vertically"
+            public static let perGroup: CGFloat = 1
+            public static let position: String = "groups.screen This week strip, just before the add tile (the newest position); also week.history (current week)"
+            public static let week: String = "the week the photos were taken"
+            public static let counter: String = "none (no number, no names)"
+            public static let notShown: String = "widgets, chat, photo.viewer"
+        }
+        /// Retro · camera.overnight · '9 AM · Now' mode control on the camera, between the header and the viewfinder · SOURCED
+        /// token: `camera.overnight.layout.modeControl`
+        public enum CameraOvernightLayoutModeControl {
+            public static let component: String = "C-30 native segmented control (iOS Picker(.segmented), Android M3 SingleChoiceSegmentedButtonRow), drawn in the dark appearance on the media page; Android selection color.global.system.secondaryContainer (dark value)"
+            public static let width: String = "screen − 2 × size.global.screenMargin"
+            public static let top: String = "size.global.titleToContent below the header title baseline"
+            public static let toViewfinder: String = "size.global.sectionHeaderToContent (the viewfinder shrinks to fit, 3:4 kept)"
+            public static let height: String = "the platform control's (PLATFORM)"
+            public static let segments: String = "[\"later\",\"now\"]"
+            public static let `default`: String = "now"
+            public static let keep: String = "the choice holds while the camera stays in memory; Now again at every app launch"
+            public static let visibility: String = "shown in both modes so the layout does not jump"
+            public static let haptic: String = "haptic.global.select"
+        }
+        /// Lapse · camera.overnight · the one notification when a group's overnight photos develop · SOURCED
+        /// token: `camera.overnight.layout.push`
+        public enum CameraOvernightLayoutPush {
+            public static let perGroupPerReveal: CGFloat = 1
+            public static let ios: String = "interruption level active (passive in quiet hours), thread = the group"
+            public static let androidChannel: String = "developed_photos (notifications.push.channel.developedPhotos.*), IMPORTANCE_DEFAULT"
+            public static let copy: String = "camera.overnight.push.title / .body"
+            public static let `switch`: String = "settings.notifications row camera.overnight.settings.row, default on"
+            public static let tap: String = "groups.screen of the group, then photo.viewer on the photos revealed at that time, oldest first, with the viewer's position badge"
+            public static let counter: String = "none"
+        }
+        /// Dispo · camera.overnight · when overnight photos develop · SOURCED
+        /// token: `camera.overnight.layout.reveal`
+        public enum CameraOvernightLayoutReveal {
+            public static let time: String = "09:00"
+            public static let zone: String = "groups.time_zone"
+            public static let rule: String = "the first 09:00 after capture, wall clock (daylight-saving safe); a photo sent to groups in two zones reveals at each group's own 09:00"
+            public static let lateUpload: String = "a photo whose upload completes after its reveal time reveals on arrival"
+            public static let before: String = "nobody can read the photo before the reveal, the author included"
+        }
+        /// Dispo · camera.overnight · what the camera does with 9 AM photos it cannot upload yet · SOURCED
+        /// token: `camera.overnight.layout.uploadQueue`
+        public enum CameraOvernightLayoutUploadQueue {
+            public static let offline: String = "capture works; the photo is stored in app storage and uploaded on reconnect; nothing extra is drawn on the camera"
+            public static let photoLibrary: String = "never written to the system photo library before its reveal"
+            public static let localFile: String = "deleted after upload"
+            public static let failure: String = "after retries: camera.sendto.error.sendFailed (C-26 toast on Android, announcement on iOS)"
+        }
         /// Retro · camera.sendto · sheet header on the black composer: centred title + close circle (Retro 'Postcard' modal); shared by daily.capture · SOURCED
         /// token: `camera.sendto.layout.header`
         public enum CameraSendtoLayoutHeader {
@@ -1680,6 +1763,8 @@ public enum Tokens {
             public static let recap: String = "IMPORTANCE_DEFAULT"
             public static let birthdayRequest: String = "IMPORTANCE_DEFAULT"
             public static let tribute: String = "IMPORTANCE_DEFAULT"
+            public static let developedPhotos: String = "IMPORTANCE_DEFAULT"
+            public static let plans: String = "IMPORTANCE_DEFAULT"
         }
         /// Apple HIG · notifications.push · iOS alert presentation for every push text · PLATFORM
         /// token: `notifications.push.layout.ios`
@@ -1821,6 +1906,39 @@ public enum Tokens {
             public static let position: String = "footer text block, after the date / tags line: capsule top photo.viewer.dimension.footerLinePitch below that line's baseline"
             public static let component: String = "chat.voice.layout.capsule on media (color.global.controlOnDeep)"
         }
+        /// BeReal · question.weekly · the question shown on the camera while answering · SOURCED
+        /// token: `question.weekly.layout.cameraPill`
+        public enum QuestionWeeklyLayoutCameraPill {
+            public static let component: String = "C-09 pill on media"
+            public static let fill: String = "color.global.controlOnDeep"
+            public static let label: String = "the question, text role pill, color.global.textOnMedia, one line, truncated"
+            public static let slot: String = "camera.sendto.layout.messageField bottomInset (20.5 above the viewfinder bottom)"
+            public static let maxWidth: String = "viewfinder width − 2 × size.global.screenMargin"
+            public static let nineAm: String = "dropped when the camera switches to 9 AM (camera.overnight)"
+        }
+        /// Retro · question.weekly · weekly question card in the group screen's pager · SOURCED
+        /// token: `question.weekly.layout.card`
+        public enum QuestionWeeklyLayoutCard {
+            public static let placement: String = "groups.screen pager (§8), the first feed card, after the friend cards"
+            public static let geometry: String = "C-18: size.global.friendCardWidth × size.global.friendCardHeight, radius.global.card, layout.global.cornerStyle, size.global.cardGap between cards"
+            public static let label: String = "question.weekly.card.label above the card in the friend card's name slot: text role listTitle, color.global.textPrimary, size.global.cardHeaderGap to the card, from the card's leading edge, no glyph"
+            public static let empty: String = "{\"fill\":\"color.global.control\",\"text\":\"displaySmall / font.global.displayNarrow / color.global.textPrimary\",\"action\":\"C-06 primary capsule (color.global.accent / color.global.onAccent, size.global.pillHeight)\"}"
+            public static let answered: String = "{\"photo\":\"newest answer, aspect-fill\",\"scrim\":\"layout.global.photoScrim\",\"text\":\"color.global.textOnMedia\",\"action\":\"C-09 light pill (color.global.surfaceLight / color.global.onSurfaceLight, text role pill)\"}"
+            public static let inset: String = "size.global.screenMargin at the bottom: question, then size.global.pillGap, then the action"
+            public static let maxLines: CGFloat = 4
+            public static let counter: String = "none (no names, no number of answers, no 'you answered' mark)"
+        }
+        /// Retro · question.weekly · when the weekly question changes and who gets it · SOURCED
+        /// token: `question.weekly.layout.schedule`
+        public enum QuestionWeeklyLayoutSchedule {
+            public static let cadence: String = "one question per group week"
+            public static let zone: String = "groups.time_zone"
+            public static let start: String = "app_config.week_start_isodow 00:00"
+            public static let sameForAllMembers: Bool = true
+            public static let push: String = "none"
+            public static let answers: String = "ordinary posts of the group, any time during the week, more than one per member allowed"
+            public static let remove: String = "a member may hide the card for themselves until the next question"
+        }
         /// Retro · global · buttons (60 / 37 / 36), pills, badges, position pill; circles for avatars and circle buttons · SOURCED
         /// token: `radius.global.capsule`
         public enum GlobalCapsule {
@@ -1896,6 +2014,30 @@ public enum Tokens {
         public enum GlobalHairline {
             public static let ios: String = "1 device pixel (1 / displayScale pt)"
             public static let android: String = "1 device pixel"
+        }
+        /// BeReal · viewer.selfiereaction · live front-camera circle of the capture layer and the target ring centred on its bottom edge · SOURCED
+        /// token: `viewer.selfiereaction.layout.captureCircle`
+        public enum ViewerSelfiereactionLayoutCaptureCircle {
+            public static let diameter: String = "screen width − 2 × size.global.screenMargin (361 at 393 pt; the camera.capture.layout.viewfinder width rule — BeReal's circle is 0.988 × its card)"
+            public static let centreX: String = "screen centre"
+            public static let centreY: String = "screen vertical middle (BeReal 425.6 of 852 pt = 0.4995 × height); when the panel is shorter than circle + ring + hint, the circle shrinks with its centre on the panel's middle"
+            public static let fill: String = "live front-camera preview, aspect-fill, circular clip"
+            public static let border: String = "viewer.selfiereaction.size.captureBorder in color.global.backgroundDeep, outside the clip"
+            public static let targetRing: String = "centred on the circle's bottom edge: outer diameter camera.capture.size.shutterOuter, stroke camera.capture.size.shutterRing, no disc, color.global.textSecondary (dark value on media)"
+        }
+        /// BeReal · viewer.selfiereaction · selfie faces over the photo in photo.viewer · SOURCED
+        /// token: `viewer.selfiereaction.layout.stack`
+        public enum ViewerSelfiereactionLayoutStack {
+            public static let anchor: String = "photo bottom-leading corner (for a letterboxed photo, the visible image's edges)"
+            public static let inset: String = "size.global.screenMargin on both axes"
+            public static let face: String = "size.global.avatarHeader (ring included), aspect-fill selfie"
+            public static let ring: String = "{\"color\":\"color.global.textOnMedia\",\"width\":2}"
+            public static let overlap: String = "size.global.avatarStackOverlap"
+            public static let maxVisible: String = "chat.reactions.count.clusterMaxVisible"
+            public static let order: String = "newest leading (chat.reactions.layout.clusterOrder)"
+            public static let zOrder: String = "each trailing face drawn over the one before it"
+            public static let counter: String = "none (no '+N', no number)"
+            public static let hitArea: String = "the whole stack is one button, at least size.global.minTouchTarget.*; a tap never advances the photo"
         }
         /// Retro · walls.browse · the people grid of walls.browse · SOURCED
         /// token: `walls.browse.layout.grid`
@@ -2856,6 +2998,9 @@ public enum Tokens {
         /// Apple Messages · global · C-36 voice waveform: width of one bar · SOURCED
         /// token: `size.global.waveformBarWidth`
         public static let globalWaveformBarWidth: CGFloat = 2
+        /// BeReal · viewer.selfiereaction · border of the live front-camera circle in the selfie-reaction capture layer, drawn outside the circular clip in color.global.backgroundDeep · SOURCED
+        /// token: `viewer.selfiereaction.size.captureBorder`
+        public static let viewerSelfiereactionSizeCaptureBorder: CGFloat = 3.4
         /// Retro · walls.browse · people grid: avatar centre → avatar centre of the next column (three columns, centred on the screen) · SOURCED
         /// token: `walls.browse.dimension.columnPitch`
         public static let wallsBrowseDimensionColumnPitch: CGFloat = 124.3

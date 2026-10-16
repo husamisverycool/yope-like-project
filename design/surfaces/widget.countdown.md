@@ -1,7 +1,9 @@
-# `widget.countdown` — the next plan, in days (draft)
+# `widget.countdown` — the next plan, in days
 
-> **Draft, 2026-10-16.** Research: `design/research/plans.md` §9; data: `design/research/plans-data.md` (`next_plans`).
-> Copy keys are proposals; tokens are existing names only.
+Research: `design/research/plans.md` §9; data: `design/research/plans-data.md`; server: `next_plans(p_group_id = null)`
+(`docs/API.md` §14.2). Tokens: existing `widget.home.*` / `global.*` names only. Copy: `design/copy/plans.json`
+(`widget.countdown.*`) — canonical, with each string's evidence and level. Decisions: `design/MERGE_DECISIONS.md` → New
+features (PL-9, PL-10, PL-11).
 
 **Visual reference: Retro's Glance widget anatomy, exactly as `widget.home.small`** (full-bleed photo, `layout.global.photoScrim`,
 white text at the bottom-trailing corner, system corner, white-85 % state column) — so the countdown widget reads as the
@@ -99,8 +101,8 @@ None (system widget).
 
 ## Accessibility
 
-- One element, button trait. Label `widget.countdown.a11y.plan`: "{plan_title} with {group_name}, {countdown}" (the
-  countdown in the formatter's words); empty: the visible line.
+- One element, button trait. Label `widget.countdown.a11y.plan`: "{title} with {group}, {countdown}" (the countdown in
+  the formatter's words); empty: the visible line.
 - Dynamic Type: title scales with Subheadline, countdown with Title 2 (the text-style map of `listTitle` /
   `displaySmall`); both truncate to one line (widgets support Large–AX5, HIG).
 - Contrast: identical to `widget.home.small` (white over the scrim is photo-dependent, **FAIL** on white photos —
@@ -119,20 +121,8 @@ None (system widget).
 - iOS: `AppIntentConfiguration` (as `widget.home.small`) with one `GroupEntity` parameter that includes "All groups".
 - Android: `GlanceAppWidget` with the `widget.android` provider rules (system corner radius, edge-to-edge container),
   `SizeMode.Responsive` for 2 × 2 and 4 × 2; lock-screen hub opt-in as `widget.android` (owner decision 18).
-- Lock Screen (accessory families): not in this draft (a monochrome text line "{title} · {countdown}" would follow
+- Lock Screen (accessory families): not in this spec (a monochrome text line "{title} · {countdown}" would follow
   `widget.lock.inline`; no reference captured).
-
-## Copy (proposed, English)
-
-| key | text | origin | pattern / source | level |
-|---|---|---|---|---|
-| `widget.countdown.gallery.name` | Next Plan | new | retro.voice.widget (gallery name Title Case: "Friend Updates", "Your Memories") | SOURCED |
-| `widget.countdown.gallery.description` | See how many days until your group's next plan. | new | platform.widgetDescription (action verb first: "Keep track of your upcoming events and meetings.", HIG) + content of Apple "count down the days until your next event" | SOURCED |
-| `widget.countdown.configuration.title` | Show plans from… | adapted | Retro "See photos from…" (`app_widget_config_screen_title_friend_picker`, retro.voice.widget: "…" leads to a choice) | SOURCED |
-| `widget.countdown.configuration.group` | Group | verbatim | `widget.home.small.configuration.group` | SOURCED |
-| `widget.countdown.configuration.allGroups` | All Groups | new | retro.voice.title-case (picker item naming a set) | SOURCED |
-| `widget.countdown.empty.noPlans` | No plans yet. Tap to make one | new | retro.voice.widget ("No media. Tap to reload") | BLOCKED (no reference widget shows an empty plan state; pattern-only) |
-| `widget.countdown.a11y.plan` | {plan_title} with {group_name}, {countdown} | new | platform.a11yLabel | SOURCED |
 
 ## Do-not-copy
 

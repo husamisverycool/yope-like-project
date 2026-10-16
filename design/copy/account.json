@@ -1,5 +1,5 @@
 {
-  "$comment": "Account group strings — Redesign Pass 2 in Retro's voice (design/copy-patterns.md). Keys kept where the meaning is unchanged (code references them); see design/MERGE_DECISIONS.md → 'Redesign — Account (RA-*)' for removed and renamed keys.",
+  "$comment": "Account group strings — Redesign Pass 2 in Retro's voice (design/copy-patterns.md). Keys kept where the meaning is unchanged (code references them); see design/MERGE_DECISIONS.md → 'Redesign — Account (RA-*)' for removed and renamed keys. question.weekly added by the new-features consolidation (2026-10-16; MERGE_DECISIONS 'New features (WQ-*)').",
   "strings": {
     "auth.phone.tagline": {
       "text": "Friends and Family Only",
@@ -2376,6 +2376,174 @@
       "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `error_message_generic`",
       "pattern": "retro.voice.error",
       "level": "SOURCED"
+    },
+    "question.weekly.card.label": {
+      "text": "This Week's Question",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "evidence": "references/auto/apple-journal/store/journal-store-iPhone_2_Suggestions.png (eyebrow 'REFLECTION' names the feature above the prompt); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `weeks_ago_this_week` 'This Week'",
+      "pattern": "retro.voice.title-case (feature name)",
+      "level": "SOURCED",
+      "notes": "Label line above the card."
+    },
+    "question.weekly.card.button": {
+      "text": "Add a photo",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `nux_card_cta_what_to_share` 'Add a memory'",
+      "pattern": "retro.voice.button",
+      "level": "SOURCED",
+      "notes": "Noun swap memory → photo. Opens the camera with the question."
+    },
+    "question.weekly.card.a11y": {
+      "text": "This week's question: {question}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "evidence": "design/copy-patterns.md `platform.a11yLabel` (the label carries the card's text)",
+      "pattern": "retro.voice.sentence-case; platform.a11yLabel",
+      "level": "SOURCED",
+      "notes": "{question}: the week's question text (question.weekly.q*)."
+    },
+    "question.weekly.card.a11y.answers": {
+      "text": "See answers",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `home_rewind_upsell_feed_card_cta` 'View memories' (verb + object)",
+      "pattern": "retro.voice.button",
+      "level": "SOURCED",
+      "notes": "Custom action when the card has answers; opens photo.viewer on them."
+    },
+    "question.weekly.menu.remove": {
+      "text": "Remove",
+      "origin": "verbatim",
+      "source_app": "Apple Journal",
+      "surface": "question.weekly",
+      "evidence": "support.apple.com iPhone User Guide, Journal 'touch and hold the suggestion, then tap Remove' (design/research/overnight-and-questions.md §0 AJS)",
+      "pattern": "platform.menuItem; retro.voice.menu-labels",
+      "level": "VERIFIED",
+      "notes": "Hides the card for this member until the next question; no confirmation."
+    },
+    "question.weekly.camera.a11y": {
+      "text": "Answering: {question}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "evidence": "design/copy-patterns.md `platform.a11yLabel`",
+      "pattern": "retro.voice.sentence-case; platform.a11yLabel",
+      "level": "SOURCED",
+      "notes": "Label of the camera pill (not a button)."
+    },
+    "question.weekly.settings.row": {
+      "text": "Weekly Question",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "evidence": "design/copy-patterns.md `retro.voice.settings` (rows in Title Case)",
+      "pattern": "retro.voice.settings",
+      "level": "SOURCED",
+      "notes": "Group switch in groups.settings."
+    },
+    "question.weekly.settings.rowDetail": {
+      "text": "One light question for the group each week, answered with a photo.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `settings_description_neighborhood_captions` 'Show the neighborhood or city on photos you post with locations.' (row detail form)",
+      "pattern": "retro.voice.settings",
+      "level": "SOURCED"
+    },
+    "question.weekly.q01": {
+      "text": "What made you laugh this week?",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "evidence": "the feature brief's example question (design/research/overnight-and-questions.md, question.weekly draft); Retro prompt form (references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `nux_card_title_what_to_share_0..7`)",
+      "pattern": "retro.voice.prompt",
+      "level": "SOURCED",
+      "notes": "Catalogue key referenced by the server (app_config weekly_question_keys)."
+    },
+    "question.weekly.q02": {
+      "text": "Caught up with a friend this week?",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `nux_card_title_what_to_share_0` 'Caught up with a friend?'",
+      "pattern": "retro.voice.prompt",
+      "level": "SOURCED",
+      "notes": "'this week' added for the weekly cadence."
+    },
+    "question.weekly.q03": {
+      "text": "Did something nice for yourself this week?",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `nux_card_title_what_to_share_1` 'Did something nice for yourself?'",
+      "pattern": "retro.voice.prompt",
+      "level": "SOURCED",
+      "notes": "'this week' added for the weekly cadence."
+    },
+    "question.weekly.q04": {
+      "text": "Ate something tasty this week?",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `nux_card_title_what_to_share_3` 'Ate something tasty?'",
+      "pattern": "retro.voice.prompt",
+      "level": "SOURCED",
+      "notes": "'this week' added for the weekly cadence."
+    },
+    "question.weekly.q05": {
+      "text": "Made something you're proud of this week?",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `nux_card_title_what_to_share_5` 'Made something you’re proud of?'",
+      "pattern": "retro.voice.prompt; retro.voice.punctuation (straight apostrophe)",
+      "level": "SOURCED",
+      "notes": "'this week' added; curly → straight apostrophe."
+    },
+    "question.weekly.q06": {
+      "text": "Anything from this week you want to remember?",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `post_reminder_notification_message` 'Anything from today you want to remember?'",
+      "pattern": "retro.voice.prompt",
+      "level": "SOURCED",
+      "notes": "today → this week."
+    },
+    "question.weekly.q07": {
+      "text": "What's something you love to do?",
+      "origin": "adapted",
+      "source_app": "Apple Journal",
+      "surface": "question.weekly",
+      "evidence": "references/auto/apple-journal/store/journal-store-iPhone_2_Suggestions.png 'Think about something you love to do and why it brings you joy.'",
+      "pattern": "retro.voice.prompt",
+      "level": "SOURCED",
+      "notes": "Imperative → question; 'why it brings you joy' dropped so a photo can answer it."
+    },
+    "question.weekly.q08": {
+      "text": "What's something nice someone did for you this week?",
+      "origin": "new",
+      "source_app": "Apple Journal",
+      "surface": "question.weekly",
+      "evidence": "Apple Journal reflection themes 'gratitude, kindness, purpose' (Apple Newsroom 2023-12-11); widget prompt form 'What's something nice you can do for yourself today?' (references/auto/apple-journal/store/journal-store-iPhone_7_Widget.png)",
+      "pattern": "retro.voice.prompt",
+      "level": "SOURCED"
+    },
+    "question.weekly.q09": {
+      "text": "Where did you spend most of your time this week?",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "question.weekly",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `retrospective_page_title_most_popular_places` 'This is where you spent most of your time'",
+      "pattern": "retro.voice.prompt",
+      "level": "SOURCED",
+      "notes": "Statement → question; 'this week' added."
     },
     "settings.root.title": {
       "text": "Settings",

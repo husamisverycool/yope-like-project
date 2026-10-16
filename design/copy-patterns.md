@@ -133,11 +133,16 @@ Loading · empty · error · offline · permission-denied states use `retro.voic
 | `onboarding.widget` | `retro.voice.widget` (title, closing), `locket.onboarding.widgetSteps` (steps content) |
 | `groups.list`, `groups.create`, `groups.invite`, `groups.screen` | Retro set (`retro.voice.title-case` for tool titles: "New Album" → our group noun), `retro.voice.share` (invite link) |
 | `groups.settings` | `retro.voice.settings`, `retro.voice.confirm`, `retro.voice.menu-labels`; native dialogs `platform.alert*` |
+| `question.weekly` | Retro set + `retro.voice.prompt` (the questions), `retro.voice.settings` (group switch), `platform.menuItem` (Remove); never a tally |
+| `plans.create`, `plans.page` | Retro set (`retro.voice.title-case` for tool titles: "New Album" → "New Plan"), `retro.voice.confirm` (discard / cancel), `retro.voice.menu-labels`; answers Going · Maybe · Can't go (Partiful content); never a count |
 | `camera.capture`, `camera.sendto`, `camera.fromwidget` | Retro set (`retro.voice.placeholder` for the caption: "Add a caption…") |
+| `camera.overnight` | Retro set + `retro.voice.explanation`, `retro.voice.settings` (alert switch), `retro.voice.push-channel`; times and relative days from the platform formatters |
 | `widget.home.*`, `widget.lock.*`, `widget.arrival`, `widget.android` | `retro.voice.widget`, `platform.widgetDescription`, `retro.voice.push-channel` (Android refresh channel) |
+| `widget.countdown` | `retro.voice.widget`, `platform.widgetDescription`; the day count is the platform relative formatter's output (PLATFORM), never typed |
 | `chat.thread`, `chat.composer`, `chat.voice` | Retro set (`retro.voice.placeholder`: "Send a private message reply…"-style) |
 | `chat.reactions` | Retro set + `messaging.reaction` (content); never a count |
 | `photo.viewer` | Retro set + `retro.voice.coach` (viewer tips), `retro.voice.menu-labels`, `retro.voice.terse-numbers` (position) |
+| `viewer.selfiereaction` | Retro set + `retro.voice.coach` (hints), `retro.voice.menu-labels`, `messaging.reaction` (rows); never a count |
 | `walls.mine`, `walls.member`, `walls.browse` | Retro set (`retro.voice.title-case` for "Share Profile"-style pills) |
 | `daily.notification` | `retro.voice.push` + `retro.voice.prompt` (tenet-5 adaptation below) |
 | `daily.capture`, `daily.liveactivity`, `daily.ongoing`, `daily.dualimage` | Retro set + `bereal.format.countdown`; `retro.voice.push-channel` (ongoing) |
@@ -153,7 +158,7 @@ Loading · empty · error · offline · permission-denied states use `retro.voic
 | `paywall` | `retro.voice.paywall` + Retro set; required links "Restore Purchases" / "Terms of Use" / "Privacy Policy" per `platform.alertButton` |
 | `safety.report`, `safety.block` | `retro.voice.confirm` ("Block {name}?"), `retro.voice.menu-labels`, Retro report flow ("Why are you reporting this post?", "Other", "Submitted!" — `media_viewer_report_reason_*`, `profile_report_*`) |
 | `system.permissions` | `platform.purposeString` |
-| `notifications.push` | `retro.voice.push`; reactions `messaging.reaction` (content); birthday request `P-BR-1`; tribute `P-BT-1`; Android channels `retro.voice.push-channel` |
+| `notifications.push` | `retro.voice.push`; reactions and selfie reactions `messaging.reaction` (content); birthday request `P-BR-1`; tribute `P-BT-1`; plans `retro.voice.push` (sender, verb, colon, content); Android channels `retro.voice.push-channel` |
 
 ## Adaptation rules
 

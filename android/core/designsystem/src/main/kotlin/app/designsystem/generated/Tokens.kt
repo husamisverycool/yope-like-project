@@ -652,6 +652,82 @@ object Tokens {
             const val android: String = "PendingIntent ACTION_VIEW on the widget root"
             const val opens: String = "camera.capture, group preselected in camera.sendto"
         }
+        /** Retro · camera.overnight · destination pill on the viewfinder in 9 AM mode (which groups the next photos develop for) · SOURCED — token `camera.overnight.layout.destinationPill` */
+        object CameraOvernightLayoutDestinationPill {
+            const val component: String = "C-09 pill on media"
+            const val fill: String = "color.global.controlOnDeep"
+            const val icon: String = "icon.global.group at size.global.iconSmall"
+            const val label: String = "camera.overnight.destination.*, text role pill, color.global.textOnMedia, truncates at the end"
+            const val height: String = "size.global.pillHeight"
+            const val padding: String = "size.global.pillPaddingLeading / size.global.pillPaddingTrailing"
+            const val iconGap: String = "size.global.pillIconGap"
+            const val maxWidth: String = "viewfinder width − 2 × size.global.screenMargin"
+            const val bottomInset: String = "camera.sendto.layout.messageField bottomInset (20.5 above the viewfinder bottom: the coach pill's slot; the video coach is never shown in 9 AM mode)"
+            const val centred: Boolean = true
+        }
+        /** Dispo · camera.overnight · sheet that chooses the groups 9 AM photos develop for · SOURCED — token `camera.overnight.layout.destinationSheet` */
+        object CameraOvernightLayoutDestinationSheet {
+            const val component: String = "C-29 native sheet (follows the appearance)"
+            const val title: String = "camera.overnight.destination.title, text role sheetTitle"
+            const val detail: String = "camera.overnight.destination.detail, text role body, color.global.textSecondary, at most 2 lines, size.global.screenMargin margins"
+            const val rows: String = "camera.sendto.layout.recipientRow in the sheet's appearance colours"
+            const val done: String = "C-08 text button in the toolbar (camera.overnight.destination.done)"
+            const val default: String = "every group selected (owner decision 11, as camera.sendto)"
+            const val keep: String = "app session"
+            const val opens: String = "the first time 9 AM is chosen in an app session, and from the destination pill"
+            const val nothingSelected: String = "Done switches the mode back to Now"
+            const val noGroups: String = "camera.sendto empty state (C-27)"
+        }
+        /** Retro · camera.overnight · one placeholder tile per group while photos develop · SOURCED — token `camera.overnight.layout.developingTile` */
+        object CameraOvernightLayoutDevelopingTile {
+            const val component: String = "C-17 placeholder tile"
+            const val size: String = "size.global.stripTileWidth × size.global.stripTileHeight"
+            const val fill: String = "color.global.control"
+            const val label: String = "camera.overnight.tile.label, text role tileLabel, color.global.textSecondary, centred horizontally and vertically"
+            const val perGroup: Float = 1f
+            const val position: String = "groups.screen This week strip, just before the add tile (the newest position); also week.history (current week)"
+            const val week: String = "the week the photos were taken"
+            const val counter: String = "none (no number, no names)"
+            const val notShown: String = "widgets, chat, photo.viewer"
+        }
+        /** Retro · camera.overnight · '9 AM · Now' mode control on the camera, between the header and the viewfinder · SOURCED — token `camera.overnight.layout.modeControl` */
+        object CameraOvernightLayoutModeControl {
+            const val component: String = "C-30 native segmented control (iOS Picker(.segmented), Android M3 SingleChoiceSegmentedButtonRow), drawn in the dark appearance on the media page; Android selection color.global.system.secondaryContainer (dark value)"
+            const val width: String = "screen − 2 × size.global.screenMargin"
+            const val top: String = "size.global.titleToContent below the header title baseline"
+            const val toViewfinder: String = "size.global.sectionHeaderToContent (the viewfinder shrinks to fit, 3:4 kept)"
+            const val height: String = "the platform control's (PLATFORM)"
+            const val segments: String = "[\"later\",\"now\"]"
+            const val default: String = "now"
+            const val keep: String = "the choice holds while the camera stays in memory; Now again at every app launch"
+            const val visibility: String = "shown in both modes so the layout does not jump"
+            const val haptic: String = "haptic.global.select"
+        }
+        /** Lapse · camera.overnight · the one notification when a group's overnight photos develop · SOURCED — token `camera.overnight.layout.push` */
+        object CameraOvernightLayoutPush {
+            const val perGroupPerReveal: Float = 1f
+            const val ios: String = "interruption level active (passive in quiet hours), thread = the group"
+            const val androidChannel: String = "developed_photos (notifications.push.channel.developedPhotos.*), IMPORTANCE_DEFAULT"
+            const val copy: String = "camera.overnight.push.title / .body"
+            const val switch: String = "settings.notifications row camera.overnight.settings.row, default on"
+            const val tap: String = "groups.screen of the group, then photo.viewer on the photos revealed at that time, oldest first, with the viewer's position badge"
+            const val counter: String = "none"
+        }
+        /** Dispo · camera.overnight · when overnight photos develop · SOURCED — token `camera.overnight.layout.reveal` */
+        object CameraOvernightLayoutReveal {
+            const val time: String = "09:00"
+            const val zone: String = "groups.time_zone"
+            const val rule: String = "the first 09:00 after capture, wall clock (daylight-saving safe); a photo sent to groups in two zones reveals at each group's own 09:00"
+            const val lateUpload: String = "a photo whose upload completes after its reveal time reveals on arrival"
+            const val before: String = "nobody can read the photo before the reveal, the author included"
+        }
+        /** Dispo · camera.overnight · what the camera does with 9 AM photos it cannot upload yet · SOURCED — token `camera.overnight.layout.uploadQueue` */
+        object CameraOvernightLayoutUploadQueue {
+            const val offline: String = "capture works; the photo is stored in app storage and uploaded on reconnect; nothing extra is drawn on the camera"
+            const val photoLibrary: String = "never written to the system photo library before its reveal"
+            const val localFile: String = "deleted after upload"
+            const val failure: String = "after retries: camera.sendto.error.sendFailed (C-26 toast on Android, announcement on iOS)"
+        }
         /** Retro · camera.sendto · sheet header on the black composer: centred title + close circle (Retro 'Postcard' modal); shared by daily.capture · SOURCED — token `camera.sendto.layout.header` */
         object CameraSendtoLayoutHeader {
             const val title: String = "centred, text role sheetTitle, colour color.global.textOnMedia; its cap middle on the circles' centre line"
@@ -1445,6 +1521,8 @@ object Tokens {
             const val recap: String = "IMPORTANCE_DEFAULT"
             const val birthdayRequest: String = "IMPORTANCE_DEFAULT"
             const val tribute: String = "IMPORTANCE_DEFAULT"
+            const val developedPhotos: String = "IMPORTANCE_DEFAULT"
+            const val plans: String = "IMPORTANCE_DEFAULT"
         }
         /** Apple HIG · notifications.push · iOS alert presentation for every push text · PLATFORM — token `notifications.push.layout.ios` */
         object NotificationsPushLayoutIos {
@@ -1569,6 +1647,36 @@ object Tokens {
             const val position: String = "footer text block, after the date / tags line: capsule top photo.viewer.dimension.footerLinePitch below that line's baseline"
             const val component: String = "chat.voice.layout.capsule on media (color.global.controlOnDeep)"
         }
+        /** BeReal · question.weekly · the question shown on the camera while answering · SOURCED — token `question.weekly.layout.cameraPill` */
+        object QuestionWeeklyLayoutCameraPill {
+            const val component: String = "C-09 pill on media"
+            const val fill: String = "color.global.controlOnDeep"
+            const val label: String = "the question, text role pill, color.global.textOnMedia, one line, truncated"
+            const val slot: String = "camera.sendto.layout.messageField bottomInset (20.5 above the viewfinder bottom)"
+            const val maxWidth: String = "viewfinder width − 2 × size.global.screenMargin"
+            const val nineAm: String = "dropped when the camera switches to 9 AM (camera.overnight)"
+        }
+        /** Retro · question.weekly · weekly question card in the group screen's pager · SOURCED — token `question.weekly.layout.card` */
+        object QuestionWeeklyLayoutCard {
+            const val placement: String = "groups.screen pager (§8), the first feed card, after the friend cards"
+            const val geometry: String = "C-18: size.global.friendCardWidth × size.global.friendCardHeight, radius.global.card, layout.global.cornerStyle, size.global.cardGap between cards"
+            const val label: String = "question.weekly.card.label above the card in the friend card's name slot: text role listTitle, color.global.textPrimary, size.global.cardHeaderGap to the card, from the card's leading edge, no glyph"
+            const val empty: String = "{\"fill\":\"color.global.control\",\"text\":\"displaySmall / font.global.displayNarrow / color.global.textPrimary\",\"action\":\"C-06 primary capsule (color.global.accent / color.global.onAccent, size.global.pillHeight)\"}"
+            const val answered: String = "{\"photo\":\"newest answer, aspect-fill\",\"scrim\":\"layout.global.photoScrim\",\"text\":\"color.global.textOnMedia\",\"action\":\"C-09 light pill (color.global.surfaceLight / color.global.onSurfaceLight, text role pill)\"}"
+            const val inset: String = "size.global.screenMargin at the bottom: question, then size.global.pillGap, then the action"
+            const val maxLines: Float = 4f
+            const val counter: String = "none (no names, no number of answers, no 'you answered' mark)"
+        }
+        /** Retro · question.weekly · when the weekly question changes and who gets it · SOURCED — token `question.weekly.layout.schedule` */
+        object QuestionWeeklyLayoutSchedule {
+            const val cadence: String = "one question per group week"
+            const val zone: String = "groups.time_zone"
+            const val start: String = "app_config.week_start_isodow 00:00"
+            const val sameForAllMembers: Boolean = true
+            const val push: String = "none"
+            const val answers: String = "ordinary posts of the group, any time during the week, more than one per member allowed"
+            const val remove: String = "a member may hide the card for themselves until the next question"
+        }
         /** Retro · global · buttons (60 / 37 / 36), pills, badges, position pill; circles for avatars and circle buttons · SOURCED — token `radius.global.capsule` */
         object GlobalCapsule {
             const val shape: String = "capsule"
@@ -1633,6 +1741,28 @@ object Tokens {
         object GlobalHairline {
             const val ios: String = "1 device pixel (1 / displayScale pt)"
             const val android: String = "1 device pixel"
+        }
+        /** BeReal · viewer.selfiereaction · live front-camera circle of the capture layer and the target ring centred on its bottom edge · SOURCED — token `viewer.selfiereaction.layout.captureCircle` */
+        object ViewerSelfiereactionLayoutCaptureCircle {
+            const val diameter: String = "screen width − 2 × size.global.screenMargin (361 at 393 pt; the camera.capture.layout.viewfinder width rule — BeReal's circle is 0.988 × its card)"
+            const val centreX: String = "screen centre"
+            const val centreY: String = "screen vertical middle (BeReal 425.6 of 852 pt = 0.4995 × height); when the panel is shorter than circle + ring + hint, the circle shrinks with its centre on the panel's middle"
+            const val fill: String = "live front-camera preview, aspect-fill, circular clip"
+            const val border: String = "viewer.selfiereaction.size.captureBorder in color.global.backgroundDeep, outside the clip"
+            const val targetRing: String = "centred on the circle's bottom edge: outer diameter camera.capture.size.shutterOuter, stroke camera.capture.size.shutterRing, no disc, color.global.textSecondary (dark value on media)"
+        }
+        /** BeReal · viewer.selfiereaction · selfie faces over the photo in photo.viewer · SOURCED — token `viewer.selfiereaction.layout.stack` */
+        object ViewerSelfiereactionLayoutStack {
+            const val anchor: String = "photo bottom-leading corner (for a letterboxed photo, the visible image's edges)"
+            const val inset: String = "size.global.screenMargin on both axes"
+            const val face: String = "size.global.avatarHeader (ring included), aspect-fill selfie"
+            const val ring: String = "{\"color\":\"color.global.textOnMedia\",\"width\":2}"
+            const val overlap: String = "size.global.avatarStackOverlap"
+            const val maxVisible: String = "chat.reactions.count.clusterMaxVisible"
+            const val order: String = "newest leading (chat.reactions.layout.clusterOrder)"
+            const val zOrder: String = "each trailing face drawn over the one before it"
+            const val counter: String = "none (no '+N', no number)"
+            const val hitArea: String = "the whole stack is one button, at least size.global.minTouchTarget.*; a tap never advances the photo"
         }
         /** Retro · walls.browse · the people grid of walls.browse · SOURCED — token `walls.browse.layout.grid` */
         object WallsBrowseLayoutGrid {
@@ -2348,6 +2478,8 @@ object Tokens {
         val globalWaveformBarMinHeight: Dp = 2.dp
         /** Apple Messages · global · C-36 voice waveform: width of one bar · SOURCED — token `size.global.waveformBarWidth` */
         val globalWaveformBarWidth: Dp = 2.dp
+        /** BeReal · viewer.selfiereaction · border of the live front-camera circle in the selfie-reaction capture layer, drawn outside the circular clip in color.global.backgroundDeep · SOURCED — token `viewer.selfiereaction.size.captureBorder` */
+        val viewerSelfiereactionSizeCaptureBorder: Dp = 3.4.dp
         /** Retro · walls.browse · people grid: avatar centre → avatar centre of the next column (three columns, centred on the screen) · SOURCED — token `walls.browse.dimension.columnPitch` */
         val wallsBrowseDimensionColumnPitch: Dp = 124.3.dp
         /** Retro · walls.browse · people grid: avatar bottom → name baseline · SOURCED — token `walls.browse.dimension.nameBaseline` */

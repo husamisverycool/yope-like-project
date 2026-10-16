@@ -389,10 +389,44 @@
     <string name="camera_capture_unavailable_detail" formatted="false">The camera couldn\'t start. Please try again.</string>
     <!-- Retro · camera.capture · new · SOURCED -->
     <string name="camera_capture_unavailable_title" formatted="false">Camera Unavailable</string>
+    <!-- Dispo · camera.overnight · new · SOURCED · args: reveal -->
+    <string name="camera_overnight_a11y_captured">Photo taken. It develops %1$s.</string>
+    <!-- Dispo · camera.overnight · new · SOURCED -->
+    <string name="camera_overnight_a11y_destinationhint" formatted="false">Choose which groups these photos develop for</string>
+    <!-- Dispo · camera.overnight · adapted · SOURCED -->
+    <string name="camera_overnight_a11y_mode" formatted="false">Develop</string>
+    <!-- Dispo · camera.overnight · new · SOURCED · args: time -->
+    <string name="camera_overnight_a11y_modehint">Photos taken for %1$s stay hidden from everyone, you too, until they develop.</string>
+    <!-- Lapse · camera.overnight · new · SOURCED · args: reveal -->
+    <string name="camera_overnight_a11y_stack">Photos developing until %1$s</string>
+    <!-- Locket · camera.overnight · adapted · SOURCED -->
+    <string name="camera_overnight_destination_all" formatted="false">All groups</string>
+    <!-- Dispo · camera.overnight · new · SOURCED · args: reveal -->
+    <string name="camera_overnight_destination_detail">Photos you take now develop for these groups %1$s.</string>
+    <!-- Retro · camera.overnight · verbatim · SOURCED -->
+    <string name="camera_overnight_destination_done" formatted="false">Done</string>
+    <!-- Dispo · camera.overnight · new · SOURCED · args: group -->
+    <string name="camera_overnight_destination_one">%1$s</string>
+    <!-- Dispo · camera.overnight · new · SOURCED -->
+    <string name="camera_overnight_destination_some" formatted="false">Selected groups</string>
+    <!-- Retro · camera.overnight · adapted · SOURCED -->
+    <string name="camera_overnight_destination_title" formatted="false">Choose Groups</string>
+    <!-- Dispo · camera.overnight · adapted · SOURCED · args: time -->
+    <string name="camera_overnight_mode_later">%1$s</string>
+    <!-- Dispo · camera.overnight · adapted · SOURCED -->
+    <string name="camera_overnight_mode_now" formatted="false">Now</string>
     <!-- Lapse · camera.overnight · adapted · SOURCED -->
     <string name="camera_overnight_push_body" formatted="false">Photos have developed and are ready to view.</string>
     <!-- Retro · camera.overnight · adapted · SOURCED · args: group -->
     <string name="camera_overnight_push_title">%1$s</string>
+    <!-- Retro · camera.overnight · new · SOURCED -->
+    <string name="camera_overnight_settings_row" formatted="false">Developed Photos</string>
+    <!-- Retro · camera.overnight · new · SOURCED · args: time -->
+    <string name="camera_overnight_settings_rowdetail">A notification when photos taken for %1$s are ready.</string>
+    <!-- Dispo · camera.overnight · new · SOURCED · args: reveal -->
+    <string name="camera_overnight_tile_a11y">Photos developing, shown to everyone %1$s</string>
+    <!-- Dispo · camera.overnight · adapted · SOURCED -->
+    <string name="camera_overnight_tile_label" formatted="false">Developing</string>
     <!-- Retro · camera.sendto · new · SOURCED -->
     <string name="camera_sendto_a11y_close" formatted="false">Close</string>
     <!-- Retro · camera.sendto · verbatim · SOURCED -->
@@ -1017,10 +1051,18 @@
     <string name="notifications_push_channel_dailyinvitation_description" formatted="false">The daily invitation to share a photo with your group</string>
     <!-- Retro · daily.notification · new · SOURCED -->
     <string name="notifications_push_channel_dailyinvitation_name" formatted="false">Daily Invitation</string>
+    <!-- Retro · camera.overnight · new · SOURCED · args: time -->
+    <string name="notifications_push_channel_developedphotos_description">When photos taken for %1$s are ready to view</string>
+    <!-- Retro · camera.overnight · new · SOURCED -->
+    <string name="notifications_push_channel_developedphotos_name" formatted="false">Developed Photos</string>
     <!-- Retro · notifications.push · adapted · SOURCED -->
     <string name="notifications_push_channel_newpost_description" formatted="false">Recent posts from your groups</string>
     <!-- Retro · notifications.push · verbatim · SOURCED -->
     <string name="notifications_push_channel_newpost_name" formatted="false">New Posts</string>
+    <!-- Retro · notifications.push · new · SOURCED -->
+    <string name="notifications_push_channel_plans_description" formatted="false">When someone makes, changes or cancels a plan, and the day before one you\'re going to</string>
+    <!-- Retro · notifications.push · new · SOURCED -->
+    <string name="notifications_push_channel_plans_name" formatted="false">Plans</string>
     <!-- Retro · notifications.push · new · SOURCED -->
     <string name="notifications_push_channel_reactionsreplies_description" formatted="false">Reactions and replies to your posts</string>
     <!-- Retro · notifications.push · new · SOURCED -->
@@ -1385,6 +1427,144 @@
     <string name="photo_viewer_toast_deleted" formatted="false">Deleted</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_toast_saved" formatted="false">Saved!</string>
+    <!-- Apple Invites · plans.create · verbatim · VERIFIED -->
+    <string name="plans_create_allday" formatted="false">All-day</string>
+    <!-- Retro · plans.create · new · VERIFIED -->
+    <string name="plans_create_close_accessibilitylabel" formatted="false">Close</string>
+    <!-- Retro · plans.create · new · VERIFIED -->
+    <string name="plans_create_cover_accessibilitylabel" formatted="false">Cover image</string>
+    <!-- Retro · plans.create · verbatim · SOURCED -->
+    <string name="plans_create_cover_add" formatted="false">Add cover image</string>
+    <!-- Retro · plans.create · verbatim · SOURCED -->
+    <string name="plans_create_cover_edit" formatted="false">Edit cover image</string>
+    <!-- Retro · plans.create · verbatim · SOURCED -->
+    <string name="plans_create_creating" formatted="false">Creating…</string>
+    <!-- Retro · plans.create · adapted · SOURCED -->
+    <string name="plans_create_cta" formatted="false">Create Plan</string>
+    <!-- Apple Invites · plans.create · adapted · SOURCED -->
+    <string name="plans_create_date" formatted="false">Date</string>
+    <!-- Retro · plans.create · new · SOURCED -->
+    <string name="plans_create_date_none" formatted="false">Choose</string>
+    <!-- Apple HIG · plans.create · verbatim · PLATFORM -->
+    <string name="plans_create_discard_cancel" formatted="false">Cancel</string>
+    <!-- Retro · plans.create · new · SOURCED -->
+    <string name="plans_create_discard_confirm" formatted="false">Yes, discard</string>
+    <!-- Retro · plans.create · new · SOURCED -->
+    <string name="plans_create_discard_title" formatted="false">Discard this plan?</string>
+    <!-- Retro · plans.create · new · SOURCED -->
+    <string name="plans_create_entry" formatted="false">Make a Plan</string>
+    <!-- Retro · plans.create · new · SOURCED -->
+    <string name="plans_create_error_cover" formatted="false">Your cover image didn\'t upload. Please try again.</string>
+    <!-- Retro · plans.create · new · SOURCED -->
+    <string name="plans_create_error_failed" formatted="false">Your plan wasn\'t created. Please try again.</string>
+    <!-- Retro · plans.create · verbatim · SOURCED -->
+    <string name="plans_create_error_toolong" formatted="false">Name too long</string>
+    <!-- Retro · plans.create · new · SOURCED -->
+    <string name="plans_create_name_accessibilitylabel" formatted="false">Plan name</string>
+    <!-- Retro · plans.create · adapted · SOURCED -->
+    <string name="plans_create_name_placeholder" formatted="false">Name your plan</string>
+    <!-- Retro · plans.create · adapted · SOURCED -->
+    <string name="plans_create_note_placeholder" formatted="false">Add a note…</string>
+    <!-- Retro · plans.create · verbatim · SOURCED -->
+    <string name="plans_create_offline" formatted="false">Could not connect. Check your connection and try again.</string>
+    <!-- Partiful · plans.create · adapted · SOURCED -->
+    <string name="plans_create_place_placeholder" formatted="false">Place name or address</string>
+    <!-- Retro · plans.create · verbatim · SOURCED -->
+    <string name="plans_create_save" formatted="false">Save</string>
+    <!-- Apple Invites · plans.create · adapted · SOURCED -->
+    <string name="plans_create_time" formatted="false">Time</string>
+    <!-- Retro · plans.create · adapted · SOURCED -->
+    <string name="plans_create_title" formatted="false">New Plan</string>
+    <!-- Retro · plans.create · adapted · SOURCED -->
+    <string name="plans_create_titleedit" formatted="false">Edit Plan</string>
+    <!-- Retro · plans.page · new · SOURCED -->
+    <string name="plans_page_album" formatted="false">Photos</string>
+    <!-- Partiful · plans.page · adapted · SOURCED -->
+    <string name="plans_page_answer_cantgo" formatted="false">Can\'t go</string>
+    <!-- Retro · plans.page · new · SOURCED -->
+    <string name="plans_page_answer_clear" formatted="false">Clear answer</string>
+    <!-- Partiful · plans.page · verbatim · SOURCED -->
+    <string name="plans_page_answer_going" formatted="false">Going</string>
+    <!-- Retro · plans.page · new · SOURCED -->
+    <string name="plans_page_answer_grouplabel" formatted="false">Your answer</string>
+    <!-- Partiful · plans.page · verbatim · SOURCED -->
+    <string name="plans_page_answer_maybe" formatted="false">Maybe</string>
+    <!-- Retro · plans.page · new · VERIFIED -->
+    <string name="plans_page_back_accessibilitylabel" formatted="false">Back</string>
+    <!-- Retro · plans.page · new · SOURCED -->
+    <string name="plans_page_cancel_confirm" formatted="false">Yes, cancel</string>
+    <!-- Retro · plans.page · new · SOURCED -->
+    <string name="plans_page_cancel_keep" formatted="false">Keep Plan</string>
+    <!-- Retro · plans.page · new · SOURCED -->
+    <string name="plans_page_cancel_message" formatted="false">Everyone who\'s going or might go will be notified.</string>
+    <!-- Retro · plans.page · new · SOURCED · args: title -->
+    <string name="plans_page_cancel_title">Cancel %1$s?</string>
+    <!-- Apple Invites · plans.page · adapted · SOURCED -->
+    <string name="plans_page_canceled" formatted="false">Canceled</string>
+    <!-- Retro · plans.page · new · SOURCED · args: title -->
+    <string name="plans_page_cover_accessibilitylabel">Cover of %1$s</string>
+    <!-- Retro · plans.page · adapted · SOURCED -->
+    <string name="plans_page_error_answer" formatted="false">Couldn\'t save your answer</string>
+    <!-- Retro · plans.page · adapted · SOURCED -->
+    <string name="plans_page_error_title" formatted="false">Error loading plan. Tap here to try again.</string>
+    <!-- Apple Invites · plans.page · verbatim · SOURCED -->
+    <string name="plans_page_going" formatted="false">Going</string>
+    <!-- Apple Invites · plans.page · adapted · SOURCED · args: name -->
+    <string name="plans_page_madeby">Made by %1$s</string>
+    <!-- Apple Invites · plans.page · verbatim · SOURCED -->
+    <string name="plans_page_maybe" formatted="false">Maybe</string>
+    <!-- Partiful · plans.page · adapted · SOURCED -->
+    <string name="plans_page_menu_cancel" formatted="false">Cancel Plan</string>
+    <!-- Apple Invites · plans.page · adapted · SOURCED -->
+    <string name="plans_page_menu_edit" formatted="false">Edit Plan</string>
+    <!-- Apple Invites · plans.page · adapted · VERIFIED -->
+    <string name="plans_page_menu_restore" formatted="false">Restore Plan</string>
+    <!-- Retro · plans.page · new · VERIFIED -->
+    <string name="plans_page_more_accessibilitylabel" formatted="false">More</string>
+    <!-- Retro · plans.page · new · SOURCED -->
+    <string name="plans_page_notfound_detail" formatted="false">It may have been removed from the group.</string>
+    <!-- Retro · plans.page · adapted · SOURCED -->
+    <string name="plans_page_notfound_title" formatted="false">Couldn\'t find plan</string>
+    <!-- Retro · plans.page · verbatim · SOURCED -->
+    <string name="plans_page_offline" formatted="false">Could not connect. Check your connection and try again.</string>
+    <!-- Partiful · plans.page · adapted · SOURCED -->
+    <string name="plans_page_people_cantgo" formatted="false">Can\'t go</string>
+    <!-- Retro · plans.page · new · SOURCED -->
+    <string name="plans_page_people_title" formatted="false">Who\'s Coming</string>
+    <!-- Retro · question.weekly · new · SOURCED · args: question -->
+    <string name="question_weekly_camera_a11y">Answering: %1$s</string>
+    <!-- Retro · question.weekly · new · SOURCED · args: question -->
+    <string name="question_weekly_card_a11y">This week\'s question: %1$s</string>
+    <!-- Retro · question.weekly · new · SOURCED -->
+    <string name="question_weekly_card_a11y_answers" formatted="false">See answers</string>
+    <!-- Retro · question.weekly · adapted · SOURCED -->
+    <string name="question_weekly_card_button" formatted="false">Add a photo</string>
+    <!-- Retro · question.weekly · new · SOURCED -->
+    <string name="question_weekly_card_label" formatted="false">This Week\'s Question</string>
+    <!-- Apple Journal · question.weekly · verbatim · VERIFIED -->
+    <string name="question_weekly_menu_remove" formatted="false">Remove</string>
+    <!-- Retro · question.weekly · new · SOURCED -->
+    <string name="question_weekly_q01" formatted="false">What made you laugh this week?</string>
+    <!-- Retro · question.weekly · adapted · SOURCED -->
+    <string name="question_weekly_q02" formatted="false">Caught up with a friend this week?</string>
+    <!-- Retro · question.weekly · adapted · SOURCED -->
+    <string name="question_weekly_q03" formatted="false">Did something nice for yourself this week?</string>
+    <!-- Retro · question.weekly · adapted · SOURCED -->
+    <string name="question_weekly_q04" formatted="false">Ate something tasty this week?</string>
+    <!-- Retro · question.weekly · adapted · SOURCED -->
+    <string name="question_weekly_q05" formatted="false">Made something you\'re proud of this week?</string>
+    <!-- Retro · question.weekly · adapted · SOURCED -->
+    <string name="question_weekly_q06" formatted="false">Anything from this week you want to remember?</string>
+    <!-- Apple Journal · question.weekly · adapted · SOURCED -->
+    <string name="question_weekly_q07" formatted="false">What\'s something you love to do?</string>
+    <!-- Apple Journal · question.weekly · new · SOURCED -->
+    <string name="question_weekly_q08" formatted="false">What\'s something nice someone did for you this week?</string>
+    <!-- Retro · question.weekly · adapted · SOURCED -->
+    <string name="question_weekly_q09" formatted="false">Where did you spend most of your time this week?</string>
+    <!-- Retro · question.weekly · new · SOURCED -->
+    <string name="question_weekly_settings_row" formatted="false">Weekly Question</string>
+    <!-- Retro · question.weekly · new · SOURCED -->
+    <string name="question_weekly_settings_rowdetail" formatted="false">One light question for the group each week, answered with a photo.</string>
     <!-- Apple HIG · safety.block · verbatim · VERIFIED -->
     <string name="safety_block_cancel" formatted="false">Cancel</string>
     <!-- Retro · safety.block · adapted · SOURCED -->
@@ -1653,6 +1833,44 @@
     <string name="tagging_toggle" formatted="false">I\'m in this</string>
     <!-- Retro · tagging · adapted · SOURCED · args: names -->
     <string name="tagging_with">with %1$s</string>
+    <!-- BeReal · viewer.selfiereaction · adapted · SOURCED -->
+    <string name="viewer_selfiereaction_a11y_action" formatted="false">React with a selfie</string>
+    <!-- Retro · viewer.selfiereaction · adapted · SOURCED -->
+    <string name="viewer_selfiereaction_a11y_capture" formatted="false">Take selfie</string>
+    <!-- Retro · viewer.selfiereaction · new · SOURCED · args: name -->
+    <string name="viewer_selfiereaction_a11y_face">%1$s\'s selfie</string>
+    <!-- Retro · viewer.selfiereaction · new · SOURCED -->
+    <string name="viewer_selfiereaction_a11y_facemine" formatted="false">Your selfie</string>
+    <!-- Retro · viewer.selfiereaction · new · SOURCED -->
+    <string name="viewer_selfiereaction_a11y_preview" formatted="false">Front camera</string>
+    <!-- Retro · viewer.selfiereaction · new · SOURCED -->
+    <string name="viewer_selfiereaction_a11y_sent" formatted="false">Selfie sent</string>
+    <!-- Retro · viewer.selfiereaction · new · SOURCED · args: names -->
+    <string name="viewer_selfiereaction_a11y_stack">Selfie reactions: %1$s</string>
+    <!-- WhatsApp + Apple Messages · viewer.selfiereaction · new · SOURCED · args: name -->
+    <string name="viewer_selfiereaction_activity_row">%1$s reacted with a selfie</string>
+    <!-- WhatsApp + Apple Messages · viewer.selfiereaction · new · SOURCED -->
+    <string name="viewer_selfiereaction_activity_rowmine" formatted="false">You reacted with a selfie</string>
+    <!-- BeReal · viewer.selfiereaction · verbatim · SOURCED -->
+    <string name="viewer_selfiereaction_coach_slidehere" formatted="false">Slide here to react</string>
+    <!-- BeReal · viewer.selfiereaction · verbatim · SOURCED -->
+    <string name="viewer_selfiereaction_coach_slidetosend" formatted="false">Slide in to send</string>
+    <!-- BeReal · viewer.selfiereaction · adapted · SOURCED -->
+    <string name="viewer_selfiereaction_coach_tapring" formatted="false">Tap the circle to send</string>
+    <!-- Retro · viewer.selfiereaction · adapted · SOURCED -->
+    <string name="viewer_selfiereaction_error" formatted="false">Couldn\'t send selfie</string>
+    <!-- BeReal · viewer.selfiereaction · adapted · SOURCED -->
+    <string name="viewer_selfiereaction_menu_react" formatted="false">React with a selfie</string>
+    <!-- BeReal · viewer.selfiereaction · new · SOURCED -->
+    <string name="viewer_selfiereaction_menu_remove" formatted="false">Remove</string>
+    <!-- Retro · viewer.selfiereaction · adapted · SOURCED -->
+    <string name="viewer_selfiereaction_menu_report" formatted="false">Report Selfie</string>
+    <!-- Retro · viewer.selfiereaction · adapted · SOURCED -->
+    <string name="viewer_selfiereaction_remove_confirm" formatted="false">Yes, remove</string>
+    <!-- Retro · viewer.selfiereaction · new · SOURCED -->
+    <string name="viewer_selfiereaction_remove_message" formatted="false">It will be removed from your photo.</string>
+    <!-- Retro · viewer.selfiereaction · new · SOURCED · args: name -->
+    <string name="viewer_selfiereaction_remove_title">Remove %1$s\'s selfie?</string>
     <!-- Retro · walls.browse · new · SOURCED · args: date -->
     <string name="walls_browse_a11y_collage">Collage, %1$s</string>
     <!-- Retro · walls.browse · adapted · SOURCED -->
@@ -1801,6 +2019,18 @@
     <string name="widget_arrival_android_refreshtitle" formatted="false">Updating widgets…</string>
     <!-- Retro · widget.arrival · new · SOURCED -->
     <string name="widget_arrival_help_delay" formatted="false">New photos can take a few minutes to show up on your widget. This helps save your battery.</string>
+    <!-- Retro · widget.countdown · new · SOURCED · args: title, group, countdown -->
+    <string name="widget_countdown_a11y_plan">%1$s with %2$s, %3$s</string>
+    <!-- Retro · widget.countdown · new · SOURCED -->
+    <string name="widget_countdown_configuration_allgroups" formatted="false">All Groups</string>
+    <!-- Retro · widget.countdown · new · SOURCED -->
+    <string name="widget_countdown_configuration_group" formatted="false">Group</string>
+    <!-- Retro · widget.countdown · adapted · SOURCED -->
+    <string name="widget_countdown_configuration_title" formatted="false">Show plans from…</string>
+    <!-- Retro · widget.countdown · new · SOURCED -->
+    <string name="widget_countdown_gallery_description" formatted="false">See how many days until your group\'s next plan.</string>
+    <!-- Retro · widget.countdown · new · SOURCED -->
+    <string name="widget_countdown_gallery_name" formatted="false">Next Plan</string>
     <!-- Retro · widget.home.small · new · SOURCED · args: group, date -->
     <string name="widget_home_small_a11y_collage">Photos from %1$s, %2$s</string>
     <!-- Retro · widget.home.small · new · SOURCED · args: name, group -->

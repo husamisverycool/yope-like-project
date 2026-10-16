@@ -1,5 +1,5 @@
 {
-  "$comment": "Social surface group strings (redesign Pass 2, Retro voice, 2026-10-16): chat.*, photo.viewer, walls.*, week.*, albums.*. Verbatim Retro strings cite their key in references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (%1$s → {name}-style placeholders). Push texts for these surfaces are owned by notifications.push (capture group). Decisions: design/MERGE_DECISIONS.md → Redesign — Social (RS-*).",
+  "$comment": "Social surface group strings (redesign Pass 2, Retro voice, 2026-10-16): chat.*, photo.viewer, walls.*, week.*, albums.*. Verbatim Retro strings cite their key in references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (%1$s → {name}-style placeholders). Push texts for these surfaces are owned by notifications.push (capture group). Decisions: design/MERGE_DECISIONS.md → Redesign — Social (RS-*). viewer.selfiereaction added by the new-features consolidation (2026-10-16; MERGE_DECISIONS 'New features (SR-*, PL-*, ON-*, WQ-*)').",
   "strings": {
     "chat.thread.a11y.back": {
       "text": "Back",
@@ -859,6 +859,191 @@
       "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED",
       "notes": "Accessibility custom action."
+    },
+    "viewer.selfiereaction.menu.react": {
+      "text": "React with a selfie",
+      "origin": "adapted",
+      "source_app": "BeReal",
+      "surface": "viewer.selfiereaction",
+      "evidence": "App Store App Preview of id1459645446, title card at 10.5 s 'React with a RealMoji'; help.bereal.com 7536240858653 'React to your friend's BeReal with RealMojis' — design/research/selfie-reactions.md §1",
+      "pattern": "retro.voice.menu-labels",
+      "level": "SOURCED",
+      "notes": "Noun swap RealMoji (trademark) → 'selfie', BeReal's own word for the front-camera photo (Google Play listing: 'a selfie and a frontal photo'). Context-menu item on the photo; opens the capture layer in tap mode."
+    },
+    "viewer.selfiereaction.coach.slideHere": {
+      "text": "Slide here to react",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "viewer.selfiereaction",
+      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t12.47s_instant-realmoji-capture.png (#375): hint across the live circle",
+      "pattern": "retro.voice.coach",
+      "level": "SOURCED",
+      "notes": "Shown in hold mode inside the C-09 coach pill."
+    },
+    "viewer.selfiereaction.coach.slideToSend": {
+      "text": "Slide in to send",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "viewer.selfiereaction",
+      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t12.47s_instant-realmoji-capture.png (#375): hint under the target ring",
+      "pattern": "retro.voice.coach",
+      "level": "SOURCED",
+      "notes": "Hold mode only."
+    },
+    "viewer.selfiereaction.coach.tapRing": {
+      "text": "Tap the circle to send",
+      "origin": "adapted",
+      "source_app": "BeReal",
+      "surface": "viewer.selfiereaction",
+      "evidence": "help.bereal.com 7536240858653 'Tap the white button to capture your reaction.'; 17845941900445 (an Instant RealMoji is sent once captured) — design/research/selfie-reactions.md §1",
+      "pattern": "retro.voice.coach ('Tap to advance', 'Tap left to go back')",
+      "level": "SOURCED",
+      "notes": "Tap mode (single-pointer path, WCAG 2.2 SC 2.5.7). Swaps: 'the white button' → 'the circle' (Jolt's target ring); 'capture your reaction' → 'send' (sent on capture)."
+    },
+    "viewer.selfiereaction.activity.row": {
+      "text": "{name} reacted with a selfie",
+      "origin": "new",
+      "source_app": "WhatsApp + Apple Messages",
+      "surface": "viewer.selfiereaction",
+      "evidence": "design/copy/social.json chat.reactions.activity.row '{name} reacted {emoji}' (design/copy-patterns.md `messaging.reaction`) with the emoji replaced by 'with a selfie'",
+      "pattern": "messaging.reaction ('{name} reacted {emoji}' — who and which reaction, no count)",
+      "level": "SOURCED",
+      "notes": "Row line in the Reactions sheet; never a count."
+    },
+    "viewer.selfiereaction.activity.rowMine": {
+      "text": "You reacted with a selfie",
+      "origin": "new",
+      "source_app": "WhatsApp + Apple Messages",
+      "surface": "viewer.selfiereaction",
+      "evidence": "design/copy/social.json chat.reactions.activity.rowMine 'You reacted {emoji}'",
+      "pattern": "messaging.reaction ('{name} reacted {emoji}' — who and which reaction, no count)",
+      "level": "SOURCED"
+    },
+    "viewer.selfiereaction.menu.remove": {
+      "text": "Remove",
+      "origin": "new",
+      "source_app": "BeReal",
+      "surface": "viewer.selfiereaction",
+      "evidence": "help.bereal.com 7545622582429 'Long press the RealMoji you want to delete.' / 'Tap the option to delete.' (the post's author removes others'); Retro menu verb 'Remove' (references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `composer_remove_selected_media`)",
+      "pattern": "retro.voice.menu-labels; platform.menuItem (destructive, C-10)",
+      "level": "SOURCED",
+      "notes": "On your own photo only; opens viewer.selfiereaction.remove.*."
+    },
+    "viewer.selfiereaction.menu.report": {
+      "text": "Report Selfie",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "viewer.selfiereaction",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_comment_overflow_report` 'Report Post' (photo.viewer.menu.report)",
+      "pattern": "retro.voice.menu-labels",
+      "level": "SOURCED",
+      "notes": "Noun swap Post → Selfie; Retro's own casing kept. On any row that is not yours → safety.report (report kind 'selfie', docs/API.md §14.1)."
+    },
+    "viewer.selfiereaction.remove.title": {
+      "text": "Remove {name}'s selfie?",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "viewer.selfiereaction",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `user_profile_confirm_block_title_template` 'Block %1$s?', `edit_address_delete_confirmation_title` 'Delete address?'",
+      "pattern": "retro.voice.confirm",
+      "level": "SOURCED",
+      "notes": "{name}: the reactor's first name."
+    },
+    "viewer.selfiereaction.remove.message": {
+      "text": "It will be removed from your photo.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "viewer.selfiereaction",
+      "evidence": "design/copy/social.json photo.viewer.delete.message ('It will be removed from …')",
+      "pattern": "retro.voice.confirm",
+      "level": "SOURCED"
+    },
+    "viewer.selfiereaction.remove.confirm": {
+      "text": "Yes, remove",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "viewer.selfiereaction",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `edit_address_delete_confirmation_positive_cta` / `rewind_home_delete_confirmation_cta` 'Yes, delete' (photo.viewer.delete.confirm)",
+      "pattern": "platform.alertButton (destructive)",
+      "level": "SOURCED",
+      "notes": "Verb swap delete → remove. The cancel button reuses photo.viewer.delete.cancel."
+    },
+    "viewer.selfiereaction.error": {
+      "text": "Couldn't send selfie",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "viewer.selfiereaction",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_comment_send_failed_title` 'Couldn't send comment'; design/copy/social.json chat.reactions.error 'Couldn't send reaction'",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED",
+      "notes": "Noun swap comment → selfie. Android Toast / iOS announcement; the face is taken back out of the stack."
+    },
+    "viewer.selfiereaction.a11y.action": {
+      "text": "React with a selfie",
+      "origin": "adapted",
+      "source_app": "BeReal",
+      "surface": "viewer.selfiereaction",
+      "evidence": "same evidence as viewer.selfiereaction.menu.react",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED",
+      "notes": "Accessibility custom action on the photo; opens tap mode."
+    },
+    "viewer.selfiereaction.a11y.capture": {
+      "text": "Take selfie",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "viewer.selfiereaction",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_profile_take_photo` 'Take photo' (camera.capture.a11y.shutter)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED",
+      "notes": "Noun swap photo → selfie. Label of the target ring."
+    },
+    "viewer.selfiereaction.a11y.preview": {
+      "text": "Front camera",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "viewer.selfiereaction",
+      "evidence": "design/copy-patterns.md `platform.a11yLabel` (the label names the element); the live view is not a button",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
+    },
+    "viewer.selfiereaction.a11y.stack": {
+      "text": "Selfie reactions: {names}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "viewer.selfiereaction",
+      "evidence": "design/copy/social.json chat.reactions.a11y.cluster 'Reactions: {emoji_names}'",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED",
+      "notes": "{names}: the first names of the faces shown, joined by the platform list formatter; never a count."
+    },
+    "viewer.selfiereaction.a11y.face": {
+      "text": "{name}'s selfie",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "viewer.selfiereaction",
+      "evidence": "design/copy/social.json photo.viewer.a11y.photo '{name}'s photo, {date}'",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
+    },
+    "viewer.selfiereaction.a11y.faceMine": {
+      "text": "Your selfie",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "viewer.selfiereaction",
+      "evidence": "design/copy/social.json photo.viewer.a11y.photoMine 'Your photo, {date}'",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
+    },
+    "viewer.selfiereaction.a11y.sent": {
+      "text": "Selfie sent",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "viewer.selfiereaction",
+      "evidence": "Retro confirmation lines 'Saved!' (references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `edit_address_success_message`), 'Copied!' (`media_viewer_comment_copy_success_message`) — design/copy-patterns.md `retro.voice.confirmation`",
+      "pattern": "retro.voice.confirmation (state line; no '!' in a spoken announcement)",
+      "level": "SOURCED",
+      "notes": "Announcement posted after sending."
     },
     "walls.mine.empty.title": {
       "text": "Welcome to Week {week_number}!",
