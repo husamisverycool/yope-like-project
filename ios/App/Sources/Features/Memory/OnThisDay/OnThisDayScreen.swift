@@ -70,6 +70,8 @@ struct OnThisDayScreen: View {
             .environment(\.colorScheme, SystemAppearance.colorScheme)
             // The page's controller is dark (the shell's `.mediaStatusBar()`); the sheet's chrome follows the system.
             .preferredColorScheme(SystemAppearance.colorScheme)
+            // A container: without .contain its identifier would replace every child's (XCUITest).
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("onthisday.intro")
         }
         .alert(

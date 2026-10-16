@@ -59,6 +59,8 @@ struct BirthdayAddScreen: View {
         } message: {
             Text(Copy.birthdayAddRemoveMessage)
         }
+        // A container: without .contain its identifier would replace every child's (XCUITest).
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("birthday.add")
     }
 
@@ -183,6 +185,8 @@ struct BirthdayAddScreen: View {
             .padding(.top, Tokens.Sizes.globalScreenMargin)
         }
         .scrollBounceBehavior(.basedOnSize)
+        // A container: without .contain its identifier would replace every child's (XCUITest).
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("birthday.add.manage")
     }
 }

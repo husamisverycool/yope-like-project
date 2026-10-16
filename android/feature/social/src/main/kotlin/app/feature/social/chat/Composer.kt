@@ -260,13 +260,13 @@ fun RowScope.LockedRecordingContent(
         val label = if (previewing) stringRes(R.string.chat_voice_a11y_pause) else stringRes(R.string.chat_voice_a11y_play, Formats.spokenDuration(elapsedMs))
         Box(
             Modifier
+                .testTag("chat.composer.preview")
                 .size(Tokens.Sizes.globalAvatarComment)
                 .tapClickable(onClick = onPreview)
                 .clearAndSetSemantics {
                     contentDescription = label
                     role = Role.Button
-                }
-                .testTag("chat.composer.preview"),
+                },
             contentAlignment = Alignment.Center,
         ) {
             Icon(if (previewing) Tokens.Icons.globalPause else Tokens.Icons.globalPlay, contentDescription = null, tint = Tokens.Colors.globalTextPrimary, modifier = Modifier.size(Tokens.Sizes.globalIcon))

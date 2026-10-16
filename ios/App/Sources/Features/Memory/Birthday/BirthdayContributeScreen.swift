@@ -46,6 +46,8 @@ struct BirthdayContributeScreen: View {
             }
             dismiss()
         }
+        // A container: without .contain its identifier would replace every child's (XCUITest).
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("birthday.contribute")
     }
 }
@@ -390,6 +392,8 @@ struct BirthdayContributeMessage: View {
         .background(Tokens.Colors.globalBackground.ignoresSafeArea())
         .presentationDetents([.large])
         .onAppear { focused = true }
+        // A container: without .contain its identifier would replace every child's (XCUITest).
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("birthday.contribute.message")
     }
 }
