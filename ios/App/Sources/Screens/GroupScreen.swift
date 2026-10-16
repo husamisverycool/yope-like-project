@@ -96,7 +96,7 @@ struct GroupFeedView: View {
             .accessibilityAddTraits(.isImage)
             .metricGap(Tokens.Sizes.globalTitleToContent + cap / 2 + Tokens.Sizes.globalHeaderButton / 2, from: .top, to: .top)
             Text(model.group?.name ?? "")
-                .dsTextRole(TextRole.albumTitle)
+                .dsTextRole(TextRole.displayTitle)
                 .foregroundStyle(Tokens.Colors.globalTextPrimary)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)

@@ -1868,7 +1868,7 @@ public enum Tokens {
         public enum WeekRecapLayoutList {
             public static let presentation: String = "page sheet (C-29) over the group; header: C-11 close circle (size.global.circleButton, color.global.control) at the leading margin, centred title week.recap.list.title (text role sheetTitle)"
             public static let cards: String = "one card per ready recap, newest first, full width inside size.global.screenMargin, size.global.cardGap apart"
-            public static let card: String = "cover = the recap's first item (aspect fill), shape week.recap.aspectRatio.weekCard, corners week.recap.radius.card; text at week.recap.dimension.weekCardTextInset / .weekCardTextTop: 'Week {n}' (font.global.display, text role displayMedium) over the date range (listSubtitle), both color.global.textOnMedia; icon.global.chevron at the trailing top in color.global.textOnMedia"
+            public static let card: String = "cover = the recap's first item (aspect fill), shape week.recap.aspectRatio.weekCard, corners week.recap.radius.card; text at week.recap.dimension.weekCardTextInset / .weekCardTextTop: 'Week {n}' (font.global.display, text role displayTitle: the title face at the displayMedium size, as Retro's month cards, TC-2023-12) over the date range (listSubtitle), both color.global.textOnMedia; icon.global.chevron at the trailing top in color.global.textOnMedia"
             public static let pending: String = "a recap with status pending shows as a C-17 placeholder fill card with week.recap.pending"
             public static let segmented: String = "none: only weekly recaps exist (Retro's Yearly / Monthly / Weekly / All Posts control has nothing to switch)"
         }

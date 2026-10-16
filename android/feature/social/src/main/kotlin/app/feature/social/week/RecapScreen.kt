@@ -155,7 +155,8 @@ private fun PlaceholderCard(text: String?) {
 
 /**
  * A week card (Retro's month card): `week.recap.aspectRatio.weekCard`, corners `week.recap.radius.card`, the cover
- * aspect-fill; "Week {n}" (`displayMedium` serif, `color.global.textOnMedia`) with its cap top
+ * aspect-fill; "Week {n}" (`displayTitle`, the title face — Retro's month cards are in its title cut, TC-2023-12 —
+ * `color.global.textOnMedia`) with its cap top
  * `week.recap.dimension.weekCardTextTop` and ink `.weekCardTextInset` in, the range (`listSubtitle`) one
  * `.weekCardLinePitch` below its baseline, `icon.global.chevron` at the trailing top on the serif line's cap middle.
  */
@@ -166,7 +167,7 @@ private fun WeekCard(card: RecapCardUi, state: RecapListState, nav: RecapNav) {
     val number = Formats.isoWeek(week)
     val range = Formats.weekRange(context, week, state.zone)
     val label = stringRes(R.string.week_recap_a11y_card, number, Formats.spokenWeekRange(context, week, state.zone))
-    val title = TextRoles.displayMedium
+    val title = TextRoles.displayTitle
     val inset = Tokens.Sizes.weekRecapDimensionWeekCardTextInset
     val capHeight = CapTop.height(title)
     Box(

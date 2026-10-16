@@ -79,7 +79,8 @@ private const val HWUI_SIGMA_OFFSET = 0.5f
 /**
  * C-34 recap card: `color.global.surfaceElevated` (#FFFFFF / #181818); [photos] in a [columns]-column grid of
  * square cells with `radius.global.thumbnail` corners, `size.global.stripGap` apart; footer: [year] in
- * `font.global.display` text role `displaySmall`, [name] text role `listTitle`, [domain] text role `meta` in
+ * `font.global.display` text role `headerTitle` (the recap card's measured title, RM-8), [name] text role `listTitle`,
+ * [domain] text role `meta` in
  * secondary text. The card's corners (≈ 4.5–5 % of its width, TC-H) have no token (Gap): [cornerRadius] comes
  * from the caller; its inner padding is not measured either — `size.global.screenMargin` (Gap).
  */
@@ -111,7 +112,7 @@ fun RecapCard(
         }
         if (year != null || name != null || domain != null) {
             Row(Modifier.fillMaxWidth().padding(top = Tokens.Sizes.globalScreenMargin), verticalAlignment = Alignment.Bottom) {
-                if (year != null) Text(year, style = TextRoles.displaySmall, color = Tokens.Colors.globalTextPrimary, modifier = Modifier.weight(1f))
+                if (year != null) Text(year, style = TextRoles.headerTitle, color = Tokens.Colors.globalTextPrimary, modifier = Modifier.weight(1f))
                 Column(horizontalAlignment = Alignment.End) {
                     if (name != null) Text(name, style = TextRoles.listTitle, color = Tokens.Colors.globalTextPrimary)
                     if (domain != null) Text(domain, style = TextRoles.meta, color = PageRoles.secondaryText())

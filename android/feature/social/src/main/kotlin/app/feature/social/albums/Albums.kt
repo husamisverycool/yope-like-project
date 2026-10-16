@@ -314,7 +314,7 @@ private fun AlbumHead(state: AlbumViewState, ui: AlbumUiState, onPhoto: (String)
     val first = state.photos.firstOrNull()
     val name = album?.name.orEmpty()
     val coverLabel = stringRes(R.string.albums_view_a11y_cover, name)
-    val titleStyle = TextRoles.albumTitle
+    val titleStyle = TextRoles.displayTitle
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(Modifier.height(Tokens.Sizes.albumsViewDimensionCoverTop))
         RemotePhoto(

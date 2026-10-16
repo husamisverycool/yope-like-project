@@ -688,7 +688,7 @@ final class ComponentSnapshotTests: XCTestCase {
             BackdropCard(backdrop: photo(15), cornerRadius: Tokens.Radii.globalThumbnail) {
                 VStack(alignment: .leading) {
                     PhotoGrid(items: (0..<6).map { PhotoGridItem(id: "r\($0)", source: self.photo($0 + 16, .square), accessibilityLabel: "") }, columns: 3)
-                    Text("2026").dsTextStyle(TextRole.displaySmall).foregroundStyle(Tokens.Colors.globalTextPrimary)
+                    Text("2026").dsTextStyle(TextRole.headerTitle).foregroundStyle(Tokens.Colors.globalTextPrimary)
                 }
             } below: {
                 PageDots(count: 3, index: 0, onMedia: true, accessibilityValue: "page 1 of 3")

@@ -144,7 +144,8 @@ struct WeekCardShape<Content: View>: View {
 
 /// A ready recap (Retro's month card as a week card): the cover = the recap's first item (aspect fill); on it,
 /// `week.recap.dimension.weekCardTextInset` from the leading edge and its cap top `.weekCardTextTop` from the top,
-/// "Week {n}" in the display serif (`displayMedium`, `color.global.textOnMedia`) and, `.weekCardLinePitch` below its
+/// "Week {n}" in the title face (`displayTitle`, `color.global.textOnMedia`; Retro's month cards are in its title cut,
+/// TC-2023-12) and, `.weekCardLinePitch` below its
 /// baseline, the range (`listSubtitle`, `color.global.textOnMedia`); `icon.global.chevron` at the trailing top on the
 /// serif line's cap middle. No scrim (Retro draws none on month cards).
 struct WeekCard: View {
@@ -159,12 +160,12 @@ struct WeekCard: View {
                 MetricStack {
                     HStack(alignment: .capMiddle) {
                         Text(Copy.photoViewerHeaderWeek(weekNumber: String(weekNumber)))
-                            .dsTextRole(TextRole.displayMedium)
+                            .dsTextRole(TextRole.displayTitle)
                             .lineLimit(1)
                         Spacer(minLength: 0)
                         Glyph(Tokens.Icons.globalChevron)
                     }
-                    .capMiddleRow(TextRole.displayMedium)
+                    .capMiddleRow(TextRole.displayTitle)
                     .metricGap(Tokens.Sizes.weekRecapDimensionWeekCardTextTop, from: .top, to: .capTop)
                     Text(range)
                         .dsTextStyle(TextRole.listSubtitle)

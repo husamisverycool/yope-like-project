@@ -36,13 +36,14 @@ object TextRoles {
         @Composable get() = display(Tokens.FontSizes.globalDisplayMedium, Tokens.FontWeights.fontWeightGlobalDisplayMedium, family = Tokens.Fonts.globalDisplayNarrow)
 
     /**
-     * An album's (a group's) name on its page: the title face (`font.global.display`) at the `displayMedium` size (34.4,
-     * regular) — retro.app sets album titles in Roslindale Retro, Retro's title cut (MERGE L-8).
+     * The title face (`font.global.display`) at the `displayMedium` size (34.4, regular): an album's (a group's) name on
+     * its page and the recap list's week cards — retro.app sets album titles, and Retro its month cards (TC-2023-12), in
+     * Roslindale Retro, Retro's title cut (MERGE L-8).
      */
-    val albumTitle: TextStyle
+    val displayTitle: TextStyle
         @Composable get() = display(Tokens.FontSizes.globalDisplayMedium, Tokens.FontWeights.fontWeightGlobalDisplayMedium)
 
-    /** `displaySmall` 25.8 regular, `font.global.displayNarrow` — recap month cards, album titles on covers, recap year. */
+    /** `displaySmall` 25.8 regular, `font.global.displayNarrow` — memory feed cards, year-story card dates and labels, the Live Activity group name. */
     val displaySmall: TextStyle
         @Composable get() = display(Tokens.FontSizes.globalDisplaySmall, Tokens.FontWeights.fontWeightGlobalDisplaySmall, family = Tokens.Fonts.globalDisplayNarrow)
 

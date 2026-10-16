@@ -29,7 +29,8 @@ Page sheet (C-29) over the group, content on `color.global.background`.
    `size.global.titleToContent` below the header: shape `week.recap.aspectRatio.weekCard`, corners `week.recap.radius.card`
    (continuous), cover = the recap's first item (aspect fill). On the cover, `week.recap.dimension.weekCardTextInset` from the
    leading edge and `week.recap.dimension.weekCardTextTop` from the top (cap top): "Week {n}" (`photo.viewer.header.week`
-   text; `font.global.display`, text role `displayMedium`, `color.global.textOnMedia`) and, `week.recap.dimension.weekCardLinePitch`
+   text; `font.global.display`, text role `displayTitle` — the title face at the `displayMedium` size: Retro sets its month
+   cards' titles in its title cut, TC-2023-12 "December", Pass 5; `color.global.textOnMedia`) and, `week.recap.dimension.weekCardLinePitch`
    below its baseline, the date range ("Jul 3 - 9", text role `listSubtitle`, `color.global.textOnMedia`); `icon.global.chevron`
    (`color.global.textOnMedia`) at the trailing top, aligned to the serif line's cap middle.
 3. A recap still being made (`status = pending`) shows as a card filled with `color.global.control` (C-17 placeholder fill)
@@ -75,7 +76,7 @@ chrome is the **same screen the capture group measured on Retro's 2026 recap pre
 |---|---|---|---|
 | list close | C-11; `size.global.circleButton`, `color.global.control` | `week.recap.a11y.close` | dismisses the sheet |
 | list title | C-29 sheet header; text role `sheetTitle` | `week.recap.list.title` | header trait |
-| week card | `week.recap.aspectRatio.weekCard`, `.radius.card`, `.dimension.weekCardTextInset`, `.weekCardTextTop`, `.weekCardLinePitch`; text roles `displayMedium` / `listSubtitle`; `icon.global.chevron` | `photo.viewer.header.week` ("Week {n}"), range (data); label `week.recap.a11y.card` | → preview |
+| week card | `week.recap.aspectRatio.weekCard`, `.radius.card`, `.dimension.weekCardTextInset`, `.weekCardTextTop`, `.weekCardLinePitch`; text roles `displayTitle` / `listSubtitle`; `icon.global.chevron` | `photo.viewer.header.week` ("Week {n}"), range (data); label `week.recap.a11y.card` | → preview |
 | preview close | C-11 on media; `collage.view.layout.screen` (`closeCentreFromTrailing`, `closeCentreBelowPageTop`) | `week.recap.a11y.close` | back to the list / opener |
 | card grid cell | `layout.year.story.recapCard` | `photo.viewer.a11y.photo` | → `photo.viewer` (context = recap items in order) |
 | card footer | `layout.year.story.recapCard` footer; text roles `headerTitle` / `meta` | "Week {n}", group name, range (data) | — |
@@ -117,7 +118,7 @@ chrome is the **same screen the capture group measured on Retro's 2026 recap pre
 - List: each card one button, label `week.recap.a11y.card` ("Recap of Week 27, July 3 to 9").
 - Preview: the card is a group labelled `week.recap.a11y.card`; cells are buttons (`photo.viewer.a11y.photo`); the pager
   announces "page 1 of 2" (platform page control); close `week.recap.a11y.close`; circle `week.recap.a11y.edit`.
-- Dynamic Type: `sheetTitle`, `displayMedium`, `listSubtitle`, `body` scale; the card footer keeps the card's proportions
+- Dynamic Type: `sheetTitle`, `displayTitle`, `listSubtitle`, `body` scale; the card footer keeps the card's proportions
   (its text scales inside the fixed card up to the footer height, then truncates — labels carry the full text).
 - Contrast (`node tools/contrast.mjs`):
 

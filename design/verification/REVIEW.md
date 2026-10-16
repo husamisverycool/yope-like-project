@@ -17,10 +17,11 @@ side-by-side images are local only (git-ignored: the reference half is third-par
 | 3 | The invite card's photo stayed readable behind white text; Retro's card is a soft colour field. | retro.app bg2.jpeg, OG image | **L-6**: σ = 0.08 × card width (web, App Clip, Android join card). |
 | 4 | The collage screen blurred the composed grid behind the grid card (busy grid on grid). | ST-04 single photo; TC-REC wash | **L-7**: the backdrop is the collage's first photo. |
 | 5 | Paywall backdrop too weak (photo readable). | PAY RAW: no edge sharper than σ ≈ 100 px | **L-9**: shared `ColourFieldBackdrop` (σ = 0.08 × width). |
-| 6 | Group and album names used the lighter headline cut after L-8. | retro.app sets album titles in Roslindale Retro | `albumTitle` text role (title cut at displayMedium size) on both platforms. |
+| 6 | Group and album names used the lighter headline cut after L-8. | retro.app sets album titles in Roslindale Retro | `displayTitle` text role (title cut at displayMedium size) on both platforms. |
 | 7 | Avatar placeholders disappeared on grouped rows (placeholder fill = row fill, both appearances). | Android dark settings, iOS settings groups | Placeholder fill raised to `color.global.controlRaised` inside grouped containers (CompositionLocal / environment). |
 | 8 | Page dots of the recap preview sat on the Share pill's line in the spec text; ST-04 shows them 16.3 pt below the page. | ST-04 full-resolution measurement | RC-19, `RecapDots.BelowPage` default (both platforms). |
 | 9 | iOS review images showed no blur at all (App Clip backdrop sharp) although the code blurs. | snapshot of invite.appclip | `SnapshotRecorder` draws through the key window (`drawHierarchy`) so Core Animation filters render; not an app bug. |
+| 10 | Recap list week cards ("Week 41" on the cover) used the light headline cut and washed out on bright covers; the C-34 library card's year did too. | TC-2023-12 recaps: "December" / "November" and the card's "2023" are the heavy title cut | Week cards → `displayTitle`; C-34 card year → `headerTitle` (as memory's recap card, RM-8). |
 
 ## Reviewed and kept (matches the reference or the spec)
 

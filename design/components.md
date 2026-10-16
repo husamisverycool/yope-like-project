@@ -59,7 +59,7 @@ Paths under `references/auto/retro/` (`INDEX.md`); research files `design/resear
 
 ---
 
-**Display faces (L-8).** Titles (C-01, C-02, C-19, Rewind dates, the wordmark) use `font.global.display` (Roboto Serif Title); headlines (cards, sheets, onboarding, invite) use `font.global.displayNarrow` (Roboto Serif Headline) via text roles displayMedium / displaySmall. An album's / a group's name on its page is the title face at the `displayMedium` size (text role `albumTitle`): retro.app sets album titles in Roslindale Retro, the title cut.
+**Display faces (L-8).** Titles (C-01, C-02, C-19, Rewind dates, the wordmark) use `font.global.display` (Roboto Serif Title); headlines (cards, sheets, onboarding, invite) use `font.global.displayNarrow` (Roboto Serif Headline) via text roles displayMedium / displaySmall. An album's / a group's name on its page and the recap list's week cards use the title face at the `displayMedium` size (text role `displayTitle`): retro.app sets album titles, and Retro its month cards (TC-2023-12), in Roslindale Retro, the title cut.
 
 ## C-01 Screen header (root): serif title + trailing icon buttons
 
@@ -601,7 +601,7 @@ pill below (recap preview) or a pager of plan cards (paywall).
 | part | token |
 |---|---|
 | backdrop | the photo full-bleed, Gaussian blur σ `size.global.backdropBlur` (1.8 pt) under `color.global.backdropDim` (black 22 %) — fitted on ST-04 (MERGE_DECISIONS L-5); not a frosted material |
-| recap card | `color.global.surfaceElevated` #FFFFFF / #181818; corners ≈4.5–5 % of the card width (TC-H; no exact fit on the gradient backdrop — **Gap**: one lossless share-image export); photo grid with `size.global.stripGap` gaps, `radius.global.thumbnail` cells; footer: year in `font.global.display` text role `displaySmall`, name text role `listTitle`, domain line text role `meta` `color.global.textSecondary` |
+| recap card | `color.global.surfaceElevated` #FFFFFF / #181818; corners ≈4.5–5 % of the card width (TC-H; no exact fit on the gradient backdrop — **Gap**: one lossless share-image export); photo grid with `size.global.stripGap` gaps, `radius.global.thumbnail` cells; footer: year in `font.global.display` text role `headerTitle` (as the measured recap card, RM-8: TC-REC "2023" is the title cut), name text role `listTitle`, domain line text role `meta` `color.global.textSecondary` |
 | plan card (paywall) | translucent white on iOS (alpha not derivable — **Gap**; opaque `color.global.surfaceElevated` is the APK value); corners `radius.global.cardLarge` (36); padding `size.global.planCardPadding` (27); its capsule (C-05) 16 from the card sides and bottom; next card peeks after `size.global.planCardGap` (8); width = screen − 2 × `size.global.buttonMarginH` |
 | plan card text | title 24 bold / price 22 heavy, body 15, steps 17, footnote 15 (PAY) — paywall surface tokens (Pass 2) |
 | close | glass circle `size.global.circleButtonSmall` (32) (C-11) |
