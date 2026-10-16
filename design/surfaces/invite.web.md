@@ -27,9 +27,11 @@ group in the line under the headline and the members' avatars (first names only 
 Page background #FFFFFF (`color.global.background` light value, both schemes — Retro's web has no dark scheme).
 
 1. **Card**: inset `invite.web.size.cardInset` (6) from every viewport edge, corners `invite.web.radius.card` (36),
-   full height; fill = the group cover blurred to a colour field (C-34 backdrop); no cover → the inviter's avatar
-   blurred; neither → `color.global.backgroundDeep`. Content is a centred column (`text-align: center`).
-2. **Avatar**: the inviter's photo, `invite.web.size.avatar` (112) circle, object-fit cover, placeholder
+   full height; fill = the group cover blurred to a colour field (`invite.web.layout.backdrop`: Gaussian σ = 0.08 × the
+   card width under `color.global.backdropDim`, the photo extended 3σ past the card; MERGE_DECISIONS L-6 — not the
+   recap's `size.global.backdropBlur`); no cover → the inviter's avatar blurred the same way; neither →
+   `color.global.backgroundDeep`. Content is a centred column (`text-align: center`).
+2. **Avatar**: the inviter's photo (`invite_preview.inviter_avatar_path`, the invite creator's avatar), `invite.web.size.avatar` (112) circle, object-fit cover, placeholder
    `invite.web.color.avatarPlaceholder`; centred in the space above the text block (Retro's capture lost the image —
    position approximated, Gaps). No photo → C-23 initials fallback is a Gap; the placeholder circle shows.
 3. **Text block**, anchored above the pill:
@@ -53,19 +55,23 @@ Page background #FFFFFF (`color.global.background` light value, both schemes —
 
 ## Structure — desktop (viewport > 840)
 
-White page, centred column (`.page_newProfilePageContent`): avatar `invite.web.size.avatarDesktop` (70) → headline
-(`invite.web.invitedBy`, `invite.web.fontSize.headlineDesktop` 48 / line 48, `font.global.display`, #000000, margin-top
-`invite.web.size.headlineTopDesktop` 70) → line `invite.web.desktop.scan` (`invite.web.fontSize.bodyDesktop` 20 /
+White page, centred column (`.page_newProfilePageContent`), in the order of the WEBD capture and Retro's DOM
+(`[QR(data, profilePhotoURL), h1, p]`, WEBX; RA-29): QR code of the invite URL (`invite.web.size.qrDesktop` 250, black
+on white, error correction H) with the inviter's avatar (`invite.web.size.avatarDesktop` 70 circle, placeholder
+`invite.web.color.avatarPlaceholder`) centred over it → headline (`invite.web.invitedBy`,
+`invite.web.fontSize.headlineDesktop` 48 / line 48, `font.global.display`, #000000, `invite.web.size.headlineTopDesktop`
+70 below the QR) → line `invite.web.desktop.scan` (`invite.web.fontSize.bodyDesktop` 20 /
 `invite.web.lineHeight.bodyDesktop` 28, `invite.web.color.bodyDesktop`, tracking −0.4, max width
 `invite.web.size.bodyMaxWidthDesktop` 300, `invite.web.size.headlineToBody` above, `invite.web.size.bodyToQrDesktop`
-below) → QR code of the invite URL (`invite.web.size.qrDesktop` 250, black on white) → link `invite.web.getApp`
-(App Store / Play listing) → footer links (Terms, Privacy) at text role `caption`, #000000 50 %.
+(Retro's p margin-bottom 30) below) → link `invite.web.getApp` (App Store / Play listing; Retro shows store badges
+here) → footer links (Terms, Privacy) at text role `caption`, #000000 50 %, at the bottom of the page. The column is
+centred vertically between the page top and the footer.
 
 ## Elements
 
 | element | tokens | copy | behaviour |
 |---|---|---|---|
-| card backdrop | `invite.web.size.cardInset`, `invite.web.radius.card`, C-34 backdrop | `invite.web.cover.alt` (on the backdrop image, `role="img"`) | static |
+| card backdrop | `invite.web.size.cardInset`, `invite.web.radius.card`, `invite.web.layout.backdrop` | `invite.web.cover.alt` (on the backdrop image, `role="img"`) | static |
 | avatar | `invite.web.size.avatar` / `.avatarDesktop`, `invite.web.color.avatarPlaceholder` | `invite.web.avatar.alt` ({first_name}) | static |
 | headline | `fontSize.global.displayMedium` / `invite.web.fontSize.headlineDesktop`, `invite.web.lineHeight.headline` | `invite.web.invitedBy` ({first_name}) / `invite.web.invitedFallback` | `<h1>` |
 | line | `invite.web.fontSize.body`, `.lineHeight.body`, `.letterSpacing.body`, `.color.body` | `invite.web.body` / `invite.web.desktop.scan` ({group_name}) | static |
@@ -113,13 +119,15 @@ None (web).
 | desktop line black 50 % on white | **4.00:1 FAIL** (20 px: large-text threshold 3:1 → pass as large text) |
 | footer 8 px white on the backdrop | photo-dependent; below any recommended size (Retro's own) |
 
-  Reported, not adjusted (Retro's values). The backdrop is darkened only by the photo itself; no scrim is sourced for this card.
+  Reported, not adjusted (Retro's values). The backdrop is the photo under `color.global.backdropDim` (black 22 %,
+  `invite.web.layout.backdrop`); no further scrim is sourced for this card.
 
 ## Data & actions
 
 - `GET /i/:token` → `invite_preview(p_token)` with the anon key (docs/API.md §6.1); cover / avatar paths signed with the
   service role and served from this origin (no storage path, user id, Supabase URL or key in the HTML).
-- Only `group_name`, `group_kind` (JSON only), `cover_path`, `inviter_first_name`, `members[].first_name`,
+- Only `group_name`, `group_kind` (JSON only), `cover_path`, `inviter_first_name`, `inviter_avatar_path` (migration
+  0016: the invite creator's avatar while a member — the same path as their `members[]` entry), `members[].first_name`,
   `members[].avatar_path` are read (`web/src/supabase.ts parsePreview`).
 - `GET /i/:token/preview.json` — the same preview for the App Clip and the apps before joining.
 - `GET /i/:token/og.png` — the 600 × 600 link-preview image (`invite.web.layout.ogImage`).
@@ -147,5 +155,5 @@ None (web).
 | app mark on the card | none (Retro shows its mark top-left) | owner's app icon / mark (decision 0.2) |
 | App name, domain, App Store id, Team ID, Android fingerprints | `invite.web.documentTitle` BLOCKED; association entries omitted in development | `config/app.json` |
 | initials avatar when the inviter has no photo | placeholder circle | one raw screenshot of a friend without a photo (C-23 Gap) |
-| backdrop blur radius | not measurable (C-34 Gap) | none from stills |
+| backdrop blur radius | closed: `invite.web.layout.backdrop` (MERGE_DECISIONS L-6) | — |
 | OG image name weight | display face at ≈ 52 px (ink-height estimate) | Retro's `/api/userogsquare` source (not public) |

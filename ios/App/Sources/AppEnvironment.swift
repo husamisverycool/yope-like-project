@@ -227,7 +227,8 @@ extension AccountDependencies {
         onboarding: OnboardingRecord = OnboardingRecord(),
         currentPhone: @escaping @MainActor () -> String? = { nil },
         liveActivityChanged: @escaping @MainActor () -> Void = {},
-        prewarmCamera: @escaping @MainActor () -> Void = {}
+        prewarmCamera: @escaping @MainActor () -> Void = {},
+        permissionStatus: (@MainActor (SystemPermission) async -> PermissionStatus)? = nil
     ) -> AccountDependencies {
         let toasts = ToastCenter()
         let shell = ShellState(prewarm: prewarmCamera)
@@ -252,7 +253,8 @@ extension AccountDependencies {
             purchases: purchases,
             liveActivity: liveActivity,
             currentPhone: currentPhone,
-            liveActivityChanged: liveActivityChanged
+            liveActivityChanged: liveActivityChanged,
+            permissionStatus: permissionStatus
         )
     }
 

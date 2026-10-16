@@ -202,7 +202,7 @@ async function main() {
 
       section("Desktop column (1440 × 900 @1x; viewport > 840)");
       check("page background (#FFFFFF, `color.global.background` light)", css(t["color.global.background"].light), bg);
-      row("order", "QR (avatar in its centre) → headline → line → link → footer", "QR (avatar in its centre) → headline → line → link → footer", "matched", "WEBD capture and Retro's DOM [QR(profilePhotoURL), h1, p]; spec Structure text corrected (RA-31)");
+      row("order", "QR (avatar in its centre) → headline → line → link → footer", "QR (avatar in its centre) → headline → line → link → footer", "matched", "WEBD capture and Retro's DOM [QR(profilePhotoURL), h1, p]; spec Structure text corrected (RA-29)");
       check("`invite.web.size.qrDesktop`", `${q} × ${q}`, `${qr.box.w} × ${qr.box.h}`);
       row("QR modules", "black on white", `square, ${k} px each (whole pixels), centred; level H`, "approximated", "Retro's code uses rounded dot modules (style not tokenised); 231-px ink in its 250-px box = 33 × 7 px, the same whole-pixel rule");
       check("QR content", `https://<domain>/i/<token>`, decoded === `https://invite.example.com/i/${TOKENS.valid}` ? `https://<domain>/i/<token>` : String(decoded), "decoded from the screenshot (jsQR) with the avatar over the centre");

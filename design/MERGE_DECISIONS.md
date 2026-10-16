@@ -1120,6 +1120,7 @@ All measurements with `python3 -I` (PIL) on the files below; scales as in RV §0
 | RA-26 | Mute semantics | Yope "mute this group" (on = muted) vs Retro "Album updates" (on = updates on) | Retro's: new key `groups.settings.notifications.updates` (on = not muted); `groups.settings.notifications.mute` removed | APK-S `journal_settings_notifications_title` | resolved |
 | RA-27 | Two cover sizes | album detail 173.5 × 246 vs link-sharing sheet 281.8 × 393.5 (same 0.71 proportion) | each surface keeps its own; the create form uses the detail size | TC-J1, TC-J5 | resolved |
 | RA-28 | Note colour on the link sheet | measured #767676 (TC-J5) vs global `textSecondary` #999999 | surface token `groups.invite.color.note` in light (4.54:1 pass); dark keeps `textSecondary` (Retro's dark secondary) | surface measured differently (brief) | resolved |
+| RA-29 | Invite page desktop order | spec Structure text: avatar → headline → line → QR; WEBD capture and Retro's DOM (`[QR(data, profilePhotoURL), h1, p]`, WEBX): QR with the profile photo in its centre, then headline and line | Retro's order: QR (70-pt avatar centred over it, error correction H) → headline (70 below) → line → "Download the app" → footer; spec text corrected; `invite.web.size.bodyToQrDesktop` (Retro's p margin-bottom 30) is the line → link space | WEBD, WEBX | resolved |
 
 ### BLOCKED items
 

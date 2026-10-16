@@ -23,7 +23,7 @@ Part 2 of the build directive: no design decision is ours.
 | `design/collage-options/` | The same-moment collage options shown to the owner. |
 | `tools/` | Codegen (tokens/copy → Swift, Kotlin, TypeScript), provenance lint, color sampler, side-by-side composer. |
 | `backend/` | Supabase project (migrations with RLS, storage policies, seed for tests), worker (job queue, media, push), tests. |
-| `web/` | Invite preview page (Partiful-style), `apple-app-site-association`, `assetlinks.json`. |
+| `web/` | Invite preview page (Retro `/u/` invite page style: blurred-cover card on mobile, QR column on desktop, 600 × 600 share image), `apple-app-site-association`, `assetlinks.json`. |
 | `ios/` | XcodeGen project: app, widgets + Live Activity extension, notification service extension, App Clip, `AppCore` Swift package. |
 | `android/` | Gradle project: app (Compose), Glance widgets, core modules. |
 
