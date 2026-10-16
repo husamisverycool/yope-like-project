@@ -11,7 +11,9 @@ import XCTest
 /// (`cd backend && npm run db:start`; values from `npx -y supabase@2.121.0 status -o json`).
 /// Defaults are the Supabase CLI's local development values, the same as backend/tests/helpers.ts;
 /// override with SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY / SUPABASE_JWT_SECRET.
-/// Set APPDATA_INTEGRATION=0 to skip them even when the stack is up.
+/// Set APPDATA_INTEGRATION=0 to skip them even when the stack is up. CI sets APPDATA_INTEGRATION_REQUIRED=1
+/// (job `ios-core`): there an unreachable stack, or a URLSession without WebSockets, fails every integration test
+/// instead of skipping it, so they can never pass by not running.
 enum LocalStack {
     static let environment = ProcessInfo.processInfo.environment
     static let url = URL(string: environment["SUPABASE_URL"] ?? "http://127.0.0.1:54321")!
@@ -28,16 +30,30 @@ enum LocalStack {
 
     private static let probe = ReachabilityProbe()
 
-    /// Skips the calling test (printing why) when the stack is not reachable.
+    /// APPDATA_INTEGRATION_REQUIRED=1: the integration tests must run (CI).
+    static var isRequired: Bool { environment["APPDATA_INTEGRATION_REQUIRED"] == "1" }
+
+    /// What a missing prerequisite does: a failure when the tests are required, a skip otherwise (printing why).
+    struct Unavailable: Error, CustomStringConvertible {
+        let description: String
+    }
+
+    private static func unavailable(_ reason: String) -> Error {
+        if isRequired {
+            print("[AppDataTests] FAILED (APPDATA_INTEGRATION_REQUIRED=1): \(reason)")
+            return Unavailable(description: "APPDATA_INTEGRATION_REQUIRED=1 but \(reason)")
+        }
+        print("[AppDataTests] skipped: \(reason)")
+        return XCTSkip(reason)
+    }
+
+    /// Skips the calling test (printing why) when the stack is not reachable; fails it when the tests are required.
     static func require() async throws {
         if environment["APPDATA_INTEGRATION"] == "0" {
-            let reason = "APPDATA_INTEGRATION=0: local Supabase integration tests disabled"
-            print("[AppDataTests] skipped: \(reason)")
-            throw XCTSkip(reason)
+            throw unavailable("APPDATA_INTEGRATION=0: local Supabase integration tests disabled")
         }
         if let reason = await probe.unavailableReason() {
-            print("[AppDataTests] skipped: \(reason)")
-            throw XCTSkip(reason)
+            throw unavailable(reason)
         }
     }
 
@@ -66,7 +82,7 @@ enum LocalStack {
 
     private static let webSocketProbe = WebSocketProbe()
 
-    /// Skips the calling test when this platform's URLSession cannot open WebSockets.
+    /// Skips the calling test when this platform's URLSession cannot open WebSockets (fails it when required).
     ///
     /// supabase-swift Realtime uses `URLSessionWebSocketTask`. On Linux that goes through the
     /// system libcurl, and Ubuntu 24.04's libcurl 8.5.0 (also in the `swift:*-noble` images) is
@@ -76,8 +92,7 @@ enum LocalStack {
     static func requireWebSockets() async throws {
         try await require()
         if let reason = await webSocketProbe.unavailableReason() {
-            print("[AppDataTests] skipped: \(reason)")
-            throw XCTSkip(reason)
+            throw unavailable(reason)
         }
     }
 
@@ -167,6 +182,28 @@ enum LocalStack {
 
     static func update(_ table: String, id: String, _ values: [String: Any]) async throws {
         try await serviceRequest("PATCH", "/rest/v1/\(table)?id=eq.\(id)", json: values, prefer: "return=minimal")
+    }
+
+    /// Calls a service-role RPC (what the worker's scheduler calls) and returns its decoded JSON.
+    @discardableResult
+    static func serviceRPC(_ function: String, _ arguments: [String: Any] = [:]) async throws -> Any {
+        let data = try await serviceRequest("POST", "/rest/v1/rpc/\(function)", json: arguments)
+        return data.isEmpty ? NSNull() : try JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])
+    }
+
+    /// `app_config.value` of `key` as JSON text ("null" when SQL NULL).
+    static func config(_ key: String) async throws -> String {
+        let data = try await serviceRequest("GET", "/rest/v1/app_config?select=value&key=eq.\(key)")
+        let rows = try JSONSerialization.jsonObject(with: data) as? [[String: Any]]
+        let value = rows?.first?["value"] ?? NSNull()
+        return String(decoding: try JSONSerialization.data(withJSONObject: value, options: [.fragmentsAllowed]), as: UTF8.self)
+    }
+
+    /// Sets `app_config.value` of `key` from JSON text (an owner setting the tests need, e.g. the weekly question's
+    /// catalogue).
+    static func setConfig(_ key: String, json: String) async throws {
+        let value = try JSONSerialization.jsonObject(with: Data(json.utf8), options: [.fragmentsAllowed])
+        try await serviceRequest("PATCH", "/rest/v1/app_config?key=eq.\(key)", json: ["value": value], prefer: "return=minimal")
     }
 
     static func createAuthUser(phone: String, password: String, displayName: String) async throws -> String {

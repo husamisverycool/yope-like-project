@@ -217,16 +217,36 @@ jobs:
           path: android/build/e2e
           if-no-files-found: warn
 
+  # AppCore on Linux: the AppModels and AppData unit tests, and AppData's integration tests (the iOS data layer: sign-in
+  # session, groups, invites, uploads, posts, realtime, selfies, plans, the weekly question, overnight photos) against
+  # this job's local Supabase. The Swift image (pinned) runs on the host network so it reaches the stack at 127.0.0.1;
+  # .github/scripts/ios-core-test.sh builds a libcurl with WebSockets for Realtime and sets APPDATA_INTEGRATION_REQUIRED=1,
+  # so an unreachable stack fails the tests instead of skipping them.
   ios-core:
-    name: ios AppCore (swift test on Linux)
+    name: ios AppCore (swift test on Linux, against a local Supabase)
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     needs: detect
-    if: needs.detect.outputs.ioscore == 'true'
-    container: swift:6.1-noble
+    if: needs.detect.outputs.ioscore == 'true' && needs.detect.outputs.backend == 'true'
     steps:
       - uses: actions/checkout@v4
-      - working-directory: ios/Packages/AppCore
-        run: swift test
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - name: start Supabase
+        working-directory: backend
+        run: |
+          npm ci
+          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
+          supabase status -o json | jq -r '"SUPABASE_URL=\(.API_URL)", "SUPABASE_ANON_KEY=\(.ANON_KEY)", "SUPABASE_SERVICE_ROLE_KEY=\(.SERVICE_ROLE_KEY)", "SUPABASE_JWT_SECRET=\(.JWT_SECRET)"' >> "$GITHUB_ENV"
+      - name: swift test (unit and live-stack integration tests)
+        run: |
+          docker run --rm --network host -v "$GITHUB_WORKSPACE:/w" -w /w/ios/Packages/AppCore \
+            -e SUPABASE_URL -e SUPABASE_ANON_KEY -e SUPABASE_SERVICE_ROLE_KEY -e SUPABASE_JWT_SECRET \
+            swift:6.1.2-noble bash /w/.github/scripts/ios-core-test.sh
 
   ios:
     name: "ios (xcodebuild: app, widgets, notification service, App Clip, tests)"
