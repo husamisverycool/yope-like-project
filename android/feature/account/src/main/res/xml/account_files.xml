@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- settings.account "Take Photo": the system camera writes the new profile photo here (cache, read/write grant only). -->
+<paths>
+    <cache-path name="camera" path="camera/" />
+</paths>

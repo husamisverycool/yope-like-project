@@ -143,10 +143,10 @@ fun SendToScreen(
     ) {
         MediaSheetHeader(
             leading = {
-                CircleIconButton(Tokens.Icons.globalDownload, stringResource(R.string.camera_sendto_a11y_save), onSave, style = CircleButtonStyle.OnMedia, enabled = !sending)
+                CircleIconButton(Tokens.Icons.globalDownload, stringResource(R.string.camera_sendto_a11y_save), onSave, Modifier.testTag("sendto.save"), style = CircleButtonStyle.OnMedia, enabled = !sending)
             },
             trailing = {
-                CircleIconButton(Tokens.Icons.globalClose, stringResource(R.string.camera_sendto_a11y_close), onClose, style = CircleButtonStyle.OnMedia, enabled = !sending)
+                CircleIconButton(Tokens.Icons.globalClose, stringResource(R.string.camera_sendto_a11y_close), onClose, Modifier.testTag("sendto.close"), style = CircleButtonStyle.OnMedia, enabled = !sending)
             },
         ) { centre ->
             Crossfade(sending, animationSpec = app.ui.foundation.DsMotion.crossfade(), label = "sendtoTitle") { busy ->
@@ -154,6 +154,7 @@ fun SendToScreen(
                     stringResource(if (busy) R.string.camera_sendto_sending else R.string.camera_sendto_title),
                     capMiddle = centre,
                     color = Tokens.Colors.globalTextOnMedia,
+                    modifier = Modifier.testTag("sendto.title"),
                 )
             }
         }
@@ -234,7 +235,8 @@ private fun Preview(
             Modifier
                 .size(width, height)
                 .clip(RoundedCornerShape(Dp(spec.cornerRadius)))
-                .background(Tokens.Colors.globalControlOnDeep),
+                .background(Tokens.Colors.globalControlOnDeep)
+                .testTag("sendto.preview"),
         ) {
             // Own photo: decorative for TalkBack.
             Box(Modifier.fillMaxSize().semantics { invisibleToUser() }) {
@@ -307,7 +309,8 @@ private fun GroupsSection(
             .padding(horizontal = Tokens.Sizes.globalScreenMargin)
             // "35.2 pt below the photo" (ST-03, to the label's cap top).
             .paddingFrom(FirstBaseline, before = Dp(GROUPS_LABEL_BELOW_PHOTO) + CapTop.height(labelStyle))
-            .semantics { heading() },
+            .semantics { heading() }
+            .testTag("sendto.label"),
     )
     val rowsArea = Modifier.fillMaxWidth().padding(vertical = Dp(row.padding))
     when (val groups = state.groups) {
@@ -383,6 +386,7 @@ private fun GroupRow(group: Group, cover: Any?, selected: Boolean, enabled: Bool
  * secondary text); the counter "58/250" (`camera.sendto.fontSize.counter`, monospaced digits, secondary text)
  * trailing 20.7 from the edge and 22 above the keyboard. Swipe down keeps the text as "Done" does.
  */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 private fun MessageSheet(text: String, onText: (String) -> Unit, onDone: () -> Unit) {
     val sheet = Tokens.Layouts.CameraSendtoLayoutMessageSheet

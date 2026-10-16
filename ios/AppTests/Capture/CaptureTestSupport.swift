@@ -54,15 +54,22 @@ final class CaptureTestRig {
         self?.haptics.append(haptic)
     }
 
-    func cameraModel(contextGroupID: String? = nil) -> CameraCaptureModel {
+    /// Noon on 2026-10-15 (ISO week 42): the camera title reads "Week 42" in every snapshot.
+    static let fixedNow: Date = {
+        var calendar = Calendar(identifier: .iso8601)
+        calendar.timeZone = .current
+        return calendar.date(from: DateComponents(year: 2026, month: 10, day: 15, hour: 12)) ?? Date(timeIntervalSince1970: 0)
+    }()
+
+    func cameraModel(contextGroupID: String? = nil, now: Date = CaptureTestRig.fixedNow) -> CameraCaptureModel {
         CameraCaptureModel(
             contextGroupID: contextGroupID,
             camera: camera,
             premium: premium,
-            library: library,
             coach: coach,
             navigation: navigation,
-            longPressThreshold: .milliseconds(20)
+            longPressThreshold: .milliseconds(20),
+            clock: { now }
         )
     }
 
@@ -83,7 +90,6 @@ final class CaptureTestRig {
             premium: premium,
             library: library,
             voice: voice,
-            coach: coach,
             sendCenter: sendCenter,
             navigation: navigation,
             onClose: onClose,
@@ -115,7 +121,7 @@ final class CaptureTestRig {
     }
 
     /// Real photos everywhere the camera fakes show one: the viewfinder, the shutter's stills (back scene, front
-    /// selfie), the library thumbnail and the group covers.
+    /// selfie) and the group covers.
     func usePhotos(scene: Int = 0) {
         let preview = CaptureTestImages.scene(scene, CGSize(width: 900, height: 1200))
         let back = CaptureTestImages.still(named: CaptureTestImages.scenes[scene % CaptureTestImages.scenes.count], position: .back)
@@ -125,7 +131,6 @@ final class CaptureTestRig {
             fake.backStill = back
             fake.frontStill = front
         }
-        library.thumbnail = CaptureTestImages.photo(CGSize(width: 192, height: 192), named: "picnic-spread-3x4")
         groups.groups = CaptureTestImages.groupsWithCovers
         groups.covers = CaptureTestImages.groupCovers
     }
@@ -208,10 +213,16 @@ enum CaptureTestImages {
     }
 }
 
-/// Records `ios/build/snapshots/capture/<surface>-<state>.png` (SnapshotRecorder writes
-/// `<test>.<name>.png`; the file is renamed to the surface/state name the verification step uses).
+/// Records `ios/build/snapshots/capture/<surface>-<state>-<light|dark>.png` (SnapshotRecorder writes
+/// `<test>.<name>.png`; the file is renamed to the surface/state name the verification step uses). Every state is
+/// recorded in the light appearance; pass `[.light, .dark]` for a surface's primary state. The host sets the
+/// appearance explicitly (`.environment(\.colorScheme)` + `.preferredColorScheme`): media surfaces render dark in
+/// both by design (`layout.global.appearance.media`), sheets and system text follow the host.
 enum CaptureSnapshot {
     static let folder = SnapshotRecorder.directory.appendingPathComponent("capture", isDirectory: true)
+
+    /// Both appearances (the primary state of a surface).
+    static let both: [ColorScheme] = [.light, .dark]
 
     @MainActor
     @discardableResult
@@ -219,25 +230,30 @@ enum CaptureSnapshot {
         _ view: V,
         surface: String,
         state: String,
+        appearances: [ColorScheme] = [.light],
         layout: SwiftUISnapshotLayout = .device(config: .iPhone13),
         file: StaticString = #filePath,
         testName: String = #function,
         line: UInt = #line
     ) -> URL? {
-        let name = "\(surface)-\(state)"
-        let hosted = view
-            .environment(\.colorScheme, .dark)
-            .preferredColorScheme(.dark)
-        guard let written = SnapshotRecorder.record(hosted, named: name, group: "capture", layout: layout, file: file, testName: testName, line: line) else {
-            return nil
+        var last: URL?
+        for scheme in appearances {
+            let name = "\(surface)-\(state)-\(scheme == .dark ? "dark" : "light")"
+            let hosted = view
+                .environment(\.colorScheme, scheme)
+                .preferredColorScheme(scheme)
+            guard let written = SnapshotRecorder.record(hosted, named: name, group: "capture", layout: layout, file: file, testName: testName, line: line) else {
+                return nil
+            }
+            let target = folder.appendingPathComponent("\(name).png")
+            try? FileManager.default.removeItem(at: target)
+            do {
+                try FileManager.default.moveItem(at: written, to: target)
+                last = target
+            } catch {
+                last = written
+            }
         }
-        let target = folder.appendingPathComponent("\(name).png")
-        try? FileManager.default.removeItem(at: target)
-        do {
-            try FileManager.default.moveItem(at: written, to: target)
-        } catch {
-            return written
-        }
-        return target
+        return last
     }
 }

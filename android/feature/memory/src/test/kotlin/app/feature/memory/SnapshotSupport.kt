@@ -14,11 +14,10 @@ import app.designsystem.LocalReduceMotionOverride
 import app.feature.memory.birthday.LocalTributePlayer
 import app.feature.memory.common.LocalMemoryBackend
 import app.feature.memory.common.LocalMemoryImages
-import app.feature.memory.common.LocalReviewBlockedToasts
+import app.feature.memory.common.LocalSeenStore
 import app.feature.memory.common.MemoryBackend
 import app.feature.memory.common.MemoryImage
-import app.feature.memory.tagging.CoachStore
-import app.feature.memory.tagging.LocalCoachStore
+import app.feature.memory.common.SeenStore
 import app.testing.SamplePhotos
 import app.ui.theme.AppTheme
 import com.github.takahirom.roborazzi.captureRoboImage
@@ -84,28 +83,27 @@ object TestImages {
     private const val COLLAGE_GAP = 6
 }
 
-/** A coach store in memory. */
-class TestCoachStore(private val dismissed: MutableSet<String> = mutableSetOf()) : CoachStore {
-    override fun dismissed(userId: String) = userId in dismissed
-    override fun dismiss(userId: String) {
-        dismissed += userId
+/** A "seen" store in memory (the On This Day intro counts as seen unless a test says otherwise). */
+class TestSeenStore(private val seen: MutableSet<String> = mutableSetOf(), private val everything: Boolean = true) : SeenStore {
+    override fun seen(userId: String, key: String) = everything || "$key.$userId" in seen
+    override fun markSeen(userId: String, key: String) {
+        seen += "$key.$userId"
     }
 }
 
-/** Theme and test locals: generated images, the poster in place of the decoder, motion on. */
+/** Theme and test locals: the sample photos, the poster in place of the decoder, motion on; [dark] = the appearance. */
 @Composable
 fun MemoryTestContent(
     backend: MemoryBackend? = null,
-    reviewToasts: Boolean = false,
-    coach: CoachStore = TestCoachStore(),
+    dark: Boolean = false,
+    seen: SeenStore = TestSeenStore(),
     content: @Composable () -> Unit,
 ) {
-    AppTheme {
+    AppTheme(dark = dark) {
         CompositionLocalProvider(
             LocalMemoryImages provides TestImages::painter,
             LocalReduceMotionOverride provides false,
-            LocalReviewBlockedToasts provides reviewToasts,
-            LocalCoachStore provides coach,
+            LocalSeenStore provides seen,
             LocalMemoryBackend provides backend,
             LocalTributePlayer provides { _, poster, modifier -> Box(modifier) { MemoryImage(poster, null, Modifier, ContentScale.Fit) } },
             content = content,
@@ -113,7 +111,10 @@ fun MemoryTestContent(
     }
 }
 
-/** Roborazzi baselines: `src/test/snapshots/<surface-id>/<state>.png`, phone 393 × 852 dp. */
+/**
+ * Roborazzi baselines: `src/test/snapshots/<surface-id>/<state>-<light|dark>.png`, phone 393 × 852 dp (no system
+ * bars in Robolectric). Every state is recorded in light; the primary state of each surface also in dark.
+ */
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "w393dp-h852dp-xhdpi")
@@ -123,29 +124,35 @@ abstract class SnapshotTest {
     /** Lets reveals and effects finish with the clock paused, so spinners always draw the same frame. */
     protected open val settleMillis: Long = 2_000
 
-    /** Toast snapshots: shown and settled, before the 2 s dwell (`safety.block.duration.toast`) ends. */
-    protected val toastSettle: Long = 1_000
-
+    /**
+     * Records [content] as `<surface>/<state>-<appearance>.png`. [screen]: the whole screen with its windows (sheets,
+     * dialogs, menus); else the composition root.
+     */
     fun snap(
         surface: String,
         state: String,
         backend: MemoryBackend? = null,
-        reviewToasts: Boolean = false,
+        dark: Boolean = false,
         screen: Boolean = false,
-        coach: CoachStore = TestCoachStore(),
+        seen: SeenStore = TestSeenStore(),
         settle: Long = settleMillis,
         content: @Composable () -> Unit,
     ) {
         compose.mainClock.autoAdvance = false
-        compose.setContent { MemoryTestContent(backend, reviewToasts, coach, content) }
+        compose.setContent { MemoryTestContent(backend, dark, seen, content) }
         compose.mainClock.advanceTimeBy(settle)
         if (screen) {
-            // Popups (coach, toasts) are separate windows: let them attach and lay out.
+            // Sheets, dialogs and menus are separate windows: let them attach, lay out and settle.
             compose.waitForIdle()
-            compose.mainClock.advanceTimeByFrame()
+            repeat(SHEET_FRAMES) { compose.mainClock.advanceTimeByFrame() }
+            compose.mainClock.advanceTimeBy(settle)
         }
-        val path = "src/test/snapshots/$surface/$state.png"
+        val path = "src/test/snapshots/$surface/$state-${if (dark) "dark" else "light"}.png"
         if (screen) captureScreenRoboImage(path) else compose.onRoot().captureRoboImage(path)
+    }
+
+    private companion object {
+        const val SHEET_FRAMES = 4
     }
 }
 

@@ -29,8 +29,9 @@ fun weekStripTiles(weekStart: LocalDate, photos: List<StripPhoto>, current: Bool
     }
     if (!current) return photoTiles
     if (photoTiles.isEmpty()) return listOfNotNull(add) + emptyDays(context, weekStart)
-    val daysWithPhotos = photos.map { it.at.atZone(zone).toLocalDate() }.distinct().size
-    val placeholders = (0 until (Formats.DAYS_IN_WEEK.toInt() - daysWithPhotos).coerceAtLeast(0)).map { i -> DayTile.Placeholder("placeholder-$weekStart-$i", emptyDayLabel(context, weekStart.plusDays((daysWithPhotos + i).toLong()))) }
+    val photoDays = photos.map { it.at.atZone(zone).toLocalDate() }.toSet()
+    val placeholders = (0 until Formats.DAYS_IN_WEEK.toInt()).map { weekStart.plusDays(it.toLong()) }.filter { it !in photoDays }
+        .map { day -> DayTile.Placeholder("placeholder-$day", emptyDayLabel(context, day)) }
     return photoTiles + listOfNotNull(add) + placeholders
 }
 

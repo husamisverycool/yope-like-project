@@ -70,7 +70,7 @@ internal suspend fun loadWeek(data: SocialData, groupId: String, recapId: String
     val ids = (recap?.items.orEmpty() + week?.postIds.orEmpty()).distinct()
     val posts = data.posts(ids)
     val media = data.media(posts.map { it.mediaId })
-    val profiles = data.profiles(posts.map { it.authorId }.distinct())
+    val profiles = data.profiles((posts.map { it.authorId } + listOfNotNull(recap?.editedBy)).distinct())
     return WeekPayload(group, recap, week?.postIds.orEmpty(), posts, media, profiles)
 }
 
@@ -83,6 +83,8 @@ data class RecapState(
     /** Every visible post of the week, chronological. */
     val pics: List<WeekPhoto> = emptyList(),
     val offline: Boolean = false,
+    /** Who last edited the recap's text (`weekly_recaps.edited_by`), for the note's attribution. */
+    val editor: Profile? = null,
 ) {
     enum class Phase { Loading, Ready, Pending, Empty, Error, OfflineEmpty }
 
@@ -164,6 +166,7 @@ class RecapViewModel(private val data: SocialData, private val groupId: String, 
                 recap = recap,
                 card = recap?.items.orEmpty().mapNotNull(::photo),
                 pics = p.weekPostIds.mapNotNull(::photo),
+                editor = recap?.editedBy?.let { id -> p.profiles.firstOrNull { it.id == id } },
             )
         }
     }
@@ -184,8 +187,18 @@ data class EditState(
     val albumSheet: Boolean = false,
     val albumName: String = "",
     val albumError: EditError? = null,
+    /** The "Add a Message" sheet is open (`week.edit.layout.message`). */
+    val messageSheet: Boolean = false,
+    /** The recap as loaded: Cancel with changes asks first (`week.edit.lostChanges.*`). */
+    val originalChecked: List<String> = emptyList(),
+    val originalText: String = "",
 ) {
     enum class Phase { Loading, Ready, NotReady, Error }
+
+    val dirty: Boolean get() = phase == Phase.Ready && (checked != originalChecked || text.trim() != originalText.trim())
+
+    /** Checked photos in their order (the strip). */
+    val strip: List<WeekPhoto> get() = photos.associateBy { it.post.id }.let { byId -> checked.mapNotNull(byId::get) }
 }
 
 enum class EditError { Save, AlbumName, NotReady }
@@ -208,7 +221,7 @@ class WeekEditViewModel(
     private val groupId: String,
     private val recapId: String?,
     private val weekStart: LocalDate?,
-    private val albumOnly: Boolean,
+    val albumOnly: Boolean,
 ) : ViewModel() {
     private val _state = MutableStateFlow(EditState(groupId = groupId, albumSheet = albumOnly))
     val state: StateFlow<EditState> = _state.asStateFlow()
@@ -239,15 +252,20 @@ class WeekEditViewModel(
                 fun photo(id: String) = posts[id]?.let { post -> WeekPhoto(post, media[post.mediaId]?.imagePath(Media.Rendition.Thumb), names[post.authorId]) }
                 val recapItems = recap?.items.orEmpty().filter { it in posts }
                 val others = p.weekPostIds.filter { it !in recapItems && it in posts }
-                val photos = (recapItems + others).mapNotNull(::photo)
+                // The grid: every visible post of the week in time order (the strip keeps the recap's order).
+                val photos = (recapItems + others).mapNotNull(::photo).sortedBy { it.post.createdAt }
+                // The album sheet alone: a recap's items (from week.recap) or the whole week (from week.history).
+                val initial = if (albumOnly && recap == null) photos.map { ph -> ph.post.id } else recapItems
                 _state.update {
                     it.copy(
                         phase = EditState.Phase.Ready,
                         recap = recap,
                         weekStart = recap?.weekStart ?: weekStart,
                         photos = photos,
-                        checked = if (albumOnly) photos.map { ph -> ph.post.id } else recapItems,
+                        checked = initial,
                         text = recap?.text.orEmpty(),
+                        originalChecked = initial,
+                        originalText = recap?.text.orEmpty(),
                     )
                 }
             } catch (e: CancellationException) {
@@ -259,6 +277,10 @@ class WeekEditViewModel(
             }
         }
     }
+
+    fun openMessage() = _state.update { it.copy(messageSheet = true) }
+
+    fun closeMessage() = _state.update { it.copy(messageSheet = false) }
 
     /** In / out of the recap (or the album selection). A newly checked photo goes last. */
     fun toggle(postId: String) = _state.update { s ->
@@ -272,13 +294,16 @@ class WeekEditViewModel(
         val list = s.checked.toMutableList()
         list.removeAt(from)
         list.add(toIndex.coerceIn(0, list.size), postId)
-        // The grid shows checked photos first in their order, then the rest.
-        val byId = s.photos.associateBy { it.post.id }
-        val rest = s.photos.filter { it.post.id !in list }
-        s.copy(checked = list, photos = list.mapNotNull(byId::get) + rest)
+        s.copy(checked = list)
     }
 
-    fun setText(text: String) = _state.update { it.copy(text = text, error = null) }
+    /** The recap text, at most [TEXT_LIMIT] characters (`weekly_recaps.text`, `week.edit.layout.message` limit). */
+    fun setText(text: String) = _state.update { it.copy(text = text.take(TEXT_LIMIT), error = null) }
+
+    companion object {
+        /** `week.edit.layout.message` → limit: "2000 characters (weekly_recaps.text)". */
+        val TEXT_LIMIT: Int = Regex("([0-9]+) characters").find(app.designsystem.generated.Tokens.Layouts.WeekEditLayoutMessage.limit)?.groupValues?.get(1)?.toInt() ?: Int.MAX_VALUE
+    }
 
     /** `update_recap` with the checked ids in order and the text; the recap screen shows the edit at once. */
     fun save() {
@@ -494,5 +519,79 @@ class HistoryViewModel(private val data: SocialData, private val groupId: String
 
     companion object {
         const val PAGE = 8
+    }
+}
+
+/** A card of the recap list: the recap and its cover (the first item's thumbnail). */
+data class RecapCardUi(val recap: WeeklyRecap, val coverPath: String?)
+
+/** What the recap list loads (cached for offline). */
+@Serializable
+internal data class RecapListPayload(val group: Group? = null, val recaps: List<WeeklyRecap> = emptyList(), val posts: List<Post> = emptyList(), val media: List<Media> = emptyList())
+
+data class RecapListState(
+    val phase: Phase = Phase.Loading,
+    val group: Group? = null,
+    val cards: List<RecapCardUi> = emptyList(),
+    val offline: Boolean = false,
+) {
+    enum class Phase { Loading, Ready, Empty, Error, OfflineEmpty }
+
+    val zone: ZoneId get() = group?.timeZone?.let { runCatching { ZoneId.of(it) }.getOrNull() } ?: ZoneId.systemDefault()
+}
+
+/** `week.recap` list (`week.recap.layout.list`): the group's ready and pending recaps, newest first, with their covers. */
+class RecapListViewModel(private val data: SocialData, private val groupId: String) : ViewModel() {
+    private val _state = MutableStateFlow(RecapListState())
+    val state: StateFlow<RecapListState> = _state.asStateFlow()
+    private var job: Job? = null
+
+    init {
+        load()
+        viewModelScope.launch { data.online.distinctUntilChanged().drop(1).collect { if (it) load() } }
+        viewModelScope.launch { RecapEdits.pending.collect { publish() } }
+    }
+
+    private var payload: RecapListPayload? = null
+
+    fun load() {
+        job?.cancel()
+        job = viewModelScope.launch {
+            data.cached("recaps/$groupId", RecapListPayload.serializer()) {
+                val group = data.group(groupId)
+                val recaps = data.recaps(groupId).filter { it.status != RenderStatus.Failed }.sortedByDescending { it.weekStart }
+                val posts = data.posts(recaps.mapNotNull { it.items.firstOrNull() })
+                val media = data.media(posts.map { it.mediaId })
+                RecapListPayload(group, recaps, posts, media)
+            }.collect { page ->
+                val value = page.value
+                when {
+                    value != null -> {
+                        payload = value
+                        _state.update { it.copy(offline = page.error == DataError.Network) }
+                        publish()
+                    }
+                    page.refreshing -> _state.update { it.copy(phase = RecapListState.Phase.Loading) }
+                    else -> _state.update { it.copy(phase = if (page.error == DataError.Network) RecapListState.Phase.OfflineEmpty else RecapListState.Phase.Error) }
+                }
+            }
+        }
+    }
+
+    fun retry() {
+        _state.update { it.copy(phase = RecapListState.Phase.Loading) }
+        load()
+    }
+
+    private fun publish() {
+        val p = payload ?: return
+        val posts = p.posts.associateBy { it.id }
+        val media = p.media.associateBy { it.id }
+        val cards = p.recaps.map { r0 ->
+            val r = RecapEdits.pending.value[r0.id] ?: r0
+            val cover = r.items.firstOrNull()?.let(posts::get)?.let { media[it.mediaId] }?.imagePath(Media.Rendition.Thumb)
+            RecapCardUi(r, cover)
+        }
+        _state.update { it.copy(phase = if (cards.isEmpty()) RecapListState.Phase.Empty else RecapListState.Phase.Ready, group = p.group, cards = cards) }
     }
 }

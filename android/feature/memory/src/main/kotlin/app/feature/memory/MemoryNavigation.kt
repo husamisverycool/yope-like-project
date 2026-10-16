@@ -1,6 +1,11 @@
 package app.feature.memory
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
@@ -9,37 +14,51 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import app.designsystem.R
+import app.designsystem.ReduceMotion
+import app.designsystem.generated.Tokens
 import app.feature.memory.birthday.BirthdayAddScreen
 import app.feature.memory.birthday.BirthdayAddViewModel
 import app.feature.memory.birthday.BirthdayRequestDestination
 import app.feature.memory.birthday.DateEntryPattern
 import app.feature.memory.birthday.TributeDestination
+import app.feature.memory.birthday.openAppSettings
 import app.feature.memory.common.CollectEffects
+import app.feature.memory.common.LightSystemBarIcons
 import app.feature.memory.common.MemoryBackend
-import app.feature.memory.common.findActivity
+import app.feature.memory.common.MemoryFormats
 import app.feature.memory.common.rememberMemoryBackend
+import app.feature.memory.common.rememberSeenStore
+import app.feature.memory.onthisday.OnThisDayActions
+import app.feature.memory.onthisday.OnThisDayEvent
 import app.feature.memory.onthisday.OnThisDayScreen
 import app.feature.memory.onthisday.OnThisDayState
 import app.feature.memory.onthisday.OnThisDayViewModel
+import app.feature.memory.share.AndroidPhotoFiles
+import app.feature.memory.share.MemoryFiles
+import app.feature.memory.share.PhotoFiles
 import app.feature.memory.yearstory.YearStoryDestination
-import app.designsystem.ReduceMotion
-import app.designsystem.generated.Tokens
 import app.model.AppRoute
 import app.model.OnThisDayRoute
+import app.ui.components.PlatformToast
 import app.ui.nav.emptyDestination
 import java.time.Clock
+import java.time.LocalDate
+import java.time.ZoneId
 
 /**
  * Destinations of the memory feature group (surface specs in design/surfaces/):
@@ -57,7 +76,11 @@ fun NavGraphBuilder.memoryDestinations(navController: NavHostController) {
     emptyDestination<AppRoute.OnThisDay>()
     composable<OnThisDayRoute> { entry ->
         val route = entry.toRoute<OnThisDayRoute>()
-        OnThisDayDestination(route.groupId, onClose = { navController.popBackStack() })
+        OnThisDayDestination(
+            route.groupId,
+            onClose = { navController.popBackStack() },
+            onReport = { postId -> navController.navigate(AppRoute.SafetyReport(groupId = route.groupId, postId = postId)) },
+        )
     }
     composable<AppRoute.BirthdayAdd> {
         BirthdayAddDestination(onClose = { navController.popBackStack() })
@@ -102,22 +125,89 @@ internal object RequestSheetMotion {
 /** Opens the day of [groupId] (for the `groups.screen` entry). */
 fun NavHostController.openOnThisDay(groupId: String) = navigate(OnThisDayRoute(groupId))
 
-/** The `onthisday` destination: the day, closing itself when the day is over. */
+/** The `onthisday` destination: the Rewind page of [groupId]; closes itself when the day has no memories. */
 @Composable
-fun OnThisDayDestination(groupId: String, onClose: () -> Unit, backend: MemoryBackend = rememberMemoryBackend(), clock: Clock = Clock.systemUTC()) {
-    val vm = viewModel(key = "onthisday/$groupId") { OnThisDayViewModel(groupId, backend, clock) }
+fun OnThisDayDestination(
+    groupId: String,
+    onClose: () -> Unit,
+    onReport: (postId: String) -> Unit,
+    backend: MemoryBackend = rememberMemoryBackend(),
+    files: PhotoFiles? = null,
+    clock: Clock = Clock.systemUTC(),
+) {
+    val context = LocalContext.current
+    val vm = viewModel(key = "onthisday/$groupId") { OnThisDayViewModel(groupId, backend, files ?: AndroidPhotoFiles(context), clock) }
     val state by vm.state.collectAsStateWithLifecycle()
     LaunchedEffect(state) { if (state == OnThisDayState.Finished) onClose() }
-    // Light status-bar icons over the banner (design/surfaces/onthisday.md, Platform notes).
-    val view = LocalView.current
-    DisposableEffect(view) {
-        val controller = view.context.findActivity()?.window?.let { WindowCompat.getInsetsController(it, view) }
-        val before = controller?.isAppearanceLightStatusBars
-        controller?.isAppearanceLightStatusBars = false
-        onDispose { if (controller != null && before != null) controller.isAppearanceLightStatusBars = before }
+    LightSystemBarIcons()
+    CollectEffects(vm.effects, onClose)
+    var saveDenied by remember { mutableStateOf(false) }
+    // The share sheet's preview: today's date as `layout.year.story.dateFormat` ("Tuesday, December 2") and "Memory".
+    val previewTitle = MemoryFormats.storyDate(LocalDate.now(clock.withZone(ZoneId.systemDefault())))
+    val previewLabel = stringResource(R.string.onthisday_share_subtitle)
+    val saved = stringResource(R.string.onthisday_toast_saved)
+    val saveFailed = stringResource(R.string.onthisday_savefailed)
+    val deleted = stringResource(R.string.onthisday_toast_deleted)
+    LaunchedEffect(vm) {
+        vm.requests.collect { event ->
+            when (event) {
+                is OnThisDayEvent.Share -> runCatching { context.startActivity(MemoryFiles.shareIntent(event.uri, MemoryFiles.MIME_JPEG, title = previewTitle, label = previewLabel)) }
+                is OnThisDayEvent.Toast -> PlatformToast.show(
+                    context,
+                    when (event.kind) {
+                        OnThisDayEvent.Toast.Kind.Saved -> saved
+                        OnThisDayEvent.Toast.Kind.SaveFailed -> saveFailed
+                        OnThisDayEvent.Toast.Kind.Deleted -> deleted
+                    },
+                )
+                OnThisDayEvent.SaveDenied -> saveDenied = true
+            }
+        }
     }
-    OnThisDayScreen(state, vm::next, vm::previous, vm::retry, onClose)
+    // API 26-28: MediaStore writes need WRITE_EXTERNAL_STORAGE (maxSdkVersion 28 in the manifest).
+    val askWrite = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> vm.save(granted) }
+    // The feature intro: first open, once per account (onthisday.md C).
+    val seen = rememberSeenStore()
+    val me = backend.currentUserId
+    var introDone by remember(me) { mutableStateOf(me == null || seen.seen(me, INTRO_KEY)) }
+    OnThisDayScreen(
+        state = state,
+        actions = OnThisDayActions(
+            onStep = vm::step,
+            onTogglePlay = vm::togglePlay,
+            onAdvance = vm::advance,
+            onShuffle = vm::shuffle,
+            onShare = vm::share,
+            onSave = {
+                val legacy = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+                if (legacy && ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    askWrite.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                } else {
+                    vm.save()
+                }
+            },
+            onDelete = vm::delete,
+            onReport = { (state as? OnThisDayState.Page)?.memory?.let { onReport(it.postId) } },
+            onRetry = vm::retry,
+            onBack = onClose,
+            onIntroDone = {
+                introDone = true
+                if (me != null) seen.markSeen(me, INTRO_KEY)
+            },
+            onDismissSaveDenied = { saveDenied = false },
+            onOpenSettings = {
+                saveDenied = false
+                openAppSettings(context)
+            },
+        ),
+        isMine = vm::isMine,
+        showIntro = !introDone,
+        saveDenied = saveDenied,
+    )
 }
+
+/** [app.feature.memory.common.SeenStore] key of the On This Day feature intro. */
+private const val INTRO_KEY = "onthisday.nux"
 
 /** The `birthday.add` destination. */
 @Composable
@@ -133,7 +223,7 @@ fun BirthdayAddDestination(onClose: () -> Unit, backend: MemoryBackend = remembe
         onAdd = vm::add,
         onRemove = vm::remove,
         onLater = vm::later,
-        onClose = onClose,
+        onBack = onClose,
         onDismissToast = vm::dismissToast,
     )
 }

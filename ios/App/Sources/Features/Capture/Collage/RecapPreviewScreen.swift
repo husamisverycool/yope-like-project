@@ -1,48 +1,90 @@
 // Shared screen — Retro's recap preview (ST-04 2026: references/auto/retro/store/retro-store-04.png; TC-REC 2023:
 // references/auto/retro/press/tc-2023-12-recaps.png), measured by the capture group as `collage.view.layout.screen` +
-// `collage.share.layout.pill` (design/surfaces/collage.view.md, collage.share.md; MERGE_DECISIONS RC-15, RC-19). One
+// `collage.share.layout.pill` (design/surfaces/collage.view.md, collage.share.md; MERGE_DECISIONS RC-15, RC-19, L-5). One
 // implementation on iOS for every surface that shows it (lead decision, Pass 4), as Android's
 // `app.ui.recap.RecapPreviewScreen`:
 //
-//   - collage.view / collage.share (capture): the collage page as the card, dots below the page, "Share" pill;
-//   - week.recap (social): memory's recap card / cover pages, dots below the page, the select-photos thumbnail as the
-//     bottom-leading item, the "Save as Album" pill (text role `pill`);
-//   - year.story / birthday.tribute (memory): the story cards, the position pill top-leading, the play / pause circle
-//     bottom-leading, "Share"; dots below the page on the summary only; tap zones instead of swiping
-//     (`swipeEnabled: false`).
+//   - collage.view / collage.share (capture): the collage page as the card on page 1 blurred, dots below the page,
+//     "Share" pill (`CollageView`);
+//   - week.recap (social): memory's `RecapCard` / cover pages, dots below the page, the select-photos thumbnail as
+//     `leading`, the "Save as Album" pill (`RecapPillLabel(title:textRole: TextRole.pill)`);
+//   - year.story / birthday.tribute (memory): the story cards, the position pill + close as `overlay`, the play / pause
+//     circle as `leading`, "Share" as `trailing`; dots on the summary only; tap zones instead of swiping.
 //
 // API
 // ---
-// `RecapPreviewScreen(backdrop:pageCount:currentPage:swipeEnabled:dots:dotsAccessibilityValue:closeAccessibilityLabel:
-// onClose:page:topLeading:bottomLeading:pill:)` draws, on `color.global.backgroundDeep` and in the dark appearance (a
-// media surface — `layout.global.appearance.media`; sheets the caller presents from it follow the system):
+// `RecapPreviewScreen(dots:onSelectPage:page:overlay:leading:trailing:)` draws, full screen on
+// `color.global.backgroundDeep` in the dark appearance (a media surface — `layout.global.appearance.media`; sheets the
+// caller presents from it follow the system; the caller's full-screen cover gives light status-bar content with
+// `.preferredColorScheme(.dark)`):
 //
-//  1. the media page: full width, from the safe-area top to `mediaPageBottomFromScreenBottom` (94.8) above the screen
-//     bottom, corners `mediaPageCornerRadius` (26.5, continuous), content clipped. Inside it `backdrop` blurred
-//     full-bleed (C-34 `BlurredBackdrop`: σ `size.global.backdropBlur` under `color.global.backdropDim`, L-5); with no
-//     backdrop the page is `color.global.controlOnDeep` (collage.view loading / empty / error);
-//  2. the pages: `page(index)` fills the media page; the caller lays its card out in it (`RecapPreviewMetrics.cardFrame`
-//     gives the collage card's aspect-fit box). With `pageCount` > 1 and `swipeEnabled` the pages sit in a paging
-//     `TabView` (finger-tracked, platform settle; index display hidden); `currentPage` (0-based) stays in sync both ways;
-//  3. the close circle (C-11 on media: 36, #262626, `icon.global.close`), centre `closeCentreFromTrailing` (37.7) from
-//     the trailing edge and `closeCentreBelowPageTop` (38) below the page top; label `closeAccessibilityLabel` (copy);
-//  4. `topLeading` (year.story's C-22 position pill), centred on the close circle's centre line at the page's leading
-//     edge — the caller gives it its own leading padding;
-//  5. the bottom row, centred `bottomRowCentreFromScreenBottom` (59.2) above the screen bottom: `bottomLeading` at the
-//     leading edge (the caller pads it, normally `size.global.buttonMarginH`) and `pill` with its trailing edge at
-//     `size.global.buttonMarginH` (normally a `RecapPill`, or a `ShareLink` labelled with `RecapPillLabel`);
-//  6. the page dots (C-31 on media: active `color.global.textOnMedia`, inactive `color.global.pageDotInactive` dark) only
-//     with 2+ pages: `.belowPage` (default) centred `dimension.year.story.dots.offset` (16.1) below the media page — ST-04
-//     measures 16.3 there, not on the pill's line (RC-19) — or `.inBottomRow` / `.hidden`. VoiceOver reads
-//     `dotsAccessibilityValue(index, count)` (default `global.a11y.pagePosition`, "2 of 3") and adjusts the page; a tap on
-//     the dots' trailing half shows the next page, on the leading half the previous one (platform page-control behaviour).
+//  1. the media page (`RecapPreviewGeometry.frame`): full width, from the safe-area top to
+//     `mediaPageBottomFromScreenBottom` (94.8) above the screen bottom, corners `mediaPageCornerRadius` (26.5,
+//     continuous), holding `page(geometry)` clipped to it. The caller fills it: a backdrop (C-34 `BlurredBackdrop`, σ
+//     `size.global.backdropBlur` under `color.global.backdropDim` — L-5; `color.global.controlOnDeep` when there is none)
+//     and the card(s) — `RecapPreviewMetrics.cardSize(in:)` gives the collage card's aspect-fit box, `geometry.contentBox`
+//     year.story's 9:16 box; a paging `TabView` for swiped pages;
+//  2. `overlay(geometry)` on the page in frame coordinates: normally `RecapPreviewClose` (C-11 on media at
+//     `closeCentreFromTrailing` (37.7) / `closeCentreBelowPageTop` (38)) and, for year.story, the C-22 position pill on the
+//     close circle's centre line (`geometry.closeCentreInFrame`);
+//  3. the page dots (C-31 on media: active `color.global.textOnMedia`, inactive `color.global.pageDotInactive` dark) when
+//     `dots` is set: `.belowPage` (default) centred `dimension.year.story.dots.offset` (16.1) below the media page — ST-04
+//     measures 16.3 there, not on the pill's line (RC-19) — or `.inBottomRow`. VoiceOver reads `dots.accessibilityValue`
+//     and adjusts the page through `onSelectPage`; a tap on the dots' trailing half shows the next page, on the leading
+//     half the previous one (platform page-control behaviour);
+//  4. the bottom row, centred `bottomRowCentreFromScreenBottom` (59.2) above the screen bottom: `leading` and `trailing`
+//     at `size.global.buttonMarginH` from the screen edges (`trailing` is normally a `RecapPill`, or a `ShareLink`
+//     labelled with `RecapPillLabel` — collage.share.layout.pill: 43.5 high, padding 23, `button` role).
 //
-// Status bar: the caller's presentation (a full-screen cover with `.preferredColorScheme(.dark)` gives light content).
 // Haptics: none on iOS (close / pill presses: `haptic.global.tap` is none on iOS; page changes are not selections).
-// Focus order: close → top-leading → page → dots → bottom-leading → pill.
-// Snapshots: AppTests/Capture/CaptureSnapshotTests `testCollageStates` (light and dark — identical by design).
+// Focus order: the caller's sort priorities (collage: close → page → dots → Share).
+// Snapshots: AppTests/Capture/CaptureSnapshotTests `testCollageStates` (light and dark — identical by design); memory's
+// year.story and birthday.tribute snapshots.
 import DesignSystem
 import SwiftUI
+
+// MARK: - Geometry
+
+/// Where the recap preview's parts sit on a full screen (`collage.view.layout.screen`, `collage.share.layout.pill`,
+/// `dimension.year.story.dots.offset`). Values are in full-screen coordinates (origin at the screen's top-left) unless
+/// named "in frame".
+struct RecapPreviewGeometry: Equatable {
+    /// The full screen (safe areas included).
+    let screen: CGSize
+    /// The safe-area top (status bar).
+    let safeTop: CGFloat
+
+    private typealias Screen = Tokens.Layouts.CollageViewLayoutScreen
+
+    /// The media page: full width (`mediaPageSideInset`), from the safe-area top to `mediaPageBottomFromScreenBottom`
+    /// above the screen bottom.
+    var frame: CGRect {
+        let top = safeTop
+        let bottom = screen.height - Screen.mediaPageBottomFromScreenBottom
+        return CGRect(
+            x: Screen.mediaPageSideInset, y: top,
+            width: max(0, screen.width - 2 * Screen.mediaPageSideInset), height: max(0, bottom - top)
+        )
+    }
+
+    /// The close circle's centre (`closeCentreFromTrailing`, `closeCentreBelowPageTop`), in frame coordinates.
+    var closeCentreInFrame: CGPoint {
+        CGPoint(x: frame.width - Screen.closeCentreFromTrailing, y: Screen.closeCentreBelowPageTop)
+    }
+
+    /// The page dots' centre line below the page (`dimension.year.story.dots.offset`; RC-19).
+    var dotsCentreY: CGFloat { frame.maxY + Tokens.Sizes.yearStoryDotsOffset }
+
+    /// The bottom row's centre line (`bottomRowCentreFromScreenBottom` above the screen bottom).
+    var bottomRowCentreY: CGFloat { screen.height - Screen.bottomRowCentreFromScreenBottom }
+
+    /// year.story's 9:16 content box (`layout.year.story.frame` aspectWidth / aspectHeight) as wide as the frame, centred
+    /// vertically in it, in frame coordinates.
+    var contentBox: CGRect {
+        let height = frame.width * Tokens.Layouts.YearStoryFrame.aspectHeight / Tokens.Layouts.YearStoryFrame.aspectWidth
+        return CGRect(x: 0, y: (frame.height - height) / 2, width: frame.width, height: height)
+    }
+}
 
 /// Where the recap preview's page dots sit.
 enum RecapDots: Equatable {
@@ -50,17 +92,32 @@ enum RecapDots: Equatable {
     case belowPage
     /// Centred on the bottom row's centre line (the Pass 2 spec text before RC-19).
     case inBottomRow
-    case hidden
 }
 
-/// The recap preview's measured geometry (`collage.view.layout.screen`, `collage.share.layout.pill`).
-enum RecapPreviewMetrics {
-    typealias Screen = Tokens.Layouts.CollageViewLayoutScreen
+/// The page dots of the recap preview (C-31 on media).
+struct RecapPreviewDots: Equatable {
+    let count: Int
+    /// 0-based.
+    let index: Int
+    /// "N of M" from copy (`global.a11y.pagePosition` or the surface's own key).
+    let accessibilityValue: String
+    var placement: RecapDots = .belowPage
 
+    init(count: Int, index: Int, accessibilityValue: String, placement: RecapDots = .belowPage) {
+        self.count = count
+        self.index = index
+        self.accessibilityValue = accessibilityValue
+        self.placement = placement
+    }
+}
+
+/// The recap preview's measured geometry for its cards (`collage.view.layout.screen` card).
+enum RecapPreviewMetrics {
     /// The card inset inside the media page, top and bottom: close-circle centre (38) + `size.global.circleButton` ÷ 2 +
     /// the 20-pt circle → photo gap of `camera.sendto.layout.preview` = 76 pt (`collage.view.layout.screen` card).
     static var cardInsetVertical: CGFloat {
-        Screen.closeCentreBelowPageTop + Tokens.Sizes.globalCircleButton / 2 + Tokens.Layouts.CameraSendtoLayoutPreview.topBelowHeaderCircle
+        Tokens.Layouts.CollageViewLayoutScreen.closeCentreBelowPageTop + Tokens.Sizes.globalCircleButton / 2
+            + Tokens.Layouts.CameraSendtoLayoutPreview.topBelowHeaderCircle
     }
 
     /// The collage card: the page image (aspect `collage.view.layout.page.canvasAspect`, 9:16) aspect-fit and centred in
@@ -73,177 +130,113 @@ enum RecapPreviewMetrics {
     }
 }
 
-struct RecapPreviewScreen<Page: View, TopLeading: View, BottomLeading: View, Pill: View>: View {
-    let backdrop: PhotoSource?
-    let pageCount: Int
-    @Binding var currentPage: Int
-    var swipeEnabled: Bool
-    var dots: RecapDots
-    var dotsAccessibilityValue: (Int, Int) -> String
-    let closeAccessibilityLabel: String
-    let onClose: () -> Void
-    @ViewBuilder let page: (Int) -> Page
-    @ViewBuilder let topLeading: () -> TopLeading
-    @ViewBuilder let bottomLeading: () -> BottomLeading
-    @ViewBuilder let pill: () -> Pill
+// MARK: - Screen
+
+struct RecapPreviewScreen<Page: View, Overlay: View, Leading: View, Trailing: View>: View {
+    var dots: RecapPreviewDots?
+    var onSelectPage: ((Int) -> Void)?
+    @ViewBuilder let page: (RecapPreviewGeometry) -> Page
+    @ViewBuilder let overlay: (RecapPreviewGeometry) -> Overlay
+    @ViewBuilder let leading: () -> Leading
+    @ViewBuilder let trailing: () -> Trailing
 
     init(
-        backdrop: PhotoSource?,
-        pageCount: Int,
-        currentPage: Binding<Int>,
-        swipeEnabled: Bool = true,
-        dots: RecapDots = .belowPage,
-        dotsAccessibilityValue: @escaping (Int, Int) -> String = RecapPreviewDefaults.pagePosition,
-        closeAccessibilityLabel: String,
-        onClose: @escaping () -> Void,
-        @ViewBuilder page: @escaping (Int) -> Page,
-        @ViewBuilder topLeading: @escaping () -> TopLeading,
-        @ViewBuilder bottomLeading: @escaping () -> BottomLeading,
-        @ViewBuilder pill: @escaping () -> Pill
+        dots: RecapPreviewDots? = nil,
+        onSelectPage: ((Int) -> Void)? = nil,
+        @ViewBuilder page: @escaping (RecapPreviewGeometry) -> Page,
+        @ViewBuilder overlay: @escaping (RecapPreviewGeometry) -> Overlay,
+        @ViewBuilder leading: @escaping () -> Leading,
+        @ViewBuilder trailing: @escaping () -> Trailing
     ) {
-        self.backdrop = backdrop
-        self.pageCount = pageCount
-        _currentPage = currentPage
-        self.swipeEnabled = swipeEnabled
         self.dots = dots
-        self.dotsAccessibilityValue = dotsAccessibilityValue
-        self.closeAccessibilityLabel = closeAccessibilityLabel
-        self.onClose = onClose
+        self.onSelectPage = onSelectPage
         self.page = page
-        self.topLeading = topLeading
-        self.bottomLeading = bottomLeading
-        self.pill = pill
+        self.overlay = overlay
+        self.leading = leading
+        self.trailing = trailing
     }
-
-    private typealias Screen = RecapPreviewMetrics.Screen
 
     var body: some View {
         GeometryReader { proxy in
-            let width = proxy.size.width
-            let safeTop = proxy.safeAreaInsets.top
-            let screenHeight = proxy.size.height
-            let pageBottom = screenHeight - Screen.mediaPageBottomFromScreenBottom
-            let pageHeight = max(0, pageBottom - safeTop)
-            let closeCentreY = safeTop + Screen.closeCentreBelowPageTop
-            let rowCentreY = screenHeight - Screen.bottomRowCentreFromScreenBottom
+            let geometry = RecapPreviewGeometry(
+                screen: CGSize(
+                    width: proxy.size.width + proxy.safeAreaInsets.leading + proxy.safeAreaInsets.trailing,
+                    height: proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
+                ),
+                safeTop: proxy.safeAreaInsets.top
+            )
+            let frame = geometry.frame
             ZStack(alignment: .topLeading) {
                 Tokens.Colors.globalBackgroundDeep
-                mediaPage
-                    .frame(width: width, height: pageHeight)
-                    .clipShape(DSShape.rounded(Screen.mediaPageCornerRadius))
-                    .offset(y: safeTop)
-                    .accessibilitySortPriority(4)
-                topLeading()
-                    .frame(width: width, alignment: .leading)
-                    .position(x: width / 2, y: closeCentreY)
-                    .accessibilitySortPriority(5)
-                CircleButton(icon: Tokens.Icons.globalClose, accessibilityLabel: closeAccessibilityLabel, style: .media, action: onClose)
-                    .position(x: width - Screen.closeCentreFromTrailing, y: closeCentreY)
-                    .accessibilitySortPriority(6)
-                    .accessibilityIdentifier("recap.preview.close")
-                if pageCount > 1 && dots != .hidden {
-                    pageDots
-                        .position(x: width / 2, y: dots == .belowPage ? pageBottom + Tokens.Sizes.yearStoryDotsOffset : rowCentreY)
-                        .accessibilitySortPriority(3)
+                ZStack(alignment: .topLeading) {
+                    ZStack {
+                        Tokens.Colors.globalControlOnDeep
+                        page(geometry)
+                    }
+                    .frame(width: frame.width, height: frame.height)
+                    .clipShape(DSShape.rounded(Tokens.Layouts.CollageViewLayoutScreen.mediaPageCornerRadius))
+                    overlay(geometry)
+                        .frame(width: frame.width, height: frame.height, alignment: .topLeading)
+                }
+                .frame(width: frame.width, height: frame.height)
+                .offset(x: frame.minX, y: frame.minY)
+                if let dots, dots.count > 1 {
+                    pageDots(dots)
+                        .position(x: geometry.screen.width / 2, y: dots.placement == .belowPage ? geometry.dotsCentreY : geometry.bottomRowCentreY)
                 }
                 HStack(spacing: 0) {
-                    bottomLeading()
-                        .accessibilitySortPriority(2)
+                    leading()
                     Spacer(minLength: 0)
-                    pill()
-                        .accessibilitySortPriority(1)
-                        .padding(.trailing, Tokens.Sizes.globalButtonMarginH)
+                    trailing()
                 }
-                .frame(width: width)
-                .position(x: width / 2, y: rowCentreY)
+                .padding(.horizontal, Tokens.Sizes.globalButtonMarginH)
+                .frame(width: geometry.screen.width)
+                .position(x: geometry.screen.width / 2, y: geometry.bottomRowCentreY)
             }
-            .accessibilityElement(children: .contain)
+            .frame(width: geometry.screen.width, height: geometry.screen.height, alignment: .topLeading)
+            .offset(x: -proxy.safeAreaInsets.leading, y: -proxy.safeAreaInsets.top)
         }
-        .ignoresSafeArea()
         .captureMediaAppearance()
-    }
-
-    // MARK: Media page
-
-    private var mediaPage: some View {
-        ZStack {
-            Tokens.Colors.globalControlOnDeep
-            if let backdrop {
-                // C-34 backdrop (`layout.global.materials.backdrop`; MERGE_DECISIONS L-5): the photo blurred σ
-                // `size.global.backdropBlur` under `color.global.backdropDim`, clipped to the media page.
-                BlurredBackdrop(source: backdrop)
-            }
-            pages
-        }
-    }
-
-    @ViewBuilder
-    private var pages: some View {
-        if pageCount > 1 && swipeEnabled {
-            TabView(selection: $currentPage) {
-                ForEach(0..<pageCount, id: \.self) { index in
-                    page(index)
-                        .tag(index)
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-        } else {
-            page(min(max(0, currentPage), max(0, pageCount - 1)))
-        }
     }
 
     // MARK: Page dots (C-31 on media)
 
-    private var pageDots: some View {
-        let dotsWidth = Tokens.Sizes.globalPageDot + CGFloat(max(0, pageCount - 1)) * Tokens.Sizes.globalPageDotPitch
-        return PageDots(
-            count: pageCount,
-            index: currentPage,
-            onMedia: true,
-            accessibilityValue: dotsAccessibilityValue(currentPage, pageCount)
-        ) { index in
-            select(index)
+    private func pageDots(_ dots: RecapPreviewDots) -> some View {
+        let dotsWidth = Tokens.Sizes.globalPageDot + CGFloat(max(0, dots.count - 1)) * Tokens.Sizes.globalPageDotPitch
+        return PageDots(count: dots.count, index: dots.index, onMedia: true, accessibilityValue: dots.accessibilityValue) { index in
+            select(index, in: dots)
         }
         .frame(minHeight: Tokens.Sizes.globalMinTouchTargetIos)
         .contentShape(Rectangle())
         .onTapGesture(coordinateSpace: .local) { location in
-            select(location.x >= dotsWidth / 2 ? currentPage + 1 : currentPage - 1)
+            select(location.x >= dotsWidth / 2 ? dots.index + 1 : dots.index - 1, in: dots)
         }
         .accessibilityIdentifier("recap.preview.dots")
     }
 
-    private func select(_ index: Int) {
-        guard (0..<pageCount).contains(index) else { return }
-        withDSAnimation(ComponentMotion.crossfade) { currentPage = index }
+    private func select(_ index: Int, in dots: RecapPreviewDots) {
+        guard let onSelectPage, (0..<dots.count).contains(index) else { return }
+        withDSAnimation(ComponentMotion.crossfade) { onSelectPage(index) }
     }
 }
 
-extension RecapPreviewScreen where TopLeading == EmptyView, BottomLeading == EmptyView {
-    /// No top-leading item and no bottom-leading item (collage.view).
-    init(
-        backdrop: PhotoSource?,
-        pageCount: Int,
-        currentPage: Binding<Int>,
-        swipeEnabled: Bool = true,
-        dots: RecapDots = .belowPage,
-        dotsAccessibilityValue: @escaping (Int, Int) -> String = RecapPreviewDefaults.pagePosition,
-        closeAccessibilityLabel: String,
-        onClose: @escaping () -> Void,
-        @ViewBuilder page: @escaping (Int) -> Page,
-        @ViewBuilder pill: @escaping () -> Pill
-    ) {
-        self.init(
-            backdrop: backdrop, pageCount: pageCount, currentPage: currentPage, swipeEnabled: swipeEnabled, dots: dots,
-            dotsAccessibilityValue: dotsAccessibilityValue, closeAccessibilityLabel: closeAccessibilityLabel, onClose: onClose,
-            page: page, topLeading: { EmptyView() }, bottomLeading: { EmptyView() }, pill: pill
+// MARK: - Close circle
+
+/// The recap preview's close circle: C-11 on media (`size.global.circleButton`, `color.global.controlOnDeep`,
+/// `icon.global.close` in `color.global.textOnMedia`) centred `closeCentreFromTrailing` / `closeCentreBelowPageTop` in the
+/// frame. Retro's '×' is ≈ 9.7 pt with no token: the glyph box is `size.global.iconSmall`, the nearest glyph token
+/// (component gap reported) — the same in every recap preview and on the black composer (`CaptureMediaHeader`).
+struct RecapPreviewClose: View {
+    let geometry: RecapPreviewGeometry
+    let accessibilityLabel: String
+    let action: () -> Void
+
+    var body: some View {
+        CircleButton(
+            icon: Tokens.Icons.globalClose, accessibilityLabel: accessibilityLabel, style: .media,
+            glyphSize: Tokens.Sizes.globalIconSmall, action: action
         )
-    }
-}
-
-enum RecapPreviewDefaults {
-    /// `global.a11y.pagePosition` ("2 of 3") for a 0-based index.
-    static func pagePosition(_ index: Int, _ count: Int) -> String {
-        Copy.globalA11yPagePosition(position: String(index + 1), count: String(count))
+        .position(geometry.closeCentreInFrame)
     }
 }
 
@@ -252,9 +245,9 @@ enum RecapPreviewDefaults {
 /// The recap preview's light pill (`collage.share.layout.pill`, ST-04): height 43.5 (a minimum: the label grows with
 /// Dynamic Type and never truncates), horizontal padding 23, width hugging the label, `radius.global.capsule`, fill
 /// `color.global.surfaceLight`, label in `color.global.onSurfaceLight` — text role `button` (17 semibold: "Share" on
-/// collage.share / year.story) or `pill` (week.recap's "Save as Album"). Busy: the label is replaced by the platform
-/// activity indicator in the label colour (C-05 busy rule), cross-fading over `duration.global.crossfade`; the width
-/// stays. For a label inside another control (a `ShareLink`).
+/// collage.share / year.story / birthday.tribute) or `pill` (week.recap's "Save as Album"). Busy: the label is replaced by
+/// the platform activity indicator in the label colour (C-05 busy rule), cross-fading over `duration.global.crossfade`;
+/// the width stays. For a label inside another control (a `ShareLink`).
 struct RecapPillLabel: View {
     let title: String
     var textRole: DSTextStyle = TextRole.button
@@ -281,6 +274,9 @@ struct RecapPillLabel: View {
         .contentShape(Capsule())
     }
 }
+
+/// The name memory's screens use for the "Share" pill label.
+typealias RecapSharePillLabel = RecapPillLabel
 
 /// `RecapPillLabel` as a button (accessibility: button labelled with the visible text; busy announced as updating).
 struct RecapPill: View {

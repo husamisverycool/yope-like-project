@@ -5,7 +5,6 @@ import app.data.DataGraph
 import app.data.model.Group
 import app.feature.capture.data.CaptureData
 import app.model.WidgetSnapshot
-import app.widget.HttpsRenditionDownloader
 import app.widget.WidgetBinding
 import app.widget.WidgetFileStore
 import app.widget.WidgetGroupMeta
@@ -18,11 +17,10 @@ import kotlinx.coroutines.launch
 
 /**
  * Prepares a widget for its newly chosen group so it never waits for the next post:
- * 1. marks the group prepared (the widget shows the loading placeholder at once, `widget.home.small`
- *    → States → loading);
- * 2. stores up to three member avatars for that placeholder;
- * 3. queues the newest rendition (post or newer collage) through the regular
- *    [WidgetUpdateScheduler] path, or records that the group has no photo yet (the empty state).
+ * 1. marks the group prepared (the widget shows its loading state at once — `color.global.backgroundDeep`, no
+ *    content, `widget.home.small` → States → loading);
+ * 2. queues the newest rendition (post or newer collage) through the regular [WidgetUpdateScheduler] path, or
+ *    records that the group has no photo yet (the empty state).
  * The widget renders from the store only; nothing here blocks it (provideGlance never touches the network).
  */
 object WidgetPrefetch {
@@ -37,13 +35,6 @@ object WidgetPrefetch {
     }
 
     internal suspend fun fill(context: Context, data: CaptureData, group: Group, meta: WidgetGroupMeta) {
-        runCatching {
-            val members = data.members(group.id).take(WidgetGroupMeta.MAX_AVATARS)
-            val avatarPaths = members.mapNotNull { it.profile?.avatarPath }
-            val urls = if (avatarPaths.isEmpty()) emptyMap() else data.signedUrls(avatarPaths)
-            meta.setMembers(group.id, members.map { m -> m.profile?.avatarPath?.let(urls::get)?.let { url -> { out: java.io.OutputStream -> HttpsRenditionDownloader().download(url, out) } } })
-            WidgetBinding.refresh(context, group.id)
-        }
         runCatching {
             val newest = data.newestForWidget(group.id)
             if (newest == null) {

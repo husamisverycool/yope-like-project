@@ -9,7 +9,6 @@ import app.designsystem.generated.Tokens
 import app.feature.memory.common.EffectQueue
 import app.feature.memory.common.Failure
 import app.feature.memory.common.MemoryBackend
-import app.feature.memory.common.MemoryBlocked
 import app.feature.memory.common.MemoryCache
 import app.feature.memory.common.aspectRatio
 import app.feature.memory.common.attempt
@@ -63,8 +62,14 @@ sealed interface RequestState {
     ) : RequestState
 }
 
-/** Pages of the destination: the request, then the three contribute steps (nested navigation). */
-enum class RequestPage(val route: String) { Request("request"), Photo("photo"), Message("message"), Done("done") }
+/**
+ * Pages of the destination: the request, then the contribute sheet's two steps (design/surfaces/birthday.contribute.md:
+ * 1 choose a photo, 2 the composer; the "Add a Message" modal is [ContributeState.editing] on step 2).
+ */
+enum class RequestPage(val route: String) { Request("request"), Photo("photo"), Message("message") }
+
+/** A confirmation toast (C-26) the screen shows once. */
+enum class FlowToast { Added, Removed }
 
 sealed interface PhotosState {
     data object Loading : PhotosState
@@ -78,6 +83,8 @@ data class ContributeState(
     val selected: String? = null,
     val line: String = "",
     val sending: Boolean = false,
+    /** Step 2a: the "Add a Message" modal is open. */
+    val editing: Boolean = false,
     val inline: Inline? = null,
     /** tribute_closed while contributing: the step content gives way to the closed message. */
     val closed: Boolean = false,
@@ -92,6 +99,7 @@ data class BirthdayFlowState(
     val request: RequestState = RequestState.Loading,
     val page: RequestPage = RequestPage.Request,
     val contribute: ContributeState = ContributeState(),
+    val toast: FlowToast? = null,
 )
 
 /**
@@ -217,6 +225,7 @@ class BirthdayRequestViewModel(
                     line = ready.contribution?.line ?: it.contribute.line,
                     inline = null,
                     closed = false,
+                    editing = false,
                 ),
             )
         }
@@ -224,19 +233,20 @@ class BirthdayRequestViewModel(
         loadPhotos()
     }
 
-    /** "Remove": direct DELETE of the own row before due_at, no confirmation; optimistic, rolled back on failure. */
+    /** "Yes, remove" (after the native confirmation): DELETE of the own row before due_at; optimistic, rolled back on failure. */
     fun withdraw() {
         val ready = _state.value.request as? RequestState.Ready ?: return
         val previous = ready.contribution ?: return
         if (ready.withdrawing) return
         writing = true
+        queue.haptic(Tokens.Haptics.globalWarning)
         updateReady { it.copy(contribution = null, withdrawing = true) }
         viewModelScope.launch {
             attempt { backend.withdraw(requestId) }
                 .onSuccess {
                     queue.haptic(Tokens.Haptics.globalSuccess)
                     updateReady { it.copy(withdrawing = false) }
-                    _state.update { it.copy(contribute = ContributeState(photos = it.contribute.photos)) }
+                    _state.update { it.copy(contribute = ContributeState(photos = it.contribute.photos), toast = FlowToast.Removed) }
                 }
                 .onFailure { e ->
                     queue.haptic(Tokens.Haptics.globalError)
@@ -295,21 +305,28 @@ class BirthdayRequestViewModel(
         _state.update { it.copy(contribute = it.contribute.copy(selected = postId, inline = null)) }
     }
 
-    /** "Use Photo" → step 2. */
+    /** "Next" → step 2 (the composer). */
     fun usePhoto() {
         if (_state.value.contribute.selectedPhoto == null) return
         _state.update { it.copy(page = RequestPage.Message, contribute = it.contribute.copy(inline = null)) }
     }
 
-    /** The one line: up to `layout.birthday.contribute.lineMax`, or the API bound while that is BLOCKED; no counter. */
+    /** The "Add a message" / "Edit message" pill: opens the "Add a Message" modal (step 2a). */
+    fun editMessage() = _state.update { it.copy(contribute = it.contribute.copy(editing = true)) }
+
+    /** "Done" on the modal: back to the composer with the line. */
+    fun doneEditing() = _state.update { it.copy(contribute = it.contribute.copy(editing = false)) }
+
+    /** The one line: input stops at `layout.birthday.contribute.lineMax` (110) characters. */
     fun setLine(text: String) = _state.update {
-        it.copy(contribute = it.contribute.copy(line = text.take(MemoryBlocked.birthdayLineMax ?: LINE_API_BOUND), inline = null))
+        it.copy(contribute = it.contribute.copy(line = text.take(LINE_MAX), inline = null))
     }
 
     /**
-     * "Submit" (or "try again" after an error): `contribute_tribute` with the trimmed line. Optimistic:
-     * step 3 and the own block show at once; a failure rolls both back to the step with the spec's
-     * message (not eligible → step 1; closed → the closed message; offline / error → under Submit).
+     * "Add to video" (or again after an error): `contribute_tribute` with the trimmed line. The capsule shows the
+     * platform indicator while it runs (C-05 busy); on success the sheet closes, the request shows your
+     * contribution and the toast "Added to video!" confirms it. Failures: not eligible → step 1 with the inline
+     * line; closed → the closed block; offline / error → under the photo, the capsule stays as the retry.
      */
     fun submit() {
         val c = _state.value.contribute
@@ -321,39 +338,32 @@ class BirthdayRequestViewModel(
             return
         }
         val line = c.line.trim()
-        val previous = (_state.value.request as? RequestState.Ready)?.contribution
         writing = true
-        updateReady { it.copy(contribution = OwnContribution(photo.postId, photo.displayUrl, photo.aspectRatio, line)) }
-        _state.update { it.copy(page = RequestPage.Done, contribute = it.contribute.copy(sending = true, inline = null)) }
-        queue.haptic(Tokens.Haptics.globalSend)
+        _state.update { it.copy(contribute = it.contribute.copy(sending = true, inline = null)) }
         viewModelScope.launch {
             attempt { backend.contribute(requestId, photo.postId, line) }
                 .onSuccess { saved ->
+                    queue.haptic(Tokens.Haptics.globalSend)
                     updateReady { it.copy(contribution = OwnContribution(photo.postId, photo.displayUrl, photo.aspectRatio, saved.line)) }
-                    _state.update { it.copy(contribute = it.contribute.copy(sending = false)) }
+                    _state.update { it.copy(page = RequestPage.Request, contribute = it.contribute.copy(sending = false, editing = false), toast = FlowToast.Added) }
                 }
                 .onFailure { e ->
                     queue.haptic(Tokens.Haptics.globalError)
-                    updateReady { it.copy(contribution = previous) }
                     when (failureOf(e)) {
                         Failure.NotEligible -> _state.update {
                             it.copy(page = RequestPage.Photo, contribute = it.contribute.copy(sending = false, inline = ContributeState.Inline.NotEligible))
                         }
                         Failure.Closed -> {
                             updateReady { it.copy(closed = true) }
-                            _state.update { it.copy(page = RequestPage.Message, contribute = it.contribute.copy(sending = false, closed = true)) }
+                            _state.update { it.copy(contribute = it.contribute.copy(sending = false, closed = true)) }
                         }
-                        Failure.Offline -> _state.update {
-                            it.copy(page = RequestPage.Message, contribute = it.contribute.copy(sending = false, inline = ContributeState.Inline.Offline))
-                        }
+                        Failure.Offline -> _state.update { it.copy(contribute = it.contribute.copy(sending = false, inline = ContributeState.Inline.Offline)) }
                         Failure.NotFound -> {
                             // post_not_found: the photo is gone (back to step 1 without it).
-                            _state.update { it.copy(page = RequestPage.Message, contribute = it.contribute.copy(sending = false)) }
+                            _state.update { it.copy(contribute = it.contribute.copy(sending = false)) }
                             onPostDeleted(photo.postId)
                         }
-                        else -> _state.update {
-                            it.copy(page = RequestPage.Message, contribute = it.contribute.copy(sending = false, inline = ContributeState.Inline.Error))
-                        }
+                        else -> _state.update { it.copy(contribute = it.contribute.copy(sending = false, inline = ContributeState.Inline.Error)) }
                     }
                 }
             writing = false
@@ -361,20 +371,22 @@ class BirthdayRequestViewModel(
         }
     }
 
-    /** "Retake": back to step 1, selection kept. */
-    fun retake() = _state.update { it.copy(page = RequestPage.Photo) }
+    /** The toast was shown. */
+    fun toastShown() = _state.update { it.copy(toast = null) }
 
-    /** "Done": back to the request, which now shows the own block. */
-    fun done() = _state.update { it.copy(page = RequestPage.Request, contribute = it.contribute.copy(inline = null)) }
-
-    /** Back / close: one page back; from the request, close the screen. */
+    /** Back: the modal closes, step 2 → step 1, step 1 → the request; from the request, close the screen. */
     fun back() {
-        when (_state.value.page) {
-            RequestPage.Request -> queue.close()
-            RequestPage.Photo, RequestPage.Done -> _state.update { it.copy(page = RequestPage.Request) }
-            RequestPage.Message -> _state.update { it.copy(page = RequestPage.Photo) }
+        val s = _state.value
+        when {
+            s.contribute.editing -> doneEditing()
+            s.page == RequestPage.Request -> queue.close()
+            s.page == RequestPage.Photo -> dismissSheet()
+            s.page == RequestPage.Message -> _state.update { it.copy(page = RequestPage.Photo) }
         }
     }
+
+    /** "Cancel" / the close circle / a swipe down: the contribute sheet closes (nothing is sent). */
+    fun dismissSheet() = _state.update { it.copy(page = RequestPage.Request, contribute = it.contribute.copy(editing = false, inline = null)) }
 
     /** `post_deleted`: drop the cell; the chosen photo sends you back to step 1; a contributed one is gone. */
     fun onPostDeleted(postId: String) {
@@ -401,7 +413,7 @@ class BirthdayRequestViewModel(
     }
 
     companion object {
-        /** docs/API.md `contribute_tribute`: `p_line` is 1-280 characters (integrity bound). */
-        const val LINE_API_BOUND = 280
+        /** `layout.birthday.contribute.lineMax` (110 characters, VidDay). */
+        val LINE_MAX: Int get() = Tokens.Layouts.BirthdayContributeLineMax.maxCharacters.toInt()
     }
 }

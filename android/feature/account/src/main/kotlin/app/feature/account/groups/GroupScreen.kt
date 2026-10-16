@@ -1,12 +1,13 @@
-// Surface: groups.screen — A. feed (photos, header, "chat" pill). Spec: design/surfaces/groups.screen.md.
-// References: references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t43.73-group-screen-hourly.png (G1),
-// -t51.23-group-created-empty-state.png (G2), -t51.73-group-profile-add-20-pics.png (G3), references/auto/yope/store/yope-store-01.png (S1),
-// a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (M24), references/auto/yope/web/a-bi-2025-create-group-composite.jpg (BI).
+// Surface: groups.screen — the group: cover, name, members, actions, this week, members' weeks and memories, earlier photos.
+// Spec: design/surfaces/groups.screen.md. References: references/auto/retro/press/tc-2024-04-journals-1.webp (TC-J1 phone 3:
+// book cover 173.5 × 246 + shadow, serif title, meta line, outline capsules, dated sections over a 3-column grid),
+// references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png and …-20260528-week22-dark-a.png (H43 / H22: header
+// glyphs book + chat 48 apart, week strip, empty week), references/auto/retro/store/retro-store-01.png and -02.png (ST-01 /
+// ST-02: populated strip, "Week 27  Jul 3 - 9", friend cards, action row with the gear capsule),
+// references/auto/retro/store/editorial/retro-appstore-story-1840659619-albums.png (ED-A: friend-card pager).
 package app.feature.account.groups
 
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,23 +19,21 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.paddingFrom
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -48,53 +47,74 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.LastBaseline
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import app.feature.memory.birthday.BirthdayRequestEntries
-import app.feature.memory.yearstory.YearStoryEntry
-import app.feature.memory.onthisday.OnThisDayEntry
-import app.feature.memory.openOnThisDay
 import androidx.navigation.NavHostController
 import app.data.error.DataError
 import app.data.model.Group
 import app.data.model.GroupKind
 import app.data.model.Media
 import app.data.model.Post
+import app.data.offline.DataState
 import app.data.realtime.GroupEvent
 import app.data.repo.Member
 import app.designsystem.R
-import app.designsystem.dsTextStyle
-import app.ui.components.LightPillShape
-import app.ui.components.LightPill
-import androidx.compose.ui.text.TextStyle
 import app.designsystem.generated.Tokens
-import app.designsystem.rememberReduceMotion
 import app.feature.account.AccountEnvironment
 import app.feature.account.LocalAccountEnvironment
 import app.feature.account.common.AccountViewModel
+import app.feature.account.common.BookCover
 import app.feature.account.common.CollectEvents
+import app.feature.account.common.TapLine
 import app.feature.account.common.dataError
+import app.feature.memory.birthday.BirthdayRequestEntries
+import app.feature.memory.onthisday.OnThisDayEntry
+import app.feature.memory.openOnThisDay
+import app.feature.memory.yearstory.YearStoryEntry
 import app.model.AppRoute
-import app.model.GroupProfileRoute
 import app.ui.components.Avatar
+import app.ui.components.AvatarStack
+import app.ui.components.Capsule
+import app.ui.components.CapsuleRowSpacing
+import app.ui.components.CapsuleStyle
+import app.ui.components.DayTile
 import app.ui.components.EmptyState
 import app.ui.components.EmptyStateAction
-import app.ui.components.HeaderCircleButton
-import app.ui.components.HeaderCircleFill
-import app.ui.components.LoadingHud
+import app.ui.components.FriendCard
+import app.ui.components.GridCell
+import app.ui.components.HeaderAction
+import app.ui.components.IconCapsule
+import app.ui.components.MediaPill
+import app.ui.components.PhotoGrid
+import app.ui.components.PushedHeader
+import app.ui.components.SectionHeader
+import app.ui.components.WeekStrip
+import app.ui.components.WeekStripOrder
+import app.ui.foundation.DsImage
+import app.ui.foundation.GlyphInk
+import app.ui.foundation.PageRoles
+import app.ui.foundation.PhotoScrimOverlay
+import app.ui.foundation.endAtLastBaseline
+import app.ui.foundation.tapClickable
 import app.ui.format.Formats
+import app.ui.system.DsMenuItem
+import app.ui.text.CapTop
 import app.ui.text.TextRoles
-import coil3.compose.AsyncImage
+import app.ui.text.capTopAt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -102,50 +122,57 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.TextStyle
+import java.time.temporal.IsoFields
+import java.time.temporal.TemporalAdjusters
+import java.util.Locale
 
-/** One entry of the feed, newest first. */
+/** One photo of the group (newest first in [GroupFeedUiState.photos]). */
 @Immutable
-sealed interface FeedItem {
-    val key: String
-    val at: Instant
-
-    data class Photo(
-        val post: Post,
-        val url: String?,
-        val authorFirstName: String?,
-        val authorAvatarUrl: String?,
-        val mine: Boolean,
-    ) : FeedItem {
-        override val key get() = "post:" + post.id
-        override val at: Instant get() = post.createdAt
-    }
-
-    /** "{first_name} joined" system pill at the joining time. */
-    data class Joined(val userId: String, val firstName: String, val avatarUrl: String?, override val at: Instant) : FeedItem {
-        override val key get() = "joined:$userId"
-    }
-}
+data class GroupPhoto(
+    val post: Post,
+    val url: String?,
+    val authorFirstName: String?,
+    val authorAvatarUrl: String?,
+    val mine: Boolean,
+)
 
 @Immutable
 data class GroupFeedUiState(
     val group: Group? = null,
-    val groupAvatarUrl: String? = null,
+    val coverUrl: String? = null,
     /** Null until the first page (cache or network) is known. */
-    val items: List<FeedItem>? = null,
+    val photos: List<GroupPhoto>? = null,
     val isCreator: Boolean = false,
-    /** First names of members other than you (created state detail). */
-    val otherNames: List<String> = emptyList(),
-    /** Every member's avatar URL (null = no photo), joining order: the profile page's member row. */
+    /** Every member's avatar URL (null = no photo), joining order. */
     val memberAvatars: List<String?> = emptyList(),
     val error: DataError? = null,
     val removed: Boolean = false,
     val endReached: Boolean = false,
 ) {
-    val loading: Boolean get() = items == null && error == null && !removed
+    val loading: Boolean get() = photos == null && error == null && !removed
 }
 
+/** The group's week (group time zone, Monday start — `app_config.week_start_isodow`, docs/API.md §6.4). */
+object GroupWeek {
+    fun start(day: LocalDate): LocalDate = day.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+    fun end(day: LocalDate): LocalDate = start(day).plusDays(DAYS_IN_WEEK - 1)
+    fun number(day: LocalDate): Int = day.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)
+    fun zone(group: Group?, fallback: ZoneId): ZoneId = group?.timeZone?.let { runCatching { ZoneId.of(it) }.getOrNull() } ?: fallback
+
+    private const val DAYS_IN_WEEK = 7L
+}
+
+/**
+ * Cache-then-network: the group (cover signed URL), its members (avatars, first names) and its posts newest first
+ * (`observeFeed`, then pages older than the last post), each post's display rendition signed; realtime inserts and
+ * deletions update the list; a resumed subscription refetches (§8). `not_group_member` / a group missing from the
+ * server's list = removed.
+ */
 class GroupFeedViewModel(private val env: AccountEnvironment, private val groupId: String) : AccountViewModel() {
     private val mutable = MutableStateFlow(GroupFeedUiState())
     val state: StateFlow<GroupFeedUiState> = mutable.asStateFlow()
@@ -181,9 +208,9 @@ class GroupFeedViewModel(private val env: AccountEnvironment, private val groupI
             env.backend.observeMyGroups().collect { page ->
                 val group = page.value?.firstOrNull { it.id == groupId }
                 if (group != null) {
-                    val avatar = group.coverPath?.let { path -> urls[path] ?: runCatching { env.backend.signedUrls(listOf(path)) }.getOrDefault(emptyMap())[path]?.also { urls[path] = it } }
-                    mutable.update { it.copy(group = group, groupAvatarUrl = avatar, isCreator = group.createdBy == env.backend.currentUserId) }
-                } else if (page.value != null && page.source == app.data.offline.DataState.Source.Network) {
+                    val cover = group.coverPath?.let { path -> urls[path] ?: runCatching { env.backend.signedUrls(listOf(path)) }.getOrDefault(emptyMap())[path]?.also { urls[path] = it } }
+                    mutable.update { it.copy(group = group, coverUrl = cover, isCreator = group.createdBy == env.backend.currentUserId) }
+                } else if (page.value != null && page.source == DataState.Source.Network) {
                     // Loaded from the server and the group is not among yours: removed (or deleted).
                     mutable.update { it.copy(removed = true) }
                 }
@@ -192,8 +219,8 @@ class GroupFeedViewModel(private val env: AccountEnvironment, private val groupI
         viewModelScope.launch {
             env.backend.observeMembers(groupId).collect { page ->
                 page.value?.let { list ->
-                    members = list
-                    enrichMembers(list)
+                    members = list.sortedBy { it.member.joinedAt }
+                    enrichMembers(members)
                     publish()
                 }
             }
@@ -209,7 +236,9 @@ class GroupFeedViewModel(private val env: AccountEnvironment, private val groupI
                     enrich(list)
                     publish(error = page.error)
                 } else if (!page.refreshing) {
-                    mutable.update { it.copy(error = page.error) }
+                    val error = page.error
+                    val removed = (error as? DataError.Api)?.code == app.data.error.ApiError.NotGroupMember
+                    mutable.update { it.copy(error = error, removed = it.removed || removed) }
                 }
             }
         }
@@ -252,7 +281,7 @@ class GroupFeedViewModel(private val env: AccountEnvironment, private val groupI
         val byUser = members.associateBy { it.member.userId }
         val photos = posts.map { p ->
             val author = byUser[p.authorId]?.profile
-            FeedItem.Photo(
+            GroupPhoto(
                 post = p,
                 url = mediaById[p.mediaId]?.imagePath(Media.Rendition.Display)?.let(urls::get),
                 authorFirstName = author?.firstName,
@@ -260,20 +289,8 @@ class GroupFeedViewModel(private val env: AccountEnvironment, private val groupI
                 mine = p.authorId == me,
             )
         }
-        val creator = mutable.value.group?.createdBy
-        val oldest = if (mutable.value.endReached) null else posts.lastOrNull()?.createdAt
-        val joins = members
-            .filter { it.member.userId != creator }
-            .filter { oldest == null || !it.member.joinedAt.isBefore(oldest) }
-            .mapNotNull { m ->
-                val profile = m.profile ?: return@mapNotNull null
-                val first = profile.firstName ?: return@mapNotNull null
-                FeedItem.Joined(m.member.userId, first, profile.avatarPath?.let(urls::get), m.member.joinedAt)
-            }
-        val items = (photos + joins.takeIf { photos.isNotEmpty() }.orEmpty()).sortedByDescending { it.at }
-        val others = members.filter { it.member.userId != me }.mapNotNull { it.profile?.firstName }
         val avatars = members.map { m -> m.profile?.avatarPath?.let(urls::get) }
-        mutable.update { it.copy(items = items, otherNames = others, memberAvatars = avatars, error = error) }
+        mutable.update { it.copy(photos = photos, memberAvatars = avatars, error = error) }
     }
 }
 
@@ -299,33 +316,59 @@ fun GroupFeedRoute(nav: NavHostController, groupId: String) {
     }
     GroupFeedScreen(
         state = state,
-        zone = env.zone(),
-        onBack = { nav.popBackStack() },
-        onHeader = { nav.navigate(GroupProfileRoute(groupId)) },
-        onWeeks = { nav.navigate(AppRoute.WeekHistory(groupId)) },
-        onRecap = { nav.navigate(recapTarget ?: AppRoute.WeekHistory(groupId)) },
-        onPhoto = { nav.navigate(AppRoute.PhotoViewer(groupId, it.id)) },
-        onReport = { nav.navigate(AppRoute.SafetyReport(groupId = groupId, postId = it.id)) },
-        onBlock = { nav.navigate(AppRoute.SafetyBlock(it.authorId)) },
-        onChat = { nav.navigate(AppRoute.Chat(groupId)) },
-        onInvite = { nav.navigate(AppRoute.GroupInvite(groupId)) },
-        onCamera = { nav.navigate(AppRoute.Camera(groupId)) },
-        onRetry = vm::load,
-        onLoadMore = vm::loadMore,
-        entries = {
-            // The memory pass supplies copy and action; the row and its place are this screen's.
+        now = env.clock.instant(),
+        fallbackZone = env.zone(),
+        actions = GroupScreenActions(
+            onBack = { nav.popBackStack() },
+            onAlbums = { nav.navigate(AppRoute.AlbumsList(groupId)) },
+            onChat = { nav.navigate(AppRoute.Chat(groupId)) },
+            onMembers = { nav.navigate(AppRoute.GroupSettings(groupId)) },
+            onRecaps = { nav.navigate(recapTarget ?: AppRoute.WeekHistory(groupId)) },
+            onInvite = { nav.navigate(AppRoute.GroupInvite(groupId)) },
+            onSettings = { nav.navigate(AppRoute.GroupSettings(groupId)) },
+            onWeeks = { nav.navigate(AppRoute.WeekHistory(groupId)) },
+            onPhoto = { nav.navigate(AppRoute.PhotoViewer(groupId, it.id)) },
+            onReport = { nav.navigate(AppRoute.SafetyReport(groupId = groupId, postId = it.id)) },
+            onBlock = { nav.navigate(AppRoute.SafetyBlock(it.authorId)) },
+            onCamera = { nav.navigate(AppRoute.Camera(groupId)) },
+            onRetry = vm::load,
+            onLoadMore = vm::loadMore,
+        ),
+        // The memory pass's entries: copy and data are theirs; the row / card and its place are this screen's.
+        birthdayRows = {
+            BirthdayRequestEntries(groupId, onOpen = { requestId -> nav.navigate(AppRoute.BirthdayContribute(groupId, requestId)) }) { title, subtitle, onClick ->
+                BirthdayRequestRow(title, subtitle, avatar = null, onClick = onClick)
+            }
+        },
+        feedCards = {
             OnThisDayEntry(groupId, state.group?.name.orEmpty(), onOpen = { nav.openOnThisDay(groupId) }) { title, subtitle, onClick ->
-                GroupEntryCard(title, subtitle, onClick = onClick)
+                FeedEntryCard(Tokens.Icons.globalRewind, title, subtitle, button = null, photo = null, onClick = onClick)
             }
             YearStoryEntry(groupId, onOpen = { year -> nav.navigate(AppRoute.YearStory(groupId, year)) }) { title, subtitle, button, onClick ->
-                GroupEntryCard(title, subtitle, button = button, onClick = onClick)
-            }
-            BirthdayRequestEntries(groupId, onOpen = { requestId -> nav.navigate(AppRoute.BirthdayContribute(groupId, requestId)) }) { title, subtitle, onClick ->
-                GroupEntryCard(title, subtitle, onClick = onClick)
+                FeedEntryCard(Tokens.Icons.globalRecap, title, subtitle, button = button, photo = null, onClick = onClick)
             }
         },
     )
 }
+
+/** What the group screen does on each control. */
+@Immutable
+data class GroupScreenActions(
+    val onBack: () -> Unit = {},
+    val onAlbums: () -> Unit = {},
+    val onChat: () -> Unit = {},
+    val onMembers: () -> Unit = {},
+    val onRecaps: () -> Unit = {},
+    val onInvite: () -> Unit = {},
+    val onSettings: () -> Unit = {},
+    val onWeeks: () -> Unit = {},
+    val onPhoto: (Post) -> Unit = {},
+    val onReport: (Post) -> Unit = {},
+    val onBlock: (Post) -> Unit = {},
+    val onCamera: () -> Unit = {},
+    val onRetry: () -> Unit = {},
+    val onLoadMore: () -> Unit = {},
+)
 
 @Composable
 internal fun createdInviteLabel(kind: GroupKind): String = when (kind) {
@@ -335,304 +378,411 @@ internal fun createdInviteLabel(kind: GroupKind): String = when (kind) {
     GroupKind.Custom -> stringResource(R.string.groups_screen_created_invite_custom)
 }
 
+/**
+ * The group (pushed; page `color.global.background.android`; one vertical scroll):
+ * 1. C-02 header row without a title — back, and the trailing `icon.global.albums` / `icon.global.chats` glyphs at the C-01
+ *    positions (centred on the cap middle of a title at `size.global.titleTop`);
+ * 2. the cover (C-24, `groups.screen.size.coverWidth` × `.coverHeight`, shadow `groups.screen.shadow.cover`),
+ *    `size.global.titleToContent` below that title line, centred;
+ * 3. the name (display serif `displayMedium`, centred, ≤ 2 lines), its cap top `groups.screen.size.coverToTitle` under the cover;
+ * 4. the C-23 member stack `groups.screen.size.titleToMeta` under the name's baseline (as many as fit, no count) → members;
+ * 5. `groups.screen.size.metaToActions` below: outline "Recaps", outline "Invite" (equal widths) and the gear capsule;
+ * 6. the birthday request row(s) (`size.global.sectionGap` apart);
+ * 7. this week: the C-20 header as one button (chevron → week.history), the C-17 strip (photos oldest → newest, add tile
+ *    last; an empty week: add tile first, then empty-day tiles to the week's end) and, for an empty group, the C-27 block;
+ * 8. the members' weeks (C-18 cards, newest first) and the memory feed cards in one pager, `size.global.cardGap` apart;
+ * 9. earlier photos: dated C-20 headers over the 3-column C-21 grid, `size.global.sectionGap` apart, paged.
+ */
 @Composable
 fun GroupFeedScreen(
     state: GroupFeedUiState,
-    zone: ZoneId,
-    onBack: () -> Unit,
-    onHeader: () -> Unit,
-    onWeeks: () -> Unit,
-    onRecap: () -> Unit,
-    onPhoto: (Post) -> Unit,
-    onReport: (Post) -> Unit,
-    onBlock: (Post) -> Unit,
-    onChat: () -> Unit,
-    onInvite: () -> Unit,
-    onCamera: () -> Unit,
-    onRetry: () -> Unit,
-    onLoadMore: () -> Unit,
-    entries: @Composable () -> Unit = {},
+    now: Instant,
+    fallbackZone: ZoneId,
+    actions: GroupScreenActions,
+    birthdayRows: @Composable () -> Unit = {},
+    feedCards: @Composable () -> Unit = {},
 ) {
-    val reduceMotion by rememberReduceMotion()
-    val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackground)) {
-        Column(Modifier.fillMaxSize()) {
-            FeedHeader(state, onBack, onHeader, onWeeks, onRecap)
-            val items = state.items
-            Box(Modifier.weight(1f).fillMaxWidth()) {
-                when {
-                    state.removed -> EmptyCentered {
-                        EmptyState(stringResource(R.string.groups_screen_removed_title), stringResource(R.string.groups_screen_removed_detail))
-                    }
-                    state.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { LoadingHud(stringResource(R.string.groups_create_hud_loading)) }
-                    items == null && state.error == DataError.Network -> EmptyCentered {
+    val zone = GroupWeek.zone(state.group, fallbackZone)
+    val today = now.atZone(zone).toLocalDate()
+    val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + Tokens.Sizes.globalSectionGap
+    val list = rememberLazyListState()
+    val photos = state.photos
+    if (photos != null && photos.isNotEmpty()) {
+        val nearEnd by remember { derivedStateOf { list.layoutInfo.visibleItemsInfo.lastOrNull()?.index?.let { it >= list.layoutInfo.totalItemsCount - PREFETCH_DISTANCE } ?: false } }
+        LaunchedEffect(list) { snapshotFlow { nearEnd }.distinctUntilChanged().filter { it }.collect { actions.onLoadMore() } }
+    }
+    Box(Modifier.fillMaxSize().background(PageRoles.page).windowInsetsPadding(WindowInsets.statusBars)) {
+        if (state.removed) {
+            Column(Modifier.fillMaxSize()) {
+                Header(actions, glyphs = false)
+                Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    EmptyState(stringResource(R.string.groups_screen_removed_title), stringResource(R.string.groups_screen_removed_detail))
+                }
+            }
+            return@Box
+        }
+        LazyColumn(state = list, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = bottom)) {
+            item(key = "header") { Header(actions, glyphs = true) }
+            item(key = "cover") { Cover(state) }
+            item(key = "name") { Name(state.group?.name) }
+            when {
+                state.loading -> {
+                    item(key = "loadingStrip") { LoadingWeek() }
+                    item(key = "loadingGrid") { LoadingGrid() }
+                }
+                photos == null && state.error == DataError.Network -> item(key = "offline") {
+                    Box(Modifier.fillMaxWidth().padding(top = Tokens.Sizes.globalSectionGap), contentAlignment = Alignment.Center) {
                         EmptyState(stringResource(R.string.groups_screen_offline_title), stringResource(R.string.groups_screen_offline_detail))
                     }
-                    items == null -> EmptyCentered {
-                        EmptyState(
-                            stringResource(R.string.groups_screen_error_title),
-                            stringResource(R.string.groups_screen_error_detail),
-                            action = EmptyStateAction(stringResource(R.string.groups_screen_error_retry), onRetry),
-                        )
-                    }
-                    items.isEmpty() && state.isCreator -> EmptyCentered {
-                        EmptyState(
-                            stringResource(R.string.groups_screen_created_title),
-                            state.otherNames.takeIf { it.isNotEmpty() }?.let { stringResource(R.string.groups_screen_created_detail, it.joinToString(NAME_SEPARATOR)) },
-                            action = EmptyStateAction(createdInviteLabel(state.group?.kind ?: GroupKind.Friends), onInvite, Tokens.Icons.globalLink),
-                        )
-                    }
-                    items.isEmpty() -> EmptyCentered {
-                        EmptyState(
-                            stringResource(R.string.groups_screen_empty_title),
-                            stringResource(R.string.groups_screen_empty_detail),
-                            action = EmptyStateAction(stringResource(R.string.groups_screen_empty_button), onCamera, Tokens.Icons.globalCamera),
-                        )
-                    }
-                    else -> {
-                        val list = rememberLazyListState()
-                        val nearEnd by remember { derivedStateOf { list.layoutInfo.visibleItemsInfo.lastOrNull()?.index?.let { it >= list.layoutInfo.totalItemsCount - PREFETCH_DISTANCE } ?: false } }
-                        LaunchedEffect(list) { snapshotFlow { nearEnd }.distinctUntilChanged().filter { it }.collect { onLoadMore() } }
-                        LazyColumn(
-                            state = list,
-                            modifier = Modifier.fillMaxSize(),
-                            // Each item carries its own gap below (groups.screen.size.cardGap), so the entries
-                            // item takes no space at all while it has no rows.
-                            contentPadding = PaddingValues(bottom = bottom + Tokens.Sizes.groupsScreenSizeChatPillHeight),
-                        ) {
-                            item(key = ENTRIES_KEY, contentType = ENTRIES_KEY) { Column { entries() } }
-                            items(items, key = { it.key }, contentType = { it::class }) { item ->
-                                // New posts arrive with spring.global.platformDefault.android; Reduce Motion: fade only.
-                                val placement = if (reduceMotion) null else Tokens.Springs.globalPlatformDefaultAndroid.spec<IntOffset>()
-                                val fade = Tokens.Springs.globalPlatformDefaultAndroid.spec<Float>()
-                                Box(Modifier.animateItem(fadeInSpec = fade, placementSpec = placement, fadeOutSpec = fade).padding(bottom = Tokens.Sizes.groupsScreenSizeCardGap)) {
-                                    when (item) {
-                                        is FeedItem.Photo -> PhotoCard(item, zone, onPhoto, onReport, onBlock)
-                                        is FeedItem.Joined -> JoinedPill(item)
-                                    }
-                                }
-                            }
-                        }
-                    }
+                }
+                photos == null -> {
+                    item(key = "members") { Members(state.memberAvatars, actions.onMembers) }
+                    item(key = "actions") { ActionRow(actions) }
+                    item(key = "error") { TapLine(stringResource(R.string.groups_screen_error_title), actions.onRetry, Modifier.padding(top = Tokens.Sizes.globalSectionGap)) }
+                }
+                else -> loaded(state, photos, today, zone, actions, birthdayRows, feedCards)
+            }
+        }
+    }
+}
+
+private fun LazyListScope.loaded(
+    state: GroupFeedUiState,
+    photos: List<GroupPhoto>,
+    today: LocalDate,
+    zone: ZoneId,
+    actions: GroupScreenActions,
+    birthdayRows: @Composable () -> Unit,
+    feedCards: @Composable () -> Unit,
+) {
+    val weekStart = GroupWeek.start(today)
+    val thisWeek = photos.filter { !it.post.createdAt.atZone(zone).toLocalDate().isBefore(weekStart) }
+    val earlier = photos.filter { it.post.createdAt.atZone(zone).toLocalDate().isBefore(weekStart) }
+    item(key = "members") { Members(state.memberAvatars, actions.onMembers) }
+    item(key = "actions") { ActionRow(actions) }
+    item(key = "birthday") { Column { birthdayRows() } }
+    item(key = "weekHeader") {
+        val range = if (thisWeek.isEmpty()) null else Formats.weekRange(weekStart, GroupWeek.end(today), zone)
+        WeekHeader(stringResource(R.string.groups_screen_week_title, GroupWeek.number(today).toString()), range, actions.onWeeks)
+    }
+    item(key = "strip") { WeekStrip(stripTiles(thisWeek, today, zone, actions)) }
+    if (photos.isEmpty()) {
+        item(key = "emptyBlock") {
+            Box(Modifier.fillMaxWidth().padding(top = Tokens.Sizes.globalSectionGap), contentAlignment = Alignment.Center) {
+                if (state.isCreator) {
+                    EmptyState(
+                        title = stringResource(R.string.groups_screen_created_title),
+                        detail = stringResource(R.string.groups_screen_created_detail),
+                        icon = Tokens.Icons.globalCalendar,
+                        action = EmptyStateAction(createdInviteLabel(state.group?.kind ?: GroupKind.Friends), actions.onInvite, Tokens.Icons.globalAdd),
+                    )
+                } else {
+                    EmptyState(
+                        title = stringResource(R.string.groups_screen_empty_title),
+                        detail = stringResource(R.string.groups_screen_empty_detail),
+                        icon = Tokens.Icons.globalCalendar,
+                        action = EmptyStateAction(stringResource(R.string.groups_screen_empty_button), actions.onCamera, Tokens.Icons.globalAdd),
+                    )
                 }
             }
         }
-        ChatPill(onChat, Modifier.align(Alignment.BottomCenter).padding(bottom = bottom))
     }
-}
-
-private const val NAME_SEPARATOR = ", "
-private const val ENTRIES_KEY = "entries"
-
-/**
- * The row of the memory entries above the feed (onthisday.md / year.story.md / birthday.request.md
- * → A: "row component and position belong to groups.screen"). Yope draws no such row; it is built
- * from Yope's inline card (`onboarding.permission.contacts.layout.card`) placed on this screen's
- * #171717: fill `color.global.control` (the screen's control fill — header capsule, joined pill; the
- * inline card's own #131313 is for black screens), corners `radius.global.card`, side margins
- * `groups.screen.size.cardMarginH` like the photo cards, content 16 in (`groups.list.size.avatarInset`),
- * title `onboarding.permission.contacts.fontSize.cardTitle` bold in `color.global.textPrimary`, subtitle
- * `.fontSize.cardDetail` in `color.global.textSecondary`; [button] (year story) as the card's white
- * capsule (`.size.cardButtonWidth` × `.size.cardButtonHeight`, label text role `button`). The whole card is one button;
- * `groups.screen.size.cardGap` below it.
- */
-@Composable
-fun GroupEntryCard(title: String, subtitle: String, onClick: () -> Unit, button: String? = null) {
-    val shape = RoundedCornerShape(Tokens.Radii.globalCard)
-    Row(
-        Modifier
-            .padding(start = Tokens.Sizes.groupsScreenSizeCardMarginH, end = Tokens.Sizes.groupsScreenSizeCardMarginH, bottom = Tokens.Sizes.groupsScreenSizeCardGap)
-            .fillMaxWidth()
-            .clip(shape)
-            .background(Tokens.Colors.globalControl, shape)
-            .clickable(role = Role.Button, onClick = onClick)
-            .semantics(mergeDescendants = true) {}
-            .padding(Tokens.Sizes.groupsListSizeAvatarInset),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.groupsListSizeAvatarInset),
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(
-                title,
-                style = dsTextStyle(Tokens.FontSizes.onboardingPermissionContactsFontSizeCardTitle, Tokens.FontWeights.onboardingPermissionContactsFontWeightCardTitle),
-                color = Tokens.Colors.globalTextPrimary,
-            )
-            Text(subtitle, style = TextStyle(fontSize = Tokens.FontSizes.onboardingPermissionContactsFontSizeCardDetail), color = Tokens.Colors.globalTextSecondary)
-        }
-        if (button != null) {
-            LightPill(button, onClick, Modifier.width(Tokens.Sizes.onboardingPermissionContactsSizeCardButtonWidth), shape = LightPillShape.Capsule, height = Tokens.Sizes.onboardingPermissionContactsSizeCardButtonHeight)
-        }
-    }
-}
-private const val PREFETCH_DISTANCE = 5
-
-@Composable
-private fun EmptyCentered(content: @Composable () -> Unit) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { content() }
-}
-
-/**
- * Header row (S1): ‹ circle; `size.global.headerGap`; capsule (height `size.global.headerButton`,
- * `color.global.control`, capsule shape; group avatar `size.global.avatarHeader` · name text role
- * `headerTitle` · `icon.global.chevron` in `color.global.textSecondary`); trailing calendar and recap
- * circles `size.global.headerGap` apart; insets `size.global.headerInset`.
- */
-@Composable
-private fun FeedHeader(state: GroupFeedUiState, onBack: () -> Unit, onHeader: () -> Unit, onWeeks: () -> Unit, onRecap: () -> Unit) {
-    val name = state.group?.name.orEmpty()
-    val headerLabel = stringResource(R.string.groups_screen_header_accessibilitylabel, name)
-    Row(
-        Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars).padding(horizontal = Tokens.Sizes.globalHeaderInset),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalHeaderGap),
-    ) {
-        HeaderCircleButton(Tokens.Icons.globalBack, stringResource(R.string.groups_screen_back_accessibilitylabel), onBack)
-        Box(Modifier.weight(1f)) {
-            Row(
-                Modifier
-                    .heightIn(min = Tokens.Sizes.globalHeaderButton)
-                    .clip(CircleShape)
-                    .background(Tokens.Colors.globalControl, CircleShape)
-                    .clickable(role = Role.Button, onClick = onHeader)
-                    .semantics(mergeDescendants = true) { contentDescription = headerLabel }
-                    .padding(horizontal = (Tokens.Sizes.globalHeaderButton - Tokens.Sizes.globalAvatarHeader) / 2),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalHeaderGap),
-            ) {
-                Avatar(state.groupAvatarUrl, Tokens.Sizes.globalAvatarHeader, fallbackIcon = Tokens.Icons.globalGroup)
-                Text(name, style = TextRoles.headerTitle, color = Tokens.Colors.globalTextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
-                Icon(Tokens.Icons.globalChevron, contentDescription = null, tint = Tokens.Colors.globalTextSecondary)
+    item(key = "pager") { CardPager(friendWeeks(thisWeek), zone, actions, feedCards) }
+    earlier.groupBy { it.post.createdAt.atZone(zone).toLocalDate() }.forEach { (day, dayPhotos) ->
+        item(key = "day:$day", contentType = "day") {
+            Column(Modifier.fillMaxWidth()) {
+                SectionHeader(Formats.longDate(day), afterContent = true)
+                PhotoGrid(dayPhotos.map { gridCell(it, zone, actions) }, columns = GRID_COLUMNS)
             }
         }
-        HeaderCircleButton(Tokens.Icons.globalCalendar, stringResource(R.string.groups_screen_weeks_accessibilitylabel), onWeeks)
-        HeaderCircleButton(Tokens.Icons.globalRecap, stringResource(R.string.groups_screen_recap_accessibilitylabel), onRecap)
     }
 }
 
-/**
- * Photo card: full width minus `groups.screen.size.cardMarginH`, height `groups.screen.size.cardHeight`,
- * corners `groups.screen.radius.card`, photo `scaledToFill` (reserved before it loads:
- * `color.global.controlRaised`); time centred (text role `overlayTime`, white, `h:mm AM/PM`); caption
- * under it (`listSubtitle`, white); author avatar `size.global.avatarHeader` + first name
- * (`listSubtitle`) bottom-leading and the ••• circle (`icon.global.more`, `color.global.controlRaised`)
- * bottom-trailing, `groups.screen.size.cardGap` from the card edges (insets not measured: role reuse).
- */
+/** C-02 without a title: back + (unless [glyphs] is false) the albums and chat glyphs at the C-01 places. */
 @Composable
-private fun PhotoCard(item: FeedItem.Photo, zone: ZoneId, onPhoto: (Post) -> Unit, onReport: (Post) -> Unit, onBlock: (Post) -> Unit) {
-    val shape = RoundedCornerShape(Tokens.Radii.groupsScreenRadiusCard)
-    val time = Formats.time(item.post.createdAt, zone)
-    val label = stringResource(R.string.groups_screen_photo_accessibilitylabel, item.authorFirstName.orEmpty(), time)
-    var menu by remember { mutableStateOf(false) }
-    Box(
-        Modifier
-            .padding(horizontal = Tokens.Sizes.groupsScreenSizeCardMarginH)
-            .fillMaxWidth()
-            .height(Tokens.Sizes.groupsScreenSizeCardHeight)
-            .clip(shape)
-            .background(Tokens.Colors.globalControlRaised, shape),
-    ) {
-        Box(
-            Modifier
-                .fillMaxSize()
-                .clickable(role = Role.Image) { onPhoto(item.post) }
-                .semantics { contentDescription = label },
-        ) {
-            if (item.url != null) AsyncImage(model = item.url, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-        }
-        Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(time, style = TextRoles.overlayTime, color = Tokens.Colors.globalTextPrimary)
-            item.post.caption?.let { Text(it, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextPrimary, textAlign = TextAlign.Center) }
-        }
-        Row(
-            Modifier.align(Alignment.BottomStart).padding(Tokens.Sizes.groupsScreenSizeCardGap),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalHeaderGap),
-        ) {
-            Avatar(item.authorAvatarUrl, Tokens.Sizes.globalAvatarHeader)
-            item.authorFirstName?.let { Text(it, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextPrimary) }
-        }
-        Box(Modifier.align(Alignment.BottomEnd).padding(Tokens.Sizes.groupsScreenSizeCardGap)) {
-            HeaderCircleButton(
-                Tokens.Icons.globalMore,
-                stringResource(R.string.groups_screen_photo_more_accessibilitylabel),
-                { menu = true },
-                fill = HeaderCircleFill.Raised,
-                diameter = Tokens.Sizes.globalAvatarHeader,
-            )
-            PhotoMenu(menu, item, onDismiss = { menu = false }, onOpen = { onPhoto(item.post) }, onReport = { onReport(item.post) }, onBlock = { onBlock(item.post) })
-        }
-    }
-}
-
-/**
- * The card's native menu (`safety.block.layout.menu` android: DropdownMenu, destructive items in
- * `color.global.system.error`): others' photos → Report…, Block {first_name}; own → Open.
- */
-@Composable
-private fun PhotoMenu(expanded: Boolean, item: FeedItem.Photo, onDismiss: () -> Unit, onOpen: () -> Unit, onReport: () -> Unit, onBlock: () -> Unit) {
-    DropdownMenu(expanded = expanded, onDismissRequest = onDismiss, containerColor = Tokens.Colors.globalSystemSurfaceContainerHigh) {
-        if (item.mine) {
-            MenuItem(stringResource(R.string.groups_screen_photo_menu_open), destructive = false) { onDismiss(); onOpen() }
+private fun Header(actions: GroupScreenActions, glyphs: Boolean) {
+    PushedHeader(
+        title = "",
+        onBack = actions.onBack,
+        backContentDescription = stringResource(R.string.groups_screen_back_accessibilitylabel),
+        actions = if (!glyphs) {
+            emptyList()
         } else {
-            MenuItem(stringResource(R.string.groups_screen_photo_menu_report), destructive = true, icon = Tokens.Icons.globalReport) { onDismiss(); onReport() }
-            MenuItem(stringResource(R.string.groups_screen_photo_menu_block, item.authorFirstName.orEmpty()), destructive = true) { onDismiss(); onBlock() }
-        }
-    }
-}
-
-@Composable
-internal fun MenuItem(text: String, destructive: Boolean, icon: androidx.compose.ui.graphics.vector.ImageVector? = null, onClick: () -> Unit) {
-    val color = if (destructive) Tokens.Colors.globalSystemError else Tokens.Colors.globalSystemOnSurface
-    DropdownMenuItem(
-        text = { Text(text, style = MaterialTheme.typography.labelLarge, color = color) },
-        onClick = onClick,
-        trailingIcon = icon?.let { { Icon(it, contentDescription = null, tint = color) } },
+            listOf(
+                HeaderAction(Tokens.Icons.globalAlbums, stringResource(R.string.groups_screen_albums_accessibilitylabel), actions.onAlbums),
+                HeaderAction(Tokens.Icons.globalChats, stringResource(R.string.groups_screen_chat), actions.onChat),
+            )
+        },
     )
 }
 
+@Composable
+private fun Cover(state: GroupFeedUiState) {
+    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        BookCover(
+            state.coverUrl,
+            Tokens.Sizes.groupsScreenSizeCoverWidth,
+            Tokens.Sizes.groupsScreenSizeCoverHeight,
+            contentDescription = state.group?.name?.let { stringResource(R.string.groups_screen_cover_accessibilitylabel, it) },
+        )
+    }
+}
+
+/** The name: `font.global.display` text role `displayMedium`, centred, ≤ 2 lines, cap top `groups.screen.size.coverToTitle` under the cover; header trait. */
+@Composable
+private fun Name(name: String?) {
+    val style = TextRoles.displayMedium
+    Text(
+        name.orEmpty(),
+        style = style,
+        color = Tokens.Colors.globalTextPrimary,
+        textAlign = TextAlign.Center,
+        maxLines = NAME_MAX_LINES,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Tokens.Sizes.globalScreenMargin)
+            .capTopAt(Tokens.Sizes.groupsScreenSizeCoverToTitle, CapTop.height(style))
+            .endAtLastBaseline()
+            .semantics { heading() },
+    )
+}
+
+/** The member stack (C-23, joining order, as many as fit the screen inside the margins — no "+N", no count): one button "Members". */
+@Composable
+private fun Members(avatars: List<String?>, onMembers: () -> Unit) {
+    val width = LocalConfiguration.current.screenWidthDp.dp - Tokens.Sizes.globalScreenMargin * 2
+    val avatar = Tokens.Sizes.globalAvatarSmall
+    val fit = if (width < avatar) 0 else 1 + ((width - avatar) / (avatar - Tokens.Sizes.globalAvatarStackOverlap)).toInt()
+    val label = stringResource(R.string.groups_screen_members_accessibilitylabel)
+    Box(Modifier.fillMaxWidth().padding(top = Tokens.Sizes.groupsScreenSizeTitleToMeta), contentAlignment = Alignment.Center) {
+        AvatarStack(
+            avatars.take(fit),
+            Modifier.tapClickable(onClick = onMembers).clearAndSetSemantics { contentDescription = label },
+        )
+    }
+}
+
+/** C-19 / C-06 action row: outline "Recaps" and "Invite" (equal widths), then the icon-only gear capsule; `size.global.pillGap` apart. */
+@Composable
+private fun ActionRow(actions: GroupScreenActions) {
+    Row(
+        Modifier.fillMaxWidth().padding(start = Tokens.Sizes.globalScreenMargin, end = Tokens.Sizes.globalScreenMargin, top = Tokens.Sizes.groupsScreenSizeMetaToActions),
+        horizontalArrangement = CapsuleRowSpacing,
+    ) {
+        Capsule(stringResource(R.string.groups_screen_recap_accessibilitylabel), actions.onRecaps, Modifier.weight(1f), style = CapsuleStyle.Outline)
+        Capsule(stringResource(R.string.groups_screen_invite), actions.onInvite, Modifier.weight(1f), style = CapsuleStyle.Outline)
+        IconCapsule(Tokens.Icons.globalSettings, stringResource(R.string.groups_screen_settings_accessibilitylabel), actions.onSettings, style = CapsuleStyle.Outline)
+    }
+}
+
 /**
- * "{first_name} joined" (BI): capsule in `color.global.control`, avatar `size.global.avatarSmall`
- * leading, text `listSubtitle` in `color.global.textPrimary`, centred between cards (sizes not
- * measured: inner spacing reuses `size.global.headerGap`).
+ * The week header (C-20: "Week 43" in text role `sectionLabel` + the range in `listSubtitle`, secondary; no range for a
+ * current week without photos), its cap top `size.global.sectionGap` below the content above, content
+ * `size.global.sectionHeaderToContent` under its baseline; in place of C-20's "•••" (Retro's week menu was not captured)
+ * `icon.global.chevron` in secondary text with its ink at the right margin. One button → week.history.
  */
 @Composable
-private fun JoinedPill(item: FeedItem.Joined) {
-    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        Row(
-            Modifier.background(Tokens.Colors.globalControl, CircleShape).padding(end = Tokens.Sizes.globalScreenMargin),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalHeaderGap),
-        ) {
-            Avatar(item.avatarUrl, Tokens.Sizes.globalAvatarSmall)
-            Text(stringResource(R.string.groups_screen_memberjoined, item.firstName), style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextPrimary)
+private fun WeekHeader(title: String, range: String?, onClick: () -> Unit) {
+    val style = TextRoles.sectionLabel
+    val secondary = PageRoles.secondaryText()
+    val chevron = Tokens.Icons.globalChevron
+    val weeksLabel = stringResource(R.string.groups_screen_weeks_accessibilitylabel)
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .capTopAt(Tokens.Sizes.globalSectionGap, CapTop.height(style))
+            .paddingFrom(LastBaseline, after = Tokens.Sizes.globalSectionHeaderToContent)
+            .tapClickable(onClickLabel = weeksLabel, onClick = onClick)
+            .semantics(mergeDescendants = true) { heading() }
+            .padding(horizontal = Tokens.Sizes.globalScreenMargin),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            buildAnnotatedString {
+                append(title)
+                if (range != null) {
+                    append(' ')
+                    withStyle(TextRoles.listSubtitle.toSpanStyle().copy(color = secondary)) { append(range) }
+                }
+            },
+            style = style,
+            color = Tokens.Colors.globalTextPrimary,
+            modifier = Modifier.weight(1f),
+        )
+        Icon(
+            chevron,
+            contentDescription = null,
+            tint = secondary,
+            modifier = Modifier.offset(x = GlyphInk.trailing(chevron, Tokens.Sizes.globalIcon)).size(Tokens.Sizes.globalIcon),
+        )
+    }
+}
+
+/** The week strip's tiles: photos oldest → newest with the add tile last; an empty week: the add tile first, then empty-day tiles from today to the week's end. */
+@Composable
+private fun stripTiles(thisWeek: List<GroupPhoto>, today: LocalDate, zone: ZoneId, actions: GroupScreenActions): List<DayTile> {
+    val locale = Locale.getDefault()
+    val add = DayTile.Add(stringResource(R.string.groups_screen_week_add_accessibilitylabel), actions.onCamera)
+    val days: List<DayTile> = if (thisWeek.isNotEmpty()) {
+        thisWeek.reversed().map { photo ->
+            val day = photo.post.createdAt.atZone(zone).toLocalDate()
+            DayTile.Photo(
+                key = photo.post.id,
+                image = photo.url,
+                weekday = day.dayOfWeek.getDisplayName(TextStyle.SHORT, locale),
+                accessibilityLabel = photoLabel(day, photo.authorFirstName),
+                onClick = { actions.onPhoto(photo.post) },
+                menu = photoMenu(photo, actions),
+            )
+        }
+    } else {
+        generateSequence(today) { it.plusDays(1) }.takeWhile { !it.isAfter(GroupWeek.end(today)) }.map { day ->
+            DayTile.Empty(
+                key = "empty:$day",
+                month = day.month.getDisplayName(TextStyle.SHORT, locale),
+                day = day.dayOfMonth.toString(),
+                weekday = day.dayOfWeek.getDisplayName(TextStyle.SHORT, locale),
+                accessibilityLabel = Formats.longDate(day),
+            )
+        }.toList()
+    }
+    return WeekStripOrder.withAdd(days, add)
+}
+
+/** `groups.screen.photo.accessibilityLabel`: "{date}, photo by {first_name}". */
+@Composable
+private fun photoLabel(day: LocalDate, firstName: String?): String = stringResource(R.string.groups_screen_photo_accessibilitylabel, Formats.longDate(day), firstName.orEmpty())
+
+/** `groups.screen.layout.menu`: others' photos — "Report Post", "Block {first_name}"; own photos: none. */
+@Composable
+private fun photoMenu(photo: GroupPhoto, actions: GroupScreenActions): List<DsMenuItem> {
+    if (photo.mine) return emptyList()
+    val report = DsMenuItem(stringResource(R.string.groups_screen_photo_menu_report), { actions.onReport(photo.post) }, icon = Tokens.Icons.globalReport, destructive = true)
+    val name = photo.authorFirstName ?: return listOf(report)
+    return listOf(report, DsMenuItem(stringResource(R.string.groups_screen_photo_menu_block, name), { actions.onBlock(photo.post) }, destructive = true))
+}
+
+@Composable
+private fun gridCell(photo: GroupPhoto, zone: ZoneId, actions: GroupScreenActions): GridCell {
+    val day = photo.post.createdAt.atZone(zone).toLocalDate()
+    return GridCell(photo.post.id, photo.url, photoLabel(day, photo.authorFirstName), { actions.onPhoto(photo.post) }, photoMenu(photo, actions))
+}
+
+/** One member's week for a C-18 card: their newest photo of the week. */
+private fun friendWeeks(thisWeek: List<GroupPhoto>): List<GroupPhoto> =
+    thisWeek.filterNot { it.mine }.distinctBy { it.post.authorId }
+
+/**
+ * The members' weeks and memories pager: C-18 friend cards (newest first) and the memory feed cards, a horizontal row
+ * starting at `size.global.screenMargin`, `size.global.cardGap` apart, the next card peeking; each card sits
+ * `size.global.sectionGap` below the strip, so an empty pager takes no space.
+ */
+@Composable
+private fun CardPager(friends: List<GroupPhoto>, zone: ZoneId, actions: GroupScreenActions, feedCards: @Composable () -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = Tokens.Sizes.globalScreenMargin),
+        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalCardGap),
+    ) {
+        friends.forEach { photo ->
+            val day = photo.post.createdAt.atZone(zone).toLocalDate()
+            FriendCard(
+                name = photo.authorFirstName.orEmpty(),
+                avatar = photo.authorAvatarUrl,
+                photo = photo.url,
+                contentDescription = photoLabel(day, photo.authorFirstName),
+                onClick = { actions.onPhoto(photo.post) },
+                modifier = Modifier.padding(top = Tokens.Sizes.globalSectionGap),
+            )
+        }
+        feedCards()
+    }
+}
+
+/**
+ * A memory feed card (Retro's Rewind / "Year in Photos" cards in its home feed; composition of C-18, C-09 and the display
+ * role): the header line shows the feature's [glyph] in the `size.global.avatarList` box (no name), `size.global.cardHeaderGap`
+ * above a `size.global.friendCardWidth` × `.friendCardHeight` card (`radius.global.card`) — the feature's [photo] aspect-fill
+ * (none: `color.global.backgroundDeep`) under the bottom scrim (`layout.global.photoScrim`), and at the bottom inside
+ * `size.global.screenMargin`: [title] (`font.global.display` text role `displaySmall`, `color.global.textOnMedia`), [line]
+ * (`listSubtitle`, `color.global.textOnMedia`) and the C-09 light pill [button] `size.global.screenMargin` below (the inner
+ * gaps are not measured). One button; the pill repeats the action.
+ */
+@Composable
+fun FeedEntryCard(glyph: ImageVector, title: String, line: String, button: String?, photo: Any?, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Column(
+        modifier
+            .padding(top = Tokens.Sizes.globalSectionGap)
+            .width(Tokens.Sizes.globalFriendCardWidth)
+            .tapClickable(onClick = onClick)
+            .semantics(mergeDescendants = true) {},
+    ) {
+        Box(Modifier.size(Tokens.Sizes.globalAvatarList), contentAlignment = Alignment.Center) {
+            Icon(glyph, contentDescription = null, tint = Tokens.Colors.globalTextPrimary, modifier = Modifier.size(Tokens.Sizes.globalAvatarList))
+        }
+        Spacer(Modifier.height(Tokens.Sizes.globalCardHeaderGap))
+        Box(Modifier.size(Tokens.Sizes.globalFriendCardWidth, Tokens.Sizes.globalFriendCardHeight).clip(RoundedCornerShape(Tokens.Radii.globalCard))) {
+            DsImage(photo, null, Modifier.fillMaxSize(), placeholder = Tokens.Colors.globalBackgroundDeep)
+            PhotoScrimOverlay()
+            Column(Modifier.align(Alignment.BottomStart).padding(Tokens.Sizes.globalScreenMargin)) {
+                Text(title, style = TextRoles.displaySmall, color = Tokens.Colors.globalTextOnMedia)
+                Text(line, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextOnMedia)
+                if (button != null) MediaPill(button, onClick, Modifier.padding(top = Tokens.Sizes.globalScreenMargin))
+            }
         }
     }
 }
 
 /**
- * The floating "chat" pill: `groups.screen.size.chatPillWidth` × `.chatPillHeight` (minimum; grows
- * with text), fill `groups.screen.color.chatPill`, corners `radius.global.button` (approximation),
- * `icon.global.chats` + `groups.screen.chat` (`groups.screen.fontSize.chatPill`, bold, white).
+ * The birthday request row (`birthday.request` entry): one C-14 single row inside the margins (fill
+ * `color.global.surfaceSecondary.android`, `radius.global.groupedRow`) holding a C-16 people row — honoree avatar
+ * `size.global.avatarPicker`, title (`listTitle`), due line (`listSubtitle`, secondary) — and `icon.global.chevron` in
+ * secondary text; `size.global.sectionGap` under the content above. One button → birthday.request.
  */
 @Composable
-private fun ChatPill(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val shape = RoundedCornerShape(Tokens.Radii.globalButton)
+fun BirthdayRequestRow(title: String, line: String, avatar: Any?, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(Tokens.Radii.globalGroupedRow)
+    val secondary = PageRoles.secondaryText()
     Row(
-        modifier
-            .widthIn(min = Tokens.Sizes.groupsScreenSizeChatPillWidth)
-            .heightIn(min = Tokens.Sizes.groupsScreenSizeChatPillHeight)
+        Modifier
+            .padding(start = Tokens.Sizes.globalScreenMargin, end = Tokens.Sizes.globalScreenMargin, top = Tokens.Sizes.globalSectionGap)
+            .fillMaxWidth()
             .clip(shape)
-            .background(Tokens.Colors.groupsScreenColorChatPill, shape)
-            .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = Tokens.Sizes.globalHeaderGap),
+            .background(PageRoles.secondarySurface, shape)
+            .tapClickable(onClick = onClick)
+            .semantics(mergeDescendants = true) {}
+            .padding(Tokens.Sizes.globalScreenMargin),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalHeaderGap, Alignment.CenterHorizontally),
     ) {
-        Icon(Tokens.Icons.globalChats, contentDescription = null, tint = Tokens.Colors.globalTextPrimary)
-        Text(
-            stringResource(R.string.groups_screen_chat),
-            style = dsTextStyle(Tokens.FontSizes.groupsScreenFontSizeChatPill, Tokens.FontWeights.fontWeightGlobalHeaderTitle),
-            color = Tokens.Colors.globalTextPrimary,
-        )
+        Avatar(avatar, Tokens.Sizes.globalAvatarPicker)
+        Spacer(Modifier.width(Tokens.Sizes.globalRowThumbGap))
+        Column(Modifier.weight(1f)) {
+            Text(title, style = TextRoles.listTitle, color = Tokens.Colors.globalTextPrimary)
+            Text(line, style = TextRoles.listSubtitle, color = secondary)
+        }
+        Icon(Tokens.Icons.globalChevron, contentDescription = null, tint = secondary, modifier = Modifier.size(Tokens.Sizes.globalIcon))
     }
 }
+
+/** Loading (C-28 placeholder form): the week header line's place and a strip of C-17 placeholder tiles. */
+@Composable
+private fun LoadingWeek() {
+    Column(Modifier.fillMaxWidth().padding(top = Tokens.Sizes.globalSectionGap)) {
+        WeekStrip(List(LOADING_TILES) { DayTile.Placeholder("placeholder:$it") })
+    }
+}
+
+/** Loading: a grid of `color.global.control` cells (C-21 with no photos yet). */
+@Composable
+private fun LoadingGrid() {
+    PhotoGrid(List(LOADING_CELLS) { GridCell("loading:$it", null, "") }, columns = GRID_COLUMNS, modifier = Modifier.padding(top = Tokens.Sizes.globalSectionGap).clearAndSetSemantics { })
+}
+
+private const val NAME_MAX_LINES = 2
+private const val GRID_COLUMNS = 3
+private const val LOADING_TILES = 4
+private const val LOADING_CELLS = 6
+private const val PREFETCH_DISTANCE = 3

@@ -22,7 +22,6 @@ struct SendToView: View {
     @State private var isCreatingGroup = false
     /// The finger's travel while holding the voice capsule (the slide-to-cancel hint follows it).
     @State private var voiceSlide: CGSize = .zero
-    @State private var recordingCapsuleWidth: CGFloat = 0
 
     init(model: SendToModel, sheetAppearance: ColorScheme? = nil) {
         _model = State(initialValue: model)
@@ -105,14 +104,15 @@ struct SendToView: View {
                 } else {
                     model.close()
                 }
-            }
+            },
+            leadingIdentifier: "camera.sendto.save",
+            trailingIdentifier: "camera.sendto.close"
         ) {
             CaptureMediaHeaderTitle(text: model.isSending ? Copy.cameraSendtoSending : Copy.cameraSendtoTitle)
                 .accessibilitySortPriority(9)
         }
         .disabled(model.isSending)
         .accessibilitySortPriority(10)
-        .accessibilityIdentifier("camera.sendto.header")
     }
 
     // MARK: Photo, groups label and rows
@@ -178,20 +178,18 @@ struct SendToView: View {
                     .dsTransition(.opacity)
                 } else {
                     SendToRecordingCapsule(model: model, slide: voiceSlide)
-                        .background {
-                            GeometryReader { proxy in
-                                Color.clear.preference(key: RecordingCapsuleWidthKey.self, value: proxy.size.width)
-                            }
-                        }
                         .dsTransition(.opacity)
                 }
             }
             .dsAnimation(ComponentMotion.fade, value: model.voicePhase == .idle)
-            SendToVoiceCapsule(model: model, rowWidth: recordingCapsuleWidth, slide: $voiceSlide)
-                .accessibilitySortPriority(6)
-        }
-        .onPreferenceChange(RecordingCapsuleWidthKey.self) { width in
-            recordingCapsuleWidth = width
+            // The recording capsule can take the photo's width less the voice capsule and the gap; sliding left past
+            // half of it cancels (chat.voice "slide left past the hint").
+            SendToVoiceCapsule(
+                model: model,
+                rowWidth: Preview.width - Tokens.Sizes.globalIconPillWidth - Tokens.Sizes.globalPillGap,
+                slide: $voiceSlide
+            )
+            .accessibilitySortPriority(6)
         }
     }
 
@@ -234,7 +232,7 @@ struct SendToView: View {
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("camera.sendto.failed")
         case .loaded:
-            LazyVStack(spacing: 0) {
+            VStack(spacing: 0) {
                 ForEach(Array(model.groups.enumerated()), id: \.element.id) { index, group in
                     if index > 0 {
                         // C-32 between rows, inside the margins; the separator's dark value on media (#4D4D4D).
@@ -262,13 +260,6 @@ struct SendToView: View {
         }
         .accessibilitySortPriority(3)
         .accessibilityIdentifier("camera.sendto.send")
-    }
-}
-
-private struct RecordingCapsuleWidthKey: PreferenceKey {
-    static let defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = max(value, nextValue())
     }
 }
 

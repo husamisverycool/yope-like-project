@@ -49,9 +49,11 @@ fun NavGraphBuilder.captureDestinations(navController: NavHostController) {
     ) {
         SendToRoute(
             onClose = { navController.popBackStack() },
-            // Sent: the sheet closes at once; Yope returns to the home list with the toast.
+            // Sent: the modal closes (camera.sendto → Out: back to the screen the camera was opened from); the
+            // toast is a platform toast, so it outlives the navigation.
             onSent = {
-                if (!navController.popBackStack(DeepLinkRouting.home, inclusive = false)) navController.navigate(DeepLinkRouting.home)
+                val popped = navController.popBackStack<AppRoute.Camera>(inclusive = true)
+                if (!popped || navController.currentBackStackEntry == null) navController.navigate(DeepLinkRouting.home)
             },
             onCreateGroup = { navController.navigate(AppRoute.GroupCreate) },
             onOpenPaywall = { navController.navigate(AppRoute.Paywall) },
@@ -73,9 +75,9 @@ fun NavGraphBuilder.captureDestinations(navController: NavHostController) {
 }
 
 /**
- * capture → `camera.sendto` (camera.capture.md → Motion): Yope's sheet, rising from the bottom with
- * `spring.global.sheetPresent` and leaving the same way; Reduce Motion cross-fades over
- * `duration.global.sheetPresent`.
+ * capture → `camera.sendto` (camera.capture.md → Motion): a full-screen modal rising from the bottom with
+ * `spring.global.sheetPresent` (Retro's measured sheet presentation) and leaving the same way; Reduce Motion
+ * cross-fades over `duration.global.sheetPresent`.
  */
 internal object SheetMotion {
     fun enter(context: Context): EnterTransition =

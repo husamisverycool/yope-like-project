@@ -48,6 +48,14 @@ class TributeViewModelTest {
         val ready = vm(after).state.value
         assertEquals(TributeContent.Ready("https://signed.test/g/g-1/tributes/t-1/video.mp4", "https://signed.test/g/g-1/tributes/t-1/poster.jpg"), ready.content)
         assertEquals("Sunday Lunch", ready.groupName)
+        assertTrue("the honoree's title is \"Your birthday video\"", ready.forMe)
+    }
+
+    @Test fun membersSeeTheHonoreesName() {
+        val member = Scenario.backend().apply { tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = null) }
+        val state = vm(member).state.value
+        assertFalse(state.forMe)
+        assertEquals("Ana", state.honoreeName)
     }
 
     @Test fun otherMembersSeeItAnyTimeUnlessBlockedWithTheHonoree() {
@@ -88,7 +96,9 @@ class TributeViewModelTest {
         vm.save()
         assertEquals(TributeState.Toast.SaveFailed, vm.state.value.toast)
         vm.save(accessGranted = false)
-        assertEquals(TributeState.Toast.SaveFailed, vm.state.value.toast)
+        assertTrue("photo access refused: the alert with a Settings button", vm.state.value.saveDenied)
+        vm.dismissSaveDenied()
+        assertFalse(vm.state.value.saveDenied)
         job.cancel()
         assertEquals(
             listOf(Tokens.Haptics.globalSuccess, Tokens.Haptics.globalError, Tokens.Haptics.globalError),
@@ -172,6 +182,7 @@ class BirthdayAddViewModelTest {
     @Test fun removeIsOptimisticAndRollsBack() {
         val backend = Scenario.backend().apply { privateRow = ProfilePrivate(ME, LocalDate.of(1999, 5, 26), true, null, FakeMemoryBackend.NOW) }
         val vm = vm(backend)
+        assertTrue(vm.state.value.optedIn)
         backend.gates["setBirthday"] = CompletableDeferred()
         vm.remove()
         assertFalse("add form at once", vm.state.value.optedIn)

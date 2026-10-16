@@ -50,6 +50,10 @@ interface AccountBackend {
     suspend fun me(): Profile
     suspend fun updateDisplayName(name: String): Profile
     suspend fun setAvatar(jpeg: File): Profile
+    /** Clears `profiles.avatar_path` (settings.account "Remove Profile Photo"). */
+    suspend fun removeAvatar(): Profile
+    /** Your saved birthday (`profile_private.birthday` while opted in), for settings.account's Birthday row. */
+    suspend fun birthday(): LocalDate?
     /** The signed-in phone number (E.164), for `settings.account`. */
     fun currentPhone(): String?
 

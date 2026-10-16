@@ -1,6 +1,7 @@
-// Surfaces: notifications.push (iOS presentation), daily.notification, widget.arrival — references:
-// BeReal (daily), Locket (new post) — design/surfaces/notifications.push.md, daily.notification.md,
-// widget.arrival.md. Alert texts come from the worker; this extension only adjusts presentation.
+// Surfaces: notifications.push (iOS presentation), daily.notification, widget.arrival — voice reference Retro's
+// notifications, mechanics BeReal (daily timing) and Locket (new post → widget) — design/surfaces/notifications.push.md,
+// daily.notification.md, widget.arrival.md. Reference: references/auto/retro/apk/retro-android-2026.10.1150-strings.txt.
+// Alert texts come from the worker; this extension only adjusts presentation.
 import AppModels
 import Foundation
 import UserNotifications
@@ -39,13 +40,14 @@ final class NotificationService: UNNotificationServiceExtension {
         }
         let store = WidgetStore.forBundle(.main)
         let delivery = WidgetDelivery(store: store, downloader: Self.downloader)
+        let attachesPhoto = NotificationPresentation.attachesPhoto(userInfo: request.content.userInfo)
         work = Task { [weak self] in
             if let snapshot = try? await delivery.deliver(payload, receivedAt: Date()) {
                 // The Home Screen and the Lock Screen widget kinds (ios/Widgets/Sources/GroupPhotoWidget.swift).
                 for kind in NotificationPresentation.widgetKinds {
                     WidgetCenter.shared.reloadTimelines(ofKind: kind)
                 }
-                if let file = store.photoURL(for: snapshot) {
+                if attachesPhoto, let file = store.photoURL(for: snapshot) {
                     self?.attach(file)
                 }
             }

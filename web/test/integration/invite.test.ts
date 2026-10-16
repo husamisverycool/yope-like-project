@@ -5,6 +5,7 @@
 import sharp from "sharp";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { copy } from "../../src/generated/copy.js";
+import { AVATAR_PX } from "../../src/images.js";
 import { InviteService } from "../../src/inviteService.js";
 import { supabaseUpstream, type Upstream } from "../../src/supabase.js";
 import { createApp } from "../../src/app.js";
@@ -49,6 +50,7 @@ const get = (a: ReturnType<typeof app>["app"], path: string) => a.request(path, 
 const visible = (html: string) =>
   html
     .replace(/<head>[\s\S]*?<\/head>/, "")
+    .replace(/<script[\s\S]*?<\/script>/g, "")
     .replace(/<svg[\s\S]*?<\/svg>/g, "")
     .replace(/<[^>]+>/g, " ")
     .replace(/&#39;/g, "'")
@@ -73,9 +75,10 @@ describe("valid invite (local stack)", () => {
     expect(res.status).toBe(200);
     const html = await res.text();
     const text = visible(html);
-    expect(text).toContain("Invited by Ana");
-    expect(text).toContain("Ana");
-    expect(text).toContain("Rui");
+    expect(text).toContain(copy["invite.web.invitedBy"].replace("{first_name}", "Ana"));
+    expect(html).toContain(`<img class="avatar" src="/i/${g.token}/avatar/0.jpg" alt="Ana">`);
+    expect(html).toContain(`aria-label="Rui"`); // member without a photo
+    expect(html).toContain(`<img class="backdrop" src="/i/${g.token}/backdrop.png"`);
     expect(text).not.toContain("Lima Lastname");
     expect(text).not.toContain("Costa"); // first names only
     expect(text).not.toMatch(/[0-9]/); // no member count or any other number
@@ -96,23 +99,25 @@ describe("valid invite (local stack)", () => {
     const avatar = await get(a, `/i/${g.token}/avatar/0.jpg`);
     expect(avatar.status).toBe(200);
     const meta = await sharp(Buffer.from(await avatar.arrayBuffer())).metadata();
-    expect([meta.width, meta.height, meta.exif]).toEqual([144, 144, undefined]);
+    expect([meta.width, meta.height, meta.exif]).toEqual([AVATAR_PX, AVATAR_PX, undefined]);
     expect((await get(a, `/i/${g.token}/avatar/1.jpg`)).status).toBe(404); // Rui has no avatar
   });
 
-  it("serves the 1200×630 link-preview image and its tags", async () => {
+  it("serves the 600×600 link-preview image, the blurred backdrop and their tags", async () => {
     const { app: a } = app();
     const html = await (await get(a, `/i/${g.token}`)).text();
-    expect(html).toContain(`<meta property="og:image" content="https://invite.example.com/i/${g.token}/og.jpg">`);
-    const og = await get(a, `/i/${g.token}/og.jpg`);
+    expect(html).toContain(`<meta property="og:image" content="https://invite.example.com/i/${g.token}/og.png">`);
+    const og = await get(a, `/i/${g.token}/og.png`);
     const meta = await sharp(Buffer.from(await og.arrayBuffer())).metadata();
-    expect([og.status, meta.format, meta.width, meta.height]).toEqual([200, "jpeg", 1200, 630]);
+    expect([og.status, meta.format, meta.width, meta.height]).toEqual([200, "png", 600, 600]);
+    const backdrop = await get(a, `/i/${g.token}/backdrop.png`);
+    expect([backdrop.status, backdrop.headers.get("content-type")]).toEqual([200, "image/png"]);
   });
 
   it("serves preview.json for the App Clip", async () => {
     const { app: a } = app();
     const body = (await (await get(a, `/i/${g.token}/preview.json`)).json()) as Record<string, any>;
-    expect(Object.keys(body).sort()).toEqual(["cover", "group_kind", "group_name", "inviter_first_name", "members", "theme"]);
+    expect(Object.keys(body).sort()).toEqual(["cover", "group_kind", "group_name", "inviter_first_name", "members"]);
     expect(body.members).toEqual([
       { first_name: "Ana", avatar_url: `https://invite.example.com/i/${g.token}/avatar/0.jpg` },
       { first_name: "Rui", avatar_url: null },
@@ -121,12 +126,14 @@ describe("valid invite (local stack)", () => {
     expect(JSON.stringify(body)).not.toContain("avatars/");
   });
 
-  it("a group without a cover uses the default theme and has no preview image", async () => {
+  it("a group without a cover: the inviter's avatar is the backdrop, the preview image has a black field", async () => {
     const { app: a } = app();
     const html = await (await get(a, `/i/${noCover.token}`)).text();
-    expect(html).toContain("html{background:#111111;color-scheme:dark");
-    expect(html).not.toContain("og:image");
-    expect((await get(a, `/i/${noCover.token}/og.jpg`)).status).toBe(404);
+    expect(html).toContain(`<img class="backdrop" src="/i/${noCover.token}/backdrop.png" alt="">`);
+    expect((await get(a, `/i/${noCover.token}/backdrop.png`)).status).toBe(200);
+    const og = await get(a, `/i/${noCover.token}/og.png`);
+    const { data } = await sharp(Buffer.from(await og.arrayBuffer())).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    expect([og.status, data[0], data[1], data[2]]).toEqual([200, 0, 0, 0]);
   });
 
   it("sends the security and cache headers", async () => {
@@ -136,7 +143,7 @@ describe("valid invite (local stack)", () => {
     expect(res.headers.get("content-security-policy")).toMatch(/^default-src 'none'; img-src 'self'; style-src 'nonce-/);
     expect(res.headers.get("x-content-type-options")).toBe("nosniff");
     expect(res.headers.get("referrer-policy")).toBe("no-referrer");
-    expect(res.headers.get("x-robots-tag")).toBe("noindex, nofollow");
+    expect(res.headers.get("x-robots-tag")).toBe("noindex, noimageindex");
   });
 });
 

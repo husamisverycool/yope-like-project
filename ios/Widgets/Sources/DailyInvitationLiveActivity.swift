@@ -1,6 +1,8 @@
-// Surface: daily.liveactivity — reference: BeReal + Apple HIG (Live Activities).
+// Surface: daily.liveactivity — visual reference Retro's media colours and roles in Apple HIG's Live Activity layouts,
+// mechanics BeReal's MM:SS countdown.
 // Reference images: references/auto/platform/hig-live-activities-ios-dimensions.png,
-// references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (design/surfaces/daily.liveactivity.md).
+// references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png, references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png
+// (design/surfaces/daily.liveactivity.md; RC-17).
 // Presentations: Lock Screen / banner, Dynamic Island compact, minimal and expanded. Content views
 // are in LiveActivitySlots.swift. Every tap opens the daily capture for the group.
 import ActivityKit
@@ -14,7 +16,7 @@ struct DailyInvitationLiveActivity: Widget {
         ActivityConfiguration(for: DailyInvitationAttributes.self) { context in
             InvitationLockScreenSlot(attributes: context.attributes, state: context.state, isStale: context.isStale)
                 .activityBackgroundTint(Tokens.Colors.globalBackgroundDeep)
-                .activitySystemActionForegroundColor(Tokens.Colors.globalTextPrimary)
+                .activitySystemActionForegroundColor(Tokens.Colors.globalTextOnMedia)
                 .widgetURL(InvitationLink.url(for: context.attributes))
         } dynamicIsland: { context in
             DynamicIsland {
@@ -42,7 +44,7 @@ struct DailyInvitationLiveActivity: Widget {
                     InvitationMinimalSlot(state: context.state)
                 }
             }
-            .keylineTint(Tokens.Colors.globalAccent)
+            .keylineTint(Tokens.Colors.globalTextOnMedia)
             .widgetURL(InvitationLink.url(for: context.attributes))
         }
     }

@@ -1,6 +1,8 @@
-// Surface: settings.notifications — per-group mute, quiet hours, Live Activity. Reference: Apple HIG (system surface;
-// design/surfaces/settings.notifications.md). Reference: HIG lists and tables, HIG Live Activities ("offer an in-app
-// control"), docs/WIDGET_REFRESH.md (muted groups still update widgets).
+// Surface: settings.notifications — per-group notifications, quiet hours, Live Activity. Visual reference: Retro
+// Notification Settings (strings references/auto/retro/apk/retro-android-2026.10.1150-strings.txt
+// `notification_settings_*`; grouped rows references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png,
+// VID-SET; the off block on references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png, H43). Native switches
+// and time pickers (design/surfaces/settings.notifications.md).
 import AppData
 import AppModels
 import DesignSystem
@@ -16,6 +18,19 @@ struct SettingsNotificationsScreen: View {
     }
 }
 
+extension View {
+    /// A page pushed inside a settings sheet: the native back button and the centred inline title
+    /// (`settings.root.layout.list.sheet`), the system tint `color.global.selection` (C-29), page
+    /// `color.global.background`.
+    func settingsPage(title: String) -> some View {
+        background(Tokens.Colors.globalBackground.ignoresSafeArea())
+            .navigationTitle(Text(title))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.visible, for: .navigationBar)
+            .tint(Tokens.Colors.globalSelection)
+    }
+}
+
 struct SettingsNotificationsView: View {
     @State private var model: SettingsNotificationsModel
     @State private var start = Date()
@@ -28,82 +43,135 @@ struct SettingsNotificationsView: View {
         _model = State(initialValue: model)
     }
 
+    private static let fade = DSAnimation.timing(duration: Tokens.Durations.globalFade, easing: Tokens.Easings.globalStandard)
+
+    private var isOffline: Bool { dependencies.network.isOffline }
+
     var body: some View {
-        Group {
-            if model.isLoading {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                list
+        SettingsList {
+            if model.systemOff {
+                permissionOff
+                    .transition(.opacity)
             }
+            groupsSection
+            quietHoursSection
+            SettingsGroup(footer: [Copy.settingsNotificationsLiveActivityFooter], rows: [
+                SettingsRow(Copy.settingsNotificationsLiveActivity, kind: .toggle($liveActivityOn))
+                    .accessibilityIdentifier("settings.notifications.liveActivity")
+                    .asSettingsRow(),
+            ])
         }
-        .navigationTitle(Text(Copy.settingsNotificationsTitle))
-        .navigationBarTitleDisplayMode(.inline)
+        .dsAnimation(Self.fade, value: model.systemOff)
+        .settingsPage(title: Copy.settingsNotificationsTitle)
+        .onChange(of: liveActivityOn) { _, value in
+            dependencies.liveActivity.isEnabled = value
+            dependencies.liveActivityChanged()
+        }
+        .onChange(of: start) { _, _ in saveQuietHours() }
+        .onChange(of: end) { _, _ in saveQuietHours() }
         .task {
             liveActivityOn = dependencies.liveActivity.isEnabled
             await model.load()
             syncPickers()
         }
+        .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
+        .formErrorAlert(model.alertMessage, trigger: model.errorCount)
         .accessibilityIdentifier("settings.notifications")
     }
 
-    private var isOffline: Bool { dependencies.network.isOffline }
-
-    private var list: some View {
-        List {
-            if model.systemOff {
-                Section {
-                    Button(Copy.settingsNotificationsOpenSettings) {
-                        if let url = URL(string: UIApplication.openNotificationSettingsURLString) { openURL(url) }
-                    }
-                } footer: {
-                    if let footer = AccountBlockedCopy.notificationsOffFooter { Text(footer) }
-                }
+    /// Permission off: the C-27 block at the top, left-aligned inside the margins, no glyph — "Keep up to date!", the
+    /// explanation and the outline capsule "Enable push" → the app's notification settings. The rows below stay editable.
+    private var permissionOff: some View {
+        MetricStack {
+            VStack(alignment: .leading) {
+                Text(Copy.settingsNotificationsOffTitle)
+                    .dsTextStyle(TextRole.emptyTitle)
+                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                    .accessibilityAddTraits(.isHeader)
+                Text(Copy.settingsNotificationsOffFooter)
+                    .dsTextStyle(TextRole.emptyDetail)
+                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
             }
-            if !model.groups.isEmpty {
-                Section {
-                    ForEach(model.groups) { row in
-                        Toggle(row.group.name, isOn: Binding(
+            .multilineTextAlignment(.leading)
+            .fixedSize(horizontal: false, vertical: true)
+            CapsuleButton(Copy.settingsNotificationsOpenSettings, style: .outline) {
+                if let url = URL(string: UIApplication.openNotificationSettingsURLString) { openURL(url) }
+            }
+            .fixedSize()
+            .accessibilityIdentifier("settings.notifications.openSettings")
+            .metricGap(Tokens.Sizes.globalEmptyTitleToAction, from: .lastBaseline, to: .top)
+        }
+        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// One row per group: the cover in a `size.global.avatarComment` circle (C-23; no cover: `icon.global.group`), the
+    /// name (`body`) and a switch (on = notifications on). Hidden when there are no groups; loading: one busy row.
+    @ViewBuilder
+    private var groupsSection: some View {
+        if model.isLoading {
+            SettingsGroup(header: Copy.settingsNotificationsGroupsHeader, rows: [SettingsRow("", kind: .busy).asSettingsRow()])
+                .accessibilityLabel(Text(Copy.globalA11yLoading))
+        } else if !model.groups.isEmpty {
+            SettingsGroup(
+                header: Copy.settingsNotificationsGroupsHeader,
+                footer: [Copy.settingsNotificationsGroupsFooter],
+                rows: model.groups.map { row in
+                    SettingsCustomRow {
+                        Toggle(isOn: Binding(
                             get: { !row.muted },
                             set: { value in Task { await model.setNotifies(value, groupID: row.id) } }
-                        ))
+                        )) {
+                            HStack {
+                                AvatarView(path: row.group.coverPath, diameter: Tokens.Sizes.globalAvatarComment, placeholderIcon: Tokens.Icons.globalGroup)
+                                Text(row.group.name)
+                                    .dsTextStyle(TextRole.body)
+                                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                            }
+                        }
+                        .tint(Tokens.Colors.globalSelection)
                         .disabled(isOffline)
                     }
-                } header: {
-                    Text(Copy.settingsNotificationsGroupsHeader)
-                } footer: {
-                    Text(model.groupsError ?? Copy.settingsNotificationsGroupsFooter)
+                    .asSettingsRow()
                 }
-            }
-            Section {
-                Toggle(Copy.settingsNotificationsQuietHours, isOn: Binding(
+            )
+        }
+    }
+
+    /// Quiet Hours: the switch; when on, Start and End with the system's compact time pickers in the rows.
+    private var quietHoursSection: some View {
+        var rows: [AnyView] = [
+            SettingsRow(
+                Copy.settingsNotificationsQuietHours,
+                kind: .toggle(Binding(
                     get: { model.quietHoursOn },
                     set: { value in
                         if value { syncPickers() }
                         Task { await model.setQuietHoursOn(value) }
                     }
-                ))
-                .disabled(isOffline)
-                if model.quietHoursOn {
-                    DatePicker(Copy.settingsNotificationsQuietHoursStart, selection: $start, displayedComponents: .hourAndMinute)
-                    DatePicker(Copy.settingsNotificationsQuietHoursEnd, selection: $end, displayedComponents: .hourAndMinute)
-                }
-            } footer: {
-                Text(model.quietError ?? Copy.settingsNotificationsQuietHoursFooter)
-            }
-            .onChange(of: start) { _, _ in saveQuietHours() }
-            .onChange(of: end) { _, _ in saveQuietHours() }
-            Section {
-                Toggle(Copy.settingsNotificationsLiveActivity, isOn: $liveActivityOn)
-                    .onChange(of: liveActivityOn) { _, value in
-                        dependencies.liveActivity.isEnabled = value
-                        dependencies.liveActivityChanged()
-                    }
-            } footer: {
-                Text(Copy.settingsNotificationsLiveActivityFooter)
-            }
+                )),
+                isEnabled: !isOffline
+            )
+            .accessibilityIdentifier("settings.notifications.quietHours")
+            .asSettingsRow(),
+        ]
+        if model.quietHoursOn {
+            rows.append(timeRow(Copy.settingsNotificationsQuietHoursStart, selection: $start))
+            rows.append(timeRow(Copy.settingsNotificationsQuietHoursEnd, selection: $end))
         }
-        .listStyle(.insetGrouped)
+        return SettingsGroup(footer: [Copy.settingsNotificationsQuietHoursFooter], rows: rows)
+    }
+
+    private func timeRow(_ title: String, selection: Binding<Date>) -> AnyView {
+        SettingsCustomRow {
+            DatePicker(selection: selection, displayedComponents: .hourAndMinute) {
+                Text(title)
+                    .dsTextStyle(TextRole.body)
+                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
+            }
+            .disabled(isOffline)
+        }
+        .asSettingsRow()
     }
 
     /// Pickers show the saved times, or the current time when none are saved yet.

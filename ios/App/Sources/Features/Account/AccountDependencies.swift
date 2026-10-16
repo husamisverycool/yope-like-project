@@ -23,6 +23,8 @@ final class AccountDependencies {
     let currentPhone: @MainActor () -> String?
     /// Runs after the Live Activity preference changed (re-registers the device's push tokens).
     let liveActivityChanged: @MainActor () -> Void
+    /// The status of a system permission (settings.root System Permissions). Nil: the live status (AppServices).
+    let permissionStatus: (@MainActor (SystemPermission) async -> PermissionStatus)?
 
     init(
         data: AccountDataSource,
@@ -35,7 +37,8 @@ final class AccountDependencies {
         purchases: PurchasesProviding,
         liveActivity: LiveActivityPreference,
         currentPhone: @escaping @MainActor () -> String? = { nil },
-        liveActivityChanged: @escaping @MainActor () -> Void = {}
+        liveActivityChanged: @escaping @MainActor () -> Void = {},
+        permissionStatus: (@MainActor (SystemPermission) async -> PermissionStatus)? = nil
     ) {
         self.data = data
         self.router = router
@@ -48,6 +51,13 @@ final class AccountDependencies {
         self.liveActivity = liveActivity
         self.currentPhone = currentPhone
         self.liveActivityChanged = liveActivityChanged
+        self.permissionStatus = permissionStatus
+    }
+
+    /// The status of `permission`: the injected one (tests, UI-test scenarios), else the live one.
+    func status(of permission: SystemPermission) async -> PermissionStatus {
+        if let permissionStatus { return await permissionStatus(permission) }
+        return await SystemPermission.liveStatus(permission, notifications: notifications)
     }
 
     /// Resolves storage paths for `StorageImage` / `AvatarView`.

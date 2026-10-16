@@ -42,10 +42,20 @@ data class PhotoViewerIn(
     override val surface get() = "photo.viewer"
 }
 
-/** `week.recap` showing the group's newest ready recap (or its empty state when there is none yet). */
+/**
+ * `week.recap`'s recap list (`week.recap.layout.list`, a page sheet over the group): every ready / pending recap of the
+ * group, newest first. [AppRoute.WeekRecap] opens one recap's preview. Entries: `groups.screen` recaps entry,
+ * `albums.list` empty action.
+ */
 @Serializable
-data class WeekRecapLatest(val groupId: String) : AppRoute {
+data class WeekRecapList(val groupId: String) : AppRoute {
     override val surface get() = "week.recap"
+}
+
+/** `week.edit`'s album sheet opened from a recap preview's "Save as Album" pill, with the recap's photos selected. */
+@Serializable
+data class WeekRecapAlbum(val groupId: String, val recapId: String) : AppRoute {
+    override val surface get() = "week.edit"
 }
 
 /**

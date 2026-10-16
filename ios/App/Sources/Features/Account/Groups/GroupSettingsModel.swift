@@ -18,10 +18,12 @@ final class GroupSettingsModel {
     private(set) var maxMembers: Int?
     /// System notifications are off (permission-denied footer).
     private(set) var systemNotificationsOff = false
-    /// Section footers after a failed save (`groups.settings.error.generic` / `.invitation.invalid`).
+    /// The failed change of each section (`groups.settings.error.generic` / `.invitation.invalid`); the screen shows the
+    /// latest as a message-only alert (`alertMessage`, trigger `errorCount`).
     private(set) var notificationsError: String?
     private(set) var invitationError: String?
     private(set) var memberError: String?
+    private(set) var alertMessage: String?
     private(set) var warningCount = 0
     private(set) var errorCount = 0
 
@@ -72,7 +74,7 @@ final class GroupSettingsModel {
         } catch {
             muted = previous
             notificationsError = Copy.groupsSettingsErrorGeneric
-            errorCount += 1
+            fail(Copy.groupsSettingsErrorGeneric)
         }
     }
 
@@ -85,7 +87,7 @@ final class GroupSettingsModel {
         } catch {
             paused = previous
             invitationError = Copy.groupsSettingsErrorGeneric
-            errorCount += 1
+            fail(Copy.groupsSettingsErrorGeneric)
         }
     }
 
@@ -106,7 +108,7 @@ final class GroupSettingsModel {
             invitationError = DataError.from(error).apiCode == .invalidWakingWindow
                 ? Copy.groupsSettingsInvitationInvalid
                 : Copy.groupsSettingsErrorGeneric
-            errorCount += 1
+            fail(invitationError ?? Copy.groupsSettingsErrorGeneric)
         }
     }
 
@@ -121,13 +123,29 @@ final class GroupSettingsModel {
         } catch {
             members = previous
             memberError = Copy.groupsSettingsErrorGeneric
-            errorCount += 1
+            fail(Copy.groupsSettingsErrorGeneric)
         }
+    }
+
+    /// Left the group (`haptic.global.warning`).
+    func didLeave() {
+        warningCount += 1
     }
 
     func leaveFailed() {
         memberError = Copy.groupsSettingsErrorGeneric
+        fail(Copy.groupsSettingsErrorGeneric)
+    }
+
+    /// Offline taps and failed writes: the message-only alert.
+    func fail(_ message: String) {
+        alertMessage = message
         errorCount += 1
+    }
+
+    /// Members in joining order.
+    var membersInJoiningOrder: [MemberProfile] {
+        members.sorted { $0.member.joinedAt < $1.member.joinedAt }
     }
 
     func seed(group: PhotoGroup, members: [MemberProfile]) {

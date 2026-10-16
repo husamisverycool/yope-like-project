@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
 // Rendering harness for the invite page: serves the real app (fake upstream, real sample photos from
 // fixtures/photos) on a local port and opens it in Playwright Chromium (PLAYWRIGHT_BROWSERS_PATH, e.g.
 // /opt/pw-browsers). Used by test/render/invite.render.test.ts and scripts/verify.ts.
@@ -75,8 +77,10 @@ export const VIEWPORTS: Record<Layout, Parameters<Browser["newContext"]>[0]> = {
   desktop: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, userAgent: DESKTOP },
 };
 
+/** Chromium with the bundled faces visible to it (web/assets/fonts/fonts.conf: "Noto Serif" — Android's serif, named
+ *  in the display stack — then the system fonts), so renders on a Linux runner show a platform serif. */
 export async function launch(): Promise<Browser> {
-  return chromium.launch();
+  return chromium.launch({ env: { ...process.env, FONTCONFIG_FILE: path.join(ROOT, "web/assets/fonts/fonts.conf") } });
 }
 
 export async function open(browser: Browser, layout: Layout, scheme: Scheme): Promise<{ context: BrowserContext; page: Page }> {
@@ -110,4 +114,28 @@ export async function measure(page: Page, sel: string, props: string[] = []): Pr
     },
     [sel, props] as const,
   );
+}
+
+export type CaseName = "valid" | "valid-no-cover" | "valid-no-photos" | "unavailable" | "not-found" | "error" | "rate-limited";
+
+/** Every state of design/surfaces/invite.web.md "States", plus the valid page's backdrop fallbacks. */
+export const CASES: { name: CaseName; token: string; status: number; server: "main" | "error" | "rateLimited" }[] = [
+  { name: "valid", token: TOKENS.valid, status: 200, server: "main" },
+  { name: "valid-no-cover", token: TOKENS.noCover, status: 200, server: "main" },
+  { name: "valid-no-photos", token: TOKENS.noPhotos, status: 200, server: "main" },
+  { name: "unavailable", token: TOKENS.expired, status: 410, server: "main" },
+  { name: "not-found", token: TOKENS.unknown, status: 404, server: "main" },
+  { name: "error", token: TOKENS.valid, status: 503, server: "error" },
+  { name: "rate-limited", token: TOKENS.unknown, status: 429, server: "rateLimited" },
+];
+
+/** The three servers the cases need: fixtures, upstream down (503), and an address over its lookup limit (429). */
+export async function serveCases(): Promise<Record<"main" | "error" | "rateLimited", Server> & { close: () => Promise<void> }> {
+  const main = await serveApp(testApp(fixtureUpstream()).app);
+  const down = fixtureUpstream();
+  down.failPreview = true;
+  const error = await serveApp(testApp(down).app);
+  const rateLimited = await serveApp(testApp(fixtureUpstream(), { rateLimitLookups: 1 }).app);
+  await fetch(`${rateLimited.base}/i/${TOKENS.revoked}`); // the address's one lookup this minute
+  return { main, error, rateLimited, close: async () => void (await Promise.all([main.close(), error.close(), rateLimited.close()])) };
 }

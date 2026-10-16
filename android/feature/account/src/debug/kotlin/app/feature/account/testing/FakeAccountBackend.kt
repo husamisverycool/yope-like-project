@@ -146,6 +146,13 @@ class FakeAccountBackend(val now: Instant = Instant.parse("2026-10-15T17:00:00Z"
         return profile(meId, profiles[meId]?.displayName.orEmpty(), "avatars/$meId/a.jpg")
     }
 
+    override suspend fun removeAvatar(): Profile {
+        call("removeAvatar")
+        return profile(meId, profiles[meId]?.displayName.orEmpty(), null)
+    }
+
+    override suspend fun birthday(): LocalDate? = birthday?.takeIf { it.second }?.first.also { call("birthday") }
+
     override fun currentPhone(): String? = phone.takeIf { currentUserId != null }
     override suspend fun signedUrls(paths: Collection<String>): Map<String, String> = emptyMap()
     override suspend fun profiles(ids: Collection<String>): List<Profile> = ids.mapNotNull(profiles::get).also { call("profiles") }

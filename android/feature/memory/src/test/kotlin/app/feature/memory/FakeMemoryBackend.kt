@@ -5,11 +5,13 @@ import app.data.error.DataError
 import app.data.error.DataException
 import app.data.model.Collage
 import app.data.model.Group
+import app.data.model.HistoryWeek
 import app.data.model.GroupKind
 import app.data.model.Media
 import app.data.model.MediaKind
 import app.data.model.OnThisDayItem
 import app.data.model.Post
+import app.data.model.PostTag
 import app.data.model.Profile
 import app.data.model.ProfilePrivate
 import app.data.model.RenderStatus
@@ -47,7 +49,10 @@ class FakeMemoryBackend(override var currentUserId: String? = ME) : MemoryBacken
     val tributes = mutableMapOf<String, Tribute>()
     val yearStories = mutableMapOf<Pair<String, Int>, YearStory>()
     val collages = mutableMapOf<String, Collage>()
-    val tags = mutableSetOf<Pair<String, String>>()
+    /** (post, user) self-tags in tag order. */
+    val tags = linkedSetOf<Pair<String, String>>()
+    /** The group's history weeks (`group_history_weeks`), newest first. */
+    val history = mutableListOf<HistoryWeek>()
     var privateRow: ProfilePrivate? = null
     /** Authors hidden from the caller by a block. */
     val blocked = mutableSetOf<String>()
@@ -90,6 +95,21 @@ class FakeMemoryBackend(override var currentUserId: String? = ME) : MemoryBacken
     override suspend fun signedUrls(paths: Collection<String>): Map<String, String> = call("signedUrls").let { paths.associateWith { "https://signed.test/$it" } }
 
     override fun postDeletions(groupId: String): Flow<String> = deletions
+
+    override suspend fun historyWeeks(groupId: String, beforeWeek: LocalDate?, limit: Int): List<HistoryWeek> {
+        call("historyWeeks")
+        return history.filter { beforeWeek == null || it.weekStart.isBefore(beforeWeek) }.take(limit)
+    }
+
+    override suspend fun deletePost(postId: String) {
+        call("deletePost")
+        val post = posts[postId] ?: throw DataException(api(ApiError.PostNotFound))
+        if (post.authorId != me()) throw DataException(api(ApiError.PostNotFound))
+        posts -= postId
+        deletedPosts += postId
+    }
+
+    val deletedPosts = mutableListOf<String>()
 
     override suspend fun privateProfile(): ProfilePrivate? = call("privateProfile").let { privateRow }
 
@@ -152,7 +172,8 @@ class FakeMemoryBackend(override var currentUserId: String? = ME) : MemoryBacken
 
     override suspend fun collages(ids: List<String>): List<Collage> = call("collages").let { ids.mapNotNull { collages[it] }.filter { it.status == RenderStatus.Ready } }
 
-    override suspend fun isTagged(postId: String): Boolean = call("isTagged").let { (postId to me()) in tags }
+    override suspend fun postTags(postId: String): List<PostTag> =
+        call("postTags").let { tags.filter { it.first == postId }.map { (p, u) -> PostTag(p, u, posts[p]?.groupId ?: GROUP, NOW) } }
 
     override suspend fun tagSelf(postId: String) {
         call("tagSelf")
@@ -232,6 +253,6 @@ object Rows {
         )
     }
 
-    fun yearStory(data: JsonElement?, status: RenderStatus = RenderStatus.Ready, year: Int = 2026) =
-        YearStory("ys-$year", FakeMemoryBackend.GROUP, year, status, data, emptyList(), emptyList(), T0, T0)
+    fun yearStory(data: JsonElement?, status: RenderStatus = RenderStatus.Ready, year: Int = 2026, postIds: List<String> = emptyList()) =
+        YearStory("ys-$year", FakeMemoryBackend.GROUP, year, status, data, postIds, emptyList(), T0, T0)
 }

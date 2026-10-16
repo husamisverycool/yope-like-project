@@ -1,6 +1,7 @@
-// One snapshot per capture screen per state, per widget family / state and per Live Activity
-// presentation, recorded into ios/build/snapshots/capture/<surface>-<state>.png for the side-by-side
-// verification (design/verification/<surface>.png, made by the lead from the CI artifact).
+// One snapshot per capture screen per state (light; the primary state of each surface also in dark), per widget family
+// / state and per Live Activity presentation, recorded into ios/build/snapshots/capture/<surface>-<state>-<appearance>.png
+// for the side-by-side verification (design/verification/<surface>.png, made by the lead from the CI artifact). Real
+// sample photos (fixtures/photos/, `SamplePhotos`) everywhere a photo shows.
 @testable import App
 import AppData
 import AppModels
@@ -24,8 +25,12 @@ final class CaptureScreenSnapshotTests: XCTestCase {
 
     // MARK: camera.capture
 
+    /// The camera as the shell shows it: the view with the C-04 tab bar (media variant) under it.
     private func cameraView(_ rig: CaptureTestRig, _ model: CameraCaptureModel, recordingProgress: CGFloat = 0) -> some View {
         CameraCaptureView(model: model, makeSendTo: { rig.sendToModel(media: $0) }, sendCenter: rig.sendCenter, recordingProgress: recordingProgress)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                AppTabBar(selected: .camera, surface: .media) { _ in }
+            }
     }
 
     func testCameraCaptureStates() async {
@@ -36,14 +41,17 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         rig.usePhotos()
         let live = rig.cameraModel()
         await live.appear()
-        assertRecorded(CaptureSnapshot.record(cameraView(rig, live), surface: "camera.capture", state: "live"))
+        assertRecorded(CaptureSnapshot.record(cameraView(rig, live), surface: "camera.capture", state: "live", appearances: CaptureSnapshot.both))
 
         live.toggleFlash()
         assertRecorded(CaptureSnapshot.record(cameraView(rig, live), surface: "camera.capture", state: "flash-on"))
 
-        live.shutterTouchDown()
-        assertRecorded(CaptureSnapshot.record(cameraView(rig, live), surface: "camera.capture", state: "shutter-pressed"))
-        live.shutterTouchUp()
+        let noFlashRig = CaptureTestRig()
+        noFlashRig.usePhotos(scene: 4)
+        noFlashRig.camera.flashAvailable = false
+        let noFlash = noFlashRig.cameraModel()
+        await noFlash.appear()
+        assertRecorded(CaptureSnapshot.record(cameraView(noFlashRig, noFlash), surface: "camera.capture", state: "no-flash"))
 
         let premiumRig = CaptureTestRig()
         premiumRig.premium.premium = true
@@ -88,7 +96,6 @@ final class CaptureScreenSnapshotTests: XCTestCase {
 
     func testSendToStates() async {
         let rig = photoRig()
-        rig.coach.dismiss(.voice)
 
         rig.groups.suspendsLoad = true
         let loading = rig.sendToModel(media: photoMedia())
@@ -100,32 +107,48 @@ final class CaptureScreenSnapshotTests: XCTestCase {
 
         let loaded = rig.sendToModel(media: photoMedia())
         await loadWithCovers(loaded)
-        loaded.caption = "golden hour"
-        assertRecorded(CaptureSnapshot.record(SendToView(model: loaded), surface: "camera.sendto", state: "loaded"))
+        assertRecorded(CaptureSnapshot.record(SendToView(model: loaded), surface: "camera.sendto", state: "loaded", appearances: CaptureSnapshot.both))
+
+        let message = rig.sendToModel(media: photoMedia())
+        await loadWithCovers(message)
+        message.caption = "Golden hour at the lake"
+        assertRecorded(CaptureSnapshot.record(SendToView(model: message), surface: "camera.sendto", state: "message-added"))
+        assertRecorded(CaptureSnapshot.record(SendToMessageSheet(model: message), surface: "camera.sendto", state: "message-sheet", appearances: CaptureSnapshot.both))
+
+        let blank = rig.sendToModel(media: photoMedia())
+        assertRecorded(CaptureSnapshot.record(SendToMessageSheet(model: blank), surface: "camera.sendto", state: "message-sheet-empty"))
 
         let widget = rig.sendToModel(media: photoMedia(), contextGroupID: "fake-group-2")
         await loadWithCovers(widget)
-        assertRecorded(CaptureSnapshot.record(SendToView(model: widget), surface: "camera.fromwidget", state: "preselected"))
+        assertRecorded(CaptureSnapshot.record(SendToView(model: widget), surface: "camera.fromwidget", state: "preselected", appearances: CaptureSnapshot.both))
 
         let none = rig.sendToModel(media: photoMedia(), contextGroupID: "left-group")
         await loadWithCovers(none)
         assertRecorded(CaptureSnapshot.record(SendToView(model: none), surface: "camera.sendto", state: "nothing-selected"))
 
-        let coachRig = photoRig()
-        let coach = coachRig.sendToModel(media: photoMedia())
-        await loadWithCovers(coach)
-        assertRecorded(CaptureSnapshot.record(SendToView(model: coach), surface: "camera.sendto", state: "voice-coach"))
-
         let voiceRig = photoRig()
         voiceRig.voice.elapsedMs = 7000
+        voiceRig.voice.recordedDurationMs = 7000
         let holding = voiceRig.sendToModel(media: photoMedia())
         await loadWithCovers(holding)
         await holding.beginVoiceRecording()
         assertRecorded(CaptureSnapshot.record(SendToView(model: holding), surface: "camera.sendto", state: "voice-recording"))
         holding.lockVoiceRecording()
         assertRecorded(CaptureSnapshot.record(SendToView(model: holding), surface: "camera.sendto", state: "voice-locked"))
+        holding.pauseVoiceRecording()
+        assertRecorded(CaptureSnapshot.record(SendToView(model: holding), surface: "camera.sendto", state: "voice-paused"))
         holding.keepVoiceRecording()
         assertRecorded(CaptureSnapshot.record(SendToView(model: holding), surface: "camera.sendto", state: "voice-attached"))
+
+        let sendingRig = photoRig()
+        sendingRig.posting.suspendsPublish = true
+        let sending = sendingRig.sendToModel(media: photoMedia())
+        await loadWithCovers(sending)
+        let sendTask = Task { await sending.send() }
+        _ = await captureEventually { sending.isSending }
+        assertRecorded(CaptureSnapshot.record(SendToView(model: sending), surface: "camera.sendto", state: "sending"))
+        sendTask.cancel()
+        _ = await captureEventually { !sending.isSending }
 
         let emptyRig = CaptureTestRig()
         emptyRig.groups.groups = []
@@ -137,37 +160,20 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         offlineRig.groups.loadError = DataError.offline
         let offline = offlineRig.sendToModel(media: photoMedia())
         await offline.load()
-        assertRecorded(CaptureSnapshot.record(SendToView(model: offline), surface: "camera.sendto", state: "offline"))
+        assertRecorded(CaptureSnapshot.record(SendToView(model: offline), surface: "camera.sendto", state: "offline-groups"))
 
         let failRig = photoRig()
-        failRig.coach.dismiss(.voice)
         failRig.posting.publishError = .api(.notGroupMember)
         let failing = failRig.sendToModel(media: photoMedia())
         await loadWithCovers(failing)
-        await failRig.sendCenter.send(CaptureSendRequest(payload: .media(photoMedia()), groupIDs: ["fake-group-1"]))
-        assertRecorded(CaptureSnapshot.record(SendToView(model: failing), surface: "camera.sendto", state: "error"))
-
-        let offlineSendRig = photoRig()
-        offlineSendRig.coach.dismiss(.voice)
-        offlineSendRig.posting.publishError = .offline
-        let offlineSend = offlineSendRig.sendToModel(media: photoMedia())
-        await loadWithCovers(offlineSend)
-        await offlineSendRig.sendCenter.send(CaptureSendRequest(payload: .media(photoMedia()), groupIDs: ["fake-group-1"]))
-        assertRecorded(CaptureSnapshot.record(SendToView(model: offlineSend), surface: "camera.sendto", state: "offline-send"))
+        await failing.send()
+        // The native alert is drawn by the system over this composer (not part of the hosted view).
+        assertRecorded(CaptureSnapshot.record(SendToView(model: failing), surface: "camera.sendto", state: "error-composer-kept"))
 
         let videoRig = photoRig()
-        videoRig.coach.dismiss(.voice)
         let video = videoRig.sendToModel(media: .video(CaptureVideo(fileURL: URL(fileURLWithPath: "/dev/null"), durationMs: 1000), capturedAt: Date()))
         await loadWithCovers(video)
         assertRecorded(CaptureSnapshot.record(SendToView(model: video), surface: "camera.sendto", state: "video-free-member"))
-    }
-
-    func testSendToConfirmationToastLayout() {
-        let toast = CaptureConfirmationToast(text: Copy.cameraSendtoToastPostedOne(group: CaptureFakes.groups[0].name))
-            .padding(.top, Tokens.Layouts.CameraSendtoLayoutToast.top)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(Tokens.Colors.globalBackground)
-        assertRecorded(CaptureSnapshot.record(toast, surface: "camera.sendto", state: "sent-toast"))
     }
 
     // MARK: daily.capture
@@ -187,7 +193,7 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         rig.usePhotos(scene: 1)
         let live = rig.dailyModel()
         await live.appear()
-        assertRecorded(CaptureSnapshot.record(dailyView(rig, live), surface: "daily.capture", state: "live"))
+        assertRecorded(CaptureSnapshot.record(dailyView(rig, live), surface: "daily.capture", state: "live", appearances: CaptureSnapshot.both))
 
         rig.dualCamera.suspendsCapture = true
         let capture = Task { await live.shutter() }
@@ -202,9 +208,17 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         let preview = previewRig.dailyModel()
         await preview.appear()
         await preview.shutter()
-        assertRecorded(CaptureSnapshot.record(dailyView(previewRig, preview), surface: "daily.capture", state: "preview"))
+        assertRecorded(CaptureSnapshot.record(dailyView(previewRig, preview), surface: "daily.capture", state: "preview", appearances: CaptureSnapshot.both))
+
+        previewRig.posting.suspendsPublish = true
+        let sendTask = Task { await preview.send() }
+        _ = await captureEventually { preview.isSending }
+        assertRecorded(CaptureSnapshot.record(dailyView(previewRig, preview), surface: "daily.capture", state: "sending"))
+        sendTask.cancel()
+        _ = await captureEventually { !preview.isSending }
 
         let singleRig = CaptureTestRig()
+        singleRig.openInvitation(closingIn: 80)
         singleRig.usePhotos(scene: 1)
         singleRig.dualCamera.failsDual = true
         let single = singleRig.dailyModel()
@@ -220,12 +234,14 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         assertRecorded(CaptureSnapshot.record(dailyView(closedRig, closed), surface: "daily.capture", state: "window-closed"))
 
         let deniedRig = CaptureTestRig()
+        deniedRig.openInvitation(closingIn: 95)
         deniedRig.dualCamera.authorizationStatus = .denied
         let denied = deniedRig.dailyModel()
         await denied.appear()
         assertRecorded(CaptureSnapshot.record(dailyView(deniedRig, denied), surface: "daily.capture", state: "permission-denied"))
 
         let failingRig = CaptureTestRig()
+        failingRig.openInvitation(closingIn: 95)
         failingRig.dualCamera.failsConfigure = true
         let unavailable = failingRig.dailyModel()
         await unavailable.appear()
@@ -235,15 +251,18 @@ final class CaptureScreenSnapshotTests: XCTestCase {
     // MARK: daily.dualimage
 
     func testDualImageStates() {
-        let layout = SwiftUISnapshotLayout.fixed(width: 393, height: 524)
+        let layout = SwiftUISnapshotLayout.fixed(width: 361, height: 482)
         let main = CaptureTestImages.scene(1, CGSize(width: 600, height: 800))
         let inset = CaptureTestImages.photo(CGSize(width: 300, height: 400), named: CaptureTestImages.selfie)
-        func framed(_ view: DualImageView) -> some View {
-            view.background(Tokens.Colors.globalBackgroundDeep)
+        func framed(_ view: DualImageView, page: Bool = false) -> some View {
+            view.background(page ? Tokens.Colors.globalBackground : Tokens.Colors.globalBackgroundDeep)
         }
-        assertRecorded(CaptureSnapshot.record(framed(DualImageView(main: main, inset: inset, accessibilityLabel: "")), surface: "daily.dualimage", state: "dual", layout: layout))
-        assertRecorded(CaptureSnapshot.record(framed(DualImageView(main: main, inset: nil, accessibilityLabel: "")), surface: "daily.dualimage", state: "single-camera", layout: layout))
-        assertRecorded(CaptureSnapshot.record(framed(DualImageView(main: nil, inset: nil, accessibilityLabel: "")), surface: "daily.dualimage", state: "loading", layout: layout))
+        let viewfinder = DualImageView.Corners.host(Tokens.Radii.globalViewfinder)
+        assertRecorded(CaptureSnapshot.record(framed(DualImageView(main: main, inset: inset, accessibilityLabel: "", corners: viewfinder)), surface: "daily.dualimage", state: "dual", appearances: CaptureSnapshot.both, layout: layout))
+        assertRecorded(CaptureSnapshot.record(framed(DualImageView(main: main, inset: inset, accessibilityLabel: "")), surface: "daily.dualimage", state: "dual-viewer", layout: layout))
+        assertRecorded(CaptureSnapshot.record(framed(DualImageView(main: main, inset: nil, accessibilityLabel: "", corners: viewfinder)), surface: "daily.dualimage", state: "single-camera", layout: layout))
+        assertRecorded(CaptureSnapshot.record(framed(DualImageView(main: nil, inset: nil, accessibilityLabel: "", corners: viewfinder)), surface: "daily.dualimage", state: "loading-media", layout: layout))
+        assertRecorded(CaptureSnapshot.record(framed(DualImageView(main: nil, inset: nil, accessibilityLabel: "", corners: .host(Tokens.Radii.globalCard), onMedia: false), page: true), surface: "daily.dualimage", state: "loading-page", layout: layout))
     }
 
     // MARK: collage.view / collage.share
@@ -274,8 +293,8 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         rig.collages.images = ["g/g1/collages/c1/v1/display-1.jpg": page, "g/g1/collages/c1/v1/display-2.jpg": secondPage]
         let ready = rig.collageModel()
         await ready.load()
-        assertRecorded(CaptureSnapshot.record(CollageView(model: ready), surface: "collage.view", state: "ready"))
-        assertRecorded(CaptureSnapshot.record(CollageView(model: ready), surface: "collage.share", state: "pill"))
+        assertRecorded(CaptureSnapshot.record(CollageView(model: ready), surface: "collage.view", state: "ready", appearances: CaptureSnapshot.both))
+        assertRecorded(CaptureSnapshot.record(CollageView(model: ready), surface: "collage.share", state: "pill", appearances: CaptureSnapshot.both))
 
         let singleRig = CaptureTestRig()
         singleRig.openInvitation(closingIn: -60)
@@ -284,6 +303,16 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         let single = singleRig.collageModel()
         await single.load()
         assertRecorded(CaptureSnapshot.record(CollageView(model: single), surface: "collage.view", state: "ready-one-page"))
+
+        let noShareRig = CaptureTestRig()
+        noShareRig.openInvitation(closingIn: -60)
+        var withoutShare = collage(pages: 1)
+        withoutShare.sharePath = nil
+        noShareRig.collages.collage = withoutShare
+        noShareRig.collages.images = ["g/g1/collages/c1/v1/display-1.jpg": page]
+        let noShare = noShareRig.collageModel()
+        await noShare.load()
+        assertRecorded(CaptureSnapshot.record(CollageView(model: noShare), surface: "collage.share", state: "not-ready"))
 
         let emptyRig = CaptureTestRig()
         emptyRig.openInvitation(closingIn: -60)
@@ -313,8 +342,8 @@ final class CaptureWidgetSnapshotTests: XCTestCase {
         return CGSize(width: parts[0], height: parts[1])
     }
 
-    /// The widget rendition (600 × 630): `photo`, or a collage page cropped to that shape; the sender's avatar.
-    private func content(_ state: GroupWidgetContent.State, caption: String? = nil, photo: String = CaptureTestImages.scenes[0]) -> GroupWidgetContent {
+    /// The widget rendition (600 × 630): `photo`, or a collage page cropped to that shape; the poster's avatar.
+    private func content(_ state: GroupWidgetContent.State, photo: String = CaptureTestImages.scenes[0], avatar: Bool = true) -> GroupWidgetContent {
         let size = CGSize(width: 600, height: 630)
         let rendition: UIImage? = switch state {
         case .photo: CaptureTestImages.photo(size, named: photo)
@@ -322,22 +351,24 @@ final class CaptureWidgetSnapshotTests: XCTestCase {
         default: nil
         }
         return GroupWidgetContent(
-            state: state, groupName: "Family", senderName: "Ana", caption: caption, postedAt: Date(),
+            state: state, groupName: "Family", senderName: "Ana Lima", postedAt: CaptureTestRig.fixedNow,
             photo: rendition,
-            avatar: CaptureTestImages.avatar(CGSize(width: 60, height: 60))
+            avatar: avatar ? CaptureTestImages.avatar(CGSize(width: 60, height: 60)) : nil
         )
     }
 
-    /// The Home Screen widget: container background + overlay, clipped like the system container.
-    private func home(_ content: GroupWidgetContent, family: WidgetFamily, size: CGSize) -> some View {
+    /// The Home Screen widget: container background + overlay, clipped like the system container (the system's own
+    /// corner — the HIG container — drawn here with Retro's widget corner `widget.android.radius.widget` for the comp), on
+    /// a wallpaper of `color.global.controlRaised`.
+    private func home(_ content: GroupWidgetContent, size: CGSize) -> some View {
         ZStack {
-            WidgetEmptyState(content: content)
-            WidgetOverlay(content: content, family: family)
+            WidgetContainerBackground(content: content)
+            WidgetOverlay(content: content)
         }
         .frame(width: size.width, height: size.height)
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .padding(16)
-        .background(Color(white: 0.25))
+        .clipShape(RoundedRectangle(cornerRadius: Tokens.Radii.widgetAndroidRadiusWidget, style: .continuous))
+        .padding(Tokens.Sizes.globalScreenMargin)
+        .background(Tokens.Colors.globalControlRaised)
     }
 
     /// Lock Screen accessory: vibrant mode approximated with zero saturation on a dark wallpaper.
@@ -345,40 +376,41 @@ final class CaptureWidgetSnapshotTests: XCTestCase {
         view
             .frame(width: size.width, height: size.height)
             .saturation(0)
-            .padding(16)
-            .background(Color(white: 0.15))
+            .padding(Tokens.Sizes.globalScreenMargin)
+            .background(Tokens.Colors.globalControlOnDeep)
     }
 
-    private func record<V: View>(_ view: V, size: CGSize, surface: String, state: String) {
-        let url = CaptureSnapshot.record(view, surface: surface, state: state, layout: .fixed(width: size.width + 32, height: size.height + 32))
+    private func record<V: View>(_ view: V, size: CGSize, surface: String, state: String, appearances: [ColorScheme] = [.light]) {
+        let margin = Tokens.Sizes.globalScreenMargin * 2
+        let url = CaptureSnapshot.record(view, surface: surface, state: state, appearances: appearances, layout: .fixed(width: size.width + margin, height: size.height + margin))
         XCTAssertNotNil(url)
     }
 
     func testHomeWidgetFamiliesAndStates() {
-        let families: [(String, WidgetFamily, CGSize)] = [
-            ("widget.home.small", .systemSmall, size(Tokens.Layouts.WidgetHomeSmallLayoutSize.w393h852)),
-            ("widget.home.medium", .systemMedium, size(Tokens.Layouts.WidgetHomeMediumLayoutSize.w393h852)),
-            ("widget.home.large", .systemLarge, size(Tokens.Layouts.WidgetHomeLargeLayoutSize.w393h852)),
-            ("widget.home.xl", .systemExtraLarge, size(Tokens.Layouts.WidgetHomeXlLayoutSize.ipad1024x1366)),
+        let families: [(String, CGSize)] = [
+            ("widget.home.small", size(Tokens.Layouts.WidgetHomeSmallLayoutSize.w393h852)),
+            ("widget.home.medium", size(Tokens.Layouts.WidgetHomeMediumLayoutSize.w393h852)),
+            ("widget.home.large", size(Tokens.Layouts.WidgetHomeLargeLayoutSize.w393h852)),
+            ("widget.home.xl", size(Tokens.Layouts.WidgetHomeXlLayoutSize.ipad1024x1366)),
         ]
-        for (surface, family, frame) in families {
-            record(home(content(.photo, caption: "Sundays"), family: family, size: frame), size: frame, surface: surface, state: "photo-caption")
-            record(home(content(.photo), family: family, size: frame), size: frame, surface: surface, state: "photo")
-            record(home(content(.collage), family: family, size: frame), size: frame, surface: surface, state: "collage")
-            record(home(.loading, family: family, size: frame), size: frame, surface: surface, state: "loading")
-            record(home(GroupWidgetContent(state: .empty), family: family, size: frame), size: frame, surface: surface, state: "empty")
-            record(home(GroupWidgetContent(state: .notSetUp), family: family, size: frame), size: frame, surface: surface, state: "not-set-up")
+        for (surface, frame) in families {
+            record(home(content(.photo), size: frame), size: frame, surface: surface, state: "photo", appearances: CaptureSnapshot.both)
+            record(home(content(.collage), size: frame), size: frame, surface: surface, state: "collage")
+            record(home(.loading, size: frame), size: frame, surface: surface, state: "loading")
+            record(home(GroupWidgetContent(state: .empty), size: frame), size: frame, surface: surface, state: "empty")
+            record(home(GroupWidgetContent(state: .notSetUp), size: frame), size: frame, surface: surface, state: "not-set-up")
+            record(home(GroupWidgetContent(state: .signedOut), size: frame), size: frame, surface: surface, state: "signed-out")
         }
-        let avatarless = GroupWidgetContent(state: .photo, groupName: "Family", senderName: "Ana", caption: "Sundays",
-                                            photo: CaptureTestImages.photo(CGSize(width: 600, height: 630)))
         let small = size(Tokens.Layouts.WidgetHomeSmallLayoutSize.w393h852)
-        record(home(avatarless, family: .systemSmall, size: small), size: small, surface: "widget.home.small", state: "no-avatar")
+        let longNames = GroupWidgetContent(state: .photo, groupName: "Saturday Morning Climbing Crew", senderName: "Maximiliana",
+                                           postedAt: CaptureTestRig.fixedNow, photo: CaptureTestImages.photo(CGSize(width: 600, height: 630), named: CaptureTestImages.scenes[5]))
+        record(home(longNames, size: small), size: small, surface: "widget.home.small", state: "long-names")
     }
 
     func testArrivalSwapsInstantly() {
         let small = size(Tokens.Layouts.WidgetHomeSmallLayoutSize.w393h852)
-        record(home(content(.photo, caption: "Sundays", photo: CaptureTestImages.scenes[0]), family: .systemSmall, size: small), size: small, surface: "widget.arrival", state: "before")
-        record(home(content(.photo, caption: "brunch", photo: CaptureTestImages.scenes[3]), family: .systemSmall, size: small), size: small, surface: "widget.arrival", state: "after")
+        record(home(content(.photo, photo: CaptureTestImages.scenes[0]), size: small), size: small, surface: "widget.arrival", state: "before")
+        record(home(content(.photo, photo: CaptureTestImages.scenes[3]), size: small), size: small, surface: "widget.arrival", state: "after")
         XCTAssertEqual(Tokens.Durations.widgetArrivalDurationTransition, 0, "no transition between entries")
     }
 
@@ -386,48 +418,56 @@ final class CaptureWidgetSnapshotTests: XCTestCase {
         let rect = size(Tokens.Layouts.WidgetLockRectLayoutSize.w393h852)
         let circle = size(Tokens.Layouts.WidgetLockCircularLayoutSize.w393h852)
         let inline = size(Tokens.Layouts.WidgetLockInlineLayoutSize.w393h852)
-        record(lock(WidgetRectangularSlot(content: content(.photo, caption: "Sundays at the lake")), size: rect), size: rect, surface: "widget.lock.rect", state: "photo-caption")
-        record(lock(WidgetRectangularSlot(content: content(.photo)), size: rect), size: rect, surface: "widget.lock.rect", state: "photo-no-caption")
+        record(lock(WidgetRectangularSlot(content: content(.photo)), size: rect), size: rect, surface: "widget.lock.rect", state: "photo", appearances: CaptureSnapshot.both)
+        record(lock(WidgetRectangularSlot(content: content(.photo, avatar: false)), size: rect), size: rect, surface: "widget.lock.rect", state: "no-avatar")
+        record(lock(WidgetRectangularSlot(content: content(.collage)), size: rect), size: rect, surface: "widget.lock.rect", state: "collage")
         record(lock(WidgetRectangularSlot(content: GroupWidgetContent(state: .empty)), size: rect), size: rect, surface: "widget.lock.rect", state: "empty")
         record(lock(WidgetRectangularSlot(content: GroupWidgetContent(state: .notSetUp)), size: rect), size: rect, surface: "widget.lock.rect", state: "not-set-up")
+        record(lock(WidgetRectangularSlot(content: GroupWidgetContent(state: .signedOut)), size: rect), size: rect, surface: "widget.lock.rect", state: "signed-out")
         record(lock(WidgetRectangularSlot(content: .loading), size: rect), size: rect, surface: "widget.lock.rect", state: "loading")
-        record(lock(WidgetCircularSlot(content: content(.photo)), size: circle), size: circle, surface: "widget.lock.circular", state: "photo")
+        record(lock(WidgetCircularSlot(content: content(.photo)), size: circle), size: circle, surface: "widget.lock.circular", state: "photo", appearances: CaptureSnapshot.both)
+        record(lock(WidgetCircularSlot(content: content(.photo, avatar: false)), size: circle), size: circle, surface: "widget.lock.circular", state: "no-avatar")
+        record(lock(WidgetCircularSlot(content: content(.collage)), size: circle), size: circle, surface: "widget.lock.circular", state: "collage")
         record(lock(WidgetCircularSlot(content: GroupWidgetContent(state: .empty)), size: circle), size: circle, surface: "widget.lock.circular", state: "empty")
-        record(lock(WidgetInlineSlot(content: content(.photo, caption: "Sundays at the lake")).foregroundStyle(.white), size: inline), size: inline, surface: "widget.lock.inline", state: "photo-caption")
-        record(lock(WidgetInlineSlot(content: content(.photo)).foregroundStyle(.white), size: inline), size: inline, surface: "widget.lock.inline", state: "photo-no-caption")
-        record(lock(WidgetInlineSlot(content: GroupWidgetContent(state: .notSetUp)).foregroundStyle(.white), size: inline), size: inline, surface: "widget.lock.inline", state: "not-set-up")
+        let white = Tokens.Colors.globalTextOnMedia
+        record(lock(WidgetInlineSlot(content: content(.photo)).foregroundStyle(white), size: inline), size: inline, surface: "widget.lock.inline", state: "photo", appearances: CaptureSnapshot.both)
+        record(lock(WidgetInlineSlot(content: content(.collage)).foregroundStyle(white), size: inline), size: inline, surface: "widget.lock.inline", state: "collage")
+        record(lock(WidgetInlineSlot(content: GroupWidgetContent(state: .notSetUp)).foregroundStyle(white), size: inline), size: inline, surface: "widget.lock.inline", state: "not-set-up")
     }
 
     func testLiveActivityPresentations() {
         let attributes = DailyInvitationAttributes(groupID: "g1", invitationID: "i1")
         let now = Date()
         let state = DailyInvitationAttributes.ContentState(closesAt: now.addingTimeInterval(95), groupName: "Family")
-        let lockSize = CGSize(width: 371, height: 84)
+        let lockWidth = WidgetLayoutSize.width(Tokens.Layouts.DailyLiveactivityLayoutSize.w393lockScreen) ?? 0
+        let lockSize = CGSize(width: lockWidth, height: InvitationLockScreenSlot.minimumHeight ?? 0)
         let lockScreen = InvitationLockScreenSlot(attributes: attributes, state: state, isStale: false, now: now)
             .frame(width: lockSize.width, height: lockSize.height)
             .background(Tokens.Colors.globalBackgroundDeep)
-        record(lockScreen, size: lockSize, surface: "daily.liveactivity", state: "lock-screen")
+        record(lockScreen, size: lockSize, surface: "daily.liveactivity", state: "lock-screen", appearances: CaptureSnapshot.both)
         let stale = InvitationLockScreenSlot(attributes: attributes, state: state, isStale: true, now: now)
             .frame(width: lockSize.width, height: lockSize.height)
             .background(Tokens.Colors.globalBackgroundDeep)
         record(stale, size: lockSize, surface: "daily.liveactivity", state: "lock-screen-stale")
 
-        let compactSize = CGSize(width: 250, height: 37)
+        // Dynamic Island comps: the island itself is system black (`daily.liveactivity.layout.colors.islandBackground`).
+        let compactWidth = (WidgetLayoutSize.width(Tokens.Layouts.DailyLiveactivityLayoutSize.w393compact) ?? 0) * 2 + lockWidth / 3
+        let compactSize = CGSize(width: compactWidth, height: WidgetLayoutSize.minimumHeight(Tokens.Layouts.DailyLiveactivityLayoutSize.w393compact) ?? 0)
         let compact = HStack {
             InvitationCompactLeadingSlot()
             Spacer()
             InvitationCompactTrailingSlot(state: state, now: now)
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, Tokens.Sizes.dailyLiveactivitySizeLockScreenMargin)
         .frame(width: compactSize.width, height: compactSize.height)
-        .background(Capsule().fill(Color.black))
+        .background(Capsule().fill(Tokens.Colors.globalBackgroundDeep))
         record(compact, size: compactSize, surface: "daily.liveactivity", state: "compact")
 
-        let minimalSize = CGSize(width: 45, height: 37)
-        record(InvitationMinimalSlot(state: state, now: now).frame(width: minimalSize.width, height: minimalSize.height).background(Circle().fill(Color.black)),
+        let minimalSize = CGSize(width: compactSize.height, height: compactSize.height)
+        record(InvitationMinimalSlot(state: state, now: now).frame(width: minimalSize.width, height: minimalSize.height).background(Circle().fill(Tokens.Colors.globalBackgroundDeep)),
                size: minimalSize, surface: "daily.liveactivity", state: "minimal")
 
-        let expandedSize = CGSize(width: 371, height: 120)
+        let expandedSize = CGSize(width: lockWidth, height: lockSize.height * 2)
         let expanded = VStack {
             HStack {
                 InvitationCompactLeadingSlot()
@@ -437,9 +477,9 @@ final class CaptureWidgetSnapshotTests: XCTestCase {
             Spacer()
             InvitationExpandedSlot(state: state)
         }
-        .padding(16)
+        .padding(Tokens.Sizes.dailyLiveactivitySizeLockScreenMargin)
         .frame(width: expandedSize.width, height: expandedSize.height)
-        .background(RoundedRectangle(cornerRadius: 40).fill(Color.black))
+        .background(RoundedRectangle(cornerRadius: Tokens.Radii.globalCardLarge, style: .continuous).fill(Tokens.Colors.globalBackgroundDeep))
         record(expanded, size: expandedSize, surface: "daily.liveactivity", state: "expanded")
     }
 }

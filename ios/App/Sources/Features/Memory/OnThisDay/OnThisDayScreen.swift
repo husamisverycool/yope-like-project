@@ -60,10 +60,9 @@ struct OnThisDayScreen: View {
             FeatureIntroSheet(
                 title: Copy.onthisdayNuxTitle,
                 rows: [FeatureIntroRow(icon: Tokens.Icons.globalRewind, text: Copy.onthisdayNuxMessage(group: model.groupName))],
-                buttonTitle: Copy.onthisdayNuxButton
-            ) {
-                model.dismissIntro()
-            }
+                buttonTitle: Copy.onthisdayNuxButton,
+                onButton: { model.dismissIntro() }
+            )
             .presentationDetents([.medium])
             .dsSheetBackground()
             .environment(\.colorScheme, SystemAppearance.colorScheme)

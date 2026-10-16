@@ -19,6 +19,8 @@ struct SettingsRow: View {
         case toggle(Binding<Bool>)
         /// Title in `color.global.destructive` (C-10) with an optional leading glyph; the row is a button.
         case destructive(action: () -> Void)
+        /// Title (+ value), no chevron; the row is a button (Sign Out, Contact Us).
+        case button(action: () -> Void)
         /// The platform activity indicator (C-28) in the row (loading, signing out).
         case busy
     }
@@ -49,7 +51,7 @@ struct SettingsRow: View {
                 .tint(Tokens.Colors.globalSelection)
                 .disabled(!isEnabled)
                 .modifier(SettingsRowFrame())
-        case let .navigation(action), let .destructive(action):
+        case let .navigation(action), let .destructive(action), let .button(action):
             Button(action: action) {
                 HStack {
                     labels

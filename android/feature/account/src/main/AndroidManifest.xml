@@ -6,7 +6,24 @@
     <!-- onboarding.permission.contacts / groups.invite (Android card): optional, asked in context. -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
+    <application>
+        <!-- settings.account "Take Photo": the content:// target handed to the system camera (TakePicture). -->
+        <provider
+            android:name="app.feature.account.settings.AccountFileProvider"
+            android:authorities="${applicationId}.account.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/account_files" />
+        </provider>
+    </application>
+
     <queries>
+        <!-- settings.account "Take Photo": the system camera (ACTION_IMAGE_CAPTURE). -->
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
         <!-- groups.invite: SMS compose (ACTION_SENDTO smsto:) and the Sharesheet. -->
         <intent>
             <action android:name="android.intent.action.SENDTO" />

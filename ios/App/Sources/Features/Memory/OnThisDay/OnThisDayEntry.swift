@@ -8,7 +8,7 @@ import SwiftUI
 /// the glyph `icon.global.rewind` and the newest memory's photo.
 ///
 /// Renders nothing unless the group has photos from today's month and day in earlier years (`on_this_day`, group-local
-/// day rolling over at 05:00); a tap pushes `onthisday` at the newest memory. The look defaults to `MemoryFeedCard`
+/// day rolling over at 05:00); a tap pushes `onthisday` at the newest memory. The look defaults to `MemoryEntryFeedCard`
 /// (groups.screen item 8); pass your own row to restyle it:
 ///
 ///     OnThisDayEntry(groupID: group.id) { content in MyCard(content) }
@@ -41,8 +41,8 @@ struct OnThisDayEntry<Row: View>: View {
     }
 }
 
-extension OnThisDayEntry where Row == MemoryFeedCard {
+extension OnThisDayEntry where Row == MemoryEntryFeedCard {
     init(groupID: String, model: OnThisDayEntryModel? = nil) {
-        self.init(groupID: groupID, model: model) { MemoryFeedCard(content: $0) }
+        self.init(groupID: groupID, model: model) { MemoryEntryFeedCard(content: $0) }
     }
 }

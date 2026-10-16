@@ -15,7 +15,7 @@ import SwiftUI
 /// activating records hands-free, then keeps the note.
 struct SendToVoiceCapsule: View {
     let model: SendToModel
-    /// Width of the recording capsule (half of it is the slide-to-cancel distance).
+    /// The width the recording capsule can take (half of it is the slide-to-cancel distance).
     let rowWidth: CGFloat
     @Binding var slide: CGSize
 
@@ -75,7 +75,7 @@ struct SendToVoiceCapsule: View {
                 }
                 guard model.voicePhase == .holding else { return }
                 slide = value.translation
-                if value.translation.width < -rowWidth / 2 {
+                if rowWidth > 0, value.translation.width < -rowWidth / 2 {
                     model.cancelVoiceRecording()
                     slide = .zero
                 } else if value.translation.height < -Tokens.Sizes.globalPillHeight {

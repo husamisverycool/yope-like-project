@@ -19,6 +19,9 @@ enum class PremiumResult { Done, Cancelled, Pending, Failed, NotConfigured }
 /** The premium purchase seam over core:billing (`Billing`, RevenueCat, entitlement `premium`). */
 interface PremiumGateway {
     val isActive: Flow<Boolean>
+
+    /** The active plan's period (settings.root "Your Subscription" subtitle), null when not subscribed or unknown. */
+    val activePlan: Flow<PlanPeriod?> get() = kotlinx.coroutines.flow.flowOf(null)
     suspend fun refresh(): Boolean
     /** Current offering's monthly and yearly plans; empty when not configured or unavailable. */
     suspend fun plans(): List<PlanOption>
@@ -29,6 +32,16 @@ interface PremiumGateway {
 /** [PremiumGateway] over [Billing]. */
 object BillingPremiumGateway : PremiumGateway {
     override val isActive: Flow<Boolean> = Billing.premium.map { it.active }
+
+    override val activePlan: Flow<PlanPeriod?> = Billing.premium.map { status ->
+        val product = status.productId?.takeIf { status.active }
+        when {
+            product == null -> null
+            app.feature.account.BuildConfig.PRODUCT_YEARLY?.let(product::startsWith) == true -> PlanPeriod.Yearly
+            app.feature.account.BuildConfig.PRODUCT_MONTHLY?.let(product::startsWith) == true -> PlanPeriod.Monthly
+            else -> null
+        }
+    }
 
     override suspend fun refresh(): Boolean = Billing.refresh().active
 

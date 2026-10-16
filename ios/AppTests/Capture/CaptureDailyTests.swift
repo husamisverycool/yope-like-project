@@ -31,9 +31,8 @@ final class CaptureDailyModelTests: XCTestCase {
         await model.appear()
         XCTAssertNil(model.remainingSeconds(at: Date()))
         await model.shutter()
-        model.send()
-        let posted = await captureEventually { rig.posting.published.count == 1 }
-        XCTAssertTrue(posted)
+        await model.send()
+        XCTAssertEqual(rig.posting.published.count, 1)
         XCTAssertEqual(rig.posting.published.first?.invitationID, InvitationID("inv-1"), "the server decides in_window")
     }
 
@@ -102,10 +101,12 @@ final class CaptureDailyModelTests: XCTestCase {
         let model = rig.dailyModel()
         await model.appear()
         await model.shutter()
-        model.send()
-        XCTAssertEqual(rig.navigation.closeCount, 1, "the cover closes at once")
-        let posted = await captureEventually { rig.posting.published.count == 1 }
-        XCTAssertTrue(posted)
+        await model.send()
+        XCTAssertFalse(model.isSending)
+        XCTAssertEqual(rig.navigation.closeCount, 1, "the cover closes once posted")
+        XCTAssertEqual(rig.posting.published.count, 1)
+        XCTAssertEqual(rig.sendCenter.confirmations.message, Copy.cameraSendtoToastPostedOne(group: CaptureFakes.groups[0].name),
+                       "iOS confirms with an accessibility announcement (C-26)")
         let draft = try! XCTUnwrap(rig.posting.published.first)
         XCTAssertEqual(draft.groupIDs, [GroupID(CaptureFakes.groups[0].id)])
         XCTAssertEqual(draft.invitationID, InvitationID("inv-1"))
@@ -120,9 +121,8 @@ final class CaptureDailyModelTests: XCTestCase {
         await model.appear()
         XCTAssertNil(model.remainingSeconds(at: Date()), "no countdown, no 'late' label")
         await model.shutter()
-        model.send()
-        let posted = await captureEventually { rig.posting.published.count == 1 }
-        XCTAssertTrue(posted)
+        await model.send()
+        XCTAssertEqual(rig.posting.published.count, 1)
     }
 
     func testDeniedAndUnavailableAndDismiss() async {
@@ -142,17 +142,54 @@ final class CaptureDailyModelTests: XCTestCase {
         XCTAssertEqual(other.navigation.closeCount, 1)
     }
 
-    func testSendFailureKeepsDraftForRetry() async {
+    func testSendFailureKeepsThePreviewAndRetries() async {
         let rig = CaptureTestRig()
         rig.posting.publishError = .offline
         let model = rig.dailyModel()
         await model.appear()
         await model.shutter()
-        model.send()
-        let failed = await captureEventually { rig.sendCenter.failure == .offline }
-        XCTAssertTrue(failed)
-        XCTAssertEqual(rig.posting.pending.count, 1)
+        await model.send()
+        XCTAssertEqual(model.sendFailure, .offline, "the native alert: Check your connection")
+        XCTAssertEqual(model.phase, .preview, "the preview is kept")
+        XCTAssertNotNil(model.answer)
+        XCTAssertEqual(rig.navigation.closeCount, 0)
         XCTAssertEqual(rig.haptics, [Tokens.Haptics.globalError])
+        XCTAssertTrue(rig.posting.pending.isEmpty, "the failed outbox draft is discarded; Try Again sends a new one")
+        XCTAssertEqual(rig.posting.discarded.count, 1)
+
+        rig.posting.publishError = nil
+        await model.retrySend()
+        XCTAssertNil(model.sendFailure)
+        XCTAssertEqual(rig.posting.published.count, 1)
+        XCTAssertEqual(rig.navigation.closeCount, 1)
+    }
+
+    func testCancelKeepsThePreview() async {
+        let rig = CaptureTestRig()
+        rig.posting.publishError = .api(.notGroupMember)
+        let model = rig.dailyModel()
+        await model.appear()
+        await model.shutter()
+        await model.send()
+        XCTAssertEqual(model.sendFailure, .sendFailed)
+        model.dismissSendFailure()
+        XCTAssertNil(model.sendFailure)
+        XCTAssertEqual(model.phase, .preview)
+    }
+
+    func testRetakeAndDismissWaitWhileSending() async {
+        let rig = CaptureTestRig()
+        rig.posting.suspendsPublish = true
+        let model = rig.dailyModel()
+        await model.appear()
+        await model.shutter()
+        let send = Task { await model.send() }
+        _ = await captureEventually { model.isSending }
+        await model.retake()
+        model.dismiss()
+        XCTAssertEqual(model.phase, .preview, "retake is disabled while sending")
+        XCTAssertEqual(rig.navigation.closeCount, 0, "close is disabled while sending")
+        send.cancel()
     }
 }
 
@@ -170,9 +207,18 @@ final class CaptureCountdownFormatTests: XCTestCase {
         XCTAssertFalse(spoken.lowercased().contains("late"))
     }
 
-    func testCollageDateIsDayMonth() {
+    func testCollageDateIsTheLocaleLongDate() {
         let date = LocalDate(year: 2026, month: 5, day: 26)!
-        XCTAssertEqual(CaptureFormat.collageDate(date, locale: Locale(identifier: "en_US")), "26 May")
+        XCTAssertEqual(CaptureFormat.collageDate(date, locale: Locale(identifier: "en_US")), "May 26, 2026", "retro.voice.formats: 'May 1, 2019'")
+    }
+
+    func testVoiceDurationIsRetrosMediaFormat() {
+        XCTAssertEqual(CaptureFormat.voiceDuration(milliseconds: 7_400), "0:07")
+        XCTAssertEqual(CaptureFormat.voiceDuration(milliseconds: 60_000), "1:00")
+    }
+
+    func testMessageCounter() {
+        XCTAssertEqual(CaptureFormat.messageCounter(count: 58, max: 250), "58/250")
     }
 
     func testFirstName() {
@@ -180,14 +226,8 @@ final class CaptureCountdownFormatTests: XCTestCase {
         XCTAssertEqual(CaptureFormat.firstName(nil), "")
     }
 
-    func testMeasuredSpringUsesTokenDurationAndPlatformDamping() {
-        let animation = DSAnimation.measured(milliseconds: Tokens.Layouts.DailyCaptureLayoutCountdownTick.digitIn)
-        XCTAssertEqual(animation, .spring(DSSpring(response: 0.3, dampingFraction: Tokens.Springs.globalPlatformDefaultIos.dampingFraction)))
-    }
-
-    func testTextStyleNames() {
-        XCTAssertEqual(CaptureTextStyleName.resolve("caption2"), .caption2)
-        XCTAssertEqual(CaptureTextStyleName.resolve("headline (17 pt semibold, Dynamic Type)"), .headline)
-        XCTAssertEqual(CaptureTextStyleName.resolve("title"), .title)
+    func testCounterRoleUsesTheCalloutStyle() {
+        XCTAssertEqual(CaptureType.counter.size, Tokens.FontSizes.cameraSendtoFontSizeCounter)
+        XCTAssertEqual(CaptureType.counter.relativeTo, .callout)
     }
 }

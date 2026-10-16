@@ -13,7 +13,7 @@ import app.feature.capture.daily.DailyCaptureViewModel
 import app.feature.capture.data.CaptureHandoff
 import app.feature.capture.data.CapturedMedia
 import app.feature.capture.data.MemoryCapturePrefs
-import app.feature.capture.data.SendTracker
+import app.feature.capture.data.PostSend
 import app.feature.capture.sendto.SendToViewModel
 import app.feature.capture.sendto.VoiceNoteFile
 import app.media.DualCaptureMode
@@ -59,7 +59,6 @@ class ViewModelTests {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
-    private fun tracker() = SendTracker(data, CoroutineScope(dispatcher))
 
     // ---- camera.capture -------------------------------------------------------------------
 
@@ -167,7 +166,7 @@ class ViewModelTests {
 
     private fun sendTo(context: String?, kind: MediaKind = MediaKind.Photo, gate: SessionPromptGate = SessionPromptGate(), reply: String? = null, maxCaption: Int? = null): SendToViewModel {
         handoff.put(media(kind), context, reply)
-        return SendToViewModel(data, handoff, tracker(), MemoryCapturePrefs(), gate, voiceRecorderAvailable = false, maxCaption = maxCaption)
+        return SendToViewModel(data, handoff, gate, voiceRecorderAvailable = false, maxCaption = maxCaption)
     }
 
     @Test fun groupsLoadCacheFirstWithoutALoadingFlash() {
@@ -180,13 +179,13 @@ class ViewModelTests {
         data.loaded(group("g1", "Family"), group("g2", "Roommates"))
         assertEquals(setOf("g1"), sendTo("g1").ui.value.selected)
         assertEquals(setOf("g1", "g2"), sendTo(null).ui.value.selected)
-        // A widget whose group was left: nothing preselected, send hidden until a choice.
+        // A widget whose group was left: nothing preselected, Send disabled until a choice.
         val gone = sendTo("gone")
         assertTrue(gone.ui.value.selected.isEmpty())
-        assertFalse(gone.ui.value.sendVisible)
+        assertFalse(gone.ui.value.sendEnabled)
     }
 
-    @Test fun sendsOnePostToTwoGroupsWithCaptionAndVoiceAndClosesAtOnce() = runTest(dispatcher) {
+    @Test fun sendsOnePostToTwoGroupsWithCaptionAndVoiceAndClosesWhenPosted() = runTest(dispatcher) {
         data.loaded(group("g1", "Family"), group("g2", "Roommates"), group("g3", "Work"))
         val vm = sendTo("g1")
         vm.toggle("g2")
@@ -195,64 +194,120 @@ class ViewModelTests {
         vm.onVoiceNote(VoiceNoteFile(voice, 2_000))
         val events = mutableListOf<SendToViewModel.Event>()
         val job = launch { vm.event.toList(events) }
-        assertTrue(vm.ui.value.sendVisible)
+        assertTrue(vm.ui.value.sendEnabled)
         vm.send()
         val post = data.enqueued.single()
         assertEquals(listOf("g1", "g2"), post.groupIds)
         assertEquals("sunday", post.caption)
         assertEquals(2_000, post.voiceDurationMs)
         assertEquals(MediaKind.Photo, post.kind)
-        assertEquals(listOf(SendToViewModel.Event.Sent), events)
+        // The sheet stays open, busy, until the post exists (camera.sendto → send).
+        assertTrue(vm.ui.value.sending)
+        assertFalse(vm.ui.value.sendEnabled)
+        assertTrue(events.isEmpty())
+        vm.toggle("g3") // rows are disabled while sending
+        assertEquals(setOf("g1", "g2"), vm.ui.value.selected)
+        data.progressFlows["draft1"]!!.value = UploadProgress.Done(listOf("p1", "p2"))
+        assertEquals(listOf(SendToViewModel.Event.Sent(listOf("Family", "Roommates"))), events)
+        assertFalse(vm.ui.value.sending)
+        assertNull(handoff.pending.value)
+        assertFalse(voice.exists())
+        job.cancel()
+    }
+
+    @Test fun aFailedSendStaysInTheSheetWithTryAgainAndCancel() = runTest(dispatcher) {
+        data.loaded(group("g1", "Family"))
+        val vm = sendTo("g1")
+        val events = mutableListOf<SendToViewModel.Event>()
+        val job = launch { vm.event.toList(events) }
+        vm.send()
+        data.progressFlows["draft1"]!!.value = UploadProgress.Failed(DataError.Unexpected(null))
+        assertEquals(SendToViewModel.Alert.SendFailed(offline = false), vm.ui.value.alert)
+        assertEquals(listOf(SendToViewModel.Event.Failed), events)
+        assertNotNull(handoff.pending.value)
+        // Try Again: the same draft once more, busy again.
+        vm.retry()
+        assertEquals(listOf("draft1"), data.retried)
+        assertTrue(vm.ui.value.sending)
+        assertNull(vm.ui.value.alert)
+        // Offline while waiting: the offline alert.
+        data.onlineFlow.value = false
+        assertEquals(SendToViewModel.Alert.SendFailed(offline = true), vm.ui.value.alert)
+        // Cancel withdraws the draft; the capture and choices stay; a new Send starts over.
+        vm.dismissAlert()
+        assertEquals(listOf("draft1"), data.discarded)
+        assertNull(vm.ui.value.alert)
+        assertFalse(vm.ui.value.sending)
+        assertTrue(vm.ui.value.sendEnabled)
+        data.onlineFlow.value = true
+        vm.send()
+        assertEquals(2, data.enqueued.size)
+        job.cancel()
+    }
+
+    @Test fun closingAsksFirstOnlyWhenAMessageOrVoiceNoteWouldBeLost() = runTest(dispatcher) {
+        data.loaded(group("g1", "Family"))
+        val vm = sendTo("g1")
+        val events = mutableListOf<SendToViewModel.Event>()
+        val job = launch { vm.event.toList(events) }
+        vm.onCaption("hi")
+        vm.close()
+        assertEquals(SendToViewModel.Alert.Discard, vm.ui.value.alert)
+        assertTrue(events.isEmpty())
+        vm.dismissAlert()
+        assertNull(vm.ui.value.alert)
+        assertNotNull(handoff.pending.value)
+        vm.close()
+        vm.confirmDiscard()
+        assertEquals(listOf(SendToViewModel.Event.Close), events)
         assertNull(handoff.pending.value)
         job.cancel()
     }
 
-    @Test fun voiceRecordingLocksAndAttachesTheNote() {
+    @Test fun voiceRecordingAttachesReplacesAndDeletesTheNote() {
         data.loaded(group("g1", "Family"))
         handoff.put(media(), "g1", null)
-        val vm = SendToViewModel(data, handoff, tracker(), MemoryCapturePrefs(), SessionPromptGate(), voiceRecorderAvailable = true)
+        val vm = SendToViewModel(data, handoff, SessionPromptGate(), voiceRecorderAvailable = true)
         assertTrue(vm.ui.value.micAvailable)
-        assertTrue(vm.ui.value.voiceCoachVisible)
-        vm.onVoiceLocked() // nothing to lock before a recording
-        assertFalse(vm.ui.value.voiceLocked)
         vm.onVoiceRecording(true, startedAt = 42L)
         assertTrue(vm.ui.value.recordingVoice)
         assertEquals(42L, vm.ui.value.recordingStartedAt)
-        assertFalse(vm.ui.value.voiceCoachVisible) // recording dismisses the coach for good
-        vm.onVoiceLocked()
-        assertTrue(vm.ui.value.voiceLocked)
         val first = File(dir, "v1.m4a").apply { writeBytes(byteArrayOf(1)) }
         vm.onVoiceNote(VoiceNoteFile(first, 1_000))
         assertFalse(vm.ui.value.recordingVoice)
-        assertFalse(vm.ui.value.voiceLocked)
         assertNull(vm.ui.value.recordingStartedAt)
+        assertTrue(vm.ui.value.hasAdditions)
         // A new note replaces (and deletes) the previous one.
         val second = File(dir, "v2.m4a").apply { writeBytes(byteArrayOf(2)) }
         vm.onVoiceNote(VoiceNoteFile(second, 2_000))
         assertFalse(first.exists())
         assertEquals(second, vm.ui.value.voice?.file)
+        // "Delete recording".
+        vm.deleteVoice()
+        assertNull(vm.ui.value.voice)
+        assertFalse(second.exists())
     }
 
-    @Test fun nothingSelectedHidesSend() {
+    @Test fun nothingSelectedDisablesSend() {
         data.loaded(group("g1", "Family"))
         val vm = sendTo("g1")
         vm.toggle("g1")
-        assertFalse(vm.ui.value.sendVisible)
+        assertFalse(vm.ui.value.sendEnabled)
         vm.send()
         assertTrue(data.enqueued.isEmpty())
     }
 
-    @Test fun aPickedVideoByAFreeMemberPromptsOnceAndHidesSend() = runTest(dispatcher) {
+    @Test fun aPickedVideoByAFreeMemberPromptsOnceAndDisablesSend() = runTest(dispatcher) {
         data.loaded(group("g1", "Family"))
         val gate = SessionPromptGate()
         val vm = sendTo("g1", MediaKind.Video, gate)
         val first = vm.event.first()
         assertEquals(SendToViewModel.Event.OpenPaywall, first)
-        assertFalse(vm.ui.value.sendVisible)
+        assertFalse(vm.ui.value.sendEnabled)
         assertTrue(gate.hasPrompted)
         data.premium = true
         val premium = sendTo("g1", MediaKind.Video, gate)
-        assertTrue(premium.ui.value.sendVisible)
+        assertTrue(premium.ui.value.sendEnabled)
     }
 
     @Test fun queueFailureKeepsTheCaptureAndShowsTheError() {
@@ -260,7 +315,7 @@ class ViewModelTests {
         data.enqueueError = DataError.NotSignedIn
         val vm = sendTo("g1")
         vm.send()
-        assertEquals(DataError.NotSignedIn, vm.ui.value.sendError)
+        assertEquals(SendToViewModel.Alert.SendFailed(offline = false), vm.ui.value.alert)
         assertNotNull(handoff.pending.value)
     }
 
@@ -303,26 +358,23 @@ class ViewModelTests {
         assertFalse(file.exists())
     }
 
-    // ---- SendTracker ------------------------------------------------------------------------
+    // ---- PostSend ---------------------------------------------------------------------------
 
-    @Test fun trackerShowsOfflineAndFailureAndClearsWhenSent() = runTest(dispatcher) {
-        val tracker = tracker()
-        val draft = data.enqueue(app.data.media.upload.NewPost(MediaKind.Photo, media().file, groupIds = listOf("g1")))
-        val sent = mutableListOf<SendTracker.Sent>()
-        val job = launch { tracker.sent.toList(sent) }
-        tracker.track(draft, listOf("Family"))
-        assertNull(tracker.failure.value)
+    @Test fun postSendFollowsTheDraftUntilPostedOrFailed() = runTest(dispatcher) {
+        val sender = PostSend(data, CoroutineScope(dispatcher))
+        assertEquals(PostSend.Status.Idle, sender.status.value)
+        assertTrue(sender.send(app.data.media.upload.NewPost(MediaKind.Photo, media().file, groupIds = listOf("g1"))))
+        assertEquals(PostSend.Status.Sending, sender.status.value)
         data.onlineFlow.value = false
-        assertTrue(tracker.failure.value is SendTracker.Failure.Offline)
-        data.progressFlows[draft]!!.value = UploadProgress.Failed(DataError.Network)
-        assertTrue(tracker.failure.value is SendTracker.Failure.SendFailed)
-        tracker.retry(draft)
-        assertEquals(listOf(draft), data.retried)
+        assertEquals(PostSend.Status.Failed(offline = true), sender.status.value)
         data.onlineFlow.value = true
-        data.progressFlows[draft]!!.value = UploadProgress.Done(listOf("p1"))
-        assertNull(tracker.failure.value)
-        assertEquals(listOf("Family"), sent.single().groupNames)
-        job.cancel()
+        assertEquals(PostSend.Status.Sending, sender.status.value)
+        data.progressFlows["draft1"]!!.value = UploadProgress.Failed(DataError.Network)
+        assertEquals(PostSend.Status.Failed(offline = true), sender.status.value)
+        sender.retry()
+        assertEquals(listOf("draft1"), data.retried)
+        data.progressFlows["draft1"]!!.value = UploadProgress.Done(listOf("p1"))
+        assertEquals(PostSend.Status.Sent(listOf("p1")), sender.status.value)
     }
 
     // ---- daily.capture ----------------------------------------------------------------------
@@ -331,7 +383,7 @@ class ViewModelTests {
         data.invitation = invitation()
         data.groupById["g1"] = group("g1", "Family")
         val clock = ServerClock(Duration.ZERO) { T0.plusMillis(scope.testScheduler.currentTime) }
-        return DailyCaptureViewModel(data, tracker(), gate, dir, "g1", "inv1", clock, sizeOf = { 300 to 400 })
+        return DailyCaptureViewModel(data, gate, dir, "g1", "inv1", clock, sizeOf = { 300 to 400 })
     }
 
     @Test fun countdownTicksToClosesAtAndIsThenRemoved() {
@@ -352,7 +404,7 @@ class ViewModelTests {
     @Test fun openedAfterTheWindowShowsNoCountdownAndStillPostsWithTheInvitation() = runTest(dispatcher) {
         data.invitation = invitation(closesAt = T0.minusSeconds(1))
         data.groupById["g1"] = group("g1", "Family")
-        val vm = DailyCaptureViewModel(data, tracker(), SessionPromptGate(), dir, "g1", "inv1", ServerClock(Duration.ZERO) { T0 })
+        val vm = DailyCaptureViewModel(data, SessionPromptGate(), dir, "g1", "inv1", ServerClock(Duration.ZERO) { T0 })
         assertNull(vm.ui.value.countdown)
         vm.onPermission(true)
         vm.attach(FakeCameraController())
@@ -393,7 +445,11 @@ class ViewModelTests {
         assertEquals(listOf("g1"), post.groupIds)
         assertEquals("inv1", post.invitationId)
         assertNotNull(post.front)
-        assertEquals(listOf(DailyCaptureViewModel.Event.Sent), events)
+        // The cover stays busy until the post exists, then closes with the group's name for the toast.
+        assertTrue(vm.ui.value.sending)
+        assertTrue(events.isEmpty())
+        data.progressFlows["draft1"]!!.value = UploadProgress.Done(listOf("p1"))
+        assertEquals(listOf(DailyCaptureViewModel.Event.Sent("Family")), events)
         job.cancel()
     }
 

@@ -56,6 +56,8 @@ class CollageViewModel(
 
     sealed interface Event {
         data class Share(val file: File) : Event
+        /** No sheet opens: a toast with `camera.sendto.error.offline` / `.generic`; the next tap retries. */
+        data class ShareFailed(val offline: Boolean) : Event
     }
 
     private val state = MutableStateFlow(UiState())
@@ -147,14 +149,15 @@ class CollageViewModel(
         state.update { it.copy(sharing = true) }
         viewModelScope.launch {
             try {
-                val url = data.signedUrls(listOf(path))[path] ?: return@launch
+                val url = data.signedUrls(listOf(path))[path] ?: throw DataException(DataError.FileUnavailable)
                 val file = File(File(cacheDir, SHARE_DIR), "share-$n.jpg")
                 data.download(url, file)
                 events.send(Event.Share(file))
             } catch (e: CancellationException) {
                 throw e
-            } catch (_: Exception) {
+            } catch (e: Exception) {
                 // No sheet opens; the pill stays and the next tap retries (collage.share → States).
+                events.send(Event.ShareFailed(offline = (e as? DataException)?.error == DataError.Network))
             } finally {
                 state.update { it.copy(sharing = false) }
             }

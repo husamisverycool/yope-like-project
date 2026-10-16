@@ -23,9 +23,11 @@ final class SettingsNotificationsModel {
     private(set) var quietHoursOn = false
     /// System notifications off or never asked (section 1).
     private(set) var systemOff = false
-    /// Section footer errors (`settings.notifications.error`).
+    /// The failed change of each section (`settings.notifications.error`); the screen shows it as a message-only alert
+    /// (trigger `errorCount`).
     private(set) var groupsError: String?
     private(set) var quietError: String?
+    private(set) var errorCount = 0
 
     private let data: AccountDataSource
     private let notifications: NotificationAuthorizing
@@ -68,6 +70,7 @@ final class SettingsNotificationsModel {
         } catch {
             if let current = groups.firstIndex(where: { $0.id == groupID }) { groups[current].muted = previous }
             groupsError = Copy.settingsNotificationsError
+            errorCount += 1
         }
     }
 
@@ -88,6 +91,7 @@ final class SettingsNotificationsModel {
             (quietStart, quietEnd) = previous
             quietHoursOn = previous.0 != nil
             quietError = Copy.settingsNotificationsError
+            errorCount += 1
         }
     }
 
@@ -102,6 +106,10 @@ final class SettingsNotificationsModel {
         } catch {
             (quietStart, quietEnd) = previous
             quietError = Copy.settingsNotificationsError
+            errorCount += 1
         }
     }
+
+    /// The latest failure's message (the alert).
+    var alertMessage: String? { quietError ?? groupsError }
 }

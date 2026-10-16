@@ -1,5 +1,5 @@
-// camera.sendto view model and the background send (outbox) — design/surfaces/camera.sendto.md,
-// docs/API.md recipe 9.4.
+// camera.sendto view model and the in-place send (busy, alert on failure; through AppData's outbox) —
+// design/surfaces/camera.sendto.md (RC-8), docs/API.md recipe 9.4.
 @testable import App
 import AppData
 import AppModels
@@ -26,12 +26,12 @@ final class CaptureSendToModelTests: XCTestCase {
         XCTAssertEqual(model.selection, ["fake-group-2"])
     }
 
-    func testLeftGroupPreselectsNothingAndHidesSend() async {
+    func testLeftGroupPreselectsNothingAndDisablesSend() async {
         let rig = CaptureTestRig()
         let model = rig.sendToModel(contextGroupID: "left-group")
         await model.load()
         XCTAssertTrue(model.selection.isEmpty)
-        XCTAssertFalse(model.canSend, "the send button is hidden with nothing selected")
+        XCTAssertFalse(model.canSend, "the send capsule is disabled (#4D4D4D) with nothing selected")
     }
 
     func testToggleKeepsListOrderAndCountsForHaptic() async {
@@ -95,16 +95,16 @@ final class CaptureSendToModelTests: XCTestCase {
         XCTAssertTrue(premium.canSend)
     }
 
-    func testSendSubmitsAndClosesAtOnce() async {
+    func testSendWaitsThenClosesWithConfirmation() async {
         let rig = CaptureTestRig()
         var sent = 0
         let model = rig.sendToModel(contextGroupID: "fake-group-1", onSent: { sent += 1 })
         await model.load()
         model.caption = "  sunset  "
-        model.send()
-        XCTAssertEqual(sent, 1, "the sheet closes before the upload finishes")
-        let posted = await captureEventually { rig.posting.published.count == 1 }
-        XCTAssertTrue(posted)
+        await model.send()
+        XCTAssertEqual(sent, 1, "the composer closes once posted")
+        XCTAssertFalse(model.isSending)
+        XCTAssertNil(model.sendFailure)
         let draft = try! XCTUnwrap(rig.posting.published.first)
         XCTAssertEqual(draft.groupIDs, [GroupID("fake-group-1")])
         XCTAssertEqual(draft.caption, "  sunset  ")
@@ -112,24 +112,112 @@ final class CaptureSendToModelTests: XCTestCase {
         XCTAssertEqual(draft.original.contentType, ContentType.jpeg)
         XCTAssertNil(draft.invitationID)
         XCTAssertEqual(rig.haptics, [Tokens.Haptics.globalSend])
-        XCTAssertEqual(rig.sendCenter.confirmation, Copy.cameraSendtoToastPostedOne(group: CaptureFakes.groups[0].name),
-                       "the lime toast for camera.sendto.duration.toastVisible")
+        XCTAssertEqual(rig.sendCenter.confirmations.message, Copy.cameraSendtoToastPostedOne(group: CaptureFakes.groups[0].name),
+                       "iOS confirms with an accessibility announcement (C-26)")
+    }
+
+    func testManyGroupsConfirmation() async {
+        let rig = CaptureTestRig()
+        let model = rig.sendToModel()
+        await model.load()
+        await model.send()
+        XCTAssertEqual(rig.sendCenter.confirmations.message, Copy.cameraSendtoToastPostedMany)
+    }
+
+    func testBlankMessageIsNoMessage() async {
+        let rig = CaptureTestRig()
+        let model = rig.sendToModel()
+        await model.load()
+        model.caption = "   "
+        XCTAssertFalse(model.hasMessage)
+        await model.send()
+        XCTAssertNil(rig.posting.published.first?.caption)
+    }
+
+    func testSendingStateDisablesTheComposer() async {
+        let rig = CaptureTestRig()
+        rig.posting.suspendsPublish = true
+        var closed = 0
+        let model = rig.sendToModel(onClose: { closed += 1 })
+        await model.load()
+        let send = Task { await model.send() }
+        let busy = await captureEventually { model.isSending }
+        XCTAssertTrue(busy, "busy capsule, title 'Sending…'")
+        let before = model.selection
+        model.toggle("fake-group-1")
+        XCTAssertEqual(model.selection, before, "rows are disabled while sending")
+        model.close()
+        XCTAssertEqual(closed, 0, "close is disabled while sending")
+        send.cancel()
+        _ = await captureEventually { !model.isSending }
+    }
+
+    func testFailureKeepsEverythingAndTryAgainResends() async {
+        let rig = CaptureTestRig()
+        rig.posting.publishError = .offline
+        var sent = 0
+        let model = rig.sendToModel(onSent: { sent += 1 })
+        await model.load()
+        model.caption = "hello"
+        await model.beginVoiceRecording()
+        model.keepVoiceRecording()
+        await model.send()
+        XCTAssertEqual(model.sendFailure, .offline)
+        XCTAssertEqual(CaptureSendCenter.Failure.offline.message, Copy.cameraSendtoErrorOffline)
+        XCTAssertEqual(sent, 0, "stays in the sheet")
+        XCTAssertEqual(model.caption, "hello")
+        XCTAssertNotNil(model.voiceNote, "the voice note is kept")
+        XCTAssertEqual(model.selection, CaptureFakes.groups.map(\.id))
+        XCTAssertEqual(rig.haptics, [Tokens.Haptics.globalError])
+        XCTAssertTrue(rig.posting.pending.isEmpty, "the failed draft leaves the outbox: Try Again sends the composer's capture")
+
+        rig.posting.publishError = nil
+        await model.retrySend()
+        XCTAssertNil(model.sendFailure)
+        XCTAssertEqual(sent, 1)
+        XCTAssertEqual(rig.posting.published.count, 1)
+        XCTAssertEqual(rig.posting.published.first?.caption, "hello")
+        XCTAssertNotNil(rig.posting.published.first?.voice)
+    }
+
+    func testCancelOnTheAlertKeepsTheComposer() async {
+        let rig = CaptureTestRig()
+        rig.posting.publishError = .api(.notGroupMember)
+        let model = rig.sendToModel()
+        await model.load()
+        await model.send()
+        XCTAssertEqual(model.sendFailure, .sendFailed)
+        XCTAssertEqual(CaptureSendCenter.Failure.sendFailed.message, Copy.cameraSendtoErrorGeneric)
+        model.dismissSendFailure()
+        XCTAssertNil(model.sendFailure)
+        XCTAssertTrue(model.canSend)
+    }
+
+    func testCloseAsksOnlyWithAMessageOrVoiceNote() async {
+        let rig = CaptureTestRig()
+        let model = rig.sendToModel()
+        await model.load()
+        XCTAssertFalse(model.needsDiscardConfirmation, "nothing to lose: closes at once")
+        model.caption = "hi"
+        XCTAssertTrue(model.needsDiscardConfirmation)
+        model.caption = ""
+        await model.beginVoiceRecording()
+        model.keepVoiceRecording()
+        XCTAssertTrue(model.needsDiscardConfirmation)
     }
 
     func testHoldRecordsAndLiftKeepsTheVoiceNote() async {
         let rig = CaptureTestRig()
         let model = rig.sendToModel()
         await model.load()
-        XCTAssertTrue(model.showsVoiceCoach, "voice coach on first use")
         let started = await model.beginVoiceRecording()
         XCTAssertTrue(started)
         XCTAssertEqual(model.voicePhase, .holding)
-        XCTAssertTrue(model.showsVoiceRow, "the recorder row replaces the field")
-        XCTAssertTrue(rig.coach.isDismissed(.voice))
+        XCTAssertTrue(model.showsVoiceRow, "the recording capsule replaces the message pill")
         model.keepVoiceRecording()
         XCTAssertEqual(model.voicePhase, .idle)
         XCTAssertEqual(model.voiceNote?.durationMs, 1000)
-        XCTAssertTrue(model.showsVoiceRow, "attached: delete · length · play")
+        XCTAssertTrue(model.showsVoiceRow, "attached: the voice capsule shows ▶ and the length")
         model.toggleVoicePlayback()
         XCTAssertTrue(model.isPlayingVoice)
     }
@@ -206,9 +294,8 @@ final class CaptureSendToModelTests: XCTestCase {
         let model = rig.sendToModel()
         await model.load()
         await model.beginVoiceRecording()
-        model.send()
-        let posted = await captureEventually { rig.posting.published.count == 1 }
-        XCTAssertTrue(posted)
+        await model.send()
+        XCTAssertEqual(rig.posting.published.count, 1)
         XCTAssertEqual(rig.posting.published.first?.voice?.contentType, ContentType.m4a)
         XCTAssertEqual(rig.posting.published.first?.voiceDurationMs, 1000, "a recording in progress is kept on send")
     }
@@ -240,9 +327,8 @@ final class CaptureSendToModelTests: XCTestCase {
         model.toggle("fake-group-2")
         XCTAssertNil(model.replyToPostID, "sent to more groups it is an ordinary post (reply_group_mismatch)")
         model.toggle("fake-group-2")
-        model.send()
-        let posted = await captureEventually { rig.posting.published.count == 1 }
-        XCTAssertTrue(posted)
+        await model.send()
+        XCTAssertEqual(rig.posting.published.count, 1)
         XCTAssertEqual(rig.posting.published.first?.replyToPostID, PostID("post-9"))
         XCTAssertEqual(rig.replyClears, 1, "the handoff is cleared once the reply is sent")
     }
@@ -251,9 +337,8 @@ final class CaptureSendToModelTests: XCTestCase {
         let rig = CaptureTestRig()
         let model = rig.sendToModel(contextGroupID: "fake-group-1")
         await model.load()
-        model.send()
-        let posted = await captureEventually { rig.posting.published.count == 1 }
-        XCTAssertTrue(posted)
+        await model.send()
+        XCTAssertEqual(rig.posting.published.count, 1)
         XCTAssertNil(rig.posting.published.first?.replyToPostID)
     }
 
@@ -262,6 +347,7 @@ final class CaptureSendToModelTests: XCTestCase {
         let model = rig.sendToModel()
         await model.save()
         XCTAssertEqual(rig.library.saved.count, 1)
+        XCTAssertEqual(rig.sendCenter.confirmations.message, Copy.cameraSendtoToastSaved, "iOS: announcement (C-26)")
     }
 }
 
@@ -275,41 +361,33 @@ final class CaptureSendCenterTests: XCTestCase {
         return CaptureSendRequest(payload: .media(.photo(CaptureTestImages.still(), capturedAt: Date())), groupIDs: groups, caption: "hi")
     }
 
-    func testOfflineFailureShowsToastAndRetriesWhenOnline() async {
+    func testPostedOutcomeRemovesCameraFilesAndConfirms() async {
         let rig = CaptureTestRig()
-        rig.posting.publishError = .offline
-        let center = rig.sendCenter
-        center.startObservingNetwork()
-        await center.send(request())
-        XCTAssertEqual(center.failure, .offline)
-        XCTAssertEqual(rig.haptics, [Tokens.Haptics.globalError])
-        XCTAssertEqual(rig.posting.pending.count, 1, "the outbox keeps the draft")
-
-        rig.posting.publishError = nil
-        rig.posting.goOnline()
-        let cleared = await captureEventually { center.failure == nil && rig.posting.published.count == 1 }
-        XCTAssertTrue(cleared)
-        XCTAssertEqual(rig.haptics.last, Tokens.Haptics.globalSend)
+        var outgoing = request()
+        outgoing.confirmation = "Added!"
+        let outcome = await rig.sendCenter.send(outgoing)
+        XCTAssertEqual(outcome, .posted)
+        XCTAssertEqual(rig.sendCenter.postedCount, 1)
+        XCTAssertEqual(rig.haptics, [Tokens.Haptics.globalSend])
+        XCTAssertEqual(rig.sendCenter.confirmations.message, "Added!")
     }
 
-    func testPermanentFailureAndManualRetry() async {
+    func testOfflineAndPermanentFailures() async {
         let rig = CaptureTestRig()
+        rig.posting.publishError = .offline
+        let offline = await rig.sendCenter.send(request())
+        XCTAssertEqual(offline, .failed(.offline))
         rig.posting.publishError = .api(.notGroupMember)
-        let center = rig.sendCenter
-        await center.send(request())
-        XCTAssertEqual(center.failure, .sendFailed)
-        await center.retry()
-        XCTAssertEqual(center.failure, .sendFailed, "still failing")
-        rig.posting.publishError = nil
-        await center.retry()
-        XCTAssertNil(center.failure)
-        XCTAssertEqual(rig.posting.published.count, 1)
-        XCTAssertEqual(center.postedCount, 1)
+        let permanent = await rig.sendCenter.send(request())
+        XCTAssertEqual(permanent, .failed(.sendFailed))
+        XCTAssertEqual(rig.haptics, [Tokens.Haptics.globalError, Tokens.Haptics.globalError])
+        XCTAssertEqual(rig.posting.discarded.count, 2, "failed drafts never stay in the outbox to replay later")
+        XCTAssertEqual(rig.sendCenter.postedCount, 0)
     }
 
     func testDailyAnswerDraftCarriesFrontAndInvitation() async {
         let rig = CaptureTestRig()
-        await rig.sendCenter.send(request(groups: ["g1"], invitationID: "inv-9", daily: true))
+        _ = await rig.sendCenter.send(request(groups: ["g1"], invitationID: "inv-9", daily: true))
         let draft = try! XCTUnwrap(rig.posting.published.first)
         XCTAssertEqual(draft.kind, .photo)
         XCTAssertEqual(draft.invitationID, InvitationID("inv-9"))

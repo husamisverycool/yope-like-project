@@ -1,54 +1,53 @@
-// Surface: week.edit — reorder, remove, edit text; save the recap or a selection as a named album.
-// Built from documented Yope components (S-13): references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png
-// (sheet header, check circles, lime button), references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png
-// (name sheet), references/owner/yope-week-recap.jpg (pics grid).
+// Surface: week.edit — design/surfaces/week.edit.md
+// References: references/auto/retro/video/ig-DDbA_F7x-j7-composer-f130-147-f188-197.png ("Add to Your Week": Cancel /
+// title / Update, chosen-photos strip, grey header line, 4-column grid), references/auto/retro/press/tc-2023-12-retro3.png
+// phones 2–3 ("Add Message" pill, "Add a Message" modal with Done and counter), references/auto/retro/apk/
+// retro-android-2026.10.1150-strings.txt ("New Album", "Name your album", "Create Album").
 package app.feature.social.week
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.paddingFrom
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.animation.core.VisibilityThreshold
-import androidx.compose.ui.zIndex
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.layout.LastBaseline
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -57,364 +56,384 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.designsystem.R
 import app.designsystem.generated.Tokens
+import app.feature.social.common.BuildApproximations
 import app.feature.social.common.Formats
-import app.feature.social.common.Glyph
-import app.feature.social.common.HeaderCircle
-import app.feature.social.common.Line
-import app.feature.social.common.LoadingHud
+import app.feature.social.common.LocalApproximations
 import app.feature.social.common.RemotePhoto
 import app.feature.social.common.SocialBlocked
-import app.feature.social.common.Type
-import app.feature.social.common.announce
-import app.feature.social.common.rememberHaptics
-import app.feature.social.common.shows
+import app.feature.social.common.namedHaptic
+import app.feature.social.common.photoModel
 import app.feature.social.common.stringRes
+import app.ui.components.ActivityIndicator
+import app.ui.components.CircleButtonStyle
+import app.ui.components.CircleIconButton
+import app.ui.components.DayTile
+import app.ui.components.DayTileView
 import app.ui.components.FormTextField
-import app.ui.components.HeaderCircleFill
+import app.ui.components.HeaderTextButton
+import app.ui.components.OutlineCta
+import app.ui.components.Capsule
+import app.ui.components.CapsuleStyle
+import app.ui.components.PlatformToast
 import app.ui.components.PrimaryButton
 import app.ui.components.PrimaryButtonSize
+import app.ui.components.stripTileShape
+import app.ui.foundation.DsMotion
+import app.ui.foundation.PageRoles
+import app.ui.foundation.reduceMotion
+import app.ui.foundation.tapClickable
+import app.ui.haptics.rememberHaptics
+import app.ui.system.DsBottomSheet
+import app.ui.system.SheetHeader
+import app.ui.system.SheetTextAction
+import app.ui.system.SystemAlertDialog
+import app.ui.text.TextRoles
+import java.time.ZoneId
 
 /**
- * The editor as a native sheet over `week.recap` (Android: `ModalBottomSheet(skipPartiallyExpanded =
- * true)`, `easing.global.native.sheet`: native sheets keep the system motion; `spring.global.sheetPresent` is for custom sheets). [onClose] pops the route.
+ * `week.edit` as a page sheet (C-29) over its opener: the recap editor, or — from `week.recap`'s pill or a
+ * `week.history` week menu ([WeekEditViewModel] `albumOnly`) — the album sheet alone. [onClose] pops the route.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeekEditSheet(vm: WeekEditViewModel, onClose: () -> Unit) {
     val state by vm.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     val haptics = rememberHaptics()
-    val view = LocalView.current
     val saved = stringRes(R.string.week_edit_toast_saved)
     val albumSaved = stringRes(R.string.week_edit_toast_albumsaved)
+    val failed = stringRes(R.string.week_edit_error_save)
+    val latest by rememberUpdatedState(state)
     LaunchedEffect(vm) {
         vm.effects.collect { effect ->
             when (effect) {
-                EditEffect.Saved -> { haptics.play(Tokens.Haptics.globalSuccess); announce(view, saved) }
-                EditEffect.AlbumSaved -> { haptics.play(Tokens.Haptics.globalSuccess); announce(view, albumSaved) }
-                EditEffect.Failed -> haptics.play(Tokens.Haptics.globalError)
+                EditEffect.Saved -> { haptics.perform(Tokens.Haptics.globalSuccess); PlatformToast.show(context, saved) }
+                EditEffect.AlbumSaved -> { haptics.perform(Tokens.Haptics.globalSuccess); PlatformToast.show(context, albumSaved) }
+                EditEffect.Failed -> {
+                    haptics.perform(Tokens.Haptics.globalError)
+                    if (latest.error == EditError.Save || latest.albumError == EditError.Save) PlatformToast.show(context, failed)
+                }
                 EditEffect.Close -> onClose()
             }
         }
     }
-    val albumOnly = state.albumSheet && state.recap == null
-    val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    ModalBottomSheet(onDismissRequest = onClose, sheetState = sheet, containerColor = Tokens.Colors.globalBackgroundDeep) {
-        if (albumOnly) {
-            AlbumSheetContent(state, onName = vm::setAlbumName, onSave = vm::saveAlbum, onClose = onClose)
-        } else {
+    var confirmDiscard by remember { mutableStateOf(false) }
+    val cancel = { if (state.dirty) confirmDiscard = true else onClose() }
+    if (!state.albumSheet || !vm.albumOnly) {
+        DsBottomSheet(onDismissRequest = cancel) {
             WeekEditContent(
                 state = state,
-                onClose = onClose,
-                onToggle = { id -> haptics.play(Tokens.Haptics.globalSelect); vm.toggle(id) },
-                onMove = vm::move,
-                onText = vm::setText,
+                onCancel = cancel,
                 onSave = vm::save,
-                onSaveAsAlbum = vm::openAlbumSheet,
+                onToggle = vm::toggle,
+                onMove = vm::move,
+                onMessage = vm::openMessage,
+                onAlbum = vm::openAlbumSheet,
             )
         }
     }
-    if (state.albumSheet && !albumOnly) {
-        val albumState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        ModalBottomSheet(onDismissRequest = vm::closeAlbumSheet, sheetState = albumState, containerColor = Tokens.Colors.globalBackgroundDeep) {
-            AlbumSheetContent(state, onName = vm::setAlbumName, onSave = vm::saveAlbum, onClose = vm::closeAlbumSheet)
-        }
+    if (state.messageSheet) {
+        DsBottomSheet(onDismissRequest = vm::closeMessage) { MessageSheetContent(state.text, vm::setText, vm::closeMessage) }
+    }
+    if (state.albumSheet) {
+        DsBottomSheet(onDismissRequest = vm::closeAlbumSheet) { AlbumSheetContent(state, vm::setAlbumName, vm::saveAlbum, vm::closeAlbumSheet) }
+    }
+    if (confirmDiscard) {
+        SystemAlertDialog(
+            title = stringRes(R.string.week_edit_lostchanges_title),
+            text = stringRes(R.string.week_edit_lostchanges_message),
+            confirmLabel = stringRes(R.string.week_edit_lostchanges_confirm),
+            onConfirm = { confirmDiscard = false; onClose() },
+            dismissLabel = stringRes(R.string.photo_viewer_delete_cancel),
+            onDismiss = { confirmDiscard = false },
+            destructive = true,
+        )
     }
 }
 
-/** A sheet header: ✕ circle at the left (`color.global.controlOnDeep`), title centred (text role `sheetTitle`). */
-@Composable
-fun SheetHeader(title: String, closeLabel: String, onClose: () -> Unit, titleStyle: androidx.compose.ui.text.TextStyle = Type.sheetTitle()) {
-    Box(Modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalHeaderInset).height(Tokens.Sizes.globalHeaderButton)) {
-        HeaderCircle(Tokens.Icons.globalClose, closeLabel, HeaderCircleFill.OnDeep, onClose, Modifier.align(Alignment.CenterStart))
-        Line(title, titleStyle, Tokens.Colors.globalTextPrimary, Modifier.align(Alignment.Center).padding(horizontal = Tokens.Sizes.globalHeaderButton).semantics { heading() })
-    }
-}
-
-/** The editor's contents (snapshots render this directly). */
+/**
+ * The editor (`week.edit.layout.composition`): native toolbar Cancel / "Edit Recap" / Update (system tint, C-08); the
+ * chosen-photos strip (C-17, recap order; touch and hold to reorder — `week.edit.layout.reorder`); the action row
+ * (C-06 outline capsules of equal widths: `icon.global.edit` + "Add a message" / "Edit message", "Save as Album");
+ * the header line "Photos taken in Week 27" (`listSubtitle`, secondary); the 4-column grid of the week's photos
+ * (square cells, `size.global.stripGap`), tap toggles in / out of the recap. Blocks `size.global.sectionGap` apart.
+ */
 @Composable
 fun WeekEditContent(
     state: EditState,
-    onClose: () -> Unit,
+    onCancel: () -> Unit,
+    onSave: () -> Unit,
     onToggle: (String) -> Unit,
     onMove: (String, Int) -> Unit,
-    onText: (String) -> Unit,
-    onSave: () -> Unit,
-    onSaveAsAlbum: () -> Unit,
-    gridState: LazyGridState = rememberLazyGridState(),
+    onMessage: () -> Unit,
+    onAlbum: () -> Unit,
 ) {
-    val pair = shows(SocialBlocked.saveAsAlbumPair)
-    Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep).testTag("week.edit")) {
-        Column(Modifier.fillMaxSize().imePadding()) {
-            SheetHeader(stringRes(R.string.week_edit_title), stringRes(R.string.week_edit_a11y_close), onClose)
-            when (state.phase) {
-                EditState.Phase.Loading -> Box(Modifier.weight(1f)) { LoadingHud() }
-                EditState.Phase.NotReady, EditState.Phase.Error -> Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Line(
-                        stringRes(if (state.phase == EditState.Phase.NotReady) R.string.week_edit_error_notready else R.string.week_edit_error_save),
-                        Type.emptyTitle(),
-                        Tokens.Colors.globalTextPrimary,
-                        maxLines = Int.MAX_VALUE,
-                        align = TextAlign.Center,
+    val haptics = rememberHaptics()
+    val margin = Tokens.Sizes.globalScreenMargin
+    val gap = Tokens.Sizes.globalStripGap
+    Column(Modifier.fillMaxWidth().testTag("week.edit")) {
+        Box(Modifier.fillMaxWidth()) {
+            SheetHeader(
+                stringRes(R.string.week_edit_title),
+                leading = SheetTextAction(stringRes(R.string.week_edit_cancel), onCancel),
+                trailing = if (state.saving) null else SheetTextAction(stringRes(R.string.week_edit_save), onSave, enabled = state.phase == EditState.Phase.Ready),
+            )
+            if (state.saving) ActivityIndicator(stringRes(R.string.week_history_a11y_loading), Modifier.align(Alignment.CenterEnd).padding(end = margin).size(Tokens.Sizes.globalIcon))
+        }
+        when (state.phase) {
+            EditState.Phase.NotReady, EditState.Phase.Error -> Box(Modifier.fillMaxWidth().padding(vertical = Tokens.Sizes.globalButtonHeight), contentAlignment = Alignment.Center) {
+                Text(
+                    stringRes(if (state.phase == EditState.Phase.NotReady) R.string.week_edit_error_notready else R.string.week_edit_error_save),
+                    style = TextRoles.body,
+                    color = PageRoles.secondaryText(),
+                    modifier = Modifier.padding(horizontal = margin),
+                )
+            }
+            else -> LazyVerticalGrid(
+                columns = GridCells.Fixed(Tokens.Counts.weekEditCountGridColumns),
+                contentPadding = PaddingValues(start = margin, end = margin, bottom = Tokens.Sizes.globalSectionGap),
+                horizontalArrangement = Arrangement.spacedBy(gap),
+                verticalArrangement = Arrangement.spacedBy(gap),
+            ) {
+                item(key = "strip", span = { GridItemSpan(maxLineSpan) }) {
+                    Box(Modifier.padding(top = Tokens.Sizes.globalSectionHeaderToContent)) {
+                        ChosenStrip(state, onMove, Modifier.fillMaxWidth())
+                    }
+                }
+                item(key = "actions", span = { GridItemSpan(maxLineSpan) }) {
+                    Row(Modifier.fillMaxWidth().padding(top = Tokens.Sizes.globalSectionGap), horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalPillGap)) {
+                        OutlineCta(
+                            stringRes(if (state.text.isBlank()) R.string.week_edit_message_add else R.string.week_edit_message_edit),
+                            onMessage,
+                            Modifier.weight(1f),
+                            icon = Tokens.Icons.globalEdit,
+                        )
+                        Capsule(stringRes(R.string.week_edit_saveasalbum), onAlbum, Modifier.weight(1f), style = CapsuleStyle.Outline)
+                    }
+                }
+                item(key = "header", span = { GridItemSpan(maxLineSpan) }) {
+                    val week = state.weekStart?.let(Formats::isoWeek)
+                    Text(
+                        week?.let { stringRes(R.string.week_edit_header, it) }.orEmpty(),
+                        style = TextRoles.listSubtitle,
+                        color = PageRoles.secondaryText(),
+                        modifier = Modifier
+                            .padding(top = Tokens.Sizes.globalSectionGap)
+                            .paddingFrom(LastBaseline, after = Tokens.Sizes.globalSectionHeaderToContent - gap),
                     )
                 }
-                EditState.Phase.Ready -> {
-                    EditGrid(state, onToggle, onMove, onText, gridState, Modifier.weight(1f))
-                    if (state.error == EditError.Save) {
-                        Line(
-                            stringRes(R.string.week_edit_error_save),
-                            Type.listSubtitle(),
-                            Tokens.Colors.globalTextSecondary,
-                            Modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalButtonMarginHSheet),
-                            maxLines = Int.MAX_VALUE,
-                            align = TextAlign.Center,
-                        )
-                    }
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .windowInsetsPadding(WindowInsets.navigationBars)
-                            .padding(start = Tokens.Sizes.globalButtonMarginHSheet, end = Tokens.Sizes.globalButtonMarginHSheet, bottom = Tokens.Sizes.cameraSendtoSizeSendButtonBottom),
-                        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalHeaderGap),
-                    ) {
-                        if (pair) DarkButton(stringRes(R.string.week_edit_saveasalbum), enabled = state.checked.isNotEmpty(), onClick = onSaveAsAlbum, modifier = Modifier.weight(1f))
-                        PrimaryButton(stringRes(R.string.week_edit_save), onSave, Modifier.weight(1f), size = PrimaryButtonSize.Sheet, loading = state.saving)
+                if (state.phase == EditState.Phase.Loading) {
+                    items(PLACEHOLDER_CELLS) { Box(Modifier.aspectRatio(1f).background(Tokens.Colors.globalControl)) }
+                } else {
+                    items(state.photos, key = { it.post.id }) { photo ->
+                        GridCell(photo, photo.post.id in state.checked, state, onToggle = {
+                            haptics.perform(Tokens.Haptics.globalSelect)
+                            onToggle(photo.post.id)
+                        })
                     }
                 }
             }
         }
-        if (state.saving && state.phase == EditState.Phase.Ready) LoadingHud()
     }
 }
 
-/**
- * Yope's dark secondary button of the "more friends" + "send" pair. week.edit names
- * `camera.sendto` pair tokens that do not exist (the pair was not measured): until they do
- * ([SocialBlocked.saveAsAlbumPair]) it shows only in development builds, with the primary button's
- * geometry and the dark control role on black (`color.global.controlOnDeep`).
- */
+/** Grid rows drawn while loading (two rows of four C-17 placeholders, VID-COMP grey placeholders). */
+private val PLACEHOLDER_CELLS: Int get() = Tokens.Counts.weekEditCountGridColumns * 2
+
+/** One grid cell: the photo (square, aspect fill), its in / out mark (`week.edit.layout.selectionMark`, BLOCKED). */
 @Composable
-private fun DarkButton(text: String, enabled: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val shape = RoundedCornerShape(Tokens.Radii.globalButton)
+private fun GridCell(photo: WeekPhoto, checked: Boolean, state: EditState, onToggle: () -> Unit) {
+    val zone = ZoneId.systemDefault()
+    val day = photo.post.createdAt.atZone(zone).toLocalDate()
+    val label = stringRes(R.string.week_history_a11y_tile, Formats.weekdayLong(day), Formats.spokenDate(day), photo.authorName.orEmpty())
+    val value = stringRes(if (checked) R.string.week_edit_a11y_inrecap else R.string.week_edit_a11y_notinrecap)
+    val mark = SocialBlocked.editSelectionMark || LocalApproximations.current
     Box(
-        modifier
-            .heightIn(min = Tokens.Sizes.globalButtonHeightSheet)
-            .clip(shape)
-            .background(Tokens.Colors.globalControlOnDeep, shape)
-            .clickable(enabled = enabled, role = Role.Button, onClick = onClick),
-        contentAlignment = Alignment.Center,
+        Modifier
+            .aspectRatio(1f)
+            .tapClickable(role = Role.Checkbox, onClick = onToggle)
+            .clearAndSetSemantics {
+                contentDescription = label
+                stateDescription = value
+                role = Role.Checkbox
+            },
     ) {
-        Line(text, Type.button(), if (enabled) Tokens.Colors.globalTextPrimary else Tokens.Colors.globalTextSecondary)
+        RemotePhoto(photo.thumbPath, null, Modifier.fillMaxSize())
+        if (mark) {
+            Icon(
+                if (checked) Tokens.Icons.globalCheck else Tokens.Icons.globalUncheck,
+                contentDescription = null,
+                tint = Tokens.Colors.globalTextOnMedia,
+                modifier = Modifier.align(Alignment.TopEnd).padding(BuildApproximations.SELECTION_MARK_INSET).size(Tokens.Sizes.globalCheckCircle),
+            )
+        }
     }
 }
 
 /**
- * The week's photos in the pics grid with Yope's selection circle at each tile's top-right corner
- * (inset `size.global.listGap`, approximation), then the recap text field (position BLOCKED:
- * under the grid, the spec's approximation). Reorder (`week.edit.layout.reorder`, Apple / Google
- * Photos, G-16): touch and hold a checked tile, drag it, release to drop; the tile follows the
- * finger and the other tiles move to show the drop position (the platform's item placement
- * animation; none under Reduce Motion). Haptics `week.edit.haptic.dragStart` / `.dragAlign`.
+ * The chosen-photos strip (C-17 photo tiles in recap order). Reorder (`week.edit.layout.reorder`, Apple / Google Photos):
+ * touch and hold a tile, drag, release; the tile follows the finger, the others shift with `duration.global.stripInsert`
+ * (`easing.global.standard`; snaps under Reduce Motion); haptics `week.edit.haptic.dragStart` / `.dragAlign`. The spec's
+ * TalkBack "move earlier / later" actions have no copy keys yet (reported), so they are not offered. Empty strip
+ * (nothing chosen): one placeholder tile.
  */
-@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
-private fun EditGrid(
-    state: EditState,
-    onToggle: (String) -> Unit,
-    onMove: (String, Int) -> Unit,
-    onText: (String) -> Unit,
-    gridState: LazyGridState,
-    modifier: Modifier,
-) {
+private fun ChosenStrip(state: EditState, onMove: (String, Int) -> Unit, modifier: Modifier) {
     val haptics = rememberHaptics()
-    val reduceMotion by app.designsystem.rememberReduceMotion()
+    val reduce = reduceMotion()
+    val listState = rememberLazyListState()
+    val zone = ZoneId.systemDefault()
+    val strip = state.strip
     var dragging by remember { mutableStateOf<String?>(null) }
-    // The finger in grid coordinates, and where it holds the dragged tile.
     var pointer by remember { mutableStateOf(Offset.Zero) }
     var grab by remember { mutableStateOf(Offset.Zero) }
-    val inRecap = stringRes(R.string.week_edit_a11y_inrecap)
-    val notInRecap = stringRes(R.string.week_edit_a11y_notinrecap)
-    val checked by androidx.compose.runtime.rememberUpdatedState(state.checked)
-    fun itemAt(offset: Offset) = gridState.layoutInfo.visibleItemsInfo.firstOrNull { item ->
-        val o = item.offset
-        val s = item.size
-        offset.x >= o.x && offset.x < o.x + s.width && offset.y >= o.y && offset.y < o.y + s.height
+    val checked by rememberUpdatedState(state.checked)
+    val tiles: List<DayTile> = if (state.phase == EditState.Phase.Loading) List(Tokens.Counts.weekEditCountGridColumns) { DayTile.Placeholder("loading-$it") }
+    else if (strip.isEmpty()) listOf(DayTile.Placeholder("empty"))
+    else strip.map { p ->
+        val day = p.post.createdAt.atZone(zone).toLocalDate()
+        DayTile.Photo(p.post.id, photoModel(p.thumbPath), Formats.weekdayShort(day), stringRes(R.string.week_history_a11y_tile, Formats.weekdayLong(day), Formats.spokenDate(day), p.authorName.orEmpty()))
     }
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(Tokens.Counts.weekRecapCountPicsColumns),
-        state = gridState,
-        modifier = modifier
-            .fillMaxWidth()
-            .pointerInput(Unit) {
-                detectDragGesturesAfterLongPress(
-                    onDragStart = { offset ->
-                        val item = itemAt(offset)
-                        val id = item?.key as? String
-                        if (item != null && id != null && id in checked) {
-                            dragging = id
-                            pointer = offset
-                            grab = offset - Offset(item.offset.x.toFloat(), item.offset.y.toFloat())
-                            haptics.playNamed(Tokens.Layouts.WeekEditHapticDragStart.android)
-                        }
-                    },
-                    onDrag = { change, delta ->
-                        val id = dragging ?: return@detectDragGesturesAfterLongPress
-                        change.consume()
-                        pointer += delta
-                        val target = itemAt(pointer)?.key as? String ?: return@detectDragGesturesAfterLongPress
-                        val to = checked.indexOf(target)
-                        if (target != id && to >= 0) {
-                            onMove(id, to)
-                            haptics.playNamed(Tokens.Layouts.WeekEditHapticDragAlign.android)
-                        }
-                    },
-                    onDragEnd = { dragging = null },
-                    onDragCancel = { dragging = null },
-                )
-            },
-        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.weekRecapDimensionPicsGap),
-        verticalArrangement = Arrangement.spacedBy(Tokens.Sizes.weekRecapDimensionPicsGap),
+    fun itemAt(x: Float) = listState.layoutInfo.visibleItemsInfo.firstOrNull { x >= it.offset && x < it.offset + it.size }
+    val dragStart = namedHaptic(Tokens.Layouts.WeekEditHapticDragStart.android, noneBelow34 = true)
+    val dragAlign = namedHaptic(Tokens.Layouts.WeekEditHapticDragAlign.android)
+    LazyRow(
+        state = listState,
+        modifier = modifier.pointerInput(Unit) {
+            detectDragGesturesAfterLongPress(
+                onDragStart = { offset ->
+                    val item = itemAt(offset.x)
+                    val id = item?.key as? String
+                    if (item != null && id != null && id in checked) {
+                        dragging = id
+                        pointer = offset
+                        grab = Offset(offset.x - item.offset, offset.y)
+                        haptics.perform(dragStart)
+                    }
+                },
+                onDrag = { change, delta ->
+                    val id = dragging ?: return@detectDragGesturesAfterLongPress
+                    change.consume()
+                    pointer += delta
+                    val target = itemAt(pointer.x)?.key as? String ?: return@detectDragGesturesAfterLongPress
+                    val to = checked.indexOf(target)
+                    if (target != id && to >= 0) {
+                        onMove(id, to)
+                        haptics.perform(dragAlign)
+                    }
+                },
+                onDragEnd = { dragging = null },
+                onDragCancel = { dragging = null },
+            )
+        },
+        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalStripGap),
     ) {
-        items(state.photos, key = { it.post.id }) { photo ->
-            val id = photo.post.id
-            val isChecked = id in state.checked
-            val label = stringRes(R.string.photo_viewer_a11y_photo, photo.authorName.orEmpty(), Formats.viewerDate(photo.post.createdAt))
-            val lifted = dragging == id
-            Box(
+        itemsIndexed(tiles, key = { _, t -> t.key }) { index, tile ->
+            val id = tile.key as? String
+            val lifted = id != null && dragging == id
+            DayTileView(
+                tile,
+                stripTileShape(index, tiles.size),
                 Modifier
                     .then(
                         if (lifted) Modifier.zIndex(1f).graphicsLayer {
-                            val info = gridState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == id }
-                            if (info != null) {
-                                translationX = pointer.x - grab.x - info.offset.x
-                                translationY = pointer.y - grab.y - info.offset.y
-                            }
-                        } else Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null, placementSpec = if (reduceMotion) null else androidx.compose.animation.core.spring(visibilityThreshold = androidx.compose.ui.unit.IntOffset.VisibilityThreshold)),
-                    )
-                    .fillMaxWidth()
-                    .aspectRatio(Tokens.AspectRatios.weekRecapAspectRatioPicsTile)
-                    .clickable(role = Role.Checkbox) { onToggle(id) }
-                    .clearAndSetSemantics {
-                        contentDescription = label
-                        stateDescription = if (isChecked) inRecap else notInRecap
-                        role = Role.Checkbox
-                    },
-            ) {
-                RemotePhoto(photo.thumbPath, null, Modifier.fillMaxSize())
-                Glyph(
-                    if (isChecked) Tokens.Icons.globalCheck else Tokens.Icons.globalUncheck,
-                    if (isChecked) Tokens.Colors.globalSelection else Tokens.Colors.globalTextPrimary,
-                    Modifier.align(Alignment.TopEnd).padding(Tokens.Sizes.globalListGap),
-                    size = Tokens.Sizes.globalCheckCircle,
-                )
-            }
-        }
-        item(key = "text", span = { GridItemSpan(maxLineSpan) }) {
-            RecapTextField(state.text, onText)
+                            val info = listState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == id }
+                            if (info != null) translationX = pointer.x - grab.x - info.offset
+                        } else Modifier.animateItem(fadeInSpec = DsMotion.fade(), placementSpec = DsMotion.movement(DsMotion.stripInsert(), reduce), fadeOutSpec = DsMotion.fade()),
+                    ),
+            )
         }
     }
 }
 
 /**
- * The recap text (≤ 2000, `weekly_recaps.text`): multi-line field `groups.create.color.field`,
- * `radius.global.field`, min height `size.global.fieldHeight`, side margin
- * `size.global.buttonMarginH`, text role `body`, placeholder `week.edit.textPlaceholder`. Inner
- * inset = `radius.global.field` (as core:ui FormTextField; not measured).
+ * The message sheet (`week.edit.layout.message`, Retro's "Add a Message"): centred title (`sheetTitle`), trailing "Done"
+ * (C-08, `textButton`, `color.global.textPrimary`); the text from `size.global.screenMargin` in text role `placeholder`;
+ * the counter "58/2000" (`body`, tabular digits, secondary) at the trailing margin above the keyboard.
  */
 @Composable
-private fun RecapTextField(text: String, onText: (String) -> Unit) {
-    val shape = RoundedCornerShape(Tokens.Radii.globalField)
-    val placeholder = stringRes(R.string.week_edit_textplaceholder)
-    BasicTextField(
-        value = text,
-        onValueChange = onText,
-        textStyle = Type.body().copy(color = Tokens.Colors.globalTextPrimary),
-        cursorBrush = SolidColor(Tokens.Colors.globalTextPrimary),
-        modifier = Modifier
-            .padding(horizontal = Tokens.Sizes.globalButtonMarginH, vertical = Tokens.Sizes.globalButtonMarginH)
-            .fillMaxWidth()
-            .heightIn(min = Tokens.Sizes.globalFieldHeight)
-            .clip(shape)
-            .background(Tokens.Colors.groupsCreateColorField, shape)
-            .semantics { contentDescription = placeholder },
-        decorationBox = { inner ->
-            Box(Modifier.padding(Tokens.Radii.globalField), contentAlignment = Alignment.CenterStart) {
-                if (text.isEmpty()) Line(placeholder, Type.body(), Tokens.Colors.globalTextSecondary, Modifier.clearAndSetSemantics { })
-                inner()
-            }
-        },
-    )
+fun MessageSheetContent(text: String, onText: (String) -> Unit, onDone: () -> Unit) {
+    var field by remember { mutableStateOf(TextFieldValue(text)) }
+    val margin = Tokens.Sizes.globalScreenMargin
+    val secondary = PageRoles.secondaryText()
+    val messageLabel = stringRes(R.string.week_edit_message_title)
+    Column(Modifier.fillMaxWidth().imePadding()) {
+        Box(Modifier.fillMaxWidth().heightIn(min = Tokens.Sizes.globalMinTouchTargetAndroid).padding(horizontal = margin), contentAlignment = Alignment.Center) {
+            Text(stringRes(R.string.week_edit_message_title), style = TextRoles.sheetTitle, color = Tokens.Colors.globalTextPrimary, modifier = Modifier.semantics { heading() })
+            HeaderTextButton(stringRes(R.string.week_edit_message_done), onDone, Modifier.align(Alignment.CenterEnd))
+        }
+        val style = TextRoles.placeholder.copy(color = Tokens.Colors.globalTextPrimary)
+        BasicTextField(
+            value = field,
+            onValueChange = {
+                field = it
+                onText(it.text)
+            },
+            textStyle = style,
+            cursorBrush = SolidColor(Tokens.Colors.globalSystemPrimary),
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = Tokens.Sizes.globalFriendCardWidth)
+                .padding(horizontal = margin, vertical = Tokens.Sizes.globalSectionHeaderToContent)
+                .semantics { contentDescription = messageLabel },
+            decorationBox = { inner ->
+                Box {
+                    if (field.text.isEmpty()) Text(stringRes(R.string.week_edit_textplaceholder), style = style.copy(color = secondary))
+                    inner()
+                }
+            },
+        )
+        Text(
+            stringRes(R.string.week_edit_message_counter, field.text.length, WeekEditViewModel.TEXT_LIMIT),
+            style = TextRoles.body.copy(fontFeatureSettings = app.feature.social.chat.TABULAR_DIGITS),
+            color = secondary,
+            modifier = Modifier.align(Alignment.End).padding(horizontal = margin, vertical = Tokens.Sizes.globalSectionHeaderToContent),
+        )
+    }
 }
 
 /**
- * Yope's "new group" name sheet: ✕ + title (`groups.create.fontSize.title` / `.fontWeight.title`),
- * `groups.create.size.titleToContent`, the name field (core:ui FormTextField: `groups.create` field
- * tokens), `groups.create.size.fieldToButton`, the lime button (`size.global.buttonHeight`,
- * `size.global.buttonMarginH`), disabled while the name is empty or nothing is checked.
+ * The album sheet (C-29): C-11 close circle at the leading margin and the centred "New Album" (`sheetTitle`); the C-12
+ * field ("Name your album") `size.global.titleToContent` below with its inline error "Name missing"; the C-05 primary
+ * capsule "Create Album" (sheet size, `size.global.buttonMarginHSheet`) at the bottom above the keyboard, disabled while
+ * the name or the selection is empty.
  */
 @Composable
-fun NameSheet(
-    title: String,
-    name: String,
-    placeholder: String,
-    error: String?,
-    enabled: Boolean,
-    saving: Boolean,
-    onName: (String) -> Unit,
-    onSave: () -> Unit,
-    onClose: () -> Unit,
-) {
-    var field by remember { mutableStateOf(TextFieldValue(name)) }
-    if (field.text != name) field = field.copy(text = name)
-    Column(Modifier.fillMaxWidth().background(Tokens.Colors.globalBackgroundDeep).imePadding().windowInsetsPadding(WindowInsets.navigationBars)) {
-        SheetHeader(title, stringRes(R.string.week_edit_a11y_close), onClose, Type.style(Tokens.FontSizes.groupsCreateFontSizeTitle, Tokens.FontWeights.groupsCreateFontWeightTitle))
-        Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeTitleToContent))
+fun AlbumSheetContent(state: EditState, onName: (String) -> Unit, onCreate: () -> Unit, onClose: () -> Unit) {
+    var field by remember { mutableStateOf(TextFieldValue(state.albumName)) }
+    val margin = Tokens.Sizes.globalScreenMargin
+    Column(Modifier.fillMaxWidth().imePadding().testTag("week.edit.album")) {
+        Box(Modifier.fillMaxWidth().heightIn(min = Tokens.Sizes.globalMinTouchTargetAndroid).padding(horizontal = margin), contentAlignment = Alignment.Center) {
+            CircleIconButton(Tokens.Icons.globalClose, stringRes(R.string.week_recap_a11y_close), onClose, Modifier.align(Alignment.CenterStart), style = CircleButtonStyle.OnPage)
+            Text(stringRes(R.string.week_edit_album_title), style = TextRoles.sheetTitle, color = Tokens.Colors.globalTextPrimary, modifier = Modifier.semantics { heading() })
+        }
+        Spacer(Modifier.height(Tokens.Sizes.globalTitleToContent))
         FormTextField(
             value = field,
-            onValueChange = { field = it; onName(it.text) },
-            placeholder = placeholder,
-            accessibilityLabel = placeholder,
-            modifier = Modifier.padding(horizontal = Tokens.Sizes.globalButtonMarginH).fillMaxWidth(),
-        )
-        if (error != null) {
-            Line(error, Type.listSubtitle(), Tokens.Colors.globalTextSecondary, Modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalButtonMarginH), maxLines = Int.MAX_VALUE, align = TextAlign.Center)
-        }
-        Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeFieldToButton))
-        PrimaryButton(
-            stringRes(R.string.week_edit_save),
-            onSave,
-            Modifier.padding(horizontal = Tokens.Sizes.globalButtonMarginH),
-            enabled = enabled && name.isNotEmpty(),
-            size = PrimaryButtonSize.Form,
-            loading = saving,
-        )
-        Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeFieldToButton))
-    }
-}
-
-/** "Save as album": the name sheet titled `week.edit.album.title`; the album gets the checked photos in order. */
-@Composable
-fun AlbumSheetContent(state: EditState, onName: (String) -> Unit, onSave: () -> Unit, onClose: () -> Unit) {
-    Box(Modifier.testTag("week.edit.album")) {
-        NameSheet(
-            title = stringRes(R.string.week_edit_album_title),
-            name = state.albumName,
-            placeholder = stringRes(R.string.week_edit_album_nameplaceholder),
-            error = when (state.albumError) {
-                EditError.AlbumName -> stringRes(R.string.week_edit_error_albumname)
-                EditError.Save -> stringRes(R.string.week_edit_error_save)
-                else -> null
+            onValueChange = {
+                field = it
+                onName(it.text)
             },
-            enabled = state.checked.isNotEmpty() && state.phase == EditState.Phase.Ready,
-            saving = state.saving,
-            onName = onName,
-            onSave = onSave,
-            onClose = onClose,
+            placeholder = stringRes(R.string.week_edit_album_nameplaceholder),
+            accessibilityLabel = stringRes(R.string.week_edit_album_nameplaceholder),
+            modifier = Modifier.padding(horizontal = margin),
+            error = if (state.albumError == EditError.AlbumName) stringRes(R.string.week_edit_error_albumname) else null,
         )
+        Spacer(Modifier.height(Tokens.Sizes.globalSectionGap))
+        PrimaryButton(
+            stringRes(R.string.week_edit_album_create),
+            onCreate,
+            Modifier.padding(horizontal = Tokens.Sizes.globalButtonMarginHSheet),
+            enabled = state.albumName.isNotEmpty() && state.checked.isNotEmpty(),
+            size = PrimaryButtonSize.Sheet,
+            loading = state.saving,
+        )
+        Spacer(Modifier.height(Tokens.Sizes.globalButtonMarginHSheet))
     }
 }
-

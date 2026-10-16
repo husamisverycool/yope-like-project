@@ -1,33 +1,16 @@
 package app.feature.memory.birthday
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.OffsetMapping
-import androidx.compose.ui.text.input.TransformedText
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.input.TextFieldValue
 import app.designsystem.R
-import app.designsystem.generated.Tokens
-import app.feature.memory.common.roleStyle
+import app.ui.components.FormTextField
 import java.time.LocalDate
 import java.time.chrono.IsoChronology
 import java.time.format.DateTimeFormatterBuilder
@@ -42,8 +25,8 @@ data class DateEntryPattern(val fields: List<Char>, val separator: Char) {
     /** Digits a complete entry has (two for day and month, four for the year). */
     val length: Int get() = fields.sumOf(::width)
 
-    /** "MM/dd/yyyy" for the placeholder (`auth.agegate.field.placeholder` `{date_format}`). */
-    val display: String get() = fields.joinToString(separator.toString()) { f -> f.toString().repeat(width(f)) }
+    /** "MM/DD/YYYY" for the placeholder (`auth.agegate.field.placeholder` `{date_format}`, as the copy's note shows it). */
+    val display: String get() = fields.joinToString(separator.toString()) { f -> f.uppercaseChar().toString().repeat(width(f)) }
 
     /** [digits] with separators inserted in the locale's order as the person types. */
     fun format(digits: String): String = buildString {
@@ -79,26 +62,6 @@ data class DateEntryPattern(val fields: List<Char>, val separator: Char) {
 
     private fun width(field: Char): Int = if (field == 'y') YEAR_DIGITS else 2
 
-    /** Maps cursor offsets between the typed digits and the formatted text. */
-    internal fun transformation(): VisualTransformation = VisualTransformation { text ->
-        val formatted = format(text.text)
-        val boundaries = fields.runningFold(0) { acc, f -> acc + width(f) }.drop(1).dropLast(1)
-        val mapping = object : OffsetMapping {
-            override fun originalToTransformed(offset: Int): Int = offset + boundaries.count { it < offset }
-            override fun transformedToOriginal(offset: Int): Int {
-                var digits = 0
-                var seen = 0
-                for (c in formatted) {
-                    if (seen >= offset) break
-                    if (c != separator) digits++
-                    seen++
-                }
-                return digits.coerceAtMost(text.length)
-            }
-        }
-        TransformedText(AnnotatedString(formatted), mapping)
-    }
-
     companion object {
         private const val YEAR_DIGITS = 4
 
@@ -113,9 +76,11 @@ data class DateEntryPattern(val fields: List<Char>, val separator: Char) {
 }
 
 /**
- * The `auth.agegate` birthday field (owned by the auth pass, rebuilt here from its tokens because
- * core:ui has no shared field): Yope form field, numeric keyboard, separators inserted in the
- * locale's order, empty by default, no default year.
+ * The `auth.agegate` birthday field (owned by the auth pass, design/surfaces/auth.agegate.md; drawn with the same
+ * component and copy): C-12 `FormTextField` (fill `color.global.control`, `size.global.fieldHeight`,
+ * `radius.global.field`, text role `placeholder`), numeric keyboard, separators inserted in the locale's order
+ * (`auth.agegate.layout.dateEntry`), the locale's format as the placeholder (`auth.agegate.field.placeholder`), empty
+ * by default, no default year. [error]: the C-12 inline error under the field.
  */
 @Composable
 fun BirthdayDateField(
@@ -123,41 +88,18 @@ fun BirthdayDateField(
     onDigitsChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    error: String? = null,
     pattern: DateEntryPattern = remember { DateEntryPattern.forLocale() },
 ) {
-    val textStyle = roleStyle(Tokens.FontSizes.groupsCreateFontSizeFieldText, Tokens.FontWeights.groupsCreateFontWeightFieldText)
-        .copy(color = Tokens.Colors.globalTextPrimary, textAlign = TextAlign.Center)
-    val label = stringResource(R.string.auth_agegate_field_accessibilitylabel)
-    val transformation = remember(pattern) { pattern.transformation() }
-    BasicTextField(
-        value = digits,
-        onValueChange = { new -> onDigitsChange(new.filter(Char::isDigit).take(pattern.length)) },
-        modifier = modifier.semantics { contentDescription = label },
-        enabled = enabled,
-        textStyle = textStyle,
-        singleLine = true,
+    val formatted = pattern.format(digits)
+    FormTextField(
+        value = TextFieldValue(formatted, TextRange(formatted.length)),
+        onValueChange = { new -> onDigitsChange(new.text.filter(Char::isDigit).take(pattern.length)) },
+        placeholder = stringResource(R.string.auth_agegate_field_placeholder, pattern.display),
+        accessibilityLabel = stringResource(R.string.auth_agegate_field_accessibilitylabel),
+        modifier = modifier,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-        visualTransformation = transformation,
-        // The platform text cursor in the dark scheme's primary role.
-        cursorBrush = SolidColor(Tokens.Colors.globalSystemPrimary),
-        decorationBox = { inner ->
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = Tokens.Sizes.globalFieldHeight)
-                    .clip(RoundedCornerShape(Tokens.Radii.globalField))
-                    .background(Tokens.Colors.groupsCreateColorField)
-                    .padding(horizontal = Tokens.Sizes.globalScreenMargin),
-                contentAlignment = Alignment.Center,
-            ) {
-                if (digits.isEmpty()) {
-                    BasicText(
-                        stringResource(R.string.auth_agegate_field_placeholder, pattern.display),
-                        style = textStyle.copy(color = Tokens.Colors.globalTextSecondary),
-                    )
-                }
-                inner()
-            }
-        },
+        enabled = enabled,
+        error = error,
     )
 }

@@ -12,9 +12,9 @@ final class BirthdayRequestModel {
     enum Phase: Equatable {
         case idle
         case loading
-        /// Open: "Add Your Photo" or the member's own contribution, then Message Ideas.
+        /// Open: the card with "Message ideas" and "Add your photo", or the member's own contribution.
         case open
-        /// `tribute_closed` or `due_at` passed: hero + title stay, the rest is replaced.
+        /// `tribute_closed` or `due_at` passed: the card holds the C-27 closed block; no capsule, no due line.
         case closed
         /// `request_not_found` (honoree opted out, left, block) or the caller is the honoree.
         case notFound
@@ -26,8 +26,8 @@ final class BirthdayRequestModel {
     struct OwnContribution: Equatable {
         let postID: PostID
         let line: String
+        /// `thumb_path` (C-15 thumbnail).
         let imageURL: URL?
-        let aspectRatio: CGFloat?
     }
 
     /// A failed withdraw, said under the own block.
@@ -36,17 +36,21 @@ final class BirthdayRequestModel {
         case error
     }
 
-    var phase: Phase = .idle
-    var honoreeName = ""
-    var heroURL: URL?
-    var dueText = ""
-    var contribution: OwnContribution?
-    var inline: Inline?
-    var isRemoving = false
-    /// Presents `birthday.contribute` (full screen, its own navigation).
+    private(set) var phase: Phase = .idle
+    private(set) var honoreeName = ""
+    /// The honoree's photo: the avatar (C-23) and the blurred backdrop (C-34).
+    private(set) var avatarURL: URL?
+    /// `birthday.request.due` ("Add yours by Wednesday, July 5").
+    private(set) var dueText = ""
+    private(set) var contribution: OwnContribution?
+    private(set) var inline: Inline?
+    private(set) var isRemoving = false
+    /// Presents `birthday.contribute` (a page sheet with its own navigation).
     var showsContribute = false
-    /// A refresh failed offline while content is shown: `birthday.request.offline` under the hero.
-    var isOffline = false
+    /// "Remove" asks first (C-29 confirmation).
+    var showsRemoveConfirmation = false
+    /// A refresh failed offline while content is shown: `birthday.request.offline` under the card.
+    private(set) var isOffline = false
     private(set) var request: TributeRequest?
 
     let requestID: TributeRequestID
@@ -57,13 +61,11 @@ final class BirthdayRequestModel {
         self.dependencies = dependencies
     }
 
-    /// `birthday.request.title`.
+    /// `birthday.request.title` ("{name}'s birthday video").
     var title: String { Copy.birthdayRequestTitle(name: honoreeName) }
 
-    /// `birthday.request.body` + " " + `.ease` + " " + `.thanks` as one paragraph.
-    var message: String {
-        [Copy.birthdayRequestBody(name: honoreeName), Copy.birthdayRequestEase, Copy.birthdayRequestThanks].joined(separator: " ")
-    }
+    /// `birthday.request.body` (the invitation, "— no pressure.").
+    var message: String { Copy.birthdayRequestBody(name: honoreeName) }
 
     func loadIfNeeded() async {
         guard phase == .idle else { return }
@@ -77,7 +79,7 @@ final class BirthdayRequestModel {
     private struct Cached {
         let request: TributeRequest
         let honoreeName: String
-        let heroURL: URL?
+        let avatarURL: URL?
         let dueText: String
         let contribution: OwnContribution?
     }
@@ -105,9 +107,9 @@ final class BirthdayRequestModel {
                 return
             }
             let honoree = try await data.profiles(ids: [request.honoreeID]).first
-            var hero: URL?
-            if let avatar = honoree?.avatarPath {
-                hero = try await data.signedURLs(paths: [avatar])[avatar]
+            var avatar: URL?
+            if let path = honoree?.avatarPath {
+                avatar = try await data.signedURLs(paths: [path])[path]
             }
             var own: OwnContribution?
             if request.isOpen(at: dependencies.now()) {
@@ -116,7 +118,7 @@ final class BirthdayRequestModel {
             let fresh = Cached(
                 request: request,
                 honoreeName: honoree?.firstName ?? "",
-                heroURL: hero,
+                avatarURL: avatar,
                 dueText: Copy.birthdayRequestDue(date: MemoryFormat.dueDate(birthday: request.birthdayDate)),
                 contribution: own
             )
@@ -126,7 +128,7 @@ final class BirthdayRequestModel {
         } catch {
             let failure = MemoryFailure(error)
             if phase == .open || phase == .closed {
-                // Cached content stays; offline is said under the hero.
+                // Cached content stays; offline is said under the card.
                 isOffline = failure == .offline
                 return
             }
@@ -142,7 +144,7 @@ final class BirthdayRequestModel {
     private func apply(_ value: Cached) {
         request = value.request
         honoreeName = value.honoreeName
-        heroURL = value.heroURL
+        avatarURL = value.avatarURL
         dueText = value.dueText
         contribution = value.contribution
         phase = value.request.isOpen(at: dependencies.now()) ? .open : .closed
@@ -151,7 +153,7 @@ final class BirthdayRequestModel {
     private func storeContribution() async {
         guard let request, let data = dependencies.data else { return }
         let me = await data.currentUser()
-        let value = Cached(request: request, honoreeName: honoreeName, heroURL: heroURL, dueText: dueText, contribution: contribution)
+        let value = Cached(request: request, honoreeName: honoreeName, avatarURL: avatarURL, dueText: dueText, contribution: contribution)
         dependencies.cache.set(value, key: cacheKey, user: me, postIDs: Set([contribution?.postID].compactMap { $0 }))
     }
 
@@ -171,24 +173,28 @@ final class BirthdayRequestModel {
         guard let row = try await data.myContribution(requestID: requestID) else { return nil }
         let post = try await data.postsWithMedia(ids: [row.postID]).first
         var url: URL?
-        if let path = post?.media?.imagePath(for: .display) {
+        if let path = post?.media?.imagePath(for: .thumb) {
             url = try await data.signedURLs(paths: [path])[path]
         }
-        var aspect: CGFloat?
-        if let width = post?.media?.width, let height = post?.media?.height, width > 0, height > 0 {
-            aspect = CGFloat(width) / CGFloat(height)
-        }
-        return OwnContribution(postID: row.postID, line: row.line, imageURL: url, aspectRatio: aspect)
+        return OwnContribution(postID: row.postID, line: row.line, imageURL: url)
     }
 
     func addPhoto() {
         showsContribute = true
     }
 
-    /// Withdraw (direct DELETE of the own row before `due_at`); no confirmation — re-adding is
-    /// possible until the due time. Optimistic: the block goes at once and comes back on failure.
+    /// "Remove": the native confirmation first.
+    func requestRemove() {
+        guard contribution != nil, !isRemoving else { return }
+        showsRemoveConfirmation = true
+    }
+
+    /// "Yes, remove" (`haptic.global.warning`): withdraw (direct DELETE of the own row before `due_at`). Optimistic: the
+    /// block goes at once (the prompts come back) and returns on failure; `haptic.global.success` and
+    /// `birthday.request.removed` when done.
     func remove() async {
         guard let removed = contribution, !isRemoving, let data = dependencies.data else { return }
+        dependencies.haptics(Tokens.Haptics.globalWarning)
         isRemoving = true
         defer { isRemoving = false }
         contribution = nil
@@ -196,6 +202,7 @@ final class BirthdayRequestModel {
         do {
             try await data.withdraw(requestID: requestID)
             dependencies.haptics(Tokens.Haptics.globalSuccess)
+            dependencies.toasts.show(Copy.birthdayRequestRemoved)
             await storeContribution()
         } catch {
             contribution = removed
@@ -244,13 +251,14 @@ final class BirthdayRequestsEntryModel {
                 $0.groupID == groupID && $0.honoreeID != me && $0.isOpen(at: now)
             }
             let profiles = try await data.profiles(ids: Array(Set(requests.map(\.honoreeID))))
-            let names = Dictionary(profiles.map { ($0.id, $0.firstName ?? "") }, uniquingKeysWith: { first, _ in first })
+            let byID = Dictionary(profiles.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
             let fresh = requests.map { request in
                 Item(
                     requestID: request.id,
                     content: MemoryEntryContent(
-                        title: Copy.birthdayRequestTitle(name: names[request.honoreeID] ?? ""),
-                        subtitle: Copy.birthdayRequestDue(date: MemoryFormat.dueDate(birthday: request.birthdayDate))
+                        title: Copy.birthdayRequestTitle(name: byID[request.honoreeID]?.firstName ?? ""),
+                        subtitle: Copy.birthdayRequestDue(date: MemoryFormat.dueDate(birthday: request.birthdayDate)),
+                        avatarPath: byID[request.honoreeID]?.avatarPath
                     )
                 )
             }

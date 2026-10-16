@@ -7,7 +7,7 @@ import SwiftUI
 /// `.entry.button` "View memories", `icon.global.recap`, the story's cover).
 ///
 /// Shown only while this year's story (group-local year) is ready, i.e. from December 1; a tap opens `YearStoryScreen`
-/// full screen. The look defaults to `MemoryFeedCard` (groups.screen item 8); pass your own row to restyle it:
+/// full screen. The look defaults to `MemoryEntryFeedCard` (groups.screen item 8); pass your own row to restyle it:
 ///
 ///     YearStoryEntry(groupID: group.id) { content in MyCard(content) }
 ///
@@ -46,8 +46,8 @@ struct YearStoryEntry<Row: View>: View {
     }
 }
 
-extension YearStoryEntry where Row == MemoryFeedCard {
+extension YearStoryEntry where Row == MemoryEntryFeedCard {
     init(groupID: String, model: YearStoryEntryModel? = nil) {
-        self.init(groupID: groupID, model: model) { MemoryFeedCard(content: $0) }
+        self.init(groupID: groupID, model: model) { MemoryEntryFeedCard(content: $0) }
     }
 }

@@ -1,5 +1,6 @@
-// Surface: camera.capture (library thumbnail) → camera.sendto. Reference: Yope library thumbnail
-// (references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png).
+// Surface: camera.capture (library circle) → camera.sendto. Reference images: references/auto/retro/press/tc-2025-12-rewind-device-a.png
+// (the 64-pt circle that opens it), references/auto/locket/store/locket-store-07.png (mechanics: library pick)
+// (design/surfaces/camera.capture.md).
 // The system photo picker (PHPickerViewController): no library permission; a picked Live Photo
 // arrives as PHLivePhoto and is exported as its still and paired movie
 // (docs/PLATFORM_CONSTRAINTS.md §6).

@@ -32,6 +32,8 @@ protocol AccountDataSource: AnyObject, Sendable {
     func myProfile() async throws -> Profile
     func myPrivateProfile() async throws -> ProfilePrivate?
     func updateProfile(displayName: String?, avatarPath: String?) async throws -> Profile
+    /// Clears `profiles.avatar_path` (settings.account "Remove Profile Photo").
+    func removeAvatar() async throws -> Profile
     /// Uploads `avatars/<uid>/<uuid>.jpg`; returns its path.
     func uploadAvatar(jpeg: Data) async throws -> String
     /// `public_app_config` (readable signed out).
@@ -160,6 +162,11 @@ final class LiveAccountData: AccountDataSource {
     func updateProfile(displayName: String?, avatarPath: String?) async throws -> Profile {
         let profiles = try env().profiles
         return try await profiles.updateProfile(displayName: displayName, avatarPath: avatarPath)
+    }
+
+    func removeAvatar() async throws -> Profile {
+        let profiles = try env().profiles
+        return try await profiles.removeAvatar()
     }
 
     func uploadAvatar(jpeg: Data) async throws -> String {

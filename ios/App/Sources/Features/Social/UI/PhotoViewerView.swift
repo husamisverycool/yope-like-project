@@ -1,8 +1,9 @@
-// Surface: photo.viewer — reference apps: Yope (frame, header, reply row, menu) + Locket (reactions, quick reactions,
-// emoji rain). Spec: design/surfaces/photo.viewer.md; the "i'm in this" toggle: design/surfaces/tagging.md.
-// References: references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (primary),
-// …-t57.20/57.30/57.40 (swipe), a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (menu),
-// references/auto/locket/store/locket-store-08.png (quick reactions), locket-store-04.png (cluster).
+// Surface: photo.viewer — Retro's media viewer (black page, header avatar + name + "Week N", "3 of 4" pill, close circle,
+// full-width photo, footer place / date with the reaction slot, hairline, comment rows, comment field) and its native
+// menu. Spec: design/surfaces/photo.viewer.md (RS-10 … RS-13); the tag run: design/surfaces/tagging.md (memory's TagRun).
+// References: references/auto/retro/press/tc-2023-07-retro-2b.jpg phone 2 (primary, 2.209 px/pt),
+// references/auto/retro/press/tc-2023-12-retro3.png phone 1, references/auto/retro/web/retro.app-j-welcome-iphone-full.png,
+// references/auto/retro/press/tc-2025-12-rewind-panels.png (menu).
 import AppData
 import AppModels
 import AppServices
@@ -25,18 +26,20 @@ struct PhotoViewerView: View {
     @State private var model: PhotoViewerModel
     @State private var toasts = ToastCenter()
     @State private var pickerOpen = false
-    @State private var activityOpen = false
+    @State private var reactionsOpen = false
+    @State private var tagSheetOpen = false
     @State private var confirmingDelete = false
+    @State private var unsendCandidate: Message?
     @State private var reportTarget: ReportTarget?
     @State private var blockTarget: BlockTarget?
-    @State private var cardDismissed = false
     @State private var width: CGFloat = 0
+    @FocusState private var fieldFocused: Bool
     @Environment(\.dismiss) private var dismiss
     @Environment(\.displayScale) private var displayScale
     @Environment(AccountDependencies.self) private var account: AccountDependencies?
 
     init(context: PhotoViewerContext, presentation: Presentation) {
-        self.init(model: PhotoViewerModel(context: context, data: SocialServices.shared.data, flags: SocialServices.shared.flags), presentation: presentation)
+        self.init(model: PhotoViewerModel(context: context, data: SocialServices.shared.data), presentation: presentation)
     }
 
     init(model: PhotoViewerModel, presentation: Presentation) {
@@ -45,69 +48,94 @@ struct PhotoViewerView: View {
     }
 
     var body: some View {
-        ZStack {
-            Tokens.Colors.photoViewerColorBackground.ignoresSafeArea()
-            // Behind the photo, in front of the background (S-9).
-            EmojiRain(trigger: model.sentReaction)
-            VStack(spacing: 0) {
-                header
-                content
+        page
+            // `photo.viewer.layout.appearance`: dark in both appearances; sheets and alerts follow the system.
+            .environment(\.colorScheme, .dark)
+            .socialHidesNavigationBar()
+            .task {
+                if model.phase == .loading { await model.load() }
+                prefetchNeighbours()
+                await model.run()
             }
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) { bottomArea }
-        .socialReadsWidth($width)
-        .socialHidesNavigationBar()
-        .task {
-            if model.phase == .loading { await model.load() }
-            prefetchNeighbours()
-            await model.run()
-        }
-        .onChange(of: model.selection) { _, _ in
-            prefetchNeighbours()
-            Task { await model.loadSelectedTag() }
-        }
-        .onChange(of: model.isClosed) { _, closed in
-            if closed { dismiss() }
-        }
-        .socialFeedback(model.signals.feedback)
-        .socialNotices(model.signals.notice, toasts: toasts)
-        .toastHost(toasts)
-        .sheet(isPresented: $pickerOpen) {
-            ReactionPicker(
-                mine: model.myEmojiOnCurrent,
-                onPick: { emoji in Task { await model.react(emoji) } },
-                onRemove: { emoji in Task { await model.unreact(emoji) } }
-            )
-        }
-        .sheet(isPresented: $activityOpen) {
-            if let post = model.current {
-                ReactionActivitySheet(
-                    reactions: model.reactions[post.id] ?? ReactionSummary(),
-                    me: model.me,
-                    posterFirstName: model.author(of: post)?.socialFirstName ?? "",
-                    nameOf: { model.profiles[$0]?.socialFirstName ?? "" }
+            .onChange(of: model.selection) { _, _ in
+                prefetchNeighbours()
+                Task { await model.loadSelectedDetails() }
+            }
+            .onChange(of: model.isClosed) { _, closed in
+                if closed { dismiss() }
+            }
+            .socialFeedback(model.signals.feedback)
+            .socialNotices(model.signals.notice, toasts: toasts)
+            .toastHost(toasts)
+            .sheet(isPresented: $pickerOpen) {
+                ReactionPicker(
+                    mine: model.myEmojiOnCurrent,
+                    onPick: { emoji in Task { await model.react(emoji) } },
+                    onRemove: { emoji in Task { await model.unreact(emoji) } }
                 )
             }
-        }
-        .sheet(item: $reportTarget) { target in
-            reportSheet(target)
-        }
-        .confirmationDialog(Copy.photoViewerDeleteTitle, isPresented: $confirmingDelete, titleVisibility: .visible) {
-            Button(Copy.photoViewerDeleteConfirm, role: .destructive) {
-                Task { await model.deleteCurrent() }
+            .sheet(isPresented: $reactionsOpen) {
+                if let post = model.current {
+                    ReactionsSheet(
+                        reactions: model.reactions[post.id] ?? ReactionSummary(),
+                        me: model.me,
+                        profile: { model.profiles[$0] },
+                        onRemove: { emoji in Task { await model.unreact(emoji) } }
+                    )
+                    .presentationDetents([.medium, .large])
+                }
             }
-            Button(Copy.photoViewerDeleteCancel, role: .cancel) {}
-        } message: {
-            Text(Copy.photoViewerDeleteMessage)
-        }
-        .blockConfirmation(
-            target: $blockTarget,
-            toasts: toasts,
-            perform: { target in try await model.blockAuthor(UserID(target.userID)) },
-            onBlocked: { target in model.authorBlocked(UserID(target.userID)) }
-        )
-        .socialClearsReplyHandoff()
-        .accessibilityIdentifier("photo.viewer") // provenance-ok: accessibility identifier for UI tests
+            .sheet(isPresented: $tagSheetOpen) {
+                TaggingSheet(
+                    people: tagPeople,
+                    isTagged: model.isCurrentTagged,
+                    isPending: model.tagPending.contains(model.selection),
+                    onRemove: { Task { await model.toggleTag() } },
+                    onTag: { Task { await model.toggleTag() } },
+                    onClose: { tagSheetOpen = false }
+                )
+                .presentationDetents([.medium])
+                .dsSheetBackground()
+            }
+            .sheet(item: $reportTarget) { target in
+                reportSheet(target)
+            }
+            .confirmationDialog(Copy.photoViewerDeleteTitle, isPresented: $confirmingDelete, titleVisibility: .visible) {
+                Button(Copy.photoViewerDeleteConfirm, role: .destructive) {
+                    Task { await model.deleteCurrent() }
+                }
+                Button(Copy.photoViewerDeleteCancel, role: .cancel) {}
+            } message: {
+                Text(Copy.photoViewerDeleteMessage)
+            }
+            .alert(
+                Copy.chatThreadDeleteMessageTitle,
+                isPresented: Binding(get: { unsendCandidate != nil }, set: { if !$0 { unsendCandidate = nil } }),
+                presenting: unsendCandidate
+            ) { message in
+                Button(Copy.chatThreadDeleteMessageConfirm, role: .destructive) {
+                    Task { await model.deleteComment(message) }
+                }
+                Button(Copy.photoViewerDeleteCancel, role: .cancel) {}
+            } message: { _ in
+                Text(Copy.chatThreadDeleteMessageMessage)
+            }
+            .alert(Copy.photoViewerPermissionTitle, isPresented: $model.saveDenied) {
+                Button(Copy.photoViewerPermissionButton) {
+                    if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+                }
+                Button(Copy.photoViewerDeleteCancel, role: .cancel) {}
+            } message: {
+                Text(Copy.photoViewerPermissionDetail)
+            }
+            .blockConfirmation(
+                target: $blockTarget,
+                toasts: toasts,
+                perform: { target in try await model.blockAuthor(UserID(target.userID)) },
+                onBlocked: { target in model.authorBlocked(UserID(target.userID)) }
+            )
+            .socialClearsReplyHandoff()
+            .accessibilityIdentifier("photo.viewer") // provenance-ok: accessibility identifier for UI tests
     }
 
     @ViewBuilder
@@ -122,91 +150,144 @@ struct PhotoViewerView: View {
 
     private func prefetchNeighbours() {
         let paths = model.neighbours.compactMap { $0.media?.displayImagePath }
-        SocialServices.shared.images.prefetch(paths, maxPixel: screenPixels)
+        SocialImages.prefetch(paths, pixels: Int((width * displayScale).rounded(.up)))
     }
 
-    /// The photo's width in pixels (it spans the screen width).
-    private var screenPixels: Int? {
-        width > 0 ? Int((width * displayScale).rounded(.up)) : nil
+    // MARK: Page
+
+    private var page: some View {
+        VStack(spacing: 0) {
+            header
+            GeometryReader { area in
+                ScrollView {
+                    content(area: area.size)
+                        .padding(.bottom, Tokens.Sizes.photoViewerDimensionCommentsToField)
+                }
+                .scrollBounceBehavior(.basedOnSize)
+                .scrollDismissesKeyboard(.interactively)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Tokens.Colors.globalBackgroundDeep.ignoresSafeArea())
+        .background {
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { width = proxy.size.width }
+                    .onChange(of: proxy.size.width) { _, value in width = value }
+            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) { replyField }
+    }
+
+    @ViewBuilder
+    private func content(area: CGSize) -> some View {
+        switch model.phase {
+        case .loading:
+            LoadingHUD()
+                .frame(width: area.width, height: area.height)
+        case .failed, .empty, .offline:
+            errorLine { Task { await model.retry() } }
+                .frame(width: area.width, height: area.height)
+        case .ready:
+            if model.isCurrentGone || model.current == nil {
+                EmptyStateView(title: Copy.photoViewerGoneTitle, detail: Copy.photoViewerGoneDetail)
+                    .frame(width: area.width, height: area.height)
+            } else if let post = model.current {
+                ViewerPostPage(
+                    post: post,
+                    model: model,
+                    area: area,
+                    menu: AnyView(menuItems),
+                    openPicker: { pickerOpen = true },
+                    openReactions: { reactionsOpen = true },
+                    openTags: { tagSheetOpen = true },
+                    replyToComment: { _ in fieldFocused = true },
+                    unsendComment: { unsendCandidate = $0 },
+                    reportComment: report(message:)
+                )
+                .id(post.id)
+                .transition(.opacity)
+            }
+        }
+    }
+
+    /// One tappable line centred on the photo frame (text role `body`, `color.global.textSecondary`).
+    private func errorLine(_ retry: @escaping () -> Void) -> some View {
+        Button(action: retry) {
+            Text(Copy.photoViewerErrorLoad)
+                .dsTextStyle(TextRole.body)
+                .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: Header
 
-    /// ✕ · two-line title · •••, centred `photo.viewer.dimension.headerCenterY` below the top safe-area inset.
+    /// Avatar `size.global.avatarHeader` at `photo.viewer.dimension.headerInset`; `.headerAvatarToText` after it the
+    /// name (`listTitle`, `color.global.textOnMedia`) over the week (`listSubtitle`, `color.global.textSecondary`),
+    /// baselines `.headerLinePitch` apart, centred on the avatar; trailing the position pill (C-22, only for more than
+    /// one photo), `size.global.pillGap`, then the close circle (`photo.viewer.dimension.closeCircle`,
+    /// `color.global.controlOnDeep`, '×' ink `.closeGlyph` in `color.global.textOnMedia`) whose right edge sits on
+    /// `size.global.screenMargin`.
     private var header: some View {
-        let half = Tokens.Sizes.globalMinTouchTargetIos / 2
-        return title
-            .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.photoViewerDimensionHeaderCenterY * 2)
-            .padding(.horizontal, Tokens.Sizes.photoViewerDimensionCloseCenterX + half)
-            .overlay(alignment: .leading) {
-                Button { dismiss() } label: {
-                    Image(systemName: Tokens.Icons.globalClose)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: Tokens.Sizes.photoViewerDimensionCloseGlyph)
-                        .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                        .frame(width: Tokens.Sizes.globalMinTouchTargetIos, height: Tokens.Sizes.globalMinTouchTargetIos)
-                        .contentShape(Rectangle())
+        HStack(spacing: 0) {
+            if let post = model.current, !model.isCurrentGone {
+                Button { SocialNav.openWall(of: post.post.authorID, me: model.me) } label: {
+                    HStack(spacing: Tokens.Sizes.photoViewerDimensionHeaderAvatarToText) {
+                        AvatarView(source: SocialImages.source(model.author(of: post)?.avatarPath), diameter: Tokens.Sizes.globalAvatarHeader)
+                        MetricStack {
+                            Text(model.author(of: post)?.displayName ?? "")
+                                .dsTextStyle(TextRole.listTitle)
+                                .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                            Text(weekLine(post))
+                                .dsTextStyle(TextRole.listSubtitle)
+                                .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                                .metricGap(Tokens.Sizes.photoViewerDimensionHeaderLinePitch, from: .firstBaseline, to: .firstBaseline)
+                        }
+                        .lineLimit(1)
+                    }
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(Text(Copy.photoViewerA11yClose))
-                .offset(x: Tokens.Sizes.photoViewerDimensionCloseCenterX - half)
+                .accessibilityElement(children: .combine)
             }
-            .overlay(alignment: .trailing) {
-                menu.offset(x: half - Tokens.Sizes.photoViewerDimensionMoreCenterTrailing)
+            Spacer(minLength: Tokens.Sizes.globalPillGap)
+            if let position = model.position {
+                PositionPill(label: Copy.photoViewerPosition(index: String(position.index), total: String(position.total)))
+                    .padding(.trailing, Tokens.Sizes.globalPillGap)
+                    .accessibilityLabel(Text(Copy.photoViewerPosition(index: String(position.index), total: String(position.total))))
             }
-    }
-
-    @ViewBuilder
-    private var title: some View {
-        if let post = model.current {
-            let name = model.isOwn(post) ? Copy.photoViewerTitleYou : (model.author(of: post)?.socialFirstName ?? "")
-            let group = model.group(of: post)?.name ?? ""
-            ZStack(alignment: Alignment(horizontal: .center, vertical: .firstTextBaseline)) {
-                Text(titleLine(name: name, group: group))
-                    .dsTextStyle(TextRole.headerTitle)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                Text(SocialFormat.viewerDate(post.post.createdAt))
-                    .dsTextStyle(TextRole.listSubtitle)
-                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
-                    .alignmentGuide(.firstTextBaseline) { $0[.firstTextBaseline] - Tokens.Sizes.photoViewerDimensionTitleToDate }
+            Button { dismiss() } label: {
+                Glyph(Tokens.Icons.globalClose, size: Tokens.Sizes.photoViewerDimensionCloseGlyph)
+                    .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                    .frame(width: Tokens.Sizes.photoViewerDimensionCloseCircle, height: Tokens.Sizes.photoViewerDimensionCloseCircle)
+                    .background(Tokens.Colors.globalControlOnDeep, in: Circle())
+                    .minimumHitArea(drawn: CGSize(width: Tokens.Sizes.photoViewerDimensionCloseCircle, height: Tokens.Sizes.photoViewerDimensionCloseCircle))
             }
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text(titleLine(name: name, group: group)) + Text(", " + SocialFormat.viewerDate(post.post.createdAt)))
-            .accessibilityAddTraits(.isHeader)
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(Copy.photoViewerA11yClose))
+            .accessibilitySortPriority(1)
+            .accessibilityIdentifier("close") // provenance-ok: accessibility identifier for UI tests
         }
+        .frame(minHeight: Tokens.Sizes.globalAvatarHeader)
+        .padding(.leading, Tokens.Sizes.photoViewerDimensionHeaderInset)
+        .padding(.trailing, Tokens.Sizes.globalScreenMargin)
     }
 
-    /// "{you | name} sent to {group}": names in `color.global.textPrimary`, "sent to" in `color.global.textSecondary`.
-    private func titleLine(name: String, group: String) -> AttributedString {
-        var first = AttributedString(name)
-        first.foregroundColor = Tokens.Colors.globalTextPrimary
-        var middle = AttributedString(" " + Copy.photoViewerTitleSentTo + " ")
-        middle.foregroundColor = Tokens.Colors.globalTextSecondary
-        var last = AttributedString(group)
-        last.foregroundColor = Tokens.Colors.globalTextPrimary
-        return first + middle + last
-    }
-
-    /// Native pull-down menu (`photo.viewer.layout.menu`): save; delete (mine) or report and block (others').
-    private var menu: some View {
-        Menu {
-            menuItems
-        } label: {
-            Image(systemName: Tokens.Icons.globalMore)
-                .resizable()
-                .scaledToFit()
-                .frame(width: Tokens.Sizes.photoViewerDimensionMoreGlyphWidth)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                .frame(width: Tokens.Sizes.globalMinTouchTargetIos, height: Tokens.Sizes.globalMinTouchTargetIos)
-                .contentShape(Rectangle())
+    /// "Week 28", or opened from a wall "{group} · Week 28" (`photo.viewer.header.week` / `.groupWeek`).
+    private func weekLine(_ post: PostWithMedia) -> String {
+        let number = String(model.weekNumber(of: post))
+        if model.showsGroupName, let group = model.group(of: post) {
+            return Copy.photoViewerHeaderGroupWeek(groupName: group.name, weekNumber: number)
         }
-        .accessibilityLabel(Text(Copy.photoViewerA11yMore))
-        .disabled(model.current == nil || model.isCurrentGone)
+        return Copy.photoViewerHeaderWeek(weekNumber: number)
     }
 
-    /// The menu's items, also exposed as accessibility actions on the photo.
+    // MARK: Menu (`photo.viewer.layout.menu`)
+
+    /// Save to Camera Roll (always) · Delete (mine, destructive) · Report Post (others', destructive) · Block {name}.
     @ViewBuilder
     private var menuItems: some View {
         Button { Task { await model.saveCurrent(using: SocialServices.shared.saver) } } label: {
@@ -214,7 +295,7 @@ struct PhotoViewerView: View {
         }
         if model.isCurrentOwn {
             Button(role: .destructive) { confirmingDelete = true } label: {
-                Label(Copy.photoViewerMenuDelete, systemImage: Tokens.Icons.photoViewerIconDelete)
+                Label(Copy.photoViewerMenuDelete, systemImage: Tokens.Icons.globalTrash)
             }
         } else if let post = model.current {
             let firstName = model.author(of: post)?.socialFirstName ?? ""
@@ -228,7 +309,7 @@ struct PhotoViewerView: View {
                     Label(Copy.photoViewerMenuReport, systemImage: Tokens.Icons.globalReport)
                 }
             }
-            Button(role: .destructive) {
+            Button {
                 blockTarget = BlockTarget(userID: post.post.authorID.rawValue, firstName: firstName)
             } label: {
                 Text(Copy.photoViewerMenuBlock(name: firstName))
@@ -236,97 +317,64 @@ struct PhotoViewerView: View {
         }
     }
 
-    // MARK: Pages
-
-    @ViewBuilder
-    private var content: some View {
-        switch model.phase {
-        case .loading:
-            Spacer()
-        case .failed, .empty:
-            Spacer()
-            EmptyStateView(title: Copy.photoViewerErrorLoad)
-            Spacer()
-        case .offline:
-            Spacer()
-            EmptyStateView(title: Copy.chatThreadOfflineTitle, detail: Copy.chatThreadOfflineDetail)
-            Spacer()
-        case .ready:
-            TabView(selection: Binding(get: { model.selection }, set: { model.show($0) })) {
-                ForEach(model.postIDs, id: \.self) { id in
-                    page(id).tag(id)
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .padding(.top, Tokens.Sizes.photoViewerDimensionPhotoTop - Tokens.Sizes.photoViewerDimensionHeaderCenterY * 2)
-        }
+    private func report(message: Message) {
+        let name = model.profiles[message.authorID]?.socialFirstName ?? ""
+        reportTarget = ReportTarget(
+            kind: .message, id: message.id.rawValue, name: nil,
+            person: BlockTarget(userID: message.authorID.rawValue, firstName: name)
+        )
     }
 
+    // MARK: Reply field (C-13 on media)
+
+    /// `color.global.controlOnDeep`; own avatar; "Add a comment…"; trailing `icon.global.camera` then `icon.global.more`
+    /// (the menu) in `color.global.textSecondary`; with text both become `icon.global.send`. On the safe area, on the
+    /// keyboard while typing.
     @ViewBuilder
-    private func page(_ id: PostID) -> some View {
-        if model.gone.contains(id) || model.posts[id] == nil {
-            VStack {
-                Spacer()
-                EmptyStateView(title: Copy.photoViewerGoneTitle, detail: Copy.photoViewerGoneDetail)
-                Spacer()
-            }
-        } else if let post = model.posts[id] {
-            VStack(alignment: .leading, spacing: Tokens.Sizes.globalScreenMargin) {
-                ViewerPhoto(
-                    post: post,
-                    model: model,
-                    maxPixel: screenPixels,
-                    openActivity: { activityOpen = true },
-                    menuActions: AnyView(menuItems)
-                )
-                if let voicePath = post.post.voicePath, let duration = post.post.voiceDurationMs {
-                    // Position BLOCKED (`photo.viewer.layout.voiceNote`): the spec's approximation, under the photo.
-                    VoiceBubble(
-                        key: post.id.rawValue,
-                        path: voicePath,
-                        durationMs: duration,
-                        isMine: model.isOwn(post),
-                        accessibilityLabel: model.isOwn(post)
-                            ? Copy.chatVoiceA11yMessageMine(duration: SocialFormat.spokenDuration(milliseconds: duration))
-                            : Copy.chatVoiceA11yMessage(name: model.author(of: post)?.socialFirstName ?? "", duration: SocialFormat.spokenDuration(milliseconds: duration)),
-                        onPlayFailed: { toasts.show(Copy.chatVoiceErrorPlay) }
-                    )
-                    .padding(.leading, Tokens.Sizes.globalScreenMargin)
-                }
-                Spacer(minLength: 0)
-            }
-        }
-    }
-
-    // MARK: Reply row
-
-    private var bottomArea: some View {
-        VStack(spacing: Tokens.Sizes.globalListGap) {
-            if model.saveDenied, !cardDismissed {
-                PermissionCard(
-                    title: Copy.photoViewerPermissionTitle,
-                    detail: Copy.photoViewerPermissionDetail,
-                    buttonTitle: Copy.photoViewerPermissionButton,
-                    onEnable: {
-                        if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
-                    },
-                    onDismiss: { cardDismissed = true }
-                )
-                .padding(.horizontal, Tokens.Sizes.onboardingPermissionContactsSizeCardMarginH)
-            }
-            if model.phase == .ready, model.current != nil, !model.isCurrentGone {
-                ViewerReplyRow(
+    private var replyField: some View {
+        if model.phase == .ready, model.current != nil, !model.isCurrentGone {
+            let hasText = !model.replyDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            HStack(alignment: .top, spacing: 0) {
+                SocialFieldInput(
                     text: $model.replyDraft,
-                    groupName: model.current.flatMap { model.group(of: $0) }?.name ?? "",
-                    send: { Task { await model.sendReply() } },
-                    react: { emoji in Task { await model.react(emoji) } },
-                    openPicker: { pickerOpen = true },
-                    camera: replyWithPhoto
+                    avatar: SocialImages.source(model.me.flatMap { model.profiles[$0] }?.avatarPath),
+                    placeholder: Copy.photoViewerReplyPlaceholder,
+                    accessibilityLabel: Copy.photoViewerReplyPlaceholder,
+                    onMedia: true,
+                    identifier: "photo.viewer.reply", // provenance-ok: accessibility identifier for UI tests
+                    focus: $fieldFocused
                 )
+                Group {
+                    if hasText {
+                        SocialFieldGlyph(
+                            icon: Tokens.Icons.globalSend, color: Tokens.Colors.globalTextPrimary,
+                            accessibilityLabel: Copy.chatComposerA11ySend,
+                            identifier: "photo.viewer.send" // provenance-ok: accessibility identifier for UI tests
+                        ) { Task { await model.sendReply() } }
+                    } else {
+                        HStack(spacing: SocialFieldMetrics.glyphSpacing) {
+                            SocialFieldGlyph(icon: Tokens.Icons.globalCamera, color: Tokens.Colors.globalTextSecondary, accessibilityLabel: Copy.chatComposerA11yCamera) {
+                                replyWithPhoto()
+                            }
+                            Menu {
+                                menuItems
+                            } label: {
+                                Glyph(Tokens.Icons.globalMore)
+                                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                                    .frame(width: Tokens.Sizes.globalHeaderButton, height: Tokens.Sizes.globalHeaderButton)
+                                    .contentShape(Rectangle())
+                            }
+                            .accessibilityLabel(Text(Copy.photoViewerA11yMore))
+                        }
+                    }
+                }
+                .padding(.top, SocialFieldMetrics.glyphTop)
+                .padding(.trailing, SocialFieldMetrics.glyphTrailing)
+                .dsAnimation(ComponentMotion.crossfade, value: hasText)
             }
-        }
-        .onChange(of: model.saveDenied) { _, denied in
-            if denied { cardDismissed = false }
+            .socialFieldShape(onMedia: true)
+            .padding(.bottom, Tokens.Sizes.chatComposerDimensionBottomInset)
+            .background(Tokens.Colors.globalBackgroundDeep.ignoresSafeArea())
         }
     }
 
@@ -341,108 +389,299 @@ struct PhotoViewerView: View {
             dismiss()
         }
     }
+
+    // MARK: Tagging sheet (memory's `TaggingSheet`)
+
+    private var tagPeople: [TaggingSheetPerson] {
+        model.taggedPeople(on: model.selection).map { id in
+            let profile = model.profiles[id]
+            return TaggingSheetPerson(
+                id: id.rawValue, firstName: profile?.socialFirstName ?? "",
+                avatar: SocialImages.source(profile?.avatarPath), isMe: id == model.me
+            )
+        }
+    }
 }
 
-// MARK: - The photo with its overlays
+// MARK: - One photo with its footer and comments
 
-/// Full width, the photo's own aspect, `radius.global.photo`, top `photo.viewer.dimension.photoTop`; scaled down to
-/// fit when taller than the space (approximation). Over it: sender (top-left), "i'm in this" (top-right, Yope's chip
-/// slot, S-19), caption (bottom-centre), reaction cluster (bottom-left).
-struct ViewerPhoto: View {
+/// The scroll area of one photo: the photo `photo.viewer.dimension.headerToPhoto` below the header (full width, its own
+/// aspect, never cropped, letterboxed when taller than the area), the footer, the hairline and the comments.
+struct ViewerPostPage: View {
     let post: PostWithMedia
     let model: PhotoViewerModel
-    let maxPixel: Int?
-    let openActivity: () -> Void
-    /// The ••• menu's items, exposed as accessibility actions on the photo.
-    var menuActions = AnyView(EmptyView())
+    let area: CGSize
+    let menu: AnyView
+    let openPicker: () -> Void
+    let openReactions: () -> Void
+    let openTags: () -> Void
+    let replyToComment: (Message) -> Void
+    let unsendComment: (Message) -> Void
+    let reportComment: (Message) -> Void
 
-    private var aspectRatio: CGFloat? {
-        guard let media = post.media, let width = media.width, let height = media.height, width > 0, height > 0 else { return nil }
-        return CGFloat(width) / CGFloat(height)
+    @State private var trailingWidth: CGFloat = 0
+
+    private var aspectRatio: CGFloat {
+        if let media = post.media, let width = media.width, let height = media.height, width > 0, height > 0 {
+            return CGFloat(width) / CGFloat(height)
+        }
+        // The app's own capture shape (3:4, the C-17 tile) until the media's size is known.
+        return Tokens.Sizes.globalStripTileWidth / Tokens.Sizes.globalStripTileHeight
     }
 
     var body: some View {
-        let shape = RoundedRectangle(cornerRadius: Tokens.Radii.globalPhoto)
-        ViewerMedia(post: post, maxPixel: maxPixel, accessibilityLabel: label)
-            .accessibilityActions { menuActions }
-            .aspectRatio(aspectRatio, contentMode: .fit)
-            .frame(maxWidth: .infinity)
-            .clipShape(shape)
-            .overlay(alignment: .topLeading) { sender }
-            .overlay(alignment: .topTrailing) { tagging }
-            .overlay(alignment: .bottom) {
-                if let caption = post.post.caption, !caption.isEmpty {
-                    PhotoCaption(text: caption, wraps: true)
-                        .padding(.horizontal, Tokens.Sizes.chatReactionsDimensionClusterInsetLeading)
-                        .padding(.bottom, Tokens.Sizes.chatThreadDimensionCaptionInsetBottom)
-                }
+        let photoHeight = min(area.width / aspectRatio, max(0, area.height - Tokens.Sizes.photoViewerDimensionHeaderToPhoto))
+        MetricStack {
+            photo
+                .frame(width: area.width, height: photoHeight)
+                .metricGap(Tokens.Sizes.photoViewerDimensionHeaderToPhoto, from: .top, to: .top)
+            footer
+                .metricGap(0, from: .bottom, to: .top)
+            if !model.currentComments.isEmpty {
+                HairlineDivider(color: Tokens.Colors.globalSeparator.darkAppearanceValue)
+                    .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+                    .metricGap(
+                        Tokens.Sizes.photoViewerDimensionFooterToDivider,
+                        from: hasVoice ? .bottom : .lastBaseline, to: .top
+                    )
+                comments
+                    .metricGap(Tokens.Sizes.photoViewerDimensionDividerToComments, from: .bottom, to: .top)
             }
-            .overlay(alignment: .bottomLeading) {
-                let emoji = model.reactions[post.id]?.distinctEmoji ?? []
-                Button(action: openActivity) {
-                    ReactionCluster(emoji: emoji)
-                }
-                .buttonStyle(.plain)
-                .allowsHitTesting(!emoji.isEmpty)
-                .accessibilityHidden(emoji.isEmpty)
-                .padding(.leading, Tokens.Sizes.chatReactionsDimensionClusterInsetLeading)
-                .padding(.bottom, Tokens.Sizes.chatReactionsDimensionClusterInsetBottom)
-            }
+        }
     }
 
-    private var label: String {
-        let date = SocialFormat.spokenDate(post.post.createdAt)
-        var text = model.isOwn(post)
-            ? Copy.photoViewerA11yPhotoMine(date: date)
-            : Copy.photoViewerA11yPhoto(name: model.author(of: post)?.socialFirstName ?? "", date: date)
-        if let caption = post.post.caption, !caption.isEmpty { text += ", " + Copy.chatThreadA11yCaption(caption: caption) }
+    private var hasVoice: Bool { post.post.voicePath != nil && post.post.voiceDurationMs != nil }
+
+    // MARK: Photo
+
+    /// Tap advances (`photo.viewer.layout.advance`), the leading zone goes back (`photo.viewer.layout.backZone`,
+    /// BLOCKED — `SocialBlocked.viewerBackZoneFraction`); long press: the menu with the quick-reaction row.
+    private var photo: some View {
+        ViewerMedia(post: post, accessibilityLabel: photoLabel)
+            .viewerTapNavigation(
+                previousFraction: SocialBlocked.viewerBackZoneFraction,
+                previousLabel: Copy.photoViewerA11yPrevious,
+                nextLabel: Copy.photoViewerA11yNext,
+                onPrevious: { withDSAnimation(ComponentMotion.crossfade) { model.goBack() } },
+                onNext: { withDSAnimation(ComponentMotion.crossfade) { model.advance() } }
+            )
+            .contextMenu {
+                QuickReactionsPalette(
+                    mine: model.myEmojiOnCurrent,
+                    onEmoji: { emoji in Task { await model.toggleReaction(emoji) } },
+                    onAdd: openPicker
+                )
+                menu
+            }
+            .accessibilityHint(Text(Copy.photoViewerA11yAdvanceHint))
+            .accessibilityActions { menu }
+    }
+
+    private var photoLabel: String {
+        var text = SocialA11y.photo(post, author: model.author(of: post), me: model.me)
+        if let caption = post.post.caption, !caption.isEmpty { text += ", " + Copy.chatThreadA11yCaption(caption: caption) } // provenance-ok: joins copy strings
         return text
     }
 
-    private var sender: some View {
-        let own = model.isOwn(post)
-        return Button {
-            SocialNav.push(own ? .social(.wallMine) : .social(.wallMember(userID: post.post.authorID.rawValue)))
-        } label: {
-            HStack(alignment: .top, spacing: Tokens.Sizes.photoViewerDimensionSenderNameGap) {
-                SocialAvatar(path: model.author(of: post)?.avatarPath, diameter: Tokens.Sizes.photoViewerDimensionSenderAvatar)
-                Text(own ? Copy.photoViewerTitleYou : (model.author(of: post)?.socialFirstName ?? ""))
-                    .dsTextStyle(TextRole.headerTitle)
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                    .lineLimit(1)
+    // MARK: Footer
+
+    /// Inside `size.global.screenMargin`: the caption (`listTitle`, `color.global.textOnMedia`, wraps) — Retro's place
+    /// line — first baseline `photo.viewer.dimension.footerFirstBaseline` below the photo; the date ("Wednesday, July 5",
+    /// `listSubtitle`, `color.global.textSecondary`) + " · " + the tag run (memory's `TagRun`) on the next line,
+    /// `.footerLinePitch` below; the voice note capsule `.footerLinePitch` below that line's baseline. Trailing, centred
+    /// on the first line: the reaction chip (on `color.global.controlOnDeep`) and the add-reaction glyph at the margin.
+    private var footer: some View {
+        let caption = post.post.caption.flatMap { $0.isEmpty ? nil : $0 }
+        let firstRole = caption != nil ? TextRole.listTitle : TextRole.listSubtitle
+        return MetricStack {
+            if let caption {
+                Text(caption)
+                    .dsTextRole(DSTextStyle(
+                        family: TextRole.listTitle.family, size: TextRole.listTitle.size, weight: TextRole.listTitle.weight,
+                        relativeTo: TextRole.listTitle.relativeTo, lineHeight: Tokens.Sizes.photoViewerDimensionFooterLinePitch
+                    ))
+                    .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.trailing, trailingWidth)
+                    .metricGap(Tokens.Sizes.photoViewerDimensionFooterFirstBaseline, from: .top, to: .firstBaseline)
             }
-            .padding(.leading, Tokens.Sizes.photoViewerDimensionSenderInsetLeading)
-            .padding(.top, Tokens.Sizes.photoViewerDimensionSenderInsetTop)
+            TagRunLine(
+                leadingText: SocialFormat.viewerDate(post.post.createdAt, timeZone: model.group(of: post)?.resolvedTimeZone ?? .current),
+                run: TagRun(
+                    names: model.taggedPeople(on: post.id).map { model.profiles[$0]?.socialFirstName ?? "" },
+                    isTagged: model.isCurrentTagged,
+                    isPending: model.tagPending.contains(post.id)
+                ) {
+                    if model.taggedPeople(on: post.id).isEmpty {
+                        Task { await model.toggleTag() }
+                    } else {
+                        openTags()
+                    }
+                }
+            )
+            .padding(.trailing, caption == nil ? trailingWidth : 0)
+            .metricGap(
+                caption == nil ? Tokens.Sizes.photoViewerDimensionFooterFirstBaseline : Tokens.Sizes.photoViewerDimensionFooterLinePitch,
+                from: caption == nil ? .top : .lastBaseline,
+                to: .firstBaseline
+            )
+            if let voicePath = post.post.voicePath, let duration = post.post.voiceDurationMs {
+                VoiceCapsule(
+                    key: post.id.rawValue,
+                    path: voicePath,
+                    durationMs: duration,
+                    onMedia: true,
+                    accessibilityLabel: model.isOwn(post)
+                        ? Copy.chatVoiceA11yMessageMine(duration: SocialFormat.spokenDuration(milliseconds: duration))
+                        : Copy.chatVoiceA11yMessage(name: model.author(of: post)?.socialFirstName ?? "", duration: SocialFormat.spokenDuration(milliseconds: duration))
+                )
+                .metricGap(Tokens.Sizes.photoViewerDimensionFooterLinePitch, from: .lastBaseline, to: .top)
+            }
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text(own ? Copy.photoViewerTitleYou : (model.author(of: post)?.socialFirstName ?? "")))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .overlay(alignment: .topTrailing) {
+            reactionSlot
+                .background {
+                    GeometryReader { proxy in
+                        Color.clear
+                            .onAppear { trailingWidth = proxy.size.width + Tokens.Sizes.globalPillGap }
+                            .onChange(of: proxy.size.width) { _, value in trailingWidth = value + Tokens.Sizes.globalPillGap }
+                    }
+                }
+                .alignmentGuide(.top) { dimensions in
+                    // Centred on the first line's cap middle.
+                    dimensions[VerticalAlignment.center]
+                        - (Tokens.Sizes.photoViewerDimensionFooterFirstBaseline - SocialMetrics.metrics(firstRole).capHeight / 2)
+                }
+        }
+        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
     }
 
-    /// The memory group's "i'm in this" control (`tagging`), drawn from this model's state: optimistic toggle,
-    /// first-use coach, toasts and haptics come from `PhotoViewerModel`. Its centre sits
-    /// `photo.viewer.dimension.actionCenterTop` below the photo's top, `.actionTrailing` from its right edge.
-    private var tagging: some View {
-        SelfTagToggleControl(
-            isOn: model.tagged[post.id] ?? false,
-            isPending: model.tagPending.contains(post.id),
-            showsCoach: model.coachVisible && model.selection == post.id,
-            onToggle: { Task { await model.toggleTag() } },
-            onDismissCoach: { model.dismissCoach() }
-        )
-        .padding(.trailing, Tokens.Sizes.photoViewerDimensionActionTrailing)
-        .padding(.top, Tokens.Sizes.photoViewerDimensionActionCenterTop - max(Tokens.Sizes.globalButtonHeight, Tokens.Sizes.globalMinTouchTargetIos) / 2)
+    /// Retro's reaction slot (its heart like is do-not-copy): the chip (hidden when empty) and the add glyph.
+    private var reactionSlot: some View {
+        HStack(spacing: Tokens.Sizes.globalPillGap) {
+            ReactionChip(emoji: model.reactions[post.id]?.distinctEmoji ?? [], onMedia: true, action: openReactions)
+            Button(action: openPicker) {
+                Glyph(Tokens.Icons.chatReactionsIconAdd)
+                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                    .minimumHitArea(drawn: CGSize(width: Tokens.Sizes.globalIcon, height: Tokens.Sizes.globalIcon))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(Copy.chatReactionsA11yAdd))
+        }
+    }
+
+    // MARK: Comments (`photo.viewer.layout.comments`)
+
+    private var comments: some View {
+        VStack(alignment: .leading, spacing: Tokens.Sizes.globalListGap) {
+            ForEach(model.currentComments) { message in
+                ViewerCommentRow(
+                    message: message,
+                    author: model.profiles[message.authorID],
+                    isMine: message.authorID == model.me,
+                    reply: { replyToComment(message) },
+                    copy: {
+                        UIPasteboard.general.string = message.body
+                        model.copied()
+                    },
+                    unsend: { unsendComment(message) },
+                    report: { reportComment(message) },
+                    openWall: { SocialNav.openWall(of: message.authorID, me: model.me) }
+                )
+            }
+        }
     }
 }
 
-/// The picture itself: the grid thumbnail at once, replaced by `display_path` when loaded (docs/API.md §7); a dual
-/// capture as `daily.dualimage` (capture group's `DualImageView`); a Live Photo plays while pressed (platform
-/// `PHLivePhotoView`); a video with the platform player.
+/// A comment under the photo: the `chat.thread` message row (C-16) in `color.global.textOnMedia` — avatar
+/// `size.global.avatarComment`, `chat.thread.dimension.rowAvatarToText`, name (`listTitle`) · time (`caption`,
+/// `color.global.textSecondary`), the text (`body`) with its first baseline `chat.thread.dimension.rowLinePitch` below the
+/// name's. Long press → the thread's message menu.
+struct ViewerCommentRow: View {
+    let message: Message
+    let author: Profile?
+    let isMine: Bool
+    let reply: () -> Void
+    let copy: () -> Void
+    let unsend: () -> Void
+    let report: () -> Void
+    let openWall: () -> Void
+
+    var body: some View {
+        HStack(alignment: .top, spacing: Tokens.Sizes.chatThreadDimensionRowAvatarToText) {
+            Button(action: openWall) {
+                AvatarView(source: SocialImages.source(author?.avatarPath), diameter: Tokens.Sizes.globalAvatarComment)
+            }
+            .buttonStyle(.plain)
+            .accessibilityHidden(true)
+            MetricStack {
+                HStack(alignment: .firstTextBaseline, spacing: 0) {
+                    Text(author?.displayName ?? "")
+                        .dsTextStyle(TextRole.listTitle)
+                        .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                        .lineLimit(1)
+                    Text(" " + SocialFormat.time(message.createdAt))
+                        .dsTextStyle(TextRole.caption)
+                        .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                        .lineLimit(1)
+                        .fixedSize()
+                }
+                .accessibilityHidden(true)
+                if message.kind == .voice {
+                    VoiceCapsule(
+                        key: message.id.rawValue,
+                        path: message.voicePath,
+                        durationMs: message.voiceDurationMs ?? 0,
+                        onMedia: true,
+                        accessibilityLabel: isMine
+                            ? Copy.chatVoiceA11yMessageMine(duration: SocialFormat.spokenDuration(milliseconds: message.voiceDurationMs ?? 0))
+                            : Copy.chatVoiceA11yMessage(name: author?.socialFirstName ?? "", duration: SocialFormat.spokenDuration(milliseconds: message.voiceDurationMs ?? 0))
+                    )
+                    .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
+                } else {
+                    Text(message.body ?? "")
+                        .dsTextRole(SocialTextRole.threadBody)
+                        .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityLabel(Text(isMine
+                            ? Copy.chatThreadA11yMessageMine(message: message.body ?? "")
+                            : Copy.chatThreadA11yMessage(name: author?.socialFirstName ?? "", message: message.body ?? "")))
+                        .metricGap(Tokens.Sizes.chatThreadDimensionRowLinePitch, from: .lastBaseline, to: .firstBaseline)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+            .contextMenu { menu }
+            .accessibilityActions { menu }
+        }
+        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+    }
+
+    @ViewBuilder
+    private var menu: some View {
+        Button(Copy.chatThreadMenuReply, action: reply)
+        if message.kind == .text {
+            Button(Copy.chatThreadMenuCopy, action: copy)
+        }
+        if isMine {
+            Button(Copy.chatThreadMenuDelete, role: .destructive, action: unsend)
+        } else {
+            Button(Copy.chatThreadMenuReport, role: .destructive, action: report)
+        }
+    }
+}
+
+// MARK: - The picture
+
+/// The picture itself, never cropped (aspect fit, letterboxed on `color.global.backgroundDeep`): the grid thumbnail at
+/// once, replaced by `display_path` when loaded (docs/API.md §7) with `duration.global.fade`; a dual capture as
+/// `daily.dualimage` (capture group's `DualImageView`); a Live Photo plays while pressed (platform `PHLivePhotoView`); a
+/// video with the platform player. When the display rendition cannot load: `photo.viewer.error.load` centred (tap
+/// retries).
 struct ViewerMedia: View {
     let post: PostWithMedia
-    let maxPixel: Int?
     let accessibilityLabel: String
-
-    @State private var failed = false
 
     var body: some View {
         Group {
@@ -452,35 +691,87 @@ struct ViewerMedia: View {
                     ViewerVideo(path: media.originalPath)
                 default:
                     if media.frontOriginalPath != nil {
-                        ViewerDualImage(media: media, maxPixel: maxPixel, accessibilityLabel: accessibilityLabel)
+                        ViewerDualImage(media: media, accessibilityLabel: accessibilityLabel)
                     } else {
                         ZStack {
-                            SocialPhoto(path: media.gridPath)
-                            SocialPhoto(path: media.displayImagePath, maxPixel: maxPixel) {
-                                Text(Copy.photoViewerErrorLoad)
-                                    .dsTextStyle(TextRole.emptyDetail)
-                                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
-                            }
+                            ViewerDisplayImage(thumbPath: media.gridPath, displayPath: media.displayImagePath)
                             if media.kind == .livePhoto { ViewerLivePhoto(media: media) }
                         }
                     }
                 }
             } else {
                 Text(Copy.photoViewerErrorLoad)
-                    .dsTextStyle(TextRole.emptyDetail)
+                    .dsTextStyle(TextRole.body)
                     .foregroundStyle(Tokens.Colors.globalTextSecondary)
             }
         }
+        .background(Tokens.Colors.globalBackgroundDeep)
+        .clipped()
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(accessibilityLabel))
         .accessibilityAddTraits(.isImage)
     }
 }
 
+/// Thumbnail first, the display rendition faded in over it; a failed display load shows the error line.
+struct ViewerDisplayImage: View {
+    let thumbPath: String?
+    let displayPath: String?
+
+    @State private var image: UIImage?
+    @State private var failed = false
+    @State private var attempt = 0
+    @Environment(\.displayScale) private var displayScale
+
+    init(thumbPath: String?, displayPath: String?) {
+        self.thumbPath = thumbPath
+        self.displayPath = displayPath
+        _image = State(initialValue: displayPath.flatMap { SocialServices.shared.images.cached($0) })
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack {
+                if image == nil {
+                    SocialImage(path: thumbPath, contentMode: .fit) { Color.clear }
+                }
+                if let image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .transition(.opacity)
+                }
+                if failed {
+                    Button {
+                        failed = false
+                        attempt += 1
+                    } label: {
+                        Text(Copy.photoViewerErrorLoad)
+                            .dsTextStyle(TextRole.body)
+                            .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .frame(width: proxy.size.width, height: proxy.size.height)
+            .task(id: (displayPath ?? "") + "#" + String(attempt)) {
+                guard image == nil, let displayPath else { return }
+                let pixels = Int((max(proxy.size.width, proxy.size.height) * displayScale).rounded(.up))
+                let loaded = await SocialServices.shared.images.load(displayPath, maxPixel: pixels > 0 ? pixels : nil)
+                withDSAnimation(ComponentMotion.fade) {
+                    image = loaded
+                    failed = loaded == nil
+                }
+            }
+        }
+    }
+}
+
 /// `daily.dualimage` for a post with a front photo.
 struct ViewerDualImage: View {
     let media: Media
-    let maxPixel: Int?
     let accessibilityLabel: String
 
     @State private var main: UIImage?
@@ -489,14 +780,14 @@ struct ViewerDualImage: View {
     var body: some View {
         DualImageView(main: main, inset: inset, accessibilityLabel: accessibilityLabel)
             .task(id: media.id) {
-                if let path = media.displayImagePath { main = await SocialServices.shared.images.load(path, maxPixel: maxPixel) }
-                if let path = media.frontImagePath(for: .display) { inset = await SocialServices.shared.images.load(path, maxPixel: maxPixel) }
+                if let path = media.displayImagePath { main = await SocialServices.shared.images.load(path) }
+                if let path = media.frontImagePath(for: .display) { inset = await SocialServices.shared.images.load(path) }
             }
     }
 }
 
-/// A Live Photo: the still and its motion (the pair that constitutes it, PLATFORM_CONSTRAINTS §6) are downloaded
-/// when the page shows; the platform view plays it while pressed.
+/// A Live Photo: the still and its motion (the pair that constitutes it, PLATFORM_CONSTRAINTS §6) are downloaded when
+/// the page shows; the platform view plays it while pressed.
 struct ViewerLivePhoto: View {
     let media: Media
     @State private var livePhoto: PHLivePhoto?
@@ -530,7 +821,7 @@ enum LivePhotoLoader {
         let result = await withCheckedContinuation { (continuation: CheckedContinuation<Loaded, Never>) in
             let once = ResumeOnce()
             PHLivePhoto.request(
-                withResourceFileURLs: [still, motion], placeholderImage: nil, targetSize: .zero, contentMode: .aspectFill
+                withResourceFileURLs: [still, motion], placeholderImage: nil, targetSize: .zero, contentMode: .aspectFit
             ) { @Sendable photo, info in
                 let degraded = (info[PHLivePhotoInfoIsDegradedKey] as? Bool) ?? false
                 guard !degraded || photo == nil, once.claim() else { return }
@@ -564,7 +855,7 @@ struct LivePhotoRepresentable: UIViewRepresentable {
 
     func makeUIView(context: Context) -> PHLivePhotoView {
         let view = PHLivePhotoView()
-        view.contentMode = .scaleAspectFill
+        view.contentMode = .scaleAspectFit
         view.clipsToBounds = true
         return view
     }
@@ -574,7 +865,7 @@ struct LivePhotoRepresentable: UIViewRepresentable {
     }
 }
 
-/// Video posts (premium): the platform player (not observed in Yope, spec Gaps).
+/// Video posts (premium): the platform player.
 struct ViewerVideo: View {
     let path: String
     @State private var player: AVPlayer?
@@ -587,88 +878,4 @@ struct ViewerVideo: View {
             }
             .onDisappear { player?.pause() }
     }
-}
-
-/// The viewer's reply row (`photo.viewer` Structure 4): the composer field with `photo.viewer.reply.placeholder`, the
-/// quick reactions 🔥 💖 and the add-reaction glyph inside its right end (`chat.reactions.layout.quickReactions`), then
-/// the camera circle, whose slot shows the lime send circle while the field has text (`chat.composer.layout.typingState`).
-/// Quick reactions use the field's text role (their size was not measured).
-struct ViewerReplyRow: View {
-    @Binding var text: String
-    let groupName: String
-    let send: () -> Void
-    let react: (String) -> Void
-    let openPicker: () -> Void
-    let camera: () -> Void
-
-    private static let fieldInset = SocialMetrics.singleLineInset(height: Tokens.Sizes.chatComposerDimensionFieldHeight, style: TextRole.body)
-
-    private var quickEmoji: [String] {
-        Tokens.Layouts.ChatReactionsLayoutQuickReactions.emoji.split(separator: " ").map(String.init)
-    }
-
-    var body: some View {
-        HStack(alignment: .bottom, spacing: 0) {
-            HStack(alignment: .bottom) {
-                TextField(
-                    text: $text,
-                    prompt: Text(Copy.photoViewerReplyPlaceholder(groupName: groupName)).foregroundStyle(Tokens.Colors.globalTextSecondary),
-                    axis: .vertical
-                ) {
-                    Text(Copy.photoViewerReplyPlaceholder(groupName: groupName))
-                }
-                .dsTextStyle(TextRole.body)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                .padding(.vertical, Self.fieldInset)
-                .accessibilityIdentifier("photo.viewer.reply") // provenance-ok: accessibility identifier for UI tests
-                ForEach(quickEmoji, id: \.self) { emoji in
-                    Button { react(emoji) } label: {
-                        Text(emoji)
-                            .dsTextStyle(TextRole.body)
-                            .frame(minHeight: Tokens.Sizes.chatComposerDimensionFieldHeight)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(Text(Copy.chatReactionsA11yQuick(emojiName: SocialEmoji.name(emoji))))
-                }
-                Button(action: openPicker) {
-                    Image(systemName: Tokens.Icons.chatReactionsIconAdd)
-                        .dsTextStyle(TextRole.body)
-                        .foregroundStyle(Tokens.Colors.globalTextSecondary)
-                        .frame(minHeight: Tokens.Sizes.chatComposerDimensionFieldHeight)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text(Copy.chatReactionsA11yAdd))
-            }
-            .padding(.horizontal, Tokens.Sizes.chatComposerDimensionFieldPaddingLeading)
-            .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.chatComposerDimensionFieldHeight, alignment: .leading)
-            .background(Tokens.Colors.globalControl, in: Capsule())
-            .socialRim(Capsule(), top: Tokens.Colors.chatComposerColorFieldRimTop, bottom: Tokens.Colors.chatComposerColorFieldRimBottom, width: Tokens.Sizes.chatComposerDimensionFieldRim)
-
-            Group {
-                if hasText {
-                    // `chat.composer.layout.typingState`: the camera circle's slot shows the lime send circle.
-                    SendCircle(identifier: "photo.viewer.send", action: send) // provenance-ok: accessibility identifier for UI tests
-                } else {
-                    Button(action: camera) {
-                        Image(systemName: Tokens.Icons.globalCamera)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: Tokens.Sizes.chatComposerDimensionCameraGlyph)
-                            .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                            .frame(width: Tokens.Sizes.chatComposerDimensionSideButton, height: Tokens.Sizes.chatComposerDimensionSideButton)
-                            .background(Tokens.Colors.globalControlRaised, in: Circle())
-                            .contentShape(Circle().inset(by: -max(0, Tokens.Sizes.globalMinTouchTargetIos - Tokens.Sizes.chatComposerDimensionSideButton) / 2))
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(Text(Copy.chatComposerA11yCamera))
-                }
-            }
-            .padding(.leading, Tokens.Sizes.chatComposerDimensionGapFieldButton)
-        }
-        .padding(.leading, Tokens.Sizes.chatComposerDimensionInsetLeading)
-        .padding(.trailing, Tokens.Sizes.chatComposerDimensionInsetTrailing)
-        .padding(.bottom, Tokens.Sizes.chatComposerDimensionBottomInset)
-    }
-
-    private var hasText: Bool { !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 }

@@ -123,6 +123,9 @@ struct CaptureLargeCircleButton: View {
 struct CaptureMediaHeader<Title: View>: View {
     var leading: HeaderAction?
     let trailing: HeaderAction
+    /// UI-test identifiers of the circles.
+    var leadingIdentifier = ""
+    var trailingIdentifier = ""
     @ViewBuilder let title: () -> Title
 
     /// From the screen edge to a circle's centre. `camera.sendto.layout.header` states it in words ("centre 37.7 pt
@@ -130,19 +133,17 @@ struct CaptureMediaHeader<Title: View>: View {
     /// Retro close circle, measured 37.7 pt on ST-04.
     static var measuredCentreInset: CGFloat { Tokens.Layouts.CollageViewLayoutScreen.closeCentreFromTrailing }
 
-    /// Height of the header area: the circle's bottom below the safe-area top.
-    static var height: CGFloat {
-        Tokens.Layouts.CameraSendtoLayoutHeader.centreBelowSafeArea + Tokens.Sizes.globalCircleButton / 2
-    }
-
     var body: some View {
         let edgeToCircle = Self.measuredCentreInset - Tokens.Sizes.globalCircleButton / 2
         HStack(spacing: 0) {
             if let leading {
                 circle(leading)
+                    .accessibilityIdentifier(leadingIdentifier)
+                    .accessibilitySortPriority(2)
             }
             Spacer(minLength: 0)
             circle(trailing)
+                .accessibilityIdentifier(trailingIdentifier)
         }
         .padding(.horizontal, edgeToCircle)
         .frame(height: Tokens.Sizes.globalCircleButton)
@@ -162,7 +163,7 @@ struct CaptureMediaHeader<Title: View>: View {
 extension CaptureMediaHeader where Title == CaptureMediaHeaderTitle {
     /// A text title (text role `sheetTitle`, `color.global.textOnMedia`, header trait).
     init(title: String, leading: HeaderAction? = nil, trailing: HeaderAction) {
-        self.init(leading: leading, trailing: trailing) { CaptureMediaHeaderTitle(text: title) }
+        self.init(leading: leading, trailing: trailing, title: { CaptureMediaHeaderTitle(text: title) })
     }
 }
 

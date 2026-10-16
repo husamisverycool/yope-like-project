@@ -49,9 +49,9 @@ final class CaptureFlowUITests: XCTestCase {
 
         let send = app.buttons["camera.sendto.send"]
         XCTAssertTrue(send.exists)
+        XCTAssertTrue(send.isEnabled)
         send.tap()
-        XCTAssertTrue(sendTo.waitForNonExistence(timeout: 5), "the sheet closes at once; the outbox uploads")
-        XCTAssertFalse(app.otherElements["camera.capture"].exists, "the camera closes after sending")
+        XCTAssertTrue(sendTo.waitForNonExistence(timeout: 10), "the composer waits for the post (busy capsule), then closes")
     }
 
     @MainActor
@@ -66,13 +66,35 @@ final class CaptureFlowUITests: XCTestCase {
     }
 
     @MainActor
-    func testDeselectingEveryGroupHidesSend() throws {
+    func testDeselectingEveryGroupDisablesSend() throws {
         let app = try launchToCamera()
         app.descendants(matching: .any)["camera.capture.shutter"].tap()
         XCTAssertTrue(app.otherElements["camera.sendto"].waitForExistence(timeout: 5))
         app.buttons["camera.sendto.row.fake-group-1"].tap()
         app.buttons["camera.sendto.row.fake-group-2"].tap()
-        XCTAssertFalse(app.buttons["camera.sendto.send"].exists, "hidden with nothing selected")
+        let send = app.buttons["camera.sendto.send"]
+        XCTAssertTrue(send.exists, "the capsule stays, disabled (#4D4D4D)")
+        XCTAssertFalse(send.isEnabled)
+    }
+
+    @MainActor
+    func testMessageSheetThenCloseAsksBeforeDiscarding() throws {
+        let app = try launchToCamera()
+        app.descendants(matching: .any)["camera.capture.shutter"].tap()
+        let sendTo = app.otherElements["camera.sendto"]
+        XCTAssertTrue(sendTo.waitForExistence(timeout: 5))
+        app.buttons["camera.sendto.message"].tap()
+        let field = app.textFields["camera.sendto.message.field"].exists
+            ? app.textFields["camera.sendto.message.field"]
+            : app.textViews["camera.sendto.message.field"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "the Add a Message sheet")
+        field.typeText("hi")
+        app.buttons["camera.sendto.message.done"].tap()
+        XCTAssertTrue(app.buttons["camera.sendto.message"].waitForExistence(timeout: 5))
+
+        // With a message the close circle asks first (Retro's lost-changes warning).
+        app.buttons["camera.sendto.close"].tap()
+        XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 5), "Discard photo? (a message would be lost)")
     }
 
     @MainActor
@@ -81,7 +103,7 @@ final class CaptureFlowUITests: XCTestCase {
         app.descendants(matching: .any)["camera.capture.shutter"].tap()
         XCTAssertTrue(app.otherElements["camera.sendto"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.descendants(matching: .any)["camera.sendto.empty"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["camera.sendto.send"].exists)
+        XCTAssertFalse(app.buttons["camera.sendto.send"].isEnabled)
     }
 
     @MainActor

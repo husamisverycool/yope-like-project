@@ -1,24 +1,27 @@
-// Surface: birthday.contribute — reference: Tribute / VidDay.
-// Reference images: references/auto/tribute/web/tribute-web-testimonials-upload-step1-info.png
-// (+ tribute-web-testimonials-upload-step1.computed-styles.json), references/auto/vidday/frames/vidday-tour-t102-phone.png;
-// https://www.tribute.co/help/creators/how-do-i-upload-a-video/, https://help.vidday.com/how-to-record-a-video-with-a-phone/
-// (design/surfaces/birthday.contribute.md).
+// Surface: birthday.contribute — Retro's "Add to Your Week" composer sheet, the dark postcard composer and the "Add a
+// Message" modal, in Tribute / VidDay's order (choose a photo → write a line → send) (design/surfaces/birthday.contribute.md,
+// MERGE RM-11). Reference images: references/auto/retro/video/ig-DDbA_F7x-j7-composer-f130-147-f188-197.png (VID-COMP),
+// references/auto/retro/store/retro-store-03.png (ST-03, postcard composer), references/auto/retro/press/tc-2023-12-retro3.png
+// phone 3 ('Add a Message' modal and counter). Components: C-29 (sheet, toolbar), C-21 (composer grid), C-11, C-09, C-05,
+// C-08, C-27, C-26.
 import AppData
 import DesignSystem
-import Foundation
 import SwiftUI
 
-/// Pick one photo you posted or are in, write one line, send. Full screen over `birthday.request`
-/// (✕ on steps 1 and 3, ‹ on step 2); the steps are native pushes in the flow's own navigation stack.
+/// The contribution flow in a page sheet with its own navigation stack: step 1 chooses a photo you posted or are in;
+/// step 2 (dark in both appearances) shows it with the "Add a message" pill and "Add to video"; the pill opens the
+/// "Add a Message" modal (step 2a, follows the appearance). Sending closes the sheet ("Added to video!" is announced).
+///
+/// - Parameter onOpenGroup: the empty state's "View {group}": the presenter closes too and shows the group.
 @MainActor
 struct BirthdayContributeScreen: View {
     let requestID: String
     @State private var model: BirthdayContributeModel
     private let onOpenGroup: ((String) -> Void)?
     @Environment(\.dismiss) private var dismiss
+    /// The sheet's own appearance (the system's): step 2a follows it although step 2 renders dark.
+    @Environment(\.colorScheme) private var systemScheme
 
-    /// - Parameter onOpenGroup: the empty state's "open group" action; nil = go to the group screen
-    ///   on the main stack (`MemoryDependencies.openGroup`).
     init(requestID: String, model: BirthdayContributeModel? = nil, onOpenGroup: ((String) -> Void)? = nil) {
         self.requestID = requestID
         _model = State(initialValue: model ?? BirthdayContributeModel(requestID: TributeRequestID(requestID), dependencies: .current))
@@ -27,401 +30,363 @@ struct BirthdayContributeScreen: View {
 
     var body: some View {
         NavigationStack(path: $model.path) {
-            ContributeStep(model: model, step: 1) {
-                ContributePhotoStep(model: model)
-            }
-            .navigationDestination(for: BirthdayContributeModel.Step.self) { step in
-                switch step {
-                case .message:
-                    ContributeStep(model: model, step: 2) {
-                        ContributeMessageStep(model: model)
-                    }
-                case .done:
-                    ContributeStep(model: model, step: 3) {
-                        ContributeDoneStep(model: model)
-                    }
+            BirthdayContributePicker(model: model)
+                .navigationDestination(for: BirthdayContributeModel.Step.self) { _ in
+                    BirthdayContributeComposer(model: model, modalScheme: systemScheme)
                 }
-            }
         }
+        .dsSheetBackground()
+        .interactiveDismissDisabled(model.isSending)
         .task { await model.loadIfNeeded() }
         .onDisappear { model.stopListening() }
         .onChange(of: model.isFinished) { _, finished in
             guard finished else { return }
-            if model.openGroupRequested, let groupID = model.groupID {
-                if let onOpenGroup {
-                    onOpenGroup(groupID.rawValue)
-                } else {
-                    MemoryDependencies.current.openGroup(groupID.rawValue)
-                }
+            if model.openGroupRequested, let group = model.groupID {
+                onOpenGroup?(group.rawValue)
             }
             dismiss()
         }
-        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("birthday.contribute")
     }
 }
 
-// MARK: - Step frame (header + stepper)
+// MARK: - Step 1 — Choose a Photo
 
-private struct ContributeStep<Content: View>: View {
-    let model: BirthdayContributeModel
-    let step: Int
-    @ViewBuilder let content: () -> Content
+/// Native toolbar "Cancel / Choose a Photo / Next" (C-29, system tint), the grey line (text role `body`,
+/// `color.global.textSecondary`, at `size.global.screenMargin`), then the composer grid (C-21: Retro's composer columns —
+/// `week.edit.count.gridColumns`, the same "Add to Your Week" grid — square cells, `size.global.stripGap` gaps,
+/// `radius.global.photo`, full width). One photo at a time: the selected cell shows the check (`icon.global.check`,
+/// `color.global.selection`, `size.global.checkCircle`, inset `size.global.badgeInset` from its top-right corner; the
+/// platform picker's filled check, PLATFORM), fading in over `duration.global.fade`.
+struct BirthdayContributePicker: View {
+    @Bindable var model: BirthdayContributeModel
 
-    var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                if step == 2 {
-                    MemoryHeaderCircle(icon: Tokens.Icons.globalBack, label: Copy.groupsScreenBackAccessibilityLabel) {
-                        model.retake()
-                    }
-                    .accessibilityIdentifier("birthday.contribute.back")
-                } else {
-                    MemoryHeaderCircle(icon: Tokens.Icons.globalClose, label: Copy.birthdayContributeA11yClose) {
-                        model.finish()
-                    }
-                    .accessibilityIdentifier("birthday.contribute.close")
-                }
-                Spacer()
-            }
-            .padding(.horizontal, Tokens.Sizes.globalHeaderInset)
-            ContributeStepper(current: step)
-                .padding(.horizontal, Tokens.Sizes.birthdayContributeMargin)
-            if model.phase == .closed {
-                MemoryStateMessage(title: Copy.birthdayContributeClosed(name: model.honoreeName))
-                    .padding(.horizontal, Tokens.Sizes.birthdayContributeMargin)
-                    .padding(.top, Tokens.Sizes.birthdayContributeHeadingGap)
-                Spacer(minLength: 0)
-            } else {
-                content()
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Tokens.Colors.globalBackgroundDeep.ignoresSafeArea())
-        .toolbar(.hidden, for: .navigationBar)
-        .navigationBarBackButtonHidden(true)
-    }
-}
-
-/// Three circles (`layout.birthday.contribute.stepper`): the first and last `edgeInset` inside the
-/// margins, the middle one centred; captions `labelGap` below. One accessibility element.
-struct ContributeStepper: View {
-    let current: Int
-
-    private var captions: [String] {
-        [Copy.birthdayContributeStepPhoto, Copy.birthdayContributeStepMessage, Copy.birthdayContributeStepDone]
-    }
+    private var columns: Int { max(1, Int(Tokens.Counts.weekEditCountGridColumns)) }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 0) {
-            ForEach(Array(captions.enumerated()), id: \.offset) { index, caption in
-                if index > 0 { Spacer(minLength: 0) }
-                step(number: index + 1, caption: caption)
-            }
-        }
-        .padding(.horizontal, ContributeStepperMetrics.edgeInset)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(captions.indices.contains(current - 1) ? captions[current - 1] : "")
-        .accessibilityIdentifier("birthday.contribute.stepper")
-    }
-
-    private func step(number: Int, caption: String) -> some View {
-        let active = number == current
-        let diameter = Tokens.Sizes.birthdayContributeStepperCircle
-        return VStack(spacing: Tokens.Layouts.BirthdayContributeStepper.labelGap) {
-            Text(String(number))
-                .dsTextStyle(BirthdayType.stepperNumber)
-                .foregroundStyle(active ? Tokens.Colors.globalTextPrimary : Tokens.Colors.birthdayContributeStepperInactiveLabel)
-                .frame(width: diameter, height: diameter)
-                .background(
-                    active ? Tokens.Colors.birthdayContributeStepperActive : Tokens.Colors.birthdayContributeStepperInactive,
-                    in: Circle()
-                )
-            Text(caption)
-                .dsTextStyle(BirthdayType.stepperLabel(active: active))
-                .foregroundStyle(active ? Tokens.Colors.globalTextPrimary : Tokens.Colors.birthdayContributeStepperInactiveLabel)
-                .fixedSize()
-                .frame(width: diameter)
-        }
-    }
-}
-
-enum ContributeStepperMetrics {
-    /// The "11 pt inside the margin" of `layout.birthday.contribute.stepper.distribution`. The token
-    /// carries this measured value only inside its text, so it is read from there.
-    static let edgeInset: CGFloat = {
-        let scanner = Scanner(string: Tokens.Layouts.BirthdayContributeStepper.distribution)
-        _ = scanner.scanUpToCharacters(from: .decimalDigits)
-        return CGFloat(scanner.scanDouble() ?? 0)
-    }()
-}
-
-// MARK: - Step 1: Photo
-
-private struct ContributePhotoStep: View {
-    let model: BirthdayContributeModel
-
-    var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(spacing: 0) {
-                    // The greeting keeps its place while the name loads (no jump, no "for !").
-                    Text(Copy.birthdayContributeGreeting(name: model.honoreeName))
-                        .dsTextStyle(BirthdayType.contributeHeading)
-                        .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                        .opacity(model.honoreeName.isEmpty ? 0 : 1)
-                        .accessibilityHidden(model.honoreeName.isEmpty)
-                        .accessibilityAddTraits(.isHeader)
-                        .padding(.top, Tokens.Sizes.birthdayContributeHeadingGap)
-                    Text(Copy.birthdayContributeThanks)
-                        .dsTextStyle(BirthdayType.contributeSubheading)
-                        .foregroundStyle(Tokens.Colors.globalTextPrimary.opacity(Tokens.Opacities.birthdayContributeSubheading))
-                        .padding(.top, Tokens.Sizes.birthdayContributeSubheadingGap)
-                    if model.inline == .notEligible {
-                        inlineText(Copy.birthdayContributeNotEligible)
-                            .padding(.top, Tokens.Sizes.birthdayContributeGroupGap)
-                    }
-                    stateContent
-                        .padding(.top, Tokens.Sizes.birthdayContributeGroupGap)
-                }
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Tokens.Sizes.birthdayContributeMargin)
-            }
-            .scrollBounceBehavior(.basedOnSize)
-            if model.phase == .loaded {
-                MemoryFilledButton.contributePrimary(Copy.birthdayContributeReviewUse) {
-                    model.usePhoto()
-                }
-                .disabled(!model.canUsePhoto)
-                .accessibilityIdentifier("birthday.contribute.use")
-                .padding(.horizontal, Tokens.Sizes.birthdayContributeMargin)
-                .padding(.bottom, Tokens.Sizes.birthdayContributeMargin)
-            }
-        }
+        content
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .background(Tokens.Colors.globalBackground.ignoresSafeArea())
+            .sheetToolbar(
+                title: Copy.birthdayContributePickerTitle,
+                cancelTitle: Copy.birthdayContributePickerCancel,
+                onCancel: { model.finish() },
+                confirmTitle: Copy.birthdayContributePickerNext,
+                isConfirmEnabled: model.canUsePhoto,
+                onConfirm: { model.usePhoto() }
+            )
     }
 
     @ViewBuilder
-    private var stateContent: some View {
+    private var content: some View {
         switch model.phase {
         case .idle, .loading:
-            MemoryLoadingIndicator(text: Copy.birthdayContributeLoading)
-        case .empty:
-            MemoryStateMessage(
-                title: Copy.birthdayContributePickerEmptyTitle(group: model.groupName),
-                detail: Copy.birthdayContributePickerEmptyDetail,
-                actionTitle: Copy.birthdayContributePickerEmptyAction
-            ) {
-                model.openGroup()
-            }
-        case .error:
-            MemoryStateMessage(
-                title: Copy.birthdayContributeErrorTitle, detail: Copy.birthdayContributeErrorDetail,
-                actionTitle: Copy.birthdayContributeErrorRetry
-            ) {
-                Task { await model.retry() }
-            }
-        case .offline:
-            VStack {
-                inlineText(Copy.birthdayContributeOffline)
-                MemoryLightPill(title: Copy.birthdayContributeErrorRetry) {
-                    Task { await model.retry() }
+            ScrollView {
+                VStack(alignment: .leading) {
+                    subtitle
+                    placeholders
                 }
             }
+            .scrollDisabled(true)
+            .onAppear { AccessibilityNotification.Announcement(Copy.birthdayContributeLoading).post() }
         case .loaded:
-            ContributePhotoGrid(model: model)
+            ScrollView {
+                VStack(alignment: .leading) {
+                    subtitle
+                    if model.inline == .notEligible {
+                        Text(Copy.birthdayContributeNotEligible)
+                            .dsTextStyle(TextRole.meta)
+                            .foregroundStyle(Tokens.Colors.globalDestructive)
+                            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+                            .accessibilityIdentifier("birthday.contribute.notEligible")
+                    }
+                    grid
+                }
+            }
+        case .empty:
+            EmptyStateView(
+                title: Copy.birthdayContributePickerEmptyTitle,
+                detail: Copy.birthdayContributePickerEmptyDetail(group: model.groupName),
+                action: EmptyStateView.Action(Copy.birthdayContributePickerEmptyAction(group: model.groupName)) { model.openGroup() }
+            )
+            .frame(maxHeight: .infinity)
+            .accessibilityIdentifier("birthday.contribute.empty")
         case .closed:
-            EmptyView()
+            EmptyStateView(title: Copy.birthdayContributeClosed(name: model.honoreeName))
+                .frame(maxHeight: .infinity)
+                .accessibilityIdentifier("birthday.contribute.closed")
+        case .error:
+            EmptyStateView(
+                title: Copy.birthdayContributeErrorTitle, detail: Copy.birthdayContributeErrorDetail,
+                action: EmptyStateView.Action(Copy.birthdayContributeErrorRetry) { Task { await model.retry() } }
+            )
+            .frame(maxHeight: .infinity)
+        case .offline:
+            EmptyStateView(
+                title: nil, detail: Copy.birthdayContributeOffline,
+                action: EmptyStateView.Action(Copy.birthdayContributeErrorRetry) { Task { await model.retry() } }
+            )
+            .frame(maxHeight: .infinity)
         }
     }
-}
 
-/// The eligible photos in the Yope wall grid (`walls.mine.count.gridColumns`,
-/// `walls.mine.dimension.gridGap`, `walls.mine.aspectRatio.gridTile`) with `radius.global.photo`
-/// corners and the global selection check in each cell's top-right corner.
-private struct ContributePhotoGrid: View {
-    let model: BirthdayContributeModel
-
-    private var columns: [GridItem] {
-        Array(
-            repeating: GridItem(.flexible(), spacing: Tokens.Sizes.wallsMineDimensionGridGap),
-            count: Int(Tokens.Counts.wallsMineCountGridColumns)
-        )
+    private var subtitle: some View {
+        Text(Copy.birthdayContributePickerSubtitle)
+            .dsTextStyle(TextRole.body)
+            .foregroundStyle(Tokens.Colors.globalTextSecondary)
+            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+            .padding(.vertical)
     }
 
-    var body: some View {
-        LazyVGrid(columns: columns, spacing: Tokens.Sizes.wallsMineDimensionGridGap) {
-            ForEach(Array(model.photos.enumerated()), id: \.element.id) { index, photo in
-                let selected = model.selectedID == photo.id
-                Button {
-                    model.select(photo.id)
-                } label: {
-                    MemoryRemoteImage(url: photo.thumbURL)
-                        .aspectRatio(Tokens.AspectRatios.wallsMineAspectRatioGridTile, contentMode: .fit)
-                        .clipShape(RoundedRectangle(cornerRadius: Tokens.Radii.globalPhoto))
-                        .overlay(alignment: .topTrailing) {
-                            Image(systemName: selected ? Tokens.Icons.globalCheck : Tokens.Icons.globalUncheck)
-                                .resizable()
-                                .scaledToFit()
-                                .foregroundStyle(selected ? Tokens.Colors.globalSelection : Tokens.Colors.globalTextPrimary)
-                                .frame(width: Tokens.Sizes.globalCheckCircle, height: Tokens.Sizes.globalCheckCircle)
-                                // No inset token for the check: the grid's own gap is used.
-                                .padding(Tokens.Sizes.wallsMineDimensionGridGap)
-                        }
-                        .contentShape(Rectangle())
+    private var gridColumns: [GridItem] {
+        Array(repeating: GridItem(.flexible(), spacing: Tokens.Sizes.globalStripGap), count: columns)
+    }
+
+    private var grid: some View {
+        MemoryImageScope { images in
+            LazyVGrid(columns: gridColumns, spacing: Tokens.Sizes.globalStripGap) {
+                ForEach(Array(model.photos.enumerated()), id: \.element.id) { offset, photo in
+                    cell(photo, source: images.source(photo.thumbURL), offset: offset)
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Copy.birthdayContributeA11yPhoto(date: ContributeFormat.spokenDate(photo.createdAt)))
-                .accessibilityAddTraits(selected ? [.isSelected] : [])
-                .accessibilityIdentifier("birthday.contribute.photo.\(index)")
             }
         }
+        .accessibilityElement(children: .contain)
+    }
+
+    private func cell(_ photo: BirthdayContributeModel.EligiblePhoto, source: PhotoSource?, offset: Int) -> some View {
+        let isSelected = model.selectedID == photo.id
+        return Button {
+            model.select(photo.id)
+        } label: {
+            PhotoView(source: source)
+                .aspectRatio(1, contentMode: .fit) // provenance-ok: square cells (C-21)
+                .clipShape(DSShape.rounded(Tokens.Radii.globalPhoto))
+                .overlay(alignment: .topTrailing) {
+                    if isSelected {
+                        Image(systemName: Tokens.Icons.globalCheck)
+                            .resizable()
+                            .scaledToFit()
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(Tokens.Colors.globalTextOnMedia, Tokens.Colors.globalSelection)
+                            .frame(width: Tokens.Sizes.globalCheckCircle, height: Tokens.Sizes.globalCheckCircle)
+                            .padding(Tokens.Sizes.globalBadgeInset)
+                            .dsTransition(.opacity)
+                    }
+                }
+                .dsAnimation(ComponentMotion.fade, value: isSelected)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(Copy.birthdayContributeA11yPhoto(date: MemoryFormat.memoryDate(photo.createdAt, timeZone: .current))))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityIdentifier("birthday.contribute.photo." + String(offset)) // provenance-ok: accessibility identifier
+    }
+
+    /// Loading: C-17 placeholder tiles (`color.global.control`) in the grid's cells, filling the visible page.
+    private var placeholders: some View {
+        GeometryReader { proxy in
+            let side = (proxy.size.width - CGFloat(columns - 1) * Tokens.Sizes.globalStripGap) / CGFloat(columns)
+            let rows = side > 0 ? Int((proxy.size.height / (side + Tokens.Sizes.globalStripGap)).rounded(.up)) : 0
+            LazyVGrid(columns: gridColumns, spacing: Tokens.Sizes.globalStripGap) {
+                ForEach(0..<(rows * columns), id: \.self) { _ in
+                    Tokens.Colors.globalControl
+                        .aspectRatio(1, contentMode: .fit) // provenance-ok: square cells (C-21)
+                }
+            }
+        }
+        .containerRelativeFrame(.vertical)
+        .accessibilityHidden(true)
     }
 }
 
-enum ContributeFormat {
-    /// `{date}` of `birthday.contribute.a11y.photo`: the platform's long date (no format token).
-    static func spokenDate(_ date: Date, locale: Locale = .current) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = locale
-        formatter.dateStyle = .long
-        formatter.timeStyle = .none
-        return formatter.string(from: date)
-    }
-}
+// MARK: - Step 2 — the composer (dark)
 
-// MARK: - Step 2: Message
-
-private struct ContributeMessageStep: View {
+/// The postcard-style composer on `color.global.backgroundDeep` (dark in both appearances): the sheet header (C-29:
+/// back, centred `birthday.contribute.composer.title` in text role `sheetTitle`, C-11 close on media); the photo fitted
+/// (own aspect) in a `dimension.birthday.contribute.photoWidth` × `.photoMaxHeight` box, `dimension.birthday.contribute
+/// .titleToPhoto` below the title's baseline, corners `radius.birthday.contribute.photo`; on it the C-09 dark pill
+/// (`icon.global.edit` + "Add a message" / "Edit message") `dimension.birthday.contribute.pillBottom` above its bottom;
+/// the line under it; pinned to the bottom the C-05 capsule on media "Add to video".
+struct BirthdayContributeComposer: View {
     @Bindable var model: BirthdayContributeModel
-    @FocusState private var fieldFocused: Bool
-
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                if let photo = model.selectedPhoto {
-                    MemoryRemoteImage(url: photo.displayURL)
-                        .aspectRatio(photo.aspectRatio ?? OnThisDayMasonry.unknownAspectRatio, contentMode: .fit)
-                        .clipShape(RoundedRectangle(cornerRadius: Tokens.Radii.globalPhoto))
-                        .accessibilityHidden(true)
-                        .padding(.top, Tokens.Sizes.birthdayContributeGroupGap)
-                }
-                Text(Copy.birthdayContributeLineLabel)
-                    .dsTextStyle(BirthdayType.contributeLabel)
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                    .padding(.top, Tokens.Sizes.birthdayContributeGroupGap)
-                    .accessibilityHidden(true)
-                TextField(text: $model.line, prompt: nil, axis: .vertical) {
-                    Text(Copy.birthdayContributeLineLabel)
-                }
-                .focused($fieldFocused)
-                .submitLabel(.done)
-                .dsTextStyle(BirthdayType.contributeInput)
-                .foregroundStyle(Tokens.Colors.birthdayContributeInputText)
-                .padding(.horizontal, Tokens.Sizes.birthdayContributeLabelGap)
-                .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.birthdayContributeInputHeight, alignment: .leading)
-                .background(Tokens.Colors.birthdayContributeInputFill, in: RoundedRectangle(cornerRadius: Tokens.Radii.birthdayContributeInput))
-                .padding(.top, Tokens.Sizes.birthdayContributeLabelGap)
-                .accessibilityIdentifier("birthday.contribute.line")
-                .onChange(of: model.line) { _, _ in
-                    // One line (the return key ends the entry), at most `layout.birthday.contribute.lineMax`
-                    // characters, no visible counter.
-                    if model.normalizeLine() { fieldFocused = false }
-                }
-                MemoryMessageIdeas(honoreeName: model.honoreeName)
-                    .padding(.top, Tokens.Sizes.birthdayContributeGroupGap)
-                MemoryFilledButton.contributePrimary(
-                    model.inline == .error ? Copy.birthdayContributeErrorRetry : Copy.birthdayContributeSubmit,
-                    isWorking: model.isSending
-                ) {
-                    fieldFocused = false
-                    Task { await model.submit() }
-                }
-                .disabled(!model.canSubmit)
-                .accessibilityIdentifier("birthday.contribute.submit")
-                .padding(.top, Tokens.Sizes.birthdayContributeButtonGap)
-                inlineLines
-                MemoryFilledButton(
-                    title: Copy.birthdayContributeReviewRetake, style: BirthdayType.contributeButton,
-                    height: Tokens.Sizes.birthdayContributeButtonHeight, radius: Tokens.Radii.birthdayContributeButton,
-                    fill: Tokens.Colors.globalSurfaceLight, labelColor: Tokens.Colors.globalOnSurfaceLight
-                ) {
-                    model.retake()
-                }
-                .disabled(model.isSending)
-                .accessibilityIdentifier("birthday.contribute.retake")
-                .padding(.top, Tokens.Sizes.birthdayContributeGroupGap)
-            }
-            .padding(.horizontal, Tokens.Sizes.birthdayContributeMargin)
-            .padding(.bottom, Tokens.Sizes.birthdayContributeMargin)
-        }
-        .scrollDismissesKeyboard(.interactively)
-    }
-
-    @ViewBuilder
-    private var inlineLines: some View {
-        switch model.inline {
-        case .offline?:
-            inlineText(Copy.birthdayContributeOffline)
-                .padding(.top, Tokens.Sizes.birthdayContributeLabelGap)
-        case .error?:
-            VStack(alignment: .leading) {
-                Text(Copy.birthdayContributeErrorTitle)
-                    .dsTextStyle(MemoryType.emptyTitle)
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                inlineText(Copy.birthdayContributeErrorDetail)
-            }
-            .padding(.top, Tokens.Sizes.birthdayContributeLabelGap)
-        case .notEligible?, nil:
-            EmptyView()
-        }
-    }
-}
-
-// MARK: - Step 3: Done
-
-private struct ContributeDoneStep: View {
-    let model: BirthdayContributeModel
+    let modalScheme: ColorScheme
 
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(spacing: Tokens.Sizes.birthdayContributeGroupGap) {
-                    Text(Copy.birthdayContributeDoneTitle)
-                        .dsTextStyle(BirthdayType.contributeHeading)
-                        .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                        .multilineTextAlignment(.center)
-                        .accessibilityAddTraits(.isHeader)
+                MetricStack(alignment: .center) {
+                    header
                     if let photo = model.selectedPhoto {
-                        MemoryRemoteImage(url: photo.displayURL)
-                            .aspectRatio(photo.aspectRatio ?? OnThisDayMasonry.unknownAspectRatio, contentMode: .fit)
-                            .clipShape(RoundedRectangle(cornerRadius: Tokens.Radii.globalPhoto))
-                            .accessibilityHidden(true)
+                        photoBox(photo)
+                            .metricGap(Tokens.Sizes.birthdayContributeTitleToPhoto, from: .lastBaseline, to: .top)
                     }
-                    Text(model.trimmedLine)
-                        .dsTextStyle(BirthdayType.message)
-                        .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    if !model.trimmedLine.isEmpty {
+                        Text(model.line)
+                            .dsTextStyle(TextRole.body)
+                            .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, Tokens.Sizes.globalButtonMarginH)
+                            .accessibilityIdentifier("birthday.contribute.line")
+                            .metricGap(Tokens.Sizes.globalListGap, from: .bottom, to: .top)
+                    }
+                    inlineState
+                        .metricGap(Tokens.Sizes.globalListGap, from: .bottom, to: .top)
                 }
-                .padding(.top, Tokens.Sizes.birthdayContributeHeadingGap)
-                .padding(.horizontal, Tokens.Sizes.birthdayContributeMargin)
             }
             .scrollBounceBehavior(.basedOnSize)
-            // While the optimistic send is unanswered the button shows the platform activity indicator.
-            MemoryFilledButton.contributePrimary(Copy.birthdayContributeDoneButton, isWorking: model.isSending) {
-                model.finish()
+            PrimaryButton(
+                model.inline == .error ? Copy.birthdayContributeErrorRetry : Copy.birthdayContributeSubmit,
+                surface: .media,
+                isEnabled: model.canSubmit || model.isSending,
+                isBusy: model.isSending
+            ) {
+                Task { await model.submit() }
             }
-            .disabled(model.isSending)
-            .accessibilityIdentifier("birthday.contribute.done")
-            .padding(.horizontal, Tokens.Sizes.birthdayContributeMargin)
-            .padding(.bottom, Tokens.Sizes.birthdayContributeMargin)
+            .padding(.horizontal, Tokens.Sizes.globalButtonMarginH)
+            .accessibilityIdentifier("birthday.contribute.submit")
+        }
+        .background(Tokens.Colors.globalBackgroundDeep.ignoresSafeArea())
+        .environment(\.colorScheme, .dark)
+        .toolbar(.hidden, for: .navigationBar)
+        .dsAnimation(ComponentMotion.crossfade, value: model.canSubmit)
+        .sheet(isPresented: $model.showsMessage, onDismiss: { _ = model.normalizeLine() }) {
+            BirthdayContributeMessage(model: model)
+                .environment(\.colorScheme, modalScheme)
+        }
+    }
+
+    /// The title's baselines are the row's; back and close are centred on its cap middle.
+    private var header: some View {
+        Text(Copy.birthdayContributeComposerTitle)
+            .dsTextRole(TextRole.sheetTitle)
+            .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+            .multilineTextAlignment(.center)
+            .lineLimit(1)
+            .padding(.horizontal, Tokens.Sizes.globalHeaderButton + Tokens.Sizes.globalScreenMargin)
+            .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.globalMinTouchTargetIos)
+            .accessibilityAddTraits(.isHeader)
+            .overlay(alignment: Alignment(horizontal: .leading, vertical: .capMiddle)) {
+                HeaderIconButton(icon: Tokens.Icons.globalBack, accessibilityLabel: Copy.onthisdayA11yBack, color: Tokens.Colors.globalTextOnMedia) {
+                    model.path = []
+                }
+                .accessibilityIdentifier("birthday.contribute.back")
+            }
+            .overlay(alignment: Alignment(horizontal: .trailing, vertical: .capMiddle)) {
+                CircleButton(
+                    icon: Tokens.Icons.globalClose, accessibilityLabel: Copy.birthdayContributeA11yClose, style: .media,
+                    glyphSize: Tokens.Sizes.globalIconSmall
+                ) {
+                    model.finish()
+                }
+                .padding(.trailing, Tokens.Sizes.globalScreenMargin)
+                .accessibilityIdentifier("birthday.contribute.close")
+            }
+            .padding(.top, Tokens.Sizes.globalScreenMargin)
+    }
+
+    private func photoBox(_ photo: BirthdayContributeModel.EligiblePhoto) -> some View {
+        let box = CGSize(width: Tokens.Sizes.birthdayContributePhotoWidth, height: Tokens.Sizes.birthdayContributePhotoMaxHeight)
+        let aspect = photo.aspectRatio ?? box.width / box.height
+        let width = min(box.width, box.height * aspect)
+        let height = width / aspect
+        let hasLine = !model.trimmedLine.isEmpty
+        return MemoryRemoteImage(url: photo.displayURL)
+            .frame(width: width, height: height)
+            .clipShape(DSShape.rounded(Tokens.Radii.birthdayContributePhoto))
+            .accessibilityHidden(true)
+            .overlay(alignment: .bottom) {
+                LightPill(hasLine ? Copy.birthdayContributeMessageEdit : Copy.birthdayContributeMessageAdd, icon: Tokens.Icons.globalEdit, style: .dark) {
+                    model.editMessage()
+                }
+                .dsAnimation(ComponentMotion.crossfade, value: hasLine)
+                .padding(.bottom, Tokens.Sizes.birthdayContributePillBottom)
+                .accessibilityIdentifier("birthday.contribute.pill")
+            }
+            .frame(width: box.width, height: height)
+    }
+
+    /// Offline: a C-12 inline line (text role `meta`, `color.global.textSecondary`); error: the C-27 error block (the
+    /// capsule retries).
+    @ViewBuilder
+    private var inlineState: some View {
+        switch model.inline {
+        case .offline?:
+            Text(Copy.birthdayContributeOffline)
+                .dsTextStyle(TextRole.meta)
+                .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                .padding(.horizontal, Tokens.Sizes.globalButtonMarginH)
+                .accessibilityIdentifier("birthday.contribute.offline")
+        case .error?:
+            EmptyStateView(title: Copy.birthdayContributeErrorTitle, detail: Copy.birthdayContributeErrorDetail)
+                .accessibilityIdentifier("birthday.contribute.error")
+        case .notEligible?, nil:
+            Color.clear.frame(height: 0)
         }
     }
 }
 
-/// Inline line (`fontSize.global.listSubtitle`, `color.global.textSecondary`).
-@MainActor
-private func inlineText(_ text: String) -> some View {
-    Text(text)
-        .dsTextStyle(MemoryType.listSubtitle)
-        .foregroundStyle(Tokens.Colors.globalTextSecondary)
+// MARK: - Step 2a — "Add a Message"
+
+/// The modal (C-29 page sheet, follows the appearance): centred title `birthday.contribute.message.title` (text role
+/// `sheetTitle`) with the app-drawn "Done" (C-08, text role `textButton`, `color.global.textPrimary`) at
+/// `dimension.birthday.contribute.counterInset` from the edge; the free text at `.messageInset` (text role
+/// `placeholder`, no fill), keyboard up on open; the counter ("{count}/{max}", monospaced digits,
+/// `color.global.textSecondary`) at the trailing `.counterInset`, its baseline `.counterAboveKeyboard` above the
+/// keyboard. Input stops at `layout.birthday.contribute.lineMax`; a typed return is Done.
+struct BirthdayContributeMessage: View {
+    @Bindable var model: BirthdayContributeModel
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Text(Copy.birthdayContributeMessageTitle)
+                .dsTextStyle(TextRole.sheetTitle)
+                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                .lineLimit(1)
+                .accessibilityAddTraits(.isHeader)
+                .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.globalMinTouchTargetIos)
+                .overlay(alignment: .trailing) {
+                    TextButton(Copy.birthdayContributeMessageDone) {
+                        model.doneEditing()
+                    }
+                    .padding(.trailing, Tokens.Sizes.birthdayContributeCounterInset)
+                    .accessibilityIdentifier("birthday.contribute.done")
+                }
+                .padding(.top, Tokens.Sizes.globalScreenMargin)
+            TextField(
+                text: $model.line,
+                prompt: Text(Copy.birthdayContributeMessagePlaceholder).foregroundStyle(Tokens.Colors.globalTextSecondary),
+                axis: .vertical
+            ) {
+                Text(Copy.birthdayContributeMessageTitle)
+            }
+            .dsTextStyle(TextRole.placeholder)
+            .foregroundStyle(Tokens.Colors.globalTextPrimary)
+            .focused($focused)
+            .padding(.horizontal, Tokens.Sizes.birthdayContributeMessageInset)
+            .padding(.top, Tokens.Sizes.globalScreenMargin)
+            .accessibilityHint(Text(model.counter))
+            .accessibilityIdentifier("birthday.contribute.field")
+            .onChange(of: model.line) { _, _ in
+                if model.normalizeLine() { model.doneEditing() }
+            }
+            Spacer(minLength: 0)
+            MetricStack(alignment: .trailing) {
+                Text(model.counter)
+                    .dsTextRole(TextRole.placeholder)
+                    .monospacedDigit()
+                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                    .accessibilityHidden(true)
+                Color.clear
+                    .frame(height: 0)
+                    .metricGap(Tokens.Sizes.birthdayContributeCounterAboveKeyboard, from: .lastBaseline, to: .top)
+            }
+            .padding(.trailing, Tokens.Sizes.birthdayContributeCounterInset)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+        }
+        .background(Tokens.Colors.globalBackground.ignoresSafeArea())
+        .presentationDetents([.large])
+        .onAppear { focused = true }
+        .accessibilityIdentifier("birthday.contribute.message")
+    }
 }

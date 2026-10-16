@@ -34,6 +34,9 @@ final class InMemoryAccountData: AccountDataSource {
     private var authContinuations: [AsyncStream<AuthState>.Continuation] = []
     private var eventContinuations: [GroupID: [AsyncStream<GroupEvent>.Continuation]] = [:]
     private let now = Date(timeIntervalSince1970: 1_792_000_000)
+
+    /// The fixture clock every row's time is relative to (screens that depend on "now", e.g. groups.screen's week).
+    var clock: Date { now }
     private var nextID = 1
 
     init(signedIn user: UserID? = nil) {
@@ -167,6 +170,15 @@ final class InMemoryAccountData: AccountDataSource {
         var profile = profilesByID[user] ?? addProfile("", id: user)
         if let displayName { profile.displayName = displayName }
         if let avatarPath { profile.avatarPath = avatarPath }
+        profilesByID[user] = profile
+        return profile
+    }
+
+    func removeAvatar() async throws -> Profile {
+        try await record("removeAvatar")
+        let user = try requireUser()
+        var profile = profilesByID[user] ?? addProfile("", id: user)
+        profile.avatarPath = nil
         profilesByID[user] = profile
         return profile
     }

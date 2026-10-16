@@ -369,6 +369,15 @@ enum SocialTokenNumbers {
     }
 
     static func first(in text: String) -> CGFloat? { all(in: text).first }
+
+    /// The whole number written right before `word` ("3 columns" → 3).
+    static func count(of word: String, in text: String) -> Int? {
+        let parts = text.split(whereSeparator: { $0 == " " || $0 == "," || $0 == ";" || $0 == ":" })
+        for (index, part) in parts.enumerated() where index > 0 && part.hasPrefix(word) {
+            if let value = Int(parts[index - 1]) { return value }
+        }
+        return nil
+    }
 }
 
 // MARK: - Text metrics

@@ -130,7 +130,7 @@ ${ctx.smartBanner ? `<meta name="apple-itunes-app" content="${esc(`${ctx.smartBa
 <body>
 <div class="page">
 <main class="card">
-${backdrop}<div class="hero">${qrSvg(inviteUrl, "qr")}${inviterAvatar(token, invite)}</div>
+${backdrop}<div class="hero">${qrSvg(inviteUrl, "qr", num("invite.web.size.qrDesktop"))}${inviterAvatar(token, invite)}</div>
 <div class="text">
 <h1 class="headline">${esc(headline)}</h1>
 <p class="line mobile-only">${esc(text("invite.web.body", { group_name: p.group_name }))}</p>

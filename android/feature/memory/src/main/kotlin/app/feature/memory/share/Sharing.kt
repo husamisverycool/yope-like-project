@@ -10,6 +10,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import androidx.core.content.FileProvider
 import app.feature.memory.R
+import app.feature.memory.common.attempt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -125,7 +126,7 @@ class AndroidPhotoFiles(context: Context) : PhotoFiles {
     private val app = context.applicationContext
 
     private suspend fun file(url: String, postId: String): File? =
-        app.feature.memory.common.attempt { MemoryFiles.download(url, File(MemoryFiles.dir(app), "memory-$postId.jpg")) }.getOrNull()
+        attempt { MemoryFiles.download(url, File(MemoryFiles.dir(app), "memory-$postId.jpg")) }.getOrNull()
 
     override suspend fun save(url: String, postId: String): Boolean {
         val file = file(url, postId) ?: return false

@@ -1,5 +1,5 @@
-// Surface: camera.sendto (preview card). Reference: references/auto/yope/frames/
-// a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png. The member's own capture,
+// Surface: camera.sendto (the photo frame). Reference images: references/auto/retro/store/retro-store-03.png (ST-03:
+// Retro's Postcard photo frame) (design/surfaces/camera.sendto.md). The member's own capture,
 // aspect-fill: a photo, a Live Photo that plays its motion on long press (PHLivePhotoView), or a
 // video that plays muted in a loop.
 @preconcurrency import AVFoundation
@@ -10,7 +10,7 @@ import UniformTypeIdentifiers
 
 struct CapturePreviewMedia: View {
     let media: CapturedMedia
-    /// The still, decoded off the main actor at the card's size (nil until ready: the card stays
+    /// The still, decoded off the main actor at the frame's size (nil until ready: the frame stays
     /// `color.global.backgroundDeep`).
     let still: UIImage?
 

@@ -2,7 +2,8 @@
 // pacing (mechanics). Reference images: references/auto/retro/store/retro-store-04.png (ST-04, recap preview 2026),
 // references/auto/retro/press/tc-2023-12-recaps.png (TC-REC phones 2–3), references/auto/retro/press/tc-2023-12-retro-header.png
 // (TC-H); mechanics: references/auto/wrapped/frames/wrapped24-rec-emilycraig-sheet-every3s.png (design/surfaces/year.story.md).
-// Components: C-34, C-31, C-22 (position pill), C-11, C-09 (recap Share pill), C-27, C-28.
+// Components: C-34, C-31, C-22 (position pill), C-11, C-09 (recap Share pill), C-27, C-28; the recap preview screen is
+// the capture group's shared `RecapPreviewScreen` (Features/Capture/Collage).
 import AppData
 import DesignSystem
 import SwiftUI
@@ -33,11 +34,20 @@ struct YearStoryScreen: View {
     var body: some View {
         MemoryImageScope { images in
             RecapPreviewScreen(
-                dots: dots,
-                page: { geometry in page(geometry, images: images) },
-                overlay: { geometry in overlay(geometry) },
-                leading: { leadingCircle },
-                trailing: { sharePill }
+                backdrop: nil,
+                pageCount: pageCount,
+                currentPage: $model.summaryPage,
+                swipeEnabled: true,
+                closeAccessibilityLabel: Copy.yearStoryA11yClose,
+                onClose: { model.close() },
+                page: { page in
+                    GeometryReader { proxy in
+                        pageContent(page, size: proxy.size, images: images)
+                    }
+                },
+                topLeading: { positionPill },
+                bottomLeading: { leadingCircle },
+                pill: { sharePill }
             )
             .task(id: renderKey) { await renderShare(images: images) }
         }
@@ -60,28 +70,38 @@ struct YearStoryScreen: View {
         .accessibilityIdentifier("year.story")
     }
 
+    /// The summary's share styles are pages (swiped, with page dots under the frame); every other card is one page.
+    private var pageCount: Int {
+        model.phase == .loaded && model.currentCard == .summary ? model.summaryStyles.count : 1
+    }
+
     // MARK: Frame
 
     @ViewBuilder
-    private func page(_ geometry: RecapPreviewGeometry, images: any MemoryImageLoading) -> some View {
-        let size = geometry.frame.size
+    private func pageContent(_ page: Int, size: CGSize, images: any MemoryImageLoading) -> some View {
         switch model.phase {
         case .idle, .loading:
-            MemoryLoadingIndicator(announcement: Copy.yearStoryLoading)
-                .frame(width: size.width, height: size.height)
+            ZStack {
+                Tokens.Colors.globalBackgroundDeep
+                MemoryLoadingIndicator(announcement: Copy.yearStoryLoading)
+            }
         case .error:
-            MemoryMediaStateBlock(title: Copy.yearStoryErrorTitle, detail: Copy.yearStoryErrorDetail, retryTitle: Copy.yearStoryErrorRetry) {
-                Task { await model.retry() }
+            ZStack {
+                Tokens.Colors.globalBackgroundDeep
+                MemoryMediaStateBlock(title: Copy.yearStoryErrorTitle, detail: Copy.yearStoryErrorDetail, retryTitle: Copy.yearStoryErrorRetry) {
+                    Task { await model.retry() }
+                }
             }
-            .frame(width: size.width, height: size.height)
         case .offline:
-            MemoryMediaStateBlock(title: Copy.yearStoryOfflineTitle, detail: Copy.yearStoryOfflineDetail, retryTitle: Copy.yearStoryErrorRetry) {
-                Task { await model.retry() }
+            ZStack {
+                Tokens.Colors.globalBackgroundDeep
+                MemoryMediaStateBlock(title: Copy.yearStoryOfflineTitle, detail: Copy.yearStoryOfflineDetail, retryTitle: Copy.yearStoryErrorRetry) {
+                    Task { await model.retry() }
+                }
             }
-            .frame(width: size.width, height: size.height)
         case .loaded:
             if let card = model.currentCard {
-                cardPage(card, size: size, images: images)
+                cardPage(card, page: page, size: size, images: images)
                     .onAppear { updateFrameWidth(size.width) }
                     .onChange(of: size.width) { _, width in updateFrameWidth(width) }
             }
@@ -89,28 +109,20 @@ struct YearStoryScreen: View {
     }
 
     @ViewBuilder
-    private func cardPage(_ card: YearStoryCard, size: CGSize, images: any MemoryImageLoading) -> some View {
-        Group {
-            if card == .summary {
-                TabView(selection: $model.summaryPage) {
-                    ForEach(Array(model.summaryStyles.enumerated()), id: \.element) { page, style in
-                        content(card, style: style, size: size, images: images)
-                            .tag(page)
-                    }
-                }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .accessibilityIdentifier("year.story.summary.pager")
+    private func cardPage(_ card: YearStoryCard, page: Int, size: CGSize, images: any MemoryImageLoading) -> some View {
+        let styles = model.summaryStyles
+        let style = card == .summary ? styles[min(max(page, 0), styles.count - 1)] : model.summaryStyle
+        YearStoryCardContent(
+            card: card, size: size, summary: model.summary, summaryStyle: style, coverURL: model.coverURL,
+            images: images, revealed: revealsImmediately
+        )
+        // Tap zones (`layout.year.story.navigation`): right half next, left half previous (the summary's pages swipe).
+        .contentShape(Rectangle())
+        .onTapGesture { location in
+            if location.x >= size.width / 2 {
+                model.next()
             } else {
-                content(card, style: model.summaryStyle, size: size, images: images)
-                    // Tap zones (`layout.year.story.navigation`): right half next, left half previous.
-                    .contentShape(Rectangle())
-                    .onTapGesture { location in
-                        if location.x >= size.width / 2 {
-                            model.next()
-                        } else {
-                            model.previous()
-                        }
-                    }
+                model.previous()
             }
         }
         // Cards change with a cut (Wrapped's chapter animations are brand art, not reproduced).
@@ -120,71 +132,48 @@ struct YearStoryScreen: View {
         .accessibilityAction(named: Text(Copy.yearStoryA11yPrevious)) { model.previous() }
     }
 
-    private func content(_ card: YearStoryCard, style: YearStorySummary.Style, size: CGSize, images: any MemoryImageLoading) -> some View {
-        YearStoryCardContent(
-            card: card, size: size, summary: model.summary, summaryStyle: style, coverURL: model.coverURL,
-            images: images, revealed: revealsImmediately
-        )
-    }
-
-    /// Close top-right; the position pill top-left (`dimension.year.story.frame.padding`, centred on the close circle's
-    /// centre line), hidden on the summary.
+    /// C-22 position pill, its leading edge at `dimension.year.story.frame.padding`, on the close circle's centre line
+    /// (the shared screen centres the top-leading item there); hidden on the summary.
     @ViewBuilder
-    private func overlay(_ geometry: RecapPreviewGeometry) -> some View {
-        ZStack(alignment: .topLeading) {
-            if let position = model.position, model.phase == .loaded {
-                PositionPill(label: position)
-                    .fixedSize()
-                    .alignmentGuide(.leading) { _ in -Tokens.Sizes.yearStoryFramePadding }
-                    .alignmentGuide(.top) { dimensions in dimensions.height / 2 - geometry.closeCentreInFrame.y }
-                    .accessibilitySortPriority(2)
-                    .accessibilityIdentifier("year.story.position")
-            }
-            RecapPreviewClose(geometry: geometry, accessibilityLabel: Copy.yearStoryA11yClose) {
-                model.close()
-            }
-            .accessibilitySortPriority(3)
-            .accessibilityIdentifier("year.story.close")
+    private var positionPill: some View {
+        if model.phase == .loaded, let position = model.position {
+            PositionPill(label: position)
+                .fixedSize()
+                .padding(.leading, Tokens.Sizes.yearStoryFramePadding)
+                .accessibilityIdentifier("year.story.position")
         }
-        .frame(width: geometry.frame.width, height: geometry.frame.height, alignment: .topLeading)
     }
 
     // MARK: Bottom row
 
-    /// The page dots on the summary (one per share style; `year.story.position` as their value).
-    private var dots: RecapPreviewDots? {
-        guard model.phase == .loaded, model.currentCard == .summary else { return nil }
-        let count = model.summaryStyles.count
-        let index = min(max(model.summaryPage, 0), count - 1)
-        return RecapPreviewDots(
-            count: count, index: index,
-            accessibilityValue: Copy.yearStoryPosition(position: MemoryFormat.number(index + 1), total: MemoryFormat.number(count))
-        )
-    }
-
-    /// Pause / play on the cards, replay on the summary (C-11 on media, `size.global.icon` glyph box).
+    /// Pause / play on the cards, replay on the summary (C-11 on media, `size.global.icon` glyph box) at
+    /// `size.global.buttonMarginH`.
     @ViewBuilder
     private var leadingCircle: some View {
         if model.phase == .loaded, let card = model.currentCard {
-            if card == .summary {
-                CircleButton(icon: Tokens.Icons.yearStoryReplay, accessibilityLabel: Copy.yearStorySummaryReplay, style: .media) {
-                    model.replay()
+            Group {
+                if card == .summary {
+                    CircleButton(icon: Tokens.Icons.yearStoryReplay, accessibilityLabel: Copy.yearStorySummaryReplay, style: .media) {
+                        model.replay()
+                    }
+                    .accessibilityIdentifier("year.story.replay")
+                } else {
+                    CircleButton(
+                        icon: model.isPaused ? Tokens.Icons.globalPlay : Tokens.Icons.globalPause,
+                        accessibilityLabel: model.isPaused ? Copy.yearStoryA11yPlay : Copy.yearStoryA11yPause,
+                        style: .media
+                    ) {
+                        model.togglePause()
+                    }
+                    .accessibilityIdentifier("year.story.pause")
                 }
-                .accessibilityIdentifier("year.story.replay")
-            } else {
-                CircleButton(
-                    icon: model.isPaused ? Tokens.Icons.globalPlay : Tokens.Icons.globalPause,
-                    accessibilityLabel: model.isPaused ? Copy.yearStoryA11yPlay : Copy.yearStoryA11yPause,
-                    style: .media
-                ) {
-                    model.togglePause()
-                }
-                .accessibilityIdentifier("year.story.pause")
             }
+            .padding(.leading, Tokens.Sizes.globalButtonMarginH)
         }
     }
 
-    /// The Share pill on the fact cards, the outro and the summary (fades in and out with `duration.global.fade`).
+    /// The Share pill (`collage.share.layout.pill`, text role `button`) on the fact cards, the outro and the summary
+    /// (fading in and out with `duration.global.fade`); elsewhere its place stays empty.
     @ViewBuilder
     private var sharePill: some View {
         ZStack {
@@ -193,14 +182,14 @@ struct YearStoryScreen: View {
                 Group {
                     if let file = model.shareFiles[key], let image = model.shareImages[key] {
                         ShareLink(item: file, preview: SharePreview(Copy.yearStoryEntrySubtitle(year: String(year)), image: Image(uiImage: image))) {
-                            RecapSharePillLabel(title: Copy.yearStoryShare)
+                            RecapPillLabel(title: Copy.yearStoryShare)
                         }
                         .buttonStyle(.plain)
                         // The card stays in view while the share sheet is up (play resumes it).
                         .simultaneousGesture(TapGesture().onEnded { model.pause() })
                     } else {
-                        // The share image renders when the card shows (a few milliseconds); the pill waits for it.
-                        RecapSharePillLabel(title: Copy.yearStoryShare)
+                        // The share image renders when the card shows (a few milliseconds): the pill shows it is busy.
+                        RecapPillLabel(title: Copy.yearStoryShare, isBusy: true)
                     }
                 }
                 .accessibilityIdentifier("year.story.share")

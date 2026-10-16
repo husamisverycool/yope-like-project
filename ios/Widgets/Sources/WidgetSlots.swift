@@ -176,9 +176,10 @@ struct WidgetTextStack: View {
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .contentTransition(.identity)
-                    // The line's baseline is its bottom: lines sit `pitch` apart above the last baseline.
-                    .alignmentGuide(.bottom) { dimensions in dimensions[.lastTextBaseline] }
-                    .padding(.bottom, lastBaseline + CGFloat(lines.count - 1 - index) * pitch)
+                    // Each line's baseline sits `lastBaseline` + n × `pitch` above the bottom edge (n = lines below it).
+                    .alignmentGuide(.bottom) { dimensions in
+                        dimensions[.lastTextBaseline] + lastBaseline + CGFloat(lines.count - 1 - index) * pitch
+                    }
             }
         }
         .padding(.leading, Tokens.Sizes.globalScreenMargin)

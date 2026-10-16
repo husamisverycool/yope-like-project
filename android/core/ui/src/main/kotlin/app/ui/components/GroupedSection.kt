@@ -66,6 +66,9 @@ sealed interface GroupedTrailing {
     /** A value in secondary text (text role `body`). */
     data class Value(val text: String) : GroupedTrailing
 
+    /** A value in secondary text followed by the chevron: the row opens something and shows its current value ("Full Name  Ana ›"). */
+    data class ValueChevron(val text: String) : GroupedTrailing
+
     /** A native switch (PLATFORM, tint `color.global.system.primary`); the whole row toggles. */
     data class Toggle(val checked: Boolean, val onCheckedChange: (Boolean) -> Unit) : GroupedTrailing
 }
@@ -179,6 +182,10 @@ fun GroupedRow(
             when (trailing) {
                 GroupedTrailing.Chevron -> Icon(Tokens.Icons.globalChevron, contentDescription = null, tint = secondary, modifier = Modifier.size(Tokens.Sizes.globalIcon))
                 is GroupedTrailing.Value -> Text(trailing.text, style = TextRoles.body, color = secondary)
+                is GroupedTrailing.ValueChevron -> Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(trailing.text, style = TextRoles.body, color = secondary)
+                    Icon(Tokens.Icons.globalChevron, contentDescription = null, tint = secondary, modifier = Modifier.size(Tokens.Sizes.globalIcon))
+                }
                 is GroupedTrailing.Toggle -> Switch(checked = trailing.checked, onCheckedChange = null, enabled = spec.enabled)
                 GroupedTrailing.None -> Unit
             }

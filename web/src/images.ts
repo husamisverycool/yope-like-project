@@ -65,7 +65,7 @@ export async function blurredBackdrop(jpeg: Buffer): Promise<Backdrop> {
   const height = Math.max(1, Math.round((BACKDROP_WIDTH * (meta.height ?? 1)) / (meta.width ?? 1)));
   const { data, info } = await sharp(jpeg)
     .resize(BACKDROP_WIDTH, height, { fit: "fill" })
-    .blur(BACKDROP_BLUR_OF_WIDTH * BACKDROP_WIDTH)
+    .blur({ sigma: BACKDROP_BLUR_OF_WIDTH * BACKDROP_WIDTH, precision: "float" })
     .png()
     .toBuffer({ resolveWithObject: true });
   const lower = await sharp(data)
@@ -176,11 +176,11 @@ export async function composeOgImage({ cover, groupName, domain }: OgInput): Pro
   let circle: Buffer;
   const mask = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${AVATAR}" height="${AVATAR}"><circle cx="${AVATAR / 2}" cy="${AVATAR / 2}" r="${AVATAR / 2}"/></svg>`);
   if (cover) {
-    const field = await sharp(cover)
-      .resize(BACKDROP_WIDTH, BACKDROP_WIDTH, { fit: "cover", position: "centre" })
-      .blur(BACKDROP_BLUR_OF_WIDTH * BACKDROP_WIDTH)
+    // Blurred at full size: an upscaled small field shows its sample grid in a still image.
+    base = await sharp(cover)
+      .resize(OG_WIDTH, OG_HEIGHT, { fit: "cover", position: "centre" })
+      .blur({ sigma: BACKDROP_BLUR_OF_WIDTH * OG_WIDTH, precision: "float" })
       .toBuffer();
-    base = await sharp(field).resize(OG_WIDTH, OG_HEIGHT, { fit: "fill", kernel: "cubic" }).toBuffer();
     circle = await sharp(cover).resize(AVATAR, AVATAR, { fit: "cover", position: "centre" }).composite([{ input: mask, blend: "dest-in" }]).png().toBuffer();
   } else {
     base = await sharp({ create: { width: OG_WIDTH, height: OG_HEIGHT, channels: 3, background: { r, g, b } } }).png().toBuffer();

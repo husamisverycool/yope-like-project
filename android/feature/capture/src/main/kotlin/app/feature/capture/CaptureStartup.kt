@@ -18,6 +18,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import app.data.DataGraph
+import app.data.repo.AuthState
+import app.widget.WidgetBinding
+import app.widget.WidgetFileStore
+import app.widget.WidgetGroupMeta
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 
 /**
  * Process start for the capture group's UI plugged into foundation modules (registered in
@@ -26,6 +35,8 @@ import kotlinx.coroutines.launch
  * - notification channels with their copy and the notification appearance (core:push,
  *   `notifications.push`, `daily.ongoing`), plus the widget-refresh channel (`widget.arrival`);
  * - the widget picker's generated preview (Android 15+; the system rate-limits it);
+ * - the widget's signed-out state (`widget.home.small.empty.signedOut`): the session is mirrored into the
+ *   widget store so every placed widget says so, and a tap opens the app's sign-in;
  * - CameraX pre-warm: the app opens to the camera, so its provider initialises in the background
  *   now and the first preview frame is not held up by it.
  */
@@ -49,5 +60,23 @@ fun installCapture(application: Application) {
     runCatching { ProcessCameraProvider.getInstance(application) }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
         startupScope.launch { runCatching { GlanceAppWidgetManager(application).setWidgetPreviews(GroupPhotoWidgetReceiver::class) } }
+    }
+    DataGraph.get(application)?.let { graph -> mirrorSessionIntoWidgets(application, graph.auth.authState) }
+}
+
+/** Keeps the widget store's signed-out marker in step with the session and re-renders the widgets when it flips. */
+internal fun mirrorSessionIntoWidgets(application: Application, states: Flow<AuthState>) {
+    val meta = WidgetGroupMeta.of(WidgetFileStore.default(application))
+    startupScope.launch {
+        states
+            .map { state -> if (state is AuthState.Initializing) null else state is AuthState.SignedOut }
+            .filterNotNull()
+            .distinctUntilChanged()
+            .collect { signedOut ->
+                if (meta.isSignedOut() != signedOut) {
+                    runCatching { meta.setSignedOut(signedOut) }
+                    runCatching { WidgetBinding.refreshAll(application) }
+                }
+            }
     }
 }

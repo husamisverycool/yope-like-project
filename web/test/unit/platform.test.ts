@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseAppIdentity } from "../../src/config.js";
-import { detectPlatform, getAppUrl, playStoreUrl, referrerFor } from "../../src/platform.js";
+import { appClipUrl, detectPlatform, getAppUrl, letsGoUrl, playStoreUrl, referrerFor } from "../../src/platform.js";
 import { clientAddress, RateLimiter } from "../../src/rateLimit.js";
 import { isTokenFormat } from "../../src/token.js";
 import { ANDROID, DESKTOP, FULL_APP_JSON, IPHONE } from "../support/app.js";
@@ -30,6 +30,26 @@ describe("store hand-off", () => {
     const blocked = parseAppIdentity({ ...FULL_APP_JSON, ios: { ...FULL_APP_JSON.ios, appStoreId: null } });
     expect(getAppUrl(blocked, "ios", TOKEN)).toBeNull();
     expect(getAppUrl(blocked, "other", TOKEN)).toContain("play.google.com");
+  });
+});
+
+describe("'Let's go'", () => {
+  it("opens the App Clip on iOS (Retro: appclip.apple.com/id?p=<clip bundle id>&…)", () => {
+    const url = new URL(letsGoUrl(app, "ios", TOKEN)!);
+    expect(url.origin + url.pathname).toBe("https://appclip.apple.com/id");
+    expect(url.searchParams.get("p")).toBe("com.example.groupphotos.Clip");
+    expect(url.searchParams.get("token")).toBe(TOKEN);
+    expect(appClipUrl(app, TOKEN)).toBe(url.toString());
+  });
+
+  it("goes to Play with the referrer on Android and to a store elsewhere", () => {
+    expect(letsGoUrl(app, "android", TOKEN)).toBe(getAppUrl(app, "android", TOKEN));
+    expect(letsGoUrl(app, "other", TOKEN)).toBe("https://apps.apple.com/app/id1234567890");
+  });
+
+  it("is null on iOS while the App Store presence is BLOCKED", () => {
+    expect(letsGoUrl(parseAppIdentity({ ...FULL_APP_JSON, ios: { ...FULL_APP_JSON.ios, teamId: null } }), "ios", TOKEN)).toBeNull();
+    expect(letsGoUrl(parseAppIdentity({ ...FULL_APP_JSON, ios: { ...FULL_APP_JSON.ios, appStoreId: null } }), "ios", TOKEN)).toBeNull();
   });
 });
 

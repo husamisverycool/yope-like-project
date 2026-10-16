@@ -23,7 +23,7 @@ class YearStoryViewModelTest {
     @get:Rule val main = MainDispatcherRule()
 
     private fun vm(backend: FakeMemoryBackend = Scenario.backend(), cache: MemoryCache = MemoryCache()) =
-        YearStoryViewModel(GROUP, 2026, backend, Scenario.clock, cache)
+        YearStoryViewModel(GROUP, 2026, backend, cache)
 
     private val YearStoryViewModel.story get() = state.value as YearStoryState.Story
 
@@ -32,12 +32,13 @@ class YearStoryViewModelTest {
         val kinds = cards.map { it::class.simpleName }
         assertEquals(
             listOf(
-                "Intro", "MomentsSetup", "Moments", "BusiestMonth", "MostReactedSetup",
+                "Intro", "LookBack", "Moments", "BusiestMonth", "MostReactedSetup",
                 "MostReactedPhoto", "MostReactedPhoto", "MostReactedPhoto", "MostReactedPhoto", "MostReactedPhoto",
-                "TogetherSetup", "TogetherDay", "TogetherDay", "Teaser", "Outro", "Summary",
+                "TogetherSetup", "TogetherDay", "TogetherDay", "Outro", "Summary",
             ),
             kinds,
         )
+        assertEquals(StoryCard.Intro("Sunday Lunch", 2026), cards[0])
         assertEquals(StoryCard.Moments("Sunday Lunch", 1284), cards[2])
         assertEquals(StoryCard.BusiestMonth(7), cards[3])
     }
@@ -59,13 +60,56 @@ class YearStoryViewModelTest {
     @Test fun cardsWithoutDataAreSkipped() {
         val backend = Scenario.backend().apply { yearStories[GROUP to 2026] = Rows.yearStory(Rows.storyData(busiest = null)) }
         val kinds = vm(backend).story.cards.map { it::class.simpleName }
-        assertEquals(listOf("Intro", "MomentsSetup", "Moments", "Teaser", "Outro", "Summary"), kinds)
+        assertEquals(listOf("Intro", "LookBack", "Moments", "Outro", "Summary"), kinds)
     }
 
-    @Test fun shareCardsAreTheFactCards() {
-        val share = vm().story.shareCards
-        assertEquals(9, share.size)
-        assertTrue(share.none { it == StoryCard.Intro || it == StoryCard.Teaser || it == StoryCard.Outro || it == StoryCard.MomentsSetup })
+    @Test fun theSharePillIsOnFactCardsTheOutroAndTheSummary() {
+        val cards = vm().story.cards
+        val share = cards.filter { it.shareable }.map { it::class.simpleName }
+        assertEquals(listOf("Moments", "BusiestMonth") + List(5) { "MostReactedPhoto" } + List(2) { "TogetherDay" } + listOf("Outro", "Summary"), share)
+        assertTrue(cards.filter { !it.shareable }.all { it is StoryCard.Intro || it == StoryCard.LookBack || it == StoryCard.MostReactedSetup || it == StoryCard.TogetherSetup })
+    }
+
+    @Test fun recapIsMostReactedFirstThenTheYearInWholeRows() {
+        val recap = vm().story.recap
+        assertEquals("Sunday Lunch", recap.groupName)
+        assertEquals(2026, recap.year)
+        assertEquals("the first most-reacted photo is the cover", "https://signed.test/u/u-ana/m-p-r1/r/display.jpg", recap.coverUrl)
+        // 6 most-reacted + 12 more = 18 photos → 4 whole rows of 4 (16).
+        assertEquals(16, recap.photos.size)
+        assertEquals(listOf("p-r1", "p-r2", "p-r3", "p-r4", "p-r5", "p-r6", "p-y1"), recap.photos.take(7).map { it.postId })
+        assertEquals("https://signed.test/u/u-ana/m-p-r1/r/thumb.jpg", recap.photos.first().thumbUrl)
+        assertEquals(listOf(SummaryStyle.Card, SummaryStyle.Cover), recap.styles)
+    }
+
+    @Test fun fewerThanOneRowOffersOnlyTheCover() {
+        val backend = Scenario.backend().apply { yearStories[GROUP to 2026] = Rows.yearStory(Rows.storyData(mostReacted = listOf("p-r1", "p-r2")), postIds = listOf("p-r1", "p-r2")) }
+        val recap = vm(backend).story.recap
+        assertEquals(0, recap.photos.size)
+        assertEquals(listOf(SummaryStyle.Cover), recap.styles)
+    }
+
+    @Test fun pauseReplayAndTheSummaryPager() {
+        val vm = vm()
+        vm.togglePause()
+        assertTrue(vm.story.paused)
+        repeat(30) { vm.next() }
+        vm.showStyle(1)
+        assertEquals(1, vm.story.style)
+        vm.showStyle(5)
+        assertEquals("clamped to the styles", 1, vm.story.style)
+        vm.replay()
+        assertEquals(0, vm.story.index)
+        assertFalse("replay plays", vm.story.paused)
+        assertEquals(0, vm.story.style)
+    }
+
+    @Test fun positionCountsTheCardsBeforeTheSummary() {
+        val vm = vm()
+        vm.next()
+        vm.next()
+        assertEquals(3, vm.story.position)
+        assertEquals(14, vm.story.total)
     }
 
     @Test fun tapThroughStopsAtBothEndsAndReplays() {
@@ -87,6 +131,8 @@ class YearStoryViewModelTest {
         assertEquals("col-2 contained it", listOf("col-1"), cards.filterIsInstance<StoryCard.TogetherDay>().map { it.collageId })
         backend.deletions.tryEmit("p-r1")
         assertFalse("no everyone-day left → no setup card", StoryCard.TogetherSetup in vm.story.cards)
+        assertFalse("and it leaves the recap grid", vm.story.recap.photos.any { it.postId == "p-r1" })
+        assertEquals("whole rows only", 8, vm.story.recap.photos.size)
     }
 
     @Test fun notReadyOfflineAndErrorStates() {

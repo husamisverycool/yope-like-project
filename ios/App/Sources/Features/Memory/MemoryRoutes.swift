@@ -3,26 +3,29 @@
 // delegate to this file, so other groups never edit it.
 //
 // The memory screens on `AppRoute` (owned here, built in Features/Memory):
-//   .birthdayRequest → BirthdayRequestScreen (birthday.request)
-//   .tribute         → TributeScreen (birthday.tribute)
-//   .yearStory       → YearStoryScreen (year.story)
-// Entry rows for groups.screen: OnThisDayEntry, YearStoryEntry, BirthdayRequestsEntry.
-// The "i'm in this" control for photo.viewer: SelfTagToggleControl / SelfTagToggle.
+//   .birthdayRequest → BirthdayRequestScreen (birthday.request, full screen)
+//   .tribute         → TributeScreen (birthday.tribute, full screen)
+//   .yearStory       → YearStoryScreen (year.story, full screen)
+// Entries for groups.screen: OnThisDayEntry and YearStoryEntry (feed cards, `MemoryEntryFeedCard`), BirthdayRequestsEntry
+// (`MemoryEntryRequestRow`).
+// For photo.viewer: the tag run (`TagRunControl`, or `TagRun` / `TagRunLine` + `TaggingSheet`; Tagging/TagRun.swift).
+// For week.recap: the recap card (`RecapCard`, `RecapFooter`; Shared/RecapCard.swift) inside capture's `RecapPreviewScreen`.
 import SwiftUI
 
 /// Screens of the memory group pushed on the main navigation stack.
 enum MemoryRoute: Hashable {
-    /// `onthisday` pushed (prefer `MemoryModal.onThisDay` / `OnThisDayEntry`: the day is full screen).
+    /// `onthisday`: pushed on the group's stack (onthisday.md platform notes: system bar hidden, C-02 back chevron,
+    /// interactive pop kept).
     case onThisDay(groupID: String)
-    /// `birthday.add`: pushed from the settings "birthday" row (settings.account pass).
+    /// `birthday.add`: pushed from the settings "Birthday" row (settings.account pass).
     case birthdayAdd
 }
 
-/// Screens of the memory group presented over the navigation stack (full screen).
+/// Screens of the memory group presented over the navigation stack.
 enum MemoryModal: Hashable {
-    /// `birthday.contribute`
+    /// `birthday.contribute` (opened from `birthday.request` as a page sheet; this case is for links / UI tests).
     case birthdayContribute(requestID: String)
-    /// `onthisday`, the day
+    /// `onthisday` presented full screen (kept for the shell's link handling; the entry pushes `MemoryRoute.onThisDay`).
     case onThisDay(groupID: String)
     /// `year.story`
     case yearStory(groupID: String, year: Int)

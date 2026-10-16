@@ -1,9 +1,11 @@
-// Surface: groups.screen — the group screen, view A (feed: header, photo cards, floating "chat" pill). View B (profile
-// page) is GroupProfileScreen. Reference app: Yope (design/surfaces/groups.screen.md). Reference images:
-// references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t43.73-group-screen-hourly.png (G1),
-// …-t51.23-group-created-empty-state.png (G2), …-t51.73-group-profile-add-20-pics.png (G3),
-// references/auto/yope/store/yope-store-01.png (S1), a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (M24),
-// references/auto/yope/web/a-bi-2025-create-group-composite.jpg (BI).
+// Surface: groups.screen — the group: cover, name, members, actions, this week's strip, the members' weeks and the
+// group's memories, earlier photos by day. Visual reference: Retro album detail
+// (references/auto/retro/press/tc-2024-04-journals-1.webp phone 3, TC-J1: book cover with its shadow, serif title, meta
+// line, capsules, dated sections, 3-column grid), Retro's home week strip and friend cards
+// (references/auto/retro/store/retro-store-01.png, ST-01; retro-store-02.png, ST-02;
+// references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png, H43; …-20260528-week22-dark-a.png, H22) and the
+// friend-card pager (references/auto/retro/store/editorial/retro-appstore-story-1840659619-albums.png, ED-A)
+// (design/surfaces/groups.screen.md; MERGE RA-9, RA-10).
 import AppData
 import AppModels
 import DesignSystem
@@ -23,27 +25,38 @@ struct GroupScreen: View {
 struct GroupFeedView: View {
     @State private var model: GroupFeedModel
     @State private var blockTarget: BlockTarget?
+    @State private var reportTarget: ReportTarget?
     @Environment(AccountDependencies.self) private var dependencies
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
-    @Environment(\.displayScale) private var displayScale
+    @ScaledMetric private var titleSize: CGFloat
+    @ScaledMetric private var sectionLabelSize: CGFloat
 
     init(model: GroupFeedModel) {
         _model = State(initialValue: model)
+        _titleSize = ScaledMetric(wrappedValue: TextRole.headerTitle.size, relativeTo: TextRole.headerTitle.relativeTo)
+        _sectionLabelSize = ScaledMetric(wrappedValue: TextRole.sectionLabel.size, relativeTo: TextRole.sectionLabel.relativeTo)
     }
+
+    /// The earlier grid's columns (groups.screen Structure 9: "a 3-column grid", TC-J1; no token of its own).
+    static let gridColumns = 3 // provenance-ok: column count named by the spec (C-21 album grid)
+
+    private var groupID: String { model.groupID.rawValue }
 
     var body: some View {
         GeometryReader { proxy in
-            content(width: proxy.size.width)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ScrollView {
+                if model.phase == .removed {
+                    removed(height: proxy.size.height)
+                } else {
+                    content(width: proxy.size.width)
+                }
+            }
+            .scrollBounceBehavior(.basedOnSize)
+            .refreshable { await model.refresh() }
         }
         .background(Tokens.Colors.globalBackground.ignoresSafeArea())
-        .safeAreaInset(edge: .top, spacing: 0) { header }
-        .overlay(alignment: .bottom) {
-            if model.phase == .loaded { chatPill }
-        }
         .toolbar(.hidden, for: .navigationBar)
-        .loadingHUD(model.phase == .loading)
         .task { await model.load() }
         .onDisappear { model.stop() }
         .onChange(of: scenePhase) { _, phase in
@@ -57,396 +70,638 @@ struct GroupFeedView: View {
         } onBlocked: { target in
             Task { await model.blocked(UserID(target.userID)) }
         }
+        .reportFlow(target: $reportTarget, dependencies: dependencies)
         .accessibilityIdentifier("groups.screen")
     }
 
-    // MARK: Header (S1)
+    // MARK: Layout
 
-    /// ‹ · capsule (avatar · name · ›) · calendar · recap; circles `size.global.headerButton` in `color.global.control`,
-    /// `size.global.headerGap` apart, `size.global.headerInset` from the edges.
-    private var header: some View {
-        HStack(spacing: Tokens.Sizes.globalHeaderGap) {
-            HeaderCircleButton(icon: Tokens.Icons.globalBack, accessibilityLabel: Copy.groupsScreenBackAccessibilityLabel, fill: .onBackground) {
+    /// Header row, cover, name, members, actions, the birthday row, this week, the members' weeks and memories, earlier
+    /// photos — each placed by the spec's measured gaps (TC-J1) and the C-20 / C-17 / C-18 metrics.
+    private func content(width: CGFloat) -> some View {
+        let cap = TextMetrics(style: TextRole.headerTitle, size: titleSize).capHeight
+        let rowTop = Tokens.Sizes.globalTitleTop - cap / 2 - Tokens.Sizes.globalHeaderButton / 2
+        let showsWeek = model.phase == .loaded || model.phase == .created || model.phase == .empty || model.phase == .loading
+        return MetricStack(alignment: .center) {
+            headerRow
+                .metricGap(max(0, rowTop), from: .top, to: .top)
+            GroupCover(
+                source: model.group?.coverPath.map { PhotoSource.storage($0) },
+                width: Tokens.Sizes.groupsScreenSizeCoverWidth,
+                height: Tokens.Sizes.groupsScreenSizeCoverHeight,
+                showsGroupGlyph: model.group != nil
+            )
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(Copy.groupsScreenCoverAccessibilityLabel(groupName: model.group?.name ?? "")))
+            .accessibilityAddTraits(.isImage)
+            .metricGap(Tokens.Sizes.globalTitleToContent + cap / 2 + Tokens.Sizes.globalHeaderButton / 2, from: .top, to: .top)
+            Text(model.group?.name ?? "")
+                .dsTextRole(TextRole.displayMedium)
+                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .accessibilityAddTraits(.isHeader)
+                .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+                .metricGap(Tokens.Sizes.groupsScreenSizeCoverToTitle, from: .bottom, to: .capTop)
+            switch model.phase {
+            case .offline:
+                EmptyStateView(title: Copy.groupsScreenOfflineTitle, detail: Copy.groupsScreenOfflineDetail)
+                    .metricGap(Tokens.Sizes.globalSectionGap, from: .lastBaseline, to: .top)
+            default:
+                memberStack(width: width)
+                    .metricGap(Tokens.Sizes.groupsScreenSizeTitleToMeta, from: .lastBaseline, to: .top)
+                actions
+                    .metricGap(Tokens.Sizes.groupsScreenSizeMetaToActions, from: .bottom, to: .top)
+            }
+            if model.phase == .error {
+                errorLine
+                    .metricGap(Tokens.Sizes.globalSectionGap, from: .bottom, to: .top)
+            }
+            if showsWeek {
+                birthdayRequests
+                    .metricGap(0, from: .bottom, to: .top)
+                weekHeader
+                    .metricGap(Tokens.Sizes.globalSectionGap, from: .bottom, to: .capTop)
+                weekStrip
+                    .metricGap(Tokens.Sizes.globalSectionHeaderToContent, from: .lastBaseline, to: .top)
+                weekBlock
+                    .metricGap(Tokens.Sizes.globalSectionGap, from: .bottom, to: .top)
+                cardsPager
+                    .metricGap(0, from: .bottom, to: .top)
+                earlier
+                    .metricGap(Tokens.Sizes.globalSectionGap - capTopOffset, from: .bottom, to: .top)
+            }
+        }
+        .padding(.bottom, Tokens.Sizes.globalSectionGap)
+    }
+
+    /// From the top of a C-20 header's frame to its cap top at the current Dynamic Type size.
+    private var capTopOffset: CGFloat {
+        TextMetrics(style: TextRole.sectionLabel, size: sectionLabelSize).capTopOffset
+    }
+
+    // MARK: Header row
+
+    /// C-02 without a title: the back chevron at `size.global.backInset`; the trailing glyphs with C-01 metrics (albums →
+    /// albums.list, chat → chat.thread; Retro's home header pair, H22), the row centred where C-01 centres its glyphs (the
+    /// cap middle of a title at `size.global.titleTop`).
+    private var headerRow: some View {
+        HStack(spacing: 0) {
+            FormBackButton(accessibilityLabel: Copy.groupsScreenBackAccessibilityLabel, identifier: "groups.screen.back") {
                 dismiss()
             }
-            .accessibilityIdentifier("groups.screen.back")
-            if model.phase != .removed, let group = model.group {
-                GroupHeaderCapsule(group: group) {
-                    dependencies.router.path.append(.account(.groupProfile(groupID: model.groupID.rawValue)))
+            Spacer(minLength: 0)
+            if model.phase != .removed {
+                HStack(spacing: Tokens.Sizes.globalHeaderIconPitch - Tokens.Sizes.globalHeaderButton) {
+                    HeaderIconButton(icon: Tokens.Icons.globalAlbums, accessibilityLabel: Copy.groupsScreenAlbumsAccessibilityLabel) {
+                        push(.social(.albums(groupID: groupID)))
+                    }
+                    .accessibilityIdentifier("groups.screen.albums")
+                    HeaderIconButton(icon: Tokens.Icons.globalChats, accessibilityLabel: Copy.groupsScreenChat) {
+                        push(.chat(groupID: groupID, messageID: nil))
+                    }
+                    .accessibilityIdentifier("groups.screen.chat")
                 }
-                .layoutPriority(1)
-                Spacer(minLength: 0)
-                HeaderCircleButton(icon: Tokens.Icons.globalCalendar, accessibilityLabel: Copy.groupsScreenWeeksAccessibilityLabel, fill: .onBackground) {
-                    openWeeks()
-                }
-                HeaderCircleButton(icon: Tokens.Icons.globalRecap, accessibilityLabel: Copy.groupsScreenRecapAccessibilityLabel, fill: .onBackground) {
-                    openRecap()
-                }
-            } else {
-                Spacer(minLength: 0)
+                .padding(.trailing, max(0, Tokens.Sizes.globalHeaderInset - (Tokens.Sizes.globalHeaderButton - Tokens.Sizes.globalIcon) / 2))
             }
         }
-        .padding(.horizontal, Tokens.Sizes.globalHeaderInset)
+        .frame(height: Tokens.Sizes.globalHeaderButton)
+        .frame(maxWidth: .infinity)
     }
 
-    private func openWeeks() {
-        if let route = CrossGroupRoutes.weekHistory(groupID: model.groupID.rawValue) {
-            dependencies.router.path.append(route)
+    // MARK: Members and actions
+
+    /// The members' avatars (C-23 stack, joining order, as many as fit inside the margins; no count) → groups.settings.
+    private func memberStack(width: CGFloat) -> some View {
+        Button {
+            openSettings()
+        } label: {
+            AvatarStack(
+                paths: model.membersInJoiningOrder.map { $0.profile?.avatarPath },
+                maxWidth: width - 2 * Tokens.Sizes.globalScreenMargin
+            )
+            .frame(minHeight: Tokens.Sizes.globalAvatarSmall)
+            .minimumHitArea(drawn: CGSize(width: Tokens.Sizes.globalMinTouchTargetIos, height: Tokens.Sizes.globalAvatarSmall))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(Copy.groupsScreenMembersAccessibilityLabel))
+        .accessibilityIdentifier("groups.screen.members")
+    }
+
+    /// "Recaps" and "Invite" (C-06 outline, equal widths) and the icon-only settings capsule, `size.global.pillGap` apart
+    /// inside `size.global.screenMargin` (C-19 action row).
+    private var actions: some View {
+        CapsuleRow {
+            CapsuleButton(Copy.groupsScreenRecapAccessibilityLabel, style: .outline, fillsWidth: true) { openRecaps() }
+                .accessibilityIdentifier("groups.screen.recaps")
+            CapsuleButton(Copy.groupsScreenInvite, style: .outline, fillsWidth: true) { openInvite() }
+                .accessibilityIdentifier("groups.screen.invite")
+            CapsuleButton(icon: Tokens.Icons.globalSettings, accessibilityLabel: Copy.groupsScreenSettingsAccessibilityLabel, style: .outline) {
+                openSettings()
+            }
+            .accessibilityIdentifier("groups.screen.settings")
+        }
+        .disabled(model.group == nil)
+        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+    }
+
+    /// Error (nothing cached): Retro's one tappable line under the actions (tap = retry).
+    private var errorLine: some View {
+        Button {
+            Task { await model.retry() }
+        } label: {
+            Text(Copy.groupsScreenErrorTitle)
+                .dsTextStyle(TextRole.body)
+                .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.globalMinTouchTargetIos)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+        .accessibilityIdentifier("groups.screen.error")
+    }
+
+    // MARK: Birthday request (memory group's entry)
+
+    /// One C-14 single row per open birthday request for you in this group, `size.global.sectionGap` under the capsules:
+    /// the honoree's avatar (C-16 `size.global.avatarPicker`), `birthday.request.title` (`listTitle`) and
+    /// `birthday.request.due` (`listSubtitle`, grey), `icon.global.chevron` → birthday.request (the memory group supplies
+    /// the copy and the tap).
+    private var birthdayRequests: some View {
+        BirthdayRequestsEntry(groupID: groupID) { content in
+            SettingsGroup(rows: [
+                SettingsCustomRow {
+                    HStack {
+                        AvatarView(source: nil, diameter: Tokens.Sizes.globalAvatarPicker)
+                        VStack(alignment: .leading) {
+                            Text(content.title)
+                                .dsTextStyle(TextRole.listTitle)
+                                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                            Text(content.subtitle)
+                                .dsTextStyle(TextRole.listSubtitle)
+                                .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                        }
+                        .multilineTextAlignment(.leading)
+                        Spacer(minLength: 0)
+                        Glyph(Tokens.Icons.globalChevron, relativeTo: TextRole.body.relativeTo)
+                            .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                    }
+                }
+                .asSettingsRow(),
+            ])
+            .padding(.top, Tokens.Sizes.globalSectionGap)
+            .accessibilityElement(children: .combine)
         }
     }
 
-    /// The latest recap, or `week.history` when there is none.
-    private func openRecap() {
-        if let recap = model.latestRecapID {
-            dependencies.router.path.append(.recap(groupID: model.groupID.rawValue, recapID: recap.rawValue))
+    // MARK: This week
+
+    /// C-20 header as one button: "Week {number}" (text role `sectionLabel`) + the week's range (`listSubtitle`, grey;
+    /// none while the week has no photos) and, in place of C-20's '•••' (Retro's week menu was not captured),
+    /// `icon.global.chevron` in `color.global.textSecondary` at the right margin → week.history.
+    private var weekHeader: some View {
+        let title = Copy.groupsScreenWeekTitle(number: String(model.weekNumber))
+        let range = model.thisWeekPosts.isEmpty ? nil : GroupDates.weekRange(model.currentWeek, calendar: model.calendar)
+        return Button {
+            if let route = CrossGroupRoutes.weekHistory(groupID: groupID) { push(route) }
+        } label: {
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                Text(title)
+                    .dsTextStyle(TextRole.sectionLabel)
+                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                if let range {
+                    Text(" " + range) // provenance-ok: the space between the two runs of C-20
+                        .dsTextStyle(TextRole.listSubtitle)
+                        .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                }
+                Spacer(minLength: 0)
+                Glyph(Tokens.Icons.globalChevron, relativeTo: TextRole.sectionLabel.relativeTo)
+                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                    .alignmentGuide(.firstTextBaseline) { glyph in glyph[VerticalAlignment.center] + capHeightHalf }
+            }
+            .lineLimit(1)
+            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text([title, range].compactMap { $0 }.joined(separator: " "))) // provenance-ok: joins copy runs
+        .accessibilityHint(Text(Copy.groupsScreenWeeksAccessibilityLabel))
+        .accessibilityAddTraits([.isHeader, .isButton])
+        .accessibilityIdentifier("groups.screen.week")
+        .capHeight(of: TextRole.sectionLabel)
+    }
+
+    /// Half the section label's cap height: the chevron centres on the header's cap middle.
+    private var capHeightHalf: CGFloat {
+        TextMetrics(style: TextRole.sectionLabel, size: sectionLabelSize).capHeight / 2
+    }
+
+    /// C-17: this week's photos oldest → newest with the add tile last; a week without photos: the add tile first, then an
+    /// empty-day tile per remaining day. Loading: placeholder tiles.
+    private var weekStrip: some View {
+        let tiles: [WeekStripTile]
+        if model.phase == .loading {
+            tiles = WeekStripLayout.placeholders(count: WeekStripLayout.days(ofWeekContaining: Date(), calendar: model.calendar).count)
         } else {
-            openWeeks()
+            let photos = model.thisWeekPosts.map { post in
+                WeekStripPhoto(id: post.id.rawValue, date: post.post.createdAt, source: post.media?.imagePath(for: .thumb).map { PhotoSource.storage($0) })
+            }
+            tiles = WeekStripLayout.tiles(days: model.remainingDaysOfWeek, photos: photos, canAdd: true)
+        }
+        return GroupWeekStrip(
+            tiles: tiles,
+            accessibilityLabel: tileLabel,
+            onSelect: selectTile,
+            menuPost: { tile in post(for: tile) }
+        ) { post in
+            photoMenu(post)
         }
     }
 
-    // MARK: Content
+    private func tileLabel(_ tile: WeekStripTile) -> String {
+        switch tile.kind {
+        case .add:
+            return Copy.groupsScreenWeekAddAccessibilityLabel
+        case .emptyDay:
+            let date = tile.date ?? Date()
+            return Copy.weekHistoryA11yEmptyDay(weekday: GroupDates.weekday(date, calendar: model.calendar), date: GroupDates.monthDay(date, calendar: model.calendar))
+        case .photo:
+            guard let post = post(for: tile) else { return "" }
+            return photoLabel(post)
+        case .placeholder:
+            return ""
+        }
+    }
 
+    private func post(for tile: WeekStripTile) -> PostWithMedia? {
+        guard case .photo = tile.kind else { return nil }
+        return model.thisWeekPosts.first { "photo-" + $0.id.rawValue == tile.id }
+    }
+
+    private func selectTile(_ tile: WeekStripTile) {
+        switch tile.kind {
+        case .add:
+            dependencies.router.modal = .camera(groupID: groupID, invitationID: nil)
+        case .photo:
+            if let post = post(for: tile) { open(post) }
+        case .emptyDay, .placeholder:
+            break
+        }
+    }
+
+    /// Under an empty strip: the created block (C-27: `icon.global.calendar`, title, explanation, C-07 → groups.invite) or
+    /// the empty block (C-07 → camera.capture). A quiet week shows none.
     @ViewBuilder
-    private func content(width: CGFloat) -> some View {
+    private var weekBlock: some View {
         switch model.phase {
-        case .loading:
-            Color.clear
-        case .loaded:
-            feed(width: width)
         case .created:
             EmptyStateView(
+                icon: Tokens.Icons.globalCalendar,
                 title: Copy.groupsScreenCreatedTitle,
-                detail: model.joinedNames.map { Copy.groupsScreenCreatedDetail(names: $0) },
-                action: EmptyStateView.Action(GroupKindCopy.createdInvite(model.group?.kind), icon: Tokens.Icons.globalLink) {
-                    dependencies.router.modal = .account(.groupInvite(groupID: model.groupID.rawValue))
-                }
+                detail: Copy.groupsScreenCreatedDetail,
+                action: EmptyStateView.Action(GroupKindCopy.createdInvite(model.group?.kind), icon: Tokens.Icons.globalAdd) { openInvite() }
             )
             .accessibilityIdentifier("groups.screen.created")
         case .empty:
             EmptyStateView(
+                icon: Tokens.Icons.globalCalendar,
                 title: Copy.groupsScreenEmptyTitle,
                 detail: Copy.groupsScreenEmptyDetail,
-                action: EmptyStateView.Action(Copy.groupsScreenEmptyButton, icon: Tokens.Icons.globalCamera) {
-                    dependencies.router.modal = .camera(groupID: model.groupID.rawValue, invitationID: nil)
+                action: EmptyStateView.Action(Copy.groupsScreenEmptyButton, icon: Tokens.Icons.globalAdd) {
+                    dependencies.router.modal = .camera(groupID: groupID, invitationID: nil)
                 }
             )
-        case .error:
-            EmptyStateView(
-                title: Copy.groupsScreenErrorTitle,
-                detail: Copy.groupsScreenErrorDetail,
-                action: EmptyStateView.Action(Copy.groupsScreenErrorRetry) { Task { await model.retry() } }
-            )
-        case .offline:
-            EmptyStateView(title: Copy.groupsScreenOfflineTitle, detail: Copy.groupsScreenOfflineDetail)
-        case .removed:
-            EmptyStateView(title: Copy.groupsScreenRemovedTitle, detail: Copy.groupsScreenRemovedDetail)
+            .accessibilityIdentifier("groups.screen.empty")
+        default:
+            EmptyView()
         }
     }
 
-    private func feed(width: CGFloat) -> some View {
-        let cardWidth = width - Tokens.Sizes.groupsScreenSizeCardMarginH * 2
-        let pixels = Int((max(cardWidth, Tokens.Sizes.groupsScreenSizeCardHeight) * displayScale).rounded(.up))
-        let items = model.items
-        return ScrollView {
-            VStack(spacing: 0) {
-                memoryEntries
-                cards(items: items, pixels: pixels)
+    // MARK: Members' weeks and memories
+
+    /// Retro's home feed pager: one C-18 friend card per member who shared this week (newest first), then the memory
+    /// feed cards (on this day, the year story) while they have content. Each card carries the `size.global.sectionGap`
+    /// above it, so the row takes no space when there is nothing to show.
+    private var cardsPager: some View {
+        FriendCardPager {
+            ForEach(model.memberWeeks) { week in
+                FriendCard(
+                    name: week.member.profile?.firstName ?? "",
+                    avatar: week.member.profile?.avatarPath.map { PhotoSource.storage($0) },
+                    photo: week.newest.media?.imagePath(for: .display).map { PhotoSource.storage($0) },
+                    accessibilityLabel: photoLabel(week.newest)
+                ) {
+                    open(week.newest)
+                }
+                .contextMenu { photoMenu(week.newest) }
+                .padding(.top, Tokens.Sizes.globalSectionGap)
+                .dsTransition(.opacity)
             }
-            .padding(.horizontal, Tokens.Sizes.groupsScreenSizeCardMarginH)
-            .padding(.bottom, Tokens.Sizes.groupsScreenSizeChatPillHeight + Tokens.Sizes.groupsScreenSizeCardGap)
+            OnThisDayEntry(groupID: groupID) { content in
+                MemoryFeedCard(
+                    glyph: Tokens.Icons.globalRewind,
+                    title: content.title,
+                    line: content.subtitle,
+                    action: content.buttonTitle ?? Copy.onthisdayEntryButton
+                )
+                .padding(.top, Tokens.Sizes.globalSectionGap)
+            }
+            YearStoryEntry(groupID: groupID) { content in
+                MemoryFeedCard(
+                    glyph: Tokens.Icons.globalRecap,
+                    title: content.title,
+                    line: content.subtitle,
+                    action: content.buttonTitle ?? Copy.yearStoryEntryButton
+                )
+                .padding(.top, Tokens.Sizes.globalSectionGap)
+            }
         }
-        .refreshable { await model.refresh() }
+        .dsAnimation(ComponentMotion.fade, value: model.memberWeeks.map(\.id))
     }
 
-    /// The memory surfaces' entry rows (birthday.request, onthisday, year.story "Entry … placed by groups.screen"), above
-    /// the newest card. Each is zero-height while it has nothing to show; a tap opens its screen (sheet / full screen).
-    private var memoryEntries: some View {
-        let group = model.groupID.rawValue
-        return VStack(spacing: 0) {
-            BirthdayRequestsEntry(groupID: group) { MemoryEntryCard(content: $0) }
-            OnThisDayEntry(groupID: group) { MemoryEntryCard(content: $0) }
-            YearStoryEntry(groupID: group) { MemoryEntryCard(content: $0) }
-        }
-    }
+    // MARK: Earlier
 
-    private func cards(items: [FeedItem], pixels: Int) -> some View {
-        LazyVStack(spacing: Tokens.Sizes.groupsScreenSizeCardGap) {
-            ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                feedItem(item)
-                    .dsTransition(.move(edge: .top).combined(with: .opacity))
-                    .onAppear {
-                        if index >= items.count - 3 {
-                            Task {
-                                await model.loadMore()
-                                await model.prefetchImages(after: index, pixels: pixels)
-                            }
+    /// Photos from before this week, newest first: C-20 dated sections (the day in the long date format, no '•••') over a
+    /// 3-column grid of square cells (C-21), `size.global.sectionGap` between sections; the next page loads when the last
+    /// section appears. Loading: one row of placeholder cells.
+    @ViewBuilder
+    private var earlier: some View {
+        if model.phase == .loading {
+            GroupPhotoGrid(cells: (0..<Self.gridColumns).map { GroupPhotoCell(id: "placeholder-\($0)", post: nil, label: "") }, columns: Self.gridColumns, onSelect: { _ in }) { _ in
+                EmptyView()
+            }
+            .accessibilityHidden(true)
+        } else {
+            WeekSectionList {
+                ForEach(model.earlierSections) { section in
+                    WeekStripSection {
+                        SectionHeader(title: GroupDates.longDate(section.day, calendar: model.calendar))
+                    } content: {
+                        GroupPhotoGrid(
+                            cells: section.posts.map { GroupPhotoCell(id: $0.id.rawValue, post: $0, label: photoLabel($0)) },
+                            columns: Self.gridColumns,
+                            onSelect: { cell in if let post = cell.post { open(post) } }
+                        ) { cell in
+                            if let post = cell.post { photoMenu(post) }
                         }
                     }
+                    .onAppear {
+                        if section.id == model.earlierSections.last?.id { Task { await model.loadMore() } }
+                    }
+                }
+            }
+            .dsAnimation(ComponentMotion.crossfade, value: model.earlierSections.map(\.id))
+        }
+    }
+
+    // MARK: Removed
+
+    /// `not_group_member`: the header row (back only) and the C-27 block centred.
+    private func removed(height: CGFloat) -> some View {
+        VStack(spacing: 0) {
+            headerRow
+            Spacer(minLength: 0)
+            EmptyStateView(title: Copy.groupsScreenRemovedTitle, detail: Copy.groupsScreenRemovedDetail)
+            Spacer(minLength: 0)
+        }
+        .frame(minHeight: height)
+        .accessibilityIdentifier("groups.screen.removed")
+    }
+
+    // MARK: Photos
+
+    /// `groups.screen.photo.accessibilityLabel`: "{date}, photo by {first_name}" (the weekday, month and day).
+    private func photoLabel(_ post: PostWithMedia) -> String {
+        Copy.groupsScreenPhotoAccessibilityLabel(
+            date: GroupDates.weekdayMonthDay(post.post.createdAt, calendar: model.calendar),
+            firstName: model.profile(of: post.post.authorID)?.firstName ?? ""
+        )
+    }
+
+    /// The long-press menu (`groups.screen.layout.menu`): others' photos "Report Post" and "Block {first_name}"
+    /// (destructive); own photos none (the viewer has the full menu).
+    @ViewBuilder
+    private func photoMenu(_ post: PostWithMedia) -> some View {
+        if post.post.authorID != model.me {
+            let firstName = model.profile(of: post.post.authorID)?.firstName ?? ""
+            let person = BlockTarget(userID: post.post.authorID.rawValue, firstName: firstName)
+            Button(Copy.groupsScreenPhotoMenuReport, role: .destructive) {
+                reportTarget = ReportTarget(
+                    kind: .post, id: post.id.rawValue, person: person, groupID: groupID, groupName: model.group?.name
+                )
+            }
+            Button(Copy.groupsScreenPhotoMenuBlock(firstName: firstName), role: .destructive) {
+                blockTarget = person
             }
         }
-        .dsAnimation(.spring(Tokens.Springs.globalPlatformDefaultIos), value: model.posts.map(\.id))
+    }
+
+    private func open(_ post: PostWithMedia) {
+        push(.post(groupID: groupID, postID: post.id.rawValue))
+    }
+
+    // MARK: Navigation
+
+    private func push(_ route: AppRoute) {
+        dependencies.router.path.append(route)
+    }
+
+    /// The latest recap, or week.history when there is none.
+    private func openRecaps() {
+        if let recap = model.latestRecapID {
+            push(.recap(groupID: groupID, recapID: recap.rawValue))
+        } else if let route = CrossGroupRoutes.weekHistory(groupID: groupID) {
+            push(route)
+        }
+    }
+
+    private func openInvite() {
+        dependencies.router.modal = .account(.groupInvite(groupID: groupID))
+    }
+
+    /// groups.settings (a sheet: the shell presents the route, `PresentedRoute`).
+    private func openSettings() {
+        push(.account(.groupSettings(groupID: groupID)))
+    }
+}
+
+/// Dates on the group screen, in the group's time zone and the person's locale.
+enum GroupDates {
+    private static func formatter(_ template: String, calendar: Calendar) -> DateFormatter {
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.timeZone = calendar.timeZone
+        formatter.locale = .current
+        formatter.setLocalizedDateFormatFromTemplate(template)
+        return formatter
+    }
+
+    /// The C-20 range of a week ("Jul 3 – 9" in the locale's interval format).
+    static func weekRange(_ week: DateInterval?, calendar: Calendar) -> String? {
+        guard let week else { return nil }
+        let formatter = DateIntervalFormatter()
+        formatter.calendar = calendar
+        formatter.timeZone = calendar.timeZone
+        formatter.dateTemplate = "MMMd" // provenance-ok: date template (abbreviated month and day, C-20 range)
+        let lastDay = week.end.addingTimeInterval(-1)
+        return formatter.string(from: week.start, to: lastDay)
+    }
+
+    /// The dated section header ("January 25, 2024": the locale's long date).
+    static func longDate(_ date: Date, calendar: Calendar) -> String {
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.timeZone = calendar.timeZone
+        formatter.dateStyle = .long
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
+    }
+
+    /// "Monday, June 26" for accessibility labels.
+    static func weekdayMonthDay(_ date: Date, calendar: Calendar) -> String {
+        formatter("EEEEMMMMd", calendar: calendar).string(from: date) // provenance-ok: date template
+    }
+
+    static func weekday(_ date: Date, calendar: Calendar) -> String {
+        formatter("EEEE", calendar: calendar).string(from: date) // provenance-ok: date template
+    }
+
+    static func monthDay(_ date: Date, calendar: Calendar) -> String {
+        formatter("MMMMd", calendar: calendar).string(from: date) // provenance-ok: date template
+    }
+}
+
+/// C-17 week strip with a long-press menu on photo tiles (`groups.screen.layout.menu`) — a local variant of `WeekStrip`
+/// (Components/WeekStrip.swift), which has no per-tile menu (reported as a component gap). Same anatomy: `DayTile`s
+/// `size.global.stripGap` apart from the leading `size.global.screenMargin`, only the strip's outer corners rounded
+/// (`radius.global.card`), tiles inserting with `duration.global.stripInsert` and fading in with `duration.global.fade`.
+struct GroupWeekStrip<Menu: View>: View {
+    let tiles: [WeekStripTile]
+    let accessibilityLabel: (WeekStripTile) -> String
+    let onSelect: (WeekStripTile) -> Void
+    let menuPost: (WeekStripTile) -> PostWithMedia?
+    @ViewBuilder let menu: (PostWithMedia) -> Menu
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Tokens.Sizes.globalStripGap) {
+                ForEach(tiles) { tile in
+                    tileView(tile)
+                        .dsTransition(AnyTransition.opacity.animation(ComponentMotion.fade.animation))
+                }
+            }
+            .clipShape(DSShape.rounded(Tokens.Radii.globalCard))
+            .padding(.leading, Tokens.Sizes.globalScreenMargin)
+            .dsAnimation(ComponentMotion.stripInsert, value: tiles.map(\.id))
+        }
+        .accessibilityElement(children: .contain)
     }
 
     @ViewBuilder
-    private func feedItem(_ item: FeedItem) -> some View {
-        switch item {
-        case let .post(post):
-            PhotoCard(
-                post: post,
-                author: model.profile(of: post.post.authorID),
-                isOwn: post.post.authorID == model.me,
-                onOpen: { openPost(post) },
-                onReport: { report(post) },
-                onBlock: { block(post) }
-            )
-        case let .joined(member):
-            JoinedPill(member: member)
-        }
-    }
-
-    private func openPost(_ post: PostWithMedia) {
-        dependencies.router.path.append(.post(groupID: model.groupID.rawValue, postID: post.id.rawValue))
-    }
-
-    private func report(_ post: PostWithMedia) {
-        let author = model.profile(of: post.post.authorID)
-        dependencies.router.modal = .account(.report(ReportTarget(
-            kind: .post,
-            id: post.id.rawValue,
-            person: BlockTarget(userID: post.post.authorID.rawValue, firstName: author?.firstName ?? "")
-        )))
-    }
-
-    private func block(_ post: PostWithMedia) {
-        let author = model.profile(of: post.post.authorID)
-        blockTarget = BlockTarget(userID: post.post.authorID.rawValue, firstName: author?.firstName ?? "")
-    }
-
-    /// Floating "chat" pill, bottom centre: `groups.screen.size.chatPillWidth` × `.chatPillHeight` (minimums),
-    /// `groups.screen.color.chatPill`, corners `radius.global.button` (approximation, not measured),
-    /// `icon.global.chats` + `groups.screen.chat` (`groups.screen.fontSize.chatPill`, bold per the spec, white).
-    private var chatPill: some View {
-        Button {
-            dependencies.router.path.append(.chat(groupID: model.groupID.rawValue, messageID: nil))
-        } label: {
-            HStack {
-                Image(systemName: Tokens.Icons.globalChats)
-                    .accessibilityHidden(true)
-                Text(Copy.groupsScreenChat)
-                    .dsTextStyle(GroupScreenStyle.chatPill)
+    private func tileView(_ tile: WeekStripTile) -> some View {
+        if tile.kind == .placeholder {
+            DayTile(tile: tile)
+                .accessibilityHidden(true)
+        } else {
+            Button {
+                onSelect(tile)
+            } label: {
+                DayTile(tile: tile)
             }
-            .foregroundStyle(Tokens.Colors.globalTextPrimary)
-            .frame(minWidth: Tokens.Sizes.groupsScreenSizeChatPillWidth, minHeight: Tokens.Sizes.groupsScreenSizeChatPillHeight)
-            .background(Tokens.Colors.groupsScreenColorChatPill, in: RoundedRectangle(cornerRadius: Tokens.Radii.globalButton))
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("groups.screen.chat")
-    }
-}
-
-/// Text styles of the group screen.
-enum GroupScreenStyle {
-    /// `groups.screen.fontSize.chatPill`, bold (spec; no weight token), Dynamic Type subheadline.
-    static let chatPill = DSTextStyle(family: Tokens.Fonts.globalFamily, size: Tokens.FontSizes.groupsScreenFontSizeChatPill, weight: Font.Weight.bold, relativeTo: .subheadline)
-    /// Author first name on a card: text role listSubtitle (`fontSize.global.listSubtitle`, `fontWeight.global.listSubtitle`).
-    static let cardName = TextRole.listSubtitle
-    /// Profile page name: `groups.screen.fontSize.profileName` / `.fontWeight.profileName`, Dynamic Type title1.
-    static let profileName = DSTextStyle(family: Tokens.Fonts.globalFamily, size: Tokens.FontSizes.groupsScreenFontSizeProfileName, weight: Tokens.FontWeights.groupsScreenFontWeightProfileName, relativeTo: .title)
-}
-
-/// Per-type copy of the group screens.
-enum GroupKindCopy {
-    /// `groups.screen.created.invite.*`
-    static func createdInvite(_ kind: GroupKind?) -> String {
-        switch kind {
-        case .family: return Copy.groupsScreenCreatedInviteFamily
-        case .roommates: return Copy.groupsScreenCreatedInviteRoommates
-        case .custom, .unknown: return Copy.groupsScreenCreatedInviteCustom
-        case .friends, .none: return Copy.groupsScreenCreatedInviteFriends
-        }
-    }
-
-    /// `groups.settings.members.invite.*`
-    static func settingsInvite(_ kind: GroupKind?) -> String {
-        switch kind {
-        case .family: return Copy.groupsSettingsMembersInviteFamily
-        case .roommates: return Copy.groupsSettingsMembersInviteRoommates
-        case .custom, .unknown: return Copy.groupsSettingsMembersInviteCustom
-        case .friends, .none: return Copy.groupsSettingsMembersInviteFriends
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(accessibilityLabel(tile)))
+            .contextMenu {
+                if let post = menuPost(tile) { menu(post) }
+            }
         }
     }
 }
 
-/// The header capsule: group avatar `size.global.avatarHeader` · name (text role `headerTitle`, one line) ·
-/// `icon.global.chevron` in `color.global.textSecondary`; height `size.global.headerButton`, fill `color.global.control`,
-/// `radius.global.capsule`. The avatar sits concentric with the capsule's rounded end (inset
-/// (`headerButton` − `avatarHeader`) / 2 on every side; Yope's inner insets were not measured).
-struct GroupHeaderCapsule: View {
-    let group: PhotoGroup
-    let action: () -> Void
+/// One cell of the dated grid.
+struct GroupPhotoCell: Identifiable, Hashable {
+    let id: String
+    let post: PostWithMedia?
+    let label: String
+}
 
-    private var inset: CGFloat { (Tokens.Sizes.globalHeaderButton - Tokens.Sizes.globalAvatarHeader) / 2 }
+/// C-21 album grid with a long-press menu per cell — a local variant of `PhotoGrid` (Components/PhotoGrid.swift), which
+/// has no per-cell menu (reported as a component gap). Same anatomy: square cells (`radius.global.photo`),
+/// `size.global.stripGap` apart in both directions, full width inside `size.global.screenMargin`; cells without a
+/// photo are `color.global.control` (C-28 placeholder).
+struct GroupPhotoGrid<Menu: View>: View {
+    let cells: [GroupPhotoCell]
+    let columns: Int
+    let onSelect: (GroupPhotoCell) -> Void
+    @ViewBuilder let menu: (GroupPhotoCell) -> Menu
 
     var body: some View {
-        Button(action: action) {
-            HStack {
-                AvatarView(path: group.coverPath, diameter: Tokens.Sizes.globalAvatarHeader, placeholderIcon: Tokens.Icons.globalGroup)
-                Text(group.name)
-                    .dsTextStyle(TextRole.headerTitle)
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                    .lineLimit(1)
-                Image(systemName: Tokens.Icons.globalChevron)
-                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
-                    .accessibilityHidden(true)
+        LazyVGrid(
+            columns: Array(repeating: GridItem(.flexible(), spacing: Tokens.Sizes.globalStripGap), count: max(1, columns)),
+            spacing: Tokens.Sizes.globalStripGap
+        ) {
+            ForEach(cells) { cell in
+                Button {
+                    onSelect(cell)
+                } label: {
+                    PhotoView(source: cell.post?.media?.imagePath(for: .thumb).map { PhotoSource.storage($0) })
+                        .aspectRatio(1, contentMode: .fit) // provenance-ok: square cells (C-21)
+                        .clipShape(Rectangle())
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text(cell.label))
+                .contextMenu { menu(cell) }
             }
-            .padding(.leading, inset)
-            .padding(.trailing, Tokens.Sizes.globalHeaderButton / 2)
-            .frame(minHeight: Tokens.Sizes.globalHeaderButton)
-            .background(Tokens.Colors.globalControl, in: Capsule())
         }
-        .buttonStyle(.plain)
+        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+        .accessibilityElement(children: .contain)
+    }
+}
+
+/// A memory feed card in the members' pager (Retro's Rewind / "Year in Photos" feed cards; composition of C-18, C-09 and
+/// the display role): C-18 geometry — the header line shows the feature's glyph in the `size.global.avatarList` box in
+/// place of an avatar, the card `size.global.friendCardWidth` × `.friendCardHeight`, `radius.global.card` — on
+/// `color.global.backgroundDeep` with the bottom scrim (`layout.global.photoScrim`); at the bottom inside
+/// `size.global.screenMargin`: the title (text role `displaySmall`, `color.global.textOnMedia`), the line (`listSubtitle`,
+/// `color.global.textOnMedia`) and the C-09 light pill with the action. The memory entry draws it inside its button, so
+/// it is read as one element. (The memory entries do not hand over the feature's photo yet: the card is the media
+/// black until they do.)
+struct MemoryFeedCard: View {
+    let glyph: String
+    let title: String
+    let line: String
+    let action: String
+    var photo: PhotoSource?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Tokens.Sizes.globalCardHeaderGap) {
+            Glyph(glyph, size: Tokens.Sizes.globalAvatarList)
+                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+            ZStack(alignment: .bottomLeading) {
+                Tokens.Colors.globalBackgroundDeep
+                PhotoView(source: photo)
+                    .opacity(photo == nil ? 0 : 1)
+                PhotoScrim()
+                VStack(alignment: .leading) {
+                    Text(title)
+                        .dsTextStyle(TextRole.displaySmall)
+                    Text(line)
+                        .dsTextStyle(TextRole.listSubtitle)
+                    LightPillLabel(action)
+                }
+                .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                .multilineTextAlignment(.leading)
+                .padding(Tokens.Sizes.globalScreenMargin)
+            }
+            .frame(width: Tokens.Sizes.globalFriendCardWidth, height: Tokens.Sizes.globalFriendCardHeight)
+            .clipShape(DSShape.rounded(Tokens.Radii.globalCard))
+        }
+        .frame(width: Tokens.Sizes.globalFriendCardWidth, alignment: .leading)
+        .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(Copy.groupsScreenHeaderAccessibilityLabel(groupName: group.name)))
+        .accessibilityLabel(Text([title, line, action].joined(separator: ", "))) // provenance-ok: joins copy strings
         .accessibilityAddTraits(.isButton)
-        .accessibilityIdentifier("groups.screen.capsule")
-    }
-}
-
-/// A photo card: full width minus `groups.screen.size.cardMarginH`, height `groups.screen.size.cardHeight`, corners
-/// `groups.screen.radius.card`, photo aspect-fill. Centred time (text role `overlayTime`, white) and caption (text
-/// role `listSubtitle`, white); author avatar `size.global.avatarHeader` + first name at the bottom-leading corner and a
-/// ••• circle (`icon.global.more` on `color.global.controlRaised`, approximation) at the bottom-trailing corner, both
-/// `groups.screen.size.cardGap` from the edges (insets not measured, spec Gaps). No scrim (`color.global.scrim` is
-/// BLOCKED): overlay contrast depends on the photo.
-struct PhotoCard: View {
-    let post: PostWithMedia
-    let author: Profile?
-    let isOwn: Bool
-    let onOpen: () -> Void
-    let onReport: () -> Void
-    let onBlock: () -> Void
-
-    private var time: String { AccountFormats.time(post.post.createdAt) }
-
-    var body: some View {
-        Button(action: onOpen) {
-            Color.clear
-                .frame(maxWidth: .infinity)
-                .frame(height: Tokens.Sizes.groupsScreenSizeCardHeight)
-                .overlay {
-                    StorageImage(path: post.media?.imagePath(for: .display)) {
-                        Tokens.Colors.globalControl
-                    }
-                }
-                .overlay {
-                    VStack(spacing: 0) {
-                        Text(time)
-                            .dsTextStyle(TextRole.overlayTime)
-                        if let caption = post.post.caption, !caption.isEmpty {
-                            Text(caption)
-                                .dsTextStyle(TextRole.listSubtitle)
-                                .lineLimit(2)
-                        }
-                    }
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, Tokens.Sizes.groupsScreenSizeCardGap)
-                }
-                .overlay(alignment: .bottomLeading) {
-                    HStack {
-                        AvatarView(path: author?.avatarPath, diameter: Tokens.Sizes.globalAvatarHeader)
-                        if let name = author?.firstName {
-                            Text(name)
-                                .dsTextStyle(GroupScreenStyle.cardName)
-                                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                                .lineLimit(1)
-                        }
-                    }
-                    .padding(Tokens.Sizes.groupsScreenSizeCardGap)
-                }
-                .clipShape(RoundedRectangle(cornerRadius: Tokens.Radii.groupsScreenRadiusCard))
-        }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(Copy.groupsScreenPhotoAccessibilityLabel(firstName: author?.firstName ?? "", time: time)))
-        .accessibilityValue(Text(post.post.caption ?? ""))
-        .accessibilityAddTraits(.isImage)
-        .overlay(alignment: .bottomTrailing) {
-            moreMenu
-                .padding(Tokens.Sizes.groupsScreenSizeCardGap - (Tokens.Sizes.globalMinTouchTargetIos - Tokens.Sizes.globalAvatarHeader) / 2)
-        }
-        .accessibilityIdentifier("groups.screen.card")
-    }
-
-    /// Native menu (`safety.block.layout.menu`): others' photos "Report…" / "Block {first_name}"; own photos "Open".
-    private var moreMenu: some View {
-        Menu {
-            if isOwn {
-                Button(Copy.groupsScreenPhotoMenuOpen, action: onOpen)
-            } else {
-                Button(Copy.groupsScreenPhotoMenuReport, systemImage: Tokens.Icons.globalReport, role: .destructive, action: onReport)
-                Button(Copy.groupsScreenPhotoMenuBlock(firstName: author?.firstName ?? ""), role: .destructive, action: onBlock)
-            }
-        } label: {
-            Image(systemName: Tokens.Icons.globalMore)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                .frame(width: Tokens.Sizes.globalAvatarHeader, height: Tokens.Sizes.globalAvatarHeader)
-                .background(Tokens.Colors.globalControlRaised, in: Circle())
-                .frame(width: Tokens.Sizes.globalMinTouchTargetIos, height: Tokens.Sizes.globalMinTouchTargetIos)
-                .contentShape(Rectangle())
-        }
-        .accessibilityLabel(Text(Copy.groupsScreenPhotoMoreAccessibilityLabel))
-    }
-}
-
-/// A memory entry row on the feed (`MemoryEntryContent`). No entry row was observed in Yope, so it takes the groups.list
-/// card's look — **approximation**: fill `groups.list.color.card`, corners `radius.global.card`, min height
-/// `groups.list.size.cardHeight`, insets `groups.list.size.avatarInset`, title `listTitle` / `color.global.textPrimary`,
-/// subtitle `listSubtitle` / `color.global.textSecondary`; the year story's `year.story.entry.button` is a light pill label
-/// (`.card` metrics). `groups.screen.size.cardGap` below it, so a hidden entry leaves no gap.
-struct MemoryEntryCard: View {
-    let content: MemoryEntryContent
-
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(content.title)
-                    .dsTextStyle(TextRole.listTitle)
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                Text(content.subtitle)
-                    .dsTextStyle(TextRole.listSubtitle)
-                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
-            }
-            Spacer(minLength: 0)
-            if let button = content.buttonTitle {
-                LightPillLabel(button, metrics: .card)
-            }
-        }
-        .padding(.horizontal, Tokens.Sizes.groupsListSizeAvatarInset)
-        .frame(minHeight: Tokens.Sizes.groupsListSizeCardHeight)
-        .background(Tokens.Colors.groupsListColorCard, in: RoundedRectangle(cornerRadius: Tokens.Radii.globalCard))
-        .contentShape(RoundedRectangle(cornerRadius: Tokens.Radii.globalCard))
-        .accessibilityElement(children: .combine)
-        .padding(.bottom, Tokens.Sizes.groupsScreenSizeCardGap)
-    }
-}
-
-/// "{first_name} joined" system pill between cards (BI): capsule in `color.global.control`, avatar
-/// `size.global.avatarSmall` leading, text role `listSubtitle` in `color.global.textPrimary`. Sizes were not measured:
-/// the capsule hugs the avatar and keeps its rounded end's radius after the text.
-struct JoinedPill: View {
-    let member: MemberProfile
-
-    var body: some View {
-        HStack {
-            AvatarView(path: member.profile?.avatarPath, diameter: Tokens.Sizes.globalAvatarSmall)
-            Text(Copy.groupsScreenMemberJoined(firstName: member.profile?.firstName ?? ""))
-                .dsTextStyle(TextRole.listSubtitle)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-        }
-        .padding(.trailing, Tokens.Sizes.globalAvatarSmall / 2)
-        .background(Tokens.Colors.globalControl, in: Capsule())
-        .frame(maxWidth: .infinity)
-        .accessibilityElement(children: .combine)
     }
 }

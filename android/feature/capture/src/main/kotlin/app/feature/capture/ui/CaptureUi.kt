@@ -268,8 +268,7 @@ internal fun Shutter(
                         },
                     )
                 }
-            }
-            .testTag("shutter"),
+            },
     ) {
         ShutterDisc()
     }
@@ -490,7 +489,7 @@ private const val SECONDS_PER_MINUTE = 60L // provenance-ok: unit conversion
 private const val VOICE_DURATION_FORMAT = "%d:%02d" // provenance-ok: chat.voice.layout.durationFormat pattern m:ss
 
 /** The hold gestures of [VoiceCapsule] (down starts, release keeps, cancel discards). */
-internal interface VoiceGestures {
+interface VoiceGestures {
     fun down()
     fun release()
     fun cancel()

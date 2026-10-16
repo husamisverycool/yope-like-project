@@ -17,8 +17,14 @@ final class MemoryTestContext {
     let cache = MemoryCache()
     let images = MemoryTestImages()
     let defaults: UserDefaults
+    /// C-26 confirmations (iOS: announced; the last one is kept).
+    let toasts = ToastCenter()
+    /// VoiceOver running (the year story starts paused).
+    var isVoiceOverRunning = false
     private(set) var haptics: [DSHaptic] = []
     private(set) var openedGroups: [String] = []
+    private(set) var openedOnThisDay: [String] = []
+    private(set) var reports: [ReportTarget] = []
 
     /// 2026-10-15 12:00 UTC unless given.
     init(now: Date = MemoryTestContext.referenceNow, configure: (inout FixtureMemoryData.State) -> Void = { _ in }) {
@@ -44,6 +50,10 @@ final class MemoryTestContext {
             haptics: { [weak self] haptic in self?.haptics.append(haptic) },
             defaults: defaults,
             openGroup: { [weak self] id in self?.openedGroups.append(id) },
+            openOnThisDay: { [weak self] id in self?.openedOnThisDay.append(id) },
+            openReport: { [weak self] target in self?.reports.append(target) },
+            toasts: toasts,
+            isVoiceOverRunning: { [weak self] in self?.isVoiceOverRunning ?? false },
             cache: cache,
             sleep: { try await sleeper.sleep($0) }
         )
@@ -51,8 +61,11 @@ final class MemoryTestContext {
 
     /// Dependencies without a backend (config/app.json not provided).
     var unconfigured: MemoryDependencies {
-        MemoryDependencies(data: nil, images: images, haptics: { _ in }, defaults: defaults, cache: cache)
+        MemoryDependencies(data: nil, images: images, haptics: { _ in }, defaults: defaults, toasts: toasts, cache: cache)
     }
+
+    /// The last confirmation shown (C-26).
+    var lastToast: String? { toasts.message }
 
     func clearHaptics() {
         haptics.removeAll()
@@ -194,6 +207,11 @@ enum MemorySamplePhotos {
             ? CGSize(width: longSide, height: (longSide / aspect).rounded())
             : CGSize(width: (longSide * aspect).rounded(), height: longSide)
         return SamplePhotos.photo(named: name, size: size)
+    }
+
+    /// A member avatar of the scenario (`avatars/<uid>/a.jpg`), a real sample portrait.
+    static func avatar(index: Int) -> UIImage {
+        SamplePhotos.image(named: SamplePhotos.avatarName(index: index))
     }
 
     /// A square collage of the first photos (at least four, a full grid two across).

@@ -45,6 +45,7 @@ package app.ui.recap
  * On a device with a tall navigation bar the bottom row and the media page bottom move up together so the row
  * clears the bar (Retro's values are measured from the iPhone screen bottom). Status bar: light content is the
  * caller's (media surface). Haptics: close, pill and dots play `haptic.global.tap`; page swipes none.
+ * Test tags (measurements): `recap.page`, `recap.close`, `recap.dots`, `recap.pill`.
  * Snapshots: core:ui `RecapPreviewSnapshotTest` (light and dark — identical by design).
  */
 
@@ -82,6 +83,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -194,7 +196,8 @@ fun RecapPreviewScreen(
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .padding(bottom = pageBottom)
                 .clip(RoundedCornerShape(RecapPreviewDefaults.mediaPageCorner))
-                .background(Tokens.Colors.globalControlOnDeep),
+                .background(Tokens.Colors.globalControlOnDeep)
+                .testTag("recap.page"),
         ) {
             if (backdrop != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 BlurredBackdrop(backdrop, backdropBlur)
@@ -210,7 +213,8 @@ fun RecapPreviewScreen(
                 Modifier
                     .align(Alignment.TopEnd)
                     .padding(end = Dp(screen.closeCentreFromTrailing) - Tokens.Sizes.globalCircleButton / 2)
-                    .centreAt(Dp(screen.closeCentreBelowPageTop)),
+                    .centreAt(Dp(screen.closeCentreBelowPageTop))
+                    .testTag("recap.close"),
                 style = CircleButtonStyle.OnMedia,
             )
         }
@@ -230,7 +234,7 @@ fun RecapPreviewScreen(
                 Box(Modifier.align(Alignment.Center)) { RecapDotsRow(pageCount, currentPage, onPageChange, description) }
             }
             if (pill != null) {
-                RecapPillButton(pill, Modifier.align(Alignment.CenterEnd).padding(end = Tokens.Sizes.globalButtonMarginH))
+                RecapPillButton(pill, Modifier.align(Alignment.CenterEnd).padding(end = Tokens.Sizes.globalButtonMarginH).testTag("recap.pill"))
             }
         }
     }
@@ -284,7 +288,7 @@ private fun RecapDotsRow(count: Int, selected: Int, onPageChange: (Int) -> Unit,
             },
         contentAlignment = Alignment.Center,
     ) {
-        PageDots(count, selected, description, onMedia = true)
+        PageDots(count, selected, description, Modifier.testTag("recap.dots"), onMedia = true)
     }
 }
 

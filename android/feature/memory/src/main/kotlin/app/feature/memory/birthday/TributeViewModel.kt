@@ -40,8 +40,14 @@ sealed interface TributeContent {
 data class TributeState(
     val content: TributeContent = TributeContent.Loading,
     val groupName: String? = null,
+    /** The honoree's first name (the member's title "{name}'s birthday video"). */
+    val honoreeName: String? = null,
+    /** The viewer is the honoree ("Your birthday video"). */
+    val forMe: Boolean = false,
     val saving: Boolean = false,
     val toast: Toast? = null,
+    /** Add-only photo access was refused: the native alert with a Settings button. */
+    val saveDenied: Boolean = false,
 ) {
     enum class Toast { Saved, SaveFailed }
 }
@@ -114,7 +120,7 @@ class TributeViewModel(
             if (shown && (content == TributeContent.Offline || content == TributeContent.Failed)) return@launch
             _state.update { it.copy(content = content) }
             val s = _state.value
-            if (s.content is TributeContent.Ready) cache.put(cacheKey, s.copy(saving = false, toast = null)) else cache.remove(cacheKey)
+            if (s.content is TributeContent.Ready) cache.put(cacheKey, s.copy(saving = false, toast = null, saveDenied = false)) else cache.remove(cacheKey)
         }
     }
 
@@ -129,7 +135,9 @@ class TributeViewModel(
             val tribute = backend.tribute(tributeId) ?: return@attempt TributeContent.NotFound
             val delivered = tribute.deliveredAt?.let { !it.isAfter(clock.instant()) } == true
             if (tribute.honoreeId == backend.currentUserId && !delivered) return@attempt TributeContent.NotFound
-            _state.update { it.copy(groupName = backend.group(tribute.groupId)?.name) }
+            val forMe = tribute.honoreeId == backend.currentUserId
+            val honoree = if (forMe) null else backend.profiles(listOf(tribute.honoreeId)).firstOrNull()?.firstName
+            _state.update { it.copy(groupName = backend.group(tribute.groupId)?.name, honoreeName = honoree, forMe = forMe) }
             val video = tribute.videoPath
             if (tribute.status != RenderStatus.Ready || video == null) return@attempt TributeContent.Rendering
             val urls = backend.signedUrls(listOfNotNull(video, tribute.posterPath))
@@ -149,7 +157,8 @@ class TributeViewModel(
         val ready = _state.value.content as? TributeContent.Ready ?: return
         if (_state.value.saving) return
         if (!accessGranted) {
-            saveFinished(false)
+            queue.haptic(Tokens.Haptics.globalError)
+            _state.update { it.copy(saveDenied = true) }
             return
         }
         _state.update { it.copy(saving = true, toast = null) }
@@ -172,4 +181,6 @@ class TributeViewModel(
     }
 
     fun dismissToast() = _state.update { it.copy(toast = null) }
+
+    fun dismissSaveDenied() = _state.update { it.copy(saveDenied = false) }
 }

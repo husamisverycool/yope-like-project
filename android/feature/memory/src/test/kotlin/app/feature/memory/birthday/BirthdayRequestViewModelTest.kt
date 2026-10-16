@@ -70,7 +70,7 @@ class BirthdayRequestViewModelTest {
         assertEquals("newest first", "p-mine1", photos.first())
     }
 
-    @Test fun contributeFlowIsOptimisticAndTrimsTheLine() = runTest {
+    @Test fun contributeFlowSendsThenClosesTheSheetWithAToast() = runTest {
         val backend = Scenario.backend().apply { gates["contribute"] = CompletableDeferred() }
         val vm = vm(backend = backend)
         val effects = mutableListOf<MemoryEffect>()
@@ -82,17 +82,24 @@ class BirthdayRequestViewModelTest {
         vm.usePhoto()
         assertEquals(RequestPage.Message, vm.state.value.page)
         assertFalse("no line yet", vm.contribute.canSubmit)
+        vm.editMessage()
+        assertTrue("the Add a Message modal", vm.contribute.editing)
         vm.setLine("  you make every Sunday better  ")
+        vm.doneEditing()
+        assertFalse(vm.contribute.editing)
         vm.submit()
-        // Optimistic: step 3 and the own block before the server answers.
-        assertEquals(RequestPage.Done, vm.state.value.page)
-        assertEquals("p-tagged", vm.ready.contribution?.postId)
-        assertEquals("you make every Sunday better", vm.ready.contribution?.line)
+        // Sending: the capsule is busy (C-05), the sheet stays until the server answers.
+        assertTrue(vm.contribute.sending)
+        assertEquals(RequestPage.Message, vm.state.value.page)
+        assertNull(vm.ready.contribution)
         backend.gates.getValue("contribute").complete(Unit)
         assertEquals("you make every Sunday better", backend.lastContributedLine)
-        vm.done()
-        assertEquals(RequestPage.Request, vm.state.value.page)
+        assertEquals("the sheet closed", RequestPage.Request, vm.state.value.page)
         assertEquals("p-tagged", vm.ready.contribution?.postId)
+        assertEquals("you make every Sunday better", vm.ready.contribution?.line)
+        assertEquals(FlowToast.Added, vm.state.value.toast)
+        vm.toastShown()
+        assertNull(vm.state.value.toast)
         job.cancel()
         assertEquals(
             listOf(MemoryEffect.Haptic(Tokens.Haptics.globalSelect), MemoryEffect.Haptic(Tokens.Haptics.globalSend)),
@@ -110,7 +117,7 @@ class BirthdayRequestViewModelTest {
         vm.submit()
         assertEquals(RequestPage.Photo, vm.state.value.page)
         assertEquals(ContributeState.Inline.NotEligible, vm.contribute.inline)
-        assertNull("optimistic contribution rolled back", vm.ready.contribution)
+        assertNull(vm.ready.contribution)
     }
 
     @Test fun errorAndOfflineStayOnTheMessageStep() {
@@ -128,7 +135,7 @@ class BirthdayRequestViewModelTest {
         assertEquals(ContributeState.Inline.Offline, vm.contribute.inline)
         backend.online = true
         vm.submit()
-        assertEquals(RequestPage.Done, vm.state.value.page)
+        assertEquals(RequestPage.Request, vm.state.value.page)
     }
 
     @Test fun closedWhileContributing() {
@@ -148,7 +155,7 @@ class BirthdayRequestViewModelTest {
         assertTrue(vm(clock = late).ready.closed)
     }
 
-    @Test fun withdrawIsOptimisticAndRollsBack() {
+    @Test fun withdrawIsOptimisticRollsBackAndConfirms() {
         val backend = Scenario.backend()
         backend.contributions["c-1"] = app.data.model.TributeContribution("c-1", "r-1", ME, "p-mine1", "hi", Scenario.at("2026-12-01T00:00:00Z"), Scenario.at("2026-12-01T00:00:00Z"))
         val vm = vm(backend = backend)
@@ -162,6 +169,7 @@ class BirthdayRequestViewModelTest {
         vm.withdraw()
         assertNull(vm.ready.contribution)
         assertTrue(backend.contributions.isEmpty())
+        assertEquals(FlowToast.Removed, vm.state.value.toast)
     }
 
     @Test fun lineIsCappedAtTheSourcedLimit() {
@@ -189,6 +197,10 @@ class BirthdayRequestViewModelTest {
         vm.startContribution()
         vm.select("p-mine1")
         vm.usePhoto()
+        vm.editMessage()
+        vm.back()
+        assertFalse("the modal closes first", vm.contribute.editing)
+        assertEquals(RequestPage.Message, vm.state.value.page)
         vm.back()
         assertEquals(RequestPage.Photo, vm.state.value.page)
         vm.back()

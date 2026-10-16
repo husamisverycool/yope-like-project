@@ -1,123 +1,114 @@
-// Surfaces: daily.capture (+ daily.dualimage for the preview).
-// References: references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (live layout: chevron, countdown,
-// 3:4 viewfinder, flash / shutter / flip); appstore-preview-2026_timer-roll_f086-f129.png (countdown roll);
-// tiktok-bereal-7339559678604627233_shutter-press_f518-f546.jpg, _capture-seq_f540-f681.jpg, _t17.63s_black-spinner-prompt.png,
-// _t18.97s_back-photo-prompt.png (capture sequence); _t21.30s_preview-keep-smiling.png (preview: retake, chip, SEND);
-// references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (preview geometry);
-// references/auto/bereal/help/help-21083730354333_feed-bonus-3x.png (dual image).
+// Surface: daily.capture (+ daily.dualimage in its preview). Retro has no camera: this full-screen cover is
+// composed from Retro components on the media surface (RC-12, RC-13) — C-29 sheet header with the countdown in the
+// title slot and a C-11 close circle, the photo container as viewfinder, the C-35 control row, a C-11 glass circle
+// on the photo, a C-09 pill, the C-05 capsule, C-27 / C-28 blocks. Mechanics: BeReal (window countdown, back +
+// front, sequential fallback, retake). References: references/auto/retro/store/retro-store-03.png (ST-03: header,
+// 20-pt photo gap, pill on a photo, capsule position); references/auto/retro/press/tc-2025-12-rewind-device-a.png
+// (control row, glass circle); references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (mechanics).
 package app.feature.capture.daily
 
 import android.Manifest
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import android.text.format.DateUtils
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.compose.CameraXViewfinder
-import androidx.compose.foundation.Image
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFromBaseline
+import androidx.compose.foundation.layout.paddingFrom
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.isTraversalGroup
-import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.semantics.traversalIndex
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import app.designsystem.MotionChannel
 import app.designsystem.R
-import app.designsystem.dsAnimateAlphaAsState
-import app.designsystem.dsAnimateFloatAsState
 import app.designsystem.generated.Tokens
 import app.feature.capture.camera.CameraControllers
 import app.feature.capture.camera.photoSize
 import app.feature.capture.data.CaptureDataProvider
 import app.feature.capture.data.CaptureHandoff
-import app.feature.capture.data.CaptureServices
 import app.feature.capture.sendto.decodePreview
-import app.feature.capture.ui.CaptureText
-import app.feature.capture.ui.CaptureToastHost
-import app.feature.capture.ui.CapsuleShape
-import app.feature.capture.ui.CircleIconButton
+import app.feature.capture.ui.ControlRow
+import app.feature.capture.ui.CrossfadeText
 import app.feature.capture.ui.DualImage
-import app.feature.capture.ui.EmptyStateBlock
-import app.feature.capture.ui.Glyph
-import app.feature.capture.ui.LimeToast
-import app.feature.capture.ui.MinTouchTargets
-import app.feature.capture.ui.ShutterDisc
-import app.feature.capture.ui.glyphTopToBaseline
-import app.feature.capture.ui.haptic
-import app.feature.capture.ui.springWithResponse
+import app.feature.capture.ui.MediaControlCircle
+import app.feature.capture.ui.MediaEmptyState
+import app.feature.capture.ui.MediaLabelPill
+import app.feature.capture.ui.MediaProgressBlock
+import app.feature.capture.ui.MediaSheetHeader
+import app.feature.capture.ui.OnMedia
+import app.feature.capture.ui.SheetTitleText
+import app.feature.capture.ui.Shutter
+import app.feature.capture.ui.TABULAR_DIGITS
+import app.feature.capture.ui.bottomClearance
 import app.media.MediaPermission
 import app.media.MediaPermissions
+import app.model.CountdownState
 import app.model.ServerClock
 import app.model.SessionPromptGate
 import app.push.InvitationClock
+import app.ui.components.CircleButtonStyle
+import app.ui.components.CircleIconButton
+import app.ui.components.EmptyStateAction
+import app.ui.components.PlatformToast
+import app.ui.components.PrimaryButton
+import app.ui.foundation.DsMotion
+import app.ui.foundation.FadeVisibility
+import app.ui.haptics.rememberHaptics
+import app.ui.system.SystemAlertDialog
+import app.ui.text.CapTop
+import app.ui.text.TextRoles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
-/** The daily-capture destination (full-screen cover, status bar hidden). */
+/** The daily-capture destination (full-screen cover; status bar visible, light content). */
 @Composable
 fun DailyCaptureRoute(groupId: String, invitationId: String, onDismiss: () -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val view = LocalView.current
+    val haptics = rememberHaptics()
     val vm: DailyCaptureViewModel = viewModel(key = "daily:$invitationId") {
         DailyCaptureViewModel(
             data = CaptureDataProvider.get(context),
-            tracker = CaptureServices.tracker(context),
             gate = SessionPromptGate.process,
             captureDir = CaptureHandoff.dir(context),
             groupId = groupId,
@@ -128,7 +119,6 @@ fun DailyCaptureRoute(groupId: String, invitationId: String, onDismiss: () -> Un
     }
     val state by vm.ui.collectAsStateWithLifecycle()
     val controller = remember(lifecycleOwner) { CameraControllers.factory(context, lifecycleOwner) }
-    val scope = rememberCoroutineScope()
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         MediaPermissions.markRequested(context, MediaPermission.Camera)
         vm.onPermission(granted)
@@ -143,44 +133,44 @@ fun DailyCaptureRoute(groupId: String, invitationId: String, onDismiss: () -> Un
         }
     }
     LaunchedEffect(vm) {
-        vm.event.collect {
-            if (it == DailyCaptureViewModel.Event.Sent) {
-                // Optimistic: queued = sent (it uploads in the background); a later failure shows the
-                // error toast with haptic.global.error.
-                view.haptic(Tokens.Haptics.globalSend)
-                onDismiss()
+        vm.event.collect { event ->
+            when (event) {
+                is DailyCaptureViewModel.Event.Sent -> {
+                    haptics.perform(Tokens.Haptics.globalSend)
+                    event.groupName?.let { PlatformToast.show(context, context.getString(R.string.camera_sendto_toast_postedone, it)) }
+                    onDismiss()
+                }
+                DailyCaptureViewModel.Event.Failed -> haptics.perform(Tokens.Haptics.globalError)
             }
         }
     }
-    // Status bar hidden while the cover shows (as in the reference).
-    DisposableEffect(view) {
-        val window = (view.context as? Activity)?.window
-        val insets = window?.let { WindowCompat.getInsetsController(it, view) }
-        insets?.hide(WindowInsetsCompat.Type.statusBars())
-        onDispose {
-            insets?.show(WindowInsetsCompat.Type.statusBars())
-            kotlinx.coroutines.MainScope().launch { runCatching { controller.unbind() } }
-        }
+    DisposableEffect(controller) {
+        onDispose { kotlinx.coroutines.MainScope().launch { runCatching { controller.unbind() } } }
     }
-    BackHandler { vm.discard(); onDismiss() }
+    BackHandler(enabled = !state.sending) { vm.discard(); onDismiss() }
     val preview by controller.preview.collectAsStateWithLifecycle()
-    val density = LocalDensity.current
-    val targetPx = with(density) { Tokens.Layouts.DailyCaptureLayoutViewfinder.width.dp.roundToPx() }
-    val mainImage by produceState<ImageBitmap?>(null, state.main) { value = state.main?.let { withContext(Dispatchers.IO) { decodePreview(it, targetPx) } } }
-    val insetImage by produceState<ImageBitmap?>(null, state.inset) { value = state.inset?.let { withContext(Dispatchers.IO) { decodePreview(it, targetPx / 3) } } }
+    // Decoded at about the screen width (the frame is the screen width minus the margins).
+    val targetPx = context.resources.displayMetrics.widthPixels
+    val mainImage by produceState<Painter?>(null, state.main) {
+        value = state.main?.let { withContext(Dispatchers.IO) { decodePreview(it, targetPx) } }?.let(::BitmapPainter)
+    }
+    val insetImage by produceState<Painter?>(null, state.inset) {
+        value = state.inset?.let { withContext(Dispatchers.IO) { decodePreview(it, targetPx / INSET_DECODE_DIVISOR) } }?.let(::BitmapPainter)
+    }
 
     DailyCaptureScreen(
         state = state,
         viewfinder = { preview?.let { CameraXViewfinder(surfaceRequest = it, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop) } },
         mainImage = mainImage,
         insetImage = insetImage,
-        posterName = state.myName,
         onDismiss = { vm.discard(); onDismiss() },
         onFlash = vm::toggleFlash,
         onFlip = vm::flip,
         onShutter = vm::capture,
         onRetake = vm::retake,
         onSend = vm::send,
+        onRetrySend = vm::retrySend,
+        onDismissSendError = vm::dismissSendError,
         onOpenSettings = {
             context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         },
@@ -188,318 +178,231 @@ fun DailyCaptureRoute(groupId: String, invitationId: String, onDismiss: () -> Un
     )
 }
 
-/** The daily capture cover (stateless): live → capturing → preview. Positions per `daily.capture.layout.*`. */
+/** The inset is about a third of the main width (0.31 W): decode it that much smaller. */
+private const val INSET_DECODE_DIVISOR = 3 // provenance-ok: decode size only (daily.dualimage insetWidthRatio ≈ 1/3), nothing drawn from it
+
+/**
+ * The daily capture cover (stateless): live → capturing → preview on `color.global.backgroundDeep`. Header
+ * `camera.sendto.layout.header`; viewfinder `daily.capture.layout.viewfinder` (3:4, 16 margins, 18 corners, 20 below
+ * the close circle); the control row centred between the viewfinder and the safe-area bottom; in the preview the
+ * C-05 capsule at `camera.sendto.size.sendButtonBottom`.
+ */
 @Composable
 fun DailyCaptureScreen(
     state: DailyCaptureViewModel.UiState,
     viewfinder: @Composable () -> Unit,
-    mainImage: ImageBitmap?,
-    insetImage: ImageBitmap?,
-    posterName: String?,
+    mainImage: Painter?,
+    insetImage: Painter?,
     onDismiss: () -> Unit,
     onFlash: () -> Unit,
     onFlip: () -> Unit,
     onShutter: () -> Unit,
     onRetake: () -> Unit,
     onSend: () -> Unit,
+    onRetrySend: () -> Unit,
+    onDismissSendError: () -> Unit,
     onOpenSettings: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
-) = MinTouchTargets {
-    val text = Tokens.Colors.dailyCaptureColorText
-    val vf = Tokens.Layouts.DailyCaptureLayoutViewfinder
-    val capturing = state.phase == DailyCaptureViewModel.Phase.Capturing
+) {
     val previewing = state.phase == DailyCaptureViewModel.Phase.Preview
-
-    BoxWithConstraints(
+    val capturing = state.phase == DailyCaptureViewModel.Phase.Capturing
+    val denied = state.permission == DailyCaptureViewModel.Permission.Denied
+    val unavailable = !denied && state.session == DailyCaptureViewModel.Session.Unavailable
+    val controls = !denied && !unavailable && state.permission == DailyCaptureViewModel.Permission.Granted
+    val margin = Tokens.Sizes.globalScreenMargin
+    val navBar = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    Column(
         modifier
             .fillMaxSize()
             .background(Tokens.Colors.globalBackgroundDeep)
-            .semantics { isTraversalGroup = true }
+            .windowInsetsPadding(WindowInsets.statusBars)
             .testTag("daily.capture"),
     ) {
-        val width = maxWidth
-        val vfWidth = width - vf.sideMargin.dp * 2
-        val vfHeight = vfWidth / vf.aspect
-
-        // Dismiss chevron.
-        val d = Tokens.Layouts.DailyCaptureLayoutDismiss
-        val chevron = Tokens.Sizes.globalMinTouchTargetAndroid
-        CircleIconButton(
-            icon = Tokens.Icons.globalChevronDown,
-            contentDescription = stringResource(R.string.daily_capture_a11y_dismiss),
-            diameter = chevron,
-            fill = null,
-            tint = text,
-            onClick = onDismiss,
-            modifier = Modifier.offset(x = d.centerFromLeading.dp - chevron / 2, y = d.centerFromTop.dp - chevron / 2).semantics { traversalIndex = 0f }.testTag("daily.dismiss"),
-        )
-
-        // Countdown: digit tops at countdown.digitsTop, centred.
-        val toBaseline = glyphTopToBaseline(Tokens.FontSizes.dailyCaptureFontSizeCountdown, Tokens.FontWeights.dailyCaptureFontWeightCountdown, DIGIT_SAMPLE)
-        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
-            CountdownText(
-                countdown = state.countdown,
-                modifier = Modifier
-                    .paddingFromBaseline(top = Tokens.Layouts.DailyCaptureLayoutCountdown.digitsTop.dp + toBaseline)
-                    .semantics { traversalIndex = 1f },
+        MediaSheetHeader(
+            trailing = {
+                CircleIconButton(Tokens.Icons.globalClose, stringResource(R.string.daily_capture_a11y_dismiss), onDismiss, Modifier.testTag("daily.dismiss"), style = CircleButtonStyle.OnMedia, enabled = !state.sending)
+            },
+        ) { centre -> TitleSlot(state.countdown, state.groupName, centre) }
+        Spacer(Modifier.height(Dp(Tokens.Layouts.CameraSendtoLayoutPreview.topBelowHeaderCircle)))
+        BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+            // The frame keeps one size through live → preview: room for the control row (shutter + a margin above
+            // and below) and for the capsule at its measured bottom.
+            val below = maxOf(
+                Tokens.Sizes.cameraCaptureSizeShutterOuter + margin * 2 + navBar,
+                Tokens.Sizes.globalButtonHeight + bottomClearance(Tokens.Sizes.cameraSendtoSizeSendButtonBottom) + margin,
             )
+            val vfHeight = minOf((maxWidth - margin * 2) / Tokens.Layouts.DailyCaptureLayoutViewfinder.aspect, maxHeight - below).coerceAtLeast(0.dp)
+            val vfWidth = vfHeight * Tokens.Layouts.DailyCaptureLayoutViewfinder.aspect
+            Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+                Frame(state, viewfinder, mainImage, insetImage, denied, unavailable, onRetake, onOpenSettings, onRetry, Modifier.size(vfWidth, vfHeight))
+                Box(Modifier.weight(1f).fillMaxWidth()) {
+                    FadeVisibility(visible = controls && !previewing && !capturing, modifier = Modifier.fillMaxSize().padding(bottom = navBar)) {
+                        ControlRow(
+                            modifier = Modifier.fillMaxSize(),
+                            leading = if (state.hasFlash) {
+                                {
+                                    MediaControlCircle(
+                                        if (state.flashOn) Tokens.Icons.globalFlashOn else Tokens.Icons.globalFlashOff,
+                                        stringResource(R.string.daily_capture_a11y_flash),
+                                        onFlash,
+                                        Modifier.testTag("daily.flash"),
+                                        stateDescription = stringResource(if (state.flashOn) R.string.daily_capture_a11y_flashon else R.string.daily_capture_a11y_flashoff),
+                                    )
+                                }
+                            } else {
+                                null
+                            },
+                            trailing = { MediaControlCircle(Tokens.Icons.globalFlip, stringResource(R.string.daily_capture_a11y_flip), onFlip, Modifier.testTag("daily.flip")) },
+                        ) {
+                            Shutter(stringResource(R.string.daily_capture_a11y_shutter), onTap = onShutter, modifier = Modifier.testTag("daily.shutter"))
+                        }
+                    }
+                    FadeVisibility(visible = previewing, modifier = Modifier.align(Alignment.BottomCenter)) {
+                        OnMedia {
+                            PrimaryButton(
+                                text = stringResource(R.string.daily_capture_send),
+                                onClick = onSend,
+                                loading = state.sending,
+                                onMedia = true,
+                                modifier = Modifier
+                                    .padding(horizontal = Tokens.Sizes.globalButtonMarginH)
+                                    .padding(bottom = bottomClearance(Tokens.Sizes.cameraSendtoSizeSendButtonBottom))
+                                    .testTag("daily.send"),
+                            )
+                        }
+                    }
+                }
+            }
         }
+    }
+    state.sendFailedOffline?.let { offline ->
+        SystemAlertDialog(
+            title = stringResource(R.string.camera_sendto_error_sendfailed),
+            text = stringResource(if (offline) R.string.camera_sendto_error_offline else R.string.camera_sendto_error_generic),
+            confirmLabel = stringResource(R.string.camera_sendto_error_retry),
+            onConfirm = onRetrySend,
+            dismissLabel = stringResource(R.string.camera_sendto_cancel),
+            onDismiss = onDismissSendError,
+        )
+    }
+}
 
-        // Viewfinder / capture area / preview image.
-        Box(
-            Modifier
-                .offset(x = vf.sideMargin.dp, y = vf.top.dp)
-                .size(vfWidth, vfHeight)
-                .semantics { traversalIndex = 2f },
-        ) {
-            if (previewing) {
+/**
+ * The title slot: while the window is open the countdown `daily.capture.countdown` (MM:SS, text role `sheetTitle`,
+ * monospaced digits, changed digits cross-fade); after `closes_at` the group name in the same role, cross-faded.
+ * TalkBack reads the remaining time as the platform's elapsed-time string.
+ */
+@Composable
+private fun TitleSlot(countdown: CountdownState.Open?, groupName: String?, capMiddle: Dp) {
+    val style = TextRoles.sheetTitle.copy(fontFeatureSettings = TABULAR_DIGITS)
+    Crossfade(countdown != null, animationSpec = DsMotion.crossfade(), label = "titleSlot") { open ->
+        if (open && countdown != null) {
+            val seconds = countdown.remainingSeconds
+            CrossfadeText(
+                countdownText(seconds),
+                style = style,
+                color = Tokens.Colors.globalTextOnMedia,
+                modifier = Modifier
+                    .paddingFrom(FirstBaseline, before = capMiddle + CapTop.height(style) / 2)
+                    .clearAndSetSemantics {
+                        heading()
+                        stateDescription = DateUtils.formatElapsedTime(seconds)
+                    }
+                    .testTag("daily.countdown"),
+            )
+        } else if (groupName != null) {
+            SheetTitleText(groupName, capMiddle, Tokens.Colors.globalTextOnMedia)
+        }
+    }
+}
+
+/** MM:SS of [seconds] through the copy pattern `daily.capture.countdown` ("{mm}:{ss}"). */
+@Composable
+internal fun countdownText(seconds: Long): String {
+    val m = seconds / SECONDS_PER_MINUTE
+    val s = seconds % SECONDS_PER_MINUTE
+    return stringResource(R.string.daily_capture_countdown, String.format(Locale.ROOT, TWO_DIGITS, m), String.format(Locale.ROOT, TWO_DIGITS, s))
+}
+
+private const val SECONDS_PER_MINUTE = 60L // provenance-ok: unit conversion
+private const val TWO_DIGITS = "%02d" // provenance-ok: MM:SS digit format of the copy pattern
+
+/**
+ * The frame (`daily.capture.layout.viewfinder`): live preview (fading in after the first frame), the capturing
+ * block (C-28 indicator + `daily.capture.prompt`), the preview — the dual image with the frame's corners, the
+ * retake glass circle (C-11 `Glass`, 40) `size.global.badgeInset` from the top and trailing edges, the audience pill
+ * (C-09 dark, `icon.global.group`) centred `camera.sendto.layout.messageField.bottomInset` above the bottom — or the
+ * C-27 blocks of `camera.capture` (denied / unavailable).
+ */
+@Composable
+private fun Frame(
+    state: DailyCaptureViewModel.UiState,
+    viewfinder: @Composable () -> Unit,
+    mainImage: Painter?,
+    insetImage: Painter?,
+    denied: Boolean,
+    unavailable: Boolean,
+    onRetake: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onRetry: () -> Unit,
+    modifier: Modifier,
+) {
+    val previewing = state.phase == DailyCaptureViewModel.Phase.Preview
+    val capturing = state.phase == DailyCaptureViewModel.Phase.Capturing
+    Box(
+        modifier
+            .clip(RoundedCornerShape(Tokens.Radii.globalViewfinder))
+            .background(Tokens.Colors.globalBackgroundDeep)
+            .testTag("daily.viewfinder"),
+        contentAlignment = Alignment.Center,
+    ) {
+        FadeVisibility(
+            visible = !previewing && !capturing && state.permission == DailyCaptureViewModel.Permission.Granted && state.session == DailyCaptureViewModel.Session.Live,
+            modifier = Modifier.fillMaxSize(),
+        ) { Box(Modifier.fillMaxSize()) { viewfinder() } }
+        FadeVisibility(visible = capturing) { MediaProgressBlock(stringResource(R.string.daily_capture_prompt)) }
+        FadeVisibility(visible = previewing, modifier = Modifier.fillMaxSize()) {
+            Box(Modifier.fillMaxSize()) {
                 DualImage(
                     main = mainImage,
                     inset = insetImage,
-                    contentDescription = posterName?.let { stringResource(R.string.daily_dualimage_a11y_label, it) },
-                    modifier = Modifier.fillMaxWidth().testTag("daily.dualimage"),
+                    contentDescription = stringResource(R.string.daily_dualimage_a11y_label, state.myName.orEmpty()),
+                    cornerRadius = Tokens.Radii.globalViewfinder,
+                    modifier = Modifier.fillMaxSize().testTag("daily.dualimage"),
                 )
-                PreviewOverlay(state.groupName, onRetake)
-            } else {
-                LiveArea(state, capturing, viewfinder, mainImage, onOpenSettings, onRetry)
+                CircleIconButton(
+                    Tokens.Icons.globalClose,
+                    stringResource(R.string.daily_capture_a11y_retake),
+                    onRetake,
+                    Modifier.align(Alignment.TopEnd).padding(top = Tokens.Sizes.globalBadgeInset, end = Tokens.Sizes.globalBadgeInset).testTag("daily.retake"),
+                    style = CircleButtonStyle.Glass,
+                    enabled = !state.sending,
+                )
+                state.groupName?.let { name ->
+                    MediaLabelPill(
+                        stringResource(R.string.daily_capture_audience, name),
+                        Tokens.Icons.globalGroup,
+                        Modifier.align(Alignment.BottomCenter).padding(bottom = Dp(Tokens.Layouts.CameraSendtoLayoutMessageField.bottomInset)).testTag("daily.audience"),
+                    )
+                }
             }
         }
-
-        if (previewing) {
-            SendLabel(onSend, Modifier.padding(top = vf.top.dp + vfHeight))
-        } else if (state.permission == DailyCaptureViewModel.Permission.Granted && state.session != DailyCaptureViewModel.Session.Unavailable) {
-            ControlRow(state, capturing, onFlash, onFlip, onShutter)
-        }
-
-        if (state.sendError != null) {
-            Box(Modifier.fillMaxWidth().padding(top = Tokens.Layouts.CameraSendtoLayoutToast.top.dp)) {
-                LimeToast(
-                    text = stringResource(if (state.sendError == app.data.error.DataError.Network) R.string.camera_sendto_error_offline else R.string.camera_sendto_error_sendfailed),
-                    actionLabel = stringResource(R.string.camera_sendto_error_retry),
-                    onAction = onSend,
-                )
-            }
-        }
-        CaptureToastHost()
-    }
-}
-
-@Composable
-private fun LiveArea(
-    state: DailyCaptureViewModel.UiState,
-    capturing: Boolean,
-    viewfinder: @Composable () -> Unit,
-    firstImage: ImageBitmap?,
-    onOpenSettings: () -> Unit,
-    onRetry: () -> Unit,
-) {
-    val vf = Tokens.Layouts.DailyCaptureLayoutViewfinder
-    val seq = Tokens.Layouts.DailyCaptureLayoutCaptureSequence
-    val text = Tokens.Colors.dailyCaptureColorText
-    // Capturing: the viewfinder fades to black, then spinner + prompt; the first photo fades in behind them.
-    val blackout by dsAnimateAlphaAsState(if (capturing) 1f else 0f, springWithResponse(seq.viewfinderFadeOut).spec(), label = "blackout") // provenance-ok: animation debug label (tooling only)
-    val firstIn by dsAnimateAlphaAsState(if (capturing && state.firstTaken) 1f else 0f, springWithResponse(seq.backPhotoFadeIn).spec(), label = "firstIn") // provenance-ok: animation debug label (tooling only)
-    Box(
-        Modifier
-            .fillMaxSize()
-            .clip(RoundedCornerShape(vf.cornerRadius.dp))
-            .background(Tokens.Colors.globalBackgroundDeep)
-            .testTag("daily.viewfinder"),
-    ) {
-        when {
-            state.permission == DailyCaptureViewModel.Permission.Denied -> EmptyStateBlock(
+        FadeVisibility(visible = denied) {
+            MediaEmptyState(
                 title = stringResource(R.string.camera_capture_denied_title),
                 detail = stringResource(R.string.camera_capture_denied_detail),
-                buttonLabel = stringResource(R.string.camera_capture_denied_button),
-                onButton = onOpenSettings,
-                modifier = Modifier.align(Alignment.Center),
+                action = EmptyStateAction(stringResource(R.string.camera_capture_denied_button), onOpenSettings),
+                icon = Tokens.Icons.globalCamera,
             )
-            state.session == DailyCaptureViewModel.Session.Unavailable -> EmptyStateBlock(
+        }
+        FadeVisibility(visible = unavailable) {
+            MediaEmptyState(
                 title = stringResource(R.string.camera_capture_unavailable_title),
                 detail = stringResource(R.string.camera_capture_unavailable_detail),
-                buttonLabel = stringResource(R.string.camera_capture_unavailable_button),
-                onButton = onRetry,
-                modifier = Modifier.align(Alignment.Center),
-            )
-            state.permission == DailyCaptureViewModel.Permission.Granted -> {
-                viewfinder()
-                Box(Modifier.fillMaxSize().alpha(blackout).background(Tokens.Colors.globalBackgroundDeep))
-                if (firstImage != null) {
-                    Image(firstImage, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().alpha(firstIn))
-                }
-                if (capturing) {
-                    Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator(color = text, modifier = Modifier.size(Tokens.Sizes.dailyCaptureSizeProgress).testTag("daily.progress"))
-                        Spacer(Modifier.height(Tokens.Layouts.DailyCaptureLayoutPrompt.gapBelowSpinner.dp))
-                        BasicText(
-                            stringResource(R.string.daily_capture_prompt),
-                            style = CaptureText.style(Tokens.FontSizes.dailyCaptureFontSizePrompt, null).merge(TextStyle(color = text)),
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ControlRow(state: DailyCaptureViewModel.UiState, capturing: Boolean, onFlash: () -> Unit, onFlip: () -> Unit, onShutter: () -> Unit) {
-    val sh = Tokens.Layouts.DailyCaptureLayoutShutter
-    val side = Tokens.Layouts.DailyCaptureLayoutSideControls
-    val seq = Tokens.Layouts.DailyCaptureLayoutCaptureSequence
-    val text = Tokens.Colors.dailyCaptureColorText
-    var pressed by remember { mutableStateOf(false) }
-    // Press → pressScale (press ms); capturing → the shutter shrinks to 0 (controlsOut ms); flash and flip go.
-    val scale by dsAnimateFloatAsState(
-        targetValue = when {
-            capturing -> 0f
-            pressed -> seq.pressScale
-            else -> 1f
-        },
-        animationSpec = springWithResponse(if (capturing) seq.controlsOut else seq.press).spec(),
-        channel = MotionChannel.Movement,
-        label = "dailyShutter", // provenance-ok: animation debug label (tooling only)
-    )
-    val controlsAlpha by dsAnimateAlphaAsState(if (capturing) 0f else 1f, springWithResponse(seq.controlsOut).spec(), label = "controls") // provenance-ok: animation debug label (tooling only)
-    val flashLabel = stringResource(R.string.daily_capture_a11y_flash)
-    val flashValue = stringResource(if (state.flashOn) R.string.daily_capture_a11y_flashon else R.string.daily_capture_a11y_flashoff)
-    val shutterLabel = stringResource(R.string.daily_capture_a11y_shutter)
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        val centerY = maxHeight - sh.centerFromBottom.dp
-        val touch = Tokens.Sizes.globalMinTouchTargetAndroid
-        if (state.hasFlash) {
-            Box(
-                Modifier
-                    .offset(x = side.flashCenterFromLeading.dp - touch / 2, y = centerY - touch / 2)
-                    .size(touch)
-                    .alpha(controlsAlpha)
-                    .clickable(enabled = !capturing, onClick = onFlash)
-                    .semantics {
-                        contentDescription = flashLabel
-                        stateDescription = flashValue
-                        role = Role.Button
-                        traversalIndex = 3f
-                    }
-                    .testTag("daily.flash"),
-                contentAlignment = Alignment.Center,
-            ) { Glyph(if (state.flashOn) Tokens.Icons.globalFlashOn else Tokens.Icons.globalFlashOff, text, null) }
-        }
-        Box(
-            Modifier
-                .offset(x = maxWidth / 2 - sh.outer.dp / 2, y = centerY - sh.outer.dp / 2)
-                .size(sh.outer.dp)
-                .graphicsLayer { scaleX = scale; scaleY = scale }
-                .pointerInput(capturing) {
-                    if (!capturing) detectTapGestures(onPress = { pressed = true; tryAwaitRelease(); pressed = false }, onTap = { onShutter() })
-                }
-                .semantics {
-                    contentDescription = shutterLabel
-                    role = Role.Button
-                    onClick { onShutter(); true }
-                    traversalIndex = 4f
-                }
-                .testTag("daily.shutter"),
-        ) {
-            ShutterDisc(
-                outer = sh.outer.dp,
-                ring = sh.ring.dp,
-                disc = sh.disc.dp,
-                ringColor = Tokens.Colors.globalSurfaceLight,
-                gapColor = Tokens.Colors.globalBackgroundDeep,
-                discColor = Tokens.Colors.globalSurfaceLight,
+                action = EmptyStateAction(stringResource(R.string.camera_capture_unavailable_button), onRetry),
+                icon = Tokens.Icons.globalCamera,
             )
         }
-        CircleIconButton(
-            icon = Tokens.Icons.globalFlip,
-            contentDescription = stringResource(R.string.daily_capture_a11y_flip),
-            diameter = touch,
-            fill = null,
-            tint = text,
-            onClick = { if (!capturing) onFlip() },
-            modifier = Modifier
-                .offset(x = maxWidth - side.flipCenterFromTrailing.dp - touch / 2, y = centerY - touch / 2)
-                .alpha(controlsAlpha)
-                .semantics { traversalIndex = 5f }
-                .testTag("daily.flip"),
-        )
     }
 }
-
-/** Retake ✕ (top-trailing) and the audience chip (bottom centre) over the preview image. */
-@Composable
-private fun PreviewOverlay(groupName: String?, onRetake: () -> Unit) {
-    val r = Tokens.Layouts.DailyCaptureLayoutRetake
-    val chip = Tokens.Layouts.DailyCaptureLayoutAudienceChip
-    val text = Tokens.Colors.dailyCaptureColorText
-    Box(Modifier.fillMaxSize()) {
-        // Fill daily.capture.color.overlayControl (backdrop blur radius not tokenized: tint only).
-        CircleIconButton(
-            icon = Tokens.Icons.globalClose,
-            contentDescription = stringResource(R.string.daily_capture_a11y_retake),
-            diameter = r.diameter.dp,
-            fill = Tokens.Colors.dailyCaptureColorOverlayControl,
-            tint = text,
-            onClick = onRetake,
-            glyphSize = r.glyph.dp,
-            modifier = Modifier.align(Alignment.TopEnd).padding(top = r.inset.dp, end = r.inset.dp).semantics { traversalIndex = 3f }.testTag("daily.retake"),
-        )
-        if (groupName != null) {
-            Row(
-                Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = chip.bottomInset.dp)
-                    .height(chip.height.dp)
-                    .clip(CapsuleShape)
-                    .background(Tokens.Colors.dailyCaptureColorOverlayControl)
-                    .padding(start = chip.paddingLeading.dp, end = chip.paddingTrailing.dp)
-                    .semantics(mergeDescendants = true) { traversalIndex = 4f }
-                    .testTag("daily.chip"),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(chip.glyphToText.dp),
-            ) {
-                Glyph(Tokens.Icons.globalGroup, text, null, Modifier.clearAndSetSemantics { })
-                BasicText(
-                    stringResource(R.string.daily_capture_audience, groupName),
-                    style = CaptureText.style(Tokens.FontSizes.dailyCaptureFontSizeChip, null).merge(TextStyle(color = text)),
-                    maxLines = 1,
-                )
-            }
-        }
-    }
-}
-
-/** SEND + the right-pointing triangle, centred, cap top `capTopBelowImage` under the image. */
-@Composable
-private fun SendLabel(onSend: () -> Unit, modifier: Modifier) {
-    val s = Tokens.Layouts.DailyCaptureLayoutSend
-    val text = Tokens.Colors.dailyCaptureColorText
-    val label = stringResource(R.string.daily_capture_send)
-    val a11y = stringResource(R.string.daily_capture_a11y_send)
-    val toBaseline = glyphTopToBaseline(Tokens.FontSizes.dailyCaptureFontSizeSend, Tokens.FontWeights.dailyCaptureFontWeightSend, label)
-    Box(modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
-        Row(
-            Modifier
-                .clickable(onClick = onSend)
-                .testTag("daily.send")
-                .clearAndSetSemantics {
-                    contentDescription = a11y
-                    role = Role.Button
-                    traversalIndex = 5f
-                    onClick { onSend(); true }
-                },
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            BasicText(
-                label,
-                style = CaptureText.style(Tokens.FontSizes.dailyCaptureFontSizeSend, Tokens.FontWeights.dailyCaptureFontWeightSend).merge(TextStyle(color = text)),
-                modifier = Modifier.paddingFromBaseline(top = s.capTopBelowImage.dp + toBaseline),
-            )
-            Spacer(Modifier.width(s.glyphGap.dp))
-            Glyph(Tokens.Icons.globalPlay, text, s.glyph.dp, Modifier.padding(top = s.capTopBelowImage.dp))
-        }
-    }
-}
-
-/** Digit used to place the countdown by its digit top. */
-private const val DIGIT_SAMPLE = "0" // provenance-ok: glyph sample for measuring digit height

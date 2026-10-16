@@ -63,6 +63,8 @@ class DataGraphAccountBackend(private val graph: DataGraph) : AccountBackend {
     override suspend fun me(): Profile = graph.profiles.me()
     override suspend fun updateDisplayName(name: String): Profile = graph.profiles.updateProfile(displayName = name)
     override suspend fun setAvatar(jpeg: File): Profile = graph.profiles.setAvatar(jpeg)
+    override suspend fun removeAvatar(): Profile = graph.profiles.updateProfile(clearAvatar = true)
+    override suspend fun birthday(): LocalDate? = graph.profiles.privateProfile()?.takeIf { it.birthdayOptIn }?.birthday
     override fun currentPhone(): String? = graph.client.auth.currentUserOrNull()?.phone?.takeIf { it.isNotBlank() }?.let { if (it.startsWith("+")) it else "+$it" }
 
     override suspend fun signedUrls(paths: Collection<String>): Map<String, String> = graph.signedUrls.urls(paths)
@@ -146,6 +148,8 @@ class UnconfiguredAccountBackend : AccountBackend {
     override suspend fun me(): Profile = fail()
     override suspend fun updateDisplayName(name: String): Profile = fail()
     override suspend fun setAvatar(jpeg: File): Profile = fail()
+    override suspend fun removeAvatar(): Profile = fail()
+    override suspend fun birthday(): LocalDate? = fail()
     override fun currentPhone(): String? = null
     override suspend fun signedUrls(paths: Collection<String>): Map<String, String> = emptyMap()
     override suspend fun profiles(ids: Collection<String>): List<Profile> = fail()

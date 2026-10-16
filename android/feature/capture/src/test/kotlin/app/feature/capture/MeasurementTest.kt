@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -64,7 +65,7 @@ class MeasurementTest {
         file.writeText(out.toString(2))
     }
 
-    private val photo get() = Images.photo(900, 1240, 0).asImageBitmap()
+    private val photo get() = Images.photo(900, 1200, 0).asImageBitmap()
 
     private companion object {
         const val SETTLE_MS = 1_000L
@@ -77,7 +78,7 @@ class MeasurementTest {
         CameraScreen(
             state = CameraViewModel.UiState(permission = CameraViewModel.Permission.Granted, session = CameraViewModel.Session.Live, hasFlash = true, videoAvailable = true),
             viewfinder = { Image(photo, null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) },
-            hourText = "5:00 PM",
+            title = "Week 42",
             onShutterTap = {}, onShutterLongPress = {}, onShutterRelease = {}, onFlash = {}, onFlip = {}, onLibrary = {},
             onCoachClose = {}, onOpenSettings = {}, onRetry = {},
         )
@@ -85,18 +86,18 @@ class MeasurementTest {
 
     @Test fun sendTo() = measure(
         "camera.sendto",
-        listOf("sendto.close", "sendto.save", "sendto.title", "sendto.preview", "sendto.field", "sendto.mic", "sendto.row.g1", "sendto.row.g2", "sendto.avatar.g1", "sendto.name.g1", "sendto.check.g1", "sendto.send", "sendto.count", "sendto.toast"),
+        listOf("sendto.close", "sendto.save", "sendto.title", "sendto.preview", "sendto.message", "sendto.voice", "sendto.label", "sendto.row.g1", "sendto.row.g2", "sendto.send"),
     ) {
         SendToScreen(
             state = SendToViewModel.UiState(
-                media = CapturedMedia(MediaKind.Photo, File("x.jpg"), 900, 1240, null, false),
+                media = CapturedMedia(MediaKind.Photo, File("x.jpg"), 900, 1200, null, false),
                 groups = SendToViewModel.Groups.Loaded(listOf(group("g1", "Sunday dinners"), group("g2", "Roommates"))),
                 selected = setOf("g1", "g2"),
                 micAvailable = true,
-                sendError = app.data.error.DataError.Network,
             ),
-            chrome = SendToChrome(preview = photo, hourText = "5:00 PM"),
-            onClose = {}, onSave = {}, onCaption = {}, onMic = {}, onVoiceCoachClose = {}, onToggle = {}, onSend = {}, onCreateGroup = {}, onRetryGroups = {},
+            chrome = SendToChrome(preview = photo),
+            onClose = {}, onSave = {}, onCaption = {}, onToggle = {}, onSend = {}, onCreateGroup = {}, onRetryGroups = {},
+            onConfirmDiscard = {}, onDismissAlert = {}, onRetrySend = {},
         )
     }
 
@@ -105,29 +106,29 @@ class MeasurementTest {
         session = DailyCaptureViewModel.Session.Live,
         countdown = CountdownState.Open(T0, Duration.ofSeconds(97)),
         groupName = "Sunday dinners",
+        myName = "Ana",
         hasFlash = true,
         mode = DualCaptureMode.Concurrent,
     )
 
     @Test fun dailyLive() = measure("daily.capture.live", listOf("daily.dismiss", "daily.countdown", "daily.viewfinder", "daily.shutter", "daily.flash", "daily.flip")) {
-        DailyCaptureScreen(daily, { Image(photo, null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }, null, null, "Ana", {}, {}, {}, {}, {}, {}, {}, {})
+        DailyCaptureScreen(daily, { Image(photo, null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }, null, null, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
     }
 
-    @Test fun dailyPreview() = measure("daily.capture.preview", listOf("daily.dualimage", "daily.retake", "daily.chip", "daily.send")) {
-        DailyCaptureScreen(daily.copy(phase = DailyCaptureViewModel.Phase.Preview), {}, photo, Images.selfie(300, 400).asImageBitmap(), "Ana", {}, {}, {}, {}, {}, {}, {}, {})
+    @Test fun dailyPreview() = measure("daily.capture.preview", listOf("daily.viewfinder", "daily.dualimage", "daily.retake", "daily.audience", "daily.send")) {
+        DailyCaptureScreen(
+            daily.copy(phase = DailyCaptureViewModel.Phase.Preview), {}, BitmapPainter(photo), BitmapPainter(Images.selfie(300, 400).asImageBitmap()),
+            {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+        )
     }
 
-    @Test fun collage() = measure("collage.view", listOf("collage.back", "collage.title", "collage.dots", "collage.pager", "collage.share")) {
+    @Test fun collage() = measure("collage.view", listOf("recap.page", "recap.close", "collage.page", "recap.dots", "recap.pill")) {
         val dir = File("build/tmp/collage-measure").apply { mkdirs() }
         val pages = (1..2).map { n -> File(dir, "p$n.jpg").also { f -> f.outputStream().use { CollagePage.render(540, n).compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, it) } } }
         CollageScreen(
             state = CollageViewModel.UiState(content = CollageViewModel.Content.Ready(pages, shareable = true), date = LocalDate.of(2026, 5, 26), groupName = "Sunday dinners"),
-            pageImage = { f -> f?.let { android.graphics.BitmapFactory.decodeFile(it.path).asImageBitmap() } },
+            pageImage = { f -> f?.let { BitmapPainter(android.graphics.BitmapFactory.decodeFile(it.path).asImageBitmap()) } },
             onBack = {}, onPage = {}, onShare = {}, onOpenCamera = {}, onRetry = {},
         )
-    }
-
-    @Test fun collageHud() = measure("collage.view.hud", listOf("collage.hud")) {
-        CollageScreen(CollageViewModel.UiState(), { null }, {}, {}, {}, {}, {})
     }
 }

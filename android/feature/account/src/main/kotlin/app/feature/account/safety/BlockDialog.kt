@@ -1,5 +1,7 @@
-// Surface: safety.block — block flow (confirmation; the menu items are placed by each calling surface).
-// Spec: design/surfaces/safety.block.md. References: HIG Action sheets, HIG Menus; M3 menus and dialogs; App Review 1.2.
+// Surface: safety.block — block flow (the confirmation; the menu items are placed by each calling surface).
+// Spec: design/surfaces/safety.block.md. References: references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (APK-S:
+// "Block Profile", "Block %1$s?", confirm message, "They will not be notified"), references/auto/retro/press/
+// tc-2025-12-rewind-panels.png (TC-RWP: native menu with a red destructive item); HIG action sheets; M3 dialogs.
 package app.feature.account.safety
 
 import androidx.compose.runtime.Composable
@@ -18,7 +20,9 @@ import app.feature.account.common.AccountEvent
 import app.feature.account.common.AccountViewModel
 import app.feature.account.common.CollectEvents
 import app.feature.account.common.dataError
+import app.ui.system.ErrorAlert
 import app.ui.system.SystemAlertDialog
+import app.feature.account.common.errorDismissLabel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -79,16 +83,20 @@ fun BlockRoute(nav: NavController, userId: String) {
 }
 
 /**
- * `safety.block.layout.confirm` android: M3 AlertDialog (`settings.account.layout.alert`) — title
- * `safety.block.title`, message `safety.block.message` (replaced by `safety.block.error` after a
- * failure), Cancel (dismissive, leading) and Block (destructive, trailing). Success: Yope's lime toast
- * `safety.block.done` (`safety.block.layout.toast`, dwell `safety.block.duration.toast`).
+ * `safety.block.layout.confirm` android: the M3 AlertDialog (`settings.account.layout.alert`, C-29) — title
+ * `safety.block.title`, message `safety.block.message`, Cancel (dismissive, leading) and "Yes, block" (destructive,
+ * trailing; the platform indicator while `block_user` runs). Done: the platform toast `safety.block.done` (C-26). Failed /
+ * offline: the message-only alert `safety.block.error` with "OK".
  */
 @Composable
 fun BlockConfirmation(state: BlockUiState, onConfirm: () -> Unit, onCancel: () -> Unit) {
+    if (state.error) {
+        ErrorAlert(stringResource(R.string.safety_block_error), errorDismissLabel(), onCancel)
+        return
+    }
     SystemAlertDialog(
         title = stringResource(R.string.safety_block_title, state.firstName),
-        text = if (state.error) stringResource(R.string.safety_block_error) else stringResource(R.string.safety_block_message, state.firstName),
+        text = stringResource(R.string.safety_block_message, state.firstName),
         confirmLabel = stringResource(R.string.safety_block_confirm),
         onConfirm = onConfirm,
         dismissLabel = stringResource(R.string.safety_block_cancel),

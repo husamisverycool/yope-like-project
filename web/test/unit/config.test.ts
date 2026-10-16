@@ -48,7 +48,7 @@ describe("config", () => {
 
   it("renders a visible marker for a BLOCKED string", () => {
     expect(text("invite.web.documentTitle", { title: "x" }, {})).toBe(blockedMarker("invite.web.documentTitle"));
-    expect(text("invite.web.invitedBy", { first_name: "Ana" })).toBe("Invited by Ana");
+    expect(text("invite.web.invitedBy", { first_name: "Ana" })).toBe("Ana Invited You!");
   });
 
   it("parses the environment", () => {

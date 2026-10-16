@@ -89,6 +89,10 @@ class FakeCaptureData : CaptureData {
     override fun retry(draftId: String) {
         retried += draftId
     }
+    val discarded = mutableListOf<String>()
+    override fun discardDraft(draftId: String) {
+        discarded += draftId
+    }
     override val online: Flow<Boolean> get() = onlineFlow
     override suspend fun invitation(invitationId: String): DailyInvitation? = invitation
     override suspend fun group(groupId: String): Group? = groupById[groupId]

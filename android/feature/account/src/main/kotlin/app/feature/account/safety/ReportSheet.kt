@@ -1,23 +1,22 @@
-// Surface: safety.report — report flow. Spec: design/surfaces/safety.report.md.
-// References: https://developer.apple.com/design/human-interface-guidelines/menus (HIG-M), …/action-sheets, …/sheets (HIG-AS / HIG-SH),
-// https://m3.material.io/components/bottom-sheets/specs (M3-BS), https://developer.apple.com/app-store/review/guidelines/ (RG 1.2).
+// Surface: safety.report — report a post, message, person or group. Spec: design/surfaces/safety.report.md.
+// References: references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (APK-S: media_viewer_report_*, profile_report_*:
+// titles, reason lists, "Next Steps", "Submitted!", "Report Post" / "Report Profile"), references/auto/retro/press/
+// tc-2025-12-rewind-panels.png (TC-RWP: native menu, destructive red); HIG action sheets; M3 bottom sheets; App Review 1.2.
 package app.feature.account.safety
 
-import androidx.compose.foundation.layout.Arrangement
+import android.view.View
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -25,11 +24,13 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -43,11 +44,18 @@ import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.account.AccountEnvironment
 import app.feature.account.LocalAccountEnvironment
-import app.feature.account.blocked.BlockedCopy
+import app.feature.account.common.AccountEvent
 import app.feature.account.common.AccountViewModel
 import app.feature.account.common.CollectEvents
 import app.feature.account.common.dataError
+import app.feature.account.common.errorDismissLabel
+import app.feature.account.common.navigateAccount
+import app.feature.account.groups.GroupActions
+import app.feature.account.groups.LeaveGroupDialog
 import app.model.AppRoute
+import app.ui.foundation.tapClickable
+import app.ui.system.SystemAlertDialog
+import app.ui.text.TextRoles
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -58,17 +66,51 @@ import kotlinx.coroutines.launch
 @Immutable
 data class ReportTarget(val kind: ReportTargetKind, val id: String, val groupId: String?, val personId: String?)
 
-enum class ReportPhase { Editing, Sending, Sent, Error, NotFound }
+/**
+ * The flow (`safety.report.layout.flow`): the reasons sheet → a reason files the report and the sheet closes at once
+ * (Sending runs with no sheet) → "Submitted!" (toast) or an alert; "I don't like it" opens Next Steps (Leave / Block).
+ */
+enum class ReportPhase { Reasons, NextSteps, Sending, ConfirmLeave, Error, NotFound }
+
+/** A reason (`safety.report.layout.reasons`): its copy and the English text sent as `p_reason` (the token's own value). */
+@Immutable
+data class ReportReason(val copy: Int, val wire: String, val dontLike: Boolean = false)
 
 @Immutable
 data class ReportUiState(
     val target: ReportTarget,
-    val details: String = "",
-    val phase: ReportPhase = ReportPhase.Editing,
-    /** The person (target user, or the author of the post / message): title, sent message, Block. */
+    val phase: ReportPhase = ReportPhase.Reasons,
+    /** The person (target user, or the author of the post / message): "Block {first_name}". */
     val firstName: String? = null,
     val groupName: String? = null,
 )
+
+/** Retro's reason lists per target kind (MERGE RA-12), copy order = the token's order. */
+object ReportReasons {
+    private const val SEPARATOR = " · " // provenance-ok: list separator inside the safety.report.layout.reasons token value
+
+    fun of(kind: ReportTargetKind): List<ReportReason> {
+        val layout = Tokens.Layouts.SafetyReportLayoutReasons
+        return when (kind) {
+            ReportTargetKind.Post, ReportTargetKind.Message -> {
+                val wire = (if (kind == ReportTargetKind.Post) layout.post else layout.message).split(SEPARATOR)
+                listOf(
+                    ReportReason(R.string.safety_report_reason_dontlike, wire[0], dontLike = true),
+                    ReportReason(R.string.safety_report_reason_nudity, wire[1]),
+                    ReportReason(R.string.safety_report_reason_other, wire[2]),
+                )
+            }
+            ReportTargetKind.User, ReportTargetKind.Group -> {
+                val wire = (if (kind == ReportTargetKind.User) layout.user else layout.group).split(SEPARATOR)
+                listOf(
+                    ReportReason(R.string.safety_report_reason_impersonation, wire[0]),
+                    ReportReason(R.string.safety_report_reason_inappropriate, wire[1]),
+                    ReportReason(R.string.safety_report_reason_other, wire[2]),
+                )
+            }
+        }
+    }
+}
 
 class ReportViewModel(private val env: AccountEnvironment, target: ReportTarget) : AccountViewModel() {
     private val mutable = MutableStateFlow(ReportUiState(target))
@@ -78,23 +120,25 @@ class ReportViewModel(private val env: AccountEnvironment, target: ReportTarget)
         viewModelScope.launch {
             val personId = target.personId ?: if (target.kind == ReportTargetKind.Post) runCatching { env.backend.post(target.id)?.authorId }.getOrNull() else null
             val first = personId?.let { id -> runCatching { env.backend.profiles(listOf(id)).firstOrNull()?.firstName }.getOrNull() }
-            val group = target.groupId?.takeIf { target.kind == ReportTargetKind.Group }?.let { id -> runCatching { env.backend.group(id)?.name }.getOrNull() }
+            val group = target.groupId?.let { id -> runCatching { env.backend.group(id)?.name }.getOrNull() }
             mutable.update { it.copy(firstName = first, groupName = group, target = it.target.copy(personId = personId)) }
         }
     }
 
-    fun onDetails(text: String) = mutable.update { it.copy(details = text.take(MAX_DETAILS)) }
-
-    fun submit() {
-        val current = mutable.value
-        if (current.phase == ReportPhase.Sending) return
+    /** A reason chosen: "I don't like it" → Next Steps (nothing filed); any other → `report(…)` with the sheet closed. */
+    fun choose(reason: ReportReason) {
+        if (reason.dontLike) {
+            mutable.update { it.copy(phase = ReportPhase.NextSteps) }
+            return
+        }
+        val target = mutable.value.target
         mutable.update { it.copy(phase = ReportPhase.Sending) }
         viewModelScope.launch {
             try {
-                // Empty details → the reason is the target kind (spec); reasons list BLOCKED.
-                env.backend.report(current.target.kind, current.target.id, current.details.trim().ifEmpty { current.target.kind.wire })
-                mutable.update { it.copy(phase = ReportPhase.Sent) }
+                env.backend.report(target.kind, target.id, reason.wire)
                 haptic(Tokens.Haptics.globalSuccess)
+                toast(R.string.safety_report_sent_title)
+                emit(AccountEvent.Back)
             } catch (t: Throwable) {
                 val error = t.dataError()
                 val gone = (error as? DataError.Api)?.code == ApiError.TargetNotFound
@@ -104,8 +148,15 @@ class ReportViewModel(private val env: AccountEnvironment, target: ReportTarget)
         }
     }
 
-    private companion object {
-        const val MAX_DETAILS = 1000
+    fun askLeave() = mutable.update { it.copy(phase = ReportPhase.ConfirmLeave) }
+
+    /** Next Steps → Leave: `leave_group` (optimistic, GroupActions) → "Left group" → home. */
+    fun leave() {
+        val groupId = mutable.value.target.groupId ?: return
+        haptic(Tokens.Haptics.globalWarning)
+        GroupActions.leave(env, groupId)
+        toast(R.string.safety_report_left)
+        navigate(AppRoute.GroupsList, clearStack = true)
     }
 }
 
@@ -122,10 +173,9 @@ fun reportTarget(route: AppRoute.SafetyReport): ReportTarget? = when {
 }
 
 /**
- * The report sheet as a navigation dialog destination: an M3 ModalBottomSheet
- * (`safety.report.layout.flow` android: container `color.global.system.surfaceContainerLow`, top
- * corners `radius.global.sheet` android 28, M3 drag handle; swipe down = cancel). The destination's
- * own dialog window is undimmed so only the sheet's scrim shows.
+ * The report flow as a navigation dialog destination (its own window undimmed so the sheet's scrim is the only one): the
+ * M3 ModalBottomSheet (`safety.report.layout.flow` android — container `color.global.system.surfaceContainerLow`, top
+ * corners `radius.global.sheet` android) while choosing; nothing while the report is sent; the platform alerts after.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -135,23 +185,51 @@ fun ReportRoute(nav: NavController, target: ReportTarget) {
     val state by vm.state.collectAsStateWithLifecycle()
     CollectEvents(vm.events, nav)
     UndimmedDialogWindow()
-    val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true, confirmValueChange = { state.phase != ReportPhase.Sending })
-    ModalBottomSheet(
-        onDismissRequest = { nav.popBackStack() },
-        sheetState = sheet,
-        containerColor = Tokens.Colors.globalSystemSurfaceContainerLow,
-        shape = RoundedCornerShape(topStart = Tokens.Layouts.GlobalSheet.android.dp, topEnd = Tokens.Layouts.GlobalSheet.android.dp),
-    ) {
-        ReportContent(
-            state = state,
-            onDetails = vm::onDetails,
-            onCancel = { nav.popBackStack() },
-            onSubmit = vm::submit,
-            onDone = { nav.popBackStack() },
-            onBlock = { personId ->
-                nav.popBackStack()
-                nav.navigate(AppRoute.SafetyBlock(personId))
-            },
+    when (state.phase) {
+        ReportPhase.Reasons, ReportPhase.NextSteps -> {
+            val corner = Tokens.Layouts.GlobalSheet.android.dp
+            ModalBottomSheet(
+                onDismissRequest = { nav.popBackStack() },
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                containerColor = Tokens.Colors.globalSystemSurfaceContainerLow,
+                shape = RoundedCornerShape(topStart = corner, topEnd = corner),
+            ) {
+                ReportContent(
+                    state = state,
+                    onReason = vm::choose,
+                    onCancel = { nav.popBackStack() },
+                    onLeave = vm::askLeave,
+                    onBlock = { personId ->
+                        nav.popBackStack()
+                        nav.navigate(AppRoute.SafetyBlock(personId))
+                    },
+                )
+            }
+        }
+        ReportPhase.Sending -> Unit
+        ReportPhase.ConfirmLeave -> LeaveGroupDialog(
+            groupName = state.groupName.orEmpty(),
+            last = false,
+            onConfirm = vm::leave,
+            onDismiss = { nav.popBackStack() },
+        )
+        ReportPhase.Error -> SystemAlertDialog(
+            title = stringResource(R.string.safety_report_error_title),
+            text = stringResource(R.string.safety_report_error_detail),
+            confirmLabel = errorDismissLabel(),
+            onConfirm = { nav.popBackStack() },
+            dismissLabel = null,
+            onDismiss = { nav.popBackStack() },
+            dismissible = false,
+        )
+        ReportPhase.NotFound -> SystemAlertDialog(
+            title = null,
+            text = stringResource(R.string.safety_report_error_notfound),
+            confirmLabel = errorDismissLabel(),
+            onConfirm = { nav.popBackStack() },
+            dismissLabel = null,
+            onDismiss = { nav.popBackStack() },
+            dismissible = false,
         )
     }
 }
@@ -164,78 +242,67 @@ internal fun UndimmedDialogWindow() {
 }
 
 @Composable
-private fun reportTitle(state: ReportUiState): String = when (state.target.kind) {
+private fun reportTitle(kind: ReportTargetKind): String = when (kind) {
     ReportTargetKind.Post -> stringResource(R.string.safety_report_title_post)
     ReportTargetKind.Message -> stringResource(R.string.safety_report_title_message)
-    ReportTargetKind.User -> stringResource(R.string.safety_report_title_user, state.firstName.orEmpty())
-    ReportTargetKind.Group -> stringResource(R.string.safety_report_title_group, state.groupName.orEmpty())
+    ReportTargetKind.User -> stringResource(R.string.safety_report_title_user)
+    ReportTargetKind.Group -> stringResource(R.string.safety_report_title_group)
 }
 
 /**
- * Sheet content: navigation bar (Cancel leading, Report trailing in `color.global.system.error`,
- * enabled at once); title (`titleLarge`, heading); explanation (`bodyMedium`; BLOCKED copy, omitted in
- * release); the reason list is BLOCKED (`safety.report.layout.reasons`, omitted); details (M3
- * OutlinedTextField, ≤ 1000 characters). After submit: "report sent" with Block (person or their
- * content) and Done. Paddings are M3's (`settings.root.size.listItemPaddingH.android`).
+ * The sheet's content (M3's action-sheet form): the title (text role `sheetTitle`, centred, header trait), one row per
+ * reason (text role `body`, at least `settings.root.size.rowHeight`, `size.global.screenMargin` padding), "Cancel" last.
+ * Next Steps: "Leave the group" and "Block {first_name}" in `color.global.destructive`, then "Cancel".
  */
 @Composable
 fun ReportContent(
     state: ReportUiState,
-    onDetails: (String) -> Unit,
+    onReason: (ReportReason) -> Unit,
     onCancel: () -> Unit,
-    onSubmit: () -> Unit,
-    onDone: () -> Unit,
+    onLeave: () -> Unit,
     onBlock: (String) -> Unit,
 ) {
-    val context = LocalContext.current
-    val pad = Tokens.Sizes.settingsRootSizeListItemPaddingHAndroid
-    Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = pad, vertical = Tokens.Sizes.settingsRootSizeListItemPaddingVAndroid)) {
-        when (state.phase) {
-            ReportPhase.Sent -> {
-                Text(stringResource(R.string.safety_report_sent_title), style = MaterialTheme.typography.titleLarge, color = Tokens.Colors.globalSystemOnSurface, modifier = Modifier.semantics { heading() })
-                val message = state.firstName?.takeIf { state.target.kind != ReportTargetKind.Group }
-                    ?.let { stringResource(R.string.safety_report_sent_message, it) }
-                    ?: stringResource(R.string.safety_report_sent_messagegroup)
-                Text(message, style = MaterialTheme.typography.bodyMedium, color = Tokens.Colors.globalSystemOnSurfaceVariant)
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    val person = state.target.personId
-                    if (person != null && state.target.kind != ReportTargetKind.Group) {
-                        TextButton(onClick = { onBlock(person) }) { Text(stringResource(R.string.safety_report_sent_block), color = Tokens.Colors.globalSystemError) }
-                    }
-                    TextButton(onClick = onDone) { Text(stringResource(R.string.safety_report_sent_done), color = Tokens.Colors.globalSystemPrimary) }
-                }
-            }
-            ReportPhase.NotFound -> {
-                Text(stringResource(R.string.safety_report_error_notfound), style = MaterialTheme.typography.bodyMedium, color = Tokens.Colors.globalSystemOnSurfaceVariant)
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    TextButton(onClick = onDone) { Text(stringResource(R.string.safety_report_sent_done), color = Tokens.Colors.globalSystemPrimary) }
-                }
-            }
-            else -> {
-                val sending = state.phase == ReportPhase.Sending
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(onClick = onCancel, enabled = !sending) { Text(stringResource(R.string.safety_report_cancel), color = Tokens.Colors.globalSystemPrimary) }
-                    Box(Modifier.weight(1f))
-                    if (sending) {
-                        CircularProgressIndicator(color = Tokens.Colors.globalSystemError)
-                    } else {
-                        TextButton(onClick = onSubmit) { Text(stringResource(R.string.safety_report_submit), color = Tokens.Colors.globalSystemError) }
-                    }
-                }
-                Text(reportTitle(state), style = MaterialTheme.typography.titleLarge, color = Tokens.Colors.globalSystemOnSurface, modifier = Modifier.semantics { heading() })
-                BlockedCopy.reportExplanation(context)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Tokens.Colors.globalSystemOnSurfaceVariant) }
-                OutlinedTextField(
-                    value = state.details,
-                    onValueChange = onDetails,
-                    enabled = !sending,
-                    placeholder = { Text(stringResource(R.string.safety_report_details_placeholder)) },
-                    modifier = Modifier.fillMaxWidth().padding(vertical = Tokens.Sizes.settingsRootSizeListItemPaddingVAndroid),
-                )
-                if (state.phase == ReportPhase.Error) {
-                    Text(stringResource(R.string.safety_report_error_title), style = MaterialTheme.typography.bodyMedium, color = Tokens.Colors.globalSystemError)
-                    Text(stringResource(R.string.safety_report_error_detail), style = MaterialTheme.typography.bodyMedium, color = Tokens.Colors.globalSystemOnSurfaceVariant)
-                }
+    Column(Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars).padding(bottom = Tokens.Sizes.globalScreenMargin)) {
+        if (state.phase == ReportPhase.NextSteps) {
+            SheetTitle(stringResource(R.string.safety_report_nextsteps_title))
+            if (state.target.groupId != null) Choice(stringResource(R.string.safety_report_nextsteps_leave), Tokens.Colors.globalDestructive, onLeave)
+            val person = state.target.personId
+            val name = state.firstName
+            if (person != null && name != null) Choice(stringResource(R.string.safety_report_nextsteps_block, name), Tokens.Colors.globalDestructive) { onBlock(person) }
+        } else {
+            SheetTitle(reportTitle(state.target.kind))
+            ReportReasons.of(state.target.kind).forEach { reason ->
+                Choice(stringResource(reason.copy), Tokens.Colors.globalTextPrimary) { onReason(reason) }
             }
         }
+        Choice(stringResource(R.string.safety_report_cancel), Tokens.Colors.globalTextPrimary, onCancel)
+    }
+}
+
+@Composable
+private fun SheetTitle(text: String) {
+    Text(
+        text,
+        style = TextRoles.sheetTitle,
+        color = Tokens.Colors.globalTextPrimary,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = Tokens.Sizes.globalScreenMargin, end = Tokens.Sizes.globalScreenMargin, bottom = Tokens.Sizes.globalScreenMargin)
+            .semantics { heading() },
+    )
+}
+
+@Composable
+private fun Choice(text: String, color: Color, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = Tokens.Sizes.settingsRootSizeRowHeight)
+            .tapClickable(onClick = onClick)
+            .padding(horizontal = Tokens.Sizes.globalScreenMargin),
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        Text(text, style = TextRoles.body, color = color)
     }
 }

@@ -39,7 +39,7 @@ struct MemoryEntryContent: Equatable {
 /// the title in `font.global.display` text role `displaySmall`, the line (text role `listSubtitle`), both
 /// `color.global.textOnMedia`, then the C-09 light pill with the action. Spacing between the three was not measured —
 /// platform stack spacing. One button for VoiceOver (title, line, action).
-struct MemoryFeedCard: View {
+struct MemoryEntryFeedCard: View {
     let content: MemoryEntryContent
 
     var body: some View {
@@ -86,7 +86,7 @@ struct MemoryFeedCard: View {
 /// `color.global.control`, `radius.global.groupedRow`, platform row padding): the honoree's avatar
 /// (`size.global.avatarPicker`, C-16), the title (text role `listTitle`, `color.global.textPrimary`) over the due line
 /// (text role `listSubtitle`, `color.global.textSecondary`), trailing `icon.global.chevron` in `color.global.textSecondary`.
-struct MemoryRequestRow: View {
+struct MemoryEntryRequestRow: View {
     let content: MemoryEntryContent
 
     var body: some View {

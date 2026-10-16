@@ -190,7 +190,7 @@ final class PhotoViewerModel {
             let summaries = ReactionSummary.byPost(rows)
             for id in ids { reactions[id] = summaries[id] ?? ReactionSummary() }
         }
-        await loadProfiles(posts.values.map(\.post.authorID))
+        await loadProfiles(posts.values.map(\.post.authorID) + [me].compactMap { $0 })
         if let mine = try? await data.myGroups() {
             for group in mine { groups[group.id] = group }
         } else if let cached = await data.cachedGroups() {
@@ -483,6 +483,30 @@ final class PhotoViewerModel {
     /// After a block: the person's photos leave the viewer (RLS hides them everywhere).
     func authorBlocked(_ userID: UserID) {
         removeFromContext(Set(postIDs.filter { posts[$0]?.post.authorID == userID }))
+    }
+
+    // MARK: Comments
+
+    /// "Unsend" on one of my comments (the thread's message menu): gone at once, put back if the call fails.
+    func deleteComment(_ message: Message) async {
+        guard message.authorID == me,
+              let postID = comments.first(where: { $0.value.contains { $0.id == message.id } })?.key else { return }
+        signals.emit(.warning)
+        let before = comments[postID]
+        comments[postID]?.removeAll { $0.id == message.id }
+        do {
+            try await data.deleteMessage(id: message.id, groupID: message.groupID)
+        } catch {
+            if SocialFailure(error) == .notFound { return }
+            if SocialFailure(error) == .offline { isOffline = true }
+            comments[postID] = before
+            signals.emit(.failed)
+        }
+    }
+
+    /// "Copy" on a comment (the view puts it on the pasteboard).
+    func copied() {
+        signals.post(.copied)
     }
 
     // MARK: Reply

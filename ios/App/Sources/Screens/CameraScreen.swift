@@ -1,7 +1,7 @@
-// Surface: camera.capture / camera.fromwidget — reference app: Yope + Locket; with an invitation:
-// daily.capture — reference app: BeReal.
+// Surface: camera.capture / camera.fromwidget — visual reference Retro (composition), mechanics Locket; with an
+// invitation: daily.capture — visual reference Retro (composition), mechanics BeReal.
 // Reference images: listed in design/surfaces/camera.capture.md, camera.fromwidget.md and
-// daily.capture.md (docs/SURFACES.md).
+// daily.capture.md (references/auto/retro/…, references/auto/locket/…, references/auto/bereal/…).
 import SwiftUI
 
 /// Opens to the camera (`camera.fromwidget` when opened from a widget: the widget's group is

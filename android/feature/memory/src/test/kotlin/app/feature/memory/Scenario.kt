@@ -76,12 +76,19 @@ object Scenario {
         photo("p-r6", ANA, "2026-09-09T10:00:00Z")
         collages["col-1"] = Rows.collage("col-1", listOf("p-r1", "p-r2"))
         collages["col-2"] = Rows.collage("col-2", listOf("p-r4"))
+        // The rest of the year (recap card grid): twelve more photos.
+        val year = (1..12).map { n -> "p-y$n".also { photo(it, listOf(ANA, BEN, CLEO, ME)[n % 4], "2026-0${1 + n % 9}-1${n % 10}T10:00:00Z") } }
         yearStories[GROUP to 2026] = Rows.yearStory(
             Rows.storyData(
                 mostReacted = listOf("p-r1", "p-r2", "p-r3", "p-r4", "p-r5", "p-r6"),
                 days = listOf(Triple("2026-04-02", "col-1", listOf("p-r1", "p-r2")), Triple("2026-09-21", "col-2", listOf("p-r4"))),
             ),
+            postIds = listOf("p-r1", "p-r2", "p-r3", "p-r4", "p-r5", "p-r6") + year,
         )
+
+        // The group's history for the dice: two weeks.
+        history += app.data.model.HistoryWeek(LocalDate.of(2026, 11, 30), listOf("p-mine1"))
+        history += app.data.model.HistoryWeek(LocalDate.of(2026, 11, 9), listOf("p-tagged", "p-other"))
 
         privateRow = ProfilePrivate(ME, null, false, null, FakeMemoryBackend.NOW)
     }

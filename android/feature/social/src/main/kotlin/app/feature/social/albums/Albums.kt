@@ -1,12 +1,11 @@
-// Surfaces: albums.list (a group's saved albums) and albums.view (one album).
-// albums.list covers: Apple Photos' Albums collection (iOS 27 guide image, references/auto/apple-photos/; Gap fill G-17).
-// Built from documented Yope components (S-14): references/owner/yope-week-recap.jpg (header, pics grid),
-// references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (••• menu),
-// references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t45.23-new-group-empty.png (name sheet).
+// Surfaces: albums.list, albums.view — design/surfaces/albums.list.md, albums.view.md
+// References: references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png (pushed "Albums",
+// search field, rows with 3:4 covers), references/auto/retro/press/tc-2024-04-journals-1.webp phones 2–3 (rows "daniel …";
+// album sheet: cover, serif name, meta, capsules, 3-column grid with rounded outer corners),
+// references/auto/retro/web/retro.app-42b38811bebcd07d.css (grid outer radius .75rem, 2-px gaps).
 package app.feature.social.albums
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,38 +19,33 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFromBaseline
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -59,470 +53,372 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
-import androidx.lifecycle.ViewModel
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
-import app.data.error.ApiError
-import app.data.error.DataError
-import app.data.model.Album
-import app.data.model.Media
-import app.data.model.MemberRole
-import app.data.model.Post
-import app.data.model.Profile
-import app.data.offline.DataState
-import app.data.realtime.GroupEvent
 import app.designsystem.R
 import app.designsystem.generated.Tokens
-import app.feature.social.common.Avatar
-import app.feature.social.common.ConfirmationToast
-import app.feature.social.common.EmptyState
 import app.feature.social.common.Formats
-import app.feature.social.common.Glyph
-import app.feature.social.common.HeaderCircle
-import app.feature.social.common.Line
-import app.feature.social.common.LoadingHud
-import app.feature.social.common.PillAction
 import app.feature.social.common.RemotePhoto
-import app.feature.social.common.Type
-import app.feature.social.common.announce
-import app.feature.social.common.rememberHaptics
+import app.feature.social.common.photoModel
 import app.feature.social.common.stringRes
-import app.feature.social.data.SocialData
-import app.feature.social.data.cached
-import app.feature.social.data.dataError
-import app.feature.social.week.NameSheet
-import app.ui.components.HeaderCircleFill
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
-
-/** One album card: the album, its cover (first photo's thumbnail) and who saved it. */
-@Serializable
-data class AlbumCard(val album: Album, val coverPath: String?, val savedBy: String?)
-
-data class AlbumsState(val phase: Phase = Phase.Loading, val cards: List<AlbumCard> = emptyList(), val offline: Boolean = false) {
-    enum class Phase { Loading, Ready, Error, OfflineEmpty }
-}
-
-/** `albums.list`: the group's albums, newest first, cache-then-network; refetched on reconnect (albums are not realtime). */
-class AlbumsViewModel(private val data: SocialData, private val groupId: String) : ViewModel() {
-    private val _state = MutableStateFlow(AlbumsState())
-    val state: StateFlow<AlbumsState> = _state.asStateFlow()
-
-    init {
-        load()
-        viewModelScope.launch { data.online.distinctUntilChanged().drop(1).collect { if (it) load() } }
-    }
-
-    fun load() {
-        viewModelScope.launch {
-            data.cached("albums/$groupId", kotlinx.serialization.builtins.ListSerializer(AlbumCard.serializer())) { cards() }.collect { page -> apply(page) }
-        }
-    }
-
-    private fun apply(page: DataState<List<AlbumCard>>) {
-        val value = page.value
-        _state.update {
-            when {
-                value != null -> it.copy(phase = AlbumsState.Phase.Ready, cards = value, offline = page.error == DataError.Network)
-                page.refreshing -> if (it.cards.isEmpty()) it.copy(phase = AlbumsState.Phase.Loading) else it
-                else -> it.copy(phase = if (page.error == DataError.Network) AlbumsState.Phase.OfflineEmpty else AlbumsState.Phase.Error)
-            }
-        }
-    }
-
-    private suspend fun cards(): List<AlbumCard> {
-        val albums = data.albums(groupId)
-        val first = albums.associate { a -> a.id to data.albumItems(a.id).minByOrNull { it.position }?.postId }
-        val posts = data.posts(first.values.filterNotNull()).associateBy { it.id }
-        val media = data.media(posts.values.map { it.mediaId }).associateBy { it.id }
-        val people = data.profiles(albums.mapNotNull { it.createdBy }.distinct()).associateBy { it.id }
-        return albums.sortedByDescending { it.createdAt }.map { a ->
-            val post = first[a.id]?.let(posts::get)
-            AlbumCard(a, post?.let { media[it.mediaId]?.imagePath(Media.Rendition.Thumb) }, a.createdBy?.let { people[it]?.firstName })
-        }
-    }
-}
-
-/** Header of the album screens: ‹ circle, centred title (`week.recap.fontSize.title`), optional trailing circle. */
-@Composable
-private fun AlbumHeader(title: String, onBack: () -> Unit, trailing: (@Composable () -> Unit)? = null) {
-    Box(Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars).padding(horizontal = Tokens.Sizes.globalHeaderInset).height(Tokens.Sizes.globalHeaderButton)) {
-        HeaderCircle(Tokens.Icons.globalBack, stringRes(R.string.chat_thread_a11y_back), HeaderCircleFill.OnDeep, onBack, Modifier.align(Alignment.CenterStart))
-        Line(
-            title,
-            Type.style(Tokens.FontSizes.weekRecapFontSizeTitle, Tokens.FontWeights.weekRecapFontWeightTitle),
-            Tokens.Colors.globalTextPrimary,
-            Modifier.align(Alignment.Center).padding(horizontal = Tokens.Sizes.globalHeaderButton + Tokens.Sizes.globalHeaderGap).semantics { heading() },
-        )
-        if (trailing != null) Box(Modifier.align(Alignment.CenterEnd)) { trailing() }
-    }
-}
+import app.feature.social.walls.ErrorLine
+import app.ui.components.Capsule
+import app.ui.components.CapsuleStyle
+import app.ui.components.CircleButtonStyle
+import app.ui.components.CircleIconButton
+import app.ui.components.EmptyState
+import app.ui.components.EmptyStateAction
+import app.ui.components.EmptyStateFill
+import app.ui.components.FormTextField
+import app.ui.components.IconCapsule
+import app.ui.components.PlatformToast
+import app.ui.components.PrimaryButton
+import app.ui.components.PrimaryButtonSize
+import app.ui.components.PushedHeader
+import app.ui.components.SearchField
+import app.ui.components.ThumbnailRow
+import app.ui.components.ThumbnailRowSpacing
+import app.ui.components.subtitleWithActor
+import app.ui.foundation.PageRoles
+import app.ui.foundation.endAtLastBaseline
+import app.ui.foundation.tapClickable
+import app.ui.haptics.rememberHaptics
+import app.ui.system.DsBottomSheet
+import app.ui.system.DsDropdownMenu
+import app.ui.system.DsMenuItem
+import app.ui.system.SystemAlertDialog
+import app.ui.text.CapTop
+import app.ui.text.TextRoles
+import app.ui.text.capTopAt
 
 @Composable
-fun AlbumsListScreen(vm: AlbumsViewModel, onBack: () -> Unit, onAlbum: (String) -> Unit, onViewRecap: () -> Unit) {
+fun AlbumsListScreen(vm: AlbumsViewModel, onBack: () -> Unit, onAlbum: (String) -> Unit, onViewRecaps: () -> Unit) {
     val state by vm.state.collectAsStateWithLifecycle()
-    AlbumsListContent(state, onBack, onAlbum, onViewRecap, vm::load)
+    AlbumsListContent(state, onBack, onAlbum, onViewRecaps, onRetry = vm::load, onQuery = vm::setQuery)
 }
 
 /**
- * albums.list (`albums.list.layout.yopeAlbums`, Apple Photos' Albums collection, G-17): a grid of
- * `columns` square covers (`coverAspect`, corners `coverRadius`), side margins `marginH`, `gap` both
- * ways, newest first; the album name over each cover's bottom-leading corner.
+ * `albums.list` (Retro's Albums list): C-02 "Albums"; the C-12 search field `size.global.titleToContent` below the title
+ * baseline (when the group has albums); C-15 rows newest first, the first `size.global.titleToContent` below the field,
+ * `size.global.listGap` apart — cover thumbnail, album name (`listTitle`, up to two lines) over "{name} created the album"
+ * (the name semibold; yours "you created the album"). No stack, no "+" (RS-21).
  */
 @Composable
-fun AlbumsListContent(state: AlbumsState, onBack: () -> Unit, onAlbum: (String) -> Unit, onViewRecap: () -> Unit, onRetry: () -> Unit) {
-    val grid = Tokens.Layouts.AlbumsListLayoutYopeAlbums
-    Column(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep).testTag("albums.list")) {
-        AlbumHeader(stringRes(R.string.albums_list_title), onBack)
-        Box(Modifier.weight(1f).fillMaxWidth()) {
-            when {
-                state.phase == AlbumsState.Phase.Loading -> LoadingHud()
-                state.phase == AlbumsState.Phase.Error -> Centered { EmptyState(stringRes(R.string.albums_list_error_title), stringRes(R.string.chat_thread_error_detail), PillAction(stringRes(R.string.chat_thread_error_retry), null, onRetry)) }
-                state.phase == AlbumsState.Phase.OfflineEmpty -> Centered { EmptyState(stringRes(R.string.chat_thread_offline_title), stringRes(R.string.chat_thread_offline_detail), null) }
-                state.cards.isEmpty() -> Centered { EmptyState(stringRes(R.string.albums_list_empty_title), stringRes(R.string.albums_list_empty_detail), PillAction(stringRes(R.string.albums_list_empty_action), null, onViewRecap)) }
-                else -> LazyVerticalGrid(
-                    columns = GridCells.Fixed(grid.columns.toInt()),
-                    modifier = Modifier.fillMaxSize(),
-                    // The header → first row gap is not measured: the grid's own `gap` (approximation).
-                    contentPadding = PaddingValues(start = grid.marginH.dp, top = grid.gap.dp, end = grid.marginH.dp, bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
-                    horizontalArrangement = Arrangement.spacedBy(grid.gap.dp),
-                    verticalArrangement = Arrangement.spacedBy(grid.gap.dp),
-                ) {
-                    items(state.cards, key = { it.album.id }) { card -> AlbumCover(card) { onAlbum(card.album.id) } }
+fun AlbumsListContent(state: AlbumsState, onBack: () -> Unit, onAlbum: (String) -> Unit, onViewRecaps: () -> Unit, onRetry: () -> Unit, onQuery: (String) -> Unit) {
+    var query by remember { mutableStateOf(TextFieldValue(state.query)) }
+    val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val hasAlbums = state.cards.isNotEmpty()
+    Column(Modifier.fillMaxSize().background(PageRoles.page).statusBarsPadding().testTag("albums.list")) {
+        PushedHeader(
+            stringRes(R.string.albums_list_title),
+            onBack,
+            stringRes(R.string.chat_thread_a11y_back),
+            below = if (hasAlbums) ({
+                SearchField(
+                    value = query,
+                    onValueChange = {
+                        query = it
+                        onQuery(it.text)
+                    },
+                    placeholder = stringRes(R.string.albums_list_search),
+                    accessibilityLabel = stringRes(R.string.albums_list_search),
+                )
+            }) else null,
+        )
+        when {
+            state.phase == AlbumsState.Phase.Loading -> Column(Modifier.padding(top = Tokens.Sizes.globalTitleToContent), verticalArrangement = ThumbnailRowSpacing) {
+                repeat(LOADING_ROWS) {
+                    Box(
+                        Modifier
+                            .padding(start = Tokens.Sizes.globalScreenMargin)
+                            .size(Tokens.Sizes.globalRowThumbWidth, Tokens.Sizes.globalRowThumbHeight)
+                            .clip(RoundedCornerShape(Tokens.Radii.globalThumbnail))
+                            .background(Tokens.Colors.globalControl),
+                    )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun Centered(content: @Composable () -> Unit) = Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { content() }
-
-/**
- * One album cover: the first photo, aspect fill; the name (one line, tail truncation,
- * `titleFontSize`, platform weight, `color.global.textPrimary`) with its ink `titleInsetLeading` from
- * the leading edge and its baseline `titleBaselineBottom` above the bottom. One button whose label is
- * the name then `albums.list.row.subtitle` (platform merge; the subtitle is not drawn). Without a
- * cover photo the square shows `icon.global.gallery` on `color.global.controlOnDeep` (not specified).
- */
-@Composable
-private fun AlbumCover(card: AlbumCard, onClick: () -> Unit) {
-    val grid = Tokens.Layouts.AlbumsListLayoutYopeAlbums
-    val subtitle = stringRes(R.string.albums_list_row_subtitle, card.savedBy.orEmpty())
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .aspectRatio(grid.coverAspect)
-            .clip(RoundedCornerShape(grid.coverRadius.dp))
-            .background(Tokens.Colors.globalControlOnDeep)
-            .clickable(role = Role.Button, onClick = onClick)
-            .semantics(mergeDescendants = true) { role = Role.Button },
-    ) {
-        if (card.coverPath != null) RemotePhoto(card.coverPath, null, Modifier.fillMaxSize())
-        else Glyph(Tokens.Icons.globalGallery, Tokens.Colors.globalTextSecondary, Modifier.align(Alignment.Center))
-        Line(
-            card.album.name,
-            Type.style(grid.titleFontSize.sp),
-            Tokens.Colors.globalTextPrimary,
-            Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = grid.titleInsetLeading.dp, end = grid.titleInsetLeading.dp)
-                .paddingFromBaseline(bottom = grid.titleBaselineBottom.dp),
-        )
-        // Read after the name (the merged label "{album name}, {subtitle}"); not drawn.
-        Box(Modifier.semantics { contentDescription = subtitle })
-    }
-}
-
-data class AlbumViewState(
-    val phase: Phase = Phase.Loading,
-    val album: Album? = null,
-    val photos: List<AlbumPhoto> = emptyList(),
-    val canDelete: Boolean = false,
-    val offline: Boolean = false,
-    val renaming: Boolean = false,
-    val renameName: String = "",
-    val renameError: RenameError? = null,
-    val busy: Boolean = false,
-) {
-    enum class Phase { Loading, Ready, NotFound, Error, OfflineEmpty }
-}
-
-enum class RenameError { Empty, Save }
-
-data class AlbumPhoto(val post: Post, val thumbPath: String?, val authorName: String?)
-
-sealed interface AlbumEffect {
-    data object Renamed : AlbumEffect
-    data object Deleted : AlbumEffect
-    data object Failed : AlbumEffect
-}
-
-@Serializable
-internal data class AlbumPayload(val album: Album? = null, val posts: List<Post> = emptyList(), val media: List<Media> = emptyList(), val profiles: List<Profile> = emptyList(), val canDelete: Boolean = false)
-
-/**
- * `albums.view`: the album's items in `position` order, rename (optimistic: the title changes at
- * once and goes back if `rename_album` fails) and delete (creator or admin; `delete_album`).
- * `post_deleted` drops tiles.
- */
-class AlbumViewModel(private val data: SocialData, private val groupId: String, private val albumId: String) : ViewModel() {
-    private val _state = MutableStateFlow(AlbumViewState())
-    val state: StateFlow<AlbumViewState> = _state.asStateFlow()
-    private val _effects = MutableSharedFlow<AlbumEffect>(extraBufferCapacity = 8, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val effects: SharedFlow<AlbumEffect> = _effects.asSharedFlow()
-    private var payload: AlbumPayload? = null
-    private val removed = HashSet<String>()
-
-    init {
-        load()
-        viewModelScope.launch { data.events(groupId).collect(::onEvent) }
-        viewModelScope.launch { data.online.distinctUntilChanged().drop(1).collect { if (it) load() } }
-    }
-
-    fun load() {
-        viewModelScope.launch {
-            data.cached("album/$albumId", AlbumPayload.serializer()) { payload() }.collect { page ->
-                val p = page.value
-                when {
-                    p != null -> publish(p, page.error == DataError.Network)
-                    page.refreshing -> _state.update { if (it.album == null) it.copy(phase = AlbumViewState.Phase.Loading) else it }
-                    else -> {
-                        val e = page.error
-                        _state.update {
-                            it.copy(
-                                phase = when {
-                                    e == DataError.Network -> AlbumViewState.Phase.OfflineEmpty
-                                    e is DataError.Api && e.code == ApiError.AlbumNotFound -> AlbumViewState.Phase.NotFound
-                                    else -> AlbumViewState.Phase.Error
-                                },
-                            )
-                        }
-                    }
-                }
+            (state.phase == AlbumsState.Phase.Error || state.phase == AlbumsState.Phase.OfflineEmpty) && !hasAlbums -> ErrorLine(stringRes(R.string.albums_list_error_title), onRetry)
+            !hasAlbums -> EmptyStateFill(Modifier.weight(1f).padding(bottom = bottom)) {
+                EmptyState(
+                    stringRes(R.string.albums_list_empty_title),
+                    stringRes(R.string.albums_list_empty_detail),
+                    action = EmptyStateAction(stringRes(R.string.albums_list_empty_action), onViewRecaps),
+                    icon = Tokens.Icons.globalAlbums,
+                )
             }
-        }
-    }
-
-    private suspend fun payload(): AlbumPayload {
-        val album = data.albums(groupId).firstOrNull { it.id == albumId } ?: return AlbumPayload()
-        val items = data.albumItems(albumId).sortedBy { it.position }
-        val posts = data.posts(items.map { it.postId })
-        val media = data.media(posts.map { it.mediaId })
-        val profiles = data.profiles(posts.map { it.authorId }.distinct())
-        val me = data.currentUserId()
-        val admin = runCatching { data.members(groupId) }.getOrDefault(emptyList()).any { it.member.userId == me && it.member.role == MemberRole.Admin }
-        return AlbumPayload(album, posts, media, profiles, canDelete = admin || (me != null && album.createdBy == me))
-    }
-
-    private fun publish(p: AlbumPayload, offline: Boolean) {
-        payload = p
-        val album = p.album
-        if (album == null) {
-            _state.update { it.copy(phase = AlbumViewState.Phase.NotFound, album = null, photos = emptyList()) }
-            return
-        }
-        val media = p.media.associateBy { it.id }
-        val names = p.profiles.associate { it.id to it.firstName }
-        val photos = p.posts.filter { it.id !in removed }.map { AlbumPhoto(it, media[it.mediaId]?.imagePath(Media.Rendition.Thumb), names[it.authorId]) }
-        _state.update { it.copy(phase = AlbumViewState.Phase.Ready, album = it.album?.takeIf { a -> a.id == album.id && it.busy } ?: album, photos = photos, canDelete = p.canDelete, offline = offline) }
-    }
-
-    internal fun onEvent(event: GroupEvent) {
-        if (event is GroupEvent.PostDeleted) {
-            removed += event.postId
-            payload?.let { publish(it, _state.value.offline) }
-        }
-    }
-
-    fun startRename() = _state.update { it.copy(renaming = true, renameName = it.album?.name.orEmpty(), renameError = null) }
-    fun cancelRename() = _state.update { it.copy(renaming = false, renameError = null) }
-    fun setRenameName(name: String) = _state.update { it.copy(renameName = name, renameError = null) }
-
-    fun rename() {
-        val s = _state.value
-        val album = s.album ?: return
-        val name = s.renameName.trim()
-        if (name.isEmpty()) {
-            _state.update { it.copy(renameError = RenameError.Empty) }
-            _effects.tryEmit(AlbumEffect.Failed)
-            return
-        }
-        // Optimistic: the title changes at once.
-        _state.update { it.copy(album = album.copy(name = name), renaming = false, busy = true) }
-        viewModelScope.launch {
-            try {
-                val renamed = data.renameAlbum(album.id, name)
-                _state.update { it.copy(album = renamed, busy = false) }
-                _effects.emit(AlbumEffect.Renamed)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Throwable) {
-                val invalid = e.dataError().let { it is DataError.Api && it.code == ApiError.InvalidName }
-                _state.update { it.copy(album = album, busy = false, renaming = true, renameName = name, renameError = if (invalid) RenameError.Empty else RenameError.Save) }
-                _effects.emit(AlbumEffect.Failed)
+            state.shown.isEmpty() -> Box(Modifier.fillMaxWidth().padding(top = Tokens.Sizes.globalTitleToContent), contentAlignment = Alignment.TopCenter) {
+                EmptyState(stringRes(R.string.albums_list_search_empty), null)
             }
-        }
-    }
-
-    fun delete() {
-        val album = _state.value.album ?: return
-        _state.update { it.copy(busy = true) }
-        viewModelScope.launch {
-            try {
-                data.deleteAlbum(album.id)
-                _state.update { it.copy(busy = false) }
-                _effects.emit(AlbumEffect.Deleted)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Throwable) {
-                _state.update { it.copy(busy = false) }
-                _effects.emit(AlbumEffect.Failed)
+            else -> LazyColumn(
+                Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(top = Tokens.Sizes.globalTitleToContent, bottom = bottom + Tokens.Sizes.globalSectionGap),
+                verticalArrangement = ThumbnailRowSpacing,
+            ) {
+                items(state.shown, key = { it.album.id }) { card -> AlbumRow(card) { onAlbum(card.album.id) } }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** Rows drawn while loading (`albums.list` → loading: "three C-15 rows"). */
+private const val LOADING_ROWS = 3
+
+/** The context line of an album (`albums.list.row.subtitle` / `.subtitleMine`), the creator's name semibold. */
 @Composable
-fun AlbumViewScreen(vm: AlbumViewModel, onBack: () -> Unit, onPhoto: (String) -> Unit) {
+private fun albumSubtitle(name: String?, mine: Boolean): androidx.compose.ui.text.AnnotatedString =
+    if (mine) subtitleWithActor(stringRes(R.string.albums_list_row_subtitlemine), "")
+    else subtitleWithActor(stringRes(R.string.albums_list_row_subtitle, name.orEmpty()), name.orEmpty())
+
+@Composable
+private fun AlbumRow(card: AlbumCard, onClick: () -> Unit) {
+    val subtitle = albumSubtitle(card.savedBy, card.mine)
+    ThumbnailRow(
+        title = card.album.name,
+        subtitle = subtitle,
+        thumbnail = photoModel(card.coverPath),
+        onClick = onClick,
+        contentDescription = card.album.name + ", " + subtitle.text,
+    )
+}
+
+/** Transient UI state of the album sheet (menu, rename sheet, delete alert). */
+class AlbumUiState(menu: Boolean = false, confirmDelete: Boolean = false) {
+    var menu by mutableStateOf(menu)
+    var confirmDelete by mutableStateOf(confirmDelete)
+}
+
+/** `albums.view` as a page sheet (C-29) over `albums.list`. */
+@Composable
+fun AlbumViewSheet(vm: AlbumViewModel, onClose: () -> Unit, onPhoto: (String) -> Unit) {
     val state by vm.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     val haptics = rememberHaptics()
-    val view = LocalView.current
-    var toast by remember { mutableStateOf<String?>(null) }
     val renamed = stringRes(R.string.albums_view_toast_renamed)
     val deleted = stringRes(R.string.albums_view_toast_deleted)
     val failed = stringRes(R.string.week_edit_error_save)
+    val latest by rememberUpdatedState(state)
     LaunchedEffect(vm) {
-        vm.effects.collect { e ->
-            when (e) {
-                AlbumEffect.Renamed -> { haptics.play(Tokens.Haptics.globalSuccess); toast = renamed }
-                AlbumEffect.Deleted -> { announce(view, deleted); onBack() }
-                AlbumEffect.Failed -> { haptics.play(Tokens.Haptics.globalError); if (!state.renaming) announce(view, failed) }
+        vm.effects.collect { effect ->
+            when (effect) {
+                AlbumEffect.Renamed -> { haptics.perform(Tokens.Haptics.globalSuccess); PlatformToast.show(context, renamed) }
+                AlbumEffect.Deleted -> { PlatformToast.show(context, deleted); onClose() }
+                AlbumEffect.Failed -> {
+                    haptics.perform(Tokens.Haptics.globalError)
+                    if (latest.renameError != RenameError.Empty) PlatformToast.show(context, failed)
+                }
             }
         }
     }
-    AlbumViewContent(
-        state = state,
-        onBack = onBack,
-        onPhoto = onPhoto,
-        onRetry = vm::load,
-        onRename = vm::startRename,
-        onDelete = { haptics.play(Tokens.Haptics.globalWarning); vm.delete() },
-    )
-    if (state.renaming) {
-        val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        ModalBottomSheet(onDismissRequest = vm::cancelRename, sheetState = sheet, containerColor = Tokens.Colors.globalBackgroundDeep) {
-            RenameSheetContent(state, vm::setRenameName, vm::rename, vm::cancelRename)
-        }
+    val ui = remember { AlbumUiState() }
+    DsBottomSheet(onDismissRequest = onClose) {
+        AlbumViewContent(state, ui, onPhoto, onRename = vm::startRename, onRetry = vm::load)
     }
-    ConfirmationToast(toast) { toast = null }
+    if (state.renaming) {
+        DsBottomSheet(onDismissRequest = vm::cancelRename) { RenameSheetContent(state, vm::setRenameName, vm::rename, vm::cancelRename) }
+    }
+    if (ui.confirmDelete) {
+        SystemAlertDialog(
+            title = stringRes(R.string.albums_view_delete_title),
+            text = stringRes(R.string.albums_view_delete_message),
+            confirmLabel = stringRes(R.string.albums_view_delete_confirm),
+            onConfirm = {
+                ui.confirmDelete = false
+                haptics.perform(Tokens.Haptics.globalWarning)
+                vm.delete()
+            },
+            dismissLabel = stringRes(R.string.photo_viewer_delete_cancel),
+            onDismiss = { ui.confirmDelete = false },
+            destructive = true,
+        )
+    }
 }
 
-/** The rename sheet: Yope's name sheet titled `albums.view.rename.title`, field prefilled. */
+/**
+ * The album sheet's content (`albums.view`): the cover centred `albums.view.dimension.coverTop` below the sheet top
+ * (`.coverWidth` × `.coverHeight`, `radius.global.thumbnail`; its shadow `albums.view.shadow.cover` is BLOCKED → flat);
+ * the name (`displayMedium` serif, ≤ 2 lines) cap top `.coverToTitle` below; the meta baseline `.titleToMeta` below the
+ * name's; the action row `.metaToActions` below — "Rename" filling it and, for the creator and admins, the "•••" icon
+ * capsule (menu: "Delete Album", red); the grid `walls.mine.dimension.actionsToWeeks` below: 3 columns of 4:5 cells
+ * (`albums.view.aspectRatio.gridCell`), `size.global.stripGap` gaps, outer corners `albums.view.radius.grid`.
+ */
 @Composable
-fun RenameSheetContent(state: AlbumViewState, onName: (String) -> Unit, onSave: () -> Unit, onClose: () -> Unit) {
-    NameSheet(
-        title = stringRes(R.string.albums_view_rename_title),
-        name = state.renameName,
-        placeholder = stringRes(R.string.week_edit_album_nameplaceholder),
-        error = when (state.renameError) {
-            RenameError.Empty -> stringRes(R.string.week_edit_error_albumname)
-            RenameError.Save -> stringRes(R.string.week_edit_error_save)
-            null -> null
-        },
-        enabled = true,
-        saving = state.busy,
-        onName = onName,
-        onSave = onSave,
-        onClose = onClose,
+fun AlbumViewContent(state: AlbumViewState, ui: AlbumUiState, onPhoto: (String) -> Unit, onRename: () -> Unit, onRetry: () -> Unit) {
+    val margin = Tokens.Sizes.globalScreenMargin
+    val gap = Tokens.Sizes.globalStripGap
+    val columns = Tokens.Counts.albumsViewCountGridColumns
+    val album = state.album
+    if (state.phase == AlbumViewState.Phase.NotFound) {
+        Box(Modifier.fillMaxWidth().padding(vertical = Tokens.Sizes.albumsViewDimensionCoverHeight / 2), contentAlignment = Alignment.Center) {
+            EmptyState(stringRes(R.string.albums_view_notfound), null)
+        }
+        return
+    }
+    val photos = state.photos
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(columns),
+        modifier = Modifier.fillMaxWidth().testTag("albums.view"),
+        contentPadding = PaddingValues(start = margin, end = margin, bottom = Tokens.Sizes.globalSectionGap),
+        horizontalArrangement = Arrangement.spacedBy(gap),
+        verticalArrangement = Arrangement.spacedBy(gap),
+    ) {
+        item(key = "head", span = { GridItemSpan(maxLineSpan) }) {
+            AlbumHead(state, ui, onPhoto, onRename)
+        }
+        when {
+            state.phase == AlbumViewState.Phase.Loading -> itemsIndexed(List(columns * 2) { it }, key = { _, i -> "loading-$i" }) { i, _ ->
+                Box(Modifier.aspectRatio(Tokens.AspectRatios.albumsViewAspectRatioGridCell).clip(gridCellShape(i, columns * 2, columns)).background(Tokens.Colors.globalControl))
+            }
+            state.phase == AlbumViewState.Phase.Error || state.phase == AlbumViewState.Phase.OfflineEmpty -> item(key = "error", span = { GridItemSpan(maxLineSpan) }) {
+                // The grid already sits inside `size.global.screenMargin`: the list-error line without its own margin.
+                Text(
+                    stringRes(R.string.albums_list_error_title),
+                    style = TextRoles.body,
+                    color = PageRoles.secondaryText(),
+                    modifier = Modifier.fillMaxWidth().tapClickable(onClick = onRetry),
+                )
+            }
+            photos.isEmpty() && album != null -> item(key = "empty", span = { GridItemSpan(maxLineSpan) }) {
+                Box(Modifier.fillMaxWidth().padding(vertical = Tokens.Sizes.globalSectionGap), contentAlignment = Alignment.Center) {
+                    EmptyState(stringRes(R.string.albums_view_empty_title), stringRes(R.string.albums_view_empty_detail))
+                }
+            }
+            else -> itemsIndexed(photos, key = { _, p -> p.post.id }) { i, p ->
+                val date = Formats.viewerDate(p.post.createdAt)
+                val label = stringRes(R.string.photo_viewer_a11y_photo, p.authorName.orEmpty(), date)
+                RemotePhoto(
+                    p.thumbPath,
+                    null,
+                    Modifier
+                        .aspectRatio(Tokens.AspectRatios.albumsViewAspectRatioGridCell)
+                        .clip(gridCellShape(i, photos.size, columns))
+                        .tapClickable { onPhoto(p.post.id) }
+                        .clearAndSetSemantics {
+                            contentDescription = label
+                            role = Role.Button
+                        },
+                )
+            }
+        }
+    }
+}
+
+/** Cover, name, meta and capsules above the grid. */
+@Composable
+private fun AlbumHead(state: AlbumViewState, ui: AlbumUiState, onPhoto: (String) -> Unit, onRename: () -> Unit) {
+    val album = state.album
+    val first = state.photos.firstOrNull()
+    val name = album?.name.orEmpty()
+    val coverLabel = stringRes(R.string.albums_view_a11y_cover, name)
+    val titleStyle = TextRoles.displayMedium
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(Modifier.height(Tokens.Sizes.albumsViewDimensionCoverTop))
+        RemotePhoto(
+            first?.thumbPath,
+            null,
+            Modifier
+                .size(Tokens.Sizes.albumsViewDimensionCoverWidth, Tokens.Sizes.albumsViewDimensionCoverHeight)
+                .clip(RoundedCornerShape(Tokens.Radii.globalThumbnail))
+                .then(if (first != null) Modifier.tapClickable { onPhoto(first.post.id) } else Modifier)
+                .clearAndSetSemantics {
+                    contentDescription = coverLabel
+                    if (first != null) role = Role.Button
+                },
+        )
+        if (album != null) {
+            Text(
+                name,
+                style = titleStyle,
+                color = Tokens.Colors.globalTextPrimary,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.capTopAt(Tokens.Sizes.albumsViewDimensionCoverToTitle, CapTop.height(titleStyle)).endAtLastBaseline().semantics { heading() },
+            )
+            val subtitle = if (state.mine) stringRes(R.string.albums_list_row_subtitlemine) else stringRes(R.string.albums_list_row_subtitle, state.creatorName.orEmpty())
+            Text(
+                subtitle,
+                style = TextRoles.listSubtitle,
+                color = PageRoles.secondaryText(),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.paddingFromBaseline(top = Tokens.Sizes.albumsViewDimensionTitleToMeta).endAtLastBaseline(),
+            )
+            Row(Modifier.fillMaxWidth().padding(top = Tokens.Sizes.albumsViewDimensionMetaToActions), horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalPillGap)) {
+                Capsule(stringRes(R.string.albums_view_menu_rename), onRename, Modifier.weight(1f), style = CapsuleStyle.Outline)
+                if (state.canDelete) {
+                    Box {
+                        IconCapsule(Tokens.Icons.globalMore, stringRes(R.string.albums_view_a11y_more), { ui.menu = true })
+                        DsDropdownMenu(ui.menu, { ui.menu = false }, listOf(DsMenuItem(stringRes(R.string.albums_view_menu_delete), { ui.confirmDelete = true }, destructive = true)))
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(Tokens.Sizes.wallsMineDimensionActionsToWeeks - Tokens.Sizes.globalStripGap))
+    }
+}
+
+/**
+ * The album grid's outer contour (`albums.view.radius.grid`, retro.app's corner classes): the first row's end cells round
+ * their top corners; the last row's first cell its bottom-leading and its last cell its bottom-trailing corner; when the
+ * last row is short, the trailing cell of the row above also rounds its bottom-trailing corner. Inner corners stay square.
+ */
+fun gridCellShape(index: Int, count: Int, columns: Int, radius: Dp = Tokens.Radii.albumsViewRadiusGrid): Shape {
+    if (count <= 0) return RectangleShape
+    val row = index / columns
+    val col = index % columns
+    val lastRow = (count - 1) / columns
+    val lastInRow = minOf((row + 1) * columns, count) - 1
+    val topStart = row == 0 && col == 0
+    val topEnd = row == 0 && index == lastInRow
+    val bottomStart = row == lastRow && col == 0
+    val bottomEnd = (row == lastRow && index == count - 1) || (row == lastRow - 1 && col == columns - 1 && count % columns != 0)
+    if (!topStart && !topEnd && !bottomStart && !bottomEnd) return RectangleShape
+    val zero = Tokens.Radii.globalPhoto
+    return RoundedCornerShape(
+        topStart = if (topStart) radius else zero,
+        topEnd = if (topEnd) radius else zero,
+        bottomStart = if (bottomStart) radius else zero,
+        bottomEnd = if (bottomEnd) radius else zero,
     )
 }
 
 /**
- * albums.view: ‹ · album name · ••• circle (native menu: rename; delete album for its creator and
- * group admins, with the platform confirmation), and the album's photos in the week pics grid.
+ * The rename sheet (C-29): C-11 close circle + the centred `albums.view.rename.title`; the C-12 field prefilled with the
+ * name `size.global.titleToContent` below (inline error "Name missing"); the C-05 primary capsule "Save", disabled while
+ * empty.
  */
 @Composable
-fun AlbumViewContent(
-    state: AlbumViewState,
-    onBack: () -> Unit,
-    onPhoto: (String) -> Unit,
-    onRetry: () -> Unit,
-    onRename: () -> Unit,
-    onDelete: () -> Unit,
-    menuOpen: Boolean = false,
-    confirmOpen: Boolean = false,
-) {
-    var menu by remember { mutableStateOf(menuOpen) }
-    var confirm by remember { mutableStateOf(confirmOpen) }
-    Column(Modifier.fillMaxSize().background(Tokens.Colors.globalBackground).testTag("albums.view")) {
-        AlbumHeader(state.album?.name.orEmpty(), onBack, trailing = if (state.album == null) null else ({
-            Box {
-                HeaderCircle(Tokens.Icons.globalMore, stringRes(R.string.photo_viewer_a11y_more), HeaderCircleFill.OnDeep, { menu = true })
-                DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                    DropdownMenuItem(
-                        text = { Text(stringRes(R.string.albums_view_menu_rename)) },
-                        leadingIcon = { Glyph(Tokens.Icons.globalEdit, Tokens.Colors.globalSystemOnSurface) },
-                        onClick = { menu = false; onRename() },
-                    )
-                    if (state.canDelete) {
-                        DropdownMenuItem(
-                            text = { Text(stringRes(R.string.albums_view_menu_delete), color = Tokens.Colors.globalSystemError) },
-                            leadingIcon = { Glyph(Tokens.Icons.photoViewerIconDelete, Tokens.Colors.globalSystemError) },
-                            onClick = { menu = false; confirm = true },
-                        )
-                    }
-                }
-            }
-        }))
-        Box(Modifier.weight(1f).fillMaxWidth()) {
-            when {
-                state.phase == AlbumViewState.Phase.Loading -> LoadingHud()
-                state.phase == AlbumViewState.Phase.NotFound -> Centered { EmptyState(stringRes(R.string.albums_view_empty_title), null, null) }
-                state.phase == AlbumViewState.Phase.Error -> Centered { EmptyState(stringRes(R.string.albums_list_error_title), stringRes(R.string.chat_thread_error_detail), PillAction(stringRes(R.string.chat_thread_error_retry), null, onRetry)) }
-                state.phase == AlbumViewState.Phase.OfflineEmpty -> Centered { EmptyState(stringRes(R.string.chat_thread_offline_title), stringRes(R.string.chat_thread_offline_detail), null) }
-                state.photos.isEmpty() -> Centered { EmptyState(stringRes(R.string.albums_view_empty_title), stringRes(R.string.albums_view_empty_detail), null) }
-                else -> LazyVerticalGrid(
-                    columns = GridCells.Fixed(Tokens.Counts.weekRecapCountPicsColumns),
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
-                    horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.weekRecapDimensionPicsGap),
-                    verticalArrangement = Arrangement.spacedBy(Tokens.Sizes.weekRecapDimensionPicsGap),
-                ) {
-                    items(state.photos, key = { it.post.id }) { photo ->
-                        val label = stringRes(R.string.photo_viewer_a11y_photo, photo.authorName.orEmpty(), Formats.viewerDate(photo.post.createdAt))
-                        RemotePhoto(
-                            photo.thumbPath,
-                            null,
-                            Modifier.fillMaxWidth().aspectRatio(Tokens.AspectRatios.weekRecapAspectRatioPicsTile)
-                                .clickable(role = Role.Button) { onPhoto(photo.post.id) }
-                                .clearAndSetSemantics { contentDescription = label; role = Role.Button },
-                        )
-                    }
-                }
-            }
-            if (state.busy && !state.renaming) LoadingHud()
+fun RenameSheetContent(state: AlbumViewState, onName: (String) -> Unit, onSave: () -> Unit, onClose: () -> Unit) {
+    var field by remember { mutableStateOf(TextFieldValue(state.renameName)) }
+    val margin = Tokens.Sizes.globalScreenMargin
+    Column(Modifier.fillMaxWidth().imePadding().testTag("albums.view.rename")) {
+        Box(Modifier.fillMaxWidth().heightIn(min = Tokens.Sizes.globalMinTouchTargetAndroid).padding(horizontal = margin), contentAlignment = Alignment.Center) {
+            CircleIconButton(Tokens.Icons.globalClose, stringRes(R.string.week_recap_a11y_close), onClose, Modifier.align(Alignment.CenterStart), style = CircleButtonStyle.OnPage)
+            Text(stringRes(R.string.albums_view_rename_title), style = TextRoles.sheetTitle, color = Tokens.Colors.globalTextPrimary, modifier = Modifier.semantics { heading() })
         }
-    }
-    if (confirm) {
-        AlertDialog(
-            onDismissRequest = { confirm = false },
-            title = { Text(stringRes(R.string.albums_view_delete_title)) },
-            text = { Text(stringRes(R.string.albums_view_delete_message)) },
-            confirmButton = { TextButton(onClick = { confirm = false; onDelete() }) { Text(stringRes(R.string.albums_view_delete_confirm), color = Tokens.Colors.globalSystemError) } },
-            dismissButton = { TextButton(onClick = { confirm = false }) { Text(stringRes(R.string.photo_viewer_delete_cancel)) } },
+        Spacer(Modifier.height(Tokens.Sizes.globalTitleToContent))
+        FormTextField(
+            value = field,
+            onValueChange = {
+                field = it
+                onName(it.text)
+            },
+            placeholder = stringRes(R.string.week_edit_album_nameplaceholder),
+            accessibilityLabel = stringRes(R.string.albums_view_rename_title),
+            modifier = Modifier.padding(horizontal = margin),
+            error = if (state.renameError == RenameError.Empty) stringRes(R.string.week_edit_error_albumname) else null,
         )
+        Spacer(Modifier.height(Tokens.Sizes.globalSectionGap))
+        PrimaryButton(
+            stringRes(R.string.albums_view_rename_save),
+            onSave,
+            Modifier.padding(horizontal = Tokens.Sizes.globalButtonMarginHSheet),
+            enabled = field.text.isNotEmpty(),
+            size = PrimaryButtonSize.Sheet,
+            loading = state.busy,
+        )
+        Spacer(Modifier.height(Tokens.Sizes.globalButtonMarginHSheet))
     }
 }

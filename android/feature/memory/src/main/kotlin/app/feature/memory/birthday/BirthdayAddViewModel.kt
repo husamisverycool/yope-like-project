@@ -102,6 +102,7 @@ class BirthdayAddViewModel(
             _state.update { it.copy(inline = BirthdayAddState.Inline.Offline) }
             return
         }
+        queue.haptic(Tokens.Haptics.globalWarning)
         _state.update { it.copy(saved = null, busy = true, removing = true, inline = null, error = false) }
         viewModelScope.launch {
             attempt { backend.setBirthday(date, false) }

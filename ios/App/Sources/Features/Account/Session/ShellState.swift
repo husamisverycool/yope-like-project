@@ -1,6 +1,6 @@
-// Account group — the home shell's tab state. Yope's floating tab bar (groups.list.layout.tabBar) switches between the
-// camera (camera.capture: "the app opens to the camera", tab bar under it, structure item 6) and the groups list; walls
-// and me push their screens on the main stack.
+// Account group — the home shell's tab state. The C-04 tab bar (groups.list.layout.tabBar) switches between the camera
+// (camera.capture: "the app opens to the camera", tab bar under it, structure item 6) and the groups list; walls and me
+// push their screens on the main stack.
 import Foundation
 import Observation
 
@@ -69,6 +69,9 @@ struct PresentedRoute: Identifiable, Hashable {
         case .tribute:
             // birthday.tribute.md structure: full screen.
             return PresentedRoute(route: route, style: .fullScreen)
+        case .account(.settings), .account(.groupSettings), .account(.groupProfile):
+            // settings.root / groups.settings: page sheets with their own navigation (`settings.root.layout.list.sheet`).
+            return PresentedRoute(route: route, style: .sheet)
         default:
             return nil
         }

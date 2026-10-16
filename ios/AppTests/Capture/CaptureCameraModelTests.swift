@@ -72,7 +72,7 @@ final class CaptureCameraModelTests: XCTestCase {
         model.toggleFlash()
         XCTAssertTrue(model.isFlashOn)
         model.shutterTouchDown()
-        XCTAssertTrue(model.isShutterPressed, "pressed disc and scale")
+        XCTAssertTrue(model.isShutterPressed, "touch tracked (no custom press visuals: RC-3)")
         model.shutterTouchUp()
         let captured = await captureEventually { model.captured != nil }
         XCTAssertTrue(captured)
@@ -166,7 +166,7 @@ final class CaptureCameraModelTests: XCTestCase {
         let video = CapturedMedia.video(CaptureVideo(fileURL: URL(fileURLWithPath: "/tmp/v.mov"), durationMs: 1000), capturedAt: Date())
         model.didPick(video)
         XCTAssertEqual(rig.premium.promptRequests, 1)
-        XCTAssertEqual(model.captured?.kind, .video, "prompt refused: send-to opens; its send button stays hidden")
+        XCTAssertEqual(model.captured?.kind, .video, "prompt refused: send-to opens; its send capsule stays disabled")
     }
 
     func testDiscardAndSendResults() async {
@@ -192,13 +192,22 @@ final class CaptureCameraModelTests: XCTestCase {
         XCTAssertEqual(rig.camera.stopCount, 1)
     }
 
-    func testHourOverlayIsStartOfHourInShortTimeStyle() {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "America/New_York")!
-        let date = calendar.date(from: DateComponents(year: 2026, month: 10, day: 15, hour: 17, minute: 42))!
-        XCTAssertEqual(CaptureFormat.hourStart(of: date, calendar: calendar), calendar.date(from: DateComponents(year: 2026, month: 10, day: 15, hour: 17)))
-        let text = CaptureFormat.hourOverlay(at: date, calendar: calendar, locale: Locale(identifier: "en_US"))
-        XCTAssertEqual(text.replacingOccurrences(of: "\u{202F}", with: " "), "5:00 PM")
-        XCTAssertEqual(CaptureFormat.nextHour(after: date, calendar: calendar), calendar.date(from: DateComponents(year: 2026, month: 10, day: 15, hour: 18)))
+    func testTitleIsTheISOWeekOfToday() {
+        let rig = CaptureTestRig()
+        XCTAssertEqual(rig.cameraModel(now: CaptureTestRig.fixedNow).title, Copy.cameraCaptureTitle(number: "42"))
+        var calendar = Calendar(identifier: .iso8601)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        let sunday = calendar.date(from: DateComponents(year: 2026, month: 1, day: 4, hour: 12))!
+        let monday = calendar.date(from: DateComponents(year: 2026, month: 1, day: 5, hour: 12))!
+        XCTAssertEqual(CaptureFormat.weekNumber(of: sunday, timeZone: calendar.timeZone), 1, "ISO weeks start on Monday")
+        XCTAssertEqual(CaptureFormat.weekNumber(of: monday, timeZone: calendar.timeZone), 2)
+    }
+
+    func testRestartAfterFlipKeepsThePreviewShown() async {
+        let rig = CaptureTestRig()
+        let model = rig.cameraModel()
+        XCTAssertFalse(model.hasBeenLive)
+        await model.appear()
+        XCTAssertTrue(model.hasBeenLive, "the preview fades in once; a flip restarts the session without hiding it")
     }
 }

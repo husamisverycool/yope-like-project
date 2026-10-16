@@ -164,7 +164,8 @@ private fun Story(
                 key(state.index) { StoryCardPage(card, state.recap, revealed = false, backdropDrawn = true) }
                 TapZones(state, actions)
             }
-            shareHost(contentBox(maxWidth, maxHeight).first)
+            // One off-screen share renderer, on the page in view.
+            if (page == (if (summary) state.style else 0)) shareHost(contentBox(maxWidth, maxHeight).first)
         }
     }
 }

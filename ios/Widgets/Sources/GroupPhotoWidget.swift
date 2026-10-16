@@ -1,11 +1,11 @@
-// Surfaces: widget.home.small / .medium / .large / .xl, widget.lock.rect / .circular / .inline,
-// widget.arrival, camera.fromwidget — reference app: Locket (+ Apple HIG Widgets).
-// Reference images: references/auto/locket/store/locket-store-03.png, locket-store-06.png,
-// references/auto/locket/frames/locket-tt-7168613044728155438-15.133s-widget-placeholder-just-added.jpg →
-// 15.167s-widget-photo-arrived.jpg, references/auto/platform/hig-widgets-ios-dimensions.png
-// (design/surfaces/widget.*.md). Two widget kinds: the Home Screen photo widget (small, medium,
-// large; extra large on iPad) and the Lock Screen widget (circular, rectangular, inline). Both read
-// only the App Group `WidgetStore`; a tap opens the camera for the widget's group.
+// Surfaces: widget.home.small / .medium / .large / .xl, widget.lock.rect / .circular / .inline, widget.arrival,
+// camera.fromwidget — visual reference Retro's Glance widgets ("Group Updates", Albums variant), mechanics Locket, sizes
+// and rendering Apple HIG Widgets.
+// Reference images: references/auto/retro/apk/widget_preview_journals.webp, references/auto/locket/store/locket-store-03.png,
+// locket-store-06.png, references/auto/locket/frames/locket-tt-7168613044728155438-15.133s-widget-placeholder-just-added.jpg →
+// 15.167s-widget-photo-arrived.jpg, references/auto/platform/hig-widgets-ios-dimensions.png (design/surfaces/widget.*.md).
+// Two widget kinds: the Home Screen photo widget (small, medium, large; extra large on iPad) and the Lock Screen widget
+// (circular, rectangular, inline). Both read only the App Group `WidgetStore`; a tap opens the camera for the widget's group.
 import AppIntents
 import AppModels
 import DesignSystem
@@ -22,7 +22,7 @@ import WidgetKit
 struct GroupPhotoProvider: AppIntentTimelineProvider {
     static let safetyRefreshSeconds: ClosedRange<TimeInterval> = 15 * 60...60 * 60
 
-    /// The Lock Screen kind resolves the newest single photo (`widget.lock.rect.layout.content`).
+    /// The Lock Screen kind skips the colour rendition (`widget.lock.rect.layout.rendering`: vibrant, no colour photo).
     var lockScreen = false
 
     func placeholder(in context: Context) -> GroupPhotoEntry {
@@ -50,40 +50,42 @@ struct GroupPhotoProvider: AppIntentTimelineProvider {
     }
 }
 
-/// Home Screen: the photo fills the widget as the removable container background (content
-/// margins disabled; the overlay sits inside the 6-pt inset, C-6). One description for all sizes;
-/// the gallery name is `{app_name}` (BLOCKED), so the system shows the app's name.
+/// Home Screen: the photo fills the widget as the removable container background (content margins disabled); one
+/// layout at every size (RC-11). Gallery: "Group Updates" / `widget.home.small.gallery.description` (Retro names its
+/// widgets by content, `retro.voice.widget`).
 struct GroupPhotoWidget: Widget {
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: GroupWidgetKinds.home, intent: SelectGroupIntent.self, provider: GroupPhotoProvider()) { entry in
             GroupPhotoWidgetView(entry: entry)
         }
+        .configurationDisplayName(Text(Copy.widgetHomeSmallGalleryName))
         .description(Text(Copy.widgetHomeSmallGalleryDescription))
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge])
         .contentMarginsDisabled()
     }
 }
 
-/// Lock Screen (vibrant): circular = sender avatar, rectangular = avatar + caption, inline = caption.
+/// Lock Screen (vibrant): circular = the poster's avatar, rectangular = C-16 row (avatar, name over group), inline =
+/// "{name} · {group}". Gallery: "Group Updates" / `widget.lock.rect.gallery.description`.
 struct GroupLockWidget: Widget {
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: GroupWidgetKinds.lockScreen, intent: SelectGroupIntent.self, provider: GroupPhotoProvider(lockScreen: true)) { entry in
             GroupLockWidgetView(entry: entry)
         }
+        .configurationDisplayName(Text(Copy.widgetLockRectGalleryName))
         .description(Text(Copy.widgetLockRectGalleryDescription))
         .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
     }
 }
 
 struct GroupPhotoWidgetView: View {
-    @Environment(\.widgetFamily) private var family
     let entry: GroupPhotoEntry
 
     var body: some View {
         let content = entry.content
-        WidgetOverlay(content: content, family: family)
+        WidgetOverlay(content: content)
             .containerBackground(for: .widget) {
-                WidgetEmptyState(content: content)
+                WidgetContainerBackground(content: content)
             }
             .widgetURL(entry.tapURL)
     }

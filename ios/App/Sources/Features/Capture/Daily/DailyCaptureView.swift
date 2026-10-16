@@ -94,7 +94,8 @@ struct DailyCaptureView: View {
         CaptureMediaHeader(
             trailing: HeaderAction(icon: Tokens.Icons.globalClose, accessibilityLabel: Copy.dailyCaptureA11yDismiss) {
                 model.dismiss()
-            }
+            },
+            trailingIdentifier: "daily.capture.dismiss"
         ) {
             DailyCaptureTitle(
                 closesAt: model.invitation?.closesAt,
@@ -106,7 +107,6 @@ struct DailyCaptureView: View {
         }
         .disabled(model.isSending)
         .accessibilitySortPriority(6)
-        .accessibilityIdentifier("daily.capture.header")
     }
 
     // MARK: Viewfinder / preview

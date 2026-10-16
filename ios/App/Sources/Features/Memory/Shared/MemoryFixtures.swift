@@ -320,7 +320,7 @@ extension FixtureMemoryData {
         let today = LocalDate(now, in: zone)
         let year = today.year
         func profile(_ id: UserID, _ name: String) -> Profile {
-            Profile(id: id, displayName: name, avatarPath: nil, createdAt: now, updatedAt: now)
+            Profile(id: id, displayName: name, avatarPath: "avatars/\(id.rawValue)/a.jpg", createdAt: now, updatedAt: now) // provenance-ok: storage path
         }
         func post(_ number: Int, author: UserID, at date: Date, shape: (Int, Int)) -> PostWithMedia {
             let mediaID = ids.media(number)
@@ -439,7 +439,7 @@ enum MemoryLaunch {
             let year = LocalDate(Date(), in: MemoryFormat.utc).year
             router.modal = .memory(.yearStory(groupID: group, year: year))
         case "onThisDay":
-            router.modal = .memory(.onThisDay(groupID: group))
+            router.path = [.memory(.onThisDay(groupID: group))]
         case "birthdayAdd":
             router.path = [.memory(.birthdayAdd)]
         default:

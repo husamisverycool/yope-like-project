@@ -9,17 +9,17 @@ import Observation
 @MainActor
 @Observable
 final class BirthdayContributeModel {
-    /// Steps pushed after step 1 (Photo), which is the flow's root.
+    /// Steps pushed after step 1 (Choose a Photo), which is the flow's root.
     enum Step: Hashable {
-        case message
-        case done
+        /// Step 2: the dark composer with the photo and the "Add a message" pill.
+        case composer
     }
 
     enum Phase: Equatable {
         case idle
         case loading
         case loaded
-        /// No eligible photo: the Yope empty state under the thanks line.
+        /// No eligible photo: the C-27 empty block with "View {group}".
         case empty
         /// `tribute_closed` / past `due_at`: replaces the step content.
         case closed
@@ -42,17 +42,22 @@ final class BirthdayContributeModel {
         let createdAt: Date
     }
 
-    var phase: Phase = .idle
-    var photos: [EligiblePhoto] = []
-    var selectedID: PostID?
+    private(set) var phase: Phase = .idle
+    private(set) var photos: [EligiblePhoto] = []
+    private(set) var selectedID: PostID?
+    /// The one line (step 2a); stops at `layout.birthday.contribute.lineMax` characters.
     var line = ""
     var path: [Step] = []
-    var isSending = false
-    var inline: Inline?
-    var honoreeName = ""
-    var groupName = ""
-    /// Set when the flow should close (Done or ✕).
-    var isFinished = false
+    /// Step 2a, the "Add a Message" modal.
+    var showsMessage = false
+    private(set) var isSending = false
+    private(set) var inline: Inline?
+    private(set) var honoreeName = ""
+    private(set) var groupName = ""
+    /// Set when the flow should close (sent, Cancel or ✕).
+    private(set) var isFinished = false
+    /// The contribution was sent (the request shows it; "Added to video!" was announced).
+    private(set) var didSend = false
     /// Set when the empty state's "open group" was tapped.
     var openGroupRequested = false
     private(set) var groupID: GroupID?
@@ -66,13 +71,8 @@ final class BirthdayContributeModel {
         self.dependencies = dependencies
     }
 
-    var step: Int {
-        switch path.last {
-        case nil: return 1
-        case .message?: return 2
-        case .done?: return 3
-        }
-    }
+    /// 1 = choose a photo, 2 = the composer.
+    var step: Int { path.isEmpty ? 1 : 2 }
 
     var selectedPhoto: EligiblePhoto? {
         photos.first { $0.id == selectedID }
@@ -82,15 +82,20 @@ final class BirthdayContributeModel {
         line.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    /// "Use Photo" is enabled once a photo is selected.
+    /// "Next" is enabled once a photo is selected.
     var canUsePhoto: Bool { selectedPhoto != nil }
 
-    /// "Submit" is disabled until the line has a non-space character.
+    /// "Add to video" is disabled until the line has a non-space character.
     var canSubmit: Bool { !trimmedLine.isEmpty && !isSending && selectedPhoto != nil }
 
-    /// `layout.birthday.contribute.lineMax`: the line stops growing at this many characters, with no
-    /// visible counter (the API's 280-character bound stays the server check).
+    /// `layout.birthday.contribute.lineMax`: input stops at this many characters (the counter shows it; the API's
+    /// 280-character bound stays the server check).
     static var lineMax: Int { Int(Tokens.Layouts.BirthdayContributeLineMax.maxCharacters) }
+
+    /// `birthday.contribute.message.counter` ("12/110").
+    var counter: String {
+        Copy.birthdayContributeMessageCounter(count: MemoryFormat.number(line.count), max: MemoryFormat.number(Self.lineMax))
+    }
 
     /// Applies the field rules to `line` after each edit: one line of meaning (a typed return ends the
     /// entry instead of adding a line, so it is removed) and at most `lineMax` characters (a longer
@@ -227,32 +232,41 @@ final class BirthdayContributeModel {
         dependencies.haptics(Tokens.Haptics.globalSelect)
     }
 
-    /// "Use Photo" → step 2.
+    /// "Next" → step 2 (the composer).
     func usePhoto() {
         guard canUsePhoto else { return }
         inline = nil
-        path = [.message]
+        path = [.composer]
     }
 
-    // MARK: Step 2 — Message
+    // MARK: Step 2 — the composer and the "Add a Message" modal
 
-    /// "Retake" → back to step 1, selection kept.
-    func retake() {
-        path = []
+    /// The pill ("Add a message" / "Edit message") opens the modal.
+    func editMessage() {
+        showsMessage = true
     }
 
-    /// Optimistic: step 3 shows at once (its Done button waits for the answer); on failure the flow
-    /// goes back to where the problem is, with the spec's error line.
+    /// "Done" in the modal: back to the composer with the line.
+    func doneEditing() {
+        normalizeLine()
+        showsMessage = false
+    }
+
+    /// "Add to video": `contribute_tribute`. On success `haptic.global.send`, the sheet closes and "Added to video!" is
+    /// announced (C-26); on failure the flow goes back to where the problem is, with the spec's line.
     func submit() async {
         guard canSubmit, let selectedID, let data = dependencies.data else { return }
         inline = nil
         isSending = true
-        path = [.message, .done]
         defer { isSending = false }
         do {
             _ = try await data.contribute(requestID: requestID, postID: selectedID, line: trimmedLine)
             dependencies.haptics(Tokens.Haptics.globalSend)
             dependencies.cache.remove(key: "birthday.request." + requestID.rawValue) // provenance-ok: cache key of birthday.request
+            dependencies.toasts.show(Copy.birthdayContributeDoneTitle)
+            didSend = true
+            deletionTask?.cancel()
+            isFinished = true
         } catch {
             dependencies.haptics(Tokens.Haptics.globalError)
             switch MemoryFailure(error) {
@@ -264,24 +278,22 @@ final class BirthdayContributeModel {
                 path = []
             case .offline:
                 inline = .offline
-                path = [.message]
             case .notFound:
                 if case .api(.postNotFound, _) = DataError.from(error) {
                     removePost(selectedID)
                     path = []
                 } else {
                     inline = .error
-                    path = [.message]
                 }
             default:
                 inline = .error
-                path = [.message]
             }
         }
     }
 
-    // MARK: Step 3 — Done / close
+    // MARK: Close
 
+    /// Cancel (step 1) or ✕ (step 2): the whole sheet closes, nothing is sent.
     func finish() {
         guard !isSending else { return }
         deletionTask?.cancel()
@@ -301,7 +313,8 @@ final class BirthdayContributeModel {
         photos.removeAll { $0.id == postID }
         if selectedID == postID {
             selectedID = nil
-            if step != 3 { path = [] }
+            path = []
+            showsMessage = false
         }
         if photos.isEmpty, phase == .loaded { phase = .empty }
     }

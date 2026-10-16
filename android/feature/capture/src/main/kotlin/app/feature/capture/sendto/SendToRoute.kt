@@ -24,9 +24,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -37,24 +35,25 @@ import androidx.media3.exoplayer.ExoPlayer
 import app.data.model.MediaKind
 import app.designsystem.R
 import app.designsystem.generated.Tokens
-import app.feature.capture.camera.rememberHourText
 import app.feature.capture.data.CaptureDataProvider
 import app.feature.capture.data.CaptureHandoff
-import app.feature.capture.data.CaptureServices
 import app.feature.capture.data.CapturedMedia
-import app.feature.capture.data.SharedCapturePrefs
-import app.feature.capture.ui.haptic
+import app.feature.capture.ui.VoiceGestures
+import app.ui.components.PlatformToast
+import app.ui.haptics.rememberHaptics
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.unit.Dp
 import app.model.SessionPromptGate
 import app.ui.permissions.PermissionRationale
 import app.ui.permissions.rememberPermissionRequest
 import app.voice.VoiceRecorder
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
-/** The send-to destination: view model, recorder, library save and navigation out. */
+/** The send-to destination: view model, recorder, library save, toasts and navigation out. */
 @Composable
 fun SendToRoute(
     onClose: () -> Unit,
@@ -63,14 +62,12 @@ fun SendToRoute(
     onOpenPaywall: () -> Unit,
 ) {
     val context = LocalContext.current
-    val view = LocalView.current
+    val haptics = rememberHaptics()
     val scope = rememberCoroutineScope()
     val vm: SendToViewModel = viewModel {
         SendToViewModel(
             data = CaptureDataProvider.get(context),
             handoff = CaptureHandoff.process,
-            tracker = CaptureServices.tracker(context),
-            prefs = SharedCapturePrefs(context),
             gate = SessionPromptGate.process,
             voiceRecorderAvailable = context.packageManager.hasSystemFeature(android.content.pm.PackageManager.FEATURE_MICROPHONE),
             maxCaption = Tokens.Counts.cameraSendtoSizeCaptionMaxLength,
@@ -78,12 +75,13 @@ fun SendToRoute(
     }
     val state by vm.ui.collectAsStateWithLifecycle()
     val media = state.media
+    var messageSheet by rememberSaveable { mutableStateOf(false) }
 
     // No capture to send (process restarted): back to the camera.
     LaunchedEffect(media == null) { if (media == null) onClose() }
 
     val density = LocalDensity.current
-    val targetPx = with(density) { Tokens.Layouts.CameraSendtoLayoutPreview.width.dp.roundToPx() }
+    val targetPx = with(density) { Dp(Tokens.Layouts.CameraSendtoLayoutPreview.width).roundToPx() }
     val preview by produceState<ImageBitmap?>(initialValue = null, media) {
         value = media?.let { m -> withContext(Dispatchers.IO) { if (m.kind == MediaKind.Video) videoFrame(m.file) else decodePreview(m.file, targetPx) } }
     }
@@ -95,7 +93,7 @@ fun SendToRoute(
         }
     }
 
-    // Voice note (`chat.voice.layout.recording`).
+    // Voice note with the chat.voice recorder; the microphone is asked here at first use.
     val recorder = remember { VoiceRecorder(context.applicationContext) }
     DisposableEffect(recorder) { onDispose { recorder.release() } }
     val microphone = rememberPermissionRequest(
@@ -109,20 +107,12 @@ fun SendToRoute(
         ),
         onResult = { },
     )
-    // "saved to your library" (camera.sendto.toast.saved) with haptic.global.success once the copy is written.
-    var savedAt by remember { mutableStateOf<Long?>(null) }
-    LaunchedEffect(savedAt) {
-        if (savedAt != null) {
-            delay(Tokens.Durations.cameraSendtoDurationToastVisible.toLong())
-            savedAt = null
-        }
-    }
+    val savedText = stringResource(R.string.camera_sendto_toast_saved)
+    val postedMany = stringResource(R.string.camera_sendto_toast_postedmany)
     val save: (CapturedMedia) -> Unit = { m ->
         scope.launch {
-            if (saveToLibrary(context, m)) {
-                view.haptic(Tokens.Haptics.globalSuccess)
-                savedAt = android.os.SystemClock.elapsedRealtime()
-            }
+            // Android confirms with the platform toast (C-26).
+            if (saveToLibrary(context, m)) PlatformToast.show(context, savedText)
         }
     }
     val storage = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -133,12 +123,13 @@ fun SendToRoute(
         vm.event.collect { event ->
             when (event) {
                 SendToViewModel.Event.Close -> onClose()
-                SendToViewModel.Event.Sent -> {
-                    // Optimistic: queued = sent (uploads.enqueue works offline and resumes); a later
-                    // failure shows the error toast with haptic.global.error.
-                    view.haptic(Tokens.Haptics.globalSend)
+                is SendToViewModel.Event.Sent -> {
+                    haptics.perform(Tokens.Haptics.globalSend)
+                    val text = event.groupNames.singleOrNull()?.let { context.getString(R.string.camera_sendto_toast_postedone, it) } ?: postedMany
+                    PlatformToast.show(context, text)
                     onSent()
                 }
+                SendToViewModel.Event.Failed -> haptics.perform(Tokens.Haptics.globalError)
                 SendToViewModel.Event.OpenPaywall -> onOpenPaywall()
                 SendToViewModel.Event.CreateGroup -> onCreateGroup()
                 is SendToViewModel.Event.SaveToLibrary -> {
@@ -153,41 +144,50 @@ fun SendToRoute(
             }
         }
     }
+    // Back = the close circle (asks first when something would be lost).
+    BackHandler(enabled = !messageSheet) { vm.close() }
 
+    val hasMic = { androidx.core.content.ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED }
     SendToScreen(
         state = state,
-        chrome = SendToChrome(preview = preview, hourText = rememberHourText(), covers = covers),
+        chrome = SendToChrome(preview = preview, covers = covers),
         onClose = vm::close,
         onSave = vm::save,
         onCaption = vm::onCaption,
-        onMic = { finishVoice(recorder, vm) },
-        onVoiceCoachClose = vm::dismissVoiceCoach,
         onToggle = vm::toggle,
         onSend = vm::send,
         onCreateGroup = vm::createGroup,
         onRetryGroups = vm::loadGroups,
+        onConfirmDiscard = vm::confirmDiscard,
+        onDismissAlert = vm::dismissAlert,
+        onRetrySend = vm::retry,
         videoPreview = media?.takeIf { it.kind == MediaKind.Video }?.let { m -> { VideoLoop(m.file) } },
-        savedToast = savedAt != null,
-        voiceGestures = remember(recorder, vm) {
-            object : VoiceGestures {
-                override fun down() {
-                    // The first use asks for the microphone; recording starts on the next hold.
-                    if (androidx.core.content.ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                        startVoice(context, recorder, vm)
-                    } else {
-                        microphone.launch()
+        messageSheetOpen = messageSheet,
+        onMessageSheet = { messageSheet = it },
+        voice = remember(recorder, vm) {
+            VoiceActions(
+                gestures = object : VoiceGestures {
+                    override fun down() {
+                        // The first use asks for the microphone; recording starts on the next hold.
+                        if (hasMic()) startVoice(context, recorder, vm) else microphone.launch()
                     }
-                }
 
-                override fun release() = finishVoice(recorder, vm)
+                    override fun release() = finishVoice(recorder, vm)
 
-                override fun cancel() {
-                    recorder.cancel()
-                    vm.onVoiceRecording(false)
-                }
-
-                override fun lock() = vm.onVoiceLocked()
-            }
+                    override fun cancel() {
+                        recorder.cancel()
+                        vm.onVoiceRecording(false)
+                    }
+                },
+                onA11yToggle = {
+                    when {
+                        recorder.isRecording -> finishVoice(recorder, vm)
+                        hasMic() -> startVoice(context, recorder, vm)
+                        else -> microphone.launch()
+                    }
+                },
+                onDelete = vm::deleteVoice,
+            )
         },
     )
 }
@@ -217,7 +217,7 @@ private fun finishVoice(recorder: VoiceRecorder, vm: SendToViewModel) {
 /** Waveform resolution of core:voice (no waveform is drawn here; transport value, not design). */
 private const val VOICE_LEVEL_SAMPLING_MS = 100L // provenance-ok: recorder level sampling interval, nothing is drawn from it
 
-/** The capture's video, muted, looping, centre-cropped into the card (Yope's speaker glyph not built). */
+/** The capture's video, muted, looping, centre-cropped into the photo frame (camera.sendto → preview). */
 @Composable
 private fun VideoLoop(file: File) {
     val context = LocalContext.current

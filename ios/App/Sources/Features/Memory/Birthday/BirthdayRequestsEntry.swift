@@ -1,20 +1,18 @@
-// Surface: birthday.request — the group-screen entry ("Entry on the group screen" in
-// design/surfaces/birthday.request.md).
+// Surface: birthday.request — the group-screen entry ("Entry on the group screen" in design/surfaces/birthday.request.md;
+// placed by groups.screen item 6).
 import AppData
 import SwiftUI
 
-/// One row per open birthday request in this group (`birthday.request.title` + `birthday.request.due`),
-/// for `groups.screen`.
+/// One row per open birthday request in this group (`birthday.request.title` + `birthday.request.due`, the honoree's
+/// avatar), for `groups.screen`.
 ///
-/// Shows nothing when there is no open request. The honoree never gets a row about themselves.
-/// There is no "you haven't contributed" badge or state. A tap opens `BirthdayRequestScreen` as a
-/// sheet (`.presentationDetents([.large])`). The row's look is the caller's:
+/// Shows nothing when there is no open request. The honoree never gets a row about themselves. There is no "you haven't
+/// contributed" badge or state. A tap opens `BirthdayRequestScreen` full screen. The look defaults to `MemoryEntryRequestRow`
+/// (groups.screen item 6: C-14 + C-16); pass your own row to restyle it:
 ///
-///     BirthdayRequestsEntry(groupID: group.id) { content in
-///         MyGroupRow(title: content.title, subtitle: content.subtitle)
-///     }
+///     BirthdayRequestsEntry(groupID: group.id) { content in MyRow(content) }
 ///
-/// While hidden it is an empty zero-height stack; it refreshes when it appears and after the sheet closes.
+/// While hidden it is an empty zero-size stack; it refreshes when it appears and after the request closes.
 @MainActor
 struct BirthdayRequestsEntry<Row: View>: View {
     @State private var model: BirthdayRequestsEntryModel
@@ -45,17 +43,16 @@ struct BirthdayRequestsEntry<Row: View>: View {
             }
         }
         .task { await model.refresh() }
-        .sheet(item: $presented, onDismiss: {
+        .fullScreenCover(item: $presented, onDismiss: {
             Task { await model.refresh() }
         }) { request in
             BirthdayRequestScreen(requestID: request.id, groupID: groupID)
-                .presentationDetents([.large])
         }
     }
 }
 
-extension BirthdayRequestsEntry where Row == MemoryEntryPlainRow {
+extension BirthdayRequestsEntry where Row == MemoryEntryRequestRow {
     init(groupID: String, model: BirthdayRequestsEntryModel? = nil) {
-        self.init(groupID: groupID, model: model) { MemoryEntryPlainRow(content: $0) }
+        self.init(groupID: groupID, model: model) { MemoryEntryRequestRow(content: $0) }
     }
 }

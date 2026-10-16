@@ -23,14 +23,19 @@ final class TributeModel {
         case offline
     }
 
-    var phase: Phase = .idle
-    var groupName = ""
-    var videoURL: URL?
-    var posterURL: URL?
-    /// The MP4 on the device, for Download and Share; nil until downloaded.
-    var localFile: URL?
-    var isSaving = false
-    var toast: MemoryToastMessage?
+    private(set) var phase: Phase = .idle
+    private(set) var groupName = ""
+    /// The honoree's first name (`birthday.tribute.title.member`); empty for the honoree.
+    private(set) var honoreeName = ""
+    /// The caller is the honoree (`birthday.tribute.title`).
+    private(set) var isHonoree = false
+    private(set) var videoURL: URL?
+    private(set) var posterURL: URL?
+    /// The MP4 on the device, for save and Share; nil until downloaded.
+    private(set) var localFile: URL?
+    private(set) var isSaving = false
+    /// Add-only photo access was denied: the native alert that opens Settings (`birthday.tribute.saveDenied.*`).
+    var showsSaveDenied = false
     /// Prepared as soon as the video URL is known, so playback starts fast when the screen shows it.
     private(set) var player: AVPlayer?
 
@@ -58,8 +63,13 @@ final class TributeModel {
         return deliveredAt <= now
     }
 
-    /// Download and Share work once the file is on the device.
+    /// Save and Share work once the file is on the device.
     var canUseFile: Bool { phase == .ready && localFile != nil && !isSaving }
+
+    /// "Your birthday video" for the honoree, "{name}'s birthday video" for anyone else.
+    var title: String {
+        isHonoree ? Copy.birthdayTributeTitle : Copy.birthdayTributeTitleMember(name: honoreeName)
+    }
 
     func loadIfNeeded() async {
         guard phase == .idle else { return }
@@ -90,6 +100,10 @@ final class TributeModel {
                 return
             }
             groupName = try await data.group(id: tribute.groupID)?.name ?? ""
+            isHonoree = tribute.honoreeID == me
+            if !isHonoree {
+                honoreeName = try await data.profiles(ids: [tribute.honoreeID]).first?.firstName ?? ""
+            }
             switch tribute.status {
             case .failed:
                 phase = .error
@@ -126,7 +140,8 @@ final class TributeModel {
         }
     }
 
-    /// Download: saves the MP4 to the photo library (add-only access).
+    /// "Save to Camera Roll": the MP4 to the photo library (add-only access). `haptic.global.success` +
+    /// `birthday.tribute.saved`; denied → the native alert; failed → `haptic.global.error` + `birthday.tribute.saveFailed`.
     func download() async {
         guard canUseFile, let localFile else { return }
         isSaving = true
@@ -134,10 +149,14 @@ final class TributeModel {
         do {
             try await saveVideo(localFile)
             dependencies.haptics(Tokens.Haptics.globalSuccess)
-            toast = MemoryToastMessage(text: Copy.birthdayTributeSaved, showsCheckmark: true)
+            dependencies.toasts.show(Copy.birthdayTributeSaved)
         } catch {
             dependencies.haptics(Tokens.Haptics.globalError)
-            toast = MemoryToastMessage(text: Copy.birthdayTributeSaveFailed)
+            if OnThisDayModel.isAccessDenied(error) {
+                showsSaveDenied = true
+            } else {
+                dependencies.toasts.show(Copy.birthdayTributeSaveFailed)
+            }
         }
     }
 }

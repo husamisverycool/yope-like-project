@@ -1,9 +1,10 @@
-// Surface: camera.capture (+ camera.fromwidget: the widget deep link lands here).
-// References: references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (layout,
-// viewfinder, hour overlay, flash, coach, shutter, library, flip); a-alexaa-7684388619099933966-t5.23-camera-hold-to-record-tabbar.png;
-// a-chuongxetank-7694968408424582452-t4.73-camera.png; a-virgi-7686278541255642390-t36.23-camera-first-open-es.png /
-// t35.23-camera-permission-alert.png (system alert over the camera); Locket shutter press
-// references/auto/locket/frames/locket-tt-7069892557970345259-03.367s-shutter-pressed-2022.jpg.
+// Surface: camera.capture (+ camera.fromwidget: the widget deep link lands here). Retro has no camera: the page is
+// composed from Retro components on its media surface (RC-1 … RC-4) — C-01 root header (serif "Week N", bare flash
+// glyph), the photo container as viewfinder (3:4, 16 margins, 18 corners), the C-35 control row (shutter flanked
+// by 64-pt C-11 circles), C-09 coach pill, C-27 states. References: references/auto/retro/lazyweb/
+// retro-lazyweb-20251020-week43-dark.png (H43: header, container corners, tab bar on black);
+// references/auto/retro/press/tc-2025-12-rewind-device-a.png (RWA: control row); references/auto/retro/store/
+// retro-store-03.png (ST-03: pill on a photo); references/auto/locket/store/locket-store-07.png (shutter mechanics).
 package app.feature.capture.camera
 
 import android.Manifest
@@ -16,81 +17,81 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.compose.CameraXViewfinder
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.CustomAccessibilityAction
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.customActions
-import androidx.compose.ui.semantics.isTraversalGroup
-import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.semantics.traversalIndex
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.data.model.MediaKind
 import app.designsystem.R
-import app.designsystem.dsAnimateFloatAsState
-import app.designsystem.MotionChannel
 import app.designsystem.generated.Tokens
 import app.feature.capture.data.CaptureDataProvider
 import app.feature.capture.data.CaptureHandoff
 import app.feature.capture.data.SharedCapturePrefs
-import app.feature.capture.ui.CaptureText
-import app.feature.capture.ui.CircleIconButton
-import app.feature.capture.ui.CoachTooltip
-import app.feature.capture.ui.EmptyStateBlock
-import app.feature.capture.ui.Glyph
-import app.feature.capture.ui.MinTouchTargets
-import app.feature.capture.ui.ShutterDisc
-import app.feature.capture.ui.CaptureToastHost
+import app.feature.capture.ui.ControlRow
+import app.feature.capture.ui.MediaControlCircle
+import app.feature.capture.ui.MediaEmptyState
+import app.feature.capture.ui.RecordingOutline
+import app.feature.capture.ui.Shutter
 import app.media.ImageEncoder
 import app.media.MediaPermission
 import app.media.MediaPermissions
 import app.media.PhotoImport
 import app.model.SessionPromptGate
+import app.ui.components.EmptyStateAction
+import app.ui.components.MediaPill
+import app.ui.components.MediaPillStyle
+import app.ui.components.ScreenHeader
+import app.ui.foundation.DsMotion
+import app.ui.foundation.FadeVisibility
+import app.ui.foundation.GlyphInk
+import app.ui.foundation.centreAt
+import app.ui.foundation.tapClickable
+import app.ui.text.CapTop
+import app.ui.text.TextRoles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.util.Date
+import java.time.LocalDate
+import java.time.temporal.IsoFields
 
 /** The camera destination: permission, CameraX session, picker, and navigation out. */
 @Composable
@@ -165,7 +166,7 @@ fun CameraRoute(
     CameraScreen(
         state = state,
         viewfinder = { preview?.let { CameraXViewfinder(surfaceRequest = it, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop) } },
-        hourText = rememberHourText(),
+        title = stringResource(R.string.camera_capture_title, currentWeekNumber().toString()),
         onShutterTap = vm::capturePhoto,
         onShutterLongPress = { vm.startVideo(MediaPermissions.wasRequested(context, MediaPermission.Microphone) || MediaPermissions.isGranted(context, MediaPermission.Microphone)) },
         onShutterRelease = vm::stopVideo,
@@ -188,16 +189,21 @@ fun CameraRoute(
     }
 }
 
+/** `camera.capture.title` {number}: the current ISO-8601 week, as `week.history` numbers weeks. */
+internal fun currentWeekNumber(today: LocalDate = LocalDate.now()): Int = today.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)
+
 /**
- * The camera screen (stateless). Positions are the spec's, from the screen top: viewfinder at
- * `camera.capture.layout.viewfinder.top`, full width, height = width × heightOverWidth; the control
- * row `camera.capture.size.shutterTopGap` below it.
+ * The camera screen (stateless), on `color.global.backgroundDeep` in both appearances: the C-01 header at the
+ * safe-area top, the 3:4 viewfinder `size.global.titleToContent` below the title baseline (it shrinks, 3:4 kept,
+ * when the control row would get less than `size.global.screenMargin` above and below the shutter), the control
+ * row centred between the viewfinder and the tab bar (C-04, drawn by the app shell over the bottom
+ * `size.global.tabBarHeight` + the navigation bar).
  */
 @Composable
 fun CameraScreen(
     state: CameraViewModel.UiState,
     viewfinder: @Composable () -> Unit,
-    hourText: String,
+    title: String,
     onShutterTap: () -> Unit,
     onShutterLongPress: () -> Unit,
     onShutterRelease: () -> Unit,
@@ -208,252 +214,156 @@ fun CameraScreen(
     onOpenSettings: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
-) = MinTouchTargets {
-    val vf = Tokens.Layouts.CameraCaptureLayoutViewfinder
-    BoxWithConstraints(
+) {
+    val tabBar = Tokens.Sizes.globalTabBarHeight + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val margin = Tokens.Sizes.globalScreenMargin
+    val shutter = Tokens.Sizes.cameraCaptureSizeShutterOuter
+    Column(
         modifier
             .fillMaxSize()
             .background(Tokens.Colors.globalBackgroundDeep)
-            .semantics { isTraversalGroup = true }
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .padding(bottom = tabBar)
             .testTag("camera.capture"),
     ) {
-        val width = maxWidth
-        val vfTop = vf.top.dp
-        val vfHeight = width * vf.heightOverWidth
-        val rowTop = vfTop + vfHeight + Tokens.Sizes.cameraCaptureSizeShutterTopGap
-        val outer = Tokens.Sizes.cameraCaptureSizeShutterOuter
-        val rowCenterY = rowTop + outer / 2
-
-        // Viewfinder.
-        Box(
-            Modifier
-                .padding(top = vfTop)
-                .fillMaxWidth()
-                .height(vfHeight)
-                .clip(RoundedCornerShape(Tokens.Radii.globalViewfinder))
-                .background(Tokens.Colors.globalBackgroundDeep)
-                .testTag("camera.viewfinder"),
-        ) {
-            when {
-                state.permission == CameraViewModel.Permission.Denied -> EmptyStateBlock(
-                    title = stringResource(R.string.camera_capture_denied_title),
-                    detail = stringResource(R.string.camera_capture_denied_detail),
-                    buttonLabel = stringResource(R.string.camera_capture_denied_button),
-                    onButton = onOpenSettings,
-                    modifier = Modifier.align(Alignment.Center),
-                )
-                state.session == CameraViewModel.Session.Unavailable -> EmptyStateBlock(
-                    title = stringResource(R.string.camera_capture_unavailable_title),
-                    detail = stringResource(R.string.camera_capture_unavailable_detail),
-                    buttonLabel = stringResource(R.string.camera_capture_unavailable_button),
-                    onButton = onRetry,
-                    modifier = Modifier.align(Alignment.Center),
-                )
-                state.permission == CameraViewModel.Permission.Granted -> {
-                    viewfinder()
-                    BasicText(
-                        hourText,
-                        style = CaptureText.overlayTimeCamera.merge(TextStyle(color = Tokens.Colors.globalTextPrimary)),
-                        modifier = Modifier.align(Alignment.Center).semantics { traversalIndex = HOUR_ORDER },
-                    )
-                    if (state.hasFlash) FlashToggle(state.flashOn, onFlash)
-                    RecordingOutline(state.recording)
-                }
+        Box {
+            ScreenHeader(title, titleColor = Tokens.Colors.globalTextOnMedia)
+            if (state.hasFlash && state.showControls) {
+                FlashGlyph(state.flashOn, onFlash, Modifier.align(Alignment.TopEnd))
             }
         }
-
-        // Control row: library (−sideControlOffset), shutter (centre), flip (+sideControlOffset).
-        val side = Tokens.Sizes.cameraCaptureSizeSideControlOffset
-        val thumb = Tokens.Sizes.cameraCaptureSizeLibraryThumb
-        LibraryThumb(
-            onLibrary,
-            Modifier.offset(x = width / 2 - side - thumb / 2, y = rowCenterY - thumb / 2).semantics { traversalIndex = LIBRARY_ORDER },
-        )
-        if (state.showControls) {
-            Shutter(
-                state = state,
-                onTap = onShutterTap,
-                onLongPress = onShutterLongPress,
-                onRelease = onShutterRelease,
-                modifier = Modifier.offset(x = width / 2 - outer / 2, y = rowTop).semantics { traversalIndex = SHUTTER_ORDER },
-            )
-            val flip = Tokens.Sizes.cameraCaptureSizeFlipButton
-            CircleIconButton(
-                icon = Tokens.Icons.globalFlip,
-                contentDescription = stringResource(R.string.camera_capture_a11y_flip),
-                diameter = flip,
-                fill = Tokens.Colors.cameraCaptureColorFlipButton,
-                tint = Tokens.Colors.globalTextPrimary,
-                onClick = onFlip,
-                modifier = Modifier.offset(x = width / 2 + side - flip / 2, y = rowCenterY - flip / 2).semantics { traversalIndex = FLIP_ORDER }.testTag("camera.flip"),
-            )
-        }
-
-        // Coach: pointer apex `pointerToTarget` above the shutter ring, centred on the shutter.
-        if (state.coachVisible) {
-            val apexY = rowTop - Tokens.Layouts.CameraCaptureLayoutCoach.pointerToTarget.dp
-            Box(Modifier.fillMaxWidth().height(apexY), contentAlignment = Alignment.BottomCenter) {
-                CoachTooltip(
-                    text = stringResource(R.string.camera_capture_coach_holdtorecord),
-                    closeLabel = stringResource(R.string.camera_capture_a11y_close),
-                    onClose = onCoachClose,
-                    leadingIcon = Tokens.Icons.cameraCaptureIconRecordHint,
-                    modifier = Modifier.semantics { traversalIndex = COACH_ORDER }.testTag("camera.coach"),
-                )
-            }
-        }
-        CaptureToastHost()
-    }
-}
-
-@Composable
-private fun FlashToggle(on: Boolean, onClick: () -> Unit) {
-    val g = Tokens.Layouts.CameraCaptureLayoutFlashGlyph
-    val label = stringResource(R.string.camera_capture_a11y_flash)
-    val value = stringResource(if (on) R.string.camera_capture_a11y_flashon else R.string.camera_capture_a11y_flashoff)
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        val glyph = g.glyphHeight.dp
-        Box(
-            Modifier
-                .offset(x = g.centerFromLeading.dp - glyph / 2, y = maxHeight - g.centerFromBottom.dp - glyph / 2)
-                .size(glyph)
-                .clickable(onClick = onClick)
-                .semantics {
-                    contentDescription = label
-                    stateDescription = value
-                    role = Role.Button
-                    traversalIndex = FLASH_ORDER
-                }
-                .testTag("camera.flash"),
-        ) {
-            Glyph(if (on) Tokens.Icons.globalFlashOn else Tokens.Icons.globalFlashOff, Tokens.Colors.globalTextPrimary, glyph)
-        }
-    }
-}
-
-@Composable
-private fun LibraryThumb(onClick: () -> Unit, modifier: Modifier) {
-    val size = Tokens.Sizes.cameraCaptureSizeLibraryThumb
-    val shape = RoundedCornerShape(Tokens.Radii.cameraCaptureRadiusLibraryThumb)
-    val label = stringResource(R.string.camera_capture_a11y_library)
-    // The app reads no library (system Photo Picker only), so the slot shows icon.global.gallery.
-    Box(
-        modifier
-            .size(size)
-            .clip(shape)
-            .border(Tokens.Sizes.cameraCaptureSizeLibraryThumbBorder, Tokens.Colors.globalTextPrimary, shape)
-            .clickable(onClick = onClick)
-            .semantics {
-                contentDescription = label
-                role = Role.Button
-            }
-            .testTag("camera.library"),
-        contentAlignment = Alignment.Center,
-    ) {
-        Glyph(Tokens.Icons.globalGallery, Tokens.Colors.globalTextPrimary, null)
-    }
-}
-
-@Composable
-private fun Shutter(
-    state: CameraViewModel.UiState,
-    onTap: () -> Unit,
-    onLongPress: () -> Unit,
-    onRelease: () -> Unit,
-    modifier: Modifier,
-) {
-    var pressed by remember { mutableStateOf(false) }
-    // Press: scale to camera.capture.layout.shutterPress.scale on camera.capture.spring.shutterPress
-    // (Reduce Motion: no scale, the disc colour change only).
-    val scale by dsAnimateFloatAsState(
-        targetValue = if (pressed || state.recording) Tokens.Layouts.CameraCaptureLayoutShutterPress.scale else 1f,
-        animationSpec = Tokens.Springs.cameraCaptureSpringShutterPress.spec(),
-        channel = MotionChannel.Movement,
-        label = "shutterPress", // provenance-ok: animation debug label (tooling only)
-    )
-    val label = stringResource(R.string.camera_capture_a11y_shutter)
-    val recordLabel = stringResource(R.string.camera_capture_a11y_recordvideo)
-    Box(
-        modifier
-            .size(Tokens.Sizes.cameraCaptureSizeShutterOuter)
-            .graphicsLayer { scaleX = scale; scaleY = scale }
-            .pointerInput(state.videoAvailable) {
-                detectTapGestures(
-                    onPress = {
-                        pressed = true
-                        tryAwaitRelease()
-                        pressed = false
-                        onRelease()
+        BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+            val fullWidth = maxWidth - margin * 2
+            val vfHeight = minOf(fullWidth / Tokens.Layouts.CameraCaptureLayoutViewfinder.aspect, maxHeight - shutter - margin * 2).coerceAtLeast(0.dp)
+            val vfWidth = vfHeight * Tokens.Layouts.CameraCaptureLayoutViewfinder.aspect
+            Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+                Viewfinder(state, viewfinder, onCoachClose, onOpenSettings, onRetry, Modifier.size(vfWidth, vfHeight))
+                ControlRow(
+                    modifier = Modifier.weight(1f),
+                    leading = {
+                        MediaControlCircle(Tokens.Icons.globalGallery, stringResource(R.string.camera_capture_a11y_library), onLibrary, Modifier.testTag("camera.library"))
                     },
-                    onTap = { onTap() },
-                    onLongPress = { onLongPress() },
-                )
-            }
-            .semantics {
-                contentDescription = label
-                role = Role.Button
-                onClick { onTap(); true }
-                if (state.videoAvailable) {
-                    customActions = listOf(
-                        CustomAccessibilityAction(recordLabel) {
-                            if (state.recording) onRelease() else onLongPress()
-                            true
-                        },
-                    )
+                    trailing = if (state.showControls) {
+                        { MediaControlCircle(Tokens.Icons.globalFlip, stringResource(R.string.camera_capture_a11y_flip), onFlip, Modifier.testTag("camera.flip")) }
+                    } else {
+                        null
+                    },
+                ) {
+                    if (state.showControls) {
+                        Shutter(
+                            label = stringResource(R.string.camera_capture_a11y_shutter),
+                            onTap = onShutterTap,
+                            onHoldStart = onShutterLongPress,
+                            onHoldEnd = onShutterRelease,
+                            holdActionLabel = if (state.videoAvailable) stringResource(R.string.camera_capture_a11y_recordvideo) else null,
+                            holding = state.recording,
+                            modifier = Modifier.testTag("camera.shutter"),
+                        )
+                    } else {
+                        Spacer(Modifier.size(shutter))
+                    }
                 }
             }
-            .testTag("camera.shutter"),
-    ) {
-        ShutterDisc(
-            outer = Tokens.Sizes.cameraCaptureSizeShutterOuter,
-            ring = Tokens.Sizes.cameraCaptureSizeShutterRing,
-            disc = Tokens.Sizes.cameraCaptureSizeShutterDisc,
-            ringColor = Tokens.Colors.globalAccent,
-            gapColor = Tokens.Colors.globalBackgroundDeep,
-            discColor = if (pressed || state.recording) Tokens.Colors.cameraCaptureColorShutterDiscPressed else Tokens.Colors.globalSurfaceLight,
-        )
+        }
     }
 }
 
 /**
- * `camera.capture.hourOverlay`: the start of the current hour in the device's short time style.
- * Updates on the hour from the system's minute tick (and on time / time-zone changes); no timer.
+ * The flash as a bare C-01 header glyph (`icon.global.flashOff` / `.flashOn`, `size.global.icon`,
+ * `color.global.textOnMedia`): centred on the title's cap middle, its ink `size.global.headerInset` from the
+ * trailing edge, hit area `size.global.headerButton` (≥ 48 dp); TalkBack "Flash" + "On" / "Off"; the glyph
+ * cross-fades (`duration.global.crossfade`). Built beside [ScreenHeader] because C-01's `HeaderAction` has no
+ * state description (reported gap).
  */
 @Composable
-fun rememberHourText(now: () -> Long = System::currentTimeMillis): String {
-    val context = LocalContext.current
-    var text by remember { mutableStateOf(hourText(context, now())) }
-    DisposableEffect(context) {
-        val receiver = object : android.content.BroadcastReceiver() {
-            override fun onReceive(c: Context, intent: Intent) {
-                text = hourText(context, now())
+private fun FlashGlyph(on: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val icon = if (on) Tokens.Icons.globalFlashOn else Tokens.Icons.globalFlashOff
+    val box = Tokens.Sizes.globalIcon
+    val hit = maxOf(Tokens.Sizes.globalHeaderButton, Tokens.Sizes.globalMinTouchTargetAndroid)
+    val capMiddle = Tokens.Sizes.globalTitleTop - CapTop.height(TextRoles.headerTitle) / 2
+    val end = Tokens.Sizes.globalHeaderInset - GlyphInk.trailing(icon, box) - (hit - box) / 2
+    val label = stringResource(R.string.camera_capture_a11y_flash)
+    val value = stringResource(if (on) R.string.camera_capture_a11y_flashon else R.string.camera_capture_a11y_flashoff)
+    Box(
+        modifier
+            .padding(end = end.coerceAtLeast(0.dp))
+            .centreAt(capMiddle)
+            .size(hit)
+            .clip(CircleShape)
+            .tapClickable(onClick = onClick)
+            .semantics {
+                contentDescription = label
+                stateDescription = value
             }
+            .testTag("camera.flash"),
+        contentAlignment = Alignment.Center,
+    ) {
+        Crossfade(icon, animationSpec = DsMotion.crossfade(), label = "flash") { glyph ->
+            Icon(glyph, contentDescription = null, tint = Tokens.Colors.globalTextOnMedia, modifier = Modifier.size(box))
         }
-        val filter = android.content.IntentFilter().apply {
-            addAction(Intent.ACTION_TIME_TICK)
-            addAction(Intent.ACTION_TIME_CHANGED)
-            addAction(Intent.ACTION_TIMEZONE_CHANGED)
-        }
-        ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
-        onDispose { runCatching { context.unregisterReceiver(receiver) } }
     }
-    return text
 }
 
-fun hourText(context: Context, epochMillis: Long): String {
-    val zone = java.util.TimeZone.getDefault()
-    val offset = zone.getOffset(epochMillis)
-    val hourStart = (epochMillis + offset) / HOUR_MS * HOUR_MS - offset
-    return context.getString(R.string.camera_capture_houroverlay, android.text.format.DateFormat.getTimeFormat(context).format(Date(hourStart)))
+/**
+ * The viewfinder (`camera.capture.layout.viewfinder`): corners `radius.global.viewfinder`, filled
+ * `color.global.backgroundDeep` until the first frame, then the live preview fades in (`duration.global.fade`).
+ * On it while recording: the outline; first use: the coach pill (C-09 dark, `icon.global.video`), centred, its
+ * bottom `camera.sendto.layout.messageField.bottomInset` above the frame bottom. Denied / unavailable: the C-27
+ * block on media inside the frame.
+ */
+@Composable
+private fun Viewfinder(
+    state: CameraViewModel.UiState,
+    viewfinder: @Composable () -> Unit,
+    onCoachClose: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onRetry: () -> Unit,
+    modifier: Modifier,
+) {
+    Box(
+        modifier
+            .clip(RoundedCornerShape(Tokens.Radii.globalViewfinder))
+            .background(Tokens.Colors.globalBackgroundDeep)
+            .semantics { invisibleToUser() }
+            .testTag("camera.viewfinder"),
+        contentAlignment = Alignment.Center,
+    ) {
+        val denied = state.permission == CameraViewModel.Permission.Denied
+        val unavailable = !denied && state.session == CameraViewModel.Session.Unavailable
+        FadeVisibility(visible = state.permission == CameraViewModel.Permission.Granted && state.session == CameraViewModel.Session.Live, modifier = Modifier.fillMaxSize()) {
+            Box(Modifier.fillMaxSize()) { viewfinder() }
+        }
+        RecordingOutline(state.recording)
+        FadeVisibility(visible = denied, modifier = Modifier.semantics { }) {
+            MediaEmptyState(
+                title = stringResource(R.string.camera_capture_denied_title),
+                detail = stringResource(R.string.camera_capture_denied_detail),
+                action = EmptyStateAction(stringResource(R.string.camera_capture_denied_button), onOpenSettings),
+                icon = Tokens.Icons.globalCamera,
+            )
+        }
+        FadeVisibility(visible = unavailable) {
+            MediaEmptyState(
+                title = stringResource(R.string.camera_capture_unavailable_title),
+                detail = stringResource(R.string.camera_capture_unavailable_detail),
+                action = EmptyStateAction(stringResource(R.string.camera_capture_unavailable_button), onRetry),
+                icon = Tokens.Icons.globalCamera,
+            )
+        }
+        FadeVisibility(
+            visible = state.coachVisible && !state.recording,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = Dp(Tokens.Layouts.CameraSendtoLayoutMessageField.bottomInset)),
+        ) {
+            MediaPill(
+                text = stringResource(R.string.camera_capture_coach_holdtorecord),
+                onClick = onCoachClose,
+                style = MediaPillStyle.Dark,
+                icon = Tokens.Icons.globalVideo,
+                modifier = Modifier.testTag("camera.coach"),
+            )
+        }
+    }
 }
-
-private const val HOUR_MS = 3_600_000L // provenance-ok: one hour, the overlay's unit (spec: start of the current hour)
-private const val COACH_ORDER = -1f
-private const val FLASH_ORDER = 0f
-private const val HOUR_ORDER = 0.5f
-private const val SHUTTER_ORDER = 1f
-private const val LIBRARY_ORDER = 2f
-private const val FLIP_ORDER = 3f
 
 /** Copies a picked item into the capture directory; images lose their location tags. */
 internal fun copyPicked(context: Context, uri: Uri): Pair<File, MediaKind>? {
@@ -491,58 +401,3 @@ internal fun photoSize(file: File): Pair<Int, Int>? {
     return if (rotation % 180 != 0) bounds.outHeight to bounds.outWidth else bounds.outWidth to bounds.outHeight
 }
 
-/**
- * `camera.capture.size.recordingOutline` in `color.global.accent`: a progress stroke that traces the
- * viewfinder's rounded outline (`radius.global.viewfinder`) from empty to full, linearly over
- * `camera.capture.duration.videoMax`. Drawn inside the viewfinder edge; it starts where a rounded
- * rect's stroke starts (the top edge, after the top-leading corner) and runs clockwise.
- */
-@Composable
-private fun RecordingOutline(recording: Boolean) {
-    val progress = remember { androidx.compose.animation.core.Animatable(0f) }
-    LaunchedEffect(recording) {
-        progress.snapTo(0f)
-        if (recording) {
-            progress.animateTo(1f, androidx.compose.animation.core.tween(CameraViewModel.VIDEO_MAX_MS.toInt(), easing = androidx.compose.animation.core.LinearEasing))
-        }
-    }
-    if (!recording) return
-    val accent = Tokens.Colors.globalAccent
-    androidx.compose.foundation.Canvas(Modifier.fillMaxSize().testTag("camera.recordingOutline")) {
-        val stroke = Tokens.Sizes.cameraCaptureSizeRecordingOutline.toPx()
-        val path = roundedOutline(size.width, size.height, Tokens.Radii.globalViewfinder.toPx(), stroke / 2)
-        val measure = androidx.compose.ui.graphics.PathMeasure().apply { setPath(path, false) }
-        val traced = androidx.compose.ui.graphics.Path()
-        measure.getSegment(0f, measure.length * progress.value, traced, true)
-        drawPath(traced, accent, style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke))
-    }
-}
-
-/** The viewfinder outline inset by [inset] (half the stroke), clockwise from the top edge's start. */
-private fun roundedOutline(width: Float, height: Float, radius: Float, inset: Float): androidx.compose.ui.graphics.Path {
-    val l = inset
-    val t = inset
-    val r = width - inset
-    val b = height - inset
-    val c = (radius - inset).coerceAtLeast(0f)
-    val d = c * 2
-    return androidx.compose.ui.graphics.Path().apply {
-        moveTo(l + c, t)
-        lineTo(r - c, t)
-        arcTo(androidx.compose.ui.geometry.Rect(r - d, t, r, t + d), ARC_TOP, ARC_SWEEP, false)
-        lineTo(r, b - c)
-        arcTo(androidx.compose.ui.geometry.Rect(r - d, b - d, r, b), ARC_RIGHT, ARC_SWEEP, false)
-        lineTo(l + c, b)
-        arcTo(androidx.compose.ui.geometry.Rect(l, b - d, l + d, b), ARC_BOTTOM, ARC_SWEEP, false)
-        lineTo(l, t + c)
-        arcTo(androidx.compose.ui.geometry.Rect(l, t, l + d, t + d), ARC_LEFT, ARC_SWEEP, false)
-        close()
-    }
-}
-
-// Arc start angles (degrees, clockwise from 3 o'clock) for the four quarter-circle corners.
-private const val ARC_TOP = 270f // provenance-ok: geometry (quarter-circle corner)
-private const val ARC_RIGHT = 0f // provenance-ok: geometry (quarter-circle corner)
-private const val ARC_BOTTOM = 90f // provenance-ok: geometry (quarter-circle corner)
-private const val ARC_LEFT = 180f // provenance-ok: geometry (quarter-circle corner)
-private const val ARC_SWEEP = 90f // provenance-ok: geometry (quarter-circle corner)

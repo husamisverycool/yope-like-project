@@ -38,7 +38,9 @@ final class CaptureCollageModelTests: XCTestCase {
         XCTAssertEqual(model.pageCount, 2)
         XCTAssertNotNil(model.pages[1])
         XCTAssertNotNil(model.pages[2], "the next page is prefetched")
-        XCTAssertTrue(model.title.hasPrefix("26"), "the invitation's local date, 'd Month'")
+        let day = CaptureFormat.collageDate(LocalDate(year: 2026, month: 5, day: 26)!)
+        XCTAssertEqual(model.shareSheetTitle, Copy.collageShareSheetTitle(date: day), "the share sheet is titled with the invitation's day")
+        XCTAssertEqual(model.pageAccessibilityLabel, Copy.collageViewA11yCollage(group: CaptureFakes.groups[0].name, date: day))
         XCTAssertTrue(model.canShare)
         XCTAssertEqual(model.shareItem()?.path, "g/g1/collages/c1/v1/share-1.jpg")
         model.currentPage = 2
@@ -128,7 +130,7 @@ final class CaptureWidgetEntryTests: XCTestCase {
         try? FileManager.default.removeItem(at: directory)
     }
 
-    private func savePhoto(groupID: String, kind: WidgetSnapshot.Kind = .photo, caption: String? = nil, avatar: Bool = false, at seconds: TimeInterval = 1_000) throws {
+    private func savePhoto(groupID: String, kind: WidgetSnapshot.Kind = .photo, sender: String = "Ana Lima", avatar: Bool = false, at seconds: TimeInterval = 1_000) throws {
         let file = "\(kind.rawValue)-\(Int(seconds)).jpg"
         try store.writeFile(CaptureTestImages.jpeg(), groupID: groupID, fileName: file)
         var avatarFile: String?
@@ -136,41 +138,51 @@ final class CaptureWidgetEntryTests: XCTestCase {
             avatarFile = "avatar-\(Int(seconds)).jpg"
             try store.writeFile(CaptureTestImages.jpeg(CGSize(width: 40, height: 40), named: SamplePhotos.avatarName(index: 0)), groupID: groupID, fileName: avatarFile!)
         }
-        try store.save(WidgetSnapshot(groupID: groupID, sourceID: "p\(Int(seconds))", photoFileName: file, senderDisplayName: "Ana",
-                                      senderAvatarFileName: avatarFile, caption: caption, kind: kind, postedAt: Date(timeIntervalSince1970: seconds)))
+        try store.save(WidgetSnapshot(groupID: groupID, sourceID: "p\(Int(seconds))", photoFileName: file, senderDisplayName: sender,
+                                      senderAvatarFileName: avatarFile, kind: kind, postedAt: Date(timeIntervalSince1970: seconds)))
     }
 
-    func testNoGroupsIsNotSetUp() {
+    func testNoGroupListIsSignedOut() {
+        let entry = GroupWidgetEntryResolver.entry(configuredGroupID: nil, store: store, at: Date())
+        XCTAssertEqual(entry.state, .signedOut, "sign-out removes the store; the app writes its group list after sign-in")
+        XCTAssertEqual(entry.content.stateLine, Copy.widgetHomeSmallEmptySignedOut)
+        XCTAssertEqual(entry.tapURL?.absoluteString, "app://camera", "tap still opens the app (sign-in first)")
+    }
+
+    func testNoGroupsIsNotSetUp() throws {
+        try store.syncGroups([])
         let entry = GroupWidgetEntryResolver.entry(configuredGroupID: nil, store: store, at: Date())
         XCTAssertEqual(entry.state, .notSetUp)
-        XCTAssertEqual(entry.content.emptyText, Copy.widgetHomeSmallEmptySetUp)
-        XCTAssertEqual(entry.tapURL?.absoluteString, "app://camera", "tap still opens the camera")
+        XCTAssertEqual(entry.content.stateLine, Copy.widgetHomeSmallEmptySetUp)
+        XCTAssertEqual(entry.content.accessibilityLabel, Copy.widgetHomeSmallEmptySetUp, "the state line is the label")
     }
 
     func testLeftGroupIsNotSetUp() throws {
         try store.syncGroups([WidgetGroup(id: "g1", name: "Family")])
         let entry = GroupWidgetEntryResolver.entry(configuredGroupID: "gone", store: store, at: Date())
         XCTAssertEqual(entry.state, .notSetUp)
+        XCTAssertNil(entry.groupID, "nothing preselected in the camera")
     }
 
     func testConfiguredGroupWithoutPhotoIsEmptyAndTapsIntoItsCamera() throws {
         try store.syncGroups([WidgetGroup(id: "g1", name: "Family")])
         let entry = GroupWidgetEntryResolver.entry(configuredGroupID: "g1", store: store, at: Date())
         XCTAssertEqual(entry.state, .empty)
-        XCTAssertEqual(entry.content.emptyText, Copy.widgetHomeSmallEmptyNoPhotos)
+        XCTAssertEqual(entry.content.stateLine, Copy.widgetHomeSmallEmptyNoPhotos)
         XCTAssertEqual(entry.tapURL?.absoluteString, "app://camera?group=g1")
     }
 
-    func testNewestPhotoWithCaptionAndAvatar() throws {
+    func testNewestPhotoShowsFirstNameOverGroup() throws {
         try store.syncGroups([WidgetGroup(id: "g1", name: "Family")])
-        try savePhoto(groupID: "g1", caption: "Sundays", avatar: true)
+        try savePhoto(groupID: "g1", avatar: true)
         let entry = GroupWidgetEntryResolver.entry(configuredGroupID: "g1", store: store, at: Date())
         XCTAssertEqual(entry.state, .photo)
         let content = entry.content
         XCTAssertNotNil(content.photo)
         XCTAssertNotNil(content.avatar)
         XCTAssertEqual(content.groupName, "Family", "named from the group list when the push had no name")
-        XCTAssertEqual(content.accessibilityLabel, Copy.widgetHomeSmallA11yPhotoWithCaption(name: "Ana", group: "Family", caption: "Sundays"))
+        XCTAssertEqual(content.firstName, "Ana", "line 1: the poster's first name")
+        XCTAssertEqual(content.accessibilityLabel, Copy.widgetHomeSmallA11yPhoto(name: "Ana", group: "Family"))
     }
 
     func testCollageNewerThanPhotoWins() throws {
@@ -179,7 +191,8 @@ final class CaptureWidgetEntryTests: XCTestCase {
         try savePhoto(groupID: "g1", kind: .collage, at: 2_000)
         let entry = GroupWidgetEntryResolver.entry(configuredGroupID: "g1", store: store, at: Date())
         XCTAssertEqual(entry.state, .collage)
-        XCTAssertTrue(entry.content.accessibilityLabel.contains("Family"))
+        XCTAssertEqual(entry.content.accessibilityLabel, Copy.widgetHomeSmallA11yCollage(group: "Family", date: entry.content.dateText))
+        XCTAssertNil(entry.content.avatar, "a collage has no poster")
     }
 
     func testUnconfiguredUsesNewestAcrossGroups() throws {
@@ -191,30 +204,31 @@ final class CaptureWidgetEntryTests: XCTestCase {
         XCTAssertEqual(entry.tapURL?.absoluteString, "app://camera?group=g2")
     }
 
-    func testLockScreenKeepsNewestSinglePhotoWhenACollageIsNewer() throws {
+    func testLockScreenShowsTheNewestItemWithoutTheColourPhoto() throws {
         try store.syncGroups([WidgetGroup(id: "g1", name: "Family")])
-        try savePhoto(groupID: "g1", caption: "Sundays", avatar: true, at: 1_000)
+        try savePhoto(groupID: "g1", avatar: true, at: 1_000)
+        let photo = GroupWidgetEntryResolver.lockScreenEntry(configuredGroupID: "g1", store: store, at: Date())
+        XCTAssertEqual(photo.state, .photo)
+        XCTAssertNil(photo.photoURL, "vibrant rendering: no colour photo")
+        XCTAssertNotNil(photo.content.avatar)
         try savePhoto(groupID: "g1", kind: .collage, at: 2_000)
-        let entry = GroupWidgetEntryResolver.lockScreenEntry(configuredGroupID: "g1", store: store, at: Date())
-        XCTAssertEqual(entry.state, .photo, "widget.lock.rect.layout.content: the newest single photo's sender")
-        XCTAssertEqual(entry.snapshot?.caption, "Sundays")
-        XCTAssertNotNil(entry.content.avatar)
-        XCTAssertEqual(GroupWidgetEntryResolver.entry(configuredGroupID: "g1", store: store, at: Date()).state, .collage,
-                       "the Home Screen still shows the collage")
+        let collage = GroupWidgetEntryResolver.lockScreenEntry(configuredGroupID: "g1", store: store, at: Date())
+        XCTAssertEqual(collage.state, .collage, "widget.lock.rect.layout.content newestIsCollage: the group name alone")
+        XCTAssertEqual(WidgetInlineSlot(content: collage.content).line, "Family")
     }
 
     func testLockScreenWithoutPhotoIsEmptyAndWithoutGroupNotSetUp() throws {
+        try store.syncGroups([])
         XCTAssertEqual(GroupWidgetEntryResolver.lockScreenEntry(configuredGroupID: nil, store: store, at: Date()).state, .notSetUp)
         try store.syncGroups([WidgetGroup(id: "g1", name: "Family")])
-        try savePhoto(groupID: "g1", kind: .collage)
         XCTAssertEqual(GroupWidgetEntryResolver.lockScreenEntry(configuredGroupID: "g1", store: store, at: Date()).state, .empty)
     }
 
-    func testInlineWithoutCaptionReadsThePhotoSentence() {
-        let content = GroupWidgetContent(state: .photo, groupName: "Family", senderName: "Ana")
-        XCTAssertEqual(WidgetInlineSlot(content: content).line, Copy.widgetHomeSmallA11yPhoto(name: "Ana", group: "Family"))
-        let captioned = GroupWidgetContent(state: .photo, groupName: "Family", senderName: "Ana", caption: "Sundays")
-        XCTAssertEqual(WidgetInlineSlot(content: captioned).line, "Sundays")
+    func testInlineLineIsNameDotGroup() {
+        let content = GroupWidgetContent(state: .photo, groupName: "Family", senderName: "Ana Lima")
+        XCTAssertEqual(WidgetInlineSlot(content: content).line, Copy.widgetLockInlineText(name: "Ana", group: "Family"))
+        XCTAssertEqual(WidgetInlineSlot(content: GroupWidgetContent(state: .signedOut)).line, Copy.widgetHomeSmallEmptySignedOut)
+        XCTAssertEqual(WidgetInlineSlot(content: .loading).line, "", "loading: an empty line")
     }
 
     func testNoCountsInAnyLabel() throws {
@@ -248,5 +262,11 @@ final class CaptureNotificationPresentationTests: XCTestCase {
 
     func testWidgetKindsIncludeLockScreen() {
         XCTAssertEqual(NotificationPresentation.widgetKinds, GroupWidgetKinds.all)
+    }
+
+    func testOnlyTheNewPostAlertCarriesThePhoto() {
+        XCTAssertTrue(NotificationPresentation.attachesPhoto(userInfo: [PushKey.type: PushType.newPost.rawValue]))
+        XCTAssertFalse(NotificationPresentation.attachesPhoto(userInfo: [PushKey.type: PushType.reaction.rawValue]))
+        XCTAssertFalse(NotificationPresentation.attachesPhoto(userInfo: [PushKey.type: PushType.dailyInvitation.rawValue]))
     }
 }

@@ -1,87 +1,210 @@
-// Surfaces: walls.mine, walls.member, walls.browse — reference app: Yope. Specs: design/surfaces/walls.mine.md,
-// walls.member.md, walls.browse.md. References: references/auto/yope/frames/b-presskit-profile.png (grid, primary),
-// references/auto/yope/frames/b-yopeapp-7591560669967682847-t116.00-me-and-friends.png (title, person row),
-// …-t118.00-friends-wall.png (wall scrolled). Every wall is the profile "pics" grid (S-11); the free-form canvas is
-// BLOCKED (`walls.mine.layout.freeformWall`).
+// Surfaces: walls.mine, walls.member, walls.browse — Retro's profile (serif name, 64-pt avatar, icon capsule, week
+// sections of strips) and its Friends grid. Specs: design/surfaces/walls.mine.md, walls.member.md, walls.browse.md
+// (RS-14 … RS-16). References: references/auto/retro/store/retro-store-02.png (profile header, week sections — primary),
+// references/auto/retro/press/engadget-2026-08-profile.jpg and jeddacp-2024-05-home-profile-journals.png (current week),
+// references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png (empty week), references/auto/retro/press/
+// tc-2023-07-retro-1b.webp (Friends grid, "•••" capsule).
 import AppData
 import AppModels
 import DesignSystem
 import SwiftUI
 
-// MARK: - Shared grid
+// MARK: - Profile header (C-19 adapted, `walls.mine.layout.header`)
 
-/// The wall grid (`walls.mine` Structure 2): `walls.mine.count.gridColumns` columns, insets
-/// `walls.mine.dimension.gridInset`, gaps `walls.mine.dimension.gridGap`, tiles `walls.mine.aspectRatio.gridTile`
-/// with `walls.mine.radius.gridTile`, newest first; more pages load at the end.
-struct WallGrid: View {
-    let model: WallModel
-    let openPhoto: (PhotoViewerContext) -> Void
-
-    @State private var width: CGFloat = 0
-    @Environment(\.displayScale) private var displayScale
-
-    private var columns: [GridItem] {
-        Array(repeating: GridItem(.flexible(), spacing: Tokens.Sizes.wallsMineDimensionGridGap), count: Int(Tokens.Counts.wallsMineCountGridColumns))
-    }
-
-    private var maxPixel: Int? {
-        guard width > 0 else { return nil }
-        let tile = SocialGrid.tileWidth(container: width, columns: Tokens.Counts.wallsMineCountGridColumns, inset: Tokens.Sizes.wallsMineDimensionGridInset, gap: Tokens.Sizes.wallsMineDimensionGridGap)
-        return SocialGrid.maxPixel(width: tile, aspectRatio: Tokens.AspectRatios.wallsMineAspectRatioGridTile, scale: displayScale)
-    }
+/// The display name in the display serif (text role `headerTitle`, one line, tail truncation), its first baseline
+/// `size.global.titleTop` below the top safe area — after the C-02 back chevron on a pushed wall; the avatar
+/// (`size.global.avatarProfile`) at the trailing margin, centred on the name's cap middle; then, its top
+/// `walls.mine.dimension.nameToActions` below the name's baseline, one C-06 outline icon capsule at the trailing margin.
+/// No real-name line and no info rows. (The shared `ProfileHeader` spaces its parts with the platform's stack spacing
+/// and centres the avatar on the name block — reported as a component gap — so the wall places them from the tokens.)
+struct WallProfileHeader<Action: View>: View {
+    let name: String
+    let avatar: PhotoSource?
+    /// Pushed (walls.member): the back chevron leads the name line.
+    var onBack: (() -> Void)?
+    /// What VoiceOver reads for the name (walls.member: `walls.member.a11y.wall`); the name itself when nil.
+    var nameAccessibilityLabel: String?
+    @ViewBuilder let action: () -> Action
 
     var body: some View {
-        let tiles = model.tiles
-        VStack(spacing: Tokens.Sizes.wallsMineDimensionGridGap) {
-            LazyVGrid(columns: columns, spacing: Tokens.Sizes.wallsMineDimensionGridGap) {
-                ForEach(tiles) { tile in
-                    tileView(tile)
-                        .onAppear {
-                            // Load the next page a row before the end.
-                            if tiles.suffix(Int(Tokens.Counts.wallsMineCountGridColumns) * 2).contains(where: { $0.id == tile.id }) {
-                                Task { await model.loadMore() }
-                            }
-                        }
+        MetricStack {
+            HStack(alignment: .capMiddle, spacing: Tokens.Sizes.globalHeaderGap) {
+                if let onBack {
+                    Button(action: onBack) {
+                        Image(systemName: Tokens.Icons.globalBack)
+                            .font(Tokens.Fonts.globalFamily.font(size: Tokens.Sizes.globalIcon, weight: Font.Weight.regular))
+                            .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                            .minimumHitArea(drawn: CGSize(width: Tokens.Sizes.globalIcon, height: Tokens.Sizes.globalIcon))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text(Copy.chatThreadA11yBack))
                 }
+                Text(name)
+                    .dsTextRole(TextRole.headerTitle)
+                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .accessibilityLabel(Text(nameAccessibilityLabel ?? name))
+                    .accessibilityAddTraits(.isHeader)
+                Spacer(minLength: Tokens.Sizes.globalPillGap)
+                AvatarView(source: avatar, diameter: Tokens.Sizes.globalAvatarProfile)
             }
-            if model.isLoadingMore { ProgressView() }
+            .capMiddleRow(TextRole.headerTitle)
+            .padding(.leading, onBack == nil ? Tokens.Sizes.globalScreenMargin : Tokens.Sizes.globalBackInset)
+            .padding(.trailing, Tokens.Sizes.globalScreenMargin)
+            .metricGap(Tokens.Sizes.globalTitleTop, from: .top, to: .firstBaseline)
+            HStack(spacing: 0) {
+                Spacer(minLength: 0)
+                action()
+            }
+            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+            .metricGap(Tokens.Sizes.wallsMineDimensionNameToActions, from: .lastBaseline, to: .top)
         }
-        .padding(.horizontal, Tokens.Sizes.wallsMineDimensionGridInset)
-        .socialReadsWidth($width)
-    }
-
-    @ViewBuilder
-    private func tileView(_ tile: WallModel.Tile) -> some View {
-        switch tile {
-        case let .post(post):
-            Button {
-                openPhoto(PhotoViewerContext(postIDs: model.photoPostIDs, start: post.id))
-            } label: {
-                PhotoGridTile(path: post.media?.gridPath, aspectRatio: Tokens.AspectRatios.wallsMineAspectRatioGridTile, cornerRadius: Tokens.Radii.wallsMineRadiusGridTile, maxPixel: maxPixel)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text(label(for: post)))
-        case let .collage(collage):
-            Button {
-                if let invitationID = collage.invitationID {
-                    SocialNav.push(.capture(.collage(groupID: collage.groupID.rawValue, invitationID: invitationID.rawValue)))
-                }
-            } label: {
-                PhotoGridTile(path: collage.imagePath, aspectRatio: Tokens.AspectRatios.wallsMineAspectRatioGridTile, cornerRadius: Tokens.Radii.wallsMineRadiusGridTile, maxPixel: maxPixel)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text(Copy.wallsBrowseA11yCollage(date: SocialFormat.spokenDate(collage.createdAt))))
-        }
-    }
-
-    private func label(for post: PostWithMedia) -> String {
-        let date = SocialFormat.spokenDate(post.post.createdAt)
-        if model.owner == .me { return Copy.photoViewerA11yPhotoMine(date: date) }
-        return Copy.photoViewerA11yPhoto(name: model.profile?.socialFirstName ?? "", date: date)
     }
 }
 
-/// The wall's states under its header (loading indicator, empty, error, offline) or the grid.
+// MARK: - Week sections (`walls.mine.layout.weeks`)
+
+/// The wall's weeks: C-20 header ("Week 27" + the range, no "•••") over a C-17 strip; the current week first (with
+/// the add tile on my wall, then empty-day or placeholder tiles per `week.history.layout.currentWeek`), past weeks with
+/// photos after it, newest first. The first header's cap top sits `walls.mine.dimension.actionsToWeeks` below the action
+/// row; sections `size.global.sectionGap` apart (`WeekSectionList`).
+struct WallWeekList: View {
+    let model: WallModel
+    let openPhoto: (PhotoViewerContext) -> Void
+
+    var body: some View {
+        let weeks = model.weeks
+        WeekSectionList {
+            ForEach(weeks) { week in
+                WeekStripSection {
+                    let number = SocialCalendar.weekNumber(of: week.weekStart, in: model.timeZone)
+                    let showsRange = !(week.isCurrent && week.tiles.isEmpty)
+                    SectionHeader(
+                        title: Copy.weekHistoryHeaderTitle(weekNumber: String(number)),
+                        detail: showsRange ? SocialFormat.weekRange(week.weekStart, timeZone: model.timeZone) : nil,
+                        accessibilityLabel: SocialA11y.weekHeader(number: number, weekStart: week.weekStart, timeZone: model.timeZone, showsRange: showsRange)
+                    )
+                } content: {
+                    strip(week)
+                }
+                .onAppear {
+                    if week.id == weeks.last?.id { Task { await model.loadMore() } }
+                }
+            }
+            if model.isLoadingMore {
+                ProgressView()
+                    .tint(Tokens.Colors.globalTextSecondary)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(.top, max(0, Tokens.Sizes.wallsMineDimensionActionsToWeeks - SocialMetrics.capTopOffset(TextRole.sectionLabel)))
+    }
+
+    private var canAdd: Bool { model.owner == .me }
+
+    private func strip(_ week: WallModel.Week) -> some View {
+        let byID = Dictionary(uniqueKeysWithValues: week.tiles.map { ("photo-" + $0.id, $0) })
+        return WeekStrip(
+            tiles: WallTiles.tiles(for: week, model: model, canAdd: canAdd),
+            accessibilityLabel: { tile in label(tile, byID[tile.id]) },
+            onSelect: { tile in select(tile, byID[tile.id]) }
+        )
+    }
+
+    private func label(_ tile: WeekStripTile, _ wallTile: WallModel.Tile?) -> String {
+        switch tile.kind {
+        case .add:
+            return Copy.weekHistoryA11yAdd
+        case .emptyDay, .placeholder:
+            return tile.date.map { SocialA11y.emptyDay($0, timeZone: model.timeZone) } ?? ""
+        case .photo:
+            switch wallTile {
+            case let .collage(collage)?:
+                return Copy.wallsBrowseA11yCollage(date: SocialFormat.spokenDate(collage.createdAt, timeZone: model.timeZone))
+            case let .post(post)?:
+                if model.owner == .me { return Copy.photoViewerA11yPhotoMine(date: SocialFormat.spokenDate(post.post.createdAt, timeZone: model.timeZone)) }
+                return SocialA11y.tile(date: post.post.createdAt, name: model.profile?.socialFirstName ?? "", timeZone: model.timeZone)
+            case nil:
+                return ""
+            }
+        }
+    }
+
+    private func select(_ tile: WeekStripTile, _ wallTile: WallModel.Tile?) {
+        switch tile.kind {
+        case .add:
+            SocialNav.openCamera(groupID: nil)
+        case .photo:
+            switch wallTile {
+            case let .post(post)?:
+                openPhoto(PhotoViewerContext(postIDs: model.photoPostIDs, start: post.id, showsGroupName: true))
+            case let .collage(collage)?:
+                if let invitationID = collage.invitationID {
+                    SocialNav.push(.capture(.collage(groupID: collage.groupID.rawValue, invitationID: invitationID.rawValue)))
+                }
+            case nil:
+                break
+            }
+        case .emptyDay, .placeholder:
+            break
+        }
+    }
+}
+
+/// The tiles of one week section (C-17 and `week.history.layout.currentWeek`).
+enum WallTiles {
+    /// Past weeks: their photo tiles. The current week: no photos → the add tile (when allowed) and seven dated
+    /// empty-day tiles; with photos → the photo tiles, the add tile, then one blank placeholder per day without a photo.
+    @MainActor
+    static func tiles(for week: WallModel.Week, model: WallModel, canAdd: Bool) -> [WeekStripTile] {
+        let photos = week.tiles.map { tile -> WeekStripPhoto in
+            let path: String?
+            switch tile {
+            case let .post(post): path = post.media?.gridPath
+            case let .collage(collage): path = collage.imagePath
+            }
+            return WeekStripPhoto(id: tile.id, date: tile.createdAt, source: SocialImages.source(path))
+        }
+        let days = SocialCalendar.days(of: week.weekStart).map { SocialCalendar.start(of: $0, in: model.timeZone) }
+        return currentWeekTiles(
+            days: days, photos: photos, isCurrent: week.isCurrent, canAdd: canAdd,
+            emptyDays: model.emptyDays(of: week).map { SocialCalendar.start(of: $0, in: model.timeZone) }
+        )
+    }
+
+    static func currentWeekTiles(days: [Date], photos: [WeekStripPhoto], isCurrent: Bool, canAdd: Bool, emptyDays: [Date]) -> [WeekStripTile] {
+        guard isCurrent else { return WeekStripLayout.tiles(days: days, photos: photos, canAdd: false) }
+        let tiles = WeekStripLayout.tiles(days: days, photos: photos, canAdd: canAdd)
+        guard !photos.isEmpty else { return tiles }
+        let placeholders = emptyDays.map { day in
+            WeekStripTile(id: "rest-" + String(Int(day.timeIntervalSinceReferenceDate)), kind: .placeholder, date: day)
+        }
+        return tiles + placeholders
+    }
+}
+
+/// One tappable line at the margin (text role `body`, `color.global.textSecondary`) — Retro's list-error line.
+struct SocialErrorLine: View {
+    let text: String
+    let retry: () -> Void
+
+    var body: some View {
+        Button(action: retry) {
+            Text(text)
+                .dsTextStyle(TextRole.body)
+                .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+    }
+}
+
+/// The wall's content under its header by state (the empty wall is laid out by the screen: the current week, then the
+/// C-27 block centred in the space below it).
 struct WallContent: View {
     let model: WallModel
     let openPhoto: (PhotoViewerContext) -> Void
@@ -89,76 +212,80 @@ struct WallContent: View {
     var body: some View {
         switch model.phase {
         case .loading:
-            if model.showsLoading { ProgressView().frame(maxWidth: .infinity) }
-        case .ready:
-            WallGrid(model: model, openPhoto: openPhoto)
-        case .empty:
-            if model.owner == .me {
-                EmptyStateView(
-                    title: Copy.wallsMineEmptyTitle,
-                    detail: Copy.wallsMineEmptyDetail,
-                    action: .init(Copy.wallsMineEmptyAction, icon: Tokens.Icons.globalCamera) { SocialNav.openCamera(groupID: nil) }
-                )
-            } else {
-                let name = model.profile?.socialFirstName ?? ""
-                EmptyStateView(title: Copy.wallsMemberEmptyTitle(name: name), detail: Copy.wallsMemberEmptyDetail(name: name))
-            }
-        case .failed:
-            EmptyStateView(
-                title: Copy.wallsMineErrorTitle,
-                detail: Copy.chatThreadErrorDetail,
-                action: .init(Copy.chatThreadErrorRetry) { Task { await model.retry() } }
-            )
-        case .offline:
-            EmptyStateView(title: Copy.chatThreadOfflineTitle, detail: Copy.chatThreadOfflineDetail)
+            if model.showsLoading { loadingSection }
+        case .ready, .empty:
+            WallWeekList(model: model, openPhoto: openPhoto)
+        case .failed, .offline:
+            SocialErrorLine(text: Copy.wallsMineErrorTitle) { Task { await model.retry() } }
+                .padding(.top, Tokens.Sizes.wallsMineDimensionActionsToWeeks)
         }
+    }
+
+    /// One section of seven placeholder tiles under a header without a range (C-28 for Retro's lists).
+    private var loadingSection: some View {
+        WeekStripSection {
+            SectionHeader(title: Copy.weekHistoryHeaderTitle(weekNumber: String(model.currentWeekNumber)))
+        } content: {
+            WeekStrip(tiles: WeekStripLayout.placeholders(count: SocialCalendar.days(of: model.currentWeekStart).count), accessibilityLabel: { _ in "" })
+        }
+        .padding(.top, max(0, Tokens.Sizes.wallsMineDimensionActionsToWeeks - SocialMetrics.capTopOffset(TextRole.sectionLabel)))
+        .accessibilityLabel(Text(Copy.weekHistoryA11yLoading))
+        .socialAnnouncesLoading(true)
     }
 }
 
-/// Title at `walls.browse.dimension.titleBaseline` below the top safe-area inset (text role `sheetTitle`), header
-/// circles vertically centred on it at `size.global.headerInset`; the content starts `walls.mine.dimension.titleToGrid`
-/// below the baseline.
-struct WallHeader<Leading: View, Trailing: View>: View {
-    let title: String
-    /// What VoiceOver reads for the title (`walls.member.a11y.wall`); the title itself when nil.
-    var titleAccessibilityLabel: String?
-    @ViewBuilder var leading: () -> Leading
-    @ViewBuilder var trailing: () -> Trailing
+/// A wall page: scrolling sections, or — for an empty wall — the current week with the C-27 block centred in the space
+/// between the strip and the bottom (H43 / H22).
+struct WallPage<Header: View>: View {
+    let model: WallModel
+    let openPhoto: (PhotoViewerContext) -> Void
+    @ViewBuilder let header: () -> Header
 
     var body: some View {
-        ZStack(alignment: .top) {
-            Color.clear.frame(height: Tokens.Sizes.wallsBrowseDimensionTitleBaseline + Tokens.Sizes.wallsMineDimensionTitleToGrid)
-            Text(title)
-                .dsTextStyle(TextRole.sheetTitle)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                .lineLimit(1)
-                .truncationMode(.tail)
-                .padding(.horizontal, Tokens.Sizes.globalHeaderInset + Tokens.Sizes.globalHeaderButton + Tokens.Sizes.globalHeaderGap)
-                .accessibilityLabel(Text(titleAccessibilityLabel ?? title))
-                .accessibilityAddTraits(.isHeader)
-                .alignmentGuide(.top) { $0[.firstTextBaseline] - Tokens.Sizes.wallsBrowseDimensionTitleBaseline }
-        }
-        .overlay(alignment: .top) {
-            HStack {
-                leading()
-                Spacer(minLength: 0)
-                trailing()
+        if model.phase == .empty {
+            VStack(alignment: .leading, spacing: 0) {
+                header()
+                WallWeekList(model: model, openPhoto: openPhoto)
+                Spacer(minLength: Tokens.Sizes.globalSectionGap)
+                emptyBlock
+                Spacer(minLength: Tokens.Sizes.globalSectionGap)
             }
-            .padding(.horizontal, Tokens.Sizes.globalHeaderInset)
-            .offset(y: titleCentre - Tokens.Sizes.globalHeaderButton / 2)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        } else {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    header()
+                    WallContent(model: model, openPhoto: openPhoto)
+                }
+                .padding(.bottom, Tokens.Sizes.globalSectionGap)
+            }
+            .scrollBounceBehavior(.basedOnSize)
         }
     }
 
-    /// The title's vertical centre: its baseline minus half its cap height.
-    private var titleCentre: CGFloat {
-        Tokens.Sizes.wallsBrowseDimensionTitleBaseline - SocialMetrics.capHeight(TextRole.sheetTitle) / 2
+    /// My wall: `icon.global.calendar`, "Welcome to Week {n}!", C-07 "Get this week started" (→ camera); someone's: the
+    /// glyph, "Nothing to see here" and the detail, no action.
+    @ViewBuilder
+    private var emptyBlock: some View {
+        if model.owner == .me {
+            EmptyStateView(
+                icon: Tokens.Icons.globalCalendar,
+                title: Copy.wallsMineEmptyTitle(weekNumber: String(model.currentWeekNumber)),
+                action: .init(Copy.wallsMineEmptyAction, icon: Tokens.Icons.globalAdd) { SocialNav.openCamera(groupID: nil) }
+            )
+        } else {
+            EmptyStateView(
+                icon: Tokens.Icons.globalCalendar,
+                title: Copy.wallsMemberEmptyTitle,
+                detail: Copy.wallsMemberEmptyDetail(name: model.profile?.socialFirstName ?? "")
+            )
+        }
     }
 }
 
 // MARK: - walls.mine
 
-/// "my wall": settings circle top-right, title, my wall items; the tab bar floats over the bottom (tab root). Opened
-/// from elsewhere (the viewer's "you"), a back circle takes the empty leading slot instead.
+/// My wall: my name, avatar, the gear capsule (→ settings.root), my weeks; the profile tab's root (tab bar below).
 struct WallMineScreen: View {
     @State private var model: WallModel
     @State private var viewer: PhotoViewerContext?
@@ -170,23 +297,19 @@ struct WallMineScreen: View {
 
     var body: some View {
         let isTabRoot = SocialTabRoot.isRoot(.wallMine)
-        ScrollView {
-            VStack(spacing: 0) {
-                WallHeader(title: Copy.wallsMineTitle) {
-                    if !isTabRoot {
-                        HeaderCircleButton(icon: Tokens.Icons.globalBack, accessibilityLabel: Copy.chatThreadA11yBack, fill: .onDeep) { dismiss() }
-                    }
-                } trailing: {
-                    HeaderCircleButton(icon: Tokens.Icons.globalSettings, accessibilityLabel: Copy.wallsMineA11ySettings, fill: .onDeep) {
-                        SocialNav.push(.account(.settings))
-                    }
+        WallPage(model: model, openPhoto: { viewer = $0 }) {
+            WallProfileHeader(
+                name: model.displayName ?? "",
+                avatar: SocialImages.source(model.profile?.avatarPath),
+                onBack: isTabRoot ? nil : { dismiss() }
+            ) {
+                CapsuleButton(icon: Tokens.Icons.globalSettings, accessibilityLabel: Copy.wallsMineA11ySettings) {
+                    SocialNav.push(.account(.settings))
                 }
-                WallContent(model: model) { viewer = $0 }
             }
         }
-        .scrollBounceBehavior(.basedOnSize)
-        .background(Tokens.Colors.globalBackgroundDeep.ignoresSafeArea())
-        .modifier(SocialTabBar(tab: .me, isTabRoot: isTabRoot, avatarPath: model.profile?.avatarPath))
+        .background(Tokens.Colors.globalBackground.ignoresSafeArea())
+        .modifier(SocialTabBar(tab: .me, isTabRoot: isTabRoot))
         .socialHidesNavigationBar()
         .task {
             if model.phase == .loading { await model.load() }
@@ -199,11 +322,14 @@ struct WallMineScreen: View {
 
 // MARK: - walls.member
 
-/// A member's wall: back circle, their display name, the photos they posted in groups you share.
+/// A member's wall: the back chevron and their name on one line, their avatar, the "•••" capsule (Report Profile /
+/// Block Profile, both red), the photos they posted in groups we share (no add tile).
 struct WallMemberScreen: View {
     let userID: String
     @State private var model: WallModel
     @State private var viewer: PhotoViewerContext?
+    @State private var blockTarget: BlockTarget?
+    @State private var toasts = ToastCenter()
     @Environment(\.dismiss) private var dismiss
 
     init(userID: String, model: WallModel? = nil) {
@@ -212,23 +338,42 @@ struct WallMemberScreen: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                WallHeader(title: model.displayName ?? "", titleAccessibilityLabel: Copy.wallsMemberA11yWall(name: model.displayName ?? "")) {
-                    HeaderCircleButton(icon: Tokens.Icons.globalBack, accessibilityLabel: Copy.chatThreadA11yBack, fill: .onDeep) { dismiss() }
-                } trailing: {
-                    EmptyView()
+        WallPage(model: model, openPhoto: { viewer = $0 }) {
+            WallProfileHeader(
+                name: model.displayName ?? "",
+                avatar: SocialImages.source(model.profile?.avatarPath),
+                onBack: { dismiss() },
+                nameAccessibilityLabel: Copy.wallsMemberA11yWall(name: model.profile?.socialFirstName ?? "")
+            ) {
+                Menu {
+                    Button(Copy.wallsMemberMenuReport, role: .destructive) {
+                        SocialNav.report(ReportTarget(
+                            kind: .user, id: userID, name: model.profile?.socialFirstName,
+                            person: BlockTarget(userID: userID, firstName: model.profile?.socialFirstName ?? "")
+                        ))
+                    }
+                    Button(Copy.wallsMemberMenuBlock, role: .destructive) {
+                        blockTarget = BlockTarget(userID: userID, firstName: model.profile?.socialFirstName ?? "")
+                    }
+                } label: {
+                    CapsuleLabel(icon: Tokens.Icons.globalMore)
                 }
-                WallContent(model: model) { viewer = $0 }
+                .accessibilityLabel(Text(Copy.wallsMemberA11yMore))
             }
         }
-        .scrollBounceBehavior(.basedOnSize)
-        .background(Tokens.Colors.globalBackgroundDeep.ignoresSafeArea())
+        .background(Tokens.Colors.globalBackground.ignoresSafeArea())
         .socialHidesNavigationBar()
         .task {
             if model.phase == .loading { await model.load() }
             await model.run()
         }
+        .toastHost(toasts)
+        .blockConfirmation(
+            target: $blockTarget,
+            toasts: toasts,
+            perform: { target in try await SocialServices.shared.data.block(userID: UserID(target.userID)) },
+            onBlocked: { _ in model.blocked() }
+        )
         .socialPhotoViewer($viewer)
         .accessibilityIdentifier("walls.member") // provenance-ok: accessibility identifier for UI tests
     }
@@ -236,12 +381,13 @@ struct WallMemberScreen: View {
 
 // MARK: - walls.browse
 
-/// "me & friends": title, the row of person circles (me first), the selected person's wall; everything scrolls. The
-/// walls tab root shows the tab bar; opened from a group profile ("wall" segment), a back circle instead.
+/// Friends: the serif title (C-01; pushed and group-scoped: C-02), the C-12 search field `size.global.titleToContent`
+/// below the title baseline, then `size.global.sectionGap` below it the people grid — three columns centred,
+/// `walls.browse.dimension.columnPitch` apart, rows `.rowPitch` apart, avatars `size.global.avatarGrid`, the name
+/// centred with its baseline `.nameBaseline` below the avatar (`listTitle`, one line). A tap opens the person's wall.
 struct WallsBrowseScreen: View {
     let groupID: String?
     @State private var model: WallsBrowseModel
-    @State private var viewer: PhotoViewerContext?
     @Environment(\.dismiss) private var dismiss
 
     init(groupID: String?, model: WallsBrowseModel? = nil) {
@@ -251,110 +397,130 @@ struct WallsBrowseScreen: View {
 
     var body: some View {
         let isTabRoot = SocialTabRoot.isRoot(.wallsBrowse(groupID: groupID))
-        ScrollView {
-            VStack(spacing: 0) {
-                ZStack(alignment: .top) {
-                    Color.clear.frame(height: Tokens.Sizes.wallsBrowseDimensionWallTop)
-                    Text(Copy.wallsBrowseTitle)
-                        .dsTextStyle(TextRole.sheetTitle)
-                        .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                        .accessibilityAddTraits(.isHeader)
-                        .alignmentGuide(.top) { $0[.firstTextBaseline] - Tokens.Sizes.wallsBrowseDimensionTitleBaseline }
-                    if !isTabRoot {
-                        HeaderCircleButton(icon: Tokens.Icons.globalBack, accessibilityLabel: Copy.chatThreadA11yBack, fill: .onDeep) { dismiss() }
-                            .padding(.leading, Tokens.Sizes.globalHeaderInset)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .offset(y: Tokens.Sizes.wallsBrowseDimensionTitleBaseline - SocialMetrics.capHeight(TextRole.sheetTitle) / 2 - Tokens.Sizes.globalHeaderButton / 2)
-                    }
-                    if model.phase == .ready {
-                        personRow
-                            .padding(.top, Tokens.Sizes.wallsBrowseDimensionRowCenter - Tokens.Sizes.wallsBrowseDimensionAvatar / 2)
-                    }
+        Group {
+            if model.phase == .empty {
+                VStack(alignment: .leading, spacing: 0) {
+                    header(isTabRoot: isTabRoot)
+                    Spacer(minLength: 0)
+                    EmptyStateView(
+                        icon: Tokens.Icons.globalGroup,
+                        title: Copy.wallsBrowseEmptyTitle,
+                        detail: Copy.wallsBrowseEmptyDetail,
+                        action: .init(Copy.wallsBrowseEmptyAction) { SocialNav.present(.account(.groupCreate)) }
+                    )
+                    .frame(maxWidth: .infinity)
+                    Spacer(minLength: 0)
                 }
-                content
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        header(isTabRoot: isTabRoot)
+                        content
+                    }
+                    .padding(.bottom, Tokens.Sizes.globalSectionGap)
+                }
+                .scrollBounceBehavior(.basedOnSize)
+                .scrollDismissesKeyboard(.interactively)
             }
         }
-        .scrollBounceBehavior(.basedOnSize)
-        .background(Tokens.Colors.globalBackgroundDeep.ignoresSafeArea())
-        .modifier(SocialTabBar(tab: .walls, isTabRoot: isTabRoot, avatarPath: model.people.first?.profile?.avatarPath))
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Tokens.Colors.globalBackground.ignoresSafeArea())
+        .modifier(SocialTabBar(tab: .walls, isTabRoot: isTabRoot))
         .socialHidesNavigationBar()
-        .socialFeedback(model.signals.feedback)
+        .socialAnnouncesLoading(model.showsLoading)
         .task {
             if model.phase == .loading { await model.load() }
         }
-        .task(id: model.selectedID) {
-            await model.selectedWall?.run()
-        }
-        .socialPhotoViewer($viewer)
         .accessibilityIdentifier("walls.browse") // provenance-ok: accessibility identifier for UI tests
+    }
+
+    @ViewBuilder
+    private func header(isTabRoot: Bool) -> some View {
+        if isTabRoot {
+            ScreenHeader(title: Copy.wallsBrowseTitle)
+        } else {
+            PushedScreenHeader(title: Copy.wallsBrowseTitle, backAccessibilityLabel: Copy.chatThreadA11yBack) { dismiss() }
+        }
     }
 
     @ViewBuilder
     private var content: some View {
         switch model.phase {
         case .loading:
-            if model.showsLoading { ProgressView().frame(maxWidth: .infinity) }
-        case .failed:
-            EmptyStateView(
-                title: Copy.wallsMineErrorTitle,
-                detail: Copy.chatThreadErrorDetail,
-                action: .init(Copy.chatThreadErrorRetry) { Task { await model.retry() } }
-            )
-        case .offline:
-            EmptyStateView(title: Copy.chatThreadOfflineTitle, detail: Copy.chatThreadOfflineDetail)
-        case .empty, .ready:
-            if model.hasNobodyElse {
-                EmptyStateView(
-                    title: Copy.wallsBrowseEmptyTitle,
-                    detail: Copy.wallsBrowseEmptyDetail,
-                    action: .init(Copy.wallsBrowseEmptyAction) { SocialNav.present(.account(.groupCreate)) }
-                )
-            } else if let wall = model.selectedWall {
-                WallContent(model: wall) { viewer = $0 }
-                    .id(model.selectedID)
+            search
+            if model.showsLoading {
+                LoadingHUD()
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, Tokens.Sizes.globalSectionGap)
+            }
+        case .empty:
+            EmptyView()
+        case .failed, .offline:
+            SocialErrorLine(text: Copy.wallsBrowseErrorTitle) { Task { await model.retry() } }
+        case .ready:
+            search
+            let people = model.visiblePeople
+            if people.isEmpty {
+                EmptyStateView(title: Copy.wallsBrowseSearchEmpty)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, Tokens.Sizes.globalSectionGap)
+            } else {
+                PeopleColumns(people: people)
+                    .padding(.top, Tokens.Sizes.globalSectionGap)
             }
         }
     }
 
-    /// Circles `walls.browse.dimension.avatar` at pitch `.avatarPitch`, the first `.rowInset` from the edge; first
-    /// names (text role `caption`) with their baseline `.labelBaselineGap` below the circle, one line no wider than
-    /// the pitch. The selected person's marking is BLOCKED (`walls.browse.layout.selection`): VoiceOver only.
-    private var personRow: some View {
-        let pitch = Tokens.Sizes.wallsBrowseDimensionAvatarPitch
-        let avatar = Tokens.Sizes.wallsBrowseDimensionAvatar
-        return ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 0) {
-                ForEach(model.people) { person in
-                    Button {
-                        Task { await model.select(person.id) }
-                    } label: {
-                        ZStack(alignment: .top) {
-                            SocialAvatar(path: person.profile?.avatarPath, diameter: avatar)
-                            Text(person.isMe ? Copy.wallsBrowseMe : (person.profile?.socialFirstName ?? ""))
-                                .dsTextStyle(TextRole.caption)
-                                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                                .lineLimit(1)
-                                .truncationMode(.tail)
-                                .frame(maxWidth: pitch)
-                                .alignmentGuide(.top) { $0[.firstTextBaseline] - avatar - Tokens.Sizes.wallsBrowseDimensionLabelBaselineGap }
-                        }
-                        .frame(width: pitch)
-                        .contentShape(Rectangle())
+    private var search: some View {
+        SearchField(Copy.wallsBrowseSearch, text: $model.search, accessibilityLabel: Copy.wallsBrowseSearch)
+            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+    }
+}
+
+/// The people grid with Retro's measured pitch (`walls.browse.layout.grid`). (The shared `PeopleGrid` shares the width
+/// between flexible columns and uses platform row spacing — reported as a component gap.)
+struct PeopleColumns: View {
+    let people: [WallsBrowseModel.Person]
+
+    private var columns: [GridItem] {
+        let count = SocialTokenNumbers.count(of: "columns", in: Tokens.Layouts.WallsBrowseLayoutGrid.grid) ?? 1
+        return Array(repeating: GridItem(.fixed(Tokens.Sizes.wallsBrowseDimensionColumnPitch), spacing: 0, alignment: .top), count: count)
+    }
+
+    var body: some View {
+        LazyVGrid(columns: columns, spacing: 0) {
+            ForEach(people) { person in
+                Button {
+                    SocialNav.push(.social(.wallMember(userID: person.id.rawValue)))
+                } label: {
+                    MetricStack(alignment: .center) {
+                        AvatarView(source: SocialImages.source(person.profile?.avatarPath), diameter: Tokens.Sizes.globalAvatarGrid)
+                        Text(person.name)
+                            .dsTextStyle(TextRole.listTitle)
+                            .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                            .frame(maxWidth: Tokens.Sizes.wallsBrowseDimensionColumnPitch)
+                            .metricGap(Tokens.Sizes.wallsBrowseDimensionNameBaseline, from: .bottom, to: .firstBaseline)
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(Text(person.isMe ? Copy.wallsMineTitle : Copy.wallsMemberA11yWall(name: person.profile?.socialFirstName ?? "")))
-                    .accessibilityAddTraits(person.id == model.selectedID ? .isSelected : [])
+                    .frame(width: Tokens.Sizes.wallsBrowseDimensionColumnPitch)
+                    .frame(minHeight: Tokens.Sizes.wallsBrowseDimensionRowPitch, alignment: .top)
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text(Copy.wallsMemberA11yWall(name: person.profile?.socialFirstName ?? person.name)))
+                .accessibilityAddTraits(.isButton)
             }
-            .padding(.leading, Tokens.Sizes.wallsBrowseDimensionRowInset - (pitch - avatar) / 2)
         }
+        .frame(maxWidth: .infinity)
     }
 }
 
 // MARK: - Tab roots
 
-/// walls.mine and walls.browse are the "me" and "walls" tabs (`groups.list.layout.tabBar`): the shell pushes them as
-/// the only route on the groups stack.
+/// walls.mine and walls.browse are the profile and Friends tabs (C-04; the account group's shell pushes them as the only
+/// route on the groups stack).
 @MainActor
 enum SocialTabRoot {
     #if DEBUG
@@ -371,17 +537,16 @@ enum SocialTabRoot {
     }
 }
 
-/// The account group's floating tab bar on a tab root (needs the account dependencies for the shell).
+/// The app's tab bar (C-04, `AppTabBar`) under a tab root (needs the account dependencies for the shell).
 struct SocialTabBar: ViewModifier {
     let tab: AppTab
     let isTabRoot: Bool
-    let avatarPath: String?
     @Environment(AccountDependencies.self) private var account: AccountDependencies?
 
     func body(content: Content) -> some View {
         if isTabRoot, let account {
-            content.safeAreaInset(edge: .bottom) {
-                FloatingTabBar(selected: tab, avatarPath: avatarPath) { selected in
+            content.safeAreaInset(edge: .bottom, spacing: 0) {
+                AppTabBar(selected: tab) { selected in
                     ShellNavigation.select(selected, router: account.router, shell: account.shell)
                 }
             }

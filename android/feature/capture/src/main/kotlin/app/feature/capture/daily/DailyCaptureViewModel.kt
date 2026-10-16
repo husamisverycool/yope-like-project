@@ -8,7 +8,7 @@ import app.data.media.upload.NewPost
 import app.data.model.MediaKind
 import app.feature.capture.camera.CameraController
 import app.feature.capture.data.CaptureData
-import app.feature.capture.data.SendTracker
+import app.feature.capture.data.PostSend
 import app.media.DualCaptureMode
 import app.media.Lens
 import app.model.CountdownState
@@ -27,13 +27,13 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 /**
- * `daily.capture`: the countdown to the server's `closes_at` (shown only while the window is open,
- * nothing in its place afterwards), front + back together (sequential fallback), the preview with
- * retake, and SEND with `p_invitation_id` (never fails for lateness; no label).
+ * `daily.capture`: the countdown to the server's `closes_at` in the title slot while the window is open (the
+ * group name afterwards), back + front together (sequential fallback), the preview with retake, and Send with
+ * `p_invitation_id` (never fails for lateness; no label). The cover stays open while the post is sent (busy
+ * capsule); success closes it, a failure shows the native alert and keeps the preview (as `camera.sendto`).
  */
 class DailyCaptureViewModel(
     private val data: CaptureData,
-    private val tracker: SendTracker,
     private val gate: SessionPromptGate,
     private val captureDir: File,
     val groupId: String,
@@ -63,11 +63,15 @@ class DailyCaptureViewModel(
         val firstTaken: Boolean = false,
         val main: File? = null,
         val inset: File? = null,
-        val sendError: DataError? = null,
+        val sending: Boolean = false,
+        /** The send failed: the alert with `camera.sendto.error.*` (offline or not). */
+        val sendFailedOffline: Boolean? = null,
     )
 
     sealed interface Event {
-        data object Sent : Event
+        data class Sent(val groupName: String?) : Event
+        /** Play `haptic.global.error`. */
+        data object Failed : Event
     }
 
     private val state = MutableStateFlow(UiState())
@@ -77,6 +81,7 @@ class DailyCaptureViewModel(
 
     private var controller: CameraController? = null
     private var countdownJob: Job? = null
+    private val sender = PostSend(data, viewModelScope)
 
     init {
         // No premium prompt (or any prompt) while capturing.
@@ -84,6 +89,23 @@ class DailyCaptureViewModel(
         viewModelScope.launch {
             val invitation = runCatching { data.invitation(invitationId) }.getOrNull()
             if (invitation != null) startCountdown(invitation.closesAt)
+        }
+        viewModelScope.launch {
+            sender.status.collect { status ->
+                when (status) {
+                    PostSend.Status.Idle -> state.update { it.copy(sending = false) }
+                    PostSend.Status.Sending -> state.update { it.copy(sending = true, sendFailedOffline = null) }
+                    is PostSend.Status.Sent -> {
+                        state.value.main?.parentFile?.deleteRecursively()
+                        state.update { it.copy(sending = false) }
+                        events.send(Event.Sent(state.value.groupName))
+                    }
+                    is PostSend.Status.Failed -> {
+                        state.update { it.copy(sending = false, sendFailedOffline = status.offline) }
+                        events.send(Event.Failed)
+                    }
+                }
+            }
         }
         viewModelScope.launch {
             val name = runCatching { data.group(groupId)?.name }.getOrNull()
@@ -161,36 +183,43 @@ class DailyCaptureViewModel(
     fun retake() {
         val s = state.value
         s.main?.parentFile?.deleteRecursively()
-        state.update { it.copy(phase = Phase.Live, main = null, inset = null, firstTaken = false, sendError = null) }
+        if (s.sending) return
+        state.update { it.copy(phase = Phase.Live, main = null, inset = null, firstTaken = false, sendFailedOffline = null) }
         viewModelScope.launch { rebind() }
     }
 
-    /** SEND: queued with the invitation id; the cover closes at once. */
+    /** Send: posts with the invitation id; the cover stays (busy) until the post exists. */
     fun send() {
         val s = state.value
         val main = s.main ?: return
+        if (s.sending) return
         val mainSize = sizeOf(main)
         val insetSize = s.inset?.let(sizeOf)
-        val post = NewPost(
-            kind = MediaKind.Photo,
-            original = main,
-            width = mainSize?.first,
-            height = mainSize?.second,
-            front = s.inset,
-            frontWidth = insetSize?.first,
-            frontHeight = insetSize?.second,
-            groupIds = listOf(groupId),
-            invitationId = invitationId,
+        sender.send(
+            NewPost(
+                kind = MediaKind.Photo,
+                original = main,
+                width = mainSize?.first,
+                height = mainSize?.second,
+                front = s.inset,
+                frontWidth = insetSize?.first,
+                frontHeight = insetSize?.second,
+                groupIds = listOf(groupId),
+                invitationId = invitationId,
+            ),
         )
-        val draft = try {
-            data.enqueue(post)
-        } catch (e: DataException) {
-            state.update { it.copy(sendError = e.error) }
-            return
-        }
-        tracker.track(draft, listOfNotNull(s.groupName))
-        main.parentFile?.deleteRecursively()
-        events.trySend(Event.Sent)
+    }
+
+    /** "Try Again" in the failure alert. */
+    fun retrySend() {
+        state.update { it.copy(sendFailedOffline = null) }
+        sender.retry()
+    }
+
+    /** "Cancel" in the failure alert: the draft is withdrawn, the preview stays. */
+    fun dismissSendError() {
+        sender.cancel()
+        state.update { it.copy(sendFailedOffline = null) }
     }
 
     /** Dismiss: an unsent preview is discarded; the invitation stays answerable from the group. */

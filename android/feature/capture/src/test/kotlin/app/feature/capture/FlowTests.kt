@@ -16,7 +16,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
-import app.designsystem.generated.Tokens
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -29,18 +28,19 @@ import app.feature.capture.camera.CameraControllers
 import app.feature.capture.camera.CameraScreen
 import app.feature.capture.camera.CameraViewModel
 import app.feature.capture.data.CaptureDataProvider
-import app.feature.capture.ui.CaptureToastHost
-import app.data.media.upload.NewPost
 import app.data.media.upload.UploadProgress
 import app.feature.capture.sendto.SendToChrome
 import app.feature.capture.sendto.SendToScreen
 import app.data.model.MediaKind
 import app.feature.capture.data.CapturedMedia
 import app.feature.capture.sendto.SendToViewModel
-import app.feature.capture.sendto.VoiceGestures
+import app.feature.capture.sendto.VoiceActions
+import app.feature.capture.sendto.VoiceNoteFile
+import app.data.error.DataError
+import app.feature.capture.ui.VoiceGestures
+import app.designsystem.generated.Tokens
+import androidx.compose.ui.test.hasText
 import app.feature.capture.data.CaptureHandoff
-import app.feature.capture.data.CaptureServices
-import app.feature.capture.data.SendTracker
 import app.links.DeepLinkIntents
 import app.media.DualCaptureMode
 import app.model.AppRoute
@@ -51,9 +51,6 @@ import app.push.ChannelCopy
 import app.push.NotificationAppearance
 import app.push.PushHandler
 import app.push.QuietHoursSource
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -81,14 +78,12 @@ class FlowTests {
     @Before fun setUp() {
         shadowOf(app).grantPermissions(Manifest.permission.CAMERA)
         CaptureDataProvider.override = data
-        CaptureServices.overrideTracker(SendTracker(data, CoroutineScope(SupervisorJob() + Dispatchers.Main)))
         camera = FakeCameraController()
         CameraControllers.factory = { _, _ -> camera }
     }
 
     @After fun tearDown() {
         CaptureDataProvider.override = null
-        CaptureServices.overrideTracker(null)
         CaptureHandoff.process.clear()
     }
 
@@ -116,7 +111,7 @@ class FlowTests {
         waitFor("camera.shutter")
         assertEquals(1, camera.binds.size) // bound as soon as the route opened
         compose.onNodeWithTag("camera.shutter").performClick()
-        waitFor("sendto.rows")
+        waitFor("sendto.row.g1")
         assertTrue(nav.currentDestination!!.hasRoute<AppRoute.SendTo>())
         // The widget's group is preselected; add a second one.
         compose.onNodeWithTag("sendto.row.g1", useUnmergedTree = true).assertIsOn()
@@ -126,8 +121,29 @@ class FlowTests {
         val post = data.enqueued.single()
         assertEquals(listOf("g1", "g2"), post.groupIds)
         assertTrue(post.original.path.contains("capture"))
-        // Sending returns at once (the upload continues in the background) to the home list.
+        // Sending keeps the modal open ("Sending…") until the post exists, then returns where the camera opened from.
+        assertTrue(nav.currentDestination!!.hasRoute<AppRoute.SendTo>())
+        compose.onNode(hasText("Sending…")).assertExists()
+        compose.runOnIdle { data.progressFlows.getValue("draft1").value = UploadProgress.Done(listOf("p1", "p2")) }
+        compose.waitForIdle()
         assertTrue(nav.currentDestination!!.hasRoute<AppRoute.GroupsList>())
+    }
+
+    @Test fun aFailedSendShowsTheAlertAndCancelKeepsTheComposer() {
+        data.loaded(group("g1", "Sunday dinners"))
+        val nav = host(AppRoute.Camera("g1"))
+        waitFor("camera.shutter")
+        compose.onNodeWithTag("camera.shutter").performClick()
+        waitFor("sendto.row.g1")
+        compose.onNodeWithTag("sendto.send", useUnmergedTree = true).performClick()
+        compose.runOnIdle { data.progressFlows.getValue("draft1").value = UploadProgress.Failed(DataError.Unexpected(null)) }
+        compose.waitUntil(WAIT_MS) { compose.onAllNodes(hasText("Couldn't send photo")).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNode(hasText("Cancel")).performClick()
+        compose.waitForIdle()
+        assertTrue(compose.onAllNodes(hasText("Couldn't send photo")).fetchSemanticsNodes().isEmpty())
+        assertEquals(listOf("draft1"), data.discarded)
+        assertTrue(nav.currentDestination!!.hasRoute<AppRoute.SendTo>())
+        compose.onNodeWithTag("sendto.row.g1", useUnmergedTree = true).assertIsOn()
     }
 
     @Test fun cameraWithoutAGroupPreselectsEveryGroup() {
@@ -135,7 +151,7 @@ class FlowTests {
         host(AppRoute.Camera(null))
         waitFor("camera.shutter")
         compose.onNodeWithTag("camera.shutter").performClick()
-        waitFor("sendto.rows")
+        waitFor("sendto.row.g1")
         compose.onNodeWithTag("sendto.row.g1", useUnmergedTree = true).assertIsOn()
         compose.onNodeWithTag("sendto.row.g2", useUnmergedTree = true).assertIsOn()
     }
@@ -154,6 +170,8 @@ class FlowTests {
         assertEquals("inv1", post.invitationId)
         assertEquals(listOf("g1"), post.groupIds)
         assertNotNull(post.front)
+        compose.runOnIdle { data.progressFlows.getValue("draft1").value = UploadProgress.Done(listOf("p1")) }
+        compose.waitForIdle()
         assertFalse(nav.currentDestination!!.hasRoute<AppRoute.DailyCapture>())
     }
 
@@ -161,53 +179,34 @@ class FlowTests {
         data.invitation = invitation(closesAt = Instant.now().minusSeconds(600))
         data.groupById["g1"] = group("g1", "Sunday dinners")
         val nav = host(AppRoute.Collage("g1", "inv1"))
-        compose.waitUntil(WAIT_MS) { compose.onAllNodes(androidx.compose.ui.test.hasText("open camera")).fetchSemanticsNodes().isNotEmpty() }
-        compose.onNode(androidx.compose.ui.test.hasText("open camera")).performClick()
+        compose.waitUntil(WAIT_MS) { compose.onAllNodes(hasText("Take photo")).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNode(hasText("Take photo")).performClick()
         compose.waitForIdle()
         assertTrue(nav.currentDestination!!.hasRoute<AppRoute.Camera>())
     }
 
-    /** Before the permission answer the viewfinder stays black: no denied / unavailable flash. */
+    /** Before the permission answer the viewfinder stays black: no denied / unavailable flash, no shutter. */
     @Test fun cameraDoesNotFlashTheDeniedStateWhileChecking() {
         compose.setContent {
             CameraScreen(
                 state = CameraViewModel.UiState(),
-                viewfinder = {}, hourText = "5:00 PM",
+                viewfinder = {}, title = "Week 42",
                 onShutterTap = {}, onShutterLongPress = {}, onShutterRelease = {}, onFlash = {}, onFlip = {}, onLibrary = {},
                 onCoachClose = {}, onOpenSettings = {}, onRetry = {},
             )
         }
-        assertTrue(compose.onAllNodes(androidx.compose.ui.test.hasText("can’t take pics?")).fetchSemanticsNodes().isEmpty())
-        assertTrue(compose.onAllNodes(androidx.compose.ui.test.hasText("camera isn’t available right now")).fetchSemanticsNodes().isEmpty())
+        assertTrue(compose.onAllNodes(hasText("No Camera Access")).fetchSemanticsNodes().isEmpty())
+        assertTrue(compose.onAllNodes(hasText("Camera Unavailable")).fetchSemanticsNodes().isEmpty())
         assertTrue(compose.onAllNodes(hasTestTag("camera.shutter")).fetchSemanticsNodes().isEmpty())
     }
 
-    /** "posted in …" appears when the upload is done and leaves after `camera.sendto.duration.toastVisible`. */
-    @Test fun postedToastShowsWhenSentForTheTokenDwell() {
-        val tracker = SendTracker(data, CoroutineScope(SupervisorJob() + Dispatchers.Unconfined))
-        compose.mainClock.autoAdvance = false
-        compose.setContent { CaptureToastHost(tracker) }
-        val draft = data.enqueue(NewPost(kind = MediaKind.Photo, original = java.io.File(app.cacheDir, "p.jpg"), groupIds = listOf("g1")))
-        compose.runOnIdle { tracker.track(draft, listOf("Sunday dinners")) }
-        compose.mainClock.advanceTimeBy(FRAME_MS)
-        // Queued / uploading: nothing shown (no flash of a toast before the post is in).
-        assertTrue(compose.onAllNodes(androidx.compose.ui.test.hasText("posted in Sunday dinners")).fetchSemanticsNodes().isEmpty())
-        compose.runOnIdle { data.progressFlows.getValue(draft).value = UploadProgress.Done(listOf("p1")) }
-        compose.waitForIdle()
-        compose.mainClock.advanceTimeBy(FRAME_MS * 30)
-        compose.onNode(androidx.compose.ui.test.hasText("posted in Sunday dinners")).assertExists()
-        compose.mainClock.advanceTimeBy(Tokens.Durations.cameraSendtoDurationToastVisible.toLong() + FRAME_MS * 60)
-        assertTrue(compose.onAllNodes(androidx.compose.ui.test.hasText("posted in Sunday dinners")).fetchSemanticsNodes().isEmpty())
-    }
-
-    /** The mic (`chat.voice.layout.recording`): hold records, lift keeps, slide left cancels, slide up locks. */
-    @Test fun voiceMicHoldSlideAndLockGestures() {
+    /** The voice capsule (`chat.voice` mechanics): hold records, lift keeps, slide left discards; a note's tap opens its menu. */
+    @Test fun voiceCapsuleHoldSlideAndNoteMenu() {
         val calls = mutableListOf<String>()
         val gestures = object : VoiceGestures {
             override fun down() { calls += "down" }
             override fun release() { calls += "release" }
             override fun cancel() { calls += "cancel" }
-            override fun lock() { calls += "lock" }
         }
         val state = androidx.compose.runtime.mutableStateOf(
             SendToViewModel.UiState(
@@ -217,34 +216,32 @@ class FlowTests {
                 micAvailable = true,
             ),
         )
-        var finished = 0
+        var deleted = 0
         compose.setContent {
             SendToScreen(
                 state = state.value,
-                chrome = SendToChrome(preview = null, hourText = ""),
-                onClose = {}, onSave = {}, onCaption = {}, onMic = { finished++ }, onVoiceCoachClose = {}, onToggle = {}, onSend = {},
-                onCreateGroup = {}, onRetryGroups = {},
-                voiceGestures = gestures,
+                chrome = SendToChrome(preview = null),
+                onClose = {}, onSave = {}, onCaption = {}, onToggle = {}, onSend = {},
+                onCreateGroup = {}, onRetryGroups = {}, onConfirmDiscard = {}, onDismissAlert = {}, onRetrySend = {},
+                voice = VoiceActions(gestures = gestures, onDelete = { deleted++ }),
             )
         }
-        val mic = compose.onNodeWithTag("sendto.mic", useUnmergedTree = true)
-        val far = with(compose.density) { (Tokens.Layouts.CameraSendtoLayoutMessageField.micDiameter * 2).dp.toPx() }
+        val capsule = compose.onNodeWithTag("sendto.voice", useUnmergedTree = true)
+        val far = with(compose.density) { (Tokens.Sizes.globalIconPillWidth * 2).toPx() }
         // Hold, then lift: the note is kept.
-        mic.performTouchInput { down(center); advanceEventTime(500); up() }
+        capsule.performTouchInput { down(center); advanceEventTime(500); up() }
         assertEquals(listOf("down", "release"), calls)
-        // Slide left past the threshold: cancelled, the lift does nothing more.
+        // Slide left past the threshold: discarded, the lift does nothing more.
         calls.clear()
-        mic.performTouchInput { down(center); moveBy(androidx.compose.ui.geometry.Offset(-far, 0f)); up() }
+        capsule.performTouchInput { down(center); moveBy(androidx.compose.ui.geometry.Offset(-far, 0f)); up() }
         assertEquals(listOf("down", "cancel"), calls)
-        // Slide up: locked (hands-free); the lift does not stop it.
-        calls.clear()
-        mic.performTouchInput { down(center); moveBy(androidx.compose.ui.geometry.Offset(0f, -far)); up() }
-        assertEquals(listOf("down", "lock"), calls)
-        // Locked: the mic turns into send; a tap finishes the note.
-        compose.runOnIdle { state.value = state.value.copy(recordingVoice = true, voiceLocked = true, recordingStartedAt = 0L) }
-        compose.onNodeWithTag("sendto.mic.recording", useUnmergedTree = true).performClick()
+        // With a note: a tap opens its menu; "Delete recording" removes it.
+        compose.runOnIdle { state.value = state.value.copy(voice = VoiceNoteFile(java.io.File(app.cacheDir, "v.m4a"), 7_000)) }
+        compose.onNodeWithTag("sendto.voice.attached", useUnmergedTree = true).performClick()
+        compose.waitUntil(WAIT_MS) { compose.onAllNodes(hasText("Delete recording")).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNode(hasText("Delete recording")).performClick()
         compose.waitForIdle()
-        assertEquals(1, finished)
+        assertEquals(1, deleted)
     }
 
     class Host : Activity()
@@ -260,7 +257,7 @@ class FlowTests {
             val manager = app.getSystemService(NotificationManager::class.java)
             val channel = manager.getNotificationChannel(AppChannel.DailyInvitation.id)
             assertEquals("Daily Invitation", channel.name)
-            assertEquals("Notifications when your group’s daily photo invitation starts", channel.description)
+            assertEquals("The daily invitation to share a photo with your group", channel.description)
             assertEquals(NotificationManager.IMPORTANCE_HIGH, channel.importance)
             // No channel for an event the worker never sends.
             assertEquals(null, manager.getNotificationChannel(AppChannel.YearStory.id))
@@ -279,7 +276,7 @@ class FlowTests {
             assertEquals(120_000L, n.timeoutAfter)
             assertEquals(0, n.flags and Notification.FLAG_ONGOING_EVENT)
             assertFalse(n.extras.getBoolean(NotificationCompat.EXTRA_REQUEST_PROMOTED_ONGOING))
-            assertEquals(android.graphics.Color.argb(0xFF, 0xCD, 0xFD, 0x07), n.color) // color.global.accent
+            assertEquals(Notification.COLOR_DEFAULT, n.color) // no tint: the system default (RC-17)
             assertEquals("app://daily?group=g1&invitation=inv1", shadowOf(n.contentIntent).savedIntent.dataString)
             assertTrue(n.flags and Notification.FLAG_AUTO_CANCEL != 0)
             assertTrue(n.groupAlertBehavior != Notification.GROUP_ALERT_SUMMARY) // not silent outside quiet hours
@@ -299,6 +296,5 @@ class FlowTests {
 
     private companion object {
         const val WAIT_MS = 5_000L
-        const val FRAME_MS = 16L
     }
 }

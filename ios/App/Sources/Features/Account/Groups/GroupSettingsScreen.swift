@@ -1,8 +1,10 @@
-// Surface: groups.settings — members, mute, quiet hours, invitation hours / pause, leave, report, block. Reference:
-// Yope + Apple HIG (native inset-grouped list with Yope's labels; design/surfaces/groups.settings.md). Reference images:
-// references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (M24),
-// …-t43.23-members-list-2024.png (ML24), a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (E26);
-// HIG lists and tables, alerts, menus.
+// Surface: groups.settings — members, notifications, invitation hours, admin, report, leave. Visual reference: Retro
+// Settings sheet (references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png, VID-SET: centred title +
+// close circle, small grey section headers, Fill grouped rows), the grouped row height and red row
+// (references/auto/retro/press/tc-2024-04-retro-journals-5.png, TC-J5) and Retro's people rows
+// (references/auto/retro/press/tc-2023-07-retro-1b.webp, TC-1B); Retro's album settings sections (APK strings
+// `journal_settings_*`). Native switches, pickers, menus and alerts (design/surfaces/groups.settings.md; MERGE RA-14,
+// RA-26).
 import AppData
 import AppModels
 import DesignSystem
@@ -10,6 +12,8 @@ import Observation
 import SwiftUI
 import UIKit
 
+/// groups.settings: a page sheet with its own navigation (`settings.root.layout.list.sheet`); pages pushed from it
+/// (settings.notifications, walls.member) use the native back button.
 struct GroupSettingsScreen: View {
     let groupID: String
     @Environment(AccountDependencies.self) private var dependencies
@@ -21,30 +25,61 @@ struct GroupSettingsScreen: View {
 
 struct GroupSettingsView: View {
     @State private var model: GroupSettingsModel
+    @State private var path: [AppRoute] = []
     @State private var editingHours = false
-    @State private var hoursStart = Date()
-    @State private var hoursEnd = Date()
     @State private var confirmLeave = false
     @State private var removing: MemberProfile?
     @State private var blockTarget: BlockTarget?
+    @State private var reportTarget: ReportTarget?
+    @State private var showsInvite = false
+    @State private var showsEdit = false
     @Environment(AccountDependencies.self) private var dependencies
-    @Environment(\.openURL) private var openURL
+    @Environment(\.dismiss) private var dismiss
 
     init(model: GroupSettingsModel) {
         _model = State(initialValue: model)
     }
 
+    private var isOffline: Bool { dependencies.network.isOffline }
+
     var body: some View {
-        Group {
-            if model.isLoading {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                list
+        NavigationStack(path: $path) {
+            VStack(spacing: 0) {
+                SheetHeader(title: Copy.groupsSettingsTitle, closeAccessibilityLabel: Copy.groupsSettingsCloseAccessibilityLabel) {
+                    dismiss()
+                }
+                SettingsList {
+                    if model.isLoading {
+                        loadingSections
+                    } else {
+                        membersSection
+                        notificationsSection
+                        invitationSection
+                        if model.isAdmin {
+                            SettingsGroup(header: Copy.groupsSettingsGroupHeader, rows: [
+                                SettingsRow(Copy.groupsSettingsGroupEdit, kind: .navigation { showsEdit = true }, isEnabled: !isOffline)
+                                    .accessibilityIdentifier("groups.settings.edit")
+                                    .asSettingsRow(),
+                            ])
+                        }
+                        SettingsGroup(rows: [
+                            SettingsRow(Copy.groupsSettingsReport, kind: .destructive { reportGroup() })
+                                .accessibilityIdentifier("groups.settings.report")
+                                .asSettingsRow(),
+                            SettingsRow(Copy.groupsSettingsLeave, kind: .destructive { confirmLeave = true }, isEnabled: !isOffline)
+                                .accessibilityIdentifier("groups.settings.leave")
+                                .asSettingsRow(),
+                        ])
+                    }
+                }
+            }
+            .background(Tokens.Colors.globalBackground.ignoresSafeArea())
+            .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(for: AppRoute.self) { route in
+                RouteDestination(route: route)
             }
         }
-        .navigationTitle(Text(Copy.groupsSettingsTitle))
-        .navigationBarTitleDisplayMode(.inline)
+        .dsSheetBackground()
         .task { await model.load() }
         .leaveGroupAlert(
             isPresented: $confirmLeave,
@@ -53,6 +88,9 @@ struct GroupSettingsView: View {
             data: dependencies.data,
             onFailed: { model.leaveFailed() }
         ) {
+            model.didLeave()
+            dismiss()
+            ShellState.active?.presentedRoute = nil
             dependencies.router.path = []
         }
         .alert(
@@ -70,200 +108,253 @@ struct GroupSettingsView: View {
         .blockConfirmation(target: $blockTarget, toasts: dependencies.toasts) { target in
             try await dependencies.data.block(userID: UserID(target.userID))
         }
+        .reportFlow(target: $reportTarget, dependencies: dependencies)
+        .formErrorAlert(model.alertMessage, trigger: model.errorCount)
+        .sheet(isPresented: $showsInvite) {
+            GroupInviteScreen(groupID: model.groupID.rawValue)
+                .environment(dependencies)
+                .environment(\.storageURLResolver, dependencies.storageURLResolver)
+        }
+        .sheet(isPresented: $showsEdit, onDismiss: { Task { await model.load() } }) {
+            GroupCreateScreen(editingGroupID: model.groupID.rawValue)
+                .environment(dependencies)
+                .environment(\.storageURLResolver, dependencies.storageURLResolver)
+        }
+        .sheet(isPresented: $editingHours) {
+            InvitationHoursSheet(group: model.group) { start, end in
+                Task { await model.setInvitationHours(start: start, end: end) }
+            }
+        }
         .dsHaptic(Tokens.Haptics.globalWarning, trigger: model.warningCount)
         .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
         .accessibilityIdentifier("groups.settings")
     }
 
-    private var isOffline: Bool { dependencies.network.isOffline }
+    // MARK: Loading
 
-    private var list: some View {
-        List {
-            membersSection
-            notificationsSection
-            invitationSection
-            if model.isAdmin {
-                Section(Copy.groupsSettingsGroupHeader) {
-                    Button(Copy.groupsSettingsGroupEdit) {
-                        dependencies.router.modal = .account(.groupEdit(groupID: model.groupID.rawValue))
-                    }
-                }
-            }
-            Section {
-                Button(Copy.groupsSettingsShareInvite) {
-                    dependencies.router.modal = .account(.groupInvite(groupID: model.groupID.rawValue))
-                }
-                Button(Copy.groupsSettingsReport, systemImage: Tokens.Icons.globalReport, role: .destructive) {
-                    dependencies.router.modal = .account(.report(ReportTarget(kind: .group, id: model.groupID.rawValue, name: model.group?.name)))
-                }
-                Button(Copy.groupsSettingsLeave, systemImage: Tokens.Icons.globalLeave, role: .destructive) {
-                    confirmLeave = true
-                }
-                .accessibilityIdentifier("groups.settings.leave")
-            }
+    /// Loading: each section with one row showing the platform activity indicator (C-28).
+    private var loadingSections: some View {
+        ForEach([Copy.groupsSettingsMembersHeader, Copy.groupsSettingsNotificationsHeader, Copy.groupsSettingsInvitationHeader], id: \.self) { header in
+            SettingsGroup(header: header, rows: [SettingsRow("", kind: .busy).asSettingsRow()])
         }
-        .listStyle(.insetGrouped)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(Copy.globalA11yLoading))
     }
 
     // MARK: Members
 
     private var membersSection: some View {
-        Section {
-            ForEach(model.members) { member in
-                memberRow(member)
-            }
-            if !model.isFull {
-                Button {
-                    dependencies.router.modal = .account(.groupInvite(groupID: model.groupID.rawValue))
-                } label: {
-                    Label(GroupKindCopy.settingsInvite(model.group?.kind), systemImage: Tokens.Icons.globalLink)
+        var rows: [AnyView] = model.membersInJoiningOrder.map { memberRow($0).asSettingsRow() }
+        if !model.isFull {
+            rows.append(
+                SettingsCustomRow {
+                    OutlineCTA(GroupKindCopy.settingsInvite(model.group?.kind)) { showsInvite = true }
+                        .fixedSize()
+                        .accessibilityIdentifier("groups.settings.invite")
                 }
-            }
-        } header: {
-            Text(Copy.groupsSettingsMembersHeader)
-        } footer: {
-            if let error = model.memberError { Text(error) }
+                .asSettingsRow()
+            )
         }
+        return SettingsGroup(header: Copy.groupsSettingsMembersHeader, rows: rows)
     }
 
+    /// C-16 in a C-14 row: avatar `size.global.avatarPicker`, first name (`listTitle`), "You" / "Admin" (`listSubtitle`,
+    /// grey); others' rows end with "•••" (native menu: Remove from Group for admins, Report Profile, Block Profile —
+    /// destructive items red). The row opens that person's wall (walls.member) inside the sheet.
     private func memberRow(_ member: MemberProfile) -> some View {
         let isMe = member.member.userID == model.me
-        let firstName = member.profile?.firstName ?? ""
-        return HStack {
+        let firstName = member.profile?.firstName ?? member.profile?.displayName ?? ""
+        let line: String? = isMe ? Copy.groupsSettingsMembersYou : (member.member.role == .admin ? Copy.groupsSettingsMembersAdmin : nil)
+        return HStack(spacing: 0) {
             Button {
-                if let route = CrossGroupRoutes.wallMember(userID: member.member.userID.rawValue) {
-                    dependencies.router.path.append(route)
-                }
+                if let route = CrossGroupRoutes.wallMember(userID: member.member.userID.rawValue) { path.append(route) }
             } label: {
                 HStack {
                     AvatarView(path: member.profile?.avatarPath, diameter: Tokens.Sizes.globalAvatarPicker)
                     VStack(alignment: .leading) {
-                        Text(member.profile?.displayName ?? "")
-                        if isMe {
-                            Text(Copy.groupsSettingsMembersYou).font(.subheadline).foregroundStyle(.secondary) // provenance-ok: system list subhead style (layout.global.system.typography)
-                        } else if member.member.role == .admin {
-                            Text(Copy.groupsSettingsMembersAdmin).font(.subheadline).foregroundStyle(.secondary) // provenance-ok: system list subhead style (layout.global.system.typography)
+                        Text(firstName)
+                            .dsTextStyle(TextRole.listTitle)
+                            .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                        if let line {
+                            Text(line)
+                                .dsTextStyle(TextRole.listSubtitle)
+                                .foregroundStyle(Tokens.Colors.globalTextSecondary)
                         }
                     }
+                    .multilineTextAlignment(.leading)
+                    Spacer(minLength: 0)
                 }
+                .modifier(SettingsRowFrame())
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            Spacer(minLength: 0)
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
             if !isMe {
-                Menu {
+                HeaderIconMenu(icon: Tokens.Icons.globalMore, accessibilityLabel: Copy.groupsSettingsMembersMoreAccessibilityLabel) {
                     if model.isAdmin {
                         Button(Copy.groupsSettingsMembersMenuRemove, role: .destructive) { removing = member }
                     }
-                    Button(Copy.groupsSettingsMembersMenuReport) {
-                        dependencies.router.modal = .account(.report(ReportTarget(
-                            kind: .user,
-                            id: member.member.userID.rawValue,
-                            name: firstName,
-                            person: BlockTarget(userID: member.member.userID.rawValue, firstName: firstName)
-                        )))
+                    Button(Copy.groupsSettingsMembersMenuReport, role: .destructive) {
+                        reportTarget = ReportTarget(
+                            kind: .user, id: member.member.userID.rawValue, name: firstName,
+                            person: BlockTarget(userID: member.member.userID.rawValue, firstName: firstName),
+                            groupID: model.groupID.rawValue, groupName: model.group?.name
+                        )
                     }
                     Button(Copy.groupsSettingsMembersMenuBlock, role: .destructive) {
                         blockTarget = BlockTarget(userID: member.member.userID.rawValue, firstName: firstName)
                     }
-                } label: {
-                    Image(systemName: Tokens.Icons.globalMore)
-                        .frame(width: Tokens.Sizes.globalMinTouchTargetIos, height: Tokens.Sizes.globalMinTouchTargetIos)
-                        .contentShape(Rectangle())
                 }
-                .accessibilityLabel(Text(Copy.groupsSettingsMembersMoreAccessibilityLabel(firstName: firstName)))
+                .padding(.trailing, Tokens.Sizes.globalScreenMargin - (Tokens.Sizes.globalHeaderButton - Tokens.Sizes.globalIcon) / 2)
             }
         }
+        .accessibilityIdentifier("groups.settings.member")
     }
 
     // MARK: Notifications
 
     private var notificationsSection: some View {
-        Section {
-            Toggle(Copy.groupsSettingsNotificationsMute, isOn: Binding(
-                get: { model.muted },
-                set: { value in Task { await model.setMuted(value) } }
-            ))
-            .disabled(isOffline)
-            .accessibilityIdentifier("groups.settings.mute")
-            NavigationLink(value: AppRoute.account(.settingsNotifications)) {
-                Text(Copy.groupsSettingsNotificationsQuietHours)
-            }
-            if model.systemNotificationsOff {
-                Button(Copy.settingsNotificationsOpenSettings) { openNotificationSettings() }
-            }
-        } header: {
-            Text(Copy.groupsSettingsNotificationsHeader)
-        } footer: {
-            VStack(alignment: .leading) {
-                Text(model.notificationsError ?? Copy.groupsSettingsNotificationsFooter)
-                if model.systemNotificationsOff, let off = AccountBlockedCopy.notificationsOffFooter {
-                    Text(off)
-                }
-            }
-        }
-    }
-
-    private func openNotificationSettings() {
-        if let url = URL(string: UIApplication.openNotificationSettingsURLString) { openURL(url) }
+        SettingsGroup(
+            header: Copy.groupsSettingsNotificationsHeader,
+            footer: [Copy.groupsSettingsNotificationsFooter],
+            rows: [
+                SettingsRow(
+                    Copy.groupsSettingsNotificationsUpdates,
+                    kind: .toggle(Binding(get: { !model.muted }, set: { on in Task { await model.setMuted(!on) } })),
+                    isEnabled: !isOffline
+                )
+                .accessibilityIdentifier("groups.settings.updates")
+                .asSettingsRow(),
+                SettingsRow(Copy.groupsSettingsNotificationsQuietHours, kind: .navigation { path.append(.account(.settingsNotifications)) })
+                    .accessibilityIdentifier("groups.settings.quietHours")
+                    .asSettingsRow(),
+            ]
+        )
     }
 
     // MARK: Daily invitation
 
+    /// Invitation Hours (value: the window or "Default") → native time pickers; Pause Invitations. Members who are not
+    /// admins see the rows disabled and the admin-only line.
     private var invitationSection: some View {
-        Section {
-            if model.isAdmin {
-                Button {
-                    beginEditingHours()
-                } label: {
-                    LabeledContent(Copy.groupsSettingsInvitationHours, value: model.invitationHoursText)
-                }
-                .foregroundStyle(.primary) // provenance-ok: system label colour (color.global.system.ios label)
-                .disabled(isOffline)
-                if editingHours {
-                    HStack {
-                        DatePicker(selection: $hoursStart, displayedComponents: .hourAndMinute) {
+        var footer = [Copy.groupsSettingsInvitationFooter]
+        if !model.isAdmin { footer.append(Copy.groupsSettingsInvitationAdminOnly) }
+        return SettingsGroup(
+            header: Copy.groupsSettingsInvitationHeader,
+            footer: footer,
+            rows: [
+                SettingsRow(
+                    Copy.groupsSettingsInvitationHours,
+                    value: model.invitationHoursText,
+                    kind: .navigation { editingHours = true },
+                    isEnabled: model.isAdmin && !isOffline
+                )
+                .accessibilityIdentifier("groups.settings.hours")
+                .asSettingsRow(),
+                SettingsRow(
+                    Copy.groupsSettingsInvitationPause,
+                    kind: .toggle(Binding(get: { model.paused }, set: { value in Task { await model.setPaused(value) } })),
+                    isEnabled: model.isAdmin && !isOffline
+                )
+                .accessibilityIdentifier("groups.settings.pause")
+                .asSettingsRow(),
+            ]
+        )
+    }
+
+    private func reportGroup() {
+        reportTarget = ReportTarget(
+            kind: .group, id: model.groupID.rawValue, name: model.group?.name,
+            groupID: model.groupID.rawValue, groupName: model.group?.name
+        )
+    }
+}
+
+/// The invitation window's native time pickers in a sheet (`DatePicker(.hourAndMinute)`): Start and End rows and the
+/// system toolbar (Cancel / Save). The pickers start at the group's window, or at the current time when it uses the
+/// default window; equal times are not saved.
+struct InvitationHoursSheet: View {
+    let group: PhotoGroup?
+    let onSave: (LocalTime, LocalTime) -> Void
+    @State private var start = Date()
+    @State private var end = Date()
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            SettingsList {
+                SettingsGroup(rows: [
+                    SettingsCustomRow {
+                        DatePicker(selection: $start, displayedComponents: .hourAndMinute) {
                             Text(Copy.settingsNotificationsQuietHoursStart)
-                        }
-                        DatePicker(selection: $hoursEnd, displayedComponents: .hourAndMinute) {
-                            Text(Copy.settingsNotificationsQuietHoursEnd)
+                                .dsTextStyle(TextRole.body)
+                                .foregroundStyle(Tokens.Colors.globalTextPrimary)
                         }
                     }
-                    .labelsHidden()
-                    .onChange(of: hoursStart) { _, _ in saveHours() }
-                    .onChange(of: hoursEnd) { _, _ in saveHours() }
-                }
-            } else {
-                LabeledContent(Copy.groupsSettingsInvitationHours, value: model.invitationHoursText)
+                    .asSettingsRow(),
+                    SettingsCustomRow {
+                        DatePicker(selection: $end, displayedComponents: .hourAndMinute) {
+                            Text(Copy.settingsNotificationsQuietHoursEnd)
+                                .dsTextStyle(TextRole.body)
+                                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                        }
+                    }
+                    .asSettingsRow(),
+                ])
             }
-            Toggle(Copy.groupsSettingsInvitationPause, isOn: Binding(
-                get: { model.paused },
-                set: { value in Task { await model.setPaused(value) } }
-            ))
-            .disabled(!model.isAdmin || isOffline)
-        } header: {
-            Text(Copy.groupsSettingsInvitationHeader)
-        } footer: {
-            VStack(alignment: .leading) {
-                Text(model.invitationError ?? Copy.groupsSettingsInvitationFooter)
-                if !model.isAdmin { Text(Copy.groupsSettingsInvitationAdminOnly) }
-            }
+            .sheetToolbar(
+                title: Copy.groupsSettingsInvitationHours,
+                cancelTitle: Copy.groupsSettingsAlertCancel,
+                onCancel: { dismiss() },
+                confirmTitle: Copy.groupsCreateSave,
+                onConfirm: save
+            )
+        }
+        .presentationDetents([.medium])
+        .dsSheetBackground()
+        .onAppear {
+            let now = Date()
+            start = group?.wakingStart.map { AccountFormats.date(for: $0, now: now) } ?? now
+            end = group?.wakingEnd.map { AccountFormats.date(for: $0, now: now) } ?? now
         }
     }
 
-    /// The pickers start at the group's window, or at the current time when it uses the default window (nothing is
-    /// saved until the two times differ).
-    private func beginEditingHours() {
-        editingHours.toggle()
-        guard editingHours else { return }
-        let now = Date()
-        hoursStart = model.group?.wakingStart.map { AccountFormats.date(for: $0, now: now) } ?? now
-        hoursEnd = model.group?.wakingEnd.map { AccountFormats.date(for: $0, now: now) } ?? now
+    private func save() {
+        defer { dismiss() }
+        guard let from = AccountFormats.localTime(of: start), let to = AccountFormats.localTime(of: end), from != to else { return }
+        if from == group?.wakingStart, to == group?.wakingEnd { return }
+        onSave(from, to)
     }
+}
 
-    private func saveHours() {
-        guard let start = AccountFormats.localTime(of: hoursStart), let end = AccountFormats.localTime(of: hoursEnd),
-              start != end else { return }
-        if start == model.group?.wakingStart, end == model.group?.wakingEnd { return }
-        Task { await model.setInvitationHours(start: start, end: end) }
+extension View {
+    /// The leave confirmation (`settings.account.layout.alert`): title `groups.settings.leave.title`, message `.message`
+    /// or `.messageLast` (last member), destructive `.confirm`, `groups.settings.alert.cancel`. Confirm →
+    /// `leave_group` → `onLeft`.
+    func leaveGroupAlert(
+        isPresented: Binding<Bool>,
+        group: PhotoGroup?,
+        isLastMember: Bool,
+        data: AccountDataSource,
+        onFailed: @escaping @MainActor () -> Void = {},
+        onLeft: @escaping @MainActor () -> Void
+    ) -> some View {
+        alert(Text(Copy.groupsSettingsLeaveTitle(groupName: group?.name ?? "")), isPresented: isPresented) {
+            Button(Copy.groupsSettingsAlertCancel, role: .cancel) {}
+            Button(Copy.groupsSettingsLeaveConfirm, role: .destructive) {
+                guard let group else { return }
+                Task { @MainActor in
+                    do {
+                        try await data.leaveGroup(id: group.id)
+                        onLeft()
+                    } catch {
+                        onFailed()
+                    }
+                }
+            }
+        } message: {
+            Text(isLastMember ? Copy.groupsSettingsLeaveMessageLast : Copy.groupsSettingsLeaveMessage)
+        }
     }
 }

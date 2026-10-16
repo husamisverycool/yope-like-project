@@ -1,29 +1,26 @@
-// Account group — groups.screen state: the group's photos newest first (paged), members, "{first_name} joined" pills,
-// realtime inserts / deletions, cached content offline (docs/API.md §5.3–5.4, §5.8, §8, §9.6).
+// Account group — groups.screen state: the group, its members and its photos newest first (paged), split the way the
+// screen shows them — this week's strip (group time zone, Monday start), the members' weeks (one friend card per member
+// who shared this week) and the earlier photos by day; realtime inserts / deletions; cached content offline
+// (docs/API.md §5.3–5.4, §5.8, §8, §9.6).
 import AppData
 import AppModels
 import Foundation
 import Observation
 import UIKit
 
-/// One element of the feed: a photo card or a "joined" system pill.
-enum FeedItem: Identifiable, Equatable {
-    case post(PostWithMedia)
-    case joined(MemberProfile)
+/// One member's week: their newest photo of this week (a C-18 friend card).
+struct MemberWeek: Identifiable, Equatable {
+    let member: MemberProfile
+    let newest: PostWithMedia
+    var id: UserID { member.member.userID }
+}
 
-    var id: String {
-        switch self {
-        case let .post(post): return "post-" + post.id.rawValue
-        case let .joined(member): return "joined-" + member.id.rawValue
-        }
-    }
-
-    var date: Date {
-        switch self {
-        case let .post(post): return post.post.createdAt
-        case let .joined(member): return member.member.joinedAt
-        }
-    }
+/// One day of the earlier photos (a C-21 dated section), newest first.
+struct DaySection: Identifiable, Equatable {
+    /// Start of the day in the group's time zone.
+    let day: Date
+    let posts: [PostWithMedia]
+    var id: Date { day }
 }
 
 @MainActor
@@ -31,11 +28,13 @@ enum FeedItem: Identifiable, Equatable {
 final class GroupFeedModel {
     enum Phase: Equatable {
         case loading
+        /// The group has photos.
         case loaded
         /// The viewer created the group and nothing is posted yet.
         case created
         /// Joined group without posts.
         case empty
+        /// The fetch failed with nothing cached.
         case error
         /// No connection and nothing cached.
         case offline
@@ -50,16 +49,19 @@ final class GroupFeedModel {
     private(set) var phase: Phase = .loading
     private(set) var isLoadingMore = false
     private(set) var latestRecapID: RecapID?
-    /// Bumped when a realtime insert added cards (VoiceOver layout-changed announcement).
+    /// Bumped when a realtime insert added photos (VoiceOver layout-changed announcement).
     private(set) var insertedCount = 0
 
     private(set) var nextCursor: Date?
     private let data: AccountDataSource
+    private let now: () -> Date
     private var realtimeTask: Task<Void, Never>?
 
-    init(groupID: GroupID, data: AccountDataSource) {
+    /// - Parameter now: the clock that decides "this week" (tests pin it to their fixture's time).
+    init(groupID: GroupID, data: AccountDataSource, now: @escaping () -> Date = Date.init) {
         self.groupID = groupID
         self.data = data
+        self.now = now
     }
 
     var me: UserID? { data.currentUserID }
@@ -70,23 +72,84 @@ final class GroupFeedModel {
         members.first { $0.member.userID == userID }?.profile
     }
 
-    /// Members who joined after the group was created (everyone but its creator), for the pills and "and added …".
-    var joinedMembers: [MemberProfile] {
-        members.filter { $0.member.userID != group?.createdBy }
+    /// Members in joining order (the avatar stack).
+    var membersInJoiningOrder: [MemberProfile] {
+        members.sorted { $0.member.joinedAt < $1.member.joinedAt }
     }
 
-    /// `groups.screen.created.detail` {names}: joined members' first names, comma-separated (copy note).
-    var joinedNames: String? {
-        let names = joinedMembers.filter { $0.member.userID != me }.compactMap { $0.profile?.firstName }
-        return names.isEmpty ? nil : names.joined(separator: ", ")
+    // MARK: Weeks (group time zone, ISO weeks: Monday start, `app_config.week_start_isodow`)
+
+    /// ISO-8601 calendar in the group's time zone.
+    var calendar: Calendar {
+        var calendar = Calendar(identifier: .iso8601)
+        if let zone = group.flatMap({ TimeZone(identifier: $0.timeZone) }) { calendar.timeZone = zone }
+        return calendar
     }
 
-    /// Cards and joined pills, newest first. Pills older than the oldest loaded card wait until the last page.
-    var items: [FeedItem] {
-        let oldest = nextCursor == nil ? Date.distantPast : (posts.last?.post.createdAt ?? Date.distantPast)
-        let pills = joinedMembers.filter { $0.member.joinedAt >= oldest }.map(FeedItem.joined)
-        return (posts.map(FeedItem.post) + pills).sorted { $0.date > $1.date }
+    /// The current week (group time zone).
+    var currentWeek: DateInterval? {
+        calendar.dateInterval(of: .weekOfYear, for: now())
     }
+
+    /// `{number}` of `groups.screen.week.title`: the ISO week number of today in the group's time zone.
+    var weekNumber: Int {
+        calendar.component(.weekOfYear, from: now())
+    }
+
+    /// This week's photos, oldest → newest (the strip's order).
+    var thisWeekPosts: [PostWithMedia] {
+        guard let week = currentWeek else { return [] }
+        return posts.filter { week.contains($0.post.createdAt) }.sorted { $0.post.createdAt < $1.post.createdAt }
+    }
+
+    /// The days of this week from today to its end (start of day, group time zone): the empty-day tiles of a week
+    /// without photos (Retro's empty week, H43 / H22).
+    var remainingDaysOfWeek: [Date] {
+        let calendar = calendar
+        guard let week = calendar.dateInterval(of: .weekOfYear, for: now()) else { return [] }
+        let today = calendar.startOfDay(for: now())
+        var days: [Date] = []
+        var day = today
+        while day < week.end {
+            days.append(day)
+            guard let next = calendar.date(byAdding: .day, value: 1, to: day) else { break }
+            day = next
+        }
+        return days
+    }
+
+    /// One friend card per member who shared this week, newest first: that member's newest photo of the week.
+    var memberWeeks: [MemberWeek] {
+        var newestByAuthor: [UserID: PostWithMedia] = [:]
+        for post in thisWeekPosts {
+            if let current = newestByAuthor[post.post.authorID], current.post.createdAt >= post.post.createdAt { continue }
+            newestByAuthor[post.post.authorID] = post
+        }
+        return newestByAuthor.compactMap { userID, post -> MemberWeek? in
+            guard let member = members.first(where: { $0.member.userID == userID }) else { return nil }
+            return MemberWeek(member: member, newest: post)
+        }
+        .sorted { $0.newest.post.createdAt > $1.newest.post.createdAt }
+    }
+
+    /// The photos from before this week by day (group time zone), newest first.
+    var earlierSections: [DaySection] {
+        let calendar = calendar
+        let weekStart = currentWeek?.start ?? .distantFuture
+        var sections: [DaySection] = []
+        for post in posts where post.post.createdAt < weekStart {
+            let day = calendar.startOfDay(for: post.post.createdAt)
+            if let last = sections.last, last.day == day {
+                sections[sections.count - 1] = DaySection(day: day, posts: last.posts + [post])
+            } else {
+                sections.append(DaySection(day: day, posts: [post]))
+            }
+        }
+        return sections
+    }
+
+    /// Earlier photos exist but none this week ("quiet week": the strip shows the empty week without the block).
+    var isQuietWeek: Bool { phase == .loaded && thisWeekPosts.isEmpty }
 
     // MARK: Loading
 
@@ -126,7 +189,7 @@ final class GroupFeedModel {
         }
     }
 
-    /// The first page replaces the newest cards and keeps older pages already loaded.
+    /// The first page replaces the newest photos and keeps older pages already loaded.
     private func mergeFirstPage(_ page: Page<PostWithMedia>) {
         guard let oldestFresh = page.items.last?.post.createdAt, page.nextCursor != nil else {
             posts = page.items
@@ -146,7 +209,7 @@ final class GroupFeedModel {
         }
     }
 
-    /// The next (older) page, when the last card appears.
+    /// The next (older) page, when the last earlier cell appears.
     func loadMore() async {
         guard let cursor = nextCursor, !isLoadingMore else { return }
         isLoadingMore = true
@@ -157,7 +220,7 @@ final class GroupFeedModel {
         nextCursor = page.nextCursor
     }
 
-    /// Error state's retry.
+    /// The error line's retry (tap).
     func retry() async {
         phase = .loading
         await refresh()
@@ -195,7 +258,7 @@ final class GroupFeedModel {
         }
     }
 
-    /// A new post: the first page is read again and new cards slide in at the top.
+    /// A new post: the first page is read again and the new photos join the strip.
     private func insertNewest() async {
         guard let page = try? await data.feed(groupID: groupID, before: nil) else { return }
         let known = Set(posts.map(\.id))
@@ -215,19 +278,6 @@ final class GroupFeedModel {
         await refresh()
     }
 
-    // MARK: Prefetch
-
-    /// Warms the image cache for the newest page beyond what is on screen (`pixels` = card pixel size).
-    func prefetchImages(after index: Int, pixels: Int) async {
-        let upcoming = posts.dropFirst(index + 1).prefix(PostRepositoryPrefetch.count)
-        var items: [(path: String, url: URL)] = []
-        for post in upcoming {
-            guard let path = post.media?.imagePath(for: .display), let url = try? await data.signedURL(path: path) else { continue }
-            items.append((path, url))
-        }
-        ImagePipeline.shared.prefetch(items, pixels: pixels)
-    }
-
     // MARK: Previews and tests
 
     func seed(group: PhotoGroup?, members: [MemberProfile], posts: [PostWithMedia], phase: Phase) {
@@ -236,9 +286,4 @@ final class GroupFeedModel {
         self.posts = posts
         self.phase = phase
     }
-}
-
-/// How far ahead the feed warms images: one feed page (`PostRepository.pageSize`).
-enum PostRepositoryPrefetch {
-    static var count: Int { PostRepository.pageSize }
 }
