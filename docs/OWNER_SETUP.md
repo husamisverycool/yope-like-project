@@ -218,9 +218,23 @@ the researcher to capture the flows listed under "approximated" in the session r
 
 | Secret | For |
 |---|---|
-| `APPLE_TEAM_ID`, `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8` | iOS signing via App Store Connect API key and TestFlight upload |
+| `APPLE_TEAM_ID`, `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8` | iOS signing via App Store Connect API key and TestFlight upload ("send Jolt to TestFlight"). The key: App Store Connect → Users and Access → Integrations → App Store Connect API → Team Keys → **+**, access **Admin** (automatic signing needs it); `ASC_KEY_P8` is the whole text of the downloaded `.p8` file |
+| `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` | "set up the server": applies the migrations and the sign-in settings to the project named by `config/app.json` `supabase.url` |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SERVICE_SID` | "set up the server" also switches on phone sign-in through Twilio Verify (step 6.1) |
 | `ANDROID_UPLOAD_KEYSTORE_B64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Android release signing |
 | `ANDROID_GOOGLE_SERVICES_JSON` | Firebase config (base64) |
 | `PLAY_SERVICE_ACCOUNT_JSON` | Upload to Play internal testing |
 
 Without these, CI still builds and tests unsigned debug builds on every push.
+
+### One-button release (GitHub → Actions → the workflow → **Run workflow**)
+
+1. **set up the server** (`.github/workflows/setup-server.yml`): once the Supabase project exists, its URL and anon key
+   are in `config/app.json` and the Supabase secrets above are set. Applies every migration and switches on phone
+   sign-in (with the Twilio secrets) with email sign-up off. Safe to run again.
+2. **send Jolt to TestFlight** (`.github/workflows/testflight.yml`): once the Apple secrets are set and the app exists
+   in App Store Connect (My Apps → + → New App) with bundle ID `com.husamisverycool.jolt` — or another one, given as the
+   workflow's input or the repository variable `IOS_BUNDLE_ID`. Builds Release, signs it automatically and uploads it;
+   the build shows under TestFlight once Apple has processed it. Each run is a new build number.
+
+Both stop at the start, naming each missing step, when something is not set up yet (`tools/release/check_setup.py`).

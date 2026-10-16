@@ -1,0 +1,94 @@
+# "Send Jolt to TestFlight": builds the real app (Release, signed by Apple's automatic signing through the App Store
+# Connect API key) and uploads it to App Store Connect, where it appears under TestFlight about half an hour later
+# (docs/OWNER_SETUP.md §1, §10). Run it from GitHub → Actions → this workflow → Run workflow. Needs the secrets
+# APPLE_TEAM_ID, ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8 (an API key with Admin access, so it can manage signing), the
+# app record in App Store Connect for the bundle ID below, and config/app.json supabase.url / anonKey.
+name: send Jolt to TestFlight
+
+on:
+  workflow_dispatch:
+    inputs:
+      bundle_id:
+        description: "Bundle ID (must match the app in App Store Connect)"
+        required: false
+        default: ""
+
+concurrency:
+  group: testflight
+  cancel-in-progress: false
+
+jobs:
+  testflight:
+    name: build and upload
+    runs-on: macos-15
+    timeout-minutes: 90
+    env:
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+      # The input, else the repository variable IOS_BUNDLE_ID, else Jolt's default.
+      BUNDLE_ID: ${{ inputs.bundle_id || vars.IOS_BUNDLE_ID || 'com.husamisverycool.jolt' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: what is set up
+        run: python3 tools/release/check_setup.py testflight
+      - name: select newest Xcode
+        run: |
+          XC=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XC"
+          xcodebuild -version
+      - run: brew install xcodegen
+      - name: generate project
+        working-directory: ios
+        run: xcodegen generate
+      - name: the App Store Connect key
+        run: |
+          printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/AuthKey.p8"
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>${APPLE_TEAM_ID}</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>uploadSymbols</key><true/>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+          </dict>
+          </plist>
+          PLIST
+      # Build number = this workflow's run number, so every upload is new to App Store Connect.
+      - name: build (archive)
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild -project App.xcodeproj -scheme App -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/Jolt.xcarchive" -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Automatic APP_BUNDLE_ID="$BUNDLE_ID" \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" archive 2>&1 | tee archive.log | grep -E "error:|warning: .*[Pp]rovisioning|ARCHIVE|\*\*" || true
+          grep -q "\*\* ARCHIVE SUCCEEDED \*\*" archive.log
+      - name: upload to App Store Connect
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/Jolt.xcarchive" -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/export" -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            2>&1 | tee upload.log | grep -E "error:|Upload|EXPORT|\*\*" || true
+          grep -q "\*\* EXPORT SUCCEEDED \*\*" upload.log
+          echo "Uploaded build $GITHUB_RUN_NUMBER of $BUNDLE_ID: it appears in App Store Connect → TestFlight after Apple processes it."
+      - name: keep the logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testflight-logs
+          path: |
+            ios/archive.log
+            ios/upload.log
+          if-no-files-found: ignore
+      - name: remove the key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/AuthKey.p8"

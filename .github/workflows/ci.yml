@@ -380,3 +380,29 @@ jobs:
             ios/tour
             ios/xcodebuild-tour.log
           if-no-files-found: ignore
+
+  # The Release configuration (what TestFlight and the App Store get; every other job builds Debug): unsigned, for the
+  # simulator, so a Release-only compile error shows on every push instead of at the first TestFlight upload.
+  ios-release:
+    name: ios release build (what TestFlight gets)
+    runs-on: macos-15
+    timeout-minutes: 45
+    needs: detect
+    if: needs.detect.outputs.ios == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - name: select newest Xcode
+        run: |
+          XC=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XC"
+          xcodebuild -version
+      - run: brew install xcodegen
+      - name: generate project
+        working-directory: ios
+        run: xcodegen generate
+      - name: build Release
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild -project App.xcodeproj -scheme App -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build CODE_SIGNING_ALLOWED=NO build 2>&1 | tee xcodebuild-release.log | grep -E "error:|BUILD|\*\*" || true
+          grep -q "\*\* BUILD SUCCEEDED \*\*" xcodebuild-release.log
