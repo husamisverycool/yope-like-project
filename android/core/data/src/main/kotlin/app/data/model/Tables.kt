@@ -148,10 +148,10 @@ data class Post(
     @SerialName("created_at") val createdAt: Instant,
     /** The voice note's waveform: 100 levels of 0…31 (§5.8 `voice_levels`); null when it has none. Last, so positional calls keep working. */
     @SerialName("voice_levels") val voiceLevels: List<Int>? = null,
-    /** §14.4: the group week's question this post answers (`answer_question`); null for every other post. */
-    @SerialName("question_id") val questionId: String? = null,
     /** §14.3: the reveal time an overnight photo joined the group at (`created_at` stays when it was taken); null for every other post. */
     @SerialName("revealed_at") val revealedAt: Instant? = null,
+    /** §14.4: the group week's question this post answers (`answer_question`); null for every other post. */
+    @SerialName("question_id") val questionId: String? = null,
 )
 
 /** §5.9 `messages` (group chat). */

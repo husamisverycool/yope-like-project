@@ -30,6 +30,7 @@ import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performSemanticsAction
@@ -165,7 +166,7 @@ class JourneyTest {
         // The open group shows the new post through its realtime subscription; reopening it reads the feed again.
         if (!appears(mayaPhoto, UPLOAD)) {
             problem("realtime-post", "the new post did not appear in the open group (realtime insert)")
-            tap(desc(R.string.groups_screen_back_accessibilitylabel))
+            tapAtGroupTop(desc(R.string.groups_screen_back_accessibilitylabel))
             tap(hasText(GROUP), LONG)
             waitFor(mayaPhoto, LONG)
         }
@@ -189,8 +190,8 @@ class JourneyTest {
         }
 
         // Chat: a message.
-        soft("chat", recover = { backTo(desc(R.string.groups_screen_back_accessibilitylabel)) }) {
-            tap(desc(R.string.groups_screen_chat))
+        soft("chat", recover = { backTo(mayaPhoto) }) {
+            tapAtGroupTop(desc(R.string.groups_screen_chat))
             // The thread's only text field is the composer.
             val composer = hasSetTextAction()
             waitFor(composer, LONG)
@@ -214,7 +215,7 @@ class JourneyTest {
         soft("overnight-capture", recover = { backTo(mayaPhoto) }) { mayaTakesA9AmPhoto(mayaPhoto) }
 
         // Home, then the wall (Profile tab).
-        tap(desc(R.string.groups_screen_back_accessibilitylabel))
+        tapAtGroupTop(desc(R.string.groups_screen_back_accessibilitylabel))
         waitFor(hasText(GROUP), LONG)
         evidence.step("maya-groups")
         tap(desc(R.string.groups_list_tab_me_accessibilitylabel))
@@ -241,7 +242,7 @@ class JourneyTest {
 
             // Theo signs out; Maya signs in again and sees what Theo did.
             backTo(mayaPhoto)
-            tap(desc(R.string.groups_screen_back_accessibilitylabel))
+            tapAtGroupTop(desc(R.string.groups_screen_back_accessibilitylabel))
             waitFor(hasText(GROUP), LONG)
             tap(desc(R.string.groups_list_tab_me_accessibilitylabel))
             waitFor(hasTestTag("walls.mine"), LONG)
@@ -274,7 +275,7 @@ class JourneyTest {
 
     /** Group settings → Admin Settings → "Weekly Question" on (`set_group_weekly_question`). */
     private fun mayaTurnsOnTheWeeklyQuestion(mayaPhoto: SemanticsMatcher) {
-        tap(desc(R.string.groups_screen_settings_accessibilitylabel))
+        tapAtGroupTop(desc(R.string.groups_screen_settings_accessibilitylabel))
         val row = text(R.string.question_weekly_settings_row)
         waitFor(row, LONG)
         scrollTo(row)
@@ -427,7 +428,9 @@ class JourneyTest {
         evidence.step("maya-9am-destination")
         tap(hasTestTag("camera.destination.done"))
         waitGone(hasTestTag("camera.destinationSheet"), SHORT)
-        waitFor(hasTestTag("camera.destination"))
+        // The destination pill (9 AM mode): one TalkBack element, its label then the hint (its test tag is cleared with
+        // its semantics).
+        waitFor(descContaining(context.getString(R.string.camera_overnight_a11y_destinationhint)))
         evidence.step("maya-camera-9am")
         tap(hasTestTag("camera.shutter"))
         // No send-to in 9 AM mode: the camera stays, the photo goes through the upload queue to create_overnight_post.
@@ -500,6 +503,16 @@ class JourneyTest {
     }
 
     // ---- The group screen's list ----
+
+    /**
+     * Taps [matcher] in the group screen's header or action row: the list is scrolled back to its top first (a lazy list
+     * composes only what is on screen, so once scrolled down the header is not there to scroll to; run 97).
+     */
+    private fun tapAtGroupTop(matcher: SemanticsMatcher) {
+        runCatching { compose.onNode(hasTestTag(GROUP_SCREEN_LIST_TAG)).performScrollToIndex(0) }
+        compose.waitForIdle()
+        tap(matcher)
+    }
 
     /**
      * Brings the group screen's item [key] (the lazy list's key: `plans`, `strip`, `pager`) into view, then [matcher]
