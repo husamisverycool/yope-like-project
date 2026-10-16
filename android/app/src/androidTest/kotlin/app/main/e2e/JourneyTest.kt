@@ -207,6 +207,16 @@ class JourneyTest {
         context.startActivity(
             Intent(Intent.ACTION_VIEW, Uri.parse(link)).setClassName(context, MainActivity::class.java.name).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
         )
+        try {
+            theoJoinsByInvite(mayaPhoto)
+        } finally {
+            restoreLaunchIntent()
+        }
+
+        assertTrue("the journey finished with problems:\n" + problems.joinToString("\n"), problems.isEmpty())
+    }
+
+    private fun theoJoinsByInvite(mayaPhoto: SemanticsMatcher) {
         waitFor(text(R.string.invite_web_cta), LONG)
         evidence.step("theo-invite-card")
         tap(text(R.string.invite_web_cta))
@@ -217,8 +227,18 @@ class JourneyTest {
         tap(mayaPhoto)
         waitFor(descContaining(context.getString(R.string.photo_viewer_a11y_photo, "Maya", MARK).substringBefore(MARK)), LONG)
         evidence.step("theo-viewer")
+    }
 
-        assertTrue("the journey finished with problems:\n" + problems.joinToString("\n"), problems.isEmpty())
+    /**
+     * The invite link reaches the running MainActivity as a new intent, which it adopts (`setIntent`, so routing reads the
+     * link). ActivityScenario recognises its activity by the intent it launched it with, so from then on it ignores that
+     * activity's lifecycle and the rule's teardown times out ("never becomes DESTROYED", run 71). The launch intent goes
+     * back before the rule closes the scenario.
+     */
+    private fun restoreLaunchIntent() {
+        compose.activityRule.scenario.onActivity { activity ->
+            activity.intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).setClassName(activity, MainActivity::class.java.name)
+        }
     }
 
     // ---- Problems that do not stop the journey: recorded (with evidence), reported at the end ----
