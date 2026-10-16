@@ -194,7 +194,7 @@ struct PaywallView: View {
                 PhotoView(source: photo)
                     .frame(width: Tokens.Sizes.paywallSizeMediaCardWidth, height: height)
                     .clipShape(DSShape.rounded(Tokens.Radii.paywallRadiusMediaCard))
-                    .mask(MediaCardFade(height: height))
+                    .mask { MediaCardFade(height: height) }
                     .accessibilityHidden(true)
             }
             VStack {
