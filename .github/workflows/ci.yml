@@ -338,3 +338,45 @@ jobs:
             ios/demo/Jolt-demo.zip
             ios/xcodebuild-demo.log
           if-no-files-found: ignore
+
+  # The Jolt demo, opened and walked like the owner will: DemoTourUITests launches the demo build with no arguments and
+  # screenshots each main screen (camera, sending a photo, groups, a group, chat, viewer, On This Day, recaps, albums,
+  # People, Profile); the screenshots are the jolt-demo-tour artifact.
+  ios-demo-tour:
+    name: ios demo tour (the Jolt demo's screens)
+    runs-on: macos-15
+    timeout-minutes: 60
+    needs: detect
+    if: needs.detect.outputs.ios == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - name: select newest Xcode
+        run: |
+          XC=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XC"
+          xcodebuild -version
+      - run: brew install xcodegen
+      - name: bundle the sample photos
+        working-directory: ios
+        run: mkdir -p App/Resources/DemoPhotos && cp ../fixtures/photos/*.jpg App/Resources/DemoPhotos/
+      - name: generate project
+        working-directory: ios
+        run: xcodegen generate
+      - name: walk the demo
+        working-directory: ios
+        run: |
+          SIM=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k,v in sorted(d.items(), reverse=True) if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
+          xcrun simctl boot "$SIM" || true
+          set -o pipefail
+          xcodebuild -project App.xcodeproj -scheme AppUITests -destination "id=$SIM" -derivedDataPath build -resultBundlePath build/DemoTour.xcresult CODE_SIGNING_ALLOWED=NO 'OTHER_SWIFT_FLAGS=$(inherited) -D DEMO' -only-testing:AppUITests/DemoTourUITests test 2>&1 | tee xcodebuild-tour.log | grep -E "error:|Test Case|Executed|BUILD|\*\*" || true
+          mkdir -p tour && (xcrun xcresulttool export attachments --path build/DemoTour.xcresult --output-path tour || true)
+          grep -q "\*\* TEST SUCCEEDED \*\*" xcodebuild-tour.log
+      - name: upload the screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jolt-demo-tour
+          path: |
+            ios/tour
+            ios/xcodebuild-tour.log
+          if-no-files-found: ignore
