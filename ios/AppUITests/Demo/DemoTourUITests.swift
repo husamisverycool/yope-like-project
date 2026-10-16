@@ -68,14 +68,19 @@ final class DemoTourUITests: XCTestCase {
             }
         }
 
-        // Memories: On This Day, a card at the end of the members' cards (a horizontal pager under the week strip).
+        // Memories: On This Day, a card at the end of the members' cards (a horizontal pager under the week strip; the
+        // weekly question's card sits before it). The pager opens on a member's card, so On This Day starts off screen,
+        // and `isHittable` on an element wholly outside the window fails the test ("Activation point invalid", run 91):
+        // visibility is read from frames instead.
         launch(app)
         if openRoommates(app) {
             let entry = element(app, "onthisday.entry")
             let cards = element(app, "groups.screen.cards")
-            for _ in 0..<3 where !cards.isHittable { app.swipeUp() }
-            for _ in 0..<8 where !(entry.exists && entry.isHittable) && cards.exists { cards.swipeLeft() }
-            if entry.exists {
+            for _ in 0..<3 where !onScreen(app, cards) { app.swipeUp() }
+            for _ in 0..<8 where !onScreen(app, entry) && cards.exists {
+                if entry.exists, entry.frame.midX < app.windows.firstMatch.frame.midX { cards.swipeRight() } else { cards.swipeLeft() }
+            }
+            if onScreen(app, entry) {
                 entry.tap()
                 _ = element(app, "onthisday").waitForExistence(timeout: 10)
                 shot(app, "09-on-this-day")
@@ -163,6 +168,14 @@ final class DemoTourUITests: XCTestCase {
 
     private func element(_ app: XCUIApplication, _ identifier: String) -> XCUIElement {
         app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+    }
+
+    /// Whether `target`'s centre is inside the app's window (frames only, never `isHittable`).
+    @MainActor
+    private func onScreen(_ app: XCUIApplication, _ target: XCUIElement) -> Bool {
+        guard target.exists else { return false }
+        let frame = target.frame
+        return !frame.isEmpty && app.windows.firstMatch.frame.contains(CGPoint(x: frame.midX, y: frame.midY))
     }
 
     @MainActor
