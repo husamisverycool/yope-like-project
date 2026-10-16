@@ -49,7 +49,7 @@ a network:
 
 | Module | Where |
 |---|---|
-| `:core:ui` | `ComponentSnapshotTest` avatars and tab-bar avatar |
+| `:core:ui` | `app.ui.snapshots.*SnapshotTest` (`SnapshotTest` helpers `portrait` / `card` / `square` / `story` / `landscape` / `avatar`): every component photo, tile, card, grid, viewer, backdrop and avatar of C-01…C-35, light and dark |
 | `:feature:social` | `TestPhotos` (`TestSupport.kt`) behind `LocalPhotoOverride`: posts by media id, avatars by user, the group cover, wall collages; every painter keeps the generated image's intrinsic size (120 × 160 px) |
 | `:feature:capture` | `Images` (`Fakes.kt`), `CollagePage`: viewfinder, stills, selfie inset, send-to covers, collage pages, widget renditions, collages and avatars |
 | `:feature:memory` | `TestImages` (`SnapshotSupport.kt`) behind `LocalMemoryImages`, cropped to the shape each URL names, keeping the generated images' intrinsic size (w × 120 by h × 120 px) |
