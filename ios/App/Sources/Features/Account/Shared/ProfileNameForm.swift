@@ -47,6 +47,7 @@ struct ProfileNameForm: View {
             .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
         } bottom: {
             PrimaryButton(Copy.authProfileContinue, isEnabled: !model.trimmedName.isEmpty && !model.isNameTooLong, isBusy: model.isSaving || finishing) {
+                AccountTrace.log("profile.name Next tapped model=\(AccountTrace.id(model)) saving=\(model.isSaving) finishing=\(finishing)")
                 Task { await save() }
             }
             .accessibilityIdentifier("auth.profile.continue")
@@ -60,9 +61,14 @@ struct ProfileNameForm: View {
     }
 
     private func save() async {
-        guard !finishing, await model.saveName() else { return }
+        AccountTrace.log("profile.name save start finishing=\(finishing) canContinue=\(model.canContinue)")
+        guard !finishing, await model.saveName() else {
+            AccountTrace.log("profile.name save stopped finishing=\(finishing) phase=\(model.phase) failure=\(model.failureMessage != nil)")
+            return
+        }
         finishing = true
         await onSaved()
+        AccountTrace.log("profile.name onSaved returned step=\(model.step)")
         finishing = false
     }
 }

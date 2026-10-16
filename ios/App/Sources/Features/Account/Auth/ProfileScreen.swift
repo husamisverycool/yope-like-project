@@ -45,10 +45,12 @@ struct ProfileScreen: View {
     private static let pageTransition = DSAnimation.timing(duration: Tokens.Durations.globalPageTransition, easing: Tokens.Easings.globalStandard)
 
     var body: some View {
+        let _ = AccountTrace.log("profile body step=\(model.step) model=\(AccountTrace.id(model))")
         ZStack {
             switch model.step {
             case .name:
                 ProfileNameForm(model: model, network: dependencies.network) {
+                    AccountTrace.log("profile showPhotoStep model=\(AccountTrace.id(model))")
                     withDSAnimation(Self.pageTransition) { model.showPhotoStep() }
                 }
                 .transition(.opacity)

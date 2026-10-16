@@ -69,15 +69,20 @@ final class ProfileModel {
 
     /// Step 1 "Next": `update profiles set display_name`. Returns true when saved (the app then shows the photo step).
     func saveName() async -> Bool {
-        guard canContinue else { return false }
+        guard canContinue else {
+            AccountTrace.log("profile.name saveName refused empty=\(trimmedName.isEmpty) tooLong=\(isNameTooLong) saving=\(isSaving)")
+            return false
+        }
         failureMessage = nil
         isSaving = true
         defer { isSaving = false }
         do {
             _ = try await data.updateProfile(displayName: trimmedName, avatarPath: nil)
             successCount += 1
+            AccountTrace.log("profile.name saved model=\(AccountTrace.id(self))")
             return true
         } catch {
+            AccountTrace.log("profile.name save failed: \(String(describing: DataError.from(error)))")
             if DataError.from(error) == .offline {
                 phase = .offline
             } else {

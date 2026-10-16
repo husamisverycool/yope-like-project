@@ -275,10 +275,16 @@ jobs:
         working-directory: ios
         run: |
           SIM=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k,v in sorted(d.items(), reverse=True) if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
+          echo "SIM=$SIM" >> "$GITHUB_ENV"
           xcrun simctl boot "$SIM" || true
           set -o pipefail
           xcodebuild -project App.xcodeproj -scheme AppUITests -destination "id=$SIM" -derivedDataPath build -resultBundlePath build/UITests.xcresult CODE_SIGNING_ALLOWED=NO test 2>&1 | tee xcodebuild-ui.log | grep -E "error:|Test Case|Test Suite|Executed|skipped|BUILD|\*\*" || true
           grep -q "\*\* TEST SUCCEEDED \*\*" xcodebuild-ui.log
+      # The app's DEBUG sign-up trace (AccountTrace, subsystem app.account.trace) from the simulator's unified log.
+      - name: the app's sign-up trace
+        if: always()
+        working-directory: ios
+        run: xcrun simctl spawn "$SIM" log show --last 2h --style compact --predicate 'subsystem == "app.account.trace"' > sim-account.log 2>&1 || true
       - name: upload the log and the result bundle (screenshots of failures)
         if: always()
         uses: actions/upload-artifact@v4
@@ -286,5 +292,6 @@ jobs:
           name: ios-ui-results
           path: |
             ios/xcodebuild-ui.log
+            ios/sim-account.log
             ios/build/UITests.xcresult
           if-no-files-found: ignore

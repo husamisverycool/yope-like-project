@@ -55,22 +55,35 @@ final class AccountFlowUITests: XCTestCase {
     /// action never ran (the result bundle's screen recording). The tip is closed with its own button when it shows.
     @MainActor
     private func closeKeyboardTip(_ app: XCUIApplication) {
-        let tipText = app.keyboards.descendants(matching: .staticText)
+        // Run 79: the tip's text is not under `app.keyboards`; it is looked up anywhere in the app.
+        let tipText = app.descendants(matching: .any)
             .matching(NSPredicate(format: "label CONTAINS[c] %@", "sliding your finger")).firstMatch
         guard tipText.exists else { return }
-        let tipButton = app.keyboards.buttons["Continue"]
+        let tipButton = app.buttons["Continue"]
         if tipButton.exists { tipButton.tap() }
     }
 
     /// Taps `control` and waits for `next`. When the tap only closed the system's keyboard tip (`closeKeyboardTip`
-    /// could not reach it), the control is still there: it is tapped once more, as a person would.
+    /// could not reach it), the control is still there: it is tapped once more, as a person would. When `next` still
+    /// does not come, the failure says whether the field's return key (`submitting`, the same save as the button)
+    /// moves on, which tells a button that never runs its action from a save that never moves on.
     @MainActor
-    private func advance(_ control: String, to next: String, in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+    private func advance(_ control: String, to next: String, in app: XCUIApplication, submitting fieldID: String? = nil, file: StaticString = #filePath, line: UInt = #line) {
         tap(control, in: app, file: file, line: line)
         if !element(app, next).waitForExistence(timeout: 3), element(app, control).exists {
             tap(control, in: app, file: file, line: line)
         }
-        expect(next, in: app, timeout: 5, "", file: file, line: line)
+        guard !element(app, next).waitForExistence(timeout: 5) else { return }
+        var note = ""
+        if let fieldID {
+            let target = field(app, fieldID)
+            target.tap()
+            target.typeText("\n")
+            note = element(app, next).waitForExistence(timeout: 5)
+                ? "(the field's return key moved on: the button's taps did not run its action)"
+                : "(the field's return key did not move on either)"
+        }
+        XCTFail("\(next) never appeared after \(control) \(note)\n\(app.debugDescription)", file: file, line: line)
     }
 
     /// The control carrying `identifier`: the button when there is one (a block's identifier also reaches its title and
@@ -124,7 +137,7 @@ final class AccountFlowUITests: XCTestCase {
         expect("auth.profile", in: app, timeout: 5)
         // The first letter keyboard of the run (the system's slide-to-type tip can show over it).
         type("Ana", into: "auth.profile.field", in: app)
-        advance("auth.profile.continue", to: "auth.profile.photo", in: app)
+        advance("auth.profile.continue", to: "auth.profile.photo", in: app, submitting: "auth.profile.field")
 
         // Step 2 (Retro's profile photo step): "Maybe Later".
         tap("auth.profile.photo.secondary", in: app)
