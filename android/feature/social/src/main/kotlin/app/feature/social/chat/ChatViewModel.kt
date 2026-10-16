@@ -9,7 +9,6 @@ import app.data.model.Message
 import app.data.model.MessageKind
 import app.data.model.Post
 import app.data.model.Profile
-import app.data.model.RenderStatus
 import app.data.offline.DataState
 import app.data.realtime.GroupEvent
 import app.data.repo.ReactionEntry
@@ -32,8 +31,17 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import java.io.File
 
-/** The quote part of a reply to a photo (S5-r): the poster's first name and the photo's thumbnail. */
-data class Quote(val postId: String, val posterName: String?, val thumbPath: String?)
+/** The quote above a reply (`chat.thread.layout.replyQuote`). */
+sealed interface Quote {
+    /** A reply to a photo: a C-15 row — thumbnail, "Post by {name}" over "Week {n}" (ISO week of the post in the group's zone). */
+    data class Photo(val postId: String, val posterName: String?, val thumbPath: String?, val weekNumber: Int?) : Quote
+
+    /** A reply to a message: one grey line, the sender's name in semibold then the quoted text ([text] null = an attachment). */
+    data class Text(val messageId: String, val senderName: String?, val text: String?, val attachment: Boolean) : Quote
+}
+
+/** What the reply bar replies to (`chat.thread.reply.bar` / `.barSelf`): a photo ([postId]) or a message ([messageId]). */
+data class ReplyTarget(val postId: String?, val messageId: String?, val name: String, val self: Boolean)
 
 /** One message as drawn. Photo messages carry their post, media and reaction rows (never a count). */
 data class ChatRow(
@@ -65,12 +73,11 @@ data class ChatState(
     val offline: Boolean = false,
     val loadingOlder: Boolean = false,
     val endReached: Boolean = false,
-    /** The newest ready recap (the film-strip circle is hidden while there is none). */
-    val recapId: String? = null,
-    val creatorName: String? = null,
-    val iAmCreator: Boolean = false,
-    val addedNames: List<String> = emptyList(),
     val draft: String = "",
+    /** The reply bar's target while replying. */
+    val replyTo: ReplyTarget? = null,
+    /** The group's time zone (week numbers of quoted posts). */
+    val zone: java.time.ZoneId = java.time.ZoneId.systemDefault(),
 ) {
     enum class Phase { Loading, Ready, Error, OfflineEmpty }
 
@@ -84,9 +91,9 @@ data class ChatState(
 sealed interface ChatEffect {
     data object Sent : ChatEffect
     data object SendFailed : ChatEffect
-    data class Rain(val emoji: String) : ChatEffect
     data object ReactionFailed : ChatEffect
     data object DeleteFailed : ChatEffect
+    data object PhotoDeleted : ChatEffect
     data object RecordFailed : ChatEffect
     /** A message arrived from someone else (announced to TalkBack). */
     data class Incoming(val row: ChatRow) : ChatEffect
@@ -126,6 +133,8 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
     private val media = LinkedHashMap<String, Media>()
     private val profiles = LinkedHashMap<String, Profile>()
     private val reactions = LinkedHashMap<String, List<ReactionEntry>>()
+    /** Quoted messages older than the loaded pages. */
+    private val quoted = HashMap<String, Message>()
     private val cacheKey = "chat/$groupId"
 
     init {
@@ -164,19 +173,9 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
     private suspend fun loadMeta() {
         val group = runCatching { data.group(groupId) }.getOrNull()
         val members = runCatching { data.members(groupId) }.getOrDefault(emptyList())
-        val recap = runCatching { data.recaps(groupId) }.getOrDefault(emptyList()).firstOrNull { it.status == RenderStatus.Ready }
         members.mapNotNull { it.profile }.forEach { profiles[it.id] = it }
-        val me = data.currentUserId()
-        val creator = group?.createdBy
-        _state.update {
-            it.copy(
-                group = group,
-                recapId = recap?.id,
-                iAmCreator = creator != null && creator == me,
-                creatorName = members.firstOrNull { m -> m.member.userId == creator }?.profile?.firstName,
-                addedNames = members.filter { m -> m.member.userId != creator }.mapNotNull { m -> m.profile?.firstName },
-            )
-        }
+        val zone = group?.timeZone?.let { runCatching { java.time.ZoneId.of(it) }.getOrNull() } ?: java.time.ZoneId.systemDefault()
+        _state.update { it.copy(group = group, zone = zone) }
         publish()
     }
 
@@ -240,11 +239,24 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
         val body = _state.value.draft.trim()
         val me = data.currentUserId() ?: return
         if (body.isEmpty()) return
-        val local = optimistic(me, MessageKind.Text, body = body)
-        _state.update { it.copy(draft = "") }
+        val reply = _state.value.replyTo
+        val local = optimistic(me, MessageKind.Text, body = body, replyToPostId = reply?.postId, replyToMessageId = reply?.messageId)
+        _state.update { it.copy(draft = "", replyTo = null) }
         publish()
         deliver(local)
     }
+
+    /** Reply to [row] (context menu "Reply"): the reply bar shows above the composer. A photo message replies to its post. */
+    fun startReply(row: ChatRow) {
+        val me = data.currentUserId()
+        val name = row.author?.firstName.orEmpty()
+        val target = if (row.kind == MessageKind.Photo) ReplyTarget(row.message.postId, null, name, row.message.authorId == me)
+        else ReplyTarget(null, row.id.takeUnless { it.startsWith(LOCAL_PREFIX) }, name, row.message.authorId == me)
+        if (target.postId == null && target.messageId == null) return
+        _state.update { it.copy(replyTo = target) }
+    }
+
+    fun cancelReply() = _state.update { it.copy(replyTo = null) }
 
     /** Uploads and sends a recorded voice message (`send_message` voice), shown at once; a failure leaves it failed with retry. */
     fun sendVoice(file: File, durationMs: Int) {
@@ -267,7 +279,7 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
             try {
                 val sent = when (local.kind) {
                     MessageKind.Voice -> data.sendVoice(groupId, File(local.voicePath.orEmpty()), local.voiceDurationMs ?: 0)
-                    else -> data.sendText(groupId, local.body.orEmpty())
+                    else -> data.sendText(groupId, local.body.orEmpty(), local.replyToPostId, local.replyToMessageId)
                 }
                 if (local.kind == MessageKind.Voice) File(local.voicePath.orEmpty()).delete()
                 if (local.id in pending) confirm(local.id, sent)
@@ -284,10 +296,18 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
         }
     }
 
-    private fun optimistic(me: String, kind: MessageKind, body: String? = null, voicePath: String? = null, durationMs: Int? = null): Message {
+    private fun optimistic(
+        me: String,
+        kind: MessageKind,
+        body: String? = null,
+        voicePath: String? = null,
+        durationMs: Int? = null,
+        replyToPostId: String? = null,
+        replyToMessageId: String? = null,
+    ): Message {
         val now = java.time.Instant.now().let { n -> messages.lastOrNull()?.createdAt?.let { last -> if (last.isAfter(n)) last.plusMillis(1) else n } ?: n }
         val message = Message(
-            id = "local-" + java.util.UUID.randomUUID(),
+            id = LOCAL_PREFIX + java.util.UUID.randomUUID(),
             groupId = groupId,
             authorId = me,
             kind = kind,
@@ -295,8 +315,8 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
             postId = null,
             voicePath = voicePath,
             voiceDurationMs = durationMs,
-            replyToPostId = null,
-            replyToMessageId = null,
+            replyToPostId = replyToPostId,
+            replyToMessageId = replyToMessageId,
             createdAt = now,
         )
         pending[message.id] = message
@@ -323,7 +343,6 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
         val me = data.currentUserId() ?: return
         reactions[postId] = withReaction(reactions[postId].orEmpty(), me, emoji)
         publish()
-        _effects.tryEmit(ChatEffect.Rain(emoji))
         viewModelScope.launch {
             try {
                 data.react(postId, emoji)
@@ -375,6 +394,29 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
                 throw e
             } catch (_: Throwable) {
                 merge(listOf(removed), replaceNewest = false)
+                publish()
+                _effects.emit(ChatEffect.DeleteFailed)
+            }
+        }
+    }
+
+    /**
+     * `delete_media` on your own photo message (after the viewer's confirmation): the photo goes from every group,
+     * chat and album; its message leaves the thread at once and comes back if the call fails.
+     */
+    fun deletePhoto(postId: String) {
+        val post = posts[postId] ?: return
+        val removed = messages.filter { it.postId == postId }
+        messages = messages.filterNot { it.postId == postId }
+        publish()
+        viewModelScope.launch {
+            try {
+                data.deleteMedia(post.mediaId)
+                _effects.emit(ChatEffect.PhotoDeleted)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Throwable) {
+                merge(removed, replaceNewest = false)
                 publish()
                 _effects.emit(ChatEffect.DeleteFailed)
             }
@@ -474,7 +516,9 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
             val rows = data.reactions(reactionPosts)
             reactionPosts.forEach { id -> reactions[id] = rows[id].orEmpty() }
         }
-        val people = (batch.map { it.authorId } + posts.values.map { it.authorId }).filter { it !in profiles }.distinct()
+        val quotedIds = batch.mapNotNull { it.replyToMessageId }.filter { id -> messages.none { it.id == id } && id !in quoted }
+        quotedIds.forEach { id -> runCatching { data.message(id) }.getOrNull()?.let { quoted[id] = it } }
+        val people = (batch.map { it.authorId } + posts.values.map { it.authorId } + quoted.values.map { it.authorId }).filter { it !in profiles }.distinct()
         if (people.isNotEmpty()) data.profiles(people).forEach { profiles[it.id] = it }
     }
 
@@ -496,10 +540,16 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
         cached.reactions.forEach { (id, list) -> reactions.putIfAbsent(id, list.map { ReactionEntry(it.userId, it.emoji) }) }
     }
 
-    private fun quoteFor(postId: String?): Quote? {
-        val post = postId?.let(posts::get) ?: return null
-        val m = media[post.mediaId]
-        return Quote(post.id, profiles[post.authorId]?.firstName, m?.imagePath(Media.Rendition.Thumb))
+    private fun quoteFor(m: Message, post: Post?): Quote? {
+        val repliedPost = if (m.kind == MessageKind.Photo) post?.replyToPostId else m.replyToPostId
+        if (repliedPost != null) {
+            val p = posts[repliedPost] ?: return null
+            val week = app.feature.social.common.Formats.isoWeek(p.createdAt.atZone(_state.value.zone).toLocalDate())
+            return Quote.Photo(p.id, profiles[p.authorId]?.firstName, media[p.mediaId]?.imagePath(Media.Rendition.Thumb), week)
+        }
+        val id = m.replyToMessageId ?: return null
+        val q = messages.firstOrNull { it.id == id } ?: quoted[id] ?: return null
+        return Quote.Text(q.id, profiles[q.authorId]?.firstName, q.body?.takeIf { it.isNotBlank() }, attachment = q.kind != MessageKind.Text)
     }
 
     private fun publish() {
@@ -518,7 +568,7 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
                 post = post,
                 media = post?.let { media[it.mediaId] },
                 reactions = m.postId?.let { reactions[it] }.orEmpty(),
-                quote = quoteFor(if (m.kind == MessageKind.Photo) post?.replyToPostId else m.replyToPostId),
+                quote = quoteFor(m, post),
             )
         }
         _state.update { it.copy(rows = rows, me = me) }
@@ -529,5 +579,6 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
 
     companion object {
         const val PAGE = 50
+        private const val LOCAL_PREFIX = "local-"
     }
 }

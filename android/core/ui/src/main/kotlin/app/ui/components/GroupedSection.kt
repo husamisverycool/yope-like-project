@@ -90,11 +90,16 @@ data class GroupedRowSpec(
  * measured (components.md C-14 Gap, VID-SET only): see [GroupedRow] and [GroupedSectionHeader].
  */
 @Composable
-fun GroupedSection(rows: List<GroupedRowSpec>, modifier: Modifier = Modifier, header: String? = null) {
+fun GroupedSection(
+    rows: List<GroupedRowSpec>,
+    modifier: Modifier = Modifier,
+    header: String? = null,
+    minRowHeight: Dp = Tokens.Sizes.globalMinTouchTargetAndroid,
+) {
     Column(modifier.fillMaxWidth()) {
         if (header != null) GroupedSectionHeader(header)
         Column(Modifier.padding(horizontal = Tokens.Sizes.globalScreenMargin)) {
-            rows.forEachIndexed { i, row -> GroupedRow(row, GroupedPosition.of(i, rows.size)) }
+            rows.forEachIndexed { i, row -> GroupedRow(row, GroupedPosition.of(i, rows.size), minHeight = minRowHeight) }
         }
     }
 }
@@ -128,12 +133,18 @@ private val rowPadding: Dp get() = Tokens.Sizes.globalScreenMargin
  * C-14 row, usable on its own in a lazy list with its [position]. Title text role `body` in
  * `color.global.textPrimary` (C-10 destructive: `color.global.destructive`), subtitle text role `meta` in secondary
  * text; trailing per [GroupedTrailing]; padding [rowPadding] on every side, at least
- * `size.global.minTouchTarget.android` high. A [GroupedRowSpec.leading] element (an avatar) sits before the
+ * [minHeight] high (default `size.global.minTouchTarget.android`; C-14's row height is not measured — a surface passes its
+ * own measured value, e.g. `settings.root.size.rowHeight`, content centred). A [GroupedRowSpec.leading] element (an avatar) sits before the
  * text, `size.global.cardNameGap` (avatar → name, C-18) apart. Rows are buttons (or switches); a toggle row
  * plays `haptic.global.select`, a button row `haptic.global.tap`.
  */
 @Composable
-fun GroupedRow(spec: GroupedRowSpec, position: GroupedPosition, modifier: Modifier = Modifier) {
+fun GroupedRow(
+    spec: GroupedRowSpec,
+    position: GroupedPosition,
+    modifier: Modifier = Modifier,
+    minHeight: Dp = Tokens.Sizes.globalMinTouchTargetAndroid,
+) {
     val shape = position.shape()
     val trailing = spec.trailing
     val interaction = when {
@@ -156,7 +167,7 @@ fun GroupedRow(spec: GroupedRowSpec, position: GroupedPosition, modifier: Modifi
             .semantics(mergeDescendants = true) {},
     ) {
         Row(
-            Modifier.fillMaxWidth().heightIn(min = Tokens.Sizes.globalMinTouchTargetAndroid).padding(rowPadding),
+            Modifier.fillMaxWidth().heightIn(min = maxOf(minHeight, Tokens.Sizes.globalMinTouchTargetAndroid)).padding(rowPadding),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalCardNameGap),
         ) {

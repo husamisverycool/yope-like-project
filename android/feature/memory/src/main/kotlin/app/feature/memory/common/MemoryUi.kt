@@ -53,11 +53,15 @@ fun MediaAppearance(content: @Composable () -> Unit) {
 /** The appearance outside the nearest [MediaAppearance] (the system setting in the app; the snapshot's in tests). */
 private val LocalOuterDark = staticCompositionLocalOf<Boolean?> { null }
 
-/** Restores the appearance outside a [MediaAppearance] for native menus, sheets and dialogs drawn from inside it. */
+/**
+ * Restores the appearance outside a [MediaAppearance] for native menus, sheets and dialogs drawn from inside it
+ * (`layout.global.appearance.media`: "sheets over them follow the appearance"); outside any [MediaAppearance] (a
+ * host that forces its own dark subtree, e.g. the photo viewer) it is the system setting.
+ */
 @Composable
 fun SystemAppearance(content: @Composable () -> Unit) {
-    val outer = LocalOuterDark.current
-    if (outer == null) content() else AppTheme(dark = outer, content = content)
+    val outer = LocalOuterDark.current ?: androidx.compose.foundation.isSystemInDarkTheme()
+    AppTheme(dark = outer, content = content)
 }
 
 /**

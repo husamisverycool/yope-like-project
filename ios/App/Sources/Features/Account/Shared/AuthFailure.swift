@@ -1,4 +1,6 @@
-// Account group — sign-in failures of auth.phone / auth.code (and the App Clip join flow) and their copy.
+// Account group — sign-in failures of auth.phone / auth.code (and the App Clip's sign-in) and how their alerts read
+// (`auth.phone.layout.inlineError`: native alert; code errors carry Retro's title + message pair and its two recoveries,
+// MERGE RA-5).
 import AppData
 import DesignSystem
 import Foundation
@@ -15,10 +17,22 @@ enum AuthFailure: Equatable {
     case wrongCode
     /// auth.code "expired": the code is older than its lifetime.
     case expired
+    /// auth.code "verification service / network error".
+    case service
     /// auth.code "too many tries" (HTTP 429).
     case tooManyTries
 
-    /// The state's copy: the message of the form error alert (`auth.phone.layout.inlineError`, `formErrorAlert`).
+    /// The alert's title: Retro's titled pairs for the code errors; nil = a message-only alert.
+    var title: String? {
+        switch self {
+        case .wrongCode: return Copy.authCodeErrorWrongTitle
+        case .expired: return Copy.authCodeErrorExpiredTitle
+        case .service: return Copy.authCodeErrorServiceTitle
+        case .invalidNumber, .rateLimited, .sendFailed, .tooManyTries: return nil
+        }
+    }
+
+    /// The alert's message.
     var message: String {
         switch self {
         case .invalidNumber: return Copy.authPhoneErrorInvalidNumber
@@ -26,8 +40,14 @@ enum AuthFailure: Equatable {
         case .sendFailed: return Copy.authPhoneErrorSendFailed
         case .wrongCode: return Copy.authCodeErrorWrong
         case .expired: return Copy.authCodeErrorExpired
+        case .service: return Copy.authCodeErrorService
         case .tooManyTries: return Copy.authCodeErrorTooMany
         }
+    }
+
+    /// Wrong and expired codes offer Retro's two recoveries ("Edit code", "Send a new code") instead of "OK".
+    var offersRecovery: Bool {
+        self == .wrongCode || self == .expired
     }
 
     /// An SMS code expires after one hour (Supabase phone auth default, docs/PLATFORM_CONSTRAINTS.md §7). AppData
@@ -50,7 +70,7 @@ enum AuthFailure: Equatable {
         case .offline: return nil
         case .auth(.rateLimited), .http(status: 429): return .tooManyTries
         case .auth(.invalidOTP): return codeAge >= codeLifetime ? .expired : .wrongCode
-        default: return .wrongCode
+        default: return .service
         }
     }
 }

@@ -86,7 +86,8 @@ fun BackGlyphButton(contentDescription: String, onClick: () -> Unit, modifier: M
  * - [bottom] (C-05 capsule, C-08 link) pinned `size.global.buttonMarginH` above the keyboard or the bottom safe area,
  *   sides `size.global.buttonMarginH`.
  * [replacement] (offline, not configured, under age): the C-27 block centred in the space under the title block, in place
- * of [content] and [bottom].
+ * of [content] and [bottom]. [scrollable] false (a page without a keyboard, e.g. the profile-photo step): [content] fills
+ * the space between the title block and [bottom] instead of scrolling, so it can centre itself there.
  */
 @Composable
 fun OnboardingForm(
@@ -95,6 +96,7 @@ fun OnboardingForm(
     modifier: Modifier = Modifier,
     back: HeaderAction? = null,
     replacement: (@Composable () -> Unit)? = null,
+    scrollable: Boolean = true,
     bottom: (@Composable ColumnScope.() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit = {},
 ) {
@@ -103,11 +105,16 @@ fun OnboardingForm(
             if (replacement != null) {
                 FormTitleBlock(title, explanation)
                 Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { replacement() }
-            } else {
+            } else if (scrollable) {
                 Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())) {
                     FormTitleBlock(title, explanation)
                     Column(Modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalScreenMargin), content = content)
                 }
+            } else {
+                FormTitleBlock(title, explanation)
+                Column(Modifier.weight(1f).fillMaxWidth().padding(horizontal = Tokens.Sizes.globalScreenMargin), content = content)
+            }
+            if (replacement == null) {
                 if (bottom != null) {
                     Column(
                         Modifier.fillMaxWidth().padding(start = Tokens.Sizes.globalButtonMarginH, end = Tokens.Sizes.globalButtonMarginH, bottom = Tokens.Sizes.globalButtonMarginH),

@@ -54,6 +54,8 @@ interface SocialData {
 
     fun observeMessages(groupId: String): Flow<DataState<List<Message>>>
     suspend fun messages(groupId: String, before: Instant?): List<Message>
+    /** One message by id (a quoted message older than the loaded pages); null when it is gone. */
+    suspend fun message(messageId: String): Message?
     /** A text message, optionally replying to a photo ([replyToPostId]) or a message ([replyToMessageId]) (`send_message`). */
     suspend fun sendText(groupId: String, body: String, replyToPostId: String? = null, replyToMessageId: String? = null): Message
     suspend fun sendVoice(groupId: String, audio: File, durationMs: Int): Message
@@ -119,6 +121,7 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
 
     override fun observeMessages(groupId: String) = graph.chat.observeMessages(groupId)
     override suspend fun messages(groupId: String, before: Instant?) = graph.chat.messages(groupId, before)
+    override suspend fun message(messageId: String) = graph.chat.message(messageId)
     override suspend fun sendText(groupId: String, body: String, replyToPostId: String?, replyToMessageId: String?) = graph.chat.sendText(groupId, body, replyToPostId, replyToMessageId)
     override suspend fun sendVoice(groupId: String, audio: File, durationMs: Int) = graph.chat.sendVoice(groupId, audio, durationMs)
     override suspend fun deleteMessage(messageId: String) = graph.chat.deleteMessage(messageId)
@@ -190,6 +193,7 @@ object UnconfiguredSocialData : SocialData {
     override suspend fun profiles(ids: Collection<String>): List<Profile> = fail()
     override fun observeMessages(groupId: String): Flow<DataState<List<Message>>> = failing()
     override suspend fun messages(groupId: String, before: Instant?): List<Message> = fail()
+    override suspend fun message(messageId: String): Message? = fail()
     override suspend fun sendText(groupId: String, body: String, replyToPostId: String?, replyToMessageId: String?): Message = fail()
     override suspend fun sendVoice(groupId: String, audio: File, durationMs: Int): Message = fail()
     override suspend fun deleteMessage(messageId: String) = fail()

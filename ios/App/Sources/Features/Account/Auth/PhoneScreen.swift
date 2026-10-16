@@ -1,9 +1,7 @@
-// Surface: auth.phone — phone number entry (sign up or log in). Reference app: Yope onboarding (the phone screen was
-// not found; assembled from documented Yope parts, design/surfaces/auth.phone.md). Reference images:
-// references/auto/yope/frames/a-yrrah-7454430216123862280-t6.73-signup-2024.png (S24),
-// a-virgi-7686278541255642390-t31.23-signup-es.png (S26), a-yrrah-7452976839846382855-t3.73-create-new-group-empty-2024.png
-// (C24), references/auto/yope/web/a-bi-2025-create-group-composite.jpg (BI),
-// a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png (NG), …-t50.60-loading-hud.png (HUD).
+// Surface: auth.phone — landing (A) and phone number entry (B). Visual reference: Retro sign-up landing
+// (references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png, LAND: RAW iOS dark, 3.000 px/pt) and Retro's
+// wordmark size (references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css `.page_largeRetroWordmark`); B is the
+// onboarding form composition (PhoneForm.swift). design/surfaces/auth.phone.md.
 import AppData
 import AppModels
 import DesignSystem
@@ -11,155 +9,125 @@ import Observation
 import SwiftUI
 import UIKit
 
-/// auth.phone screen: title, italic subtitle, phone field, lime "continue", legal footer; HUD while sending.
+/// auth.phone: the landing on a cold launch without a session (and after sign-out), the phone form after "Get started"
+/// or "already have an account?" (one-time-code sign-in serves new and returning accounts). A ↔ B: the onboarding page
+/// transition (`duration.global.pageTransition`, `easing.global.standard`).
 struct PhoneScreen: View {
     @State private var model: PhoneModel
+    @State private var showsForm: Bool
     @Environment(AccountDependencies.self) private var dependencies
-    @FocusState private var fieldFocused: Bool
-    @State private var choosingCountry = false
 
-    init(model: PhoneModel) {
+    /// - Parameter showsForm: start on B (tests, a return from auth.code); the landing otherwise.
+    init(model: PhoneModel, showsForm: Bool = false) {
         _model = State(initialValue: model)
+        _showsForm = State(initialValue: showsForm)
     }
 
+    private static let pageTransition = DSAnimation.timing(duration: Tokens.Durations.globalPageTransition, easing: Tokens.Easings.globalStandard)
+
     var body: some View {
-        Group {
-            if dependencies.network.isOffline || model.failedOffline {
-                SignUpStateView(
-                    title: Copy.authPhoneOfflineTitle,
-                    detail: Copy.authPhoneOfflineDetail,
-                    retry: EmptyStateView.Action(Copy.authPhoneOfflineRetry) { model.retryAfterOffline() }
+        ZStack {
+            if showsForm {
+                PhoneForm(
+                    model: model,
+                    network: dependencies.network,
+                    onBack: { withDSAnimation(Self.pageTransition) { showsForm = false } },
+                    onSent: { number in dependencies.session.codeSent(phone: number) }
                 )
+                .transition(.opacity)
             } else {
-                form
-            }
-        }
-        .loadingHUD(model.isSending)
-        .dsHaptic(Tokens.Haptics.globalSuccess, trigger: model.successCount)
-        .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
-        .formErrorAlert(model.failure?.message, trigger: model.errorCount)
-        .onAppear { fieldFocused = true }
-        .sheet(isPresented: $choosingCountry) {
-            CountryCodeList(selected: model.flagRegion) { region in
-                model.selectCountry(region)
-                fieldFocused = true
+                PhoneLanding(
+                    appName: dependencies.configuration.displayName,
+                    legal: PhoneModel.legalText(termsURL: dependencies.configuration.termsURL, privacyURL: dependencies.configuration.privacyURL),
+                    onStart: { withDSAnimation(Self.pageTransition) { showsForm = true } }
+                )
+                .transition(.opacity)
             }
         }
         .accessibilityIdentifier("auth.phone")
     }
+}
 
-    private var form: some View {
-        SignUpLayout {
-            VStack(spacing: 0) {
-                OnboardingTitleBlock(title: Copy.authPhoneTitle, subtitle: Copy.authPhoneSubtitle)
+/// auth.phone A — the landing (C-33 anatomy with LAND's measured gaps): the wordmark (the app's name from
+/// config/app.json `displayName`, owner — omitted while it is not set) over the tagline, the block centred at
+/// `auth.phone.layout.landingBlock.centreY` of the screen height; "Get started" (C-05) at `size.global.buttonMarginH`;
+/// "already have an account?" (C-08 link) `auth.phone.size.capsuleToLink` under it; the fine print (text role `caption`,
+/// underlined links) `auth.phone.size.linkToLegal` under the link and `auth.phone.size.legalToBottom` above the screen
+/// bottom. Both buttons open the phone form. Page `color.global.background`, following the appearance (LAND is dark;
+/// the light landing reuses its geometry, MERGE RA-3).
+struct PhoneLanding: View {
+    let appName: String?
+    let legal: AttributedString
+    let onStart: () -> Void
+
+    /// The wordmark: the app's name in the display serif at `auth.phone.fontSize.wordmark`, at the display role's weight
+    /// (`fontWeight.global.headerTitle`, regular), Dynamic Type `largeTitle`.
+    private static let wordmark = DSTextStyle(
+        family: Tokens.Fonts.globalDisplay,
+        size: Tokens.FontSizes.authPhoneFontSizeWordmark,
+        weight: Tokens.FontWeights.fontWeightGlobalHeaderTitle,
+        relativeTo: .largeTitle
+    )
+
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack(alignment: .top) {
+                wordmarkBlock
                     .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
-                FormField(
-                    Copy.authPhoneFieldPlaceholder,
-                    text: $model.phone,
-                    accessibilityLabel: Copy.authPhoneFieldAccessibilityLabel,
-                    keyboard: .phonePad,
-                    contentType: .telephoneNumber,
-                    trailingInset: CountryFlagButton.Layout.flagLeading
-                ) {
-                    CountryFlagButton(region: model.flagRegion) { choosingCountry = true }
+                    .position(x: proxy.size.width / 2, y: proxy.size.height * Tokens.Layouts.AuthPhoneLayoutLandingBlock.centreY)
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0)
+                    actions
                 }
-                .focused($fieldFocused)
-                .accessibilityIdentifier("auth.phone.field")
-                .padding(.top, Tokens.Sizes.groupsCreateSizeTitleToContent)
-                PrimaryButton(Copy.authPhoneContinue, isEnabled: model.canContinue) {
-                    Task { await send() }
-                }
-                .accessibilityIdentifier("auth.phone.continue")
-                .padding(.top, Tokens.Sizes.groupsCreateSizeFieldToButton)
+                .frame(width: proxy.size.width, height: proxy.size.height)
             }
-            .padding(.horizontal, Tokens.Sizes.globalButtonMarginH)
-        } footer: {
-            Text(PhoneModel.legalText(termsURL: dependencies.configuration.termsURL, privacyURL: dependencies.configuration.privacyURL))
-                .dsTextStyle(TextRole.caption)
+        }
+        .ignoresSafeArea(.container, edges: [.top, .bottom])
+        .background(Tokens.Colors.globalBackground.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
+        .opensLinksInAppBrowser()
+    }
+
+    /// Wordmark (header trait, read as the app's name) and the tagline `auth.phone.size.wordmarkToTagline` below its
+    /// baseline (to the tagline's cap top), centred.
+    private var wordmarkBlock: some View {
+        MetricStack(alignment: .center) {
+            if let appName {
+                Text(appName)
+                    .dsTextRole(Self.wordmark)
+                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityAddTraits(.isHeader)
+            }
+            Text(Copy.authPhoneTagline)
+                .dsTextRole(TextRole.onboardingTitle)
+                .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .metricGap(appName == nil ? 0 : Tokens.Sizes.authPhoneSizeWordmarkToTagline, from: .lastBaseline, to: .capTop)
+        }
+    }
+
+    private var actions: some View {
+        MetricStack(alignment: .center) {
+            PrimaryButton(Copy.authPhoneGetStarted, action: onStart)
+                .padding(.horizontal, Tokens.Sizes.globalButtonMarginH)
+                .accessibilityIdentifier("auth.phone.getStarted")
+            // C-08 secondary link; its 44-pt hit area centres the text, so it is placed by the text's cap top.
+            TextButton(Copy.authPhoneSignIn, style: .link, action: onStart)
+                .capHeight(of: TextRole.listTitle)
+                .accessibilityIdentifier("auth.phone.signIn")
+                .metricGap(Tokens.Sizes.authPhoneSizeCapsuleToLink, from: .bottom, to: .capTop)
+            Text(legal)
+                .dsTextRole(TextRole.caption)
                 .foregroundStyle(Tokens.Colors.globalTextSecondary)
                 .tint(Tokens.Colors.globalTextSecondary)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
-                .opensLinksInAppBrowser()
+                .metricGap(Tokens.Sizes.authPhoneSizeLinkToLegal, from: .lastBaseline, to: .capTop)
         }
-    }
-
-    private func send() async {
-        guard let number = await model.send() else { return }
-        dependencies.toasts.show(Copy.authPhoneToastCodeSent)
-        dependencies.session.codeSent(phone: number)
-    }
-}
-
-/// The flag at the phone field's leading edge (`auth.phone.layout.countryCode`): the regional-indicator emoji of the
-/// typed calling code's country in a `flagWidth` × `flagHeight` slot, `flagLeading` from the field's edge and
-/// `flagToText` before the text; a tap opens the country list. The hit area is the inset, slot and gap, the field's
-/// full height. While no calling code is typed the slot stays empty (the layout does not move).
-struct CountryFlagButton: View {
-    typealias Layout = Tokens.Layouts.AuthPhoneLayoutCountryCode
-
-    let region: String?
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(region.map { PhoneNumberInput.flag(for: $0) } ?? "")
-                // The emoji is sized to the slot height and scaled down to fit its width.
-                .font(.system(size: Layout.flagHeight)) // provenance-ok: emoji sized to the token slot (auth.phone.layout.countryCode flagHeight)
-                .minimumScaleFactor(0.5)
-                .frame(width: Layout.flagWidth, height: Layout.flagHeight)
-                .padding(.leading, Layout.flagLeading)
-                .padding(.trailing, Layout.flagToText)
-                .frame(maxHeight: .infinity)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text(region.flatMap { Locale.current.localizedString(forRegionCode: $0) } ?? ""))
-        .accessibilityHidden(region == nil)
-    }
-}
-
-/// The country list behind the flag (`auth.phone.layout.countryCode` flagTap: the platform picker in a sheet): every
-/// region with a calling code by its localised name, its flag and code, searchable; choosing one replaces the calling
-/// code and closes the sheet. System list styling (system surface).
-struct CountryCodeList: View {
-    let selected: String?
-    let onSelect: (String) -> Void
-    @State private var query = ""
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.locale) private var locale
-
-    private var countries: [PhoneNumberInput.Country] {
-        let all = PhoneNumberInput.countries(locale: locale)
-        let trimmed = query.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return all }
-        let digits = PhoneNumberInput.digits(of: trimmed)
-        return all.filter { $0.name.localizedCaseInsensitiveContains(trimmed) || (!digits.isEmpty && $0.callingCode.hasPrefix(digits)) }
-    }
-
-    var body: some View {
-        NavigationStack {
-            List(countries) { country in
-                Button {
-                    onSelect(country.region)
-                    dismiss()
-                } label: {
-                    HStack {
-                        Text(country.flag)
-                        Text(country.name)
-                            .foregroundStyle(.primary) // provenance-ok: system list label colour (color.global.system.ios)
-                        Spacer(minLength: 0)
-                        Text("+" + country.callingCode) // provenance-ok: E.164 prefix before the calling code
-                            .foregroundStyle(.secondary) // provenance-ok: system secondary label colour (color.global.system.ios)
-                    }
-                }
-                .accessibilityAddTraits(country.region == selected ? .isSelected : [])
-            }
-            .listStyle(.plain)
-            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always))
-        }
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.visible)
-        .accessibilityIdentifier("auth.phone.countries")
+        .padding(.bottom, Tokens.Sizes.authPhoneSizeLegalToBottom)
     }
 }

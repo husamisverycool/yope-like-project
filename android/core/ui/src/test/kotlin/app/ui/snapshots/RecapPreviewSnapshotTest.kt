@@ -66,9 +66,9 @@ class RecapPreviewSnapshotTest(appearance: Appearance) : SnapshotTest(appearance
                     null,
                     Modifier
                         .padding(start = Tokens.Sizes.globalButtonMarginH)
-                        .size(Tokens.Sizes.globalCircleButton)
-                        .clip(RoundedCornerShape(Tokens.Radii.globalThumbnail))
-                        .border(Tokens.Sizes.globalHairline, Tokens.Colors.globalSurfaceLight, RoundedCornerShape(Tokens.Radii.globalThumbnail)),
+                        .size(Tokens.Sizes.weekRecapDimensionSelectThumb)
+                        .clip(RoundedCornerShape(Tokens.Radii.weekRecapRadiusSelectThumb))
+                        .border(Tokens.Sizes.weekRecapDimensionSelectThumbBorder, Tokens.Colors.globalSurfaceLight, RoundedCornerShape(Tokens.Radii.weekRecapRadiusSelectThumb)),
                 )
             },
         ) {
@@ -88,7 +88,7 @@ class RecapPreviewSnapshotTest(appearance: Appearance) : SnapshotTest(appearance
             closeContentDescription = "Close",
             pill = RecapPill("Share", {}, busy = true),
             dots = RecapDots.Hidden,
-            topLeading = { PositionPill("3 of 12", Modifier.padding(start = Tokens.Sizes.globalScreenMargin)) },
+            topLeading = { PositionPill("3 of 12", modifier = Modifier.padding(start = Tokens.Sizes.globalScreenMargin)) },
             bottomLeading = {
                 CircleIconButton(Tokens.Icons.globalPause, "Pause", {}, Modifier.padding(start = Tokens.Sizes.globalButtonMarginH), style = CircleButtonStyle.OnMedia)
             },

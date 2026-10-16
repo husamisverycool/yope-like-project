@@ -1,25 +1,34 @@
-// Surface: auth.agegate — birthday / age gate at sign-up. Spec: design/surfaces/auth.agegate.md.
-// References: as auth.phone (S24, S26, C24, BI, NG, HUD) plus
-// references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png (check circles).
+// Surface: auth.agegate — birthday / age gate at sign-up (neutral age screen). Spec: design/surfaces/auth.agegate.md.
+// References: references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png (LAND: page, capsule),
+// references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png (VID-SET: grouped row with a switch, C-14),
+// references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (APK-S patterns); FTC COPPA FAQ (PLATFORM_CONSTRAINTS §9).
+// Composition of C-02, C-12, C-14, C-05 in Retro's sign-up order (MERGE RA-2, RA-4).
 package app.feature.account.auth
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -34,25 +43,24 @@ import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.account.AccountEnvironment
 import app.feature.account.LocalAccountEnvironment
-import app.feature.account.blocked.BlockedCopy
 import app.feature.account.common.AccountViewModel
-import app.feature.account.common.CenteredState
 import app.feature.account.common.CollectEvents
-import app.feature.account.common.SignUpLayout
-import app.feature.account.common.SignUpStack
+import app.feature.account.common.OnboardingForm
 import app.feature.account.common.dataError
+import app.feature.account.common.errorDismissLabel
 import app.feature.account.platform.AgeRefusal
 import app.feature.account.shell.AccountFlow
-import app.ui.components.CheckRow
 import app.ui.components.EmptyState
 import app.ui.components.EmptyStateAction
 import app.ui.components.FormTextField
-import app.ui.components.HudOverlay
-import app.ui.system.ErrorAlert
-import app.feature.account.common.errorDismissLabel
-import app.ui.components.OnboardingTitle
+import app.ui.components.GroupedPosition
+import app.ui.components.GroupedRow
+import app.ui.components.GroupedRowSpec
+import app.ui.components.GroupedTrailing
 import app.ui.components.PrimaryButton
-import app.ui.text.TextRoles
+import app.ui.foundation.DsMotion
+import app.ui.foundation.PageRoles
+import app.ui.system.ErrorAlert
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -205,6 +213,15 @@ fun AgeGateRoute(nav: NavController) {
     AgeGateScreen(state, pattern, vm.canContinue, vm::onDigits, vm::onOptIn, vm::submit, vm::retry, onDismissError = vm::dismissError)
 }
 
+/**
+ * The onboarding form ([OnboardingForm], no back: the account exists after auth.code): title / explanation (no age is
+ * shown); the C-12 birthday field (`auth.agegate.layout.dateEntry`: numeric, the locale's order as the placeholder,
+ * separators inserted, empty by default); `size.global.titleToContent` below it the opt-in (`auth.agegate.layout.optIn`:
+ * one C-14 row — title `body`, subtitle `meta`, native switch, off — at least `settings.root.size.rowHeight` high); C-05
+ * "Next" (disabled until the date is complete; busy while checking). Not configured / under age: the C-27 block (no glyph)
+ * centred on the page in place of the form; offline: the title block stays and the block replaces field, row and capsule.
+ * State changes cross-fade `duration.global.crossfade`.
+ */
 @Composable
 fun AgeGateScreen(
     state: AgeGateUiState,
@@ -217,42 +234,68 @@ fun AgeGateScreen(
     onDismissError: () -> Unit = {},
     focusOnAppear: Boolean = true,
 ) {
-    val context = LocalContext.current
-    when {
-        state.refusal != null -> {
-            val minAge = state.refusal.minAge?.toString()
-            CenteredState {
+    val phase = when {
+        state.refusal != null -> AgePhase.Refused
+        state.notConfigured -> AgePhase.NotConfigured
+        else -> AgePhase.Form
+    }
+    Crossfade(targetState = phase, animationSpec = DsMotion.crossfade(), label = "ageGatePhase") { shown ->
+        when (shown) {
+            AgePhase.Refused -> PageBlock {
                 EmptyState(
-                    // BLOCKED in release ({app_name}); omitted there, the detail stays.
-                    title = minAge?.let { BlockedCopy.ageGateUnderAgeTitle(context, it) },
+                    title = state.refusal?.minAge?.let { stringResource(R.string.auth_agegate_underage_title, it.toString()) },
                     detail = stringResource(R.string.auth_agegate_underage_detail),
                 )
             }
-            return
-        }
-        state.notConfigured -> {
-            CenteredState {
+            AgePhase.NotConfigured -> PageBlock {
                 EmptyState(
                     title = stringResource(R.string.auth_agegate_notconfigured_title),
                     detail = stringResource(R.string.auth_agegate_notconfigured_detail),
                     action = EmptyStateAction(stringResource(R.string.auth_agegate_notconfigured_retry), onRetry),
                 )
             }
-            return
-        }
-        state.offline -> {
-            SignUpOffline(stringResource(R.string.auth_agegate_offline_detail), onRetry)
-            return
+            AgePhase.Form -> AgeForm(state, pattern, canContinue, onDigits, onOptIn, onContinue, onRetry, focusOnAppear)
         }
     }
+    if (phase == AgePhase.Form && state.invalidDate) ErrorAlert(stringResource(R.string.auth_agegate_error_invaliddate), errorDismissLabel(), onDismissError)
+}
+
+private enum class AgePhase { Form, NotConfigured, Refused }
+
+/** A C-27 block centred on the page (inside the safe area). */
+@Composable
+private fun PageBlock(content: @Composable () -> Unit) {
+    Box(
+        Modifier.fillMaxSize().background(PageRoles.page).windowInsetsPadding(WindowInsets.safeDrawing),
+        contentAlignment = Alignment.Center,
+    ) { content() }
+}
+
+@Composable
+private fun AgeForm(
+    state: AgeGateUiState,
+    pattern: DateEntryPattern,
+    canContinue: Boolean,
+    onDigits: (String) -> Unit,
+    onOptIn: (Boolean) -> Unit,
+    onContinue: () -> Unit,
+    onRetry: () -> Unit,
+    focusOnAppear: Boolean,
+) {
     val focus = remember { FocusRequester() }
     val formatted = pattern.format(state.digits)
     var field by remember { mutableStateOf(TextFieldValue(formatted, TextRange(formatted.length))) }
     if (field.text != formatted) field = TextFieldValue(formatted, TextRange(formatted.length))
-    SignUpLayout(overlay = { HudOverlay(state.checking, stringResource(R.string.groups_create_hud_loading)) }) {
-        OnboardingTitle(stringResource(R.string.auth_agegate_title), capTop = SignUpStack.titleCapTop)
-        Text(stringResource(R.string.auth_agegate_subtitle), style = TextRoles.onboardingSubtitle, modifier = Modifier.fillMaxWidth())
-        Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeTitleToContent))
+    OnboardingForm(
+        title = stringResource(R.string.auth_agegate_title),
+        explanation = stringResource(R.string.auth_agegate_subtitle),
+        replacement = if (state.offline) {
+            { OfflineBlock(onRetry) }
+        } else {
+            null
+        },
+        bottom = { PrimaryButton(stringResource(R.string.auth_agegate_continue), onContinue, enabled = canContinue || state.checking, loading = state.checking) },
+    ) {
         FormTextField(
             value = field,
             onValueChange = { onDigits(it.text) },
@@ -260,19 +303,23 @@ fun AgeGateScreen(
             accessibilityLabel = stringResource(R.string.auth_agegate_field_accessibilitylabel),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { onContinue() }),
+            enabled = !state.checking,
             modifier = Modifier.focusRequester(focus),
         )
-        Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeFieldToButton))
-        CheckRow(
-            label = stringResource(R.string.auth_agegate_optin_label),
-            checked = state.optIn,
-            onCheckedChange = onOptIn,
-            accessibilityLabel = stringResource(R.string.auth_agegate_optin_accessibilitylabel),
-            detail = stringResource(R.string.auth_agegate_optin_detail),
+        Spacer(Modifier.height(Tokens.Sizes.globalTitleToContent))
+        val optInLabel = stringResource(R.string.auth_agegate_optin_accessibilitylabel)
+        // The C-14 single row sits inside the form's margin (the C-14 group inset is the same size.global.screenMargin).
+        GroupedRow(
+            GroupedRowSpec(
+                title = stringResource(R.string.auth_agegate_optin_label),
+                subtitle = stringResource(R.string.auth_agegate_optin_detail),
+                trailing = GroupedTrailing.Toggle(state.optIn, onOptIn),
+                enabled = !state.checking,
+            ),
+            GroupedPosition.Single,
+            Modifier.semantics { contentDescription = optInLabel },
+            minHeight = Tokens.Sizes.settingsRootSizeRowHeight,
         )
-        Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeFieldToButton))
-        PrimaryButton(stringResource(R.string.auth_agegate_continue), onContinue, enabled = canContinue)
     }
-    if (state.invalidDate) ErrorAlert(stringResource(R.string.auth_agegate_error_invaliddate), errorDismissLabel(), onDismissError)
-    if (focusOnAppear) LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
+    if (focusOnAppear && !state.offline) LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
 }
