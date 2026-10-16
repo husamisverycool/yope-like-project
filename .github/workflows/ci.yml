@@ -117,6 +117,7 @@ jobs:
         working-directory: web
         run: |
           npm ci
+          npx playwright-core install --with-deps --only-shell chromium
           npm run typecheck
           npm test
 

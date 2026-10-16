@@ -69,7 +69,7 @@ final class AccountGroupsTests: XCTestCase {
         XCTAssertEqual(model.rows.first?.senderFirstName, "Rui")
         XCTAssertEqual(model.rows.first?.isOwnPost, false)
         XCTAssertNil(model.rows.last?.newest)
-        XCTAssertEqual(model.coverRow?.group.id, family.id)
+        XCTAssertEqual(model.rows.last?.isCreatedByMe, true, "a group without photos: 'Created by you'")
         XCTAssertEqual(model.myFirstName, "Ana")
         model.stop()
     }
@@ -106,7 +106,8 @@ final class AccountGroupsTests: XCTestCase {
         let created = GroupFeedModel(groupID: mine.id, data: fixture.data)
         await created.refresh()
         XCTAssertEqual(created.phase, .created, "the creator's new group")
-        XCTAssertEqual(created.joinedNames, "Rui")
+        XCTAssertTrue(created.isCreator)
+        XCTAssertTrue(created.isAdmin)
 
         let theirs = fixture.data.addGroup("Sunday dinners", createdBy: fixture.rui.id, members: [fixture.rui, fixture.me])
         let empty = GroupFeedModel(groupID: theirs.id, data: fixture.data)
@@ -147,13 +148,38 @@ final class AccountGroupsTests: XCTestCase {
         XCTAssertFalse(model.posts.contains { $0.id == fresh.id })
     }
 
-    func testFeedInterleavesJoinedPillsByDate() async {
+    func testFeedSplitsThisWeekIntoMemberCardsAndEarlierDays() async {
         let fixture = AccountFixture()
-        let group = fixture.familyGroup(posts: 1)
-        let model = GroupFeedModel(groupID: group.id, data: fixture.data)
+        let group = fixture.familyGroup()
+        // The fixture clock is Wednesday 14 October 2026, 17:46 UTC (ISO week 42; the group is in UTC).
+        let ruiOlder = fixture.data.addPost(groupID: group.id, author: fixture.rui.id, minutesAgo: 600)
+        let ruiNewest = fixture.data.addPost(groupID: group.id, author: fixture.rui.id, minutesAgo: 30)
+        let anaNewest = fixture.data.addPost(groupID: group.id, author: fixture.me.id, minutesAgo: 120)
+        let lastWeek = fixture.data.addPost(groupID: group.id, author: fixture.rui.id, minutesAgo: 60 * 24 * 5)
+        let model = GroupFeedModel(groupID: group.id, data: fixture.data, now: { fixture.data.clock })
         await model.refresh()
-        XCTAssertTrue(model.items.contains { if case .joined = $0 { return true } else { return false } })
-        XCTAssertEqual(model.items.map(\.date), model.items.map(\.date).sorted(by: >))
+
+        XCTAssertEqual(model.weekNumber, 42)
+        XCTAssertEqual(model.thisWeekPosts.map(\.id), [ruiOlder.id, anaNewest.id, ruiNewest.id], "the strip: oldest to newest")
+        XCTAssertEqual(model.memberWeeks.map(\.newest.id), [ruiNewest.id, anaNewest.id], "one card per member, newest first")
+        XCTAssertEqual(model.earlierSections.count, 1)
+        XCTAssertEqual(model.earlierSections.first?.posts.map(\.id), [lastWeek.id])
+        XCTAssertEqual(model.remainingDaysOfWeek.count, 5, "Wednesday to Sunday")
+        XCTAssertFalse(model.isQuietWeek)
+        model.stop()
+    }
+
+    func testFeedQuietWeekKeepsEarlierPhotos() async {
+        let fixture = AccountFixture()
+        let group = fixture.familyGroup()
+        fixture.data.addPost(groupID: group.id, author: fixture.rui.id, minutesAgo: 60 * 24 * 9)
+        let model = GroupFeedModel(groupID: group.id, data: fixture.data, now: { fixture.data.clock })
+        await model.refresh()
+        XCTAssertEqual(model.phase, .loaded)
+        XCTAssertTrue(model.isQuietWeek)
+        XCTAssertTrue(model.memberWeeks.isEmpty)
+        XCTAssertEqual(model.earlierSections.count, 1)
+        model.stop()
     }
 
     func testFeedDropsABlockedPersonsPosts() async {
@@ -209,11 +235,29 @@ final class AccountGroupsTests: XCTestCase {
         XCTAssertEqual(fixture.data.calls.last, "updateGroup")
     }
 
-    func testGroupNameIsCapped() {
+    func testGroupNameTooLongIsRefusedInline() {
         let model = GroupCreateModel(data: InMemoryAccountData())
         model.setName(String(repeating: "x", count: 120))
-        XCTAssertEqual(model.name.count, GroupCreateModel.maxNameLength)
+        XCTAssertEqual(model.name.count, 120, "typing is not cut: 'Name too long' shows under the field")
+        XCTAssertTrue(model.isNameTooLong)
+        XCTAssertFalse(model.canSubmit)
         XCTAssertEqual(GroupCreateModel.title(of: .unknown), Copy.groupsCreateTypeCustom)
+    }
+
+    func testCreateStartsAtTheTypeStepUnlessAKindWasChosen() {
+        let data = InMemoryAccountData()
+        let fresh = GroupCreateModel(data: data)
+        XCTAssertEqual(fresh.step, .type)
+        fresh.choose(.roommates)
+        XCTAssertEqual(fresh.step, .details)
+        XCTAssertEqual(fresh.kind, .roommates)
+        fresh.backToType()
+        XCTAssertEqual(fresh.step, .type)
+
+        let fromTemplate = GroupCreateModel(data: data, kind: .family)
+        XCTAssertEqual(fromTemplate.step, .details, "a groups.list template row skips step A")
+        XCTAssertEqual(fromTemplate.kind, .family)
+        XCTAssertEqual(GroupCreateModel.kinds, [.friends, .family, .roommates, .custom])
     }
 
     // MARK: groups.invite
@@ -355,6 +399,7 @@ final class AccountGroupsTests: XCTestCase {
         guard case let .valid(preview) = model.state else { return XCTFail("expected a preview, got \(model.state)") }
         XCTAssertEqual(preview.groupName, "Lima family")
         XCTAssertEqual(preview.inviterFirstName, "Ana")
+        XCTAssertEqual(preview.members.count, 2, "storage paths stand in for the web's image URLs")
         let joined = await model.join()
         XCTAssertEqual(joined?.id, group.id)
         XCTAssertEqual(model.successCount, 1)
