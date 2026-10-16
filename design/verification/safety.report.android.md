@@ -8,7 +8,7 @@ Side by side: [`safety.report.android.png`](safety.report.android.png) — ours 
 
 States rendered (`android/feature/account/src/test/snapshots/safety.report/`): `confirmLeave-light`, `failed-light`, `nextSteps-light`, `reasons-group-light`, `reasons-message-light`, `reasons-post-dark`, `reasons-post-light`, `reasons-user-light`, `sending-light`, `targetGone-light`.
 
-**Result: 24 checks — 23 match, 1 MISS.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 24 checks — 24 match.** (`match` includes measured, token, behaviour and copy rows.)
 
 ## Reasons sheet (safety.report/reasons-post-light)
 
@@ -16,7 +16,7 @@ States rendered (`android/feature/account/src/test/snapshots/safety.report/`): `
 |---|---|---|---|---|---|
 | match | sheet container: `color.global.system.surfaceContainerLow` | #F7F2FA | #F7F2FA | ColorLightTokens.kt SurfaceContainerLow = Neutral96 (247,242,250); ColorDarkTok… |  |
 | match | sheet full width: `layout.global.materials` | 393 | 393 | references/auto/retro/press/tc-2025-12-rewind-device-a.png, references/auto/ret… | M3 ModalBottomSheet at full width on a phone |
-| MISS | reason text inset: `size.global.screenMargin` | 16 | 64 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
+| match | reason text inset (first left-aligned row): `size.global.screenMargin` | 16 | 17.5 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 
 ## Tokens named in the spec
 

@@ -12,7 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.hasScrollToIndexAction
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
@@ -48,6 +48,7 @@ import app.feature.account.groups.GroupCreateScreen
 import app.feature.account.groups.GroupCreateUiState
 import app.feature.account.groups.GroupFeedScreen
 import app.feature.account.groups.GroupFeedUiState
+import app.feature.account.groups.GROUP_INVITE_LIST_TAG
 import app.feature.account.groups.GroupInviteActions
 import app.feature.account.groups.GroupInviteScreen
 import app.feature.account.groups.GroupInviteUiState
@@ -279,7 +280,7 @@ class ScreenSnapshotTest {
     // The Contacts section sits under the link controls: each render scrolls the sheet to it.
     // The sheet is a lazy list: scroll it until the node is composed and shown.
     private fun scrollTo(text: Int): () -> Unit = scrollToText(context.getString(text))
-    private fun scrollToText(text: String): () -> Unit = { compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText(text)) }
+    private fun scrollToText(text: String): () -> Unit = { compose.onNodeWithTag(GROUP_INVITE_LIST_TAG).performScrollToNode(hasText(text)) }
     @Test fun contactsNotAsked() = snap("onboarding.permission.contacts", "notAsked", act = scrollTo(R.string.onboarding_permission_contacts_card_button), content = inviteScreen(linkOn))
     @Test fun contactsNotAskedDark() = snap("onboarding.permission.contacts", "notAsked", dark = true, act = scrollTo(R.string.onboarding_permission_contacts_card_button), content = inviteScreen(linkOn))
     @Test fun contactsGranted() = snap("onboarding.permission.contacts", "granted", act = scrollToText("Zoe Park"), content = inviteScreen(withContacts))

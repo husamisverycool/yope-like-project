@@ -8,7 +8,7 @@ Side by side: [`groups.list.android.png`](groups.list.android.png) — ours left
 
 States rendered (`android/feature/account/src/test/snapshots/groups.list/`): `default-dark`, `default-light`, `empty-light`, `error-light`, `loading-light`, `offline-cached-light`, `offline-light`.
 
-**Result: 54 checks — 53 match, 1 MISS.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 54 checks — 54 match.** (`match` includes measured, token, behaviour and copy rows.)
 
 ## List (groups.list/default-light)
 
@@ -17,7 +17,7 @@ States rendered (`android/feature/account/src/test/snapshots/groups.list/`): `de
 | match | title baseline below the safe-area top: `size.global.titleTop` | 64 | 64 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match | title leading inset (ink): `size.global.screenMargin` | 16 | 18.5 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… | the serif capital's side bearing at 40 sp (≈ 2.5 dp) is inside the measure |
 | match | cover thumbnail height: `size.global.rowThumbHeight` | 97 | 97 | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
-| MISS | cover thumbnail width: `size.global.rowThumbWidth` | 72 | 94 | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
+| match | cover thumbnail width: `size.global.rowThumbWidth` | 72 | 72 | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
 | match | thumbnail leading inset: `size.global.screenMargin` | 16 | 16 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match | gap between rows (thumbnail to thumbnail): `size.global.listGap` | 22.5 | 22.5 | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
 

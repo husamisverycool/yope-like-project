@@ -3,7 +3,7 @@ package app.main
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollAction
-import androidx.compose.ui.test.hasScrollToIndexAction
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
@@ -17,6 +17,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.data.model.GroupInvite
 import app.data.model.MemberRole
 import app.feature.account.AccountEnvironment
+import app.feature.account.groups.GROUP_SCREEN_LIST_TAG
 import app.feature.account.groups.GroupsListViewModel
 import app.feature.account.testing.FakeAccountBackend
 import app.feature.account.testing.FakeStores
@@ -273,7 +274,7 @@ class AccountFlowsTest {
         compose.waitForIdle()
         // The entry is a card in the pager under this week's strip.
         compose.waitUntil(WAIT_MS) {
-            runCatching { compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText("On this day")) }.isSuccess
+            runCatching { compose.onNodeWithTag(GROUP_SCREEN_LIST_TAG).performScrollToNode(hasText("On this day")) }.isSuccess
         }
         compose.onNode(hasText("On this day"), useUnmergedTree = true).performClick()
         compose.waitForIdle()

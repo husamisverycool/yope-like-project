@@ -8,15 +8,15 @@ Side by side: [`onboarding.permission.photos.android.png`](onboarding.permission
 
 States rendered (`android/feature/account/src/test/snapshots/onboarding.permission.photos/`): `denied-dark`, `denied-light`.
 
-**Result: 11 checks — 6 match, 1 approx, 1 MISS, 3 n/a.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 11 checks — 7 match, 1 approx, 3 n/a.** (`match` includes measured, token, behaviour and copy rows.)
 
 ## Denied block (onboarding.permission.photos/denied-light)
 
 | status | token / copy | expected (spec) | ours | reference evidence | note |
 |---|---|---|---|---|---|
 | match | media surface (both appearances): `color.global.backgroundDeep` | #000000 | #000000 | references/auto/retro/press/tc-2023-12-retro3.png phone 1: black viewer under a… |  |
-| approx | denied block glyph ink: `size.global.emptyIcon` | 22 | 11 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png icon y1380… | Material glyph ink ≈ 80 % of its 22 dp box |
-| MISS | denied block glyph box → title cap top: `size.global.emptyIconToTitle` | 26 | -3 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 1445 → 152… | glyph box = its ink centre ± 11; title ink top of a capital = cap top |
+| approx | denied block glyph ink: `size.global.emptyIcon` | 22 | 15.5 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png icon y1380… | Material glyph ink ≈ 80 % of its 22 dp box |
+| match | denied block glyph box → title cap top: `size.global.emptyIconToTitle` | 26 | 26.75 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 1445 → 152… | glyph box = its ink centre ± 11; title ink top of a capital = cap top |
 | match | denied block centred: `size.global.emptyIcon` | 196.5 | 196.5 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png icon y1380… |  |
 
 ## Tokens named in the spec

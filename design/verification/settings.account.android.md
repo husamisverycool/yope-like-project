@@ -8,7 +8,7 @@ Side by side: [`settings.account.android.png`](settings.account.android.png) —
 
 States rendered (`android/feature/account/src/test/snapshots/settings.account/`): `cameraDenied-light`, `default-dark`, `default-light`, `deleteConfirm-light`, `deleteConfirm-premium-light`, `deleteFailed-light`, `deleting-light`, `editName-light`, `editName-saving-light`, `noPhoto-noBirthday-light`, `photoSheet-light`, `saveFailed-light`, `savingPhoto-light`.
 
-**Result: 36 checks — 35 match, 1 MISS.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 36 checks — 36 match.** (`match` includes measured, token, behaviour and copy rows.)
 
 ## List (settings.account/default)
 
@@ -20,7 +20,7 @@ States rendered (`android/feature/account/src/test/snapshots/settings.account/`)
 | match | grouped row fill: `color.global.surfaceSecondary.android` | #F7F7F7 | #F7F7F7 | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt vv3.l / vv3.f… |  |
 | match | grouped row (dark) fill: `color.global.surfaceSecondary.android` | #262626 | #262626 | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt vv3.l / vv3.f… |  |
 | match | page (dark): `color.global.background.android` | #1C1C1E | #1C1C1E | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Retro palett… |  |
-| MISS | row pitch (separator to separator): `settings.root.size.rowHeight` | 58.7 | 2.5 | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2 (grouped ro… |  |
+| match | single-row group height (smallest group): `settings.root.size.rowHeight` | 58.7 | 58.5 | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2 (grouped ro… |  |
 
 ## Tokens named in the spec
 

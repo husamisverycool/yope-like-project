@@ -46,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.LastBaseline
@@ -351,6 +352,9 @@ fun GroupFeedRoute(nav: NavHostController, groupId: String) {
     )
 }
 
+/** Test tag of the screen's vertical list (UI tests scroll it; the week strip is a second scrollable list). */
+const val GROUP_SCREEN_LIST_TAG = "groups.screen.list" // provenance-ok: test tag, not shown
+
 /** What the group screen does on each control. */
 @Immutable
 data class GroupScreenActions(
@@ -421,7 +425,7 @@ fun GroupFeedScreen(
             }
             return@Box
         }
-        LazyColumn(state = list, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = bottom)) {
+        LazyColumn(state = list, modifier = Modifier.fillMaxSize().testTag(GROUP_SCREEN_LIST_TAG), contentPadding = PaddingValues(bottom = bottom)) {
             item(key = "header") { Header(actions, glyphs = true) }
             item(key = "cover") { Cover(state) }
             item(key = "name") { Name(state.group?.name) }

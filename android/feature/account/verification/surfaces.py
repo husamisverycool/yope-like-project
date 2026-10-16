@@ -77,7 +77,10 @@ def fill_extent(img, hexc, y, tol=3, x0=0, x1=M.W, min_w=200):
 
     def row_span(py):
         xs = [x for x in range(int(x0 * M.SCALE), min(int(x1 * M.SCALE), img.width)) if pred(img.getpixel((x, py)))]
-        return (xs[0], xs[-1] + 1) if xs and (xs[-1] - xs[0]) / M.SCALE >= min_w else None
+        if not xs or (xs[-1] - xs[0]) / M.SCALE < min_w:
+            return None
+        # A fill covers most of its span (text on it is a small part); scattered matches (a photo's highlights) do not.
+        return (xs[0], xs[-1] + 1) if len(xs) >= 0.6 * (xs[-1] + 1 - xs[0]) else None
 
     py = int(y * M.SCALE)
     span = row_span(py)
@@ -279,6 +282,10 @@ def empty_block_rows(img, ink, box, label):
     blocks = ink_blocks(img, ink, box)
     if len(blocks) < 2:
         return [(f"{label}: block found", "size.global.emptyIcon", t("size.global.emptyIcon"), None)]
+    # A glyph can be drawn in parts (the download arrow and its base): join blocks while they fit the glyph box.
+    while len(blocks) > 2 and blocks[1][1] - blocks[0][0] <= t("size.global.emptyIcon") + 1:
+        a, b = blocks[0], blocks[1]
+        blocks = [(a[0], b[1], min(a[2], b[2]), max(a[3], b[3]))] + blocks[2:]
     glyph, title = blocks[0], blocks[1]
     size = max(glyph[1] - glyph[0], glyph[3] - glyph[2])
     box_bottom = (glyph[0] + glyph[1]) / 2 + t("size.global.emptyIcon") / 2
@@ -302,11 +309,12 @@ def widget():
     im = snap("onboarding.widget/default-light")
     rows = form_title_rows(im, LIGHT_PAGE, dark_ink)
     notpage = lambda p: max(p[:3]) < 245
-    col = [r for r in M.col_runs(im, M.W / 2, notpage, 150, 420, min_len=100)]
+    cols = [c for x in range(140, 254, 4) for c in M.col_runs(im, x, notpage, 150, 420, min_len=60)]
+    col = [max(cols, key=lambda c: c[1] - c[0])] if cols else []
     if col:
         mid = (col[0][0] + col[0][1]) / 2
         row = [r for r in M.row_runs(im, mid, notpage, min_len=100)]
-        rows += [("preview tile height", "onboarding.widget.size.preview", t("onboarding.widget.size.preview"), col[0][1] - col[0][0], {"tol": 2.0}),
+        rows += [("preview tile height (tallest clean column)", "onboarding.widget.size.preview", t("onboarding.widget.size.preview"), col[0][1] - col[0][0], {"tol": 2.0}),
                  ("preview tile width", "onboarding.widget.size.preview", t("onboarding.widget.size.preview"), row[0][1] - row[0][0] if row else None, {"tol": 2.0}),
                  ("preview centred", "onboarding.widget.size.preview", M.W / 2, (row[0][0] + row[0][1]) / 2 if row else None, {"tol": 1.5})]
     rows += capsule_rows("Add Widget", im, t("color.global.accent")["light"], LIGHT_PAGE)
@@ -324,7 +332,7 @@ def groups_list():
     thumbs = M.col_runs(im, 80, lambda p: max(p[:3]) < 250, 90, 560, min_len=40)
     if thumbs:
         th = thumbs[0]
-        ext = M.extent(im, lambda p: max(p[:3]) < 250, (0, th[0] + 2, 110, th[1] - 2))
+        ext = M.extent(im, lambda p: max(p[:3]) < 250, (0, th[0] + 2, 100, th[1] - 2))
         rows.append(("cover thumbnail height", "size.global.rowThumbHeight", t("size.global.rowThumbHeight"), th[1] - th[0], {"tol": 1.0}))
         if ext:
             rows += [("cover thumbnail width", "size.global.rowThumbWidth", t("size.global.rowThumbWidth"), ext[2] - ext[0], {"tol": 1.0}),
@@ -383,10 +391,14 @@ def groups_screen():
     for y in [(cover[3] if cover else 380) + 120 + i * 0.5 for i in range(500)]:
         runs = [r for r in M.row_runs(im, y, notpage, 0, 393, min_len=3) if abs((r[1] - r[0]) - t("size.global.stripTileWidth")) <= 2]
         if len(runs) >= 3:
+            # Below the strip's rounded top corners: measure on a row 40 dp further down.
+            y += 40
+            runs = [r for r in M.row_runs(im, y, notpage, 0, 393, min_len=3) if abs((r[1] - r[0]) - t("size.global.stripTileWidth")) <= 2] or runs
             heights = []
             for r in runs:
-                col = M.col_runs(im, (r[0] + r[1]) / 2, notpage, y - 120, y + 120, min_len=20)
-                heights += [c[1] - c[0] for c in col if c[0] <= y <= c[1]]
+                for x in range(int(r[0]) + 4, int(r[1]) - 4, 4):
+                    col = M.col_runs(im, x, notpage, y - 140, y + 140, min_len=20)
+                    heights += [c[1] - c[0] for c in col if c[0] <= y <= c[1]]
             rows += [("strip tile leading inset", "size.global.screenMargin", t("size.global.screenMargin"), runs[0][0], {"tol": 1.0}),
                      ("strip tile width", "size.global.stripTileWidth", t("size.global.stripTileWidth"), runs[0][1] - runs[0][0], {"tol": 1.0}),
                      ("strip gap", "size.global.stripGap", t("size.global.stripGap"), runs[1][0] - runs[0][1], {"tol": 0.6}),
@@ -411,17 +423,21 @@ def settings_list(surface, state, label):
 
 
 def settings_rows_height(surface, state):
-    """Row height inside the first group: the separator-to-separator pitch of its rows."""
+    """Single-row height: the smallest C-14 group on the page (a one-line row; taller groups hold several rows, an avatar
+    or a two-line row)."""
     def run():
         sections = settings_list(surface, state, "List")()
         im = snap(f"{surface}/{state}-light")
-        b = wide_fill(im, t("color.global.surfaceSecondary.android")["light"], 50, 800, min_w=300, tol=2)
-        if b:
-            seps = M.col_runs(im, 200, lambda p: max(p[:3]) < 240 and abs(p[0] - p[1]) < 4 and abs(p[1] - p[2]) < 4 and min(p[:3]) > 150, b["top"], b["bottom"] + 300)
-            if len(seps) >= 2:
-                sections[0][1].append(("row pitch (separator to separator)", "settings.root.size.rowHeight", t("settings.root.size.rowHeight"), seps[1][0] - seps[0][0], {"tol": 1.5}))
-            else:
-                sections[0][1].append(("single-row group height", "settings.root.size.rowHeight", t("settings.root.size.rowHeight"), b["height"], {"tol": 1.5}))
+        fill = t("color.global.surfaceSecondary.android")["light"]
+        heights, y = [], 50
+        while y < 840:
+            b = wide_fill(im, fill, y, 845, min_w=300, tol=2)
+            if not b:
+                break
+            heights.append(b["height"])
+            y = b["bottom"] + 2
+        if heights:
+            sections[0][1].append(("single-row group height (smallest group)", "settings.root.size.rowHeight", t("settings.root.size.rowHeight"), min(heights), {"tol": 1.5}))
         return sections
     return run
 
@@ -434,9 +450,9 @@ def safety_report():
     if sheet:
         rows.append(("sheet container", "color.global.system.surfaceContainerLow", fill, sheet["color"]))
         rows.append(("sheet full width", "layout.global.materials", M.W, sheet["width"], {"tol": 1.0, "note": "M3 ModalBottomSheet at full width on a phone"}))
-        reason = line_box(im, (0, sheet["top"] + 60, 393, sheet["top"] + 140), dark_ink)
-        if reason:
-            rows.append(("reason text inset", "size.global.screenMargin", t("size.global.screenMargin"), reason[0], {"tol": 2.0}))
+        texts = [b for b in ink_blocks(im, dark_ink, (0, sheet["top"] + 1, 393, M.H)) if b[2] < 60]
+        if texts:
+            rows.append(("reason text inset (first left-aligned row)", "size.global.screenMargin", t("size.global.screenMargin"), texts[0][2], {"tol": 2.0}))
     return [("Reasons sheet (safety.report/reasons-post-light)", rows)]
 
 

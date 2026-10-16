@@ -34,6 +34,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -277,6 +278,9 @@ private fun copyToClipboard(context: Context, url: String) {
 
 /** What the invite sheet does on each control. */
 @Immutable
+/** Test tag of the sheet's list (UI tests scroll it to the Contacts section). */
+const val GROUP_INVITE_LIST_TAG = "groups.invite.list" // provenance-ok: test tag, not shown
+
 data class GroupInviteActions(
     val onClose: () -> Unit = {},
     val onTurnOn: () -> Unit = {},
@@ -308,7 +312,7 @@ fun GroupInviteScreen(state: GroupInviteUiState, zone: ZoneId, actions: GroupInv
         title = stringResource(R.string.groups_invite_title, state.groupName),
         close = HeaderAction(Tokens.Icons.globalClose, stringResource(R.string.groups_invite_close_accessibilitylabel), actions.onClose),
     ) {
-        LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(bottom = sheetBottomPadding()), horizontalAlignment = Alignment.CenterHorizontally) {
+        LazyColumn(Modifier.fillMaxWidth().testTag(GROUP_INVITE_LIST_TAG), contentPadding = PaddingValues(bottom = sheetBottomPadding()), horizontalAlignment = Alignment.CenterHorizontally) {
             item(key = "cover") {
                 BookCover(
                     state.coverUrl,
