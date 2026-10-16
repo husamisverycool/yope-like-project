@@ -285,7 +285,9 @@ jobs:
           XC=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
           sudo xcode-select -s "$XC"
           xcodebuild -version
-      - run: brew install xcodegen
+      # Retried: a macOS runner's DNS sometimes misses ghcr.io for a moment (run 97: "Could not resolve host: ghcr.io").
+      - name: install XcodeGen
+        run: for i in 1 2 3; do brew install xcodegen && break || sleep $((i * 20)); done; command -v xcodegen
       - name: generate project
         working-directory: ios
         run: xcodegen generate
@@ -319,7 +321,9 @@ jobs:
           XC=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
           sudo xcode-select -s "$XC"
           xcodebuild -version
-      - run: brew install xcodegen
+      # Retried: a macOS runner's DNS sometimes misses ghcr.io for a moment (run 97: "Could not resolve host: ghcr.io").
+      - name: install XcodeGen
+        run: for i in 1 2 3; do brew install xcodegen && break || sleep $((i * 20)); done; command -v xcodegen
       - name: generate project
         working-directory: ios
         run: xcodegen generate
@@ -418,7 +422,9 @@ jobs:
           XC=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
           sudo xcode-select -s "$XC"
           xcodebuild -version
-      - run: brew install xcodegen
+      # Retried: a macOS runner's DNS sometimes misses ghcr.io for a moment (run 97: "Could not resolve host: ghcr.io").
+      - name: install XcodeGen
+        run: for i in 1 2 3; do brew install xcodegen && break || sleep $((i * 20)); done; command -v xcodegen
       - name: generate project
         working-directory: ios
         run: xcodegen generate
@@ -489,7 +495,9 @@ jobs:
           XC=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
           sudo xcode-select -s "$XC"
           xcodebuild -version
-      - run: brew install xcodegen
+      # Retried: a macOS runner's DNS sometimes misses ghcr.io for a moment (run 97: "Could not resolve host: ghcr.io").
+      - name: install XcodeGen
+        run: for i in 1 2 3; do brew install xcodegen && break || sleep $((i * 20)); done; command -v xcodegen
       # The demo world's photos (DemoPhotos.swift): the sample photos, in this build's bundle only.
       - name: bundle the sample photos
         working-directory: ios
@@ -532,7 +540,9 @@ jobs:
           XC=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
           sudo xcode-select -s "$XC"
           xcodebuild -version
-      - run: brew install xcodegen
+      # Retried: a macOS runner's DNS sometimes misses ghcr.io for a moment (run 97: "Could not resolve host: ghcr.io").
+      - name: install XcodeGen
+        run: for i in 1 2 3; do brew install xcodegen && break || sleep $((i * 20)); done; command -v xcodegen
       - name: bundle the sample photos
         working-directory: ios
         run: mkdir -p App/Resources/DemoPhotos && cp ../fixtures/photos/*.jpg App/Resources/DemoPhotos/
@@ -573,7 +583,9 @@ jobs:
           XC=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
           sudo xcode-select -s "$XC"
           xcodebuild -version
-      - run: brew install xcodegen
+      # Retried: a macOS runner's DNS sometimes misses ghcr.io for a moment (run 97: "Could not resolve host: ghcr.io").
+      - name: install XcodeGen
+        run: for i in 1 2 3; do brew install xcodegen && break || sleep $((i * 20)); done; command -v xcodegen
       - name: generate project
         working-directory: ios
         run: xcodegen generate
