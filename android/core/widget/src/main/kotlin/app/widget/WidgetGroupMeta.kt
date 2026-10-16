@@ -1,8 +1,6 @@
 package app.widget
 
-import app.designsystem.generated.Tokens
 import app.model.DeepLinkCodec
-import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
@@ -14,14 +12,13 @@ import java.io.OutputStream
  * person chooses the group in the configuration activity, before the widget is bound.
  *
  * - [content]: whether the group has a photo yet. [Content.Unknown] while the newest rendition is
- *   being fetched (the widget shows the loading placeholder, `widget.home.small` → States →
- *   loading); [Content.NoPhotos] once the group is known to have none (the empty state).
- * - [members]: up to three members for the loading placeholder
- *   (`Tokens.Layouts.WidgetHomeSmallLayoutPlaceholderAvatars.max`), each with its avatar file or
- *   null when the member has no avatar.
+ *   being fetched (the widget shows the loading state, `widget.home.small` → States → loading);
+ *   [Content.NoPhotos] once the group is known to have none (the empty state).
+ * - [isSignedOut]: nobody is signed in on this device (every widget shows the signed-out state,
+ *   `widget.home.small.empty.signedOut`; a tap opens the app's sign-in).
  *
- * A bound widget whose group has no entry here was never prepared, or its group was left, removed
- * or signed out of ([WidgetFileStore.retainGroups] drops the entry): it shows "not set up".
+ * A bound widget whose group has no entry here was never prepared, or its group was left or
+ * removed ([WidgetFileStore.retainGroups] drops the entry): it shows "not set up".
  * Kept next to the rendition store (never inside it: the store prunes unknown files).
  */
 class WidgetGroupMeta(val root: File) {
@@ -40,41 +37,29 @@ class WidgetGroupMeta(val root: File) {
     fun content(groupId: String): Content = readState(groupId)?.optString(KEY_CONTENT)
         ?.let { name -> Content.entries.firstOrNull { it.name == name } } ?: Content.Unknown
 
-    /** The placeholder's members in order: each one's avatar file, or null for a member without one. */
-    fun members(groupId: String): List<File?> {
-        val flags = readState(groupId)?.optJSONArray(KEY_MEMBERS) ?: return emptyList()
-        return (0 until minOf(flags.length(), MAX_AVATARS)).map { i ->
-            File(dir(groupId), "$AVATAR_PREFIX$i$EXT").takeIf { flags.optBoolean(i) && it.isFile }
-        }
-    }
-
-    /** Creates (or resets) the entry: content unknown, no members yet. */
+    /** Creates (or resets) the entry: content unknown. */
     fun prepare(groupId: String) = synchronized(lock) {
         dir(groupId).deleteRecursively()
-        writeState(groupId, Content.Unknown, emptyList())
+        writeState(groupId, Content.Unknown)
     }
 
     fun setContent(groupId: String, content: Content) = synchronized(lock) {
-        writeState(groupId, content, memberFlags(groupId))
+        writeState(groupId, content)
     }
 
-    /**
-     * Stores the placeholder's members: one writer per member (null = no avatar). A writer that
-     * throws leaves that member's avatar out (the placeholder draws the no-avatar circle).
-     */
-    fun setMembers(groupId: String, avatars: List<((OutputStream) -> Unit)?>) = synchronized(lock) {
-        val dir = dir(groupId).apply { mkdirs() }
-        val flags = avatars.take(MAX_AVATARS).mapIndexed { i, write ->
-            val file = File(dir, "$AVATAR_PREFIX$i$EXT")
-            file.delete()
-            write != null && try {
-                writeAtomically(file, write)
-                true
-            } catch (_: IOException) {
-                false
-            }
+    /** Whether the device is signed out (a marker next to the group entries). */
+    fun isSignedOut(): Boolean = File(root, SIGNED_OUT).isFile
+
+    /** Records the session: signed out shows `empty.signedOut` on every widget until someone signs in. */
+    fun setSignedOut(signedOut: Boolean) = synchronized(lock) {
+        val marker = File(root, SIGNED_OUT)
+        if (signedOut) {
+            root.mkdirs()
+            if (!marker.isFile) writeAtomically(marker) { it.write(SIGNED_OUT.toByteArray()) }
+        } else {
+            marker.delete()
         }
-        writeState(groupId, content(groupId), flags)
+        Unit
     }
 
     /** Drops every group not in [groupIds] (left, removed, signed out). */
@@ -83,11 +68,6 @@ class WidgetGroupMeta(val root: File) {
     }
 
     fun remove(groupId: String) = synchronized(lock) { dir(groupId).deleteRecursively(); Unit }
-
-    private fun memberFlags(groupId: String): List<Boolean> {
-        val flags = readState(groupId)?.optJSONArray(KEY_MEMBERS) ?: return emptyList()
-        return (0 until flags.length()).map { flags.optBoolean(it) }
-    }
 
     private fun readState(groupId: String): JSONObject? {
         val file = File(dir(groupId), STATE)
@@ -99,9 +79,9 @@ class WidgetGroupMeta(val root: File) {
         }
     }
 
-    private fun writeState(groupId: String, content: Content, members: List<Boolean>) {
+    private fun writeState(groupId: String, content: Content) {
         val dir = dir(groupId).apply { mkdirs() }
-        val json = JSONObject().put(KEY_CONTENT, content.name).put(KEY_MEMBERS, JSONArray(members))
+        val json = JSONObject().put(KEY_CONTENT, content.name)
         writeAtomically(File(dir, STATE)) { it.write(json.toString().toByteArray()) }
     }
 
@@ -123,13 +103,9 @@ class WidgetGroupMeta(val root: File) {
     }
 
     companion object {
-        /** The placeholder shows at most this many member avatars. */
-        val MAX_AVATARS: Int = Tokens.Layouts.WidgetHomeSmallLayoutPlaceholderAvatars.max.toInt()
         private const val STATE = "state.json"
+        private const val SIGNED_OUT = "signed-out"
         private const val KEY_CONTENT = "content"
-        private const val KEY_MEMBERS = "members"
-        private const val AVATAR_PREFIX = "m-"
-        private const val EXT = ".jpg"
 
         /** The meta directory that belongs to [store] (a sibling of its root). */
         fun of(store: WidgetFileStore): WidgetGroupMeta = WidgetGroupMeta(File(store.root.parentFile, store.root.name + "-meta"))

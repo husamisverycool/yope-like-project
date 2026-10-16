@@ -28,6 +28,8 @@ android {
         // Support address for "Contact Us" (settings.root Gaps: not in config/app.json yet).
         buildConfigField("String", "SUPPORT_EMAIL", quoted(configString("support", "email")))
         buildConfigField("String", "APPLICATION_ID", quoted(configString("android", "applicationId")))
+        // The app's name (auth.phone landing wordmark; BLOCKED while null: debug builds show the placeholder, release omits it).
+        buildConfigField("String", "APP_DISPLAY_NAME", quoted(configString("displayName", "value")))
     }
 }
 

@@ -1,5 +1,5 @@
 // Surfaces: camera.capture, camera.sendto, camera.fromwidget, daily.capture, collage.view,
-// collage.share. The services the capture screens use, as protocols, so view models run with
+// collage.share (design/surfaces/<id>.md; reference images listed there). The services the capture screens use, as protocols, so view models run with
 // fakes in unit tests, snapshot tests and UI tests (launch argument `CaptureLaunchArgument.fakes`).
 // Live implementations wrap AppServices / AppData (CaptureLiveServices.swift).
 import AppData
@@ -70,8 +70,6 @@ protocol CaptureCamera: AnyObject, Sendable {
 
 @MainActor
 protocol CaptureLibrary: AnyObject, Sendable {
-    /// The newest library photo, only when read access was already granted (never asks).
-    func newestThumbnail(side: CGFloat) async -> UIImage?
     /// Saves to the library with add-only access (asks on first use).
     func save(_ media: CapturedMedia) async throws
 }
@@ -127,22 +125,14 @@ protocol CaptureVoiceRecorder: AnyObject, Sendable {
 
 // MARK: - Posting
 
-struct CaptureRetryResult: Sendable, Equatable {
-    /// Drafts posted by this retry.
-    var posted: Int
-    /// The error of the first draft that failed again, if any.
-    var error: DataError?
-}
-
 @MainActor
 protocol CapturePosting: AnyObject, Sendable {
     /// Saves the draft in the outbox and posts it (docs/API.md recipe 9.4). A draft whose post
-    /// fails stays in the outbox (AppData `PostPublisher`).
+    /// fails stays in the outbox (AppData `PostPublisher`) until `discard`.
     func publish(_ draft: PostDraft) async throws
-    /// Retries every draft left in the outbox.
-    func retryPending() async -> CaptureRetryResult
-    /// True whenever the network comes back (the data layer's reachability).
-    func onlineUpdates() -> AsyncStream<Bool>
+    /// Removes a draft that failed from the outbox: the composer keeps the capture and sends a new draft when the
+    /// member taps Try Again (camera.sendto error state), so the outbox never replays a post the member saw fail.
+    func discard(_ mediaID: MediaID) async
 }
 
 // MARK: - Daily invitation and collage
@@ -206,8 +196,6 @@ protocol CaptureCoachStore: AnyObject, Sendable {
 enum CaptureCoach: String, CaseIterable, Sendable {
     /// `camera.capture.coach.holdToRecord`
     case holdToRecord = "capture.coach.holdToRecord"
-    /// `camera.sendto.coach.voice`
-    case voice = "capture.coach.voice"
 }
 
 @MainActor

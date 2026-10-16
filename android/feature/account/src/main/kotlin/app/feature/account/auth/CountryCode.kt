@@ -1,7 +1,10 @@
 package app.feature.account.auth
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.requiredSize
@@ -11,17 +14,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -33,7 +32,10 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.designsystem.generated.Tokens
-import app.ui.system.SystemRow
+import app.ui.foundation.PageRoles
+import app.ui.foundation.tapClickable
+import app.ui.system.DsBottomSheet
+import app.ui.text.TextRoles
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import java.text.Collator
 import java.util.Locale
@@ -88,7 +90,7 @@ fun CountryFlagButton(region: String, onClick: () -> Unit) {
         Modifier
             // The touch target may overhang the field (it is taller than size.global.fieldHeight).
             .requiredSize(CountryFlagSlot.touchTarget)
-            .clickable(role = Role.Button, onClick = onClick)
+            .tapClickable(onClick = onClick)
             .semantics { contentDescription = name },
         contentAlignment = Alignment.Center,
     ) {
@@ -104,39 +106,60 @@ fun CountryFlagButton(region: String, onClick: () -> Unit) {
 }
 
 /**
- * The country list (`auth.phone.layout.countryCode` flagTap: "ours: the platform picker in a sheet"):
- * an M3 modal bottom sheet of M3 list rows — flag, the platform's country name, trailing "+code" —
- * scrolled to the current country; choosing one replaces the calling code.
+ * The country list (`auth.phone.layout.countryCode` flagTap: "opens a country list in a native sheet (C-29)"): the C-29 page
+ * sheet ([DsBottomSheet], expanded) holding the list, scrolled to the current country; choosing one replaces the calling code.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CountryPickerSheet(selected: String?, onPick: (String) -> Unit, onDismiss: () -> Unit) {
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(),
-        containerColor = Tokens.Colors.globalSystemSurfaceContainerLow,
-    ) {
+    DsBottomSheet(onDismissRequest = onDismiss) {
         CountryList(selected, onPick, Modifier.navigationBarsPadding())
     }
 }
 
-/** The sheet's list: one M3 row per country, starting at [selected]. */
+/**
+ * The sheet's list: one row per country — the flag in the C-12 flag slot, the platform's country name (text role `body`,
+ * `color.global.textPrimary`) and the trailing "+code" (text role `body`, secondary text), as the C-14 row lays out a
+ * title and its trailing value; `size.global.screenMargin` padding, at least `size.global.minTouchTarget.android` high.
+ * The current country carries the selected state; a row press plays `haptic.global.tap` (the choice plays
+ * `haptic.global.select` in the view model).
+ */
 @Composable
 fun CountryList(selected: String?, onPick: (String) -> Unit, modifier: Modifier = Modifier) {
     val countries = remember { Countries.all() }
     val start = remember(selected) { countries.indexOfFirst { it.region == selected }.coerceAtLeast(0) }
     val list = rememberLazyListState(initialFirstVisibleItemIndex = start)
+    val margin = Tokens.Sizes.globalScreenMargin
+    val secondary = PageRoles.secondaryText()
     LazyColumn(modifier.fillMaxWidth(), state = list) {
         items(countries, key = { it.region }) { country ->
-            SystemRow(
-                headline = country.name,
-                leading = { Text(Countries.flag(country.region), style = MaterialTheme.typography.titleLarge) },
-                trailing = { Text(PLUS + country.code, style = MaterialTheme.typography.bodyMedium, color = Tokens.Colors.globalSystemOnSurfaceVariant) },
-                onClick = { onPick(country.region) },
-                modifier = if (country.region == selected) Modifier.semantics { this.selected = true } else Modifier,
-            )
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = Tokens.Sizes.globalMinTouchTargetAndroid)
+                    .tapClickable { onPick(country.region) }
+                    .semantics(mergeDescendants = true) { if (country.region == selected) this.selected = true }
+                    .padding(horizontal = margin),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalCardNameGap),
+            ) {
+                FlagText(country.region)
+                Text(country.name, style = TextRoles.body, color = Tokens.Colors.globalTextPrimary, modifier = Modifier.weight(1f))
+                Text(PLUS + country.code, style = TextRoles.body, color = secondary)
+            }
         }
     }
+}
+
+/** The flag emoji fitted into the C-12 flag slot (`auth.phone.layout.countryCode` flagWidth × flagHeight). */
+@Composable
+private fun FlagText(region: String) {
+    BasicText(
+        Countries.flag(region),
+        style = TextStyle(lineHeight = 1.em, lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both), textAlign = TextAlign.Center),
+        autoSize = TextAutoSize.StepBased(minFontSize = (Tokens.Layouts.AuthPhoneLayoutCountryCode.flagHeight / 4).sp),
+        maxLines = 1,
+        modifier = Modifier.size(CountryFlagSlot.width, CountryFlagSlot.height).clearAndSetSemantics { },
+    )
 }
 
 private const val PLUS = "+"

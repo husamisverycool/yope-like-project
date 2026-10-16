@@ -88,17 +88,25 @@ enum SocialDemo {
         )
     }
 
+    static func messageID(_ n: Int) -> MessageID {
+        MessageID("00000000-0000-4000-8000-0000000a" + String(1000 + n).suffix(4))
+    }
+
     static func message(
         _ n: Int, by author: UserID, at date: Date, text: String? = nil, post: PostID? = nil, voiceMs: Int? = nil,
-        replyTo: PostID? = nil, in group: GroupID = groupID
+        replyTo: PostID? = nil, replyToMessage: MessageID? = nil, in group: GroupID = groupID
     ) -> Message {
         let kind: MessageKind = post != nil ? .photo : (voiceMs != nil ? .voice : .text)
         return Message(
-            id: MessageID("00000000-0000-4000-8000-0000000a" + String(1000 + n).suffix(4)),
+            id: messageID(n),
             groupID: group, authorID: author, kind: kind, body: text, postID: post,
             voicePath: voiceMs.map { _ in "fake/voice/m\(n)" }, voiceDurationMs: voiceMs,
-            replyToPostID: replyTo, createdAt: date
+            replyToPostID: replyTo, replyToMessageID: replyToMessage, createdAt: date
         )
+    }
+
+    static func tag(_ post: PostID, _ user: UserID, minutes: Double) -> PostTag {
+        PostTag(postID: post, userID: user, groupID: groupID, createdAt: monday.addingTimeInterval(minutes * 60))
     }
 
     static func reaction(_ post: PostID, _ user: UserID, _ emoji: String, minutes: Double) -> Reaction {

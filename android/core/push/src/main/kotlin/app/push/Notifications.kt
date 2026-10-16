@@ -168,8 +168,9 @@ object DailyInvitationNotifier {
             .setTimeoutAfter(state.remaining.toMillis())
             .setContentIntent(DeepLinkIntents.pendingIntent(context, message.link))
             .setSilent(quiet)
-            .setColor(InvitationAppearance.accentColor)
+            // No tint (system default, RC-17); never colorized; never a promoted Live Update (C-11).
             .setColorized(false)
+        InvitationAppearance.accentColor?.let(builder::setColor)
         NotificationManagerCompat.from(context).notifyChecked(context, tag(message.groupId), ID, builder)
         return true
     }

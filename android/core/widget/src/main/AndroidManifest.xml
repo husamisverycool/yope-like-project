@@ -2,11 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application>
-        <!-- One receiver per widget layout (WidgetLayouts.all). Labels/descriptions/previews come
-             from copy and design in the screens pass; until then the picker shows the app label. -->
+        <!-- One receiver per widget layout (WidgetLayouts.all). Picker label: copy
+             widget.android.label ("Group Updates"); description in the provider XML. -->
         <receiver
             android:name="app.widget.GroupPhotoWidgetReceiver"
-            android:exported="true">
+            android:exported="true"
+            android:label="@string/widget_android_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>

@@ -1,20 +1,26 @@
-// Surface: camera.capture (+ camera.fromwidget) — reference app: Yope + Locket.
-// Reference images: references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png,
-// a-alexaa-7684388619099933966-t5.23-camera-hold-to-record-tabbar.png, a-chuongxetank-7694968408424582452-t4.73-camera.png,
-// a-virgi-7686278541255642390-t36.23-camera-first-open-es.png, references/auto/locket/frames/
-// locket-tt-7069892557970345259-03.367s-shutter-pressed-2022.jpg (design/surfaces/camera.capture.md).
+// Surface: camera.capture (+ camera.fromwidget) — visual reference Retro (composed only from Retro components: Retro has
+// no camera), mechanics Locket.
+// Reference images: references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png (H43: C-01 serif title,
+// bare trailing glyph, 16 margin, 18-pt photo-container corners), references/auto/retro/press/tc-2025-12-rewind-device-a.png
+// and …-device-b.jpg (RWA / RWB: C-35 control row, 64-pt circles), references/auto/retro/store/retro-store-03.png (ST-03:
+// C-09 pill on a photo), references/auto/locket/store/locket-store-07.png (AS-7: shutter, flash / flip row)
+// (design/surfaces/camera.capture.md; MERGE_DECISIONS RC-1 … RC-4).
 import AppServices
 import DesignSystem
 import SwiftUI
 
-/// The camera the app opens to: full-width viewfinder with the hour overlay and flash, then the
-/// library thumbnail, the shutter and flip. One tap captures; holding records (premium).
+/// The camera the app opens to, on Retro's media surface (black in both appearances): the C-01 serif header
+/// ("Week 42") with the flash as a bare header glyph, the 3:4 viewfinder in Retro's photo container, and the C-35 control
+/// row (library · shutter · flip). The tab bar under it is the shell's (C-04 media variant). One tap captures; holding
+/// records a video (premium).
 struct CameraCaptureView: View {
     @Bindable var model: CameraCaptureModel
     /// Builds the send-to screen for a capture.
     let makeSendTo: (CapturedMedia) -> SendToModel
     let sendCenter: CaptureSendCenter
 
+    /// The system appearance, read outside the media override: sheets over the composer follow it.
+    @Environment(\.colorScheme) private var systemAppearance
     @State private var isPickerPresented = false
     /// Recording progress, 0 → 1 linearly over `camera.capture.duration.videoMax`.
     @State private var recordingProgress: CGFloat
@@ -27,248 +33,241 @@ struct CameraCaptureView: View {
         _recordingProgress = State(initialValue: recordingProgress)
     }
 
-    private typealias Viewfinder = Tokens.Layouts.CameraCaptureLayoutViewfinder
-
     var body: some View {
-        GeometryReader { proxy in
-            let width = proxy.size.width
-            let viewfinderHeight = width * Viewfinder.heightOverWidth
-            let shutterCenterY = Viewfinder.top + viewfinderHeight + Tokens.Sizes.cameraCaptureSizeShutterTopGap
-                + Tokens.Sizes.cameraCaptureSizeShutterOuter / 2
-            ZStack(alignment: .topLeading) {
-                Tokens.Colors.globalBackgroundDeep
-                viewfinder(width: width, height: viewfinderHeight)
-                    .frame(width: width, height: viewfinderHeight)
-                    .clipShape(RoundedRectangle(cornerRadius: Tokens.Radii.globalViewfinder, style: .continuous))
-                    .overlay {
-                        if model.isRecording {
-                            recordingOutline
-                        }
-                    }
-                    .offset(y: Viewfinder.top)
-                controls(width: width)
-                    .frame(width: width, height: Tokens.Sizes.cameraCaptureSizeShutterOuter)
-                    .offset(y: shutterCenterY - Tokens.Sizes.cameraCaptureSizeShutterOuter / 2)
+        page
+            .captureMediaAppearance()
+            .fullScreenCover(item: $model.captured) { media in
+                SendToView(model: makeSendTo(media), sheetAppearance: systemAppearance)
             }
-        }
-        .ignoresSafeArea()
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("camera.capture")
-        .fullScreenCover(item: $model.captured) { media in
-            SendToView(model: makeSendTo(media))
-        }
-        .sheet(isPresented: $isPickerPresented) {
-            CaptureLibraryPicker { media in
-                isPickerPresented = false
-                if let media { model.didPick(media) }
+            .sheet(isPresented: $isPickerPresented) {
+                CaptureLibraryPicker { media in
+                    isPickerPresented = false
+                    if let media { model.didPick(media) }
+                }
+                .ignoresSafeArea()
             }
-            .ignoresSafeArea()
-        }
-        .task { await model.appear() }
-        .onDisappear { Task { await model.disappear() } }
-        .onChange(of: model.isRecording) { _, recording in
-            recordingProgress = 0
-            guard recording else { return }
-            withDSAnimation(.timing(duration: Tokens.Durations.cameraCaptureDurationVideoMax, easing: .linear)) { // provenance-ok: linear fill per camera.capture.size.recordingOutline notes (Locket)
-                recordingProgress = 1
+            .task { await model.appear() }
+            .onDisappear { Task { await model.disappear() } }
+            .onChange(of: model.isRecording) { _, recording in
+                recordingProgress = 0
+                guard recording else { return }
+                // A progress indicator, not decoration: linear, and unchanged under Reduce Motion (camera.capture Motion).
+                let fill = DSAnimation.timing(duration: Tokens.Durations.cameraCaptureDurationVideoMax, easing: .linear) // provenance-ok: linear trim per camera.capture Motion ("recording outline: linear trim 0 → 1")
+                withAnimation(fill.animation) {
+                    recordingProgress = 1
+                }
             }
-        }
-        .captureSendStatus(sendCenter)
     }
 
-    /// While a video records, the viewfinder's outline (`camera.capture.size.recordingOutline`,
-    /// `color.global.accent`) is traced from empty to full, linearly, over the maximum video length
-    /// (Locket's progress stroke).
-    private var recordingOutline: some View {
-        let width = Tokens.Sizes.cameraCaptureSizeRecordingOutline
-        return RoundedRectangle(cornerRadius: Tokens.Radii.globalViewfinder, style: .continuous)
-            .inset(by: width / 2)
-            .trim(from: 0, to: recordingProgress)
-            .stroke(Tokens.Colors.globalAccent, style: StrokeStyle(lineWidth: width, lineCap: .butt))
-            .accessibilityHidden(true)
-            .allowsHitTesting(false)
+    private var page: some View {
+        VStack(spacing: 0) {
+            CameraHeader(title: model.title, flash: flashControl)
+                .accessibilitySortPriority(6)
+            GeometryReader { area in
+                let size = Self.viewfinderSize(in: area.size)
+                VStack(spacing: 0) {
+                    viewfinder
+                        .frame(width: size.width, height: size.height)
+                        .accessibilitySortPriority(4)
+                    controls
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .frame(width: area.size.width)
+            }
+        }
+        .background(Tokens.Colors.globalBackgroundDeep.ignoresSafeArea())
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("camera.capture")
+    }
+
+    /// `camera.capture.layout.viewfinder`: 3:4, screen width − 2 × `size.global.screenMargin`; if the control row would get
+    /// less than `size.global.screenMargin` above and below the shutter, the viewfinder shrinks (3:4 kept, centred).
+    static func viewfinderSize(in area: CGSize) -> CGSize {
+        let aspect = Tokens.Layouts.CameraCaptureLayoutViewfinder.aspect
+        let fullWidth = max(0, area.width - Tokens.Sizes.globalScreenMargin * 2)
+        let rowMinimum = Tokens.Sizes.cameraCaptureSizeShutterOuter + Tokens.Sizes.globalScreenMargin * 2
+        let height = max(0, min(fullWidth / aspect, area.height - rowMinimum))
+        return CGSize(width: height * aspect, height: height)
+    }
+
+    private var flashControl: CameraHeader.Flash? {
+        guard model.isFlashAvailable else { return nil }
+        return CameraHeader.Flash(isOn: model.isFlashOn) { model.toggleFlash() }
     }
 
     // MARK: Viewfinder
 
-    @ViewBuilder
-    private func viewfinder(width: CGFloat, height: CGFloat) -> some View {
+    private var viewfinder: some View {
         ZStack {
             Tokens.Colors.globalBackgroundDeep
             switch model.phase {
             case .starting, .live:
-                model.camera.preview(position: nil)
-                    .accessibilityHidden(true)
-                hourOverlay
-                flashToggle
-                    .position(
-                        x: Tokens.Layouts.CameraCaptureLayoutFlashGlyph.centerFromLeading,
-                        y: height - Tokens.Layouts.CameraCaptureLayoutFlashGlyph.centerFromBottom
-                    )
+                if model.phase == .live || model.hasBeenLive {
+                    model.camera.preview(position: nil)
+                        .accessibilityHidden(true)
+                        .dsTransition(.opacity)
+                }
             case .denied:
-                CaptureEmptyState(
+                EmptyStateView(
+                    icon: Tokens.Icons.globalCamera,
                     title: Copy.cameraCaptureDeniedTitle,
                     detail: Copy.cameraCaptureDeniedDetail,
-                    buttonTitle: Copy.cameraCaptureDeniedButton,
-                    action: { model.openSettings() }
+                    action: EmptyStateView.Action(Copy.cameraCaptureDeniedButton) { model.openSettings() }
                 )
+                .dsTransition(.opacity)
+                .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("camera.capture.denied")
             case .unavailable:
-                CaptureEmptyState(
+                EmptyStateView(
+                    icon: Tokens.Icons.globalCamera,
                     title: Copy.cameraCaptureUnavailableTitle,
                     detail: Copy.cameraCaptureUnavailableDetail,
-                    buttonTitle: Copy.cameraCaptureUnavailableButton,
-                    action: { Task { await model.retry() } }
+                    action: EmptyStateView.Action(Copy.cameraCaptureUnavailableButton) { Task { await model.retry() } }
                 )
+                .dsTransition(.opacity)
+                .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("camera.capture.unavailable")
             }
         }
-    }
-
-    /// The hour slot the photo will be filed under; updates on the hour.
-    private var hourOverlay: some View {
-        TimelineView(.everyMinute) { context in
-            Text(CaptureFormat.hourOverlay(at: context.date))
-                .dsTextStyle(CaptureType.overlayTimeCamera)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-        }
-        .accessibilitySortPriority(5)
-    }
-
-    @ViewBuilder
-    private var flashToggle: some View {
-        if model.isFlashAvailable {
-            Button {
-                model.toggleFlash()
-            } label: {
-                Image(systemName: model.isFlashOn ? Tokens.Icons.globalFlashOn : Tokens.Icons.globalFlashOff)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: Tokens.Layouts.CameraCaptureLayoutFlashGlyph.glyphHeight)
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                    .frame(minWidth: Tokens.Sizes.globalMinTouchTargetIos, minHeight: Tokens.Sizes.globalMinTouchTargetIos)
-                    .contentShape(Rectangle())
+        .dsAnimation(ComponentMotion.fade, value: model.phase)
+        .clipShape(DSShape.rounded(Tokens.Radii.globalViewfinder))
+        .overlay {
+            if model.isRecording {
+                recordingOutline
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Copy.cameraCaptureA11yFlash)
-            .accessibilityValue(model.isFlashOn ? Copy.cameraCaptureA11yFlashOn : Copy.cameraCaptureA11yFlashOff)
-            .accessibilitySortPriority(4)
-            .accessibilityIdentifier("camera.capture.flash")
+        }
+        .overlay(alignment: .bottom) {
+            ZStack {
+                if model.showsCoach && model.phase == .live && !model.isRecording {
+                    coach
+                        .dsTransition(.opacity)
+                }
+            }
+            .dsAnimation(ComponentMotion.fade, value: model.showsCoach)
         }
     }
 
-    // MARK: Control row
-
-    private func controls(width: CGFloat) -> some View {
-        let center = width / 2
-        let offset = Tokens.Sizes.cameraCaptureSizeSideControlOffset
-        let rowHeight = Tokens.Sizes.cameraCaptureSizeShutterOuter
-        return ZStack {
-            libraryThumbnail
-                .position(x: center - offset, y: rowHeight / 2)
-            if model.phase != .denied {
-                shutter
-                    .position(x: center, y: rowHeight / 2)
-                flipButton
-                    .position(x: center + offset, y: rowHeight / 2)
-            }
-            if model.showsCoach && model.phase == .live {
-                // Centred on the shutter; the pointer's apex sits `pointerToTarget` above the ring.
-                coach
-                    .frame(width: width, height: 0, alignment: .bottom)
-                    .position(x: center, y: -Tokens.Layouts.CameraCaptureLayoutCoach.pointerToTarget)
-            }
-        }
+    /// While a video records: `camera.capture.size.recordingOutline` in `color.global.surfaceLight` traced along the
+    /// viewfinder's rounded outline from empty to full over the maximum video length (Locket's progress outline).
+    private var recordingOutline: some View {
+        let width = Tokens.Sizes.cameraCaptureSizeRecordingOutline
+        return DSShape.rounded(Tokens.Radii.globalViewfinder)
+            .inset(by: width / 2)
+            .trim(from: 0, to: recordingProgress)
+            .stroke(Tokens.Colors.globalSurfaceLight, style: StrokeStyle(lineWidth: width, lineCap: .butt))
+            .accessibilityHidden(true)
+            .allowsHitTesting(false)
     }
 
+    /// First use, members who can record video: C-09 pill on media centred, its bottom 20.5 pt above the viewfinder's
+    /// bottom (`camera.sendto.layout.messageField.bottomInset`, Retro's pill-on-photo inset). Tapping dismisses it for good.
     private var coach: some View {
-        CaptureCoachTooltip(
-            glyph: Tokens.Icons.cameraCaptureIconRecordHint,
-            text: Copy.cameraCaptureCoachHoldToRecord,
-            onClose: { model.dismissCoach() }
-        )
-        .fixedSize()
-        .accessibilitySortPriority(6)
+        LightPill(Copy.cameraCaptureCoachHoldToRecord, icon: Tokens.Icons.globalVideo, style: .dark) {
+            model.dismissCoach()
+        }
+        .padding(.bottom, Tokens.Layouts.CameraSendtoLayoutMessageField.bottomInset)
+        .accessibilitySortPriority(5)
         .accessibilityIdentifier("camera.capture.coach")
     }
 
-    private var libraryThumbnail: some View {
-        Button {
-            isPickerPresented = true
-        } label: {
-            ZStack {
-                if let image = model.libraryThumbnail {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                } else {
-                    Image(systemName: Tokens.Icons.globalGallery)
-                        .foregroundStyle(Tokens.Colors.globalTextPrimary)
+    // MARK: Control row (C-35)
+
+    private var controls: some View {
+        CaptureControlRow {
+            CaptureLargeCircleButton(icon: Tokens.Icons.globalGallery, accessibilityLabel: Copy.cameraCaptureA11yLibrary) {
+                isPickerPresented = true
+            }
+            .accessibilitySortPriority(3)
+            .accessibilityIdentifier("camera.capture.library")
+        } centre: {
+            if model.phase != .denied {
+                shutter
+            }
+        } trailing: {
+            if model.phase != .denied {
+                CaptureLargeCircleButton(icon: Tokens.Icons.globalFlip, accessibilityLabel: Copy.cameraCaptureA11yFlip) {
+                    Task { await model.flip() }
                 }
+                .accessibilitySortPriority(1)
+                .accessibilityIdentifier("camera.capture.flip")
             }
-            .frame(width: Tokens.Sizes.cameraCaptureSizeLibraryThumb, height: Tokens.Sizes.cameraCaptureSizeLibraryThumb)
-            .clipShape(RoundedRectangle(cornerRadius: Tokens.Radii.cameraCaptureRadiusLibraryThumb, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: Tokens.Radii.cameraCaptureRadiusLibraryThumb, style: .continuous)
-                    .strokeBorder(Tokens.Colors.globalTextPrimary, lineWidth: Tokens.Sizes.cameraCaptureSizeLibraryThumbBorder)
-            }
-            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Copy.cameraCaptureA11yLibrary)
-        .accessibilitySortPriority(2)
-        .accessibilityIdentifier("camera.capture.library")
     }
 
+    /// Tap = photo; hold = video (premium; a free member's first hold opens the paywall once per session). No haptic
+    /// (`haptic.global.shutter`: none) and no custom press state (RC-3).
     private var shutter: some View {
-        CaptureShutterGraphic(
-            outer: Tokens.Sizes.cameraCaptureSizeShutterOuter,
-            ring: Tokens.Sizes.cameraCaptureSizeShutterRing,
-            disc: Tokens.Sizes.cameraCaptureSizeShutterDisc,
-            ringColor: Tokens.Colors.globalAccent,
-            gapColor: Tokens.Colors.globalBackgroundDeep,
-            discColor: model.isShutterPressed ? Tokens.Colors.cameraCaptureColorShutterDiscPressed : Tokens.Colors.globalSurfaceLight
-        )
-        .dsMotion(
-            .spring(Tokens.Springs.cameraCaptureSpringShutterPress),
-            opacity: 1,
-            scale: model.isShutterPressed ? Tokens.Layouts.CameraCaptureLayoutShutterPress.scale : 1
-        )
-        .dsAnimation(.spring(Tokens.Springs.cameraCaptureSpringShutterPress), value: model.isShutterPressed)
-        .contentShape(Circle())
-        .gesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in model.shutterTouchDown() }
-                .onEnded { _ in model.shutterTouchUp() }
-        )
-        .accessibilityElement()
-        .accessibilityLabel(Copy.cameraCaptureA11yShutter)
-        .accessibilityAddTraits(.isButton)
-        .accessibilityAction { Task { await model.takePhoto() } }
-        .accessibilityActions {
-            if model.isVideoAvailable {
-                Button(Copy.cameraCaptureA11yRecordVideo) {
-                    Task { await model.toggleRecordingFromAccessibility() }
+        CaptureShutter()
+            .contentShape(Circle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { _ in model.shutterTouchDown() }
+                    .onEnded { _ in model.shutterTouchUp() }
+            )
+            .accessibilityElement()
+            .accessibilityLabel(Text(Copy.cameraCaptureA11yShutter))
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction { Task { await model.takePhoto() } }
+            .accessibilityActions {
+                if model.isVideoAvailable {
+                    Button(Copy.cameraCaptureA11yRecordVideo) {
+                        Task { await model.toggleRecordingFromAccessibility() }
+                    }
                 }
             }
-        }
-        .accessibilitySortPriority(3)
-        .accessibilityIdentifier("camera.capture.shutter")
+            .accessibilitySortPriority(2)
+            .accessibilityIdentifier("camera.capture.shutter")
+    }
+}
+
+/// C-01 root header on media: the serif title (`headerTitle`, `color.global.textOnMedia`) and the flash as the trailing
+/// bare header glyph (`icon.global.flashOff` / `.flashOn`, `size.global.icon`, hit area `size.global.headerButton`),
+/// centred on the title's cap middle with its ink `size.global.headerInset` from the trailing edge — `ScreenHeader`'s
+/// own trailing-glyph geometry. The glyph is placed here rather than as a `HeaderAction` because the flash needs an
+/// accessibility value (On / Off), which `HeaderAction` cannot carry (component gap reported).
+private struct CameraHeader: View {
+    struct Flash {
+        let isOn: Bool
+        let toggle: () -> Void
     }
 
-    private var flipButton: some View {
-        Button {
-            Task { await model.flip() }
-        } label: {
-            Image(systemName: Tokens.Icons.globalFlip)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                .frame(width: Tokens.Sizes.cameraCaptureSizeFlipButton, height: Tokens.Sizes.cameraCaptureSizeFlipButton)
-                .background(Tokens.Colors.cameraCaptureColorFlipButton, in: Circle())
-                .contentShape(Circle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Copy.cameraCaptureA11yFlip)
-        .accessibilitySortPriority(1)
-        .accessibilityIdentifier("camera.capture.flip")
+    let title: String
+    let flash: Flash?
+
+    @ScaledMetric private var titleSize: CGFloat
+
+    init(title: String, flash: Flash?) {
+        self.title = title
+        self.flash = flash
+        _titleSize = ScaledMetric(wrappedValue: TextRole.headerTitle.size, relativeTo: TextRole.headerTitle.relativeTo)
+    }
+
+    /// The trailing glyph row of C-01 for one glyph: the hit area plus the padding that puts the glyph's ink on the margin.
+    private static var trailingPadding: CGFloat {
+        max(0, Tokens.Sizes.globalHeaderInset - (Tokens.Sizes.globalHeaderButton - Tokens.Sizes.globalIcon) / 2)
+    }
+
+    private static var glyphRowWidth: CGFloat { Tokens.Sizes.globalHeaderButton + trailingPadding }
+
+    var body: some View {
+        let capHeight = TextMetrics(style: TextRole.headerTitle, size: titleSize).capHeight
+        let capMiddle = Tokens.Sizes.globalTitleTop - capHeight / 2
+        ScreenHeader(title: title, onMedia: true)
+            .padding(.trailing, flash == nil ? 0 : Self.glyphRowWidth)
+            .overlay(alignment: .topTrailing) {
+                if let flash {
+                    HeaderIconButton(
+                        icon: flash.isOn ? Tokens.Icons.globalFlashOn : Tokens.Icons.globalFlashOff,
+                        accessibilityLabel: Copy.cameraCaptureA11yFlash,
+                        color: Tokens.Colors.globalTextOnMedia,
+                        action: flash.toggle
+                    )
+                    .accessibilityValue(Text(flash.isOn ? Copy.cameraCaptureA11yFlashOn : Copy.cameraCaptureA11yFlashOff))
+                    .dsAnimation(ComponentMotion.crossfade, value: flash.isOn)
+                    .padding(.top, capMiddle - Tokens.Sizes.globalHeaderButton / 2)
+                    .padding(.trailing, Self.trailingPadding)
+                    .accessibilityIdentifier("camera.capture.flash")
+                }
+            }
     }
 }

@@ -80,6 +80,9 @@ class PushHandlerTest {
         assertTrue(n.flags and Notification.FLAG_ONGOING_EVENT == 0)
         assertTrue(n.flags and Notification.FLAG_AUTO_CANCEL != 0)
         assertFalse(n.extras.getBoolean(NotificationCompat.EXTRA_REQUEST_PROMOTED_ONGOING))
+        // RC-17: no tint (system default), not colorized.
+        assertEquals(Notification.COLOR_DEFAULT, n.color)
+        assertFalse(n.extras.getBoolean(Notification.EXTRA_COLORIZED))
         assertEquals(closesAt, n.`when`)
         assertTrue(n.extras.getBoolean(Notification.EXTRA_SHOW_CHRONOMETER))
         assertTrue(n.extras.getBoolean(Notification.EXTRA_CHRONOMETER_COUNT_DOWN))

@@ -26,6 +26,12 @@ protocol MemoryDataSource: Sendable {
 
     // onthisday
     func onThisDay(groupID: GroupID, localDate: LocalDate) async throws -> [OnThisDayItem]
+    /// `group_history_weeks` (newest first; `free_history_days` applied by the server) — the shuffle's pool.
+    func historyWeeks(groupID: GroupID, before: LocalDate?, limit: Int) async throws -> [HistoryWeek]
+    /// `delete_post` (own post).
+    func deletePost(id: PostID) async throws
+    /// The bytes at a (signed) file URL (the original photo, for saving).
+    func downloadData(from url: URL) async throws -> Data
 
     // birthday.add
     func myPrivateProfile() async throws -> ProfilePrivate?
@@ -51,6 +57,8 @@ protocol MemoryDataSource: Sendable {
     func collages(ids: [CollageID]) async throws -> [Collage]
 
     // tagging
+    /// The post's self-tags, in tag order (`post_tags`, RLS: the group's members).
+    func tags(postID: PostID) async throws -> [PostTag]
     func isTagged(postID: PostID) async throws -> Bool
     func tagSelf(postID: PostID) async throws
     func untagSelf(postID: PostID) async throws
@@ -129,6 +137,22 @@ struct LiveMemoryData: MemoryDataSource {
         try await environment.memories.onThisDay(groupID: groupID, localDate: localDate)
     }
 
+    func historyWeeks(groupID: GroupID, before: LocalDate?, limit: Int) async throws -> [HistoryWeek] {
+        try await environment.memories.historyWeeks(groupID: groupID, beforeWeek: before, limit: limit)
+    }
+
+    func deletePost(id: PostID) async throws {
+        try await environment.posts.deletePost(id: id)
+    }
+
+    func downloadData(from url: URL) async throws -> Data {
+        do {
+            return try await URLSession.shared.data(from: url).0
+        } catch {
+            throw DataError.from(error)
+        }
+    }
+
     func myPrivateProfile() async throws -> ProfilePrivate? {
         try await environment.profiles.myPrivateProfile()
     }
@@ -191,6 +215,10 @@ struct LiveMemoryData: MemoryDataSource {
             }
         }
         return result
+    }
+
+    func tags(postID: PostID) async throws -> [PostTag] {
+        try await environment.reactions.tags(postID: postID)
     }
 
     func isTagged(postID: PostID) async throws -> Bool {

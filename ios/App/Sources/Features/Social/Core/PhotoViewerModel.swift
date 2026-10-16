@@ -1,5 +1,5 @@
-// Surface: photo.viewer — reference apps: Yope + Locket. Spec: design/surfaces/photo.viewer.md
-// ("States", "Menu", "Data & actions") and design/surfaces/tagging.md (the "i'm in this" toggle).
+// Surface: photo.viewer — Retro's media viewer (TC-2B). Spec: design/surfaces/photo.viewer.md ("States", "Menu",
+// "Data & actions") and design/surfaces/tagging.md (the footer's tag run, hosted here).
 // View model only (Foundation + Observation + AppData); the view is PhotoViewerView.
 import AppData
 import AppModels
@@ -18,38 +18,32 @@ enum SocialSaveFailure: Error, Equatable {
     case notAuthorized
 }
 
-/// Which photos the viewer pages through, in the opener's order (thread photos, a wall, a week, an album).
+/// Which photos the viewer moves through, in the opener's order (thread photos, a wall, a week, a recap, an album).
 struct PhotoViewerContext: Hashable, Identifiable, Sendable {
     var postIDs: [PostID]
     var start: PostID
     /// The group the photos belong to, when the opener is a group screen (offline copy of its feed).
     var groupID: GroupID?
+    /// Opened from a wall: the header's second line names the group (`photo.viewer.header.groupWeek`).
+    var showsGroupName: Bool
 
     var id: String { start.rawValue + "|" + postIDs.map(\.rawValue).joined(separator: ",") }
 
-    init(postIDs: [PostID], start: PostID, groupID: GroupID? = nil) {
+    init(postIDs: [PostID], start: PostID, groupID: GroupID? = nil, showsGroupName: Bool = false) {
         self.postIDs = postIDs.contains(start) ? postIDs : [start] + postIDs
         self.start = start
         self.groupID = groupID
+        self.showsGroupName = showsGroupName
     }
 }
 
-/// Per-device flags of the social screens (first-use coach, recently used emoji).
+/// Per-device flags of the social screens (recently used emoji).
 final class SocialFlags: @unchecked Sendable {
     private let defaults: UserDefaults
     private let keyPrefix = "social."
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-    }
-
-    /// `tagging.coach`: shown once per account.
-    func taggingCoachSeen(by user: UserID) -> Bool {
-        defaults.bool(forKey: keyPrefix + "taggingCoachSeen." + user.rawValue)
-    }
-
-    func setTaggingCoachSeen(by user: UserID) {
-        defaults.set(true, forKey: keyPrefix + "taggingCoachSeen." + user.rawValue)
     }
 
     /// "Frequently Used" in the reaction picker (kept per device, `chat.reactions` Platform notes), newest first.
@@ -67,11 +61,11 @@ final class SocialFlags: @unchecked Sendable {
 @Observable
 final class PhotoViewerModel {
     @ObservationIgnored private let data: any SocialDataSource
-    @ObservationIgnored private let flags: SocialFlags
 
     /// The photos still in the context (deleted ones leave it).
     private(set) var postIDs: [PostID]
     private(set) var selection: PostID
+    let showsGroupName: Bool
     private(set) var phase: SocialPhase = .loading
     private(set) var isOffline = false
     private(set) var me: UserID?
@@ -81,29 +75,26 @@ final class PhotoViewerModel {
     private(set) var reactions: [PostID: ReactionSummary] = [:]
     private(set) var profiles: [UserID: Profile] = [:]
     private(set) var groups: [GroupID: PhotoGroup] = [:]
-    /// My "i'm in this" state per post (absent until read).
-    private(set) var tagged: [PostID: Bool] = [:]
+    /// Who is in each photo (`post_tags`), in tag order; absent until read.
+    private(set) var tagged: [PostID: [UserID]] = [:]
     /// ≤ one `tag_self` / `untag_self` in flight per photo.
     private(set) var tagPending: Set<PostID> = []
-    /// `tagging.coach` pointing at the toggle.
-    private(set) var coachVisible = false
-    /// Add-only photo access was denied: the inline permission card shows.
-    private(set) var saveDenied = false
+    /// The group-chat replies to each photo, oldest first (`photo.viewer.layout.comments`); absent until read.
+    private(set) var comments: [PostID: [Message]] = [:]
+    /// Add-only photo access was denied: the native alert with the Settings link shows.
+    var saveDenied = false
     /// The viewer has nothing left to show and closes.
     private(set) var isClosed = false
     private(set) var isSendingReply = false
     private(set) var signals = SocialSignals()
-    private(set) var sentReaction: SentReaction?
     var replyDraft = ""
 
-    private var reactionCounter = 0
-
-    init(context: PhotoViewerContext, data: any SocialDataSource, flags: SocialFlags = SocialFlags()) {
+    init(context: PhotoViewerContext, data: any SocialDataSource) {
         self.data = data
-        self.flags = flags
         postIDs = context.postIDs
         selection = context.start
         contextGroupID = context.groupID
+        showsGroupName = context.showsGroupName
     }
 
     @ObservationIgnored private let contextGroupID: GroupID?
@@ -122,7 +113,27 @@ final class PhotoViewerModel {
 
     func group(of post: PostWithMedia) -> PhotoGroup? { groups[post.post.groupID] }
 
-    var isCurrentTagged: Bool { tagged[selection] ?? false }
+    /// The ISO week of the post in its group's time zone (`photo.viewer.header.week`).
+    func weekNumber(of post: PostWithMedia) -> Int {
+        let zone = group(of: post)?.resolvedTimeZone ?? .current
+        return SocialCalendar.weekNumber(containing: post.post.createdAt, in: zone)
+    }
+
+    /// 1-based position of the photo on screen and the context's size (`photo.viewer.position`, shown when > 1).
+    var position: (index: Int, total: Int)? {
+        guard postIDs.count > 1, let index = postIDs.firstIndex(of: selection) else { return nil }
+        return (index + 1, postIDs.count)
+    }
+
+    func taggedPeople(on postID: PostID) -> [UserID] { tagged[postID] ?? [] }
+
+    var isCurrentTagged: Bool {
+        guard let me else { return false }
+        return taggedPeople(on: selection).contains(me)
+    }
+
+    /// The comments under the photo on screen.
+    var currentComments: [Message] { comments[selection] ?? [] }
 
     // MARK: Loading
 
@@ -151,8 +162,13 @@ final class PhotoViewerModel {
         for id in postIDs where posts[id] == nil { gone.insert(id) }
         phase = .ready
         await loadDetails()
-        await loadTag(for: selection)
-        updateCoach()
+        await loadSelectedDetails()
+    }
+
+    /// Error line "Tap to retry".
+    func retry() async {
+        phase = .loading
+        await load()
     }
 
     private func showCached() async {
@@ -174,10 +190,7 @@ final class PhotoViewerModel {
             let summaries = ReactionSummary.byPost(rows)
             for id in ids { reactions[id] = summaries[id] ?? ReactionSummary() }
         }
-        let people = posts.values.map(\.post.authorID).socialUnique().filter { profiles[$0] == nil }
-        if !people.isEmpty, let found = try? await data.profiles(ids: people) {
-            for profile in found { profiles[profile.id] = profile }
-        }
+        await loadProfiles(posts.values.map(\.post.authorID))
         if let mine = try? await data.myGroups() {
             for group in mine { groups[group.id] = group }
         } else if let cached = await data.cachedGroups() {
@@ -185,26 +198,53 @@ final class PhotoViewerModel {
         }
     }
 
-    private func loadTag(for id: PostID) async {
-        guard tagged[id] == nil, posts[id] != nil, let me else { return }
-        if let value = try? await data.isTagged(postID: id, userID: me) { tagged[id] = value }
+    private func loadProfiles(_ ids: [UserID]) async {
+        let wanted = ids.socialUnique().filter { profiles[$0] == nil }
+        if !wanted.isEmpty, let found = try? await data.profiles(ids: wanted) {
+            for profile in found { profiles[profile.id] = profile }
+        }
     }
 
-    /// Paging moved to another photo (synchronous, so the pager never snaps back).
+    /// Tags and comments of the photo on screen (read when it shows).
+    func loadSelectedDetails() async {
+        let id = selection
+        guard posts[id] != nil, !gone.contains(id) else { return }
+        if tagged[id] == nil, let rows = try? await data.tags(postID: id) {
+            tagged[id] = rows.map(\.userID).socialUnique()
+        }
+        if comments[id] == nil, let rows = try? await data.replies(postID: id) {
+            comments[id] = rows
+        }
+        await loadProfiles(taggedPeople(on: id) + (comments[id] ?? []).map(\.authorID))
+    }
+
+    // MARK: Moving (`photo.viewer.layout.advance`)
+
+    /// Shows another photo of the context.
     func show(_ id: PostID) {
         guard postIDs.contains(id), id != selection else { return }
         selection = id
-        updateCoach()
-    }
-
-    /// The "i'm in this" state of the photo on screen.
-    func loadSelectedTag() async {
-        await loadTag(for: selection)
     }
 
     func select(_ id: PostID) async {
         show(id)
-        await loadSelectedTag()
+        await loadSelectedDetails()
+    }
+
+    /// Tap on the photo: the next photo; past the last one the viewer closes.
+    func advance() {
+        guard let index = postIDs.firstIndex(of: selection) else { return }
+        if index + 1 < postIDs.count {
+            selection = postIDs[index + 1]
+        } else {
+            isClosed = true
+        }
+    }
+
+    /// Tap on the photo's leading zone: the previous photo (none before the first).
+    func goBack() {
+        guard let index = postIDs.firstIndex(of: selection), index > 0 else { return }
+        selection = postIDs[index - 1]
     }
 
     /// The posts beside the current one (prefetched while the current one shows).
@@ -251,18 +291,31 @@ final class PhotoViewerModel {
         case let .reactionInserted(reaction):
             guard posts[reaction.postID] != nil else { return }
             reactions[reaction.postID, default: ReactionSummary()].insert(reaction)
+            await loadProfiles([reaction.userID])
         case let .reactionsChanged(postID):
             guard posts[postID] != nil, let rows = try? await data.reactions(postIDs: [postID]) else { return }
             reactions[postID] = ReactionSummary(rows)
         case let .postUpdated(post):
             guard let known = posts[post.id] else { return }
             posts[post.id] = PostWithMedia(post: post, media: known.media)
+        case let .messageInserted(message):
+            guard let postID = message.replyToPostID, comments[postID] != nil else { return }
+            appendComment(message, to: postID)
+            await loadProfiles([message.authorID])
+        case let .messageDeleted(messageID):
+            for id in comments.keys { comments[id]?.removeAll { $0.id == messageID } }
         default:
             break
         }
     }
 
-    // MARK: Reactions (Locket quick reactions and picker)
+    private func appendComment(_ message: Message, to postID: PostID) {
+        guard !(comments[postID] ?? []).contains(where: { $0.id == message.id }) else { return }
+        comments[postID, default: []].append(message)
+        comments[postID]?.sort { $0.createdAt < $1.createdAt }
+    }
+
+    // MARK: Reactions (`chat.reactions`)
 
     func react(_ emoji: String) async {
         guard let me, let post = current, !isCurrentGone else { return }
@@ -273,8 +326,6 @@ final class PhotoViewerModel {
                 Reaction(postID: postID, userID: me, emoji: emoji, groupID: post.post.groupID, createdAt: Date())
             )
         }
-        reactionCounter += 1
-        sentReaction = SentReaction(postID: postID, emoji: emoji, id: reactionCounter)
         do {
             _ = try await data.react(postID: postID, emoji: emoji)
         } catch {
@@ -285,14 +336,22 @@ final class PhotoViewerModel {
         }
     }
 
-    /// The emoji I reacted with on the photo on screen (highlighted in the picker).
+    /// A quick reaction from the photo's context menu: a used emoji is taken back, any other reacts.
+    func toggleReaction(_ emoji: String) async {
+        if myEmojiOnCurrent.contains(emoji) {
+            await unreact(emoji)
+        } else {
+            await react(emoji)
+        }
+    }
+
+    /// The emoji I reacted with on the photo on screen (selected in the quick row and the picker).
     var myEmojiOnCurrent: Set<String> {
         guard let me, let post = current else { return [] }
         return reactions[post.id]?.emoji(by: me) ?? []
     }
 
-    /// `unreact` from the picker's highlighted emoji (`chat.reactions.layout.unreact`): the sticker leaves at once
-    /// (when nobody else used that emoji) and comes back if the call fails. No haptic, no rain.
+    /// `unreact` (`chat.reactions.layout.unreact`): the emoji goes at once and comes back if the call fails.
     func unreact(_ emoji: String) async {
         guard let me, let post = current, !isCurrentGone else { return }
         let postID = post.id
@@ -311,40 +370,26 @@ final class PhotoViewerModel {
         }
     }
 
-    // MARK: "i'm in this" (tagging.md)
+    // MARK: "I'm in this" (tagging.md)
 
-    private func updateCoach() {
-        guard let me, let post = current, !isOwn(post), !flags.taggingCoachSeen(by: me) else {
-            coachVisible = false
-            return
-        }
-        coachVisible = true
-    }
-
-    /// ✕ on the coach, or any tap on the toggle: dismissed for good.
-    func dismissCoach() {
-        guard let me else { return }
-        coachVisible = false
-        flags.setTaggingCoachSeen(by: me)
-    }
-
-    /// Optimistic toggle with rollback; taps are ignored while the call runs.
+    /// Optimistic tag / untag of myself with rollback; taps are ignored while the call runs. `haptic.global.select`
+    /// when applied, `haptic.global.error` when it fails.
     func toggleTag() async {
         let postID = selection
-        guard posts[postID] != nil, !gone.contains(postID), !tagPending.contains(postID) else { return }
-        if coachVisible { dismissCoach() }
+        guard let me, posts[postID] != nil, !gone.contains(postID), !tagPending.contains(postID) else { return }
+        let previous = tagged[postID] ?? []
+        let wasTagged = previous.contains(me)
         if isOffline {
             signals.emit(.failed)
             signals.post(.tagOffline)
             return
         }
-        let previous = tagged[postID] ?? false
-        tagged[postID] = !previous
+        tagged[postID] = wasTagged ? previous.filter { $0 != me } : previous + [me]
         tagPending.insert(postID)
         signals.emit(.select)
         defer { tagPending.remove(postID) }
         do {
-            try await data.setTagged(!previous, postID: postID)
+            try await data.setTagged(!wasTagged, postID: postID)
         } catch {
             tagged[postID] = previous
             signals.emit(.failed)
@@ -356,7 +401,7 @@ final class PhotoViewerModel {
                 isOffline = true
                 signals.post(.tagOffline)
             default:
-                signals.post(.tagError)
+                signals.post(wasTagged ? .tagRemoveError : .tagError)
             }
         }
     }
@@ -378,7 +423,6 @@ final class PhotoViewerModel {
                 if SocialFailure(error) == .offline { isOffline = true }
                 (postIDs, selection, posts, reactions) = snapshot
                 isClosed = false
-                updateCoach()
                 signals.emit(.failed)
                 signals.post(.deleteFailed)
                 return
@@ -398,7 +442,6 @@ final class PhotoViewerModel {
         guard wasSelected else { return }
         if index < postIDs.count {
             selection = postIDs[index]
-            updateCoach()
         } else {
             isClosed = true
         }
@@ -437,14 +480,14 @@ final class PhotoViewerModel {
         }
     }
 
-    /// After a block: the person's pics leave the viewer (RLS hides them everywhere).
+    /// After a block: the person's photos leave the viewer (RLS hides them everywhere).
     func authorBlocked(_ userID: UserID) {
         removeFromContext(Set(postIDs.filter { posts[$0]?.post.authorID == userID }))
     }
 
     // MARK: Reply
 
-    /// `send_message(text, p_reply_to_post_id)`: the reply appears in the group's chat.
+    /// `send_message(text, p_reply_to_post_id)`: the reply appears in the group's chat and as a comment here.
     func sendReply() async {
         let body = replyDraft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !body.isEmpty, !isSendingReply, let post = current, !isCurrentGone else { return }
@@ -452,7 +495,9 @@ final class PhotoViewerModel {
         replyDraft = ""
         defer { isSendingReply = false }
         do {
-            _ = try await data.sendText(groupID: post.post.groupID, body: body, replyToPostID: post.id)
+            let message = try await data.sendText(groupID: post.post.groupID, body: body, replyToPostID: post.id)
+            if comments[post.id] != nil { appendComment(message, to: post.id) } else { comments[post.id] = [message] }
+            await loadProfiles([message.authorID])
             signals.emit(.sent)
         } catch {
             if SocialFailure(error) == .offline { isOffline = true }

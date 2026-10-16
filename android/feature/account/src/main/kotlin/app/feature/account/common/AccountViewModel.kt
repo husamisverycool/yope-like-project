@@ -25,7 +25,7 @@ sealed interface AccountEvent {
     data object Back : AccountEvent
     /** A `haptic` token (`Tokens.Haptics.*`). */
     data class Haptic(val token: Int) : AccountEvent
-    /** Yope's lime toast with the copy [copy] (`R.string.*`) formatted with [args] (`safety.block.layout.toast`). */
+    /** A confirmation (C-26: the platform toast, `LENGTH_SHORT`) with the copy [copy] (`R.string.*`) formatted with [args]. */
     data class Toast(val copy: Int, val args: List<String> = emptyList()) : AccountEvent
 }
 

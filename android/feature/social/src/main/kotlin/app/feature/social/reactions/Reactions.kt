@@ -1,257 +1,208 @@
-// Surface: chat.reactions — any-emoji reactions on photos, never shown as numbers.
-// References: references/auto/locket/store/locket-store-04.png (cluster),
+// Surface: chat.reactions — design/surfaces/chat.reactions.md
+// References: references/auto/whatsapp/store/whatsapp-store-04.png (summary under a message, count dropped),
+// references/auto/imessage/apple-support/messages-tapbacks-ios27.png (reaction row on long press),
 // references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg (picker),
-// references/auto/locket/frames/locket-tt-7147749171762908462-05.300s-emoji-rain-rising-behind-photo.jpg (rain).
+// references/auto/retro/apk/retro-android-2026.10.1150-strings.txt ("Reactions" sheet).
 package app.feature.social.reactions
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionOnScreen
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.unit.toSize
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.paddingFrom
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.LastBaseline
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
-import androidx.compose.ui.zIndex
-import androidx.compose.foundation.text.BasicText
+import androidx.compose.ui.unit.dp
 import app.data.repo.ReactionEntry
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.social.common.EmojiNames
-import app.feature.social.common.Glyph
-import app.feature.social.common.Line
-import app.feature.social.common.Type
+import app.feature.social.common.PersonAvatar
+import app.feature.social.common.SystemAppearance
 import app.feature.social.common.stringRes
-import kotlin.math.cos
-import kotlin.math.roundToInt
-import kotlin.math.sin
-import kotlin.random.Random
-
-/** The x positions' source (tests make it deterministic). */
-val LocalRainRandom = androidx.compose.runtime.staticCompositionLocalOf<Random> { Random.Default }
-
-/** Size of the text used to measure an emoji's rendered width (a measuring reference, not a drawn size). */
-private const val MEASURE_REFERENCE_SP = 100f
-
-/**
- * One emoji drawn [width] wide. Emoji fonts differ by platform, so sizes are rendered glyph
- * widths (design/surfaces/chat.reactions.md → Platform notes): the font size is solved from a
- * measurement. Emoji keep their size at any font scale.
- */
-@Composable
-fun EmojiGlyph(emoji: String, width: Dp, modifier: Modifier = Modifier) {
-    val measurer = rememberTextMeasurer()
-    val density = LocalDensity.current
-    val reference = TextUnit(MEASURE_REFERENCE_SP, TextUnitType.Sp)
-    val measured = remember(emoji, density) { measurer.measure(emoji, TextStyle(fontSize = reference)).size.width.coerceAtLeast(1) }
-    val target = with(density) { width.toPx() }
-    val size = TextUnit(MEASURE_REFERENCE_SP * target / measured, TextUnitType.Sp)
-    BasicText(emoji, modifier, style = TextStyle(fontSize = size), maxLines = 1, softWrap = false)
-}
-
-/** Directions of the outline copies around a sticker (a drawing technique for a bitmap glyph's outline). */
-private const val OUTLINE_STEPS = 16
+import app.ui.components.EmptyState
+import app.ui.components.SearchField
+import app.ui.components.LoadingState
+import app.ui.foundation.DsMotion
+import app.ui.foundation.PageRoles
+import app.ui.foundation.tapClickable
+import app.ui.haptics.rememberHaptics
+import app.ui.system.DsBottomSheet
+import app.ui.system.DsMenuItem
+import app.ui.system.SheetHeader
+import app.ui.text.CapTop
+import app.ui.text.TextRoles
+import app.ui.text.capTopAt
 
 /**
- * A reaction sticker: the emoji with a `chat.reactions.dimension.clusterOutline` outline in
- * `chat.reactions.color.clusterOutline`; [size] includes the outline.
+ * The distinct emoji of a photo's reactions for the chip (`chat.reactions.layout.clusterOrder`): newest first —
+ * an emoji used again moves to the front. Rows arrive oldest first.
  */
-@Composable
-fun Sticker(emoji: String, size: Dp, outline: Dp, modifier: Modifier = Modifier) {
-    val glyph = size - outline * 2
-    val px = with(LocalDensity.current) { outline.toPx() }
-    Box(modifier.size(size), contentAlignment = Alignment.Center) {
-        for (i in 0 until OUTLINE_STEPS) {
-            val a = 2 * Math.PI * i / OUTLINE_STEPS
-            EmojiGlyph(
-                emoji,
-                glyph,
-                Modifier
-                    .graphicsLayer {
-                        compositingStrategy = CompositingStrategy.Offscreen
-                        translationX = (cos(a) * px).toFloat()
-                        translationY = (sin(a) * px).toFloat()
-                    }
-                    .drawWithContent {
-                        drawContent()
-                        drawRect(Tokens.Colors.chatReactionsColorClusterOutline, blendMode = BlendMode.SrcIn)
-                    },
-            )
-        }
-        EmojiGlyph(emoji, glyph)
-    }
-}
+fun clusterEmoji(entries: List<ReactionEntry>): List<String> = entries.asReversed().map { it.emoji }.distinct()
 
-/**
- * Distinct emoji, newest first (`chat.reactions.layout.clusterOrder`, Locket, G-10): a new emoji
- * enters at the leading end; a repeat of an emoji already there keeps its place. [entries] are
- * oldest first (the data layer's order).
- */
-fun clusterEmoji(entries: List<ReactionEntry>): List<String> = entries.map { it.emoji }.distinct().asReversed()
-
-/** The TalkBack label of a cluster: emoji names only, never a count (`chat.reactions.a11y.cluster`). */
+/** The chip's TalkBack label: the emoji's system names, never a count (`chat.reactions.a11y.cluster`). */
 @Composable
 fun clusterLabel(entries: List<ReactionEntry>): String =
     stringRes(R.string.chat_reactions_a11y_cluster, clusterEmoji(entries).joinToString(", ") { EmojiNames.name(it) })
 
+/** Padding of Retro's small pills, as `chat.reactions.layout.chip` gives it ("12 horizontal / 8 vertical"). */
+internal object ChipPadding {
+    private val numbers = Regex("([0-9.]+) horizontal / ([0-9.]+) vertical").find(Tokens.Layouts.ChatReactionsLayoutChip.padding)
+    val horizontal: Dp = numbers?.groupValues?.get(1)?.toFloatOrNull()?.dp ?: Dp.Hairline
+    val vertical: Dp = numbers?.groupValues?.get(2)?.toFloatOrNull()?.dp ?: Dp.Hairline
+}
+
 /**
- * Locket's cluster at a photo's bottom-left: one sticker per distinct emoji, each
- * `chat.reactions.dimension.clusterStep` toward the trailing side of the previous and drawn over it.
- * No numbers, no avatars, no "+N". The leading slot is the landing point of a reaction in flight
- * ([ReactionFlights], keyed by [postId]); that sticker stays hidden until the flight lands. Max
- * visible is BLOCKED (`chat.reactions.count.clusterMaxVisible`): every sticker is drawn and the
- * photo clips them.
+ * C-06 fill capsule summarising the reactions (`chat.reactions.layout.chip`): up to
+ * `chat.reactions.count.clusterMaxVisible` distinct emoji, newest first, at `fontSize.global.pill`, padding
+ * [ChipPadding], `radius.global.capsule`; fill `color.global.surfaceSecondary.android` on a page,
+ * `color.global.controlOnDeep` on media ([onMedia]). No number, no avatars; hidden when nobody reacted.
+ * Changes cross-fade (`duration.global.crossfade`). One button: opens the Reactions sheet.
  */
 @Composable
-fun ReactionCluster(entries: List<ReactionEntry>, onClick: (() -> Unit)?, modifier: Modifier = Modifier, postId: String? = null) {
-    val all = clusterEmoji(entries)
-    val emoji = app.feature.social.common.SocialBlocked.clusterMaxVisible?.let { all.take(it) } ?: all
-    val flights = LocalReactionFlights.current
-    val arriving = postId?.let { flights?.arriving(it) }
-    val size = Tokens.Sizes.chatReactionsDimensionClusterEmoji
-    val step = Tokens.Sizes.chatReactionsDimensionClusterStep
-    Box(modifier) {
-        if (flights != null && postId != null) FlightAnchor(flights, postId, size)
-        if (emoji.isEmpty()) return@Box
-        val label = clusterLabel(entries)
-        Box(
-            Modifier
-                .let { if (onClick != null) it.clickable(role = Role.Button, onClick = onClick) else it }
-                // Without a tap action the cluster merges into its photo's element (chat.thread a11y: grouped with the photo).
-                .clearAndSetSemantics {
-                    contentDescription = label
-                    if (onClick != null) role = Role.Button
-                },
-        ) {
-            emoji.forEachIndexed { i, e ->
-                val hidden = i == 0 && e == arriving
-                Sticker(e, size, Tokens.Sizes.chatReactionsDimensionClusterOutline, Modifier.offset(x = step * i).zIndex(i.toFloat()).graphicsLayer { alpha = if (hidden) 0f else 1f })
+fun ReactionChip(entries: List<ReactionEntry>, onClick: () -> Unit, modifier: Modifier = Modifier, onMedia: Boolean = false) {
+    val emoji = clusterEmoji(entries).take(Tokens.Counts.chatReactionsCountClusterMaxVisible)
+    if (emoji.isEmpty()) return
+    val fill = if (onMedia) Tokens.Colors.globalControlOnDeep else PageRoles.secondarySurface
+    val label = clusterLabel(entries)
+    Box(
+        modifier
+            .background(fill, CircleShape)
+            .tapClickable(onClick = onClick)
+            .clearAndSetSemantics {
+                contentDescription = label
+                role = Role.Button
             }
+            .padding(horizontal = ChipPadding.horizontal, vertical = ChipPadding.vertical),
+    ) {
+        AnimatedContent(emoji, transitionSpec = { fadeIn(DsMotion.crossfade()) togetherWith fadeOut(DsMotion.crossfade()) }, label = "chip") { shown ->
+            Text(shown.joinToString(""), style = emojiStyle(Tokens.FontSizes.globalPill), maxLines = 1)
         }
     }
 }
 
-/** Records where the cluster's leading sticker sits on screen (the flight's landing rect). */
+/** Emoji drawn at a font size token (colour glyphs: no colour role applies). */
 @Composable
-private fun FlightAnchor(flights: ReactionFlights, postId: String, size: Dp) {
-    androidx.compose.runtime.DisposableEffect(flights, postId) { onDispose { flights.anchors.remove(postId) } }
-    Box(
-        Modifier
-            .size(size)
-            .onGloballyPositioned { c -> flights.anchors[postId] = Rect(c.positionOnScreen(), c.size.toSize()) }
-            .clearAndSetSemantics { },
-    )
+internal fun emojiStyle(size: androidx.compose.ui.unit.TextUnit): TextStyle = TextRoles.pill.copy(fontSize = size)
+
+/** The quick reactions of `chat.reactions.layout.quickReactions` ("🔥 then 💖, then the add-reaction glyph"). */
+object QuickReactions {
+    val emoji: List<String> by lazy { EmojiNames.inText(Tokens.Layouts.ChatReactionsLayoutQuickReactions.emoji) }
 }
 
 /**
- * Reactions in flight (`chat.reactions` Motion: "the chosen emoji flies from where it was picked to
- * the cluster's leading end in `chat.reactions.duration.flyToCluster`, decelerating, shrinking to
- * `chat.reactions.dimension.clusterEmoji`"; Locket 2025, G-12). Reduce Motion: no flight, the sticker
- * appears in place (callers don't launch).
+ * The photo's native context menu (C-29 `DropdownMenu`) with the quick-reaction palette as its first row
+ * (`chat.reactions.layout.quickReactions`): 🔥 💖 and `chat.reactions.icon.add`; an emoji you already used shows
+ * selected (on a `color.global.control` circle) and unreacts. Then the surface's own [items] (destructive in
+ * `color.global.system.error`). core:ui `DsDropdownMenu` has no header row, so the items are drawn here with
+ * the same M3 item and colours (component gap, reported).
  */
-class ReactionFlights {
-    /** Screen rect of each visible cluster's leading slot, by post id. */
-    internal val anchors = HashMap<String, Rect>()
-    var flight by mutableStateOf<Flight?>(null)
-        private set
-    private var next = 0L
-
-    data class Flight(val postId: String, val emoji: String, val from: Rect, val to: Rect, val id: Long)
-
-    /** Starts a flight from [from] (screen rect of the picked emoji) to [postId]'s cluster; false when either end is unknown. */
-    fun launch(postId: String, emoji: String, from: Rect?): Boolean {
-        val to = anchors[postId] ?: return false
-        if (from == null) return false
-        flight = Flight(postId, emoji, from, to, next++)
-        return true
-    }
-
-    fun landed(f: Flight) {
-        if (flight == f) flight = null
-    }
-
-    /** The emoji flying to [postId]'s cluster, if any (its sticker is hidden until it lands). */
-    fun arriving(postId: String): String? = flight?.takeIf { it.postId == postId }?.emoji
-}
-
-val LocalReactionFlights = androidx.compose.runtime.staticCompositionLocalOf<ReactionFlights?> { null }
-
-/** Draws the flight over everything: [Tokens.Durations.chatReactionsDurationFlyToCluster], decelerating (`easing.global.system.standard`). */
 @Composable
-fun FlightLayer(flights: ReactionFlights) {
-    val f = flights.flight ?: return
-    var origin by remember { mutableStateOf<Offset?>(null) }
-    val progress = remember(f) { Animatable(0f) }
-    LaunchedEffect(f) {
-        progress.animateTo(1f, tween(durationMillis = Tokens.Durations.chatReactionsDurationFlyToCluster, easing = Tokens.Easings.globalSystemStandard))
-        flights.landed(f)
-    }
-    val density = LocalDensity.current
-    Box(Modifier.fillMaxSize().onGloballyPositioned { origin = it.positionOnScreen() }.clearAndSetSemantics { }) {
-        val o = origin ?: return@Box
-        val t = progress.value
-        val left = lerp(f.from.left, f.to.left, t) - o.x
-        val top = lerp(f.from.top, f.to.top, t) - o.y
-        val width = with(density) { lerp(f.from.width, f.to.width, t).toDp() }
-        EmojiGlyph(f.emoji, width, Modifier.offset { IntOffset(left.roundToInt(), top.roundToInt()) })
+fun PhotoContextMenu(
+    expanded: Boolean,
+    onDismiss: () -> Unit,
+    mine: Set<String>,
+    onReact: (String) -> Unit,
+    onUnreact: (String) -> Unit,
+    onAddReaction: () -> Unit,
+    items: List<DsMenuItem>,
+) {
+    val haptics = rememberHaptics()
+    SystemAppearance {
+        DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
+            Row(Modifier.padding(horizontal = Tokens.Sizes.globalScreenMargin), verticalAlignment = Alignment.CenterVertically) {
+                QuickReactions.emoji.forEach { e ->
+                    val used = e in mine
+                    val name = EmojiNames.name(e)
+                    val label = stringRes(R.string.chat_reactions_a11y_quick, name)
+                    Box(
+                        Modifier
+                            .size(Tokens.Sizes.globalHeaderButton)
+                            .tapClickable {
+                                onDismiss()
+                                if (used) onUnreact(e) else onReact(e)
+                            }
+                            .semantics(mergeDescendants = true) {
+                                contentDescription = label
+                                selected = used
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (used) Box(Modifier.size(Tokens.Sizes.globalCircleButton).background(Tokens.Colors.globalControl, CircleShape))
+                        Text(e, style = emojiStyle(Tokens.FontSizes.globalSheetTitle))
+                    }
+                }
+                val add = stringRes(R.string.chat_reactions_a11y_add)
+                Box(
+                    Modifier.size(Tokens.Sizes.globalHeaderButton).tapClickable {
+                        onDismiss()
+                        onAddReaction()
+                    }.semantics { contentDescription = add },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(Tokens.Icons.chatReactionsIconAdd, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(Tokens.Sizes.globalIcon))
+                }
+            }
+            items.forEach { item ->
+                val color = if (item.destructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                DropdownMenuItem(
+                    text = { Text(item.text) },
+                    onClick = {
+                        haptics.tap()
+                        onDismiss()
+                        item.onClick()
+                    },
+                    enabled = item.enabled,
+                    trailingIcon = item.icon?.let { { Icon(it, contentDescription = null) } },
+                    colors = MenuDefaults.itemColors(textColor = color, trailingIconColor = color),
+                )
+            }
+        }
     }
 }
-
-private fun lerp(a: Float, b: Float, t: Float) = a + (b - a) * t
 
 /** One picker item: a section label or an emoji cell. */
 private sealed interface PickerItem {
@@ -260,67 +211,61 @@ private sealed interface PickerItem {
 }
 
 /**
- * The emoji picker sheet (`chat.reactions.layout.picker`): native M3 sheet with a search field,
- * then Frequently Used, Popular and All in `chat.reactions.count.pickerColumns` columns. Tapping an
- * emoji picks it ([onPick] gets its screen rect, the flight's start) and closes the sheet. Emoji you
- * already reacted with ([mine]) sit on a `color.global.selection` circle with the selected trait;
- * tapping one takes the reaction back (`chat.reactions.layout.unreact`, Apple Messages + WhatsApp, G-13).
+ * The emoji picker (`chat.reactions.layout.picker`): native sheet (C-29) on the page colour; C-12 search field
+ * (`chat.reactions.picker.search`) inside `size.global.screenMargin`; "Frequently Used" (this device) and "All"
+ * (Unicode order) as C-20 labels (`sectionLabel`; `size.global.sectionGap` above, `size.global.sectionHeaderToContent`
+ * below the baseline); `chat.reactions.count.pickerColumns` equal columns, emoji at `fontSize.global.headerTitle`.
+ * Emoji you already used ([mine]) sit on a `size.global.circleButton` circle in `color.global.control` (selected
+ * trait) and unreact. Tap → react and close.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReactionPickerSheet(mine: Set<String>, onPick: (String, Rect?) -> Unit, onUnreact: (String) -> Unit, onDismiss: () -> Unit) {
+fun ReactionPickerSheet(mine: Set<String>, onPick: (String) -> Unit, onUnreact: (String) -> Unit, onDismiss: () -> Unit) {
     val context = LocalContext.current
-    val state = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-    var query by rememberSaveable { mutableStateOf("") }
+    var query by remember { mutableStateOf(TextFieldValue()) }
     val frequent = remember { EmojiCatalog.recent(context) }
     val all = remember { EmojiCatalog.all(context) }
     val frequentLabel = stringRes(R.string.chat_reactions_picker_frequent)
-    val popularLabel = stringRes(R.string.chat_reactions_picker_popular)
     val allLabel = stringRes(R.string.chat_reactions_picker_all)
-    val items: List<PickerItem> = remember(query, frequent, all) {
-        if (query.isNotBlank()) {
-            val q = query.trim().lowercase()
-            (EmojiCatalog.popular + all).distinct().filter { EmojiNames.name(it).contains(q) }.map<String, PickerItem> { PickerItem.Cell(it, 0) }
-        } else buildList<PickerItem> {
+    val items: List<PickerItem> = remember(query.text, frequent, all) {
+        val q = query.text.trim().lowercase()
+        if (q.isNotEmpty()) {
+            (frequent + all).distinct().filter { EmojiNames.name(it).contains(q) }.map { PickerItem.Cell(it, 0) }
+        } else buildList {
             if (frequent.isNotEmpty()) {
                 add(PickerItem.Section(frequentLabel))
                 frequent.forEach { add(PickerItem.Cell(it, 1)) }
             }
-            add(PickerItem.Section(popularLabel))
-            EmojiCatalog.popular.forEach { add(PickerItem.Cell(it, 2)) }
             if (all.isNotEmpty()) {
                 add(PickerItem.Section(allLabel))
-                all.forEach { add(PickerItem.Cell(it, 3)) }
+                all.forEach { add(PickerItem.Cell(it, 2)) }
             }
         }
     }
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = state) {
-        Column(Modifier.fillMaxWidth()) {
-            TextField(
+    SystemAppearance {
+        DsBottomSheet(onDismissRequest = onDismiss) {
+            SearchField(
                 value = query,
                 onValueChange = { query = it },
-                singleLine = true,
-                placeholder = { Text(stringRes(R.string.chat_reactions_picker_search)) },
-                leadingIcon = { Glyph(Tokens.Icons.globalSearch, MaterialTheme.colorScheme.onSurfaceVariant) },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalScreenMargin),
+                placeholder = stringRes(R.string.chat_reactions_picker_search),
+                accessibilityLabel = stringRes(R.string.chat_reactions_picker_search),
+                modifier = Modifier.padding(horizontal = Tokens.Sizes.globalScreenMargin),
             )
-            LazyVerticalGrid(columns = GridCells.Fixed(Tokens.Counts.chatReactionsCountPickerColumns), modifier = Modifier.fillMaxWidth()) {
-                items(items, span = { item -> if (item is PickerItem.Section) GridItemSpan(maxLineSpan) else GridItemSpan(1) }, key = { item ->
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(Tokens.Counts.chatReactionsCountPickerColumns),
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = Tokens.Sizes.globalScreenMargin),
+            ) {
+                items(items, span = { if (it is PickerItem.Section) GridItemSpan(maxLineSpan) else GridItemSpan(1) }, key = { item ->
                     when (item) {
                         is PickerItem.Section -> "s:" + item.label
                         is PickerItem.Cell -> "c:${item.section}:${item.emoji}"
                     }
                 }) { item ->
                     when (item) {
-                        is PickerItem.Section -> Line(
-                            item.label,
-                            Type.style(Tokens.FontSizes.chatReactionsFontSizePickerSection, Tokens.FontWeights.chatReactionsFontWeightPickerSection),
-                            Tokens.Colors.globalTextSecondary,
-                            Modifier.padding(horizontal = Tokens.Sizes.globalScreenMargin).semantics { heading() },
-                        )
-                        is PickerItem.Cell -> PickerCell(item.emoji, item.emoji in mine, onPick = { rect ->
+                        is PickerItem.Section -> SectionLabel(item.label)
+                        is PickerItem.Cell -> PickerCell(item.emoji, item.emoji in mine, onPick = {
                             EmojiCatalog.remember(context, item.emoji)
-                            onPick(item.emoji, rect)
+                            onPick(item.emoji)
                         }, onUnreact = { onUnreact(item.emoji) })
                     }
                 }
@@ -329,86 +274,99 @@ fun ReactionPickerSheet(mine: Set<String>, onPick: (String, Rect?) -> Unit, onUn
     }
 }
 
-/** One picker cell; a reaction of yours is highlighted (`chat.reactions.layout.unreact`: filled `color.global.selection` circle, selected trait). */
+/** A C-20 label without "•••": cap top `size.global.sectionGap` below the content above, content `sectionHeaderToContent` below its baseline. */
 @Composable
-private fun PickerCell(emoji: String, mine: Boolean, onPick: (Rect?) -> Unit, onUnreact: () -> Unit) {
+private fun SectionLabel(text: String) {
+    val style = TextRoles.sectionLabel
+    Text(
+        text,
+        style = style,
+        color = Tokens.Colors.globalTextPrimary,
+        modifier = Modifier
+            .fillMaxWidth()
+            .capTopAt(Tokens.Sizes.globalSectionGap, CapTop.height(style))
+            .paddingFrom(LastBaseline, after = Tokens.Sizes.globalSectionHeaderToContent)
+            .semantics { heading() },
+    )
+}
+
+/** One picker cell; a reaction of yours sits on the `color.global.control` circle with the selected trait. */
+@Composable
+private fun PickerCell(emoji: String, mine: Boolean, onPick: () -> Unit, onUnreact: () -> Unit) {
     val name = EmojiNames.name(emoji)
-    var bounds by remember { mutableStateOf<Rect?>(null) }
-    val size = Tokens.Sizes.chatReactionsDimensionPickerEmoji
     Box(
-        Modifier.fillMaxWidth()
-            .clickable(role = Role.Button) { if (mine) onUnreact() else onPick(bounds) }
-            .clearAndSetSemantics {
+        Modifier
+            .aspectRatio(1f)
+            .tapClickable { if (mine) onUnreact() else onPick() }
+            .semantics(mergeDescendants = true) {
                 contentDescription = name
-                role = Role.Button
                 selected = mine
             },
         contentAlignment = Alignment.Center,
     ) {
-        // The highlight circle's diameter is not measured: one picker cell's emoji width plus the cluster outline on each side.
-        if (mine) Box(Modifier.size(size + Tokens.Sizes.chatReactionsDimensionClusterOutline * 2).clip(CircleShape).background(Tokens.Colors.globalSelection))
-        EmojiGlyph(emoji, size, Modifier.onGloballyPositioned { c -> bounds = Rect(c.positionOnScreen(), c.size.toSize()) })
+        if (mine) Box(Modifier.size(Tokens.Sizes.globalCircleButton).background(Tokens.Colors.globalControl, CircleShape))
+        Text(emoji, style = emojiStyle(Tokens.FontSizes.globalHeaderTitle), maxLines = 1)
     }
 }
 
-/**
- * Emoji rain after you react (`chat.reactions.layout.rainPath`): `chat.reactions.count.rainCopies`
- * copies rise from just below the bottom edge to just past the top, one every
- * `chat.reactions.duration.rainSpawnInterval`, each taking `chat.reactions.duration.rainTravel` on
- * `chat.reactions.easing.rain` (G-11). Never under Reduce Motion (`chat.reactions.layout.reduceMotion`:
- * callers don't start it). Not interactive; hidden from accessibility.
- */
-@Composable
-fun EmojiRain(emoji: String, key: Any, onFinished: () -> Unit, modifier: Modifier = Modifier, easing: androidx.compose.animation.core.Easing = Tokens.Easings.chatReactionsEasingRain) {
-    val copies = Tokens.Counts.chatReactionsCountRainCopies
-    val spawn = Tokens.Durations.chatReactionsDurationRainSpawnInterval
-    val travel = Tokens.Durations.chatReactionsDurationRainTravel
-    val total = Tokens.Durations.chatReactionsDurationRainTotal
-    val random = LocalRainRandom.current
-    val xs = remember(key) { List(copies) { random.nextFloat() } }
-    var elapsed by remember(key) { mutableLongStateOf(0L) }
-    LaunchedEffect(key) {
-        val start = withFrameMillis { it }
-        while (elapsed < total) withFrameMillis { now -> elapsed = now - start }
-        onFinished()
-    }
-    BoxWithConstraints(modifier.fillMaxSize().clearAndSetSemantics { }) {
-        val density = LocalDensity.current
-        val size = Tokens.Sizes.chatReactionsDimensionRainEmoji
-        val w = with(density) { maxWidth.toPx() }
-        val h = with(density) { maxHeight.toPx() }
-        val s = with(density) { size.toPx() }
-        for (i in 0 until copies) {
-            val linear = (elapsed - i * spawn).toFloat() / travel
-            if (linear < 0f || linear > 1f) continue
-            val progress = easing.transform(linear)
-            val y = h - progress * (h + s)
-            val x = xs[i] * (w - s).coerceAtLeast(0f)
-            EmojiGlyph(emoji, size, Modifier.offset { IntOffset(x.roundToInt(), y.roundToInt()) })
-        }
-    }
-}
+/** A person of the Reactions sheet. */
+data class Reactor(val userId: String, val name: String, val avatarPath: String?)
 
 /**
- * The reactions list ("Activity"): who reacted with what, never a count. Its row layout and order
- * are BLOCKED (`chat.reactions.layout.activitySheet`): callers open it only in development builds,
- * as a native sheet with one platform list line per reaction, in data order.
+ * The Reactions sheet (`chat.reactions.layout.list`): native sheet titled `chat.reactions.activity.title`, a plain
+ * list on the page colour, one C-16 row per person and emoji — avatar `size.global.avatarPicker` at the margin,
+ * name (`listTitle`) `chat.thread.dimension.rowAvatarToText` after it, the emoji at the trailing margin in the
+ * `size.global.icon` box; your rows add `chat.reactions.list.removeHint` and unreact on tap. Rows
+ * `size.global.listGap` apart. Order `chat.reactions.layout.listOrder` is BLOCKED: [newestFirst] (the
+ * development approximation) or the data order. Empty: `chat.reactions.empty` (C-27 title only).
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ActivitySheet(entries: List<ReactionEntry>, me: String?, nameOf: (String) -> String, posterName: String, onDismiss: () -> Unit) {
-    val state = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = state) {
-        Column(Modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalScreenMargin)) {
-            Text(stringRes(R.string.chat_reactions_activity_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
-            if (entries.isEmpty()) {
-                Text(stringRes(R.string.chat_reactions_empty), style = MaterialTheme.typography.bodyLarge)
-            } else {
-                LazyColumn {
-                    items(entries, key = { it.userId + it.emoji }) { entry ->
-                        val line = if (entry.userId == me) stringRes(R.string.chat_reactions_activity_rowmine, entry.emoji, posterName)
-                        else stringRes(R.string.chat_reactions_activity_row, nameOf(entry.userId), entry.emoji)
-                        Text(line, style = MaterialTheme.typography.bodyLarge)
+fun ReactionsSheet(
+    entries: List<ReactionEntry>,
+    me: String?,
+    person: (String) -> Reactor,
+    onUnreact: (String) -> Unit,
+    onDismiss: () -> Unit,
+    newestFirst: Boolean,
+    loading: Boolean = false,
+) {
+    val rows = if (newestFirst) entries.asReversed() else entries
+    SystemAppearance {
+        DsBottomSheet(onDismissRequest = onDismiss) {
+            SheetHeader(stringRes(R.string.chat_reactions_activity_title))
+            Spacer(Modifier.height(Tokens.Sizes.globalSectionHeaderToContent))
+            when {
+                loading -> LoadingState(stringRes(R.string.week_history_a11y_loading), Modifier.height(Tokens.Sizes.globalFriendCardHeight))
+                rows.isEmpty() -> Box(Modifier.fillMaxWidth().height(Tokens.Sizes.globalFriendCardHeight), contentAlignment = Alignment.Center) {
+                    EmptyState(stringRes(R.string.chat_reactions_empty), null)
+                }
+                else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalListGap), contentPadding = PaddingValues(bottom = Tokens.Sizes.globalSectionGap)) {
+                    itemsIndexed(rows, key = { _, e -> e.userId + ":" + e.emoji }) { _, entry ->
+                        val p = person(entry.userId)
+                        val mine = entry.userId == me
+                        val label = if (mine) stringRes(R.string.chat_reactions_activity_rowmine, entry.emoji)
+                        else stringRes(R.string.chat_reactions_activity_row, p.name, entry.emoji)
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .then(if (mine) Modifier.tapClickable { onUnreact(entry.emoji) } else Modifier)
+                                .clearAndSetSemantics {
+                                    contentDescription = label
+                                    if (mine) role = Role.Button
+                                }
+                                .padding(horizontal = Tokens.Sizes.globalScreenMargin),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            PersonAvatar(p.avatarPath, Tokens.Sizes.globalAvatarPicker)
+                            Spacer(Modifier.width(Tokens.Sizes.chatThreadDimensionRowAvatarToText))
+                            Column(Modifier.weight(1f)) {
+                                Text(p.name, style = TextRoles.listTitle, color = Tokens.Colors.globalTextPrimary, maxLines = 1)
+                                if (mine) Text(stringRes(R.string.chat_reactions_list_removehint), style = TextRoles.listSubtitle, color = PageRoles.secondaryText())
+                            }
+                            Box(Modifier.size(Tokens.Sizes.globalIcon), contentAlignment = Alignment.Center) {
+                                Text(entry.emoji, style = emojiStyle(Tokens.FontSizes.globalListTitle), maxLines = 1)
+                            }
+                        }
                     }
                 }
             }
@@ -416,11 +374,10 @@ fun ActivitySheet(entries: List<ReactionEntry>, me: String?, nameOf: (String) ->
     }
 }
 
-/** Optimistic reaction rows: [entries] plus `(me, emoji)` unless already there. */
+/** Optimistic reaction rows: [entries] plus `(me, emoji)` (the newest) unless already there. */
 fun withReaction(entries: List<ReactionEntry>, me: String, emoji: String): List<ReactionEntry> =
     if (entries.any { it.userId == me && it.emoji == emoji }) entries else entries + ReactionEntry(me, emoji)
 
 /** Removes `(me, emoji)` (the optimistic row after a failed `react`, or `unreact`). */
 fun withoutReaction(entries: List<ReactionEntry>, me: String, emoji: String): List<ReactionEntry> =
     entries.filterNot { it.userId == me && it.emoji == emoji }
-

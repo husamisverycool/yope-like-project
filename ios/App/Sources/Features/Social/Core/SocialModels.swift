@@ -42,14 +42,18 @@ struct SocialFeedback: Equatable, Sendable {
 enum SocialNotice: Equatable, Sendable {
     case sendFailed
     /// `chat.thread.sendFailed` for a message that stays in the thread with the failed-message layout: announced only
-    /// (the label under the message shows it).
+    /// (the status line under the message shows it).
     case messageNotSent
+    /// `chat.thread.toast.copied`
+    case copied
     case reactionFailed
     case photoSaved
     case photoDeleted
     case saveFailed
     case deleteFailed
     case tagError
+    /// `tagging.removeError` (untag failed).
+    case tagRemoveError
     case tagNotFound
     case tagOffline
     case recapSaved
@@ -100,11 +104,18 @@ struct ReactionSummary: Equatable, Sendable {
         for row in rows { insert(row) }
     }
 
-    /// One sticker per distinct emoji, newest first (`chat.reactions.layout.clusterOrder`): a newly added emoji enters
-    /// at the leading end; a repeat of an emoji already there adds no sticker and keeps its place.
+    /// The distinct emoji, newest first (`chat.reactions.layout.clusterOrder`): a newly added emoji enters at the
+    /// leading end and an emoji used again moves to the front. The chip shows the first
+    /// `chat.reactions.count.clusterMaxVisible` of them.
     var distinctEmoji: [String] {
         var seen = Set<String>()
-        return rows.compactMap { seen.insert($0.emoji).inserted ? $0.emoji : nil }.reversed()
+        return rows.reversed().compactMap { seen.insert($0.emoji).inserted ? $0.emoji : nil }
+    }
+
+    /// The rows of the Reactions sheet (`chat.reactions.layout.list`: one per person and emoji); `newestFirst` is the
+    /// development approximation of the BLOCKED `chat.reactions.layout.listOrder`, else the data's order.
+    func listRows(newestFirst: Bool = SocialOrdering.reactionsNewestFirst) -> [Reaction] {
+        newestFirst ? rows.sorted { $0.createdAt > $1.createdAt } : rows
     }
 
     /// The emoji this person reacted with (highlighted in the picker, `chat.reactions.layout.unreact`).
@@ -138,8 +149,30 @@ struct ReactionSummary: Equatable, Sendable {
     }
 }
 
-/// Emoji-only messages (`chat.thread`: a message of only 1…`chat.thread.count.emojiOnlyMax` emoji renders large
-/// without a bubble).
+/// Orders the specs leave BLOCKED, behind one switch: DEBUG builds use the development approximation named in the
+/// token's notes (design/tokens/social.json); release builds keep the order the data arrives in.
+enum SocialOrdering {
+    /// `walls.browse.layout.rowOrder` — approximation: newest wall item first, then by name.
+    static var peopleByNewestWall: Bool {
+        #if DEBUG
+        return true
+        #else
+        return false
+        #endif
+    }
+
+    /// `chat.reactions.layout.listOrder` — approximation: newest first by `reactions.created_at`.
+    static var reactionsNewestFirst: Bool {
+        #if DEBUG
+        return true
+        #else
+        return false
+        #endif
+    }
+}
+
+/// Emoji-only messages (`chat.thread`: a message of only 1…`chat.thread.count.emojiOnlyMax` emoji renders at
+/// `fontSize.global.headerTitle`).
 enum SocialEmojiText {
     /// How many emoji `text` holds when it is made of emoji only (spaces ignored); nil otherwise.
     static func emojiOnlyCount(_ text: String) -> Int? {
@@ -200,6 +233,11 @@ enum SocialCalendar {
         let weekday = calendar.component(.weekday, from: date) // 1 = Sunday … 7 = Saturday
         let daysSinceMonday = (weekday + 5) % 7
         return day.adding(days: -daysSinceMonday)
+    }
+
+    /// The ISO-8601 week number of the week containing `date` (group-local).
+    static func weekNumber(containing date: Date, in timeZone: TimeZone) -> Int {
+        iso(timeZone).component(.weekOfYear, from: date)
     }
 
     /// The ISO-8601 week number of the week starting `weekStart`.

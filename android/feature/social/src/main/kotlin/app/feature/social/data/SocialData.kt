@@ -12,12 +12,15 @@ import app.data.model.HistoryWeek
 import app.data.model.Media
 import app.data.model.Message
 import app.data.model.Post
+import app.data.model.PostTag
 import app.data.model.Profile
 import app.data.model.WallItem
 import app.data.model.WeeklyRecap
 import app.data.offline.CacheKey
 import app.data.offline.DataState
 import app.data.realtime.GroupEvent
+import app.data.remote.Tables
+import io.github.jan.supabase.postgrest.query.Order
 import app.data.repo.Member
 import app.data.repo.ReactionEntry
 import kotlinx.coroutines.flow.Flow
@@ -51,9 +54,13 @@ interface SocialData {
 
     fun observeMessages(groupId: String): Flow<DataState<List<Message>>>
     suspend fun messages(groupId: String, before: Instant?): List<Message>
-    suspend fun sendText(groupId: String, body: String, replyToPostId: String? = null): Message
+    /** A text message, optionally replying to a photo ([replyToPostId]) or a message ([replyToMessageId]) (`send_message`). */
+    suspend fun sendText(groupId: String, body: String, replyToPostId: String? = null, replyToMessageId: String? = null): Message
     suspend fun sendVoice(groupId: String, audio: File, durationMs: Int): Message
     suspend fun deleteMessage(messageId: String)
+
+    /** Replies to a photo in its group's chat (`messages` with `reply_to_post_id`), oldest first (`photo.viewer.layout.comments`). */
+    suspend fun replies(groupId: String, postId: String): List<Message>
 
     suspend fun feed(groupId: String, before: Instant?): List<Post>
     suspend fun posts(ids: Collection<String>): List<Post>
@@ -66,6 +73,8 @@ interface SocialData {
     suspend fun unreact(postId: String, emoji: String)
 
     suspend fun isTaggedByMe(postId: String): Boolean
+    /** `post_tags` of a photo in tag order (docs/API.md §5.11): who said "I'm in this". */
+    suspend fun tags(postId: String): List<PostTag>
     suspend fun tagSelf(postId: String)
     suspend fun untagSelf(postId: String)
 
@@ -110,9 +119,17 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
 
     override fun observeMessages(groupId: String) = graph.chat.observeMessages(groupId)
     override suspend fun messages(groupId: String, before: Instant?) = graph.chat.messages(groupId, before)
-    override suspend fun sendText(groupId: String, body: String, replyToPostId: String?) = graph.chat.sendText(groupId, body, replyToPostId)
+    override suspend fun sendText(groupId: String, body: String, replyToPostId: String?, replyToMessageId: String?) = graph.chat.sendText(groupId, body, replyToPostId, replyToMessageId)
     override suspend fun sendVoice(groupId: String, audio: File, durationMs: Int) = graph.chat.sendVoice(groupId, audio, durationMs)
     override suspend fun deleteMessage(messageId: String) = graph.chat.deleteMessage(messageId)
+    override suspend fun replies(groupId: String, postId: String): List<Message> =
+        graph.api.select(Tables.MESSAGES, Message.serializer()) {
+            filter {
+                eq("group_id", groupId)
+                eq("reply_to_post_id", postId)
+            }
+            order("created_at", Order.ASCENDING)
+        }
 
     override suspend fun feed(groupId: String, before: Instant?) = graph.posts.feed(groupId, before)
     override suspend fun posts(ids: Collection<String>) = graph.posts.posts(ids)
@@ -129,6 +146,7 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
         val me = currentUserId() ?: return false
         return graph.tags.tags(postId).any { it.userId == me }
     }
+    override suspend fun tags(postId: String): List<PostTag> = graph.tags.tags(postId)
     override suspend fun tagSelf(postId: String) {
         graph.tags.tagSelf(postId)
     }
@@ -172,9 +190,10 @@ object UnconfiguredSocialData : SocialData {
     override suspend fun profiles(ids: Collection<String>): List<Profile> = fail()
     override fun observeMessages(groupId: String): Flow<DataState<List<Message>>> = failing()
     override suspend fun messages(groupId: String, before: Instant?): List<Message> = fail()
-    override suspend fun sendText(groupId: String, body: String, replyToPostId: String?): Message = fail()
+    override suspend fun sendText(groupId: String, body: String, replyToPostId: String?, replyToMessageId: String?): Message = fail()
     override suspend fun sendVoice(groupId: String, audio: File, durationMs: Int): Message = fail()
     override suspend fun deleteMessage(messageId: String) = fail()
+    override suspend fun replies(groupId: String, postId: String): List<Message> = fail()
     override suspend fun feed(groupId: String, before: Instant?): List<Post> = fail()
     override suspend fun posts(ids: Collection<String>): List<Post> = fail()
     override suspend fun media(ids: Collection<String>): List<Media> = fail()
@@ -183,6 +202,7 @@ object UnconfiguredSocialData : SocialData {
     override suspend fun react(postId: String, emoji: String) = fail()
     override suspend fun unreact(postId: String, emoji: String) = fail()
     override suspend fun isTaggedByMe(postId: String): Boolean = fail()
+    override suspend fun tags(postId: String): List<PostTag> = fail()
     override suspend fun tagSelf(postId: String) = fail()
     override suspend fun untagSelf(postId: String) = fail()
     override fun observeWall(userId: String): Flow<DataState<List<WallItem>>> = failing()

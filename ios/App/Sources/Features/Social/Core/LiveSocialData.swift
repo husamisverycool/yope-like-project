@@ -2,6 +2,7 @@
 import AppData
 import AppModels
 import Foundation
+import Supabase
 
 /// The production data source: AppData repositories, offline cache, signed URLs, realtime and reachability.
 struct LiveSocialData: SocialDataSource {
@@ -61,8 +62,29 @@ struct LiveSocialData: SocialDataSource {
         await environment.chat.cachedPage(groupID: groupID)?.value
     }
 
-    func sendText(groupID: GroupID, body: String, replyToPostID: PostID?) async throws -> Message {
-        try await environment.chat.sendText(groupID: groupID, body: body, replyToPostID: replyToPostID)
+    func sendText(groupID: GroupID, body: String, replyToPostID: PostID?, replyToMessageID: MessageID?) async throws -> Message {
+        try await environment.chat.sendText(
+            groupID: groupID, body: body, replyToPostID: replyToPostID, replyToMessageID: replyToMessageID
+        )
+    }
+
+    func message(id: MessageID) async throws -> Message? {
+        try await environment.chat.message(id: id)
+    }
+
+    /// `from("messages").eq("reply_to_post_id", post).order(created_at)` (docs/API.md §5.9). ChatRepository has no
+    /// such read, so it runs here on the shared client (decoded with the client's own date strategy).
+    func replies(postID: PostID) async throws -> [Message] {
+        do {
+            return try await environment.client.supabase.from("messages").select()
+                .eq("reply_to_post_id", value: postID.rawValue)
+                .order("created_at", ascending: true)
+                .execute()
+                .value
+        } catch let error as URLError {
+            throw error.code == .notConnectedToInternet || error.code == .networkConnectionLost
+                ? DataError.offline : error
+        }
     }
 
     func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int) async throws -> Message {
@@ -118,6 +140,10 @@ struct LiveSocialData: SocialDataSource {
 
     func isTagged(postID: PostID, userID: UserID) async throws -> Bool {
         try await environment.reactions.tags(postID: postID).contains { $0.userID == userID }
+    }
+
+    func tags(postID: PostID) async throws -> [PostTag] {
+        try await environment.reactions.tags(postID: postID)
     }
 
     func setTagged(_ tagged: Bool, postID: PostID) async throws {
@@ -237,7 +263,9 @@ struct UnconfiguredSocialData: SocialDataSource {
     func myMembership(groupID: GroupID) async throws -> GroupMember? { try fail() }
     func messages(groupID: GroupID, before: Date?) async throws -> Page<Message> { try fail() }
     func cachedMessages(groupID: GroupID) async -> [Message]? { nil }
-    func sendText(groupID: GroupID, body: String, replyToPostID: PostID?) async throws -> Message { try fail() }
+    func sendText(groupID: GroupID, body: String, replyToPostID: PostID?, replyToMessageID: MessageID?) async throws -> Message { try fail() }
+    func message(id: MessageID) async throws -> Message? { try fail() }
+    func replies(postID: PostID) async throws -> [Message] { try fail() }
     func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int) async throws -> Message { try fail() }
     func deleteMessage(id: MessageID, groupID: GroupID) async throws { try fail() as Void }
     func posts(ids: [PostID]) async throws -> [PostWithMedia] { try fail() }
@@ -248,6 +276,7 @@ struct UnconfiguredSocialData: SocialDataSource {
     func react(postID: PostID, emoji: String) async throws -> Reaction { try fail() }
     func unreact(postID: PostID, emoji: String) async throws { try fail() as Void }
     func isTagged(postID: PostID, userID: UserID) async throws -> Bool { try fail() }
+    func tags(postID: PostID) async throws -> [PostTag] { try fail() }
     func setTagged(_ tagged: Bool, postID: PostID) async throws { try fail() as Void }
     func block(userID: UserID) async throws { try fail() as Void }
     func wall(userID: UserID, before: Date?, limit: Int) async throws -> Page<WallItem> { try fail() }

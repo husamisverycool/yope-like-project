@@ -196,11 +196,11 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
 
     func cachedMessages(groupID: GroupID) async -> [Message]? { read { $0.cachedMessages[groupID] } }
 
-    func sendText(groupID: GroupID, body: String, replyToPostID: PostID?) async throws -> Message {
+    func sendText(groupID: GroupID, body: String, replyToPostID: PostID?, replyToMessageID: MessageID?) async throws -> Message {
         try call("sendText")
         let message = Message(
             id: MessageID(nextID()), groupID: groupID, authorID: read { $0.me } ?? UserID("me"), kind: .text,
-            body: body, replyToPostID: replyToPostID, createdAt: tick()
+            body: body, replyToPostID: replyToPostID, replyToMessageID: replyToMessageID, createdAt: tick()
         )
         update { $0.messages.append(message) }
         if let hook = read({ $0.beforeSendReturns }) { await hook(message) }
@@ -219,6 +219,17 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         }
         if let hook = read({ $0.beforeSendReturns }) { await hook(message) }
         return message
+    }
+
+    func message(id: MessageID) async throws -> Message? {
+        try call("message")
+        return read { $0.messages.first { $0.id == id } }
+    }
+
+    func replies(postID: PostID) async throws -> [Message] {
+        await hold("replies")
+        try call("replies")
+        return read { $0.messages.filter { $0.replyToPostID == postID }.sorted { $0.createdAt < $1.createdAt } }
     }
 
     func deleteMessage(id: MessageID, groupID: GroupID) async throws {
@@ -279,6 +290,11 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
     func isTagged(postID: PostID, userID: UserID) async throws -> Bool {
         try call("isTagged")
         return read { $0.tags.contains { $0.postID == postID && $0.userID == userID } }
+    }
+
+    func tags(postID: PostID) async throws -> [PostTag] {
+        try call("tags")
+        return read { $0.tags.filter { $0.postID == postID }.sorted { $0.createdAt < $1.createdAt } }
     }
 
     func setTagged(_ tagged: Bool, postID: PostID) async throws {

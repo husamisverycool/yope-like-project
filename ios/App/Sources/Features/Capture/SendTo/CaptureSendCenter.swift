@@ -1,38 +1,39 @@
-// Surface: camera.sendto (states sending / sent / error / offline) and daily.capture (send failed /
-// offline). Reference: Yope 'posted in the wall' toast
-// (references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png).
-// The sheet closes at once; the post continues in the background through AppData's outbox and the
-// result is shown on whatever screen the member is on.
+// Surfaces: camera.sendto (states sending / sent / error / offline) and daily.capture (send, send failed / offline) —
+// design/surfaces/camera.sendto.md, daily.capture.md (RC-8). Reference: references/auto/retro/press/tc-2023-12-retro3.png
+// phone 2 (Retro's Postcard composer sends in place: "Ordering postcard…"), references/owner/locket-review-sending.jpg
+// (mechanics: sending → sent).
+// The composer waits for its send: busy capsule and "Sending…" title while the capture uploads and `create_post`
+// runs (docs/API.md recipe 9.4, through AppData's outbox); success closes the composer with `haptic.global.send` and
+// the confirmation (iOS: an accessibility announcement, C-26 — iOS draws no toast); failure keeps everything in the
+// composer, plays `haptic.global.error` and returns the reason for the native alert.
 import AppData
 import AppModels
 import DesignSystem
 import Observation
 import SwiftUI
 
-/// Sends captures in the background and keeps the last failure for the error toast.
 @MainActor
 @Observable
 final class CaptureSendCenter {
     enum Failure: Equatable {
+        /// No connection (`camera.sendto.error.offline`).
         case offline
+        /// Upload or `create_post` failed (`camera.sendto.error.generic`).
         case sendFailed
     }
 
-    /// The error toast's state; nil while nothing failed.
-    private(set) var failure: Failure?
-    /// The confirmation toast's text while it is shown ('posted in …', 'saved to your library').
-    private(set) var confirmation: String?
-    private(set) var isRetrying = false
-    private(set) var inFlight = 0
-    /// Number of sends that reached `create_post` (tests, the BLOCKED success toast).
+    enum Outcome: Equatable {
+        case posted
+        case failed(Failure)
+    }
+
+    /// Sends that reached `create_post` (tests).
     private(set) var postedCount = 0
+    /// C-26 confirmations ("Added to Family!", "Saved"): announced to VoiceOver, nothing drawn on iOS.
+    let confirmations = ToastCenter()
 
     private let posting: CapturePosting
     private let playHaptic: @MainActor (DSHaptic) -> Void
-    /// Requests that never reached the outbox (encoding or local-file failure); retried with it.
-    @ObservationIgnored private var unqueued: [CaptureSendRequest] = []
-    @ObservationIgnored private var onlineTask: Task<Void, Never>?
-    @ObservationIgnored private var confirmationTask: Task<Void, Never>?
 
     init(posting: CapturePosting, playHaptic: @escaping @MainActor (DSHaptic) -> Void = CaptureSendCenter.systemHaptic) {
         self.posting = posting
@@ -43,80 +44,23 @@ final class CaptureSendCenter {
         haptic.play()
     }
 
-    /// Starts following the network: a failure caused by being offline is retried when it returns.
-    func startObservingNetwork() {
-        guard onlineTask == nil else { return }
-        let updates = posting.onlineUpdates()
-        onlineTask = Task { [weak self] in
-            for await online in updates where online {
-                guard let self, self.failure == .offline else { continue }
-                await self.retry()
-            }
-        }
-    }
-
-    /// A confirmation: the lime toast for `camera.sendto.duration.toastVisible`, also announced to
-    /// VoiceOver.
+    /// A confirmation (C-26): an accessibility announcement on iOS.
     func confirm(_ text: String) {
-        AccessibilityNotification.Announcement(text).post()
-        let visible = Tokens.Durations.cameraSendtoDurationToastVisible
-        confirmation = text
-        confirmationTask?.cancel()
-        confirmationTask = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(visible))
-            guard !Task.isCancelled else { return }
-            self?.confirmation = nil
-        }
+        confirmations.show(text)
     }
 
-    /// Posts in the background; returns at once (the sheet closes immediately, camera.sendto).
-    func submit(_ request: CaptureSendRequest) {
-        inFlight += 1
-        Task { [weak self] in
-            await self?.run(request)
-            self?.inFlight -= 1
-        }
-    }
-
-    /// Waits for one send (tests).
-    func send(_ request: CaptureSendRequest) async {
-        inFlight += 1
-        await run(request)
-        inFlight -= 1
-    }
-
-    /// The toast's retry: re-sends what never reached the outbox and replays the outbox.
-    func retry() async {
-        guard !isRetrying else { return }
-        isRetrying = true
-        defer { isRetrying = false }
-        failure = nil
-        let pending = unqueued
-        unqueued = []
-        for request in pending {
-            await run(request)
-        }
-        let result = await posting.retryPending()
-        if result.posted > 0 {
-            postedCount += result.posted
-            playHaptic(Tokens.Haptics.globalSend)
-            confirm(Copy.cameraSendtoToastPostedMany)
-        }
-        if let error = result.error {
-            fail(error == .offline ? .offline : .sendFailed)
-        }
-    }
-
-    private func run(_ request: CaptureSendRequest) async {
+    /// Uploads and posts one capture while the composer waits. Posted: `haptic.global.send` and the request's
+    /// confirmation; the camera's temporary files are removed. Failed: `haptic.global.error`; the outbox copy is
+    /// discarded (the composer still holds the capture, and Try Again sends it as a new draft), the camera's files stay.
+    func send(_ request: CaptureSendRequest) async -> Outcome {
         let draft: PostDraft
         do {
             draft = try await Task.detached(priority: .userInitiated) {
                 try await CaptureDraftBuilder.build(request)
             }.value
         } catch {
-            unqueued.append(request)
-            fail(.sendFailed)
-            return
+            CaptureDraftBuilder.cleanUp(request)
+            return fail(.sendFailed)
         }
         do {
             try await posting.publish(draft)
@@ -125,121 +69,34 @@ final class CaptureSendCenter {
             postedCount += 1
             playHaptic(Tokens.Haptics.globalSend)
             if let text = request.confirmation { confirm(text) }
+            return .posted
         } catch {
-            let dataError = DataError.from(error)
-            if case .localFile = dataError {
-                // The outbox could not copy the files: keep the request itself for the retry.
-                unqueued.append(request)
-            } else {
-                // The outbox holds copies of the files and replays the draft on retry.
-                CaptureDraftBuilder.cleanUp(request)
-                request.removeTemporaryFiles()
-            }
-            fail(dataError == .offline ? .offline : .sendFailed)
+            await posting.discard(draft.mediaID)
+            CaptureDraftBuilder.cleanUp(request)
+            return fail(DataError.from(error) == .offline ? .offline : .sendFailed)
         }
     }
 
-    private func fail(_ failure: Failure) {
-        self.failure = failure
+    private func fail(_ failure: Failure) -> Outcome {
         playHaptic(Tokens.Haptics.globalError)
+        return .failed(failure)
     }
 }
 
-/// The lime toast bar (`camera.sendto.layout.toast`): `icon.global.check` in `color.global.onAccent`
-/// (C-12) and the confirmation text, shown for `camera.sendto.duration.toastVisible`.
-struct CaptureConfirmationToast: View {
-    let text: String
-
-    private typealias Toast = Tokens.Layouts.CameraSendtoLayoutToast
-
-    var body: some View {
-        HStack(spacing: Toast.glyphToText) {
-            Image(systemName: Tokens.Icons.globalCheck)
-                .resizable()
-                .scaledToFit()
-                .frame(width: Toast.glyph, height: Toast.glyph)
-                .accessibilityHidden(true)
-            Text(text)
-                .dsTextStyle(CaptureType.button)
-                .lineLimit(1)
-            Spacer(minLength: 0)
+extension CaptureSendCenter.Failure {
+    /// The alert message (camera.sendto States: error / offline).
+    var message: String {
+        switch self {
+        case .offline: return Copy.cameraSendtoErrorOffline
+        case .sendFailed: return Copy.cameraSendtoErrorGeneric
         }
-        .foregroundStyle(Tokens.Colors.globalOnAccent)
-        .padding(.horizontal, Toast.glyphInset)
-        .frame(height: Toast.height)
-        .frame(maxWidth: .infinity)
-        .background(Tokens.Colors.globalAccent, in: RoundedRectangle(cornerRadius: Toast.cornerRadius, style: .continuous))
-        .padding(.horizontal, Toast.marginHorizontal)
-        .accessibilityElement(children: .combine)
-        .accessibilityIdentifier("capture.toast.confirmation")
-    }
-}
-
-/// The same toast bar in its error form: the text and a trailing retry text button.
-struct CaptureFailureToast: View {
-    let failure: CaptureSendCenter.Failure
-    let isRetrying: Bool
-    let onRetry: () -> Void
-
-    private typealias Toast = Tokens.Layouts.CameraSendtoLayoutToast
-
-    var body: some View {
-        HStack {
-            Text(failure == .offline ? Copy.cameraSendtoErrorOffline : Copy.cameraSendtoErrorSendFailed)
-                .dsTextStyle(CaptureType.button)
-                .foregroundStyle(Tokens.Colors.globalOnAccent)
-                .lineLimit(1)
-            Spacer(minLength: Toast.glyphToText)
-            Button(action: onRetry) {
-                Text(Copy.cameraSendtoErrorRetry)
-                    .dsTextStyle(CaptureType.button)
-                    .foregroundStyle(Tokens.Colors.globalOnAccent)
-                    .frame(minHeight: Tokens.Sizes.globalMinTouchTargetIos)
-                    .contentShape(Rectangle())
-            }
-            .disabled(isRetrying)
-            .accessibilityIdentifier("capture.toast.retry")
-        }
-        .padding(.horizontal, Toast.glyphInset)
-        .frame(height: Toast.height)
-        .frame(maxWidth: .infinity)
-        .background(Tokens.Colors.globalAccent, in: RoundedRectangle(cornerRadius: Toast.cornerRadius, style: .continuous))
-        .padding(.horizontal, Toast.marginHorizontal)
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("capture.toast.failure")
     }
 }
 
 extension View {
-    /// Shows the capture send-failure toast at the toast position (`camera.sendto.layout.toast.top`
-    /// from the screen top). Attach to the screen the member returns to after sending.
+    /// Kept for the shell (`RootView` attaches it): sends no longer continue in the background — the composer waits for
+    /// its result and shows failures in its own alert (RC-8) — so there is nothing to show here. Adds nothing.
     func captureSendStatus(_ center: CaptureSendCenter) -> some View {
-        modifier(CaptureSendStatusModifier(center: center))
-    }
-}
-
-private struct CaptureSendStatusModifier: ViewModifier {
-    let center: CaptureSendCenter
-
-    /// Toast in / out (camera.sendto Motion): the curve was not measurable, so the platform default
-    /// spring (`spring.global.platformDefault.ios`) moves it in from the top; Reduce Motion cross-fades.
-    func body(content: Content) -> some View {
-        content.overlay(alignment: .top) {
-            ZStack {
-                if let failure = center.failure {
-                    CaptureFailureToast(failure: failure, isRetrying: center.isRetrying) {
-                        Task { await center.retry() }
-                    }
-                    .dsTransition(.move(edge: .top).combined(with: .opacity))
-                } else if let confirmation = center.confirmation {
-                    CaptureConfirmationToast(text: confirmation)
-                        .dsTransition(.move(edge: .top).combined(with: .opacity))
-                }
-            }
-            .padding(.top, Tokens.Layouts.CameraSendtoLayoutToast.top)
-            .ignoresSafeArea(edges: .top)
-            .dsAnimation(.spring(Tokens.Springs.globalPlatformDefaultIos), value: center.failure)
-            .dsAnimation(.spring(Tokens.Springs.globalPlatformDefaultIos), value: center.confirmation)
-        }
+        self
     }
 }

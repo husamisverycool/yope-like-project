@@ -5,26 +5,17 @@ import androidx.core.content.edit
 import app.designsystem.generated.Tokens
 
 /**
- * The reaction picker's sections (design/surfaces/chat.reactions.md §2): the person's recently
- * used emoji (kept per device), Locket's Popular set in its order
- * (`chat.reactions.layout.pickerPopular`), and every emoji in the system category order
- * (androidx.emoji2 emoji picker data; the first entry of each line is the base emoji).
+ * The reaction picker's sections (design/surfaces/chat.reactions.md §3): the person's recently used emoji
+ * (kept per device, "Frequently Used") and every emoji in the system order (androidx.emoji2 emoji picker data;
+ * the first entry of each line is the base emoji).
  */
 object EmojiCatalog {
     private const val PREFS = "social_reactions"
     private const val RECENT = "recent"
     private const val SEPARATOR = "\u0000"
 
-    /** How many recently used emoji are kept (one row of the picker per [Tokens.Counts.chatReactionsCountPickerColumns]). */
+    /** How many recently used emoji are kept: one picker row (`chat.reactions.count.pickerColumns`). */
     private val recentMax get() = Tokens.Counts.chatReactionsCountPickerColumns
-
-    val popular: List<String> by lazy {
-        val p = Tokens.Layouts.ChatReactionsLayoutPickerPopular
-        listOf(p.row1, p.row2, p.row3, p.row4, p.row5).flatMap { row -> row.split(' ').filter { it.isNotBlank() } }
-    }
-
-    /** The quick reactions inside the viewer's reply field (`chat.reactions.layout.quickReactions`, "🔥 💖"). */
-    val quick: List<String> by lazy { Tokens.Layouts.ChatReactionsLayoutQuickReactions.emoji.split(' ').filter { it.isNotBlank() } }
 
     fun recent(context: Context): List<String> =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(RECENT, null)?.split(SEPARATOR)?.filter { it.isNotEmpty() }.orEmpty()
@@ -36,7 +27,7 @@ object EmojiCatalog {
 
     @Volatile private var all: List<String>? = null
 
-    /** Every emoji, system category order (empty when the data cannot be read). */
+    /** Every emoji, system order (empty when the data cannot be read). */
     fun all(context: Context): List<String> = all ?: synchronized(this) {
         all ?: load(context).also { all = it }
     }

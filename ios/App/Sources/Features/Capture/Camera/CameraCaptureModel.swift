@@ -1,6 +1,7 @@
-// Surface: camera.capture (+ camera.fromwidget) — reference app: Yope + Locket.
-// Reference images: design/surfaces/camera.capture.md (references/auto/yope/frames/
-// a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png and others).
+// Surface: camera.capture (+ camera.fromwidget) — visual reference Retro (composition), mechanics Locket.
+// Reference images: references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png,
+// references/auto/retro/press/tc-2025-12-rewind-device-a.png, references/auto/locket/store/locket-store-07.png
+// (design/surfaces/camera.capture.md).
 // State of the camera the app opens to: permission, session, flash, flip, one-tap photo,
 // hold-to-record video (premium), coach, library pick → send-to.
 import AppData
@@ -31,6 +32,8 @@ final class CameraCaptureModel {
     static var currentSessionPosition: CameraPosition { sessionPosition }
 
     private(set) var phase: Phase = .starting
+    /// True once the session has shown the live preview (a restart after a flip keeps the preview on screen).
+    private(set) var hasBeenLive = false
     private(set) var position: CameraPosition
     private(set) var isFlashOn = false
     private(set) var isFlashAvailable = false
@@ -39,7 +42,6 @@ final class CameraCaptureModel {
     private(set) var isCapturing = false
     private(set) var isVideoAvailable = false
     private(set) var showsCoach = false
-    private(set) var libraryThumbnail: UIImage? = nil
     /// A capture waiting in `camera.sendto` (presented while non-nil).
     var captured: CapturedMedia? = nil
     /// Increments when a recording starts (announcement trigger).
@@ -50,8 +52,8 @@ final class CameraCaptureModel {
 
     let camera: CaptureCamera
     private let premium: CapturePremium
-    private let library: CaptureLibrary
     private let coach: CaptureCoachStore
+    private let clock: @MainActor () -> Date
     private let navigation: CaptureNavigation
     private let longPressThreshold: Duration
     @ObservationIgnored private var longPressTask: Task<Void, Never>?
@@ -66,16 +68,16 @@ final class CameraCaptureModel {
         contextGroupID: String?,
         camera: CaptureCamera,
         premium: CapturePremium,
-        library: CaptureLibrary,
         coach: CaptureCoachStore,
         navigation: CaptureNavigation,
-        longPressThreshold: Duration = CameraCaptureModel.platformLongPress
+        longPressThreshold: Duration = CameraCaptureModel.platformLongPress,
+        clock: @escaping @MainActor () -> Date = { Date() }
     ) {
         self.contextGroupID = contextGroupID
         self.camera = camera
         self.premium = premium
-        self.library = library
         self.coach = coach
+        self.clock = clock
         self.navigation = navigation
         self.longPressThreshold = longPressThreshold
         position = Self.sessionPosition
@@ -109,14 +111,16 @@ final class CameraCaptureModel {
             phase = .denied
             return
         }
-        // The session first (first frame as early as possible); premium and the library thumbnail
-        // load meanwhile.
+        // The session first (first frame as early as possible); premium loads meanwhile.
         async let premiumStatus = premium.isPremium()
-        async let thumbnail = library.newestThumbnail(side: Tokens.Sizes.cameraCaptureSizeLibraryThumb)
         await startSession()
         isVideoAvailable = await premiumStatus
         showsCoach = isVideoAvailable && !coach.isDismissed(.holdToRecord)
-        libraryThumbnail = await thumbnail
+    }
+
+    /// `camera.capture.title`: "Week {number}", the week the photo will be added to.
+    var title: String {
+        Copy.cameraCaptureTitle(number: String(CaptureFormat.weekNumber(of: clock())))
     }
 
     func disappear() async {
@@ -134,6 +138,7 @@ final class CameraCaptureModel {
             isFlashAvailable = camera.hasFlash(at: position)
             if !isFlashAvailable { isFlashOn = false }
             phase = .live
+            hasBeenLive = true
         } catch {
             phase = .unavailable
         }

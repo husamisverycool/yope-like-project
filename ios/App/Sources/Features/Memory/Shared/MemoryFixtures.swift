@@ -8,9 +8,10 @@ import Foundation
 
 final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
     enum Operation: String, CaseIterable, Sendable {
-        case group, postsWithMedia, profiles, signedURLs, onThisDay, myPrivateProfile, setBirthday
+        case group, postsWithMedia, profiles, signedURLs, onThisDay, historyWeeks, deletePost, downloadData
+        case myPrivateProfile, setBirthday
         case openRequests, request, myContribution, contribute, withdraw, eligiblePostIDs
-        case tribute, downloadFile, yearStory, collages, isTagged, tagSelf, untagSelf
+        case tribute, downloadFile, yearStory, collages, tags, isTagged, tagSelf, untagSelf
     }
 
     struct State {
@@ -26,6 +27,8 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
         var contributions: [TributeContribution] = []
         /// Posts the caller tagged themselves in.
         var myTags: Set<PostID> = []
+        /// Other members' self-tags per post, in tag order (the caller's own tag, if any, comes after them).
+        var otherTags: [PostID: [UserID]] = [:]
         var tributes: [Tribute] = []
         var yearStories: [YearStory] = []
         var collages: [Collage] = []
@@ -128,6 +131,43 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
         return current.onThisDay.filter { groupPosts.contains($0.postID) }
     }
 
+    /// The group's posts by week (Monday start, group time zone), newest week first, posts chronological;
+    /// `before` is exclusive, at most `limit` weeks (as `group_history_weeks`).
+    func historyWeeks(groupID: GroupID, before: LocalDate?, limit: Int) async throws -> [HistoryWeek] {
+        let current = try await record(.historyWeeks)
+        let zone = current.groups.first { $0.id == groupID }?.resolvedTimeZone ?? MemoryFormat.utc
+        var weeks: [LocalDate: [PostWithMedia]] = [:]
+        for post in current.posts where post.post.groupID == groupID {
+            let day = LocalDate(post.post.createdAt, in: zone)
+            // dayNumber 0 (1970-01-01) was a Thursday: Monday-based weekday = (dayNumber + 3) mod 7.
+            let weekday = ((day.dayNumber + 3) % 7 + 7) % 7 // provenance-ok: calendar arithmetic (ISO weekday of the epoch)
+            weeks[day.adding(days: -weekday), default: []].append(post)
+        }
+        return weeks.keys.sorted(by: >)
+            .filter { start in before.map { start < $0 } ?? true }
+            .prefix(max(1, limit))
+            .map { start in
+                HistoryWeek(weekStart: start, postIDs: (weeks[start] ?? []).sorted { $0.post.createdAt < $1.post.createdAt }.map(\.post.id))
+            }
+    }
+
+    /// `delete_post`: own posts only; the post leaves every list and the group hears `post_deleted`.
+    func deletePost(id: PostID) async throws {
+        let current = try await record(.deletePost)
+        guard let post = current.posts.first(where: { $0.post.id == id }) else { throw DataError.api(.postNotFound) }
+        guard post.post.authorID == current.me else { throw DataError.api(.postNotFound) }
+        update { state in
+            state.posts.removeAll { $0.post.id == id }
+            state.onThisDay.removeAll { $0.postID == id }
+        }
+        emitDeletion(postID: id, groupID: post.post.groupID)
+    }
+
+    func downloadData(from url: URL) async throws -> Data {
+        _ = try await record(.downloadData)
+        return Data(url.absoluteString.utf8)
+    }
+
     func myPrivateProfile() async throws -> ProfilePrivate? {
         try await record(.myPrivateProfile).privateProfile
     }
@@ -226,6 +266,16 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
         return try await record(.collages).collages.filter { wanted.contains($0.id) }
     }
 
+    func tags(postID: PostID) async throws -> [PostTag] {
+        let current = try await record(.tags)
+        guard let post = current.posts.first(where: { $0.post.id == postID }) else { return [] }
+        var users = current.otherTags[postID] ?? []
+        if let me = current.me, current.myTags.contains(postID) { users.append(me) }
+        return users.enumerated().map { offset, user in
+            PostTag(postID: postID, userID: user, groupID: post.post.groupID, createdAt: current.now.addingTimeInterval(TimeInterval(offset)))
+        }
+    }
+
     func isTagged(postID: PostID) async throws -> Bool {
         try await record(.isTagged).myTags.contains(postID)
     }
@@ -309,6 +359,7 @@ extension FixtureMemoryData {
             post(9, author: ids.friend, at: yearsAgo(3, hour: 20), shape: (3, 5)),
         ]
         state.myTags = [ids.post(2)]
+        state.otherTags = [ids.post(2): [ids.friend], ids.post(6): [ids.friend, ids.other]]
         state.onThisDay = [
             OnThisDayItem(postID: ids.post(6), mediaID: ids.media(6), authorID: ids.friend, createdAt: yearsAgo(1, hour: 22), yearsAgo: 1),
             OnThisDayItem(postID: ids.post(9), mediaID: ids.media(9), authorID: ids.friend, createdAt: yearsAgo(3, hour: 20), yearsAgo: 3),

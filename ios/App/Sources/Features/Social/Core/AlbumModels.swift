@@ -1,11 +1,12 @@
-// Surfaces: albums.list, albums.view — reference app: Yope (composition from documented Yope components, S-14).
+// Surfaces: albums.list, albums.view — Retro's Albums list and album detail (RS-21).
 // Specs: design/surfaces/albums.*.md ("States", "Data & actions"). View models only (Foundation + Observation + AppData).
 import AppData
 import AppModels
 import Foundation
 import Observation
 
-/// `albums.list`: the group's saved albums, newest first, each with its first photo as cover.
+/// `albums.list`: the group's saved albums, newest first, each with its first photo as cover, filtered by the search
+/// field.
 @MainActor
 @Observable
 final class AlbumsListModel {
@@ -17,8 +18,9 @@ final class AlbumsListModel {
     private(set) var albums: [AlbumWithItems] = []
     private(set) var covers: [PostID: PostWithMedia] = [:]
     private(set) var profiles: [UserID: Profile] = [:]
-    /// The latest ready recap (empty-state "view recap").
-    private(set) var latestRecapID: RecapID?
+    private(set) var me: UserID?
+    /// The search field's text (filters by album name).
+    var search = ""
     private(set) var hasCheckedCache = false
 
     var showsLoading: Bool { phase == .loading && hasCheckedCache }
@@ -32,11 +34,24 @@ final class AlbumsListModel {
         album.postIDs.first.flatMap { covers[$0] }
     }
 
+    /// The albums the list shows for the current search.
+    var visibleAlbums: [AlbumWithItems] {
+        let query = search.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return albums }
+        return albums.filter { $0.album.name.localizedStandardContains(query) }
+    }
+
     func savedByName(_ album: AlbumWithItems) -> String? {
         album.album.createdBy.flatMap { profiles[$0]?.socialFirstName }
     }
 
+    /// `albums.list.row.subtitleMine` ("you created the album").
+    func isMine(_ album: AlbumWithItems) -> Bool {
+        me != nil && album.album.createdBy == me
+    }
+
     func load() async {
+        if me == nil { me = await data.currentUserID() }
         if albums.isEmpty, let cached = await data.cachedAlbums(groupID: groupID), !cached.isEmpty {
             albums = cached
             phase = .ready
@@ -52,9 +67,6 @@ final class AlbumsListModel {
             if albums.isEmpty { phase = isOffline ? .offline : .failed }
         }
         await loadDetails()
-        if phase == .empty, let recaps = try? await data.recaps(groupID: groupID) {
-            latestRecapID = recaps.first { $0.status == .ready }?.id
-        }
     }
 
     func retry() async {
@@ -97,7 +109,7 @@ final class AlbumModel {
     private(set) var isOffline = false
     private(set) var album: Album?
     private(set) var posts: [PostWithMedia] = []
-    /// "delete album" is offered to the album's creator and group admins.
+    /// "Delete Album" is offered to the album's creator and group admins.
     private(set) var canDelete = false
     var isRenaming = false
     var renameText = ""
@@ -118,12 +130,18 @@ final class AlbumModel {
 
     var postIDs: [PostID] { posts.map(\.id) }
 
+    /// `albums.list.row.subtitleMine` / `.subtitle` with the creator's first name.
+    var isMine: Bool { me != nil && album?.createdBy == me }
+
+    var creatorName: String? { album?.createdBy.flatMap { profiles[$0]?.socialFirstName } }
+
     private(set) var hasCheckedCache = false
 
     var showsLoading: Bool { phase == .loading && hasCheckedCache }
 
     func load() async {
         let me = await data.currentUserID()
+        self.me = me
         if album == nil, let cached = await data.cachedAlbums(groupID: groupID),
            let found = cached.first(where: { $0.album.id == albumID }) {
             album = found.album
@@ -165,6 +183,9 @@ final class AlbumModel {
         posts = try await data.posts(ids: found.postIDs)
         if me == nil { me = await data.currentUserID() }
         profiles = await SocialPeople.profiles(of: posts, known: profiles, data: data)
+        if let creator = found.album.createdBy, profiles[creator] == nil, let people = try? await data.profiles(ids: [creator]) {
+            for profile in people { profiles[profile.id] = profile }
+        }
         phase = posts.isEmpty ? .empty : .ready
     }
 
@@ -179,7 +200,7 @@ final class AlbumModel {
         isRenaming = true
     }
 
-    /// `rename_album` → toast `albums.view.toast.renamed`.
+    /// `rename_album` → `albums.view.toast.renamed` (Android Toast / iOS announcement).
     func rename() async {
         let name = renameText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else {
@@ -205,7 +226,7 @@ final class AlbumModel {
         }
     }
 
-    /// `delete_album` after the confirmation → pop + toast `albums.view.toast.deleted`. Posts stay.
+    /// `delete_album` after the confirmation → the sheet closes + `albums.view.toast.deleted`. Posts stay.
     func delete() async {
         guard canDelete, !isWorking else { return }
         isWorking = true

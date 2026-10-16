@@ -1,249 +1,139 @@
-// Surface: chat.voice — voice message playback bubble and the recording row (`chat.voice.layout.recording`).
-// References: references/auto/yope/store/yope-store-05.png (mine, 0:38),
-// references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (permission card),
-// references/auto/whatsapp + references/auto/telegram App Store panels (recording row; MERGE_DECISIONS Gap fill G-9).
+// Surface: chat.voice — design/surfaces/chat.voice.md
+// References: references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png (C-07 anatomy),
+// references/auto/retro/store/retro-store-02.png (C-06 medium capsules), references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png
+// ("1:00" duration format), references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png (record gestures),
+// references/auto/telegram/store/telegram-store-03.png (recording row, lock).
 package app.feature.social.chat
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.Dp
-import androidx.compose.material.icons.rounded.ExpandLess
+import androidx.compose.ui.semantics.stateDescription
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.social.common.Formats
-import app.feature.social.common.Glyph
-import app.feature.social.common.InkGlyph
-import app.feature.social.common.Line
-import app.feature.social.common.LocalSocialData
-import app.feature.social.common.Type
 import app.feature.social.common.stringRes
-import app.feature.social.data.VoiceServices
+import app.ui.foundation.DsMotion
+import app.ui.foundation.PageRoles
+import app.ui.foundation.tapClickable
+import app.ui.text.TextRoles
 
-/** How many waveform bars fit [width] (`chat.voice.dimension.barWidth` at `.barPitch`). */
-fun barCount(width: Dp): Int {
-    val pitch = Tokens.Sizes.chatVoiceDimensionBarPitch
-    val bar = Tokens.Sizes.chatVoiceDimensionBarWidth
-    if (width < bar) return 0
-    return ((width - bar) / pitch).toInt() + 1
+/** Voice recording (`chat.voice.layout.recording`: WhatsApp's press-and-hold, slide-to-cancel and lock). */
+sealed interface Recording {
+    val startedAt: Long
+
+    /** Recording while the finger holds the mic glyph: lift sends, slide left cancels, slide up locks. */
+    data class Holding(override val startedAt: Long) : Recording
+
+    /** Hands-free after sliding onto the lock (or started from TalkBack's "Record" action): trash discards, send sends. */
+    data class Locked(override val startedAt: Long) : Recording
 }
 
-/** Waveform bars: rounded, centred on the line, heights between `barMinHeight` and `barMaxHeight` from [levels] (0…1). */
-@Composable
-fun WaveformBars(levels: List<Float>?, count: Int, modifier: Modifier = Modifier, progress: Float = 0f) {
-    val played = Tokens.Colors.chatVoiceColorWaveformPlayed
-    val min = Tokens.Sizes.chatVoiceDimensionBarMinHeight
-    val maxH = Tokens.Sizes.chatVoiceDimensionBarMaxHeight
-    val gap = Tokens.Sizes.chatVoiceDimensionBarPitch - Tokens.Sizes.chatVoiceDimensionBarWidth
-    Row(modifier.clearAndSetSemantics { }, horizontalArrangement = Arrangement.spacedBy(gap), verticalAlignment = Alignment.CenterVertically) {
-        for (i in 0 until count) {
-            val level = levels?.getOrNull(i)?.coerceIn(0f, 1f) ?: 0f
-            Box(
-                Modifier
-                    .width(Tokens.Sizes.chatVoiceDimensionBarWidth)
-                    .height(min + (maxH - min) * level)
-                    .clip(RoundedCornerShape(Tokens.Sizes.chatVoiceDimensionBarWidth))
-                    // Bars up to the playhead in `chat.voice.color.waveformPlayed`, the rest `chat.voice.color.waveform` (G-8).
-                    .background(if (count > 0 && i < progress * count) played else Tokens.Colors.chatVoiceColorWaveform),
-            )
-        }
-    }
-}
+/** What a voice capsule shows (`chat.voice.layout.playback`). */
+enum class VoiceState { Idle, Loading, Playing, Paused, Error }
+
+/** Tabular digits for durations ("monospaced", `chat.voice.layout.durationFormat`). */
+internal const val TABULAR_DIGITS = "tnum"
 
 /**
- * The voice bubble (`chat.voice.*`): play circle, waveform, duration; [fill] `chat.voice.color.bubble`
- * (mine) or `.bubbleTheirs`. Playing: `chat.voice.icon.pause` in the circle and the bars up to the
- * playhead in `chat.voice.color.waveformPlayed`. Its width is the observed one for every duration
- * (`chat.voice.layout.widthRule` is BLOCKED).
+ * The voice message (`chat.voice.layout.capsule`): C-06 fill capsule with C-07's anatomy, hugging its content —
+ * `size.global.pillPaddingLeading` → `icon.global.play` / `icon.global.pause` at `size.global.iconSmall` →
+ * `size.global.pillIconGap` → the duration (`chat.voice.layout.durationFormat`, tabular digits, text role `pill`) →
+ * `size.global.pillPaddingTrailing`; height `size.global.pillHeight` (grows with the font), `radius.global.capsule`.
+ * Fill `color.global.surfaceSecondary.android` on a page, `color.global.controlOnDeep` on media ([onMedia]).
+ * The label shows the total while idle and the elapsed time while playing or paused mid-way. Loading: the platform
+ * activity indicator in the glyph's place; error: `chat.voice.error.play` in `color.global.destructive` (tap retries).
+ * Play ↔ pause cross-fades (`duration.global.crossfade`). One button: [label] (`chat.voice.a11y.message` /
+ * `.messageMine`), action `chat.voice.a11y.play` / `.pause`.
  */
 @Composable
-fun VoiceBubble(
-    path: String,
-    durationMs: Int,
-    fill: Color,
+fun VoiceCapsule(
+    durationMs: Long,
+    elapsedMs: Long,
+    state: VoiceState,
     label: String,
-    playing: Boolean,
-    voice: VoiceServices?,
-    onToggle: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    progress: Float = 0f,
+    onMedia: Boolean = false,
 ) {
-    val duration = Formats.voiceDuration(durationMs)
-    val buttonLabel = playLabel(playing, durationMs)
-    val shape = RoundedCornerShape(Tokens.Radii.chatVoiceRadiusBubble)
+    val fill = if (onMedia) Tokens.Colors.globalControlOnDeep else PageRoles.secondarySurface
+    val ink = Tokens.Colors.globalTextPrimary
+    val shown = when (state) {
+        VoiceState.Playing, VoiceState.Paused -> elapsedMs
+        else -> durationMs
+    }
+    val action = if (state == VoiceState.Playing) stringRes(R.string.chat_voice_a11y_pause)
+    else stringRes(R.string.chat_voice_a11y_play, Formats.spokenDuration(durationMs))
+    val errorText = stringRes(R.string.chat_voice_error_play)
     Row(
         modifier
-            .width(Tokens.Sizes.chatVoiceDimensionWidth)
-            .heightIn(min = Tokens.Sizes.chatVoiceDimensionHeight)
-            .clip(shape)
-            .background(fill)
-            .semantics { contentDescription = label },
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Spacer(Modifier.width(Tokens.Sizes.chatVoiceDimensionPlayInsetLeading))
-        Box(
-            Modifier
-                .size(Tokens.Sizes.chatVoiceDimensionPlayButton)
-                .clip(CircleShape)
-                .background(Tokens.Colors.chatVoiceColorPlayButton)
-                .clickable(role = Role.Button, onClick = onToggle)
-                .clearAndSetSemantics {
-                    contentDescription = buttonLabel
-                    role = Role.Button
-                },
-            contentAlignment = Alignment.Center,
-        ) {
-            InkGlyph(if (playing) Tokens.Icons.chatVoiceIconPause else Tokens.Icons.globalPlay, Tokens.Colors.globalTextPrimary, inkWidth = Tokens.Sizes.chatVoiceDimensionPlayGlyph)
-        }
-        Spacer(Modifier.width(Tokens.Sizes.chatVoiceDimensionPlayToWaveform))
-        BoxWithConstraints(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
-            val count = barCount(maxWidth)
-            val data = LocalSocialData.current
-            val levels by produceState(app.feature.social.data.AudioEnvelope.peek(path, count), path, count, voice) {
-                if (voice != null && count > 0 && value == null) {
-                    val url = runCatching { data.signedUrls(listOf(path))[path] }.getOrNull()
-                    value = url?.let { voice.envelope(path, it, count) }
-                }
-            }
-            WaveformBars(levels, count, progress = if (playing) progress else 0f)
-        }
-        Spacer(Modifier.width(Tokens.Sizes.chatVoiceDimensionWaveformToDuration))
-        Line(duration, Type.caption(), Tokens.Colors.chatVoiceColorDuration, Modifier.clearAndSetSemantics { })
-        Spacer(Modifier.width(Tokens.Sizes.chatVoiceDimensionDurationTrailing))
-    }
-}
-
-/** The play button's label: `chat.voice.a11y.play` with the spoken duration, or `.pause` while playing. */
-@Composable
-fun playLabel(playing: Boolean, durationMs: Int): String =
-    if (playing) stringRes(R.string.chat_voice_a11y_pause) else stringRes(R.string.chat_voice_a11y_play, Formats.spokenDuration(durationMs))
-
-
-/** Voice recording (`chat.voice.layout.recording`: WhatsApp gestures, WhatsApp / Telegram rows; Gap fill G-9). */
-sealed interface Recording {
-    /** Recording while the finger holds the mic circle: lift sends, slide left cancels, slide up locks. */
-    data class Holding(val startedAt: Long) : Recording
-
-    /** Hands-free after sliding onto the lock (or started from TalkBack): pause keeps the draft, send sends. */
-    data class Locked(val startedAt: Long) : Recording
-
-    /** Paused while locked: the draft plays like a voice message; send sends it. */
-    data class Draft(val voice: app.feature.social.data.RecordedVoice, val levels: List<Float>) : Recording
-}
-
-/**
- * The composer row's leading part while recording. Holding: red dot (`color.global.destructive`),
- * elapsed time (`chat.voice.layout.durationFormat`, `color.global.textPrimary`), then the centred hint
- * `icon.global.back` + `chat.voice.recording.slideToCancel` (`color.global.textSecondary`). Locked:
- * the hint's place holds the pause control (`chat.voice.icon.pause`). Paused: the draft as a voice
- * bubble's insides (play circle, waveform from the recorded levels, duration). The dot's diameter
- * and the text roles of time and hint are not measured: the play glyph width, `body` and `placeholder`.
- */
-@Composable
-fun RecordingRow(
-    recording: Recording,
-    elapsedMs: Long,
-    draftPlaying: Boolean,
-    draftProgress: Float,
-    onPause: () -> Unit,
-    onPlayDraft: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(modifier.heightIn(min = Tokens.Sizes.chatComposerDimensionFieldHeight), verticalAlignment = Alignment.CenterVertically) {
-        when (recording) {
-            is Recording.Draft -> {
-                val ms = recording.voice.durationMs
-                PlayCircle(draftPlaying, playLabel(draftPlaying, ms), onPlayDraft)
-                Spacer(Modifier.width(Tokens.Sizes.chatVoiceDimensionPlayToWaveform))
-                BoxWithConstraints(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
-                    val count = barCount(maxWidth)
-                    WaveformBars(app.voice.Waveform.bars(recording.levels.ifEmpty { listOf(0f) }, count.coerceAtLeast(1)), count, progress = if (draftPlaying) draftProgress else 0f)
-                }
-                Spacer(Modifier.width(Tokens.Sizes.chatVoiceDimensionWaveformToDuration))
-                Line(Formats.voiceDuration(ms), Type.caption(), Tokens.Colors.chatVoiceColorDuration, Modifier.clearAndSetSemantics { })
-            }
-            else -> {
-                Box(Modifier.size(Tokens.Sizes.chatVoiceDimensionPlayGlyph).clip(CircleShape).background(Tokens.Colors.globalDestructive))
-                Spacer(Modifier.width(Tokens.Sizes.globalHeaderGap))
-                Line(Formats.voiceDuration(elapsedMs.toInt()), Type.body(), Tokens.Colors.globalTextPrimary)
-                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                    if (recording is Recording.Locked) {
-                        PlayCircle(playing = true, label = stringRes(R.string.chat_voice_a11y_pause), onClick = onPause)
-                    } else {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Glyph(Tokens.Icons.globalBack, Tokens.Colors.globalTextSecondary)
-                            Line(stringRes(R.string.chat_voice_recording_slidetocancel), Type.placeholder(), Tokens.Colors.globalTextSecondary)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-/** The voice play circle (`chat.voice.dimension.playButton`, `.color.playButton`): ▶ or `chat.voice.icon.pause`. */
-@Composable
-private fun PlayCircle(playing: Boolean, label: String, onClick: () -> Unit) {
-    Box(
-        Modifier
-            .size(Tokens.Sizes.chatVoiceDimensionPlayButton)
-            .clip(CircleShape)
-            .background(Tokens.Colors.chatVoiceColorPlayButton)
-            .clickable(role = Role.Button, onClick = onClick)
+            .heightIn(min = Tokens.Sizes.globalPillHeight)
+            .background(fill, CircleShape)
+            .tapClickable(onClick = onClick)
             .clearAndSetSemantics {
                 contentDescription = label
                 role = Role.Button
-            },
-        contentAlignment = Alignment.Center,
+                if (state == VoiceState.Error) stateDescription = errorText
+                onClick(action) { onClick(); true }
+            }
+            .padding(PaddingValues(start = Tokens.Sizes.globalPillPaddingLeading, end = Tokens.Sizes.globalPillPaddingTrailing)),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        InkGlyph(if (playing) Tokens.Icons.chatVoiceIconPause else Tokens.Icons.globalPlay, Tokens.Colors.globalTextPrimary, inkWidth = Tokens.Sizes.chatVoiceDimensionPlayGlyph)
+        Box(Modifier.size(Tokens.Sizes.globalIconSmall), contentAlignment = Alignment.Center) {
+            AnimatedContent(state, transitionSpec = { fadeIn(DsMotion.crossfade()) togetherWith fadeOut(DsMotion.crossfade()) }, label = "voiceGlyph") { s ->
+                when (s) {
+                    VoiceState.Loading -> CircularProgressIndicator(color = PageRoles.secondaryText(onMedia), strokeWidth = Tokens.Sizes.globalStripGap, modifier = Modifier.size(Tokens.Sizes.globalIconSmall))
+                    VoiceState.Playing -> Icon(Tokens.Icons.globalPause, contentDescription = null, tint = ink, modifier = Modifier.size(Tokens.Sizes.globalIconSmall))
+                    else -> Icon(Tokens.Icons.globalPlay, contentDescription = null, tint = ink, modifier = Modifier.size(Tokens.Sizes.globalIconSmall))
+                }
+            }
+        }
+        Spacer(Modifier.width(Tokens.Sizes.globalPillIconGap))
+        if (state == VoiceState.Error) {
+            Text(errorText, style = TextRoles.pill, color = Tokens.Colors.globalDestructive, maxLines = 1)
+        } else {
+            Text(Formats.voiceDuration(shown), style = TextRoles.pill.copy(fontFeatureSettings = TABULAR_DIGITS), color = ink, maxLines = 1)
+        }
     }
 }
 
-/**
- * The lock shown above the mic circle while holding (`chat.voice.layout.recording`: `icon.global.lock`
- * over the lock hint chevron `Rounded.ExpandLess`, `lockHintGlyphAndroid`). Its capsule is not
- * measured: `chat.composer.dimension.sideButton` wide, two circles tall, `color.global.controlRaised`.
- */
-@Composable
-fun LockIndicator(modifier: Modifier = Modifier) {
-    Column(
-        modifier
-            .width(Tokens.Sizes.chatComposerDimensionSideButton)
-            .height(Tokens.Sizes.chatComposerDimensionSideButton * 2)
-            .clip(CircleShape)
-            .background(Tokens.Colors.globalControlRaised)
-            .clearAndSetSemantics { },
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly,
-    ) {
-        Glyph(Tokens.Icons.globalLock, Tokens.Colors.globalTextPrimary)
-        // `chat.voice.layout.recording.lockHintGlyphAndroid`.
-        Glyph(androidx.compose.material.icons.Icons.Rounded.ExpandLess, Tokens.Colors.globalTextSecondary)
-    }
+/** The voice state of the message whose voice path is [key], from the shared playback ([playingKey] / [isPlaying] / [progress] 0…1). */
+fun voiceStateOf(key: String?, playingKey: String?, isPlaying: Boolean, progress: Float, loadingKey: String?, failedKeys: Set<String>): VoiceState = when {
+    key == null -> VoiceState.Idle
+    key in failedKeys -> VoiceState.Error
+    key == loadingKey -> VoiceState.Loading
+    key == playingKey && isPlaying -> VoiceState.Playing
+    key == playingKey && progress > 0f && progress < 1f -> VoiceState.Paused
+    else -> VoiceState.Idle
 }
+
+/** Custom TalkBack action helper for the recording's discard (`chat.voice.a11y.discard`). */
+internal fun discardAction(label: String, onDiscard: () -> Unit) = CustomAccessibilityAction(label) { onDiscard(); true }
+
+/** Unused-import guard for semantics helpers shared with the composer. */
+@Suppress("unused")
+private val keepCustomActions = Modifier.clearAndSetSemantics { customActions = emptyList() }

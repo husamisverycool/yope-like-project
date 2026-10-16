@@ -1,30 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Group photo widget (surface widget.android). Sizes are PLATFORM values, not design values:
-  default 2x2 cells (WidgetSizeClass.Small); minWidth/minHeight use Android's cell formula for
-  pre-Android 12 launchers ((70 x n) - 30 dp for n cells, the value in the platform's own
-  default_size_attributes example), targetCell* is used on Android 12+.
-  https://developer.android.com/develop/ui/views/appwidgets/layouts#anatomy_determining_size
-  Description: copy widget.android.description. Label: widget.android.label = {app_name}, BLOCKED
-  until the owner names the app, so the receiver carries none (the picker shows the app label).
-  Preview: generated from the current content on Android 15+ (GroupPhotoWidget.providePreview,
-  published by WidgetPreviews.publish); the static previewImage fallback is BLOCKED (owner asset).
-  Lock-screen hub eligibility (not_keyguard, API 36) is an owner decision: left at the default.
-  updatePeriodMillis = token widget.android.duration.updatePeriod (86400000 ms, Locket APK; a
-  safety net that re-renders the stored rendition; refresh itself is FCM + WorkManager).
-  minWidth / minHeight / minResize* = token widget.android.size.minSize (110 dp).
+  Group photo widget (surface widget.android; Retro's Glance widget providers, APK 2026.10.1150).
+  minWidth / minHeight / minResize* / targetCell* / resizeMode / reconfigurable = token
+  widget.android.layout.provider (200 dp, resizable down to 100 dp, default 2 x 2, both axes).
+  updatePeriodMillis = token widget.android.duration.updatePeriod (3600000 ms, Retro's hourly
+  safety net; refresh itself is FCM + WorkManager, widget.arrival).
+  Description: copy widget.android.description. Label: copy widget.android.label (on the receiver).
+  Preview: generated from the current content on Android 15+ (GroupPhotoWidget.providePreview);
+  the static previewImage is BLOCKED (owner asset; Retro's preview art is do-not-copy).
+  Lock-screen hub eligibility (widgetCategory without keyguard, res/xml-v36) is an owner decision:
+  left at the default.
 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:configure="app.widget.WidgetConfigureActivity"
     android:description="@string/widget_android_description"
     android:initialLayout="@layout/glance_default_loading_layout"
-    android:minWidth="110dp"
-    android:minHeight="110dp"
-    android:minResizeWidth="110dp"
-    android:minResizeHeight="110dp"
+    android:minWidth="200dp"
+    android:minHeight="200dp"
+    android:minResizeWidth="100dp"
+    android:minResizeHeight="100dp"
     android:resizeMode="horizontal|vertical"
     android:targetCellWidth="2"
     android:targetCellHeight="2"
-    android:updatePeriodMillis="86400000"
+    android:updatePeriodMillis="3600000"
     android:widgetCategory="home_screen"
     android:widgetFeatures="reconfigurable" />

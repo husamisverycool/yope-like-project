@@ -16,13 +16,22 @@ struct MemoryDependencies {
     var now: @Sendable () -> Date
     /// Plays a haptic token (`Tokens.Haptics.*`).
     var haptics: @MainActor (DSHaptic) -> Void
-    /// Persists small per-account flags (the tagging coach was seen).
+    /// Persists small per-account flags (the On This Day intro was seen).
     var defaults: UserDefaults
     /// Shows a group's screen (`groups.screen`) on the main navigation stack.
     var openGroup: @MainActor (String) -> Void
+    /// Pushes `onthisday` for a group on the main navigation stack (the entry card's tap).
+    var openOnThisDay: @MainActor (String) -> Void
+    /// Opens `safety.report` (account group) for a post.
+    var openReport: @MainActor (ReportTarget) -> Void
+    /// Confirmations and failures (C-26: iOS draws nothing; the message is announced to VoiceOver and kept as the
+    /// screen's last confirmation).
+    var toasts: ToastCenter
+    /// VoiceOver is running: the year story starts paused (WCAG 2.2.2).
+    var isVoiceOverRunning: @MainActor () -> Bool
     /// Last content per screen (cache-first loading).
     var cache: MemoryCache
-    /// Waits the given seconds (the year story's auto-advance); tests drive it by hand.
+    /// Waits the given seconds (the year story's and the dial's automatic steps); tests drive it by hand.
     var sleep: @Sendable (TimeInterval) async throws -> Void
 
     init(
@@ -32,6 +41,10 @@ struct MemoryDependencies {
         haptics: @escaping @MainActor (DSHaptic) -> Void = { $0.play() },
         defaults: UserDefaults = .standard,
         openGroup: @escaping @MainActor (String) -> Void = { AppEnvironment.shared.router.path = [.group(id: $0)] },
+        openOnThisDay: @escaping @MainActor (String) -> Void = { AppEnvironment.shared.router.path.append(.memory(.onThisDay(groupID: $0))) },
+        openReport: @escaping @MainActor (ReportTarget) -> Void = { AppEnvironment.shared.router.modal = .account(.report($0)) },
+        toasts: ToastCenter? = nil,
+        isVoiceOverRunning: @escaping @MainActor () -> Bool = { UIAccessibility.isVoiceOverRunning },
         cache: MemoryCache = .shared,
         sleep: @escaping @Sendable (TimeInterval) async throws -> Void = { try await Task.sleep(for: .seconds($0)) }
     ) {
@@ -41,6 +54,10 @@ struct MemoryDependencies {
         self.haptics = haptics
         self.defaults = defaults
         self.openGroup = openGroup
+        self.openOnThisDay = openOnThisDay
+        self.openReport = openReport
+        self.toasts = toasts ?? ToastCenter()
+        self.isVoiceOverRunning = isVoiceOverRunning
         self.cache = cache
         self.sleep = sleep
     }
@@ -192,5 +209,27 @@ struct MemoryRemoteImage: View {
                     loaded = await loader.image(for: url, maxPixelSize: longest > 0 ? longest : nil)
                 }
         }
+    }
+}
+
+extension MemoryImageLoading {
+    /// A component photo source (C-23 avatars, C-34 backdrops, C-15 thumbnails) for a signed URL: the decoded image
+    /// when this loader already holds it (snapshots and the share renderer draw it at once), else the URL itself
+    /// (the component loads it).
+    func source(_ url: URL?) -> PhotoSource? {
+        guard let url else { return nil }
+        if let image = cachedImage(for: url) { return .image(image) }
+        return .url(url)
+    }
+}
+
+/// Hands its content the memory screens' image loader: the injected one (`\.memoryImageLoader`, tests) or the shared
+/// one — for building component photo sources (`MemoryImageLoading.source(_:)`).
+struct MemoryImageScope<Content: View>: View {
+    @ViewBuilder let content: (any MemoryImageLoading) -> Content
+    @Environment(\.memoryImageLoader) private var injected
+
+    var body: some View {
+        content(injected ?? MemoryImageLoader.shared)
     }
 }

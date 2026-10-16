@@ -1,14 +1,12 @@
 // Surfaces: notifications.push (Android channels, layouts, small-icon / accent hooks),
 // daily.notification and daily.ongoing (the invitation's presentation on Android).
 // References: design/surfaces/notifications.push.md, daily.notification.md, daily.ongoing.md
-// (system UI; BeReal push structure, Locket channel naming).
+// (system-drawn; Retro's copy voice and channel naming, APK 2026.10.1150 notification_channel_display_*;
+// BeReal's MM:SS countdown as the system chronometer). Decisions: MERGE_DECISIONS RC-16 … RC-18.
 package app.push
 
 import android.content.Context
-import androidx.compose.ui.graphics.toArgb
-import app.designsystem.DsAppearance
 import app.designsystem.R
-import app.designsystem.generated.Tokens
 
 /**
  * The user-visible copy of each notification channel (`notifications.push.channel.*`) and the set
@@ -55,13 +53,12 @@ object ChannelCopy {
 }
 
 /**
- * The daily invitation's accent (`Tokens.Layouts.DailyOngoingLayoutNotification.color` =
- * `color.global.accent`): tints the small icon and app name in the header. Alerts keep the
- * system default ([NotificationAppearance.accentColor], none specified in notifications.push).
- * Read when posting (outside composition), so it takes the accent of the system appearance.
+ * The daily invitation's accent: none. Retro's notification tint is not captured, so the system
+ * default applies (`daily.ongoing` → "No `setColor`", MERGE_DECISIONS RC-17), as for every alert
+ * ([NotificationAppearance.accentColor]).
  */
 object InvitationAppearance {
-    val accentColor: Int get() = DsAppearance.pickSystem(Tokens.ColorsLight.globalAccent, Tokens.ColorsDark.globalAccent).toArgb()
+    val accentColor: Int? get() = null
 }
 
 /**

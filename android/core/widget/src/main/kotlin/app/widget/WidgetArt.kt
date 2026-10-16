@@ -33,141 +33,122 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
- * Pixel art for the Glance widget, drawn from token values. RemoteViews has no clip-to-circle or
- * gradient before Android 12 and no semibold text, so circles, gradients, the caption capsule and
- * the empty-state stack are drawn into bitmaps here; Glance shows them at their dp size.
+ * Pixel art for the Glance widget, drawn from token values. RemoteViews has no runtime gradient,
+ * no clipping before Android 12, no exact baseline placement and no 600 weight, so the scrim, the
+ * rounded corners below Android 12, the text stack and the state glyph are drawn into bitmaps here;
+ * Glance shows them at their dp size.
  */
 internal object WidgetArt {
-    /** Height of the gradient strip (stretched to the widget; a vertical gradient needs no width). */
-    private const val GRADIENT_STEPS = 256 // provenance-ok: bitmap resolution of a stretched gradient, not a design value
-
     fun px(context: Context, dp: Dp): Float = dp.value * context.resources.displayMetrics.density
 
     fun px(context: Context, size: TextUnit): Float =
         TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, size.value, context.resources.displayMetrics)
 
-    /** A one-pixel-wide vertical gradient [top] → [bottom], stretched with ContentScale.FillBounds. */
-    fun verticalGradient(top: Color, bottom: Color): Bitmap {
-        val bitmap = Bitmap.createBitmap(1, GRADIENT_STEPS, Bitmap.Config.ARGB_8888)
+    /**
+     * [photo] with the bottom scrim drawn in (`layout.global.photoScrim`): [start] down to
+     * [startAt] of the height, then a linear ramp to [end] at the bottom edge.
+     */
+    fun withScrim(photo: Bitmap, start: Color, end: Color, startAt: Float): Bitmap {
+        val out = if (photo.isMutable) photo else photo.copy(Bitmap.Config.ARGB_8888, true).also { if (it !== photo) photo.recycle() }
+        val h = out.height.toFloat()
         val paint = Paint().apply {
-            shader = LinearGradient(0f, 0f, 0f, GRADIENT_STEPS.toFloat(), top.toArgb(), bottom.toArgb(), Shader.TileMode.CLAMP)
+            shader = LinearGradient(
+                0f, 0f, 0f, h,
+                intArrayOf(start.toArgb(), start.toArgb(), end.toArgb()),
+                floatArrayOf(0f, startAt, 1f),
+                Shader.TileMode.CLAMP,
+            )
         }
-        Canvas(bitmap).drawRect(0f, 0f, 1f, GRADIENT_STEPS.toFloat(), paint)
-        return bitmap
+        Canvas(out).drawRect(0f, 0f, out.width.toFloat(), h, paint)
+        return out
     }
+
+    /** [src] with its corners cut to [radiusPx] (transparent outside), for Android < 12. */
+    fun rounded(src: Bitmap, radiusPx: Float): Bitmap {
+        val out = Bitmap.createBitmap(src.width, src.height, Bitmap.Config.ARGB_8888)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { shader = BitmapShader(src, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP) }
+        Canvas(out).drawRoundRect(RectF(0f, 0f, src.width.toFloat(), src.height.toFloat()), radiusPx, radiusPx, paint)
+        if (out !== src) src.recycle()
+        return out
+    }
+
+    /** A [width]×[height] rounded rectangle of [radius] in [color] (the states' background below Android 12). */
+    fun roundedFill(context: Context, width: Dp, height: Dp, radius: Dp, color: Color): Bitmap {
+        val w = max(1, px(context, width).roundToInt())
+        val h = max(1, px(context, height).roundToInt())
+        val out = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val r = px(context, radius)
+        Canvas(out).drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()), r, r, Paint(Paint.ANTI_ALIAS_FLAG).apply { this.color = color.toArgb() })
+        return out
+    }
+
+    /** [vector] fitted into a [glyph] square centred in a [box] square, in [color]. */
+    fun glyph(context: Context, vector: ImageVector, box: Dp, glyph: Dp, color: Color): Bitmap {
+        val size = max(1, px(context, box).roundToInt())
+        val out = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val g = px(context, glyph)
+        val inset = (size - g) / 2f
+        drawVector(Canvas(out), vector, RectF(inset, inset, inset + g, inset + g), color)
+        return out
+    }
+
+    /** The text stack's bitmap and its size in dp. */
+    class Stack(val bitmap: Bitmap, val widthDp: Dp, val heightDp: Dp)
 
     /**
-     * A circular avatar of [diameter]: the image at [file] centre-cropped into a circle, or (no
-     * file / undecodable) the vertical gradient [placeholderTop] → [placeholderBottom]; then a
-     * [ringWidth] ring in [ringColor] inside the edge (null = no ring).
+     * The widget text stack (`widget.home.small.layout.overlay`): [lines] top to bottom, each one
+     * line ellipsized at the end, aligned to the trailing edge [trailingInset] in, the last baseline
+     * [lastBaselineFromBottom] above the bitmap's bottom, baselines [linePitch] apart (the pitch
+     * follows the font scale with the text). [widthPx] is the space from the leading inset to the
+     * widget's trailing edge; the bitmap sits at the widget's bottom-end corner.
      */
-    fun avatar(
+    fun textStack(
         context: Context,
-        file: File?,
-        diameter: Dp,
-        placeholderTop: Color,
-        placeholderBottom: Color,
-        ringWidth: Dp?,
-        ringColor: Color?,
-    ): Bitmap {
-        val size = max(1, px(context, diameter).roundToInt())
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        val r = size / 2f
-        val source = file?.takeIf(File::isFile)?.let { decodeSampled(it, size) }
-        val fill = Paint(Paint.ANTI_ALIAS_FLAG)
-        if (source != null) {
-            val scale = max(size.toFloat() / source.width, size.toFloat() / source.height)
-            val matrix = Matrix().apply {
-                setScale(scale, scale)
-                postTranslate((size - source.width * scale) / 2f, (size - source.height * scale) / 2f)
-            }
-            fill.shader = BitmapShader(source, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP).apply { setLocalMatrix(matrix) }
-        } else {
-            fill.shader = LinearGradient(0f, 0f, 0f, size.toFloat(), placeholderTop.toArgb(), placeholderBottom.toArgb(), Shader.TileMode.CLAMP)
-        }
-        canvas.drawCircle(r, r, r, fill)
-        if (ringWidth != null && ringColor != null) {
-            val stroke = px(context, ringWidth)
-            val ring = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                style = Paint.Style.STROKE
-                strokeWidth = stroke
-                color = ringColor.toArgb()
-            }
-            canvas.drawCircle(r, r, r - stroke / 2f, ring)
-        }
-        return bitmap
-    }
-
-    /** The caption capsule: [text] on one line, ellipsized to fit [maxWidthPx]. */
-    class Pill(val bitmap: Bitmap, val widthDp: Float, val heightDp: Float)
-
-    fun captionPill(
-        context: Context,
-        text: String,
-        maxWidthPx: Float,
-        height: Dp,
-        padding: Dp,
-        fill: Color,
-        textColor: Color,
+        lines: List<String>,
+        widthPx: Float,
+        trailingInset: Dp,
+        lastBaselineFromBottom: Dp,
+        linePitch: Dp,
         textSize: TextUnit,
         weight: FontWeight,
-    ): Pill? {
+        color: Color,
+        rtl: Boolean,
+    ): Stack? {
+        if (lines.isEmpty() || widthPx <= 0f) return null
         val density = context.resources.displayMetrics.density
         val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = textColor.toArgb()
+            this.color = color.toArgb()
             this.textSize = px(context, textSize)
             typeface = typeface(weight)
+            textAlign = if (rtl) Paint.Align.LEFT else Paint.Align.RIGHT
         }
-        val pad = px(context, padding)
-        val available = maxWidthPx - 2 * pad
+        val inset = px(context, trailingInset)
+        val available = widthPx - inset
         if (available <= 0f) return null
-        val shown = TextUtils.ellipsize(text, paint, available, TextUtils.TruncateAt.END).toString()
-        if (shown.isEmpty()) return null
+        val shown = lines.map { TextUtils.ellipsize(it, paint, available, TextUtils.TruncateAt.END).toString() }
+        if (shown.all(String::isEmpty)) return null
+        // The pitch scales with the font scale (sp px ÷ the same number in dp px).
+        val fontScale = px(context, textSize) / px(context, Dp(textSize.value))
+        val pitch = px(context, linePitch) * fontScale
+        val lastBaseline = px(context, lastBaselineFromBottom)
         val metrics = paint.fontMetrics
-        val lineHeight = metrics.descent - metrics.ascent
-        // The token height, grown only when a large font scale would clip the line (one line, truncated).
-        val h = ceil(max(px(context, height), lineHeight)).toInt()
-        val w = ceil(min(maxWidthPx, paint.measureText(shown) + 2 * pad)).toInt()
-        val bitmap = Bitmap.createBitmap(max(1, w), max(1, h), Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        val radius = h / 2f // radius.global.capsule: height / 2
-        canvas.drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()), radius, radius, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = fill.toArgb() })
-        val baseline = h / 2f - (metrics.ascent + metrics.descent) / 2f
-        canvas.drawText(shown, pad, baseline, paint)
-        return Pill(bitmap, w / density, h / density)
+        val h = ceil(-metrics.top + pitch * (shown.size - 1) + lastBaseline).toInt()
+        val w = ceil(widthPx).toInt()
+        val out = Bitmap.createBitmap(max(1, w), max(1, h), Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(out)
+        val x = if (rtl) inset else w - inset
+        shown.forEachIndexed { i, line ->
+            val baseline = h - lastBaseline - pitch * (shown.size - 1 - i)
+            canvas.drawText(line, x, baseline, paint)
+        }
+        return Stack(out, Dp(w / density), Dp(h / density))
     }
 
-    /**
-     * The empty-state stack (`Tokens.Layouts.WidgetHomeSmallLayoutEmpty`): a [ring]-diameter ring
-     * of [ringStroke] in [ringColor] around a [circle]-diameter disc in [circleColor], holding
-     * [glyph] fitted into [glyphWidth] × [glyphHeight] in [glyphColor].
-     */
-    fun emptyStack(
-        context: Context,
-        ring: Dp,
-        ringStroke: Dp,
-        ringColor: Color,
-        circle: Dp,
-        circleColor: Color,
-        glyph: ImageVector,
-        glyphWidth: Dp,
-        glyphHeight: Dp,
-        glyphColor: Color,
-    ): Bitmap {
-        val size = max(1, px(context, ring).roundToInt())
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        val c = size / 2f
-        val stroke = px(context, ringStroke)
-        canvas.drawCircle(c, c, c - stroke / 2f, Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.STROKE
-            strokeWidth = stroke
-            color = ringColor.toArgb()
-        })
-        canvas.drawCircle(c, c, px(context, circle) / 2f, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = circleColor.toArgb() })
-        drawVector(canvas, glyph, RectF(c - px(context, glyphWidth) / 2f, c - px(context, glyphHeight) / 2f, c + px(context, glyphWidth) / 2f, c + px(context, glyphHeight) / 2f), glyphColor)
-        return bitmap
+    /** The nearest Glance text weight (Glance offers normal / medium / bold). */
+    fun glanceWeight(weight: FontWeight): androidx.glance.text.FontWeight = when {
+        weight >= FontWeight.Bold -> androidx.glance.text.FontWeight.Bold
+        weight >= FontWeight.Medium -> androidx.glance.text.FontWeight.Medium
+        else -> androidx.glance.text.FontWeight.Normal
     }
 
     /** Draws [vector] fitted (aspect kept, centred) into [box] in [color]. */

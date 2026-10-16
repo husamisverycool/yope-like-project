@@ -28,7 +28,12 @@ protocol SocialDataSource: Sendable {
     /// Newest first; `before` pages back.
     func messages(groupID: GroupID, before: Date?) async throws -> Page<Message>
     func cachedMessages(groupID: GroupID) async -> [Message]?
-    func sendText(groupID: GroupID, body: String, replyToPostID: PostID?) async throws -> Message
+    /// `send_message` (text); `replyToPostID` quotes a photo, `replyToMessageID` a message (`chat.thread.layout.replyQuote`).
+    func sendText(groupID: GroupID, body: String, replyToPostID: PostID?, replyToMessageID: MessageID?) async throws -> Message
+    /// One message by id (a quoted message outside the loaded pages).
+    func message(id: MessageID) async throws -> Message?
+    /// The group-chat replies to a photo (`messages.reply_to_post_id = post`), oldest first (`photo.viewer.layout.comments`).
+    func replies(postID: PostID) async throws -> [Message]
     /// Uploads the `.m4a` (`u/<uid>/voice/<uuid>.m4a`), then sends it.
     func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int) async throws -> Message
     func deleteMessage(id: MessageID, groupID: GroupID) async throws
@@ -51,6 +56,8 @@ protocol SocialDataSource: Sendable {
     /// `unreact`: takes back one of my reactions (`chat.reactions.layout.unreact`).
     func unreact(postID: PostID, emoji: String) async throws
     func isTagged(postID: PostID, userID: UserID) async throws -> Bool
+    /// Who is in the photo (`post_tags`), in tag order (`tagging.with`).
+    func tags(postID: PostID) async throws -> [PostTag]
     /// `tag_self` / `untag_self`.
     func setTagged(_ tagged: Bool, postID: PostID) async throws
 
@@ -87,6 +94,13 @@ protocol SocialDataSource: Sendable {
     func events(groupID: GroupID) -> AsyncStream<GroupEvent>
     /// The current reachability, then every change.
     func network() -> AsyncStream<NetworkStatus>
+}
+
+extension SocialDataSource {
+    /// A text message that quotes nothing, or only a photo.
+    func sendText(groupID: GroupID, body: String, replyToPostID: PostID?) async throws -> Message {
+        try await sendText(groupID: groupID, body: body, replyToPostID: replyToPostID, replyToMessageID: nil)
+    }
 }
 
 /// Page sizes fixed by the API contract (docs/API.md §5.9, §6.4) and the specs' "Data" sections.

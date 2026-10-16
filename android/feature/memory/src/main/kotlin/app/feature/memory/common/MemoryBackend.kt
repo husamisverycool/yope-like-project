@@ -10,9 +10,11 @@ import app.data.error.DataError
 import app.data.error.DataException
 import app.data.model.Collage
 import app.data.model.Group
+import app.data.model.HistoryWeek
 import app.data.model.Media
 import app.data.model.OnThisDayItem
 import app.data.model.Post
+import app.data.model.PostTag
 import app.data.model.Profile
 import app.data.model.ProfilePrivate
 import app.data.model.RenderStatus
@@ -55,6 +57,12 @@ interface MemoryBackend {
     /** Post ids from the group's private `post_deleted` broadcast (docs/API.md §8.2). */
     fun postDeletions(groupId: String): Flow<String>
 
+    /** `group_history_weeks`: weeks with posts, newest first, before [beforeWeek] (exclusive); respects `free_history_days`. */
+    suspend fun historyWeeks(groupId: String, beforeWeek: LocalDate?, limit: Int): List<HistoryWeek>
+
+    /** `delete_post` (your own post). */
+    suspend fun deletePost(postId: String)
+
     // Birthdays (docs/API.md §5.2, §5.16-§5.18, set_birthday, contribute_tribute).
     suspend fun privateProfile(): ProfilePrivate?
     suspend fun setBirthday(birthday: LocalDate?, optIn: Boolean): ProfilePrivate
@@ -74,7 +82,8 @@ interface MemoryBackend {
     suspend fun collages(ids: List<String>): List<Collage>
 
     // "I'm in this" (docs/API.md §5.11, tag_self / untag_self).
-    suspend fun isTagged(postId: String): Boolean
+    /** The post's tags, oldest first (tag order). */
+    suspend fun postTags(postId: String): List<PostTag>
     suspend fun tagSelf(postId: String)
     suspend fun untagSelf(postId: String)
 }
@@ -99,6 +108,11 @@ class GraphMemoryBackend(private val graph: DataGraph) : MemoryBackend {
 
     override fun postDeletions(groupId: String): Flow<String> =
         graph.realtime.deletions(groupId).filterIsInstance<GroupEvent.PostDeleted>().map { it.postId }
+
+    override suspend fun historyWeeks(groupId: String, beforeWeek: LocalDate?, limit: Int): List<HistoryWeek> =
+        graph.browse.historyWeeks(groupId, beforeWeek, limit)
+
+    override suspend fun deletePost(postId: String) = graph.posts.deletePost(postId)
 
     override suspend fun privateProfile(): ProfilePrivate? = graph.profiles.privateProfile()
 
@@ -138,10 +152,7 @@ class GraphMemoryBackend(private val graph: DataGraph) : MemoryBackend {
     override suspend fun collages(ids: List<String>): List<Collage> =
         ids.distinct().mapNotNull { graph.invitations.collage(it) }.filter { it.status == RenderStatus.Ready }
 
-    override suspend fun isTagged(postId: String): Boolean {
-        val uid = graph.api.requireUserId()
-        return graph.tags.tags(postId).any { it.userId == uid }
-    }
+    override suspend fun postTags(postId: String): List<PostTag> = graph.tags.tags(postId)
 
     override suspend fun tagSelf(postId: String) {
         graph.tags.tagSelf(postId)
@@ -169,6 +180,8 @@ object UnconfiguredMemoryBackend : MemoryBackend {
     override suspend fun profiles(ids: List<String>): List<Profile> = fail()
     override suspend fun signedUrls(paths: Collection<String>): Map<String, String> = fail()
     override fun postDeletions(groupId: String): Flow<String> = emptyFlow()
+    override suspend fun historyWeeks(groupId: String, beforeWeek: LocalDate?, limit: Int): List<HistoryWeek> = fail()
+    override suspend fun deletePost(postId: String) = fail()
     override suspend fun privateProfile(): ProfilePrivate? = fail()
     override suspend fun setBirthday(birthday: LocalDate?, optIn: Boolean): ProfilePrivate = fail()
     override suspend fun openRequests(): List<TributeRequest> = fail()
@@ -181,7 +194,7 @@ object UnconfiguredMemoryBackend : MemoryBackend {
     override suspend fun yearStory(groupId: String, year: Int): YearStory? = fail()
     override suspend fun yearStories(groupId: String): List<YearStory> = fail()
     override suspend fun collages(ids: List<String>): List<Collage> = fail()
-    override suspend fun isTagged(postId: String): Boolean = fail()
+    override suspend fun postTags(postId: String): List<PostTag> = fail()
     override suspend fun tagSelf(postId: String) = fail()
     override suspend fun untagSelf(postId: String) = fail()
 }

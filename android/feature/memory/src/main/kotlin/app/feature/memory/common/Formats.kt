@@ -1,64 +1,54 @@
 package app.feature.memory.common
 
-import android.content.res.Resources
+import android.text.format.DateFormat
 import app.designsystem.generated.Tokens
-import app.designsystem.R
 import java.text.NumberFormat
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.time.format.TextStyle
 import java.util.Locale
 
 /**
- * Date and number formats of the memory surfaces, each from its own reference (MERGE memory M-28).
- * Patterns come from `layout.*Format` tokens; localised forms from the platform.
+ * Date and number formats of the memory surfaces (MERGE RM-14): Rewind 'Jul 22, 2022' (medium date), within the
+ * year 'Wednesday, July 5', birthdays 'July 5', months 'December'. Each comes from its `layout.*Format` token and
+ * is localised by the platform (`DateFormat.getBestDateTimePattern` with the token's skeleton).
  */
 object MemoryFormats {
-    /** `onthisday.banner.yearsAgo.one` / `.other` ("1 YEAR AGO", "3 YEARS AGO"). */
-    fun yearsAgo(resources: Resources, years: Int, locale: Locale = Locale.getDefault()): String =
-        if (years == 1) resources.getString(R.string.onthisday_banner_yearsago_one)
-        else resources.getString(R.string.onthisday_banner_yearsago_other, NumberFormat.getIntegerInstance(locale).format(years))
+    /** `layout.onthisday.dateFormat`: the locale's medium date ("Jul 22, 2022"). */
+    fun memoryDate(date: LocalDate, locale: Locale = Locale.getDefault()): String =
+        DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale).format(date)
 
-    /** `onthisday.memory.meta` weekday ("TUE"), uppercase as the reference, in the group time zone. */
-    fun metaWeekday(at: Instant, zone: ZoneId, locale: Locale = Locale.getDefault()): String =
-        at.atZone(zone).dayOfWeek.getDisplayName(TextStyle.SHORT, locale).uppercase(locale).trimEnd('.')
-
-    /** Spoken weekday for `onthisday.a11y.photo` ("Tuesday"). */
-    fun spokenWeekday(at: Instant, zone: ZoneId, locale: Locale = Locale.getDefault()): String =
-        at.atZone(zone).dayOfWeek.getDisplayName(TextStyle.FULL, locale)
-
-    /** `onthisday.memory.meta` time ("10:34 PM"), the locale's short time, uppercase as the reference. */
-    fun metaTime(at: Instant, zone: ZoneId, locale: Locale = Locale.getDefault()): String =
-        DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(locale).format(at.atZone(zone)).uppercase(locale)
-
-    /** `layout.birthday.request.dueDate`: the day before the birthday, full date ("Wednesday, December 31, 2025"). */
-    fun dueDate(birthday: LocalDate, locale: Locale = Locale.getDefault()): String =
-        DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale).format(birthday.minusDays(1))
-
-    /** `layout.birthday.add.dateFormat` ("26 May"): day and month only, never the year. */
+    /** `layout.birthday.add.dateFormat` ("July 5"): day and month only, never the year. */
     fun dayMonth(date: LocalDate, locale: Locale = Locale.getDefault()): String =
-        DateTimeFormatter.ofPattern(Tokens.Layouts.BirthdayAddDateFormat.pattern, locale).format(date)
+        skeleton(Tokens.Layouts.BirthdayAddDateFormat.pattern, date, locale)
 
-    /** `layout.year.story.dateFormat` ("February 25"), localised with the locale's month-day template. */
-    fun storyDate(date: LocalDate, locale: Locale = Locale.getDefault()): String {
-        val skeleton = Tokens.Layouts.YearStoryDateFormat.pattern.filterNot(Char::isWhitespace)
-        val pattern = android.text.format.DateFormat.getBestDateTimePattern(locale, skeleton)
-        return DateTimeFormatter.ofPattern(pattern, locale).format(date)
-    }
+    /** `layout.birthday.request.dueDate`: the day before the birthday ("Wednesday, July 5"; no year, never a countdown). */
+    fun dueDate(birthday: LocalDate, locale: Locale = Locale.getDefault()): String =
+        skeleton(Tokens.Layouts.BirthdayRequestDueDate.pattern, birthday.minusDays(1), locale)
 
-    /** `layout.year.story.monthFormat` ("January"). */
+    /** `layout.year.story.dateFormat` ("Wednesday, July 5"). */
+    fun storyDate(date: LocalDate, locale: Locale = Locale.getDefault()): String =
+        skeleton(Tokens.Layouts.YearStoryDateFormat.pattern, date, locale)
+
+    /** `layout.year.story.monthFormat` ("December"), the stand-alone month name. */
     fun storyMonth(month: Int, locale: Locale = Locale.getDefault()): String =
-        DateTimeFormatter.ofPattern(Tokens.Layouts.YearStoryMonthFormat.pattern, locale).format(LocalDate.of(2000, month, 1))
+        java.time.Month.of(month).getDisplayName(java.time.format.TextStyle.FULL_STANDALONE, locale)
 
     /** A group-level number (`year.story.moments.count` `{count}`), grouped per locale. */
     fun number(value: Int, locale: Locale = Locale.getDefault()): String = NumberFormat.getIntegerInstance(locale).format(value)
 
+    /** A position ("2" of "5") in the locale's digits. */
+    fun position(value: Int, locale: Locale = Locale.getDefault()): String = number(value, locale)
+
     /** Spoken date for photo labels (`birthday.contribute.a11y.photo`, `year.story.a11y.collage`). */
     fun spokenDate(date: LocalDate, locale: Locale = Locale.getDefault()): String =
         DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).withLocale(locale).format(date)
+
+    /** A token's pattern ("EEEE, MMMM d") as a skeleton for the locale's best pattern (Android `getBestDateTimePattern`). */
+    private fun skeleton(pattern: String, date: LocalDate, locale: Locale): String {
+        val best = DateFormat.getBestDateTimePattern(locale, pattern.filter(Char::isLetter))
+        return DateTimeFormatter.ofPattern(best, locale).format(date)
+    }
 }
 
 /** width / height of the original image; 1 when the client did not record the size. */

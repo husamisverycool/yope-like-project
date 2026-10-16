@@ -182,25 +182,6 @@ private extension CaptureStill {
 final class LiveCaptureLibrary: CaptureLibrary {
     private let service = PhotoLibraryService()
 
-    func newestThumbnail(side: CGFloat) async -> UIImage? {
-        guard PhotoLibraryService.readAuthorization().allowsAccess else { return nil }
-        let options = PHFetchOptions()
-        options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-        options.fetchLimit = 1
-        guard let asset = PHAsset.fetchAssets(with: .image, options: options).firstObject else { return nil }
-        let scale = UITraitCollection.current.displayScale
-        let target = CGSize(width: side * scale, height: side * scale)
-        let request = PHImageRequestOptions()
-        request.deliveryMode = .highQualityFormat
-        request.resizeMode = .fast
-        request.isNetworkAccessAllowed = false
-        return await withCheckedContinuation { (continuation: CheckedContinuation<UIImage?, Never>) in
-            _ = PHImageManager.default().requestImage(for: asset, targetSize: target, contentMode: .aspectFill, options: request) { @Sendable image, _ in
-                continuation.resume(returning: image)
-            }
-        }
-    }
-
     func save(_ media: CapturedMedia) async throws {
         switch media.kind {
         case .photo:
@@ -345,32 +326,9 @@ final class LiveCapturePosting: CapturePosting {
         _ = try await data.publisher.publish(draft)
     }
 
-    func retryPending() async -> CaptureRetryResult {
-        guard let data else { return CaptureRetryResult(posted: 0, error: .notConfigured) }
-        let results = await data.publisher.resumePending()
-        var posted = 0
-        var firstError: DataError?
-        for result in results.values {
-            switch result {
-            case .success: posted += 1
-            case let .failure(error): firstError = firstError ?? error
-            }
-        }
-        return CaptureRetryResult(posted: posted, error: firstError)
-    }
-
-    func onlineUpdates() -> AsyncStream<Bool> {
-        guard let data else { return AsyncStream { $0.finish() } }
-        let updates = data.reachability.updates()
-        return AsyncStream { continuation in
-            let task = Task {
-                for await status in updates {
-                    continuation.yield(status == .online)
-                }
-                continuation.finish()
-            }
-            continuation.onTermination = { _ in task.cancel() }
-        }
+    func discard(_ mediaID: MediaID) async {
+        guard let data else { return }
+        await data.publisher.discard(mediaID)
     }
 }
 

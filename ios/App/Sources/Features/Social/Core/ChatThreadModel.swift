@@ -1,16 +1,23 @@
-// Surface: chat.thread (+ chat.composer, chat.voice, chat.reactions inside it) — reference app: Yope
-// (reactions: Locket). Spec: design/surfaces/chat.thread.md "States", "Data & actions".
+// Surface: chat.thread (+ chat.composer, chat.voice, chat.reactions inside it) — Retro comment rows composed in Apple
+// Messages / WhatsApp's order. Spec: design/surfaces/chat.thread.md "States", "Data & actions".
 // View model only (Foundation + Observation + AppData); the view is ChatThreadView.
 import AppData
 import AppModels
 import Foundation
 import Observation
 
-/// A reaction just sent by this person (starts the emoji rain on their screen, `chat.reactions` §4).
-struct SentReaction: Equatable, Sendable {
-    var postID: PostID
-    var emoji: String
-    var id: Int
+/// What the composer's reply bar quotes (`chat.thread.layout.replyQuote`, Retro "Reply").
+enum ChatReplyTarget: Equatable, Sendable {
+    /// A photo message: the reply quotes its post (`p_reply_to_post_id`).
+    case post(PostID, author: UserID)
+    /// A text or voice message (`p_reply_to_message_id`).
+    case message(MessageID, author: UserID)
+
+    var author: UserID {
+        switch self {
+        case let .post(_, author), let .message(_, author): return author
+        }
+    }
 }
 
 @MainActor
@@ -32,8 +39,8 @@ final class ChatThreadModel {
     private(set) var posts: [PostID: PostWithMedia] = [:]
     private(set) var reactions: [PostID: ReactionSummary] = [:]
     private(set) var profiles: [UserID: Profile] = [:]
-    /// The latest ready recap (film-strip circle; hidden while nil).
-    private(set) var latestRecapID: RecapID?
+    /// Quoted messages that are not in the loaded pages (fetched by id).
+    private(set) var quotedMessages: [MessageID: Message] = [:]
     /// Cursor of the next older page (nil = no older messages).
     private(set) var olderCursor: Date?
     private(set) var isLoadingOlder = false
@@ -41,9 +48,10 @@ final class ChatThreadModel {
     private(set) var signals = SocialSignals()
     /// The newest message someone else sent while the thread was open (announced to VoiceOver).
     private(set) var arrival: Message?
-    private(set) var sentReaction: SentReaction?
     /// Composer text.
     var draft = ""
+    /// The message or photo the composer replies to (the reply bar shows while set).
+    private(set) var replyTarget: ChatReplyTarget?
     /// Local copies of my messages not yet confirmed by the server (being sent, or failed), by their temporary id.
     private(set) var pending: Set<MessageID> = []
     /// Local copies whose send failed (`chat.thread.layout.failedMessage`); a tap sends them again.
@@ -51,10 +59,12 @@ final class ChatThreadModel {
     @ObservationIgnored private var outgoing: [MessageID: Outgoing] = [:]
     /// Recorded voice files of pending / just-sent voice messages, playable before the upload finishes.
     private(set) var localVoiceFiles: [MessageID: URL] = [:]
-    /// The offline copy was looked at; the loading HUD shows only when there was none (no flash before cached content).
+    /// The offline copy was looked at; the loading indicator shows only when there was none (no flash before cached
+    /// content).
     private(set) var hasCheckedCache = false
+    /// Add-only photo access was denied on "Save": the native alert with the Settings link shows.
+    var saveDenied = false
 
-    private var reactionCounter = 0
     private var localCounter = 0
 
     init(groupID: GroupID, focusMessageID: MessageID? = nil, data: any SocialDataSource) {
@@ -67,10 +77,12 @@ final class ChatThreadModel {
 
     var hasOlder: Bool { olderCursor != nil }
 
-    /// The first-load HUD (`chat.thread` loading state).
+    /// The first-load indicator (`chat.thread` loading state).
     var showsLoading: Bool { phase == .loading && hasCheckedCache }
 
-    func isPending(_ message: Message) -> Bool { pending.contains(message.id) }
+    func isPending(_ message: Message) -> Bool { pending.contains(message.id) && !failed.contains(message.id) }
+
+    func isFailed(_ message: Message) -> Bool { failed.contains(message.id) }
 
     /// Photo posts of the thread in chronological order (`photo.viewer` context).
     var photoPostIDs: [PostID] {
@@ -81,21 +93,31 @@ final class ChatThreadModel {
 
     func profile(_ id: UserID) -> Profile? { profiles[id] }
 
-    /// Empty state: the viewer created the group (`chat.thread.empty.titleCreator`) or someone else did.
-    var viewerCreatedGroup: Bool {
-        guard let creator = group?.createdBy else { return false }
-        return creator == me
+    func post(of message: Message) -> PostWithMedia? { message.postID.flatMap { posts[$0] } }
+
+    /// The time zone of the group (week numbers of quoted posts).
+    var timeZone: TimeZone { group?.resolvedTimeZone ?? .current }
+
+    /// The photo a message quotes: a text reply's `reply_to_post_id`, or a photo reply's post `reply_to_post_id`.
+    func quotedPost(of message: Message) -> PostWithMedia? {
+        if let id = message.replyToPostID { return posts[id] }
+        if message.kind == .photo, let id = post(of: message)?.post.replyToPostID { return posts[id] }
+        return nil
     }
 
-    var creatorFirstName: String? {
-        guard let creator = group?.createdBy else { return nil }
-        return profiles[creator]?.socialFirstName
+    /// The message a message quotes (`reply_to_message_id`), when it still exists.
+    func quotedMessage(of message: Message) -> Message? {
+        guard let id = message.replyToMessageID else { return nil }
+        return messages.first { $0.id == id } ?? quotedMessages[id]
     }
 
-    /// First names of the members the creator added (`chat.thread.empty.detail`), joining order.
-    var addedMemberNames: [String] {
-        let creator = group?.createdBy
-        return members.filter { $0.member.userID != creator }.compactMap { $0.profile?.socialFirstName }
+    func hasQuote(_ message: Message) -> Bool {
+        quotedPost(of: message) != nil || quotedMessage(of: message) != nil
+    }
+
+    /// The thread as day dividers and runs (`chat.thread.layout.runs`, `.timeFormat.dayDividers`).
+    func entries(calendar: Calendar = .current) -> [ChatEntry] {
+        ChatThreadLayout.entries(messages, me: me, calendar: calendar) { [self] in hasQuote($0) }
     }
 
     // MARK: Loading
@@ -131,7 +153,6 @@ final class ChatThreadModel {
             for message in local where !messages.contains(where: { $0.id == message.id }) { insert(message) }
             await loadDetails(for: newest)
             phase = messages.isEmpty ? .empty : .ready
-            await loadLatestRecap()
         } catch {
             let failure = SocialFailure(error)
             if failure == .offline { isOffline = true }
@@ -143,7 +164,7 @@ final class ChatThreadModel {
         }
     }
 
-    /// Error state "try again".
+    /// Error state "Try Again".
     func retry() async {
         phase = .loading
         await load()
@@ -186,11 +207,6 @@ final class ChatThreadModel {
         }
     }
 
-    private func loadLatestRecap() async {
-        guard let recaps = try? await data.recaps(groupID: groupID) else { return }
-        latestRecapID = recaps.first { $0.status == .ready }?.id
-    }
-
     private func loadPosts(_ wanted: [PostID]) async {
         guard !wanted.isEmpty else { return }
         if let found = try? await data.posts(ids: wanted) {
@@ -200,20 +216,27 @@ final class ChatThreadModel {
         }
     }
 
-    /// Posts (photo messages and reply targets), their reactions, and authors' profiles.
+    /// Posts (photo messages and quoted photos), quoted messages, reactions, and the people behind them.
     private func loadDetails(for batch: [Message]) async {
         let photoIDs = batch.compactMap(\.postID)
         let wanted = (photoIDs + batch.compactMap(\.replyToPostID)).socialUnique().filter { posts[$0] == nil }
         await loadPosts(wanted)
         // Photo replies to a photo (`posts.reply_to_post_id`): their quoted photo too.
         await loadPosts(photoIDs.compactMap { posts[$0]?.post.replyToPostID }.socialUnique().filter { posts[$0] == nil })
+        let known = Set(messages.map(\.id))
+        let missingQuotes = batch.compactMap(\.replyToMessageID).socialUnique()
+            .filter { !known.contains($0) && quotedMessages[$0] == nil }
+        for id in missingQuotes {
+            if let found = try? await data.message(id: id) { quotedMessages[id] = found }
+        }
         if !photoIDs.isEmpty, let rows = try? await data.reactions(postIDs: photoIDs) {
             let summaries = ReactionSummary.byPost(rows)
             for id in photoIDs.socialUnique() {
                 reactions[id] = summaries[id] ?? ReactionSummary()
             }
         }
-        let people = (batch.map(\.authorID) + posts.values.map(\.post.authorID))
+        let reactors = photoIDs.flatMap { reactions[$0]?.rows.map(\.userID) ?? [] }
+        let people = (batch.map(\.authorID) + posts.values.map(\.post.authorID) + quotedMessages.values.map(\.authorID) + reactors)
             .socialUnique()
             .filter { profiles[$0] == nil }
         if !people.isEmpty, let found = try? await data.profiles(ids: people) {
@@ -275,11 +298,13 @@ final class ChatThreadModel {
         case let .postDeleted(postID, _):
             removePost(postID)
         case let .messageDeleted(messageID):
-            messages.removeAll { $0.id == messageID }
-            if messages.isEmpty, phase == .ready { phase = .empty }
+            removeMessage(messageID)
         case let .reactionInserted(reaction):
             guard posts[reaction.postID] != nil || messages.contains(where: { $0.postID == reaction.postID }) else { return }
             reactions[reaction.postID, default: ReactionSummary()].insert(reaction)
+            if profiles[reaction.userID] == nil, let found = try? await data.profiles(ids: [reaction.userID]) {
+                for profile in found { profiles[profile.id] = profile }
+            }
         case let .reactionsChanged(postID):
             await reloadReactions(postID)
         case .resubscribed:
@@ -300,6 +325,18 @@ final class ChatThreadModel {
         }
         posts[postID] = nil
         reactions[postID] = nil
+        if case let .post(id, _)? = replyTarget, id == postID { replyTarget = nil }
+        if messages.isEmpty, phase == .ready { phase = .empty }
+    }
+
+    /// `message_deleted`: the message goes; replies to it lose their quote part.
+    private func removeMessage(_ messageID: MessageID) {
+        messages.removeAll { $0.id == messageID }
+        quotedMessages[messageID] = nil
+        for index in messages.indices where messages[index].replyToMessageID == messageID {
+            messages[index].replyToMessageID = nil
+        }
+        if case let .message(id, _)? = replyTarget, id == messageID { replyTarget = nil }
         if messages.isEmpty, phase == .ready { phase = .empty }
     }
 
@@ -313,23 +350,57 @@ final class ChatThreadModel {
         messages.insert(message, at: index)
     }
 
+    // MARK: Replies
+
+    /// Context menu "Reply": the reply bar shows above the field (`chat.composer.placeholderReply`).
+    func startReply(to message: Message) {
+        guard !pending.contains(message.id) else { return }
+        if message.kind == .photo, let postID = message.postID {
+            replyTarget = .post(postID, author: message.authorID)
+        } else {
+            replyTarget = .message(message.id, author: message.authorID)
+        }
+    }
+
+    /// The reply bar's close glyph.
+    func cancelReply() {
+        replyTarget = nil
+    }
+
+    /// The post a photo sent from the composer's camera replies to (`create_post(p_reply_to_post_id)`).
+    var replyPostID: PostID? {
+        if case let .post(id, _)? = replyTarget { return id }
+        return nil
+    }
+
     // MARK: Composer
 
     /// What a local message sends (kept for a retry after a failure).
     private enum Outgoing {
-        case text(String)
+        case text(String, replyToPost: PostID?, replyToMessage: MessageID?)
         case voice(URL, durationMs: Int)
     }
 
-    /// Sends the composer text (`send_message`, kind text): the message shows at once (optimistic) and is replaced
-    /// by the server's row. On failure it stays with the failed-message layout (`chat.thread.layout.failedMessage`:
-    /// red "!" and `chat.thread.sendFailed`); tapping it sends it again.
+    /// Sends the composer text (`send_message`, kind text, with the reply ids): the message shows at once (optimistic)
+    /// with `chat.thread.sending` under it and is replaced by the server's row. On failure it stays with
+    /// `chat.thread.sendFailed` (`chat.thread.layout.failedMessage`); tapping it sends it again.
     func sendDraft() async {
         let body = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !body.isEmpty, let me else { return }
         draft = ""
-        let local = makeLocal(Message(id: nextLocalID(), groupID: groupID, authorID: me, kind: .text, body: body, createdAt: Date()))
-        outgoing[local.id] = .text(body)
+        var replyToPost: PostID?
+        var replyToMessage: MessageID?
+        switch replyTarget {
+        case let .post(id, _)?: replyToPost = id
+        case let .message(id, _)?: replyToMessage = id
+        case nil: break
+        }
+        replyTarget = nil
+        let local = makeLocal(Message(
+            id: nextLocalID(), groupID: groupID, authorID: me, kind: .text, body: body,
+            replyToPostID: replyToPost, replyToMessageID: replyToMessage, createdAt: Date()
+        ))
+        outgoing[local.id] = .text(body, replyToPost: replyToPost, replyToMessage: replyToMessage)
         await deliver(local.id)
     }
 
@@ -344,14 +415,12 @@ final class ChatThreadModel {
         await deliver(local.id)
     }
 
-    /// Tap on a failed message (its "!", label or bubble): sends it again.
+    /// Tap on a failed message (or its status line, or "Retry"): sends it again.
     func retry(_ message: Message) async {
         guard failed.contains(message.id) else { return }
         failed.remove(message.id)
         await deliver(message.id)
     }
-
-    func isFailed(_ message: Message) -> Bool { failed.contains(message.id) }
 
     private func deliver(_ localID: MessageID) async {
         guard let payload = outgoing[localID], messages.contains(where: { $0.id == localID }) else { return }
@@ -359,8 +428,10 @@ final class ChatThreadModel {
         do {
             let message: Message
             switch payload {
-            case let .text(body):
-                message = try await data.sendText(groupID: groupID, body: body, replyToPostID: nil)
+            case let .text(body, replyToPost, replyToMessage):
+                message = try await data.sendText(
+                    groupID: groupID, body: body, replyToPostID: replyToPost, replyToMessageID: replyToMessage
+                )
             case let .voice(fileURL, durationMs):
                 message = try await data.sendVoice(groupID: groupID, fileURL: fileURL, durationMs: durationMs)
                 localVoiceFiles[message.id] = fileURL
@@ -441,8 +512,13 @@ final class ChatThreadModel {
 
     // MARK: Messages
 
-    /// Deletes one of my text / voice messages after the native confirmation: gone at once, put back if the
-    /// call fails.
+    /// "Copy" on a text message: the composer's view puts it on the pasteboard; this confirms it
+    /// (`chat.thread.toast.copied`: Android Toast, iOS announcement).
+    func copied() {
+        signals.post(.copied)
+    }
+
+    /// "Unsend" one of my text / voice messages after the confirmation: gone at once, put back if the call fails.
     func delete(_ message: Message) async {
         guard isMine(message), message.kind != .photo,
               let index = messages.firstIndex(where: { $0.id == message.id }) else { return }
@@ -472,9 +548,52 @@ final class ChatThreadModel {
         }
     }
 
+    /// "Delete" on my photo message after `photo.viewer`'s confirmation: `delete_media` removes it everywhere; it goes
+    /// at once and comes back if the call fails.
+    func deletePhoto(_ message: Message) async {
+        guard isMine(message), message.kind == .photo, let post = post(of: message) else { return }
+        signals.emit(.warning)
+        let snapshot = (messages, posts, reactions)
+        let removed = Set(posts.values.filter { $0.post.mediaID == post.post.mediaID }.map(\.id)).union([post.id])
+        for id in removed { removePost(id) }
+        do {
+            try await data.deleteMedia(id: post.post.mediaID)
+            signals.post(.photoDeleted)
+        } catch {
+            if SocialFailure(error) == .notFound { return }
+            if SocialFailure(error) == .offline { isOffline = true }
+            (messages, posts, reactions) = snapshot
+            phase = messages.isEmpty ? .empty : .ready
+            signals.emit(.failed)
+            signals.post(.deleteFailed)
+        }
+    }
+
+    /// "Save" on a photo message (as `photo.viewer`'s Save to Camera Roll).
+    func savePhoto(_ message: Message, using saver: any SocialPhotoSaving) async {
+        guard let media = post(of: message)?.media else { return }
+        do {
+            let fileURL = try await data.fileURL(path: media.originalPath)
+            var motionURL: URL?
+            if media.kind == .livePhoto, let motionPath = media.motionPath {
+                motionURL = try await data.fileURL(path: motionPath)
+            }
+            try await saver.save(kind: media.kind, fileURL: fileURL, motionURL: motionURL)
+            signals.emit(.success)
+            signals.post(.photoSaved)
+        } catch SocialSaveFailure.notAuthorized {
+            saveDenied = true
+            signals.emit(.failed)
+        } catch {
+            if SocialFailure(error) == .offline { isOffline = true }
+            signals.emit(.failed)
+            signals.post(.saveFailed)
+        }
+    }
+
     // MARK: Reactions
 
-    /// `react` with optimistic display: the sticker appears at once and is removed if the call fails.
+    /// `react` with optimistic display: the chip updates at once and the emoji goes again if the call fails.
     func react(postID: PostID, emoji: String) async {
         guard let me else { return }
         let alreadyThere = reactions[postID]?.contains(userID: me, emoji: emoji) ?? false
@@ -483,8 +602,6 @@ final class ChatThreadModel {
                 Reaction(postID: postID, userID: me, emoji: emoji, groupID: groupID, createdAt: Date())
             )
         }
-        reactionCounter += 1
-        sentReaction = SentReaction(postID: postID, emoji: emoji, id: reactionCounter)
         do {
             _ = try await data.react(postID: postID, emoji: emoji)
         } catch {
@@ -494,13 +611,23 @@ final class ChatThreadModel {
         }
     }
 
-    /// The emoji I reacted with on a post (highlighted in the picker).
+    /// A quick reaction from the context menu: an emoji I already used takes it back
+    /// (`chat.reactions.layout.unreact.menu`), any other reacts.
+    func toggleReaction(postID: PostID, emoji: String) async {
+        if myEmoji(on: postID).contains(emoji) {
+            await unreact(postID: postID, emoji: emoji)
+        } else {
+            await react(postID: postID, emoji: emoji)
+        }
+    }
+
+    /// The emoji I reacted with on a post (selected in the quick row and the picker).
     func myEmoji(on postID: PostID) -> Set<String> {
         guard let me else { return [] }
         return reactions[postID]?.emoji(by: me) ?? []
     }
 
-    /// `unreact` from the picker's highlighted emoji (`chat.reactions.layout.unreact`): optimistic, restored on failure.
+    /// `unreact` (`chat.reactions.layout.unreact`): optimistic, restored on failure.
     func unreact(postID: PostID, emoji: String) async {
         guard let me, let before = reactions[postID], before.contains(userID: me, emoji: emoji) else { return }
         reactions[postID]?.remove(userID: me, emoji: emoji)
@@ -525,50 +652,84 @@ final class ChatThreadModel {
     }
 }
 
-/// The vertical gap above a message (`chat.thread` "Message geometry"); the view maps each to its token.
+// MARK: - Layout
+
+/// The space above an entry of the thread (`chat.thread.layout.runs.spacing`); the view maps each to its token.
 enum ChatGap: Equatable, Sendable {
-    /// First message of the list.
+    /// The first entry of the list.
     case none
-    /// Same sender, bubble → bubble (`chat.thread.dimension.gapSameSender`).
-    case sameSender
-    /// Same sender, text → voice (`chat.thread.dimension.gapTextToVoice`).
-    case textToVoice
-    /// Same sender, photo → photo (`chat.thread.dimension.photoGap`); also photo ↔ bubble (not measured:
-    /// the photo gap is used, spec Gaps).
-    case photo
-    /// Runs of different senders (`chat.thread.dimension.gapBetweenSenders`).
-    case betweenSenders
+    /// The next item of the same run (`chat.thread.dimension.itemGap`).
+    case item
+    /// A new run (`size.global.listGap`).
+    case run
+    /// A day divider (`size.global.sectionGap` to its cap top).
+    case divider
+    /// The first message after a divider (`size.global.sectionHeaderToContent` below its baseline).
+    case afterDivider
 }
 
-/// One row of the thread: the message, its gap above, and whether the sender's avatar sits beside it
-/// (another member's message, last of its run).
-struct ChatRowLayout: Identifiable, Equatable, Sendable {
+/// One message of the thread with its place in a run.
+struct ChatRow: Identifiable, Equatable, Sendable {
     let message: Message
-    let gap: ChatGap
-    let showsAvatar: Bool
+    /// The run's first message: avatar, name and time lead it (C-16 comment row).
+    let startsRun: Bool
     let isMine: Bool
+    let gap: ChatGap
 
     var id: MessageID { message.id }
+}
 
-    static func rows(_ messages: [Message], me: UserID?) -> [ChatRowLayout] {
-        messages.indices.map { index in
-            let message = messages[index]
-            let previous = index > 0 ? messages[index - 1] : nil
-            let next = index + 1 < messages.count ? messages[index + 1] : nil
-            let isMine = message.authorID == me
-            return ChatRowLayout(
-                message: message,
-                gap: previous.map { gap(from: $0, to: message) } ?? .none,
-                showsAvatar: !isMine && next?.authorID != message.authorID,
-                isMine: isMine
-            )
+/// An entry of the thread: a day divider (C-20 dated header) or a message.
+enum ChatEntry: Identifiable, Equatable, Sendable {
+    /// The start of a day (device calendar) and the space above it.
+    case day(Date, gap: ChatGap)
+    case message(ChatRow)
+
+    var id: String {
+        switch self {
+        case let .day(date, _): return "day-" + String(Int(date.timeIntervalSinceReferenceDate))
+        case let .message(row): return row.id.rawValue
         }
     }
+}
 
-    static func gap(from previous: Message, to message: Message) -> ChatGap {
-        guard previous.authorID == message.authorID else { return .betweenSenders }
-        if previous.kind == .photo || message.kind == .photo { return .photo }
-        if previous.kind == .text, message.kind == .voice { return .textToVoice }
-        return .sameSender
+enum ChatThreadLayout {
+    /// Day dividers before the first message of each day; runs of consecutive messages from one sender, broken by
+    /// another sender, a day divider, or a reply quote (`chat.thread.layout.runs.breaks`).
+    static func entries(
+        _ messages: [Message],
+        me: UserID?,
+        calendar: Calendar = .current,
+        hasQuote: (Message) -> Bool = { _ in false }
+    ) -> [ChatEntry] {
+        var result: [ChatEntry] = []
+        var previous: Message?
+        for message in messages {
+            let day = calendar.startOfDay(for: message.createdAt)
+            let newDay = previous.map { calendar.startOfDay(for: $0.createdAt) != day } ?? true
+            if newDay {
+                result.append(.day(day, gap: result.isEmpty ? .none : .divider))
+            }
+            let startsRun = newDay || previous?.authorID != message.authorID || hasQuote(message)
+            let gap: ChatGap = newDay ? .afterDivider : (startsRun ? .run : .item)
+            result.append(.message(ChatRow(message: message, startsRun: startsRun, isMine: message.authorID == me, gap: gap)))
+            previous = message
+        }
+        return result
+    }
+
+    /// The day divider's words (`chat.thread.divider.today` / `.yesterday`, else the date).
+    enum DayLabel: Equatable {
+        case today
+        case yesterday
+        case date(Date)
+    }
+
+    static func dayLabel(_ day: Date, now: Date = Date(), calendar: Calendar = .current) -> DayLabel {
+        if calendar.isDate(day, inSameDayAs: now) { return .today }
+        if let yesterday = calendar.date(byAdding: .day, value: -1, to: now), calendar.isDate(day, inSameDayAs: yesterday) {
+            return .yesterday
+        }
+        return .date(day)
     }
 }

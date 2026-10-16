@@ -1,11 +1,12 @@
 // Surface: auth.code — SMS code entry. Spec: design/surfaces/auth.code.md.
-// References: as auth.phone (S24, S26, C24, BI, NG, HUD) plus
-// references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png x262-479 y76-94 (lime text link).
+// References: references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (APK-S: "Enter your code", hints, resend line,
+// titled error pairs), references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png (LAND: page, capsule, grey link C-08);
+// the onboarding form composition of C-02, C-12, C-05, C-08 in Retro's sign-up order (MERGE RA-2).
 package app.feature.account.auth
 
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
@@ -15,7 +16,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.focus.FocusRequester
@@ -37,20 +37,22 @@ import app.feature.account.AccountEnvironment
 import app.feature.account.LocalAccountEnvironment
 import app.feature.account.common.AccountViewModel
 import app.feature.account.common.CollectEvents
-import app.feature.account.common.SignUpLayout
-import app.feature.account.common.SignUpStack
+import app.feature.account.common.OnboardingForm
 import app.feature.account.common.dataError
+import app.feature.account.common.errorDismissLabel
 import app.feature.account.shell.AccountFlow
 import app.ui.components.FormTextField
-import app.ui.components.HeaderCircleButton
-import app.ui.components.HeaderCircleFill
-import app.ui.components.HudOverlay
-import app.ui.system.ErrorAlert
-import app.feature.account.common.errorDismissLabel
-import app.ui.components.OnboardingTitle
+import app.ui.components.HeaderAction
 import app.ui.components.PrimaryButton
 import app.ui.components.TextLink
+import app.ui.foundation.DsMotion
+import app.ui.foundation.PageRoles
+import app.ui.foundation.endAtLastBaseline
+import app.ui.system.ErrorAlert
+import app.ui.system.SystemAlertDialog
+import app.ui.text.CapTop
 import app.ui.text.TextRoles
+import app.ui.text.capTopAt
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,11 +61,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** Field errors, shown as the alert of `auth.phone.layout.inlineError` (message = the error sentence, one OK). */
-enum class CodeError(val copy: Int) {
-    Wrong(R.string.auth_code_error_wrong),
-    Expired(R.string.auth_code_error_expired),
-    TooMany(R.string.auth_code_error_toomany),
+/**
+ * Code errors (`auth.phone.layout.inlineError`): Retro's titled pairs with its two recoveries ("Edit code" / "Send a new
+ * code"; the first listed is the confirming action), a titled service error with "OK", and the message-only "too many".
+ */
+enum class CodeError(val title: Int?, val message: Int) {
+    Wrong(R.string.auth_code_error_wrong_title, R.string.auth_code_error_wrong),
+    Expired(R.string.auth_code_error_expired_title, R.string.auth_code_error_expired),
+    Service(R.string.auth_code_error_service_title, R.string.auth_code_error_service),
+    TooMany(null, R.string.auth_code_error_toomany),
 }
 
 data class CodeUiState(
@@ -92,6 +98,12 @@ class CodeViewModel(private val env: AccountEnvironment) : AccountViewModel() {
 
     fun dismissError() = mutable.update { it.copy(error = null) }
 
+    /** "Send a new code" from an error alert: closes it and resends (the lock does not apply to this recovery). */
+    fun sendNewCode() {
+        mutable.update { it.copy(error = null, resendLocked = false) }
+        resend()
+    }
+
     fun onCodeChange(text: String) = mutable.update { it.copy(code = text.filter(Char::isLetterOrDigit).take(MAX_CODE), error = null) }
 
     /** A code delivered by the SMS User Consent sheet: filled into the field (no auto-submit, spec). */
@@ -116,7 +128,8 @@ class CodeViewModel(private val env: AccountEnvironment) : AccountViewModel() {
                         error == DataError.Network -> it.copy(verifying = false, offline = true)
                         error is DataError.Auth && error.kind == AuthFailure.RateLimited -> it.copy(verifying = false, error = CodeError.TooMany)
                         error is DataError.Auth && error.kind == AuthFailure.InvalidOrExpiredCode && isExpired() -> it.copy(verifying = false, error = CodeError.Expired, code = "")
-                        else -> it.copy(verifying = false, error = CodeError.Wrong, code = "")
+                        error is DataError.Auth && error.kind == AuthFailure.InvalidOrExpiredCode -> it.copy(verifying = false, error = CodeError.Wrong, code = "")
+                        else -> it.copy(verifying = false, error = CodeError.Service)
                     }
                 }
                 haptic(Tokens.Haptics.globalError)
@@ -185,9 +198,26 @@ fun CodeRoute(nav: NavController) {
     val state by vm.state.collectAsStateWithLifecycle()
     CollectEvents(vm.events, nav)
     SmsUserConsentEffect(enabled = env.smsUserConsent, restartKey = env.signUp.codeSentAtMillis, onCode = vm::onCodeReceived)
-    CodeScreen(state, vm::onCodeChange, vm::submit, vm::resend, onBack = { nav.popBackStack() }, onRetry = vm::retryOffline, onDismissError = vm::dismissError)
+    CodeScreen(
+        state,
+        vm::onCodeChange,
+        vm::submit,
+        vm::resend,
+        onBack = { nav.popBackStack() },
+        onRetry = vm::retryOffline,
+        onDismissError = vm::dismissError,
+        onSendNewCode = vm::sendNewCode,
+    )
 }
 
+/**
+ * The onboarding form ([OnboardingForm]): back → auth.phone (number kept); title / explanation ({phone}); the C-12 code
+ * field (`auth.code.layout.codeField`: one field, digits, SMS one-time-code autofill + SMS User Consent); the helper
+ * (text role `caption`, secondary) whose cap top sits `size.global.sectionHeaderToContent` under the field; the resend line
+ * the same gap under the helper's baseline: the prefix (`caption`, secondary) and the C-08 link "Send again" (text role
+ * `listTitle`, secondary; dimmed `color.global.textTertiary` and disabled for `auth.code.duration.resendLock`, crossfading
+ * `duration.global.crossfade`, no countdown); C-05 "Next" pinned above the keyboard (busy while verifying).
+ */
 @Composable
 fun CodeScreen(
     state: CodeUiState,
@@ -197,30 +227,25 @@ fun CodeScreen(
     onBack: () -> Unit,
     onRetry: () -> Unit,
     onDismissError: () -> Unit = {},
+    onSendNewCode: () -> Unit = {},
     focusOnAppear: Boolean = true,
 ) {
-    if (state.offline) {
-        SignUpOffline(stringResource(R.string.auth_code_offline_detail), onRetry)
-        return
-    }
     val focus = remember { FocusRequester() }
     var field by remember { mutableStateOf(TextFieldValue(state.code, TextRange(state.code.length))) }
     if (field.text != state.code) field = TextFieldValue(state.code, TextRange(state.code.length))
-    SignUpLayout(
-        header = {
-            HeaderCircleButton(
-                Tokens.Icons.globalBack,
-                stringResource(R.string.auth_code_back_accessibilitylabel),
-                onBack,
-                fill = HeaderCircleFill.OnDeep,
-                modifier = Modifier.align(Alignment.TopStart),
-            )
+    val gap = Tokens.Sizes.globalSectionHeaderToContent
+    val caption = TextRoles.caption
+    OnboardingForm(
+        title = stringResource(R.string.auth_code_title),
+        explanation = stringResource(R.string.auth_code_subtitle, state.phoneDisplay),
+        back = HeaderAction(Tokens.Icons.globalBack, stringResource(R.string.auth_code_back_accessibilitylabel)) { if (!state.verifying) onBack() },
+        replacement = if (state.offline) {
+            { OfflineBlock(onRetry) }
+        } else {
+            null
         },
-        overlay = { HudOverlay(state.verifying, stringResource(R.string.groups_create_hud_loading)) },
+        bottom = { PrimaryButton(stringResource(R.string.auth_code_continue), onContinue, enabled = state.canContinue || state.verifying, loading = state.verifying) },
     ) {
-        OnboardingTitle(stringResource(R.string.auth_code_title), capTop = SignUpStack.titleCapTop)
-        Text(stringResource(R.string.auth_code_subtitle, state.phoneDisplay), style = TextRoles.onboardingSubtitle, modifier = Modifier.fillMaxWidth())
-        Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeTitleToContent))
         FormTextField(
             value = field,
             onValueChange = { field = it; onCodeChange(it.text) },
@@ -229,13 +254,53 @@ fun CodeScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { onContinue() }),
             autofill = ContentType.SmsOtpCode,
+            enabled = !state.verifying,
             modifier = Modifier.focusRequester(focus),
         )
-        Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeFieldToButton))
-        PrimaryButton(stringResource(R.string.auth_code_continue), onContinue, enabled = state.canContinue)
-        Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeFieldToButton))
-        TextLink(stringResource(R.string.auth_code_resend), onResend, enabled = !state.resendLocked)
+        Text(
+            stringResource(R.string.auth_code_helper),
+            style = caption,
+            color = PageRoles.secondaryText(),
+            modifier = Modifier.fillMaxWidth().capTopAt(gap, CapTop.height(caption)).endAtLastBaseline(),
+        )
+        ResendLine(locked = state.resendLocked, onResend = onResend, modifier = Modifier.capTopAt(gap, CapTop.height(TextRoles.listTitle)))
     }
-    state.error?.let { ErrorAlert(stringResource(it.copy), errorDismissLabel(), onDismissError) }
-    if (focusOnAppear) LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
+    state.error?.let { error ->
+        val editCode = stringResource(R.string.auth_code_error_editcode)
+        val sendNew = stringResource(R.string.auth_code_error_sendnew)
+        val edit = {
+            onDismissError()
+            runCatching { focus.requestFocus() }
+            Unit
+        }
+        when (error) {
+            CodeError.Wrong -> SystemAlertDialog(stringResource(error.title!!), stringResource(error.message), editCode, edit, sendNew, onSendNewCode, dismissible = false)
+            CodeError.Expired -> SystemAlertDialog(stringResource(error.title!!), stringResource(error.message), sendNew, onSendNewCode, editCode, edit, dismissible = false)
+            CodeError.Service -> SystemAlertDialog(stringResource(error.title!!), stringResource(error.message), errorDismissLabel(), onDismissError, null, onDismissError, dismissible = false)
+            CodeError.TooMany -> ErrorAlert(stringResource(error.message), errorDismissLabel(), onDismissError)
+        }
+    }
+    if (focusOnAppear && !state.offline) LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
 }
+
+/**
+ * "Didn't receive a code? Send again": the prefix (text role `caption`, secondary) and the C-08 link on one baseline,
+ * a word space apart; the link is disabled (announced) and dimmed while [locked].
+ */
+@Composable
+private fun ResendLine(locked: Boolean, onResend: () -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier.fillMaxWidth()) {
+        Text(
+            stringResource(R.string.auth_code_resend_prefix) + WORD_SPACE,
+            style = TextRoles.caption,
+            color = PageRoles.secondaryText(),
+            modifier = Modifier.alignByBaseline(),
+        )
+        Crossfade(targetState = locked, animationSpec = DsMotion.crossfade(), modifier = Modifier.alignByBaseline(), label = "resendLock") { isLocked ->
+            TextLink(stringResource(R.string.auth_code_resend), onResend, enabled = !isLocked)
+        }
+    }
+}
+
+/** Typographic word space between the prefix and the link (two copy runs on one line). */
+private const val WORD_SPACE = " " // provenance-ok: typographic word space joining two copy strings

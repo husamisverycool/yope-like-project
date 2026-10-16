@@ -30,7 +30,6 @@ import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
 import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.appwidget.state.updateAppWidgetState
-import androidx.glance.background
 import androidx.glance.currentState
 import androidx.glance.layout.Box
 import androidx.glance.layout.ContentScale
@@ -42,8 +41,10 @@ import androidx.glance.unit.ColorProvider
 import app.links.DeepLinkIntents
 import app.model.DeepLink
 import app.model.WidgetSnapshot
+import app.designsystem.generated.Tokens
 import java.io.File
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
@@ -51,28 +52,44 @@ import kotlin.math.roundToInt
  * nothing here invents a value. The interface's own defaults draw only the photo.
  */
 interface PhotoWidgetSlots {
-    /** Drawn over the photo (sender, caption, group name …) for the given size class. */
+    /** Drawn over the photo (the text stack …) for the given size class. */
     @Composable fun Overlay(snapshot: WidgetSnapshot, sizeClass: WidgetSizeClass) {}
 
-    /** Shown when the widget has no group yet ([groupId] null) or the group has no photo yet. */
+    /** Shown when the widget has no rendition: loading, empty, not set up, signed out. */
     @Composable fun Empty(groupId: String?, sizeClass: WidgetSizeClass) {}
 
-    /** Behind the photo (e.g. while it loads); null draws nothing. */
+    /** Behind everything (the states' background); null draws nothing. */
     val background: ColorProvider? get() = null
+
+    /**
+     * The decoded photo (already cropped to the widget's aspect) as the widget shows it, e.g. with
+     * a scrim drawn in. [widgetWidthPx] is the widget's width in pixels (the photo may be smaller).
+     */
+    fun photo(context: Context, photo: Bitmap, widgetWidthPx: Int): Bitmap = photo
 
     /** The widget's one TalkBack label (the whole widget is one element). Default: the caption. */
     fun contentDescription(context: Context, snapshot: WidgetSnapshot?, groupId: String?): String? = snapshot?.caption
 
-    /**
-     * Whether a tap opens the camera for [groupId] (`camera.fromwidget`); otherwise it opens the
-     * configuration activity. Default: whenever a group is bound.
-     */
-    fun opensCamera(context: Context, snapshot: WidgetSnapshot?, groupId: String?): Boolean = groupId != null
+    /** Where a tap goes (`camera.fromwidget`). Default: the camera whenever a group is bound. */
+    fun tap(context: Context, snapshot: WidgetSnapshot?, groupId: String?): WidgetTap =
+        if (groupId != null) WidgetTap.Camera(groupId) else WidgetTap.Configure
 
     companion object {
         /** The token styling; replaceable (tests). */
         @Volatile var current: PhotoWidgetSlots = TokenPhotoWidgetSlots
     }
+}
+
+/** What tapping the widget opens. */
+sealed interface WidgetTap {
+    /** `camera.capture` with [groupId] preselected (`app://camera?group=<id>`, `camera.fromwidget`). */
+    data class Camera(val groupId: String) : WidgetTap
+
+    /** The configuration activity (no group, or the group is gone). */
+    data object Configure : WidgetTap
+
+    /** The app itself (signed out: the app opens on sign-in). */
+    data object App : WidgetTap
 }
 
 /** Per-widget state: which group a widget shows. */
@@ -187,19 +204,19 @@ internal fun PhotoWidgetContent(store: WidgetFileStore, groupId: String?, revisi
     val widthPx = (size.width.value * density).roundToInt()
     val heightPx = (size.height.value * density).roundToInt()
     val bitmap = remember(snapshot, widthPx, heightPx) {
-        snapshot?.let { WidgetBitmaps.decodeCropped(store.photo(it), widthPx, heightPx) }
+        snapshot?.let { WidgetBitmaps.decodeCropped(store.photo(it), widthPx, heightPx) }?.let { slots.photo(context, it, widthPx) }
     }
     // A preview (widget picker) shows the newest photo, or the loading placeholder; never "set up".
     val emptyGroup = if (preview && snapshot == null) null else groupId
 
     var modifier = GlanceModifier.fillMaxSize().appWidgetBackground()
-    if (!preview) modifier = modifier.clickable(tapAction(context, groupId.takeIf { slots.opensCamera(context, snapshot, groupId) }, appWidgetId))
+    if (!preview) modifier = modifier.clickable(tapAction(context, slots.tap(context, snapshot, groupId), appWidgetId))
     slots.contentDescription(context, snapshot, groupId)?.let { label -> modifier = modifier.semantics { contentDescription = label } }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        // PLATFORM: the launcher's own widget corner radius.
-        modifier = modifier.cornerRadius(android.R.dimen.system_app_widget_background_radius)
+        // `widget.android.radius.widget` on the root (Android 12+ clips children to it); below 12
+        // the slots cut the corners into their bitmaps.
+        modifier = modifier.cornerRadius(Tokens.Radii.widgetAndroidRadiusWidget)
     }
-    slots.background?.let { modifier = modifier.background(it) }
 
     Box(modifier = modifier) {
         if (snapshot != null && bitmap != null) {
@@ -219,15 +236,18 @@ internal fun PhotoWidgetContent(store: WidgetFileStore, groupId: String?, revisi
     }
 }
 
-/** The loading placeholder without member avatars (the picker preview has no group). */
+/** The loading placeholder (the picker preview has no group). */
 @Composable
 private fun PreviewPlaceholder(slots: PhotoWidgetSlots, sizeClass: WidgetSizeClass) {
     if (slots === TokenPhotoWidgetSlots) TokenPhotoWidgetSlots.Placeholder() else slots.Empty(null, sizeClass)
 }
 
-private fun tapAction(context: Context, groupId: String?, appWidgetId: Int): Action {
-    val link = groupId?.let { DeepLinkIntents.intent(context, DeepLink.Camera(it)) }
-    if (link != null) return actionStartActivity(link)
+private fun tapAction(context: Context, tap: WidgetTap, appWidgetId: Int): Action {
+    when (tap) {
+        is WidgetTap.Camera -> DeepLinkIntents.intent(context, DeepLink.Camera(tap.groupId))?.let { return actionStartActivity(it) }
+        WidgetTap.App -> context.packageManager.getLaunchIntentForPackage(context.packageName)?.let { return actionStartActivity(it) }
+        WidgetTap.Configure -> Unit
+    }
     val configure = Intent(context, WidgetConfigureActivity::class.java)
         .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         .setData(android.net.Uri.parse("widget://configure/$appWidgetId")) // unique per widget
@@ -247,16 +267,20 @@ object WidgetBitmaps {
         return centerCrop(decoded, widthPx, heightPx)
     }
 
-    /** Scales [src] to cover [w]×[h] and crops the centre (what ContentScale.Crop shows). */
+    /**
+     * Crops the centre of [src] to the [w]×[h] aspect (what ContentScale.Crop shows) and scales it
+     * down to [w]×[h] when larger. Never upscales: Glance scales a smaller bitmap to fill. The
+     * result always has the widget's aspect, so whatever the slots draw into it lines up.
+     */
     fun centerCrop(src: Bitmap, w: Int, h: Int): Bitmap {
-        val scale = max(w.toFloat() / src.width, h.toFloat() / src.height)
-        if (scale >= 1f) return src // never upscale; Glance scales the smaller bitmap to fill
-        val sw = max(w, (src.width * scale).roundToInt())
-        val sh = max(h, (src.height * scale).roundToInt())
-        val scaled = Bitmap.createScaledBitmap(src, sw, sh, true)
-        if (scaled !== src) src.recycle()
-        val cropped = Bitmap.createBitmap(scaled, (sw - w) / 2, (sh - h) / 2, w, h)
-        if (cropped !== scaled) scaled.recycle()
-        return cropped
+        val target = w.toFloat() / h
+        val cropW = min(src.width, (src.height * target).roundToInt()).coerceAtLeast(1)
+        val cropH = min(src.height, (src.width / target).roundToInt()).coerceAtLeast(1)
+        val cropped = if (cropW == src.width && cropH == src.height) src else Bitmap.createBitmap(src, (src.width - cropW) / 2, (src.height - cropH) / 2, cropW, cropH)
+        if (cropped !== src) src.recycle()
+        if (cropped.width <= w) return cropped
+        val scaled = Bitmap.createScaledBitmap(cropped, w, h, true)
+        if (scaled !== cropped) cropped.recycle()
+        return scaled
     }
 }

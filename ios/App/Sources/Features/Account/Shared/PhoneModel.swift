@@ -1,4 +1,4 @@
-// Account group — PhoneModel: state and actions of the screen in PhoneScreen.swift.
+// Account group — PhoneModel: state and actions of the phone form (auth.phone B; PhoneForm.swift), shared with the App Clip.
 import AppData
 import AppModels
 import DesignSystem
@@ -78,13 +78,14 @@ final class PhoneModel {
         failedOffline = false
     }
 
-    /// `auth.phone.legal.text` with `auth.phone.legal.terms` / `.privacy` as bold link ranges
-    /// (`auth.phone.layout.legalFooter`); without a configured URL (config/app.json legal.* null) the phrase is bold only.
+    /// `auth.phone.legal.text` with `auth.phone.legal.terms` / `.privacy` underlined, in the same grey (LAND, C-33);
+    /// each is a link when config/app.json has its URL (`legal.termsUrl` / `.privacyUrl`, owner), opened in the in-app
+    /// browser.
     static func legalText(termsURL: URL?, privacyURL: URL?) -> AttributedString {
         var text = AttributedString(Copy.authPhoneLegalText)
         for (phrase, url) in [(Copy.authPhoneLegalTerms, termsURL), (Copy.authPhoneLegalPrivacy, privacyURL)] {
             guard let range = text.range(of: phrase) else { continue }
-            text[range].inlinePresentationIntent = .stronglyEmphasized
+            text[range].swiftUI.underlineStyle = Text.LineStyle.single
             if let url { text[range].link = url }
         }
         return text

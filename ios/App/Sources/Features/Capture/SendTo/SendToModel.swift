@@ -1,8 +1,9 @@
-// Surface: camera.sendto — reference app: Yope (+ Locket default audience, C-5).
-// Reference images: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png,
-// a-savannahclooney-7683341732695592206-t5.73-sendto-caption-keyboard.png,
-// a-virgi-7686278541255642390-t56.23-sendto-three-selected-es.png (design/surfaces/camera.sendto.md).
-// Choose one or more groups, optional caption and voice note, send. No mandatory edit step.
+// Surface: camera.sendto — visual reference Retro's Postcard composer, mechanics Locket (send to many, save, send states).
+// Reference images: references/auto/retro/store/retro-store-03.png, references/auto/retro/press/tc-2023-12-retro3.png
+// phones 2–3, references/owner/locket-review-sendto.jpg, -review-sending.jpg, -review-sent.jpg
+// (design/surfaces/camera.sendto.md; MERGE_DECISIONS RC-5 … RC-8).
+// Choose one or more groups, an optional message and voice note, send. No mandatory edit step. The composer waits for
+// the send (busy capsule, "Sending…"); a failure keeps everything and shows the native alert.
 import AppData
 import AppModels
 import DesignSystem
@@ -59,8 +60,11 @@ final class SendToModel: Identifiable {
     private(set) var voicePhase: VoicePhase = .idle
     /// A locked recording paused into a draft (play it, then attach or delete it).
     private(set) var voiceDraft: VoiceNote? = nil
-    private(set) var showsVoiceCoach = false
     private(set) var isPremium = false
+    /// While the capture uploads and `create_post` runs (busy capsule, title "Sending…", controls disabled).
+    private(set) var isSending = false
+    /// The last send's failure, shown as the native alert until Try Again or Cancel.
+    private(set) var sendFailure: CaptureSendCenter.Failure? = nil
     /// Increments on every recipient toggle (`haptic.global.select` trigger).
     private(set) var selectionChanges = 0
 
@@ -68,7 +72,6 @@ final class SendToModel: Identifiable {
     private let premium: CapturePremium
     private let library: CaptureLibrary
     private let voice: CaptureVoiceRecorder
-    private let coach: CaptureCoachStore
     private let sendCenter: CaptureSendCenter
     private let navigation: CaptureNavigation
     private let onClose: @MainActor () -> Void
@@ -86,7 +89,6 @@ final class SendToModel: Identifiable {
         premium: CapturePremium,
         library: CaptureLibrary,
         voice: CaptureVoiceRecorder,
-        coach: CaptureCoachStore,
         sendCenter: CaptureSendCenter,
         navigation: CaptureNavigation,
         onClose: @escaping @MainActor () -> Void,
@@ -100,7 +102,6 @@ final class SendToModel: Identifiable {
         self.premium = premium
         self.library = library
         self.voice = voice
-        self.coach = coach
         self.sendCenter = sendCenter
         self.navigation = navigation
         self.onClose = onClose
@@ -111,8 +112,14 @@ final class SendToModel: Identifiable {
 
     // MARK: Derived state
 
-    /// The longest caption (`camera.sendto.size.captionMaxLength`, no counter).
+    /// The longest message (`camera.sendto.size.captionMaxLength` 250, the counter's {max}).
     static var captionMaxLength: Int { Int(Tokens.Counts.cameraSendtoSizeCaptionMaxLength) }
+
+    /// A message was added (blank text is no message).
+    var hasMessage: Bool { !caption.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+    /// Closing asks first only when a message or a voice note would be lost (Retro's lost-changes warning, RC-8).
+    var needsDiscardConfirmation: Bool { hasMessage || voiceNote != nil || voicePhase != .idle }
 
     /// Keeps the caption within `captionMaxLength` (called as the member types).
     func clampCaption() {
@@ -138,7 +145,8 @@ final class SendToModel: Identifiable {
     /// A video needs premium at `create_post`; a free member's video cannot be sent.
     var isMediaSendable: Bool { !media.needsPremium || isPremium }
 
-    /// The send button is hidden with nothing selected (a disabled look was never observed).
+    /// The send capsule is enabled with at least one group and sendable media (disabled #4D4D4D otherwise, Retro's
+    /// disabled Send Postcard).
     var canSend: Bool { !selection.isEmpty && isMediaSendable }
 
     var canCreateGroup: Bool { navigation.canCreateGroup }
@@ -150,9 +158,6 @@ final class SendToModel: Identifiable {
         return replyTarget(contextGroupID)
     }
 
-    /// Where the toasts of this flow are shown (send failures, 'saved to your library').
-    var statusCenter: CaptureSendCenter { sendCenter }
-
     func isSelected(_ groupID: String) -> Bool {
         selection.contains(groupID)
     }
@@ -162,7 +167,6 @@ final class SendToModel: Identifiable {
     func load() async {
         async let decoded = decodePreview()
         isPremium = await premium.isPremium()
-        showsVoiceCoach = !coach.isDismissed(.voice)
         if let cached = await groupSource.cachedGroups(), !cached.isEmpty {
             apply(cached)
         } else if listState == .idle {
@@ -186,7 +190,7 @@ final class SendToModel: Identifiable {
     private func decodePreview() async -> UIImage? {
         if let previewImage { return previewImage }
         guard let data = media.still?.imageData else { return nil }
-        let side = CaptureImageDecoder.pixels(max(Tokens.Layouts.CameraSendtoLayoutPreview.width, Tokens.Layouts.CameraSendtoLayoutPreview.height))
+        let side = CaptureImageDecoder.pixels(Tokens.Layouts.CameraSendtoLayoutPreview.maxHeight)
         return await CaptureImageDecoder.image(data: data, maxPixelSize: side)
     }
 
@@ -218,6 +222,7 @@ final class SendToModel: Identifiable {
     // MARK: Actions
 
     func toggle(_ groupID: String) {
+        guard !isSending else { return }
         if let index = selection.firstIndex(of: groupID) {
             selection.remove(at: index)
         } else {
@@ -227,34 +232,58 @@ final class SendToModel: Identifiable {
         selectionChanges += 1
     }
 
-    /// Upload + `create_post` in the background; the sheet closes at once.
-    func send() {
-        guard canSend else { return }
+    /// Upload + `create_post` while the composer waits (camera.sendto "sending"). Posted: the composer closes (`onSent`),
+    /// with `haptic.global.send` and the confirmation announced (iOS, C-26). Failed: everything stays and the alert shows.
+    func send() async {
+        guard canSend, !isSending else { return }
         if voicePhase != .idle { keepVoiceRecording() }
         voice.stopPlayback()
+        sendFailure = nil
+        isSending = true
         let names = groups.filter { selection.contains($0.id) }.map(\.name)
         let request = CaptureSendRequest(
             payload: .media(media),
             groupIDs: selection,
-            caption: caption,
+            caption: hasMessage ? caption : nil,
             voice: voiceNote,
             confirmation: names.count == 1 ? Copy.cameraSendtoToastPostedOne(group: names[0]) : Copy.cameraSendtoToastPostedMany,
             replyToPostID: replyToPostID
         )
-        sendCenter.submit(request)
-        clearReply()
-        onSent()
+        let outcome = await sendCenter.send(request)
+        isSending = false
+        switch outcome {
+        case .posted:
+            clearReply()
+            onSent()
+        case let .failed(failure):
+            sendFailure = failure
+        }
     }
 
-    /// ✕: discards the capture, caption and voice note; back to the camera (no confirmation).
+    /// The alert's Try Again.
+    func retrySend() async {
+        sendFailure = nil
+        await send()
+    }
+
+    /// The alert's Cancel: keeps the capture, message, voice note and selection.
+    func dismissSendFailure() {
+        sendFailure = nil
+    }
+
+    /// ✕ (after the discard alert when a message or voice note exists): discards the capture, message and voice note;
+    /// back to the camera.
     func close() {
+        guard !isSending else { return }
         cancelVoiceRecording()
         removeVoiceNote()
         onClose()
     }
 
-    /// Download: saves the photo / Live Photo / video with add-only access, then the 'saved' toast.
+    /// Save: the photo / Live Photo / video with add-only access, confirmed by `camera.sendto.toast.saved` (iOS: an
+    /// accessibility announcement, C-26).
     func save() async {
+        guard !isSending else { return }
         do {
             try await library.save(media)
             sendCenter.confirm(Copy.cameraSendtoToastSaved)
@@ -281,7 +310,6 @@ final class SendToModel: Identifiable {
             navigation.openSystemSettings()
             return false
         }
-        dismissVoiceCoach()
         voice.stopPlayback()
         do {
             try voice.start()
@@ -348,11 +376,5 @@ final class SendToModel: Identifiable {
     func toggleVoicePlayback() {
         guard let file = (voiceDraft ?? voiceNote)?.fileURL else { return }
         voice.togglePlayback(file)
-    }
-
-    func dismissVoiceCoach() {
-        guard showsVoiceCoach else { return }
-        showsVoiceCoach = false
-        coach.dismiss(.voice)
     }
 }

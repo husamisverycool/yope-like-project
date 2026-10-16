@@ -69,7 +69,7 @@ class AccountEnvironment(
      * (camera.capture: "the app opens to the camera"). Off in tests that are about other screens.
      */
     val launchToCamera: Boolean = true,
-    /** Yope's lime toast, shown by the shell's `ToastHost` over every screen (it outlives navigation). */
+    /** Confirmations (C-26 platform toasts), shown by the shell's `ToastHost` (they outlive the navigation that follows them). */
     val toasts: app.ui.components.ToastState = app.ui.components.ToastState(),
 )
 

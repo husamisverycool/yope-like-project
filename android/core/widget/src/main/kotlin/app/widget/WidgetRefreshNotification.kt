@@ -1,6 +1,6 @@
 // Surface: widget.arrival (Android refresh notification).
-// References: Locket APK 1.243.0 strings 'Updating widget...', channel 'Widget Updating'
-// (design/research/locket.md §5); design/surfaces/widget.arrival.md.
+// References: Retro APK 2026.10.1150 strings notification_channel_display_name_foreground_work
+// "Background Work" (design/surfaces/widget.arrival.md → References).
 package app.widget
 
 import android.app.Notification
@@ -14,7 +14,7 @@ import app.designsystem.R
 /**
  * The notification shown only while a widget refresh runs as a foreground job: expedited work on
  * Android 11 and lower runs as a foreground service and needs one (`widget.arrival` → Android
- * refresh notification). Channel `widget_refresh`, low importance (no sound, no heads-up).
+ * refresh notification). Channel `widget_refresh`, IMPORTANCE_MIN (no sound, no status-bar icon).
  */
 object WidgetRefreshNotification {
     const val CHANNEL_ID = "widget_refresh"
@@ -37,12 +37,12 @@ object WidgetRefreshNotification {
         val channel = NotificationChannel(
             CHANNEL_ID,
             context.getString(R.string.widget_arrival_android_refreshchannelname),
-            NotificationManager.IMPORTANCE_LOW,
+            NotificationManager.IMPORTANCE_MIN,
         ).apply { description = context.getString(R.string.widget_arrival_android_refreshchanneldescription) }
         context.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
 
-    /** The "Updating widget..." notification, or null without an icon. */
+    /** The "Updating widgets…" notification (`widget.arrival.android.refreshTitle`), or null without an icon. */
     fun build(context: Context): Notification? {
         val icon = icon(context) ?: return null
         registerChannel(context)
@@ -50,6 +50,7 @@ object WidgetRefreshNotification {
             .setSmallIcon(icon)
             .setContentTitle(context.getString(R.string.widget_arrival_android_refreshtitle))
             .setOngoing(true)
+            .setPriority(NotificationCompat.PRIORITY_MIN)
             .setSilent(true)
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_DEFAULT)

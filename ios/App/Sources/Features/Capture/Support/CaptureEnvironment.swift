@@ -1,5 +1,5 @@
 // Surfaces: camera.capture, camera.sendto, camera.fromwidget, daily.capture, collage.view,
-// collage.share. Wires the capture screens to their services: live (AppEnvironment) or, for UI
+// collage.share (design/surfaces/<id>.md; reference images listed there). Wires the capture screens to their services: live (AppEnvironment) or, for UI
 // tests, fakes selected by `CaptureLaunchArgument.fakes`.
 import AppData
 import AppModels
@@ -52,7 +52,6 @@ final class CaptureEnvironment {
         self.navigation = navigation
         self.coach = coach
         sendCenter = CaptureSendCenter(posting: posting)
-        sendCenter.startObservingNetwork()
     }
 
     static func live(_ app: AppEnvironment) -> CaptureEnvironment {
@@ -99,7 +98,6 @@ final class CaptureEnvironment {
             contextGroupID: contextGroupID,
             camera: sharedSingleCamera(),
             premium: premium,
-            library: library,
             coach: coach,
             navigation: navigation
         )
@@ -118,7 +116,6 @@ final class CaptureEnvironment {
             premium: premium,
             library: library,
             voice: makeVoiceRecorder(),
-            coach: coach,
             sendCenter: sendCenter,
             navigation: navigation,
             onClose: onClose,

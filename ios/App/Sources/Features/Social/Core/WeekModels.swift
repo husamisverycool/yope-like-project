@@ -1,4 +1,4 @@
-// Surfaces: week.recap, week.edit, week.history — reference apps: Yope (recap, edit), Retro (history).
+// Surfaces: week.recap, week.edit, week.history — Retro recaps, "Add to Your Week" composer, profile week strips.
 // Specs: design/surfaces/week.*.md ("States", "Data & actions"). View models only (Foundation + Observation + AppData).
 import AppData
 import AppModels
@@ -26,7 +26,80 @@ enum WeekPosts {
     }
 }
 
-/// `week.recap`: the recap card (recap items) and the week's pics grid.
+/// `week.recap` list (`week.recap.layout.list`): the group's recaps, newest first — ready ones as week cards (cover =
+/// the first item), pending ones as placeholder cards.
+@MainActor
+@Observable
+final class WeekRecapListModel {
+    let groupID: GroupID
+    @ObservationIgnored private let data: any SocialDataSource
+
+    /// `.empty`: no recap yet.
+    private(set) var phase: SocialPhase = .loading
+    private(set) var isOffline = false
+    private(set) var group: PhotoGroup?
+    /// Ready and pending recaps, newest week first.
+    private(set) var recaps: [WeeklyRecap] = []
+    private(set) var covers: [PostID: PostWithMedia] = [:]
+    private(set) var hasCheckedCache = false
+
+    init(groupID: GroupID, data: any SocialDataSource) {
+        self.groupID = groupID
+        self.data = data
+    }
+
+    var showsLoading: Bool { phase == .loading && hasCheckedCache }
+
+    var timeZone: TimeZone { group?.resolvedTimeZone ?? .current }
+
+    func cover(of recap: WeeklyRecap) -> PostWithMedia? {
+        recap.items.lazy.compactMap { self.covers[$0] }.first
+    }
+
+    func weekNumber(of recap: WeeklyRecap) -> Int {
+        SocialCalendar.weekNumber(of: recap.weekStart, in: timeZone)
+    }
+
+    func load() async {
+        if group == nil { group = await data.cachedGroup(id: groupID) }
+        hasCheckedCache = true
+        do {
+            if let fresh = try? await data.group(id: groupID) { group = fresh }
+            let all = try await data.recaps(groupID: groupID)
+            recaps = all.filter { $0.status == .ready || $0.status == .pending }.sorted { $0.weekStart > $1.weekStart }
+            isOffline = false
+            let firstItems = recaps.compactMap(\.items.first).filter { covers[$0] == nil }
+            if !firstItems.isEmpty, let found = try? await data.posts(ids: firstItems) {
+                for post in found { covers[post.id] = post }
+            }
+            // A recap whose first item is hidden: its next visible item is the cover.
+            let missing = recaps.filter { cover(of: $0) == nil }.flatMap { $0.items.dropFirst() }.filter { covers[$0] == nil }
+            if !missing.isEmpty, let found = try? await data.posts(ids: Array(missing)) {
+                for post in found { covers[post.id] = post }
+            }
+            phase = recaps.isEmpty ? .empty : .ready
+        } catch {
+            let failure = SocialFailure(error)
+            isOffline = failure == .offline
+            if recaps.isEmpty { phase = isOffline ? .offline : .failed }
+        }
+    }
+
+    func retry() async {
+        phase = .loading
+        await load()
+    }
+
+    func run() async {
+        for await event in data.events(groupID: groupID) {
+            guard case let .postDeleted(postID, _) = event else { continue }
+            covers[postID] = nil
+            for index in recaps.indices { recaps[index].items.removeAll { $0 == postID } }
+        }
+    }
+}
+
+/// `week.recap` preview (`week.recap.layout.preview`): one recap's card (items in recap order), its note and cover.
 @MainActor
 @Observable
 final class WeekRecapModel {
@@ -35,16 +108,10 @@ final class WeekRecapModel {
         case ready
         /// `status = pending` (`week.recap.pending`).
         case pending
-        /// No ready recap yet.
+        /// No such recap (deleted, or never made).
         case empty
         case failed
         case offline
-    }
-
-    /// The floating "recap | pics" capsule.
-    enum Segment: Hashable, Sendable {
-        case recap
-        case pics
     }
 
     let groupID: GroupID
@@ -56,11 +123,10 @@ final class WeekRecapModel {
     private(set) var group: PhotoGroup?
     /// Recap items in `weekly_recaps.items` order (hidden posts dropped by RLS).
     private(set) var cardPosts: [PostWithMedia] = []
-    /// Every visible post of the week, chronological.
+    /// Every visible post of the week, chronological (the editor's grid).
     private(set) var weekPosts: [PostWithMedia] = []
-    private(set) var segment: Segment = .recap
     private(set) var signals = SocialSignals()
-    /// Authors of the shown posts (tile labels) and the viewer.
+    /// Authors of the shown posts, and the recap's last editor (the note's attribution).
     private(set) var profiles: [UserID: Profile] = [:]
     private(set) var me: UserID?
 
@@ -72,8 +138,19 @@ final class WeekRecapModel {
 
     var timeZone: TimeZone { group?.resolvedTimeZone ?? .current }
 
-    /// The pencil opens `week.edit` only for a ready recap.
+    var weekNumber: Int? { recap.map { SocialCalendar.weekNumber(of: $0.weekStart, in: timeZone) } }
+
+    /// The editor opens only for a ready recap.
     var canEdit: Bool { recap?.status == .ready }
+
+    /// The recap's first item: the cover of page 2, the blurred backdrop and the select-photos thumbnail.
+    var cover: PostWithMedia? { cardPosts.first }
+
+    /// The note (`week.recap.layout.note`): the recap text, attributed to `edited_by`.
+    var note: (text: String, editor: Profile?)? {
+        guard let text = recap?.text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else { return nil }
+        return (text, recap?.editedBy.flatMap { profiles[$0] })
+    }
 
     /// The editor starts from what this screen shows.
     var editSeed: WeekEditModel.Seed? {
@@ -81,7 +158,7 @@ final class WeekRecapModel {
         return WeekEditModel.Seed(recap: recap, cardPosts: cardPosts, weekPosts: weekPosts, profiles: profiles, me: me)
     }
 
-    /// The on-device copy was looked at: only then may the loading HUD show (none over cached content).
+    /// The on-device copy was looked at: only then may the loading state show (none over cached content).
     private(set) var hasCheckedCache = false
     /// Showing the on-device copy because the server could not be reached.
     private(set) var isOffline = false
@@ -108,7 +185,11 @@ final class WeekRecapModel {
             let weekIDs = try await WeekPosts.ids(of: recap.weekStart, groupID: groupID, data: data)
             let week = try await data.posts(ids: weekIDs)
             me = await data.currentUserID()
-            profiles = await SocialPeople.profiles(of: card + week, known: profiles, data: data)
+            var people = await SocialPeople.profiles(of: card + week, known: profiles, data: data)
+            if let editor = recap.editedBy, people[editor] == nil, let found = try? await data.profiles(ids: [editor]) {
+                for profile in found { people[profile.id] = profile }
+            }
+            profiles = people
             cardPosts = card
             weekPosts = week
             isOffline = false
@@ -148,20 +229,13 @@ final class WeekRecapModel {
         await load()
     }
 
-    /// A segment was tapped (or scrolling crossed into the other part).
-    func setSegment(_ segment: Segment, fromScroll: Bool = false) {
-        guard segment != self.segment else { return }
-        self.segment = segment
-        if !fromScroll { signals.emit(.select) }
-    }
-
     func run() async {
         for await event in data.events(groupID: groupID) {
             handle(event)
         }
     }
 
-    /// `post_deleted` → the item leaves the card and the grid.
+    /// `post_deleted` → the item leaves the card and the week.
     func handle(_ event: GroupEvent) {
         guard case let .postDeleted(postID, _) = event else { return }
         cardPosts.removeAll { $0.id == postID }
@@ -169,16 +243,19 @@ final class WeekRecapModel {
     }
 }
 
-/// `week.edit`: check / uncheck the week's photos, edit the recap text, save; or save the checked
-/// photos as a named album (also opened straight on the album sheet from `week.history`).
+/// `week.edit`: the recap's chosen photos as a strip (reorder by drag), the week's photos as a grid (tap toggles in /
+/// out), the recap text, "Update"; or — opened from `week.recap` / `week.history` — the album sheet alone with the
+/// recap's items or the week's photos selected.
 @MainActor
 @Observable
 final class WeekEditModel {
     enum Mode: Hashable, Sendable {
-        /// Pencil on `week.recap`.
+        /// The select-photos thumbnail of `week.recap`: the editor.
         case recap(RecapID)
-        /// "Save as album" in a `week.history` week menu: that week's photos, all checked, album sheet open.
+        /// "Save as Album" in a `week.history` week menu: the album sheet with that week's photos.
         case album(weekStart: LocalDate)
+        /// "Save as Album" on `week.recap`: the album sheet with the recap's items in recap order.
+        case recapAlbum(RecapID)
     }
 
     enum Phase: Equatable {
@@ -196,15 +273,20 @@ final class WeekEditModel {
 
     private(set) var phase: Phase = .loading
     private(set) var recap: WeeklyRecap?
-    /// Grid order: the recap's items first in recap order, then the week's other posts in time order.
+    private(set) var group: PhotoGroup?
+    /// The grid: every visible post of the recap's week in time order.
     private(set) var gridPosts: [PostWithMedia] = []
-    private(set) var checked: Set<PostID> = []
-    /// Recap text (`weekly_recaps.text`, ≤ 2000).
+    /// The strip: the chosen photos in recap order (`p_items`); a checked photo joins its end.
+    private(set) var chosen: [PostID] = []
+    private var postsByID: [PostID: PostWithMedia] = [:]
+    /// Recap text (`weekly_recaps.text`); the view limits it (`week.edit.layout.message.limit`).
     var text = ""
+    private var initialChosen: [PostID] = []
+    private var initialText = ""
     private(set) var isSaving = false
-    /// Inline error above the buttons (`week.edit.error.save` / `.notReady`); the selection is kept.
+    /// The save failed (`week.edit.error.save` / `.notReady`); the selection is kept.
     private(set) var saveError: SocialFailure?
-    /// The editor is done (saved) and closes.
+    /// The editor is done (saved, or the album saved in an album mode) and closes.
     private(set) var isFinished = false
 
     var isAlbumSheetPresented = false
@@ -218,7 +300,7 @@ final class WeekEditModel {
     private(set) var profiles: [UserID: Profile] = [:]
     private(set) var me: UserID?
 
-    /// What `week.recap` already shows: the editor opens on it at once (no loading HUD).
+    /// What `week.recap` already shows: the editor opens on it at once (no loading state).
     struct Seed {
         let recap: WeeklyRecap
         let cardPosts: [PostWithMedia]
@@ -231,51 +313,94 @@ final class WeekEditModel {
         self.groupID = groupID
         self.mode = mode
         self.data = data
-        if case .album = mode { isAlbumSheetPresented = true }
-        if case let .recap(recapID) = mode, let seed, seed.recap.id == recapID, seed.recap.status == .ready {
-            recap = seed.recap
-            text = seed.recap.text ?? ""
-            let inRecap = Set(seed.cardPosts.map(\.id))
-            gridPosts = seed.cardPosts + seed.weekPosts.filter { !inRecap.contains($0.id) }
-            checked = inRecap
-            profiles = seed.profiles
-            me = seed.me
-            phase = .ready
+        if isAlbumOnly { isAlbumSheetPresented = true }
+        if let seed, seed.recap.status == .ready {
+            switch mode {
+            case let .recap(recapID) where seed.recap.id == recapID:
+                apply(recap: seed.recap, items: seed.cardPosts, week: seed.weekPosts)
+                profiles = seed.profiles
+                me = seed.me
+                phase = .ready
+            case let .recapAlbum(recapID) where seed.recap.id == recapID:
+                apply(recap: seed.recap, items: seed.cardPosts, week: seed.cardPosts)
+                profiles = seed.profiles
+                me = seed.me
+                phase = .ready
+            default:
+                break
+            }
         }
     }
 
-    /// Checked photos in grid order (what `update_recap` / `save_album` receive).
-    var checkedInOrder: [PostID] { gridPosts.map(\.id).filter(checked.contains) }
+    /// Album modes show only the album sheet's content.
+    var isAlbumOnly: Bool {
+        if case .recap = mode { return false }
+        return true
+    }
 
-    /// Album save: at least one photo checked and a name typed.
+    /// The strip's photos in order.
+    var chosenPosts: [PostWithMedia] { chosen.compactMap { postsByID[$0] } }
+
+    /// What `update_recap(p_items)` / `save_album(p_post_ids)` receive.
+    var checkedInOrder: [PostID] { chosen }
+
+    func isChecked(_ id: PostID) -> Bool { chosen.contains(id) }
+
+    /// Cancel asks first (`week.edit.lostChanges.*`) when something changed.
+    var hasChanges: Bool { chosen != initialChosen || text != initialText }
+
+    /// The week number of the recap's week (`week.edit.header`).
+    var weekNumber: Int? {
+        guard let recap else { return nil }
+        return SocialCalendar.weekNumber(of: recap.weekStart, in: group?.resolvedTimeZone ?? .current)
+    }
+
+    /// Album save: at least one photo and a name typed.
     var canSaveAlbum: Bool {
-        !checked.isEmpty && !albumName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isSavingAlbum
+        !chosen.isEmpty && !albumName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isSavingAlbum
+    }
+
+    private func apply(recap: WeeklyRecap, items: [PostWithMedia], week: [PostWithMedia]) {
+        self.recap = recap
+        text = recap.text ?? ""
+        for post in items + week { postsByID[post.id] = post }
+        gridPosts = week.sorted { $0.post.createdAt < $1.post.createdAt }
+        chosen = recap.items.filter { postsByID[$0] != nil }
+        initialChosen = chosen
+        initialText = text
     }
 
     func load() async {
+        if group == nil { group = await data.cachedGroup(id: groupID) }
+        if let fresh = try? await data.group(id: groupID) { group = fresh }
         do {
             switch mode {
-            case let .recap(recapID):
+            case let .recap(recapID), let .recapAlbum(recapID):
                 guard let recap = try await data.recap(id: recapID) else {
                     phase = .failed
                     return
                 }
-                self.recap = recap
                 guard recap.status == .ready else {
+                    self.recap = recap
                     phase = .notReady
                     return
                 }
-                text = recap.text ?? ""
                 let items = try await data.posts(ids: recap.items)
-                let weekIDs = try await WeekPosts.ids(of: recap.weekStart, groupID: groupID, data: data)
-                let inRecap = Set(items.map(\.id))
-                let others = try await data.posts(ids: weekIDs.filter { !inRecap.contains($0) })
-                gridPosts = items + others
-                checked = inRecap
+                if case .recapAlbum = mode {
+                    apply(recap: recap, items: items, week: items)
+                } else {
+                    let weekIDs = try await WeekPosts.ids(of: recap.weekStart, groupID: groupID, data: data)
+                    let inRecap = Set(items.map(\.id))
+                    let others = try await data.posts(ids: weekIDs.filter { !inRecap.contains($0) })
+                    apply(recap: recap, items: items, week: items + others)
+                }
             case let .album(weekStart):
                 let weekIDs = try await WeekPosts.ids(of: weekStart, groupID: groupID, data: data)
-                gridPosts = try await data.posts(ids: weekIDs)
-                checked = Set(gridPosts.map(\.id))
+                let week = try await data.posts(ids: weekIDs)
+                for post in week { postsByID[post.id] = post }
+                gridPosts = week.sorted { $0.post.createdAt < $1.post.createdAt }
+                chosen = gridPosts.map(\.id)
+                initialChosen = chosen
             }
             me = await data.currentUserID()
             profiles = await SocialPeople.profiles(of: gridPosts, known: profiles, data: data)
@@ -289,35 +414,46 @@ final class WeekEditModel {
         }
     }
 
-    func isChecked(_ id: PostID) -> Bool { checked.contains(id) }
-
-    /// Tap on a tile (`haptic.global.select`).
+    /// Tap on a grid cell (`haptic.global.select`): a checked photo joins the strip's end; unchecking removes it.
     func toggle(_ id: PostID) {
-        guard gridPosts.contains(where: { $0.id == id }) else { return }
-        if checked.contains(id) { checked.remove(id) } else { checked.insert(id) }
+        guard postsByID[id] != nil else { return }
+        if let index = chosen.firstIndex(of: id) {
+            chosen.remove(at: index)
+        } else {
+            chosen.append(id)
+        }
         signals.emit(.select)
     }
 
-    /// Development-only reorder approximation (`week.edit.layout.reorder` is BLOCKED): moves a checked
-    /// tile to another checked tile's place. Returns whether anything moved.
+    /// `week.edit.layout.reorder`: the dragged strip tile takes `target`'s place; the others shift. Returns whether
+    /// anything moved.
     @discardableResult
     func move(_ id: PostID, to target: PostID) -> Bool {
-        guard id != target, checked.contains(id), checked.contains(target),
-              let from = gridPosts.firstIndex(where: { $0.id == id }),
-              let to = gridPosts.firstIndex(where: { $0.id == target }) else { return false }
-        let post = gridPosts.remove(at: from)
-        gridPosts.insert(post, at: to)
+        guard id != target, let from = chosen.firstIndex(of: id), let to = chosen.firstIndex(of: target) else { return false }
+        chosen.remove(at: from)
+        chosen.insert(id, at: to)
         return true
     }
 
-    /// "save": `update_recap(p_items: checked in order, p_text)`.
+    /// Accessibility "move earlier / later" on a strip tile.
+    @discardableResult
+    func move(_ id: PostID, by offset: Int) -> Bool {
+        guard let from = chosen.firstIndex(of: id) else { return false }
+        let to = from + offset
+        guard chosen.indices.contains(to) else { return false }
+        return move(id, to: chosen[to])
+    }
+
+    /// "Update": `update_recap(p_items: the strip, p_text)`.
     func save() async {
         guard case let .recap(recapID) = mode, !isSaving else { return }
         isSaving = true
         saveError = nil
         defer { isSaving = false }
         do {
-            recap = try await data.updateRecap(id: recapID, items: checkedInOrder, text: text)
+            recap = try await data.updateRecap(id: recapID, items: chosen, text: text)
+            initialChosen = chosen
+            initialText = text
             signals.emit(.success)
             signals.post(.recapSaved)
             isFinished = true
@@ -327,24 +463,25 @@ final class WeekEditModel {
         }
     }
 
-    /// The album sheet's lime button / return key.
+    /// "Create Album" (or the return key).
     func saveAlbum() async {
         let name = albumName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else {
             albumNameMissing = true
             return
         }
-        guard !checked.isEmpty, !isSavingAlbum else { return }
+        guard !chosen.isEmpty, !isSavingAlbum else { return }
         albumNameMissing = false
         albumError = nil
         isSavingAlbum = true
         defer { isSavingAlbum = false }
         do {
-            savedAlbum = try await data.saveAlbum(groupID: groupID, name: name, postIDs: checkedInOrder)
+            savedAlbum = try await data.saveAlbum(groupID: groupID, name: name, postIDs: chosen)
             signals.emit(.success)
             signals.post(.albumSaved)
             isAlbumSheetPresented = false
-            if case .album = mode { isFinished = true }
+            albumName = ""
+            if isAlbumOnly { isFinished = true }
         } catch {
             albumError = SocialFailure(error)
             signals.emit(.failed)
@@ -370,9 +507,9 @@ final class WeekHistoryModel {
     }
 
     enum Line: Equatable {
-        /// `week.history.empty` (the group has no photos yet).
+        /// The group has no photos yet: the empty-state block under the current week (`week.history.empty.*`).
         case empty
-        /// `week.history.error` (pull down to retry).
+        /// `week.history.error` (tap to retry).
         case error
         /// `week.history.offline` at the top of the list.
         case offline
@@ -407,6 +544,10 @@ final class WeekHistoryModel {
     var timeZone: TimeZone { group?.resolvedTimeZone ?? .current }
 
     var currentWeekStart: LocalDate { SocialCalendar.weekStart(containing: now(), in: timeZone) }
+
+    var currentWeekNumber: Int { SocialCalendar.weekNumber(of: currentWeekStart, in: timeZone) }
+
+    func weekNumber(of week: Week) -> Int { SocialCalendar.weekNumber(of: week.weekStart, in: timeZone) }
 
     /// The current week's days without a photo (`week.history`: one empty-day tile each, after the add tile), Monday
     /// first; nil until every photo of the week is loaded (no tile appears and then disappears).
