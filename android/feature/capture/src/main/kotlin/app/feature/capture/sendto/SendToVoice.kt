@@ -313,8 +313,8 @@ internal fun SendToRecordingCapsule(
         modifier
             .heightIn(min = Tokens.Sizes.globalPillHeight)
             .background(Tokens.Colors.globalControlOnDeep, CircleShape)
-            .padding(PaddingValues(start = Tokens.Sizes.globalPillPaddingLeading, end = Tokens.Sizes.globalPillPaddingTrailing))
-            .testTag("sendto.voice.recording"),
+            .testTag("sendto.voice.recording")
+            .padding(PaddingValues(start = Tokens.Sizes.globalPillPaddingLeading, end = Tokens.Sizes.globalPillPaddingTrailing)),
         horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalPillIconGap),
         verticalAlignment = Alignment.CenterVertically,
     ) {

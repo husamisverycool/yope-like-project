@@ -23,6 +23,9 @@ import app.feature.capture.data.CapturedMedia
 import app.feature.capture.sendto.SendToChrome
 import app.feature.capture.sendto.SendToScreen
 import app.feature.capture.sendto.SendToViewModel
+import app.feature.capture.sendto.VoiceLive
+import app.feature.capture.sendto.VoiceNoteFile
+import app.feature.capture.sendto.VoicePhase
 import app.media.DualCaptureMode
 import app.model.CountdownState
 import app.ui.theme.AppTheme
@@ -98,6 +101,45 @@ class MeasurementTest {
             chrome = SendToChrome(preview = photo),
             onClose = {}, onSave = {}, onCaption = {}, onToggle = {}, onSend = {}, onCreateGroup = {}, onRetryGroups = {},
             onConfirmDiscard = {}, onDismissAlert = {}, onRetrySend = {},
+        )
+    }
+
+    /** The voice note on the photo (`camera.sendto.layout.messageField` `.note` above the pill pair, C-36). */
+    @Test fun sendToVoiceNote() = measure(
+        "camera.sendto.voice",
+        listOf("sendto.preview", "sendto.message", "sendto.voice", "sendto.voice.attached"),
+    ) {
+        SendToScreen(
+            state = SendToViewModel.UiState(
+                media = CapturedMedia(MediaKind.Photo, File("x.jpg"), 900, 1200, null, false),
+                groups = SendToViewModel.Groups.Loaded(listOf(group("g1", "Sunday dinners"), group("g2", "Roommates"))),
+                selected = setOf("g1", "g2"),
+                micAvailable = true,
+                voice = VoiceNoteFile(File("v.m4a"), 7_000, List(100) { (it * 7) % 32 }),
+            ),
+            chrome = SendToChrome(preview = photo),
+            onClose = {}, onSave = {}, onCaption = {}, onToggle = {}, onSend = {}, onCreateGroup = {}, onRetryGroups = {},
+            onConfirmDiscard = {}, onDismissAlert = {}, onRetrySend = {},
+        )
+    }
+
+    /** A paused draft: the recording capsule spans the photo less the gaps and the voice capsule (`.recording`). */
+    @Test fun sendToVoicePaused() = measure(
+        "camera.sendto.recording",
+        listOf("sendto.preview", "sendto.voice", "sendto.voice.recording", "sendto.voice.discard", "sendto.voice.pauseResume"),
+    ) {
+        SendToScreen(
+            state = SendToViewModel.UiState(
+                media = CapturedMedia(MediaKind.Photo, File("x.jpg"), 900, 1200, null, false),
+                groups = SendToViewModel.Groups.Loaded(listOf(group("g1", "Sunday dinners"), group("g2", "Roommates"))),
+                selected = setOf("g1", "g2"),
+                micAvailable = true,
+                voicePhase = VoicePhase.Paused,
+            ),
+            chrome = SendToChrome(preview = photo),
+            onClose = {}, onSave = {}, onCaption = {}, onToggle = {}, onSend = {}, onCreateGroup = {}, onRetryGroups = {},
+            onConfirmDiscard = {}, onDismissAlert = {}, onRetrySend = {},
+            voiceLive = VoiceLive(elapsedMs = 7_000, levels = List(100) { (it * 7) % 32 }),
         )
     }
 

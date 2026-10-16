@@ -8,7 +8,7 @@ Side by side: [`birthday.tribute.android.png`](birthday.tribute.android.png) —
 
 Snapshots (real sample photos, `fixtures/photos/`): `birthday.tribute/error-light.png`, `birthday.tribute/honoree-light.png`, `birthday.tribute/loading-light.png`, `birthday.tribute/not-found-light.png`, `birthday.tribute/offline-light.png`, `birthday.tribute/ready-dark.png`, `birthday.tribute/ready-light.png`, `birthday.tribute/rendering-light.png`, `birthday.tribute/save-denied-light.png`, `birthday.tribute/saving-light.png`
 
-**Result: 27 checks — 26 match, 1 match (token).**
+**Result: 28 checks — 27 match, 1 match (token).**
 
 ## Header
 
@@ -47,13 +47,14 @@ Snapshots (real sample photos, `fixtures/photos/`): `birthday.tribute/error-ligh
 | status | token / element | expected | ours | reference evidence | note |
 |---|---|---|---|---|---|
 | match | save → add-only MediaStore.Video; denied → alert | `birthday.tribute.saveDenied.*` (Settings) | TributeAndAddViewModelTest; save-denied-light.png |  | error haptic |
+| match | save and Share: the honoree only (owner decision 12) | members: no bottom row, no download | ready-light.png (member) / honoree-light.png; TributeAndAddViewModelTest.membersCannotSaveOrShare |  |  |
 
 ## States
 
 | status | token / element | expected | ours | reference evidence | note |
 |---|---|---|---|---|---|
-| match | state `ready (primary)` | spec → States | ready-light.png, ready-dark.png |  | member view; light and dark (media) |
-| match | state `honoree` | spec → States | honoree-light.png |  | 'Your birthday video' |
+| match | state `ready (primary)` | spec → States | ready-light.png, ready-dark.png |  | member view: no bottom row (save and Share are the honoree's, owner decision 12); light and dark (media) |
+| match | state `honoree` | spec → States | honoree-light.png |  | 'Your birthday video'; save circle + Share pill |
 | match | state `loading` | spec → States | loading-light.png |  | C-28 in the player box |
 | match | state `re-rendering` | spec → States | rendering-light.png |  | as loading |
 | match | state `saving` | spec → States | saving-light.png |  |  |

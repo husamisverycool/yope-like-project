@@ -53,6 +53,7 @@ import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -344,11 +345,12 @@ private fun Header(
         }
         if (title != null) {
             Column(Modifier.padding(start = titleStart, end = titleEnd)) {
-                val titleText = @Composable { modifier: Modifier ->
+                val titleText = @Composable { modifier: Modifier, onLayout: (TextLayoutResult) -> Unit ->
                     Text(
                         title,
                         style = titleStyle,
                         color = Tokens.Colors.globalTextOnMedia,
+                        onTextLayout = onLayout,
                         modifier = modifier
                             .paddingFrom(FirstBaseline, before = Tokens.Sizes.globalTitleTop)
                             .endAtLastBaseline()
@@ -360,7 +362,7 @@ private fun Header(
                     )
                 }
                 if (modeMenu == null) {
-                    titleText(Modifier)
+                    titleText(Modifier) {}
                 } else {
                     ModeTitle(modeMenu, capMiddle, titleText)
                 }
@@ -380,7 +382,10 @@ private fun Header(
     }
 }
 
-/** What the title does with a mode menu: open it, and report where it is (bounds in the root) so the menu anchors there. */
+/**
+ * What the title does with a mode menu: open it, and report where it is (bounds in the root, down to the date's
+ * descent) so the menu anchors under the date.
+ */
 private class ModeTitleActions(val onOpen: () -> Unit, val onPlaced: (Rect) -> Unit)
 
 /**
@@ -390,23 +395,26 @@ private class ModeTitleActions(val onOpen: () -> Unit, val onPlaced: (Rect) -> U
  * title's cap middle ([capMiddle], from the header's top).
  */
 @Composable
-private fun ModeTitle(menu: ModeTitleActions, capMiddle: Dp, title: @Composable (Modifier) -> Unit) {
+private fun ModeTitle(menu: ModeTitleActions, capMiddle: Dp, title: @Composable (Modifier, (TextLayoutResult) -> Unit) -> Unit) {
     val chevron = Tokens.Icons.globalChevronDown
     val ink = GlyphInk.bounds(chevron)
     val box = Tokens.Sizes.onthisdayModeChevronWidth * (chevron.viewportWidth / ink.width)
     // The gap and the drop are measured on the ink: shift the box by the glyph's own side bearing and ink centre.
     val lead = Tokens.Sizes.onthisdayModeChevronGap - GlyphInk.leading(chevron, box)
     val inkCentreBelowBoxCentre = box * ((ink.top + ink.bottom) / 2f / chevron.viewportHeight) - box / 2
+    // The row ends at the date's baseline (the subtitle's pitch); the menu goes under the descent, read from the text
+    // layout (measured before the row is placed, so no state is needed).
+    val belowBaseline = remember { FloatArray(1) }
     Row(
         Modifier
-            .onGloballyPositioned { menu.onPlaced(it.boundsInRoot()) }
+            .onGloballyPositioned { val r = it.boundsInRoot(); menu.onPlaced(r.copy(bottom = r.bottom + belowBaseline[0])) }
             // No ripple: the touch area reaches up to the header's top (the title's baseline padding); the menu itself
             // is the feedback.
             .clickable(interactionSource = null, indication = null, role = Role.DropdownList, onClick = menu.onOpen)
             .semantics(mergeDescendants = true) { heading() }
             .testTag(OnThisDayTags.MODE),
     ) {
-        title(Modifier.weight(1f, fill = false))
+        title(Modifier.weight(1f, fill = false)) { belowBaseline[0] = it.size.height - it.lastBaseline }
         Icon(
             chevron,
             contentDescription = null,

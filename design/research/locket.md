@@ -1,5 +1,10 @@
 # Locket: reference research (widgets, camera, send, reactions, onboarding widget step, Gold paywall, push)
 
+> **Owner decision 22 (2026-10-16):** what this file reports from Locket's decompiled app bundle (rows citing the APK's
+> Hermes string table or JS constants) no longer counts as evidence. The canonical tokens and strings were re-sourced from
+> public screenshots, help pages and platform documentation (design/MERGE_DECISIONS.md, OD22-*); this file is kept as the
+> record of the research pass.
+
 Researched on 2026-10-15. Locket (Locket Labs, Inc.) is the reference for these surfaces:
 `widget.home.*`, `widget.lock.*`, `widget.arrival`, `widget.android`, `camera.fromwidget`, the
 Locket parts of `camera.capture` and `camera.sendto`, `chat.reactions`, the Locket parts of

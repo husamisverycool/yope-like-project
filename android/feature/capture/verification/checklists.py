@@ -235,10 +235,85 @@ def camera_sendto():
     for st, note in [("loading", "C-28 indicator in the rows area"), ("empty", "C-27 on media, C-07 \"Create Group\""), ("groups-offline", "C-27 error variant with \"Try Again\""),
                      ("sending", "busy capsule (indicator in `onSurfaceLight`), title \"Sending…\""), ("error", "native alert \"Couldn't send photo\" / Try Again / Cancel"),
                      ("offline", "same alert, offline message"), ("discard", "native alert, destructive \"Yes, go back\""), ("message", "pill relabelled \"Edit message\""),
-                     ("video-free", "Send disabled for a free member's video"), ("voice-recording", "mic in `color.global.destructive` + elapsed m:ss"), ("voice-attached", "mic + length; tap → \"Delete recording\" menu")]:
+                     ("video-free", "Send disabled for a free member's video"),
+                     ("voice-recording", "holding: red mic · elapsed m:ss · ‹ \"Slide to cancel\" in the pill's place; lock circle over the voice capsule"),
+                     ("voice-locked", "red mic · elapsed · C-36 live waveform · pause; voice capsule shows send"),
+                     ("voice-paused", "trash (red) · play · draft waveform · length · mic (red); voice capsule shows send"),
+                     ("voice-paused-preview", "preview playing: pause glyph, played bars up to the preview"),
+                     ("voice-attached", "note capsule (play · C-36 · 0:07) `size.global.pillGap` above the pill pair; long press → \"Delete recording\""),
+                     ("voice-attached-playing", "pause glyph, played bars in `color.global.textOnMedia` up to the playback")]:
         s.row("match", f"state `{st}`", "spec → States", f"camera.sendto_{st}.png", "", note)
     s.row("approx", "close glyph ink ≈ 9.7 pt (ST-03)", "9.7", "24-dp glyph box (C-11)", "", "components gap: no size token for the small × (reported by Pass 3)")
+    sendto_voice(s)
     return s
+
+
+def waveform_bars(snapshot, left, top, width, height, fill):
+    """C-36 bars in a box (dp) of a render: count, mean width, pitch, tallest / shortest bar, the tallest bar's colour."""
+    im = Image.open(os.path.join(SNAP, snapshot)).convert("RGB")
+    fl = sum(int(fill[i:i + 2], 16) for i in (1, 3, 5)) / 3
+    l, t, r, b = (int(round(v * SCALE)) for v in (left, top, left + width, top + height))
+    runs, cur = [], None
+    for x in range(l, min(r, im.width)):
+        ys = [y for y in range(t, min(b, im.height)) if abs(sum(im.getpixel((x, y))) / 3 - fl) > 40]
+        if ys:
+            cur = [x, x, min(ys), max(ys)] if cur is None else [cur[0], x, min(cur[2], min(ys)), max(cur[3], max(ys))]
+        elif cur is not None:
+            runs.append(cur)
+            cur = None
+    if cur is not None:
+        runs.append(cur)
+    if not runs:
+        return {"count": 0, "width": -1, "pitch": -1, "max": -1, "min": -1, "colour": "#000000"}
+    tall = max(runs, key=lambda o: o[3] - o[2])
+    return {
+        "count": len(runs),
+        "width": sum(o[1] - o[0] + 1 for o in runs) / len(runs) / SCALE,
+        "pitch": (runs[-1][0] - runs[0][0]) / max(1, len(runs) - 1) / SCALE,
+        "max": (tall[3] - tall[2] + 1) / SCALE,
+        "min": min(o[3] - o[2] + 1 for o in runs) / SCALE,
+        "colour": "#%02X%02X%02X" % im.getpixel(((tall[0] + tall[1]) // 2, (tall[2] + tall[3]) // 2)),
+    }
+
+
+def sendto_voice(s):
+    """The voice note on the photo (owner decision 16): note capsule, recording capsule, C-36 bars measured on the renders."""
+    n, r = meas("camera.sendto.voice"), meas("camera.sendto.recording")
+    pv, note, msg, mic = n["sendto.preview"], n["sendto.voice.attached"], n["sendto.message"], n["sendto.voice"]
+    gap, pill = tok("size.global.pillGap"), tok("size.global.pillHeight")
+    s.section("Voice note (`camera.sendto.layout.messageField` `.note` / `.recording`, chat.voice, C-36)")
+    s.near("note capsule height `size.global.pillHeight`", pill, note["height"], ev("camera.sendto.layout.messageField"))
+    s.near("note capsule `size.global.pillGap` above the pill pair", gap, msg["top"] - note["bottom"])
+    s.near("note capsule centred on the photo", cx(pv), cx(note))
+    s.near("pill pair keeps its bottom 20.5 above the photo bottom", tok("camera.sendto.layout.messageField", "bottomInset"), pv["bottom"] - mic["bottom"])
+    rec = r["sendto.voice.recording"]
+    s.near("recording capsule (locked / paused) width = photo − 2 × `size.global.pillGap` − `size.global.iconPillWidth` − gap",
+           r["sendto.preview"]["width"] - 3 * gap - tok("size.global.iconPillWidth"), rec["width"], ev("camera.sendto.layout.messageField"))
+    s.near("recording capsule → voice capsule `size.global.pillGap`", gap, r["sendto.voice"]["left"] - rec["right"])
+    s.near("trash glyph after `size.global.pillPaddingLeading`", tok("size.global.pillPaddingLeading"), r["sendto.voice.discard"]["left"] - rec["left"])
+    s.near("continue glyph `size.global.pillPaddingTrailing` from the end", tok("size.global.pillPaddingTrailing"), rec["right"] - r["sendto.voice.pauseResume"]["right"])
+    s.near("glyphs `size.global.iconSmall`", tok("size.global.iconSmall"), r["sendto.voice.discard"]["width"])
+    x0 = note["left"] + tok("size.global.pillPaddingLeading") + tok("size.global.iconSmall") + tok("size.global.pillIconGap")
+    wf = waveform_bars("camera.sendto_voice-attached.png", x0, note["top"], tok("chat.voice.dimension.waveform"), note["height"], tok("color.global.controlOnDeep"))
+    bar, bgap = tok("size.global.waveformBarWidth"), tok("size.global.waveformBarGap")
+    s.near("C-36 bar count ⌊(154 + gap) ÷ (bar + gap)⌋ (render `voice-attached`)", (tok("chat.voice.dimension.waveform") + bgap) // (bar + bgap), wf["count"], ev("size.global.waveformBarGap"), tol=0)
+    s.near("C-36 bar width `size.global.waveformBarWidth`", bar, wf["width"], ev("size.global.waveformBarWidth"), tol=0.34)
+    s.near("C-36 pitch bar + `size.global.waveformBarGap`", bar + bgap, wf["pitch"], ev("size.global.waveformBarGap"), tol=0.1)
+    s.near("C-36 tallest bar = `layout.global.waveform` maxHeightRatio × `size.global.pillHeight`", tok("layout.global.waveform", "maxHeightRatio") * pill, wf["max"], ev("layout.global.waveform"), tol=0.67)
+    # The render's levels (ScreenSnapshotTest VOICE_LEVELS) bucketed as core:ui WaveformBars does: the shortest bar's height.
+    import math
+    levels = [max(0, min(31, int(31 * math.sin(math.pi * (i % 50) / 50) * (0.55 + 0.45 * abs(math.sin(i * 0.9)))))) for i in range(100)]
+    count = int((tok("chat.voice.dimension.waveform") + bgap) // (bar + bgap))
+    peaks = [max(levels[i * 100 // count:max(i * 100 // count + 1, (i + 1) * 100 // count)]) for i in range(count)]
+    low, high = tok("size.global.waveformBarMinHeight"), tok("layout.global.waveform", "maxHeightRatio") * pill
+    s.near("C-36 shortest bar = `size.global.waveformBarMinHeight` + (tallest − min) × its level ÷ the largest level", low + (high - low) * min(peaks) / max(levels), wf["min"],
+           ev("size.global.waveformBarMinHeight"), "silent bars (level 0) are dots of the min height: core:ui c36 `idle-playing-dots-short`", tol=0.67)
+    s.same("C-36 idle bars unplayed `color.global.textSecondary`", tok("color.global.textSecondary"), wf["colour"], ev("color.global.textSecondary"))
+    s.token("played bars `color.global.textOnMedia` up to the playback (split bar at the edge)", "spec", "render `voice-attached-playing`; core:ui ComponentLogicTest", ev("layout.global.waveform"))
+    s.token("hold / slide left past half the row / slide up `size.global.pillHeight` / lock; locked send; paused continue, preview, delete", "chat.voice.layout.recording / .locked",
+            "FlowTests.voiceCapsuleHoldSlideLockAndNoteMenu; ViewModelTests.voice*", ev("chat.voice.layout.locked"))
+    s.token("TalkBack: voice capsule activates a hands-free recording, then keeps it; glyphs labelled `chat.voice.a11y.*`; waveform decorative", "spec Accessibility",
+            "clearAndSetSemantics labels; VoiceWaveform clears its semantics", "")
 
 
 def daily_capture():

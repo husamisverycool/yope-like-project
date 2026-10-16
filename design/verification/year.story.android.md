@@ -97,7 +97,7 @@ Snapshots (real sample photos, `fixtures/photos/`): `year.story/card-01-intro-da
 | status | token / element | expected | ours | reference evidence | note |
 |---|---|---|---|---|---|
 | match | `layout.year.story.navigation` | right half next, left half previous; auto-advance `duration.year.story.card` | YearStoryFlowTest: taps both ways, advances on its own, pause holds |  | TalkBack: custom actions next / previous; touch exploration pauses |
-| match | Share pill only on shareable cards | fact cards, photos, collages, outro, summary | no pill on intro (flow), pill on moments |  | RecapPill(busy) while the image renders |
+| match | Share pill only on shareable cards | fact cards, your own photos, collages, outro, summary | no pill on intro (flow), pill on moments; card-06-most-reacted-photo-p2 (yours): pill, -p1 (Ana's): none; YearStoryViewModelTest |  | RecapPill(busy) while the image renders; a most-reacted photo is shareable only when it is yours (owner decision 12) |
 
 ## States
 

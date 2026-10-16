@@ -318,7 +318,63 @@ def chat_voice():
     sh.row("`chat.voice.layout.recording`: hold → recording row (red mic, time, \"Slide to cancel\", lock); locked: delete + send", "spec", "renders `recordingHolding`, `recordingLocked`; flow tests", status="match (token)")
     sh.row("mic permission denied → native alert", "spec", "render `micPermissionDenied`", status="match (token)")
     sh.row("load failure line (destructive)", "spec", "render `voiceError`", status="match (token)")
+    sh.row("`chat.voice.layout.locked` recording: red mic · elapsed · live waveform; trash · pause (red, page circle) · send (primary circle)", "spec", "renders `recordingLocked`, `recordingLockedDark`", status="match (token)")
+    sh.row("`chat.voice.layout.locked` paused: preview glyph · draft waveform (played bars up to the preview) · length; trash · mic (red) · send", "spec", "renders `recordingPaused`, `recordingPausedDark`; flow tests `voicePausePreviewContinueAndSend`, `voicePausedDraftDeletes`", status="match (token)")
+    sh.row("`chat.voice.a11y.pauseRecording` / `.resumeRecording`", f"{copy('chat.voice.a11y.pauseRecording')} / {copy('chat.voice.a11y.resumeRecording')}", "pause / continue circle labels (flow tests)", status="match (token)")
+    # C-36 measured on the render: the capsule's waveform (`content`, the voice capsule `VerificationMeasurements` reports).
+    wf = waveform_bars(snap("ChatSnapshotTest.content"), v["left"] + tok("size.global.pillPaddingLeading") + tok("size.global.iconSmall") + tok("size.global.pillIconGap"),
+                       v["top"], tok("chat.voice.dimension.waveform"), v["height"], tok("color.global.surfaceSecondary.android", "light"))
+    sh.section("Voice waveform (C-36, `layout.global.waveform`, owner decision 16)")
+    bar, gap = tok("size.global.waveformBarWidth"), tok("size.global.waveformBarGap")
+    sh.row("bar count = ⌊(`chat.voice.dimension.waveform` + gap) ÷ (bar + gap)⌋", int((tok("chat.voice.dimension.waveform") + gap) // (bar + gap)), wf["count"], tol=0)
+    sh.row("bar width `size.global.waveformBarWidth`", bar, wf["width"], tol=0.3)
+    sh.row("bar pitch `size.global.waveformBarWidth` + `size.global.waveformBarGap`", round(bar + gap, 2), wf["pitch"], tol=0.1)
+    sh.row("tallest bar `layout.global.waveform` maxHeightRatio × `size.global.pillHeight`", round(tok("layout.global.waveform", "maxHeightRatio") * tok("size.global.pillHeight"), 2), wf["max"], tol=0.6)
+    sh.row("silent bar (a dot) `size.global.waveformBarMinHeight`", tok("size.global.waveformBarMinHeight"), wf["min"], tol=0.6)
+    sh.row("unplayed bars `color.global.textSecondary` (idle: all unplayed)", tok("color.global.textSecondary", "light") if isinstance(tok("color.global.textSecondary"), dict) else tok("color.global.textSecondary"), wf["colour"], tol=12)
+    sh.row("played bars `color.global.textPrimary` up to the progress edge; split bar at the edge", "spec", "render `voicePlaying`; core:ui `ComponentLogicTest` (played share)", status="match (token)")
+    sh.row("100 levels of 0…31 stored per note (`layout.global.waveform` samples / levelMax, Telegram's format); none → dots, or levels decoded from the audio", "spec", "core:voice `VoiceLevelsTest`; feature:social `AudioLevels`", status="match (token)")
     return sh
+
+
+def copy(key):
+    """A copy string's value (design/copy/*.json)."""
+    for name in ("social", "global", "capture"):
+        p = os.path.join(ROOT, "design", "copy", name + ".json")
+        if os.path.exists(p):
+            entry = json.load(open(p)).get("strings", {}).get(key)
+            if entry:
+                return entry.get("text", key) if isinstance(entry, dict) else entry
+    return key
+
+
+def waveform_bars(img, left, top, width, height, fill):
+    """C-36 bars in a box (dp): count, mean width, pitch, tallest / shortest bar, the bars' colour (sampled)."""
+    fr, fg, fb = (int(fill[i:i + 2], 16) for i in (1, 3, 5))
+    fl = (fr + fg + fb) / 3
+    l, t, r, b = (int(round(v * SCALE)) for v in (left, top, left + width, top + height))
+    runs, cur = [], None
+    for x in range(l, min(r, img.width)):
+        ys = [y for y in range(t, min(b, img.height)) if abs(sum(img.getpixel((x, y))) / 3 - fl) > 40]
+        if ys:
+            cur = [x, x, min(ys), max(ys)] if cur is None else [cur[0], x, min(cur[2], min(ys)), max(cur[3], max(ys))]
+        elif cur is not None:
+            runs.append(cur)
+            cur = None
+    if cur is not None:
+        runs.append(cur)
+    if not runs:
+        return {"count": 0, "width": -1.0, "pitch": -1.0, "max": -1.0, "min": -1.0, "colour": "#000000"}
+    tallest = max(runs, key=lambda o: o[3] - o[2])
+    cx, cy = (tallest[0] + tallest[1]) // 2, (tallest[2] + tallest[3]) // 2
+    return {
+        "count": len(runs),
+        "width": round(sum(o[1] - o[0] + 1 for o in runs) / len(runs) / SCALE, 2),
+        "pitch": round((runs[-1][0] - runs[0][0]) / max(1, len(runs) - 1) / SCALE, 2),
+        "max": round((tallest[3] - tallest[2] + 1) / SCALE, 2),
+        "min": round(min(o[3] - o[2] + 1 for o in runs) / SCALE, 2),
+        "colour": "#%02X%02X%02X" % img.getpixel((cx, cy)),
+    }
 
 
 def chat_reactions():
@@ -739,7 +795,8 @@ ST02 = ("references/auto/retro/store/retro-store-02.png", None)
 SURFACES = [
     ("chat.thread", chat_thread, ["ChatSnapshotTest.content", "ChatSnapshotTest.contentDark", "ChatSnapshotTest.dualPhoto"], [TC2B, ("references/auto/retro/store/retro-store-01.png", None)]),
     ("chat.composer", chat_composer, ["ChatSnapshotTest.composerTyping", "ChatSnapshotTest.replying", "ChatSnapshotTest.contentDark"], [TC2B]),
-    ("chat.voice", chat_voice, ["ChatSnapshotTest.voicePlaying", "ChatSnapshotTest.recordingHolding", "ChatSnapshotTest.contentDark"], [ST02, ("references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png", None)]),
+    ("chat.voice", chat_voice, ["ChatSnapshotTest.voicePlaying", "ChatSnapshotTest.recordingHolding", "ChatSnapshotTest.recordingLocked", "ChatSnapshotTest.recordingPausedDark"],
+     [ST02, ("references/auto/whatsapp/blog/whatsapp-blog-2022-03-voice-updates.png", None), ("references/auto/whatsapp/store/whatsapp-store-02.png", None)]),
     ("chat.reactions", chat_reactions, ["ChatSnapshotTest.contextMenuPhoto", "ChatSnapshotTest.reactionsSheet", "ChatSnapshotTest.reactionsPicker"], [("references/auto/whatsapp/store/whatsapp-store-04.png", None)]),
     ("photo.viewer", photo_viewer, ["ViewerSnapshotTest.othersPhoto", "ViewerSnapshotTest.othersPhotoDark", "ViewerSnapshotTest.dualCapture"], [TC2B]),
     ("walls.mine", walls_mine, ["WallsSnapshotTest.mineContent", "WallsSnapshotTest.mineContentDark"], [ST02]),

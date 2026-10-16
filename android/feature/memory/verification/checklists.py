@@ -507,7 +507,7 @@ def year_story():
     s.check("match", "share sheet preview title", "`year.story.entry.subtitle` ('2026 Recap')", "EXTRA_TITLE '2026 Recap' (YearStoryFlowTest)", "")
     s.section("Behaviour")
     s.check("match", "`layout.year.story.navigation`", "right half next, left half previous; auto-advance `duration.year.story.card`", "YearStoryFlowTest: taps both ways, advances on its own, pause holds", "TalkBack: custom actions next / previous; touch exploration pauses")
-    s.check("match", "Share pill only on shareable cards", "fact cards, photos, collages, outro, summary", "no pill on intro (flow), pill on moments", "RecapPill(busy) while the image renders")
+    s.check("match", "Share pill only on shareable cards", "fact cards, your own photos, collages, outro, summary", "no pill on intro (flow), pill on moments; card-06-most-reacted-photo-p2 (yours): pill, -p1 (Ana's): none; YearStoryViewModelTest", "RecapPill(busy) while the image renders; a most-reacted photo is shareable only when it is yours (owner decision 12)")
     s.section("States")
     states(s, "year.story", [
         ("intro (primary)", "card-01-intro", "light and dark (media: identical)"),
@@ -757,9 +757,11 @@ def birthday_tribute():
     s.dp("Share pill at `size.global.buttonMarginH`", tok("size.global.buttonMarginH"), W - k[2])
     s.section("Behaviour")
     s.check("match", "save → add-only MediaStore.Video; denied → alert", "`birthday.tribute.saveDenied.*` (Settings)", "TributeAndAddViewModelTest; save-denied-light.png", "error haptic")
+    s.check("match", "save and Share: the honoree only (owner decision 12)", "members: no bottom row, no download", "ready-light.png (member) / honoree-light.png; TributeAndAddViewModelTest.membersCannotSaveOrShare", "")
     s.section("States")
     states(s, "birthday.tribute", [
-        ("ready (primary)", "ready", "member view; light and dark (media)"), ("honoree", "honoree", "'Your birthday video'"),
+        ("ready (primary)", "ready", "member view: no bottom row (save and Share are the honoree's, owner decision 12); light and dark (media)"),
+        ("honoree", "honoree", "'Your birthday video'; save circle + Share pill"),
         ("loading", "loading", "C-28 in the player box"), ("re-rendering", "rendering", "as loading"), ("saving", "saving", ""),
         ("not found", "not-found", ""), ("error", "error", ""), ("offline", "offline", ""), ("save denied", "save-denied", "native alert"),
     ])

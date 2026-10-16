@@ -8,7 +8,7 @@ Side by side: [`onthisday.android.png`](onthisday.android.png) — ours (paused 
 
 Snapshots (real sample photos, `fixtures/photos/`): `onthisday/delete-confirm-light.png`, `onthisday/dial-step-2-light.png`, `onthisday/empty-light.png`, `onthisday/error-light.png`, `onthisday/intro-light.png`, `onthisday/loading-light.png`, `onthisday/menu-light.png`, `onthisday/menu-own-light.png`, `onthisday/mode-menu-light.png`, `onthisday/offline-light.png`, `onthisday/paused-dark.png`, `onthisday/paused-light.png`, `onthisday/paused-own-memory-light.png`, `onthisday/playing-light.png`, `onthisday/save-denied-light.png`, `onthisday/shuffle-light.png`
 
-**Result: 62 checks — 53 match, 7 match (token), 1 approx, 1 not matched.**
+**Result: 62 checks — 54 match, 7 match (token), 1 approx.**
 
 ## Header (C-02 / C-35 on media)
 
@@ -19,7 +19,7 @@ Snapshots (real sample photos, `fixtures/photos/`): `onthisday/delete-confirm-li
 | match | `size.global.titleTop` (title baseline) | 64 | 64 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references/auto/retro/lazyweb/r… | RWA: 63.3 pt below the safe-area top |
 | match (token) | `fontSize.global.headerTitle` (text role `headerTitle`, `font.global.display`) | 43.0 | TextRoles.headerTitle — 'Jul 22, 2022' (`layout.onthisday.dateFormat`, DateFormat MEDIUM) | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt wv3.e Roslindale Retro 40 sp / 48 … |  |
 | match | `color.global.textOnMedia` (title) | #FFFFFF | #FFFFFF | references/auto/retro/press/tc-2023-12-retro3.png phone 1 viewer name 'nathan' white on black under … |  |
-| not matched | `dimension.onthisday.subtitleBaseline` (date baseline → subtitle baseline) | 26.4 | 33 | references/auto/retro/store/retro-store-05.png (App Store render, 2.389 px/pt): '2021' digits y752-8… | ST-05: 26.4 pt |
+| match | `dimension.onthisday.subtitleBaseline` (date baseline → subtitle baseline) | 26.4 | 26.5 | references/auto/retro/store/retro-store-05.png (App Store render, 2.389 px/pt): '2021' digits y752-8… | ST-05: 26.4 pt |
 | match | subtitle aligned with the date's leading edge | 46.5 | 46.5 |  | same text box start |
 | match | `color.onthisday.subtitle` (#FFFFFFC2 on black) | #C2C2C2 | #C2C2C2 | references/auto/retro/press/tc-2025-12-rewind-panels.png (press render, Dec 2025) phone 1 'On this w… | brightest pixel of the 17-sp regular line |
 | match | `size.global.circleButtonPhoto` ('•••' glass circle) | 40 | 40 | references/auto/retro/press/tc-2025-12-rewind-device-a.png more y276–396, x1152–1271 — design/resear… | C-11 glass, `CircleButtonStyle.Glass` |
