@@ -29,7 +29,8 @@ styles, full-quality downloads.
 3. **Benefit pager** (one page per perk; opened from a locked feature, that perk's page first), centred in the space
    between the header and the plan cards:
    - media card `paywall.size.mediaCardWidth` (248), `paywall.radius.mediaCard` (27), aspect-fill: the newest photo from
-     the person's groups (no photo → no card);
+     the person's groups (no photo → no card); its bottom `paywall.size.mediaCardFade` (48) fades linearly to clear into
+     the backdrop (PAY rows 805–950; Pass 5 review);
    - `size.global.titleToContent` below: headline = `paywall.perk.<perk>.title` (`font.global.display`,
      `displayMedium`, `color.global.textOnMedia`, centred);
    - directly under it: `paywall.perk.<perk>.subtitle` (text role `textButton` 17 regular, `color.global.textOnMedia`,

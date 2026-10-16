@@ -2401,6 +2401,9 @@ public enum Tokens {
         /// Retro · onboarding.widget · widget preview tile on the add-the-widget page (square) · SOURCED
         /// token: `onboarding.widget.size.preview`
         public static let onboardingWidgetSizePreview: CGFloat = 158
+        /// Retro · paywall · bottom fade of the benefit media card: opacity 1 → 0, linear, over this length at the card's bottom · SOURCED
+        /// token: `paywall.size.mediaCardFade`
+        public static let paywallSizeMediaCardFade: CGFloat = 48
         /// Retro · paywall · benefit media card (the locked feature's preview) centred under the title · SOURCED
         /// token: `paywall.size.mediaCardWidth`
         public static let paywallSizeMediaCardWidth: CGFloat = 248

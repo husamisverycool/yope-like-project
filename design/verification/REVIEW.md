@@ -22,6 +22,7 @@ side-by-side images are local only (git-ignored: the reference half is third-par
 | 8 | Page dots of the recap preview sat on the Share pill's line in the spec text; ST-04 shows them 16.3 pt below the page. | ST-04 full-resolution measurement | RC-19, `RecapDots.BelowPage` default (both platforms). |
 | 9 | iOS review images showed no blur at all (App Clip backdrop sharp) although the code blurs. | snapshot of invite.appclip | `SnapshotRecorder` draws through the key window (`drawHierarchy`) so Core Animation filters render; not an app bug. |
 | 10 | Recap list week cards ("Week 41" on the cover) used the light headline cut and washed out on bright covers; the C-34 library card's year did too. | TC-2023-12 recaps: "December" / "November" and the card's "2023" are the heavy title cut | Week cards → `displayTitle`; C-34 card year → `headerTitle` (as memory's recap card, RM-8). |
+| 11 | Paywall media card ended in a hard edge; Retro's card fades into the colour field at the bottom. | PAY rows 700–1050 (card vs backdrop colour distance; linear ramp y 805 → 950) | `paywall.size.mediaCardFade` (48 pt) alpha mask on both platforms. |
 
 ## Reviewed and kept (matches the reference or the spec)
 

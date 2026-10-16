@@ -2000,6 +2000,8 @@ object Tokens {
         val inviteWebSizeTextMaxWidth: Dp = 260.dp
         /** Retro · onboarding.widget · widget preview tile on the add-the-widget page (square) · SOURCED — token `onboarding.widget.size.preview` */
         val onboardingWidgetSizePreview: Dp = 158.dp
+        /** Retro · paywall · bottom fade of the benefit media card: opacity 1 → 0, linear, over this length at the card's bottom · SOURCED — token `paywall.size.mediaCardFade` */
+        val paywallSizeMediaCardFade: Dp = 48.dp
         /** Retro · paywall · benefit media card (the locked feature's preview) centred under the title · SOURCED — token `paywall.size.mediaCardWidth` */
         val paywallSizeMediaCardWidth: Dp = 248.dp
         /** Retro · photo.viewer · close circle in the viewer header (fill color.global.controlOnDeep) · SOURCED — token `photo.viewer.dimension.closeCircle` */

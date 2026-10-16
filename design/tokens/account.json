@@ -575,7 +575,20 @@
       "method": "(974 − 231 + 1) ÷ 3.000",
       "level": "SOURCED",
       "precision": "±0.5 pt",
-      "notes": "Its top sits 137 pt below the screen top (y 411); height is the media's own (the card fades into the backdrop at the bottom)."
+      "notes": "Its top sits 137 pt below the screen top (y 411); height is the media's own; its bottom paywall.size.mediaCardFade fades into the backdrop."
+    },
+    "paywall.size.mediaCardFade": {
+      "type": "dimension",
+      "value": 48,
+      "unit": "pt",
+      "source_app": "Retro",
+      "surface": "paywall",
+      "element": "bottom fade of the benefit media card: opacity 1 → 0, linear, over this length at the card's bottom",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png rows 700–1050: mean colour inside the card (x 650–960) against the backdrop beside it (x 195–222, 985–1010); the distance falls from the photo's ≈ 250 (y 830) to the noise floor ≈ 10 at y 950; a linear opacity ramp fits rows 850–930 with its start at y ≈ 805 (fits 788–820)",
+      "method": "(950 − 805) px ÷ 3.000 px/pt = 48.3; the card's opacity reaches 0 at y 950 = 179.7 pt below its top (y 411), i.e. at the bottom of the 248 × ≈ 183 card",
+      "level": "SOURCED",
+      "precision": "±4 pt",
+      "notes": "Draw as an alpha mask on the clipped card (ramp from opaque at height − fade to clear at the bottom edge); the card keeps its frame for layout (the headline's titleToContent counts from the card's bottom edge). Pass 5 review finding 11."
     },
     "paywall.radius.mediaCard": {
       "type": "radius",

@@ -37,6 +37,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -315,7 +321,8 @@ private fun Offer(state: PaywallUiState, legal: LegalLinks, actions: PaywallActi
 
 /**
  * The benefit pager (one page per perk): the media card (`paywall.size.mediaCardWidth` wide, `paywall.radius.mediaCard`,
- * aspect-fill, as tall as the space allows up to 3:4; no photo → no card), the headline `size.global.titleToContent`
+ * aspect-fill, as tall as the space allows up to 3:4, its bottom `paywall.size.mediaCardFade` fading into the backdrop;
+ * no photo → no card), the headline `size.global.titleToContent`
  * under it (`font.global.display` `displayMedium`, white, centred), the description (text role `textButton`, white,
  * ≤ 2 lines) and the C-31 page dots on media; a page change ticks (`haptic.global.select`).
  */
@@ -339,7 +346,8 @@ private fun Benefits(state: PaywallUiState, modifier: Modifier) {
                             // never taller than 3:4.
                             .heightIn(max = Tokens.Sizes.paywallSizeMediaCardWidth / MEDIA_ASPECT)
                             .fillMaxHeight()
-                            .clip(RoundedCornerShape(Tokens.Radii.paywallRadiusMediaCard)),
+                            .clip(RoundedCornerShape(Tokens.Radii.paywallRadiusMediaCard))
+                            .mediaCardFade(),
                     )
                 }
                 Text(
@@ -477,5 +485,20 @@ private fun Welcome(welcome: PaywallWelcome, onDone: () -> Unit) {
 
 /** The media card's tallest shape: 3:4, the shape of the app's photos (the card's own height is not measured). */
 private const val MEDIA_ASPECT = 3f / 4f
+
+/**
+ * The media card's alpha mask: opaque down to `paywall.size.mediaCardFade` above the bottom edge, then a linear ramp to
+ * clear at the edge (Retro's card fades into the paywall backdrop, PAY). Only the mask's alpha counts.
+ */
+private fun Modifier.mediaCardFade(): Modifier =
+    graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+        .drawWithContent {
+            drawContent()
+            val opaqueTo = (1f - Tokens.Sizes.paywallSizeMediaCardFade.toPx() / size.height).coerceIn(0f, 1f)
+            drawRect(
+                Brush.verticalGradient(0f to Tokens.Colors.globalBackgroundDeep, opaqueTo to Tokens.Colors.globalBackgroundDeep, 1f to Color.Transparent),
+                blendMode = BlendMode.DstIn,
+            )
+        }
 private const val DESCRIPTION_LINES = 2
 private const val LOADING_CARDS = 2

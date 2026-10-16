@@ -160,7 +160,8 @@ struct PaywallView: View {
     // MARK: Benefits
 
     /// One page per perk (swipe), centred in the space between the header and the plans: the media card
-    /// (`paywall.size.mediaCardWidth`, `paywall.radius.mediaCard`, aspect-fill; none without a photo), the headline
+    /// (`paywall.size.mediaCardWidth`, `paywall.radius.mediaCard`, aspect-fill, its bottom `paywall.size.mediaCardFade`
+    /// fading into the backdrop; none without a photo), the headline
     /// `size.global.titleToContent` below it (display serif `displayMedium`, white), the description under it
     /// (`textButton`, white, ≤ 2 lines); page dots (C-31 on media) under the pages.
     private var benefits: some View {
@@ -188,13 +189,12 @@ struct PaywallView: View {
     private func benefitPage(_ perk: PaywallPerk) -> some View {
         MetricStack(alignment: .center) {
             if let photo {
+                // Retro's card is ≈ 248 × 183 (PAY): no height token — the C-15 cover proportion turned landscape.
+                let height = Tokens.Sizes.paywallSizeMediaCardWidth * Tokens.Sizes.globalRowThumbWidth / Tokens.Sizes.globalRowThumbHeight
                 PhotoView(source: photo)
-                    .frame(
-                        width: Tokens.Sizes.paywallSizeMediaCardWidth,
-                        // Retro's card is ≈ 248 × 183 (PAY): no height token — the C-15 cover proportion turned landscape.
-                        height: Tokens.Sizes.paywallSizeMediaCardWidth * Tokens.Sizes.globalRowThumbWidth / Tokens.Sizes.globalRowThumbHeight
-                    )
+                    .frame(width: Tokens.Sizes.paywallSizeMediaCardWidth, height: height)
                     .clipShape(DSShape.rounded(Tokens.Radii.paywallRadiusMediaCard))
+                    .mask(MediaCardFade(height: height))
                     .accessibilityHidden(true)
             }
             VStack {
@@ -418,5 +418,23 @@ struct PlanCard: View {
         case (false, false): return Copy.paywallPlansMonthlyDetail(monthlyPrice: plan.price)
         case (false, true): return Copy.paywallPlansMonthlyTrialDetail(monthlyPrice: plan.price)
         }
+    }
+}
+
+/// The media card's alpha mask: opaque down to `paywall.size.mediaCardFade` above the bottom edge, then a linear ramp to
+/// clear at the edge (Retro's card fades into the paywall backdrop, PAY). Only the mask's alpha counts.
+private struct MediaCardFade: View {
+    let height: CGFloat
+
+    var body: some View {
+        LinearGradient(
+            stops: [
+                Gradient.Stop(color: Tokens.Colors.globalBackgroundDeep, location: 0),
+                Gradient.Stop(color: Tokens.Colors.globalBackgroundDeep, location: max(0, 1 - Tokens.Sizes.paywallSizeMediaCardFade / height)),
+                Gradient.Stop(color: .clear, location: 1),
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
     }
 }
