@@ -95,8 +95,8 @@ final class MemoryYearStoryTests: XCTestCase {
         await model.loadIfNeeded()
         XCTAssertEqual(model.phase, .loaded)
         // intro, look back, moments, month, most-reacted setup + 3 photos, together setup + 1 day, outro, summary.
-        XCTAssertEqual(model.cards.count, 13)
-        XCTAssertEqual(model.position, Copy.yearStoryPosition(position: "1", total: "12"), "position among the cards before the summary")
+        XCTAssertEqual(model.cards.count, 12)
+        XCTAssertEqual(model.position, Copy.yearStoryPosition(position: "1", total: "11"), "position among the cards before the summary")
         XCTAssertNotNil(model.coverURL, "the cover: the first most-reacted photo")
         // The recap card: most-reacted first, then the story's posts, deduplicated, full rows of 4 only.
         XCTAssertEqual(model.summary?.grid.map(\.postID), [2, 1, 3, 4, 5, 6, 7, 8].map(MemoryIDs.post))

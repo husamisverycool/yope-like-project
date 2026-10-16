@@ -70,7 +70,7 @@ def line_box(img, box, ink):
 
 
 def fill_extent(img, hexc, y, tol=3, x0=0, x1=M.W, min_w=200):
-    """The flat fill of hexc crossing row y: height = the tallest clean column run between 25 % and 75 % of its width
+    """The flat fill of hexc crossing row y: height = the tallest clean column run between 10 % and 90 % of its width
     (text on the fill breaks some columns, not all); left / right = the outermost matching pixels on the row through the
     middle of that run (so rounded corners do not narrow it)."""
     pred = near(hexc, tol)
@@ -88,7 +88,7 @@ def fill_extent(img, hexc, y, tol=3, x0=0, x1=M.W, min_w=200):
         return None
     l, r = span
     best = None
-    for x in range(l + (r - l) // 4, r - (r - l) // 4, max(1, (r - l) // 60)):
+    for x in range(l + (r - l) // 10, r - (r - l) // 10, max(1, (r - l) // 80)):
         if not pred(img.getpixel((x, py))):
             continue
         a = b = py

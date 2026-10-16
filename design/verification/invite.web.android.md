@@ -36,7 +36,7 @@ States rendered (`android/feature/account/src/test/snapshots/invite.web/`): `and
 | match (token) | `color.global.backgroundDeep` | #000000 | Tokens.Colors.globalBackgroundDeep | references/auto/retro/press/tc-2023-12-retro3.png phone 1: black viewer under a… |  |
 | match (token) | `invite.web.size.avatar` | 112 pt | Tokens.Sizes.inviteWebSizeAvatar | design/research/retro-package-copy-motion.md §7 (/u/[username] mobile: avatar 1… |  |
 | match (token) | `invite.web.color.avatarPlaceholder` | #EDEDED | Tokens.Colors.inviteWebColorAvatarPlaceholder | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css .page_profilePicture{b… |  |
-| match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |
+| match (token) | `font.global.displayNarrow` | roboto_serif_headline | Tokens.Fonts.globalDisplayNarrow | references/auto/retro/web/retro.app-u-nathan-iphone.png 'Nathan Invited You!' (… |  |
 | match (token) | `fontSize.global.displayMedium` | 34.4 pt | Tokens.FontSizes.globalDisplayMedium | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'FONT FAMILY … |  |
 | match (token) | `invite.web.lineHeight.headline` | 32 pt | Tokens.LineHeights.inviteWebLineHeightHeadline | design/research/retro-package-copy-motion.md §7; references/auto/retro/web/retr… |  |
 | match (token) | `invite.web.size.textMaxWidth` | 260 pt | Tokens.Sizes.inviteWebSizeTextMaxWidth | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css .page_mobileProfilePag… |  |

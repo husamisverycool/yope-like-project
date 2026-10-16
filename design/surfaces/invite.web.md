@@ -35,8 +35,9 @@ Page background #FFFFFF (`color.global.background` light value, both schemes —
    `invite.web.color.avatarPlaceholder`; centred in the space above the text block (Retro's capture lost the image —
    position approximated, Gaps). No photo → C-23 initials fallback is a Gap; the placeholder circle shows.
 3. **Text block**, anchored above the pill:
-   - headline `invite.web.invitedBy` (or `invite.web.invitedFallback`): `font.global.display` (web stack: the display
-     serif; `serif` fallback), `fontSize.global.displayMedium` (32) / `invite.web.lineHeight.headline` (32), regular,
+   - headline `invite.web.invitedBy` (or `invite.web.invitedFallback`): `font.global.displayNarrow` (Roboto Serif
+     Headline served as WOFF2, `ui-serif`, `serif` fallbacks; L-8), `fontSize.global.displayMedium` (34.4) /
+     `invite.web.lineHeight.headline` (32), regular,
      #FFFFFF, max width `invite.web.size.textMaxWidth` (260);
    - `invite.web.size.headlineToBody` (16) below: line `invite.web.body` — `invite.web.fontSize.body` (14) /
      `invite.web.lineHeight.body` (19.6), tracking `invite.web.letterSpacing.body`, colour `invite.web.color.body`
@@ -59,7 +60,7 @@ White page, centred column (`.page_newProfilePageContent`), in the order of the 
 (`[QR(data, profilePhotoURL), h1, p]`, WEBX; RA-29): QR code of the invite URL (`invite.web.size.qrDesktop` 250, black
 on white, error correction H) with the inviter's avatar (`invite.web.size.avatarDesktop` 70 circle, placeholder
 `invite.web.color.avatarPlaceholder`) centred over it → headline (`invite.web.invitedBy`,
-`invite.web.fontSize.headlineDesktop` 48 / line 48, `font.global.display`, #000000, `invite.web.size.headlineTopDesktop`
+`invite.web.fontSize.headlineDesktop` 51.5 / line 48, `font.global.displayNarrow`, #000000, `invite.web.size.headlineTopDesktop`
 70 below the QR) → line `invite.web.desktop.scan` (`invite.web.fontSize.bodyDesktop` 20 /
 `invite.web.lineHeight.bodyDesktop` 28, `invite.web.color.bodyDesktop`, tracking −0.4, max width
 `invite.web.size.bodyMaxWidthDesktop` 300, `invite.web.size.headlineToBody` above, `invite.web.size.bodyToQrDesktop`
