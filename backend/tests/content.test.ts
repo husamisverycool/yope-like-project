@@ -217,10 +217,47 @@ describe('send_message / delete_message', () => {
       p_voice_duration_ms: 3000,
       p_reply_to_message_id: t.id,
     });
-    expect(v).toMatchObject({ kind: 'voice', voice_path: voice, reply_to_message_id: t.id });
+    expect(v).toMatchObject({ kind: 'voice', voice_path: voice, reply_to_message_id: t.id, voice_levels: null });
     expect(await jobsWhere('push.new_message', { message_id: v.id })).toHaveLength(1);
     // members can read the voice message file
     expect((await a.client.storage.from('media').createSignedUrl(voice, 60)).error).toBeNull();
+  });
+
+  it('a voice message carries its 100 levels; members read them, outsiders and blocked authors do not', async () => {
+    const levels = Array.from({ length: 100 }, (_, i) => (i * 7) % 32);
+    const voice = `u/${c.id}/voice/${randomUUID()}.m4a`;
+    await upload(c, voice, 'audio/mp4');
+    const send = (extra: Record<string, unknown>) =>
+      rpc<any>(c.client, 'send_message', { p_group_id: g1.id, p_kind: 'voice', p_voice_path: voice, p_voice_duration_ms: 4100, ...extra });
+    for (const bad of [[], levels.slice(1), levels.map((v, i) => (i === 99 ? 40 : v)), [[1, 2], [3, 4]]]) {
+      await expectRpcError(send({ p_voice_levels: bad }), 'invalid_voice', 400);
+    }
+    await expectRpcError(
+      rpc(c.client, 'send_message', { p_group_id: g1.id, p_kind: 'text', p_body: 'hi', p_voice_levels: levels }),
+      'invalid_body',
+      400,
+    );
+    const v = await send({ p_voice_levels: levels });
+    expect(v.voice_levels).toEqual(levels);
+    const [seen] = await select(a.client, 'messages', (q) => q.eq('id', v.id));
+    expect(seen.voice_levels).toEqual(levels);
+    expect(await select(stranger.client, 'messages', (q) => q.eq('id', v.id))).toEqual([]);
+    // the author cannot rewrite the levels afterwards (no direct writes)
+    const u = await c.client.from('messages').update({ voice_levels: levels.map(() => 0) }).eq('id', v.id);
+    expect(u.error?.code).toBe('42501');
+  });
+
+  it('the table constraints refuse levels on non-voice rows and malformed levels', async () => {
+    const t = await rpc<any>(b.client, 'send_message', { p_group_id: g1.id, p_kind: 'text', p_body: 'plain' });
+    const levels = `array[${Array.from({ length: 100 }, () => 5).join(',')}]::smallint[]`;
+    await expect(sql(`update public.messages set voice_levels = ${levels} where id = '${t.id}'`)).rejects.toThrow(/messages_voice_levels_need_voice/);
+    const post = (await postPhoto(a, [g1.id])).posts[0];
+    await expect(sql(`update public.posts set voice_levels = ${levels} where id = '${post.id}'`)).rejects.toThrow(/posts_voice_levels_need_voice/);
+    const voice = `u/${b.id}/voice/${randomUUID()}.m4a`;
+    await upload(b, voice, 'audio/mp4');
+    const v = await rpc<any>(b.client, 'send_message', { p_group_id: g1.id, p_kind: 'voice', p_voice_path: voice, p_voice_duration_ms: 900 });
+    await expect(sql(`update public.messages set voice_levels = array[1,2,3]::smallint[] where id = '${v.id}'`)).rejects.toThrow(/messages_voice_levels_valid/);
+    await expect(sql(`update public.messages set voice_levels = ${levels.replace('5,', '99,')} where id = '${v.id}'`)).rejects.toThrow(/messages_voice_levels_valid/);
   });
 
   it('validates kind, body, voice and reply targets', async () => {

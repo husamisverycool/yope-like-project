@@ -227,6 +227,11 @@ fun GroupInviteRoute(nav: NavController, groupId: String) {
     val vm = viewModel(key = "invite:$groupId") { GroupInviteViewModel(env, groupId) }
     val state by vm.state.collectAsStateWithLifecycle()
     CollectEvents(vm.events, nav)
+    // The QR card (owner decision 17): open while the link is live; Back closes it first.
+    var qrOpen by rememberSaveable { mutableStateOf(false) }
+    val qrLink = if (qrOpen) vm.link() else null
+    BackHandler(enabled = qrLink != null) { qrOpen = false }
+    val qr = rememberQrExport()
     // `groups.invite.link.message` is BLOCKED while it names the app ({app_name}): release builds share the link alone.
     fun message(url: String): String = BlockedCopy.inviteLinkMessage(context, state.groupName, url) ?: url
     val contactsRequest = rememberPermissionRequest(
@@ -243,8 +248,11 @@ fun GroupInviteRoute(nav: NavController, groupId: String) {
     GroupInviteScreen(
         state = state,
         zone = env.zone(),
+        qrLink = qrLink,
         actions = GroupInviteActions(
             onClose = { nav.popBackStack() },
+            onQr = { if (vm.link() != null) qrOpen = true },
+            qr = InviteQrActions(onClose = { qrOpen = false }, onSave = qr.save, onShare = qr.share),
             onTurnOn = vm::turnOn,
             onReset = vm::reset,
             onTurnOff = vm::askTurnOff,
@@ -270,6 +278,63 @@ fun GroupInviteRoute(nav: NavController, groupId: String) {
     )
 }
 
+/** Save / Share of the QR card image, with the save permission (API 26–28) and its denied alert. */
+private class QrExport(val save: (ImageBitmap) -> Unit, val share: (ImageBitmap) -> Unit)
+
+/**
+ * Save → the photo library (`InviteQrExport.save`; API 26–28 ask WRITE_EXTERNAL_STORAGE first): `haptic.global.success`
+ * + `groups.invite.qr.saved`, or `haptic.global.error` + `groups.invite.qr.saveFailed`; a denial shows the C-29 alert
+ * `groups.invite.qr.saveDenied.*` whose button opens the app's Settings page. Share → the Sharesheet with the PNG.
+ */
+@Composable
+private fun rememberQrExport(): QrExport {
+    val env = LocalAccountEnvironment.current
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val haptics = rememberHaptics()
+    var pending by remember { mutableStateOf<ByteArray?>(null) }
+    var denied by remember { mutableStateOf(false) }
+    fun write(png: ByteArray) {
+        scope.launch {
+            val saved = InviteQrExport.save(context, png)
+            haptics.perform(if (saved) Tokens.Haptics.globalSuccess else Tokens.Haptics.globalError)
+            env.toasts.show(context.getString(if (saved) R.string.groups_invite_qr_saved else R.string.groups_invite_qr_savefailed))
+        }
+    }
+    val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        val png = pending
+        pending = null
+        if (granted && png != null) write(png) else if (!granted) denied = true
+    }
+    if (denied) {
+        SystemAlertDialog(
+            title = stringResource(R.string.groups_invite_qr_savedenied_title),
+            text = stringResource(R.string.groups_invite_qr_savedenied_message),
+            confirmLabel = stringResource(R.string.groups_invite_qr_savedenied_button),
+            onConfirm = {
+                denied = false
+                ExternalActions.start(context, Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)))
+            },
+            dismissLabel = stringResource(R.string.groups_invite_qr_savedenied_cancel),
+            onDismiss = { denied = false },
+        )
+    }
+    return remember(context) {
+        QrExport(
+            save = { image ->
+                val png = InviteQrExport.png(image)
+                if (InviteQrExport.needsPermission(context)) {
+                    pending = png
+                    permission.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                } else {
+                    write(png)
+                }
+            },
+            share = { image -> scope.launch { InviteQrExport.share(context, InviteQrExport.png(image)) } },
+        )
+    }
+}
+
 /** Copies the invite link (`groups.invite.layout.share` copy: ClipboardManager). */
 private fun copyToClipboard(context: Context, url: String) {
     val clipboard = context.getSystemService(ClipboardManager::class.java) ?: return
@@ -288,6 +353,10 @@ data class GroupInviteActions(
     val onTurnOff: () -> Unit = {},
     val onConfirmTurnOff: () -> Unit = {},
     val onCancelTurnOff: () -> Unit = {},
+    /** "QR Code": opens the QR card (owner decision 17). */
+    val onQr: () -> Unit = {},
+    /** The QR card's close / Save / Share. */
+    val qr: InviteQrActions = InviteQrActions(),
     val onMessage: () -> Unit = {},
     val onCopy: () -> Unit = {},
     val onShare: () -> Unit = {},
@@ -302,12 +371,26 @@ data class GroupInviteActions(
  * `groups.invite.size.coverToNote` under it (eye `groups.invite.icon.note` at `size.global.iconSmall`,
  * `groups.invite.size.noteGlyphGap`, text role `meta`, `groups.invite.color.note` light / secondary text dark; with a live
  * link a second line with its expiry date). `size.global.titleToContent` below: link off → C-05 "Turn on link sharing";
- * link on → the grouped menu (Reset link; Turn off link sharing in red) and the three 64-pt share targets. The two
- * cross-fade (`duration.global.fade`). `size.global.sectionGap` below: the Contacts section (C-20 header; Android: people
- * rows with the C-06 "Invite" capsule, or the C-27 permission block left-aligned).
+ * link on → the grouped menu (Reset link; Turn off link sharing in red) and the four 64-pt share targets (QR Code · Copy
+ * Link · Message · Share to…, TC-J5's order with Message in Instagram's place). The two cross-fade
+ * (`duration.global.fade`). `size.global.sectionGap` below: the Contacts section (C-20 header; Android: people rows with
+ * the C-06 "Invite" capsule, or the C-27 permission block left-aligned). With [qrLink] the QR card screen
+ * ([GroupInviteQrScreen], a media surface) covers the sheet, fading in and out (`duration.global.fade`).
  */
 @Composable
-fun GroupInviteScreen(state: GroupInviteUiState, zone: ZoneId, actions: GroupInviteActions) {
+fun GroupInviteScreen(state: GroupInviteUiState, zone: ZoneId, actions: GroupInviteActions, qrLink: String? = null) {
+    Box(Modifier.fillMaxSize()) {
+        GroupInviteSheet(state, zone, actions)
+        AnimatedVisibility(visible = qrLink != null, enter = DsMotion.fadeIn, exit = DsMotion.fadeOut) {
+            // Keeps the last link while fading out.
+            val link = remember { mutableStateOf(qrLink) }.apply { if (qrLink != null) value = qrLink }.value
+            if (link != null) GroupInviteQrScreen(link, state.groupName, state.coverUrl, actions.qr)
+        }
+    }
+}
+
+@Composable
+private fun GroupInviteSheet(state: GroupInviteUiState, zone: ZoneId, actions: GroupInviteActions) {
     SheetPage(
         title = stringResource(R.string.groups_invite_title, state.groupName),
         close = HeaderAction(Tokens.Icons.globalClose, stringResource(R.string.groups_invite_close_accessibilitylabel), actions.onClose),
