@@ -3,7 +3,8 @@
 //   GET /i/:token                 invite page (invite.web), every state
 //   GET /i/:token/cover.jpg       group cover, re-encoded (no metadata)
 //   GET /i/:token/avatar/:n.jpg   member n's avatar, re-encoded
-//   GET /i/:token/og.jpg          1200×630 link-preview image
+//   GET /i/:token/backdrop.png    the card's backdrop: the cover (else the inviter's avatar) blurred
+//   GET /i/:token/og.png          600×600 link-preview image (invite.web.layout.ogImage)
 //   GET /i/:token/preview.json    the same preview for the App Clip and the apps before joining
 //   GET /.well-known/apple-app-site-association, /.well-known/assetlinks.json
 //   GET /privacy, /terms          redirect to the owner's documents (404 until configured)
@@ -12,9 +13,9 @@
 import { randomBytes } from "node:crypto";
 import { Hono, type Context } from "hono";
 import { appClipBundleId, type Config } from "./config.js";
-import { invitePairs } from "./contrastReport.js";
+import { cardPairs } from "./contrastReport.js";
 import type { InviteService, LoadedInvite } from "./inviteService.js";
-import { detectPlatform, getAppUrl } from "./platform.js";
+import { detectPlatform, getAppUrl, letsGoUrl } from "./platform.js";
 import { clientAddress, RateLimiter } from "./rateLimit.js";
 import { invitePage, statePage, type PageContext, type StateKind } from "./render/pages.js";
 import { UpstreamError } from "./supabase.js";
@@ -63,15 +64,16 @@ export function createApp(deps: AppDeps): Hono {
     h.set("Cross-Origin-Opener-Policy", "same-origin");
     if (!h.has("Cross-Origin-Resource-Policy")) h.set("Cross-Origin-Resource-Policy", "same-origin");
     h.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()");
-    h.set("X-Robots-Tag", "noindex, nofollow");
+    h.set("X-Robots-Tag", "noindex, noimageindex"); // invite.web.layout.linkPreview robots
     if (!h.has("Content-Security-Policy")) h.set("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
     if (!h.has("Cache-Control")) h.set("Cache-Control", "no-store");
     if (production) h.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains");
     if (config.mode !== "test") log(`${c.req.method} ${redact(c.req.path)} ${c.res.status} ${Date.now() - started}ms`);
   });
 
+  // script-src: the one inline script (the "Let's go" busy state), by nonce like the stylesheet.
   const pageCsp = (nonce: string) =>
-    `default-src 'none'; img-src 'self'; style-src 'nonce-${nonce}'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'` +
+    `default-src 'none'; img-src 'self'; style-src 'nonce-${nonce}'; script-src 'nonce-${nonce}'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'` +
     (production ? "; upgrade-insecure-requests" : "");
 
   function html(c: Context, status: number, body: string, nonce: string, cache: string) {
@@ -84,7 +86,17 @@ export function createApp(deps: AppDeps): Hono {
   }
 
   function context(c: Context, token: string | null, nonce: string): PageContext {
-    return { nonce, getAppUrl: getAppUrl(config.app, detectPlatform(c.req.header("user-agent")), token), smartBanner, origin: origin(c) };
+    const platform = detectPlatform(c.req.header("user-agent"));
+    return {
+      nonce,
+      origin: origin(c),
+      appName: config.app.displayName,
+      letsGoUrl: token ? letsGoUrl(config.app, platform, token) : null,
+      getAppUrl: getAppUrl(config.app, platform, token),
+      smartBanner,
+      termsUrl: config.app.legal.termsUrl,
+      privacyUrl: config.app.legal.privacyUrl,
+    };
   }
 
   function state(c: Context, kind: StateKind, status: number, extra: { retryUrl?: string; retryAfter?: number } = {}) {
@@ -121,9 +133,9 @@ export function createApp(deps: AppDeps): Hono {
     }
   }
 
-  const image = (c: Context, buf: Buffer, crossOrigin = false) =>
+  const image = (c: Context, buf: Buffer, crossOrigin = false, type = "image/jpeg") =>
     c.body(new Uint8Array(buf), 200, {
-      "Content-Type": "image/jpeg",
+      "Content-Type": type,
       "Cache-Control": `private, max-age=${ttl}`,
       ...(crossOrigin ? { "Cross-Origin-Resource-Policy": "cross-origin" } : {}),
     });
@@ -135,9 +147,12 @@ export function createApp(deps: AppDeps): Hono {
     const token = c.req.param("token");
     const nonce = randomBytes(16).toString("base64");
     if (config.mode === "development") {
-      // Sourced values are never adjusted; failing WCAG pairs for this theme are reported.
-      const failing = invitePairs(r.invite.theme).filter((p) => !p.pass);
-      if (failing.length) log(`WCAG: theme ${r.invite.theme.background} fails ${failing.map((p) => `${p.element} ${p.ratio.toFixed(2)}:1 < ${p.need}:1`).join("; ")}`);
+      // Sourced values are never adjusted; failing WCAG pairs over this invite's backdrop are reported.
+      const backdrop = await deps.invites!.backdrop(token).catch(() => null);
+      if (backdrop) {
+        const failing = cardPairs(backdrop.under).filter((p) => !p.pass);
+        if (failing.length) log(`WCAG: backdrop ${failing[0]!.bg} fails ${failing.map((p) => `${p.element} ${p.ratio.toFixed(2)}:1 < ${p.need}:1`).join("; ")}`);
+      }
     }
     return html(c, 200, invitePage(token, r.invite, context(c, token, nonce)), nonce, `private, max-age=${ttl}`);
   });
@@ -162,12 +177,25 @@ export function createApp(deps: AppDeps): Hono {
     }
   });
 
-  app.get("/i/:token/og.jpg", async (c) => {
+  app.get("/i/:token/backdrop.png", async (c) => {
     const r = await resolve(c, false);
     if (!r.ok) return r.response;
     try {
-      const buf = await deps.invites!.ogImage(c.req.param("token"));
-      return buf ? image(c, buf, true) : c.body(null, 404);
+      const b = await deps.invites!.backdrop(c.req.param("token"));
+      return b ? image(c, b.png, false, "image/png") : c.body(null, 404);
+    } catch (e) {
+      log(`backdrop failed: ${(e as Error).message}`);
+      return c.body(null, 503);
+    }
+  });
+
+  app.get("/i/:token/og.png", async (c) => {
+    const r = await resolve(c, false);
+    if (!r.ok) return r.response;
+    try {
+      const domain = config.app.domain ?? new URL(c.req.url).host;
+      const buf = await deps.invites!.ogImage(c.req.param("token"), domain);
+      return buf ? image(c, buf, true, "image/png") : c.body(null, 404);
     } catch (e) {
       log(`og image failed: ${(e as Error).message}`);
       return c.body(null, 503);
@@ -179,7 +207,7 @@ export function createApp(deps: AppDeps): Hono {
     if (!r.ok) return r.response;
     const token = c.req.param("token");
     const base = `${origin(c)}/i/${token}`;
-    const { preview, cover, theme, avatarIndexes } = r.invite;
+    const { preview, cover, avatarIndexes } = r.invite;
     return c.json(
       {
         group_name: preview.group_name,
@@ -187,7 +215,6 @@ export function createApp(deps: AppDeps): Hono {
         inviter_first_name: preview.inviter_first_name,
         cover: cover ? { url: `${base}/cover.jpg`, width: cover.width, height: cover.height } : null,
         members: preview.members.map((m, i) => ({ first_name: m.first_name, avatar_url: avatarIndexes.has(i) ? `${base}/avatar/${i}.jpg` : null })),
-        theme,
       },
       200,
       { "Cache-Control": `private, max-age=${ttl}` },

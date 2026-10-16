@@ -80,6 +80,8 @@ object Tokens {
         /** Retro · global · primary action fill: full-width primary capsule, primary medium capsule ('Accept'), selected state that is a fill. Retro has no brand colour in chrome — the primary fill is the inverse of the page · SOURCED — token `color.global.accent` */
         val globalAccent: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFFFFFFFF) else Color(0xFF000000)
+        /** Retro · global · black layer over the blurred photo backdrop (C-34 recap preview media page) · SOURCED — token `color.global.backdropDim` */
+        val globalBackdropDim: Color = Color(0x39000000)
         /** Retro · global · page background of every app screen (home, profile, albums, settings, sheets); iOS — and Android's 'true black' option · SOURCED — token `color.global.background` */
         val globalBackground: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF000000) else Color(0xFFFFFFFF)
@@ -2023,6 +2025,8 @@ object Tokens {
         val globalAvatarSmall: Dp = 22.6.dp
         /** Retro · global · overlap between avatars in a stack · SOURCED — token `size.global.avatarStackOverlap` */
         val globalAvatarStackOverlap: Dp = 3.dp
+        /** Retro · global · Gaussian blur of the photo backdrop behind a card (C-34: recap preview media page) · SOURCED — token `size.global.backdropBlur` */
+        val globalBackdropBlur: Dp = 1.8.dp
         /** Retro · global · pushed screen: screen edge → back chevron ink (chevron ink 11.1 × 18.3 pt, centred on the title's cap middle) · SOURCED — token `size.global.backInset` */
         val globalBackInset: Dp = 21.1.dp
         /** Retro · global · height of the red badge capsule · SOURCED — token `size.global.badgeHeight` */
@@ -2199,6 +2203,7 @@ object Tokens {
     object ColorsLight {
         val birthdayTributePillarbox: Color = Color(0xFF000000)
         val globalAccent: Color = Color(0xFF000000)
+        val globalBackdropDim: Color = Color(0x39000000)
         val globalBackground: Color = Color(0xFFFFFFFF)
         val globalBackgroundAndroid: Color = Color(0xFFFFFFFF)
         val globalBackgroundDeep: Color = Color(0xFF000000)
@@ -2256,6 +2261,7 @@ object Tokens {
     object ColorsDark {
         val birthdayTributePillarbox: Color = Color(0xFF000000)
         val globalAccent: Color = Color(0xFFFFFFFF)
+        val globalBackdropDim: Color = Color(0x39000000)
         val globalBackground: Color = Color(0xFF000000)
         val globalBackgroundAndroid: Color = Color(0xFF1C1C1E)
         val globalBackgroundDeep: Color = Color(0xFF000000)

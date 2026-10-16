@@ -2,9 +2,11 @@
 // (Retro Rewind: one memory at a time, a dial with one slot per memory, play / pause, share, shuffle; MERGE RM-2…RM-7).
 import AppData
 import AppServices
+import CoreTransferable
 import DesignSystem
 import Foundation
 import Observation
+import UniformTypeIdentifiers
 
 /// The group-local day `on_this_day` is asked for: today in the group's zone, rolling over at
 /// `layout.onthisday.dayBoundary.hour` (05:00) instead of midnight.
@@ -275,7 +277,7 @@ final class OnThisDayModel {
                 return true
             }
             guard hasUnshownHistory else { return false }
-            Task { await pickRandom(change: change) }
+            Task { await self.pickRandom(change: change) }
             return true
         }
     }
@@ -468,8 +470,9 @@ final class OnThisDayModel {
     }
 
     /// "Yes, delete": `haptic.global.warning`, `delete_post`, then `onthisday.toast.deleted` and the memory leaves the dial.
-    func confirmDelete() async {
-        guard let memory = deleteCandidate, let data = dependencies.data else { return }
+    /// - Parameter memory: the memory the confirmation was shown for (default: `deleteCandidate`).
+    func confirmDelete(_ memory: Memory? = nil) async {
+        guard let memory = memory ?? deleteCandidate, memory.isMine, let data = dependencies.data else { return }
         deleteCandidate = nil
         dependencies.haptics(Tokens.Haptics.globalWarning)
         do {

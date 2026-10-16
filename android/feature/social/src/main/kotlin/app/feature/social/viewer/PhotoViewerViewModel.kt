@@ -5,11 +5,13 @@ import androidx.lifecycle.viewModelScope
 import app.data.error.ApiError
 import app.data.error.DataError
 import app.data.model.Media
+import app.data.model.Message
 import app.data.model.Post
 import app.data.model.Profile
 import app.data.model.WallItemKind
 import app.data.realtime.GroupEvent
 import app.data.repo.ReactionEntry
+import app.feature.social.common.Formats
 import app.feature.social.data.SocialData
 import app.feature.social.data.dataError
 import app.feature.social.reactions.withReaction
@@ -27,6 +29,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.ZoneId
 
 /** One photo of the viewer. [gone] = deleted / no longer visible (`post_not_found`, `post_deleted`). */
 data class ViewerPhoto(
@@ -35,13 +38,22 @@ data class ViewerPhoto(
     val media: Media? = null,
     val author: Profile? = null,
     val groupName: String? = null,
+    /** The group's time zone (week number of the header). */
+    val zone: ZoneId? = null,
     val reactions: List<ReactionEntry> = emptyList(),
-    /** Your own "i'm in this" tag as loaded with the photo (the memory group's control takes it from there); null until known. */
-    val tagged: Boolean? = null,
+    /** Replies to this photo in its group's chat, oldest first (`photo.viewer.layout.comments`). */
+    val comments: List<Message> = emptyList(),
+    /** Who said "I'm in this", in tag order (`post_tags`). */
+    val tagged: List<String> = emptyList(),
+    /** Profiles of the author, commenters, reactors and tagged members. */
+    val people: Map<String, Profile> = emptyMap(),
     val loaded: Boolean = false,
     val gone: Boolean = false,
     val loadFailed: Boolean = false,
-)
+) {
+    /** ISO week of the photo in its group's time zone. */
+    val weekNumber: Int? get() = post?.let { Formats.isoWeek(it.createdAt.atZone(zone ?: ZoneId.systemDefault()).toLocalDate()) }
+}
 
 data class ViewerState(
     val phase: Phase = Phase.Loading,
@@ -49,32 +61,37 @@ data class ViewerState(
     val photos: List<ViewerPhoto> = emptyList(),
     val index: Int = 0,
     val draft: String = "",
-    val sending: Boolean = false,
     val online: Boolean = true,
-    /** Every photo is gone: the viewer closes. */
+    /** Opened from a wall: the header names the group ("{group} · Week 28"). */
+    val fromWall: Boolean = false,
+    /** Every photo is gone, or the last one was passed: the viewer closes. */
     val closed: Boolean = false,
 ) {
     enum class Phase { Loading, Ready }
 
     val current: ViewerPhoto? get() = photos.getOrNull(index)
     val mine: Boolean get() = current?.post?.authorId != null && current?.post?.authorId == me
+    val taggedByMe: Boolean get() = me != null && current?.tagged?.contains(me) == true
 }
 
 sealed interface ViewerEffect {
     data object Sent : ViewerEffect
     data object SendFailed : ViewerEffect
-    data class Rain(val emoji: String) : ViewerEffect
     data object ReactionFailed : ViewerEffect
     data object Deleted : ViewerEffect
     data object DeleteFailed : ViewerEffect
     data object Saved : ViewerEffect
     data object SaveFailed : ViewerEffect
+    /** A tag call failed: [removing] picks `tagging.removeError` over `tagging.error`; [reason] the message. */
+    data class TagFailed(val removing: Boolean, val reason: TagFailure) : ViewerEffect
 }
 
+enum class TagFailure { Error, NotFound, Offline }
 
 /**
- * `photo.viewer`: the opener's photo list ([PhotoContext]), each photo's post / media / author /
- * group / reaction rows / your tag, realtime deletions and reactions, and the viewer's actions.
+ * `photo.viewer`: the opener's photo list ([PhotoContext]), each photo's post / media / author / group /
+ * reactions / comments / tags, realtime deletions, reactions and new comments, and the viewer's actions
+ * (advance, reply, react, tag, delete everywhere, save).
  */
 class PhotoViewerViewModel(
     private val data: SocialData,
@@ -84,14 +101,15 @@ class PhotoViewerViewModel(
     private val contextId: String,
     private val weekStart: LocalDate?,
 ) : ViewModel() {
-    private val _state = MutableStateFlow(ViewerState(me = data.currentUserId()))
+    private val _state = MutableStateFlow(ViewerState(me = data.currentUserId(), fromWall = context == PhotoContext.Wall))
     val state: StateFlow<ViewerState> = _state.asStateFlow()
     private val _effects = MutableSharedFlow<ViewerEffect>(extraBufferCapacity = 16, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val effects: SharedFlow<ViewerEffect> = _effects.asSharedFlow()
 
-    private val groupNames = HashMap<String, String>()
+    private val groups = HashMap<String, app.data.model.Group?>()
     private val subscriptions = HashMap<String, Job>()
     private val loading = HashSet<String>()
+    private var tagPending = false
 
     init {
         viewModelScope.launch { load() }
@@ -99,8 +117,8 @@ class PhotoViewerViewModel(
     }
 
     /**
-     * The opened photo shows at once; the opener's list arrives after and is spliced around it,
-     * keeping the photo on screen and whatever is already loaded (no state flash).
+     * The opened photo shows at once; the opener's list arrives after and is spliced around it, keeping the
+     * photo on screen and whatever is already loaded.
      */
     private suspend fun load() {
         _state.update { it.copy(phase = ViewerState.Phase.Ready, photos = listOf(ViewerPhoto(postId)), index = 0) }
@@ -121,7 +139,6 @@ class PhotoViewerViewModel(
     private suspend fun contextIds(): List<String> = when (context) {
         PhotoContext.Single -> listOf(postId)
         PhotoContext.Chat -> {
-            // The thread's photos, chronological: feed pages back until the opened photo is in.
             val pages = ArrayList<Post>()
             var before: java.time.Instant? = null
             var guard = 0
@@ -147,17 +164,29 @@ class PhotoViewerViewModel(
         }
         PhotoContext.Week -> {
             val start = weekStart ?: return listOf(postId)
-            data.historyWeeks(contextId, start.plusDays(DAYS_IN_WEEK), 1).firstOrNull { it.weekStart == start }?.postIds.orEmpty()
+            data.historyWeeks(contextId, start.plusDays(Formats.DAYS_IN_WEEK), 1).firstOrNull { it.weekStart == start }?.postIds.orEmpty()
         }
         PhotoContext.Recap -> data.recap(contextId)?.items.orEmpty()
         PhotoContext.Album -> data.albumItems(contextId).sortedBy { it.position }.map { it.postId }
     }
 
-    /** Moves to [index] (swipe) and loads that photo and its neighbours. */
+    /** Moves to [index] and loads that photo and its neighbours. */
     fun select(index: Int) {
         if (index == _state.value.index || index !in _state.value.photos.indices) return
-        _state.update { it.copy(index = index, draft = it.draft) }
+        _state.update { it.copy(index = index) }
         prefetch()
+    }
+
+    /** Tap to advance (`photo.viewer.layout.advance`): past the last photo the viewer closes. */
+    fun next() {
+        val s = _state.value
+        if (s.index + 1 < s.photos.size) select(s.index + 1) else _state.update { it.copy(closed = true) }
+    }
+
+    /** "Tap left to go back": nothing before the first photo. */
+    fun previous() {
+        val s = _state.value
+        if (s.index > 0) select(s.index - 1)
     }
 
     private fun prefetch() {
@@ -176,11 +205,19 @@ class PhotoViewerViewModel(
             }
             subscribe(post.groupId)
             val media = data.media(listOf(post.mediaId)).firstOrNull()
-            val author = data.profiles(listOf(post.authorId)).firstOrNull()
-            val groupName = groupNames[post.groupId] ?: data.group(post.groupId)?.name?.also { groupNames[post.groupId] = it }
+            val group = if (groups.containsKey(post.groupId)) groups[post.groupId] else data.group(post.groupId).also { groups[post.groupId] = it }
             val reactions = data.reactions(listOf(id))[id].orEmpty()
-            val tagged = runCatching { data.isTaggedByMe(id) }.getOrNull()
-            update(id) { it.copy(post = post, media = media, author = author, groupName = groupName, reactions = reactions, tagged = tagged, loaded = true, loadFailed = false) }
+            val comments = runCatching { data.replies(post.groupId, id) }.getOrDefault(emptyList())
+            val tags = runCatching { data.tags(id) }.getOrDefault(emptyList()).map { it.userId }
+            val ids = (listOf(post.authorId) + comments.map { it.authorId } + reactions.map { it.userId } + tags).distinct()
+            val people = data.profiles(ids).associateBy { it.id }
+            val zone = group?.timeZone?.let { runCatching { ZoneId.of(it) }.getOrNull() }
+            update(id) {
+                it.copy(
+                    post = post, media = media, author = people[post.authorId], groupName = group?.name, zone = zone, reactions = reactions,
+                    comments = comments, tagged = tags, people = people, loaded = true, loadFailed = false,
+                )
+            }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
@@ -217,6 +254,17 @@ class PhotoViewerViewModel(
                 if (_state.value.photos.none { it.postId == event.postId }) return
                 runCatching { data.reactions(listOf(event.postId)) }.getOrNull()?.let { rows -> update(event.postId) { it.copy(reactions = rows[event.postId].orEmpty()) } }
             }
+            is GroupEvent.MessageInserted -> {
+                val m = event.message
+                val target = m.replyToPostId ?: return
+                if (_state.value.photos.none { it.postId == target }) return
+                val profile = if (_state.value.photos.any { it.people.containsKey(m.authorId) }) null else runCatching { data.profiles(listOf(m.authorId)).firstOrNull() }.getOrNull()
+                update(target) { p ->
+                    if (p.comments.any { it.id == m.id }) p
+                    else p.copy(comments = (p.comments + m).sortedBy { it.createdAt }, people = profile?.let { p.people + (it.id to it) } ?: p.people)
+                }
+            }
+            is GroupEvent.MessageDeleted -> _state.update { s -> s.copy(photos = s.photos.map { p -> p.copy(comments = p.comments.filterNot { it.id == event.messageId }) }) }
             else -> Unit
         }
     }
@@ -224,9 +272,8 @@ class PhotoViewerViewModel(
     fun setDraft(text: String) = _state.update { it.copy(draft = text) }
 
     /**
-     * `send_message(text, p_reply_to_post_id)`: the reply appears in the chat. Optimistic: the field
-     * clears at once; if the call fails the text comes back (unless something new was typed) and the
-     * failure is announced (`chat.thread.sendFailed`).
+     * `send_message(text, p_reply_to_post_id)`: the comment joins the list and the thread. Optimistic: the field
+     * clears at once; if the call fails the text comes back (unless something new was typed).
      */
     fun sendReply() {
         val post = _state.value.current?.post ?: return
@@ -235,7 +282,8 @@ class PhotoViewerViewModel(
         _state.update { it.copy(draft = "") }
         viewModelScope.launch {
             try {
-                data.sendText(post.groupId, body, replyToPostId = post.id)
+                val sent = data.sendText(post.groupId, body, replyToPostId = post.id)
+                update(post.id) { p -> if (p.comments.any { it.id == sent.id }) p else p.copy(comments = p.comments + sent) }
                 _effects.emit(ViewerEffect.Sent)
             } catch (e: CancellationException) {
                 throw e
@@ -246,7 +294,40 @@ class PhotoViewerViewModel(
         }
     }
 
-    /** `unreact` from the picker's highlighted emoji: the sticker leaves at once; back if the call fails. */
+    /** Your own comment (`delete_message`, after the confirmation): gone at once, back if the call fails. */
+    fun unsendComment(messageId: String) {
+        val photo = _state.value.photos.firstOrNull { p -> p.comments.any { it.id == messageId } } ?: return
+        val removed = photo.comments.first { it.id == messageId }
+        update(photo.postId) { p -> p.copy(comments = p.comments - removed) }
+        viewModelScope.launch {
+            try {
+                data.deleteMessage(messageId)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Throwable) {
+                update(photo.postId) { p -> p.copy(comments = (p.comments + removed).sortedBy { it.createdAt }) }
+                _effects.emit(ViewerEffect.DeleteFailed)
+            }
+        }
+    }
+
+    fun react(emoji: String) {
+        val me = data.currentUserId() ?: return
+        val id = _state.value.current?.post?.id ?: return
+        update(id) { it.copy(reactions = withReaction(it.reactions, me, emoji)) }
+        viewModelScope.launch {
+            try {
+                data.react(id, emoji)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Throwable) {
+                update(id) { it.copy(reactions = withoutReaction(it.reactions, me, emoji)) }
+                _effects.emit(ViewerEffect.ReactionFailed)
+            }
+        }
+    }
+
+    /** `unreact` (picker, quick row, your row in the Reactions sheet): gone at once; back if the call fails. */
     fun unreact(emoji: String) {
         val me = data.currentUserId() ?: return
         val id = _state.value.current?.post?.id ?: return
@@ -264,27 +345,38 @@ class PhotoViewerViewModel(
         }
     }
 
-    fun react(emoji: String) {
+    /**
+     * "I'm in this" (tagging.md): only yourself, at once (optimistic), then `tag_self` / `untag_self`; one call
+     * per photo at a time; a failure reverts it. `post_not_found` shows the photo as gone.
+     */
+    fun setTagged(tagged: Boolean) {
         val me = data.currentUserId() ?: return
         val id = _state.value.current?.post?.id ?: return
-        update(id) { it.copy(reactions = withReaction(it.reactions, me, emoji)) }
-        _effects.tryEmit(ViewerEffect.Rain(emoji))
+        if (tagPending || _state.value.taggedByMe == tagged) return
+        tagPending = true
+        update(id) { p -> p.copy(tagged = if (tagged) p.tagged + me else p.tagged - me) }
         viewModelScope.launch {
             try {
-                data.react(id, emoji)
+                if (tagged) data.tagSelf(id) else data.untagSelf(id)
             } catch (e: CancellationException) {
                 throw e
-            } catch (_: Throwable) {
-                update(id) { it.copy(reactions = withoutReaction(it.reactions, me, emoji)) }
-                _effects.emit(ViewerEffect.ReactionFailed)
+            } catch (e: Throwable) {
+                update(id) { p -> p.copy(tagged = if (tagged) p.tagged - me else p.tagged + me) }
+                val error = e.dataError()
+                val reason = when {
+                    error == DataError.Network -> TagFailure.Offline
+                    error is DataError.Api && error.code == ApiError.PostNotFound -> TagFailure.NotFound
+                    else -> TagFailure.Error
+                }
+                if (reason == TagFailure.NotFound) markGone(id)
+                _effects.emit(ViewerEffect.TagFailed(removing = !tagged, reason = reason))
+            } finally {
+                tagPending = false
             }
         }
     }
 
-    /**
-     * The photo was deleted meanwhile (the memory group's "i'm in this" control got `post_not_found`):
-     * it shows as gone, as for a realtime `post_deleted`.
-     */
+    /** The photo was deleted meanwhile: it shows as gone, as for a realtime `post_deleted`. */
     fun markGone(postId: String) = update(postId) { it.copy(gone = true) }
 
     /** `delete_media` (owner only, after the confirmation): gone everywhere; the viewer moves on or closes. */
@@ -308,12 +400,6 @@ class PhotoViewerViewModel(
         }
     }
 
-    /** Bytes of the current original (save to the photo library). */
-    suspend fun originalBytes(): Pair<ByteArray, String>? {
-        val media = _state.value.current?.media ?: return null
-        return runCatching { data.download(media.originalPath) to media.originalPath }.getOrNull()
-    }
-
     fun saved(ok: Boolean) {
         _effects.tryEmit(if (ok) ViewerEffect.Saved else ViewerEffect.SaveFailed)
     }
@@ -332,6 +418,5 @@ class PhotoViewerViewModel(
         const val MAX_PAGES = 20
         const val FEED_PAGE = 30
         const val WALL_PAGE = 50
-        const val DAYS_IN_WEEK = 7L
     }
 }

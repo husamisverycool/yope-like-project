@@ -1,7 +1,9 @@
-// Surface: auth.profile — name and avatar. Reference app: Yope onboarding (Yope's in-app step was not found; built from
-// documented Yope parts, design/surfaces/auth.profile.md). Reference images: as auth.phone, plus
-// references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.73-group-profile-add-20-pics.png (GP, avatar size) and
-// a-yrrah-7434441926000037121-t43.23-members-list-2024.png (ML, default avatar).
+// Surface: auth.profile — step 1 name (Shared/ProfileNameForm.swift) and step 2 profile photo. Visual reference: Retro's
+// FULL_NAME and PROFILE_PHOTO sign-up steps (references/auto/retro/apk/retro-android-2026.10.1150-strings.txt
+// `onboarding_v3_page_title_profile_photo`, `onboarding_v3_profile_photo_cta_*`), the 112-pt avatar of Retro's web
+// invite page (references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css) and the landing's capsule and link
+// (references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png); composition of C-02, C-12, C-23, C-05, C-08
+// (design/surfaces/auth.profile.md; MERGE RA-24).
 import AppData
 import AppModels
 import AppServices
@@ -29,35 +31,99 @@ enum UploadImage {
     }
 }
 
-/// auth.profile screen: title, subtitle, avatar circle + caption, name field + note, lime "continue".
+/// auth.profile: the name step, then the photo step (onboarding page transition between them,
+/// `duration.global.pageTransition`); after the photo step (or "Maybe Later") the session continues to the
+/// notifications ask.
 struct ProfileScreen: View {
     @State private var model: ProfileModel
-    @State private var pickerItem: PhotosPickerItem?
     @Environment(AccountDependencies.self) private var dependencies
 
     init(model: ProfileModel) {
         _model = State(initialValue: model)
     }
 
-    private static let noteStyle = TextRole.caption
+    private static let pageTransition = DSAnimation.timing(duration: Tokens.Durations.globalPageTransition, easing: Tokens.Easings.globalStandard)
 
     var body: some View {
-        Group {
-            if dependencies.network.isOffline || model.phase == .offline {
-                SignUpStateView(
-                    title: Copy.authPhoneOfflineTitle,
-                    detail: Copy.authProfileOfflineDetail,
-                    retry: EmptyStateView.Action(Copy.authPhoneOfflineRetry) { model.retry() }
-                )
-            } else {
-                form
+        ZStack {
+            switch model.step {
+            case .name:
+                ProfileNameForm(model: model, network: dependencies.network) {
+                    withDSAnimation(Self.pageTransition) { model.showPhotoStep() }
+                }
+                .transition(.opacity)
+            case .photo:
+                ProfilePhotoStep(model: model, network: dependencies.network) {
+                    withDSAnimation(Self.pageTransition) { model.showNameStep() }
+                } onDone: {
+                    Task { await dependencies.session.profileSaved() }
+                }
+                .transition(.opacity)
             }
         }
-        .loadingHUD(model.isSaving)
-        .dsHaptic(Tokens.Haptics.globalSuccess, trigger: model.successCount)
-        .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
-        .formErrorAlert(model.failureMessage, trigger: model.errorCount)
-        .navigationBarBackButtonHidden(true)
+    }
+}
+
+/// auth.profile step 2: back → step 1 · "Add a profile photo" · explanation · the avatar circle
+/// (`auth.profile.size.avatar`, C-23; empty = `auth.profile.layout.avatarPicker.empty`) centred between the explanation
+/// and the capsule · C-05 "Choose photo" (empty) / "Next" (chosen) · C-08 "Maybe Later" (empty) / "Edit photo" (chosen)
+/// `auth.phone.size.capsuleToLink` under it. Picking uses the system picker (no permission).
+struct ProfilePhotoStep: View {
+    @Bindable var model: ProfileModel
+    let network: NetworkMonitor
+    let onBack: () -> Void
+    let onDone: () -> Void
+
+    @State private var pickerItem: PhotosPickerItem?
+    @State private var picking = false
+
+    private static let photoFade = DSAnimation.timing(duration: Tokens.Durations.globalFade, easing: Tokens.Easings.globalStandard)
+
+    private var hasPhoto: Bool { model.avatarImage != nil }
+
+    var body: some View {
+        SignUpLayout(
+            back: FormBackButton(accessibilityLabel: Copy.authCodeBackAccessibilityLabel, identifier: "auth.profile.back", action: onBack),
+            title: Copy.authProfilePhotoTitle,
+            explanation: Copy.authProfilePhotoSubtitle,
+            replacement: network.isOffline || model.phase == .offline ? .signUpOffline { model.retry() } : nil,
+            centersContent: true
+        ) {
+            Button {
+                picking = true
+            } label: {
+                AvatarView(
+                    localImage: model.avatarImage.map { Image(uiImage: $0) },
+                    diameter: Tokens.Sizes.authProfileSizeAvatar
+                )
+                .dsAnimation(Self.photoFade, value: hasPhoto)
+            }
+            .buttonStyle(.plain)
+            .disabled(model.isSaving)
+            .accessibilityLabel(Text(hasPhoto ? Copy.authProfileAvatarChangeAccessibilityLabel : Copy.authProfileAvatarAccessibilityLabel))
+            .accessibilityAddTraits(.isImage)
+            .accessibilityIdentifier("auth.profile.avatar")
+            .frame(maxWidth: .infinity)
+        } bottom: {
+            MetricStack(alignment: .center) {
+                PrimaryButton(hasPhoto ? Copy.authProfileContinue : Copy.authProfileAvatarAdd, isBusy: model.isSaving) {
+                    if hasPhoto {
+                        Task { if await model.savePhoto() { onDone() } }
+                    } else {
+                        picking = true
+                    }
+                }
+                .accessibilityIdentifier("auth.profile.photo.primary")
+                TextButton(hasPhoto ? Copy.authProfileAvatarEdit : Copy.authProfilePhotoSkip, style: .link) {
+                    if hasPhoto { picking = true } else { onDone() }
+                }
+                .capHeight(of: TextRole.listTitle)
+                .disabled(model.isSaving)
+                .accessibilityIdentifier("auth.profile.photo.secondary")
+                .metricGap(Tokens.Sizes.authPhoneSizeCapsuleToLink, from: .bottom, to: .capTop)
+            }
+        }
+        .photosPicker(isPresented: $picking, selection: $pickerItem, matching: .images, preferredItemEncoding: .compatible)
         .onChange(of: pickerItem) { _, item in
             guard let item else { return }
             Task {
@@ -67,61 +133,9 @@ struct ProfileScreen: View {
                 pickerItem = nil
             }
         }
-        .accessibilityIdentifier("auth.profile")
-    }
-
-    private var form: some View {
-        SignUpLayout {
-            VStack(spacing: 0) {
-                OnboardingTitleBlock(title: Copy.authProfileTitle, subtitle: Copy.authProfileSubtitle)
-                    .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
-                avatarPicker
-                    .padding(.top, Tokens.Sizes.groupsCreateSizeTitleToContent)
-                if model.avatarImage == nil {
-                    // The label is built here, on the main actor: PhotosPicker's label closure is nonisolated.
-                    let addLabel = Text(Copy.authProfileAvatarAdd)
-                        .dsTextStyle(TextRole.listSubtitle)
-                        .foregroundStyle(Tokens.Colors.globalTextSecondary)
-                    PhotosPicker(selection: $pickerItem, matching: .images, preferredItemEncoding: .compatible) {
-                        addLabel
-                    }
-                    .accessibilityHidden(true)
-                    .padding(.top, Tokens.Sizes.groupsCreateSizeFieldToButton)
-                }
-                FormField(
-                    Copy.authProfileFieldPlaceholder,
-                    text: Binding(get: { model.name }, set: { model.setName($0) }),
-                    accessibilityLabel: Copy.authProfileFieldAccessibilityLabel,
-                    contentType: .givenName
-                )
-                .accessibilityIdentifier("auth.profile.field")
-                .padding(.top, Tokens.Sizes.groupsCreateSizeMediaToField)
-                Text(Copy.authProfileFieldNote)
-                    .dsTextStyle(Self.noteStyle)
-                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
-                    .multilineTextAlignment(.center)
-                PrimaryButton(Copy.authProfileContinue, isEnabled: model.canContinue) {
-                    Task {
-                        if await model.save() { await dependencies.session.profileSaved() }
-                    }
-                }
-                .accessibilityIdentifier("auth.profile.continue")
-                .padding(.top, Tokens.Sizes.groupsCreateSizeFieldToButton)
-            }
-            .padding(.horizontal, Tokens.Sizes.globalButtonMarginH)
-        }
-    }
-
-    /// Avatar circle `auth.profile.size.avatar`; empty look `auth.profile.layout.avatarPicker`; tap → system picker.
-    private var avatarPicker: some View {
-        PhotosPicker(selection: $pickerItem, matching: .images, preferredItemEncoding: .compatible) {
-            AvatarView(
-                localImage: model.avatarImage.map { Image(uiImage: $0) },
-                diameter: Tokens.Sizes.authProfileSizeAvatar
-            )
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text(model.avatarImage == nil ? Copy.authProfileAvatarAccessibilityLabel : Copy.authProfileAvatarChangeAccessibilityLabel))
-        .accessibilityIdentifier("auth.profile.avatar")
+        .dsHaptic(Tokens.Haptics.globalSuccess, trigger: model.successCount)
+        .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
+        .formErrorAlert(model.failureMessage, trigger: model.errorCount)
+        .accessibilityIdentifier("auth.profile.photo")
     }
 }

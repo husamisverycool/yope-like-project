@@ -78,13 +78,17 @@ data class ChatState(
     val replyTo: ReplyTarget? = null,
     /** The group's time zone (week numbers of quoted posts). */
     val zone: java.time.ZoneId = java.time.ZoneId.systemDefault(),
+    /** Profiles of the group's members and the thread's senders. */
+    val people: Map<String, Profile> = emptyMap(),
 ) {
     enum class Phase { Loading, Ready, Error, OfflineEmpty }
 
     val isEmpty: Boolean get() = phase == Phase.Ready && rows.isEmpty()
 
-    /** First names by user id (Activity sheet, labels). */
-    fun nameOf(userId: String): String? = rows.firstOrNull { it.message.authorId == userId }?.author?.firstName
+    fun profileOf(userId: String): Profile? = people[userId]
+
+    /** My avatar (the composer's own avatar). */
+    val meAvatar: String? get() = me?.let { people[it]?.avatarPath }
 }
 
 /** One-shot outcomes the screen turns into haptics, announcements and motion. */
@@ -571,7 +575,7 @@ class ChatViewModel(private val data: SocialData, val groupId: String) : ViewMod
                 quote = quoteFor(m, post),
             )
         }
-        _state.update { it.copy(rows = rows, me = me) }
+        _state.update { it.copy(rows = rows, me = me, people = profiles.toMap()) }
     }
 
     /** Messages of [ChatRow]s for [Quote] taps etc. */

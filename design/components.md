@@ -596,7 +596,7 @@ pill below (recap preview) or a pager of plan cards (paywall).
 
 | part | token |
 |---|---|
-| backdrop | the photo blurred (`layout.global.materials.backdrop`); blur radius not measurable (**Gap**) |
+| backdrop | the photo full-bleed, Gaussian blur σ `size.global.backdropBlur` (1.8 pt) under `color.global.backdropDim` (black 22 %) — fitted on ST-04 (MERGE_DECISIONS L-5); not a frosted material |
 | recap card | `color.global.surfaceElevated` #FFFFFF / #181818; corners ≈4.5–5 % of the card width (TC-H; no exact fit on the gradient backdrop — **Gap**: one lossless share-image export); photo grid with `size.global.stripGap` gaps, `radius.global.thumbnail` cells; footer: year in `font.global.display` text role `displaySmall`, name text role `listTitle`, domain line text role `meta` `color.global.textSecondary` |
 | plan card (paywall) | translucent white on iOS (alpha not derivable — **Gap**; opaque `color.global.surfaceElevated` is the APK value); corners `radius.global.cardLarge` (36); padding `size.global.planCardPadding` (27); its capsule (C-05) 16 from the card sides and bottom; next card peeks after `size.global.planCardGap` (8); width = screen − 2 × `size.global.buttonMarginH` |
 | plan card text | title 24 bold / price 22 heavy, body 15, steps 17, footnote 15 (PAY) — paywall surface tokens (Pass 2) |

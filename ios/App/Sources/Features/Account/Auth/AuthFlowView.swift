@@ -1,6 +1,7 @@
 // Account group — the sign-up / onboarding navigation stack (auth.phone → auth.code → auth.agegate → auth.profile →
-// onboarding.permission.notifications → onboarding.widget). Native pushes (`easing.global.native.navigationPush`;
-// Yope's measured 100 ms push cannot be applied to a native push, F-11). Steps after the code have no back.
+// onboarding.permission.notifications → onboarding.widget). Pushes are native (`easing.global.native.navigationPush`,
+// Retro's push not captured, R-14); the landing ↔ phone form and the profile steps change with the onboarding page
+// transition inside their screens. Steps after the code have no back.
 import DesignSystem
 import SwiftUI
 
@@ -25,10 +26,9 @@ struct AuthFlowView: View {
         case .ageGate:
             AgeGateScreen(model: AgeGateModel(data: dependencies.data))
         case .profile:
-            ProfileScreen(model: ProfileModel(data: dependencies.data))
+            ProfileScreen(model: ProfileModel(data: dependencies.data, prepareImage: UploadImage.jpeg(from:)))
         case .resolving:
             SignUpStateView(title: nil, detail: nil)
-                .loadingHUD(true)
         case .resolveFailed:
             SignUpStateView(
                 title: Copy.authPhoneOfflineTitle,
@@ -52,15 +52,32 @@ struct AuthFlowView: View {
         case .ageGate:
             AgeGateScreen(model: AgeGateModel(data: dependencies.data))
         case .profile:
-            ProfileScreen(model: ProfileModel(data: dependencies.data))
+            ProfileScreen(model: ProfileModel(data: dependencies.data, prepareImage: UploadImage.jpeg(from:)))
         case .notifications:
             NotificationsPermissionScreen(notifications: dependencies.notifications) {
                 session.notificationsAnswered()
             }
         case .widget:
-            WidgetGuideScreen {
+            WidgetGuideRoute(onBack: nil) {
                 session.finishOnboarding()
             }
         }
+    }
+}
+
+/// onboarding.widget with its preview: the newest photo from the person's groups (cached data; the empty tile until it
+/// is read or when there is none).
+struct WidgetGuideRoute: View {
+    var onBack: (() -> Void)?
+    var onContinue: (() -> Void)?
+    @Environment(AccountDependencies.self) private var dependencies
+    @State private var preview: WidgetPreviewContent?
+
+    var body: some View {
+        WidgetGuideScreen(preview: preview, onBack: onBack, onContinue: onContinue)
+            .task {
+                guard let newest = await NewestGroupPhoto.load(from: dependencies.data) else { return }
+                preview = WidgetPreviewContent(photo: .storage(newest.path), firstName: newest.firstName)
+            }
     }
 }

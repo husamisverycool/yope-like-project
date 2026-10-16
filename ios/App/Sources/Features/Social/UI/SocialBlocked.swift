@@ -1,47 +1,60 @@
-// Social group — every value the social screens need that is still BLOCKED (design/BLOCKED.md), behind one accessor.
+// Social group — the values the social specs still leave BLOCKED (design/BLOCKED.md), behind one accessor each.
 //
-// Each accessor returns nil / false while its token is BLOCKED; the screens omit (or, where a spec gives one, use the
-// approximation for) the part that needs it. When a value is filled, `tools/designgen.mjs` moves it from the DEBUG-only
-// `BlockedTokens` into `Tokens`: replace that accessor's `nil` / `false` with the token (one line), or build the
-// behaviour a layout token describes. The 19 values sourced by the social gap fill (MERGE_DECISIONS "Gap fill (social)",
-// G-1…G-17) and `color.global.scrim` (gap fill G2) are read from `Tokens` directly at their use sites.
+// A BLOCKED token is not generated into `Tokens` (only into the DEBUG-only `BlockedTokens`, as `Never`), so a release
+// build never reads one. Each accessor below returns the release behaviour — the element is left out, or the data's
+// order is kept — and, in DEBUG builds only, the development approximation written in the token's `notes`
+// (design/tokens/social.json), so the layout can be reviewed. When the owner's capture fills a value,
+// `tools/designgen.mjs` moves it into `Tokens`: replace the accessor with the token and delete the DEBUG branch.
+// The row orders (`walls.browse.layout.rowOrder`, `chat.reactions.layout.listOrder`) are in Core (`SocialOrdering`).
+// No longer BLOCKED and read from `Tokens` at their use sites: `photo.viewer.layout.voiceNote`,
+// `week.history.layout.weekMenu`, `chat.reactions.count.clusterMaxVisible` (RS-7, RS-8, RS-13, RS-20).
 import DesignSystem
 import SwiftUI
 
 enum SocialBlocked {
-    // MARK: Values (one line each when filled)
+    /// `photo.viewer.layout.backZone` — the share of the photo's width (from the leading edge) whose tap goes back.
+    /// Release: none (every tap advances; "Previous photo" stays an accessibility action). DEBUG: the leading third.
+    static var viewerBackZoneFraction: CGFloat {
+        #if DEBUG
+        return 1.0 / 3.0 // provenance-ok: BLOCKED photo.viewer.layout.backZone development approximation (token notes), DEBUG only
+        #else
+        return 0
+        #endif
+    }
 
-    /// `chat.reactions.count.clusterMaxVisible` — every distinct emoji shows (clipped by the photo) meanwhile.
-    static var clusterMaxVisible: Int? { nil }
-    /// `week.recap.dimension.shortRowHeight` (with `week.recap.layout.shortRowSplit`) — the card's leftover row; those
-    /// photos stay in the pics grid meanwhile.
-    static var recapShortRowHeight: CGFloat? { nil }
+    /// `week.recap.layout.gridFill` — the items the recap card's grid (`layout.year.story.recapCard`, `columns` ×
+    /// `maxRows`) shows. Only a full grid is unambiguous; release builds show the card page only then (nil: the page is
+    /// left out and the preview shows the cover page). DEBUG: row by row in item order, empty cells in the card fill,
+    /// items beyond the grid not drawn.
+    static func recapCardItems<Item>(_ items: [Item], columns: Int, maxRows: Int) -> [Item]? {
+        let capacity = max(0, columns * maxRows)
+        if items.count == capacity, capacity > 0 { return items }
+        #if DEBUG
+        return items.isEmpty ? nil : Array(items.prefix(capacity))
+        #else
+        return nil
+        #endif
+    }
 
-    // MARK: Layouts (behaviour to build when filled)
+    /// `week.edit.layout.selectionMark` — the in / out mark on a grid cell. Release: none (the state is in the strip and
+    /// the cell's accessibility value). DEBUG: `size.global.checkCircle` at the cell's top-right corner, `inset` in,
+    /// `icon.global.check` / `icon.global.uncheck` in `color.global.textOnMedia`.
+    static var showsSelectionMark: Bool {
+        #if DEBUG
+        return true
+        #else
+        return false
+        #endif
+    }
 
-    /// `chat.voice.layout.widthRule` — every voice bubble uses the observed width meanwhile.
-    static var hasVoiceWidthRule: Bool { false }
-    /// `chat.reactions.layout.activitySheet` — native list rows in the data's order meanwhile.
-    static var hasActivitySheetLayout: Bool { false }
-    /// `photo.viewer.layout.voiceNote` — the spec's approximation (under the photo, `size.global.screenMargin`).
-    static var hasViewerVoiceNoteLayout: Bool { false }
-    /// `walls.mine.layout.freeformWall` / `.mosaic` — the uniform grid (S-11) meanwhile.
-    static var hasFreeformWall: Bool { false }
-    /// `walls.browse.layout.selection` — the selected person is marked for VoiceOver only meanwhile.
-    static var hasBrowseSelection: Bool { false }
-    /// `walls.browse.layout.rowOrder` — the spec's approximation (newest wall item first) meanwhile.
-    static var hasBrowseRowOrder: Bool { false }
-    /// `week.recap.layout.scrim` — the card label is drawn without a scrim meanwhile.
-    static var hasRecapScrim: Bool { false }
-    /// `week.recap.layout.page2` — one page, dots hidden meanwhile.
-    static var hasRecapPage2: Bool { false }
-    /// `week.edit.layout.recapText` — the spec's approximation (field under the grid) meanwhile.
-    static var hasRecapTextLayout: Bool { false }
-    /// `week.history.layout.weekMenu` — our two product items meanwhile.
-    static var hasWeekMenuLayout: Bool { false }
+    /// The DEBUG approximation's inset of the selection mark (token notes: "6 pt in").
+    static var selectionMarkInset: CGFloat {
+        #if DEBUG
+        return 6 // provenance-ok: BLOCKED week.edit.layout.selectionMark development approximation (token notes), DEBUG only
+        #else
+        return 0
+        #endif
+    }
 
-    /// The week.edit dark secondary "save as album" button: the spec names `camera.sendto` tokens for Yope's compact
-    /// "more friends" + "send" pair, but design/tokens has none (that variant is do-not-copy in camera.sendto). The
-    /// button is not drawn until its tokens exist; "Save as album" stays reachable from week.history's week menu.
-    static var hasSaveAsAlbumButton: Bool { false }
+    // `albums.view.shadow.cover` — the album cover is drawn flat in every build until captured (token notes).
 }

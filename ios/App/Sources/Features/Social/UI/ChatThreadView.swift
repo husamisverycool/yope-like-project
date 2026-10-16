@@ -1,9 +1,10 @@
-// Surface: chat.thread (with chat.composer, chat.voice and chat.reactions inside it) — reference app: Yope
-// (reactions: Locket). Spec: design/surfaces/chat.thread.md, chat.composer.md, chat.voice.md, chat.reactions.md.
-// References: references/auto/yope/store/yope-store-05.png (primary, lossless; coordinates in
-// references/auto/yope/frames/b-derot-store-05-rot-1.68.png), references/auto/yope/frames/
-// b-yopeapp-7591560669967682847-t49.50-reply-to-photo.png (reply quote), a-itsmthuyope-7644974799302823175-
-// t51.23-group-created-empty-state.png (empty state), references/auto/locket/store/locket-store-04.png (cluster).
+// Surface: chat.thread (with chat.composer, chat.voice and chat.reactions inside it) — Retro: composition of C-02,
+// C-16, C-18, C-15, C-20, C-13, C-27 in Apple Messages / WhatsApp's order (RS-1 … RS-6). Spec: design/surfaces/chat.thread.md.
+// References: references/auto/retro/press/engadget-2026-08-the-problem-with-friends-only-socials-1786385236.jpg (pushed
+// serif header), references/auto/retro/press/tc-2023-07-retro-2b.jpg phone 2 (comment rows, field),
+// references/auto/retro/store/retro-store-01.png (photo card), references/auto/retro/press/tc-2024-04-journals-1.webp
+// (dated section header), references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (thread strings),
+// mechanics references/auto/imessage/apple-support/messages-tapbacks-ios27.png, references/auto/whatsapp/store/whatsapp-store-04.png.
 import AppData
 import AppModels
 import AppServices
@@ -17,21 +18,21 @@ struct ChatThreadView: View {
     @State private var toasts = ToastCenter()
     @State private var viewer: PhotoViewerContext?
     @State private var pickerTarget: ReactionPickerTarget?
-    @State private var activityTarget: ReactionActivityTarget?
-    @State private var deleteCandidate: Message?
+    @State private var reactionsTarget: ReactionsSheetTarget?
+    @State private var unsendCandidate: Message?
+    @State private var deletePhotoCandidate: Message?
     /// The bottom-most visible message (keeps the reading position when older pages load or messages arrive).
-    @State private var anchor: MessageID?
+    @State private var anchor: String?
     @State private var didScrollToFocus = false
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.scenePhase) private var scenePhase
     @State private var recorder = SocialVoiceRecorder()
     @State private var micDenied = false
+    @FocusState private var fieldFocused: Bool
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         ZStack {
             Tokens.Colors.globalBackground.ignoresSafeArea()
-            // Behind the messages, in front of the background (`chat.reactions.layout.rainPath`).
-            EmojiRain(trigger: model.sentReaction)
             content
         }
         .safeAreaInset(edge: .top, spacing: 0) { header }
@@ -46,7 +47,9 @@ struct ChatThreadView: View {
             await model.run()
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { Task { await model.refresh() } }
+            guard phase == .active else { return }
+            Task { await model.refresh() }
+            recorder.refreshPermission()
         }
         .onChange(of: model.arrival) { _, message in
             if let message { AccessibilityNotification.Announcement(accessibilityLabel(for: message)).post() }
@@ -54,6 +57,7 @@ struct ChatThreadView: View {
         .socialFeedback(model.signals.feedback)
         .socialNotices(model.signals.notice, toasts: toasts)
         .toastHost(toasts)
+        .socialAnnouncesLoading(model.showsLoading)
         .socialPhotoViewer($viewer)
         .sheet(item: $pickerTarget) { target in
             ReactionPicker(
@@ -62,72 +66,64 @@ struct ChatThreadView: View {
                 onRemove: { emoji in Task { await model.unreact(postID: target.postID, emoji: emoji) } }
             )
         }
-        .sheet(item: $activityTarget) { target in
-            ReactionActivitySheet(
+        .sheet(item: $reactionsTarget) { target in
+            ReactionsSheet(
                 reactions: model.reactions[target.postID] ?? ReactionSummary(),
                 me: model.me,
-                posterFirstName: model.posts[target.postID].flatMap { model.profile($0.post.authorID)?.socialFirstName } ?? "",
-                nameOf: { model.profile($0)?.socialFirstName ?? "" }
+                profile: { model.profile($0) },
+                onRemove: { emoji in Task { await model.unreact(postID: target.postID, emoji: emoji) } }
             )
+            .presentationDetents([.medium, .large])
         }
-        .confirmationDialog(
+        .alert(
             Copy.chatThreadDeleteMessageTitle,
-            isPresented: Binding(get: { deleteCandidate != nil }, set: { if !$0 { deleteCandidate = nil } }),
-            titleVisibility: .visible,
-            presenting: deleteCandidate
+            isPresented: Binding(get: { unsendCandidate != nil }, set: { if !$0 { unsendCandidate = nil } }),
+            presenting: unsendCandidate
         ) { message in
-            Button(Copy.photoViewerDeleteConfirm, role: .destructive) {
+            Button(Copy.chatThreadDeleteMessageConfirm, role: .destructive) {
                 Task { await model.delete(message) }
             }
             Button(Copy.photoViewerDeleteCancel, role: .cancel) {}
         } message: { _ in
             Text(Copy.chatThreadDeleteMessageMessage)
         }
+        .confirmationDialog(
+            Copy.photoViewerDeleteTitle,
+            isPresented: Binding(get: { deletePhotoCandidate != nil }, set: { if !$0 { deletePhotoCandidate = nil } }),
+            titleVisibility: .visible,
+            presenting: deletePhotoCandidate
+        ) { message in
+            Button(Copy.photoViewerDeleteConfirm, role: .destructive) {
+                Task { await model.deletePhoto(message) }
+            }
+            Button(Copy.photoViewerDeleteCancel, role: .cancel) {}
+        } message: { _ in
+            Text(Copy.photoViewerDeleteMessage)
+        }
+        .alert(Copy.chatVoicePermissionTitle, isPresented: $micDenied) {
+            Button(Copy.chatVoicePermissionButton) { openSettings() }
+            Button(Copy.photoViewerDeleteCancel, role: .cancel) {}
+        } message: {
+            Text(Copy.chatVoicePermissionDetail)
+        }
+        .alert(Copy.photoViewerPermissionTitle, isPresented: $model.saveDenied) {
+            Button(Copy.photoViewerPermissionButton) { openSettings() }
+            Button(Copy.photoViewerDeleteCancel, role: .cancel) {}
+        } message: {
+            Text(Copy.photoViewerPermissionDetail)
+        }
         .socialClearsReplyHandoff()
         .accessibilityIdentifier("chat.thread") // provenance-ok: accessibility identifier for UI tests
     }
 
-    // MARK: Header
+    // MARK: Header (C-02)
 
+    /// Back chevron + the group's name in the display serif, one line; no trailing glyphs.
     private var header: some View {
-        HStack(spacing: Tokens.Sizes.globalHeaderGap) {
-            HeaderCircleButton(icon: Tokens.Icons.globalBack, accessibilityLabel: Copy.chatThreadA11yBack, fill: .onBackground) {
-                dismiss()
-            }
-            groupCapsule
-            Spacer(minLength: 0)
-            if let recapID = model.latestRecapID {
-                HeaderCircleButton(icon: Tokens.Icons.globalRecap, accessibilityLabel: Copy.chatThreadA11yRecap, fill: .onBackground) {
-                    SocialNav.push(.recap(groupID: model.groupID.rawValue, recapID: recapID.rawValue))
-                }
-            }
-        }
-        .padding(.horizontal, Tokens.Sizes.globalHeaderInset)
-    }
-
-    /// Group avatar · name · › in a `color.global.control` capsule (insides as the groups.screen header capsule;
-    /// the avatar sits centred in the capsule's height, so its start inset equals its top inset — not measured).
-    private var groupCapsule: some View {
-        let inset = (Tokens.Sizes.chatThreadDimensionHeaderCapsuleHeight - Tokens.Sizes.globalAvatarHeader) / 2
-        return Button {
-            SocialNav.push(.account(.groupProfile(groupID: model.groupID.rawValue)))
-        } label: {
-            HStack {
-                SocialAvatar(path: model.group?.coverPath, diameter: Tokens.Sizes.globalAvatarHeader, placeholderIcon: Tokens.Icons.globalGroup)
-                Text(model.group?.name ?? "")
-                    .dsTextStyle(TextRole.headerTitle)
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                    .lineLimit(1)
-                Image(systemName: Tokens.Icons.globalChevron)
-                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
-            }
-            .padding(.horizontal, inset)
-            .frame(minHeight: Tokens.Sizes.chatThreadDimensionHeaderCapsuleHeight)
-            .background(Tokens.Colors.globalControl, in: Capsule())
-            .contentShape(Capsule())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text(Copy.chatThreadA11yGroupCapsule(groupName: model.group?.name ?? "")))
+        PushedScreenHeader(title: model.group?.name ?? "", backAccessibilityLabel: Copy.chatThreadA11yBack) { dismiss() }
+            .lineLimit(1)
+            .truncationMode(.tail)
+            .background(Tokens.Colors.globalBackground)
     }
 
     // MARK: Content by state
@@ -136,65 +132,64 @@ struct ChatThreadView: View {
     private var content: some View {
         switch model.phase {
         case .loading:
-            if model.showsLoading { LoadingHUD() }
+            if model.showsLoading {
+                LoadingHUD()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
         case .empty:
-            emptyState
+            centred(EmptyStateView(
+                icon: Tokens.Icons.globalChats,
+                title: Copy.chatThreadEmptyTitle,
+                detail: Copy.chatThreadEmptyDetail,
+                action: .init(Copy.chatThreadEmptyInvite) {
+                    SocialNav.present(.account(.groupInvite(groupID: model.groupID.rawValue)))
+                }
+            ))
         case .failed:
-            EmptyStateView(
+            centred(EmptyStateView(
                 title: Copy.chatThreadErrorTitle,
                 detail: Copy.chatThreadErrorDetail,
                 action: .init(Copy.chatThreadErrorRetry) { Task { await model.retry() } }
-            )
+            ))
         case .offline:
-            EmptyStateView(title: Copy.chatThreadOfflineTitle, detail: Copy.chatThreadOfflineDetail)
+            centred(EmptyStateView(title: Copy.chatThreadOfflineTitle, detail: Copy.chatThreadOfflineDetail))
         case .ready:
             messageList
         }
     }
 
-    private var emptyState: some View {
-        let names = model.addedMemberNames
-        return EmptyStateView(
-            title: model.viewerCreatedGroup ? Copy.chatThreadEmptyTitleCreator : Copy.chatThreadEmptyTitleMember(name: model.creatorFirstName ?? ""),
-            detail: names.isEmpty ? nil : Copy.chatThreadEmptyDetail(names: names.joined(separator: ", ")),
-            action: .init(Copy.chatThreadEmptyInvite, icon: Tokens.Icons.globalLink) {
-                SocialNav.present(.account(.groupInvite(groupID: model.groupID.rawValue)))
-            }
-        )
+    private func centred(_ view: some View) -> some View {
+        VStack {
+            Spacer(minLength: 0)
+            view
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: Messages
 
     private var messageList: some View {
-        let rows = ChatRowLayout.rows(model.messages, me: model.me)
+        let entries = model.entries()
         return ScrollView {
-            LazyVStack(spacing: 0) {
+            LazyVStack(alignment: .leading, spacing: 0) {
                 if model.hasOlder {
                     ProgressView()
+                        .tint(Tokens.Colors.globalTextSecondary)
                         .frame(maxWidth: .infinity)
                         .task(id: model.messages.first?.id) { await model.loadOlder() }
                 }
-                ForEach(rows) { row in
-                    ChatMessageRow(
-                        row: row,
-                        model: model,
-                        openPhoto: { postID in
-                            viewer = PhotoViewerContext(postIDs: model.photoPostIDs, start: postID, groupID: model.groupID)
-                        },
-                        react: { pickerTarget = ReactionPickerTarget(postID: $0) },
-                        showReactions: { activityTarget = ReactionActivityTarget(postID: $0) },
-                        delete: { deleteCandidate = $0 },
-                        report: report,
-                        playFailed: { toasts.show(Copy.chatVoiceErrorPlay) }
-                    )
-                    .padding(.top, gap(row.gap))
-                    .onAppear {
-                        // Prefetch the next older page before the top is reached.
-                        if row.id == prefetchID(rows), model.hasOlder { Task { await model.loadOlder() } }
-                    }
+                ForEach(entries) { entry in
+                    entryView(entry)
+                        .transition(.opacity)
                 }
             }
+            .padding(.bottom, Tokens.Sizes.globalTitleToContent)
             .scrollTargetLayout()
+            .animation(
+                DSAnimation.timing(duration: Tokens.Durations.chatThreadDurationEntry, easing: Tokens.Easings.chatThreadEasingEntry).animation,
+                value: model.messages.map(\.id)
+            )
         }
         .defaultScrollAnchor(.bottom)
         .scrollPosition(id: $anchor, anchor: .bottom)
@@ -202,36 +197,78 @@ struct ChatThreadView: View {
         .onChange(of: model.messages.last?.id) { old, new in
             // Follow new messages only when the reader was at the bottom (or sent it).
             guard let new else { return }
-            if anchor == nil || anchor == old || model.messages.last.map({ model.isMine($0) }) == true { anchor = new }
+            if anchor == nil || anchor == old?.rawValue || model.messages.last.map({ model.isMine($0) }) == true {
+                anchor = new.rawValue
+            }
         }
         .onAppear { scrollToFocus() }
         .onChange(of: model.messages.count) { _, _ in scrollToFocus() }
     }
 
-    /// A row a little below the top: reaching it loads the next older page.
-    private func prefetchID(_ rows: [ChatRowLayout]) -> MessageID? {
-        let lead = SocialPaging.messages / 5
-        return rows.indices.contains(lead) ? rows[lead].id : rows.first?.id
+    @ViewBuilder
+    private func entryView(_ entry: ChatEntry) -> some View {
+        switch entry {
+        case let .day(day, gap):
+            SectionHeader(title: SocialFormat.dayDivider(day))
+                .padding(.top, space(gap))
+                .id(entry.id)
+        case let .message(row):
+            ChatMessageRow(
+                row: row,
+                model: model,
+                actions: actions
+            )
+            .padding(.top, space(row.gap))
+            .id(entry.id)
+        }
+    }
+
+    /// `chat.thread.layout.runs.spacing`.
+    private func space(_ gap: ChatGap) -> CGFloat {
+        switch gap {
+        case .none: return 0
+        case .item: return Tokens.Sizes.chatThreadDimensionItemGap
+        case .run: return Tokens.Sizes.globalListGap
+        case .divider: return max(0, Tokens.Sizes.globalSectionGap - SocialMetrics.capTopOffset(TextRole.sectionLabel))
+        case .afterDivider: return max(0, Tokens.Sizes.globalSectionHeaderToContent - SocialMetrics.belowBaseline(TextRole.sectionLabel))
+        }
+    }
+
+    private var actions: ChatMessageActions {
+        ChatMessageActions(
+            openPhoto: { postID in
+                let ids = model.photoPostIDs.contains(postID) ? model.photoPostIDs : [postID]
+                viewer = PhotoViewerContext(postIDs: ids, start: postID, groupID: model.groupID)
+            },
+            openQuotedMessage: { id in anchor = id.rawValue },
+            openWall: { SocialNav.openWall(of: $0, me: model.me) },
+            reply: { message in
+                model.startReply(to: message)
+                fieldFocused = true
+            },
+            copy: { message in
+                UIPasteboard.general.string = message.body
+                model.copied()
+            },
+            save: { message in Task { await model.savePhoto(message, using: SocialServices.shared.saver) } },
+            report: report,
+            unsend: { unsendCandidate = $0 },
+            deletePhoto: { deletePhotoCandidate = $0 },
+            retry: { message in Task { await model.retry(message) } },
+            react: { postID, emoji in Task { await model.toggleReaction(postID: postID, emoji: emoji) } },
+            openPicker: { pickerTarget = ReactionPickerTarget(postID: $0) },
+            openReactions: { reactionsTarget = ReactionsSheetTarget(postID: $0) }
+        )
     }
 
     /// Deep link (`DeepLink.chatMessage`): the thread opens on that message.
     private func scrollToFocus() {
         guard !didScrollToFocus, let focus = model.focusMessageID, model.messages.contains(where: { $0.id == focus }) else { return }
         didScrollToFocus = true
-        anchor = focus
+        anchor = focus.rawValue
     }
 
-    private func gap(_ gap: ChatGap) -> CGFloat {
-        switch gap {
-        case .none: return 0
-        case .sameSender: return Tokens.Sizes.chatThreadDimensionGapSameSender
-        case .textToVoice: return Tokens.Sizes.chatThreadDimensionGapTextToVoice
-        case .photo: return Tokens.Sizes.chatThreadDimensionPhotoGap
-        case .betweenSenders: return Tokens.Sizes.chatThreadDimensionGapBetweenSenders
-        }
-    }
-
-    /// `safety.report` for another member's text / voice message (account group's sheet).
+    /// `safety.report` for another member's message (account group's sheet).
     private func report(_ message: Message) {
         let name = model.profile(message.authorID)?.socialFirstName ?? ""
         SocialNav.report(ReportTarget(
@@ -254,36 +291,46 @@ struct ChatThreadView: View {
 
     // MARK: Composer
 
+    /// The reply bar (when replying) `size.global.sectionHeaderToContent` from its baseline to the field, then the field.
     private var composerArea: some View {
-        VStack(spacing: Tokens.Sizes.globalListGap) {
-            if micDenied {
-                PermissionCard(
-                    title: Copy.chatVoicePermissionTitle,
-                    detail: Copy.chatVoicePermissionDetail,
-                    buttonTitle: Copy.chatVoicePermissionButton,
-                    onEnable: { openSettings() },
-                    onDismiss: { micDenied = false }
-                )
-                .padding(.horizontal, Tokens.Sizes.onboardingPermissionContactsSizeCardMarginH)
+        MetricStack {
+            if let target = model.replyTarget {
+                ChatReplyBar(label: replyLabel(target)) { model.cancelReply() }
+                    .transition(.opacity)
             }
             ChatComposer(
                 text: $model.draft,
+                avatar: SocialImages.source(model.me.flatMap { model.profile($0) }?.avatarPath),
+                isReplying: model.replyTarget != nil,
                 send: { Task { await model.sendDraft() } },
-                camera: { SocialNav.openCamera(groupID: model.groupID.rawValue) },
+                camera: openCamera,
                 recorder: recorder,
                 onRecorded: { recording in
-                    micDenied = false
                     Task { await model.sendVoice(fileURL: recording.fileURL, durationMs: recording.durationMs) }
                 },
                 onRecordFailed: { model.voiceRecordingFailed() },
-                onMicDenied: { micDenied = true }
+                onMicDenied: { micDenied = true },
+                focus: $fieldFocused
             )
+            .metricGap(model.replyTarget == nil ? 0 : Tokens.Sizes.globalSectionHeaderToContent, from: model.replyTarget == nil ? .top : .lastBaseline, to: .top)
         }
-        .onChange(of: scenePhase) { _, phase in
-            // Coming back from Settings: the card goes once the microphone is allowed.
-            guard phase == .active else { return }
-            recorder.refreshPermission()
-            if recorder.permission.allowsAccess { micDenied = false }
+        .padding(.top, Tokens.Sizes.chatThreadDimensionItemGap)
+        .background(Tokens.Colors.globalBackground)
+        .dsAnimation(ComponentMotion.fade, value: model.replyTarget)
+    }
+
+    private func replyLabel(_ target: ChatReplyTarget) -> String {
+        if target.author == model.me { return Copy.chatThreadReplyBarSelf }
+        return Copy.chatThreadReplyBar(name: model.profile(target.author)?.socialFirstName ?? "")
+    }
+
+    /// The camera for this group; while the reply bar quotes a photo, the photo is sent as a reply to it.
+    private func openCamera() {
+        if let postID = model.replyPostID {
+            SocialNav.router.presentCameraReplying(toPost: postID.rawValue, groupID: model.groupID.rawValue)
+            model.cancelReply()
+        } else {
+            SocialNav.openCamera(groupID: model.groupID.rawValue)
         }
     }
 
@@ -294,146 +341,140 @@ struct ChatThreadView: View {
 
 // MARK: - One message
 
-struct ChatMessageRow: View {
-    let row: ChatRowLayout
-    let model: ChatThreadModel
+/// What a message row can do (the thread owns the sheets, alerts and navigation).
+struct ChatMessageActions {
     let openPhoto: (PostID) -> Void
-    let react: (PostID) -> Void
-    let showReactions: (PostID) -> Void
-    let delete: (Message) -> Void
+    let openQuotedMessage: (MessageID) -> Void
+    let openWall: (UserID) -> Void
+    let reply: (Message) -> Void
+    let copy: (Message) -> Void
+    let save: (Message) -> Void
     let report: (Message) -> Void
-    let playFailed: () -> Void
+    let unsend: (Message) -> Void
+    let deletePhoto: (Message) -> Void
+    let retry: (Message) -> Void
+    let react: (PostID, String) -> Void
+    let openPicker: (PostID) -> Void
+    let openReactions: (PostID) -> Void
+}
+
+/// A message in its run (`chat.thread.layout.runs`): the run's first message is the C-16 comment row — avatar
+/// `size.global.avatarComment` at the margin with its top on the name line's ascender, then
+/// `chat.thread.dimension.rowAvatarToText` after it the name (text role `listTitle`) and, one space after it, the time
+/// (`chat.thread.layout.timeFormat`, text role `caption`, `color.global.textSecondary`). Every item sits in the text
+/// column: text (`body`, first baseline `chat.thread.dimension.rowLinePitch` below the name's, lines at that pitch), the
+/// C-18 photo card, the reaction chip `chat.reactions.dimension.chipTop` under the photo, the caption, the voice capsule,
+/// the reply quote above the reply, the status line under my message in flight / failed; items
+/// `chat.thread.dimension.itemGap` apart. Later messages of a run carry no avatar or name. Everyone's messages use the
+/// same row (Retro shows every comment the same way).
+struct ChatMessageRow: View {
+    let row: ChatRow
+    let model: ChatThreadModel
+    let actions: ChatMessageActions
 
     private var message: Message { row.message }
-    private var authorName: String { model.profile(message.authorID)?.socialFirstName ?? "" }
+    private var author: Profile? { model.profile(message.authorID) }
+    private var authorName: String { author?.socialFirstName ?? "" }
 
     var body: some View {
-        if message.kind == .photo {
-            photoRow
-        } else {
-            bubbleRow
-        }
-    }
-
-    private typealias Failed = Tokens.Layouts.ChatThreadLayoutFailedMessage
-
-    private var isFailed: Bool { model.isFailed(message) }
-
-    private func retry() {
-        Task { await model.retry(message) }
-    }
-
-    // Another member's messages: avatar column (`chat.thread.dimension.avatarInset`, `size.global.avatarSmall`,
-    // `chat.thread.dimension.avatarGap`); mine: right-aligned at `chat.thread.dimension.bubbleInsetMine`. Bubbles hug
-    // their text up to `chat.thread.dimension.bubbleMaxWidth`.
-    private var bubbleRow: some View {
-        HStack(alignment: .bottom, spacing: 0) {
-            if row.isMine {
-                Spacer(minLength: Tokens.Sizes.chatThreadDimensionBubbleInsetTheirs)
-                mineWithStatus
-                    .padding(.trailing, Tokens.Sizes.chatThreadDimensionBubbleInsetMine)
-            } else {
-                avatarColumn
-                bubbleContent
-                Spacer(minLength: Tokens.Sizes.chatThreadDimensionBubbleInsetMine)
-            }
-        }
-    }
-
-    /// `chat.thread.layout.failedMessage` (my text and voice messages): the red outlined "!" (`indicatorSize`) takes the
-    /// trailing slot `indicatorGap` after the bubble, vertically centred on it; `chat.thread.sendFailed` in red (text role
-    /// caption) sits `labelGap` under the bubble, trailing-aligned with it. Tapping the "!", the label or the bubble sends
-    /// the message again.
-    @ViewBuilder
-    private var mineWithStatus: some View {
-        if isFailed {
-            VStack(alignment: .trailing, spacing: Failed.labelGap) {
-                HStack(alignment: .center, spacing: Failed.indicatorGap) {
-                    bubbleContent
-                        .onTapGesture { retry() }
-                        .accessibilityValue(Text(Copy.chatThreadSendFailed))
-                        .accessibilityAction(named: Text(Copy.chatThreadSendFailed)) { retry() }
-                    Button { retry() } label: {
-                        Image(systemName: Failed.indicatorIconIos)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: Failed.indicatorSize, height: Failed.indicatorSize)
-                            .foregroundStyle(Tokens.Colors.globalDestructive)
-                            .socialMinimumHitArea()
-                            .frame(width: Failed.indicatorSize, height: Failed.indicatorSize)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(Text(Copy.chatThreadSendFailed))
-                }
-                Text(Copy.chatThreadSendFailed)
-                    .dsTextStyle(SocialText.failedLabel)
-                    .foregroundStyle(Tokens.Colors.globalDestructive)
-                    .multilineTextAlignment(.trailing)
-                    .padding(.trailing, Failed.indicatorSize + Failed.indicatorGap)
-                    .onTapGesture { retry() }
-                    .accessibilityHidden(true)
-            }
-        } else {
-            bubbleContent
-        }
-    }
-
-    private var avatarColumn: some View {
-        Group {
-            if row.showsAvatar {
-                Button {
-                    SocialNav.push(.social(.wallMember(userID: message.authorID.rawValue)))
-                } label: {
-                    SocialAvatar(path: model.profile(message.authorID)?.avatarPath, diameter: Tokens.Sizes.globalAvatarSmall)
+        HStack(alignment: .top, spacing: Tokens.Sizes.chatThreadDimensionRowAvatarToText) {
+            if row.startsRun {
+                Button { actions.openWall(message.authorID) } label: {
+                    AvatarView(source: SocialImages.source(author?.avatarPath), diameter: Tokens.Sizes.globalAvatarComment)
                 }
                 .buttonStyle(.plain)
                 .accessibilityHidden(true)
             } else {
-                Color.clear.frame(width: Tokens.Sizes.globalAvatarSmall, height: Tokens.Sizes.globalAvatarSmall)
+                Color.clear.frame(width: Tokens.Sizes.globalAvatarComment, height: 0)
             }
+            column
         }
-        .padding(.leading, Tokens.Sizes.chatThreadDimensionAvatarInset)
-        .padding(.trailing, Tokens.Sizes.chatThreadDimensionAvatarGap)
+        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
     }
 
-    @ViewBuilder
-    private var bubbleContent: some View {
-        switch message.kind {
-        case .voice:
-            VoiceBubble(
-                key: message.id.rawValue,
-                path: message.voicePath,
-                localFile: model.localVoiceFiles[message.id],
-                durationMs: message.voiceDurationMs ?? 0,
-                isMine: row.isMine,
-                accessibilityLabel: row.isMine
-                    ? Copy.chatVoiceA11yMessageMine(duration: SocialFormat.spokenDuration(milliseconds: message.voiceDurationMs ?? 0))
-                    : Copy.chatVoiceA11yMessage(name: authorName, duration: SocialFormat.spokenDuration(milliseconds: message.voiceDurationMs ?? 0)),
-                onPlayFailed: playFailed
-            )
-            .contextMenu { menu }
-            .accessibilityActions { menu }
-        default:
-            Group {
-                if message.replyToPostID == nil, let count = SocialEmojiText.emojiOnlyCount(message.body ?? ""),
-                   count <= Int(Tokens.Counts.chatThreadCountEmojiOnlyMax) {
-                    EmojiOnlyMessage(text: message.body ?? "", accessibilityLabel: textLabel)
-                } else if let replyTo = message.replyToPostID, let quoted = model.posts[replyTo] {
-                    ReplyBubble(
-                        quote: ReplyQuote(
-                            posterFirstName: model.profile(quoted.post.authorID)?.socialFirstName ?? "",
-                            thumbPath: quoted.media?.gridPath
-                        ) { openPhoto(replyTo) },
-                        text: message.body ?? "",
-                        isMine: row.isMine,
-                        accessibilityLabel: textLabel
-                    )
-                } else {
-                    TextBubble(text: message.body ?? "", isMine: row.isMine, accessibilityLabel: textLabel)
-                }
+    private var column: some View {
+        MetricStack {
+            if row.startsRun {
+                runHeader
             }
-            .contextMenu { menu }
-            .accessibilityActions { menu }
+            if let quoted = model.quotedPost(of: message), message.kind != .photo {
+                postQuote(quoted)
+                    .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
+            } else if let quoted = model.quotedMessage(of: message) {
+                messageQuote(quoted)
+                    .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
+            }
+            items
+            if row.isMine, model.isPending(message) || model.isFailed(message) {
+                statusLine
+                    .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Name · time on one baseline; hidden from VoiceOver (each message's label names its sender).
+    private var runHeader: some View {
+        Button { actions.openWall(message.authorID) } label: {
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                Text(author?.displayName ?? "")
+                    .dsTextStyle(TextRole.listTitle)
+                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                    .lineLimit(1)
+                Text(" " + SocialFormat.time(message.createdAt))
+                    .dsTextStyle(TextRole.caption)
+                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                    .lineLimit(1)
+                    .fixedSize()
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityHidden(true)
+    }
+
+    // MARK: Items
+
+    @ViewBuilder
+    private var items: some View {
+        switch message.kind {
+        case .photo:
+            photoItems
+        case .voice:
+            voice
+                .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
+        default:
+            text(message.body ?? "", label: textLabel)
+        }
+    }
+
+    /// The text of a message (or a caption): after the name line its first baseline sits `rowLinePitch` below the
+    /// name's; after another item, `itemGap` below it. 1–3 emoji only: `fontSize.global.headerTitle`.
+    @ViewBuilder
+    private func text(_ body: String, label: String, isCaption: Bool = false) -> some View {
+        let afterHeader = row.startsRun && !isCaption && !model.hasQuote(message)
+        if let count = SocialEmojiText.emojiOnlyCount(body), count <= Int(Tokens.Counts.chatThreadCountEmojiOnlyMax) {
+            Text(body)
+                .dsTextStyle(SocialTextRole.emojiOnly)
+                .fixedSize()
+                .modifier(MessageMenu(row: row, model: model, actions: actions))
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text(label))
+                .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
+        } else {
+            Text(body)
+                .dsTextRole(SocialTextRole.threadBody)
+                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .modifier(MessageMenu(row: row, model: model, actions: actions))
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text(label))
+                .accessibilityValue(Text(model.isFailed(message) ? Copy.chatThreadSendFailed : ""))
+                .metricGap(
+                    afterHeader ? Tokens.Sizes.chatThreadDimensionRowLinePitch : Tokens.Sizes.chatThreadDimensionItemGap,
+                    from: afterHeader ? .lastBaseline : .bottom,
+                    to: afterHeader ? .firstBaseline : .top
+                )
         }
     }
 
@@ -441,466 +482,212 @@ struct ChatMessageRow: View {
         row.isMine ? Copy.chatThreadA11yMessageMine(message: message.body ?? "") : Copy.chatThreadA11yMessage(name: authorName, message: message.body ?? "")
     }
 
-    /// Native context menu: own text / voice → delete; another member's → report (`chat.thread` Data & actions).
+    private var voice: some View {
+        let duration = SocialFormat.spokenDuration(milliseconds: message.voiceDurationMs ?? 0)
+        return VoiceCapsule(
+            key: message.id.rawValue,
+            path: message.voicePath,
+            localFile: model.localVoiceFiles[message.id],
+            durationMs: message.voiceDurationMs ?? 0,
+            accessibilityLabel: row.isMine ? Copy.chatVoiceA11yMessageMine(duration: duration) : Copy.chatVoiceA11yMessage(name: authorName, duration: duration)
+        )
+        .modifier(MessageMenu(row: row, model: model, actions: actions))
+    }
+
+    /// Photo card, reaction chip, caption, voice note (`chat.thread.layout.photoFit`, `chat.reactions.layout.chip`).
     @ViewBuilder
-    private var menu: some View {
-        if row.isMine {
-            Button(role: .destructive) { delete(message) } label: {
-                Label(Copy.chatThreadMenuDelete, systemImage: Tokens.Icons.photoViewerIconDelete)
-            }
-        } else {
-            Button(role: .destructive) { report(message) } label: {
-                Label(Copy.chatThreadMenuReport, systemImage: Tokens.Icons.globalReport)
-            }
+    private var photoItems: some View {
+        let post = model.post(of: message)
+        if let quoted = model.quotedPost(of: message) {
+            postQuote(quoted)
+                .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
         }
-    }
-
-    // MARK: Photo message
-
-    /// From `chat.thread.dimension.bubbleInsetTheirs` to `chat.thread.dimension.photoInsetTrailing`, shape
-    /// `chat.thread.dimension.photoWidth` × `.photoHeight`, `radius.global.photo`, aspect fill.
-    /// A photo replying to a photo (S-7, approximation): the quote part attached above the photo message, the photo
-    /// overlapping its bottom like the text part of a text reply.
-    private var photoRow: some View {
-        let post = message.postID.flatMap { model.posts[$0] }
-        let quotedID = post?.post.replyToPostID
-        let quoted = quotedID.flatMap { model.posts[$0] }
-        return HStack(alignment: .bottom, spacing: 0) {
-            if row.isMine {
-                Color.clear.frame(width: Tokens.Sizes.chatThreadDimensionBubbleInsetTheirs, height: 0)
-            } else {
-                avatarColumn
-            }
-            VStack(alignment: row.isMine ? .trailing : .leading, spacing: 0) {
-                if let quotedID, let quoted {
-                    ReplyQuote(
-                        posterFirstName: model.profile(quoted.post.authorID)?.socialFirstName ?? "",
-                        thumbPath: quoted.media?.gridPath
-                    ) { openPhoto(quotedID) }
-                }
-                ChatPhotoMessage(
-                    post: post,
-                    reactions: message.postID.flatMap { model.reactions[$0] } ?? ReactionSummary(),
-                    isMine: row.isMine,
-                    authorName: authorName,
-                    open: { if let id = message.postID { openPhoto(id) } },
-                    react: { if let id = message.postID { react(id) } },
-                    showReactions: { if let id = message.postID { showReactions(id) } }
-                )
-                .padding(.top, quoted == nil ? 0 : -Tokens.Radii.globalPhoto)
-            }
-            .padding(.trailing, Tokens.Sizes.chatThreadDimensionPhotoInsetTrailing)
+        photoCard(post)
+            .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
+        if let postID = message.postID, let summary = model.reactions[postID], !summary.isEmpty {
+            ReactionChip(emoji: summary.distinctEmoji) { actions.openReactions(postID) }
+                .metricGap(Tokens.Reactions.chipTop, from: .bottom, to: .top)
         }
-    }
-}
-
-/// A text bubble: `chat.thread.radius.bubble`, height `chat.thread.dimension.bubbleHeight` per line (minimum),
-/// `chat.thread.dimension.bubblePaddingH`, fill and hairline rim of the sender, text role `body`.
-struct TextBubble: View {
-    let text: String
-    let isMine: Bool
-    /// `chat.thread.a11y.message` / `.messageMine`.
-    let accessibilityLabel: String
-
-    private static let verticalInset = SocialMetrics.singleLineInset(height: Tokens.Sizes.chatThreadDimensionBubbleHeight, style: TextRole.body)
-
-    var body: some View {
-        let shape = RoundedRectangle(cornerRadius: Tokens.Radii.chatThreadRadiusBubble)
-        let hugging = SocialMaxWidth(maxWidth: Tokens.Sizes.chatThreadDimensionBubbleMaxWidth)
-        hugging {
-            Text(text)
-                .dsTextStyle(TextRole.body)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                .padding(.horizontal, Tokens.Sizes.chatThreadDimensionBubblePaddingH)
+        if let caption = post?.post.caption, !caption.isEmpty {
+            text(caption, label: Copy.chatThreadA11yCaption(caption: caption), isCaption: true)
         }
-            .padding(.vertical, Self.verticalInset)
-            .frame(minHeight: Tokens.Sizes.chatThreadDimensionBubbleHeight)
-            .background(isMine ? Tokens.Colors.chatThreadColorBubbleMine : Tokens.Colors.chatThreadColorBubbleTheirs, in: shape)
-            .socialRim(
-                shape,
-                top: isMine ? Tokens.Colors.chatThreadColorBubbleRimMineTop : Tokens.Colors.chatThreadColorBubbleRimTheirsTop,
-                bottom: isMine ? Tokens.Colors.chatThreadColorBubbleRimMineBottom : Tokens.Colors.chatThreadColorBubbleRimTheirsBottom,
-                width: Tokens.Sizes.chatThreadDimensionBubbleRim
+        if let post, let voicePath = post.post.voicePath, let duration = post.post.voiceDurationMs {
+            VoiceCapsule(
+                key: post.id.rawValue,
+                path: voicePath,
+                durationMs: duration,
+                accessibilityLabel: row.isMine
+                    ? Copy.chatVoiceA11yMessageMine(duration: SocialFormat.spokenDuration(milliseconds: duration))
+                    : Copy.chatVoiceA11yMessage(name: authorName, duration: SocialFormat.spokenDuration(milliseconds: duration))
             )
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text(accessibilityLabel))
-    }
-}
-
-/// Proposes at most `maxWidth` to its content and takes the content's own size: a bubble hugs its text up to the
-/// maximum, then the text wraps (`chat.thread.dimension.bubbleMaxWidth`).
-struct SocialMaxWidth: Layout {
-    let maxWidth: CGFloat
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        subviews.first?.sizeThatFits(limited(proposal)) ?? .zero
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        subviews.first?.place(at: bounds.origin, proposal: ProposedViewSize(width: bounds.width, height: bounds.height))
-    }
-
-    private func limited(_ proposal: ProposedViewSize) -> ProposedViewSize {
-        ProposedViewSize(width: min(proposal.width ?? maxWidth, maxWidth), height: proposal.height)
-    }
-}
-
-/// A message of only 1…`chat.thread.count.emojiOnlyMax` emoji: large, no bubble, glyphs
-/// `chat.thread.dimension.emojiOnlyGlyph` wide (Dynamic Type `chat.thread.layout.textStyleMap.emojiOnly`).
-struct EmojiOnlyMessage: View {
-    let text: String
-    let accessibilityLabel: String
-
-    var body: some View {
-        Text(text)
-            .dsTextStyle(SocialText.emojiOnly)
-            .fixedSize()
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text(accessibilityLabel))
-    }
-}
-
-/// Reply to a photo (S5-r): the lime quote part, then the sender's text bubble overlapping its bottom so the lime
-/// shows behind the bubble's top corners. Width: the quote's natural width (`chat.thread.dimension.replyWidth`); a
-/// longer text widens the text part (not observed).
-struct ReplyBubble: View {
-    let quote: ReplyQuote
-    let text: String
-    let isMine: Bool
-    let accessibilityLabel: String
-
-    var body: some View {
-        VStack(alignment: isMine ? .trailing : .leading, spacing: 0) {
-            quote
-            TextBubble(text: text, isMine: isMine, accessibilityLabel: accessibilityLabel)
-                .frame(minWidth: Tokens.Sizes.chatThreadDimensionReplyWidth)
-                .padding(.top, -Tokens.Radii.chatThreadRadiusBubble)
+            .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
         }
     }
-}
 
-/// The quote part: `chat.thread.dimension.replyQuoteHeight`, `color.global.accent`, top corners
-/// `chat.thread.radius.replyQuote`; quote bar, poster's first name (cap top `replyNameCapTop`), "pic" (baseline
-/// `replyLabelBaseline`), square thumbnail at the top-right.
-struct ReplyQuote: View {
-    let posterFirstName: String
-    let thumbPath: String?
-    let open: () -> Void
-
-    @Environment(\.displayScale) private var displayScale
-
-    var body: some View {
-        let nameCap = SocialMetrics.capHeight(SocialText.replyName)
-        Button(action: open) {
-            ZStack(alignment: .topLeading) {
-                UnevenRoundedRectangle(
-                    topLeadingRadius: Tokens.Radii.chatThreadRadiusReplyQuote,
-                    topTrailingRadius: Tokens.Radii.chatThreadRadiusReplyQuote
-                )
-                .fill(Tokens.Colors.globalAccent)
-                Rectangle()
-                    .fill(Tokens.Colors.globalOnAccent)
-                    .frame(
-                        width: Tokens.Sizes.chatThreadDimensionReplyQuoteBar,
-                        height: Tokens.Sizes.chatThreadDimensionReplyLabelBaseline - Tokens.Sizes.chatThreadDimensionReplyNameCapTop
-                    )
-                    .alignmentGuide(.leading) { $0[.leading] - Tokens.Sizes.chatThreadDimensionReplyQuoteBarInset }
-                    .alignmentGuide(.top) { $0[.top] - Tokens.Sizes.chatThreadDimensionReplyNameCapTop }
-                Text(posterFirstName)
-                    .dsTextStyle(SocialText.replyName)
-                    .lineLimit(1)
-                    .alignmentGuide(.leading) { $0[.leading] - Tokens.Sizes.chatThreadDimensionReplyTextInset }
-                    .alignmentGuide(.top) { $0[.firstTextBaseline] - nameCap - Tokens.Sizes.chatThreadDimensionReplyNameCapTop }
-                Text(Copy.chatThreadReplyPhotoLabel)
-                    .dsTextStyle(SocialText.replyLabel)
-                    .alignmentGuide(.leading) { $0[.leading] - Tokens.Sizes.chatThreadDimensionReplyTextInset }
-                    .alignmentGuide(.top) { $0[.firstTextBaseline] - Tokens.Sizes.chatThreadDimensionReplyLabelBaseline }
-            }
-            .foregroundStyle(Tokens.Colors.globalOnAccent)
-            .frame(width: Tokens.Sizes.chatThreadDimensionReplyWidth, height: Tokens.Sizes.chatThreadDimensionReplyQuoteHeight)
-            .overlay(alignment: .topTrailing) {
-                SocialPhoto(path: thumbPath, maxPixel: Int((Tokens.Sizes.chatThreadDimensionReplyThumb * displayScale).rounded(.up)))
-                    .frame(width: Tokens.Sizes.chatThreadDimensionReplyThumb, height: Tokens.Sizes.chatThreadDimensionReplyThumb)
-                    .clipShape(RoundedRectangle(cornerRadius: Tokens.Radii.chatThreadRadiusReplyThumb))
-                    .padding(.top, Tokens.Sizes.chatThreadDimensionReplyThumbInsetTop)
-                    .padding(.trailing, Tokens.Sizes.chatThreadDimensionReplyThumbInsetTrailing)
-            }
+    /// C-18 photo card: `size.global.friendCardWidth` × `.friendCardHeight`, `radius.global.card`, aspect fill.
+    private func photoCard(_ post: PostWithMedia?) -> some View {
+        Button {
+            if let id = message.postID { actions.openPhoto(id) }
+        } label: {
+            PhotoView(source: SocialImages.source(post?.media?.displayImagePath))
+                .frame(width: Tokens.Sizes.globalFriendCardWidth, height: Tokens.Sizes.globalFriendCardHeight)
+                .clipShape(DSShape.rounded(Tokens.Radii.globalCard))
+                .contentShape(DSShape.rounded(Tokens.Radii.globalCard))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(Text(Copy.chatThreadA11yReplyQuote(name: posterFirstName)))
+        .modifier(MessageMenu(row: row, model: model, actions: actions))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(photoLabel(post)))
+        .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("chat.photo." + (message.postID?.rawValue ?? "")) // provenance-ok: accessibility identifier for UI tests
     }
-}
 
-/// A photo message: time centred (text role `overlayTime`, `chat.thread.layout.timeFormat`), caption box,
-/// reaction cluster bottom-left. Tap → viewer; long press → reaction picker (`haptic.global.reaction`: iOS plays the
-/// system's only with a context menu, so no custom haptic here).
-struct ChatPhotoMessage: View {
-    let post: PostWithMedia?
-    let reactions: ReactionSummary
-    let isMine: Bool
-    let authorName: String
-    let open: () -> Void
-    let react: () -> Void
-    let showReactions: () -> Void
+    private func photoLabel(_ post: PostWithMedia?) -> String {
+        let time = SocialFormat.time(message.createdAt)
+        return row.isMine ? Copy.chatThreadA11yPhotoMine(time: time) : Copy.chatThreadA11yPhoto(name: authorName, time: time)
+    }
 
-    @Environment(\.displayScale) private var displayScale
+    // MARK: Quotes (`chat.thread.layout.replyQuote`)
 
-    var body: some View {
-        let shape = RoundedRectangle(cornerRadius: Tokens.Radii.globalPhoto)
-        ZStack {
-            SocialPhoto(
-                path: post?.media?.displayImagePath,
-                maxPixel: Int((Tokens.Sizes.chatThreadDimensionPhotoWidth * displayScale).rounded(.up))
-            )
-            if let post {
-                Text(SocialFormat.time(post.post.createdAt))
-                    .dsTextStyle(TextRole.overlayTime)
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                    .accessibilityHidden(true)
+    /// A quoted photo: a C-15 row — thumbnail `size.global.rowThumbWidth` × `.rowThumbHeight`, `radius.global.thumbnail`,
+    /// then (`size.global.rowThumbGap`) "Post by {name}" (`listTitle`) over "Week {n}" (`listSubtitle`,
+    /// `color.global.textSecondary`). Tap → the photo. (The shared `ThumbnailRow` always applies the screen margin, so
+    /// it cannot sit in the text column — reported as a component gap.)
+    private func postQuote(_ quoted: PostWithMedia) -> some View {
+        let name = model.profile(quoted.post.authorID)?.socialFirstName ?? ""
+        let week = SocialCalendar.weekNumber(containing: quoted.post.createdAt, in: model.timeZone)
+        return Button { actions.openPhoto(quoted.id) } label: {
+            HStack(alignment: .top, spacing: Tokens.Sizes.globalRowThumbGap) {
+                PhotoView(source: SocialImages.source(quoted.media?.gridPath))
+                    .frame(width: Tokens.Sizes.globalRowThumbWidth, height: Tokens.Sizes.globalRowThumbHeight)
+                    .clipShape(DSShape.rounded(Tokens.Radii.globalThumbnail))
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(Copy.chatThreadReplyPostTitle(name: name))
+                        .dsTextStyle(TextRole.listTitle)
+                        .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                    Text(Copy.chatThreadReplyPostWeek(weekNumber: String(week)))
+                        .dsTextStyle(TextRole.listSubtitle)
+                        .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                }
+                .multilineTextAlignment(.leading)
+                Spacer(minLength: 0)
             }
+            .contentShape(Rectangle())
         }
-        .overlay(alignment: .bottom) {
-            if let caption = post?.post.caption, !caption.isEmpty {
-                PhotoCaption(text: caption)
-                    .padding(.bottom, Tokens.Sizes.chatThreadDimensionCaptionInsetBottom)
-            }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(Copy.chatThreadA11yReplyQuote(name: name)))
+        .accessibilityAddTraits(.isButton)
+    }
+
+    /// A quoted message: one grey line "**name** text…" (`listSubtitle`, `color.global.textSecondary`, the name in the
+    /// `listTitle` weight), tail truncation. A voice / photo message reads "Attachment", an empty text "Message".
+    private func messageQuote(_ quoted: Message) -> some View {
+        let name = model.profile(quoted.authorID)?.socialFirstName ?? ""
+        let body: String
+        switch quoted.kind {
+        case .voice, .photo: body = Copy.chatThreadReplyDefaultAttachment
+        default: body = (quoted.body?.isEmpty == false ? quoted.body : nil) ?? Copy.chatThreadReplyDefaultText
         }
-        .overlay(alignment: .bottomLeading) {
-            Button(action: showReactions) {
-                ReactionCluster(emoji: reactions.distinctEmoji)
+        let line = Text(name).fontWeight(Tokens.FontWeights.fontWeightGlobalListTitle) + Text(" " + body)
+        return Button { actions.openQuotedMessage(quoted.id) } label: {
+            line
+                .dsTextStyle(TextRole.listSubtitle)
+                .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                .lineLimit(1)
+                .truncationMode(.tail)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(name) + Text(", " + body)) // provenance-ok: joins a name and a message (data)
+    }
+
+    // MARK: Status (`chat.thread.layout.failedMessage`)
+
+    /// "Sending" (`color.global.textSecondary`) while in flight; "Couldn't send. Tap to retry" (`color.global.destructive`)
+    /// after a failure — a tap sends it again. Text role `caption`.
+    @ViewBuilder
+    private var statusLine: some View {
+        if model.isFailed(message) {
+            Button { actions.retry(message) } label: {
+                Text(Copy.chatThreadSendFailed)
+                    .dsTextStyle(TextRole.caption)
+                    .foregroundStyle(Tokens.Colors.globalDestructive)
             }
             .buttonStyle(.plain)
-            .allowsHitTesting(!reactions.isEmpty)
-            .padding(.leading, Tokens.Sizes.chatReactionsDimensionClusterInsetLeading)
-            .padding(.bottom, Tokens.Sizes.chatReactionsDimensionClusterInsetBottom)
+        } else {
+            Text(Copy.chatThreadSending)
+                .dsTextStyle(TextRole.caption)
+                .foregroundStyle(Tokens.Colors.globalTextSecondary)
         }
-        .aspectRatio(Tokens.Sizes.chatThreadDimensionPhotoWidth / Tokens.Sizes.chatThreadDimensionPhotoHeight, contentMode: .fit)
-        .frame(maxWidth: .infinity)
-        .clipShape(shape)
-        .contentShape(shape)
-        .onTapGesture(perform: open)
-        .onLongPressGesture(perform: react)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(label))
-        .accessibilityValue(Text(reactions.isEmpty ? "" : SocialEmoji.clusterLabel(reactions.distinctEmoji)))
-        .accessibilityAddTraits(.isButton)
-        .accessibilityAction(.default, open)
-        .accessibilityAction(named: Text(Copy.chatReactionsA11yAdd), react)
-        .accessibilityAction(named: Text(Copy.chatReactionsActivityTitle), showReactions)
-        .accessibilityIdentifier("chat.photo." + (post?.id.rawValue ?? "")) // provenance-ok: accessibility identifier for UI tests
-    }
-
-    private var label: String {
-        guard let post else { return "" }
-        let time = SocialFormat.time(post.post.createdAt)
-        var text = isMine ? Copy.chatThreadA11yPhotoMine(time: time) : Copy.chatThreadA11yPhoto(name: authorName, time: time)
-        if let caption = post.post.caption, !caption.isEmpty { text += ", " + Copy.chatThreadA11yCaption(caption: caption) }
-        return text
     }
 }
 
-// MARK: - Composer
+private extension Tokens {
+    /// Names the chip's top distance for readability at the use site.
+    enum Reactions {
+        static var chipTop: CGFloat { Tokens.Sizes.chatReactionsDimensionChipTop }
+    }
+}
 
-/// `chat.composer`: lime camera circle · text field · mic circle on one centre line, `chat.composer.dimension.bottomInset`
-/// above the bottom safe area (and the keyboard). The sticker circle is do-not-build. While the field holds text the
-/// mic's slot shows the lime send circle (`chat.composer.layout.typingState`). Holding the mic records
-/// (`chat.voice.layout.recording`): the row then shows the recording row instead of the camera and field.
-struct ChatComposer: View {
-    @Binding var text: String
-    let send: () -> Void
-    let camera: () -> Void
-    let recorder: SocialVoiceRecorder
-    /// A finished recording to send.
-    let onRecorded: (VoiceRecording) -> Void
-    let onRecordFailed: () -> Void
-    /// The microphone is denied: the inline permission card shows.
-    let onMicDenied: () -> Void
+/// The native context menu of a message (C-29; items Sentence case, destructive last and red) and the same items as
+/// accessibility custom actions.
+/// - text: Reply · Copy · Report Message (others') / Unsend (mine)
+/// - voice: Reply · Report Message / Unsend
+/// - photo: the quick-reaction row · Reply · Save · Report Message / Delete
+/// - my failed message: Retry · Unsend
+struct MessageMenu: ViewModifier {
+    let row: ChatRow
+    let model: ChatThreadModel
+    let actions: ChatMessageActions
 
-    @State private var drag: CGSize = .zero
-    /// The finger is on the mic (reset by the system when the gesture ends or is cancelled).
-    @GestureState private var touching = false
-    /// This touch already started a recording (or tried to).
-    @State private var didStart = false
-    @State private var rowWidth: CGFloat = 0
+    private var message: Message { row.message }
 
-    private static let fieldInset = SocialMetrics.singleLineInset(height: Tokens.Sizes.chatComposerDimensionFieldHeight, style: TextRole.body)
-
-    private var hasText: Bool { !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-
-    var body: some View {
-        HStack(alignment: .bottom, spacing: 0) {
-            HStack(alignment: .bottom, spacing: 0) {
-                if recorder.isActive {
-                    VoiceRecordingRow(recorder: recorder, slide: drag.width, onCancel: { recorder.cancel() })
-                } else {
-                    cameraCircle
-                        .padding(.trailing, Tokens.Sizes.chatComposerDimensionGapCameraField)
-                    field
-                }
-            }
-            .socialReadsWidth($rowWidth)
-            .padding(.trailing, Tokens.Sizes.chatComposerDimensionGapFieldButton)
-
-            trailingSlot
-        }
-        .padding(.leading, Tokens.Sizes.chatComposerDimensionInsetLeading)
-        .padding(.trailing, Tokens.Sizes.chatComposerDimensionInsetTrailing)
-        .padding(.bottom, Tokens.Sizes.chatComposerDimensionBottomInset)
-        .onChange(of: recorder.isActive) { _, active in
-            if !active { drag = .zero }
-        }
-        .onChange(of: touching) { _, isTouching in
-            if !isTouching { didStart = false }
-        }
+    func body(content: Content) -> some View {
+        content
+            .contextMenu { items(includingPalette: true) }
+            .accessibilityActions { items(includingPalette: false) }
     }
 
-    private var cameraCircle: some View {
-        Button(action: camera) {
-            Image(systemName: Tokens.Icons.globalCamera)
-                .resizable()
-                .scaledToFit()
-                .frame(height: Tokens.Sizes.chatComposerDimensionCameraGlyph)
-                .foregroundStyle(Tokens.Colors.globalOnAccent)
-                .frame(width: Tokens.Sizes.chatComposerDimensionCameraButton, height: Tokens.Sizes.chatComposerDimensionCameraButton)
-                .background(Tokens.Colors.globalAccent, in: Circle())
-                .contentShape(Circle().inset(by: -max(0, Tokens.Sizes.globalMinTouchTargetIos - Tokens.Sizes.chatComposerDimensionCameraButton) / 2))
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text(Copy.chatComposerA11yCamera))
-    }
-
-    /// Mic or send: the same slot (send while the field has text, and for a hands-free recording).
     @ViewBuilder
-    private var trailingSlot: some View {
-        switch recorder.phase {
-        case .locked, .paused:
-            SendCircle(identifier: "chat.composer.send") { finishRecording() } // provenance-ok: accessibility identifier for UI tests
-        case .idle where hasText:
-            SendCircle(identifier: "chat.composer.send") { send() } // provenance-ok: accessibility identifier for UI tests
-        case .idle, .holding:
-            micCircle
-        }
-    }
-
-    /// The mic circle: press and hold records; lift sends; slide left past the row's middle (the hint) cancels; slide
-    /// up past the lock (one circle and a gap above) keeps recording hands-free.
-    private var micCircle: some View {
-        Image(systemName: Tokens.Icons.globalMic)
-            .resizable()
-            .scaledToFit()
-            .frame(height: Tokens.Sizes.chatComposerDimensionMicGlyph)
-            .foregroundStyle(Tokens.Colors.globalTextPrimary)
-            .frame(width: Tokens.Sizes.chatComposerDimensionSideButton, height: Tokens.Sizes.chatComposerDimensionSideButton)
-            .background(Tokens.Colors.globalControlRaised, in: Circle())
-            .contentShape(Circle().inset(by: -max(0, Tokens.Sizes.globalMinTouchTargetIos - Tokens.Sizes.chatComposerDimensionSideButton) / 2))
-            .overlay(alignment: .top) {
-                if recorder.phase == .holding {
-                    VoiceLockHint()
-                        .alignmentGuide(.top) { $0[.bottom] + Tokens.Sizes.chatComposerDimensionGapFieldButton }
+    private func items(includingPalette: Bool) -> some View {
+        if model.isFailed(message) {
+            Button(Copy.chatThreadMenuRetry) { actions.retry(message) }
+            Button(Copy.chatThreadMenuDelete, role: .destructive) { actions.unsend(message) }
+        } else if !model.isPending(message) {
+            switch message.kind {
+            case .photo:
+                if includingPalette, let postID = message.postID {
+                    QuickReactionsPalette(
+                        mine: model.myEmoji(on: postID),
+                        onEmoji: { actions.react(postID, $0) },
+                        onAdd: { actions.openPicker(postID) }
+                    )
+                } else if let postID = message.postID {
+                    Button(Copy.chatReactionsA11yAdd) { actions.openPicker(postID) }
+                }
+                Button(Copy.chatThreadMenuReply) { actions.reply(message) }
+                Button(Copy.chatThreadMenuSave) { actions.save(message) }
+                if row.isMine {
+                    Button(Copy.chatThreadMenuDeletePhoto, role: .destructive) { actions.deletePhoto(message) }
+                } else {
+                    Button(Copy.chatThreadMenuReport, role: .destructive) { actions.report(message) }
+                }
+            case .voice:
+                Button(Copy.chatThreadMenuReply) { actions.reply(message) }
+                if row.isMine {
+                    Button(Copy.chatThreadMenuDelete, role: .destructive) { actions.unsend(message) }
+                } else {
+                    Button(Copy.chatThreadMenuReport, role: .destructive) { actions.report(message) }
+                }
+            default:
+                Button(Copy.chatThreadMenuReply) { actions.reply(message) }
+                Button(Copy.chatThreadMenuCopy) { actions.copy(message) }
+                if row.isMine {
+                    Button(Copy.chatThreadMenuDelete, role: .destructive) { actions.unsend(message) }
+                } else {
+                    Button(Copy.chatThreadMenuReport, role: .destructive) { actions.report(message) }
                 }
             }
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .updating($touching) { _, state, _ in state = true }
-                    .onChanged { value in fingerMoved(value.translation) }
-                    .onEnded { _ in fingerLifted() }
-            )
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text(Copy.chatComposerA11yMic))
-            .accessibilityAddTraits(.isButton)
-            .accessibilityAction(.default) { start(locked: true) }
-            .accessibilityIdentifier("chat.composer.mic") // provenance-ok: accessibility identifier for UI tests
-    }
-
-    private func fingerMoved(_ translation: CGSize) {
-        if !didStart {
-            didStart = true
-            start(locked: false)
-            return
         }
-        guard recorder.phase == .holding else { return }
-        drag = translation
-        if translation.width <= -rowWidth / 2 {
-            recorder.cancel()
-        } else if translation.height <= -(Tokens.Sizes.chatComposerDimensionSideButton + Tokens.Sizes.chatComposerDimensionGapFieldButton) {
-            recorder.lock()
-            drag = .zero
-        }
-    }
-
-    private func fingerLifted() {
-        didStart = false
-        drag = .zero
-        if recorder.phase == .holding { finishRecording() }
-    }
-
-    private func start(locked: Bool) {
-        switch recorder.begin(locked: locked) {
-        case .started:
-            break
-        case .askedPermission:
-            Task {
-                await recorder.requestPermission()
-                if !recorder.permission.allowsAccess { onMicDenied() }
-            }
-        case .denied:
-            onMicDenied()
-        case .failed:
-            onRecordFailed()
-        }
-    }
-
-    private func finishRecording() {
-        do {
-            if let recording = try recorder.finish() { onRecorded(recording) }
-        } catch {
-            onRecordFailed()
-        }
-    }
-
-    private var field: some View {
-        TextField(
-            text: $text,
-            prompt: Text(Copy.chatComposerPlaceholder).foregroundStyle(Tokens.Colors.globalTextSecondary),
-            axis: .vertical
-        ) {
-            Text(Copy.chatComposerA11yField)
-        }
-        .dsTextStyle(TextRole.body)
-        .foregroundStyle(Tokens.Colors.globalTextPrimary)
-        .padding(.horizontal, Tokens.Sizes.chatComposerDimensionFieldPaddingLeading)
-        .padding(.vertical, Self.fieldInset)
-        .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.chatComposerDimensionFieldHeight, alignment: .leading)
-        .background(Tokens.Colors.globalControl, in: Capsule())
-        .socialRim(Capsule(), top: Tokens.Colors.chatComposerColorFieldRimTop, bottom: Tokens.Colors.chatComposerColorFieldRimBottom, width: Tokens.Sizes.chatComposerDimensionFieldRim)
-        .accessibilityIdentifier("chat.composer.field") // provenance-ok: accessibility identifier for UI tests
-    }
-}
-
-/// The lime send circle (`chat.composer.layout.typingState`): `chat.composer.dimension.sideButton`, `color.global.accent`,
-/// `icon.global.send` in `color.global.onAccent` at the mic glyph's height (the glyph it replaces); no transition.
-struct SendCircle: View {
-    let identifier: String
-    let action: () -> Void
-
-    init(identifier: String, action: @escaping () -> Void) {
-        self.identifier = identifier
-        self.action = action
-    }
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: Tokens.Icons.globalSend)
-                .resizable()
-                .scaledToFit()
-                .frame(height: Tokens.Sizes.chatComposerDimensionMicGlyph)
-                .foregroundStyle(Tokens.Colors.globalOnAccent)
-                .frame(width: Tokens.Sizes.chatComposerDimensionSideButton, height: Tokens.Sizes.chatComposerDimensionSideButton)
-                .background(Tokens.Colors.globalAccent, in: Circle())
-                .contentShape(Circle().inset(by: -max(0, Tokens.Sizes.globalMinTouchTargetIos - Tokens.Sizes.chatComposerDimensionSideButton) / 2))
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text(Copy.chatComposerA11ySend))
-        .accessibilityIdentifier(identifier)
     }
 }

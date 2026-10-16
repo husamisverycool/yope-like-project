@@ -18,6 +18,9 @@ public enum Tokens {
         /// Retro · global · primary action fill: full-width primary capsule, primary medium capsule ('Accept'), selected state that is a fill. Retro has no brand colour in chrome — the primary fill is the inverse of the page · SOURCED
         /// token: `color.global.accent`
         public static let globalAccent: Color = Color(light: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1), dark: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1))
+        /// Retro · global · black layer over the blurred photo backdrop (C-34 recap preview media page) · SOURCED
+        /// token: `color.global.backdropDim`
+        public static let globalBackdropDim: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.2235)
         /// Retro · global · page background of every app screen (home, profile, albums, settings, sheets); iOS — and Android's 'true black' option · SOURCED
         /// token: `color.global.background`
         public static let globalBackground: Color = Color(light: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1), dark: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1))
@@ -2440,6 +2443,9 @@ public enum Tokens {
         /// Retro · global · overlap between avatars in a stack · SOURCED
         /// token: `size.global.avatarStackOverlap`
         public static let globalAvatarStackOverlap: CGFloat = 3
+        /// Retro · global · Gaussian blur of the photo backdrop behind a card (C-34: recap preview media page) · SOURCED
+        /// token: `size.global.backdropBlur`
+        public static let globalBackdropBlur: CGFloat = 1.8
         /// Retro · global · pushed screen: screen edge → back chevron ink (chevron ink 11.1 × 18.3 pt, centred on the title's cap middle) · SOURCED
         /// token: `size.global.backInset`
         public static let globalBackInset: CGFloat = 21.1

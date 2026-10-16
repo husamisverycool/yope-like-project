@@ -1033,6 +1033,19 @@ comment avatar 30 → 31.2, viewer header avatar 39 → 40.7, position pill 22 �
 white card with black text on a dark-mode screen; `layout.year.story.recapCard` background → `color.global.surfaceLight`,
 footer text → `color.global.onSurfaceLight`. week.recap (social) and year.story (memory) share this one definition.
 
+**L-5 — Backdrop blur and dim measured (closes the C-34 / `layout.global.materials` gap).** ST-04 (Retro's recap preview,
+2026 store render, 2.389 px/pt) shows the same photo twice: sharp inside the card (x 328–960, y 1197–1831) and as the
+backdrop of the media page (x 171–1110, y 717–2385). A least-squares fit over the visible backdrop (216 072 px; card,
+close circle, footer and edge bands masked) of `gain · Gσ[photo scaled s and shifted] + bias` per channel gives s 3.000,
+shift (2.8, −2.4) px, **σ 4.18 px = 1.75 pt** (1 − R² 0.0131; the linear-light variant fits worse, 0.0181, so the
+compositing is in sRGB), and equal channel gains 0.779 / 0.774 / 0.777 with ≈0 bias — a **22 % black layer**, no
+saturation change. The card photo used as the sharp source is itself softened by the render (≈1.5 px at backdrop
+scale), so σ ≈ 1.86 pt; σ ± 25 % raises the residual ≈10 %. Tokens: `size.global.backdropBlur` 1.8 (σ, pt; iOS
+`.blur(radius:)` takes σ, Android's `Modifier.blur` radius r is converted by hwui as σ = 0.57735 r + 0.5 px, so the
+component passes r = (σ − 0.5) / 0.57735), `color.global.backdropDim` #00000039. The earlier implementations were not
+Retro's look: iOS used `.ultraThinMaterial` (a frosted, tinted material) and Android a 32-dp placeholder radius; both
+C-34 components (`BlurredBackdrop`) now draw the measured blur and dim, and the recap preview reads the token.
+
 ---
 
 ## Redesign — Account (RA-*)

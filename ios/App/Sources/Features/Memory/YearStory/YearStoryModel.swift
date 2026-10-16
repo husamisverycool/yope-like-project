@@ -69,76 +69,97 @@ struct YearStoryCollage: Equatable, Sendable {
     let imageURL: URL?
 }
 
+/// One cell of the summary's recap card.
+struct YearStoryGridPhoto: Equatable, Sendable, Identifiable {
+    let postID: PostID
+    /// `thumb_path`.
+    let imageURL: URL?
+    /// The poster's first name (the cell's VoiceOver label).
+    let name: String
+    let date: LocalDate
+    var id: PostID { postID }
+}
+
+/// What the summary's two share styles show (C in year.story.md).
+struct YearStorySummary: Equatable, Sendable {
+    enum Style: String, Equatable, Sendable, CaseIterable {
+        /// `layout.year.story.recapCard` on the blurred cover.
+        case recapCard
+        /// The cover photo full bleed with the year and the group name.
+        case cover
+    }
+
+    let year: Int
+    let groupName: String
+    /// The recap card's photos: full rows only (`layout.year.story.recapCard.columns`, up to `maxRows`).
+    let grid: [YearStoryGridPhoto]
+
+    /// The recap card is offered only with at least one full row.
+    var styles: [Style] { grid.isEmpty ? [.cover] : [.recapCard, .cover] }
+}
+
 /// One card of the tap-through, in the order of the spec's card table.
 enum YearStoryCard: Equatable, Identifiable, Sendable {
-    case intro
-    case momentsSetup
+    case intro(groupName: String, year: Int)
+    case lookBack
     case moments(groupName: String, count: Int)
     case busiestMonth(month: Int, year: Int)
     case mostReactedSetup
     case mostReacted(YearStoryPhoto)
     case togetherSetup
     case togetherDay(YearStoryCollage)
-    case teaser
     case outro
     case summary
 
     var id: String {
         switch self {
         case .intro: return "intro"
-        case .momentsSetup: return "moments-setup"
+        case .lookBack: return "look-back"
         case .moments: return "moments"
         case .busiestMonth: return "busiest-month"
         case .mostReactedSetup: return "most-reacted-setup"
         case let .mostReacted(photo): return "most-reacted-" + photo.postID.rawValue
         case .togetherSetup: return "together-setup"
         case let .togetherDay(collage): return "together-" + collage.collageID.rawValue
-        case .teaser: return "teaser"
         case .outro: return "outro"
         case .summary: return "summary"
         }
     }
 
-    /// Cards that state a fact carry the share row and have a share image.
+    /// The cards with the Share pill (the card table's last column): the facts, the outro and the summary.
     var isShareable: Bool {
         switch self {
-        case .moments, .busiestMonth, .mostReacted, .togetherDay: return true
-        default: return false
+        case .moments, .busiestMonth, .mostReacted, .togetherDay, .outro, .summary: return true
+        case .intro, .lookBack, .mostReactedSetup, .togetherSetup: return false
         }
     }
 
+    /// The headline of a text card (empty for photo, collage and summary cards).
     var headline: String {
         switch self {
         case .intro: return Copy.yearStoryIntroTitle
-        case .momentsSetup: return Copy.yearStoryMomentsTitle
+        case .lookBack: return Copy.yearStoryLookBackTitle
         case let .moments(groupName, count):
-            return Copy.yearStoryMomentsCount(group: groupName, count: count.formatted())
+            return Copy.yearStoryMomentsCount(group: groupName, count: MemoryFormat.number(count))
         case let .busiestMonth(month, year):
             return Copy.yearStoryBusiestMonthTitle(month: MemoryFormat.storyMonth(month, year: year) ?? "")
         case .mostReactedSetup: return Copy.yearStoryMostReactedTitle
-        case let .mostReacted(photo):
-            return Copy.yearStoryMostReactedPhoto(name: photo.name, date: MemoryFormat.storyDate(photo.date))
         case .togetherSetup: return Copy.yearStoryTogetherTitle
-        case let .togetherDay(collage): return MemoryFormat.storyDate(collage.date)
-        case .teaser: return Copy.yearStoryOutroTeaser
         case .outro: return Copy.yearStoryOutroTitle
-        case .summary: return ""
+        case .mostReacted, .togetherDay, .summary: return ""
         }
     }
 
+    /// The subline of a text card (revealed after the headline).
     var subline: String? {
         switch self {
-        case .intro: return Copy.yearStoryIntroSubtitle
-        case .moments: return Copy.yearStoryMomentsAside
-        case .busiestMonth: return Copy.yearStoryBusiestMonthAside
-        case .mostReactedSetup: return Copy.yearStoryMostReactedAside
+        case let .intro(groupName, year): return Copy.yearStoryIntroSubtitle(group: groupName, year: String(year))
         case .togetherSetup: return Copy.yearStoryTogetherAside
-        case .outro: return Copy.yearStoryOutroSubtitle
         default: return nil
         }
     }
 
-    /// Image of a photo / collage card.
+    /// The image of a photo / collage card.
     var imageURL: URL? {
         switch self {
         case let .mostReacted(photo): return photo.imageURL
@@ -147,13 +168,13 @@ enum YearStoryCard: Equatable, Identifiable, Sendable {
         }
     }
 
-    /// The cards for a story: a card (or a whole section) whose data is missing is skipped; lists
-    /// keep at most `count.year.story.listLength` entries.
+    /// The cards for a story: a card whose data is missing is skipped (a list's setup card with its list); lists keep at
+    /// most `count.year.story.listLength` entries.
     static func build(data: YearStoryData, groupName: String, photos: [YearStoryPhoto], collages: [YearStoryCollage]) -> [YearStoryCard] {
         let listLength = Int(Tokens.Counts.yearStoryListLength)
-        var cards: [YearStoryCard] = [.intro]
+        var cards: [YearStoryCard] = [.intro(groupName: groupName, year: data.year), .lookBack]
         if let count = data.momentsShared {
-            cards += [.momentsSetup, .moments(groupName: groupName, count: count)]
+            cards.append(.moments(groupName: groupName, count: count))
         }
         if let month = data.busiestMonth {
             cards.append(.busiestMonth(month: month, year: data.year))
@@ -168,7 +189,7 @@ enum YearStoryCard: Equatable, Identifiable, Sendable {
             cards.append(.togetherSetup)
             cards += shownCollages.map { .togetherDay($0) }
         }
-        cards += [.teaser, .outro, .summary]
+        cards += [.outro, .summary]
         return cards
     }
 }
@@ -189,9 +210,14 @@ final class YearStoryModel {
     var index = 0
     /// Set when the player should close.
     var isFinished = false
-    /// The share card in view on the summary.
+    /// The summary's share style in view (its pager).
     var summaryPage = 0
-    /// Rendered share images (1080 × 1920 PNG files and their previews), by card id.
+    /// The summary's styles and photos; nil until loaded.
+    private(set) var summary: YearStorySummary?
+    /// The cover (`data.most_reacted` first, else the first of `post_ids`): the text cards' blurred backdrop and the
+    /// summary's full-bleed style.
+    private(set) var coverURL: URL?
+    /// Rendered share images (1080 × 1920 PNG files and their previews), by `shareKey`.
     var shareFiles: [String: URL] = [:]
     var shareImages: [String: UIImage] = [:]
 
@@ -208,10 +234,29 @@ final class YearStoryModel {
 
     var currentCard: YearStoryCard? { cards.indices.contains(index) ? cards[index] : nil }
 
-    /// The fact cards, in story order (the summary's pager).
-    var shareableCards: [YearStoryCard] { cards.filter(\.isShareable) }
-
     var images: any MemoryImageLoading { dependencies.images }
+
+    /// The summary's styles (one page each).
+    var summaryStyles: [YearStorySummary.Style] { summary?.styles ?? [.cover] }
+
+    /// The summary style in view.
+    var summaryStyle: YearStorySummary.Style {
+        let styles = summaryStyles
+        return styles[min(max(summaryPage, 0), styles.count - 1)]
+    }
+
+    /// The share image's key of the card in view (the summary: per style).
+    func shareKey(_ card: YearStoryCard) -> String {
+        card == .summary ? card.id + "-" + summaryStyle.rawValue : card.id // provenance-ok: dictionary key, not UI text
+    }
+
+    /// `year.story.position` ("3 of 12"): the card among the cards before the summary; nil on the summary (the page dots
+    /// take over).
+    var position: String? {
+        guard let card = currentCard, card != .summary else { return nil }
+        let total = cards.filter { $0 != .summary }.count
+        return Copy.yearStoryPosition(position: MemoryFormat.number(index + 1), total: MemoryFormat.number(total))
+    }
 
     func loadIfNeeded() async {
         guard phase == .idle else { return }
@@ -222,6 +267,12 @@ final class YearStoryModel {
         await load()
     }
 
+    private struct Cached {
+        let cards: [YearStoryCard]
+        let summary: YearStorySummary
+        let coverURL: URL?
+    }
+
     /// Cache-first: the story shown last opens at once; the fresh read replaces it in place.
     private func load() async {
         guard let data = dependencies.data else {
@@ -230,7 +281,7 @@ final class YearStoryModel {
         }
         let me = await data.currentUser()
         let cacheKey = "yearstory." + groupID.rawValue + "." + String(year) // provenance-ok: cache key
-        if phase != .loaded, let cached = dependencies.cache.value([YearStoryCard].self, key: cacheKey, user: me) {
+        if phase != .loaded, let cached = dependencies.cache.value(Cached.self, key: cacheKey, user: me) {
             apply(cached)
         } else if phase != .loaded {
             phase = .loading
@@ -245,8 +296,14 @@ final class YearStoryModel {
             let groupName = try await data.group(id: groupID)?.name ?? ""
             let photos = try await Self.photos(storyData, data: data)
             let collages = try await Self.collages(storyData, data: data)
-            let fresh = YearStoryCard.build(data: storyData, groupName: groupName, photos: photos, collages: collages)
-            dependencies.cache.set(fresh, key: cacheKey, user: me, postIDs: Self.postIDs(of: fresh))
+            let grid = try await Self.grid(storyData, postIDs: story.postIDs, data: data)
+            let cover = try await Self.coverURL(storyData, postIDs: story.postIDs, data: data)
+            let fresh = Cached(
+                cards: YearStoryCard.build(data: storyData, groupName: groupName, photos: photos, collages: collages),
+                summary: YearStorySummary(year: storyData.year, groupName: groupName, grid: grid),
+                coverURL: cover
+            )
+            dependencies.cache.set(fresh, key: cacheKey, user: me, postIDs: Self.postIDs(of: fresh.cards).union(grid.map(\.postID)))
             apply(fresh)
             listenForDeletions(data: data)
         } catch {
@@ -256,16 +313,22 @@ final class YearStoryModel {
         }
     }
 
-    /// Shows `fresh`, staying on the card in view when it is still there.
-    private func apply(_ fresh: [YearStoryCard]) {
+    /// Shows `fresh`, staying on the card in view when it is still there. The first time, the story starts playing —
+    /// paused instead while VoiceOver runs (auto-advance would cut speech; WCAG 2.2.2).
+    private func apply(_ fresh: Cached) {
         let currentID = currentCard?.id
-        if fresh != cards {
-            shareFiles = shareFiles.filter { id, _ in fresh.contains { $0.id == id } }
-            shareImages = shareImages.filter { id, _ in fresh.contains { $0.id == id } }
+        let isFirst = phase != .loaded
+        if fresh.cards != cards || fresh.summary != summary {
+            shareFiles = [:]
+            shareImages = [:]
         }
-        cards = fresh
-        index = currentID.flatMap { id in fresh.firstIndex { $0.id == id } } ?? 0
+        cards = fresh.cards
+        summary = fresh.summary
+        coverURL = fresh.coverURL
+        summaryPage = min(summaryPage, summaryStyles.count - 1)
+        index = currentID.flatMap { id in fresh.cards.firstIndex { $0.id == id } } ?? 0
         phase = .loaded
+        if isFirst, dependencies.isVoiceOverRunning() { isPaused = true }
         preloadUpcoming()
         if currentID == nil || currentCard?.id != currentID { restartCardTimer() }
     }
@@ -287,7 +350,11 @@ final class YearStoryModel {
 
     /// Loads the images of the card in view and the next cards before they are tapped to.
     func preloadUpcoming() {
-        let upcoming = cards.dropFirst(index).prefix(Self.preloadCount + 1).compactMap(\.imageURL)
+        var upcoming = cards.dropFirst(index).prefix(Self.preloadCount + 1).compactMap(\.imageURL)
+        if let coverURL { upcoming.insert(coverURL, at: 0) }
+        if cards.dropFirst(index).prefix(Self.preloadCount + 1).contains(.summary) {
+            upcoming += summary?.grid.compactMap(\.imageURL) ?? []
+        }
         guard !upcoming.isEmpty else { return }
         let images = dependencies.images
         let size = imagePixelSize
@@ -339,6 +406,40 @@ final class YearStoryModel {
         }
     }
 
+    /// The recap card's photos: `data.most_reacted` first, then `year_stories.post_ids` in order, deduplicated; posts
+    /// hidden by a block are skipped; full rows only (`layout.year.story.recapCard`), at most `maxRows` rows.
+    static func grid(_ story: YearStoryData, postIDs: [PostID], data: any MemoryDataSource) async throws -> [YearStoryGridPhoto] {
+        var seen = Set<PostID>()
+        let ordered = (story.mostReacted + postIDs).filter { seen.insert($0).inserted }
+        let limit = Int(Tokens.Layouts.YearStoryRecapCard.columns * Tokens.Layouts.YearStoryRecapCard.maxRows)
+        guard !ordered.isEmpty else { return [] }
+        // Read a few more than a full card so photos hidden by a block (RLS) leave no hole.
+        let posts = try await data.postsWithMedia(ids: Array(ordered.prefix(limit * 2)))
+        let shown = RecapCard.fullRows(Array(posts.prefix(limit)))
+        guard !shown.isEmpty else { return [] }
+        let profiles = try await data.profiles(ids: Array(Set(shown.map(\.post.authorID))))
+        let names = Dictionary(profiles.map { ($0.id, $0.firstName ?? "") }, uniquingKeysWith: { first, _ in first })
+        let urls = try await data.signedURLs(paths: shown.compactMap { $0.media?.imagePath(for: .thumb) })
+        return shown.map { post in
+            YearStoryGridPhoto(
+                postID: post.post.id,
+                imageURL: post.media?.imagePath(for: .thumb).flatMap { urls[$0] },
+                name: names[post.post.authorID] ?? "",
+                date: LocalDate(post.post.createdAt, in: story.timeZone)
+            )
+        }
+    }
+
+    /// The cover's display rendition: the first visible post of `data.most_reacted`, else of `year_stories.post_ids`.
+    static func coverURL(_ story: YearStoryData, postIDs: [PostID], data: any MemoryDataSource) async throws -> URL? {
+        for candidates in [story.mostReacted, postIDs] where !candidates.isEmpty {
+            guard let post = try await data.postsWithMedia(ids: Array(candidates.prefix(Int(Tokens.Counts.yearStoryListLength)))).first,
+                  let path = post.media?.imagePath(for: .display) else { continue }
+            return try await data.signedURLs(paths: [path])[path]
+        }
+        return nil
+    }
+
     // MARK: Navigation (`layout.year.story.navigation`)
 
     /// Right half: the next card (nothing on the last card).
@@ -358,7 +459,7 @@ final class YearStoryModel {
         }
     }
 
-    /// "Replay from beginning".
+    /// The summary's replay circle (`year.story.summary.replay`): back to card 1.
     func replay() {
         index = 0
         summaryPage = 0
@@ -494,6 +595,15 @@ final class YearStoryModel {
             default: return false
             }
         }
+        if let current = summary, current.grid.contains(where: { $0.postID == postID }) {
+            summary = YearStorySummary(
+                year: current.year, groupName: current.groupName,
+                grid: RecapCard.fullRows(current.grid.filter { $0.postID != postID })
+            )
+            summaryPage = min(summaryPage, summaryStyles.count - 1)
+            shareFiles = shareFiles.filter { !$0.key.hasPrefix(YearStoryCard.summary.id) }
+            shareImages = shareImages.filter { !$0.key.hasPrefix(YearStoryCard.summary.id) }
+        }
         if !cards.contains(where: { if case .mostReacted = $0 { return true } else { return false } }) {
             cards.removeAll { $0 == .mostReactedSetup }
         }
@@ -507,7 +617,6 @@ final class YearStoryModel {
             // The card in view was dropped: the one now shown gets its full time.
             restartCardTimer()
         }
-        summaryPage = min(summaryPage, max(shareableCards.count - 1, 0))
     }
 
     private func listenForDeletions(data: any MemoryDataSource) {
@@ -527,12 +636,13 @@ final class YearStoryModel {
     }
 }
 
-/// The group-screen entry (A in design/surfaces/year.story.md): shown while this year's story is ready.
+/// The group-screen entry (A in design/surfaces/year.story.md): shown while this year's story is ready ("Year in Photos" /
+/// "2025 Recap" / "View memories", `icon.global.recap`, the story's cover).
 @MainActor
 @Observable
 final class YearStoryEntryModel {
-    var content: MemoryEntryContent?
-    var year: Int?
+    private(set) var content: MemoryEntryContent?
+    private(set) var year: Int?
     let groupID: GroupID
     private let dependencies: MemoryDependencies
 
@@ -561,15 +671,23 @@ final class YearStoryEntryModel {
             let zone = try await data.group(id: groupID)?.resolvedTimeZone ?? MemoryFormat.utc
             let currentYear = LocalDate(dependencies.now(), in: zone).year
             guard let story = try await data.yearStory(groupID: groupID, year: currentYear), story.status == .ready,
-                  story.data != nil else {
+                  let storyData = YearStoryData(json: story.data, fallbackYear: currentYear) else {
                 content = nil
                 dependencies.cache.remove(key: cacheKey)
                 return
             }
+            // The card's photo: the story's cover (the first visible most-reacted post, else the first post).
+            var photo: String?
+            for candidates in [storyData.mostReacted, story.postIDs] where photo == nil && !candidates.isEmpty {
+                photo = try await data.postsWithMedia(ids: Array(candidates.prefix(Int(Tokens.Counts.yearStoryListLength))))
+                    .first?.media?.imagePath(for: .display)
+            }
             let fresh = MemoryEntryContent(
-                title: Copy.yearStoryEntryTitle(year: String(currentYear)),
-                subtitle: Copy.yearStoryEntrySubtitle,
-                buttonTitle: Copy.yearStoryEntryButton
+                title: Copy.yearStoryEntryTitle,
+                subtitle: Copy.yearStoryEntrySubtitle(year: String(currentYear)),
+                buttonTitle: Copy.yearStoryEntryButton,
+                icon: Tokens.Icons.globalRecap,
+                photoPath: photo
             )
             year = currentYear
             content = fresh

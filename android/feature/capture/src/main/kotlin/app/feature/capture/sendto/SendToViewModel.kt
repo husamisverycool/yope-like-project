@@ -3,24 +3,22 @@ package app.feature.capture.sendto
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.data.error.DataError
-import app.data.error.DataException
 import app.data.media.upload.NewPost
 import app.data.model.Group
 import app.data.model.MediaKind
 import app.data.offline.DataState
 import app.feature.capture.data.CaptureData
 import app.feature.capture.data.CaptureHandoff
-import app.feature.capture.data.CapturePrefs
 import app.feature.capture.data.CapturedMedia
-import app.feature.capture.data.SendTracker
+import app.feature.capture.data.PostSend
 import app.model.SessionPromptGate
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
@@ -29,17 +27,17 @@ import java.io.File
 data class VoiceNoteFile(val file: File, val durationMs: Int)
 
 /**
- * `camera.sendto`: choose one or more groups, optional caption and voice note, send. No edit step.
- * Sending queues the post with `uploads.enqueue` (works offline, resumes) and closes at once; the
- * toast host follows the upload ([SendTracker]).
+ * `camera.sendto` (Retro's Postcard composer, RC-5 … RC-8): choose one or more groups, an optional message
+ * (the "Add a Message" sheet, at most `camera.sendto.size.captionMaxLength`) and voice note, then Send. The
+ * sheet stays open while the post is sent (busy capsule, "Sending…"); success closes it with a toast, a failure
+ * shows the native alert with "Try Again" / "Cancel" and keeps everything. Closing asks first only when a
+ * message or voice note would be lost.
  */
 class SendToViewModel(
     private val data: CaptureData,
     private val handoff: CaptureHandoff,
-    private val tracker: SendTracker,
-    private val prefs: CapturePrefs,
     private val gate: SessionPromptGate,
-    /** Whether the device can record a voice note (`chat.voice.layout.recording`; false without a microphone). */
+    /** Whether the device can record a voice note (false without a microphone). */
     private val voiceRecorderAvailable: Boolean,
     private val maxCaption: Int? = null,
 ) : ViewModel() {
@@ -52,6 +50,14 @@ class SendToViewModel(
         data class Failed(val offline: Boolean) : Groups
     }
 
+    /** The native alert on screen (C-29). */
+    sealed interface Alert {
+        /** Close with a message or voice note: `camera.sendto.discard.*`. */
+        data object Discard : Alert
+        /** Upload or `create_post` failed: `camera.sendto.error.*`. */
+        data class SendFailed(val offline: Boolean) : Alert
+    }
+
     data class UiState(
         val media: CapturedMedia? = null,
         val groups: Groups = Groups.Loading,
@@ -59,17 +65,14 @@ class SendToViewModel(
         val caption: String = "",
         val voice: VoiceNoteFile? = null,
         val recordingVoice: Boolean = false,
-        /** Slid up onto the lock: recording continues hands-free (`chat.voice.layout.recording` lock). */
-        val voiceLocked: Boolean = false,
         /** When the current recording started (device elapsed clock), for the timer. */
         val recordingStartedAt: Long? = null,
-        val voiceCoachVisible: Boolean = false,
         val premium: Boolean = false,
         /** A reply to a photo: exactly the replied post's group. */
         val replyGroupId: String? = null,
-        /** The last attempt to queue failed before anything was queued (toast with retry). */
-        val sendError: DataError? = null,
         val micAvailable: Boolean = false,
+        val sending: Boolean = false,
+        val alert: Alert? = null,
     ) {
         val visibleGroups: List<Group>
             get() {
@@ -77,17 +80,23 @@ class SendToViewModel(
                 return if (replyGroupId != null) all.filter { it.id == replyGroupId } else all
             }
 
-        /** Hidden with nothing selected (never observed disabled), and for a video a free member cannot post. */
-        val sendVisible: Boolean
-            get() = media != null && selected.isNotEmpty() && (media.kind != MediaKind.Video || premium)
+        /** Disabled with nothing selected, and for a video a free member cannot post (`premium_required`). */
+        val sendEnabled: Boolean
+            get() = media != null && !sending && selected.any { id -> visibleGroups.any { it.id == id } } &&
+                (media.kind != MediaKind.Video || premium)
+
+        /** Whether closing would lose something the member added (Retro's lost-changes rule). */
+        val hasAdditions: Boolean get() = caption.isNotBlank() || voice != null
     }
 
     sealed interface Event {
         data object Close : Event
-        data object Sent : Event
+        data class Sent(val groupNames: List<String>) : Event
         data object OpenPaywall : Event
         data class SaveToLibrary(val media: CapturedMedia) : Event
         data object CreateGroup : Event
+        /** Play `haptic.global.error` (the send failed). */
+        data object Failed : Event
     }
 
     private val pending = handoff.pending.value
@@ -96,7 +105,6 @@ class SendToViewModel(
             media = pending?.media,
             replyGroupId = pending?.replyToPostId?.let { pending.contextGroupId },
             micAvailable = voiceRecorderAvailable,
-            voiceCoachVisible = voiceRecorderAvailable && !prefs.voiceCoachDone,
         ),
     )
     val ui: StateFlow<UiState> = state.asStateFlow()
@@ -105,6 +113,8 @@ class SendToViewModel(
     private val events = Channel<Event>(Channel.BUFFERED)
     val event: Flow<Event> = events.receiveAsFlow()
 
+    private val sender = PostSend(data, viewModelScope)
+    private var sentTo: List<String> = emptyList()
     private var preselected = false
     private var loadJob: Job? = null
 
@@ -113,8 +123,27 @@ class SendToViewModel(
         viewModelScope.launch {
             val premium = runCatching { data.isPremium() }.getOrDefault(false)
             state.update { it.copy(premium = premium) }
-            // A picked video by a free member: the paywall once per session; otherwise send stays hidden.
+            // A picked video by a free member: the paywall once per session; otherwise Send stays disabled.
             if (!premium && pending?.media?.kind == MediaKind.Video && gate.tryClaim()) events.send(Event.OpenPaywall)
+        }
+        viewModelScope.launch {
+            sender.status.collect { status ->
+                when (status) {
+                    PostSend.Status.Idle -> state.update { it.copy(sending = false) }
+                    PostSend.Status.Sending -> state.update { it.copy(sending = true, alert = null) }
+                    is PostSend.Status.Sent -> {
+                        // The queue copied the files: drop ours.
+                        handoff.discard()
+                        state.value.voice?.file?.delete()
+                        state.update { it.copy(sending = false) }
+                        events.send(Event.Sent(sentTo))
+                    }
+                    is PostSend.Status.Failed -> {
+                        state.update { it.copy(sending = false, alert = Alert.SendFailed(status.offline)) }
+                        events.send(Event.Failed)
+                    }
+                }
+            }
         }
     }
 
@@ -157,13 +186,13 @@ class SendToViewModel(
     }
 
     fun toggle(groupId: String) {
-        if (state.value.replyGroupId != null) return
+        if (state.value.replyGroupId != null || state.value.sending) return
         state.update { s -> s.copy(selected = if (groupId in s.selected) s.selected - groupId else s.selected + groupId) }
     }
 
     /**
-     * Typed on the photo; `camera.sendto.size.captionMaxLength` caps it (UTF-16 units, as the
-     * reference's text input counts) without splitting an emoji's surrogate pair. No counter.
+     * The message from the "Add a Message" sheet; input stops at `camera.sendto.size.captionMaxLength`
+     * (UTF-16 units, as the counter counts) without splitting an emoji's surrogate pair.
      */
     fun onCaption(text: String) = state.update { it.copy(caption = maxCaption?.let { max -> capCaption(text, max) } ?: text) }
 
@@ -173,28 +202,50 @@ class SendToViewModel(
         return text.substring(0, end)
     }
 
-    fun dismissVoiceCoach() {
-        prefs.voiceCoachDone = true
-        state.update { it.copy(voiceCoachVisible = false) }
-    }
-
     fun onVoiceRecording(recording: Boolean, startedAt: Long? = null) {
-        if (recording) dismissVoiceCoach()
-        state.update { it.copy(recordingVoice = recording, voiceLocked = false, recordingStartedAt = if (recording) startedAt else null) }
+        state.update { it.copy(recordingVoice = recording, recordingStartedAt = if (recording) startedAt else null) }
     }
-
-    fun onVoiceLocked() = state.update { if (it.recordingVoice) it.copy(voiceLocked = true) else it }
 
     fun onVoiceNote(note: VoiceNoteFile?) {
         state.value.voice?.file?.takeIf { it != note?.file }?.delete()
-        state.update { it.copy(voice = note, recordingVoice = false, voiceLocked = false, recordingStartedAt = null) }
+        state.update { it.copy(voice = note, recordingVoice = false, recordingStartedAt = null) }
     }
 
-    /** ✕: discards the capture, caption and voice note (no confirmation observed). */
+    /** Removes the recorded note (its menu's "Delete recording"). */
+    fun deleteVoice() = onVoiceNote(null)
+
+    /** ✕: back to the camera, discarding the capture; asks first when a message or voice note exists. */
     fun close() {
+        if (state.value.sending) return
+        if (state.value.hasAdditions) {
+            state.update { it.copy(alert = Alert.Discard) }
+        } else {
+            discardAndClose()
+        }
+    }
+
+    /** "Yes, go back" in the discard alert. */
+    fun confirmDiscard() {
+        state.update { it.copy(alert = null) }
+        discardAndClose()
+    }
+
+    private fun discardAndClose() {
         handoff.discard()
         state.value.voice?.file?.delete()
         events.trySend(Event.Close)
+    }
+
+    /** Dismisses the alert on screen ("Cancel"): a failed send's draft is withdrawn; everything else stays. */
+    fun dismissAlert() {
+        if (state.value.alert is Alert.SendFailed) sender.cancel()
+        state.update { it.copy(alert = null) }
+    }
+
+    /** "Try Again" in the failure alert. */
+    fun retry() {
+        state.update { it.copy(alert = null) }
+        sender.retry()
     }
 
     fun save() {
@@ -205,36 +256,27 @@ class SendToViewModel(
         events.trySend(Event.CreateGroup)
     }
 
-    /** Queues the post for every selected group and closes; the toast host follows the upload. */
+    /** Sends to every selected group; the sheet stays open (busy) until the post exists. */
     fun send() {
         val s = state.value
         val media = s.media ?: return
-        if (!s.sendVisible) return
+        if (!s.sendEnabled) return
         val order = s.visibleGroups.filter { it.id in s.selected }
+        sentTo = order.map { it.name }
         val caption = s.caption.trim().takeIf { it.isNotEmpty() }
-        val post = NewPost(
-            kind = media.kind,
-            original = media.file,
-            width = media.width,
-            height = media.height,
-            durationMs = media.durationMs,
-            voice = s.voice?.file,
-            voiceDurationMs = s.voice?.durationMs,
-            groupIds = order.map { it.id },
-            caption = caption,
-            replyToPostId = pending?.replyToPostId,
+        sender.send(
+            NewPost(
+                kind = media.kind,
+                original = media.file,
+                width = media.width,
+                height = media.height,
+                durationMs = media.durationMs,
+                voice = s.voice?.file,
+                voiceDurationMs = s.voice?.durationMs,
+                groupIds = order.map { it.id },
+                caption = caption,
+                replyToPostId = pending?.replyToPostId,
+            ),
         )
-        val draftId = try {
-            data.enqueue(post)
-        } catch (e: DataException) {
-            state.update { it.copy(sendError = e.error) }
-            return
-        }
-        tracker.track(draftId, order.map { it.name })
-        // The queue copied the files: drop ours.
-        handoff.discard()
-        s.voice?.file?.delete()
-        state.update { it.copy(sendError = null) }
-        events.trySend(Event.Sent)
     }
 }

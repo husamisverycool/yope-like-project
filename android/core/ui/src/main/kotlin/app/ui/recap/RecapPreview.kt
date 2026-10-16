@@ -128,12 +128,8 @@ data class RecapPill(
 
 /** Values of the recap preview shared by its callers. */
 object RecapPreviewDefaults {
-    /**
-     * Blur of the backdrop (`layout.global.materials.backdrop`). Retro's radius is not measurable yet (C-34 Gap);
-     * the lead is adding `size.global.backdropBlur` — switch this one line to it when it lands. Same value as
-     * the C-34 component snapshots.
-     */
-    val BackdropBlur: Dp get() = Tokens.Sizes.globalScreenMargin * 2
+    /** Blur σ of the backdrop (`size.global.backdropBlur`, fitted on ST-04 — MERGE_DECISIONS L-5). */
+    val BackdropBlur: Dp get() = Tokens.Sizes.globalBackdropBlur
 
     private val screen get() = Tokens.Layouts.CollageViewLayoutScreen
 

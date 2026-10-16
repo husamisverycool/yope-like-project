@@ -1,131 +1,147 @@
-// Surface: invite.web — reference app: Partiful (event invite page).
-// Reference images: references/auto/partiful/web/pf-web-private-past-01..03.png (closest analogue:
-// link-only event, logged out), pf-web-public-light-01..04.png, pf-web-public-dark-01..04.png,
-// pf-web-notfound-01.png. Build spec: design/surfaces/invite.web.md.
+// Surface: invite.web — reference: Retro's /u/[username] invite page.
+// Reference images: references/auto/retro/web/retro.app-u-nathan-iphone.png, retro.app-u-nathan-pixel7.png
+// (mobile card), retro.app-u-nathan-desktop.png (desktop column: QR with the inviter's photo in its centre, then
+// headline and line — the order of Retro's DOM, references/auto/retro/web/retro.app-web-copy-excerpts.txt
+// "ProfilePageContent,children:[QR(data, profilePhotoURL), h1, p]"), retro.app-og-userogsquare-nathan.png (share
+// image). Build spec: design/surfaces/invite.web.md.
 //
-// Server-rendered HTML for every state of GET /i/:token. No script; the member list disclosure is
-// a native <details> element. Every word comes from copy (text()), every value from tokens (via the
-// stylesheet); database values are escaped.
+// Server-rendered HTML for every state of GET /i/:token. Every word comes from copy (text()), every value from
+// tokens (via the stylesheet); database values are escaped. The only script is the "Let's go" busy state
+// (aria-busy + "Opening…"); without it the pill is a plain link.
 
-import { text, tokens } from "../design.js";
+import { num, text, type RequiredCopyKey } from "../design.js";
 import type { LoadedInvite } from "../inviteService.js";
-import { defaultTheme, type Theme } from "../theme.js";
-import { titleSteps } from "../titleFit.js";
-import { inviteCss, stateCss } from "./css.js";
+import { InviteService } from "../inviteService.js";
+import { pageCss } from "./css.js";
 import { esc } from "./html.js";
 import { icon } from "./icons.js";
+import { qrSvg } from "./qr.js";
+import { OG_HEIGHT, OG_WIDTH } from "../images.js";
 
 export interface PageContext {
-  /** CSP nonce for the inline stylesheet. */
+  /** CSP nonce for the inline stylesheet and script. */
   nonce: string;
-  /** Where "Get the app" goes for this visitor (null while the store id is BLOCKED). */
-  getAppUrl: string | null;
-  /** Content of <meta name="apple-itunes-app">, or null while its ids are BLOCKED. */
-  smartBanner: string | null;
-  /** Absolute origin for og:url / og:image, e.g. https://example.com */
+  /** Absolute origin of invite links, e.g. https://example.com */
   origin: string;
+  /** The app's name for {app_name}, or null while BLOCKED. */
+  appName: string | null;
+  /** "Let's go" (mobile): App Clip on iOS, Play on Android, else a store; null while BLOCKED. */
+  letsGoUrl: string | null;
+  /** "Download the app" (desktop) and the error state's store fallback; null while BLOCKED. */
+  getAppUrl: string | null;
+  /** apple-itunes-app content without app-argument, or null while its ids are BLOCKED. */
+  smartBanner: string | null;
+  termsUrl: string | null;
+  privacyUrl: string | null;
 }
 
-const OG_WIDTH = (tokens["invite.web.layout.ogImage"] as { width: number }).width;
-const OG_HEIGHT = (tokens["invite.web.layout.ogImage"] as { height: number }).height;
-const COLUMN_MIN = 0;
-const COLUMN_MAX = (tokens["invite.web.dimension.columnMaxWidth"] as number) - 2 * (tokens["invite.web.dimension.margin"] as number);
+/** How many avatars of `diameter` overlapping by `overlap` fit in `width` (C-23: never a "+N"). */
+export function fittingCount(width: number, diameter: number, overlap: number): number {
+  if (diameter <= 0 || width < diameter) return 0;
+  return Math.floor((width - diameter) / (diameter - overlap) + 1e-9) + 1;
+}
 
-function head(title: string, css: string, ctx: PageContext, extra: string): string {
+const MEMBERS_SHOWN = fittingCount(num("invite.web.size.textMaxWidth"), num("size.global.avatarSmall"), num("size.global.avatarStackOverlap"));
+
+const title = (ctx: PageContext, t: string) => text("invite.web.documentTitle", { title: t, ...(ctx.appName ? { app_name: ctx.appName } : {}) });
+
+function head(ctx: PageContext, documentTitle: string, extra = ""): string {
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, noimageindex">
 <meta name="referrer" content="no-referrer">
-<title>${esc(title)}</title>
-<meta property="og:title" content="${esc(title)}">
-<meta name="twitter:title" content="${esc(title)}">
-${extra}<style nonce="${ctx.nonce}">${css}</style>
+<title>${esc(documentTitle)}</title>
+${extra}<style nonce="${ctx.nonce}">${pageCss()}</style>
 </head>`;
 }
 
-/** "Get the app" link; without a destination while the store id is BLOCKED (development only). */
-function getAppLink(url: string | null, className: string, inner: string, newTab: boolean): string {
-  if (!url) return `<a class="${className}" aria-disabled="true" data-blocked="ios.appStoreId">${inner}</a>`;
+/** A link, or — while its destination is BLOCKED (development only) — the same element without one. */
+function link(url: string | null, attrs: string, inner: string, blockedKey: string, newTab = false): string {
+  if (!url) return `<a ${attrs} aria-disabled="true" data-blocked="${blockedKey}">${inner}</a>`;
   const target = newTab ? ` target="_blank" rel="noopener noreferrer"` : ` rel="noreferrer"`;
-  return `<a class="${className}" href="${esc(url)}"${target}>${inner}</a>`;
+  return `<a ${attrs} href="${esc(url)}"${target}>${inner}</a>`;
 }
 
+/**
+ * "Terms & Privacy" (design/surfaces/invite.web.md "Footer"; Retro: Terms<span>&nbsp;&amp;&nbsp;</span>Privacy). The
+ * joining ampersand is the spec's own text between the two copy strings.
+ */
 function footer(ctx: PageContext): string {
-  const inner = `<span>${esc(text("invite.web.getApp"))}</span>${icon("invite.web.icon.getApp", "")}`;
-  return `<footer><div class="divider"></div><div class="footer-content">${getAppLink(ctx.getAppUrl, "get-app", inner, true)}</div></footer>`;
+  const terms = link(ctx.termsUrl, `class="hit"`, esc(text("invite.web.footer.terms")), "legal.termsUrl", true);
+  const privacy = link(ctx.privacyUrl, `class="hit"`, esc(text("invite.web.footer.privacy")), "legal.privacyUrl", true);
+  return `<footer class="footer">${terms}&nbsp;&amp;&nbsp;${privacy}</footer>`;
 }
 
-/** First grapheme of a first name, upper-cased (initials disc for members without a photo). */
-export function initial(name: string): string {
-  const seg = new Intl.Segmenter(undefined, { granularity: "grapheme" });
-  const first = seg.segment(name.trim())[Symbol.iterator]().next().value?.segment ?? "";
-  return first.toLocaleUpperCase();
-}
+const BUSY_SCRIPT = `for(const a of document.querySelectorAll("a.pill[href][data-opens]"))a.addEventListener("click",()=>a.setAttribute("aria-busy","true"));addEventListener("pageshow",()=>{for(const a of document.querySelectorAll("a.pill[aria-busy]"))a.removeAttribute("aria-busy")});`;
 
-function avatarCell(token: string, invite: LoadedInvite, i: number, decorative: boolean): string {
+function memberCell(token: string, invite: LoadedInvite, i: number): string {
   const name = invite.preview.members[i]!.first_name;
-  if (invite.avatarIndexes.has(i)) {
-    const alt = decorative || !name ? "" : esc(name);
-    return `<img class="avatar" src="/i/${token}/avatar/${i}.jpg" alt="${alt}" width="${tokens["invite.web.dimension.avatar"]}" height="${tokens["invite.web.dimension.avatar"]}" decoding="async">`;
-  }
-  const letter = name ? esc(initial(name)) : "";
-  if (decorative || !name) return `<span class="initials" aria-hidden="true">${letter}</span>`;
-  return `<span class="initials" role="img" aria-label="${esc(name)}">${letter}</span>`;
+  const label = name ? esc(text("invite.web.avatar.alt", { first_name: name })) : "";
+  if (invite.avatarIndexes.has(i)) return `<li><img class="member" src="/i/${token}/avatar/${i}.jpg" alt="${label}" decoding="async"></li>`;
+  const a11y = name ? `role="img" aria-label="${label}"` : `aria-hidden="true"`;
+  return `<li><span class="member" ${a11y}>${icon("icon.global.person", "")}</span></li>`;
+}
+
+function inviterAvatar(token: string, invite: LoadedInvite): string {
+  const name = invite.preview.inviter_first_name;
+  const label = name ? esc(text("invite.web.avatar.alt", { first_name: name })) : "";
+  const i = invite.inviterIndex;
+  if (i !== null && invite.avatarIndexes.has(i)) return `<img class="avatar" src="/i/${token}/avatar/${i}.jpg" alt="${label}">`;
+  return `<span class="avatar" ${name ? `role="img" aria-label="${label}"` : `aria-hidden="true"`}></span>`;
 }
 
 export function invitePage(token: string, invite: LoadedInvite, ctx: PageContext): string {
   const p = invite.preview;
-  const title = text("invite.web.documentTitle", { title: p.group_name });
+  const inviteUrl = `${ctx.origin}/i/${token}`;
   const coverAlt = text("invite.web.cover.alt", { group_name: p.group_name });
-  const og = invite.cover
-    ? `<meta property="og:image" content="${esc(`${ctx.origin}/i/${token}/og.jpg`)}">
-<meta property="og:image:type" content="image/jpeg">
+  const ogTitle = text("invite.web.og.title", { group_name: p.group_name });
+  const ogDescription = text("invite.web.og.description");
+  const ogImage = `${inviteUrl}/og.png`;
+  const meta = `<meta property="og:type" content="website">
+<meta property="og:url" content="${esc(inviteUrl)}">
+<meta property="og:title" content="${esc(ogTitle)}">
+<meta property="og:description" content="${esc(ogDescription)}">
+<meta property="og:image" content="${esc(ogImage)}">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="${OG_WIDTH}">
 <meta property="og:image:height" content="${OG_HEIGHT}">
 <meta property="og:image:alt" content="${esc(coverAlt)}">
-<meta name="twitter:image" content="${esc(`${ctx.origin}/i/${token}/og.jpg`)}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(ogTitle)}">
+<meta name="twitter:description" content="${esc(ogDescription)}">
+<meta name="twitter:image" content="${esc(ogImage)}">
 <meta name="twitter:image:alt" content="${esc(coverAlt)}">
-`
-    : "";
-  const extra = `<meta property="og:type" content="website">
-<meta property="og:url" content="${esc(`${ctx.origin}/i/${token}`)}">
-<meta name="twitter:card" content="${esc(String((tokens["invite.web.layout.linkPreview"] as { twitterCard: string }).twitterCard))}">
-${og}${ctx.smartBanner ? `<meta name="apple-itunes-app" content="${esc(ctx.smartBanner)}">\n` : ""}`;
+${ctx.smartBanner ? `<meta name="apple-itunes-app" content="${esc(`${ctx.smartBanner}, app-argument=${inviteUrl}`)}">\n` : ""}`;
 
-  const steps = titleSteps(p.group_name, COLUMN_MIN, COLUMN_MAX);
-  const cover = invite.cover
-    ? `<img class="cover" src="/i/${token}/cover.jpg" width="${invite.cover.width}" height="${invite.cover.height}" alt="${esc(coverAlt)}">`
+  const source = InviteService.backdropSource(invite);
+  const backdrop = source ? `<img class="backdrop" src="/i/${token}/backdrop.png" alt="${source === "cover" ? esc(coverAlt) : ""}">\n` : "";
+  const headline = p.inviter_first_name ? text("invite.web.invitedBy", { first_name: p.inviter_first_name }) : text("invite.web.invitedFallback");
+  const shown = p.members.slice(0, MEMBERS_SHOWN);
+  const members = shown.length
+    ? `<ul class="members mobile-only" aria-label="${esc(text("invite.web.members.title", { group_name: p.group_name }))}">${shown.map((_, i) => memberCell(token, invite, i)).join("")}</ul>\n`
     : "";
-  const invitedBy = p.inviter_first_name ? `<p class="field">${esc(text("invite.web.invitedBy", { first_name: p.inviter_first_name }))}</p>` : "";
-  const avatars = p.members.map((_, i) => `<li>${avatarCell(token, invite, i, false)}</li>`).join("");
-  const rows = p.members
-    .map((m, i) => `<li class="row">${avatarCell(token, invite, i, true)}${m.first_name ? `<span class="row-name">${esc(m.first_name)}</span>` : ""}</li>`)
-    .join("");
+  const pillInner = `<span class="label">${esc(text("invite.web.cta"))}</span><span class="busy">${esc(text("invite.web.opening"))}</span>`;
 
-  return `${head(title, inviteCss(invite.theme, steps), ctx, extra)}
+  return `${head(ctx, title(ctx, p.group_name), meta)}
 <body>
 <div class="page">
-<main class="column invite">
-<h1 class="title">${esc(p.group_name)}</h1>
-${cover}
-${invitedBy}
-<section class="members" aria-labelledby="members-title">
-<div class="members-head"><h2 class="section-title" id="members-title">${esc(text("invite.web.members.title"))}</h2></div>
-<ul class="avatars" aria-labelledby="members-title">${avatars}</ul>
-<details class="all"><summary class="btn btn-outlined">${esc(text("invite.web.members.viewAll"))}</summary><ul class="rows" aria-labelledby="members-title">${rows}</ul></details>
-</section>
-<section class="gate" aria-labelledby="gate-title">
-${icon("invite.web.icon.lock", "lock")}
-<h2 class="section-title" id="gate-title">${esc(text("invite.web.gate.title"))}</h2>
-<p class="gate-body">${esc(text("invite.web.gate.body"))}</p>
-${getAppLink(ctx.getAppUrl, "btn btn-filled", esc(text("invite.web.getApp")), false)}
-</section>
-</main>
+<main class="card">
+${backdrop}<div class="hero">${qrSvg(inviteUrl, "qr")}${inviterAvatar(token, invite)}</div>
+<div class="text">
+<h1 class="headline">${esc(headline)}</h1>
+<p class="line mobile-only">${esc(text("invite.web.body", { group_name: p.group_name }))}</p>
+<p class="line desktop-only">${esc(text("invite.web.desktop.scan", { group_name: p.group_name }))}</p>
+${members}</div>
+${link(ctx.letsGoUrl, `class="pill mobile-only" data-opens`, pillInner, "ios.appStoreId")}
+${link(ctx.getAppUrl, `class="link hit desktop-only"`, esc(text("invite.web.getApp")), "ios.appStoreId")}
 ${footer(ctx)}
+</main>
 </div>
+<script nonce="${ctx.nonce}">${BUSY_SCRIPT}</script>
 </body>
 </html>
 `;
@@ -133,36 +149,34 @@ ${footer(ctx)}
 
 export type StateKind = "not_found" | "unavailable" | "error" | "rate_limited";
 
+const STATE: Record<StateKind, { title: RequiredCopyKey; body: RequiredCopyKey | null }> = {
+  not_found: { title: "invite.web.notFound.title", body: null },
+  unavailable: { title: "invite.web.unavailable.title", body: "invite.web.unavailable.body" },
+  error: { title: "invite.web.error.title", body: "invite.web.error.body" },
+  rate_limited: { title: "invite.web.error.title", body: "invite.web.rateLimited.body" },
+};
+
+/** Every non-ideal state: the same card / column, title + explanation, the retry action only for errors. */
 export function statePage(kind: StateKind, ctx: PageContext & { retryUrl?: string }): string {
-  const theme: Theme = defaultTheme();
-  const heading = {
-    not_found: text("invite.web.notFound.title"),
-    unavailable: text("invite.web.unavailable.title"),
-    error: text("invite.web.error.title"),
-    rate_limited: text("invite.web.error.title"),
-  }[kind];
-  const shortTitle = kind === "not_found" ? text("invite.web.notFound.documentTitle") : heading;
-  const body = {
-    not_found: "",
-    unavailable: text("invite.web.unavailable.body"),
-    error: text("invite.web.error.body"),
-    rate_limited: text("invite.web.rateLimited.body"),
-  }[kind];
-  const action =
+  const s = STATE[kind];
+  const heading = text(s.title);
+  const documentTitle = kind === "not_found" ? text("invite.web.notFound.documentTitle") : heading;
+  const retry =
     kind === "error" && ctx.retryUrl
-      ? `<a class="btn btn-filled" href="${esc(ctx.retryUrl)}">${esc(text("invite.web.error.retry"))}</a>`
+      ? `<a class="pill mobile-only" href="${esc(ctx.retryUrl)}">${esc(text("invite.web.error.retry"))}</a>
+<a class="link hit desktop-only" href="${esc(ctx.retryUrl)}">${esc(text("invite.web.error.retry"))}</a>
+`
       : "";
-  return `${head(text("invite.web.documentTitle", { title: shortTitle }), stateCss(theme), ctx, "")}
+  return `${head(ctx, title(ctx, documentTitle))}
 <body>
 <div class="page">
-<div class="header-space"></div>
-<main class="column state">
-<div class="glyph" role="img" aria-label="${esc(text("invite.web.state.glyphLabel"))}">${esc(text("invite.web.state.glyph"))}</div>
-<h1 class="state-title">${esc(heading)}</h1>
-${body ? `<p class="state-body">${esc(body)}</p>` : ""}
-${action}
+<main class="card">
+<div class="hero"></div>
+<div class="text">
+<h1 class="headline">${esc(heading)}</h1>
+${s.body ? `<p class="line">${esc(text(s.body))}</p>\n` : ""}</div>
+${retry}${footer(ctx)}
 </main>
-${footer(ctx)}
 </div>
 </body>
 </html>

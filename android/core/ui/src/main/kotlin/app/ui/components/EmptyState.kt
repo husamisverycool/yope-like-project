@@ -40,7 +40,8 @@ data class EmptyStateAction(val text: String, val onClick: () -> Unit, val icon:
  * `color.global.textPrimary`, Sentence case, header trait) → optional [detail] (text role `emptyDetail`,
  * secondary text, ≤ 2 lines, directly under the title — its gap is not measured) → `size.global.emptyTitleToAction`
  * from the last baseline to the capsule top → [action]. Side margins `size.global.screenMargin`. Place it with
- * [EmptyStateFill] (centred in the free space between the content above and the tab bar, H43).
+ * [EmptyStateFill] (centred in the free space between the content above and the tab bar, H43). [alignment] Start draws the
+ * same block left-aligned inside a section (the permission block of a list section, e.g. the invite sheet's Contacts).
  */
 @Composable
 fun EmptyState(
@@ -49,9 +50,11 @@ fun EmptyState(
     modifier: Modifier = Modifier,
     action: EmptyStateAction? = null,
     icon: ImageVector? = null,
+    alignment: Alignment.Horizontal = Alignment.CenterHorizontally,
 ) {
     val titleStyle = TextRoles.emptyTitle
-    Column(modifier.padding(horizontal = Tokens.Sizes.globalScreenMargin), horizontalAlignment = Alignment.CenterHorizontally) {
+    val textAlign = if (alignment == Alignment.Start) TextAlign.Start else TextAlign.Center
+    Column(modifier.padding(horizontal = Tokens.Sizes.globalScreenMargin), horizontalAlignment = alignment) {
         if (icon != null) Icon(icon, contentDescription = null, tint = Tokens.Colors.globalTextPrimary, modifier = Modifier.size(Tokens.Sizes.globalEmptyIcon))
         val afterLast = if (action != null) Tokens.Sizes.globalEmptyTitleToAction else Dp.Unspecified
         if (title != null) {
@@ -59,7 +62,7 @@ fun EmptyState(
                 title,
                 style = titleStyle,
                 color = Tokens.Colors.globalTextPrimary,
-                textAlign = TextAlign.Center,
+                textAlign = textAlign,
                 modifier = Modifier
                     .capTopAt(if (icon != null) Tokens.Sizes.globalEmptyIconToTitle else Dp.Unspecified, CapTop.height(titleStyle))
                     .then(if (detail == null && afterLast != Dp.Unspecified) Modifier.paddingFrom(LastBaseline, after = afterLast) else Modifier)
@@ -71,7 +74,7 @@ fun EmptyState(
                 detail,
                 style = TextRoles.emptyDetail,
                 color = PageRoles.secondaryText(),
-                textAlign = TextAlign.Center,
+                textAlign = textAlign,
                 maxLines = DETAIL_MAX_LINES,
                 modifier = if (afterLast != Dp.Unspecified) Modifier.paddingFrom(LastBaseline, after = afterLast) else Modifier,
             )

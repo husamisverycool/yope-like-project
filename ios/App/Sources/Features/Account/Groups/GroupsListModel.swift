@@ -1,11 +1,12 @@
-// Account group — groups.list state: the person's groups with their newest post, newest activity first; cached rows
-// offline; realtime inserts / deletions and foreground refetches update the subtitles and the cover (docs/API.md §5.8, §8).
+// Account group — groups.list state: the person's groups with their newest post and members, newest activity first;
+// cached rows offline; realtime inserts / deletions and foreground refetches update the subtitles and the order
+// (docs/API.md §5.4, §5.8, §8).
 import AppData
 import AppModels
 import Foundation
 import Observation
 
-/// One card of the home list.
+/// One row of the home list (C-15).
 struct GroupRow: Identifiable, Equatable {
     let group: PhotoGroup
     /// The group's newest post (nil: no pics yet).
@@ -14,6 +15,12 @@ struct GroupRow: Identifiable, Equatable {
     var senderFirstName: String?
     /// The newest post is the viewer's own (`groups.list.row.newPic`).
     var isOwnPost: Bool
+    /// Members in joining order (the avatar stack; never a count).
+    var members: [MemberProfile] = []
+    /// The creator's first name for `groups.list.row.createdBy` (nil when unknown).
+    var creatorFirstName: String?
+    /// The viewer created the group (`groups.list.row.createdByYou`).
+    var isCreatedByMe = false
 
     var id: GroupID { group.id }
     /// Newest activity: the newest post, else the group's creation.
@@ -37,9 +44,7 @@ final class GroupsListModel {
 
     private(set) var rows: [GroupRow] = []
     private(set) var phase: Phase = .loading
-    /// The person's avatar (tab bar "me").
-    private(set) var avatarPath: String?
-    /// The person's first name (cover label when the newest photo is their own).
+    /// The person's first name.
     private(set) var myFirstName: String?
 
     private let data: AccountDataSource
@@ -49,15 +54,15 @@ final class GroupsListModel {
         self.data = data
     }
 
-    /// The cover header: the row whose newest post is the newest photo across the groups.
-    var coverRow: GroupRow? {
-        rows.filter { $0.newest?.media != nil }.max { $0.activity < $1.activity }
-    }
-
     /// First load: cached groups at once, then the server's.
     func load() async {
         if rows.isEmpty, let cached = await data.cachedGroups(), !cached.isEmpty {
-            rows = cached.map { GroupRow(group: $0, newest: nil, senderFirstName: nil, isOwnPost: false) }
+            var cachedRows: [GroupRow] = []
+            for group in cached {
+                let members = await data.cachedMembers(groupID: group.id) ?? []
+                cachedRows.append(GroupRow(group: group, newest: nil, senderFirstName: nil, isOwnPost: false, members: Self.joiningOrder(members)))
+            }
+            rows = cachedRows
             phase = .loaded
         }
         await refresh()
@@ -75,21 +80,34 @@ final class GroupsListModel {
             return
         }
         if let profile = try? await data.myProfile() {
-            avatarPath = profile.avatarPath
             myFirstName = profile.firstName
         }
         let me = data.currentUserID
         var newest: [GroupID: PostWithMedia] = [:]
+        var members: [GroupID: [MemberProfile]] = [:]
         for group in groups {
             if let post = try? await data.newestPost(groupID: group.id) {
                 newest[group.id] = post
             } else if let existing = rows.first(where: { $0.id == group.id })?.newest {
                 newest[group.id] = existing
             }
+            if let fresh = try? await data.members(groupID: group.id) {
+                members[group.id] = Self.joiningOrder(fresh)
+            } else {
+                members[group.id] = rows.first(where: { $0.id == group.id })?.members ?? []
+            }
         }
-        let authorIDs = Set(newest.values.map(\.post.authorID)).filter { $0 != me }
-        let profiles = (try? await data.profiles(ids: Array(authorIDs))) ?? []
-        let names = Dictionary(profiles.map { ($0.id, $0.firstName) }, uniquingKeysWith: { first, _ in first })
+        // First names of the newest posts' authors and of the creators, from the member rows (then `profiles`).
+        var names: [UserID: String] = [:]
+        for profile in members.values.flatMap({ $0 }).compactMap(\.profile) {
+            if let first = profile.firstName { names[profile.id] = first }
+        }
+        let missing = Set(newest.values.map(\.post.authorID) + groups.compactMap(\.createdBy)).filter { $0 != me && names[$0] == nil }
+        if !missing.isEmpty, let profiles = try? await data.profiles(ids: Array(missing)) {
+            for profile in profiles {
+                if let first = profile.firstName { names[profile.id] = first }
+            }
+        }
         rows = groups.map { group -> GroupRow in
             let post = newest[group.id]
             let isOwn = post.map { $0.post.authorID == me } ?? false
@@ -97,14 +115,28 @@ final class GroupsListModel {
             if let post, !isOwn, let name = names[post.post.authorID] {
                 sender = name
             }
-            return GroupRow(group: group, newest: post, senderFirstName: sender, isOwnPost: isOwn)
+            let createdByMe = group.createdBy != nil && group.createdBy == me
+            return GroupRow(
+                group: group,
+                newest: post,
+                senderFirstName: sender,
+                isOwnPost: isOwn,
+                members: members[group.id] ?? [],
+                creatorFirstName: createdByMe ? nil : group.createdBy.flatMap { names[$0] },
+                isCreatedByMe: createdByMe
+            )
         }
         .sorted { $0.activity > $1.activity }
         phase = rows.isEmpty ? .empty : .loaded
         followRealtime()
     }
 
-    /// Retry pill of the error state.
+    /// Members by `joined_at` (the stack's order).
+    static func joiningOrder(_ members: [MemberProfile]) -> [MemberProfile] {
+        members.sorted { $0.member.joinedAt < $1.member.joinedAt }
+    }
+
+    /// The error line's retry (tap).
     func retry() async {
         phase = .loading
         await refresh()
@@ -167,9 +199,8 @@ final class GroupsListModel {
     // MARK: Previews and tests
 
     /// Seeds a state directly (snapshot tests).
-    func seed(rows: [GroupRow], phase: Phase, avatarPath: String? = nil) {
+    func seed(rows: [GroupRow], phase: Phase) {
         self.rows = rows
         self.phase = phase
-        self.avatarPath = avatarPath
     }
 }

@@ -1,72 +1,56 @@
-// Surface: photo.viewer — full photo: caption, voice note, reactions, reply, "i'm in this", delete, report, save.
-// References: references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.07-photo-viewer.png (primary),
-// references/auto/yope/frames/b-yopeapp-7591560669967682847-t57.20-viewer-swipe-start.png (swipe),
-// references/auto/locket/store/locket-store-08.png (quick reactions), references/auto/locket/store/locket-store-04.png (cluster),
-// references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (••• menu).
+// Surface: photo.viewer — design/surfaces/photo.viewer.md
+// References: references/auto/retro/press/tc-2023-07-retro-2b.jpg phone 2 (primary: header, photo, footer, hairline,
+// comment rows, comment field), references/auto/retro/press/tc-2023-12-retro3.png phone 1 (black viewer in light mode),
+// references/auto/retro/web/retro.app-j-welcome-iphone-full.png ("1 of N" pill, close circle), references/auto/retro/press/
+// tc-2025-12-rewind-panels.png (native menu with red destructive items).
 package app.feature.social.viewer
 
-import android.Manifest
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionOnScreen
-import androidx.compose.ui.unit.toSize
-import app.feature.social.chat.SendCircle
-import app.feature.social.reactions.FlightLayer
-import app.feature.social.reactions.LocalReactionFlights
-import app.feature.social.reactions.ReactionFlights
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.FirstBaseline
-import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
@@ -76,139 +60,159 @@ import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.min
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.data.media.StoragePaths
 import app.data.model.Media
+import app.data.model.Message
 import app.designsystem.R
 import app.designsystem.generated.Tokens
-import app.designsystem.rememberReduceMotion
-import app.feature.social.chat.CapsuleField
-import app.feature.social.chat.CircleButton
-import app.feature.social.chat.VoiceBubble
-import app.feature.social.common.Avatar
-import app.feature.social.common.ConfirmationToast
-import app.feature.social.common.EmptyState
+import app.feature.social.chat.FieldGlyph
+import app.feature.social.chat.endInset
+import app.feature.social.chat.glyphHit
+import app.feature.social.chat.MessageField
+import app.feature.social.chat.VoiceCapsule
+import app.feature.social.chat.VoiceUi
+import app.feature.social.chat.voiceStateOf
+import app.feature.social.common.BuildApproximations
 import app.feature.social.common.Formats
-import app.feature.social.common.Glyph
-import app.feature.social.common.InkGlyph
-import app.feature.social.common.Line
 import app.feature.social.common.LocalApproximations
-import app.feature.social.common.LocalPhotoOverride
 import app.feature.social.common.LocalSocialData
 import app.feature.social.common.LocalSocialServices
+import app.feature.social.common.MediaAppearance
+import app.feature.social.common.PersonAvatar
+import app.feature.social.common.PhotoSaveUi
 import app.feature.social.common.RemotePhoto
-import app.feature.social.common.Type
+import app.feature.social.common.SocialBlocked
+import app.feature.social.common.SystemAppearance
 import app.feature.social.common.announce
-import app.feature.social.common.rememberHaptics
+import app.feature.social.common.rememberPhotoSaver
 import app.feature.social.common.stringRes
-import app.feature.social.data.VoicePlayback
-import app.feature.social.data.VoiceServices
-import app.feature.social.reactions.ActivitySheet
-import app.feature.social.reactions.EmojiCatalog
-import app.feature.social.reactions.EmojiGlyph
-import app.feature.social.reactions.EmojiRain
-import app.feature.social.reactions.ReactionCluster
+import app.feature.social.reactions.PhotoContextMenu
+import app.feature.social.reactions.ReactionChip
 import app.feature.social.reactions.ReactionPickerSheet
-import app.ui.components.PermissionCard
-import coil3.SingletonImageLoader
-import coil3.request.ImageRequest
-import kotlinx.coroutines.flow.distinctUntilChanged
+import app.feature.social.reactions.Reactor
+import app.feature.social.reactions.ReactionsSheet
+import app.ui.components.EmptyState
+import app.ui.components.EmptyStateFill
+import app.ui.components.Hairline
+import app.ui.components.PlatformToast
+import app.ui.components.PositionPill
+import app.ui.components.ViewerTaps
+import app.ui.foundation.GlyphInk
+import app.ui.foundation.endAtLastBaseline
+import app.ui.foundation.tapClickable
+import app.ui.haptics.rememberHaptics
+import app.ui.system.DsDropdownMenu
+import app.ui.system.DsMenuItem
+import app.ui.system.SystemAlertDialog
+import app.ui.text.CapTop
+import app.ui.text.TextRoles
 import kotlinx.coroutines.launch
 
-/** Where the viewer leads. */
+/** Where the viewer leads (photo.viewer.md → Navigation out). */
 data class ViewerNav(
     val close: () -> Unit,
-    /** The sender overlay: `walls.member`, or `walls.mine` for your own photo. */
-    val person: (userId: String, mine: Boolean) -> Unit,
-    /** Reply to the photo with a photo (`camera.capture`, `create_post` `p_reply_to_post_id`). */
+    val person: (userId: String, groupId: String) -> Unit,
+    /** `camera.capture` replying to this photo (`create_post(p_reply_to_post_id)`, exactly this group). */
     val replyWithPhoto: (groupId: String, postId: String) -> Unit,
     val report: (groupId: String, postId: String) -> Unit,
     val block: (userId: String) -> Unit,
 )
 
-/** Transient UI state of the viewer, hoisted for tests. */
-class ViewerUiState(menu: Boolean = false, confirmDelete: Boolean = false, picker: Boolean = false, saveDenied: Boolean = false, coach: Boolean? = null) {
+/** Transient UI state of the viewer (menus, sheets, dialogs), hoisted for tests. */
+class ViewerUiState(
+    menu: Boolean = false,
+    photoMenu: Boolean = false,
+    confirmDelete: Boolean = false,
+    picker: Boolean = false,
+    reactions: Boolean = false,
+    inThisPhoto: Boolean = false,
+    saveDenied: Boolean = false,
+    draft: TextFieldValue? = null,
+) {
     var menu by mutableStateOf(menu)
+    var photoMenu by mutableStateOf(photoMenu)
     var confirmDelete by mutableStateOf(confirmDelete)
     var picker by mutableStateOf(picker)
-    var activity by mutableStateOf(false)
-    var saveDenied by mutableStateOf(saveDenied)
-    var toast by mutableStateOf<String?>(null)
-    var rain by mutableStateOf<Pair<String, Int>?>(null)
-    /** Null = follow the per-account memory. */
-    var coach by mutableStateOf(coach)
+    var reactions by mutableStateOf(reactions)
+    var inThisPhoto by mutableStateOf(inThisPhoto)
+    var commentMenu by mutableStateOf<String?>(null)
+    var confirmUnsend by mutableStateOf<String?>(null)
+    val save = PhotoSaveUi(saveDenied)
+    val fixedDraft = draft
 }
 
 @Composable
 fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiState = remember { ViewerUiState() }) {
     val state by vm.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val view = LocalView.current
+    val view = androidx.compose.ui.platform.LocalView.current
     val haptics = rememberHaptics()
-    val reduceMotion by rememberReduceMotion()
     val services = LocalSocialServices.current
     val voice = remember { services.voice(context) }
-    androidx.compose.runtime.DisposableEffect(voice) { onDispose { voice.release() } }
+    DisposableEffect(voice) { onDispose { voice.release() } }
     val playback by voice.playback.collectAsStateWithLifecycle()
     val data = LocalSocialData.current
     val scope = rememberCoroutineScope()
-    var rainKey by remember { mutableIntStateOf(0) }
 
     val texts = ViewerTexts(
-        saved = stringRes(R.string.photo_viewer_toast_saved),
-        deleted = stringRes(R.string.photo_viewer_toast_deleted),
-        saveFailed = stringRes(R.string.photo_viewer_error_save),
-        deleteFailed = stringRes(R.string.photo_viewer_error_delete),
         sendFailed = stringRes(R.string.chat_thread_sendfailed),
         reactionFailed = stringRes(R.string.chat_reactions_error),
-        playFailed = stringRes(R.string.chat_voice_error_play),
+        deleted = stringRes(R.string.photo_viewer_toast_deleted),
+        deleteFailed = stringRes(R.string.photo_viewer_error_delete),
+        saved = stringRes(R.string.photo_viewer_toast_saved),
+        saveFailed = stringRes(R.string.photo_viewer_error_save),
+        tagError = stringRes(R.string.tagging_error),
+        tagRemoveError = stringRes(R.string.tagging_removeerror),
+        tagNotFound = stringRes(R.string.tagging_notfound),
+        tagOffline = stringRes(R.string.tagging_offline),
     )
     LaunchedEffect(vm) {
         vm.effects.collect { effect ->
             when (effect) {
-                ViewerEffect.Sent -> haptics.play(Tokens.Haptics.globalSend)
-                ViewerEffect.SendFailed -> { haptics.play(Tokens.Haptics.globalError); announce(view, texts.sendFailed) }
-                is ViewerEffect.Rain -> if (!reduceMotion) ui.rain = effect.emoji to ++rainKey
-                ViewerEffect.ReactionFailed -> { haptics.play(Tokens.Haptics.globalError); announce(view, texts.reactionFailed) }
-                ViewerEffect.Deleted -> ui.toast = texts.deleted
-                ViewerEffect.DeleteFailed -> { haptics.play(Tokens.Haptics.globalError); announce(view, texts.deleteFailed) }
-                ViewerEffect.Saved -> { haptics.play(Tokens.Haptics.globalSuccess); ui.toast = texts.saved }
-                ViewerEffect.SaveFailed -> { haptics.play(Tokens.Haptics.globalError); announce(view, texts.saveFailed) }
+                ViewerEffect.Sent -> haptics.perform(Tokens.Haptics.globalSend)
+                ViewerEffect.SendFailed -> { haptics.perform(Tokens.Haptics.globalError); announce(view, texts.sendFailed) }
+                ViewerEffect.ReactionFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.reactionFailed) }
+                ViewerEffect.Deleted -> PlatformToast.show(context, texts.deleted)
+                ViewerEffect.DeleteFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.deleteFailed) }
+                ViewerEffect.Saved -> { haptics.perform(Tokens.Haptics.globalSuccess); PlatformToast.show(context, texts.saved) }
+                ViewerEffect.SaveFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.saveFailed) }
+                is ViewerEffect.TagFailed -> {
+                    haptics.perform(Tokens.Haptics.globalError)
+                    PlatformToast.show(
+                        context,
+                        when (effect.reason) {
+                            TagFailure.NotFound -> texts.tagNotFound
+                            TagFailure.Offline -> texts.tagOffline
+                            TagFailure.Error -> if (effect.removing) texts.tagRemoveError else texts.tagError
+                        },
+                    )
+                }
             }
         }
     }
     LaunchedEffect(state.closed) { if (state.closed) nav.close() }
+    val save = rememberPhotoSaver(ui.save) { ok -> vm.saved(ok) }
 
-    val gallery = services.gallery
-    val save: () -> Unit = {
-        scope.launch {
-            val original = vm.originalBytes()
-            if (original == null) vm.saved(false)
-            else {
-                val ext = original.second.substringAfterLast('.', "jpg").lowercase()
-                val mime = runCatching { StoragePaths.contentTypeFor(ext) }.getOrDefault("image/jpeg")
-                vm.saved(gallery.save(context, original.first, mime, ext))
-            }
-        }
-    }
-    val storageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        ui.saveDenied = !granted
-        if (granted) save()
-    }
-    val onSave: () -> Unit = {
-        if (gallery.needsPermission(context)) storageLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE) else save()
-    }
+    var loadingKey by remember { mutableStateOf<String?>(null) }
+    var failedKeys by remember { mutableStateOf(emptySet<String>()) }
+    LaunchedEffect(playback.key, playback.isPlaying) { if (playback.isPlaying && playback.key == loadingKey) loadingKey = null }
     val onPlay: (String) -> Unit = { path ->
+        haptics.tap()
         if (playback.key == path && playback.isPlaying) voice.pause()
         else scope.launch {
+            failedKeys = failedKeys - path
+            loadingKey = path
             val url = runCatching { data.signedUrls(listOf(path))[path] }.getOrNull()
-            if (url != null) voice.play(path, url) else announce(view, texts.playFailed)
+            if (url != null) voice.play(path, url) else { loadingKey = null; failedKeys = failedKeys + path }
         }
     }
 
@@ -216,515 +220,542 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
         state = state,
         ui = ui,
         nav = nav,
-        voice = voice,
-        playback = playback,
-        onSelect = vm::select,
+        voice = VoiceUi(playback, loadingKey, failedKeys, onPlay),
+        onNext = { haptics.tap(); vm.next() },
+        onPrevious = { haptics.tap(); vm.previous() },
+        onRetry = vm::retryLoad,
         onDraft = vm::setDraft,
         onSend = vm::sendReply,
         onReact = vm::react,
         onUnreact = vm::unreact,
-        onPhotoGone = vm::markGone,
-        onDelete = { haptics.play(Tokens.Haptics.globalWarning); vm.deleteEverywhere() },
-        onSave = onSave,
-        onRetry = vm::retryLoad,
-        onPlay = onPlay,
+        onTag = vm::setTagged,
+        onSave = { state.current?.media?.originalPath?.let(save) },
+        onDelete = { haptics.perform(Tokens.Haptics.globalWarning); vm.deleteEverywhere() },
+        onUnsendComment = { id -> haptics.perform(Tokens.Haptics.globalWarning); vm.unsendComment(id) },
     )
 }
 
 private class ViewerTexts(
-    val saved: String,
-    val deleted: String,
-    val saveFailed: String,
-    val deleteFailed: String,
     val sendFailed: String,
     val reactionFailed: String,
-    val playFailed: String,
+    val deleted: String,
+    val deleteFailed: String,
+    val saved: String,
+    val saveFailed: String,
+    val tagError: String,
+    val tagRemoveError: String,
+    val tagNotFound: String,
+    val tagOffline: String,
 )
 
-/** The viewer without its view model (snapshots). */
+/** The viewer without its view model (snapshots render this with fixed states). Dark in both appearances. */
 @Composable
 fun PhotoViewerContent(
     state: ViewerState,
     ui: ViewerUiState,
     nav: ViewerNav,
-    voice: VoiceServices?,
-    playback: VoicePlayback,
-    onSelect: (Int) -> Unit,
+    voice: VoiceUi,
+    onNext: () -> Unit,
+    onPrevious: () -> Unit,
+    onRetry: () -> Unit,
     onDraft: (String) -> Unit,
     onSend: () -> Unit,
     onReact: (String) -> Unit,
     onUnreact: (String) -> Unit,
-    onPhotoGone: (String) -> Unit,
-    onDelete: () -> Unit,
+    onTag: (Boolean) -> Unit,
     onSave: () -> Unit,
-    onRetry: () -> Unit,
-    onPlay: (String) -> Unit,
-    flights: ReactionFlights = remember { ReactionFlights() },
+    onDelete: () -> Unit,
+    onUnsendComment: (String) -> Unit,
 ) {
-    val activityAllowed = app.feature.social.common.shows(app.feature.social.common.SocialBlocked.activitySheet)
-    val reduceMotion by rememberReduceMotion()
-    val pager = rememberPagerState(initialPage = state.index) { state.photos.size }
-    // Keep the pager on the view model's photo when the list grows around it or a photo is removed.
-    LaunchedEffect(state.index, state.photos.size) { if (pager.currentPage != state.index && state.index in state.photos.indices) pager.scrollToPage(state.index) }
-    LaunchedEffect(pager) { snapshotFlow { pager.settledPage }.distinctUntilChanged().collect(onSelect) }
-    PrefetchNeighbours(state)
-    val current = state.current
-
-    // A reaction flies from where it was picked to the cluster's leading end (not for an emoji already there; not under Reduce Motion).
-    val react: (String, androidx.compose.ui.geometry.Rect?) -> Unit = { emoji, from ->
-        val post = current?.post
-        if (current != null && post != null && !reduceMotion && current.reactions.none { it.emoji == emoji }) flights.launch(post.id, emoji, from)
-        onReact(emoji)
-    }
-    // [ViewerUiState.coach] set (tests) decides the tagging coach; null = the memory group's per-account store.
-    val coachOverride = ui.coach?.let { show -> remember(show) { FixedCoachStore(!show) } }
-    val coachStore = coachOverride ?: app.feature.memory.tagging.LocalCoachStore.current
-    CompositionLocalProvider(LocalReactionFlights provides flights, app.feature.memory.tagging.LocalCoachStore provides coachStore) {
-    Box(Modifier.fillMaxSize().background(Tokens.Colors.photoViewerColorBackground).testTag("photo.viewer")) {
-        // Emoji rain: behind the photo, in front of the background (S-9).
-        ui.rain?.let { (emoji, key) -> EmojiRain(emoji, key, onFinished = { if (ui.rain?.second == key) ui.rain = null }) }
-        Column(Modifier.fillMaxSize().imePadding().navigationBarsPadding()) {
-            // `photo.viewer.dimension.pageGap` (0: pages touch, G-14).
-            HorizontalPager(
-                state = pager,
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-                pageSpacing = Tokens.Sizes.photoViewerDimensionPageGap,
-                key = { i -> state.photos.getOrNull(i)?.postId ?: i },
-            ) { page ->
-                val photo = state.photos.getOrNull(page)
-                if (photo != null) ViewerPage(photo, state, ui, nav, voice, playback, onPhotoGone, onRetry, onPlay, onSave, onDelete)
-            }
-            if (ui.saveDenied) {
-                PermissionCard(
-                    stringRes(R.string.photo_viewer_permission_title),
-                    stringRes(R.string.photo_viewer_permission_detail),
-                    stringRes(R.string.photo_viewer_permission_button),
-                    onSave,
-                    Modifier.padding(horizontal = Tokens.Sizes.onboardingPermissionContactsSizeCardMarginH),
-                )
-            }
-            if (current?.post != null && !current.gone) {
-                ReplyRow(
-                    draft = state.draft,
-                    groupName = current.groupName.orEmpty(),
-                    onDraft = onDraft,
-                    onSend = onSend,
-                    onReact = react,
-                    onPicker = { ui.picker = true },
-                    onCamera = { nav.replyWithPhoto(current.post.groupId, current.post.id) },
-                    modifier = Modifier.padding(bottom = Tokens.Sizes.chatComposerDimensionBottomInset),
-                )
-            }
-        }
-        ViewerHeader(state, ui, nav, onSave)
-        ConfirmationToast(ui.toast) { ui.toast = null }
-        FlightLayer(flights)
-    }
-    }
-
-    if (ui.picker) {
-        val mine = current?.reactions.orEmpty().filter { it.userId == state.me }.map { it.emoji }.toSet()
-        ReactionPickerSheet(
-            mine = mine,
-            onPick = { emoji, from -> ui.picker = false; react(emoji, from) },
-            onUnreact = { emoji -> ui.picker = false; onUnreact(emoji) },
-            onDismiss = { ui.picker = false },
-        )
-    }
-    if (activityAllowed && ui.activity && current?.post != null) {
-        val me = state.me
-        ActivitySheet(current.reactions, me, { id -> if (id == current.post.authorId) current.author?.firstName.orEmpty() else "" }, current.author?.firstName.orEmpty(), onDismiss = { ui.activity = false })
-    }
-    if (ui.confirmDelete) {
-        AlertDialog(
-            onDismissRequest = { ui.confirmDelete = false },
-            title = { Text(stringRes(R.string.photo_viewer_delete_title)) },
-            text = { Text(stringRes(R.string.photo_viewer_delete_message)) },
-            confirmButton = { TextButton(onClick = { ui.confirmDelete = false; onDelete() }) { Text(stringRes(R.string.photo_viewer_delete_confirm), color = Tokens.Colors.globalSystemError) } },
-            dismissButton = { TextButton(onClick = { ui.confirmDelete = false }) { Text(stringRes(R.string.photo_viewer_delete_cancel)) } },
-        )
-    }
-}
-
-/** A coach memory with a fixed answer (hoisted UI state for tests and previews). */
-private class FixedCoachStore(private val dismissed: Boolean) : app.feature.memory.tagging.CoachStore {
-    override fun dismissed(userId: String) = dismissed
-    override fun dismiss(userId: String) = Unit
-}
-
-/** Starts loading the neighbouring photos' display images so a swipe lands on a drawn photo. */
-@Composable
-private fun PrefetchNeighbours(state: ViewerState) {
-    if (LocalPhotoOverride.current != null) return
-    val context = LocalContext.current
-    val data = LocalSocialData.current
-    val paths = listOf(state.index - 1, state.index + 1).mapNotNull { state.photos.getOrNull(it)?.media?.imagePath(Media.Rendition.Display) }
-    LaunchedEffect(paths) {
-        val urls = runCatching { data.signedUrls(paths) }.getOrDefault(emptyMap())
-        val loader = SingletonImageLoader.get(context)
-        urls.values.forEach { url -> loader.enqueue(ImageRequest.Builder(context).data(url).build()) }
-    }
-}
-
-/**
- * Header row centred `photo.viewer.dimension.headerCenterY` below the top safe-area inset: bare ✕
- * (`closeGlyph` ink height, centre `closeCenterX`), the two-line title, bare ••• (`moreGlyphWidth`,
- * centre `moreCenterTrailing` from the right) opening the native menu.
- */
-@Composable
-private fun ViewerHeader(state: ViewerState, ui: ViewerUiState, nav: ViewerNav, onSave: () -> Unit) {
-    val current = state.current
-    val touch = Tokens.Sizes.globalMinTouchTargetAndroid
-    val rowHeight = Tokens.Sizes.photoViewerDimensionHeaderCenterY * 2
-    val closeLabel = stringRes(R.string.photo_viewer_a11y_close)
-    val moreLabel = stringRes(R.string.photo_viewer_a11y_more)
-    Box(Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars).height(rowHeight)) {
-        Box(
+    MediaAppearance {
+        Column(
             Modifier
-                .align(Alignment.CenterStart)
-                .offset(x = Tokens.Sizes.photoViewerDimensionCloseCenterX - touch / 2)
-                .size(touch)
-                .clickable(role = Role.Button, onClick = nav.close)
-                .clearAndSetSemantics { contentDescription = closeLabel; role = Role.Button },
-            contentAlignment = Alignment.Center,
-        ) { InkGlyph(Tokens.Icons.globalClose, Tokens.Colors.globalTextPrimary, inkHeight = Tokens.Sizes.photoViewerDimensionCloseGlyph) }
-        if (current?.post != null && !current.gone) {
-            ViewerTitle(
-                sender = if (state.mine) stringRes(R.string.photo_viewer_title_you) else current.author?.firstName.orEmpty(),
-                group = current.groupName.orEmpty(),
-                date = Formats.viewerDate(current.post.createdAt),
-                modifier = Modifier.align(Alignment.Center).padding(horizontal = touch + Tokens.Sizes.photoViewerDimensionCloseCenterX),
-            )
-            Box(
-                Modifier
-                    .align(Alignment.CenterEnd)
-                    .offset(x = -(Tokens.Sizes.photoViewerDimensionMoreCenterTrailing - touch / 2))
-                    .size(touch),
-            ) {
-                Box(
-                    Modifier.fillMaxSize().clickable(role = Role.Button) { ui.menu = true }.clearAndSetSemantics { contentDescription = moreLabel; role = Role.Button },
-                    contentAlignment = Alignment.Center,
-                ) { InkGlyph(Tokens.Icons.globalMore, Tokens.Colors.globalTextPrimary, inkWidth = Tokens.Sizes.photoViewerDimensionMoreGlyphWidth) }
-                ViewerMenu(state, ui, nav, onSave)
+                .fillMaxSize()
+                .background(Tokens.Colors.globalBackgroundDeep)
+                .testTag("photo.viewer")
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .imePadding(),
+        ) {
+            val photo = state.current
+            ViewerHeaderRow(state, nav)
+            BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+                val area = maxHeight
+                when {
+                    photo == null -> Unit
+                    photo.gone -> EmptyStateFill {
+                        EmptyState(stringRes(R.string.photo_viewer_gone_title), stringRes(R.string.photo_viewer_gone_detail))
+                    }
+                    else -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                        Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionHeaderToPhoto))
+                        PhotoArea(photo, state, ui, nav, area, onNext, onPrevious, onRetry, onReact, onUnreact, onSave)
+                        Footer(photo, state, ui, voice, onTag)
+                        Comments(photo, state, ui, onUnsendComment)
+                        Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionCommentsToField))
+                    }
+                }
             }
+            if (photo?.gone != true) ReplyField(state, ui, nav, onDraft, onSend, onSave)
         }
+        ViewerDialogs(state, ui, nav, onReact, onUnreact, onTag, onDelete, onUnsendComment)
     }
 }
 
 /**
- * Line 1: [you | first name] + "sent to" + group (text role `headerTitle`; names
- * `color.global.textPrimary`, "sent to" `color.global.textSecondary`; the group name truncates);
- * line 2: the date (`listSubtitle`, `color.global.textSecondary`) with its baseline
- * `photo.viewer.dimension.titleToDate` below line 1's. Read as one header element.
+ * The header (fixed under the status bar): avatar `size.global.avatarHeader` at `photo.viewer.dimension.headerInset`;
+ * `photo.viewer.dimension.headerAvatarToText` after it the name (`listTitle`, `color.global.textOnMedia`) over "Week 28"
+ * (`photo.viewer.header.week`, or `.groupWeek` from a wall; `listSubtitle`, `color.global.textSecondary`), baselines
+ * `photo.viewer.dimension.headerLinePitch` apart, centred on the avatar; trailing the C-22 position pill (more than one
+ * photo), `size.global.pillGap`, the close circle whose right edge sits on `size.global.screenMargin`.
  */
 @Composable
-private fun ViewerTitle(sender: String, group: String, date: String, modifier: Modifier = Modifier) {
-    val sentTo = stringRes(R.string.photo_viewer_title_sentto)
-    val line1 = buildAnnotatedString {
-        withStyle(SpanStyle(color = Tokens.Colors.globalTextPrimary)) { append(sender) }
-        append(' ')
-        withStyle(SpanStyle(color = Tokens.Colors.globalTextSecondary)) { append(sentTo) }
-        append(' ')
-        withStyle(SpanStyle(color = Tokens.Colors.globalTextPrimary)) { append(group) }
-    }
-    val gap = Tokens.Sizes.photoViewerDimensionTitleToDate
-    val titleStyle = Type.headerTitle()
-    val dateStyle = Type.listSubtitle()
-    Layout(
-        // Read as one header element (the platform merge of both lines).
-        modifier = modifier.semantics(mergeDescendants = true) { heading() },
-        content = {
-            BasicText(line1, style = titleStyle, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-            Line(date, dateStyle, Tokens.Colors.globalTextSecondary)
-        },
-    ) { measurables, constraints ->
-        val loose = constraints.copy(minWidth = 0, minHeight = 0)
-        val top = measurables[0].measure(loose)
-        val bottom = measurables[1].measure(loose)
-        val topBaseline = top[FirstBaseline]
-        val bottomBaseline = bottom[FirstBaseline]
-        val bottomY = topBaseline + gap.roundToPx() - bottomBaseline
-        val width = maxOf(top.width, bottom.width)
-        val height = maxOf(top.height, bottomY + bottom.height)
-        layout(width, height) {
-            top.place((width - top.width) / 2, 0)
-            bottom.place((width - bottom.width) / 2, bottomY)
-        }
-    }
-}
-
-/** The native ••• menu (`photo.viewer.layout.menu`): save; delete (yours) or report + block {name} (others'). */
-@Composable
-private fun ViewerMenu(state: ViewerState, ui: ViewerUiState, nav: ViewerNav, onSave: () -> Unit) {
-    val current = state.current ?: return
-    val post = current.post ?: return
-    DropdownMenu(expanded = ui.menu, onDismissRequest = { ui.menu = false }) {
-        DropdownMenuItem(
-            text = { Text(stringRes(R.string.photo_viewer_menu_save)) },
-            leadingIcon = { Glyph(Tokens.Icons.globalDownload, Tokens.Colors.globalSystemOnSurface) },
-            onClick = { ui.menu = false; onSave() },
-        )
-        if (state.mine) {
-            DropdownMenuItem(
-                text = { Text(stringRes(R.string.photo_viewer_menu_delete), color = Tokens.Colors.globalSystemError) },
-                leadingIcon = { Glyph(Tokens.Icons.photoViewerIconDelete, Tokens.Colors.globalSystemError) },
-                onClick = { ui.menu = false; ui.confirmDelete = true },
-            )
-        } else {
-            DropdownMenuItem(
-                text = { Text(stringRes(R.string.photo_viewer_menu_report), color = Tokens.Colors.globalSystemError) },
-                leadingIcon = { Glyph(Tokens.Icons.globalReport, Tokens.Colors.globalSystemError) },
-                onClick = { ui.menu = false; nav.report(post.groupId, post.id) },
-            )
-            DropdownMenuItem(
-                text = { Text(stringRes(R.string.photo_viewer_menu_block, current.author?.firstName.orEmpty()), color = Tokens.Colors.globalSystemError) },
-                onClick = { ui.menu = false; nav.block(post.authorId) },
-            )
-        }
-    }
-}
-
-@Composable
-private fun ViewerPage(
-    photo: ViewerPhoto,
-    state: ViewerState,
-    ui: ViewerUiState,
-    nav: ViewerNav,
-    voice: VoiceServices?,
-    playback: VoicePlayback,
-    onPhotoGone: (String) -> Unit,
-    onRetry: () -> Unit,
-    onPlay: (String) -> Unit,
-    onSave: () -> Unit,
-    onDelete: () -> Unit,
-) {
-    val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + Tokens.Sizes.photoViewerDimensionPhotoTop
-    if (photo.gone) {
-        Box(Modifier.fillMaxSize().padding(top = top), contentAlignment = Alignment.Center) {
-            EmptyState(stringRes(R.string.photo_viewer_gone_title), stringRes(R.string.photo_viewer_gone_detail), null)
-        }
-        return
-    }
-    val post = photo.post
-    val voicePath = post?.voicePath
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        val voiceSpace = if (voicePath != null) Tokens.Sizes.globalScreenMargin + Tokens.Sizes.chatVoiceDimensionHeight else 0.dp
-        val available = (maxHeight - top - voiceSpace).coerceAtLeast(0.dp)
-        val media = photo.media
-        val aspect = media?.let { m -> if ((m.width ?: 0) > 0 && (m.height ?: 0) > 0) m.width!!.toFloat() / m.height!! else null }
-        // Full width at the photo's own aspect; a photo taller than the space is scaled down to fit, centred (approximation).
-        val (w, h) = when {
-            aspect == null -> maxWidth to available
-            maxWidth / aspect <= available -> maxWidth to maxWidth / aspect
-            else -> available * aspect to available
-        }
-        Column(Modifier.fillMaxSize().padding(top = top), horizontalAlignment = Alignment.CenterHorizontally) {
-            PhotoFrame(photo, state, ui, nav, w, h, if (aspect == null) ContentScale.Fit else ContentScale.Crop, onPhotoGone, onRetry, onSave, onDelete)
-            val voiceMs = post?.voiceDurationMs
-            if (voicePath != null && voiceMs != null) {
-                Spacer(Modifier.height(Tokens.Sizes.globalScreenMargin))
-                Box(Modifier.fillMaxWidth().padding(start = Tokens.Sizes.globalScreenMargin)) {
-                    val mine = post.authorId == state.me
-                    VoiceBubble(
-                        path = voicePath,
-                        durationMs = voiceMs,
-                        fill = if (mine) Tokens.Colors.chatVoiceColorBubble else Tokens.Colors.chatVoiceColorBubbleTheirs,
-                        progress = if (playback.key == voicePath) playback.progress else 0f,
-                        label = if (mine) stringRes(R.string.chat_voice_a11y_messagemine, Formats.spokenDuration(voiceMs))
-                        else stringRes(R.string.chat_voice_a11y_message, photo.author?.firstName.orEmpty(), Formats.spokenDuration(voiceMs)),
-                        playing = playback.key == voicePath && playback.isPlaying,
-                        voice = voice,
-                        onToggle = { onPlay(voicePath) },
-                    )
+private fun ViewerHeaderRow(state: ViewerState, nav: ViewerNav) {
+    val photo = state.current
+    val post = photo?.post
+    Row(
+        Modifier.fillMaxWidth().padding(start = Tokens.Sizes.photoViewerDimensionHeaderInset, end = Tokens.Sizes.globalScreenMargin),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(
+            Modifier
+                .weight(1f)
+                .then(if (post != null) Modifier.tapClickable { nav.person(post.authorId, post.groupId) } else Modifier)
+                .semantics(mergeDescendants = true) { heading() },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            PersonAvatar(photo?.author?.avatarPath, Tokens.Sizes.globalAvatarHeader)
+            Spacer(Modifier.width(Tokens.Sizes.photoViewerDimensionHeaderAvatarToText))
+            Column {
+                Text(photo?.author?.displayName.orEmpty(), style = TextRoles.listTitle, color = Tokens.Colors.globalTextOnMedia, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.endAtLastBaseline())
+                val week = photo?.weekNumber
+                if (week != null) {
+                    val line = if (state.fromWall && photo.groupName != null) stringRes(R.string.photo_viewer_header_groupweek, photo.groupName, week)
+                    else stringRes(R.string.photo_viewer_header_week, week)
+                    Text(line, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.paddingFromBaseline(top = Tokens.Sizes.photoViewerDimensionHeaderLinePitch))
                 }
             }
         }
+        if (state.photos.size > 1) {
+            val position = stringRes(R.string.photo_viewer_position, state.index + 1, state.photos.size)
+            PositionPill(position, position)
+            Spacer(Modifier.width(Tokens.Sizes.globalPillGap))
+        }
+        CloseCircle(stringRes(R.string.photo_viewer_a11y_close), nav.close)
     }
 }
 
+/**
+ * The viewer's close (C-11 on media at the measured size): `photo.viewer.dimension.closeCircle` in
+ * `color.global.controlOnDeep`, `icon.global.close` with its ink `photo.viewer.dimension.closeGlyph` tall in
+ * `color.global.textOnMedia`. Its touch target is expanded to `size.global.minTouchTarget.android` by the theme.
+ */
 @Composable
-private fun PhotoFrame(
+private fun CloseCircle(label: String, onClick: () -> Unit) {
+    val icon = Tokens.Icons.globalClose
+    val bounds = GlyphInk.bounds(icon)
+    val box = Tokens.Sizes.photoViewerDimensionCloseGlyph * (icon.viewportHeight / bounds.height)
+    Box(
+        Modifier
+            .size(Tokens.Sizes.photoViewerDimensionCloseCircle)
+            .background(Tokens.Colors.globalControlOnDeep, CircleShape)
+            .tapClickable(onClick = onClick)
+            .clearAndSetSemantics {
+                contentDescription = label
+                role = Role.Button
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(icon, contentDescription = null, tint = Tokens.Colors.globalTextOnMedia, modifier = Modifier.size(box))
+    }
+}
+
+/**
+ * The photo (`photo.viewer.layout.photo`): full width, its own aspect, never cropped, square corners, scaled down and
+ * letterboxed when taller than [area]; the thumbnail shows until the display rendition loads. Tap = advance (the
+ * leading `photo.viewer.layout.backZone` — BLOCKED — goes back); long press = the context menu with the
+ * quick-reaction row. TalkBack: label, hints and next / previous custom actions.
+ */
+@Composable
+private fun PhotoArea(
     photo: ViewerPhoto,
     state: ViewerState,
     ui: ViewerUiState,
     nav: ViewerNav,
-    width: Dp,
-    height: Dp,
-    scale: ContentScale,
-    onPhotoGone: (String) -> Unit,
+    area: Dp,
+    onNext: () -> Unit,
+    onPrevious: () -> Unit,
     onRetry: () -> Unit,
+    onReact: (String) -> Unit,
+    onUnreact: (String) -> Unit,
     onSave: () -> Unit,
-    onDelete: () -> Unit,
 ) {
-    val activityAllowed = app.feature.social.common.shows(app.feature.social.common.SocialBlocked.activitySheet)
-    val context = LocalContext.current
-    val post = photo.post
     val media = photo.media
-    val mine = post != null && post.authorId == state.me
-    val name = if (mine) stringRes(R.string.photo_viewer_title_you) else photo.author?.firstName.orEmpty()
-    val date = post?.let { Formats.viewerDate(it.createdAt) }.orEmpty()
-    val caption = post?.caption?.takeIf { it.isNotBlank() }
-    val label = if (mine) stringRes(R.string.photo_viewer_a11y_photomine, date) else stringRes(R.string.photo_viewer_a11y_photo, name, date)
-    val captionLabel = caption?.let { stringRes(R.string.chat_thread_a11y_caption, it) }
-    val actions = buildList {
-        add(CustomAccessibilityAction(stringRes(R.string.photo_viewer_menu_save)) { onSave(); true })
-        if (mine) add(CustomAccessibilityAction(stringRes(R.string.photo_viewer_menu_delete)) { ui.confirmDelete = true; true })
-        else if (post != null) {
-            add(CustomAccessibilityAction(stringRes(R.string.photo_viewer_menu_report)) { nav.report(post.groupId, post.id); true })
-            add(CustomAccessibilityAction(stringRes(R.string.photo_viewer_menu_block, name)) { nav.block(post.authorId); true })
-        }
-    }
-    Box(
-        Modifier
-            .size(width, height)
-            .clip(RoundedCornerShape(Tokens.Radii.globalPhoto))
-            // The photo, its caption and its reactions are one element (platform merge); sender and toggle stay separate controls.
-            .semantics(mergeDescendants = true) { customActions = actions },
-    ) {
-        RemotePhoto(media?.imagePath(Media.Rendition.Display), label, Modifier.fillMaxSize(), scale, fallbackPath = media?.imagePath(Media.Rendition.Thumb))
-        if (photo.loadFailed) {
-            Box(Modifier.fillMaxSize().clickable(onClick = onRetry), contentAlignment = Alignment.Center) {
-                Line(stringRes(R.string.photo_viewer_error_load), Type.style(Tokens.FontSizes.globalEmptyDetail), Tokens.Colors.globalTextSecondary)
-            }
-        }
-        if (post == null) return@Box
-        // Sender overlay (top-left).
-        Row(
+    val aspect = media?.let { m -> if ((m.width ?: 0) > 0 && (m.height ?: 0) > 0) m.width!!.toFloat() / m.height!! else null }
+    val next by rememberUpdatedState(onNext)
+    val previous by rememberUpdatedState(onPrevious)
+    val backZone = if (SocialBlocked.viewerBackZone || LocalApproximations.current) BuildApproximations.BACK_ZONE_FRACTION else 0f
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val date = photo.post?.let { Formats.viewerDate(it.createdAt, photo.zone ?: java.time.ZoneId.systemDefault()) }.orEmpty()
+    val label = if (state.mine) stringRes(R.string.photo_viewer_a11y_photomine, date) else stringRes(R.string.photo_viewer_a11y_photo, photo.author?.firstName.orEmpty(), date)
+    val caption = photo.post?.caption?.takeIf { it.isNotBlank() }?.let { stringRes(R.string.chat_thread_a11y_caption, it) }
+    val nextLabel = stringRes(R.string.photo_viewer_a11y_next)
+    val previousLabel = stringRes(R.string.photo_viewer_a11y_previous)
+    val hint = stringRes(R.string.photo_viewer_a11y_advancehint) + ". " + stringRes(R.string.photo_viewer_a11y_backhint)
+    val menuItems = viewerMenuItems(state, ui, nav, onSave)
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val natural = if (aspect != null) maxWidth / aspect else maxWidth / DEFAULT_ASPECT
+        val height = min(natural, area)
+        Box(
             Modifier
-                .padding(start = Tokens.Sizes.photoViewerDimensionSenderInsetLeading, top = Tokens.Sizes.photoViewerDimensionSenderInsetTop)
-                .clickable(role = Role.Button) { nav.person(post.authorId, mine) }
-                .semantics(mergeDescendants = true) { contentDescription = name; role = Role.Button },
-            verticalAlignment = Alignment.Top,
+                .fillMaxWidth()
+                .height(height)
+                .pointerInput(backZone, rtl) {
+                    detectTapGestures(
+                        onTap = { offset -> if (ViewerTaps.isPrevious(offset.x, size.width.toFloat(), backZone, rtl)) previous() else next() },
+                        onLongPress = { ui.photoMenu = true },
+                    )
+                }
+                .clearAndSetSemantics {
+                    contentDescription = listOfNotNull(label, caption, hint).joinToString(", ")
+                    customActions = listOf(
+                        CustomAccessibilityAction(nextLabel) { next(); true },
+                        CustomAccessibilityAction(previousLabel) { previous(); true },
+                    ) + menuItems.map { m -> CustomAccessibilityAction(m.text) { m.onClick(); true } }
+                },
+            contentAlignment = Alignment.Center,
         ) {
-            Avatar(photo.author?.avatarPath, Tokens.Sizes.photoViewerDimensionSenderAvatar)
-            Spacer(Modifier.width(Tokens.Sizes.photoViewerDimensionSenderNameGap))
-            Line(name, Type.headerTitle(), Tokens.Colors.globalTextPrimary, Modifier.clearAndSetSemantics { })
-        }
-        // "i'm in this": the memory group's control (design/surfaces/tagging.md: capsule, optimistic tag_self /
-        // untag_self, first-use coach, toasts), its centre `photo.viewer.dimension.actionCenterTop` below the
-        // photo's top and its right edge `.actionTrailing` from the photo's right (S-19).
-        if (photo.loaded) {
-            val height = Tokens.Sizes.groupsScreenSizeLightPillHeight
-            app.feature.memory.tagging.SelfTagToggle(
-                postId = post.id,
-                postAuthorId = post.authorId,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(end = Tokens.Sizes.photoViewerDimensionActionTrailing, top = (Tokens.Sizes.photoViewerDimensionActionCenterTop - height / 2).coerceAtLeast(0.dp)),
-                initiallyTagged = photo.tagged,
-                onPhotoGone = { onPhotoGone(post.id) },
-                height = height,
+            if (photo.loadFailed) {
+                Text(
+                    stringRes(R.string.photo_viewer_error_load),
+                    style = TextRoles.body,
+                    color = Tokens.Colors.globalTextSecondary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.tapClickable(onClick = onRetry).padding(horizontal = Tokens.Sizes.globalScreenMargin),
+                )
+            } else {
+                RemotePhoto(
+                    media?.imagePath(Media.Rendition.Display),
+                    null,
+                    Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit,
+                    fallbackPath = media?.imagePath(Media.Rendition.Thumb),
+                    placeholder = Tokens.Colors.globalBackgroundDeep,
+                )
+            }
+            val mine = photo.reactions.filter { it.userId == state.me }.map { it.emoji }.toSet()
+            PhotoContextMenu(
+                expanded = ui.photoMenu,
+                onDismiss = { ui.photoMenu = false },
+                mine = mine,
+                onReact = onReact,
+                onUnreact = onUnreact,
+                onAddReaction = { ui.picker = true },
+                items = menuItems,
             )
         }
-        // Caption (bottom-centre) on its `color.global.scrim` box.
-        if (caption != null) {
-            Box(
-                Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(
-                        bottom = Tokens.Sizes.chatThreadDimensionCaptionInsetBottom,
-                        start = Tokens.Sizes.chatReactionsDimensionClusterInsetLeading + Tokens.Sizes.chatReactionsDimensionClusterEmoji,
-                        end = Tokens.Sizes.chatReactionsDimensionClusterInsetLeading + Tokens.Sizes.chatReactionsDimensionClusterEmoji,
-                    )
-                    .heightIn(min = Tokens.Sizes.chatThreadDimensionCaptionHeight)
-                    .background(Tokens.Colors.globalScrim, RoundedCornerShape(Tokens.Radii.chatThreadRadiusCaption))
-                    .padding(horizontal = Tokens.Sizes.chatThreadDimensionCaptionPaddingH)
-                    .clearAndSetSemantics { if (captionLabel != null) contentDescription = captionLabel },
-                contentAlignment = Alignment.Center,
-            ) {
-                Line(
+    }
+}
+
+/** Until the media's size is known the frame takes a 3:4 box (the strip tiles' shape, `size.global.stripTileWidth` ÷ `.stripTileHeight`). */
+private val DEFAULT_ASPECT: Float get() = Tokens.Sizes.globalStripTileWidth / Tokens.Sizes.globalStripTileHeight
+
+/** The viewer's menu (`photo.viewer.layout.menu`): save; delete (yours) or report + block {name} (others'). */
+@Composable
+private fun viewerMenuItems(state: ViewerState, ui: ViewerUiState, nav: ViewerNav, onSave: () -> Unit): List<DsMenuItem> {
+    val save = stringRes(R.string.photo_viewer_menu_save)
+    val delete = stringRes(R.string.photo_viewer_menu_delete)
+    val report = stringRes(R.string.photo_viewer_menu_report)
+    val block = stringRes(R.string.photo_viewer_menu_block, state.current?.author?.firstName.orEmpty())
+    return buildList {
+        add(DsMenuItem(save, onSave, icon = Tokens.Icons.globalDownload))
+        if (state.mine) add(DsMenuItem(delete, { ui.confirmDelete = true }, icon = Tokens.Icons.globalTrash, destructive = true))
+        else state.current?.post?.let { post ->
+            add(DsMenuItem(report, { nav.report(post.groupId, post.id) }, icon = Tokens.Icons.globalReport, destructive = true))
+            add(DsMenuItem(block, { nav.block(post.authorId) }))
+        }
+    }
+}
+
+/**
+ * The footer inside `size.global.screenMargin`: first baseline `photo.viewer.dimension.footerFirstBaseline` below the
+ * photo, lines `photo.viewer.dimension.footerLinePitch` apart — the caption (`listTitle`, `color.global.textOnMedia`),
+ * the date (`photo.viewer.layout.dateFormat`, `listSubtitle`, secondary) + " · " + the tag run, the voice note
+ * (capsule on `color.global.controlOnDeep`, top one pitch below the date line's baseline). Trailing on the first line:
+ * the reaction chip and the add-reaction glyph at the margin.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun Footer(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, voice: VoiceUi, onTag: (Boolean) -> Unit) {
+    val post = photo.post ?: return
+    val pitch = Tokens.Sizes.photoViewerDimensionFooterLinePitch
+    val caption = post.caption?.takeIf { it.isNotBlank() }
+    val date = Formats.viewerDate(post.createdAt, photo.zone ?: java.time.ZoneId.systemDefault())
+    val taggedNames = photo.tagged.mapNotNull { photo.people[it]?.firstName }
+    val run = tagRunText(taggedNames)
+    val tagLabel = if (taggedNames.isEmpty()) stringRes(R.string.tagging_toggle) else stringRes(R.string.tagging_a11y_people) + ", " + run.text
+    Row(Modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalScreenMargin), verticalAlignment = Alignment.Top) {
+        Column(Modifier.weight(1f)) {
+            if (caption != null) {
+                Text(
                     caption,
-                    Type.style(Tokens.FontSizes.chatThreadFontSizeCaption, Tokens.FontWeights.chatThreadFontWeightCaption),
-                    Tokens.Colors.globalTextPrimary,
-                    maxLines = Int.MAX_VALUE,
-                    align = androidx.compose.ui.text.style.TextAlign.Center,
+                    style = TextRoles.listTitle,
+                    color = Tokens.Colors.globalTextOnMedia,
+                    modifier = Modifier.paddingFromBaseline(top = Tokens.Sizes.photoViewerDimensionFooterFirstBaseline).endAtLastBaseline().clearAndSetSemantics { },
+                )
+            }
+            Row(
+                Modifier.paddingFromBaseline(top = if (caption != null) pitch else Tokens.Sizes.photoViewerDimensionFooterFirstBaseline).endAtLastBaseline(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(date, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary, maxLines = 1)
+                Text(SEPARATOR, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary, maxLines = 1, modifier = Modifier.clearAndSetSemantics { })
+                TagRunCrossfade(run) { text ->
+                    Text(
+                        text,
+                        style = TextRoles.listSubtitle,
+                        color = Tokens.Colors.globalTextSecondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .tapClickable { if (taggedNames.isEmpty()) onTag(true) else ui.inThisPhoto = true }
+                            .clearAndSetSemantics {
+                                contentDescription = tagLabel
+                                role = Role.Button
+                            },
+                    )
+                }
+            }
+            if (post.voicePath != null) {
+                val duration = (post.voiceDurationMs ?: 0).toLong()
+                val voiceLabel = if (state.mine) stringRes(R.string.chat_voice_a11y_messagemine, Formats.spokenDuration(duration))
+                else stringRes(R.string.chat_voice_a11y_message, photo.author?.firstName.orEmpty(), Formats.spokenDuration(duration))
+                Spacer(Modifier.height(pitch))
+                VoiceCapsule(
+                    duration,
+                    voice.elapsedOf(post.voicePath, duration),
+                    voiceStateOf(post.voicePath, voice.playback.key, voice.playback.isPlaying, voice.playback.progress, voice.loadingKey, voice.failedKeys),
+                    voiceLabel,
+                    onClick = { voice.onPlay(post.voicePath) },
+                    onMedia = true,
                 )
             }
         }
-        ReactionCluster(
-            photo.reactions,
-            if (activityAllowed) ({ ui.activity = true }) else null,
-            Modifier.align(Alignment.BottomStart).padding(start = Tokens.Sizes.chatReactionsDimensionClusterInsetLeading, bottom = Tokens.Sizes.chatReactionsDimensionClusterInsetBottom),
-            postId = post.id,
-        )
-    }
-}
-
-/**
- * The reply row (rides on the keyboard, `chat.composer.dimension.bottomInset` above it): the composer
- * field with placeholder `photo.viewer.reply.placeholder`, Locket's quick reactions 🔥 💖 and the
- * add-reaction glyph inside its right end (`chat.reactions.layout.quickReactions`), then the camera
- * circle — the lime send circle in its slot while the field has text (`chat.composer.layout.typingState`).
- */
-@Composable
-private fun ReplyRow(
-    draft: String,
-    groupName: String,
-    onDraft: (String) -> Unit,
-    onSend: () -> Unit,
-    onReact: (String, androidx.compose.ui.geometry.Rect?) -> Unit,
-    onPicker: () -> Unit,
-    onCamera: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-        Spacer(Modifier.width(Tokens.Sizes.chatComposerDimensionInsetLeading))
-        CapsuleField(
-            value = draft,
-            onValueChange = onDraft,
-            placeholder = stringRes(R.string.photo_viewer_reply_placeholder, groupName),
-            label = stringRes(R.string.chat_composer_a11y_field),
-            onSend = onSend,
-            modifier = Modifier.weight(1f),
-            trailing = { QuickReactions(onReact, onPicker) },
-        )
-        Spacer(Modifier.width(Tokens.Sizes.chatComposerDimensionGapFieldButton))
-        if (draft.isNotBlank()) {
-            SendCircle(onSend)
-        } else {
-            CircleButton(
-                size = Tokens.Sizes.chatComposerDimensionSideButton,
-                fill = Tokens.Colors.globalControlRaised,
-                icon = Tokens.Icons.globalCamera,
-                tint = Tokens.Colors.globalTextPrimary,
-                glyphInkHeight = null,
-                label = stringRes(R.string.chat_composer_a11y_camera),
-                onClick = onCamera,
-            )
+        // Trailing reaction slot, centred on the first line (its baseline less half the cap height).
+        val firstLine = if (caption != null) TextRoles.listTitle else TextRoles.listSubtitle
+        Row(
+            Modifier.centredAt(Tokens.Sizes.photoViewerDimensionFooterFirstBaseline - CapTop.height(firstLine) / 2),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            ReactionChip(photo.reactions, onClick = { ui.reactions = true }, onMedia = true)
+            AddReactionGlyph { ui.picker = true }
         }
-        Spacer(Modifier.width(Tokens.Sizes.chatComposerDimensionInsetTrailing))
+    }
+}
+
+/** Places the element with its vertical centre [y] below the top of its slot (may start above the slot). */
+private fun Modifier.centredAt(y: Dp): Modifier = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints.copy(minHeight = 0))
+    val top = (y.toPx() - placeable.height / 2f).toInt()
+    layout(placeable.width, (top + placeable.height).coerceAtLeast(0)) { placeable.place(0, top) }
+}
+
+private const val SEPARATOR = " · " // provenance-ok: Retro's footer separator (media_viewer_footer_tagged_users_divider " · with "), punctuation between two data runs
+
+/** `chat.reactions.icon.add` (`size.global.icon`, `color.global.textSecondary`) with its ink on the margin; hit `size.global.headerButton`. */
+@Composable
+private fun AddReactionGlyph(onClick: () -> Unit) {
+    val icon = Tokens.Icons.chatReactionsIconAdd
+    val box = Tokens.Sizes.globalIcon
+    val hit = glyphHit
+    val label = stringRes(R.string.chat_reactions_a11y_add)
+    Box(
+        Modifier
+            .endInset(-(GlyphInk.trailing(icon, box) + (hit - box) / 2))
+            .size(hit)
+            .tapClickable(onClick = onClick)
+            .clearAndSetSemantics {
+                contentDescription = label
+                role = Role.Button
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(icon, contentDescription = null, tint = Tokens.Colors.globalTextSecondary, modifier = Modifier.size(box))
     }
 }
 
 /**
- * 🔥 💖 + add glyph. Their size and spacing inside the field are not measured: the emoji take the
- * field's text size (text role `body`), `size.global.headerGap` apart, ending
- * `chat.composer.dimension.fieldPaddingLeading` from the field's end (approximation).
+ * Comments (`photo.viewer.layout.comments`): the divider (C-32 on media) `photo.viewer.dimension.footerToDivider` below
+ * the footer, then the replies as thread rows (avatar `size.global.avatarComment`, text
+ * `chat.thread.dimension.rowAvatarToText` after it, "name time", the text a `chat.thread.dimension.rowLinePitch` below)
+ * in `color.global.textOnMedia`, the first `photo.viewer.dimension.dividerToComments` below the divider, rows
+ * `size.global.listGap` apart. None → no divider.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun QuickReactions(onReact: (String, androidx.compose.ui.geometry.Rect?) -> Unit, onPicker: () -> Unit) {
-    val density = LocalDensity.current
-    val emojiWidth = with(density) { Tokens.FontSizes.globalBody.toDp() }
-    Row(
-        Modifier.padding(end = Tokens.Sizes.chatComposerDimensionFieldPaddingLeading),
-        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalHeaderGap),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        EmojiCatalog.quick.forEach { emoji ->
-            val label = stringRes(R.string.chat_reactions_a11y_quick, app.feature.social.common.EmojiNames.name(emoji))
-            var bounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
-            Box(
-                Modifier
-                    .onGloballyPositioned { c -> bounds = androidx.compose.ui.geometry.Rect(c.positionOnScreen(), c.size.toSize()) }
-                    .clickable(role = Role.Button) { onReact(emoji, bounds) }
-                    .clearAndSetSemantics { contentDescription = label; role = Role.Button },
-            ) {
-                EmojiGlyph(emoji, emojiWidth)
+private fun Comments(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, onUnsendComment: (String) -> Unit) {
+    if (photo.comments.isEmpty()) return
+    Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionFooterToDivider))
+    Hairline(Modifier.padding(horizontal = Tokens.Sizes.globalScreenMargin), onMedia = true)
+    Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionDividerToComments))
+    Column(verticalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalListGap)) {
+        photo.comments.forEach { m -> CommentLine(m, photo, state, ui, onUnsendComment) }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun CommentLine(m: Message, photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, onUnsendComment: (String) -> Unit) {
+    val author = photo.people[m.authorId]
+    val mine = m.authorId == state.me
+    val label = if (mine) stringRes(R.string.chat_thread_a11y_messagemine, m.body.orEmpty()) else stringRes(R.string.chat_thread_a11y_message, author?.firstName.orEmpty(), m.body.orEmpty())
+    val items = commentMenu(m, mine, ui)
+    Box {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .combinedClickable(onClick = {}, onLongClick = { ui.commentMenu = m.id })
+                .clearAndSetSemantics {
+                    contentDescription = label
+                    customActions = items.map { i -> CustomAccessibilityAction(i.text) { i.onClick(); true } }
+                }
+                .padding(horizontal = Tokens.Sizes.globalScreenMargin),
+            verticalAlignment = Alignment.Top,
+        ) {
+            PersonAvatar(author?.avatarPath, Tokens.Sizes.globalAvatarComment)
+            Spacer(Modifier.width(Tokens.Sizes.chatThreadDimensionRowAvatarToText))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    buildAnnotatedString {
+                        withStyle(TextRoles.listTitle.toSpanStyle().copy(color = Tokens.Colors.globalTextOnMedia)) { append(author?.firstName.orEmpty()) }
+                        append(' ')
+                        withStyle(TextRoles.caption.toSpanStyle().copy(color = Tokens.Colors.globalTextSecondary)) { append(Formats.shortTime(m.createdAt)) }
+                    },
+                    style = TextRoles.listTitle,
+                    maxLines = 1,
+                    modifier = Modifier.endAtLastBaseline(),
+                )
+                Text(
+                    m.body.orEmpty(),
+                    style = TextRoles.body.copy(lineHeight = Tokens.Sizes.chatThreadDimensionRowLinePitch.value.sp),
+                    color = Tokens.Colors.globalTextOnMedia,
+                    modifier = Modifier.paddingFromBaseline(top = Tokens.Sizes.chatThreadDimensionRowLinePitch),
+                )
             }
         }
-        val add = stringRes(R.string.chat_reactions_a11y_add)
-        Box(Modifier.clickable(role = Role.Button, onClick = onPicker).clearAndSetSemantics { contentDescription = add; role = Role.Button }) {
-            Glyph(Tokens.Icons.chatReactionsIconAdd, Tokens.Colors.globalTextSecondary)
+        SystemAppearance { DsDropdownMenu(ui.commentMenu == m.id, { ui.commentMenu = null }, items) }
+    }
+}
+
+/** A comment's long-press menu: the thread's message items that apply here (Copy; Report Message or Unsend). */
+@Composable
+private fun commentMenu(m: Message, mine: Boolean, ui: ViewerUiState): List<DsMenuItem> {
+    val clipboard = androidx.compose.ui.platform.LocalClipboard.current
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val copied = stringRes(R.string.chat_thread_toast_copied)
+    val copy = stringRes(R.string.chat_thread_menu_copy)
+    val unsend = stringRes(R.string.chat_thread_menu_delete)
+    return buildList {
+        add(
+            DsMenuItem(copy, {
+                val body = m.body.orEmpty()
+                scope.launch { clipboard.setClipEntry(androidx.compose.ui.platform.ClipEntry(android.content.ClipData.newPlainText(body, body))) }
+                PlatformToast.show(context, copied)
+            }),
+        )
+        if (mine) add(DsMenuItem(unsend, { ui.confirmUnsend = m.id }, destructive = true))
+    }
+}
+
+/** The reply field (C-13 on media): placeholder `photo.viewer.reply.placeholder`; camera, then "•••" (menu). */
+@Composable
+private fun ReplyField(state: ViewerState, ui: ViewerUiState, nav: ViewerNav, onDraft: (String) -> Unit, onSend: () -> Unit, onSave: () -> Unit) {
+    var field by remember { mutableStateOf(ui.fixedDraft ?: TextFieldValue(state.draft)) }
+    LaunchedEffect(state.draft) { if (ui.fixedDraft == null && state.draft != field.text) field = TextFieldValue(state.draft) }
+    val post = state.current?.post
+    val me = state.me
+    val myAvatar = me?.let { id -> state.photos.firstNotNullOfOrNull { it.people[id] }?.avatarPath }
+    val items = viewerMenuItems(state, ui, nav, onSave)
+    MessageField(
+        value = field,
+        onValueChange = {
+            field = it
+            onDraft(it.text)
+        },
+        placeholder = stringRes(R.string.photo_viewer_reply_placeholder),
+        accessibilityLabel = stringRes(R.string.photo_viewer_reply_placeholder),
+        avatarPath = myAvatar,
+        glyphs = listOf(
+            FieldGlyph(Tokens.Icons.globalCamera, stringRes(R.string.chat_composer_a11y_camera), Tokens.Colors.globalTextSecondary, { post?.let { nav.replyWithPhoto(it.groupId, it.id) } }),
+            FieldGlyph(
+                Tokens.Icons.globalMore,
+                stringRes(R.string.photo_viewer_a11y_more),
+                Tokens.Colors.globalTextSecondary,
+                { ui.menu = true },
+                anchor = { SystemAppearance { DsDropdownMenu(ui.menu, { ui.menu = false }, items) } },
+            ),
+        ),
+        onSend = {
+            onSend()
+            field = TextFieldValue()
+        },
+        onMedia = true,
+    )
+}
+
+/** Sheets and alerts over the viewer (system appearance). */
+@Composable
+private fun ViewerDialogs(
+    state: ViewerState,
+    ui: ViewerUiState,
+    nav: ViewerNav,
+    onReact: (String) -> Unit,
+    onUnreact: (String) -> Unit,
+    onTag: (Boolean) -> Unit,
+    onDelete: () -> Unit,
+    onUnsendComment: (String) -> Unit,
+) {
+    val photo = state.current ?: return
+    SystemAppearance {
+        val mine = photo.reactions.filter { it.userId == state.me }.map { it.emoji }.toSet()
+        if (ui.picker) {
+            ReactionPickerSheet(mine, onPick = { e -> ui.picker = false; onReact(e) }, onUnreact = { e -> ui.picker = false; onUnreact(e) }, onDismiss = { ui.picker = false })
+        }
+        if (ui.reactions) {
+            ReactionsSheet(
+                entries = photo.reactions,
+                me = state.me,
+                person = { id -> photo.people[id].let { Reactor(id, it?.firstName.orEmpty(), it?.avatarPath) } },
+                onUnreact = onUnreact,
+                onDismiss = { ui.reactions = false },
+                newestFirst = SocialBlocked.reactionListOrder || LocalApproximations.current,
+            )
+        }
+        if (ui.inThisPhoto) {
+            val people = photo.tagged.mapNotNull { id -> photo.people[id]?.let { TaggedPerson(id, it.firstName.orEmpty(), it.avatarPath, id == state.me) } }
+            InThisPhotoSheet(people, state.taggedByMe, onTag = onTag, onDismiss = { ui.inThisPhoto = false })
+        }
+        if (ui.confirmDelete) {
+            SystemAlertDialog(
+                title = stringRes(R.string.photo_viewer_delete_title),
+                text = stringRes(R.string.photo_viewer_delete_message),
+                confirmLabel = stringRes(R.string.photo_viewer_delete_confirm),
+                onConfirm = { ui.confirmDelete = false; onDelete() },
+                dismissLabel = stringRes(R.string.photo_viewer_delete_cancel),
+                onDismiss = { ui.confirmDelete = false },
+                destructive = true,
+            )
+        }
+        ui.confirmUnsend?.let { id ->
+            SystemAlertDialog(
+                title = stringRes(R.string.chat_thread_deletemessage_title),
+                text = stringRes(R.string.chat_thread_deletemessage_message),
+                confirmLabel = stringRes(R.string.chat_thread_deletemessage_confirm),
+                onConfirm = { ui.confirmUnsend = null; onUnsendComment(id) },
+                dismissLabel = stringRes(R.string.photo_viewer_delete_cancel),
+                onDismiss = { ui.confirmUnsend = null },
+                destructive = true,
+            )
         }
     }
 }

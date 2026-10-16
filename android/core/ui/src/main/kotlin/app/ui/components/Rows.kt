@@ -1,6 +1,7 @@
 package app.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,7 +22,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import app.designsystem.generated.Tokens
 import app.ui.foundation.DsImage
@@ -52,9 +56,11 @@ fun subtitleWithActor(text: String, actor: String): AnnotatedString = buildAnnot
  * text role `listTitle` in `color.global.textPrimary`, [subtitle] text role `listSubtitle` in secondary text
  * (build it with [subtitleWithActor]), then the C-23 [avatars] stack (its gap under the subtitle is not
  * measured — Gap: directly below). Trailing [add]: a C-11 circle (`size.global.circleButton`,
- * `color.global.control`, `icon.global.add`) at the right margin. Rows sit `size.global.listGap` apart
- * ([ThumbnailRowSpacing]). The whole row is one button ([contentDescription] from copy, else title and subtitle
- * are read together); the "+" is a separate labelled button.
+ * `color.global.control`, `icon.global.add`) at the right margin; or any other [trailing] control (e.g. the C-06 fill
+ * capsule of a template row). Rows sit `size.global.listGap` apart ([ThumbnailRowSpacing]). The whole row is one
+ * button ([contentDescription] from copy, else title and subtitle are read together); the trailing control is a
+ * separate labelled button. [thumbnailFallback]: a glyph (`icon.global.group` …) centred on the placeholder fill in
+ * secondary text while there is no thumbnail; [titleMaxLines] / [subtitleMaxLines] truncate with an ellipsis.
  */
 @Composable
 fun ThumbnailRow(
@@ -66,6 +72,10 @@ fun ThumbnailRow(
     avatars: List<Any?> = emptyList(),
     add: HeaderAction? = null,
     contentDescription: String? = null,
+    thumbnailFallback: ImageVector? = null,
+    titleMaxLines: Int = Int.MAX_VALUE,
+    subtitleMaxLines: Int = Int.MAX_VALUE,
+    trailing: (@Composable () -> Unit)? = null,
 ) {
     Row(
         modifier
@@ -76,14 +86,24 @@ fun ThumbnailRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val shape = RoundedCornerShape(Tokens.Radii.globalThumbnail)
-        DsImage(thumbnail, null, Modifier.size(Tokens.Sizes.globalRowThumbWidth, Tokens.Sizes.globalRowThumbHeight).clip(shape))
+        Box(Modifier.size(Tokens.Sizes.globalRowThumbWidth, Tokens.Sizes.globalRowThumbHeight).clip(shape), contentAlignment = Alignment.Center) {
+            DsImage(thumbnail, null, Modifier.matchParentSize())
+            if (thumbnail == null && thumbnailFallback != null) {
+                Icon(thumbnailFallback, contentDescription = null, tint = PageRoles.secondaryText(), modifier = Modifier.size(Tokens.Sizes.globalIcon))
+            }
+        }
         Spacer(Modifier.width(Tokens.Sizes.globalRowThumbGap))
         Column(Modifier.weight(1f)) {
-            Text(title, style = TextRoles.listTitle, color = Tokens.Colors.globalTextPrimary)
-            if (subtitle != null) Text(subtitle, style = TextRoles.listSubtitle, color = PageRoles.secondaryText())
+            Text(title, style = TextRoles.listTitle, color = Tokens.Colors.globalTextPrimary, maxLines = titleMaxLines, overflow = TextOverflow.Ellipsis)
+            if (subtitle != null) Text(subtitle, style = TextRoles.listSubtitle, color = PageRoles.secondaryText(), maxLines = subtitleMaxLines, overflow = TextOverflow.Ellipsis)
             if (avatars.isNotEmpty()) AvatarStack(avatars)
         }
-        if (add != null) CircleIconButton(add.icon, add.contentDescription, add.onClick, style = CircleButtonStyle.OnPage)
+        if (trailing != null) {
+            Spacer(Modifier.width(Tokens.Sizes.globalPillGap))
+            trailing()
+        } else if (add != null) {
+            CircleIconButton(add.icon, add.contentDescription, add.onClick, style = CircleButtonStyle.OnPage)
+        }
     }
 }
 
@@ -99,8 +119,9 @@ val ThumbnailRowSpacing: Arrangement.Vertical get() = Arrangement.spacedBy(Token
  * text: "elton 2h"); [line] text role `listSubtitle` in secondary text. [actions] — the C-06 pair ("Accept /
  * Decide Later", equal widths `Modifier.weight(1f)`, `size.global.pillGap` apart) — go under the text, a
  * `size.global.pillGap` below it (their vertical gap is not measured — Gap). [unread]: the C-24 dot at the
- * trailing end. [onMedia]: colours of the black viewer (`color.global.textOnMedia`, `color.global.textSecondary`).
- * With [onClick] the row is one button.
+ * trailing end. [trailing]: a control at the trailing end, `size.global.pillGap` after the text (a C-06 capsule
+ * "Invite" / "Unblock", a "•••" glyph button). [onMedia]: colours of the black viewer (`color.global.textOnMedia`,
+ * `color.global.textSecondary`). With [onClick] the row is one button.
  */
 @Composable
 fun PeopleRow(
@@ -114,6 +135,7 @@ fun PeopleRow(
     onMedia: Boolean = false,
     onClick: (() -> Unit)? = null,
     actions: (@Composable RowScope.() -> Unit)? = null,
+    trailing: (@Composable () -> Unit)? = null,
 ) {
     val primary = if (onMedia) Tokens.Colors.globalTextOnMedia else Tokens.Colors.globalTextPrimary
     val secondary = PageRoles.secondaryText(onMedia)
@@ -144,5 +166,8 @@ fun PeopleRow(
             }
         }
         if (unread) UnreadDot(Modifier.align(Alignment.CenterVertically).padding(start = Tokens.Sizes.globalPillGap))
+        if (trailing != null) {
+            Box(Modifier.align(Alignment.CenterVertically).padding(start = Tokens.Sizes.globalPillGap)) { trailing() }
+        }
     }
 }

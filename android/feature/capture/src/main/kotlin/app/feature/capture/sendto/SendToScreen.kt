@@ -1,38 +1,38 @@
-// Surface: camera.sendto.
-// References: references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (header, preview
-// card, message field + mic, voice coach, recipient rows, 'send ⓝ'); a-savannahclooney-7683341732695592206-t5.73-sendto-caption-keyboard.png
-// (caption on the photo, keyboard); a-jacob-7691153057177931039-t4.73-sendto-voice-tooltip.png;
-// a-virgi-7686278541255642390-t56.23-sendto-three-selected-es.png; a-chuongxetank-…-t7.73-posted-toast-contacts-card.png (toast).
+// Surface: camera.sendto — Retro's "Postcard" composer and its "Add a Message" sheet.
+// References: references/auto/retro/store/retro-store-03.png (ST-03: header, photo frame, "Add a message" pill,
+// label + rows, 60-pt white capsule); references/auto/retro/press/tc-2023-12-retro3.png phones 2–3 (disabled
+// capsule #4D4D4D, "Add a Message" sheet with the 250 counter). Decisions: MERGE_DECISIONS RC-5 … RC-8.
 package app.feature.capture.sendto
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.paddingFrom
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,56 +40,53 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material.icons.rounded.ExpandLess
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.semantics.onClick
-import app.feature.capture.ui.glyphTopToBaseline
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.layout.FirstBaseline
+import androidx.compose.ui.layout.LastBaseline
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.isTraversalGroup
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.traversalIndex
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import app.data.model.Group
 import app.designsystem.R
 import app.designsystem.generated.Tokens
-import app.feature.capture.ui.CaptureText
-import app.feature.capture.ui.CapsuleShape
-import app.feature.capture.ui.CircleIconButton
-import app.feature.capture.ui.CoachTooltip
-import app.feature.capture.ui.EmptyStateBlock
-import app.feature.capture.ui.Glyph
-import app.feature.capture.ui.AnimatedToast
-import app.feature.capture.ui.LimeToast
-import app.feature.capture.ui.MinTouchTargets
-import app.feature.capture.ui.haptic
+import app.feature.capture.ui.MediaEmptyState
+import app.feature.capture.ui.MediaSheetHeader
+import app.feature.capture.ui.OnMedia
+import app.feature.capture.ui.SheetTitleText
+import app.feature.capture.ui.VoiceCapsule
+import app.feature.capture.ui.VoiceGestures
+import app.feature.capture.ui.bottomClearance
+import app.ui.components.ActivityIndicator
 import app.ui.components.Avatar
 import app.ui.components.CheckCircle
-import app.ui.components.HeaderCircleButton
-import app.ui.components.HeaderCircleFill
+import app.ui.components.CircleButtonStyle
+import app.ui.components.CircleIconButton
+import app.ui.components.EmptyStateAction
+import app.ui.components.Hairline
+import app.ui.components.HeaderTextButton
+import app.ui.components.MediaPill
+import app.ui.components.MediaPillStyle
+import app.ui.components.PrimaryButton
+import app.ui.foundation.PageRoles
+import app.ui.foundation.tickToggleable
+import app.ui.system.DsBottomSheet
+import app.ui.system.DsDropdownMenu
+import app.ui.system.DsMenuItem
+import app.ui.system.SystemAlertDialog
+import app.ui.text.CapTop
+import app.ui.text.TextRoles
 import java.io.File
 import kotlin.math.max
 
@@ -97,15 +94,23 @@ import kotlin.math.max
 data class SendToChrome(
     /** The capture as an image (photo, or a video's frame). */
     val preview: ImageBitmap?,
-    /** `camera.capture.hourOverlay` text. */
-    val hourText: String,
-    /** Signed cover URLs by group id (rows show `icon.global.group` without one). */
+    /** Signed cover URLs (or painters) by group id (rows show `icon.global.group` without one). */
     val covers: Map<String, Any?> = emptyMap(),
 )
 
+/** The voice note's callbacks besides the hold gestures. */
+data class VoiceActions(
+    val gestures: VoiceGestures = VoiceGestures.None,
+    /** TalkBack: start a hands-free recording, or keep the running one. */
+    val onA11yToggle: () -> Unit = {},
+    /** "Delete recording" from the note's menu. */
+    val onDelete: () -> Unit = {},
+)
+
 /**
- * The send-to screen (stateless). Full height on `color.global.backgroundDeep`; positions from
- * the screen top per `camera.sendto.layout.*`.
+ * The send-to screen (stateless). Full height on `color.global.backgroundDeep` in both appearances; the
+ * content between the header and the bottom capsule scrolls. [messageSheetOpen] shows the "Add a Message"
+ * sheet (follows the appearance).
  */
 @Composable
 fun SendToScreen(
@@ -114,473 +119,324 @@ fun SendToScreen(
     onClose: () -> Unit,
     onSave: () -> Unit,
     onCaption: (String) -> Unit,
-    onMic: () -> Unit,
-    onVoiceCoachClose: () -> Unit,
     onToggle: (String) -> Unit,
     onSend: () -> Unit,
     onCreateGroup: () -> Unit,
     onRetryGroups: () -> Unit,
+    onConfirmDiscard: () -> Unit,
+    onDismissAlert: () -> Unit,
+    onRetrySend: () -> Unit,
     modifier: Modifier = Modifier,
     videoPreview: (@Composable () -> Unit)? = null,
-    voiceGestures: VoiceGestures = VoiceGestures.None,
+    voice: VoiceActions = VoiceActions(),
     now: () -> Long = android.os.SystemClock::elapsedRealtime,
-    savedToast: Boolean = false,
-) = MinTouchTargets {
-    val view = LocalView.current
-    var captionFocused by remember { mutableStateOf(false) }
-    val captionFocus = remember { FocusRequester() }
-    val preview = Tokens.Layouts.CameraSendtoLayoutPreview
-    val header = Tokens.Sizes.globalHeaderButton
-    // The header circles' centre line sits gapBelowHeader above the card.
-    val headerTop = preview.top.dp - preview.gapBelowHeader.dp - header
-
-    BoxWithConstraints(
+    messageSheetOpen: Boolean = false,
+    onMessageSheet: (Boolean) -> Unit = {},
+) {
+    val sending = state.sending
+    Column(
         modifier
             .fillMaxSize()
             .background(Tokens.Colors.globalBackgroundDeep)
-            .semantics { isTraversalGroup = true }
+            .windowInsetsPadding(WindowInsets.statusBars)
             .testTag("camera.sendto"),
     ) {
-        val width = maxWidth
-        // Header: ✕ · title · download.
-        Box(Modifier.fillMaxWidth().padding(top = headerTop).height(header)) {
-            HeaderCircleButton(
-                icon = Tokens.Icons.globalClose,
-                contentDescription = stringResource(R.string.camera_sendto_a11y_close),
-                onClick = onClose,
-                fill = HeaderCircleFill.OnDeep,
-                modifier = Modifier.align(Alignment.CenterStart).padding(start = Tokens.Sizes.globalHeaderInset).semantics { traversalIndex = 0f }.testTag("sendto.close"),
-            )
-            BasicText(
-                stringResource(R.string.camera_sendto_title),
-                style = CaptureText.sheetTitle.merge(TextStyle(color = Tokens.Colors.globalTextPrimary)),
-                modifier = Modifier.align(Alignment.Center).semantics { traversalIndex = 1f }.testTag("sendto.title"),
-            )
-            HeaderCircleButton(
-                icon = Tokens.Icons.globalDownload,
-                contentDescription = stringResource(R.string.camera_sendto_a11y_save),
-                onClick = onSave,
-                fill = HeaderCircleFill.OnDeep,
-                modifier = Modifier.align(Alignment.CenterEnd).padding(end = Tokens.Sizes.globalHeaderInset).semantics { traversalIndex = 2f }.testTag("sendto.save"),
+        MediaSheetHeader(
+            leading = {
+                CircleIconButton(Tokens.Icons.globalDownload, stringResource(R.string.camera_sendto_a11y_save), onSave, style = CircleButtonStyle.OnMedia, enabled = !sending)
+            },
+            trailing = {
+                CircleIconButton(Tokens.Icons.globalClose, stringResource(R.string.camera_sendto_a11y_close), onClose, style = CircleButtonStyle.OnMedia, enabled = !sending)
+            },
+        ) { centre ->
+            Crossfade(sending, animationSpec = app.ui.foundation.DsMotion.crossfade(), label = "sendtoTitle") { busy ->
+                SheetTitleText(
+                    stringResource(if (busy) R.string.camera_sendto_sending else R.string.camera_sendto_title),
+                    capMiddle = centre,
+                    color = Tokens.Colors.globalTextOnMedia,
+                )
+            }
+        }
+        Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+            Spacer(Modifier.height(Dp(Tokens.Layouts.CameraSendtoLayoutPreview.topBelowHeaderCircle)))
+            Preview(state, chrome, videoPreview, voice, now, sending, onOpenMessage = { onMessageSheet(true) })
+            GroupsSection(state, chrome.covers, onToggle, onCreateGroup, onRetryGroups)
+        }
+        // C-05 on media, pinned: 20 from the sides, its bottom `camera.sendto.size.sendButtonBottom` above the screen bottom.
+        OnMedia {
+            PrimaryButton(
+                text = stringResource(R.string.camera_sendto_send),
+                onClick = onSend,
+                enabled = state.sendEnabled || sending,
+                loading = sending,
+                onMedia = true,
+                modifier = Modifier
+                    .padding(horizontal = Tokens.Sizes.globalButtonMarginH)
+                    .padding(top = Tokens.Sizes.globalScreenMargin, bottom = bottomClearance(Tokens.Sizes.cameraSendtoSizeSendButtonBottom))
+                    .testTag("sendto.send"),
             )
         }
+    }
 
-        // Preview card.
-        val cardW = preview.width.dp
-        val cardH = preview.height.dp
+    if (messageSheetOpen) {
+        MessageSheet(state.caption, onCaption, onDone = { onMessageSheet(false) })
+    }
+    when (val alert = state.alert) {
+        SendToViewModel.Alert.Discard -> SystemAlertDialog(
+            title = stringResource(R.string.camera_sendto_discard_title),
+            text = stringResource(R.string.camera_sendto_discard_message),
+            confirmLabel = stringResource(R.string.camera_sendto_discard_confirm),
+            onConfirm = onConfirmDiscard,
+            dismissLabel = stringResource(R.string.camera_sendto_cancel),
+            onDismiss = onDismissAlert,
+            destructive = true,
+        )
+        is SendToViewModel.Alert.SendFailed -> SystemAlertDialog(
+            title = stringResource(R.string.camera_sendto_error_sendfailed),
+            text = stringResource(if (alert.offline) R.string.camera_sendto_error_offline else R.string.camera_sendto_error_generic),
+            confirmLabel = stringResource(R.string.camera_sendto_error_retry),
+            onConfirm = onRetrySend,
+            dismissLabel = stringResource(R.string.camera_sendto_cancel),
+            onDismiss = onDismissAlert,
+        )
+        null -> Unit
+    }
+}
+
+/**
+ * The photo frame (`camera.sendto.layout.preview`): 297.6 wide, centred, native aspect up to 422.8 tall,
+ * aspect-fill, corners 8.5; on it, centred, its bottom 20.5 above the photo bottom, the message pill (C-09 dark,
+ * `icon.global.edit`) and, `size.global.pillGap` after it, the voice capsule.
+ */
+@Composable
+private fun Preview(
+    state: SendToViewModel.UiState,
+    chrome: SendToChrome,
+    videoPreview: (@Composable () -> Unit)?,
+    voice: VoiceActions,
+    now: () -> Long,
+    sending: Boolean,
+    onOpenMessage: () -> Unit,
+) {
+    val spec = Tokens.Layouts.CameraSendtoLayoutPreview
+    val field = Tokens.Layouts.CameraSendtoLayoutMessageField
+    val media = state.media
+    val bitmap = chrome.preview
+    val aspect = when {
+        media?.width != null && media.height != null && media.height > 0 -> media.width.toFloat() / media.height
+        bitmap != null && bitmap.height > 0 -> bitmap.width.toFloat() / bitmap.height
+        else -> Tokens.Layouts.CameraCaptureLayoutViewfinder.aspect
+    }
+    val width = Dp(spec.width)
+    val height = minOf(width / aspect, Dp(spec.maxHeight))
+    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Box(
             Modifier
-                .offset(x = (width - cardW) / 2, y = preview.top.dp)
-                .size(cardW, cardH)
-                .clip(RoundedCornerShape(Tokens.Radii.globalPhoto))
-                .background(Tokens.Colors.globalBackgroundDeep)
-                .testTag("sendto.preview"),
+                .size(width, height)
+                .clip(RoundedCornerShape(Dp(spec.cornerRadius)))
+                .background(Tokens.Colors.globalControlOnDeep),
         ) {
-            if (videoPreview != null) {
-                Box(Modifier.fillMaxSize().clearAndSetSemantics { }) { videoPreview() }
-            } else if (chrome.preview != null) {
-                // The member's own photo: decorative in this flow.
-                Image(chrome.preview, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+            // Own photo: decorative for TalkBack.
+            Box(Modifier.fillMaxSize().semantics { invisibleToUser() }) {
+                when {
+                    videoPreview != null -> videoPreview()
+                    bitmap != null -> Image(BitmapPainter(bitmap), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                }
             }
-            CaptionOverlay(
-                hourText = chrome.hourText,
-                caption = state.caption,
-                onCaption = onCaption,
-                focusRequester = captionFocus,
-                onFocus = { captionFocused = it },
-                placeholder = stringResource(R.string.camera_sendto_caption_placeholder),
-            )
-            // Bottom row: message field + mic in camera.sendto.color.messageField (backdrop blur radius not tokenized: tint only).
-            if (!captionFocused) {
-                MessageRow(
-                    state = state,
-                    onField = { captionFocus.requestFocus() },
-                    onLockedFinish = onMic,
-                    gestures = voiceGestures,
-                    now = now,
-                )
-            }
-        }
-        if (state.voiceCoachVisible && state.micAvailable && !captionFocused) {
-            VoiceCoach(cardLeft = (width - cardW) / 2, cardTop = preview.top.dp, onClose = onVoiceCoachClose)
-        }
-
-        // Recipients.
-        val row = Tokens.Layouts.CameraSendtoLayoutRecipientRow
-        val listTop = preview.top.dp + cardH + row.firstRowCenterBelowPreview.dp - row.pitch.dp / 2
-        val buttonArea = Tokens.Sizes.globalButtonHeightSheet + Tokens.Sizes.cameraSendtoSizeSendButtonBottom
-        Box(Modifier.fillMaxSize().padding(top = listTop, bottom = buttonArea)) {
-            when (val groups = state.groups) {
-                SendToViewModel.Groups.Loading -> CircularProgressIndicator(
-                    color = Tokens.Colors.globalTextPrimary,
-                    modifier = Modifier.align(Alignment.Center).testTag("sendto.loading"),
-                )
-                SendToViewModel.Groups.Empty -> EmptyStateBlock(
-                    title = stringResource(R.string.camera_sendto_empty_title),
-                    detail = stringResource(R.string.camera_sendto_empty_detail),
-                    buttonLabel = stringResource(R.string.camera_sendto_empty_button),
-                    onButton = onCreateGroup,
-                    modifier = Modifier.align(Alignment.Center),
-                )
-                is SendToViewModel.Groups.Failed -> Unit // the error toast below carries "try again"
-                is SendToViewModel.Groups.Loaded -> LazyColumn(Modifier.fillMaxSize().testTag("sendto.rows"), contentPadding = PaddingValues()) {
-                    items(state.visibleGroups, key = { it.id }) { group ->
-                        RecipientRow(
-                            group = group,
-                            cover = chrome.covers[group.id],
-                            selected = group.id in state.selected,
-                            onToggle = {
-                                view.haptic(Tokens.Haptics.globalSelect)
-                                onToggle(group.id)
-                            },
+            Row(
+                Modifier.align(Alignment.BottomCenter).padding(bottom = Dp(field.bottomInset)),
+                horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalPillGap),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (!state.recordingVoice) {
+                    Crossfade(state.caption.isBlank(), animationSpec = app.ui.foundation.DsMotion.crossfade(), label = "messagePill") { empty ->
+                        MediaPill(
+                            text = stringResource(if (empty) R.string.camera_sendto_message_add else R.string.camera_sendto_message_edit),
+                            onClick = { if (!sending) onOpenMessage() },
+                            style = MediaPillStyle.Dark,
+                            icon = Tokens.Icons.globalEdit,
+                            modifier = Modifier.testTag("sendto.message"),
+                        )
+                    }
+                }
+                if (state.micAvailable) {
+                    var menu by remember { mutableStateOf(false) }
+                    Box {
+                        VoiceCapsule(
+                            recording = state.recordingVoice,
+                            recordingStartedAt = state.recordingStartedAt,
+                            noteDurationMs = state.voice?.durationMs,
+                            label = stringResource(R.string.camera_sendto_a11y_voice),
+                            gestures = if (sending) VoiceGestures.None else voice.gestures,
+                            onA11yToggle = { if (!sending) voice.onA11yToggle() },
+                            onNoteTap = { if (!sending) menu = true },
+                            now = now,
+                        )
+                        DsDropdownMenu(
+                            expanded = menu,
+                            onDismissRequest = { menu = false },
+                            items = listOf(DsMenuItem(stringResource(R.string.chat_voice_a11y_discard), voice.onDelete, Tokens.Icons.globalTrash, destructive = true)),
                         )
                     }
                 }
             }
         }
-
-        // Send button.
-        if (state.sendVisible) {
-            SendButton(
-                count = state.selected.size,
-                onClick = onSend,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(
-                        start = Tokens.Sizes.globalButtonMarginHSheet,
-                        end = Tokens.Sizes.globalButtonMarginHSheet,
-                        bottom = Tokens.Sizes.cameraSendtoSizeSendButtonBottom,
-                    )
-                    .semantics { traversalIndex = 10f },
-            )
-        }
-
-        // "saved to your library" for camera.sendto.duration.toastVisible (the route times it).
-        val failedGroups = state.groups as? SendToViewModel.Groups.Failed
-        AnimatedToast(visible = savedToast && state.sendError == null && failedGroups == null, Modifier.testTag("sendto.saved")) {
-            LimeToast(stringResource(R.string.camera_sendto_toast_saved), null, null, Modifier.semantics { liveRegion = LiveRegionMode.Polite })
-        }
-
-        // Errors that keep the capture: queueing failed, or the group list could not load.
-        if (state.sendError != null || failedGroups != null) {
-            val offline = failedGroups?.offline == true || state.sendError == app.data.error.DataError.Network
-            Box(Modifier.fillMaxWidth().padding(top = Tokens.Layouts.CameraSendtoLayoutToast.top.dp).testTag("sendto.error")) {
-                LimeToast(
-                    text = stringResource(if (offline) R.string.camera_sendto_error_offline else R.string.camera_sendto_error_sendfailed),
-                    actionLabel = stringResource(R.string.camera_sendto_error_retry),
-                    onAction = if (failedGroups != null) onRetryGroups else onSend,
-                    modifier = Modifier.testTag("sendto.toast"),
-                )
-            }
-        }
-    }
-}
-
-/** Hour overlay centred on the card and, under it, the caption as typed (wraps within the card). */
-@Composable
-private fun CaptionOverlay(
-    hourText: String,
-    caption: String,
-    onCaption: (String) -> Unit,
-    focusRequester: FocusRequester,
-    onFocus: (Boolean) -> Unit,
-    placeholder: String,
-) {
-    val overlayStyle = CaptureText.overlayTimeCamera.merge(TextStyle(color = Tokens.Colors.globalTextPrimary, textAlign = TextAlign.Center))
-    val captionStyle = CaptureText.style(Tokens.FontSizes.cameraSendtoFontSizeCaption, Tokens.FontWeights.cameraSendtoFontWeightCaption)
-        .merge(TextStyle(color = Tokens.Colors.globalTextPrimary, textAlign = TextAlign.Center))
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        BasicText(hourText, style = overlayStyle, modifier = Modifier.clearAndSetSemantics { })
-        // Caption baseline camera.sendto.size.captionBaselineOffset below the overlay baseline.
-        BasicTextField(
-            value = caption,
-            onValueChange = onCaption,
-            textStyle = captionStyle,
-            cursorBrush = SolidColor(Tokens.Colors.globalTextPrimary),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = Tokens.Layouts.CameraSendtoLayoutMessageField.insetLeading.dp)
-                .offset(y = Tokens.Sizes.cameraSendtoSizeCaptionBaselineOffset)
-                .focusRequester(focusRequester)
-                .onFocusChanged { onFocus(it.isFocused) }
-                .semantics { contentDescription = placeholder }
-                .testTag("sendto.caption"),
-        )
     }
 }
 
 /**
- * The voice-note gestures of the mic circle (`chat.voice.layout.recording`): press and hold
- * records, lifting the finger keeps the note for the post, sliding left cancels, sliding up onto
- * the lock continues hands-free.
+ * The groups block (`camera.sendto.layout.recipientRow`): the label (text role `meta`, `color.global.textSecondary`)
+ * 35.2 below the photo at the margin, then one C-16 row per group with C-32 hairlines between; or the loading /
+ * empty / failed block in the rows area.
  */
-interface VoiceGestures {
-    fun down()
-    fun release()
-    fun cancel()
-    fun lock()
-
-    companion object {
-        val None = object : VoiceGestures {
-            override fun down() = Unit
-            override fun release() = Unit
-            override fun cancel() = Unit
-            override fun lock() = Unit
-        }
-    }
-}
-
 @Composable
-private fun MessageRow(
+private fun GroupsSection(
     state: SendToViewModel.UiState,
-    onField: () -> Unit,
-    onLockedFinish: () -> Unit,
-    gestures: VoiceGestures,
-    now: () -> Long,
+    covers: Map<String, Any?>,
+    onToggle: (String) -> Unit,
+    onCreateGroup: () -> Unit,
+    onRetryGroups: () -> Unit,
 ) {
-    val f = Tokens.Layouts.CameraSendtoLayoutMessageField
-    val placeholder = stringResource(R.string.camera_sendto_caption_placeholder)
-    val fieldText = CaptureText.style(Tokens.FontSizes.cameraSendtoFontSizeMessagePlaceholder, null).merge(TextStyle(color = Tokens.Colors.globalTextPrimary))
-    Box(Modifier.fillMaxSize()) {
-        Row(
-            Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = f.insetLeading.dp, end = f.insetTrailing.dp, bottom = f.insetBottom.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(
-                Modifier
-                    .weight(1f)
-                    .height(f.height.dp)
-                    .clip(CapsuleShape)
-                    .background(Tokens.Colors.cameraSendtoColorMessageField)
-                    .clickable(enabled = !state.recordingVoice, onClick = onField)
-                    .semantics { role = Role.Button; contentDescription = placeholder; traversalIndex = 3f }
-                    .padding(horizontal = f.height.dp / 2)
-                    .testTag("sendto.field"),
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                when {
-                    state.recordingVoice -> RecordingRow(state.recordingStartedAt, fieldText, now)
-                    state.voice != null -> BasicText(
-                        voiceDuration(state.voice.durationMs.toLong()),
-                        style = CaptureText.style(Tokens.FontSizes.globalCaption, Tokens.FontWeights.fontWeightGlobalCaption).merge(TextStyle(color = Tokens.Colors.chatVoiceColorDuration)),
-                        modifier = Modifier.testTag("sendto.voice.attached"),
-                    )
-                    else -> BasicText(placeholder, style = fieldText, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-            }
-            Spacer(Modifier.width(f.gapToMic.dp))
-            if (state.micAvailable) {
-                VoiceMic(state, gestures, onLockedFinish)
-            } else {
-                Spacer(Modifier.width(f.micDiameter.dp))
-            }
+    val row = Tokens.Layouts.CameraSendtoLayoutRecipientRow
+    val labelStyle = TextRoles.meta
+    Text(
+        stringResource(R.string.camera_sendto_groupslabel),
+        style = labelStyle,
+        color = Tokens.Colors.globalTextSecondary,
+        modifier = Modifier
+            .padding(horizontal = Tokens.Sizes.globalScreenMargin)
+            // "35.2 pt below the photo" (ST-03, to the label's cap top).
+            .paddingFrom(FirstBaseline, before = Dp(GROUPS_LABEL_BELOW_PHOTO) + CapTop.height(labelStyle))
+            .semantics { heading() },
+    )
+    val rowsArea = Modifier.fillMaxWidth().padding(vertical = Dp(row.padding))
+    when (val groups = state.groups) {
+        SendToViewModel.Groups.Loading -> Box(rowsArea, contentAlignment = Alignment.Center) {
+            ActivityIndicator(stringResource(R.string.global_a11y_loading), onMedia = true)
         }
-    }
-}
-
-/** While recording: red dot, elapsed time, and the centred hint (‹ slide to cancel) in the field's text role. */
-@Composable
-private fun RecordingRow(startedAt: Long?, style: TextStyle, now: () -> Long) {
-    var elapsed by remember(startedAt) { mutableStateOf(0L) }
-    LaunchedEffect(startedAt) {
-        val start = startedAt ?: return@LaunchedEffect
-        while (true) {
-            elapsed = (now() - start).coerceAtLeast(0)
-            kotlinx.coroutines.delay(VOICE_TIMER_TICK_MS)
-        }
-    }
-    // The dot takes the timer's digit height (its size was not measured).
-    val dot = glyphTopToBaseline(Tokens.FontSizes.cameraSendtoFontSizeMessagePlaceholder, null, "0")
-    Row(Modifier.fillMaxWidth().testTag("sendto.voice.recording"), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(dot).clip(CircleShape).background(Tokens.Colors.globalDestructive))
-        Spacer(Modifier.width(dot / 2))
-        BasicText(voiceDuration(elapsed), style = style)
-        Row(Modifier.weight(1f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-            Glyph(Tokens.Icons.globalBack, Tokens.Colors.globalTextSecondary, null)
-            BasicText(
-                stringResource(R.string.chat_voice_recording_slidetocancel),
-                style = style.merge(TextStyle(color = Tokens.Colors.globalTextSecondary)),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+        SendToViewModel.Groups.Empty -> Box(rowsArea, contentAlignment = Alignment.Center) {
+            MediaEmptyState(
+                title = stringResource(R.string.camera_sendto_empty_title),
+                detail = stringResource(R.string.camera_sendto_empty_detail),
+                action = EmptyStateAction(stringResource(R.string.camera_sendto_empty_button), onCreateGroup, Tokens.Icons.globalAdd),
+                icon = Tokens.Icons.globalGroup,
             )
         }
-    }
-}
-
-/** `chat.voice.layout.durationFormat` (mm:ss). */
-private fun voiceDuration(ms: Long): String {
-    val seconds = ms / MILLIS_PER_SECOND
-    return String.format(java.util.Locale.ROOT, VOICE_DURATION_FORMAT, seconds / SECONDS_PER_MINUTE, seconds % SECONDS_PER_MINUTE)
-}
-
-private const val MILLIS_PER_SECOND = 1000L // provenance-ok: unit conversion
-private const val SECONDS_PER_MINUTE = 60L // provenance-ok: unit conversion
-private const val VOICE_DURATION_FORMAT = "%02d:%02d" // provenance-ok: chat.voice.layout.durationFormat pattern mm:ss
-private const val VOICE_TIMER_TICK_MS = 1000L // provenance-ok: the timer shows whole seconds
-
-@Composable
-private fun VoiceMic(state: SendToViewModel.UiState, gestures: VoiceGestures, onLockedFinish: () -> Unit) {
-    val f = Tokens.Layouts.CameraSendtoLayoutMessageField
-    val mic = f.micDiameter.dp
-    val label = stringResource(R.string.camera_sendto_a11y_voice)
-    val density = androidx.compose.ui.platform.LocalDensity.current
-    // A slide counts once it travels one mic diameter (gesture threshold, not a drawn size).
-    val threshold = with(density) { mic.toPx() }
-    val locked = state.voiceLocked
-    // Fixed to the mic's size: the lock floats above it without moving the row (no layout jump).
-    Box(Modifier.size(mic), contentAlignment = Alignment.Center) {
-        if (state.recordingVoice && !locked) {
-            // The lock above the mic: chevron up over the lock glyph (capsule size not measured).
-            Column(
-                Modifier
-                    .align(Alignment.BottomCenter)
-                    .offset(y = -mic)
-                    .wrapContentSize(Alignment.BottomCenter, unbounded = true)
-                    .testTag("sendto.voice.lock"),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Glyph(androidx.compose.material.icons.Icons.Rounded.ExpandLess, Tokens.Colors.globalTextSecondary, null)
-                Glyph(Tokens.Icons.globalLock, Tokens.Colors.globalTextSecondary, null)
+        is SendToViewModel.Groups.Failed -> Box(rowsArea, contentAlignment = Alignment.Center) {
+            MediaEmptyState(
+                title = stringResource(if (groups.offline) R.string.camera_sendto_error_offline else R.string.camera_sendto_error_generic),
+                detail = null,
+                action = EmptyStateAction(stringResource(R.string.camera_sendto_error_retry), onRetryGroups),
+                icon = null,
+            )
+        }
+        is SendToViewModel.Groups.Loaded -> Column(Modifier.padding(top = Dp(row.padding) - Dp(row.padding))) {
+            state.visibleGroups.forEachIndexed { index, group ->
+                if (index > 0) Hairline(Modifier.padding(horizontal = Tokens.Sizes.globalScreenMargin), onMedia = true)
+                GroupRow(group, covers[group.id], selected = group.id in state.selected, enabled = !state.sending && state.replyGroupId == null) { onToggle(group.id) }
             }
         }
-        Box(
-            Modifier
-                .size(mic)
-                .clip(CircleShape)
-                .background(Tokens.Colors.cameraSendtoColorMessageField)
-                .pointerInput(locked) {
-                    awaitEachGesture {
-                        val down = awaitFirstDown()
-                        if (locked) {
-                            if (waitForUpOrCancellation() != null) onLockedFinish()
-                            return@awaitEachGesture
-                        }
-                        gestures.down()
-                        var settled = false
-                        while (true) {
-                            val event = awaitPointerEvent()
-                            val change = event.changes.firstOrNull { it.id == down.id } ?: break
-                            change.consume()
-                            if (!settled) {
-                                val d = change.position - down.position
-                                when {
-                                    d.x < -threshold -> { gestures.cancel(); settled = true }
-                                    d.y < -threshold -> { gestures.lock(); settled = true }
-                                }
-                            }
-                            if (!change.pressed) {
-                                if (!settled) gestures.release()
-                                break
-                            }
-                        }
-                    }
-                }
-                .semantics {
-                    contentDescription = label
-                    role = Role.Button
-                    traversalIndex = 4f
-                    // TalkBack cannot hold: activating starts hands-free (locked) and again finishes.
-                    onClick {
-                        if (locked) onLockedFinish() else { gestures.down(); gestures.lock() }
-                        true
-                    }
-                }
-                .testTag(if (state.recordingVoice) "sendto.mic.recording" else "sendto.mic"),
-            contentAlignment = Alignment.Center,
-        ) {
-            Glyph(if (locked) Tokens.Icons.globalSend else Tokens.Icons.globalMic, Tokens.Colors.globalTextPrimary, null)
-        }
     }
 }
 
-/** The Yope coach pointing at the mic, wrapping to two lines within the card. */
-@Composable
-private fun VoiceCoach(cardLeft: Dp, cardTop: Dp, onClose: () -> Unit) {
-    val f = Tokens.Layouts.CameraSendtoLayoutMessageField
-    val p = Tokens.Layouts.CameraSendtoLayoutPreview
-    val coach = Tokens.Layouts.CameraCaptureLayoutCoach
-    val micTop = cardTop + p.height.dp - f.insetBottom.dp - (f.height.dp + f.micDiameter.dp) / 2
-    val coachWidth = p.width.dp - f.insetLeading.dp - f.insetTrailing.dp
-    val micCenterInCoach = coachWidth - f.micDiameter.dp / 2
-    Box(Modifier.fillMaxWidth().height(micTop - coach.pointerToTarget.dp), contentAlignment = Alignment.BottomStart) {
-        CoachTooltip(
-            text = stringResource(R.string.camera_sendto_coach_voice),
-            closeLabel = stringResource(R.string.camera_capture_a11y_close),
-            onClose = onClose,
-            pointerX = micCenterInCoach,
-            maxLines = 2,
-            modifier = Modifier.padding(start = cardLeft + f.insetLeading.dp).width(coachWidth),
-        )
-    }
-}
+/** "35.2 pt below the photo" (`camera.sendto.layout.recipientRow.label`: the number lives only in the token's text). */
+private const val GROUPS_LABEL_BELOW_PHOTO = 35.2f // provenance-ok: camera.sendto.layout.recipientRow.label "35.2 pt below the preview bottom" (no numeric field — reported)
 
+/**
+ * One group row (C-16 on media): cover in a `size.global.avatarPicker` circle (no cover: `icon.global.group` on
+ * `color.global.controlOnDeep`), the name `size.global.cardNameGap` after it (text role `listTitle`,
+ * `color.global.textOnMedia`), the check circle (`size.global.checkCircle`) with its ink at the trailing margin;
+ * 16 above and below the avatar (`camera.sendto.layout.recipientRow.padding`). The row toggles as a checkbox
+ * (`haptic.global.select`); the check cross-fades.
+ */
 @Composable
-private fun RecipientRow(group: Group, cover: Any?, selected: Boolean, onToggle: () -> Unit) {
-    val row = Tokens.Layouts.CameraSendtoLayoutRecipientRow
-    val avatar = Tokens.Sizes.globalAvatarSmall
-    Box(
+private fun GroupRow(group: Group, cover: Any?, selected: Boolean, enabled: Boolean, onToggle: () -> Unit) {
+    val padding = Dp(Tokens.Layouts.CameraSendtoLayoutRecipientRow.padding)
+    Row(
         Modifier
             .fillMaxWidth()
-            .height(row.pitch.dp)
-            .toggleable(value = selected, role = Role.Checkbox, onValueChange = { onToggle() })
-            .semantics(mergeDescendants = true) { traversalIndex = 5f }
+            .tickToggleable(value = selected, enabled = enabled, role = Role.Checkbox) { onToggle() }
+            .semantics(mergeDescendants = true) {}
+            .padding(horizontal = Tokens.Sizes.globalScreenMargin, vertical = padding)
             .testTag("sendto.row.${group.id}"),
-    ) {
-        Avatar(
-            image = cover,
-            size = avatar,
-            fallbackIcon = Tokens.Icons.globalGroup,
-            modifier = Modifier.align(Alignment.CenterStart).offset(x = row.avatarCenterInset.dp - avatar / 2).testTag("sendto.avatar.${group.id}"),
-        )
-        BasicText(
-            group.name,
-            style = CaptureText.headerTitle.merge(TextStyle(color = Tokens.Colors.globalTextPrimary)),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .padding(start = row.nameInset.dp, end = row.checkTrailingInset.dp + Tokens.Sizes.globalCheckCircle)
-                .testTag("sendto.name.${group.id}"),
-        )
-        CheckCircle(selected, Modifier.align(Alignment.CenterEnd).padding(end = row.checkTrailingInset.dp).testTag("sendto.check.${group.id}"))
-    }
-}
-
-@Composable
-private fun SendButton(count: Int, onClick: () -> Unit, modifier: Modifier) {
-    val label = stringResource(R.string.camera_sendto_send)
-    val disc = Tokens.Sizes.cameraSendtoSizeCountDisc
-    Row(
-        modifier
-            .fillMaxWidth()
-            .height(Tokens.Sizes.globalButtonHeightSheet)
-            .clip(RoundedCornerShape(Tokens.Radii.globalButton))
-            .background(Tokens.Colors.globalAccent)
-            .clickable(onClick = onClick)
-            .semantics(mergeDescendants = true) { role = Role.Button; contentDescription = label }
-            .testTag("sendto.send"),
-        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        BasicText(label, style = CaptureText.button.merge(TextStyle(color = Tokens.Colors.globalOnAccent)), modifier = Modifier.clearAndSetSemantics { })
-        Spacer(Modifier.width(Tokens.Sizes.cameraSendtoSizeCountDiscGap))
-        // The count disc is hidden from accessibility (the rows expose their selected state).
-        Box(
-            Modifier.size(disc).clip(CircleShape).background(Tokens.Colors.globalOnAccent).testTag("sendto.count").clearAndSetSemantics { },
-            contentAlignment = Alignment.Center,
-        ) {
-            BasicText(
-                count.toString(),
-                style = CaptureText.style(Tokens.FontSizes.cameraSendtoFontSizeCountNumber, Tokens.FontWeights.cameraSendtoFontWeightCountNumber)
-                    .merge(TextStyle(color = Tokens.Colors.globalAccent)),
-            )
-        }
+        OnMedia { Avatar(cover, Tokens.Sizes.globalAvatarPicker, fallbackIcon = Tokens.Icons.globalGroup) }
+        Spacer(Modifier.width(Tokens.Sizes.globalCardNameGap))
+        Text(
+            group.name,
+            style = TextRoles.listTitle,
+            color = Tokens.Colors.globalTextOnMedia,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        Spacer(Modifier.width(Tokens.Sizes.globalCardNameGap))
+        Crossfade(selected, animationSpec = app.ui.foundation.DsMotion.crossfade(), label = "check") { on -> OnMedia { CheckCircle(on) } }
     }
 }
 
-/** Decodes [file] sampled down to about [targetPx] on its short side (no full-size bitmap). */
+/**
+ * The "Add a Message" sheet (`camera.sendto.layout.messageSheet`): a native page sheet that follows the
+ * appearance; centred title (`sheetTitle`) with the trailing "Done" (C-08, `textButton`, `color.global.textPrimary`);
+ * the multi-line field from 22 in (text role `placeholder`, typed `color.global.textPrimary`, placeholder in
+ * secondary text); the counter "58/250" (`camera.sendto.fontSize.counter`, monospaced digits, secondary text)
+ * trailing 20.7 from the edge and 22 above the keyboard. Swipe down keeps the text as "Done" does.
+ */
+@Composable
+private fun MessageSheet(text: String, onText: (String) -> Unit, onDone: () -> Unit) {
+    val sheet = Tokens.Layouts.CameraSendtoLayoutMessageSheet
+    val max = Tokens.Counts.cameraSendtoSizeCaptionMaxLength
+    val focus = remember { FocusRequester() }
+    DsBottomSheet(onDismissRequest = onDone) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Tokens.Sizes.globalScreenMargin),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                stringResource(R.string.camera_sendto_message_title),
+                style = TextRoles.sheetTitle,
+                color = Tokens.Colors.globalTextPrimary,
+                modifier = Modifier.semantics { heading() },
+            )
+            HeaderTextButton(stringResource(R.string.camera_sendto_message_done), onDone, Modifier.align(Alignment.CenterEnd).testTag("sendto.message.done"))
+        }
+        val placeholder = stringResource(R.string.camera_sendto_caption_placeholder)
+        BasicTextField(
+            value = text,
+            onValueChange = onText,
+            textStyle = TextRoles.placeholder.copy(color = Tokens.Colors.globalTextPrimary),
+            cursorBrush = SolidColor(Tokens.Colors.globalTextPrimary),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f, fill = false)
+                .padding(PaddingValues(horizontal = Dp(sheet.textInset), vertical = Tokens.Sizes.globalScreenMargin))
+                .focusRequester(focus)
+                .testTag("sendto.message.field"),
+            decorationBox = { inner ->
+                Box {
+                    if (text.isEmpty()) Text(placeholder, style = TextRoles.placeholder, color = PageRoles.secondaryText())
+                    inner()
+                }
+            },
+        )
+        Text(
+            stringResource(R.string.camera_sendto_message_counter, text.length, max),
+            style = TextRoles.placeholder.copy(fontSize = Tokens.FontSizes.cameraSendtoFontSizeCounter, fontFamily = FontFamily.Monospace),
+            color = PageRoles.secondaryText(),
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(end = Dp(sheet.counterTrailingInset))
+                .paddingFrom(LastBaseline, after = Dp(sheet.counterAboveKeyboard))
+                .imePadding(),
+        )
+    }
+    LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
+}
+
+/** Decodes [file] for the preview at about [targetPx] wide, EXIF orientation applied. */
 internal fun decodePreview(file: File, targetPx: Int): ImageBitmap? {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeFile(file.path, bounds)

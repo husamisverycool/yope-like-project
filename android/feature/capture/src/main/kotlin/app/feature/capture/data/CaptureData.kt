@@ -55,6 +55,9 @@ interface CaptureData {
 
     fun retry(draftId: String)
 
+    /** `uploads.discard`: withdraws a draft that was not posted (the send's "Cancel"). */
+    fun discardDraft(draftId: String)
+
     /** Device reachability. */
     val online: Flow<Boolean>
 
@@ -94,6 +97,8 @@ class GraphCaptureData(private val graph: DataGraph) : CaptureData {
     override fun progress(draftId: String): Flow<UploadProgress> = graph.uploads.progress(draftId)
 
     override fun retry(draftId: String) = graph.uploads.retry(draftId)
+
+    override fun discardDraft(draftId: String) = graph.uploads.discard(draftId)
 
     override val online: Flow<Boolean> get() = graph.connectivity.online
 
@@ -141,6 +146,7 @@ object UnconfiguredCaptureData : CaptureData {
     override fun enqueue(post: NewPost): String = throw DataException(DataError.NotConfigured)
     override fun progress(draftId: String): Flow<UploadProgress> = flowOf(UploadProgress.Failed(DataError.NotConfigured))
     override fun retry(draftId: String) = Unit
+    override fun discardDraft(draftId: String) = Unit
     override val online: Flow<Boolean> get() = flowOf(false)
     override suspend fun invitation(invitationId: String): DailyInvitation? = null
     override suspend fun group(groupId: String): Group? = null

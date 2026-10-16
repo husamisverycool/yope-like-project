@@ -1,9 +1,9 @@
-// Surface: groups.invite — invite by link or from contacts. Reference app: Yope (2026 "invite more friends" pill; 2024
-// "Add friends to {group}" sheet; design/surfaces/groups.invite.md). Reference images:
-// references/auto/yope/frames/a-yrrah-7452976839846382855-t10.73-add-friends-share-link-2024.png (I24),
-// a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png (E26),
-// a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png (M24), …-t49.23-new-group-selected-create.png (NG2),
-// a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (CC), a-virgi-7686278541255642390-t44.23-suggested-friends-es.png (SF).
+// Surface: groups.invite — invite by link or from contacts. Visual reference: Retro album link-sharing flow
+// (references/auto/retro/press/tc-2024-04-retro-journals-5.png, TC-J5 phones 1–2: book cover with its shadow, eye note,
+// "Turn on link sharing", the grouped menu with "Reset link" and the red row, the circular share targets), the cover
+// shadow (references/auto/retro/press/tc-2024-04-journals-1.webp, TC-J1) and Retro's people rows with capsule actions
+// (references/auto/retro/press/tc-2023-07-retro-1b.webp, TC-1B). Mechanics: system share sheet, SMS compose, contacts
+// (design/surfaces/groups.invite.md; MERGE RA-11, RA-25).
 import AppData
 import AppModels
 import AppServices
@@ -27,64 +27,79 @@ struct GroupInviteScreen: View {
 struct GroupInviteView: View {
     @State private var model: GroupInviteModel
     @Environment(AccountDependencies.self) private var dependencies
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     @State private var share: ShareRequest?
     @State private var message: MessageRequest?
     @State private var confirmTurnOff = false
     @State private var pickingContact = false
     @State private var contactQuery = ""
+    @State private var contactsShared = false
 
     init(model: GroupInviteModel) {
         _model = State(initialValue: model)
     }
 
-    private static let pickerNameStyle = DSTextStyle(
-        family: Tokens.Fonts.globalFamily,
-        size: Tokens.FontSizes.groupsInviteFontSizePickerName,
-        weight: Tokens.FontWeights.groupsInviteFontWeightPickerName,
-        relativeTo: .footnote
-    )
+    private static let linkFade = DSAnimation.timing(duration: Tokens.Durations.globalFade, easing: Tokens.Easings.globalStandard)
+
+    /// The note under the cover: `groups.invite.color.note` in light (measured on TC-J5), `color.global.textSecondary` in
+    /// dark (MERGE RA-28).
+    private var noteColor: Color {
+        colorScheme == .dark ? Tokens.Colors.globalTextSecondary : Tokens.Colors.groupsInviteColorNote
+    }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                header
-                title
-                    .padding(.top, Tokens.Sizes.groupsCreateSizeTitleToContent)
-                switch model.phase {
-                case .ready:
-                    linkSection
-                        .padding(.top, Tokens.Sizes.groupsCreateSizeTitleToContent)
-                    contactsSection
-                        .padding(.top, Tokens.Sizes.groupsCreateSizeTitleToContent)
-                case .full:
-                    EmptyStateView(
-                        title: Copy.groupsInviteFullTitle(groupName: model.group?.name ?? ""),
-                        detail: Copy.groupsInviteFullDetail(maxMembers: model.maxMembers.map { String($0) } ?? "")
+        VStack(spacing: 0) {
+            SheetHeader(
+                title: Copy.groupsInviteTitle(groupName: model.group?.name ?? ""),
+                closeAccessibilityLabel: Copy.groupsInviteCloseAccessibilityLabel,
+                onClose: close
+            )
+            ScrollView {
+                MetricStack(alignment: .center) {
+                    GroupCover(
+                        source: model.group?.coverPath.map { PhotoSource.storage($0) },
+                        width: Tokens.Sizes.groupsInviteSizeCoverWidth,
+                        height: Tokens.Sizes.groupsInviteSizeCoverHeight,
+                        showsGroupGlyph: false
                     )
-                    .padding(.top, Tokens.Sizes.groupsCreateSizeTitleToContent)
-                case .error:
-                    EmptyStateView(
-                        title: Copy.groupsInviteErrorTitle,
-                        detail: Copy.groupsInviteErrorDetail,
-                        action: EmptyStateView.Action(Copy.groupsInviteErrorRetry) { Task { await model.retry() } }
-                    )
-                    .padding(.top, Tokens.Sizes.groupsCreateSizeTitleToContent)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text(Copy.groupsInviteCoverAccessibilityLabel(groupName: model.group?.name ?? "")))
+                    .accessibilityAddTraits(.isImage)
+                    .metricGap(Tokens.Sizes.globalTitleToContent, from: .top, to: .top)
+                    note
+                        .metricGap(Tokens.Sizes.groupsInviteSizeCoverToNote, from: .bottom, to: .capTop)
+                    linkArea
+                        .metricGap(Tokens.Sizes.globalTitleToContent, from: .lastBaseline, to: .top)
+                    if model.phase == .ready {
+                        contactsSection
+                            .metricGap(Tokens.Sizes.globalSectionGap, from: .bottom, to: .top)
+                    }
                 }
+                .padding(.bottom, Tokens.Sizes.globalSectionGap)
             }
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .scrollBounceBehavior(.basedOnSize)
-        .background(Tokens.Colors.globalBackgroundDeep.ignoresSafeArea())
-        .loadingHUD(model.isCreating)
+        .background(Tokens.Colors.globalBackground.ignoresSafeArea())
+        .dsSheetBackground()
+        .dsAnimation(Self.linkFade, value: model.isLinkOn)
         .dsHaptic(Tokens.Haptics.globalWarning, trigger: model.warningCount)
         .dsHaptic(Tokens.Haptics.globalSend, trigger: model.sendCount)
-        .task { await model.load() }
+        .task {
+            await model.load()
+            contactsShared = ContactsService.authorization().allowsAccess
+        }
         .sheet(item: $share) { request in
             ActivityView(items: request.items)
                 .presentationDetents([.medium, .large])
         }
         .sheet(item: $message) { request in
             MessageComposeView(request: request) { sent in
-                if sent { model.markInvited(request.contactID) }
+                if sent {
+                    if let contactID = request.contactID {
+                        model.markInvited(contactID)
+                    }
+                }
                 message = nil
             }
             .ignoresSafeArea()
@@ -106,71 +121,145 @@ struct GroupInviteView: View {
         .accessibilityIdentifier("groups.invite")
     }
 
-    private var header: some View {
-        HStack {
-            HeaderCircleButton(icon: Tokens.Icons.globalClose, accessibilityLabel: Copy.groupsInviteCloseAccessibilityLabel, fill: .onDeep) {
-                dependencies.router.modal = nil
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, Tokens.Sizes.globalHeaderInset)
-        .padding(.top, Tokens.Sizes.globalHeaderInset)
+    /// True when this sheet is the router's modal; false when another sheet hosts it (groups.settings).
+    private var isRouterModal: Bool {
+        if case .account(.groupInvite)? = dependencies.router.modal { return true }
+        return false
     }
 
-    /// "add {members} to" / group name in lime (`groups.create.layout.titleAccent`), by `groups.kind`.
-    private var title: some View {
-        let name = model.group?.name ?? ""
-        let text: String
-        switch model.group?.kind ?? .friends {
-        case .family: text = Copy.groupsInviteTitleFamily(groupName: name)
-        case .roommates: text = Copy.groupsInviteTitleRoommates(groupName: name)
-        case .custom, .unknown: text = Copy.groupsInviteTitleCustom(groupName: name)
-        case .friends: text = Copy.groupsInviteTitleFriends(groupName: name)
+    private func close() {
+        if isRouterModal {
+            dependencies.router.modal = nil
+        } else {
+            dismiss()
         }
-        return TwoToneTitle(text: text, accent: name)
-            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
     }
 
-    private func sectionLabel(_ text: String, icon: String? = nil) -> some View {
-        HStack {
-            if let icon {
-                Image(systemName: icon).accessibilityHidden(true)
+    // MARK: Note
+
+    /// `groups.invite.icon.note` (`size.global.iconSmall`) + `groups.invite.size.noteGlyphGap` + "Anyone with this link can
+    /// join {group_name}" (text role `meta`); with the link on, its expiry on a second line (same style). Read as one
+    /// sentence.
+    private var note: some View {
+        VStack {
+            HStack(alignment: .firstTextBaseline, spacing: Tokens.Sizes.groupsInviteSizeNoteGlyphGap) {
+                Image(systemName: Tokens.Icons.groupsInviteIconNote)
+                    .font(Tokens.Fonts.globalFamily.font(size: Tokens.Sizes.globalIconSmall, weight: Font.Weight.regular))
+                    .accessibilityHidden(true)
+                Text(Copy.groupsInviteLinkLabel(groupName: model.group?.name ?? ""))
+                    .dsTextStyle(TextRole.meta)
             }
-            Text(text)
+            if let invite = model.invite {
+                Text(Copy.groupsInviteLinkExpiry(date: AccountFormats.expiryDate(invite.expiresAt)))
+                    .dsTextStyle(TextRole.meta)
+            }
         }
-        .dsTextStyle(TextRole.sectionLabel)
-        .foregroundStyle(Tokens.Colors.globalTextSecondary)
+        .foregroundStyle(noteColor)
+        .multilineTextAlignment(.center)
+        .fixedSize(horizontal: false, vertical: true)
+        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+        .accessibilityElement(children: .combine)
+        .capHeight(of: TextRole.meta)
     }
 
     // MARK: Link
 
-    private var linkSection: some View {
-        VStack {
-            sectionLabel(Copy.groupsInviteLinkLabel, icon: Tokens.Icons.globalLink)
-            LightPill(Copy.groupsInviteLinkShare, icon: Tokens.Icons.globalLink) {
+    @ViewBuilder
+    private var linkArea: some View {
+        switch model.phase {
+        case .loading:
+            LoadingHUD()
+        case .full:
+            EmptyStateView(
+                title: Copy.groupsInviteFullTitle(groupName: model.group?.name ?? ""),
+                detail: Copy.groupsInviteFullDetail(maxMembers: model.maxMembers.map { String($0) } ?? "")
+            )
+            .accessibilityIdentifier("groups.invite.full")
+        case .error:
+            EmptyStateView(
+                title: Copy.groupsInviteErrorTitle,
+                detail: Copy.groupsInviteErrorDetail,
+                action: EmptyStateView.Action(Copy.groupsInviteErrorRetry) { Task { await model.retry() } }
+            )
+            .accessibilityIdentifier("groups.invite.error")
+        case .ready:
+            if model.isLinkOn {
+                VStack(spacing: Tokens.Sizes.globalTitleToContent) {
+                    linkMenu
+                    shareTargets
+                }
+                .transition(.opacity)
+            } else {
+                PrimaryButton(Copy.groupsInviteLinkTurnOn, isBusy: model.isCreating) {
+                    Task { await model.turnOnLink() }
+                }
+                .padding(.horizontal, Tokens.Sizes.globalButtonMarginH)
+                .accessibilityIdentifier("groups.invite.turnOn")
+                .transition(.opacity)
+            }
+        }
+    }
+
+    /// The grouped link menu (C-14 group, inset `size.global.buttonMarginH`): "Reset link" and, for the link's creator or
+    /// an admin, the red "Turn off link sharing" (C-10); rows `groups.invite.size.menuRowHeight`, glyph ink at
+    /// `groups.invite.size.menuGlyphInset`, label at `groups.invite.size.menuTextInset` (text role `textButton`).
+    private var linkMenu: some View {
+        VStack(spacing: 0) {
+            InviteMenuRow(
+                title: Copy.groupsInviteLinkReset,
+                icon: Tokens.Icons.groupsInviteIconReset,
+                isDestructive: false,
+                isBusy: model.isCreating
+            ) {
+                Task { await model.resetLink() }
+            }
+            .accessibilityIdentifier("groups.invite.reset")
+            if model.canTurnOff {
+                HairlineDivider()
+                InviteMenuRow(title: Copy.groupsInviteLinkTurnOff, icon: Tokens.Icons.globalLock, isDestructive: true, isBusy: false) {
+                    confirmTurnOff = true
+                }
+                .accessibilityIdentifier("groups.invite.turnOff")
+            }
+        }
+        .background(Tokens.Colors.globalControl)
+        .clipShape(DSShape.rounded(Tokens.Radii.globalGroupedRow))
+        .padding(.horizontal, Tokens.Sizes.globalButtonMarginH)
+    }
+
+    /// Message · Copy Link · Share to… — `size.global.circleButtonLarge` circles, centres `groups.invite.size.targetPitch`
+    /// apart, labels `groups.invite.size.targetLabelGap` below.
+    private var shareTargets: some View {
+        HStack(alignment: .top, spacing: 0) {
+            ShareTarget(title: Copy.groupsInviteLinkMessageTarget, icon: Tokens.Icons.globalChats) {
+                Task { await sendMessage() }
+            }
+            .accessibilityIdentifier("groups.invite.message")
+            ShareTarget(title: Copy.groupsInviteLinkCopy, icon: Tokens.Icons.globalLink) {
+                Task { await copyLink() }
+            }
+            .accessibilityIdentifier("groups.invite.copy")
+            ShareTarget(title: Copy.groupsInviteLinkShare, icon: Tokens.Icons.globalShare) {
                 Task { await shareLink() }
             }
             .accessibilityIdentifier("groups.invite.share")
-            if let invite = model.invite {
-                Text(Copy.groupsInviteLinkExpiry(date: AccountFormats.expiryDate(invite.expiresAt)))
-                    .dsTextStyle(TextRole.caption)
-                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
-                if model.canTurnOff {
-                    Button {
-                        confirmTurnOff = true
-                    } label: {
-                        Text(Copy.groupsInviteLinkTurnOff)
-                            .dsTextStyle(TextRole.textLink)
-                            .foregroundStyle(Tokens.Colors.globalAccent)
-                            .frame(minHeight: Tokens.Sizes.globalMinTouchTargetIos)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("groups.invite.turnOff")
-                }
-            }
         }
-        .multilineTextAlignment(.center)
-        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+    }
+
+    private func sendMessage() async {
+        guard let link = await model.linkToShare() else { return }
+        let body = model.message(for: link)
+        if MessageComposeView.canSendText {
+            message = MessageRequest(recipient: nil, body: body, contactID: nil)
+        } else {
+            share = ShareRequest(items: body == link.absoluteString ? [link] : [body])
+        }
+    }
+
+    private func copyLink() async {
+        guard let link = await model.linkToShare() else { return }
+        UIPasteboard.general.url = link
+        dependencies.toasts.show(Copy.groupsInviteLinkCopied)
     }
 
     private func shareLink() async {
@@ -182,40 +271,52 @@ struct GroupInviteView: View {
     // MARK: Contacts (groups.invite.layout.contacts)
 
     private var contactsSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            sectionLabel(Copy.groupsInviteContactsLabel)
+        VStack(alignment: .leading, spacing: Tokens.Sizes.globalSectionHeaderToContent) {
+            Text(Copy.groupsInviteContactsLabel)
+                .dsTextStyle(TextRole.sectionLabel)
+                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                .accessibilityAddTraits(.isHeader)
                 .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
             contactAccess
-                .padding(.horizontal, Tokens.Sizes.globalButtonMarginH)
-            LazyVStack(spacing: 0) {
+            if contactsShared, model.contacts.isEmpty {
+                Text(Copy.groupsInviteContactsEmpty)
+                    .dsTextStyle(TextRole.body)
+                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                    .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+            }
+            LazyVStack(spacing: Tokens.Sizes.globalSectionHeaderToContent) {
                 ForEach(model.contacts) { contact in
                     contactRow(contact)
+                        .dsTransition(.opacity)
                 }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder
     private var contactAccess: some View {
         if #available(iOS 18.0, *) {
-            VStack {
-                FormField(
+            VStack(alignment: .leading) {
+                SearchField(
                     Copy.onboardingPermissionContactsSearchPlaceholder,
                     text: $contactQuery,
-                    accessibilityLabel: Copy.onboardingPermissionContactsSearchPlaceholder,
-                    contentType: .name
+                    accessibilityLabel: Copy.onboardingPermissionContactsSearchPlaceholder
                 )
                 ContactAccessButton(queryString: contactQuery) { identifiers in
                     Task {
                         let granted = await GrantedContacts.contacts(withIdentifiers: identifiers)
                         granted.forEach { model.add($0) }
+                        contactsShared = true
                     }
                 }
             }
+            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
             .task(id: contactQuery) { await loadGrantedContacts() }
         } else {
-            LightPill(Copy.onboardingPermissionContactsChoose) { pickingContact = true }
-                .frame(maxWidth: .infinity)
+            CapsuleButton(Copy.onboardingPermissionContactsChoose, style: .outline) { pickingContact = true }
+                .fixedSize()
+                .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
                 .accessibilityIdentifier("groups.invite.chooseContacts")
         }
     }
@@ -229,30 +330,23 @@ struct GroupInviteView: View {
         model.replaceContacts(matches)
     }
 
-    /// Row pitch `groups.invite.size.pickerRowPitch`, margins `size.global.screenMargin`: avatar
-    /// `size.global.avatarPicker` (gray circle + `icon.global.person`; contact photos are not read), bold name
-    /// (`groups.invite.fontSize.pickerName`), trailing white "invite" pill → SMS compose; then "invited".
+    /// C-16 people row: avatar `size.global.avatarPicker` (contact photos are not read: the C-23 fallback), the name
+    /// (`listTitle`) and the outline capsule "Invite" → SMS compose addressed to the number; once sent, "Invited"
+    /// (`listSubtitle`, `color.global.textSecondary`).
     private func contactRow(_ contact: LocalContact) -> some View {
         let invited = model.invitedContactIDs.contains(contact.id)
-        return HStack {
-            AvatarView(diameter: Tokens.Sizes.globalAvatarPicker)
-            Text(contact.displayName)
-                .dsTextStyle(Self.pickerNameStyle)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-            Spacer(minLength: 0)
+        return PeopleRow(name: contact.displayName, avatar: nil) {
             if invited {
                 Text(Copy.groupsInviteContactsInvited)
-                    .dsTextStyle(TextRole.button)
+                    .dsTextStyle(TextRole.listSubtitle)
                     .foregroundStyle(Tokens.Colors.globalTextSecondary)
             } else {
-                LightPill(Copy.groupsInviteContactsInvite, metrics: .card) {
+                CapsuleButton(Copy.groupsInviteContactsInvite, style: .outline) {
                     Task { await invite(contact) }
                 }
+                .fixedSize()
             }
         }
-        .frame(minHeight: Tokens.Sizes.groupsInviteSizePickerRowPitch)
-        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
-        .accessibilityElement(children: .combine)
     }
 
     private func invite(_ contact: LocalContact) async {
@@ -263,5 +357,76 @@ struct GroupInviteView: View {
         } else {
             share = ShareRequest(items: body == link.absoluteString ? [link] : [body])
         }
+    }
+}
+
+/// A row of the link menu (TC-J5): glyph at `groups.invite.size.menuGlyphInset`, label at
+/// `groups.invite.size.menuTextInset` (text role `textButton`), height `groups.invite.size.menuRowHeight` (a minimum);
+/// destructive rows draw glyph and label in `color.global.destructive` (C-10). Busy: the label's place shows the
+/// platform activity indicator.
+private struct InviteMenuRow: View {
+    let title: String
+    let icon: String
+    let isDestructive: Bool
+    let isBusy: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(role: isDestructive ? .destructive : nil, action: action) {
+            ZStack(alignment: .leading) {
+                Glyph(icon, relativeTo: TextRole.textButton.relativeTo)
+                    .padding(.leading, Tokens.Sizes.groupsInviteSizeMenuGlyphInset)
+                Group {
+                    if isBusy {
+                        LoadingHUD()
+                    } else {
+                        Text(title)
+                            .dsTextStyle(TextRole.textButton)
+                            .multilineTextAlignment(.leading)
+                    }
+                }
+                .padding(.leading, Tokens.Sizes.groupsInviteSizeMenuTextInset)
+                .padding(.trailing, Tokens.Sizes.groupsInviteSizeMenuGlyphInset)
+            }
+            .foregroundStyle(isDestructive ? Tokens.Colors.globalDestructive : Tokens.Colors.globalTextPrimary)
+            .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.groupsInviteSizeMenuRowHeight, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(isBusy)
+        .accessibilityLabel(Text(title))
+    }
+}
+
+/// A share target: a `size.global.circleButtonLarge` circle in `color.global.control` with the glyph (`size.global.icon`,
+/// `color.global.textPrimary`) — C-11's large circle on a page — and the label `groups.invite.size.targetLabelGap` below
+/// (text role `meta`, `color.global.textPrimary`, centred), in a `groups.invite.size.targetPitch` wide column. One button
+/// labelled with the visible text.
+private struct ShareTarget: View {
+    let title: String
+    let icon: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            MetricStack(alignment: .center) {
+                Glyph(icon)
+                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                    .frame(width: Tokens.Sizes.globalCircleButtonLarge, height: Tokens.Sizes.globalCircleButtonLarge)
+                    .background(Tokens.Colors.globalControl, in: Circle())
+                Text(title)
+                    .dsTextRole(TextRole.meta)
+                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .metricGap(Tokens.Sizes.groupsInviteSizeTargetLabelGap, from: .bottom, to: .capTop)
+            }
+            .frame(width: Tokens.Sizes.groupsInviteSizeTargetPitch)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(title))
+        .accessibilityAddTraits(.isButton)
     }
 }

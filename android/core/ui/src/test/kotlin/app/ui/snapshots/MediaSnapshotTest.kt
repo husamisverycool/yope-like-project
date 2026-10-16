@@ -109,7 +109,7 @@ class MediaSnapshotTest(appearance: Appearance) : SnapshotTest(appearance) {
 
     @Test fun c34RecapCard() = snap("c34-backdrop-card", "recap-card", surface = Surface.Photo) {
         Box(Modifier.fillMaxWidth().height(Tokens.Sizes.globalFriendCardHeight + Tokens.Sizes.globalFriendCardWidth / 2)) {
-            BlurredBackdrop(portrait(3), blurRadius = Tokens.Sizes.globalScreenMargin * 2)
+            BlurredBackdrop(portrait(3))
             Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalScreenMargin)) {
                 RecapCard(List(6) { square(it + 10) }, columns = 3, cornerRadius = Tokens.Radii.globalCard, modifier = Modifier.width(Tokens.Sizes.globalFriendCardWidth), year = "2023", name = "isareyes", domain = "example.app")
                 PageDots(3, 0, "Page 1 of 3", onMedia = true)
@@ -120,7 +120,7 @@ class MediaSnapshotTest(appearance: Appearance) : SnapshotTest(appearance) {
 
     @Test fun c34PlanCards() = snap("c34-backdrop-card", "plan-card-pager", surface = Surface.Photo) {
         Box(Modifier.fillMaxWidth().height(Tokens.Sizes.globalFriendCardHeight)) {
-            BlurredBackdrop(portrait(9), blurRadius = Tokens.Sizes.globalScreenMargin * 2)
+            BlurredBackdrop(portrait(9))
             CircleIconButton(Tokens.Icons.globalClose, "Close", {}, Modifier.padding(Tokens.Sizes.globalScreenMargin), style = CircleButtonStyle.GlassSmall)
             PlanCardPager(2, Modifier.align(Alignment.Center)) { i, _ ->
                 PlanCard(if (i == 0) "Claim" else "Continue", {}) {

@@ -7,7 +7,8 @@ import SwiftUI
 
 /// Screens of the capture group pushed on the main navigation stack.
 enum CaptureRoute: Hashable {
-    /// `collage.view` (with `collage.share`): the same-moment collage of one daily invitation.
+    /// `collage.view` (with `collage.share`): the same-moment collage of one daily invitation. The spec presents it as a
+    /// full-screen modal (`CaptureModal.collageShare`); pushed, it hides the navigation bar and draws the same screen.
     case collage(groupID: String, invitationID: String)
 }
 
@@ -34,7 +35,7 @@ struct CaptureModalDestination: View {
     var body: some View {
         switch modal {
         case let .collageShare(groupID, invitationID):
-            CollageScreen(groupID: groupID, invitationID: invitationID)
+            CollageScreen(groupID: groupID, invitationID: invitationID, isPresentedModally: true)
         }
     }
 }

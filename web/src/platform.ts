@@ -1,9 +1,10 @@
-// Store hand-off. iOS: App Store listing (the Smart App Banner / App Clip card is added by Safari
-// from the apple-itunes-app meta tag). Android: Play listing with an install referrer carrying the
-// invite token, read after install with the Play Install Referrer API to join the group
+// Store hand-off. iOS: the App Clip (design/surfaces/invite.web.md "Let's go": an App Clip link,
+// as Retro's /u/ page opens its clip card) or the App Store listing; Safari also adds the App Clip
+// card from the apple-itunes-app meta tag. Android: Play listing with an install referrer carrying
+// the invite token, read after install with the Play Install Referrer API to join the group
 // (docs/PLATFORM_CONSTRAINTS.md §4.1: Google Play Instant ended in December 2025).
 
-import type { AppIdentity } from "./config.js";
+import { appClipBundleId, type AppIdentity } from "./config.js";
 
 export type Platform = "ios" | "android" | "other";
 
@@ -37,4 +38,22 @@ export function getAppUrl(app: AppIdentity, platform: Platform, token: string | 
   if (platform === "android") return playStoreUrl(app, token);
   if (platform === "ios") return appStoreUrl(app);
   return appStoreUrl(app) ?? playStoreUrl(app, token);
+}
+
+/**
+ * App Clip link of an invite (`https://appclip.apple.com/id?p=<bundle id>.Clip&token=<token>`), or null while the
+ * App Store presence it needs is BLOCKED (App Store id and Team ID, as for the apple-itunes-app meta tag).
+ */
+export function appClipUrl(app: AppIdentity, token: string): string | null {
+  if (!app.ios.appStoreId || !app.ios.teamId) return null;
+  const u = new URL("https://appclip.apple.com/id");
+  u.searchParams.set("p", appClipBundleId(app));
+  u.searchParams.set("token", token);
+  return u.toString();
+}
+
+/** Where "Let's go" goes: the App Clip on iOS, the Play listing (with the referrer) on Android, else the store. */
+export function letsGoUrl(app: AppIdentity, platform: Platform, token: string): string | null {
+  if (platform === "ios") return appClipUrl(app, token);
+  return getAppUrl(app, platform, token);
 }

@@ -18,6 +18,8 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.layout.layout
+import kotlin.math.roundToInt
 import androidx.core.view.WindowCompat
 import app.designsystem.LocalDsDarkTheme
 import app.designsystem.generated.Tokens
@@ -172,6 +174,18 @@ fun FadeInItem(key: Any, content: @Composable () -> Unit) {
     val state = remember(key) { androidx.compose.animation.core.MutableTransitionState(false).apply { targetState = true } }
     androidx.compose.animation.AnimatedVisibility(state, enter = app.ui.foundation.DsMotion.fadeIn, exit = app.ui.foundation.DsMotion.fadeOut) { content() }
 }
+
+/**
+ * Gives the element a slot [centre] × 2 tall and centres it there, so that a slot aligned to the bottom (or top) of
+ * its parent puts the element's centre exactly [centre] from that edge, whatever its own height.
+ */
+fun Modifier.centredSlot(centre: androidx.compose.ui.unit.Dp): Modifier = this.then(
+    Modifier.layout { measurable, constraints ->
+        val placeable = measurable.measure(constraints.copy(minHeight = 0))
+        val h = maxOf((centre.toPx() * 2).roundToInt(), placeable.height)
+        layout(placeable.width, h) { placeable.place(0, (h - placeable.height) / 2) }
+    },
+)
 
 /** The activity hosting [this] context, if any (window flags, system bars). */
 tailrec fun android.content.Context.findActivity(): android.app.Activity? = when (this) {

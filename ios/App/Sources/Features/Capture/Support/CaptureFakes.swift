@@ -1,5 +1,5 @@
-// Surfaces: camera.capture, camera.sendto, daily.capture, collage.view, collage.share.
-// Fakes of the capture services (DEBUG only): unit tests, snapshot tests, and UI tests through the
+// Surfaces: camera.capture, camera.sendto, daily.capture, collage.view, collage.share (design/surfaces/<id>.md;
+// reference images listed there). Fakes of the capture services (DEBUG only): unit tests, snapshot tests, and UI tests through the
 // launch argument `CaptureLaunchArgument.fakes` (the simulator has no camera).
 #if DEBUG
 import AppData
@@ -124,7 +124,7 @@ final class FakeCaptureCamera: CaptureCamera {
         if failsDual { throw FakeCaptureError.failed }
         return CaptureDualStills(
             back: backStill ?? CaptureFakes.still(Tokens.Colors.globalAccent, position: .back),
-            front: hasFrontCamera ? frontStill ?? CaptureFakes.still(Tokens.Colors.globalAccentSecondary, position: .front) : nil,
+            front: hasFrontCamera ? frontStill ?? CaptureFakes.still(Tokens.Colors.globalSelection, position: .front) : nil,
             simultaneous: true
         )
     }
@@ -168,10 +168,7 @@ struct FakeCameraPreview: View {
 
 @MainActor
 final class FakeCaptureLibrary: CaptureLibrary {
-    var thumbnail: UIImage?
     private(set) var saved: [CapturedMedia] = []
-
-    func newestThumbnail(side: CGFloat) async -> UIImage? { thumbnail }
 
     func save(_ media: CapturedMedia) async throws {
         saved.append(media)
@@ -280,13 +277,16 @@ final class InMemoryCaptureCoachStore: CaptureCoachStore {
 
 @MainActor
 final class FakeCapturePosting: CapturePosting {
-    /// When set, `publish` fails with it and keeps the draft pending (like the outbox).
+    /// When set, `publish` fails with it (the draft is kept in `pending`, like the outbox, until discarded).
     var publishError: DataError?
+    /// Holds `publish` until cancelled (the sending state in snapshots).
+    var suspendsPublish = false
     private(set) var published: [PostDraft] = []
     private(set) var pending: [PostDraft] = []
-    private var continuation: AsyncStream<Bool>.Continuation?
+    private(set) var discarded: [MediaID] = []
 
     func publish(_ draft: PostDraft) async throws {
+        if suspendsPublish { try await Task.sleep(for: .seconds(3600)) }
         if let publishError {
             pending.append(draft)
             throw publishError
@@ -294,25 +294,9 @@ final class FakeCapturePosting: CapturePosting {
         published.append(draft)
     }
 
-    func retryPending() async -> CaptureRetryResult {
-        if let publishError, !pending.isEmpty {
-            return CaptureRetryResult(posted: 0, error: publishError)
-        }
-        let posted = pending.count
-        published += pending
-        pending = []
-        return CaptureRetryResult(posted: posted, error: nil)
-    }
-
-    func onlineUpdates() -> AsyncStream<Bool> {
-        let (stream, continuation) = AsyncStream<Bool>.makeStream()
-        self.continuation = continuation
-        return stream
-    }
-
-    /// The network came back.
-    func goOnline() {
-        continuation?.yield(true)
+    func discard(_ mediaID: MediaID) async {
+        discarded.append(mediaID)
+        pending.removeAll { $0.mediaID == mediaID }
     }
 }
 

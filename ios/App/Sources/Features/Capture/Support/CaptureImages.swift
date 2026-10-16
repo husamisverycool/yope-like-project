@@ -1,5 +1,5 @@
-// Surfaces: camera.sendto (preview card, recipient avatars), daily.capture (preview),
-// daily.dualimage, collage.view. Images are decoded off the main actor, downsampled to the frame
+// Surfaces: camera.sendto (preview, group covers), daily.capture (preview), daily.dualimage,
+// collage.view (design/surfaces/<id>.md; reference images listed there). Images are decoded off the main actor, downsampled to the frame
 // they are shown in, so lists scroll and previews appear without decoding on the main thread.
 import Foundation
 import ImageIO
@@ -30,6 +30,13 @@ enum CaptureImageDecoder {
     @MainActor
     static func pixels(_ points: CGFloat) -> CGFloat {
         points * UITraitCollection.current.displayScale
+    }
+
+    /// The width of the window's screen in points (an upper bound for full-width frames such as the viewfinder).
+    @MainActor
+    static var screenWidth: CGFloat {
+        let scene = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first
+        return scene?.screen.bounds.width ?? 0
     }
 
     private static func decode(_ source: CGImageSource?, maxPixelSize: CGFloat) -> UIImage? {

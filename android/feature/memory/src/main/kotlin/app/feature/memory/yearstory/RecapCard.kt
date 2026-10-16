@@ -80,7 +80,8 @@ object RecapCardMetrics {
  * The card fills the width it is given ([modifier]); inside a recap frame give it [RecapCardMetrics.width] of the
  * frame width — or use [RecapCardPage]. Photos beyond the full rows are left out (only full rows: TC-REC); offer the
  * card only when [RecapCardMetrics.offered]. Read in order: each photo (its label; a button with [RecapCardPhoto.onClick]),
- * then the footer as one element.
+ * then the footer as one element. [image] draws one cell (default: core:ui `DsImage`, aspect fill, the
+ * `color.global.control` light placeholder while loading); a share renderer passes its own software-decoded image.
  */
 @Composable
 fun RecapCard(
@@ -90,6 +91,7 @@ fun RecapCard(
     name: String? = null,
     detail: String? = null,
     nameStyle: TextStyle = TextRoles.listTitle,
+    image: @Composable (photo: RecapCardPhoto, modifier: Modifier) -> Unit = { photo, m -> DsImage(photo.image, null, m, placeholder = Tokens.ColorsLight.globalControl) },
 ) {
     BoxWithConstraints(modifier) {
         val width = maxWidth
@@ -111,15 +113,13 @@ fun RecapCard(
                     shown.chunked(columns).forEach { row ->
                         Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
                             row.forEach { photo ->
-                                DsImage(
-                                    photo.image,
-                                    null,
+                                image(
+                                    photo,
                                     Modifier
                                         .weight(1f)
                                         .aspectRatio(Tokens.Layouts.YearStoryRecapCard.cellAspect)
                                         .then(if (photo.onClick != null) Modifier.tapClickable(onClick = photo.onClick) else Modifier)
                                         .clearAndSetSemantics { contentDescription = photo.accessibilityLabel },
-                                    placeholder = Tokens.ColorsLight.globalControl,
                                 )
                             }
                         }
@@ -153,10 +153,11 @@ fun RecapCardPage(
     name: String? = null,
     detail: String? = null,
     backdrop: @Composable () -> Unit = {},
+    image: @Composable (photo: RecapCardPhoto, modifier: Modifier) -> Unit = { photo, m -> DsImage(photo.image, null, m, placeholder = Tokens.ColorsLight.globalControl) },
 ) {
     BoxWithConstraints(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         backdrop()
-        RecapCard(photos, title, Modifier.width(RecapCardMetrics.width(maxWidth)), name = name, detail = detail)
+        RecapCard(photos, title, Modifier.width(RecapCardMetrics.width(maxWidth)), name = name, detail = detail, image = image)
     }
 }
 

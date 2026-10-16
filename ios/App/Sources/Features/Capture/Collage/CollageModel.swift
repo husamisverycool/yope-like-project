@@ -1,8 +1,7 @@
-// Surfaces: collage.view + collage.share — reference: BeReal dual image + Yope wall composition and
-// day view. Reference images: design/collage-options/option-B.jpg,
-// references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png,
-// references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png
-// (design/surfaces/collage.view.md, collage.share.md). Option B pages (production fallback).
+// Surfaces: collage.view + collage.share — visual reference Retro's recap preview (ST-04 2026, TC-REC 2023); the collage
+// itself is the worker's composition of BeReal dual images (option B pages, owner-pending — RC-14).
+// Reference images: references/auto/retro/store/retro-store-04.png, references/auto/retro/press/tc-2023-12-recaps.png,
+// design/collage-options/option-B.jpg (design/surfaces/collage.view.md, collage.share.md).
 import AppData
 import AppModels
 import CoreTransferable
@@ -64,7 +63,8 @@ final class CollageModel {
     /// The share pill shows once the share image exists (`collages.share_path`).
     var canShare: Bool { state == .ready && collage?.sharePath != nil }
 
-    var title: String { dateText.isEmpty ? "" : Copy.collageViewTitle(date: dateText) }
+    /// `collage.share.sheetTitle`: the share sheet's preview title, the invitation's day.
+    var shareSheetTitle: String { Copy.collageShareSheetTitle(date: dateText) }
 
     var pageAccessibilityLabel: String {
         Copy.collageViewA11yCollage(group: groupName, date: dateText)

@@ -1,7 +1,8 @@
-// Surface: daily.capture — reference app: BeReal.
-// Reference images: references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png,
-// tiktok-bereal-7339559678604627233_capture-seq_f540-f681.jpg, …_t21.30s_preview-keep-smiling.png,
-// references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (design/surfaces/daily.capture.md).
+// Surface: daily.capture — visual reference Retro (composed only from Retro components), mechanics BeReal.
+// Reference images: references/auto/retro/store/retro-store-03.png, references/auto/retro/press/tc-2025-12-rewind-device-a.png,
+// references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png,
+// references/auto/bereal/frames/tiktok-bereal-7339559678604627233_capture-seq_f540-f681.jpg, …_t21.30s_preview-keep-smiling.png
+// (design/surfaces/daily.capture.md; RC-12, RC-13).
 // Capture with the countdown; back + front together (simultaneous where the hardware allows,
 // otherwise back then front); answering after the window posts normally with no label.
 import AppData
@@ -43,6 +44,10 @@ final class DailyCaptureModel {
     /// appears in one frame (BeReal).
     private(set) var mainImage: UIImage? = nil
     private(set) var insetImage: UIImage? = nil
+    /// While the answer uploads and `create_post` runs (busy capsule; retake and close disabled).
+    private(set) var isSending = false
+    /// The last send's failure, shown as the native alert (preview kept) until Try Again or Cancel.
+    private(set) var sendFailure: CaptureSendCenter.Failure? = nil
 
     let camera: CaptureCamera
     private let invitations: CaptureInvitationSource
@@ -184,7 +189,10 @@ final class DailyCaptureModel {
 
     private func showPreview(_ answer: DailyAnswer) async {
         typealias Composition = Tokens.Layouts.DailyDualimageLayoutComposition
-        let width = CaptureImageDecoder.pixels(Tokens.Layouts.DailyCaptureLayoutViewfinder.width)
+        // The viewfinder is the screen width less two margins: decode at the screen width (an upper bound); without a
+        // window scene, at the photo's own width.
+        let screen = CaptureImageDecoder.screenWidth
+        let width = screen > 0 ? CaptureImageDecoder.pixels(screen) : CGFloat(answer.main.pixelWidth)
         let mainPixels = width / Composition.mainAspect
         let insetPixels = width * Composition.insetWidthRatio / Composition.insetAspect
         async let main = CaptureImageDecoder.image(data: answer.main.imageData, maxPixelSize: mainPixels)
@@ -197,27 +205,50 @@ final class DailyCaptureModel {
 
     /// Back to the live screen; unlimited, no count.
     func retake() async {
+        guard !isSending else { return }
         answer = nil
         mainImage = nil
         insetImage = nil
         await startSession()
     }
 
-    /// Uploads and posts with `p_invitation_id`; the cover closes. Never fails for lateness.
-    func send() {
-        guard let answer, phase == .preview else { return }
-        sendCenter.submit(CaptureSendRequest(
+    /// Uploads and posts with `p_invitation_id` while the cover waits (busy capsule, as camera.sendto); posted: the cover
+    /// closes with `haptic.global.send` and the confirmation (iOS announcement, C-26). Never fails for lateness; a failure
+    /// keeps the preview and shows the alert.
+    func send() async {
+        guard let answer, phase == .preview, !isSending else { return }
+        sendFailure = nil
+        isSending = true
+        let outcome = await sendCenter.send(CaptureSendRequest(
             payload: .daily(answer),
             groupIDs: [groupID],
             invitationID: invitationID,
             confirmation: Copy.cameraSendtoToastPostedOne(group: groupName)
         ))
-        self.answer = nil
-        navigation.closeCapture()
+        isSending = false
+        switch outcome {
+        case .posted:
+            self.answer = nil
+            navigation.closeCapture()
+        case let .failed(failure):
+            sendFailure = failure
+        }
+    }
+
+    /// The alert's Try Again.
+    func retrySend() async {
+        sendFailure = nil
+        await send()
+    }
+
+    /// The alert's Cancel: the preview stays.
+    func dismissSendFailure() {
+        sendFailure = nil
     }
 
     /// Dismisses, discarding an unsent preview; the invitation stays answerable from the group.
     func dismiss() {
+        guard !isSending else { return }
         answer = nil
         navigation.closeCapture()
     }

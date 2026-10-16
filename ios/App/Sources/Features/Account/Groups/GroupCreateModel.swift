@@ -10,10 +10,21 @@ import UIKit
 @MainActor
 @Observable
 final class GroupCreateModel {
+    /// Step A (type: the template rows) and step B (cover and name).
+    enum Step: Hashable {
+        case type
+        case details
+    }
+
     /// Nil: create; else the group being edited (admins).
     let editingGroupID: GroupID?
+    /// Step A is skipped when the kind was chosen on a template row (groups.list) and in edit mode.
+    private(set) var step: Step
+    /// Name as typed; 1–80 characters after trimming (`groups.create.error.tooLong` past that).
     private(set) var name = ""
     var kind: GroupKind = .friends
+    /// Bumped when a kind is chosen on step A (`haptic.global.select`).
+    private(set) var kindChoiceCount = 0
     /// The picked cover (fills the rectangle) and its upload-ready JPEG.
     private(set) var coverImage: UIImage?
     private var coverJPEG: Data?
@@ -26,23 +37,40 @@ final class GroupCreateModel {
     private(set) var errorCount = 0
 
     static let maxNameLength = 80
-    /// The four types in `group_kind` order (friends is the default, the first segment).
-    static let kinds: [GroupKind] = [.friends, .family, .roommates, .custom]
+    /// The four types in `group_kind` order.
+    static var kinds: [GroupKind] { GroupKindCopy.kinds }
 
     private let data: AccountDataSource
 
-    init(data: AccountDataSource, editingGroupID: GroupID? = nil) {
+    /// - Parameter kind: a kind chosen on a template row (starts at step B).
+    init(data: AccountDataSource, editingGroupID: GroupID? = nil, kind: GroupKind? = nil) {
         self.data = data
         self.editingGroupID = editingGroupID
+        step = editingGroupID != nil || kind != nil ? .details : .type
+        if let kind { self.kind = kind }
     }
 
     var isEditing: Bool { editingGroupID != nil }
     var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
-    var canSubmit: Bool { !trimmedName.isEmpty && !isWorking }
+    /// More than `maxNameLength` characters after trimming.
+    var isNameTooLong: Bool { trimmedName.count > Self.maxNameLength }
+    var canSubmit: Bool { !trimmedName.isEmpty && !isNameTooLong && !isWorking }
     var hasCover: Bool { coverImage != nil || existingCoverPath != nil }
 
     func setName(_ value: String) {
-        name = String(value.prefix(Self.maxNameLength))
+        name = value
+    }
+
+    /// Step A: a template row (or its "Create" capsule) chose the kind → step B.
+    func choose(_ kind: GroupKind) {
+        self.kind = kind
+        kindChoiceCount += 1
+        step = .details
+    }
+
+    /// Step B's back chevron (only when step A was shown).
+    func backToType() {
+        step = .type
     }
 
     /// Edit mode: prefill from the group.
@@ -110,11 +138,6 @@ final class GroupCreateModel {
     }
 
     static func title(of kind: GroupKind) -> String {
-        switch kind {
-        case .family: return Copy.groupsCreateTypeFamily
-        case .roommates: return Copy.groupsCreateTypeRoommates
-        case .custom, .unknown: return Copy.groupsCreateTypeCustom
-        case .friends: return Copy.groupsCreateTypeFriends
-        }
+        GroupKindCopy.title(kind)
     }
 }

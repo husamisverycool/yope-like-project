@@ -2352,7 +2352,32 @@
       "element": "where translucency is used",
       "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-a.png, references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png, references/auto/retro/press/tc-2023-12-recaps.png phone 2, references/auto/retro/store/retro-store-04.png — design/research/retro-visual.md §3.7",
       "method": "inspection",
-      "notes": "Backdrop blur radius not measurable (gap)."
+      "notes": "Backdrop blur and dim measured by the lead (MERGE_DECISIONS L-5): size.global.backdropBlur, color.global.backdropDim."
+    },
+    "size.global.backdropBlur": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global",
+      "type": "dimension",
+      "value": 1.8,
+      "element": "Gaussian blur of the photo backdrop behind a card (C-34: recap preview media page)",
+      "evidence": "references/auto/retro/store/retro-store-04.png: media page x171–1110 y717–2385; the card's sharp photo x328–960 y1197–1831 is the same photo the backdrop shows — fit scratch scripts summarised in design/MERGE_DECISIONS.md L-5",
+      "method": "least-squares fit over the visible backdrop (216 072 px, card / close / footer masked) of gain·Gσ[photo scaled s, shifted dx,dy] + bias per channel: s 3.000, dx 2.8 px, dy −2.4 px, σ 4.18 px = 1.75 pt at 2.389 px/pt (1−R² 0.0131; linear-light fit σ 4.23 px, worse 0.0181); the card photo used as the sharp source is itself softened by the render (≈1.5 px at backdrop scale), so σ ≈ √(4.18² + 1.5²) = 4.44 px = 1.86 pt; value 1.8",
+      "precision": "±0.3 pt (σ × 0.75 or × 1.25 raises the residual by ≈10 %)",
+      "unit": "pt",
+      "notes": "Value is the Gaussian standard deviation σ in pt. iOS: SwiftUI .blur(radius:) takes σ (Core Image convention). Android: Modifier.blur / RenderEffect.createBlurEffect take a 'radius' r that hwui converts as σ = 0.57735·r + 0.5 px, so pass r = (σ·density − 0.5) / 0.57735 px. The backdrop photo is mild-blurred and dimmed (color.global.backdropDim), not a frosted material."
+    },
+    "color.global.backdropDim": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global",
+      "type": "color",
+      "value": "#00000039",
+      "element": "black layer over the blurred photo backdrop (C-34 recap preview media page)",
+      "evidence": "references/auto/retro/store/retro-store-04.png: media page x171–1110 y717–2385; the card's sharp photo x328–960 y1197–1831 is the same photo the backdrop shows",
+      "method": "same fit as size.global.backdropBlur: per-channel gain 0.7787 / 0.7736 / 0.7773, bias 0.010 / 0.008 / 0.006 in sRGB (equal gains → no saturation change); black over the photo at α = 1 − 0.7765 = 0.2235 → 57/255 = #39",
+      "precision": "±0.01 alpha",
+      "notes": "Same in both appearances (the recap preview is a media surface; ST-04 is its only capture)."
     },
     "layout.global.photoScrim": {
       "level": "SOURCED",

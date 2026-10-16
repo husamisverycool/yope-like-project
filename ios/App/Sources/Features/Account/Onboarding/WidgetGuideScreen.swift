@@ -1,16 +1,34 @@
-// Surface: onboarding.widget — guided add-the-widget step. Reference app: Locket (design/surfaces/onboarding.widget.md;
-// layout from the welcome screen of the same Locket onboarding flow, an approximation noted in its Gaps). Reference
-// images: references/auto/locket/lazyweb/locket-lazyweb-20260821-cap-welcome.png (LW),
-// references/owner/locket-add-widget-steps.jpg (LT), locket-lazyweb-20260821-cap-personalization-3.png (LP3).
+// Surface: onboarding.widget — guided add-the-widget step. Visual reference: Retro Settings → Widgets
+// (references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png, VID-SET: rounded widget thumbnails with
+// their names) and Retro's widget art (references/auto/retro/apk/widget_preview_friends.webp, 22-dp corners); step text
+// from Locket's add-widget steps (references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt). Composition of C-33
+// (page title), the widget preview, C-11 numbered circles, C-05 (design/surfaces/onboarding.widget.md).
 import DesignSystem
 import SwiftUI
 
-/// Static steps and a "Continue" capsule that always moves on (no check, no gate, no "did you add it?").
-struct WidgetGuideScreen: View {
-    let onContinue: () -> Void
+/// What the preview tile shows: the newest photo from the person's groups and its sender (nil: the empty tile).
+struct WidgetPreviewContent: Equatable {
+    var photo: PhotoSource?
+    var firstName: String?
+}
 
-    /// The iOS steps (`onboarding.widget.step.ios.1` … `.5`), then `onboarding.widget.done`. Step 4 names the app
-    /// (`{app_name}`, BLOCKED): release builds omit it, so numbering follows the steps shown.
+/// The steps and a "Next" capsule that always moves on (no check, no gate, no "did you add it?"). Inside onboarding
+/// there is no back; opened from Settings (settings.root → Widgets) the C-02 chevron returns there.
+struct WidgetGuideScreen: View {
+    var preview: WidgetPreviewContent?
+    /// From Settings: back to settings.root; nil inside onboarding.
+    var onBack: (() -> Void)?
+    /// Onboarding's "Next"; nil from Settings (the page has no capsule there: back is the way out).
+    var onContinue: (() -> Void)?
+
+    init(preview: WidgetPreviewContent? = nil, onBack: (() -> Void)? = nil, onContinue: (() -> Void)? = nil) {
+        self.preview = preview
+        self.onBack = onBack
+        self.onContinue = onContinue
+    }
+
+    /// The iOS steps (`onboarding.widget.step.ios.1` … `.5`). Step 4 names the app (`{app_name}`, BLOCKED): release
+    /// builds omit it, so numbering follows the steps shown.
     static var steps: [String] {
         [
             Copy.onboardingWidgetStepIos1,
@@ -21,92 +39,114 @@ struct WidgetGuideScreen: View {
         ].compactMap { $0 }
     }
 
-    /// "1. …": numeral + period before the step's text (reference LT).
-    static func numbered(_ number: Int, _ text: String) -> String {
-        String(number) + ". " + text
-    }
-
-    private static let titleStyle = DSTextStyle(
-        family: Tokens.Fonts.globalFamily,
-        size: Tokens.FontSizes.onboardingWidgetFontSizeTitle,
-        weight: Tokens.FontWeights.onboardingWidgetFontWeightTitle,
-        relativeTo: .largeTitle
-    )
-    private static let stepStyle = DSTextStyle(
-        family: Tokens.Fonts.globalFamily,
-        size: Tokens.FontSizes.onboardingWidgetFontSizeStep,
-        weight: Tokens.FontWeights.onboardingWidgetFontWeightStep,
-        relativeTo: .title2,
-        lineHeight: Tokens.LineHeights.onboardingWidgetLineHeightStep
-    )
-    /// CTA label: `onboarding.widget.fontSize.ctaLabel`, bold per the spec (no weight token), Dynamic Type headline.
-    private static let ctaStyle = DSTextStyle(
-        family: Tokens.Fonts.globalFamily,
-        size: Tokens.FontSizes.onboardingWidgetFontSizeCtaLabel,
-        weight: Font.Weight.bold,
-        relativeTo: .headline
-    )
-
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(spacing: 0) {
-                    Text(Copy.onboardingWidgetTitle)
-                        .dsTextStyle(Self.titleStyle)
-                        .foregroundStyle(Tokens.Colors.onboardingWidgetColorTitle)
-                        .accessibilityAddTraits(.isHeader)
-                        .padding(.top, Tokens.Sizes.groupsCreateSizeSheetTopToTitle)
-                    VStack(spacing: Tokens.LineHeights.onboardingWidgetLineHeightStep) {
-                        ForEach(Array(Self.steps.enumerated()), id: \.offset) { index, step in
-                            Text(Self.numbered(index + 1, step))
-                                .accessibilityLabel(Text(Copy.onboardingWidgetStepNumberAccessibilityLabel(number: String(index + 1))))
-                                .accessibilityValue(Text(step))
-                        }
-                        Text(Copy.onboardingWidgetDone)
-                    }
-                    .dsTextStyle(Self.stepStyle)
-                    .foregroundStyle(Tokens.Colors.onboardingWidgetColorStep)
-                    .padding(.top, Tokens.Sizes.groupsCreateSizeTitleToContent)
-                }
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, Tokens.Sizes.paywallSizePerkMarginH)
+        SignUpLayout(
+            back: onBack.map { FormBackButton(accessibilityLabel: Copy.authCodeBackAccessibilityLabel, identifier: "onboarding.widget.back", action: $0) },
+            title: Copy.onboardingWidgetTitle,
+            explanation: Copy.onboardingWidgetDetail
+        ) {
+            MetricStack {
+                WidgetPreviewTile(content: preview)
+                    .frame(maxWidth: .infinity)
+                Text(Copy.widgetHomeSmallGalleryName)
+                    .dsTextRole(TextRole.meta)
+                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                    .frame(maxWidth: .infinity)
+                    .metricGap(Tokens.Sizes.globalSectionHeaderToContent, from: .bottom, to: .capTop)
+                stepList
+                    .metricGap(Tokens.Sizes.globalTitleToContent, from: .lastBaseline, to: .top)
             }
-            .scrollBounceBehavior(.basedOnSize)
-            cta
-                .padding(.bottom, Tokens.Sizes.groupsCreateSizeFieldToButton)
+            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+        } bottom: {
+            if let onContinue {
+                PrimaryButton(Copy.onboardingWidgetContinue, action: onContinue)
+                    .accessibilityIdentifier("onboarding.widget.continue")
+            }
         }
-        .background(
-            LinearGradient(
-                colors: [Tokens.Colors.onboardingWidgetColorBackgroundTop, Tokens.Colors.onboardingWidgetColorBackgroundBottom],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-        )
-        .toolbar(.hidden, for: .navigationBar)
-        .navigationBarBackButtonHidden(true)
         .accessibilityIdentifier("onboarding.widget")
     }
 
-    /// Content-width capsule: label + trailing arrow (decorative), `onboarding.widget.size.ctaPaddingH` each side.
-    private var cta: some View {
-        Button(action: onContinue) {
-            HStack(spacing: Tokens.Sizes.onboardingWidgetSizeCtaArrowGap) {
-                Text(Copy.onboardingWidgetContinue)
-                    .dsTextStyle(Self.ctaStyle)
-                Image(systemName: Tokens.Icons.onboardingWidgetIconCtaArrow)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: Tokens.Sizes.onboardingWidgetSizeCtaArrow)
-                    .accessibilityHidden(true)
+    /// One row per step (`size.global.sectionHeaderToContent` apart), then "You're done!" and the arrival note.
+    private var stepList: some View {
+        VStack(alignment: .leading, spacing: Tokens.Sizes.globalSectionHeaderToContent) {
+            ForEach(Array(Self.steps.enumerated()), id: \.offset) { index, step in
+                WidgetStepRow(number: index + 1, text: step)
             }
-            .foregroundStyle(Tokens.Colors.onboardingWidgetColorCtaLabel)
-            .padding(.horizontal, Tokens.Sizes.onboardingWidgetSizeCtaPaddingH)
-            .frame(minHeight: Tokens.Sizes.onboardingWidgetSizeCtaHeight)
-            .background(Tokens.Colors.onboardingWidgetColorCta, in: Capsule())
+            Text(Copy.onboardingWidgetDone)
+                .dsTextStyle(TextRole.listTitle)
+                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+            Text(Copy.widgetArrivalHelpDelay)
+                .dsTextStyle(TextRole.meta)
+                .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("onboarding.widget.continue")
+    }
+}
+
+/// A step: the numeral (text role `listTitle`, `color.global.textPrimary`) in a `size.global.circleButton` circle filled
+/// `color.global.control` (C-11 on the page), then the step (text role `body`, `color.global.textPrimary`)
+/// `size.global.rowThumbGap` after the circle. Read as one element: "Step {number}" with the text as its value.
+struct WidgetStepRow: View {
+    let number: Int
+    let text: String
+
+    var body: some View {
+        HStack(spacing: Tokens.Sizes.globalRowThumbGap) {
+            Text(String(number))
+                .dsTextStyle(TextRole.listTitle)
+                .monospacedDigit()
+                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                .frame(width: Tokens.Sizes.globalCircleButton, height: Tokens.Sizes.globalCircleButton)
+                .background(Tokens.Colors.globalControl, in: Circle())
+            Text(text)
+                .dsTextStyle(TextRole.body)
+                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(Copy.onboardingWidgetStepNumberAccessibilityLabel(number: String(number))))
+        .accessibilityValue(Text(text))
+    }
+}
+
+/// The widget preview: `onboarding.widget.size.preview` square, corners `onboarding.widget.radius.preview` (continuous),
+/// centred: the photo aspect-fill under `layout.global.photoScrim` with the sender's first name (text role `listTitle`,
+/// `color.global.textOnMedia`) at the bottom trailing corner (Retro's widget art: the name stack bottom-right, inset
+/// `size.global.badgeInset` as the card badge — Retro's own inset was not measured); no photo yet: `color.global.control`
+/// with `icon.global.gallery` in `color.global.textSecondary`. The photo fades in (`duration.global.fade`). One image
+/// for VoiceOver (`onboarding.widget.preview.accessibilityLabel`).
+struct WidgetPreviewTile: View {
+    let content: WidgetPreviewContent?
+
+    private static let fade = DSAnimation.timing(duration: Tokens.Durations.globalFade, easing: Tokens.Easings.globalStandard)
+
+    var body: some View {
+        ZStack {
+            Tokens.Colors.globalControl
+            if let photo = content?.photo {
+                PhotoView(source: photo)
+                    .overlay { PhotoScrim() }
+                    .overlay(alignment: .bottomTrailing) {
+                        if let name = content?.firstName {
+                            Text(name)
+                                .dsTextStyle(TextRole.listTitle)
+                                .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                                .lineLimit(1)
+                                .padding(Tokens.Sizes.globalBadgeInset)
+                        }
+                    }
+                    .transition(.opacity)
+            } else {
+                Glyph(Tokens.Icons.globalGallery)
+                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
+            }
+        }
+        .frame(width: Tokens.Sizes.onboardingWidgetSizePreview, height: Tokens.Sizes.onboardingWidgetSizePreview)
+        .clipShape(DSShape.rounded(Tokens.Radii.onboardingWidgetRadiusPreview))
+        .dsAnimation(Self.fade, value: content?.photo)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(Copy.onboardingWidgetPreviewAccessibilityLabel))
+        .accessibilityAddTraits(.isImage)
     }
 }

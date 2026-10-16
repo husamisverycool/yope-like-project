@@ -1,32 +1,45 @@
-// Surface: daily.capture (countdown) — reference app: BeReal.
-// Reference images: references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png,
-// appstore-preview-2026_timer-roll_f086-f129.png, tiktok-bereal-7339559678604627233_timer-roll_f496-f529.png
-// (design/surfaces/daily.capture.md). MM:SS, shown only while the window is open (SPEC_FLAGS T4).
+// Surface: daily.capture (title slot: countdown, then the group name) — visual reference Retro (C-29 title slot, text
+// role `sheetTitle`), mechanics BeReal (MM:SS countdown of the window).
+// Reference images: references/auto/retro/store/retro-store-03.png (ST-03: centred sheet title on the black composer),
+// references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (MM:SS) (design/surfaces/daily.capture.md;
+// RC-12, RC-13; SPEC_FLAGS T4).
 import AppModels
 import DesignSystem
 import SwiftUI
 
-/// The invitation countdown: ticks every `daily.capture.layout.countdownTick.tick`; only the
-/// changed digits move; the colon never moves; it leaves at `closes_at` and nothing takes its place.
-struct DailyCountdownView: View {
+/// The daily capture's title slot: while the window is open the countdown `daily.capture.countdown` (MM:SS, text role
+/// `sheetTitle`, monospaced digits, `color.global.textOnMedia`) — changed digits cross-fade over
+/// `duration.global.crossfade` and nothing shifts; at `closes_at` (or when opened late) it cross-fades to the group name in
+/// the same role. Nothing changes colour or says "late" (tenet 5). Accessibility: the countdown is a header whose value is
+/// the platform's spoken duration, updated without announcements.
+struct DailyCaptureTitle: View {
     let closesAt: Date?
     let opensAt: Date?
     let clock: ServerClock
-
-    private typealias Tick = Tokens.Layouts.DailyCaptureLayoutCountdownTick
+    let groupName: String
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: Double(Tick.tick) / 1000)) { context in
+        TimelineView(.periodic(from: .now, by: 1)) { context in // provenance-ok: one tick per second (MM:SS countdown)
             let seconds = remainingSeconds(at: context.date)
             ZStack {
                 if let seconds {
                     CountdownDigits(text: CaptureFormat.countdown(remainingSeconds: seconds))
                         .accessibilityElement(children: .ignore)
-                        .accessibilityValue(CaptureFormat.spokenCountdown(remainingSeconds: seconds))
+                        .accessibilityValue(Text(CaptureFormat.spokenCountdown(remainingSeconds: seconds)))
+                        .accessibilityAddTraits([.isHeader, .updatesFrequently])
                         .accessibilityIdentifier("daily.capture.countdown")
-                        .transition(.opacity.animation(DSAnimation.measured(milliseconds: Tick.digitOut).animation))
+                        .dsTransition(.opacity)
+                } else {
+                    Text(groupName)
+                        .dsTextRole(TextRole.sheetTitle)
+                        .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                        .lineLimit(1)
+                        .accessibilityAddTraits(.isHeader)
+                        .accessibilityIdentifier("daily.capture.groupName")
+                        .dsTransition(.opacity)
                 }
             }
+            .dsAnimation(ComponentMotion.crossfade, value: seconds == nil)
         }
     }
 
@@ -37,44 +50,24 @@ struct DailyCountdownView: View {
     }
 }
 
-/// Digits that roll individually: the old digit slides up `travel` and fades out (digitOut); the
-/// new one rises from `travel` below (digitIn) and fades in (digitFadeIn). Reduce Motion: the
-/// changed digits cross-fade over digitOut / digitIn, no movement.
+/// MM:SS where only the changed digits cross-fade (`duration.global.crossfade`; the same under Reduce Motion — RC-13: no
+/// BeReal digit roll). Monospaced digits, so the colon never moves.
 struct CountdownDigits: View {
     let text: String
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    private typealias Tick = Tokens.Layouts.DailyCaptureLayoutCountdownTick
 
     var body: some View {
         HStack(spacing: 0) {
             ForEach(Array(text.enumerated()), id: \.offset) { _, character in
                 ZStack {
-                    if character.isNumber {
-                        Text(String(character))
-                            .id(character)
-                            .transition(transition)
-                    } else {
-                        Text(String(character))
-                    }
+                    Text(String(character))
+                        .id(character)
+                        .transition(.opacity)
                 }
             }
         }
-        .dsTextStyle(CaptureType.countdown)
+        .dsTextRole(TextRole.sheetTitle)
         .monospacedDigit()
-        .foregroundStyle(Tokens.Colors.dailyCaptureColorText)
-    }
-
-    private var transition: AnyTransition {
-        let digitOut = DSAnimation.measured(milliseconds: Tick.digitOut).resolved(reduceMotion: reduceMotion)
-        let digitIn = DSAnimation.measured(milliseconds: Tick.digitIn).resolved(reduceMotion: reduceMotion)
-        let fadeIn = DSAnimation.measured(milliseconds: Tick.digitFadeIn).resolved(reduceMotion: reduceMotion)
-        if reduceMotion {
-            return .asymmetric(insertion: .opacity.animation(digitIn), removal: .opacity.animation(digitOut))
-        }
-        let insertion = AnyTransition.offset(y: Tick.travel).animation(digitIn)
-            .combined(with: AnyTransition.opacity.animation(fadeIn))
-        let removal = AnyTransition.offset(y: -Tick.travel).combined(with: .opacity).animation(digitOut)
-        return .asymmetric(insertion: insertion, removal: removal)
+        .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+        .dsAnimation(ComponentMotion.crossfade, value: text)
     }
 }

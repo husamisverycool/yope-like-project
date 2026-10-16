@@ -1,5 +1,5 @@
 // Surfaces: camera.capture (+ camera.fromwidget), camera.sendto, daily.capture, collage.view,
-// collage.share. Reference images: listed in each design/surfaces/<id>.md.
+// collage.share. Reference images: listed in each design/surfaces/<id>.md (Retro: references/auto/retro/…).
 // Screen entry points: each creates its view model once (camera sessions are expensive) from the
 // capture environment and hosts the view.
 import SwiftUI
@@ -61,6 +61,8 @@ struct DailyCaptureScreen: View {
 struct CollageScreen: View {
     let groupID: String
     let invitationID: String
+    /// Presented as a full-screen cover (collage.view: "Full-screen modal"); false when pushed on the stack.
+    var isPresentedModally = false
     var environment: CaptureEnvironment?
 
     @State private var model: CollageModel? = nil
@@ -68,7 +70,7 @@ struct CollageScreen: View {
     var body: some View {
         ZStack {
             if let model {
-                CollageView(model: model)
+                CollageView(model: model, isPresentedModally: isPresentedModally)
             }
         }
         .onAppear {

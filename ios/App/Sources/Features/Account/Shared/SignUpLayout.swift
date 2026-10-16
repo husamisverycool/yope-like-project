@@ -76,11 +76,14 @@ struct OnboardingHeading: View {
 ///   area, `size.global.buttonMarginH` from the sides; the stack scrolls when it no longer fits (large Dynamic Type).
 /// - `replacement` (offline, not configured): the C-27 block replaces the content and the bottom, centred in the space
 ///   under the heading.
+/// - `centersContent`: the content is centred in the space between the heading and the bottom instead (the profile
+///   photo step's avatar).
 struct SignUpLayout<Content: View, Bottom: View>: View {
     var back: FormBackButton?
     let title: String
     var explanation: String?
     var replacement: EmptyStateView?
+    var centersContent = false
     @ViewBuilder var content: () -> Content
     @ViewBuilder var bottom: () -> Bottom
 
@@ -89,6 +92,7 @@ struct SignUpLayout<Content: View, Bottom: View>: View {
         title: String,
         explanation: String? = nil,
         replacement: EmptyStateView? = nil,
+        centersContent: Bool = false,
         @ViewBuilder content: @escaping () -> Content,
         @ViewBuilder bottom: @escaping () -> Bottom
     ) {
@@ -96,6 +100,7 @@ struct SignUpLayout<Content: View, Bottom: View>: View {
         self.title = title
         self.explanation = explanation
         self.replacement = replacement
+        self.centersContent = centersContent
         self.content = content
         self.bottom = bottom
     }
@@ -108,7 +113,7 @@ struct SignUpLayout<Content: View, Bottom: View>: View {
                         OnboardingHeading(title: title, explanation: explanation)
                             .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
                             .metricGap(Tokens.Sizes.globalTitleTop, from: .top, to: .firstBaseline)
-                        if replacement == nil {
+                        if replacement == nil, !centersContent {
                             content()
                                 .metricGap(Tokens.Sizes.globalTitleToContent, from: .lastBaseline, to: .top)
                         }
@@ -118,6 +123,10 @@ struct SignUpLayout<Content: View, Bottom: View>: View {
                         replacement
                         Spacer(minLength: 0)
                     } else {
+                        if centersContent {
+                            Spacer(minLength: Tokens.Sizes.globalTitleToContent)
+                            content()
+                        }
                         // The capsule keeps its own margin (`size.global.buttonMarginH`) from the content above it.
                         Spacer(minLength: Tokens.Sizes.globalButtonMarginH)
                         bottom()

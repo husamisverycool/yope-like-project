@@ -41,15 +41,15 @@ import java.io.File
 import kotlin.math.roundToInt
 
 /**
- * Renders a story card into a share image (`layout.year.story.shareCard`: 1080 × 1920 px, the card's
- * canvas without progress bar, chrome or share row, at the default text size). The card is composed
- * off screen at the on-screen canvas size with a density that maps its width to 1080 px, and its draw
- * commands are recorded into a [Picture] (never drawn on screen). The bitmap is then drawn from the
- * picture and encoded as PNG off the main thread.
+ * Renders a story card into a share image (`layout.year.story.shareCard`: 1080 × 1920 px — the frame's 9:16 content
+ * box without the close circle, position pill or bottom bar, at the default text size). The card is composed off
+ * screen at the on-screen box size with a density that maps its width to 1080 px, and its draw commands are recorded
+ * into a [Picture] (never drawn on screen). The bitmap is then drawn from the picture and encoded as PNG off the main
+ * thread. Images decode into software bitmaps; the record waits until every image of the card has settled.
  */
 @Stable
 class ShareCardExporter {
-    internal class Job(val card: StoryCard, val result: CompletableDeferred<Picture?>)
+    internal class Job(val card: StoryCard, val style: SummaryStyle, val recap: StoryRecap, val result: CompletableDeferred<Picture?>)
 
     internal var job by mutableStateOf<Job?>(null)
         private set
@@ -58,8 +58,8 @@ class ShareCardExporter {
     val busy: Boolean get() = job != null
 
     /** The recorded picture of [card], or null when it could not be rendered. */
-    internal suspend fun record(card: StoryCard): Picture? {
-        val next = Job(card, CompletableDeferred())
+    internal suspend fun record(card: StoryCard, style: SummaryStyle, recap: StoryRecap): Picture? {
+        val next = Job(card, style, recap, CompletableDeferred())
         job = next
         return try {
             next.result.await()
@@ -69,8 +69,8 @@ class ShareCardExporter {
     }
 
     /** Renders [card] into a 1080 × 1920 bitmap (drawing and encoding off the main thread). */
-    suspend fun render(card: StoryCard): Bitmap? {
-        val picture = record(card) ?: return null
+    suspend fun render(card: StoryCard, style: SummaryStyle, recap: StoryRecap): Bitmap? {
+        val picture = record(card, style, recap) ?: return null
         val share = Tokens.Layouts.YearStoryShareCard
         return withContext(Dispatchers.Default) {
             Bitmap.createBitmap(share.width.toInt(), share.height.toInt(), Bitmap.Config.ARGB_8888).also { AndroidCanvas(it).drawPicture(picture) }
@@ -78,8 +78,8 @@ class ShareCardExporter {
     }
 
     /** Renders [card] and writes it as a PNG under the share folder; returns its content:// URI. */
-    suspend fun export(context: Context, card: StoryCard, name: String): Uri? {
-        val bitmap = render(card) ?: return null
+    suspend fun export(context: Context, card: StoryCard, style: SummaryStyle, recap: StoryRecap, name: String): Uri? {
+        val bitmap = render(card, style, recap) ?: return null
         return withContext(Dispatchers.IO) {
             val file = File(MemoryFiles.dir(context), "$name.png")
             file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, PNG_QUALITY, it) }
@@ -98,12 +98,13 @@ fun rememberShareCardExporter(): ShareCardExporter = remember { ShareCardExporte
 
 /**
  * Hosts [exporter]'s off-screen render. Place it anywhere in the screen: it takes no space and draws
- * nothing. [canvasWidth] is the on-screen canvas width, so the share image matches the card's layout.
+ * nothing. [canvasWidth] is the on-screen 9:16 box width, so the share image matches the card's layout.
  */
 @Composable
 fun ShareCardHost(exporter: ShareCardExporter, canvasWidth: Dp) {
     val job = exporter.job ?: return
-    val canvasHeight = canvasWidth * Tokens.Layouts.YearStoryCanvas.aspectHeight / Tokens.Layouts.YearStoryCanvas.aspectWidth
+    val frame = Tokens.Layouts.YearStoryFrame
+    val canvasHeight = canvasWidth * frame.aspectHeight / frame.aspectWidth
     val shareCard = Tokens.Layouts.YearStoryShareCard
     // Density so that canvasWidth dp = shareCard.width px; the share image always uses the default text size.
     val shareDensity = Density(density = shareCard.width / canvasWidth.value, fontScale = 1f)
@@ -115,6 +116,8 @@ fun ShareCardHost(exporter: ShareCardExporter, canvasWidth: Dp) {
 @Composable
 private fun Host(job: ShareCardExporter.Job, canvasWidth: Dp, canvasHeight: Dp, shareDensity: Density, view: View) {
     val settled = remember { CompletableDeferred<Unit>() }
+    val waiting = remember { intArrayOf(exportImages(job.card, job.style, job.recap)) }
+    val onSettled: () -> Unit = { if (--waiting[0] <= 0) settled.complete(Unit) }
     val recorded = remember { arrayOfNulls<Picture>(1) }
     Box(Modifier.size(0.dp).wrapContentSize(Alignment.TopStart, unbounded = true).clearAndSetSemantics { }) {
         CompositionLocalProvider(LocalDensity provides shareDensity) {
@@ -135,7 +138,11 @@ private fun Host(job: ShareCardExporter.Job, canvasWidth: Dp, canvasHeight: Dp, 
                     }
                     .background(Tokens.Colors.globalBackgroundDeep),
             ) {
-                StoryCardContent(job.card, canvasWidth, canvasHeight, revealed = true, softwareImages = true, onSettled = { settled.complete(Unit) })
+                if (job.card == StoryCard.Summary) {
+                    SummaryPage(job.style, job.recap, backdropDrawn = false, onSettled = onSettled, software = true)
+                } else {
+                    StoryCardPage(job.card, job.recap, revealed = true, backdropDrawn = false, onSettled = onSettled, software = true)
+                }
             }
         }
     }

@@ -1,21 +1,24 @@
 // Looks up invites and prepares everything a page needs, with a short-lived cache.
 //
 // One lookup = invite_preview (anon) + one signing call (service role) + the cover download. The
-// result, the processed cover, avatars and link-preview image are reused for INVITE_CACHE_SECONDS
-// and then dropped, so a revoked or expired invite stops showing within that time. Upstream
-// failures are never cached.
+// result, the processed cover, avatars, backdrop and link-preview image are reused for
+// INVITE_CACHE_SECONDS and then dropped, so a revoked or expired invite stops showing within that
+// time. Upstream failures are never cached.
 
-import { composeOgImage, processAvatar, processCover, type ProcessedCover } from "./images.js";
+import { blurredBackdrop, composeOgImage, processAvatar, processCover, type Backdrop, type ProcessedCover } from "./images.js";
 import type { InvitePreview, Upstream } from "./supabase.js";
-import { defaultTheme, themeFromColour, type Theme } from "./theme.js";
 
 export interface LoadedInvite {
   status: "ok";
   preview: InvitePreview;
-  theme: Theme;
   cover: ProcessedCover | null;
   /** Indexes into preview.members whose avatar was signed and can be served. */
   avatarIndexes: Set<number>;
+  /**
+   * The member who is the inviter, when it can be told: invite_preview returns the inviter's first name but no
+   * avatar, so the inviter is the one member with that first name (null when none or several match).
+   */
+  inviterIndex: number | null;
 }
 
 export type InviteResult = LoadedInvite | { status: "not_found" } | { status: "unavailable"; reason: "expired" | "revoked" };
@@ -26,7 +29,8 @@ interface Entry {
   result: Promise<InviteResult>;
   signed: Map<string, string>;
   avatars: Map<number, Promise<Buffer | null>>;
-  og?: Promise<Buffer | null>;
+  backdrop?: Promise<Backdrop | null>;
+  og?: Promise<Buffer>;
   bytes: number;
 }
 
@@ -38,6 +42,14 @@ export interface InviteServiceOptions {
   maxEntries?: number;
   now?: () => number;
   log?: (msg: string) => void;
+}
+
+/** The member whose first name is the inviter's, if exactly one has it. */
+export function inviterIndex(preview: InvitePreview): number | null {
+  const name = preview.inviter_first_name;
+  if (!name) return null;
+  const matches = preview.members.flatMap((m, i) => (m.first_name === name ? [i] : []));
+  return matches.length === 1 ? matches[0]! : null;
 }
 
 export class InviteService {
@@ -95,13 +107,45 @@ export class InviteService {
     return p;
   }
 
-  /** Link-preview image, or null when the group has no cover. */
-  async ogImage(token: string): Promise<Buffer | null> {
+  /**
+   * The card's backdrop (C-34): the cover blurred; without a cover the inviter's avatar blurred; null when there is
+   * neither (the card is then color.global.backgroundDeep).
+   */
+  async backdrop(token: string): Promise<Backdrop | null> {
     const entry = this.entry(token);
     const result = await entry.result;
-    if (result.status !== "ok" || !result.cover) return null;
+    if (result.status !== "ok") return null;
+    if (!entry.backdrop) {
+      const source = async (): Promise<Buffer | null> => {
+        if (result.cover) return result.cover.jpeg;
+        if (result.inviterIndex !== null && result.avatarIndexes.has(result.inviterIndex)) return this.avatar(token, result.inviterIndex);
+        return null;
+      };
+      entry.backdrop = source().then(async (buf) => {
+        if (!buf) return null;
+        const b = await blurredBackdrop(buf);
+        this.account(entry, b.png.length);
+        return b;
+      });
+      entry.backdrop.catch(() => (entry.backdrop = undefined));
+    }
+    return entry.backdrop;
+  }
+
+  /** What the backdrop is drawn from, without computing it. */
+  static backdropSource(invite: LoadedInvite): "cover" | "inviter" | null {
+    if (invite.cover) return "cover";
+    if (invite.inviterIndex !== null && invite.avatarIndexes.has(invite.inviterIndex)) return "inviter";
+    return null;
+  }
+
+  /** 600 × 600 link-preview image (invite.web.layout.ogImage). */
+  async ogImage(token: string, domain: string | null): Promise<Buffer | null> {
+    const entry = this.entry(token);
+    const result = await entry.result;
+    if (result.status !== "ok") return null;
     if (!entry.og) {
-      entry.og = composeOgImage(result.cover.jpeg).then((buf) => {
+      entry.og = composeOgImage({ cover: result.cover?.jpeg ?? null, groupName: result.preview.group_name, domain }).then((buf) => {
         this.account(entry, buf.length);
         return buf;
       });
@@ -148,8 +192,7 @@ export class InviteService {
     preview.members.forEach((m, i) => {
       if (m.avatar_path && signed.has(m.avatar_path)) avatarIndexes.add(i);
     });
-    const theme = cover ? themeFromColour(cover.mean) : defaultTheme();
-    return { status: "ok", preview, theme, cover, avatarIndexes };
+    return { status: "ok", preview, cover, avatarIndexes, inviterIndex: inviterIndex(preview) };
   }
 
   private account(entry: Entry, bytes: number) {

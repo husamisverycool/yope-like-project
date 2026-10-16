@@ -25,13 +25,14 @@ struct ShareRequest: Identifiable {
     let items: [Any]
 }
 
-/// An SMS invite addressed to one number, shown in the system composer.
+/// An SMS invite shown in the system composer: addressed to one contact's number, or to nobody yet (the "Message"
+/// share target).
 struct MessageRequest: Identifiable {
     let id = UUID()
-    let recipient: String
+    var recipient: String?
     let body: String
-    /// Row being invited (marked "invited" after `.sent`).
-    let contactID: String
+    /// Row being invited (marked "Invited" after `.sent`); nil for the "Message" share target.
+    var contactID: String?
 }
 
 /// `MFMessageComposeViewController`; `onFinish(true)` when the message was sent.
@@ -45,7 +46,7 @@ struct MessageComposeView: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> MFMessageComposeViewController {
         let controller = MFMessageComposeViewController()
-        controller.recipients = [request.recipient]
+        if let recipient = request.recipient { controller.recipients = [recipient] }
         controller.body = request.body
         controller.messageComposeDelegate = context.coordinator
         return controller

@@ -14,9 +14,9 @@ import SwiftUI
 /// - Recap card: Retro's corner (≈4.5–5 % of the card width) has no token (Gap — one lossless share-image export); pass
 ///   the recap surface's radius.
 ///
-/// The blur radius is not measurable from stills (Gap): the backdrop is the photo under the platform's thinnest material
-/// (system blur, PLATFORM), which keeps its colours and follows the appearance. Accessibility: the backdrop is
-/// decorative; the card's content reads in order.
+/// The backdrop is the photo with a mild Gaussian blur (`size.global.backdropBlur`, σ 1.8 pt) under a black layer
+/// (`color.global.backdropDim`, 22 %), both fitted on ST-04 (MERGE_DECISIONS L-5): not a frosted material.
+/// Accessibility: the backdrop is decorative; the card's content reads in order.
 struct BackdropCard<Content: View, Below: View>: View {
     let backdrop: PhotoSource?
     var cornerRadius: CGFloat
@@ -72,8 +72,10 @@ struct BlurredBackdrop: View {
         ZStack {
             Tokens.Colors.globalBackgroundDeep
             PhotoView(source: source)
-            Rectangle().fill(.ultraThinMaterial)
+                .blur(radius: Tokens.Sizes.globalBackdropBlur, opaque: true)
+            Tokens.Colors.globalBackdropDim
         }
+        .clipped()
         .ignoresSafeArea()
         .accessibilityHidden(true)
     }

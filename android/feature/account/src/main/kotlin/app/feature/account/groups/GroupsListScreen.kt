@@ -1,55 +1,42 @@
-// Surface: groups.list — group list / home. Spec: design/surfaces/groups.list.md.
-// References: references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png (H1),
-// a-virgi-7686278541255642390-t40.23-home-list-es.png (H2), a-itsmthuyope-7644974799302823175-t44.23-home-list-new-group-icon.png (H3),
-// a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (H4), references/auto/yope/store/yope-store-02.png (TB),
-// references/auto/yope/web/a-bi-2025-onboarding-composite.jpg (BI).
+// Surface: groups.list — the group list (home). Spec: design/surfaces/groups.list.md.
+// References: references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png (ED-W3: row pitch 119.5,
+// 72 × 97 covers, subtitle with the actor in semibold, avatar stack, 36-pt "+" circle, new-album glyph),
+// references/auto/retro/press/tc-2024-04-journals-1.webp (TC-J1 phone 2: serif title), references/auto/retro/press/
+// jeddacp-2024-05-home-profile-journals.png (JED phone 3: "Ideas to Get Started" template rows with a Fill "Create" capsule),
+// references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png and …-20260528-week22-dark-a.png (H43 / H22: title, tab bar).
 package app.feature.account.groups
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -57,7 +44,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import app.data.error.DataError
 import app.data.model.Group
-import app.data.model.Media
+import app.data.model.GroupKind
 import app.data.model.Post
 import app.data.offline.DataState
 import app.data.realtime.GroupEvent
@@ -67,20 +54,22 @@ import app.feature.account.AccountEnvironment
 import app.feature.account.LocalAccountEnvironment
 import app.feature.account.common.AccountViewModel
 import app.feature.account.common.CollectEvents
+import app.feature.account.common.TapLine
 import app.feature.account.common.dataError
 import app.model.AppRoute
-import app.ui.components.AccentTitle
-import app.ui.components.Avatar
+import app.model.GroupCreateKindRoute
+import app.ui.components.Capsule
+import app.ui.components.CapsuleStyle
 import app.ui.components.EmptyState
 import app.ui.components.EmptyStateAction
-import app.ui.components.HeaderCircleButton
-import app.ui.components.HeaderCircleFill
-import app.ui.components.LoadingHud
-import app.ui.components.PrimaryButton
-import app.ui.components.TitleSplit
-import app.ui.format.Formats
-import app.ui.text.TextRoles
-import coil3.compose.AsyncImage
+import app.ui.components.HeaderAction
+import app.ui.components.ScreenHeader
+import app.ui.components.SectionHeader
+import app.ui.components.ThumbnailRow
+import app.ui.components.ThumbnailRowSpacing
+import app.ui.components.subtitleWithActor
+import app.ui.foundation.DsMotion
+import app.ui.foundation.PageRoles
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -89,38 +78,53 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
-import java.time.ZoneId
 import java.util.concurrent.ConcurrentHashMap
 
-/** What a card's subtitle says (`groups.list.row.*`). */
+/** What a row's subtitle says (`groups.list.row.*`); the actor ({first_name} or "you") is set in semibold. */
 @Immutable
 sealed interface RowSubtitle {
+    /** No posts and the creator is unknown: "group created". */
     data object NoPics : RowSubtitle
-    data class NewPic(val at: Instant) : RowSubtitle
-    data class SentPic(val firstName: String, val at: Instant) : RowSubtitle
+
+    /** Newest post is yours: "you shared a post". */
+    data object NewPic : RowSubtitle
+
+    /** Newest post by someone else: "{first_name} shared a post". */
+    data class SentPic(val firstName: String) : RowSubtitle
+
+    /** No posts, you created it: "you created the group". */
+    data object CreatedByYou : RowSubtitle
+
+    /** No posts, someone else created it: "{first_name} created the group". */
+    data class CreatedBy(val firstName: String) : RowSubtitle
 }
 
-/** The newest activity of one group, as the card and the cover need it. */
+/** The newest activity of one group, its creator's first name and its members' avatars (joining order). */
 @Immutable
-data class RowDetail(val newest: Post?, val senderFirstName: String?, val coverUrl: String?, val photoUrl: String?)
+data class RowDetail(val newest: Post?, val senderFirstName: String?, val creatorFirstName: String?, val coverUrl: String?, val memberAvatars: List<String?>)
 
 @Immutable
-data class GroupRow(val id: String, val name: String, val coverUrl: String?, val subtitle: RowSubtitle?, val activityAt: Instant)
-
-@Immutable
-data class CoverPhoto(val groupId: String, val postId: String, val url: String?, val firstName: String?, val groupName: String)
+data class GroupRow(
+    val id: String,
+    val name: String,
+    val coverUrl: String?,
+    val subtitle: RowSubtitle?,
+    val activityAt: Instant,
+    /** Members' avatar URLs (null = no photo), joining order. */
+    val avatars: List<String?> = emptyList(),
+)
 
 @Immutable
 data class GroupsListUiState(
     /** Null until the first page (cache or network) is known. */
     val rows: List<GroupRow>? = null,
-    val cover: CoverPhoto? = null,
     val refreshing: Boolean = true,
     val error: DataError? = null,
 ) {
@@ -129,9 +133,9 @@ data class GroupsListUiState(
 }
 
 /**
- * Cache-then-network group list (`GroupRepository.observeMyGroups`), the newest post of each group
- * (`posts … order(created_at desc) limit 1`), sender first names and signed URLs; realtime post
- * inserts / deletions refresh that group's card and the cover; refetch on (re)subscription.
+ * Cache-then-network group list (`GroupRepository.observeMyGroups`), per group the newest post
+ * (`posts … order(created_at desc) limit 1`), the sender's or creator's first name, the members' avatars (joining order)
+ * and signed URLs; realtime post inserts / deletions refresh that group's row and the order; refetch on (re)subscription.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class GroupsListViewModel(private val env: AccountEnvironment) : AccountViewModel() {
@@ -199,37 +203,42 @@ class GroupsListViewModel(private val env: AccountEnvironment) : AccountViewMode
             Details.byGroup[group.id]?.newest
         }
         val me = env.backend.currentUserId
-        val firstName = newest?.takeIf { it.authorId != me }?.let { post ->
-            runCatching { env.backend.profiles(listOf(post.authorId)).firstOrNull()?.firstName }.getOrNull()
+        val members = runCatching {
+            env.backend.observeMembers(group.id).first { it.value != null || !it.refreshing }.value.orEmpty()
+        }.getOrDefault(emptyList()).sortedBy { it.member.joinedAt }
+        val byId = members.associateBy { it.member.userId }
+        fun firstName(userId: String?): String? = userId?.let { id ->
+            byId[id]?.profile?.firstName ?: runCatching { env.backend.profiles(listOf(id)).firstOrNull()?.firstName }.getOrNull()
         }
-        val media: Media? = newest?.let { post -> runCatching { env.backend.media(listOf(post.mediaId)).firstOrNull() }.getOrNull() }
-        val paths = listOfNotNull(group.coverPath, media?.imagePath(Media.Rendition.Display))
+        val sender = newest?.takeIf { it.authorId != me }?.let { firstName(it.authorId) }
+        val creator = if (newest == null) group.createdBy?.takeIf { it != me }?.let(::firstName) else null
+        val paths = listOfNotNull(group.coverPath) + members.mapNotNull { it.profile?.avatarPath }
         val urls = runCatching { env.backend.signedUrls(paths) }.getOrDefault(emptyMap())
         return RowDetail(
             newest = newest,
-            senderFirstName = firstName,
+            senderFirstName = sender,
+            creatorFirstName = creator,
             coverUrl = group.coverPath?.let(urls::get),
-            photoUrl = media?.imagePath(Media.Rendition.Display)?.let(urls::get),
+            memberAvatars = members.map { m -> m.profile?.avatarPath?.let(urls::get) },
         )
     }
 
     private fun publish(list: List<Group>, refreshing: Boolean, error: DataError?) {
         val me = env.backend.currentUserId
         val left = env.optimistic.leftGroups.value
-        val visible = list.filterNot { it.id in left }
-        val rows = visible.map { g ->
+        val rows = list.filterNot { it.id in left }.map { g ->
             val d = Details.byGroup[g.id]
             val subtitle: RowSubtitle? = when {
                 d == null -> null
-                d.newest == null -> RowSubtitle.NoPics
-                d.newest.authorId == me || d.senderFirstName == null -> RowSubtitle.NewPic(d.newest.createdAt)
-                else -> RowSubtitle.SentPic(d.senderFirstName, d.newest.createdAt)
+                d.newest != null && (d.newest.authorId == me || d.senderFirstName == null) -> RowSubtitle.NewPic
+                d.newest != null -> RowSubtitle.SentPic(d.senderFirstName!!)
+                g.createdBy == me -> RowSubtitle.CreatedByYou
+                d.creatorFirstName != null -> RowSubtitle.CreatedBy(d.creatorFirstName)
+                else -> RowSubtitle.NoPics
             }
-            GroupRow(g.id, g.name, d?.coverUrl, subtitle, maxOf(d?.newest?.createdAt ?: g.createdAt, g.createdAt))
+            GroupRow(g.id, g.name, d?.coverUrl, subtitle, maxOf(d?.newest?.createdAt ?: g.createdAt, g.createdAt), d?.memberAvatars.orEmpty())
         }.sortedByDescending { it.activityAt }
-        val newest = visible.mapNotNull { g -> Details.byGroup[g.id]?.let { d -> d.newest?.let { p -> Triple(g, d, p) } } }.maxByOrNull { it.third.createdAt }
-        val cover = newest?.let { (g, d, p) -> CoverPhoto(g.id, p.id, d.photoUrl, d.senderFirstName, g.name) }
-        mutable.update { it.copy(rows = rows, cover = cover, refreshing = refreshing, error = error) }
+        mutable.update { it.copy(rows = rows, refreshing = refreshing, error = error) }
     }
 
     /** Known activity per group, kept for the process so coming back to the list never reorders or flashes (tests clear it). */
@@ -238,8 +247,8 @@ class GroupsListViewModel(private val env: AccountEnvironment) : AccountViewMode
     }
 }
 
-/** Space the floating tab bar takes over the list (`size.global.tabBarHeight` + `.tabBarInset`). */
-val TabBarClearance = Tokens.Sizes.globalTabBarHeight + Tokens.Sizes.globalTabBarInset
+/** Space the tab bar (C-04, the shell's) takes over the list: `size.global.tabBarHeight` above the navigation bar. */
+val TabBarClearance: Dp get() = Tokens.Sizes.globalTabBarHeight + Tokens.Sizes.globalTabBarInset
 
 @Composable
 fun GroupsListRoute(nav: NavController) {
@@ -253,213 +262,180 @@ fun GroupsListRoute(nav: NavController) {
     }
     GroupsListScreen(
         state = state,
-        zone = env.zone(),
         onRefresh = vm::refresh,
         onOpenGroup = { nav.navigate(AppRoute.Group(it)) },
         onCamera = { nav.navigate(AppRoute.Camera(it)) },
         onCreate = { nav.navigate(AppRoute.GroupCreate) },
-        onCover = { nav.navigate(AppRoute.PhotoViewer(it.groupId, it.postId)) },
+        onTemplate = { nav.navigate(GroupCreateKindRoute(it.wire)) },
     )
 }
 
+/**
+ * The home list (page `color.global.background.android`; vertical scroll; the shell's C-04 tab bar over the bottom):
+ * C-01 header — serif "Groups" and the trailing `icon.global.newAlbum` → groups.create; `size.global.titleToContent` below,
+ * C-15 rows (newest activity first, thumbnails `size.global.listGap` apart): cover 72 × 97 (no cover: `color.global.control`
+ * with `icon.global.group`), name (one line, tail truncation), subtitle with the actor in semibold, the C-23 member stack
+ * (as many as fit, no count), the "+" circle → the camera for that group; `size.global.sectionGap` below, the C-20
+ * "Ideas to Get Started" header and one template row per `group_kind` (placeholder thumbnail, ≤ 2-line description, C-06
+ * fill capsule "Create" → groups.create with that kind). Rows fade in / reorder with the house fade.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupsListScreen(
     state: GroupsListUiState,
-    zone: ZoneId,
     onRefresh: () -> Unit,
     onOpenGroup: (String) -> Unit,
     onCamera: (String) -> Unit,
     onCreate: () -> Unit,
-    onCover: (CoverPhoto) -> Unit,
+    onTemplate: (GroupKind) -> Unit,
 ) {
     val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + TabBarClearance
-    Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep)) {
+    val header = @Composable {
+        ScreenHeader(
+            stringResource(R.string.groups_list_title),
+            actions = listOf(HeaderAction(Tokens.Icons.globalNewAlbum, stringResource(R.string.groups_list_header_add_accessibilitylabel), onCreate)),
+        )
+    }
+    Box(Modifier.fillMaxSize().background(PageRoles.page).windowInsetsPadding(WindowInsets.statusBars)) {
         val rows = state.rows
         when {
-            state.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { LoadingHud(stringResource(R.string.groups_create_hud_loading)) }
-            rows == null && state.offline -> CenteredHome(bottom) {
-                EmptyState(stringResource(R.string.groups_list_offline_title), stringResource(R.string.groups_list_offline_detail))
+            state.loading -> Column(Modifier.fillMaxSize()) {
+                header()
+                LoadingRows()
             }
-            rows == null -> CenteredHome(bottom) {
-                EmptyState(
-                    stringResource(R.string.groups_list_error_title),
-                    stringResource(R.string.groups_list_error_detail),
-                    action = EmptyStateAction(stringResource(R.string.groups_list_error_retry), onRefresh),
-                )
+            rows == null && state.offline -> Column(Modifier.fillMaxSize().padding(bottom = bottom)) {
+                header()
+                Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    EmptyState(stringResource(R.string.groups_list_offline_title), stringResource(R.string.groups_list_offline_detail))
+                }
             }
-            rows.isEmpty() -> EmptyHome(bottom, onCreate)
+            rows == null -> Column(Modifier.fillMaxSize()) {
+                header()
+                TapLine(stringResource(R.string.groups_list_error_title), onRefresh)
+            }
             else -> PullToRefreshBox(isRefreshing = false, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
-                GroupsListContent(rows, state.cover, zone, bottom, onOpenGroup, onCamera, onCreate, onCover)
-            }
-        }
-    }
-}
-
-@Composable
-private fun GroupsListContent(
-    rows: List<GroupRow>,
-    cover: CoverPhoto?,
-    zone: ZoneId,
-    bottom: androidx.compose.ui.unit.Dp,
-    onOpenGroup: (String) -> Unit,
-    onCamera: (String) -> Unit,
-    onCreate: () -> Unit,
-    onCover: (CoverPhoto) -> Unit,
-) {
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = bottom)) {
-        item(key = "cover") { CoverHeader(cover, onCreate, onCover) }
-        items(rows, key = { it.id }, contentType = { "card" }) { row ->
-            GroupCard(row, zone, onOpen = { onOpenGroup(row.id) }, onCamera = { onCamera(row.id) })
-            Spacer(Modifier.height(Tokens.Sizes.globalListGap))
-        }
-    }
-}
-
-/**
- * The cover header: newest photo across groups, full-bleed from the top edge, height
- * `groups.list.size.coverHeight`, `scaledToFill`; square bottom corners (radius not measured); ⌄
- * (`icon.global.chevronDown`, white) under it, `size.global.listGap` above the first card. The "+"
- * circle (`size.global.headerButton`, `icon.global.add`) sits over the cover at the trailing
- * `size.global.headerInset`, filled `groups.list.color.headerCircleOverPhoto`.
- */
-@Composable
-private fun CoverHeader(cover: CoverPhoto?, onCreate: () -> Unit, onCover: (CoverPhoto) -> Unit) {
-    val addLabel = stringResource(R.string.groups_list_header_add_accessibilitylabel)
-    if (cover == null) {
-        Box(Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars).padding(horizontal = Tokens.Sizes.globalHeaderInset)) {
-            HeaderCircleButton(Tokens.Icons.globalAdd, addLabel, onCreate, fill = HeaderCircleFill.OnDeep, modifier = Modifier.align(Alignment.CenterEnd))
-        }
-        Spacer(Modifier.height(Tokens.Sizes.globalListGap))
-        return
-    }
-    val coverLabel = stringResource(R.string.groups_list_cover_accessibilitylabel, cover.firstName.orEmpty(), cover.groupName)
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-        Box(Modifier.fillMaxWidth().height(Tokens.Sizes.groupsListSizeCoverHeight)) {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(Tokens.Colors.globalControlRaised)
-                    .clickable(role = Role.Image) { onCover(cover) }
-                    .semantics { contentDescription = coverLabel },
-            ) {
-                if (cover.url != null) {
-                    AsyncImage(model = cover.url, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-                }
-            }
-            HeaderCircleButton(
-                Tokens.Icons.globalAdd,
-                addLabel,
-                onCreate,
-                fillColor = Tokens.Colors.groupsListColorHeaderCircleOverPhoto,
-                modifier = Modifier.align(Alignment.TopEnd).windowInsetsPadding(WindowInsets.statusBars).padding(horizontal = Tokens.Sizes.globalHeaderInset),
-            )
-        }
-        Icon(Tokens.Icons.globalChevronDown, contentDescription = null, tint = Tokens.Colors.globalTextPrimary)
-        Spacer(Modifier.height(Tokens.Sizes.globalListGap))
-    }
-}
-
-/**
- * One group card: fill `groups.list.color.card`, minimum height `groups.list.size.cardHeight` (grows
- * with text), corners `radius.global.card`, side margin `size.global.screenMargin`; avatar
- * `size.global.avatarList` at `groups.list.size.avatarInset` (group glyph fallback); name text role
- * `listTitle`; subtitle `listSubtitle` in `color.global.textSecondary` with the sender in
- * `color.global.accent`; camera glyph `icon.global.camera` (`groups.list.size.cameraGlyph`) at the
- * trailing inset. The avatar → text gap reuses `groups.list.size.avatarInset` (not measured). The
- * card is one TalkBack element (name + subtitle); the camera glyph is a second.
- */
-@Composable
-internal fun GroupCard(row: GroupRow, zone: ZoneId, onOpen: () -> Unit, onCamera: () -> Unit) {
-    val shape = RoundedCornerShape(Tokens.Radii.globalCard)
-    val subtitleText = subtitleText(row.subtitle, zone)
-    val rowLabel = stringResource(R.string.groups_list_row_accessibilitylabel, row.name, subtitleText?.text.orEmpty())
-    val cameraLabel = stringResource(R.string.groups_list_row_camera_accessibilitylabel, row.name)
-    Row(
-        Modifier
-            .padding(horizontal = Tokens.Sizes.globalScreenMargin)
-            .fillMaxWidth()
-            .heightIn(min = Tokens.Sizes.groupsListSizeCardHeight)
-            .clip(shape)
-            .background(Tokens.Colors.groupsListColorCard, shape),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Row(
-            Modifier
-                .weight(1f)
-                .heightIn(min = Tokens.Sizes.groupsListSizeCardHeight)
-                .clickable(onClick = onOpen)
-                .clearAndSetSemantics { contentDescription = rowLabel; role = Role.Button }
-                .padding(start = Tokens.Sizes.groupsListSizeAvatarInset),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.groupsListSizeAvatarInset),
-        ) {
-            Avatar(row.coverUrl, Tokens.Sizes.globalAvatarList, fallbackIcon = Tokens.Icons.globalGroup)
-            Column(Modifier.weight(1f)) {
-                Text(row.name, style = TextRoles.listTitle, color = Tokens.Colors.globalTextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                val placeholder = stringResource(R.string.groups_list_row_nopics)
-                if (subtitleText != null) {
-                    Text(subtitleText, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary)
-                } else {
-                    // Activity not known yet: the line is reserved so the card never changes height.
-                    Text(placeholder, style = TextRoles.listSubtitle, modifier = Modifier.alpha(0f))
+                LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = bottom)) {
+                    item(key = "header", contentType = "header") { header() }
+                    if (rows.isEmpty()) {
+                        item(key = "empty", contentType = "empty") {
+                            Box(Modifier.fillMaxWidth().padding(vertical = Tokens.Sizes.globalSectionGap), contentAlignment = Alignment.Center) {
+                                EmptyState(
+                                    title = stringResource(R.string.groups_list_empty_title),
+                                    detail = stringResource(R.string.groups_list_empty_detail),
+                                    icon = Tokens.Icons.globalAlbums,
+                                    action = EmptyStateAction(stringResource(R.string.groups_list_empty_button), onCreate, Tokens.Icons.globalAdd),
+                                )
+                            }
+                        }
+                    }
+                    itemsIndexed(rows, key = { _, row -> row.id }, contentType = { _, _ -> "group" }) { index, row ->
+                        // Thumbnails `size.global.listGap` apart (the header already ends `size.global.titleToContent` below its baseline).
+                        GroupListRow(
+                            row,
+                            Modifier
+                                .animateItem(fadeInSpec = DsMotion.fade(), placementSpec = null, fadeOutSpec = DsMotion.crossfade())
+                                .padding(top = if (index == 0) 0.dp else Tokens.Sizes.globalListGap),
+                            onOpenGroup,
+                            onCamera,
+                        )
+                    }
+                    item(key = "ideas", contentType = "ideas") {
+                        SectionHeader(stringResource(R.string.groups_list_ideas_title), afterContent = rows.isNotEmpty())
+                    }
+                    itemsIndexed(GroupKind.entries, key = { _, kind -> "idea:" + kind.wire }, contentType = { _, _ -> "idea" }) { index, kind ->
+                        TemplateRow(kind, onTemplate, Modifier.padding(top = if (index == 0) 0.dp else Tokens.Sizes.globalListGap))
+                    }
                 }
             }
         }
-        Box(
-            Modifier
-                .size(Tokens.Sizes.globalMinTouchTargetAndroid)
-                .clickable(role = Role.Button, onClick = onCamera)
-                .semantics { contentDescription = cameraLabel },
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(Tokens.Icons.globalCamera, contentDescription = null, tint = Tokens.Colors.globalTextPrimary, modifier = Modifier.size(Tokens.Sizes.groupsListSizeCameraGlyph))
-        }
-        // The 48-dp hit area (size.global.minTouchTarget.android) centred on the 16-dp glyph puts the
-        // glyph exactly groups.list.size.avatarInset (16) from the card's trailing edge.
     }
 }
 
+/** One group (C-15 + C-23 + C-11 "+"): one button (name + subtitle); the "+" is a separate labelled button. */
 @Composable
-private fun subtitleText(subtitle: RowSubtitle?, zone: ZoneId) = when (subtitle) {
-    null -> null
-    RowSubtitle.NoPics -> buildAnnotatedString { append(stringResource(R.string.groups_list_row_nopics)) }
-    is RowSubtitle.NewPic -> buildAnnotatedString { append(stringResource(R.string.groups_list_row_newpic, Formats.time(subtitle.at, zone))) }
-    is RowSubtitle.SentPic -> {
-        val full = stringResource(R.string.groups_list_row_sentpic, subtitle.firstName, Formats.time(subtitle.at, zone))
-        val at = full.indexOf(subtitle.firstName)
-        buildAnnotatedString {
-            if (at < 0) {
-                append(full)
-            } else {
-                append(full.substring(0, at))
-                withStyle(SpanStyle(color = Tokens.Colors.globalAccent)) { append(subtitle.firstName) }
-                append(full.substring(at + subtitle.firstName.length))
+private fun GroupListRow(row: GroupRow, modifier: Modifier, onOpen: (String) -> Unit, onCamera: (String) -> Unit) {
+    val subtitle = row.subtitle?.let { rowSubtitle(it) }
+    ThumbnailRow(
+        title = row.name,
+        subtitle = subtitle,
+        thumbnail = row.coverUrl,
+        onClick = { onOpen(row.id) },
+        modifier = modifier,
+        avatars = row.avatars.take(avatarsThatFit()),
+        add = HeaderAction(Tokens.Icons.globalAdd, stringResource(R.string.groups_list_row_camera_accessibilitylabel, row.name)) { onCamera(row.id) },
+        contentDescription = stringResource(R.string.groups_list_row_accessibilitylabel, row.name, subtitle?.text.orEmpty()),
+        thumbnailFallback = Tokens.Icons.globalGroup,
+        titleMaxLines = 1,
+    )
+}
+
+/** The row subtitle with its actor in semibold (C-15 `subtitleWithActor`). */
+@Composable
+internal fun rowSubtitle(subtitle: RowSubtitle): AnnotatedString {
+    // "you" is the people-row label for yourself (`groups.settings.members.you`), found in the sentence whatever its case.
+    val you = stringResource(R.string.groups_settings_members_you)
+    fun withYou(text: String): AnnotatedString {
+        val at = text.indexOf(you, ignoreCase = true)
+        return if (at < 0) AnnotatedString(text) else subtitleWithActor(text, text.substring(at, at + you.length))
+    }
+    return when (subtitle) {
+        RowSubtitle.NoPics -> AnnotatedString(stringResource(R.string.groups_list_row_nopics))
+        RowSubtitle.NewPic -> withYou(stringResource(R.string.groups_list_row_newpic))
+        is RowSubtitle.SentPic -> subtitleWithActor(stringResource(R.string.groups_list_row_sentpic, subtitle.firstName), subtitle.firstName)
+        RowSubtitle.CreatedByYou -> withYou(stringResource(R.string.groups_list_row_createdbyyou))
+        is RowSubtitle.CreatedBy -> subtitleWithActor(stringResource(R.string.groups_list_row_createdby, subtitle.firstName), subtitle.firstName)
+    }
+}
+
+/**
+ * How many `size.global.avatarSmall` avatars (overlapping `size.global.avatarStackOverlap`) fit the C-15 text column: the
+ * screen width less the margins, the cover, its gap and the "+" circle. No "+N" and no count (tenets).
+ */
+@Composable
+private fun avatarsThatFit(): Int {
+    val width = LocalConfiguration.current.screenWidthDp.dp
+    val column = width - Tokens.Sizes.globalScreenMargin * 2 - Tokens.Sizes.globalRowThumbWidth - Tokens.Sizes.globalRowThumbGap - Tokens.Sizes.globalCircleButton
+    val avatar = Tokens.Sizes.globalAvatarSmall
+    val pitch = avatar - Tokens.Sizes.globalAvatarStackOverlap
+    return if (column < avatar) 0 else 1 + ((column - avatar) / pitch).toInt()
+}
+
+/** A template ("Ideas to Get Started"): C-15 geometry with a placeholder thumbnail and the C-06 fill capsule "Create". */
+@Composable
+internal fun TemplateRow(kind: GroupKind, onCreate: (GroupKind) -> Unit, modifier: Modifier = Modifier) {
+    val (title, detail) = kindCopy(kind)
+    ThumbnailRow(
+        title = title,
+        subtitle = AnnotatedString(detail),
+        thumbnail = null,
+        onClick = { onCreate(kind) },
+        modifier = modifier,
+        subtitleMaxLines = 2,
+        trailing = { Capsule(stringResource(R.string.groups_create_type_create), { onCreate(kind) }, style = CapsuleStyle.Fill) },
+    )
+}
+
+/** Title and description of a group kind's template (`groups.create.type.<kind>` / `.detail`). */
+@Composable
+internal fun kindCopy(kind: GroupKind): Pair<String, String> = when (kind) {
+    GroupKind.Friends -> stringResource(R.string.groups_create_type_friends) to stringResource(R.string.groups_create_type_friends_detail)
+    GroupKind.Family -> stringResource(R.string.groups_create_type_family) to stringResource(R.string.groups_create_type_family_detail)
+    GroupKind.Roommates -> stringResource(R.string.groups_create_type_roommates) to stringResource(R.string.groups_create_type_roommates_detail)
+    GroupKind.Custom -> stringResource(R.string.groups_create_type_custom) to stringResource(R.string.groups_create_type_custom_detail)
+}
+
+/** Loading (C-28 placeholder form): three C-15 rows whose thumbnails are `color.global.control` placeholders, no text. */
+@Composable
+private fun LoadingRows() {
+    val shape = RoundedCornerShape(Tokens.Radii.globalThumbnail)
+    Column(verticalArrangement = ThumbnailRowSpacing) {
+        repeat(LOADING_ROWS) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalScreenMargin).clearAndSetSemantics { }) {
+                Box(Modifier.size(Tokens.Sizes.globalRowThumbWidth, Tokens.Sizes.globalRowThumbHeight).clip(shape).background(Tokens.Colors.globalControl, shape))
             }
         }
     }
 }
 
-@Composable
-private fun CenteredHome(bottom: androidx.compose.ui.unit.Dp, content: @Composable () -> Unit) {
-    Box(Modifier.fillMaxSize().padding(bottom = bottom), contentAlignment = Alignment.Center) { content() }
-}
-
-/**
- * Empty state (no groups; Yope's 2025 "create your first group", BI): two-line title in text role
- * `onboardingTitle`, second line lime (`groups.create.layout.titleAccent`), detail in the onboarding
- * subtitle style, lime primary button `groups.create.size.titleToContent` below; vertically centred
- * above the tab bar. No cover.
- */
-@Composable
-private fun EmptyHome(bottom: androidx.compose.ui.unit.Dp, onCreate: () -> Unit) {
-    val (line1, line2) = TitleSplit.atMiddleWord(stringResource(R.string.groups_list_empty_title))
-    CenteredHome(bottom) {
-        Column(Modifier.padding(horizontal = Tokens.Sizes.globalButtonMarginH), horizontalAlignment = Alignment.CenterHorizontally) {
-            AccentTitle(line1, line2)
-            Text(stringResource(R.string.groups_list_empty_detail), style = TextRoles.onboardingSubtitle, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(Tokens.Sizes.groupsCreateSizeTitleToContent))
-            PrimaryButton(stringResource(R.string.groups_list_empty_button), onCreate)
-        }
-    }
-}
+/** groups.list States → loading: "three C-15 rows". */
+private const val LOADING_ROWS = 3

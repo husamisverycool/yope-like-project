@@ -1,61 +1,11 @@
-// Social group — view pieces shared by the social screens: the social text roles (design/tokens/social.json),
-// haptics and notices, navigation and the reply-with-a-photo hand-off, private images, and token-driven formats.
-// App-wide components (headers, empty states, pills, HUD, toasts, permission card) are the account pass's
-// ios/App/Sources/Components, used read-only.
+// Social group — view pieces shared by the social screens: haptics and notices, navigation and the reply-with-a-photo
+// hand-off, private images as component photo sources, token-driven formats, emoji names, and text metrics.
+// The visual components are Pass 3's ios/App/Sources/Components (C-01…C-35), used read-only.
 import AppData
 import AppModels
 import DesignSystem
 import SwiftUI
 import UIKit
-
-// MARK: - Text roles of the social surfaces
-
-enum SocialText {
-    private static func role(_ size: CGFloat, _ weight: Font.Weight, _ textStyle: String) -> DSTextStyle {
-        DSTextStyle(family: Tokens.Fonts.globalFamily, size: size, weight: weight, relativeTo: Font.TextStyle(tokenName: textStyle))
-    }
-
-    /// Quoted poster's first name on the lime reply quote.
-    static let replyName = role(Tokens.FontSizes.chatThreadFontSizeReplyName, Tokens.FontWeights.chatThreadFontWeightReplyName, Tokens.Layouts.ChatThreadLayoutTextStyleMap.replyName)
-    /// "pic" under the quoted name.
-    static let replyLabel = role(Tokens.FontSizes.chatThreadFontSizeReplyLabel, Tokens.FontWeights.chatThreadFontWeightReplyLabel, Tokens.Layouts.ChatThreadLayoutTextStyleMap.replyLabel)
-    /// Caption on a photo (thread and viewer).
-    static let caption = role(Tokens.FontSizes.chatThreadFontSizeCaption, Tokens.FontWeights.chatThreadFontWeightCaption, Tokens.Layouts.ChatThreadLayoutTextStyleMap.caption)
-    /// Emoji-only message (`chat.thread.dimension.emojiOnlyGlyph`: the glyph's rendered width; regular weight).
-    static let emojiOnly = role(Tokens.Sizes.chatThreadDimensionEmojiOnlyGlyph, Font.Weight.regular, Tokens.Layouts.ChatThreadLayoutTextStyleMap.emojiOnly)
-    /// Recording row timer and hint (`chat.voice.layout.recording`: the text role of the field they replace, body).
-    static let recordingRow = TextRole.body
-    /// Failed-message label (`chat.thread.layout.failedMessage.labelTextRole`: caption).
-    static let failedLabel = TextRole.caption
-    /// Album name on its cover (`albums.list.layout.yopeAlbums.titleFontSize`, weight not measured → platform default;
-    /// Dynamic Type of `listSubtitle`, the nearest style).
-    static let albumCoverTitle = role(Tokens.Layouts.AlbumsListLayoutYopeAlbums.titleFontSize, Font.Weight.regular, Tokens.Layouts.GlobalTextStyleMap.listSubtitle)
-    /// Empty-day tile: day number (`week.history.fontSize.emptyDay`, bold per the token's element) and month / weekday
-    /// lines (`week.history.fontSize.emptyDayLabel`, weight not measured → regular).
-    static let historyEmptyDay = role(Tokens.FontSizes.weekHistoryFontSizeEmptyDay, Font.Weight.bold, Tokens.Layouts.WeekHistoryLayoutTextStyleMap.emptyDay)
-    static let historyEmptyDayLabel = role(Tokens.FontSizes.weekHistoryFontSizeEmptyDayLabel, Font.Weight.regular, Tokens.Layouts.WeekHistoryLayoutTextStyleMap.emptyDayLabel)
-    /// Reaction picker section labels.
-    static let pickerSection = role(Tokens.FontSizes.chatReactionsFontSizePickerSection, Tokens.FontWeights.chatReactionsFontWeightPickerSection, Tokens.Layouts.ChatReactionsLayoutTextStyleMap.pickerSection)
-    /// `week.recap` / `albums.*` centred header title.
-    static let recapTitle = role(Tokens.FontSizes.weekRecapFontSizeTitle, Tokens.FontWeights.weekRecapFontWeightTitle, Tokens.Layouts.WeekRecapLayoutTextStyleMap.title)
-    /// Week label on the recap card.
-    static let recapLabel = role(Tokens.FontSizes.weekRecapFontSizeLabel, Tokens.FontWeights.weekRecapFontWeightLabel, Tokens.Layouts.WeekRecapLayoutTextStyleMap.label)
-    /// "recap | pics" capsule labels.
-    static let recapSegment = role(Tokens.FontSizes.weekRecapFontSizeSegmented, Tokens.FontWeights.weekRecapFontWeightSegmented, Tokens.Layouts.WeekRecapLayoutTextStyleMap.segmented)
-    /// `week.history` display title (Retro display role, platform font).
-    static let historyTitle = DSTextStyle(
-        family: Tokens.Fonts.weekHistoryFontTitle, size: Tokens.FontSizes.weekHistoryFontSizeTitle,
-        weight: Tokens.FontWeights.weekHistoryFontWeightTitle, relativeTo: Font.TextStyle(tokenName: Tokens.Layouts.WeekHistoryLayoutTextStyleMap.title)
-    )
-    /// "Week {n}".
-    static let historyHeaderTitle = role(Tokens.FontSizes.weekHistoryFontSizeHeader, Tokens.FontWeights.weekHistoryFontWeightHeaderTitle, Tokens.Layouts.WeekHistoryLayoutTextStyleMap.header)
-    /// The week's date range.
-    static let historyHeaderRange = role(Tokens.FontSizes.weekHistoryFontSizeHeader, Tokens.FontWeights.weekHistoryFontWeightHeaderRange, Tokens.Layouts.WeekHistoryLayoutTextStyleMap.header)
-    /// Weekday on a strip tile.
-    static let historyWeekday = role(Tokens.FontSizes.weekHistoryFontSizeWeekday, Tokens.FontWeights.weekHistoryFontWeightWeekday, Tokens.Layouts.WeekHistoryLayoutTextStyleMap.weekday)
-    /// Album name sheet title (`groups.create.fontSize.title` / `.fontWeight.title`; Dynamic Type of the sheet title).
-    static let albumSheetTitle = role(Tokens.FontSizes.groupsCreateFontSizeTitle, Tokens.FontWeights.groupsCreateFontWeightTitle, Tokens.Layouts.GlobalTextStyleMap.sheetTitle)
-}
 
 // MARK: - Haptics and notices
 
@@ -76,12 +26,14 @@ extension SocialNotice {
     var text: String {
         switch self {
         case .sendFailed, .messageNotSent: return Copy.chatThreadSendFailed
+        case .copied: return Copy.chatThreadToastCopied
         case .reactionFailed: return Copy.chatReactionsError
         case .photoSaved: return Copy.photoViewerToastSaved
         case .photoDeleted: return Copy.photoViewerToastDeleted
         case .saveFailed: return Copy.photoViewerErrorSave
         case .deleteFailed: return Copy.photoViewerErrorDelete
         case .tagError: return Copy.taggingError
+        case .tagRemoveError: return Copy.taggingRemoveError
         case .tagNotFound: return Copy.taggingNotFound
         case .tagOffline: return Copy.taggingOffline
         case .recapSaved: return Copy.weekEditToastSaved
@@ -102,8 +54,8 @@ extension View {
         sensoryFeedback(trigger: feedback) { _, new in new?.kind.haptic.sensoryFeedback }
     }
 
-    /// Shows each new notice through the Yope toast (`ToastCenter`: announced always; drawn only while the toast
-    /// dwell time is BLOCKED in DEBUG builds).
+    /// Confirms each new notice (C-26: on iOS an accessibility announcement — nothing is drawn; `ToastCenter` keeps it
+    /// as the last confirmation).
     func socialNotices(_ event: SocialNoticeEvent?, toasts: ToastCenter) -> some View {
         onChange(of: event) { _, new in
             guard let new else { return }
@@ -115,33 +67,16 @@ extension View {
         }
     }
 
-    /// The custom headers replace the navigation bar on every social screen.
+    /// The app-drawn headers (C-01 / C-02) replace the navigation bar on every social screen.
     func socialHidesNavigationBar() -> some View {
         toolbar(.hidden, for: .navigationBar)
     }
 
-    /// A hairline rim shading from `top` to `bottom` (bubbles, composer field).
-    func socialRim<S: InsettableShape>(_ shape: S, top: Color, bottom: Color, width: CGFloat) -> some View {
-        overlay {
-            shape.strokeBorder(LinearGradient(colors: [top, bottom], startPoint: .top, endPoint: .bottom), lineWidth: width)
+    /// Announces the loading state once (`week.history.a11y.loading`).
+    func socialAnnouncesLoading(_ isLoading: Bool) -> some View {
+        onChange(of: isLoading, initial: true) { _, loading in
+            if loading { AccessibilityNotification.Announcement(Copy.weekHistoryA11yLoading).post() }
         }
-    }
-
-    /// Keeps `width` equal to this view's width (frame-sized image decoding).
-    func socialReadsWidth(_ width: Binding<CGFloat>) -> some View {
-        background {
-            GeometryReader { proxy in
-                Color.clear
-                    .onAppear { width.wrappedValue = proxy.size.width }
-                    .onChange(of: proxy.size.width) { _, new in width.wrappedValue = new }
-            }
-        }
-    }
-
-    /// Extends the hit area to `size.global.minTouchTarget.ios` without changing the drawn size.
-    func socialMinimumHitArea() -> some View {
-        frame(minWidth: Tokens.Sizes.globalMinTouchTargetIos, minHeight: Tokens.Sizes.globalMinTouchTargetIos)
-            .contentShape(Rectangle())
     }
 }
 
@@ -165,16 +100,22 @@ enum SocialNav {
         router.modal = .account(.report(target))
     }
 
-    /// `camera.capture` for one group (`chat.composer` camera circle, empty-state "share a pic").
+    /// `camera.capture` for one group (the composer's camera glyph, add tiles, "Get this week started"); nil lets the
+    /// person choose the groups in `camera.sendto`.
     static func openCamera(groupID: String?) {
         router.modal = .camera(groupID: groupID, invitationID: nil)
     }
+
+    /// A person's wall: mine (`walls.mine`) or theirs (`walls.member`).
+    static func openWall(of userID: UserID, me: UserID?) {
+        push(userID == me ? .social(.wallMine) : .social(.wallMember(userID: userID.rawValue)))
+    }
 }
 
-/// Reply to a photo with a photo (`photo.viewer` camera circle → `camera.capture` → `create_post(p_group_ids: [this
-/// group], p_reply_to_post_id)`). The viewer stores the replied post here and presents `AppModal.camera`; the
-/// capture pass reads `replyTarget(for:)` when it builds the `PostDraft` (`PostDraft.replyToPostID`, exactly this
-/// group). The target is cleared when the camera closes.
+/// Reply to a photo with a photo (`photo.viewer` camera glyph, or the thread's camera while the reply bar quotes a
+/// photo → `camera.capture` → `create_post(p_group_ids: [this group], p_reply_to_post_id)`). The opener stores the
+/// replied post here and presents `AppModal.camera`; the capture pass reads `replyTarget(for:)` when it builds the
+/// `PostDraft` (`PostDraft.replyToPostID`, exactly this group). The target is cleared when the camera closes.
 @MainActor
 enum PhotoReplyHandoff {
     struct Target: Equatable, Sendable {
@@ -188,7 +129,7 @@ enum PhotoReplyHandoff {
         pending = target
     }
 
-    /// The post being replied to when the camera was opened for `groupID` from `photo.viewer`; nil otherwise.
+    /// The post being replied to when the camera was opened for `groupID` from a social screen; nil otherwise.
     static func replyTarget(for groupID: String?) -> PostID? {
         guard let pending, pending.groupID == groupID else { return nil }
         return PostID(pending.postID)
@@ -200,7 +141,7 @@ enum PhotoReplyHandoff {
 }
 
 extension AppRouter {
-    /// `photo.viewer` camera circle: the camera for `groupID`, replying to `postID` with a photo.
+    /// The camera for `groupID`, replying to `postID` with a photo.
     func presentCameraReplying(toPost postID: String, groupID: String) {
         PhotoReplyHandoff.begin(PhotoReplyHandoff.Target(groupID: groupID, postID: postID))
         modal = .camera(groupID: groupID, invitationID: nil)
@@ -219,103 +160,84 @@ extension View {
 
 // MARK: - Images
 
-/// A private photo by storage path, filling the proposed frame (`thumb_path` in grids, `display_path` full screen).
-struct SocialPhoto<Failure: View>: View {
+/// Private photos as component photo sources (`PhotoSource`): a storage path loads through the components'
+/// `StorageImage` pipeline (signed URL, downsampled decode); the DEBUG demo / snapshot loader hands its images over
+/// directly, so previews and snapshots draw real photos on the first frame.
+@MainActor
+enum SocialImages {
+    static func source(_ path: String?) -> PhotoSource? {
+        guard let path else { return nil }
+        if let image = SocialServices.shared.images.cached(path) { return .image(image) }
+        return .storage(path)
+    }
+
+    /// Warms the image cache for photos about to show (the viewer's neighbours).
+    static func prefetch(_ paths: [String], pixels: Int) {
+        guard pixels > 0 else { return }
+        let data = SocialServices.shared.data
+        Task {
+            var items: [(path: String, url: URL)] = []
+            for path in paths where SocialServices.shared.images.cached(path) == nil {
+                if let url = try? await data.fileURL(path: path) { items.append((path, url)) }
+            }
+            ImagePipeline.shared.prefetch(items, pixels: pixels)
+        }
+    }
+}
+
+/// A private photo filling the proposed frame, with `placeholder` until it has loaded (the viewer's display rendition
+/// over its thumbnail uses a clear placeholder).
+struct SocialImage<Placeholder: View>: View {
     let path: String?
     var contentMode: ContentMode = .fill
-    /// Longest side of the frame in pixels: the image is decoded at that size (nil: full size).
-    var maxPixel: Int?
-    @ViewBuilder var failure: () -> Failure
-
-    @State private var image: UIImage?
-    @State private var failed = false
-
-    init(path: String?, contentMode: ContentMode = .fill, maxPixel: Int? = nil, @ViewBuilder failure: @escaping () -> Failure) {
-        self.path = path
-        self.contentMode = contentMode
-        self.maxPixel = maxPixel
-        self.failure = failure
-        _image = State(initialValue: path.flatMap { SocialServices.shared.images.cached($0, maxPixel: maxPixel) })
-    }
+    @ViewBuilder var placeholder: () -> Placeholder
 
     var body: some View {
-        Color.clear
-            .overlay {
-                if let image {
-                    Image(uiImage: image)
-                        .resizable()
-                        .aspectRatio(contentMode: contentMode)
-                } else if failed {
-                    failure()
-                }
+        if let path, let image = SocialServices.shared.images.cached(path) {
+            GeometryReader { proxy in
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: contentMode)
+                    .frame(width: proxy.size.width, height: proxy.size.height)
+                    .clipped()
             }
-            .clipped()
-            .task(id: path) {
-                guard let path else {
-                    image = nil
-                    return
-                }
-                if let cached = SocialServices.shared.images.cached(path, maxPixel: maxPixel) {
-                    image = cached
-                    return
-                }
-                let loaded = await SocialServices.shared.images.load(path, maxPixel: maxPixel)
-                image = loaded
-                failed = loaded == nil
-            }
-            .accessibilityHidden(true)
-    }
-}
-
-extension SocialPhoto where Failure == EmptyView {
-    init(path: String?, contentMode: ContentMode = .fill, maxPixel: Int? = nil) {
-        self.init(path: path, contentMode: contentMode, maxPixel: maxPixel) { EmptyView() }
-    }
-}
-
-/// A person's (or a group's) round avatar through the social image loader, with the shared `AvatarView` look
-/// as its placeholder.
-struct SocialAvatar: View {
-    let path: String?
-    let diameter: CGFloat
-    var placeholderIcon: String = Tokens.Icons.globalPerson
-
-    @State private var image: UIImage?
-
-    init(path: String?, diameter: CGFloat, placeholderIcon: String = Tokens.Icons.globalPerson) {
-        self.path = path
-        self.diameter = diameter
-        self.placeholderIcon = placeholderIcon
-        _image = State(initialValue: path.flatMap { SocialServices.shared.images.cached($0) })
-    }
-
-    var body: some View {
-        AvatarView(path: nil, localImage: image.map { Image(uiImage: $0) }, diameter: diameter, placeholderIcon: placeholderIcon)
-            .task(id: path) {
-                guard let path, image == nil else { return }
-                image = await SocialServices.shared.images.load(path)
-            }
+        } else {
+            StorageImage(path: path, contentMode: contentMode, placeholder: placeholder)
+        }
     }
 }
 
 // MARK: - Formats (token patterns)
 
 enum SocialFormat {
-    /// `chat.thread.layout.timeFormat`: device-locale short time from the template ("10:00 PM").
+    /// `chat.thread.layout.timeFormat`: the locale's short time ("10:00 PM").
     static func time(_ date: Date) -> String {
+        date.formatted(.dateTime.hour().minute())
+    }
+
+    /// `chat.thread.layout.timeFormat.dayDividers`: "Today", "Yesterday", else the long date ("January 25, 2024").
+    static func dayDivider(_ day: Date, now: Date = Date()) -> String {
+        switch ChatThreadLayout.dayLabel(day, now: now) {
+        case .today: return Copy.chatThreadDividerToday
+        case .yesterday: return Copy.chatThreadDividerYesterday
+        case let .date(date): return date.formatted(.dateTime.month(.wide).day().year())
+        }
+    }
+
+    /// `photo.viewer.layout.dateFormat`: "Wednesday, July 5"; a photo of another year adds it.
+    static func viewerDate(_ date: Date, now: Date = Date(), timeZone: TimeZone = .current) -> String {
+        var calendar = Calendar.current
+        calendar.timeZone = timeZone
+        let sameYear = calendar.component(.year, from: date) == calendar.component(.year, from: now)
         let formatter = DateFormatter()
-        formatter.setLocalizedDateFormatFromTemplate(Tokens.Layouts.ChatThreadLayoutTimeFormat.pattern)
+        formatter.timeZone = timeZone
+        formatter.setLocalizedDateFormatFromTemplate(
+            sameYear ? Tokens.Layouts.PhotoViewerLayoutDateFormat.pattern : Tokens.Layouts.PhotoViewerLayoutDateFormat.otherYear
+        )
         return formatter.string(from: date)
     }
 
-    /// `photo.viewer.layout.dateFormat` ("Oct 30 2025").
-    static func viewerDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = Tokens.Layouts.PhotoViewerLayoutDateFormat.pattern
-        return formatter.string(from: date)
-    }
-
-    /// `chat.voice.layout.durationFormat` ("00:38").
+    /// `chat.voice.layout.durationFormat` ("0:38").
     static func duration(milliseconds: Int) -> String {
         let formatter = DateFormatter()
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
@@ -331,34 +253,20 @@ enum SocialFormat {
         return formatter.string(from: TimeInterval(max(0, milliseconds)) / 1000) ?? duration(milliseconds: milliseconds)
     }
 
-    /// `week.recap.layout.weekFormat` title form ("18 aug-24 aug"): the token's "d MMM-d MMM" pattern, lowercase,
-    /// bare hyphen, in the group's time zone.
-    static func weekTitle(_ weekStart: LocalDate, timeZone: TimeZone) -> String {
-        let pattern = Tokens.Layouts.WeekRecapLayoutWeekFormat.title.split(separator: ",").first.map(String.init) ?? ""
-        let halves = pattern.split(separator: "-").map { $0.trimmingCharacters(in: .whitespaces) }
-        guard halves.count == 2 else { return weekStart.description }
-        let formatter = DateFormatter()
-        formatter.timeZone = timeZone
-        let start = SocialCalendar.start(of: weekStart, in: timeZone)
-        let end = SocialCalendar.start(of: weekStart.adding(days: 6), in: timeZone)
-        formatter.dateFormat = halves[0]
-        let first = formatter.string(from: start)
-        formatter.dateFormat = halves[1]
-        return (first + "-" + formatter.string(from: end)).lowercased()
-    }
-
-    /// The label form on the recap card: the title in uppercase ("18 AUG-24 AUG").
-    static func weekLabel(_ weekStart: LocalDate, timeZone: TimeZone) -> String {
-        weekTitle(weekStart, timeZone: timeZone).uppercased()
-    }
-
-    /// `week.history` range: the locale's interval for Monday–Sunday ("Apr 29 – May 5", "10–16 Aug").
+    /// The week's date range: the locale's interval for Monday–Sunday ("Jul 3 – 9", "Apr 29 – May 5").
     static func weekRange(_ weekStart: LocalDate, timeZone: TimeZone) -> String {
+        interval(weekStart, timeZone: timeZone, template: "MMMd") // provenance-ok: date template (locale interval, spec)
+    }
+
+    /// The range for VoiceOver ("July 3 – 9" in full month names).
+    static func spokenWeekRange(_ weekStart: LocalDate, timeZone: TimeZone) -> String {
+        interval(weekStart, timeZone: timeZone, template: "MMMMd") // provenance-ok: date template (spoken form)
+    }
+
+    private static func interval(_ weekStart: LocalDate, timeZone: TimeZone, template: String) -> String {
         let formatter = DateIntervalFormatter()
         formatter.timeZone = timeZone
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        formatter.dateTemplate = "MMMd"
+        formatter.dateTemplate = template
         let start = SocialCalendar.start(of: weekStart, in: timeZone)
         let end = SocialCalendar.start(of: weekStart.adding(days: 6), in: timeZone)
         return formatter.string(from: start, to: end)
@@ -366,21 +274,7 @@ enum SocialFormat {
 
     /// Weekday on a strip tile ("Mon").
     static func weekday(_ date: Date, timeZone: TimeZone) -> String {
-        var style = Date.FormatStyle.dateTime.weekday(.abbreviated)
-        style.timeZone = timeZone
-        return date.formatted(style)
-    }
-
-    /// Month ("Oct") of an empty-day tile.
-    static func month(_ date: Date, timeZone: TimeZone) -> String {
-        var style = Date.FormatStyle.dateTime.month(.abbreviated)
-        style.timeZone = timeZone
-        return date.formatted(style)
-    }
-
-    /// Day number of an empty-day tile.
-    static func dayNumber(_ date: Date, timeZone: TimeZone) -> String {
-        var style = Date.FormatStyle.dateTime.day()
+        var style = Date.FormatStyle.dateTime.weekday(.wide)
         style.timeZone = timeZone
         return date.formatted(style)
     }
@@ -393,18 +287,42 @@ enum SocialFormat {
     }
 }
 
-// MARK: - Photo labels (accessibility)
+// MARK: - Accessibility labels
 
 enum SocialA11y {
-    /// `photo.viewer.a11y.photoMine` ("your pic, {date}") / `photo.viewer.a11y.photo` ("{name}’s pic, {date}").
+    /// `photo.viewer.a11y.photoMine` ("Your photo, {date}") / `photo.viewer.a11y.photo` ("{name}'s photo, {date}").
     static func photo(_ post: PostWithMedia, author: Profile?, me: UserID?) -> String {
         let date = SocialFormat.spokenDate(post.post.createdAt)
         if post.post.authorID == me { return Copy.photoViewerA11yPhotoMine(date: date) }
         return Copy.photoViewerA11yPhoto(name: author?.socialFirstName ?? "", date: date)
     }
+
+    /// `week.history.a11y.tile` ("Monday, October 12, Ana's photo").
+    static func tile(date: Date, name: String, timeZone: TimeZone) -> String {
+        Copy.weekHistoryA11yTile(
+            weekday: SocialFormat.weekday(date, timeZone: timeZone),
+            date: SocialFormat.spokenDate(date, timeZone: timeZone),
+            name: name
+        )
+    }
+
+    /// `week.history.a11y.emptyDay` ("Thursday, October 15, no photos").
+    static func emptyDay(_ date: Date, timeZone: TimeZone) -> String {
+        Copy.weekHistoryA11yEmptyDay(
+            weekday: SocialFormat.weekday(date, timeZone: timeZone),
+            date: SocialFormat.spokenDate(date, timeZone: timeZone)
+        )
+    }
+
+    /// The C-20 header read as "Week 27, July 3 – 9".
+    static func weekHeader(number: Int, weekStart: LocalDate, timeZone: TimeZone, showsRange: Bool) -> String {
+        let title = Copy.weekHistoryHeaderTitle(weekNumber: String(number))
+        guard showsRange else { return title }
+        return title + ", " + SocialFormat.spokenWeekRange(weekStart, timeZone: timeZone) // provenance-ok: list separator joining two copy strings
+    }
 }
 
-// MARK: - Emoji names (accessibility)
+// MARK: - Emoji
 
 enum SocialEmoji {
     /// The emoji's system name ("fire"), for VoiceOver (`chat.reactions` Accessibility).
@@ -420,38 +338,87 @@ enum SocialEmoji {
 
     /// "Reactions: fire, sparkling heart" — names only, never a count.
     static func clusterLabel(_ emoji: [String]) -> String {
-        Copy.chatReactionsA11yCluster(emojiNames: emoji.map(name).joined(separator: ", "))
+        Copy.chatReactionsA11yCluster(emojiNames: emoji.map(name).joined(separator: ", ")) // provenance-ok: list separator
+    }
+
+    /// The quick reactions of `chat.reactions.layout.quickReactions` (🔥 then 💖), read from the token.
+    static var quick: [String] {
+        Tokens.Layouts.ChatReactionsLayoutQuickReactions.emoji.compactMap { character in
+            SocialEmojiText.isEmoji(character) ? String(character) : nil
+        }
     }
 }
 
-// MARK: - Font metrics (cap-top / baseline placement)
+// MARK: - Numbers inside layout tokens
 
+/// Some layout tokens carry their measured numbers inside their description (e.g. `chat.reactions.layout.chip.padding`
+/// "12 horizontal / 8 vertical", `week.edit.layout.message.limit` "2000 characters"): read in order, never typed here.
+enum SocialTokenNumbers {
+    static func all(in text: String) -> [CGFloat] {
+        var result: [CGFloat] = []
+        var current = ""
+        for character in text + " " {
+            if character.isNumber || (character == "." && !current.isEmpty) {
+                current.append(character)
+            } else {
+                if let value = Double(current) { result.append(CGFloat(value)) }
+                current = ""
+            }
+        }
+        return result
+    }
+
+    static func first(in text: String) -> CGFloat? { all(in: text).first }
+}
+
+// MARK: - Text metrics
+
+/// Text metrics of a text role at the current Dynamic Type size (cap tops and baselines are how Retro's spacings are
+/// measured; `TextMetrics` is the components' helper).
 enum SocialMetrics {
-    /// Cap height of a token text style at the current Dynamic Type size.
-    static func capHeight(_ style: DSTextStyle) -> CGFloat {
-        font(style).capHeight
+    static func metrics(_ style: DSTextStyle) -> TextMetrics {
+        TextMetrics(style: style, size: DSDynamicType.scaled(style.size, relativeTo: style.relativeTo))
     }
 
-    /// Line height of a token text style at the default content size.
+    /// From the top of a one-line text's frame to its cap top.
+    static func capTopOffset(_ style: DSTextStyle) -> CGFloat { metrics(style).capTopOffset }
+
+    /// From the last baseline to the bottom of the text's frame.
+    static func belowBaseline(_ style: DSTextStyle) -> CGFloat { metrics(style).belowBaseline }
+
+    /// The natural line height (ascender + below-baseline).
     static func lineHeight(_ style: DSTextStyle) -> CGFloat {
-        UIFont.systemFont(ofSize: style.size, weight: uiWeight(style.weight)).lineHeight
+        let metrics = metrics(style)
+        return metrics.ascender + metrics.belowBaseline
     }
 
-    private static func font(_ style: DSTextStyle) -> UIFont {
-        UIFont.systemFont(ofSize: DSDynamicType.scaled(style.size, relativeTo: style.relativeTo), weight: uiWeight(style.weight))
+    /// `value` scaled with Dynamic Type like the text role it sits next to.
+    static func scaled(_ value: CGFloat, like style: DSTextStyle) -> CGFloat {
+        DSDynamicType.scaled(value, relativeTo: style.relativeTo)
     }
+}
 
-    static func uiWeight(_ weight: Font.Weight) -> UIFont.Weight {
-        let pairs: [(Font.Weight, UIFont.Weight)] = [
-            (.ultraLight, .ultraLight), (.thin, .thin), (.light, .light), (.regular, .regular),
-            (.medium, .medium), (.semibold, .semibold), (.bold, .bold), (.heavy, .heavy), (.black, .black),
-        ]
-        return pairs.first { $0.0 == weight }?.1 ?? .regular
-    }
+/// Text roles the social specs derive from the global roles.
+enum SocialTextRole {
+    /// Message and comment text: `body` with its lines `chat.thread.dimension.rowLinePitch` apart (C-16, TC-2B).
+    static let threadBody = DSTextStyle(
+        family: TextRole.body.family, size: TextRole.body.size, weight: TextRole.body.weight,
+        relativeTo: TextRole.body.relativeTo, lineHeight: Tokens.Sizes.chatThreadDimensionRowLinePitch
+    )
 
-    /// Vertical inset that keeps a single line where it sits in a control of `height` when the text wraps
-    /// (multi-line layouts were not measured).
-    static func singleLineInset(height: CGFloat, style: DSTextStyle) -> CGFloat {
-        max(0, (height - lineHeight(style)) / 2)
-    }
+    /// A message of 1…`chat.thread.count.emojiOnlyMax` emoji: `fontSize.global.headerTitle` in the body face
+    /// (Dynamic Type of `headerTitle`).
+    static let emojiOnly = DSTextStyle(
+        family: TextRole.body.family, size: Tokens.FontSizes.globalHeaderTitle, weight: TextRole.body.weight,
+        relativeTo: TextRole.headerTitle.relativeTo
+    )
+
+    /// Emoji in the reaction chip: `fontSize.global.pill` (`chat.reactions.layout.chip.emoji`).
+    static let chipEmoji = DSTextStyle(
+        family: TextRole.pill.family, size: Tokens.FontSizes.globalPill, weight: TextRole.body.weight,
+        relativeTo: TextRole.pill.relativeTo
+    )
+
+    /// Picker cells: `fontSize.global.headerTitle` (`chat.reactions.layout.picker.grid`).
+    static let pickerEmoji = emojiOnly
 }

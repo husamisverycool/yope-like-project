@@ -13,21 +13,20 @@ import java.time.Clock
 import java.time.ZoneId
 
 /**
- * The year-story entry for `groups.screen` (design/surfaces/year.story.md, A). Shown while the
- * group's story for the current year (group time zone) is `ready` — from December 1
- * (`year_story_release_month_day`); a `pending` story or none composes nothing, as do loading,
- * errors and offline. The row component, its position and tokens belong to the `groups.screen`
- * pass; this composable supplies the copy and the action to [row]:
- * - `title` = `year.story.entry.title` ("It's time for your {year} story"),
- * - `subtitle` = `year.story.entry.subtitle`,
- * - `button` = `year.story.entry.button` ("Let's go"),
+ * The year-story entry card for `groups.screen` (design/surfaces/year.story.md, A). Shown while the group's story
+ * for the current year (group time zone) is `ready` — from December 1 (`year_story_release_month_day`); a `pending`
+ * story or none composes nothing, as do loading, errors and offline. The card component (a Retro feed card), its
+ * position and tokens belong to the `groups.screen` pass; this composable supplies the copy and the action to [card]:
+ * - `title` = `year.story.entry.title` ("Year in Photos"),
+ * - `subtitle` = `year.story.entry.subtitle` ("{year} Recap"),
+ * - `button` = `year.story.entry.button` ("View memories"),
  * - `onClick` = [onOpen] with the year (open `AppRoute.YearStory(groupId, year)`).
  */
 @Composable
 fun YearStoryEntry(
     groupId: String,
     onOpen: (year: Int) -> Unit,
-    row: @Composable (title: String, subtitle: String, button: String, onClick: () -> Unit) -> Unit,
+    card: @Composable (title: String, subtitle: String, button: String, onClick: () -> Unit) -> Unit,
 ) {
     val backend = rememberMemoryBackend()
     // Cached first, so the row does not pop in on every visit; the read confirms or removes it.
@@ -35,9 +34,9 @@ fun YearStoryEntry(
     val year = produceState(MemoryCache.shared.get<Int>(key), groupId, backend) {
         value = readyStoryYear(backend, groupId).also { if (it == null) MemoryCache.shared.remove(key) else MemoryCache.shared.put(key, it) }
     }.value ?: return
-    row(
-        stringResource(R.string.year_story_entry_title, year.toString()),
-        stringResource(R.string.year_story_entry_subtitle),
+    card(
+        stringResource(R.string.year_story_entry_title),
+        stringResource(R.string.year_story_entry_subtitle, year.toString()),
         stringResource(R.string.year_story_entry_button),
     ) { onOpen(year) }
 }

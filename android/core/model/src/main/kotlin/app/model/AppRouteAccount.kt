@@ -3,11 +3,14 @@ package app.model
 import kotlinx.serialization.Serializable
 
 /*
- * Routes added by the account screens pass (same package and module, so they join the sealed
- * [AppRoute]). Surface ids from docs/SURFACES.md.
+ * Routes added by the account screens passes (same package and module, so they join the sealed [AppRoute]).
+ * Surface ids from docs/SURFACES.md.
  */
 
-/** `groups.screen` B: the group profile page (avatar, name, members row, "pics | wall | recaps", ••• menu). */
+/**
+ * `groups.screen` opened as "the group's page" (social's chat header). The redesign has one group screen (Retro's album
+ * detail, MERGE RA-9): this route hosts the same screen as [AppRoute.Group]; new callers use [AppRoute.Group].
+ */
 @Serializable
 data class GroupProfileRoute(val groupId: String) : AppRoute {
     override val surface get() = "groups.screen"
@@ -17,6 +20,21 @@ data class GroupProfileRoute(val groupId: String) : AppRoute {
 @Serializable
 data class GroupEditRoute(val groupId: String) : AppRoute {
     override val surface get() = "groups.create"
+}
+
+/**
+ * `groups.create` at its name step with the group kind already chosen (a "Create" template row on `groups.list`);
+ * [kind] is the `group_kind` wire value (friends · family · roommates · custom).
+ */
+@Serializable
+data class GroupCreateKindRoute(val kind: String) : AppRoute {
+    override val surface get() = "groups.create"
+}
+
+/** `onboarding.widget` opened from `settings.root` (Widgets → Add Widget): back chevron, returns to Settings. */
+@Serializable
+data object OnboardingWidgetFromSettingsRoute : AppRoute {
+    override val surface get() = "onboarding.widget"
 }
 
 /**

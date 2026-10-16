@@ -23,7 +23,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import app.designsystem.generated.Tokens
@@ -32,15 +35,30 @@ import app.ui.foundation.PageRoles
 import app.ui.text.TextRoles
 
 /**
- * C-34 backdrop: the photo full-screen, blurred and colour-rich behind a card (`layout.global.materials.backdrop`:
- * recap preview, paywall). Retro's blur radius is not measurable (components.md C-34 Gap), so the caller passes
- * [blurRadius] from its surface spec; the blur is the platform's (API 31+; earlier versions show the photo
- * unblurred).
+ * C-34 backdrop: the photo full-bleed with a mild Gaussian blur of standard deviation [sigma]
+ * (`size.global.backdropBlur`, 1.8 pt) under a black layer (`color.global.backdropDim`, 22 %), both fitted on
+ * Retro's recap preview ST-04 (design/MERGE_DECISIONS.md L-5) — not a frosted material. The blur is the platform's
+ * RenderEffect (API 31+; earlier versions show the photo unblurred, still dimmed).
  */
 @Composable
-fun BlurredBackdrop(photo: Any?, blurRadius: Dp, modifier: Modifier = Modifier) {
-    DsImage(photo, null, modifier.fillMaxSize().blur(blurRadius), placeholder = Tokens.Colors.globalBackgroundDeep)
+fun BlurredBackdrop(photo: Any?, sigma: Dp = Tokens.Sizes.globalBackdropBlur, modifier: Modifier = Modifier) {
+    val radius = with(LocalDensity.current) { blurRadiusForSigma(sigma.toPx()).toDp() }
+    Box(modifier.fillMaxSize().clipToBounds()) {
+        DsImage(photo, null, Modifier.fillMaxSize().blur(radius, BlurredEdgeTreatment.Rectangle), placeholder = Tokens.Colors.globalBackgroundDeep)
+        Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackdropDim))
+    }
 }
+
+/**
+ * `Modifier.blur` takes a "radius" r that hwui turns into a Gaussian σ = 0.57735·r + 0.5 px
+ * (frameworks/base libs/hwui/utils/Blur.cpp, `Blur::convertRadiusToSigma`; PLATFORM), so a token σ is passed as
+ * r = (σ − 0.5) / 0.57735.
+ */
+internal fun blurRadiusForSigma(sigmaPx: Float): Float =
+    ((sigmaPx - HWUI_SIGMA_OFFSET) / HWUI_SIGMA_SCALE).coerceAtLeast(0f)
+
+private const val HWUI_SIGMA_SCALE = 0.57735f
+private const val HWUI_SIGMA_OFFSET = 0.5f
 
 /**
  * C-34 recap card: `color.global.surfaceElevated` (#FFFFFF / #181818); [photos] in a [columns]-column grid of

@@ -1,24 +1,24 @@
-// Surface: year.story — reference: Spotify Wrapped (2024 tap-through).
-// Reference images: references/auto/wrapped/frames/wrapped24-rec-emilycraig-t020.png, -t020-bars-zoom2x.png,
-// -t15.533-reveal-start.png, -t16.400-reveal-end.png, -sheet-every3s.png; references/auto/wrapped/press/wrapped24-press-minutes.jpg,
-// wrapped24-press-summary-sharecard.jpg, wrapped25-press-minutes.png, wrapped25-press-sharecards.png, wrapped25-press-entrypoints.png;
-// references/auto/wrapped/frames/wrapped25-rec-cdragon2010-t004.800.png, -t258.000.png, wrapped24-rec-xenarxoxo-sheet-every3s.png
-// (design/surfaces/year.story.md). Replaces the container ios/App/Sources/Screens/YearStoryScreen.swift (`AppRoute.yearStory`).
+// Surface: year.story — Retro's yearly recap ("Year in Photos") in Retro's recap preview; Spotify Wrapped's tap-through
+// pacing (mechanics). Reference images: references/auto/retro/store/retro-store-04.png (ST-04, recap preview 2026),
+// references/auto/retro/press/tc-2023-12-recaps.png (TC-REC phones 2–3), references/auto/retro/press/tc-2023-12-retro-header.png
+// (TC-H); mechanics: references/auto/wrapped/frames/wrapped24-rec-emilycraig-sheet-every3s.png (design/surfaces/year.story.md).
+// Components: C-34, C-31, C-22 (position pill), C-11, C-09 (recap Share pill), C-27, C-28.
 import AppData
 import DesignSystem
 import SwiftUI
 import UIKit
 
-/// The group's December year story: Wrapped-style tap-through cards on a 9:16 canvas, one fact per
-/// card, each fact card shareable as a 1080 × 1920 image. Present full screen (`YearStoryEntry`
-/// does; the deep link pushes it on the main stack with the navigation bar hidden).
+/// The group's December year story: one fact per card in the recap preview's rounded frame, auto-advancing every
+/// `duration.year.story.card` (pause / play in the bottom row), tap halves to step, ending on the summary's two share
+/// styles. Dark in both appearances; presented full screen (`MemoryModal.yearStory`).
 @MainActor
 struct YearStoryScreen: View {
     let groupID: String
     let year: Int
     @State private var model: YearStoryModel
-    /// Snapshots: subline shown at once instead of the reveal.
+    /// Snapshots: the reveal settled at once.
     private let revealsImmediately: Bool
+    @State private var frameWidth: CGFloat = 0
     @Environment(\.dismiss) private var dismiss
     @Environment(\.displayScale) private var displayScale
     @Environment(\.scenePhase) private var scenePhase
@@ -31,22 +31,18 @@ struct YearStoryScreen: View {
     }
 
     var body: some View {
-        GeometryReader { proxy in
-            let canvas = YearStoryGeometry.canvasSize(in: proxy.size)
-            ZStack {
-                Tokens.Colors.yearStoryLetterbox
-                    .ignoresSafeArea()
-                YearStoryCanvasView(model: model, size: canvas, revealsImmediately: revealsImmediately)
-                    .frame(width: canvas.width, height: canvas.height)
-                    .onAppear { updatePixelSize(width: canvas.width) }
-                    .onChange(of: canvas.width) { _, width in updatePixelSize(width: width) }
-                    .task(id: renderKey(width: canvas.width)) {
-                        await renderShares(width: canvas.width)
-                    }
-            }
-            .frame(width: proxy.size.width, height: proxy.size.height)
+        MemoryImageScope { images in
+            RecapPreviewScreen(
+                dots: dots,
+                page: { geometry in page(geometry, images: images) },
+                overlay: { geometry in overlay(geometry) },
+                leading: { leadingCircle },
+                trailing: { sharePill }
+            )
+            .task(id: renderKey) { await renderShare(images: images) }
         }
-        .statusBarHidden(true)
+        .environment(\.colorScheme, .dark)
+        .preferredColorScheme(.dark)
         .toolbar(.hidden, for: .navigationBar)
         .task { await model.loadIfNeeded() }
         .onDisappear { model.stopListening() }
@@ -64,286 +60,181 @@ struct YearStoryScreen: View {
         .accessibilityIdentifier("year.story")
     }
 
-    /// Share images are rendered when a fact card is shown, and all of them on the summary.
-    private func renderKey(width: CGFloat) -> String {
-        "\(model.phase == .loaded)-\(model.currentCard?.id ?? "")-\(Int(width))" // provenance-ok: task identity, not UI text
+    // MARK: Frame
+
+    @ViewBuilder
+    private func page(_ geometry: RecapPreviewGeometry, images: any MemoryImageLoading) -> some View {
+        let size = geometry.frame.size
+        switch model.phase {
+        case .idle, .loading:
+            MemoryLoadingIndicator(announcement: Copy.yearStoryLoading)
+                .frame(width: size.width, height: size.height)
+        case .error:
+            MemoryMediaStateBlock(title: Copy.yearStoryErrorTitle, detail: Copy.yearStoryErrorDetail, retryTitle: Copy.yearStoryErrorRetry) {
+                Task { await model.retry() }
+            }
+            .frame(width: size.width, height: size.height)
+        case .offline:
+            MemoryMediaStateBlock(title: Copy.yearStoryOfflineTitle, detail: Copy.yearStoryOfflineDetail, retryTitle: Copy.yearStoryErrorRetry) {
+                Task { await model.retry() }
+            }
+            .frame(width: size.width, height: size.height)
+        case .loaded:
+            if let card = model.currentCard {
+                cardPage(card, size: size, images: images)
+                    .onAppear { updateFrameWidth(size.width) }
+                    .onChange(of: size.width) { _, width in updateFrameWidth(width) }
+            }
+        }
     }
 
-    /// The photo box in pixels, at the larger of the screen's and the share image's scale.
-    private func updatePixelSize(width: CGFloat) {
-        guard width > 0 else { return }
-        let box = width * Tokens.Layouts.YearStoryPhotoCard.boxWidthRatio
-        model.imagePixelSize = box * max(displayScale, Tokens.Layouts.YearStoryShareCard.width / width)
+    @ViewBuilder
+    private func cardPage(_ card: YearStoryCard, size: CGSize, images: any MemoryImageLoading) -> some View {
+        Group {
+            if card == .summary {
+                TabView(selection: $model.summaryPage) {
+                    ForEach(Array(model.summaryStyles.enumerated()), id: \.element) { page, style in
+                        content(card, style: style, size: size, images: images)
+                            .tag(page)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .accessibilityIdentifier("year.story.summary.pager")
+            } else {
+                content(card, style: model.summaryStyle, size: size, images: images)
+                    // Tap zones (`layout.year.story.navigation`): right half next, left half previous.
+                    .contentShape(Rectangle())
+                    .onTapGesture { location in
+                        if location.x >= size.width / 2 {
+                            model.next()
+                        } else {
+                            model.previous()
+                        }
+                    }
+            }
+        }
+        // Cards change with a cut (Wrapped's chapter animations are brand art, not reproduced).
+        .id(card.id)
+        .accessibilityElement(children: .contain)
+        .accessibilityAction(named: Text(Copy.yearStoryA11yNext)) { model.next() }
+        .accessibilityAction(named: Text(Copy.yearStoryA11yPrevious)) { model.previous() }
+    }
+
+    private func content(_ card: YearStoryCard, style: YearStorySummary.Style, size: CGSize, images: any MemoryImageLoading) -> some View {
+        YearStoryCardContent(
+            card: card, size: size, summary: model.summary, summaryStyle: style, coverURL: model.coverURL,
+            images: images, revealed: revealsImmediately
+        )
+    }
+
+    /// Close top-right; the position pill top-left (`dimension.year.story.frame.padding`, centred on the close circle's
+    /// centre line), hidden on the summary.
+    @ViewBuilder
+    private func overlay(_ geometry: RecapPreviewGeometry) -> some View {
+        ZStack(alignment: .topLeading) {
+            if let position = model.position, model.phase == .loaded {
+                PositionPill(label: position)
+                    .fixedSize()
+                    .alignmentGuide(.leading) { _ in -Tokens.Sizes.yearStoryFramePadding }
+                    .alignmentGuide(.top) { dimensions in dimensions.height / 2 - geometry.closeCentreInFrame.y }
+                    .accessibilitySortPriority(2)
+                    .accessibilityIdentifier("year.story.position")
+            }
+            RecapPreviewClose(geometry: geometry, accessibilityLabel: Copy.yearStoryA11yClose) {
+                model.close()
+            }
+            .accessibilitySortPriority(3)
+            .accessibilityIdentifier("year.story.close")
+        }
+        .frame(width: geometry.frame.width, height: geometry.frame.height, alignment: .topLeading)
+    }
+
+    // MARK: Bottom row
+
+    /// The page dots on the summary (one per share style; `year.story.position` as their value).
+    private var dots: RecapPreviewDots? {
+        guard model.phase == .loaded, model.currentCard == .summary else { return nil }
+        let count = model.summaryStyles.count
+        let index = min(max(model.summaryPage, 0), count - 1)
+        return RecapPreviewDots(
+            count: count, index: index,
+            accessibilityValue: Copy.yearStoryPosition(position: MemoryFormat.number(index + 1), total: MemoryFormat.number(count))
+        )
+    }
+
+    /// Pause / play on the cards, replay on the summary (C-11 on media, `size.global.icon` glyph box).
+    @ViewBuilder
+    private var leadingCircle: some View {
+        if model.phase == .loaded, let card = model.currentCard {
+            if card == .summary {
+                CircleButton(icon: Tokens.Icons.yearStoryReplay, accessibilityLabel: Copy.yearStorySummaryReplay, style: .media) {
+                    model.replay()
+                }
+                .accessibilityIdentifier("year.story.replay")
+            } else {
+                CircleButton(
+                    icon: model.isPaused ? Tokens.Icons.globalPlay : Tokens.Icons.globalPause,
+                    accessibilityLabel: model.isPaused ? Copy.yearStoryA11yPlay : Copy.yearStoryA11yPause,
+                    style: .media
+                ) {
+                    model.togglePause()
+                }
+                .accessibilityIdentifier("year.story.pause")
+            }
+        }
+    }
+
+    /// The Share pill on the fact cards, the outro and the summary (fades in and out with `duration.global.fade`).
+    @ViewBuilder
+    private var sharePill: some View {
+        ZStack {
+            if model.phase == .loaded, let card = model.currentCard, card.isShareable {
+                let key = model.shareKey(card)
+                Group {
+                    if let file = model.shareFiles[key], let image = model.shareImages[key] {
+                        ShareLink(item: file, preview: SharePreview(Copy.yearStoryEntrySubtitle(year: String(year)), image: Image(uiImage: image))) {
+                            RecapSharePillLabel(title: Copy.yearStoryShare)
+                        }
+                        .buttonStyle(.plain)
+                        // The card stays in view while the share sheet is up (play resumes it).
+                        .simultaneousGesture(TapGesture().onEnded { model.pause() })
+                    } else {
+                        // The share image renders when the card shows (a few milliseconds); the pill waits for it.
+                        RecapSharePillLabel(title: Copy.yearStoryShare)
+                    }
+                }
+                .accessibilityIdentifier("year.story.share")
+                .dsTransition(.opacity)
+            }
+        }
+        .dsAnimation(ComponentMotion.fade, value: model.currentCard?.isShareable == true)
+    }
+
+    // MARK: Share images
+
+    private var renderKey: String {
+        let card = model.currentCard.map { model.shareKey($0) } ?? ""
+        return "\(model.phase == .loaded)-\(card)-\(Int(frameWidth))" // provenance-ok: task identity, not UI text
+    }
+
+    private func updateFrameWidth(_ width: CGFloat) {
+        guard width > 0, width != frameWidth else { return }
+        frameWidth = width
+        model.imagePixelSize = width * max(displayScale, Tokens.Layouts.YearStoryShareCard.width / width)
         model.preloadUpcoming()
     }
 
-    private func renderShares(width: CGFloat) async {
-        guard model.phase == .loaded, let card = model.currentCard else { return }
-        let targets = card == .summary ? model.shareableCards : (card.isShareable ? [card] : [])
-        for target in targets where model.shareFiles[target.id] == nil {
-            // One card per main-actor turn, so taps and frames are not held up.
-            await Task.yield()
-            guard !Task.isCancelled else { return }
-            guard let output = await YearStoryShareRenderer.render(
-                target, width: width, pixelSize: model.imagePixelSize, images: model.images
-            ) else { continue }
-            model.shareFiles[target.id] = output.file
-            model.shareImages[target.id] = output.image
-        }
+    /// The share image of the card in view (each summary style on its own), rendered when it shows.
+    private func renderShare(images: any MemoryImageLoading) async {
+        guard model.phase == .loaded, frameWidth > 0, let card = model.currentCard, card.isShareable else { return }
+        let key = model.shareKey(card)
+        guard model.shareFiles[key] == nil else { return }
+        await Task.yield()
+        guard !Task.isCancelled, let output = await YearStoryShareRenderer.render(
+            card, width: frameWidth, summary: model.summary, summaryStyle: model.summaryStyle,
+            coverURL: model.coverURL, images: images, name: key
+        ) else { return }
+        model.shareFiles[key] = output.file
+        model.shareImages[key] = output.image
     }
-}
-
-/// The canvas with progress bar, chrome, card content, share row and tap zones.
-struct YearStoryCanvasView: View {
-    let model: YearStoryModel
-    let size: CGSize
-    var revealsImmediately = false
-
-    var body: some View {
-        ZStack(alignment: .topLeading) {
-            Tokens.Colors.globalBackgroundDeep
-            switch model.phase {
-            case .idle, .loading:
-                MemoryLoadingIndicator(text: Copy.yearStoryLoading)
-                    .frame(width: size.width, height: size.height)
-            case .error:
-                stateMessage(title: Copy.yearStoryErrorTitle, detail: Copy.yearStoryErrorDetail)
-            case .offline:
-                stateMessage(title: Copy.yearStoryOfflineTitle, detail: Copy.yearStoryOfflineDetail)
-            case .loaded:
-                if let card = model.currentCard {
-                    cardLayer(card)
-                }
-            }
-            chrome
-        }
-        .frame(width: size.width, height: size.height)
-        .clipped()
-    }
-
-    private func stateMessage(title: String, detail: String) -> some View {
-        MemoryStateMessage(title: title, detail: detail, actionTitle: Copy.yearStoryErrorRetry) {
-            Task { await model.retry() }
-        }
-        .frame(maxWidth: Tokens.Sizes.yearStoryTextMaxWidth)
-        .frame(width: size.width, height: size.height)
-    }
-
-    @ViewBuilder
-    private func cardLayer(_ card: YearStoryCard) -> some View {
-        ZStack(alignment: .topLeading) {
-            Group {
-                if card == .summary {
-                    YearStorySummaryView(model: model, size: size)
-                } else {
-                    YearStoryCardContent(card: card, size: size, revealed: revealsImmediately)
-                }
-            }
-            // Cards change with a cut (Wrapped's chapter transitions are brand animation).
-            .id(card.id)
-            .accessibilityElement(children: .contain)
-            .modifier(YearStoryNavigationActions(model: model))
-            // Tap zones (`layout.year.story.navigation`): right half next, left half previous.
-            .contentShape(Rectangle())
-            .onTapGesture(coordinateSpace: .local) { location in
-                if location.x >= size.width / 2 {
-                    model.next()
-                } else {
-                    model.previous()
-                }
-            }
-            // The current segment fills over `duration.year.story.card`; redrawn only while the clock runs.
-            TimelineView(.animation(paused: !model.clockRuns)) { context in
-                YearStoryProgressBar(count: model.cards.count, index: model.index, currentFraction: model.currentFraction(at: context.date))
-            }
-            .padding(.top, Tokens.Sizes.yearStoryProgressTop)
-            .allowsHitTesting(false)
-            if card.isShareable {
-                shareRow(card)
-                    .frame(width: size.width, height: size.height - Tokens.Sizes.yearStoryShareBottomInset, alignment: .bottom)
-            }
-        }
-        .frame(width: size.width, height: size.height, alignment: .topLeading)
-    }
-
-    @ViewBuilder
-    private func shareRow(_ card: YearStoryCard) -> some View {
-        if let file = model.shareFiles[card.id], let image = model.shareImages[card.id] {
-            ShareLink(item: file, preview: SharePreview(card.headline, image: Image(uiImage: image))) {
-                YearStoryShareRowLabel()
-            }
-            .buttonStyle(.plain)
-            // The card stays in view while the share sheet is up (play resumes it).
-            .simultaneousGesture(TapGesture().onEnded { model.pause() })
-            .accessibilityIdentifier("year.story.share")
-            .accessibilitySortPriority(-1)
-        } else {
-            YearStoryShareRowLabel()
-                .accessibilityIdentifier("year.story.share")
-                .accessibilitySortPriority(-1)
-        }
-    }
-
-    /// Close circle (`dimension.year.story.chrome.*`), centred `chrome.centerY` below the canvas top,
-    /// `chrome.insetRight` from its right; hit area `size.global.minTouchTarget.ios`. The pause / play
-    /// circle sits `chrome.pitch` to its left on every card that advances on its own
-    /// (`duration.year.story.card`; not on the summary, which waits).
-    @ViewBuilder
-    private var chrome: some View {
-        let diameter = Tokens.Sizes.yearStoryChromeButton
-        let closeX = size.width - Tokens.Sizes.yearStoryChromeInsetRight - diameter / 2
-        chromeCircle(icon: Tokens.Icons.globalClose, label: Copy.yearStoryA11yClose) {
-            model.close()
-        }
-        .accessibilityIdentifier("year.story.close")
-        .accessibilitySortPriority(4)
-        .position(x: closeX, y: Tokens.Sizes.yearStoryChromeCenterY)
-        if model.advancesOnItsOwn {
-            chromeCircle(
-                icon: model.isPaused ? Tokens.Icons.globalPlay : Tokens.Icons.yearStoryPause,
-                label: model.isPaused ? Copy.yearStoryA11yPlay : Copy.yearStoryA11yPause
-            ) {
-                model.togglePause()
-            }
-            .accessibilityIdentifier("year.story.pause")
-            .accessibilitySortPriority(3)
-            .position(x: closeX - Tokens.Sizes.yearStoryChromePitch, y: Tokens.Sizes.yearStoryChromeCenterY)
-        }
-    }
-
-    private func chromeCircle(icon: String, label: String, action: @escaping () -> Void) -> some View {
-        let diameter = Tokens.Sizes.yearStoryChromeButton
-        let hit = max(Tokens.Sizes.globalMinTouchTargetIos, diameter)
-        return Button(action: action) {
-            Image(systemName: icon)
-                .resizable()
-                .scaledToFit()
-                .frame(height: Tokens.Sizes.yearStoryChromeGlyph)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                .frame(width: diameter, height: diameter)
-                .background(Tokens.Colors.yearStoryChromeFill, in: Circle())
-                .frame(width: hit, height: hit)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(label)
-    }
-}
-
-/// `year.story.a11y.next` / `.previous` as custom actions (the tap zones are not reachable by VoiceOver).
-private struct YearStoryNavigationActions: ViewModifier {
-    let model: YearStoryModel
-
-    func body(content: Content) -> some View {
-        content
-            .accessibilityAction(named: Copy.yearStoryA11yNext) { model.next() }
-            .accessibilityAction(named: Copy.yearStoryA11yPrevious) { model.previous() }
-    }
-}
-
-/// C. Summary (`layout.year.story.summary`): a pager of the story's share cards at
-/// `previewWidthRatio` × canvas width, its page dots (`layout.year.story.summary.dots`), the Share
-/// pill for the card in view, then "Replay from beginning".
-struct YearStorySummaryView: View {
-    @Bindable var model: YearStoryModel
-    let size: CGSize
-
-    var body: some View {
-        let cards = model.shareableCards
-        let previewWidth = size.width * Tokens.Layouts.YearStorySummary.previewWidthRatio
-        let previewHeight = previewWidth / YearStoryGeometry.aspect
-        let dots = Tokens.Layouts.YearStorySummaryDots.self
-        VStack {
-            if !cards.isEmpty {
-                VStack(spacing: 0) {
-                    TabView(selection: $model.summaryPage) {
-                        ForEach(Array(cards.enumerated()), id: \.element.id) { page, card in
-                            preview(card)
-                                .frame(width: previewWidth, height: previewHeight)
-                                // The pager takes its own taps (no navigation from a tap on a share card).
-                                .onTapGesture {}
-                                .tag(page)
-                        }
-                    }
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    .frame(width: size.width, height: previewHeight)
-                    .accessibilityIdentifier("year.story.summary.pager")
-                    // Dot centres `centerBelowCarousel` under the card and `centerAboveShare` over the pill.
-                    YearStorySummaryDots(count: cards.count, selected: min(max(model.summaryPage, 0), cards.count - 1))
-                        .padding(.top, dots.centerBelowCarousel - dots.diameter / 2)
-                        .padding(.bottom, dots.centerAboveShare - dots.diameter / 2)
-                    sharePill(cards)
-                }
-            }
-            Button {
-                model.replay()
-            } label: {
-                Label {
-                    Text(Copy.yearStorySummaryReplay)
-                } icon: {
-                    Image(systemName: Tokens.Icons.yearStoryReplay)
-                }
-                .labelStyle(.titleAndIcon)
-                .dsTextStyle(YearStoryType.body)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                .frame(minHeight: Tokens.Sizes.globalMinTouchTargetIos)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("year.story.replay")
-        }
-        .frame(width: size.width, height: size.height)
-    }
-
-    @ViewBuilder
-    private func preview(_ card: YearStoryCard) -> some View {
-        if let image = model.shareImages[card.id] {
-            Image(uiImage: image)
-                .resizable()
-                .scaledToFit()
-                .accessibilityLabel(card.headline)
-        } else {
-            MemoryLoadingIndicator()
-        }
-    }
-
-    @ViewBuilder
-    private func sharePill(_ cards: [YearStoryCard]) -> some View {
-        let page = min(max(model.summaryPage, 0), cards.count - 1)
-        let card = cards[page]
-        if let file = model.shareFiles[card.id], let image = model.shareImages[card.id] {
-            ShareLink(item: file, preview: SharePreview(card.headline, image: Image(uiImage: image))) {
-                YearStorySharePillLabel()
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("year.story.summary.share")
-        } else {
-            YearStorySharePillLabel()
-                .accessibilityIdentifier("year.story.summary.share")
-        }
-    }
-}
-
-/// `layout.year.story.summary.dots`: one dot per share card, `diameter` wide and `pitch` apart
-/// (centre to centre); the card in view in `selectedColor`, the others in `unselectedColor`; no
-/// animation (`animation`: none observed). Hidden from VoiceOver: the pager announces its pages.
-struct YearStorySummaryDots: View {
-    let count: Int
-    let selected: Int
-
-    var body: some View {
-        let dots = Tokens.Layouts.YearStorySummaryDots.self
-        HStack(spacing: dots.pitch - dots.diameter) {
-            ForEach(0..<count, id: \.self) { page in
-                Circle()
-                    .fill(page == selected ? Self.selectedColor : Self.unselectedColor)
-                    .frame(width: dots.diameter, height: dots.diameter)
-            }
-        }
-        .accessibilityHidden(true)
-    }
-
-    /// The token stores its colours as text; both parse (unit-tested), the fallback is never drawn.
-    static let selectedColor = MemoryTokenColor.color(Tokens.Layouts.YearStorySummaryDots.selectedColor) ?? Tokens.Colors.globalTextPrimary
-    static let unselectedColor = MemoryTokenColor.color(Tokens.Layouts.YearStorySummaryDots.unselectedColor) ?? Tokens.Colors.globalTextSecondary
 }

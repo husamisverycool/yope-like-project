@@ -1,103 +1,77 @@
-// Surface: invite.web — reference app: Partiful (event invite page).
-// Reference images: references/auto/partiful/web/pf-web-private-past-01..03.png,
-// pf-web-public-light-01..04.png, pf-web-public-dark-01..04.png, pf-web-notfound-01.png
-// (design/surfaces/invite.web.md).
+// Surface: invite.web — reference: Retro's /u/[username] invite page.
+// Reference images: references/auto/retro/web/retro.app-u-nathan-iphone.png (mobile card),
+// retro.app-u-nathan-pixel7.png, retro.app-u-nathan-desktop.png (desktop column), CSS
+// references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css (.page_mobileProfilePageContent,
+// .page_invitePillButton, .page_mobileInviteFooter, .page_newProfilePageContent, .page_profilePicture,
+// @media (max-width:840px)). Build spec: design/surfaces/invite.web.md.
 //
-// The page stylesheet, built from tokens only. Colours are the theme's text colour at the token
-// alphas; sizes are token values in CSS px (1 pt = 1 px). Literal numbers in this file are CSS
-// mechanics (0, 100%, flex), never design values.
+// The page stylesheet, built from tokens only (sizes in CSS px, 1 pt = 1 px). Literal numbers in this
+// file are CSS mechanics (0, 50%, 100%, 1, flex, z-order), never design values. `line-height: 1` where
+// no line-height token exists is Retro's own reset (retro.app-c857ab11667cdfc8.css `body{line-height:1}`,
+// which is why its h1 computes 32px/32px and 48px/48px). One appearance: see src/design.ts.
+//
+// Layout: one DOM for both layouts, like Retro's CSS: the desktop column is the default and
+// `@media (max-width: invite.web.size.breakpoint)` turns it into the mobile card.
 
-import { cssColor, cssEasing, cssFontFamily, cssWeight, layout, num, px, str } from "../design.js";
-import type { Scheme, Theme } from "../theme.js";
-import type { SizeStep } from "../titleFit.js";
+import { cssColor, cssEasing, cssFontStack, cssWeight, num, px } from "../design.js";
 
-const fgHex = (s: Scheme) => (s === "light" ? str("invite.web.color.text.light") : str("invite.web.color.text.dark"));
-const fg = (s: Scheme, alpha = 1) => cssColor(fgHex(s), alpha);
-const pick = (s: Scheme, light: number, dark: number) => (s === "light" ? light : dark);
+const capsule = (height: string) => `calc(${height} / 2)`; // radius.global.capsule: "height / 2"
 
-function base(theme: Theme): string {
-  const s = theme.scheme;
-  const text = layout<{ fontSmoothing: string }>("invite.web.layout.text");
-  const link = layout<{ textDecoration: string }>("invite.web.layout.link");
-  const colourT = `${num("invite.web.duration.button.colour")}ms ${cssEasing("invite.web.easing.button")}`;
-  const opacityT = `${num("invite.web.duration.button.opacity")}ms ${cssEasing("invite.web.easing.button")}`;
-  const outlinedBorder = pick(s, num("invite.web.opacity.button.outlined.border.light"), num("invite.web.opacity.button.outlined.border.dark"));
-  const borderW = px("invite.web.dimension.button.outlined.border");
+export function pageCss(): string {
+  const bp = px("invite.web.size.breakpoint");
+  const minTarget = px("size.global.minTouchTarget.ios");
+  const pillT = `background-color ${num("invite.web.duration.pill")}ms ${cssEasing("invite.web.easing.pill")}`;
+  const memberGlyph = `${Math.min(num("size.global.avatarSmall"), num("size.global.icon"))}px`;
   return `
+:root{color-scheme:light}
 *,*::before,*::after{box-sizing:border-box}
-html{background:${theme.background};color-scheme:${s === "dark" ? "dark" : "light"};-webkit-text-size-adjust:100%}
-body{margin:0;font-family:${cssFontFamily("invite.web.font")};font-size:${px("invite.web.fontSize.body")};font-weight:${cssWeight("invite.web.fontWeight.body")};line-height:${num("invite.web.lineHeight.default")};color:${fg(s)};-webkit-font-smoothing:${text.fontSmoothing};-moz-osx-font-smoothing:grayscale}
-.page{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center}
-.column{width:100%;max-width:${px("invite.web.dimension.columnMaxWidth")};padding:0 ${px("invite.web.dimension.margin")};container-type:inline-size}
-a{color:inherit;text-decoration:${link.textDecoration}}
-:focus-visible{outline:${borderW} solid ${fg(s)};outline-offset:${px("invite.web.dimension.focus.offset")}}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:${px("invite.web.dimension.button.gap")};font-weight:${cssWeight("invite.web.fontWeight.button")};white-space:nowrap;user-select:none;-webkit-user-select:none;cursor:pointer;transition:background-color ${colourT},color ${colourT},opacity ${opacityT}}
-@media (any-hover:hover){.btn:hover{opacity:${num("invite.web.opacity.button.hover")}}}
-.btn:active{opacity:${num("invite.web.opacity.button.active")}}
-.btn-filled{height:${px("invite.web.dimension.button.large.height")};padding:0 ${px("invite.web.dimension.button.large.paddingH")};border:none;border-radius:${px("invite.web.radius.button.large")};font-size:${px("invite.web.fontSize.body")};background:${cssColor(s === "dark" ? str("invite.web.color.button.filled.fill.dark") : str("invite.web.color.button.filled.fill.light"))};color:${cssColor(s === "dark" ? str("invite.web.color.button.filled.label.dark") : str("invite.web.color.button.filled.label.light"))}}
-.btn-outlined{height:${px("invite.web.dimension.button.medium.height")};padding:0 calc(${px("invite.web.dimension.button.medium.paddingH")} - ${borderW});border:${borderW} solid ${fg(s, outlinedBorder)};border-radius:${px("invite.web.radius.button.medium")};font-size:${px("invite.web.fontSize.button.medium")};background:${fg(s, num("invite.web.opacity.button.outlined.fill"))};-webkit-backdrop-filter:blur(${px("invite.web.blur.button.outlined")});backdrop-filter:blur(${px("invite.web.blur.button.outlined")})}
-@media (any-hover:hover){.btn-outlined:hover{background:${fg(s, num("invite.web.opacity.button.outlined.hover.fill"))};border-color:${fg(s, outlinedBorder)};opacity:1}}
-.btn-outlined:active{background:${fg(s, num("invite.web.opacity.button.outlined.active.fill"))};border-color:${fg(s, num("invite.web.opacity.button.outlined.active.border"))};opacity:1}
-summary{list-style:none}
-summary::-webkit-details-marker{display:none}
-footer{align-self:stretch;margin-top:auto;padding-top:${px("invite.web.dimension.footer.paddingTop")}}
-.divider{border-bottom:${borderW} solid ${fg(s, num("invite.web.opacity.footer.divider"))}}
-.footer-content{display:flex;flex-direction:column;align-items:center;padding:${px("invite.web.dimension.footer.contentPaddingV")} ${px("invite.web.dimension.margin")}}
-.get-app{display:inline-flex;align-items:center;gap:${px("invite.web.dimension.footer.linkGap")};font-weight:${cssWeight("invite.web.fontWeight.button")};transition:color ${colourT}}
-.get-app svg{width:${px("invite.web.dimension.footer.arrow")};height:${px("invite.web.dimension.footer.arrow")};color:${fg(s, num("invite.web.opacity.footer.arrow"))}}
+html,body{margin:0;padding:0}
+html{background:${cssColor("color.global.background")};-webkit-text-size-adjust:100%}
+body{font-family:${cssFontStack("font.global.family")};color:${cssColor("color.global.textPrimary")};line-height:1}
+h1,p,ul{margin:0;padding:0;font-weight:${cssWeight("fontWeight.global.body")}}
+a{color:inherit;text-decoration:none}
+img{display:block}
+.hit{position:relative}
+.hit::after{content:"";position:absolute;left:50%;top:50%;width:max(100%, ${minTarget});height:max(100%, ${minTarget});transform:translate(-50%, -50%)}
+
+/* desktop column (.page_newProfilePageContent) */
+.card{position:relative;isolation:isolate;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;text-align:center;overflow-wrap:break-word}
+.backdrop,.mobile-only{display:none}
+.hero{margin-top:auto;display:grid;place-items:center}
+.hero>*{grid-area:1 / 1}
+.qr{display:block;width:${px("invite.web.size.qrDesktop")};height:${px("invite.web.size.qrDesktop")};color:${cssColor("color.global.textPrimary")}}
+.avatar{width:${px("invite.web.size.avatarDesktop")};height:${px("invite.web.size.avatarDesktop")};border-radius:50%;object-fit:cover;background:${cssColor("invite.web.color.avatarPlaceholder")}}
+.text{display:flex;flex-direction:column;align-items:center;margin-bottom:${px("invite.web.size.bodyToQrDesktop")}}
+.headline{margin-top:${px("invite.web.size.headlineTopDesktop")};font-family:${cssFontStack("font.global.display")};font-size:${px("invite.web.fontSize.headlineDesktop")};font-weight:${cssWeight("fontWeight.global.displayMedium")};line-height:1;color:${cssColor("color.global.textPrimary")}}
+.line{margin-top:${px("invite.web.size.headlineToBody")};max-width:${px("invite.web.size.bodyMaxWidthDesktop")};font-size:${px("invite.web.fontSize.bodyDesktop")};line-height:${px("invite.web.lineHeight.bodyDesktop")};letter-spacing:${px("invite.web.letterSpacing.body")};color:${cssColor("invite.web.color.bodyDesktop")}}
+.link{display:inline-block;font-size:${px("fontSize.global.textButton")};font-weight:${cssWeight("fontWeight.global.textButton")};color:${cssColor("color.global.textPrimary")}}
+.footer{margin:auto ${px("invite.web.size.footerMargin")} ${px("invite.web.size.footerMargin")};font-size:${px("fontSize.global.caption")};font-weight:${cssWeight("fontWeight.global.caption")};line-height:${px("lineHeight.global.caption")};color:${cssColor("invite.web.color.bodyDesktop")}}
+[data-blocked]{cursor:default}
+
+/* mobile card (.page_mobileProfilePageContent, .page_invitePillButton, .page_mobileInviteFooter) */
+@media (max-width:${bp}){
+.desktop-only,.qr{display:none}
+.mobile-only{display:revert}
+.page{min-height:100vh;min-height:100dvh;padding:${px("invite.web.size.cardInset")};display:flex}
+.card{flex:1 1 auto;min-height:0;border-radius:${px("invite.web.radius.card")};overflow:hidden;background:${cssColor("color.global.backgroundDeep")}}
+.backdrop{display:block;position:absolute;inset:0;z-index:-1;width:100%;height:100%;object-fit:cover}
+.hero{margin-top:0;flex:1 1 auto;display:flex;align-items:center;justify-content:center;width:100%}
+.avatar{width:${px("invite.web.size.avatar")};height:${px("invite.web.size.avatar")}}
+.text{margin-bottom:${px("invite.web.size.bodyToPill")}}
+.headline{margin-top:0;max-width:${px("invite.web.size.textMaxWidth")};font-size:${px("fontSize.global.displayMedium")};line-height:${px("invite.web.lineHeight.headline")};color:${cssColor("color.global.textOnMedia")}}
+.line{max-width:${px("invite.web.size.textMaxWidth")};font-size:${px("invite.web.fontSize.body")};line-height:${px("invite.web.lineHeight.body")};color:${cssColor("invite.web.color.body")}}
+.members{display:flex;margin-top:${px("invite.web.size.headlineToBody")};list-style:none}
+.members>li+li{margin-left:-${px("size.global.avatarStackOverlap")}}
+.member{display:flex;align-items:center;justify-content:center;width:${px("size.global.avatarSmall")};height:${px("size.global.avatarSmall")};border-radius:50%;object-fit:cover;background:${cssColor("color.global.control")};color:${cssColor("color.global.textSecondary")}}
+.member svg{width:${memberGlyph};height:${memberGlyph}}
+.pill{display:flex;justify-content:center;align-items:center;width:calc(100% - 2 * ${px("invite.web.size.pillInset")});height:${px("invite.web.size.pillHeight")};margin-bottom:${px("invite.web.size.pillToFooter")};border-radius:${capsule(px("invite.web.size.pillHeight"))};background-color:${cssColor("invite.web.color.pill")};color:${cssColor("color.global.textOnMedia")};font-size:${px("invite.web.fontSize.pill")};font-weight:${cssWeight("invite.web.fontWeight.pill")};cursor:pointer;transition:${pillT}}
+.pill:hover:not([aria-busy="true"]):not([data-blocked]){background-color:${cssColor("invite.web.color.pillHover")}}
+.pill .busy{display:none}
+.pill[aria-busy="true"]{opacity:${num("invite.web.opacity.pillDisabled")};cursor:default}
+.pill[aria-busy="true"] .label{display:none}
+.pill[aria-busy="true"] .busy{display:inline}
+.footer{margin:${px("invite.web.size.footerMargin")};font-size:${px("invite.web.fontSize.footer")};font-weight:${cssWeight("fontWeight.global.body")};line-height:1;color:${cssColor("color.global.textOnMedia")}}
+}
+@media (prefers-reduced-motion:reduce){.pill{transition:none}}
 `;
-}
-
-/** Stylesheet of the invite page (valid state). */
-export function inviteCss(theme: Theme, steps: SizeStep[]): string {
-  const s = theme.scheme;
-  const title = layout<{ textAlign: string }>("invite.web.layout.title");
-  const [first, ...rest] = steps;
-  const sizeRules = rest.map((st) => `@container (min-width:${st.minWidth}px){.title{font-size:${st.size}px}}`).join("\n");
-  const avatar = px("invite.web.dimension.avatar");
-  const card = s === "light"
-    ? cssColor(str("invite.web.color.gateCard.light"), num("invite.web.opacity.gateCard.light"))
-    : cssColor(str("invite.web.color.gateCard.dark"), num("invite.web.opacity.gateCard.dark"));
-  return (
-    base(theme) +
-    `
-.invite{padding-top:${px("invite.web.dimension.titleTop")}}
-.title{margin:0 0 ${px("invite.web.dimension.titleToCover")};text-align:${title.textAlign};font-weight:${cssWeight("invite.web.fontWeight.title")};line-height:${num("invite.web.lineHeight.title")};letter-spacing:${num("invite.web.letterSpacing.title")}em;font-size:${first ? first.size : num("invite.web.fontSize.title.min")}px;overflow-wrap:break-word}
-${sizeRules}
-.cover{display:block;width:100%;height:auto;border-radius:${px("invite.web.radius.cover")};margin:0 0 ${px("invite.web.dimension.coverToNext")}}
-.field{margin:0;padding:${px("invite.web.dimension.fieldRow.paddingV")} 0;color:${fg(s, num("invite.web.opacity.text.body"))}}
-.members{position:relative;margin-top:${px("invite.web.dimension.sectionGap")}}
-.members-head{display:flex;align-items:center;min-height:${px("invite.web.dimension.button.medium.height")}}
-.section-title{margin:0;font-size:${px("invite.web.fontSize.sectionHeader")};font-weight:${cssWeight("invite.web.fontWeight.sectionHeader")};line-height:${num("invite.web.lineHeight.default")}}
-.avatars{list-style:none;margin:${px("invite.web.dimension.headerToAvatars")} 0 0;padding:0;display:flex;flex-wrap:wrap;gap:${px("invite.web.dimension.avatarGap")}}
-.avatar{display:block;width:${avatar};height:${avatar};border-radius:${px("invite.web.radius.avatar")};object-fit:cover}
-.initials{display:flex;align-items:center;justify-content:center;width:${avatar};height:${avatar};border-radius:${px("invite.web.radius.avatar")};background:${fg(s, pick(s, num("invite.web.opacity.avatar.minimal.fill.light"), num("invite.web.opacity.avatar.minimal.fill.dark")))};color:${fg(s, num("invite.web.opacity.avatar.minimal.text"))};font-size:${px("invite.web.fontSize.body")};font-weight:${cssWeight("invite.web.fontWeight.body")}}
-.all>summary{position:absolute;top:0;right:0}
-.rows{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:${px("invite.web.dimension.userRow.listGap")}}
-.row{display:flex;align-items:center;gap:${px("invite.web.dimension.userRow.columnGap")};padding:${px("invite.web.dimension.userRow.paddingV")} 0}
-.row-name{font-weight:${cssWeight("invite.web.fontWeight.userRow.name")}}
-.gate{margin-top:${px("invite.web.dimension.sectionGap")};padding:${px("invite.web.dimension.gateCard.padding")};border-radius:${px("invite.web.radius.gateCard")};background:${card};display:flex;flex-direction:column;align-items:center;text-align:center}
-.lock{display:block;width:${px("invite.web.dimension.gateCard.glyph")};height:${px("invite.web.dimension.gateCard.glyph")}}
-.gate .section-title{margin-top:${px("invite.web.dimension.gateCard.glyphToTitle")}}
-.gate-body{margin:${px("invite.web.dimension.gateCard.titleToBody")} 0 0;font-size:${px("invite.web.fontSize.detail")};color:${fg(s, num("invite.web.opacity.text.body"))}}
-.gate .btn-filled{margin-top:${px("invite.web.dimension.gateCard.bodyToButton")};width:100%}
-`
-  );
-}
-
-/** Stylesheet of the non-ideal states (not found, link no longer works, error). */
-export function stateCss(theme: Theme): string {
-  const s = theme.scheme;
-  const t = layout<{ textTransform: string; textAlign: string }>("invite.web.layout.state.title");
-  return (
-    base(theme) +
-    `
-.header-space{flex:none;height:${px("invite.web.dimension.state.headerSpace")}}
-.state{margin-top:auto;margin-bottom:auto;display:flex;flex-direction:column;align-items:center;text-align:${t.textAlign}}
-.glyph{margin:0 0 ${px("invite.web.dimension.state.glyphToTitle")};font-size:${px("invite.web.fontSize.state.glyph")};line-height:${num("invite.web.lineHeight.default")}}
-.state-title{margin:0;font-size:${px("invite.web.fontSize.state.title")};font-weight:${cssWeight("invite.web.fontWeight.state.title")};line-height:${num("invite.web.lineHeight.default")};text-transform:${t.textTransform}}
-.state-body{margin:${px("invite.web.dimension.gateCard.titleToBody")} 0 0;font-size:${px("invite.web.fontSize.detail")};color:${fg(s, num("invite.web.opacity.text.body"))}}
-.state .btn-filled{margin-top:${px("invite.web.dimension.state.bodyToAction")}}
-`
-  );
 }

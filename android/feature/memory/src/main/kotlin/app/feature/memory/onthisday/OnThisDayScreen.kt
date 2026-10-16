@@ -1,280 +1,363 @@
-// Surface: onthisday — design/surfaces/onthisday.md
-// References: references/auto/timehop/store/timehop-store-01.png, -02.png, -03.png, -05.png;
-// references/auto/timehop/play/timehop-play-01.png, -02.png, -05.png;
-// references/auto/timehop/help/th-help-2023-04-memory-view-hide.png (progress bar, meta row, close).
+// Surface: onthisday — design/surfaces/onthisday.md (Retro Rewind)
+// References: references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (RWB), references/auto/retro/press/tc-2025-12-rewind-device-a.png (RWA),
+// references/auto/retro/press/tc-2025-12-rewind-panels.png (RWP), references/auto/retro/store/retro-store-05.png (ST-05).
 package app.feature.memory.onthisday
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFromBaseline
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.paddingFrom
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.layout
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.coerceAtLeast
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import app.designsystem.R
+import app.designsystem.dsAnimateAlphaAsState
 import app.designsystem.generated.Tokens
-import app.feature.memory.common.HeaderCircleButton
-import app.feature.memory.common.MemoryBlocked
-import app.feature.memory.common.PreloadImages
+import app.feature.memory.common.MediaAppearance
+import app.feature.memory.common.MediaMessage
 import app.feature.memory.common.MemoryFormats
 import app.feature.memory.common.MemoryImage
-import app.feature.memory.common.MessageBlock
-import app.feature.memory.common.PlatformSpinner
-import app.feature.memory.common.roleStyle
-import app.feature.memory.common.touchOutset
-import java.time.ZoneId
+import app.feature.memory.common.PreloadImages
+import app.feature.memory.common.SystemAppearance
+import app.feature.memory.common.centredSlot
+import app.ui.components.CircleButtonStyle
+import app.ui.components.CircleIconButton
+import app.ui.components.EmptyState
+import app.ui.components.EmptyStateFill
+import app.ui.components.HeaderIconButton
+import app.ui.components.LoadingState
+import app.ui.components.TickOnStep
+import app.ui.foundation.DsMotion
+import app.ui.foundation.GlyphInk
+import app.ui.foundation.PhotoScrimOverlay
+import app.ui.foundation.centreAt
+import app.ui.foundation.endAtLastBaseline
+import app.ui.system.DsDropdownMenu
+import app.ui.system.DsMenuItem
+import app.ui.system.FeatureIntroRow
+import app.ui.system.FeatureIntroSheet
+import app.ui.system.SystemAlertDialog
+import app.ui.text.CapTop
+import app.ui.text.TextRoles
+import kotlinx.coroutines.delay
 
-/** Test tags of the day's parts (flow tests). */
+/** Test tags (flow tests). */
 object OnThisDayTags {
     const val ROOT = "onthisday"
-    const val CONTENT = "onthisday.content"
-    const val LABEL = "onthisday.label"
+    const val TITLE = "onthisday.title"
+    const val SHARE = "onthisday.share"
+    const val SHUFFLE = "onthisday.shuffle"
+    const val MORE = "onthisday.more"
 }
 
+/** The page's actions (one object, so the screen's signature stays readable). */
+data class OnThisDayActions(
+    val onStep: (Int) -> Unit = {},
+    val onTogglePlay: () -> Unit = {},
+    val onAdvance: () -> Unit = {},
+    val onShuffle: () -> Unit = {},
+    val onShare: () -> Unit = {},
+    val onSave: () -> Unit = {},
+    val onDelete: () -> Unit = {},
+    val onReport: () -> Unit = {},
+    val onRetry: () -> Unit = {},
+    val onBack: () -> Unit = {},
+    val onIntroDone: () -> Unit = {},
+    val onDismissSaveDenied: () -> Unit = {},
+    val onOpenSettings: () -> Unit = {},
+)
+
 /**
- * The day, full screen: banner with progress bar, years-ago label and close; then one photo or the
- * two-column masonry grid. Taps on the right / left half move to the older / newer year.
+ * The Rewind page (design/surfaces/onthisday.md B), dark in both appearances: the memory full bleed under the
+ * status bar (aspect fill, `radius.global.photo`, no top scrim), the C-02 header on media (back chevron, the date in
+ * the display serif, the subtitle), the glass "•••" (C-11, `size.global.circleButtonPhoto`) with the native menu,
+ * `layout.global.photoScrim`, and the control row (share, dial, random) centred
+ * `dimension.onthisday.controls.centerY` above the safe-area bottom with equal gaps. [isMine] decides the menu's
+ * Report / Delete item. [showIntro]: the feature intro (C-29) over the page.
  */
 @Composable
 fun OnThisDayScreen(
     state: OnThisDayState,
-    onNext: () -> Unit,
-    onPrevious: () -> Unit,
-    onRetry: () -> Unit,
-    onClose: () -> Unit,
+    actions: OnThisDayActions,
+    isMine: (Memory) -> Boolean,
     modifier: Modifier = Modifier,
+    showIntro: Boolean = false,
+    saveDenied: Boolean = false,
 ) {
-    Box(modifier.fillMaxSize().background(Tokens.Colors.globalBackground).testTag(OnThisDayTags.ROOT)) {
-        when (state) {
-            OnThisDayState.Loading -> Loading()
-            is OnThisDayState.Failed -> MessageBlock(
-                title = stringResource(if (state.offline) R.string.onthisday_offline_title else R.string.onthisday_error_title),
-                detail = stringResource(if (state.offline) R.string.onthisday_offline_detail else R.string.onthisday_error_detail),
-                action = stringResource(R.string.onthisday_error_retry),
-                onAction = onRetry,
-                modifier = Modifier.fillMaxSize(),
-            )
-            is OnThisDayState.Day -> Day(state, onNext, onPrevious, onClose)
-            OnThisDayState.Finished -> Unit
-        }
-    }
-}
-
-@Composable
-private fun Loading() {
-    Column(Modifier.fillMaxSize()) {
-        Box(Modifier.fillMaxWidth().height(Tokens.Sizes.onthisdayBannerHeight).background(Tokens.Colors.onthisdayBanner))
-        Column(
-            Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            PlatformSpinner()
-            Spacer(Modifier.size(Tokens.Sizes.globalListGap))
-            BasicText(
-                stringResource(R.string.onthisday_loading),
-                style = roleStyle(Tokens.FontSizes.globalListSubtitle, Tokens.FontWeights.fontWeightGlobalListSubtitle)
-                    .copy(color = Tokens.Colors.globalTextSecondary),
-            )
-        }
-    }
-}
-
-@Composable
-private fun Day(state: OnThisDayState.Day, onNext: () -> Unit, onPrevious: () -> Unit, onClose: () -> Unit) {
-    val resources = LocalContext.current.resources
-    val next by rememberUpdatedState(onNext)
-    val previous by rememberUpdatedState(onPrevious)
-    val olderLabel = stringResource(R.string.onthisday_a11y_next)
-    val backLabel = stringResource(R.string.onthisday_a11y_previous)
-    Column(Modifier.fillMaxSize()) {
-        Banner(MemoryFormats.yearsAgo(resources, state.year.yearsAgo), state.progress, onClose)
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .testTag(OnThisDayTags.CONTENT)
-                // layout.onthisday.navigation: right half → older, left half → newer; no other tap target.
-                .pointerInput(Unit) {
-                    detectTapGestures { offset -> if (offset.x >= size.width / 2f) next() else previous() }
+    MediaAppearance {
+        Box(modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep).semantics { isTraversalGroup = true }.testTag(OnThisDayTags.ROOT)) {
+            when (state) {
+                OnThisDayState.Loading -> {
+                    LoadingState(stringResource(R.string.onthisday_loading), onMedia = true)
+                    Header(null, null, actions.onBack)
                 }
-                .semantics {
-                    customActions = buildList {
-                        add(CustomAccessibilityAction(olderLabel) { next(); true })
-                        if (!state.isNewest) add(CustomAccessibilityAction(backLabel) { previous(); true })
+                is OnThisDayState.Failed -> {
+                    EmptyStateFill {
+                        MediaMessage(
+                            stringResource(if (state.offline) R.string.onthisday_offline_title else R.string.onthisday_error_title),
+                            stringResource(if (state.offline) R.string.onthisday_offline_detail else R.string.onthisday_error_detail),
+                            retry = stringResource(R.string.onthisday_error_retry),
+                            onRetry = actions.onRetry,
+                        )
                     }
-                },
-        ) {
-            // `duration.onthisday.memoryChange` is BLOCKED: the year changes without animation until it is sourced.
-            val change = MemoryBlocked.onThisDayMemoryChangeMs
-            if (change == null) {
-                YearContent(state.year, state.zone)
-            } else {
-                Crossfade(state.index, animationSpec = tween(change), label = "memoryChange") { index -> YearContent(state.years[index], state.zone) } // provenance-ok: animation inspector label, never shown
+                    Header(null, null, actions.onBack)
+                }
+                OnThisDayState.Empty -> {
+                    EmptyStateFill { EmptyState(stringResource(R.string.onthisday_empty_title), null) }
+                    Header(null, null, actions.onBack)
+                }
+                OnThisDayState.Finished -> Unit
+                is OnThisDayState.Page -> Page(state, actions, isMine)
             }
         }
-        // The next year's photos load before the tap, so they are on screen at once.
-        PreloadImages(state.years.getOrNull(state.index + 1)?.photos.orEmpty().mapNotNull { photo -> if (state.years[state.index + 1].photos.size == 1) photo.displayUrl else photo.thumbUrl })
+        if (showIntro && state is OnThisDayState.Page) {
+            SystemAppearance {
+                FeatureIntroSheet(
+                    title = stringResource(R.string.onthisday_nux_title),
+                    // C-29's intro rows carry a glyph: the Rewind glyph (`icon.global.rewind`, Retro's own for this feature).
+                    rows = listOf(FeatureIntroRow(Tokens.Icons.globalRewind, stringResource(R.string.onthisday_nux_message, state.groupName))),
+                    actionText = stringResource(R.string.onthisday_nux_button),
+                    onAction = actions.onIntroDone,
+                    onDismissRequest = actions.onIntroDone,
+                )
+            }
+        }
+        if (saveDenied) {
+            SystemAppearance {
+                SystemAlertDialog(
+                    title = stringResource(R.string.onthisday_savedenied_title),
+                    text = stringResource(R.string.onthisday_savedenied_message),
+                    confirmLabel = stringResource(R.string.onthisday_savedenied_button),
+                    onConfirm = actions.onOpenSettings,
+                    dismissLabel = null,
+                    onDismiss = actions.onDismissSaveDenied,
+                )
+            }
+        }
     }
 }
 
 @Composable
-private fun YearContent(year: MemoryYear, zone: ZoneId) {
-    if (year.photos.size == 1) SinglePhoto(year.photos.first(), zone) else Grid(year.photos, zone)
-}
-
-/** Banner: fill from the screen top, progress bar below the status bar, label + close on one row. */
-@Composable
-private fun Banner(label: String, progress: Float, onClose: () -> Unit) {
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .background(Tokens.Colors.onthisdayBanner)
-            .heightIn(min = Tokens.Sizes.onthisdayBannerHeight),
-        verticalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Box(
-            Modifier
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .fillMaxWidth()
-                .height(Tokens.Sizes.onthisdayProgressHeight)
-                .background(Tokens.Colors.onthisdayProgressTrack)
+private fun BoxScope.Page(state: OnThisDayState.Page, actions: OnThisDayActions, isMine: (Memory) -> Boolean) {
+    val memory = state.memory
+    val advance by rememberUpdatedState(actions.onAdvance)
+    // Playing: one memory every `duration.onthisday.playHold`, stopping after the last (the view model decides).
+    LaunchedEffect(state.playing, state.index, state.memories.size) {
+        if (state.playing) {
+            delay(Tokens.Durations.onthisdayPlayHold.toLong())
+            advance()
+        }
+    }
+    // One tick per memory change: each slot crossed on the dial and each automatic step (`haptic.global.select`).
+    TickOnStep(state.index)
+    PreloadImages(state.memories.drop(state.index + 1).take(PRELOAD_AHEAD).mapNotNull { it.displayUrl })
+    // Scrubbing cross-fades over `duration.global.crossfade`, playing over `duration.onthisday.memoryChange`.
+    val fade = tween<Float>(if (state.playing) Tokens.Durations.onthisdayMemoryChange else Tokens.Durations.globalCrossfade, easing = Tokens.Easings.globalStandard)
+    val dateText = MemoryFormats.memoryDate(memory.date)
+    Crossfade(targetState = memory, animationSpec = fade, label = "memory") { shown ->
+        MemoryImage(
+            shown.displayUrl,
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxSize()
                 .clearAndSetSemantics { },
-        ) {
-            Box(Modifier.fillMaxHeight().fillMaxWidth(progress).background(Tokens.Colors.onthisdayProgressFill))
-        }
-        Box(Modifier.fillMaxWidth().paddingFromBaseline(bottom = Tokens.Sizes.onthisdayBannerLabelBaseline)) {
-            BasicText(
-                label,
-                Modifier
-                    .align(Alignment.Center)
-                    .padding(horizontal = Tokens.Sizes.globalHeaderButton + Tokens.Sizes.globalHeaderInset)
-                    .testTag(OnThisDayTags.LABEL)
-                    .semantics {
-                        heading()
-                        liveRegion = LiveRegionMode.Polite
-                    },
-                style = roleStyle(Tokens.FontSizes.onthisdayBannerLabel, Tokens.FontWeights.fontWeightOnthisdayBannerLabel, family = Tokens.Fonts.onthisday)
-                    .copy(color = Tokens.Colors.onthisdayBannerLabel, textAlign = TextAlign.Center),
-            )
-            HeaderCircleButton(
-                icon = Tokens.Icons.globalClose,
-                contentDescription = stringResource(R.string.onthisday_a11y_close),
-                onClick = onClose,
-                modifier = Modifier.align(Alignment.CenterEnd).padding(end = Tokens.Sizes.globalHeaderInset - touchOutset(Tokens.Sizes.globalHeaderButton)),
-            )
-        }
-    }
-}
-
-@Composable
-private fun photoLabel(photo: MemoryPhoto, zone: ZoneId): String = stringResource(
-    R.string.onthisday_a11y_photo,
-    photo.authorName,
-    MemoryFormats.spokenWeekday(photo.createdAt, zone),
-    MemoryFormats.metaTime(photo.createdAt, zone),
-)
-
-/** `layout.onthisday.photo.single`: banner bottom to screen bottom, aspect-fill, meta row over it. */
-@Composable
-private fun SinglePhoto(photo: MemoryPhoto, zone: ZoneId) {
-    Box(Modifier.fillMaxSize()) {
-        MemoryImage(photo.displayUrl, photoLabel(photo, zone), Modifier.fillMaxSize(), ContentScale.Crop)
-        MetaRow(photo, zone)
-    }
-}
-
-/** Avatar + "TUE 10:34 PM", centred `dimension.onthisday.meta.centerY` below the banner. */
-@Composable
-private fun MetaRow(photo: MemoryPhoto, zone: ZoneId) {
-    val centerY = Tokens.Sizes.onthisdayMetaCenterY
-    Row(
-        Modifier
-            .layout { measurable, constraints ->
-                val placeable = measurable.measure(constraints)
-                layout(placeable.width, placeable.height) { placeable.place(0, centerY.roundToPx() - placeable.height / 2) }
-            }
-            .padding(start = Tokens.Sizes.onthisdayMetaInset)
-            .clearAndSetSemantics { },
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            Modifier.size(Tokens.Sizes.onthisdayMetaAvatar).clip(CircleShape).background(Tokens.Colors.globalControl),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (photo.avatarUrl != null) MemoryImage(photo.avatarUrl, null, Modifier.fillMaxSize())
-            else Icon(Tokens.Icons.globalPerson, contentDescription = null, tint = Tokens.Colors.globalTextPrimary)
-        }
-        Spacer(Modifier.size(Tokens.Sizes.onthisdayMetaGap))
-        BasicText(
-            stringResource(R.string.onthisday_memory_meta, MemoryFormats.metaWeekday(photo.createdAt, zone), MemoryFormats.metaTime(photo.createdAt, zone)),
-            style = roleStyle(Tokens.FontSizes.onthisdayMeta, Tokens.FontWeights.fontWeightOnthisdayMeta, family = Tokens.Fonts.onthisday)
-                .copy(color = Tokens.Colors.onthisdayMetaText),
         )
     }
+    PhotoScrimOverlay()
+    var menuOpen by remember { mutableStateOf(false) }
+    var confirmDelete by remember { mutableStateOf(false) }
+    val photoLabel = stringResource(R.string.onthisday_a11y_photo, memory.authorName, dateText)
+    // Focus order: header → photo → controls (onthisday.md → Accessibility).
+    Box(Modifier.fillMaxSize().semantics { contentDescription = photoLabel; traversalIndex = 0f })
+    Crossfade(targetState = memory, animationSpec = fade, label = "memoryTitle") { shown ->
+        val subtitle = stringResource(
+            if (state.mode == MemoryMode.Shuffle) R.string.onthisday_subtitle_shuffle else R.string.onthisday_subtitle_day,
+            shown.authorName,
+        )
+        Header(MemoryFormats.memoryDate(shown.date), subtitle, actions.onBack, showBack = false)
+    }
+    Header(null, null, actions.onBack) {
+        Box {
+            CircleIconButton(
+                Tokens.Icons.globalMore,
+                stringResource(R.string.onthisday_a11y_more),
+                { menuOpen = true },
+                Modifier.testTag(OnThisDayTags.MORE),
+                style = CircleButtonStyle.Glass,
+            )
+            SystemAppearance {
+                DsDropdownMenu(
+                    menuOpen,
+                    { menuOpen = false },
+                    buildList {
+                        add(DsMenuItem(stringResource(R.string.onthisday_menu_save), actions.onSave))
+                        if (isMine(memory)) {
+                            add(DsMenuItem(stringResource(R.string.onthisday_menu_delete), { confirmDelete = true }, destructive = true))
+                        } else {
+                            add(DsMenuItem(stringResource(R.string.onthisday_menu_report), actions.onReport, destructive = true))
+                        }
+                    },
+                )
+            }
+        }
+    }
+    Controls(state, actions, Modifier.align(Alignment.BottomCenter))
+    if (confirmDelete) {
+        SystemAppearance {
+            SystemAlertDialog(
+                title = stringResource(R.string.onthisday_delete_title),
+                text = stringResource(R.string.onthisday_delete_message, state.groupName),
+                confirmLabel = stringResource(R.string.onthisday_delete_confirm),
+                onConfirm = {
+                    confirmDelete = false
+                    actions.onDelete()
+                },
+                dismissLabel = stringResource(R.string.onthisday_delete_cancel),
+                onDismiss = { confirmDelete = false },
+                destructive = true,
+            )
+        }
+    }
 }
 
-/** `layout.onthisday.grid`: two-column masonry, each photo at its own aspect, shorter column first. */
+/** How many memories ahead have their images loaded. */
+private const val PRELOAD_AHEAD = 2
+
+/**
+ * The header on media (C-02 / C-35): back chevron (`icon.global.back`, ink at `size.global.backInset`, centred on the
+ * title's cap middle, `color.global.textOnMedia`); the date [title] `size.global.headerGap` after the chevron's ink,
+ * text role `headerTitle` in the display serif, baseline `size.global.titleTop` below the safe-area top; [subtitle]
+ * (text role `textButton`, `color.onthisday.subtitle`) its baseline `dimension.onthisday.subtitleBaseline` below the
+ * title's; [trailing] (the glass "•••") with its circle `size.global.headerInset` from the right edge, centred on the
+ * title's cap middle.
+ */
 @Composable
-private fun Grid(photos: List<MemoryPhoto>, zone: ZoneId) {
-    val navigation = WindowInsets.navigationBars.asPaddingValues()
-    LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Fixed(Tokens.Layouts.OnthisdayGrid.columns.toInt()),
-        modifier = Modifier.fillMaxSize().background(Tokens.Colors.globalBackground),
-        contentPadding = PaddingValues(
-            start = Tokens.Sizes.onthisdayGridMargin,
-            end = Tokens.Sizes.onthisdayGridMargin,
-            top = Tokens.Sizes.onthisdayGridTop,
-            bottom = navigation.calculateBottomPadding(),
-        ),
-        verticalItemSpacing = Tokens.Sizes.onthisdayGridGutter,
-        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.onthisdayGridGutter),
+private fun Header(
+    title: String?,
+    subtitle: String?,
+    onBack: () -> Unit,
+    showBack: Boolean = true,
+    trailing: (@Composable () -> Unit)? = null,
+) {
+    val titleStyle = TextRoles.headerTitle
+    val capMiddle = Tokens.Sizes.globalTitleTop - CapTop.height(titleStyle) / 2
+    val back = Tokens.Icons.globalBack
+    val box = Tokens.Sizes.globalIcon
+    val hit = max(Tokens.Sizes.globalHeaderButton, Tokens.Sizes.globalMinTouchTargetAndroid)
+    val hitStart = (Tokens.Sizes.globalBackInset - GlyphInk.leading(back, box) - (hit - box) / 2).coerceAtLeast(0.dp)
+    val titleStart = Tokens.Sizes.globalBackInset + GlyphInk.width(back, box) + Tokens.Sizes.globalHeaderGap
+    val titleEnd = Tokens.Sizes.globalHeaderInset + Tokens.Sizes.globalCircleButtonPhoto + Tokens.Sizes.globalHeaderGap
+    Box(Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars).semantics { isTraversalGroup = true; traversalIndex = -1f }) {
+        if (showBack) {
+            Box(Modifier.padding(start = hitStart).centreAt(capMiddle)) {
+                HeaderIconButton(back, stringResource(R.string.onthisday_a11y_back), onBack, tint = Tokens.Colors.globalTextOnMedia)
+            }
+        }
+        if (title != null) {
+            Column(Modifier.padding(start = titleStart, end = titleEnd)) {
+                Text(
+                    title,
+                    style = titleStyle,
+                    color = Tokens.Colors.globalTextOnMedia,
+                    modifier = Modifier
+                        .paddingFrom(FirstBaseline, before = Tokens.Sizes.globalTitleTop)
+                        .endAtLastBaseline()
+                        .semantics {
+                            heading()
+                            liveRegion = LiveRegionMode.Polite
+                        }
+                        .testTag(OnThisDayTags.TITLE),
+                )
+                if (subtitle != null) {
+                    Text(
+                        subtitle,
+                        style = TextRoles.textButton,
+                        color = Tokens.Colors.onthisdaySubtitle,
+                        modifier = Modifier.paddingFrom(FirstBaseline, before = Tokens.Sizes.onthisdaySubtitleBaseline),
+                    )
+                }
+            }
+        }
+        if (trailing != null) {
+            Box(Modifier.align(Alignment.TopEnd).padding(end = Tokens.Sizes.globalHeaderInset).centreAt(capMiddle)) { trailing() }
+        }
+    }
+}
+
+/**
+ * The control row (`layout.onthisday.controls`): share circle, dial, random circle with equal gaps across the width
+ * (`Arrangement.SpaceEvenly`), centres `dimension.onthisday.controls.centerY` above the safe-area bottom. Share and
+ * random are glass circles (C-11 `size.global.circleButtonLarge`, `color.global.glass`); they fade out while playing
+ * (`duration.global.fade`, `easing.global.standard`) and keep their places.
+ */
+@Composable
+private fun Controls(state: OnThisDayState.Page, actions: OnThisDayActions, modifier: Modifier) {
+    val alpha by dsAnimateAlphaAsState(if (state.playing) 0f else 1f, DsMotion.fade(), label = "controls")
+    Box(
+        modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .centredSlot(Tokens.Sizes.onthisdayControlsCenterY)
+            .semantics { isTraversalGroup = true; traversalIndex = 1f },
     ) {
-        items(photos, key = { it.postId }) { photo ->
-            MemoryImage(photo.thumbUrl, photoLabel(photo, zone), Modifier.fillMaxWidth().aspectRatio(photo.aspectRatio), ContentScale.Crop)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+            CircleIconButton(
+                Tokens.Icons.globalShare,
+                stringResource(R.string.onthisday_a11y_share),
+                actions.onShare,
+                Modifier.alpha(alpha).testTag(OnThisDayTags.SHARE),
+                style = CircleButtonStyle.GlassLarge,
+                enabled = !state.playing,
+            )
+            RewindDial(
+                index = state.index,
+                count = state.memories.size,
+                playing = state.playing,
+                onStep = actions.onStep,
+                onTogglePlay = actions.onTogglePlay,
+            )
+            CircleIconButton(
+                Tokens.Icons.globalRandom,
+                stringResource(R.string.onthisday_a11y_shuffle),
+                actions.onShuffle,
+                Modifier.alpha(alpha).testTag(OnThisDayTags.SHUFFLE),
+                style = CircleButtonStyle.GlassLarge,
+                enabled = !state.playing && !state.picking,
+            )
         }
     }
 }

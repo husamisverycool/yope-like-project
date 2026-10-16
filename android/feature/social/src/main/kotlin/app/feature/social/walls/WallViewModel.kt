@@ -232,28 +232,28 @@ class WallViewModel(data: SocialData, userId: String) : ViewModel() {
     val state: StateFlow<WallState> get() = loader.state
 }
 
-data class BrowsePerson(val profile: Profile, val isMe: Boolean)
-
 data class BrowseState(
     val phase: Phase = Phase.Loading,
-    val people: List<BrowsePerson> = emptyList(),
-    val selected: String? = null,
-    /** True when I share a group with nobody else (or have no group). */
+    /** Everyone who shares at least one group with me (not me). */
+    val people: List<Profile> = emptyList(),
+    /** True when I have no group, or nobody else is in mine. */
     val alone: Boolean = false,
+    val query: String = "",
 ) {
     enum class Phase { Loading, Ready, Error, OfflineEmpty }
+
+    /** The grid filtered by display name as typed (`walls.browse` search). */
+    val shown: List<Profile> get() = query.trim().let { q -> if (q.isEmpty()) people else people.filter { it.displayName.contains(q, ignoreCase = true) } }
 }
 
 /**
- * `walls.browse`: me first, then everyone sharing a group with me; the row order is BLOCKED
- * (`walls.browse.layout.rowOrder`), so the spec's approximation is used: newest wall item first.
- * The selected person's wall is a [WallLoader].
+ * `walls.browse`: everyone sharing a group with me. The order `walls.browse.layout.rowOrder` is BLOCKED: with
+ * [approximations] the development approximation (newest wall item first, then name), otherwise the order the
+ * memberships arrive in.
  */
-class BrowseViewModel(private val data: SocialData) : ViewModel() {
+class BrowseViewModel(private val data: SocialData, private val approximations: Boolean = app.feature.social.common.BuildApproximations.ENABLED) : ViewModel() {
     private val _state = MutableStateFlow(BrowseState())
     val state: StateFlow<BrowseState> = _state.asStateFlow()
-    private val _wall = MutableStateFlow<WallLoader?>(null)
-    val wall: StateFlow<WallLoader?> = _wall.asStateFlow()
 
     init {
         load()
@@ -265,16 +265,14 @@ class BrowseViewModel(private val data: SocialData) : ViewModel() {
             try {
                 val groups = data.myGroups()
                 val members = coroutineScope { groups.map { g -> async { data.members(g.id) } }.awaitAll() }.flatten()
-                val profiles = members.mapNotNull { it.profile }.distinctBy { it.id }
-                val mine = profiles.firstOrNull { it.id == me } ?: me?.let { runCatching { data.profiles(listOf(it)).firstOrNull() }.getOrNull() }
-                val others = profiles.filter { it.id != me }
-                val newest = coroutineScope {
-                    others.map { p -> async { p.id to runCatching { data.wall(p.id, null, 1).firstOrNull()?.createdAt }.getOrNull() } }.awaitAll()
-                }.toMap()
-                val ordered = others.sortedWith(compareByDescending<Profile> { newest[it.id] ?: Instant.MIN }.thenBy { it.displayName })
-                val people = listOfNotNull(mine?.let { BrowsePerson(it, true) }) + ordered.map { BrowsePerson(it, false) }
-                _state.update { it.copy(phase = BrowseState.Phase.Ready, people = people, alone = others.isEmpty()) }
-                if (_state.value.selected == null) people.firstOrNull()?.let { select(it.profile.id) }
+                val others = members.mapNotNull { it.profile }.distinctBy { it.id }.filter { it.id != me }
+                val ordered = if (app.feature.social.common.SocialBlocked.browseRowOrder || approximations) {
+                    val newest = coroutineScope {
+                        others.map { p -> async { p.id to runCatching { data.wall(p.id, null, 1).firstOrNull()?.createdAt }.getOrNull() } }.awaitAll()
+                    }.toMap()
+                    others.sortedWith(compareByDescending<Profile> { newest[it.id] ?: Instant.MIN }.thenBy { it.displayName })
+                } else others
+                _state.update { it.copy(phase = BrowseState.Phase.Ready, people = ordered, alone = ordered.isEmpty()) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
@@ -283,12 +281,7 @@ class BrowseViewModel(private val data: SocialData) : ViewModel() {
         }
     }
 
-    fun select(userId: String) {
-        if (_state.value.selected == userId && _wall.value != null) return
-        _wall.value?.stop()
-        _state.update { it.copy(selected = userId) }
-        _wall.value = WallLoader(data, viewModelScope, userId).also { it.start() }
-    }
+    fun setQuery(query: String) = _state.update { it.copy(query = query) }
 
     fun retry() {
         _state.update { it.copy(phase = BrowseState.Phase.Loading) }

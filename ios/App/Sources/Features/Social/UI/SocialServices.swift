@@ -1,5 +1,5 @@
 // Social group — the services the social screens use: AppData (live), or the in-memory demo backend when
-// the app is launched with `-SocialFakes` (DEBUG; UI tests), plus image loading through signed URLs.
+// the app is launched with `-SocialFakes` (DEBUG; UI tests), plus file downloads through signed URLs.
 import AppData
 import AppModels
 import AppServices
@@ -12,7 +12,6 @@ import UIKit
 final class SocialServices {
     let data: any SocialDataSource
     let images: SocialImageLoader
-    let voiceLevels: SocialVoiceLevels
     let flags: SocialFlags
     let saver: any SocialPhotoSaving
     /// One voice message plays at a time across the social screens.
@@ -21,13 +20,11 @@ final class SocialServices {
     init(
         data: any SocialDataSource,
         images: SocialImageLoader,
-        voiceLevels: SocialVoiceLevels? = nil,
         flags: SocialFlags = SocialFlags(),
         saver: any SocialPhotoSaving = LibraryPhotoSaver()
     ) {
         self.data = data
         self.images = images
-        self.voiceLevels = voiceLevels ?? SocialVoiceLevels(data: data)
         self.flags = flags
         self.saver = saver
         playback = SocialVoicePlayback(data: data)
@@ -41,7 +38,7 @@ final class SocialServices {
         if SocialLaunch.usesFakes {
             let data = SocialDemo.makeData()
             return SocialServices(
-                data: data, images: .demo(), voiceLevels: .demo(), flags: SocialFlags(defaults: SocialLaunch.defaults), saver: DemoPhotoSaver()
+                data: data, images: .demo(), flags: SocialFlags(defaults: SocialLaunch.defaults), saver: DemoPhotoSaver()
             )
         }
         #endif
@@ -59,8 +56,9 @@ struct SocialDecodedImage: @unchecked Sendable {
     let image: UIImage
 }
 
-/// Loads private images by storage path: signed URL → download → downsampled decode off the main actor,
-/// sized to the frame that shows it, cached in memory per path and size, one request per image in flight.
+/// Private images by storage path. Screens draw photos through the components' `StorageImage` pipeline
+/// (`SocialImages.source`); this loader serves the images the DEBUG demo / snapshot renderer draws synchronously, and
+/// full-size decodes the viewer needs as `UIImage` (a dual capture's two photos).
 @MainActor
 final class SocialImageLoader {
     private let cache = NSCache<NSString, UIImage>()
@@ -150,48 +148,6 @@ final class SocialImageLoader {
     }
 }
 
-/// Voice-message level envelopes (`chat.voice` waveform), computed once per file from its samples and kept.
-@MainActor
-final class SocialVoiceLevels {
-    private var cache: [String: [Float]] = [:]
-    private let data: (any SocialDataSource)?
-    private let demo: ((String) -> [Float])?
-
-    init(data: any SocialDataSource) {
-        self.data = data
-        demo = nil
-    }
-
-    init(demo: @escaping (String) -> [Float]) {
-        data = nil
-        self.demo = demo
-    }
-
-    func cached(_ key: String) -> [Float]? {
-        if let levels = cache[key] { return levels }
-        if let demo {
-            let levels = demo(key)
-            cache[key] = levels
-            return levels
-        }
-        return nil
-    }
-
-    /// Levels of a remote voice file (storage path) or a local recording (file URL).
-    func levels(path: String?, localFile: URL?) async -> [Float]? {
-        let key = localFile?.absoluteString ?? path ?? ""
-        if let levels = cached(key) { return levels }
-        var fileURL = localFile
-        if fileURL == nil, let path, let data, let url = try? await data.fileURL(path: path),
-           let bytes = await SocialImageLoader.download(url) {
-            fileURL = try? SocialVoiceFiles.write(bytes, name: key)
-        }
-        guard let fileURL, let levels = await VoiceEnvelope.levels(of: fileURL) else { return nil }
-        cache[key] = levels
-        return levels
-    }
-}
-
 /// `photo.viewer` save: add-only photo library access (AppServices `PhotoLibraryService`,
 /// `system.permissions.photosAdd.purpose`).
 struct LibraryPhotoSaver: SocialPhotoSaving {
@@ -247,7 +203,7 @@ enum SocialLaunch {
         return defaults
     }()
 
-    /// `-SocialOpen <screen>`: the screen the UI test starts on (chat, viewer, wallMine, recap, history, albums).
+    /// `-SocialOpen <screen>`: the screen the UI test starts on (chat, viewer, wallMine, walls, recap, history, albums).
     static var openArgument: String? {
         let arguments = ProcessInfo.processInfo.arguments
         guard let index = arguments.firstIndex(of: "-SocialOpen"), arguments.indices.contains(index + 1) else { return nil }
@@ -282,33 +238,21 @@ enum SocialLaunch {
     }
 }
 
-/// Demo images: one flat colour per path from the token palette, drawn at the photos' 3:4 shape.
+/// Demo images: one flat colour per path from the token palette, drawn at the strip tiles' 3:4 shape (UI tests run
+/// without photo fixtures; the snapshot tests use real sample photos instead).
 extension SocialImageLoader {
     static func demo() -> SocialImageLoader {
         SocialImageLoader { path in
             let palette: [Color] = [
-                Tokens.Colors.globalAccent, Tokens.Colors.globalSelection, Tokens.Colors.globalAccentSecondary,
-                Tokens.Colors.globalControlRaised, Tokens.Colors.chatVoiceColorWaveform, Tokens.Colors.groupsCreateColorCover,
+                Tokens.Colors.globalAccent, Tokens.Colors.globalSelection, Tokens.Colors.globalBadgeMuted,
+                Tokens.Colors.globalControlRaised, Tokens.Colors.globalPremium, Tokens.Colors.globalBadge,
             ]
             let index = path.unicodeScalars.reduce(0) { ($0 &* 31 &+ Int($1.value)) & 0xFFFF } % palette.count
             let color = UIColor(palette[index])
-            let size = CGSize(width: Tokens.Sizes.weekHistoryDimensionTileWidth, height: Tokens.Sizes.weekHistoryDimensionTileHeight)
+            let size = CGSize(width: Tokens.Sizes.globalStripTileWidth, height: Tokens.Sizes.globalStripTileHeight)
             return UIGraphicsImageRenderer(size: size).image { context in
                 color.setFill()
                 context.fill(CGRect(origin: .zero, size: size))
-            }
-        }
-    }
-}
-
-extension SocialVoiceLevels {
-    /// Demo envelopes: a fixed pattern per path (sample data for snapshots and UI tests, not a design value).
-    static func demo() -> SocialVoiceLevels {
-        SocialVoiceLevels { key in
-            let seed = key.unicodeScalars.reduce(UInt32(7)) { ($0 &* 31) &+ $1.value }
-            return (0..<64).map { index in
-                let mixed = (seed &+ UInt32(index) &* 2_654_435_761) >> 24
-                return Float(mixed) / Float(UInt8.max)
             }
         }
     }

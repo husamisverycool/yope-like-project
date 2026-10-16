@@ -1,4 +1,6 @@
-// Account group — GroupInviteModel: state and actions of the screen in GroupInviteScreen.swift.
+// Account group — GroupInviteModel: state and actions of groups.invite (GroupInviteScreen.swift): link sharing turned on
+// explicitly (`create_invite`), reset (revoke + create) and turned off (`revoke_invite`) as Retro's link-sharing sheet does
+// (MERGE RA-11), the share targets, and the contacts section.
 import AppData
 import AppModels
 import AppServices
@@ -13,26 +15,31 @@ import UIKit
 @Observable
 final class GroupInviteModel {
     enum Phase: Equatable {
+        /// Reading the group and `group_invites`.
+        case loading
+        /// Link off (no live invite of yours) or on.
         case ready
         /// members = `max_group_members`.
         case full
-        /// `create_invite` failed (also offline: the link cannot be created offline).
+        /// The invite read / create failed (also offline: a link cannot be created offline; and while config/app.json
+        /// has no `domain`, no link can be built).
         case error
     }
 
     let groupID: GroupID
     private(set) var group: PhotoGroup?
-    /// The caller's live invite (not revoked, not expired), reused before creating a new one.
+    /// The caller's live invite (not revoked, not expired): link sharing is on.
     private(set) var invite: GroupInvite?
     private(set) var isAdmin = false
-    private(set) var phase: Phase = .ready
-    /// `create_invite` in flight (Loading HUD).
+    private(set) var phase: Phase = .loading
+    /// `create_invite` (turn on / reset) in flight: the capsule is busy.
     private(set) var isCreating = false
     private(set) var maxMembers: Int?
     /// Contacts shown as rows (chosen in the picker / granted through `ContactAccessButton`).
     private(set) var contacts: [LocalContact] = []
-    /// Rows whose SMS was sent ("invited").
+    /// Rows whose SMS was sent ("Invited").
     private(set) var invitedContactIDs: Set<String> = []
+    /// `haptic.global.warning` (link turned off) and `haptic.global.send` (SMS sent) triggers.
     private(set) var warningCount = 0
     private(set) var sendCount = 0
 
@@ -45,10 +52,11 @@ final class GroupInviteModel {
         self.domain = domain
     }
 
-    /// The share URL (`https://<domain>/i/<token>`); nil while no invite exists or the domain is not configured.
+    /// The share URL (`https://<domain>/i/<token>`); nil while no invite is live or the domain is not configured.
     var link: URL? { invite?.link(domain: domain) }
+    var isLinkOn: Bool { invite != nil }
 
-    /// "turn off link" is offered to the link's creator and admins.
+    /// "Turn off link sharing" is offered to the link's creator and admins.
     var canTurnOff: Bool {
         guard let invite else { return false }
         return isAdmin || invite.createdBy == data.currentUserID
@@ -70,11 +78,17 @@ final class GroupInviteModel {
             phase = .full
             return
         }
-        let invites = (try? await data.activeInvites(groupID: groupID)) ?? []
-        invite = invites.first { $0.createdBy == me && $0.isUsable() }
+        do {
+            let invites = try await data.activeInvites(groupID: groupID)
+            invite = invites.first { $0.createdBy == me && $0.isUsable() }
+            phase = .ready
+        } catch {
+            phase = .error
+        }
     }
 
-    /// The link to share: reuses the caller's live invite, else `create_invite`. Nil on failure (error state).
+    /// The link to share: the caller's live invite, else `create_invite` ("Turn on link sharing"). Nil on failure
+    /// (error state).
     func linkToShare() async -> URL? {
         if let link { return link }
         isCreating = true
@@ -90,16 +104,37 @@ final class GroupInviteModel {
             phase = .error
             return nil
         }
+        phase = .ready
         return link
     }
 
-    /// The text that goes with the link (share sheet and SMS). `groups.invite.link.message` uses `{app_name}` (BLOCKED):
+    /// "Turn on link sharing".
+    func turnOnLink() async {
+        _ = await linkToShare()
+    }
+
+    /// "Reset link": `revoke_invite(old)` then `create_invite` — a new link; the old one stops working.
+    func resetLink() async {
+        guard let current = invite else { return }
+        isCreating = true
+        defer { isCreating = false }
+        do {
+            try await data.revokeInvite(token: current.token)
+            invite = nil
+            invite = try await data.createInvite(groupID: groupID)
+            if link == nil { phase = .error }
+        } catch {
+            phase = .error
+        }
+    }
+
+    /// The text that goes with the link (Message and Share to…). `groups.invite.link.message` uses `{app_name}` (BLOCKED):
     /// release builds send the link alone.
     func message(for link: URL) -> String {
         AccountBlockedCopy.inviteLinkMessage(groupName: group?.name ?? "", link: link.absoluteString) ?? link.absoluteString
     }
 
-    /// "turn off link" confirmed: `revoke_invite`, applied at once and restored if the request fails.
+    /// "Turn off link sharing" confirmed: `revoke_invite`, applied at once and restored if the request fails.
     func turnOffLink() async -> Bool {
         guard let current = invite else { return false }
         invite = nil
@@ -113,10 +148,10 @@ final class GroupInviteModel {
         }
     }
 
-    /// Error state's retry.
+    /// The error block's "Try again".
     func retry() async {
-        phase = .ready
-        _ = await linkToShare()
+        phase = .loading
+        await load()
     }
 
     func add(_ contact: LocalContact) {

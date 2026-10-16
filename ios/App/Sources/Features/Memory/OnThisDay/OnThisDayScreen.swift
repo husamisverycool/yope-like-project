@@ -1,331 +1,329 @@
-// Surface: onthisday — reference: Timehop.
-// Reference images: references/auto/timehop/store/timehop-store-01.png, -02.png, -03.png, -05.png;
-// references/auto/timehop/play/timehop-play-01.png, -02.png, -05.png;
-// references/auto/timehop/help/th-help-2023-04-memory-view-hide.png, th-help-2024-03-intro-day-in-history.jpg,
-// th-help-2024-02-panel-share-1-year-ago.png (design/surfaces/onthisday.md).
+// Surface: onthisday — Retro Rewind (design/surfaces/onthisday.md B–D; MERGE RM-2…RM-7).
+// Reference images: references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (RWB, dial at rest, share / random glass
+// circles, 'Jul 22, 2022'), references/auto/retro/press/tc-2025-12-rewind-device-a.png (RWA, title and '•••' glass),
+// references/auto/retro/press/tc-2025-12-rewind-panels.png (RWP, playing / menu / share sheet),
+// references/auto/retro/store/retro-store-05.png (ST-05, the subtitle). Components: C-35 full-bleed media page (composed
+// here with a pushed C-02 back chevron, which `FullBleedMediaPage` does not carry), C-11 glass circles, C-29 menu /
+// feature intro / alerts, C-27 / C-28 states.
 import AppData
 import DesignSystem
 import SwiftUI
 import UIKit
 
-/// The day: one full-screen page per year, newest year first, tapped through like Timehop.
-/// Present it with `.fullScreenCover` (the `OnThisDayEntry` row does).
+/// One memory at a time, full bleed on black (dark in both appearances, `layout.global.appearance.media`): the date in
+/// the display serif with the poster under it, '•••' (save / report / delete), and the control row — share, the dial,
+/// random. Pushed on the group's stack with the bar hidden; the back chevron pops.
 @MainActor
 struct OnThisDayScreen: View {
+    let groupID: String
     @State private var model: OnThisDayModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     @Environment(\.displayScale) private var displayScale
 
     init(groupID: String, model: OnThisDayModel? = nil) {
+        self.groupID = groupID
         _model = State(initialValue: model ?? OnThisDayModel(groupID: GroupID(groupID), dependencies: .current))
     }
 
     var body: some View {
         GeometryReader { proxy in
-            let safeTop = proxy.safeAreaInsets.top
-            VStack(spacing: 0) {
-                banner(safeTop: safeTop)
-                // Year → year: the content cross-fades over `duration.onthisday.memoryChange` with the
-                // platform's ease-in-out (`easing.global.native`); a cross-fade is already the Reduce
-                // Motion substitute, so it is the same with the setting on. Only the content animates:
-                // the banner label and the progress fill jump with the year (onthisday.md § Motion).
-                ZStack {
-                    content(width: proxy.size.width)
+            ZStack {
+                Tokens.Colors.globalBackgroundDeep
+                    .ignoresSafeArea()
+                if model.phase == .loaded {
+                    photo
+                    PhotoScrim()
+                        .ignoresSafeArea()
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .animation(Self.memoryChange, value: model.index)
+                content
             }
-            .background(Tokens.Colors.globalBackground)
-            .ignoresSafeArea()
-            .onAppear { updatePixelSize(proxy) }
-            .onChange(of: proxy.size) { _, _ in updatePixelSize(proxy) }
+            .onAppear {
+                let longest = max(proxy.size.width, proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom)
+                model.imagePixelSize = longest * displayScale
+                model.preloadNeighbours()
+            }
         }
+        // The media page is dark in both appearances; its sheets follow the system (RM-16).
+        .environment(\.colorScheme, .dark)
         .toolbar(.hidden, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .task { await model.loadIfNeeded() }
         .onDisappear { model.stopListening() }
-        .onChange(of: model.isFinished) { _, finished in
-            if finished { dismiss() }
+        .onChange(of: model.current?.id) { _, _ in
+            // After a dial change the new date title is announced.
+            if UIAccessibility.isVoiceOverRunning, !model.title.isEmpty {
+                AccessibilityNotification.Announcement(model.title).post()
+            }
         }
-        .onChange(of: model.index) { _, _ in
-            UIAccessibility.post(notification: .screenChanged, argument: nil)
+        .sheet(isPresented: $model.showsIntro, onDismiss: { model.dismissIntro() }) {
+            FeatureIntroSheet(
+                title: Copy.onthisdayNuxTitle,
+                rows: [FeatureIntroRow(icon: Tokens.Icons.globalRewind, text: Copy.onthisdayNuxMessage(group: model.groupName))],
+                buttonTitle: Copy.onthisdayNuxButton
+            ) {
+                model.dismissIntro()
+            }
+            .presentationDetents([.medium])
+            .dsSheetBackground()
+            .environment(\.colorScheme, SystemAppearance.colorScheme)
+            .accessibilityIdentifier("onthisday.intro")
+        }
+        .alert(
+            Copy.onthisdayDeleteTitle,
+            isPresented: Binding(get: { model.deleteCandidate != nil }, set: { if !$0 { model.deleteCandidate = nil } }),
+            presenting: model.deleteCandidate
+        ) { memory in
+            Button(Copy.onthisdayDeleteConfirm, role: .destructive) {
+                Task { await model.confirmDelete(memory) }
+            }
+            Button(Copy.onthisdayDeleteCancel, role: .cancel) {}
+        } message: { _ in
+            Text(Copy.onthisdayDeleteMessage(group: model.groupName))
+        }
+        .alert(Copy.onthisdaySaveDeniedTitle, isPresented: $model.showsSaveDenied) {
+            Button(Copy.onthisdaySaveDeniedButton) {
+                if let settings = URL(string: UIApplication.openSettingsURLString) { openURL(settings) }
+            }
+        } message: {
+            Text(Copy.onthisdaySaveDeniedMessage)
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("onthisday")
     }
 
-    /// The preload size: the screen's longest side in pixels, at least what any photo is shown at.
-    private func updatePixelSize(_ proxy: GeometryProxy) {
-        let height = proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
-        let size = max(proxy.size.width, height) * displayScale
-        guard size > 0, size != model.imagePixelSize else { return }
-        model.imagePixelSize = size
-        model.preloadUpcoming()
-    }
+    // MARK: Photo
 
-    /// `duration.onthisday.memoryChange` on the platform's curve (`easing.global.native`, a PLATFORM token
-    /// whose value is "system": the system ease-in-out of a cross-dissolve).
-    static let memoryChange = DSAnimation.timing(
-        duration: Tokens.Durations.onthisdayMemoryChange,
-        easing: .easeInOut // provenance-ok: easing.global.native (PLATFORM) — the system cross-dissolve curve
-    ).animation
-
-    // MARK: Banner
-
-    private func banner(safeTop: CGFloat) -> some View {
-        OnThisDayBannerLayout(safeTop: safeTop) {
-            progressBar
-            Text(model.phase == .loaded ? (model.currentYear.map { model.bannerLabel(for: $0) } ?? "") : "")
-                .dsTextStyle(OnThisDayType.bannerLabel)
-                .foregroundStyle(Tokens.Colors.onthisdayBannerLabel)
-                .multilineTextAlignment(.center)
-                .accessibilityAddTraits(.isHeader)
-                .accessibilityHidden(model.phase != .loaded)
-            MemoryHeaderCircle(icon: Tokens.Icons.globalClose, label: Copy.onthisdayA11yClose) {
-                model.close()
+    /// The memory's display rendition, full bleed under the status bar, aspect-fill (`radius.global.photo` 0). A dial step
+    /// cross-fades over `duration.global.crossfade`, a step while playing over `duration.onthisday.memoryChange`.
+    private var photo: some View {
+        ZStack {
+            ForEach([model.current].compactMap { $0 }) { memory in
+                MemoryRemoteImage(url: memory.displayURL)
+                    .transition(.opacity)
             }
-            .accessibilityIdentifier("onthisday.close")
         }
-        .frame(maxWidth: .infinity)
-        .background(Tokens.Colors.onthisdayBanner)
+        .ignoresSafeArea()
+        .animation(
+            (model.lastChange == .play ? Self.playChange : ComponentMotion.crossfade).resolved(reduceMotion: false),
+            value: model.current?.id
+        )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(model.photoLabel))
+        .accessibilityAddTraits(.isImage)
+        .accessibilitySortPriority(5)
     }
+
+    /// `duration.onthisday.memoryChange` with `easing.global.standard` (a cross-fade: the same under Reduce Motion).
+    private static let playChange = DSAnimation.timing(duration: Tokens.Durations.onthisdayMemoryChange, easing: Tokens.Easings.globalStandard)
+
+    // MARK: Foreground
 
     @ViewBuilder
-    private var progressBar: some View {
-        if model.phase == .loaded {
-            GeometryReader { bar in
-                ZStack(alignment: .leading) {
-                    Tokens.Colors.onthisdayProgressTrack
-                    Tokens.Colors.onthisdayProgressFill
-                        .frame(width: bar.size.width * model.progress)
+    private var content: some View {
+        VStack(spacing: 0) {
+            header
+            switch model.phase {
+            case .idle, .loading:
+                Spacer(minLength: 0)
+                MemoryLoadingIndicator(announcement: Copy.onthisdayLoading)
+                Spacer(minLength: 0)
+            case .loaded:
+                Spacer(minLength: 0)
+                controls
+                    .padding(.bottom, Tokens.Sizes.onthisdayControlsCenterY - Tokens.Sizes.onthisdayDialDiameter / 2)
+            case .empty:
+                Spacer(minLength: 0)
+                EmptyStateView(title: Copy.onthisdayEmptyTitle)
+                    .accessibilityIdentifier("onthisday.empty")
+                Spacer(minLength: 0)
+            case .error:
+                Spacer(minLength: 0)
+                MemoryMediaStateBlock(
+                    title: Copy.onthisdayErrorTitle, detail: Copy.onthisdayErrorDetail, retryTitle: Copy.onthisdayErrorRetry
+                ) {
+                    Task { await model.retry() }
+                }
+                Spacer(minLength: 0)
+            case .offline:
+                Spacer(minLength: 0)
+                MemoryMediaStateBlock(
+                    title: Copy.onthisdayOfflineTitle, detail: Copy.onthisdayOfflineDetail, retryTitle: Copy.onthisdayErrorRetry
+                ) {
+                    Task { await model.retry() }
+                }
+                Spacer(minLength: 0)
+            }
+        }
+    }
+
+    // MARK: Header (C-02 on media, C-35 title)
+
+    /// The back chevron's width at its symbol size (`size.global.icon`, as C-02 draws it), so the title starts
+    /// `size.global.headerGap` after it and the subtitle shares the title's leading edge.
+    private static let backChevronWidth: CGFloat = {
+        let configuration = UIImage.SymbolConfiguration(pointSize: Tokens.Sizes.globalIcon, weight: .regular)
+        return UIImage(systemName: Tokens.Icons.globalBack, withConfiguration: configuration)?.size.width ?? Tokens.Sizes.globalIcon
+    }()
+
+    private var titleLeading: CGFloat {
+        Tokens.Sizes.globalBackInset + Self.backChevronWidth + Tokens.Sizes.globalHeaderGap
+    }
+
+    /// The date title's first baseline `size.global.titleTop` below the safe-area top (text role `headerTitle` in the
+    /// display serif, `color.global.textOnMedia`, wrapping to two lines at large sizes); the back chevron (ink at
+    /// `size.global.backInset`) and the '•••' glass circle (`size.global.circleButtonPhoto`, ink `size.global.headerInset`
+    /// from the right) centred on its cap middle; the subtitle's baseline `dimension.onthisday.subtitleBaseline` below the
+    /// title's last baseline, on the title's leading edge.
+    private var header: some View {
+        MetricStack {
+            titleLine
+                .metricGap(Tokens.Sizes.globalTitleTop, from: .top, to: .firstBaseline)
+            if model.phase == .loaded, let subtitle = model.subtitle {
+                Text(subtitle)
+                    .dsTextStyle(TextRole.textButton)
+                    .foregroundStyle(Tokens.Colors.onthisdaySubtitle)
+                    .padding(.leading, titleLeading)
+                    .padding(.trailing, Tokens.Sizes.globalScreenMargin)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .dsAnimation(ComponentMotion.crossfade, value: subtitle)
+                    .accessibilitySortPriority(7)
+                    .accessibilityIdentifier("onthisday.subtitle")
+                    .metricGap(Tokens.Sizes.onthisdaySubtitleBaseline, from: .lastBaseline, to: .firstBaseline)
+            }
+        }
+    }
+
+    private var titleLine: some View {
+        Text(model.phase == .loaded ? model.title : "")
+            .dsTextRole(TextRole.headerTitle)
+            .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+            .padding(.leading, titleLeading)
+            .padding(.trailing, Tokens.Sizes.globalHeaderInset + Tokens.Sizes.globalCircleButtonPhoto + Tokens.Sizes.globalHeaderGap)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .dsAnimation(ComponentMotion.crossfade, value: model.title)
+            .accessibilityAddTraits(.isHeader)
+            .accessibilityHidden(model.phase != .loaded)
+            .accessibilitySortPriority(8)
+            .accessibilityIdentifier("onthisday.title")
+            .overlay(alignment: Alignment(horizontal: .leading, vertical: .capMiddle)) {
+                backButton
+                    .padding(.leading, Tokens.Sizes.globalBackInset)
+            }
+            .overlay(alignment: Alignment(horizontal: .trailing, vertical: .capMiddle)) {
+                if model.phase == .loaded, model.current != nil {
+                    moreMenu
+                        .padding(.trailing, Tokens.Sizes.globalHeaderInset)
                 }
             }
-            .accessibilityHidden(true)
-        } else {
-            Color.clear
-        }
     }
 
-    // MARK: Content
+    private var backButton: some View {
+        Button {
+            model.stopPlaying()
+            dismiss()
+        } label: {
+            Image(systemName: Tokens.Icons.globalBack)
+                .font(Tokens.Fonts.globalFamily.font(size: Tokens.Sizes.globalIcon, weight: Font.Weight.regular))
+                .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                .minimumHitArea(drawn: CGSize(width: Self.backChevronWidth, height: Tokens.Sizes.globalIcon))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(Copy.onthisdayA11yBack))
+        .accessibilitySortPriority(9)
+        .accessibilityIdentifier("onthisday.back")
+    }
 
-    @ViewBuilder
-    private func content(width: CGFloat) -> some View {
-        switch model.phase {
-        case .idle, .loading:
-            MemoryLoadingIndicator(text: Copy.onthisdayLoading)
-        case .error:
-            MemoryStateMessage(title: Copy.onthisdayErrorTitle, detail: Copy.onthisdayErrorDetail, actionTitle: Copy.onthisdayErrorRetry) {
-                Task { await model.retry() }
+    /// D. The native menu: save (every memory), report (someone else's, destructive), delete (yours, destructive).
+    private var moreMenu: some View {
+        CircleMenu(icon: Tokens.Icons.globalMore, accessibilityLabel: Copy.onthisdayA11yMore, style: .glass) {
+            Button(Copy.onthisdayMenuSave) {
+                Task { await model.save() }
             }
-            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
-        case .offline:
-            MemoryStateMessage(title: Copy.onthisdayOfflineTitle, detail: Copy.onthisdayOfflineDetail, actionTitle: Copy.onthisdayErrorRetry) {
-                Task { await model.retry() }
-            }
-            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
-        case .loaded:
-            if let year = model.currentYear {
-                Group {
-                    if year.photos.count == 1, let photo = year.photos.first {
-                        singlePhoto(photo, width: width)
-                    } else {
-                        grid(year, width: width)
+            if let current = model.current {
+                if current.isMine {
+                    Button(Copy.onthisdayMenuDelete, role: .destructive) {
+                        model.requestDelete()
+                    }
+                } else {
+                    Button(Copy.onthisdayMenuReport, role: .destructive) {
+                        model.report()
                     }
                 }
-                // Keyed by year so a year change swaps the content (cross-fade, see `body`).
-                .id(year.id)
-                .transition(.opacity)
             }
+        }
+        .accessibilitySortPriority(6)
+        .accessibilityIdentifier("onthisday.more")
+    }
+
+    // MARK: Control row (`layout.onthisday.controls`)
+
+    /// Share, the dial and random, with equal gaps across the width; share and random fade out while playing
+    /// (`duration.global.fade`, `easing.global.standard`).
+    private var controls: some View {
+        HStack(spacing: 0) {
+            Spacer(minLength: 0)
+            shareCircle
+                .modifier(HiddenWhilePlaying(isPlaying: model.isPlaying))
+                .accessibilitySortPriority(4)
+            Spacer(minLength: 0)
+            RewindDial(
+                slot: model.dialSlot,
+                isPlaying: model.isPlaying,
+                accessibilityValue: model.dialValue,
+                onStep: { delta in delta > 0 ? model.next() : model.previous() },
+                onPlayPause: { model.togglePlay() },
+                onDragStart: { model.stopPlaying() }
+            )
+            .accessibilitySortPriority(3)
+            Spacer(minLength: 0)
+            CircleButton(icon: Tokens.Icons.globalRandom, accessibilityLabel: Copy.onthisdayA11yShuffle, style: .glassLarge) {
+                Task { await model.shuffle() }
+            }
+            .disabled(model.isPicking)
+            .modifier(HiddenWhilePlaying(isPlaying: model.isPlaying))
+            .accessibilitySortPriority(1)
+            .accessibilityIdentifier("onthisday.shuffle")
+            Spacer(minLength: 0)
         }
     }
 
-    /// `layout.onthisday.photo.single`: full width, banner bottom to screen bottom, cropped, no corners.
-    private func singlePhoto(_ photo: OnThisDayModel.Photo, width: CGFloat) -> some View {
-        MemoryRemoteImage(url: photo.displayURL)
-            .overlay(alignment: .topLeading) { metaRow(photo) }
-            .contentShape(Rectangle())
-            .onTapGesture(coordinateSpace: .local) { location in tap(at: location, width: width) }
-            .accessibilityElement()
-            .accessibilityLabel(model.accessibilityLabel(for: photo))
-            .accessibilityAddTraits(.isImage)
-            .modifier(OnThisDayNavigationActions(model: model))
-    }
-
-    /// Avatar (`dimension.onthisday.meta.avatar`) and "TUE 10:34 PM" over the photo's top-left.
-    private func metaRow(_ photo: OnThisDayModel.Photo) -> some View {
-        HStack(spacing: Tokens.Sizes.onthisdayMetaGap) {
-            ZStack {
-                Circle().fill(Tokens.Colors.globalControl)
-                if photo.avatarURL == nil {
-                    // No glyph-size token: the glyph takes the meta row's text size.
-                    Image(systemName: Tokens.Icons.globalPerson)
-                        .dsTextStyle(OnThisDayType.meta)
-                        .foregroundStyle(Tokens.Colors.globalTextSecondary)
+    /// The native share sheet with the memory's original; preview title = today's date (`layout.year.story.dateFormat`).
+    @ViewBuilder
+    private var shareCircle: some View {
+        MemoryImageScope { images in
+            if let item = model.shareItem {
+                if let image = model.current?.displayURL.flatMap({ images.cachedImage(for: $0) }) {
+                    ShareLink(item: item, preview: SharePreview(model.shareTitle, image: Image(uiImage: image))) {
+                        CircleButtonFace(icon: Tokens.Icons.globalShare, style: .glassLarge)
+                    }
+                    .buttonStyle(.plain)
                 } else {
-                    MemoryRemoteImage(url: photo.avatarURL)
-                        .clipShape(Circle())
+                    ShareLink(item: item, preview: SharePreview(model.shareTitle)) {
+                        CircleButtonFace(icon: Tokens.Icons.globalShare, style: .glassLarge)
+                    }
+                    .buttonStyle(.plain)
                 }
+            } else {
+                CircleButtonFace(icon: Tokens.Icons.globalShare, style: .glassLarge)
             }
-            .frame(width: Tokens.Sizes.onthisdayMetaAvatar, height: Tokens.Sizes.onthisdayMetaAvatar)
-            Text(model.meta(for: photo))
-                .dsTextStyle(OnThisDayType.meta)
-                .foregroundStyle(Tokens.Colors.onthisdayMetaText)
         }
-        .frame(height: Tokens.Sizes.onthisdayMetaCenterY * 2, alignment: .center)
-        .padding(.leading, Tokens.Sizes.onthisdayMetaInset)
-        .accessibilityHidden(true)
-    }
-
-    /// `layout.onthisday.grid`: 2-column masonry, thumbs, newest first; scrolls under the banner.
-    private func grid(_ year: OnThisDayModel.Year, width: CGFloat) -> some View {
-        ScrollView(.vertical) {
-            OnThisDayMasonry(
-                columns: Int(Tokens.Layouts.OnthisdayGrid.columns),
-                spacing: Tokens.Sizes.onthisdayGridGutter,
-                aspectRatios: year.photos.map { $0.aspectRatio ?? OnThisDayMasonry.unknownAspectRatio }
-            ) {
-                ForEach(year.photos) { photo in
-                    MemoryRemoteImage(url: photo.thumbURL)
-                        .accessibilityElement()
-                        .accessibilityLabel(model.accessibilityLabel(for: photo))
-                        .accessibilityAddTraits(.isImage)
-                        .modifier(OnThisDayNavigationActions(model: model))
-                }
-            }
-            .padding(.horizontal, Tokens.Sizes.onthisdayGridMargin)
-            .padding(.top, Tokens.Sizes.onthisdayGridTop)
-            .contentShape(Rectangle())
-            .onTapGesture(coordinateSpace: .local) { location in tap(at: location, width: width) }
-        }
-        .scrollIndicators(.hidden)
-        .background(Tokens.Colors.globalBackground)
-    }
-
-    /// Right half → older year (closes after the oldest); left half → newer year.
-    private func tap(at location: CGPoint, width: CGFloat) {
-        guard width > 0 else { return }
-        if location.x >= width / 2 {
-            model.next()
-        } else {
-            model.previous()
-        }
+        .simultaneousGesture(TapGesture().onEnded { model.stopPlaying() })
+        .accessibilityLabel(Text(Copy.onthisdayA11yShare))
+        .accessibilityIdentifier("onthisday.share")
     }
 }
 
-/// `onthisday.a11y.next` ("Older") / `onthisday.a11y.previous` ("Back") as custom actions, since
-/// VoiceOver cannot reach the tap zones.
-private struct OnThisDayNavigationActions: ViewModifier {
-    let model: OnThisDayModel
+/// Share and random while playing: faded out (`duration.global.fade`, `easing.global.standard`), not tappable, hidden from
+/// VoiceOver; they keep their place so the dial does not move.
+private struct HiddenWhilePlaying: ViewModifier {
+    let isPlaying: Bool
 
     func body(content: Content) -> some View {
         content
-            .accessibilityAction(named: Copy.onthisdayA11yNext) { model.next() }
-            .accessibilityAction(named: Copy.onthisdayA11yPrevious) { model.previous() }
-    }
-}
-
-// MARK: - Layouts
-
-/// The banner (`layout.onthisday.banner`): from the screen top to `dimension.onthisday.banner.height`
-/// (grows with the label at large Dynamic Type sizes); progress bar on its top edge directly below
-/// the status bar; label baseline `dimension.onthisday.banner.labelBaseline` above the bottom;
-/// close circle `size.global.headerInset` from the right, centred on the label's row.
-/// Subviews: progress bar, label, close.
-struct OnThisDayBannerLayout: Layout {
-    let safeTop: CGFloat
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let width = proposal.width ?? 0
-        guard subviews.count == 3 else { return CGSize(width: width, height: Tokens.Sizes.onthisdayBannerHeight) }
-        let label = subviews[1].dimensions(in: ProposedViewSize(width: width, height: nil))
-        let natural = safeTop + Tokens.Sizes.onthisdayProgressHeight + label[.lastTextBaseline] + Tokens.Sizes.onthisdayBannerLabelBaseline
-        return CGSize(width: width, height: max(Tokens.Sizes.onthisdayBannerHeight, natural))
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        guard subviews.count == 3 else { return }
-        subviews[0].place(
-            at: CGPoint(x: bounds.minX, y: bounds.minY + safeTop),
-            anchor: .topLeading,
-            proposal: ProposedViewSize(width: bounds.width, height: Tokens.Sizes.onthisdayProgressHeight)
-        )
-        let labelProposal = ProposedViewSize(width: bounds.width, height: nil)
-        let label = subviews[1].dimensions(in: labelProposal)
-        let baselineY = bounds.maxY - Tokens.Sizes.onthisdayBannerLabelBaseline
-        let labelTop = baselineY - label[.lastTextBaseline]
-        subviews[1].place(at: CGPoint(x: bounds.midX, y: labelTop), anchor: .top, proposal: labelProposal)
-        let closeSize = Tokens.Sizes.globalHeaderButton
-        subviews[2].place(
-            at: CGPoint(x: bounds.maxX - Tokens.Sizes.globalHeaderInset - closeSize / 2, y: labelTop + label.height / 2),
-            anchor: .center,
-            proposal: ProposedViewSize(width: closeSize, height: closeSize)
-        )
-    }
-}
-
-/// Two-column masonry (`layout.onthisday.grid`): each photo keeps its aspect ratio and goes to
-/// the shorter column; `spacing` between columns and rows.
-struct OnThisDayMasonry: Layout {
-    let columns: Int
-    let spacing: CGFloat
-    let aspectRatios: [CGFloat]
-
-    /// Until the photo's own size is known it is laid out square.
-    static let unknownAspectRatio: CGFloat = 1 // provenance-ok: placeholder ratio for a photo without stored dimensions
-
-    struct Placement {
-        let column: Int
-        let y: CGFloat
-        let height: CGFloat
-    }
-
-    func placements(width: CGFloat, count: Int) -> (items: [Placement], height: CGFloat) {
-        let columnCount = max(columns, 1)
-        let columnWidth = max(0, (width - spacing * CGFloat(columnCount - 1)) / CGFloat(columnCount))
-        var heights = Array(repeating: CGFloat(0), count: columnCount)
-        var items: [Placement] = []
-        for index in 0..<count {
-            let ratio = aspectRatios.indices.contains(index) && aspectRatios[index] > 0 ? aspectRatios[index] : Self.unknownAspectRatio
-            let height = columnWidth / ratio
-            let column = heights.indices.min { heights[$0] < heights[$1] } ?? 0
-            let y = heights[column] == 0 ? 0 : heights[column] + spacing
-            items.append(Placement(column: column, y: y, height: height))
-            heights[column] = y + height
-        }
-        return (items, heights.max() ?? 0)
-    }
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let width = proposal.width ?? 0
-        return CGSize(width: width, height: placements(width: width, count: subviews.count).height)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let columnCount = max(columns, 1)
-        let columnWidth = max(0, (bounds.width - spacing * CGFloat(columnCount - 1)) / CGFloat(columnCount))
-        let layout = placements(width: bounds.width, count: subviews.count)
-        for (index, subview) in subviews.enumerated() {
-            let item = layout.items[index]
-            subview.place(
-                at: CGPoint(x: bounds.minX + CGFloat(item.column) * (columnWidth + spacing), y: bounds.minY + item.y),
-                anchor: .topLeading,
-                proposal: ProposedViewSize(width: columnWidth, height: item.height)
-            )
-        }
-    }
-}
-
-// MARK: - Text roles
-
-enum OnThisDayType {
-    static var bannerLabel: DSTextStyle {
-        MemoryType.style(Tokens.Fonts.onthisday, size: Tokens.FontSizes.onthisdayBannerLabel,
-                         weight: Tokens.FontWeights.fontWeightOnthisdayBannerLabel,
-                         relativeTo: Tokens.Layouts.OnthisdayTextStyleMap.bannerLabel)
-    }
-
-    static var meta: DSTextStyle {
-        MemoryType.style(Tokens.Fonts.onthisday, size: Tokens.FontSizes.onthisdayMeta,
-                         weight: Tokens.FontWeights.fontWeightOnthisdayMeta,
-                         relativeTo: Tokens.Layouts.OnthisdayTextStyleMap.meta)
+            .opacity(isPlaying ? 0 : 1)
+            .allowsHitTesting(!isPlaying)
+            .accessibilityHidden(isPlaying)
+            .dsAnimation(ComponentMotion.fade, value: isPlaying)
     }
 }

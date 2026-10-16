@@ -29,22 +29,35 @@ final class BirthdayAddModel {
         case dismissed
     }
 
-    var phase: Phase = .idle
-    var dateText = ""
-    var inline: Inline?
-    /// The save failed: error texts above the buttons; the primary button retries.
-    var showsError = false
-    var isSaving = false
-    var toast: MemoryToastMessage?
+    private(set) var phase: Phase = .idle
+    /// The date field's text (`auth.agegate` entry rules: digits in the locale's order, separators inserted).
+    private(set) var dateText = ""
+    private(set) var inline: Inline?
+    /// The save failed: the C-27 error block above the capsule; the capsule retries.
+    private(set) var showsError = false
+    private(set) var isSaving = false
+    /// "Remove Birthday" asks first (C-29 confirmation).
+    var showsRemoveConfirmation = false
     /// Set when the screen should close.
-    var outcome: Outcome?
+    private(set) var outcome: Outcome?
 
-    let entry: BirthdayDateEntry
+    /// The `auth.agegate` date entry (account group's `BirthdayEntry`: `auth.agegate.layout.dateEntry`).
+    let entry: BirthdayEntry
     private let dependencies: MemoryDependencies
 
-    init(dependencies: MemoryDependencies, entry: BirthdayDateEntry = BirthdayDateEntry()) {
+    init(dependencies: MemoryDependencies, entry: BirthdayEntry = BirthdayEntry()) {
         self.dependencies = dependencies
         self.entry = entry
+    }
+
+    /// `auth.agegate.field.placeholder` with the locale's pattern ({date_format}), as the age gate shows it.
+    var placeholder: String { Copy.authAgegateFieldPlaceholder(dateFormat: entry.placeholderFormat) }
+
+    /// The field's edit rules (`BirthdayEntry.edit`); a new edit clears the inline line.
+    func setText(_ newValue: String) {
+        let formatted = entry.edit(from: dateText, to: newValue)
+        if formatted != dateText, inline == .invalid { inline = nil }
+        dateText = formatted
     }
 
     /// The typed day, when complete and valid.
@@ -119,9 +132,17 @@ final class BirthdayAddModel {
         }
     }
 
-    /// Optimistic: the add form shows at once; on failure the saved birthday comes back with the error.
+    /// "Remove Birthday": the native confirmation first.
+    func requestRemove() {
+        guard case .manage = phase, !isSaving else { return }
+        showsRemoveConfirmation = true
+    }
+
+    /// "Yes, remove" (`haptic.global.warning`). Optimistic: the add form shows at once; on failure the saved birthday comes
+    /// back with the error. Removing deletes requests about you that are not yet due (`set_birthday`).
     func remove() async {
         guard case let .manage(saved) = phase, !isSaving else { return }
+        dependencies.haptics(Tokens.Haptics.globalWarning)
         showsError = false
         isSaving = true
         defer { isSaving = false }
@@ -135,7 +156,7 @@ final class BirthdayAddModel {
             _ = try await data.setBirthday(saved, optIn: false)
             dependencies.haptics(Tokens.Haptics.globalSuccess)
             await store(nil)
-            toast = MemoryToastMessage(text: Copy.birthdayAddRemoved, showsCheckmark: true)
+            dependencies.toasts.show(Copy.birthdayAddRemoved)
         } catch {
             phase = .manage(saved)
             fail(MemoryFailure(error))

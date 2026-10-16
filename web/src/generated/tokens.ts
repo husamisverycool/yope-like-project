@@ -82,6 +82,7 @@ export const tokens = {
   "collage.view.layout.screen": {"mediaPage":"the page-1 image blurred full-bleed inside a rounded media page (layout.global.materials.backdrop)","mediaPageTop":"safe-area top","mediaPageSideInset":0,"mediaPageBottomFromScreenBottom":94.8,"mediaPageCornerRadius":26.5,"closeCentreFromTrailing":37.7,"closeCentreBelowPageTop":38,"card":"the composed page, aspect-fit and centred in the media page inset by 76 pt top and bottom (close-circle centre 38 + size.global.circleButton ÷ 2 + the 20-pt circle → photo gap of camera.sendto.layout.preview) and at least 32 pt at the sides; clipped to collage.view.layout.page.outerRadiusRatio × its width (393 × 852: 307 × 546 pt)","bottomRowCentreFromScreenBottom":59.2,"bottomRow":"'Share' pill (collage.share.layout.pill) at size.global.buttonMarginH from the trailing edge; page dots (C-31) centred, dimension.year.story.dots.offset below the media page (ST-04; MERGE_DECISIONS RC-19)"}, // Retro · collage.view · SOURCED
   "color.birthday.tribute.pillarbox": "#000000", // Tribute · birthday.tribute · SOURCED
   "color.global.accent": {"light":"#000000","dark":"#FFFFFF"}, // Retro · global · SOURCED
+  "color.global.backdropDim": "#00000039", // Retro · global · SOURCED
   "color.global.background": {"light":"#FFFFFF","dark":"#000000"}, // Retro · global · SOURCED
   "color.global.background.android": {"light":"#FFFFFF","dark":"#1C1C1E"}, // Retro · global · SOURCED
   "color.global.backgroundDeep": "#000000", // Retro · global · SOURCED
@@ -470,6 +471,7 @@ export const tokens = {
   "size.global.avatarProfile": 64, // Retro · global · SOURCED
   "size.global.avatarSmall": 22.6, // Retro · global · SOURCED
   "size.global.avatarStackOverlap": 3, // Retro · global · SOURCED
+  "size.global.backdropBlur": 1.8, // Retro · global · SOURCED
   "size.global.backInset": 21.1, // Retro · global · SOURCED
   "size.global.badgeHeight": 24, // Retro · global · SOURCED
   "size.global.badgeInset": 12, // Retro · global · SOURCED

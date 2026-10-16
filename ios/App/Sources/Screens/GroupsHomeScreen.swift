@@ -1,10 +1,11 @@
-// Surface: groups.list — group list / home; switch between groups. Reference app: Yope home list
-// (design/surfaces/groups.list.md). Reference images:
-// references/auto/yope/frames/a-savannahclooney-7683341732695592206-t6.73-home-list.png (H1),
-// a-virgi-7686278541255642390-t40.23-home-list-es.png (H2), a-itsmthuyope-7644974799302823175-t44.23-home-list-new-group-icon.png (H3),
-// a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (H4), references/auto/yope/store/yope-store-02.png (TB),
-// references/auto/yope/web/a-bi-2025-onboarding-composite.jpg (BI).
+// Surface: groups.list — the group list (home). Visual reference: Retro Albums list
+// (references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png, ED-W3;
+// references/auto/retro/press/tc-2024-04-journals-1.webp phone 2, TC-J1), "Ideas to Get Started"
+// (references/auto/retro/press/jeddacp-2024-05-home-profile-journals.png phone 3, JED) and Retro's tab bar
+// (references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png, H43; …-20260528-week22-dark-a.png, H22).
+// Components C-01, C-15, C-23, C-11, C-06, C-04, C-27, C-28 (design/surfaces/groups.list.md; MERGE RA-7, RA-8).
 import AppData
+import AppModels
 import DesignSystem
 import SwiftUI
 
@@ -26,219 +27,238 @@ struct GroupsListView: View {
         _model = State(initialValue: model)
     }
 
+    /// groups.list States "loading": three placeholder rows.
+    private static let loadingRows = 3 // provenance-ok: row count named by the spec's loading state
+
     var body: some View {
-        content
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Tokens.Colors.globalBackgroundDeep.ignoresSafeArea())
-            .safeAreaInset(edge: .bottom) {
-                FloatingTabBar(selected: .groups, avatarPath: model.avatarPath) { tab in
-                    select(tab)
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    ScreenHeader(title: Copy.groupsListTitle, actions: [
+                        HeaderAction(icon: Tokens.Icons.globalNewAlbum, accessibilityLabel: Copy.groupsListHeaderAddAccessibilityLabel) {
+                            dependencies.router.modal = .account(.groupCreate)
+                        },
+                    ])
+                    content(width: proxy.size.width, height: proxy.size.height)
                 }
             }
-            .toolbar(.hidden, for: .navigationBar)
-            .task {
-                // The camera is one tap away (tab bar, card glyphs): start its session ahead (capture pass).
-                dependencies.shell.prewarm()
-                await model.load()
+            .scrollBounceBehavior(.basedOnSize)
+            .refreshable { await model.refresh() }
+        }
+        .background(Tokens.Colors.globalBackground.ignoresSafeArea())
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppTabBar(selected: .groups) { tab in
+                ShellNavigation.select(tab, router: dependencies.router, shell: dependencies.shell)
             }
-            .onChange(of: scenePhase) { _, phase in
-                if phase == .active { Task { await model.refresh() } }
-            }
-            .onChange(of: dependencies.network.isOffline) { wasOffline, isOffline in
-                if wasOffline, !isOffline { Task { await model.refresh() } }
-            }
-            .accessibilityIdentifier("groups.list")
+        }
+        .toolbar(.hidden, for: .navigationBar)
+        .task {
+            // The camera is one tap away (tab bar, the rows' "+"): start its session ahead (capture pass).
+            dependencies.shell.prewarm()
+            await model.load()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { Task { await model.refresh() } }
+        }
+        .onChange(of: dependencies.network.isOffline) { wasOffline, isOffline in
+            if wasOffline, !isOffline { Task { await model.refresh() } }
+        }
+        .accessibilityIdentifier("groups.list")
     }
 
     @ViewBuilder
-    private var content: some View {
+    private func content(width: CGFloat, height: CGFloat) -> some View {
         switch model.phase {
         case .loading:
-            LoadingHUD()
-        case .empty:
-            emptyState
-        case .error:
-            EmptyStateView(
-                title: Copy.groupsListErrorTitle,
-                detail: Copy.groupsListErrorDetail,
-                action: EmptyStateView.Action(Copy.groupsListErrorRetry) { Task { await model.retry() } }
-            )
-        case .offline:
-            EmptyStateView(title: Copy.groupsListOfflineTitle, detail: Copy.groupsListOfflineDetail)
-        case .loaded:
-            list
-        }
-    }
-
-    // MARK: Loaded
-
-    private var list: some View {
-        ZStack(alignment: .topTrailing) {
-            ScrollView {
-                VStack(spacing: 0) {
-                    if let cover = model.coverRow {
-                        coverHeader(cover)
-                    }
-                    LazyVStack(spacing: Tokens.Sizes.globalListGap) {
-                        ForEach(model.rows) { row in
-                            GroupCard(row: row) {
-                                dependencies.router.path.append(.group(id: row.id.rawValue))
-                            } onCamera: {
-                                dependencies.router.modal = .camera(groupID: row.id.rawValue, invitationID: nil)
-                            }
-                        }
-                    }
-                    .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
-                    .padding(.top, Tokens.Sizes.globalListGap)
+            // C-28: three C-15 rows whose thumbnails are placeholders (Retro's placeholder-tile loading form).
+            ThumbnailRowList {
+                ForEach(0..<Self.loadingRows, id: \.self) { _ in
+                    GroupRowPlaceholder()
                 }
             }
-            .ignoresSafeArea(edges: model.coverRow == nil ? [] : .top)
-            .refreshable { await model.refresh() }
-            addCircle
-                .padding(.trailing, Tokens.Sizes.globalHeaderInset)
-        }
-    }
-
-    /// Newest photo across the groups, full-bleed from the top edge, `groups.list.size.coverHeight`; ⌄ under it.
-    /// Bottom-corner radius: not measured (square, Gaps).
-    private func coverHeader(_ row: GroupRow) -> some View {
-        VStack(spacing: Tokens.Sizes.globalListGap) {
-            Button {
-                if let post = row.newest {
-                    dependencies.router.path.append(.post(groupID: row.id.rawValue, postID: post.post.id.rawValue))
-                }
-            } label: {
-                Color.clear
-                    .frame(maxWidth: .infinity)
-                    .frame(height: Tokens.Sizes.groupsListSizeCoverHeight)
-                    .overlay {
-                        StorageImage(path: row.newest?.media?.imagePath(for: .display)) {
-                            Tokens.Colors.globalControlRaised
-                        }
-                    }
-                    .clipped()
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text(Copy.groupsListCoverAccessibilityLabel(
-                firstName: (row.isOwnPost ? model.myFirstName : row.senderFirstName) ?? "",
-                groupName: row.group.name
-            )))
-            .accessibilityIdentifier("groups.list.cover")
-            Image(systemName: Tokens.Icons.globalChevronDown)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                .accessibilityHidden(true)
-        }
-    }
-
-    /// "+" over the cover → groups.create (fill `groups.list.color.headerCircleOverPhoto`).
-    private var addCircle: some View {
-        HeaderCircleButton(icon: Tokens.Icons.globalAdd, accessibilityLabel: Copy.groupsListHeaderAddAccessibilityLabel, fill: .overPhoto) {
-            dependencies.router.modal = .account(.groupCreate)
-        }
-        .accessibilityIdentifier("groups.list.add")
-    }
-
-    // MARK: Empty
-
-    /// Yope's 2025 "create your first group" (BI): two-tone title, italic detail, lime button.
-    private var emptyState: some View {
-        VStack(spacing: 0) {
-            TwoToneTitle(text: Copy.groupsListEmptyTitle)
-                .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
-            Text(Copy.groupsListEmptyDetail)
-                .italic()
-                .dsTextStyle(TextRole.signUpSubtitle)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
-            PrimaryButton(Copy.groupsListEmptyButton) {
-                dependencies.router.modal = .account(.groupCreate)
-            }
-            .accessibilityIdentifier("groups.list.empty.create")
-            .padding(.horizontal, Tokens.Sizes.globalButtonMarginH)
-            .padding(.top, Tokens.Sizes.groupsCreateSizeTitleToContent)
-        }
-    }
-
-    // MARK: Tab bar
-
-    private func select(_ tab: AppTab) {
-        ShellNavigation.select(tab, router: dependencies.router, shell: dependencies.shell)
-    }
-}
-
-/// One group card: avatar (group cover in a circle) · name + subtitle · camera glyph.
-///
-/// Tokens: fill `groups.list.color.card`, height `groups.list.size.cardHeight` (minimum; grows with Dynamic Type),
-/// corners `radius.global.card`; avatar `size.global.avatarList` at `groups.list.size.avatarInset` (empty cover:
-/// `color.global.controlRaised` + `icon.global.group`); name text role `listTitle` (one line, tail truncation);
-/// subtitle text role `listSubtitle` in `color.global.textSecondary` with the sender's first name in
-/// `color.global.accent`; camera `icon.global.camera` at `groups.list.size.cameraGlyph`, trailing inset
-/// `groups.list.size.avatarInset`, hit area `size.global.minTouchTarget.ios`.
-struct GroupCard: View {
-    let row: GroupRow
-    let onOpen: () -> Void
-    let onCamera: () -> Void
-
-    var body: some View {
-        HStack(spacing: 0) {
-            Button(action: onOpen) {
-                HStack {
-                    AvatarView(path: row.group.coverPath, diameter: Tokens.Sizes.globalAvatarList, placeholderIcon: Tokens.Icons.globalGroup)
-                    VStack(alignment: .leading) {
-                        Text(row.group.name)
-                            .dsTextStyle(TextRole.listTitle)
-                            .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                            .lineLimit(1)
-                            .truncationMode(.tail)
-                        Text(Self.subtitle(for: row))
-                            .dsTextStyle(TextRole.listSubtitle)
-                            .foregroundStyle(Tokens.Colors.globalTextSecondary)
-                    }
-                    Spacer(minLength: 0)
-                }
-                .padding(.leading, Tokens.Sizes.groupsListSizeAvatarInset)
-                .frame(minHeight: Tokens.Sizes.groupsListSizeCardHeight)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text(Copy.groupsListRowAccessibilityLabel(groupName: row.group.name, subtitle: Self.plainSubtitle(for: row))))
-            .accessibilityAddTraits(.isButton)
-            .accessibilityIdentifier("groups.list.row")
-            Button(action: onCamera) {
-                Image(systemName: Tokens.Icons.globalCamera)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: Tokens.Sizes.groupsListSizeCameraGlyph, height: Tokens.Sizes.groupsListSizeCameraGlyph)
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                    .frame(width: Tokens.Sizes.globalMinTouchTargetIos, height: Tokens.Sizes.globalMinTouchTargetIos)
+            .accessibilityLabel(Text(Copy.globalA11yLoading))
+        case .empty:
+            VStack(alignment: .leading, spacing: 0) {
+                EmptyStateView(
+                    icon: Tokens.Icons.globalAlbums,
+                    title: Copy.groupsListEmptyTitle,
+                    detail: Copy.groupsListEmptyDetail,
+                    action: EmptyStateView.Action(Copy.groupsListEmptyButton, icon: Tokens.Icons.globalAdd) {
+                        dependencies.router.modal = .account(.groupCreate)
+                    }
+                )
+                .frame(maxWidth: .infinity)
+                .accessibilityIdentifier("groups.list.empty.create")
+                ideas
+                    .padding(.top, Tokens.Sizes.globalSectionGap)
+            }
+        case .error:
+            // Retro's list error: one tappable line under the header (tap = retry).
+            Button {
+                Task { await model.retry() }
+            } label: {
+                Text(Copy.groupsListErrorTitle)
+                    .dsTextStyle(TextRole.body)
+                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.globalMinTouchTargetIos)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(Text(Copy.groupsListRowCameraAccessibilityLabel(groupName: row.group.name)))
-            // The 44-pt hit area is centred on the glyph, which sits `avatarInset` from the trailing edge.
-            .padding(.trailing, Tokens.Sizes.groupsListSizeAvatarInset - (Tokens.Sizes.globalMinTouchTargetIos - Tokens.Sizes.groupsListSizeCameraGlyph) / 2)
+            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+            .accessibilityIdentifier("groups.list.error")
+        case .offline:
+            EmptyStateView(title: Copy.groupsListOfflineTitle, detail: Copy.groupsListOfflineDetail)
+                .frame(maxWidth: .infinity)
+        case .loaded:
+            VStack(alignment: .leading, spacing: 0) {
+                ThumbnailRowList {
+                    ForEach(model.rows) { row in
+                        groupRow(row, width: width)
+                    }
+                }
+                .dsAnimation(ComponentMotion.crossfade, value: model.rows.map(\.id))
+                ideas
+                    .padding(.top, Tokens.Sizes.globalSectionGap)
+            }
+            .padding(.bottom, Tokens.Sizes.globalSectionGap)
         }
-        .background(Tokens.Colors.groupsListColorCard, in: RoundedRectangle(cornerRadius: Tokens.Radii.globalCard))
     }
 
-    /// `groups.list.row.sentPic` (sender in lime) / `.newPic` (own post) / `.noPics`.
-    static func subtitle(for row: GroupRow) -> AttributedString {
-        let plain = plainSubtitle(for: row)
-        var text = AttributedString(plain)
-        if !row.isOwnPost, let name = row.senderFirstName, row.newest != nil, let range = text.range(of: name) {
-            text[range].swiftUI.foregroundColor = Tokens.Colors.globalAccent
-        }
-        return text
+    // MARK: Rows
+
+    private func groupRow(_ row: GroupRow, width: CGFloat) -> some View {
+        let subtitle = GroupRowText.subtitle(for: row)
+        return ThumbnailRow(
+            title: row.group.name,
+            subtitle: subtitle.text,
+            subtitleEmphasis: subtitle.emphasis,
+            thumbnail: row.group.coverPath.map { PhotoSource.storage($0) },
+            avatars: GroupRowText.avatars(for: row, rowWidth: width),
+            accessibilityLabel: Copy.groupsListRowAccessibilityLabel(groupName: row.group.name, subtitle: subtitle.text),
+            addAccessibilityLabel: Copy.groupsListRowCameraAccessibilityLabel(groupName: row.group.name),
+            onAdd: { dependencies.router.modal = .camera(groupID: row.id.rawValue, invitationID: nil) },
+            action: { dependencies.router.path.append(.group(id: row.id.rawValue)) }
+        )
+        .lineLimit(1)
+        .accessibilityIdentifier("groups.list.row")
+        .dsTransition(.opacity)
     }
 
-    static func plainSubtitle(for row: GroupRow) -> String {
-        guard let post = row.newest else { return Copy.groupsListRowNoPics }
-        let time = AccountFormats.time(post.post.createdAt)
-        if !row.isOwnPost, let name = row.senderFirstName {
-            return Copy.groupsListRowSentPic(firstName: name, time: time)
+    // MARK: Ideas to Get Started
+
+    /// The section header (text role `sectionLabel`) and one template row per group kind in `group_kind` order.
+    private var ideas: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(Copy.groupsListIdeasTitle)
+                .dsTextRole(TextRole.sectionLabel)
+                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                .accessibilityAddTraits(.isHeader)
+                .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+            ThumbnailRowList {
+                ForEach(GroupKindCopy.kinds, id: \.self) { kind in
+                    GroupTemplateRow(kind: kind) {
+                        dependencies.router.modal = .account(.groupCreateKind(kind))
+                    }
+                }
+            }
+            .padding(.top, Tokens.Sizes.globalSectionHeaderToContent)
         }
-        return Copy.groupsListRowNewPic(time: time)
+    }
+}
+
+/// The subtitle and avatar stack of a group row.
+enum GroupRowText {
+    /// The subtitle and its actor (drawn in the `listTitle` weight): the newest post by someone else
+    /// (`groups.list.row.sentPic`, the sender), your newest post (`groups.list.row.newPic`, "you"), else who created the
+    /// group (`groups.list.row.createdByYou` / `.createdBy`) or `groups.list.row.noPics` when the creator is unknown. The
+    /// "you" strings put the actor first (copy pattern), so their first word is the actor.
+    static func subtitle(for row: GroupRow) -> (text: String, emphasis: String?) {
+        if row.newest != nil {
+            if !row.isOwnPost, let name = row.senderFirstName {
+                return (Copy.groupsListRowSentPic(firstName: name), name)
+            }
+            if row.isOwnPost {
+                return firstWordEmphasised(Copy.groupsListRowNewPic)
+            }
+        }
+        if row.isCreatedByMe {
+            return firstWordEmphasised(Copy.groupsListRowCreatedByYou)
+        }
+        if let creator = row.creatorFirstName {
+            return (Copy.groupsListRowCreatedBy(firstName: creator), creator)
+        }
+        return (Copy.groupsListRowNoPics, nil)
+    }
+
+    private static func firstWordEmphasised(_ text: String) -> (text: String, emphasis: String?) {
+        (text, text.split(separator: " ").first.map(String.init))
+    }
+
+    /// The members' avatars in joining order, as many as fit the row's text column (screen − margins − thumbnail − gap −
+    /// the "+" circle); never a count.
+    static func avatars(for row: GroupRow, rowWidth: CGFloat) -> [PhotoSource?] {
+        let column = rowWidth - 2 * Tokens.Sizes.globalScreenMargin - Tokens.Sizes.globalRowThumbWidth
+            - Tokens.Sizes.globalRowThumbGap - Tokens.Sizes.globalCircleButton
+        let fitting = AvatarStackLayout.fittingCount(
+            width: column, diameter: Tokens.Sizes.globalAvatarSmall, overlap: Tokens.Sizes.globalAvatarStackOverlap
+        )
+        return row.members.prefix(fitting).map { member in member.profile?.avatarPath.map { PhotoSource.storage($0) } }
+    }
+}
+
+/// A loading row (C-28): the C-15 thumbnail as a `color.global.control` placeholder, no text.
+struct GroupRowPlaceholder: View {
+    var body: some View {
+        HStack(spacing: 0) {
+            Tokens.Colors.globalControl
+                .frame(width: Tokens.Sizes.globalRowThumbWidth, height: Tokens.Sizes.globalRowThumbHeight)
+                .clipShape(DSShape.rounded(Tokens.Radii.globalThumbnail))
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+    }
+}
+
+/// A template row of "Ideas to Get Started" (JED; C-15 geometry): the thumbnail as a `color.global.control`
+/// placeholder (Retro's template photos are its own), the kind's title (text role `listTitle`) and description (text
+/// role `listSubtitle`, `color.global.textSecondary`, ≤ 2 lines) `size.global.rowThumbGap` after it, and the fill
+/// capsule C-06 "Create" at the right margin. The row and the capsule both open groups.create at its name step with the
+/// kind chosen. Accessibility: the row is one button (title + description); the capsule a separate one.
+struct GroupTemplateRow: View {
+    let kind: GroupKind
+    let action: () -> Void
+
+    var body: some View {
+        HStack(spacing: Tokens.Sizes.globalRowThumbGap) {
+            Button(action: action) {
+                HStack(spacing: Tokens.Sizes.globalRowThumbGap) {
+                    Tokens.Colors.globalControl
+                        .frame(width: Tokens.Sizes.globalRowThumbWidth, height: Tokens.Sizes.globalRowThumbHeight)
+                        .clipShape(DSShape.rounded(Tokens.Radii.globalThumbnail))
+                    VStack(alignment: .leading) {
+                        Text(GroupKindCopy.title(kind))
+                            .dsTextStyle(TextRole.listTitle)
+                            .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                        Text(GroupKindCopy.detail(kind))
+                            .dsTextStyle(TextRole.listSubtitle)
+                            .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                            .lineLimit(2)
+                    }
+                    .multilineTextAlignment(.leading)
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
+            CapsuleButton(Copy.groupsCreateTypeCreate, style: .fill, action: action)
+                .fixedSize()
+                .accessibilityIdentifier("groups.template.create")
+        }
+        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+        .accessibilityIdentifier("groups.template." + kind.rawValue)
     }
 }
