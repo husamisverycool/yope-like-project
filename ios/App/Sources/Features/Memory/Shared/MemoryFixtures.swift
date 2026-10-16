@@ -109,7 +109,8 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
         _ = try await record(.signedURLs)
         var result: [String: URL] = [:]
         for path in paths {
-            result[path] = URL(string: "fixture://" + path) // provenance-ok: fixture URL scheme
+            // The Jolt demo build carries the photos its world names (`DemoPhotos`).
+            result[path] = DemoPhotos.url(for: path) ?? URL(string: "fixture://" + path) // provenance-ok: fixture URL scheme
         }
         return result
     }
@@ -294,12 +295,14 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
 
 // MARK: - The fixture scenario (UI tests, previews, snapshots)
 
-/// Fixed ids, shared with AppUITests/Memory (which repeats them; it cannot import the app).
+/// Fixed ids, shared with AppUITests/Memory (which repeats them; it cannot import the app). In the Jolt demo build
+/// (`DemoMode`) the people and the group are the social demo's (Sam, Ana, Ben in "roommates"), so the memory cards on
+/// that group's screen and every memory screen belong to the same world.
 enum MemoryFixtureIDs {
-    static let me = UserID("00000000-0000-4000-8000-0000000000a1")
-    static let friend = UserID("00000000-0000-4000-8000-0000000000a2")
-    static let other = UserID("00000000-0000-4000-8000-0000000000a3")
-    static let group = GroupID("00000000-0000-4000-8000-0000000000b1")
+    static var me: UserID { DemoMode.isOn ? SocialDemo.me : UserID("00000000-0000-4000-8000-0000000000a1") }
+    static var friend: UserID { DemoMode.isOn ? SocialDemo.ana : UserID("00000000-0000-4000-8000-0000000000a2") }
+    static var other: UserID { DemoMode.isOn ? SocialDemo.ben : UserID("00000000-0000-4000-8000-0000000000a3") }
+    static var group: GroupID { DemoMode.isOn ? SocialDemo.groupID : GroupID("00000000-0000-4000-8000-0000000000b1") }
     static let request = TributeRequestID("00000000-0000-4000-8000-0000000000c1")
     static let tribute = TributeID("00000000-0000-4000-8000-0000000000d1")
     static let collage = CollageID("00000000-0000-4000-8000-0000000000e1")
@@ -315,12 +318,14 @@ extension FixtureMemoryData {
     /// about the friend, a delivered tribute for the caller and a ready year story.
     static func scenario(now: Date) -> FixtureMemoryData {
         let ids = MemoryFixtureIDs.self
-        let zone = TimeZone(identifier: "UTC")! // provenance-ok: fixture group time zone
+        let zone = DemoMode.isOn ? TimeZone.current : TimeZone(identifier: "UTC")! // provenance-ok: fixture group time zone
         let day: TimeInterval = 86_400 // provenance-ok: seconds per day (fixture arithmetic)
         let today = LocalDate(now, in: zone)
         let year = today.year
         func profile(_ id: UserID, _ name: String) -> Profile {
-            Profile(id: id, displayName: name, avatarPath: "avatars/\(id.rawValue)/a.jpg", createdAt: now, updatedAt: now) // provenance-ok: storage path
+            // The Jolt demo: the social demo's people, with their avatars (`DemoPhotos`).
+            if DemoMode.isOn, let person = SocialDemo.profiles.first(where: { $0.id == id }) { return person }
+            return Profile(id: id, displayName: name, avatarPath: "avatars/\(id.rawValue)/a.jpg", createdAt: now, updatedAt: now) // provenance-ok: storage path
         }
         func post(_ number: Int, author: UserID, at date: Date, shape: (Int, Int)) -> PostWithMedia {
             let mediaID = ids.media(number)
@@ -343,7 +348,8 @@ extension FixtureMemoryData {
         state.me = ids.me
         state.now = now
         state.groups = [PhotoGroup(
-            id: ids.group, name: "Sunday dinners", kind: .friends, coverPath: nil, timeZone: zone.identifier, // provenance-ok: fixture data
+            id: ids.group, name: DemoMode.isOn ? "roommates" : "Sunday dinners", kind: .friends, // provenance-ok: fixture data
+            coverPath: DemoMode.isOn ? "fake/cover/01" : nil, timeZone: zone.identifier, // provenance-ok: fixture data
             wakingStart: nil, wakingEnd: nil, invitationPaused: false, createdBy: ids.me, createdAt: now, updatedAt: now
         )]
         state.profiles = [profile(ids.me, "Ana Lima"), profile(ids.friend, "Bea Costa"), profile(ids.other, "Caio Dias")] // provenance-ok: fixture data
@@ -412,9 +418,9 @@ extension FixtureMemoryData {
 /// `-MemoryOpen <screen>` (request, contribute, tribute, yearStory, onThisDay, birthdayAdd) is the
 /// screen the test starts on. `apply(to:)` must be called once the person is home (shell, DEBUG).
 enum MemoryLaunch {
+    /// `-MemoryFixtures` (or the Jolt demo build, `DemoMode`).
     static var usesFixtures: Bool {
-        let arguments = ProcessInfo.processInfo.arguments
-        return arguments.contains("-" + MemoryDependencies.fixturesArgument)
+        DemoMode.launchArguments.contains("-" + MemoryDependencies.fixturesArgument)
     }
 
     static var openArgument: String? {

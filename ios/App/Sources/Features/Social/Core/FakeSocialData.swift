@@ -63,6 +63,8 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         var beforeSendReturns: (@Sendable (Message) async -> Void)?
         var idCounter = 0
         var now = Date(timeIntervalSince1970: 1_792_000_000)
+        /// The Jolt demo: new messages, reactions and albums carry the real time.
+        var realClock = false
     }
 
     init(me: UserID? = nil) {
@@ -140,7 +142,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
 
     private func tick() -> Date {
         lock.lock()
-        state.now = state.now.addingTimeInterval(60)
+        state.now = state.realClock ? max(state.now.addingTimeInterval(1), Date()) : state.now.addingTimeInterval(60)
         let value = state.now
         lock.unlock()
         return value

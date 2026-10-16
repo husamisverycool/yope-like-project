@@ -354,6 +354,8 @@ final class InMemoryAccountData: AccountDataSource {
 
     func signedURL(path: String) async throws -> URL {
         try await record("signedURL")
+        // The Jolt demo build carries the photos its world names (`DemoPhotos`).
+        if let url = DemoPhotos.url(for: path) { return url }
         throw DataError.storage(.notFound)
     }
 

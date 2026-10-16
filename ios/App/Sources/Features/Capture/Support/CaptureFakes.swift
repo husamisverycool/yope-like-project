@@ -35,22 +35,42 @@ enum CaptureFakes {
         CaptureGroup(id: "fake-group-2", name: "Group 2", coverPath: nil),
     ]
 
+    /// The Jolt demo's groups (`DemoMode`): the social demo's "roommates" and "climbing", with their covers.
+    static var demoGroups: [CaptureGroup] {
+        [
+            CaptureGroup(id: SocialDemo.groupID.rawValue, name: "roommates", coverPath: "fake/cover/01"), // provenance-ok: demo data
+            CaptureGroup(id: SocialDemo.otherGroupID.rawValue, name: "climbing", coverPath: "fake/cover/02"), // provenance-ok: demo data
+        ]
+    }
+
+    /// A bundled demo photo as a capture (`DemoPhotos`).
+    static func demoStill(_ name: String, position: CameraPosition) -> CaptureStill? {
+        guard let shot = DemoPhotos.jpeg(named: name) else { return nil }
+        return CaptureStill(imageData: shot.data, livePhotoMovieURL: nil, pixelWidth: shot.width, pixelHeight: shot.height, position: position)
+    }
+
     /// The environment UI tests run against (launch argument `-capture-fakes`).
     @MainActor
     static func environment(arguments: [String], router: AppRouter) -> CaptureEnvironment {
-        let groups = FakeCaptureGroups(groups: CaptureLaunchArgument.isSet(CaptureLaunchArgument.fakeNoGroups, in: arguments) ? [] : Self.groups)
+        let listed = DemoMode.isOn ? Self.demoGroups : Self.groups
+        let groups = FakeCaptureGroups(groups: CaptureLaunchArgument.isSet(CaptureLaunchArgument.fakeNoGroups, in: arguments) ? [] : listed)
+        if DemoMode.isOn {
+            for group in listed {
+                if let path = group.coverPath, let cover = DemoPhotos.image(for: path) { groups.covers[path] = cover }
+            }
+        }
         let premium = FakeCapturePremium(isPremium: CaptureLaunchArgument.isSet(CaptureLaunchArgument.fakePremium, in: arguments))
         let invitations = FakeCaptureInvitations()
         invitations.invitation = CaptureInvitation(
             id: "fake-invitation",
-            groupID: Self.groups[0].id,
-            groupName: Self.groups[0].name,
+            groupID: listed[0].id,
+            groupName: listed[0].name,
             firesAt: Date(),
             closesAt: Date().addingTimeInterval(Tokens.Durations.cameraCaptureDurationVideoMax * 12),
             localDate: LocalDate(Date(), in: .current)
         )
         return CaptureEnvironment(
-            makeCamera: { _ in FakeCaptureCamera() },
+            makeCamera: { _ in DemoMode.isOn ? FakeCaptureCamera.demo() : FakeCaptureCamera() },
             makeVoiceRecorder: { FakeCaptureVoiceRecorder() },
             library: FakeCaptureLibrary(),
             groups: groups,
@@ -68,6 +88,15 @@ enum CaptureFakes {
 
 @MainActor
 final class FakeCaptureCamera: CaptureCamera {
+    /// The Jolt demo's camera: a photo in the viewfinder, and the shutter takes sample photos (`DemoPhotos`).
+    static func demo() -> FakeCaptureCamera {
+        let camera = FakeCaptureCamera()
+        camera.previewImage = DemoPhotos.image(named: DemoPhotos.viewfinder)
+        camera.backStill = CaptureFakes.demoStill(DemoPhotos.backShot, position: .back)
+        camera.frontStill = CaptureFakes.demoStill(DemoPhotos.frontShot, position: .front)
+        return camera
+    }
+
     var authorizationStatus: PermissionStatus = .granted
     var accessResult: PermissionStatus = .granted
     var microphoneStatus: PermissionStatus = .granted
@@ -326,6 +355,8 @@ final class FakeCapturePosting: CapturePosting {
             throw publishError
         }
         published.append(draft)
+        // The Jolt demo: the photo joins its groups in the demo world.
+        DemoSentPosts.add(draft)
     }
 
     func discard(_ mediaID: MediaID) async {

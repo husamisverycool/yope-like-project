@@ -195,8 +195,8 @@ struct LibraryPhotoSaver: SocialPhotoSaving {
 #if DEBUG
 /// Launch arguments of the social UI tests (ios/AppUITests/Social).
 enum SocialLaunch {
-    /// `-SocialFakes`: every social screen runs on `SocialDemo`'s in-memory backend.
-    static var usesFakes: Bool { ProcessInfo.processInfo.arguments.contains("-SocialFakes") }
+    /// `-SocialFakes` (or the Jolt demo build, `DemoMode`): every social screen runs on `SocialDemo`'s in-memory backend.
+    static var usesFakes: Bool { DemoMode.launchArguments.contains("-SocialFakes") }
 
     /// A defaults suite emptied at launch, so first-use flags start fresh in each UI-test run.
     @MainActor static let defaults: UserDefaults = {
@@ -246,6 +246,8 @@ enum SocialLaunch {
 extension SocialImageLoader {
     static func demo() -> SocialImageLoader {
         SocialImageLoader { path in
+            // The Jolt demo build carries the sample photos (`DemoPhotos`); other builds draw the colours below.
+            if let photo = DemoPhotos.image(for: path) { return photo }
             let palette: [Color] = [
                 Tokens.Colors.globalAccent, Tokens.Colors.globalSelection, Tokens.Colors.globalBadgeMuted,
                 Tokens.Colors.globalControlRaised, Tokens.Colors.globalPremium, Tokens.Colors.globalBadge,

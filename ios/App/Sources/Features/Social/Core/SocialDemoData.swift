@@ -17,12 +17,28 @@ enum SocialDemo {
     static let groupID = GroupID("00000000-0000-4000-8000-00000000b001")
     static let otherGroupID = GroupID("00000000-0000-4000-8000-00000000b002")
 
-    /// Monday 2026-10-12 09:00 UTC (ISO week 42).
-    static let monday = Date(timeIntervalSince1970: 1_791_795_600)
+    /// Monday 2026-10-12 09:00 UTC (ISO week 42); in the Jolt demo, the start of the week it runs in (`DemoMode`).
+    static var monday: Date { DemoMode.isOn ? DemoMode.weekStart : fixedMonday }
+    static let fixedMonday = Date(timeIntervalSince1970: 1_791_795_600)
     static let hour: TimeInterval = 3600
     static let day: TimeInterval = 86_400
-    static let thisWeek = LocalDate(year: 2026, month: 10, day: 12)!
-    static let lastWeek = LocalDate(year: 2026, month: 10, day: 5)!
+    static var thisWeek: LocalDate {
+        DemoMode.isOn ? LocalDate(DemoMode.weekStart, in: .current) : LocalDate(year: 2026, month: 10, day: 12)!
+    }
+    static var lastWeek: LocalDate {
+        DemoMode.isOn ? thisWeek.adding(days: -7) : LocalDate(year: 2026, month: 10, day: 5)!
+    }
+
+    /// `offset` after `monday`. In the Jolt demo, this week's moments (up to `demoSpan` after Monday) are spread over the
+    /// part of the week already past, so none lies in the future whatever day it runs; earlier ones keep their place.
+    static func at(_ offset: TimeInterval) -> Date {
+        guard DemoMode.isOn, offset > 0 else { return monday.addingTimeInterval(offset) }
+        let past = max(0, DemoMode.launchDate.timeIntervalSince(monday) - 10 * 60) // provenance-ok: demo data (10 minutes before launch)
+        return monday.addingTimeInterval(offset * min(1, past / demoSpan))
+    }
+
+    /// The latest moment of the demo week: Cleo's post, Thursday evening.
+    private static let demoSpan: TimeInterval = 3 * day + 9 * hour
 
     // Posts (p1–p4 this week, p5–p6 last week)
     static let p1 = PostID("00000000-0000-4000-8000-00000000c001")
@@ -52,15 +68,16 @@ enum SocialDemo {
 
     static func group(_ id: GroupID, name: String, createdBy: UserID) -> PhotoGroup {
         PhotoGroup(
-            id: id, name: name, kind: .friends, coverPath: "fake/cover/\(id.rawValue.suffix(2))", timeZone: "UTC",
+            id: id, name: name, kind: .friends, coverPath: "fake/cover/\(id.rawValue.suffix(2))",
+            timeZone: DemoMode.isOn ? TimeZone.current.identifier : "UTC", // provenance-ok: demo group time zone
             wakingStart: nil, wakingEnd: nil, invitationPaused: false, createdBy: createdBy,
-            createdAt: monday.addingTimeInterval(-30 * day), updatedAt: monday
+            createdAt: at(-30 * day), updatedAt: monday
         )
     }
 
     static func member(_ user: UserID, in group: GroupID, role: MemberRole = .member) -> MemberProfile {
         MemberProfile(
-            member: GroupMember(groupID: group, userID: user, role: role, muted: false, joinedAt: monday.addingTimeInterval(-29 * day)),
+            member: GroupMember(groupID: group, userID: user, role: role, muted: false, joinedAt: at(-29 * day)),
             profile: profiles.first { $0.id == user }
         )
     }
@@ -121,36 +138,36 @@ enum SocialDemo {
     ] // provenance-ok: demo data (sample voice levels)
 
     static func tag(_ post: PostID, _ user: UserID, minutes: Double) -> PostTag {
-        PostTag(postID: post, userID: user, groupID: groupID, createdAt: monday.addingTimeInterval(minutes * 60))
+        PostTag(postID: post, userID: user, groupID: groupID, createdAt: at(minutes * 60))
     }
 
     static func reaction(_ post: PostID, _ user: UserID, _ emoji: String, minutes: Double) -> Reaction {
-        Reaction(postID: post, userID: user, emoji: emoji, groupID: groupID, createdAt: monday.addingTimeInterval(minutes * 60))
+        Reaction(postID: post, userID: user, emoji: emoji, groupID: groupID, createdAt: at(minutes * 60))
     }
 
     static var posts: [PostWithMedia] {
         [
-            post(p1, by: ben, at: monday.addingTimeInterval(1 * hour)),
-            post(p2, by: ana, at: monday.addingTimeInterval(1 * day + 10 * hour), caption: "first snow", voiceMs: 38_000, voiceLevels: voiceLevelsNote),
-            post(p3, by: me, at: monday.addingTimeInterval(2 * day + 4 * hour)),
-            post(p3b, by: me, at: monday.addingTimeInterval(2 * day + 4 * hour), in: otherGroupID, media: mediaID(p3)),
-            post(p4, by: cleo, at: monday.addingTimeInterval(3 * day + 8 * hour), kind: .livePhoto),
-            post(p5, by: ana, at: monday.addingTimeInterval(-5 * day)),
-            post(p6, by: me, at: monday.addingTimeInterval(-4 * day), caption: "picnic"),
+            post(p1, by: ben, at: at(1 * hour)),
+            post(p2, by: ana, at: at(1 * day + 10 * hour), caption: "first snow", voiceMs: 38_000, voiceLevels: voiceLevelsNote),
+            post(p3, by: me, at: at(2 * day + 4 * hour)),
+            post(p3b, by: me, at: at(2 * day + 4 * hour), in: otherGroupID, media: mediaID(p3)),
+            post(p4, by: cleo, at: at(3 * day + 8 * hour), kind: .livePhoto),
+            post(p5, by: ana, at: at(-5 * day)),
+            post(p6, by: me, at: at(-4 * day), caption: "picnic"),
         ]
     }
 
     static var messages: [Message] {
         [
-            message(1, by: ana, at: monday.addingTimeInterval(0.2 * hour), text: "who's cooking tonight?"),
-            message(2, by: ana, at: monday.addingTimeInterval(0.3 * hour), text: "i can do pasta"),
-            message(3, by: ben, at: monday.addingTimeInterval(1 * hour), post: p1),
-            message(4, by: me, at: monday.addingTimeInterval(1.2 * hour), text: "yes please"),
-            message(5, by: me, at: monday.addingTimeInterval(1.3 * hour), voiceMs: 38_000, voiceLevels: voiceLevelsMessage),
-            message(6, by: ana, at: monday.addingTimeInterval(1 * day + 10 * hour), post: p2),
-            message(7, by: ben, at: monday.addingTimeInterval(1 * day + 11 * hour), text: "so pretty", replyTo: p2),
-            message(8, by: me, at: monday.addingTimeInterval(2 * day + 4 * hour), post: p3),
-            message(9, by: cleo, at: monday.addingTimeInterval(3 * day + 8 * hour), post: p4),
+            message(1, by: ana, at: at(0.2 * hour), text: "who's cooking tonight?"),
+            message(2, by: ana, at: at(0.3 * hour), text: "i can do pasta"),
+            message(3, by: ben, at: at(1 * hour), post: p1),
+            message(4, by: me, at: at(1.2 * hour), text: "yes please"),
+            message(5, by: me, at: at(1.3 * hour), voiceMs: 38_000, voiceLevels: voiceLevelsMessage),
+            message(6, by: ana, at: at(1 * day + 10 * hour), post: p2),
+            message(7, by: ben, at: at(1 * day + 11 * hour), text: "so pretty", replyTo: p2),
+            message(8, by: me, at: at(2 * day + 4 * hour), post: p3),
+            message(9, by: cleo, at: at(3 * day + 8 * hour), post: p4),
         ]
     }
 
@@ -162,7 +179,7 @@ enum SocialDemo {
     }
 
     static var recaps: [WeeklyRecap] {
-        let sunday = monday.addingTimeInterval(-1 * day + 9 * hour)
+        let sunday = at(-1 * day + 9 * hour)
         return [
             WeeklyRecap(
                 id: recapID, groupID: groupID, weekStart: lastWeek, items: [p6, p5], text: nil, status: .ready,
@@ -202,7 +219,8 @@ enum SocialDemo {
             state.reactions = reactions
             state.recaps = recaps
             state.albums = albums
-            state.now = now ?? monday.addingTimeInterval(4 * day)
+            state.now = now ?? (DemoMode.isOn ? DemoMode.launchDate : at(4 * day))
+            state.realClock = DemoMode.isOn
         }
         return data
     }

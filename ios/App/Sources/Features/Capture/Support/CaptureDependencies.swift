@@ -246,7 +246,8 @@ enum CaptureLaunchArgument {
     /// With `fakes`: the member has no groups.
     static let fakeNoGroups = "-capture-fake-no-groups"
 
-    static func isSet(_ argument: String, in arguments: [String] = ProcessInfo.processInfo.arguments) -> Bool {
+    /// `arguments`: the launch arguments, with the Jolt demo build's (`DemoMode`).
+    static func isSet(_ argument: String, in arguments: [String] = DemoMode.launchArguments) -> Bool {
         arguments.contains(argument)
     }
 }

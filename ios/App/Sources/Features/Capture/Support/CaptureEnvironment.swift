@@ -11,7 +11,7 @@ final class CaptureEnvironment {
     static let shared: CaptureEnvironment = {
         #if DEBUG
         if CaptureLaunchArgument.isSet(CaptureLaunchArgument.fakes) {
-            return CaptureFakes.environment(arguments: ProcessInfo.processInfo.arguments, router: AppEnvironment.shared.router)
+            return CaptureFakes.environment(arguments: DemoMode.launchArguments, router: AppEnvironment.shared.router)
         }
         #endif
         return .live(AppEnvironment.shared)

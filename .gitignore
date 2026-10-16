@@ -59,3 +59,6 @@ references/**/*.txt
 # Python bytecode from the verification scripts
 __pycache__/
 *.pyc
+
+# The Jolt demo build copies the sample photos here (CI "ios demo build"); never committed.
+ios/App/Resources/DemoPhotos/

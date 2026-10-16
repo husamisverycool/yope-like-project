@@ -313,6 +313,10 @@ jobs:
           sudo xcode-select -s "$XC"
           xcodebuild -version
       - run: brew install xcodegen
+      # The demo world's photos (DemoPhotos.swift): the sample photos, in this build's bundle only.
+      - name: bundle the sample photos
+        working-directory: ios
+        run: mkdir -p App/Resources/DemoPhotos && cp ../fixtures/photos/*.jpg App/Resources/DemoPhotos/
       - name: generate project
         working-directory: ios
         run: xcodegen generate
