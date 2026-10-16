@@ -37,6 +37,9 @@ final class ServerJourneyUITests: XCTestCase {
             "JOLT_E2E_SUPABASE_URL": stack.url.absoluteString,
             "JOLT_E2E_SUPABASE_ANON_KEY": stack.anonKey,
             "JOLT_E2E_INVITE_HOST": Self.inviteHost,
+            // Maya's phone is in a zone where it is about noon (the group takes it): the plan is made for "today" and
+            // must still be ahead when Theo reads it, whatever the hour of the CI run (a plan is over at its day's end).
+            "TZ": Self.middayTimeZone(),
         ]
         app.launch()
 
@@ -454,6 +457,14 @@ final class ServerJourneyUITests: XCTestCase {
     private static let planTitle = "Sunday lunch at Grandma's"
     /// Invite links' host for the run (RFC 6761 `.test`).
     private static let inviteHost = "invite.e2e.test"
+
+    /// The fixed-offset zone where it is now 12:xx (`Etc/GMT-N` is UTC+N: POSIX signs).
+    static func middayTimeZone(now: Date = Date()) -> String {
+        var utc = Calendar(identifier: .gregorian)
+        utc.timeZone = TimeZone(identifier: "UTC")!
+        let offset = 12 - utc.component(.hour, from: now) // -11 … +12
+        return offset == 0 ? "Etc/GMT" : offset > 0 ? "Etc/GMT-\(offset)" : "Etc/GMT+\(-offset)"
+    }
 
     // The app's English copy the journey reads (design/copy: groups.list.tab.*, groups.screen.week.add.accessibilityLabel,
     // walls.mine.a11y.settings, settings.root.signOut.confirm, groups.screen.back.accessibilityLabel,
