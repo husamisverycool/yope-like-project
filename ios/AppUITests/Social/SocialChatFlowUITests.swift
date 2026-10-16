@@ -86,10 +86,17 @@ final class SocialChatFlowUITests: XCTestCase {
         let field = composer(app)
         field.typeText("count me in")
         app.buttons["chat.composer.send"].tap()
-        XCTAssertTrue(app.descendants(matching: .any)["You, count me in"].waitForExistence(timeout: 5))
+        let sent = app.descendants(matching: .any)["You, count me in"]
+        XCTAssertTrue(sent.waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["Cancel reply"].exists, "the reply bar closes on send")
-        let quotes = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "Ana, i can do pasta"))
-        XCTAssertGreaterThanOrEqual(quotes.count, 2, "the reply quotes the message above its text")
+        // The thread follows the sent message (chat.thread.layout.followNewest), so the original is scrolled away and
+        // only the quote is near: it sits right above the reply's text.
+        let quotes = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "Ana, i can do pasta")).allElementsBoundByIndex
+        let text = sent.frame
+        XCTAssertTrue(
+            quotes.contains { $0.frame.maxY <= text.minY + 1 && text.minY - $0.frame.maxY < 150 },
+            "the reply quotes the message above its text (quotes at \(quotes.map(\.frame)), reply at \(text))"
+        )
     }
 
     @MainActor

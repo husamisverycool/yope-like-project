@@ -37,6 +37,9 @@ final class SocialServices {
         #if DEBUG
         if SocialLaunch.usesFakes {
             let data = SocialDemo.makeData()
+            // The backend echoes every insert over realtime, the sender's own too, so a message sent on one screen (a
+            // comment in the photo viewer) reaches the screens under it (the chat). The demo backend does the same.
+            data.update { $0.beforeSendReturns = { message in data.emit(.messageInserted(message), groupID: message.groupID) } }
             return SocialServices(
                 data: data, images: .demo(), flags: SocialFlags(defaults: SocialLaunch.defaults), saver: DemoPhotoSaver()
             )

@@ -31,7 +31,11 @@ final class AccountFlowUITests: XCTestCase {
         let target = field(app, identifier)
         XCTAssertTrue(target.waitForExistence(timeout: 5), "\(identifier) missing", file: file, line: line)
         target.tap()
-        target.typeText(text)
+        // One key at a time: the phone and birthday fields reformat as they are typed (separators inserted), and a
+        // burst of keys typed while the field rewrites its text loses some of them.
+        for character in text {
+            target.typeText(String(character))
+        }
     }
 
     /// The control carrying `identifier`: the button when there is one (a block's identifier also reaches its title and
@@ -72,6 +76,8 @@ final class AccountFlowUITests: XCTestCase {
 
         XCTAssertTrue(element(app, "auth.agegate").waitForExistence(timeout: 5))
         type("01012000", into: "auth.agegate.field", in: app)
+        let birthday = field(app, "auth.agegate.field")
+        XCTAssertEqual((birthday.value as? String)?.filter(\.isNumber), "01012000", "every digit of the birthday reached the field")
         tap("auth.agegate.continue", in: app)
 
         XCTAssertTrue(element(app, "auth.profile").waitForExistence(timeout: 5))
