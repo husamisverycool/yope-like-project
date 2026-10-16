@@ -8,7 +8,7 @@ Side by side: [`auth.agegate.android.png`](auth.agegate.android.png) — ours le
 
 States rendered (`android/feature/account/src/test/snapshots/auth.agegate/`): `checking-light`, `default-dark`, `default-light`, `filled-optIn-light`, `invalidDate-light`, `notConfigured-light`, `offline-light`, `underAge-light`.
 
-**Result: 53 checks — 51 match, 2 MISS.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 53 checks — 53 match.** (`match` includes measured, token, behaviour and copy rows.)
 
 ## Form (auth.agegate/filled-optIn-light)
 
@@ -31,8 +31,8 @@ States rendered (`android/feature/account/src/test/snapshots/auth.agegate/`): `c
 
 | status | token / copy | expected (spec) | ours | reference evidence | note |
 |---|---|---|---|---|---|
-| MISS | opt-in row side inset: `size.global.screenMargin` | 16 | 21 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
-| MISS | opt-in row corner radius: `radius.global.groupedRow` | 12 | 5.12 | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt pik: single 1… |  |
+| match | opt-in row side inset: `size.global.screenMargin` | 16 | 16 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
+| match | opt-in row corner radius: `radius.global.groupedRow` | 12 | 11.95 | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt pik: single 1… |  |
 | match | opt-in row fill: `color.global.surfaceSecondary.android` | #F7F7F7 | #F7F7F7 | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt vv3.l / vv3.f… |  |
 | match | opt-in row height (minimum): `settings.root.size.rowHeight` | ≥ 58.7 | 80 | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2 (grouped ro… | the row's minimum; the two-line subtitle makes it taller |
 

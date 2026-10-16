@@ -75,12 +75,12 @@ def fill_extent(img, hexc, y, tol=3, x0=0, x1=M.W, min_w=200):
     middle of that run (so rounded corners do not narrow it)."""
     pred = near(hexc, tol)
 
-    def row_span(py):
+    def row_span(py, coverage=0.6):
         xs = [x for x in range(int(x0 * M.SCALE), min(int(x1 * M.SCALE), img.width)) if pred(img.getpixel((x, py)))]
         if not xs or (xs[-1] - xs[0]) / M.SCALE < min_w:
             return None
         # A fill covers most of its span (text on it is a small part); scattered matches (a photo's highlights) do not.
-        return (xs[0], xs[-1] + 1) if len(xs) >= 0.6 * (xs[-1] + 1 - xs[0]) else None
+        return (xs[0], xs[-1] + 1) if len(xs) >= coverage * (xs[-1] + 1 - xs[0]) else None
 
     py = int(y * M.SCALE)
     span = row_span(py)
@@ -101,7 +101,8 @@ def fill_extent(img, hexc, y, tol=3, x0=0, x1=M.W, min_w=200):
     if best is None:
         return None
     t, bt = best
-    mid = row_span((t + bt) // 2) or span
+    # The edges on the middle row (its text may cover much of it: no coverage test there).
+    mid = row_span((t + bt) // 2, coverage=0) or span
     l, r = mid
     return {"left": l / M.SCALE, "right": r / M.SCALE, "top": t / M.SCALE, "bottom": (bt + 1) / M.SCALE,
             "width": (r - l) / M.SCALE, "height": (bt + 1 - t) / M.SCALE, "color": M.hexof(img.getpixel((l + 6, (t + bt) // 2)))}
