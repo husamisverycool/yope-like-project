@@ -28,7 +28,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import app.designsystem.R
+import app.feature.account.AccountEnvironments
 import app.main.MainActivity
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -113,8 +116,12 @@ class JourneyTest {
         waitFor(text(R.string.groups_invite_link_copy), LONG)
         evidence.step("maya-invite-on")
         tap(text(R.string.groups_invite_link_copy))
-        val link = clipboardText()
-        assertTrue("invite link copied: $link", link?.startsWith("https://${E2eRunner.E2E_INVITE_HOST}/i/") == true)
+        var link = clipboardText()?.takeIf { it.startsWith("https://${E2eRunner.E2E_INVITE_HOST}/i/") }
+        if (link == null) {
+            problem("invite-copy", "Copy Link left no invite link on the clipboard (${clipboardText()})")
+            link = inviteLinkFromBackend()
+        }
+        assertTrue("Maya's group has a live invite link", link != null)
         tap(desc(R.string.groups_invite_close_accessibilitylabel))
         waitFor(text(R.string.groups_screen_created_title))
 
@@ -129,35 +136,46 @@ class JourneyTest {
         tap(hasTestTag("sendto.send"))
         waitGone(hasTestTag("camera.sendto"), UPLOAD)
         val mayaPhoto = descContaining(after(R.string.groups_screen_photo_accessibilitylabel, 2, "Maya"))
-        waitFor(mayaPhoto, UPLOAD)
+        // The open group shows the new post through its realtime subscription; reopening it reads the feed again.
+        if (!appears(mayaPhoto, UPLOAD)) {
+            problem("realtime-post", "the new post did not appear in the open group (realtime insert)")
+            tap(desc(R.string.groups_screen_back_accessibilitylabel))
+            tap(hasText(GROUP), LONG)
+            waitFor(mayaPhoto, LONG)
+        }
         evidence.step("maya-group-with-post")
 
         // Viewer + a reaction from the photo's menu.
-        tap(mayaPhoto)
-        waitFor(hasTestTag("photo.viewer"), LONG)
-        waitFor(descContaining(before(R.string.photo_viewer_a11y_photomine, 1)), LONG)
-        evidence.step("maya-viewer")
-        node(hasTestTag("viewer.photo")).performTouchInput { longClick() }
-        val react = descContaining(before(R.string.chat_reactions_a11y_quick, 1))
-        waitFor(react)
-        evidence.step("maya-viewer-react-menu")
-        compose.onAllNodes(react).onFirst().performClick()
-        waitFor(descContaining(before(R.string.chat_reactions_a11y_cluster, 1)), LONG)
-        evidence.step("maya-viewer-reacted")
-        tap(desc(R.string.photo_viewer_a11y_close))
-        waitFor(mayaPhoto)
+        soft("viewer-reaction", recover = { backTo(mayaPhoto) }) {
+            tap(mayaPhoto)
+            waitFor(hasTestTag("photo.viewer"), LONG)
+            waitFor(descContaining(before(R.string.photo_viewer_a11y_photomine, 1)), LONG)
+            evidence.step("maya-viewer")
+            node(hasTestTag("viewer.photo")).performTouchInput { longClick() }
+            val react = descContaining(before(R.string.chat_reactions_a11y_quick, 1))
+            waitFor(react)
+            evidence.step("maya-viewer-react-menu")
+            compose.onAllNodes(react).onFirst().performClick()
+            waitFor(descContaining(before(R.string.chat_reactions_a11y_cluster, 1)), LONG)
+            evidence.step("maya-viewer-reacted")
+            tap(desc(R.string.photo_viewer_a11y_close))
+            waitFor(mayaPhoto)
+        }
 
         // Chat: a message.
-        tap(desc(R.string.groups_screen_chat))
-        // The thread's only text field is the composer.
-        val composer = hasSetTextAction()
-        waitFor(composer, LONG)
-        evidence.step("maya-chat")
-        type(composer, MESSAGE)
-        tap(desc(R.string.chat_composer_a11y_send))
-        waitFor(desc(context.getString(R.string.chat_thread_a11y_messagemine, MESSAGE)), LONG)
-        evidence.step("maya-chat-sent")
-        tap(desc(R.string.chat_thread_a11y_back))
+        soft("chat", recover = { backTo(desc(R.string.groups_screen_back_accessibilitylabel)) }) {
+            tap(desc(R.string.groups_screen_chat))
+            // The thread's only text field is the composer.
+            val composer = hasSetTextAction()
+            waitFor(composer, LONG)
+            evidence.step("maya-chat")
+            type(composer, MESSAGE)
+            tap(desc(R.string.chat_composer_a11y_send))
+            waitFor(desc(context.getString(R.string.chat_thread_a11y_messagemine, MESSAGE)), LONG)
+            evidence.step("maya-chat-sent")
+            tap(desc(R.string.chat_thread_a11y_back))
+            waitFor(mayaPhoto)
+        }
 
         // Home, then the wall (Profile tab).
         tap(desc(R.string.groups_screen_back_accessibilitylabel))
@@ -165,7 +183,9 @@ class JourneyTest {
         evidence.step("maya-groups")
         tap(desc(R.string.groups_list_tab_me_accessibilitylabel))
         waitFor(hasTestTag("walls.mine"), LONG)
-        waitFor(descContaining(before(R.string.photo_viewer_a11y_photomine, 1)), LONG)
+        soft("wall") {
+            waitFor(descContaining(before(R.string.photo_viewer_a11y_photomine, 1)), LONG)
+        }
         evidence.step("maya-wall")
 
         // Settings → sign out.
@@ -192,8 +212,57 @@ class JourneyTest {
         waitFor(mayaPhoto, LONG)
         evidence.step("theo-group")
         tap(mayaPhoto)
-        waitFor(descContaining(context.getString(R.string.photo_viewer_a11y_photo, "Maya", "\u0000").substringBefore('\u0000')), LONG)
+        waitFor(descContaining(context.getString(R.string.photo_viewer_a11y_photo, "Maya", MARK).substringBefore(MARK)), LONG)
         evidence.step("theo-viewer")
+
+        assertTrue("the journey finished with problems:\n" + problems.joinToString("\n"), problems.isEmpty())
+    }
+
+    // ---- Problems that do not stop the journey: recorded (with evidence), reported at the end ----
+
+    private val problems = mutableListOf<String>()
+
+    private fun problem(name: String, message: String) {
+        Log.e(E2eRunner.TAG, "problem $name: $message")
+        problems += "$name: $message"
+        evidence.step("problem-$name")
+    }
+
+    /** Runs [block]; a failure is recorded as a problem, [recover] brings the app back to a known screen. */
+    private fun soft(name: String, recover: () -> Unit = {}, block: () -> Unit) {
+        try {
+            block()
+        } catch (e: AssertionError) {
+            problem(name, e.message ?: e.toString())
+            recover()
+        }
+    }
+
+    /** Whether [matcher] shows within [timeout]. */
+    private fun appears(matcher: SemanticsMatcher, timeout: Long): Boolean = try {
+        compose.waitUntil(timeout) { exists(matcher) }
+        compose.waitForIdle()
+        true
+    } catch (e: ComposeTimeoutException) {
+        false
+    }
+
+    /** System Back until [matcher] is on screen. */
+    private fun backTo(matcher: SemanticsMatcher) {
+        repeat(BACK_ATTEMPTS) {
+            if (exists(matcher)) return
+            compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+            compose.waitForIdle()
+        }
+        waitFor(matcher)
+    }
+
+    /** The live invite of Maya's group through the app's data layer (only when the clipboard path failed). */
+    private fun inviteLinkFromBackend(): String? = runBlocking {
+        val env = AccountEnvironments.get(context)
+        val group = env.backend.observeMyGroups().first { it.value != null || !it.refreshing }.value?.firstOrNull { it.name == GROUP }
+            ?: return@runBlocking null
+        env.backend.activeInvites(group.id).firstOrNull()?.let { env.inviteLinks.url(it.token) }
     }
 
     // ---- Sign-up: auth.phone → auth.code → auth.agegate → auth.profile → onboarding ----
@@ -367,6 +436,8 @@ class JourneyTest {
         const val GROUP = "Reyes family"
         const val MESSAGE = "See you all on Sunday"
         const val MARK = "\u0000"
+
+        const val BACK_ATTEMPTS = 4
 
         const val SHORT = 10_000L
         const val LONG = 30_000L

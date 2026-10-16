@@ -16,6 +16,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.performClick
 import com.github.takahirom.roborazzi.captureRoboImage
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
@@ -145,7 +146,12 @@ class InviteQrAndCoversTest {
         compose.onNodeWithTag(GROUP_INVITE_QR_CARD_TAG).assertExists()
         compose.onNodeWithContentDescription(context.getString(R.string.groups_invite_qr_save)).assertHasClickAction()
         compose.onNodeWithText(context.getString(R.string.groups_invite_qr_share)).assertExists()
-        compose.onNodeWithContentDescription(context.getString(R.string.groups_invite_close_accessibilitylabel)).assertExists()
+        assertEquals(
+            "under the card the sheet is hidden from TalkBack: only the card's close circle is read",
+            1,
+            compose.onAllNodesWithContentDescription(context.getString(R.string.groups_invite_close_accessibilitylabel)).fetchSemanticsNodes().size,
+        )
+        compose.onNodeWithText(context.getString(R.string.groups_invite_link_qr)).assertDoesNotExist()
     }
 
     // Template covers -------------------------------------------------------------------------------

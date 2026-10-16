@@ -52,9 +52,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -396,11 +398,23 @@ data class GroupInviteActions(
 @Composable
 fun GroupInviteScreen(state: GroupInviteUiState, zone: ZoneId, actions: GroupInviteActions, qrLink: String? = null) {
     Box(Modifier.fillMaxSize()) {
-        GroupInviteSheet(state, zone, actions)
+        // Under the QR card the sheet is neither read by TalkBack nor touchable.
+        Box(if (qrLink != null) Modifier.clearAndSetSemantics {} else Modifier) {
+            GroupInviteSheet(state, zone, actions)
+        }
         AnimatedVisibility(visible = qrLink != null, enter = DsMotion.fadeIn, exit = DsMotion.fadeOut) {
             // Keeps the last link while fading out.
             val link = remember { mutableStateOf(qrLink) }.apply { if (qrLink != null) value = qrLink }.value
-            if (link != null) GroupInviteQrScreen(link, state.groupName, state.coverUrl, actions.qr)
+            if (link != null) {
+                GroupInviteQrScreen(
+                    link,
+                    state.groupName,
+                    state.coverUrl,
+                    actions.qr,
+                    // A pointer handler over the whole layer: touches on it never reach the sheet below.
+                    Modifier.pointerInput(Unit) { awaitPointerEventScope { while (true) awaitPointerEvent() } },
+                )
+            }
         }
     }
 }
