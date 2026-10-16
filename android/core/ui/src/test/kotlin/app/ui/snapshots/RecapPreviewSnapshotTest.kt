@@ -24,8 +24,8 @@ import app.ui.recap.RecapPreviewScreen
 import org.junit.Test
 
 /**
- * The shared recap preview (app.ui.recap, ST-04) as each caller uses it: collage.view (collage card, dots in the
- * bottom row, Share), week.recap (recap card, dots below the page, thumbnail + "Save as Album"), year.story
+ * The shared recap preview (app.ui.recap, ST-04) as each caller uses it: collage.view (collage card, dots below
+ * the page, Share), week.recap (recap card, dots below the page, thumbnail + "Save as Album"), year.story
  * (position pill, play circle, no dots), and the busy / no-backdrop states. Media surface: light and dark
  * render the same by design.
  */
@@ -59,7 +59,7 @@ class RecapPreviewSnapshotTest(appearance: Appearance) : SnapshotTest(appearance
             onClose = {},
             closeContentDescription = "Close",
             pill = RecapPill("Save as Album", {}, label = RecapPillLabel.Pill),
-            dots = RecapDots.BelowPage(Tokens.Sizes.globalScreenMargin),
+            dots = RecapDots.BelowPage(),
             bottomLeading = {
                 DsImage(
                     square(5),

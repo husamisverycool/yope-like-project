@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -111,7 +112,10 @@ class TagRunController(
 
     enum class Message { TagError, RemoveError, NotFound, Offline }
 
-    private val myId: String? get() = backend.currentUserId
+    /** Your user id (your row carries "Remove tag"). */
+    val selfId: String? get() = backend.currentUserId
+
+    private val myId: String? get() = selfId
 
     /** Whether you are tagged in the photo. */
     val isTagged: Boolean get() = people?.any { it.userId == myId } == true
@@ -319,13 +323,14 @@ fun InThisPhotoSheet(controller: TagRunController, onDismiss: () -> Unit) {
 @Composable
 internal fun InThisPhotoContent(controller: TagRunController, onClose: () -> Unit) {
     val people = controller.people.orEmpty()
-    val me = (controller as TagRunController).isTagged
+    val tagged = controller.isTagged
     Column(Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars).testTag(TagRunTags.SHEET)) {
         SheetHeader(
             stringResource(R.string.tagging_sheet_title),
+            // tagging has no close label of its own (copy gap, reported): the memory group's "Close" (PLATFORM).
             close = HeaderAction(Tokens.Icons.globalClose, stringResource(R.string.birthday_request_a11y_close), onClose),
         )
-        Spacer(Modifier.padding(top = Tokens.Sizes.globalScreenMargin))
+        Spacer(Modifier.height(Tokens.Sizes.globalScreenMargin))
         if (people.isEmpty()) {
             Box(Modifier.fillMaxWidth().padding(vertical = Tokens.Sizes.globalListGap), contentAlignment = Alignment.Center) {
                 EmptyState(stringResource(R.string.tagging_sheet_empty), null)
@@ -342,7 +347,7 @@ internal fun InThisPhotoContent(controller: TagRunController, onClose: () -> Uni
                 }
             }
         }
-        if (!me) {
+        if (!tagged) {
             PrimaryButton(
                 stringResource(R.string.tagging_toggle),
                 controller::tag,

@@ -46,6 +46,7 @@ struct PhoneForm: View {
             .focused($fieldFocused)
             .disabled(model.isSending)
             .accessibilityIdentifier("auth.phone.field")
+            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
         } bottom: {
             PrimaryButton(
                 Copy.authPhoneContinue,

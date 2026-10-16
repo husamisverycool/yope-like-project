@@ -159,6 +159,20 @@ fun PreloadImages(urls: List<String>) {
     }
 }
 
+/**
+ * The image model for a URL: the test image when tests supply images ([LocalMemoryImages]), else the URL itself —
+ * for core:ui components that load models themselves (`Avatar`, `DsImage`).
+ */
+@Composable
+fun memoryModel(url: Any?): Any? = (url as? String)?.let { LocalMemoryImages.current?.invoke(it) } ?: url
+
+/** Fades [content] in when it first appears (`duration.global.fade`, `easing.global.standard`; kept under Reduce Motion). */
+@Composable
+fun FadeInItem(key: Any, content: @Composable () -> Unit) {
+    val state = remember(key) { androidx.compose.animation.core.MutableTransitionState(false).apply { targetState = true } }
+    androidx.compose.animation.AnimatedVisibility(state, enter = app.ui.foundation.DsMotion.fadeIn, exit = app.ui.foundation.DsMotion.fadeOut) { content() }
+}
+
 /** The activity hosting [this] context, if any (window flags, system bars). */
 tailrec fun android.content.Context.findActivity(): android.app.Activity? = when (this) {
     is android.app.Activity -> this

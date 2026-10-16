@@ -1,5 +1,7 @@
-// Surface: onthisday — view models (the day and the group-screen entry). Spec: design/surfaces/onthisday.md.
+// Surface: onthisday — view models of the Rewind page and of the group-screen entry. Spec: design/surfaces/onthisday.md
+// (Retro Rewind: one memory at a time, a dial with one slot per memory, play / pause, share, shuffle; MERGE RM-2…RM-7).
 import AppData
+import AppServices
 import DesignSystem
 import Foundation
 import Observation
@@ -14,72 +16,143 @@ enum OnThisDayCalendar {
         let today = LocalDate(now, in: timeZone)
         return hour < Int(Tokens.Layouts.OnthisdayDayBoundary.hour) ? today.adding(days: -1) : today
     }
-
-    /// Rows grouped by `years_ago` ascending (1 year ago first), API order kept inside a year.
-    static func years(_ rows: [OnThisDayItem]) -> [(yearsAgo: Int, rows: [OnThisDayItem])] {
-        var order: [Int] = []
-        var grouped: [Int: [OnThisDayItem]] = [:]
-        for row in rows {
-            if grouped[row.yearsAgo] == nil { order.append(row.yearsAgo) }
-            grouped[row.yearsAgo, default: []].append(row)
-        }
-        return order.sorted().map { ($0, grouped[$0] ?? []) }
-    }
 }
 
 @MainActor
 @Observable
 final class OnThisDayModel {
-    struct Photo: Identifiable, Equatable {
+    /// One memory = one post.
+    struct Memory: Identifiable, Equatable, Sendable {
         let id: PostID
+        let authorID: UserID
+        /// The poster's first name (`{name}` of the subtitle and the photo's label).
         let authorName: String
-        let avatarURL: URL?
-        /// `display_path` (original until renditions are ready): the single-photo layout.
+        /// `display_path` (the original until renditions are ready).
         let displayURL: URL?
-        /// `thumb_path`: the grid.
-        let thumbURL: URL?
-        /// width / height of the media; nil when unknown.
-        let aspectRatio: CGFloat?
+        /// The original, for save and share.
+        let originalURL: URL?
         let createdAt: Date
-    }
-
-    struct Year: Identifiable, Equatable {
-        let yearsAgo: Int
-        var photos: [Photo]
-        var id: Int { yearsAgo }
+        let isMine: Bool
     }
 
     enum Phase: Equatable {
         case idle
         case loading
         case loaded
+        /// Every memory was deleted while the page was open (the entry is hidden otherwise).
+        case empty
         case error
         case offline
     }
 
-    var phase: Phase = .idle
-    var years: [Year] = []
-    var index = 0
-    /// Set when the day should close (✕, past the oldest year, or no photo left).
-    var isFinished = false
-    var timeZone: TimeZone = MemoryFormat.utc
+    /// The day's memories, or random ones from the group's history after the dice (RM-5).
+    enum Mode: Equatable {
+        case day
+        case shuffle
+    }
+
+    /// How the memory in view last changed: by the dial (`duration.global.crossfade`) or by playing
+    /// (`duration.onthisday.memoryChange`).
+    enum Change: Equatable {
+        case dial
+        case play
+    }
+
+    private(set) var phase: Phase = .idle
+    /// The day's memories, newest first (the API's order is the dial's order: slot 0 = the newest).
+    private(set) var memories: [Memory] = []
+    /// Shuffle: the random picks shown so far, in order (previous = back through them).
+    private(set) var picks: [Memory] = []
+    private(set) var mode: Mode = .day
+    private(set) var index = 0
+    private(set) var lastChange: Change = .dial
+    private(set) var isPlaying = false
+    /// A random pick is being read (the dial waits for it).
+    private(set) var isPicking = false
+    /// The feature intro (C-29), once per account.
+    var showsIntro = false
+    /// The own memory waiting for the delete confirmation.
+    var deleteCandidate: Memory?
+    /// Add-only photo access was denied: the native alert that opens Settings.
+    var showsSaveDenied = false
+    private(set) var groupName = ""
+    private(set) var timeZone: TimeZone = MemoryFormat.utc
 
     let groupID: GroupID
     private let dependencies: MemoryDependencies
+    private let savePhoto: @Sendable (Data) async throws -> Void
+    private let randomIndex: (Int) -> Int
+    private var me: UserID?
     private var deletionTask: Task<Void, Never>?
+    private var playTask: Task<Void, Never>?
+    /// The shuffle's pool: every week of the group's history (`group_history_weeks`), read once per session.
+    private var historyWeeks: [HistoryWeek]?
 
-    init(groupID: GroupID, dependencies: MemoryDependencies) {
+    /// - Parameters:
+    ///   - savePhoto: saves image data with add-only access (`PhotoLibraryService.saveImage`).
+    ///   - randomIndex: a random index below its argument (the dice); tests pass a fixed sequence.
+    init(
+        groupID: GroupID,
+        dependencies: MemoryDependencies,
+        savePhoto: @escaping @Sendable (Data) async throws -> Void = { try await PhotoLibraryService().saveImage($0) },
+        randomIndex: @escaping (Int) -> Int = { Int.random(in: 0..<max(1, $0)) }
+    ) {
         self.groupID = groupID
         self.dependencies = dependencies
+        self.savePhoto = savePhoto
+        self.randomIndex = randomIndex
     }
 
-    var currentYear: Year? { years.indices.contains(index) ? years[index] : nil }
+    // MARK: What the page shows
 
-    /// Reached fraction of the progress bar: (index + 1) / number of years (`layout.onthisday.progress`).
-    var progress: CGFloat {
-        guard !years.isEmpty else { return 0 }
-        return CGFloat(index + 1) / CGFloat(years.count)
+    /// The memories the dial steps through.
+    var list: [Memory] { mode == .day ? memories : picks }
+
+    var current: Memory? { list.indices.contains(index) ? list[index] : nil }
+
+    /// The dial slot of the memory in view: memory index mod `layout.onthisday.dial.slots`.
+    var dialSlot: Int {
+        let slots = max(1, Int(Tokens.Layouts.OnthisdayDial.slots))
+        return index % slots
     }
+
+    /// The date title (`layout.onthisday.dateFormat`, "Jul 22, 2022", group time zone).
+    var title: String {
+        current.map { MemoryFormat.memoryDate($0.createdAt, timeZone: timeZone) } ?? ""
+    }
+
+    /// `onthisday.subtitle.day` / `.subtitle.shuffle` with the poster's first name.
+    var subtitle: String? {
+        guard let current else { return nil }
+        return mode == .day ? Copy.onthisdaySubtitleDay(name: current.authorName) : Copy.onthisdaySubtitleShuffle(name: current.authorName)
+    }
+
+    /// `onthisday.a11y.photo` ("Photo by Maya, Jul 22, 2022").
+    var photoLabel: String {
+        guard let current else { return "" }
+        return Copy.onthisdayA11yPhoto(name: current.authorName, date: title)
+    }
+
+    /// `onthisday.a11y.dialValue` ("2 of 5").
+    var dialValue: String {
+        Copy.onthisdayA11yDialValue(position: MemoryFormat.number(index + 1), total: MemoryFormat.number(list.count))
+    }
+
+    var canGoPrevious: Bool { index > 0 && !isPicking }
+
+    var canGoNext: Bool {
+        switch mode {
+        case .day: return index + 1 < memories.count
+        case .shuffle: return !isPicking && (index + 1 < picks.count || hasUnshownHistory)
+        }
+    }
+
+    /// Today's date for the share sheet's title (`layout.year.story.dateFormat`, "Tuesday, December 2").
+    var shareTitle: String {
+        MemoryFormat.weekdayMonthDay(LocalDate(dependencies.now(), in: timeZone))
+    }
+
+    // MARK: Loading
 
     func loadIfNeeded() async {
         guard phase == .idle else { return }
@@ -91,21 +164,22 @@ final class OnThisDayModel {
     }
 
     private struct Cached {
-        let years: [Year]
+        let memories: [Memory]
+        let groupName: String
         let timeZone: TimeZone
     }
 
-    /// Cache-first: the last content of this day shows at once and is replaced in place.
+    private var cacheKey: String { "onthisday." + groupID.rawValue } // provenance-ok: cache key
+
+    /// Cache-first: the day shown last opens at once; the fresh read replaces it in place.
     private func load() async {
         guard let data = dependencies.data else {
             phase = .error
             return
         }
-        let me = await data.currentUser()
-        let cacheKey = "onthisday." + groupID.rawValue // provenance-ok: cache key
-        let cached = dependencies.cache.value(Cached.self, key: cacheKey, user: me)
-        if let cached, phase != .loaded {
-            apply(cached.years, timeZone: cached.timeZone)
+        me = await data.currentUser()
+        if phase != .loaded, let cached = dependencies.cache.value(Cached.self, key: cacheKey, user: me) {
+            apply(cached)
         } else if phase != .loaded {
             phase = .loading
         }
@@ -114,12 +188,12 @@ final class OnThisDayModel {
             let zone = group?.resolvedTimeZone ?? MemoryFormat.utc
             let day = OnThisDayCalendar.localDate(now: dependencies.now(), timeZone: zone)
             let rows = try await data.onThisDay(groupID: groupID, localDate: day)
-            let fresh = try await Self.resolve(rows: rows, data: data)
-            dependencies.cache.set(Cached(years: fresh, timeZone: zone), key: cacheKey, user: me,
-                                   postIDs: Set(fresh.flatMap { $0.photos.map(\.id) }))
-            apply(fresh, timeZone: zone)
-            if years.isEmpty { isFinished = true }
+            let fresh = try await resolve(rows.map(\.postID), data: data)
+            let value = Cached(memories: fresh, groupName: group?.name ?? "", timeZone: zone)
+            dependencies.cache.set(value, key: cacheKey, user: me, postIDs: Set(fresh.map(\.id)))
+            apply(value)
             listenForDeletions(data: data)
+            showIntroIfFirstTime()
         } catch {
             // Cached content stays on screen; without it, the error / offline state.
             if phase != .loaded {
@@ -128,116 +202,308 @@ final class OnThisDayModel {
         }
     }
 
-    /// Shows `fresh`, keeping the year in view when it is still there.
-    private func apply(_ fresh: [Year], timeZone zone: TimeZone) {
-        let currentID = currentYear?.id
-        timeZone = zone
-        years = fresh
-        if let currentID, let kept = fresh.firstIndex(where: { $0.id == currentID }) {
-            index = kept
-        } else {
-            index = 0
+    /// Shows `value`, keeping the memory in view when it is still there.
+    private func apply(_ value: Cached) {
+        let currentID = current?.id
+        groupName = value.groupName
+        timeZone = value.timeZone
+        memories = value.memories
+        if mode == .day {
+            index = currentID.flatMap { id in memories.firstIndex { $0.id == id } } ?? 0
         }
-        phase = .loaded
-        preloadUpcoming()
+        phase = list.isEmpty ? .empty : .loaded
+        preloadNeighbours()
     }
 
-    /// Pixel size of the content area's longest side (set by the screen); photos are decoded at it.
-    /// Nothing is preloaded until it is known.
-    var imagePixelSize: CGFloat?
-
-    /// Decodes the next (older) year's photos before it is tapped to, so the year cross-fade
-    /// (`duration.onthisday.memoryChange`) never fades into an empty frame.
-    func preloadUpcoming() {
-        guard let size = imagePixelSize, years.indices.contains(index + 1) else { return }
-        let photos = years[index + 1].photos
-        let urls = photos.count == 1
-            ? photos.compactMap(\.displayURL) + photos.compactMap(\.avatarURL)
-            : photos.compactMap(\.thumbURL)
-        guard !urls.isEmpty else { return }
-        let images = dependencies.images
-        Task {
-            for url in urls {
-                _ = await images.image(for: url, maxPixelSize: size)
-            }
-        }
-    }
-
-    static func resolve(rows: [OnThisDayItem], data: any MemoryDataSource) async throws -> [Year] {
-        let posts = try await data.postsWithMedia(ids: rows.map(\.postID))
-        let byPost = Dictionary(posts.map { ($0.post.id, $0) }, uniquingKeysWith: { first, _ in first })
-        let profiles = try await data.profiles(ids: Array(Set(rows.map(\.authorID))))
-        let byUser = Dictionary(profiles.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+    /// Posts → memories in the order of `ids` (RLS drops posts hidden by a block).
+    private func resolve(_ ids: [PostID], data: any MemoryDataSource) async throws -> [Memory] {
+        let posts = try await data.postsWithMedia(ids: ids)
+        let profiles = try await data.profiles(ids: Array(Set(posts.map(\.post.authorID))))
+        let names = Dictionary(profiles.map { ($0.id, $0.firstName ?? "") }, uniquingKeysWith: { first, _ in first })
         var paths: [String] = []
         for post in posts {
             if let path = post.media?.imagePath(for: .display) { paths.append(path) }
-            if let path = post.media?.imagePath(for: .thumb) { paths.append(path) }
+            if let path = post.media?.originalPath { paths.append(path) }
         }
-        paths += profiles.compactMap(\.avatarPath)
         let urls = try await data.signedURLs(paths: paths)
-        return OnThisDayCalendar.years(rows).compactMap { group -> Year? in
-            let photos = group.rows.compactMap { row -> Photo? in
-                guard let post = byPost[row.postID] else { return nil }
-                let media = post.media
-                let profile = byUser[row.authorID]
-                var aspect: CGFloat?
-                if let width = media?.width, let height = media?.height, width > 0, height > 0 {
-                    aspect = CGFloat(width) / CGFloat(height)
-                }
-                return Photo(
-                    id: row.postID,
-                    authorName: profile?.firstName ?? "",
-                    avatarURL: profile?.avatarPath.flatMap { urls[$0] },
-                    displayURL: media?.imagePath(for: .display).flatMap { urls[$0] },
-                    thumbURL: media?.imagePath(for: .thumb).flatMap { urls[$0] },
-                    aspectRatio: aspect,
-                    createdAt: row.createdAt
-                )
+        return posts.map { post in
+            Memory(
+                id: post.post.id,
+                authorID: post.post.authorID,
+                authorName: names[post.post.authorID] ?? "",
+                displayURL: post.media?.imagePath(for: .display).flatMap { urls[$0] },
+                originalURL: post.media?.originalPath.flatMap { urls[$0] },
+                createdAt: post.post.createdAt,
+                isMine: post.post.authorID == me
+            )
+        }
+    }
+
+    // MARK: Feature intro (C-29, once per account)
+
+    static func introKey(_ user: UserID) -> String {
+        "memory.onthisday.introSeen." + user.rawValue // provenance-ok: defaults key, not UI text
+    }
+
+    private func showIntroIfFirstTime() {
+        guard phase == .loaded, let me, !dependencies.defaults.bool(forKey: Self.introKey(me)) else { return }
+        showsIntro = true
+    }
+
+    /// "Try it out" (or the sheet dismissed): never shown again on this account.
+    func dismissIntro() {
+        showsIntro = false
+        if let me { dependencies.defaults.set(true, forKey: Self.introKey(me)) }
+    }
+
+    // MARK: The dial (`layout.onthisday.dial`)
+
+    /// One slot clockwise: the next (older) memory; in shuffle mode a new random pick once the picks run out.
+    /// Plays `haptic.global.select` when the memory changes. Returns whether it moved (or started a pick).
+    @discardableResult
+    func next(change: Change = .dial) -> Bool {
+        guard phase == .loaded else { return false }
+        switch mode {
+        case .day:
+            guard index + 1 < memories.count else { return false }
+            move(to: index + 1, change: change)
+            return true
+        case .shuffle:
+            guard !isPicking else { return false }
+            if index + 1 < picks.count {
+                move(to: index + 1, change: change)
+                return true
             }
-            return photos.isEmpty ? nil : Year(yearsAgo: group.yearsAgo, photos: photos)
+            guard hasUnshownHistory else { return false }
+            Task { await pickRandom(change: change) }
+            return true
         }
     }
 
-    // MARK: Navigation (`layout.onthisday.navigation`)
+    /// One slot counter-clockwise: the previous memory (or the previous pick). Stops at the first.
+    @discardableResult
+    func previous() -> Bool {
+        guard phase == .loaded, canGoPrevious else { return false }
+        move(to: index - 1, change: .dial)
+        return true
+    }
 
-    /// Right half: the next (older) year; on the oldest year it closes the day.
-    func next() {
-        if index + 1 < years.count {
-            index += 1
-            preloadUpcoming()
-        } else {
-            isFinished = true
+    private func move(to newIndex: Int, change: Change) {
+        lastChange = change
+        index = newIndex
+        dependencies.haptics(Tokens.Haptics.globalSelect)
+        preloadNeighbours()
+    }
+
+    // MARK: Play / pause (`duration.onthisday.playHold`)
+
+    /// The dial centre. Playing advances one memory every `duration.onthisday.playHold` and stops after the last;
+    /// from the last memory, play starts again at the first.
+    func togglePlay() {
+        if isPlaying {
+            stopPlaying()
+            return
+        }
+        guard phase == .loaded, !list.isEmpty else { return }
+        if mode == .day, index + 1 >= memories.count, memories.count > 1 {
+            move(to: 0, change: .play)
+        }
+        isPlaying = true
+        let sleep = dependencies.sleep
+        let hold = Tokens.Durations.onthisdayPlayHold
+        playTask?.cancel()
+        playTask = Task { [weak self] in
+            while true {
+                do {
+                    try await sleep(hold)
+                } catch {
+                    return
+                }
+                guard let self, !Task.isCancelled, self.isPlaying else { return }
+                if self.mode == .shuffle, self.index + 1 >= self.picks.count {
+                    guard self.hasUnshownHistory else {
+                        self.stopPlaying()
+                        return
+                    }
+                    await self.pickRandom(change: .play)
+                } else if !self.next(change: .play) {
+                    self.stopPlaying()
+                    return
+                }
+                if self.mode == .day, self.index + 1 >= self.memories.count {
+                    // The last memory stays in view for its time, then play stops (play glyph again).
+                    try? await sleep(hold)
+                    self.stopPlaying()
+                    return
+                }
+            }
         }
     }
 
-    /// Left half: the previous (newer) year; nothing on the newest year.
-    func previous() {
-        if index > 0 { index -= 1 }
+    func stopPlaying() {
+        playTask?.cancel()
+        playTask = nil
+        isPlaying = false
     }
 
-    func close() {
-        isFinished = true
+    // MARK: Shuffle (the dice, RM-5)
+
+    private var shownIDs: Set<PostID> { Set(picks.map(\.id)) }
+
+    private var hasUnshownHistory: Bool {
+        guard let historyWeeks else { return true }
+        let shown = shownIDs
+        return historyWeeks.contains { week in week.postIDs.contains { !shown.contains($0) } }
+    }
+
+    /// The dice: a random memory from the group's whole history; the subtitle switches to `onthisday.subtitle.shuffle`
+    /// and the dial steps through further random picks.
+    func shuffle() async {
+        guard phase == .loaded, !isPicking else { return }
+        stopPlaying()
+        picks = []
+        await pickRandom(change: .dial, startsShuffle: true)
+    }
+
+    private func pickRandom(change: Change, startsShuffle: Bool = false) async {
+        guard let data = dependencies.data, !isPicking else { return }
+        isPicking = true
+        defer { isPicking = false }
+        do {
+            let weeks = try await loadHistory(data: data)
+            let shown = shownIDs
+            let candidates = weeks.compactMap { week -> [PostID]? in
+                let unshown = week.postIDs.filter { !shown.contains($0) }
+                return unshown.isEmpty ? nil : unshown
+            }
+            guard !candidates.isEmpty else { return }
+            let week = candidates[min(candidates.count - 1, max(0, randomIndex(candidates.count)))]
+            let postID = week[min(week.count - 1, max(0, randomIndex(week.count)))]
+            guard let memory = try await resolve([postID], data: data).first else {
+                // Hidden by a block or gone meanwhile: leave it out of the pool and try another.
+                historyWeeks = historyWeeks?.map { HistoryWeek(weekStart: $0.weekStart, postIDs: $0.postIDs.filter { $0 != postID }) }
+                return
+            }
+            picks.append(memory)
+            if startsShuffle { mode = .shuffle }
+            move(to: picks.count - 1, change: change)
+        } catch {
+            dependencies.haptics(Tokens.Haptics.globalError)
+            dependencies.toasts.show(MemoryFailure(error) == .offline ? Copy.onthisdayOfflineDetail : Copy.onthisdayErrorDetail)
+        }
+    }
+
+    /// `group_history_weeks` in pages of `p_limit` (the API's clamp, 52) until a page comes back short; cached per session.
+    private func loadHistory(data: any MemoryDataSource) async throws -> [HistoryWeek] {
+        if let historyWeeks { return historyWeeks }
+        let key = "onthisday.history." + groupID.rawValue // provenance-ok: cache key
+        if let cached = dependencies.cache.value([HistoryWeek].self, key: key, user: me) {
+            historyWeeks = cached
+            return cached
+        }
+        let pageSize = Self.historyPageSize
+        var weeks: [HistoryWeek] = []
+        var before: LocalDate?
+        while true {
+            let page = try await data.historyWeeks(groupID: groupID, before: before, limit: pageSize)
+            weeks += page
+            guard page.count == pageSize, let last = page.last else { break }
+            before = last.weekStart
+        }
+        historyWeeks = weeks
+        dependencies.cache.set(weeks, key: key, user: me, postIDs: Set(weeks.flatMap(\.postIDs)))
+        return weeks
+    }
+
+    /// `p_limit` of the shuffle's history pages: the API's upper clamp (docs/API.md `group_history_weeks`: 1–52).
+    static let historyPageSize = 52 // provenance-ok: API page-size bound (docs/API.md group_history_weeks), not a design value
+
+    // MARK: Save, share, report, delete (the '•••' menu, D)
+
+    /// "Save to Camera Roll": the original, add-only photo access. `haptic.global.success` + `onthisday.toast.saved`; denied →
+    /// the native alert (`onthisday.saveDenied.*`); failed → `haptic.global.error` + `onthisday.saveFailed`.
+    func save() async {
+        guard let current, let data = dependencies.data, let url = current.originalURL ?? current.displayURL else { return }
+        do {
+            let bytes = try await data.downloadData(from: url)
+            try await savePhoto(bytes)
+            dependencies.haptics(Tokens.Haptics.globalSuccess)
+            dependencies.toasts.show(Copy.onthisdayToastSaved)
+        } catch {
+            dependencies.haptics(Tokens.Haptics.globalError)
+            if Self.isAccessDenied(error) {
+                showsSaveDenied = true
+            } else {
+                dependencies.toasts.show(Copy.onthisdaySaveFailed)
+            }
+        }
+    }
+
+    static func isAccessDenied(_ error: Error) -> Bool {
+        if case .notAuthorized? = error as? PhotoLibraryService.LibraryError { return true }
+        return false
+    }
+
+    /// The memory's original for the share sheet (downloaded when a destination is picked).
+    var shareItem: MemoryShareImage? {
+        guard let current, let data = dependencies.data, let url = current.originalURL ?? current.displayURL else { return nil }
+        return MemoryShareImage(url: url, name: current.id.rawValue, data: data)
+    }
+
+    /// "Report Post" (someone else's memory) → `safety.report` (target kind post).
+    func report() {
+        guard let current, !current.isMine else { return }
+        stopPlaying()
+        dependencies.openReport(ReportTarget(
+            kind: .post, id: current.id.rawValue,
+            person: BlockTarget(userID: current.authorID.rawValue, firstName: current.authorName)
+        ))
+    }
+
+    /// "Delete Post" (your own memory): asks first.
+    func requestDelete() {
+        guard let current, current.isMine else { return }
+        stopPlaying()
+        deleteCandidate = current
+    }
+
+    /// "Yes, delete": `haptic.global.warning`, `delete_post`, then `onthisday.toast.deleted` and the memory leaves the dial.
+    func confirmDelete() async {
+        guard let memory = deleteCandidate, let data = dependencies.data else { return }
+        deleteCandidate = nil
+        dependencies.haptics(Tokens.Haptics.globalWarning)
+        do {
+            try await data.deletePost(id: memory.id)
+            removePost(memory.id)
+            dependencies.toasts.show(Copy.onthisdayToastDeleted)
+        } catch {
+            dependencies.haptics(Tokens.Haptics.globalError)
+            dependencies.toasts.show(MemoryFailure(error) == .offline ? Copy.onthisdayOfflineDetail : Copy.onthisdayErrorDetail)
+        }
     }
 
     // MARK: Deletions (docs/API.md §8.2)
 
-    /// Drops a deleted photo, its year when it was the last one, and closes the day when none remain.
+    /// Drops a deleted memory from the dial; when it was in view, the next one (or the previous) shows. With none left,
+    /// the C-27 empty block.
     func removePost(_ postID: PostID) {
         dependencies.cache.purge(postID: postID)
-        let currentID = currentYear?.id
-        for position in years.indices {
-            years[position].photos.removeAll { $0.id == postID }
-        }
-        years.removeAll { $0.photos.isEmpty }
-        if years.isEmpty {
-            isFinished = true
+        historyWeeks = historyWeeks?.map { HistoryWeek(weekStart: $0.weekStart, postIDs: $0.postIDs.filter { $0 != postID }) }
+        let currentID = current?.id
+        memories.removeAll { $0.id == postID }
+        picks.removeAll { $0.id == postID }
+        if mode == .shuffle, picks.isEmpty {
+            mode = .day
             index = 0
-            return
         }
-        if let currentID, let kept = years.firstIndex(where: { $0.id == currentID }) {
+        if let currentID, let kept = list.firstIndex(where: { $0.id == currentID }) {
             index = kept
         } else {
-            index = min(index, years.count - 1)
+            index = min(index, max(list.count - 1, 0))
+        }
+        if list.isEmpty {
+            stopPlaying()
+            phase = .empty
         }
     }
 
@@ -254,47 +520,56 @@ final class OnThisDayModel {
     func stopListening() {
         deletionTask?.cancel()
         deletionTask = nil
+        stopPlaying()
     }
 
-    // MARK: Text
+    // MARK: Images
 
-    func bannerLabel(for year: Year) -> String {
-        MemoryFormat.yearsAgo(year.yearsAgo)
-    }
+    /// Pixel size of the page's longest side (set by the screen); photos are decoded at it.
+    var imagePixelSize: CGFloat?
 
-    func meta(for photo: Photo) -> String {
-        Copy.onthisdayMemoryMeta(
-            weekday: MemoryFormat.metaWeekday(photo.createdAt, timeZone: timeZone),
-            time: MemoryFormat.metaTime(photo.createdAt, timeZone: timeZone)
-        )
-    }
-
-    func accessibilityLabel(for photo: Photo) -> String {
-        Copy.onthisdayA11yPhoto(
-            name: photo.authorName,
-            weekday: MemoryFormat.spokenWeekday(photo.createdAt, timeZone: timeZone),
-            time: MemoryFormat.metaTime(photo.createdAt, timeZone: timeZone)
-        )
+    /// Decodes the memories on both sides of the one in view, so a dial step cross-fades into a photo, not an empty page.
+    func preloadNeighbours() {
+        guard let size = imagePixelSize else { return }
+        let urls = [index - 1, index + 1].compactMap { list.indices.contains($0) ? list[$0].displayURL : nil }
+        guard !urls.isEmpty else { return }
+        let images = dependencies.images
+        Task {
+            for url in urls {
+                _ = await images.image(for: url, maxPixelSize: size)
+            }
+        }
     }
 }
 
-/// The group-screen entry: visible only while `on_this_day` returns rows.
+/// The memory's original for the native share sheet, downloaded when the member picks a destination.
+struct MemoryShareImage: Transferable {
+    let url: URL
+    let name: String
+    let data: any MemoryDataSource
+
+    static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(exportedContentType: .jpeg) { item in
+            SentTransferredFile(try await item.data.downloadFile(from: item.url, name: item.name + ".jpg")) // provenance-ok: file extension of the JPEG
+        }
+    }
+}
+
+/// The group-screen entry: visible only while `on_this_day` returns rows (A in onthisday.md).
 @MainActor
 @Observable
 final class OnThisDayEntryModel {
-    /// Title (`onthisday.entry.title`) and second line (the newest memory's banner label).
-    struct Content: Equatable {
-        let title: String
-        let subtitle: String
-    }
-
-    var content: Content?
+    private(set) var content: MemoryEntryContent?
     let groupID: GroupID
     private let dependencies: MemoryDependencies
 
     init(groupID: GroupID, dependencies: MemoryDependencies) {
         self.groupID = groupID
         self.dependencies = dependencies
+    }
+
+    func open() {
+        dependencies.openOnThisDay(groupID.rawValue)
     }
 
     func refresh() async {
@@ -304,24 +579,30 @@ final class OnThisDayEntryModel {
         }
         let me = await data.currentUser()
         let cacheKey = "onthisday.entry." + groupID.rawValue // provenance-ok: cache key
-        if content == nil, let cached = dependencies.cache.value(Content.self, key: cacheKey, user: me) {
+        if content == nil, let cached = dependencies.cache.value(MemoryEntryContent.self, key: cacheKey, user: me) {
             content = cached
         }
         do {
-            let group = try await data.group(id: groupID)
-            guard let group else {
+            guard let group = try await data.group(id: groupID) else {
                 content = nil
                 dependencies.cache.remove(key: cacheKey)
                 return
             }
             let day = OnThisDayCalendar.localDate(now: dependencies.now(), timeZone: group.resolvedTimeZone)
             let rows = try await data.onThisDay(groupID: groupID, localDate: day)
-            guard let newest = rows.map(\.yearsAgo).min() else {
+            guard let newest = rows.first else {
                 content = nil
                 dependencies.cache.remove(key: cacheKey)
                 return
             }
-            let fresh = Content(title: Copy.onthisdayEntryTitle(group: group.name), subtitle: MemoryFormat.yearsAgo(newest))
+            let photo = try await data.postsWithMedia(ids: [newest.postID]).first?.media?.imagePath(for: .display)
+            let fresh = MemoryEntryContent(
+                title: Copy.onthisdayEntryTitle,
+                subtitle: Copy.onthisdayEntrySubtitle(date: MemoryFormat.dayMonth(day)),
+                buttonTitle: Copy.onthisdayEntryButton,
+                icon: Tokens.Icons.globalRewind,
+                photoPath: photo
+            )
             content = fresh
             dependencies.cache.set(fresh, key: cacheKey, user: me, postIDs: Set(rows.map(\.postID)))
         } catch {

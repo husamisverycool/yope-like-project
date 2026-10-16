@@ -5,7 +5,7 @@ package app.ui.recap
  * measured by the capture group as `collage.view.layout.screen` + `collage.share.layout.pill` (MERGE_DECISIONS
  * RC-15). One implementation for every surface that shows it (lead decision, Pass 4):
  *
- *   - collage.view / collage.share (capture): the collage page as the card, dots in the bottom row, "Share" pill;
+ *   - collage.view / collage.share (capture): the collage page as the card, dots below the page, "Share" pill;
  *   - week.recap (social): memory's recap card / cover pages, dots below the page, select-photos thumbnail
  *     leading, "Save as Album" pill (text role `pill`);
  *   - year.story / birthday.tribute (memory): the story cards, position pill top-leading, play / pause circle
@@ -31,11 +31,10 @@ package app.ui.recap
  *     the caller gives it its own leading padding;
  *  5. the **bottom row**, centred `bottomRowCentreFromScreenBottom` (59.2) above the screen bottom: optional
  *     [bottomLeading] (a C-11 circle or the select-photos thumbnail — the caller pads it, normally
- *     `size.global.buttonMarginH`), the page dots when [dots] is [RecapDots.InBottomRow], and the trailing
- *     [pill] at `size.global.buttonMarginH`;
- *  6. the **page dots** (C-31 on media) only with 2+ pages: in the bottom row, below the page
- *     ([RecapDots.BelowPage], centre `offset` under the media page — year.story / week.recap use
- *     `dimension.year.story.dots.offset`), or [RecapDots.Hidden]. TalkBack reads [dotsDescription] (default
+ *     `size.global.buttonMarginH`) and the trailing [pill] at `size.global.buttonMarginH`;
+ *  6. the **page dots** (C-31 on media) only with 2+ pages: by default centred `dimension.year.story.dots.offset`
+ *     (16.1) below the media page ([RecapDots.BelowPage] — ST-04 measures 16.3 there, not on the pill's line;
+ *     MERGE_DECISIONS RC-19), or [RecapDots.InBottomRow] / [RecapDots.Hidden]. TalkBack reads [dotsDescription] (default
  *     `global.a11y.pagePosition`, "2 of 3"); a tap on the dots' trailing half moves to the next page, on the
  *     leading half to the previous one (platform page-control behaviour);
  *  7. the **pill** ([RecapPill]): the recap-size C-09 light pill — height 43.5, horizontal padding 23
@@ -104,11 +103,11 @@ import app.ui.text.TextRoles
 
 /** Where the recap preview's page dots sit (C-31 on media). Shown only with 2+ pages. */
 sealed interface RecapDots {
-    /** Centred in the bottom row (collage.view). */
+    /** Centred on the bottom row's centre line (not used by Retro's 2026 render; kept for compositions). */
     data object InBottomRow : RecapDots
 
-    /** Centred, their centre [offset] below the media page's bottom edge (week.recap, year.story summary). */
-    data class BelowPage(val offset: Dp) : RecapDots
+    /** Centred, their centre [offset] below the media page's bottom edge (ST-04; every caller). */
+    data class BelowPage(val offset: Dp = Tokens.Sizes.yearStoryDotsOffset) : RecapDots
 
     /** No dots (year.story cards). */
     data object Hidden : RecapDots
@@ -173,7 +172,7 @@ fun RecapPreviewScreen(
     closeContentDescription: String,
     modifier: Modifier = Modifier,
     pill: RecapPill? = null,
-    dots: RecapDots = RecapDots.InBottomRow,
+    dots: RecapDots = RecapDots.BelowPage(),
     dotsDescription: String? = null,
     swipeEnabled: Boolean = true,
     backdropBlur: Dp = RecapPreviewDefaults.BackdropBlur,

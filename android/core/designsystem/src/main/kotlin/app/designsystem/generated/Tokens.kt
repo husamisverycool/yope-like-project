@@ -836,7 +836,7 @@ object Tokens {
             const val closeCentreBelowPageTop: Float = 38f
             const val card: String = "the composed page, aspect-fit and centred in the media page inset by 76 pt top and bottom (close-circle centre 38 + size.global.circleButton ÷ 2 + the 20-pt circle → photo gap of camera.sendto.layout.preview) and at least 32 pt at the sides; clipped to collage.view.layout.page.outerRadiusRatio × its width (393 × 852: 307 × 546 pt)"
             const val bottomRowCentreFromScreenBottom: Float = 59.2f
-            const val bottomRow: String = "page dots (C-31) centred; 'Share' pill (collage.share.layout.pill) at size.global.buttonMarginH from the trailing edge"
+            const val bottomRow: String = "'Share' pill (collage.share.layout.pill) at size.global.buttonMarginH from the trailing edge; page dots (C-31) centred, dimension.year.story.dots.offset below the media page (ST-04; MERGE_DECISIONS RC-19)"
         }
         /** Apple HIG · global.system · semantic colours of native components on iOS (alerts, menus, share sheet, pickers, keyboard, system permission prompts); dynamic — they follow Light / Dark · PLATFORM — token `color.global.system.ios` */
         object GlobalSystemIos {

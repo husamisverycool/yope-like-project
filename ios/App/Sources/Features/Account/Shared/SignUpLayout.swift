@@ -13,7 +13,14 @@ import SwiftUI
 /// hit area at least `size.global.minTouchTarget.ios`.
 struct FormBackButton: View {
     let accessibilityLabel: String
+    var identifier: String = "form.back" // provenance-ok: accessibility identifier for UI tests
     let action: () -> Void
+
+    init(accessibilityLabel: String, identifier: String = "form.back", action: @escaping () -> Void) { // provenance-ok: accessibility identifier
+        self.accessibilityLabel = accessibilityLabel
+        self.identifier = identifier
+        self.action = action
+    }
 
     var body: some View {
         Button(action: action) {
@@ -25,6 +32,7 @@ struct FormBackButton: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text(accessibilityLabel))
+        .accessibilityIdentifier(identifier)
         .padding(.leading, Tokens.Sizes.globalBackInset)
     }
 }
@@ -62,8 +70,8 @@ struct OnboardingHeading: View {
 ///   code cannot go back).
 /// - the heading (`OnboardingHeading`) at `size.global.screenMargin`, the title's first baseline
 ///   `size.global.titleTop` below the safe-area top (C-01 metric);
-/// - `content` (fields, rows) `size.global.titleToContent` below the explanation's last baseline, inside
-///   `size.global.screenMargin`;
+/// - `content` (fields, rows) `size.global.titleToContent` below the explanation's last baseline, full width (each
+///   element applies its own inset: C-12 fields `size.global.screenMargin`, C-14 groups their own);
 /// - `bottom` (the C-05 capsule, a C-08 link) pinned `size.global.buttonMarginH` above the keyboard or the bottom safe
 ///   area, `size.global.buttonMarginH` from the sides; the stack scrolls when it no longer fits (large Dynamic Type).
 /// - `replacement` (offline, not configured): the C-27 block replaces the content and the bottom, centred in the space
@@ -98,13 +106,13 @@ struct SignUpLayout<Content: View, Bottom: View>: View {
                 VStack(spacing: 0) {
                     MetricStack {
                         OnboardingHeading(title: title, explanation: explanation)
+                            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
                             .metricGap(Tokens.Sizes.globalTitleTop, from: .top, to: .firstBaseline)
                         if replacement == nil {
                             content()
                                 .metricGap(Tokens.Sizes.globalTitleToContent, from: .lastBaseline, to: .top)
                         }
                     }
-                    .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
                     if let replacement {
                         Spacer(minLength: 0)
                         replacement

@@ -31,7 +31,7 @@ struct CodeScreen: View {
 
     var body: some View {
         SignUpLayout(
-            back: FormBackButton(accessibilityLabel: Copy.authCodeBackAccessibilityLabel, action: onBack),
+            back: FormBackButton(accessibilityLabel: Copy.authCodeBackAccessibilityLabel, identifier: "auth.code.back", action: onBack),
             title: Copy.authCodeTitle,
             explanation: Copy.authCodeSubtitle(phone: model.phone),
             replacement: network.isOffline || model.failedOffline ? .signUpOffline { model.retryAfterOffline() } : nil
@@ -42,10 +42,6 @@ struct CodeScreen: View {
                 Task { await model.verify(onVerified: onVerified) }
             }
             .accessibilityIdentifier("auth.code.continue")
-        }
-        .overlay(alignment: .topLeading) {
-            // UI tests find the chevron by this identifier.
-            Color.clear.frame(width: 0, height: 0).accessibilityIdentifier("auth.code.back")
         }
         .dsHaptic(Tokens.Haptics.globalSuccess, trigger: model.successCount)
         .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
@@ -93,6 +89,7 @@ struct CodeScreen: View {
             resendLine
                 .metricGap(Tokens.Sizes.globalSectionHeaderToContent, from: .lastBaseline, to: .capTop)
         }
+        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
     }
 
     /// `auth.code.resend.prefix` (caption, grey) + "Send again" (C-08 link: text role `listTitle`, grey; dimmed to
@@ -109,16 +106,14 @@ struct CodeScreen: View {
                 Text(Copy.authCodeResend)
                     .dsTextStyle(TextRole.listTitle)
                     .foregroundStyle(model.isResendLocked ? Tokens.Colors.globalTextTertiary : Tokens.Colors.globalTextSecondary)
+                    .frame(minHeight: Tokens.Sizes.globalMinTouchTargetIos)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .disabled(model.isResendLocked)
-            .minimumHitArea(drawn: CGSize(width: Tokens.Sizes.globalMinTouchTargetIos, height: Tokens.Sizes.globalIcon))
             .dsAnimation(ComponentMotion.crossfade, value: model.isResendLocked)
             .accessibilityIdentifier("auth.code.resend")
         }
-        .lineLimit(1)
-        .minimumScaleFactor(Tokens.Layouts.GlobalPhotoScrim.startAt)
         .capHeight(of: TextRole.caption)
     }
 

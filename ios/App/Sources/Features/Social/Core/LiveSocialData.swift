@@ -2,7 +2,6 @@
 import AppData
 import AppModels
 import Foundation
-import Supabase
 
 /// The production data source: AppData repositories, offline cache, signed URLs, realtime and reachability.
 struct LiveSocialData: SocialDataSource {
@@ -72,19 +71,8 @@ struct LiveSocialData: SocialDataSource {
         try await environment.chat.message(id: id)
     }
 
-    /// `from("messages").eq("reply_to_post_id", post).order(created_at)` (docs/API.md §5.9). ChatRepository has no
-    /// such read, so it runs here on the shared client (decoded with the client's own date strategy).
     func replies(postID: PostID) async throws -> [Message] {
-        do {
-            return try await environment.client.supabase.from("messages").select()
-                .eq("reply_to_post_id", value: postID.rawValue)
-                .order("created_at", ascending: true)
-                .execute()
-                .value
-        } catch let error as URLError {
-            throw error.code == .notConnectedToInternet || error.code == .networkConnectionLost
-                ? DataError.offline : error
-        }
+        try await replyRows(postID: postID)
     }
 
     func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int) async throws -> Message {
