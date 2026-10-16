@@ -7,12 +7,6 @@ public enum Tokens {
         /// Retro · albums.view · album grid cell (portrait) · SOURCED
         /// token: `albums.view.aspectRatio.gridCell`
         public static let albumsViewAspectRatioGridCell: CGFloat = 0.8034
-        /// Retro · week.recap · collage card (2:3) · SOURCED
-        /// token: `week.recap.aspectRatio.card`
-        public static let weekRecapAspectRatioCard: CGFloat = 0.665
-        /// Retro · week.recap · collage card grid cell · SOURCED
-        /// token: `week.recap.aspectRatio.gridCell`
-        public static let weekRecapAspectRatioGridCell: CGFloat = 1.1296
         /// Retro · week.recap · recap list card (cover photo) · SOURCED
         /// token: `week.recap.aspectRatio.weekCard`
         public static let weekRecapAspectRatioWeekCard: CGFloat = 1.3386
@@ -203,9 +197,6 @@ public enum Tokens {
         /// Retro · week.edit · columns of the photo grid in the recap editor · SOURCED
         /// token: `week.edit.count.gridColumns`
         public static let weekEditCountGridColumns: CGFloat = 4
-        /// Retro · week.recap · columns of the collage card's photo grid · SOURCED
-        /// token: `week.recap.count.gridColumns`
-        public static let weekRecapCountGridColumns: CGFloat = 4
     }
     public enum Durations {
         /// Supabase Auth documentation · auth.code · time after a code request before 'Send again' is enabled · VERIFIED
@@ -419,9 +410,6 @@ public enum Tokens {
         /// Retro · paywall · plan card title ('Annual', 'Monthly') · SOURCED
         /// token: `paywall.fontSize.planTitle`
         public static let paywallFontSizePlanTitle: CGFloat = 24
-        /// Retro · week.recap · group name in the collage card footer (semibold) · SOURCED
-        /// token: `week.recap.fontSize.cardName`
-        public static let weekRecapFontSizeCardName: CGFloat = 13
         /// Retro · widget.home.small · name and group lines of the widget text stack (both lines the same size) · SOURCED
         /// token: `widget.home.small.fontSize.overlay`
         public static let widgetHomeSmallFontSizeOverlay: CGFloat = 11
@@ -502,9 +490,6 @@ public enum Tokens {
         /// Retro · paywall · plan card title weight · SOURCED
         /// token: `paywall.fontWeight.planTitle`
         public static let paywallFontWeightPlanTitle: Font.Weight = .bold
-        /// Retro · week.recap · group name in the collage card footer · SOURCED
-        /// token: `week.recap.fontWeight.cardName`
-        public static let weekRecapFontWeightCardName: Font.Weight = .semibold
         /// Retro · widget.home.small · name and group lines of the widget text stack · SOURCED
         /// token: `widget.home.small.fontWeight.overlay`
         public static let widgetHomeSmallFontWeightOverlay: Font.Weight = .regular
@@ -1158,6 +1143,7 @@ public enum Tokens {
             public static let order: String = "camera · groups (home) · walls (people) · me (profile) — the app's four destinations, unchanged"
             public static let glyphs: String = "camera icon.global.camera · groups icon.global.home · walls icon.global.group · me icon.global.wall"
             public static let badges: String = "none: no unread dot on our tabs (Retro's dot sits on its Activity tab, which this app does not have)"
+            public static let overMedia: String = "while the camera tab is selected the bar sits over the black camera surface: selected color.global.textOnMedia, unselected color.global.tabInactiveOnMedia (C-04 over-photo variant, RWA)"
         }
         /// Apple HIG · groups.screen · long-press menu on the group's photos · PLATFORM
         /// token: `groups.screen.layout.menu`
@@ -1531,9 +1517,9 @@ public enum Tokens {
             public static let gap: String = "size.global.stripGap"
             public static let cornerRadiusRatio: CGFloat = 0.051
             public static let footerHeightRatio: CGFloat = 0.21
-            public static let background: String = "color.global.surfaceElevated"
+            public static let background: String = "color.global.surfaceLight"
             public static let backdrop: String = "the cover photo blurred, full frame (layout.global.materials.backdrop)"
-            public static let footer: String = "year: font.global.display, text role headerTitle, color.global.textPrimary at the card padding, bottom-left; group name: text role listTitle, color.global.textPrimary, right-aligned; app line below it: text role meta, color.global.textSecondary"
+            public static let footer: String = "year: font.global.display, text role headerTitle, color.global.onSurfaceLight at the card padding, bottom-left; group name: text role listTitle, color.global.onSurfaceLight, right-aligned; app line below it: text role meta, color.global.textSecondary"
         }
         /// Retro + Spotify Wrapped + Meta developer docs · year.story · exported share image · SOURCED
         /// token: `layout.year.story.shareCard`
@@ -1871,23 +1857,17 @@ public enum Tokens {
         /// Retro · week.recap · the recap's pages (styles) · SOURCED
         /// token: `week.recap.layout.pages`
         public enum WeekRecapLayoutPages {
-            public static let page1: String = "collage card: white card (color.global.surfaceLight in both appearances) centred in the panel, week.recap.dimension.cardInsetH from the panel sides, shape week.recap.aspectRatio.card, corners week.recap.radius.card; photo grid week.recap.dimension.gridInset from the card's top and sides: week.recap.count.gridColumns columns, size.global.stripGap gaps, cells week.recap.aspectRatio.gridCell (aspect fill), outer corners week.recap.radius.grid, inner square; footer: 'Week {n}' (font.global.display, text role headerTitle, color.global.onSurfaceLight) leading at week.recap.dimension.footerInset, baseline week.recap.dimension.footerBaseline above the card bottom; trailing stack right-aligned at the same inset: group name (week.recap.fontSize.cardName / .fontWeight.cardName, color.global.onSurfaceLight) over the date range (text role meta, color.global.textSecondary), the range's baseline on the week's baseline, week.recap.dimension.footerLinePitch apart; the recap text (if any) as a note under the card (week.recap.layout.note)"
-            public static let page2: String = "cover: the first item fills the panel (aspect fill, panel corners) under layout.global.photoScrim; 'Week {n}' (headerTitle serif, color.global.textOnMedia) leading at week.recap.dimension.coverTextInset, baseline week.recap.dimension.coverTextBaseline above the panel bottom; group name / date range stack trailing at the same inset (as page 1, color.global.textOnMedia / color.global.textSecondary)"
-            public static let dots: String = "C-31 with two pages"
+            public static let page1: String = "card: layout.year.story.recapCard (memory group: width ratio, padding, 4 columns up to 6 rows, cell aspect, size.global.stripGap gaps, corner ratio, footer) centred in the frame; footer text mapped: the year → 'Week {n}' (font.global.display, text role headerTitle), the name → the group name, the app line → the date range (text role meta, color.global.textSecondary); the recap text (if any) as a note under the card (week.recap.layout.note)"
+            public static let page2: String = "cover: the first item fills the frame (aspect fill, frame corners) under layout.global.photoScrim; 'Week {n}' (headerTitle serif, color.global.textOnMedia) and the name / range stack at dimension.year.story.frame.padding, baseline dimension.year.story.footer.baseline above the frame bottom (memory group)"
+            public static let fill: String = "photos fill the card grid per week.recap.layout.gridFill"
         }
         /// Retro · week.recap · one recap: preview screen (Retro recap preview) · SOURCED
         /// token: `week.recap.layout.preview`
         public enum WeekRecapLayoutPreview {
             public static let page: String = "color.global.backgroundDeep in both appearances (photo.viewer.layout.appearance rule)"
-            public static let panel: String = "a rounded panel inset week.recap.dimension.panelInset from the screen sides, from the top safe area to week.recap.dimension.panelToControls above the controls row; corners week.recap.radius.panel; filled with the blurred cover photo (layout.global.materials.backdrop)"
-            public static let close: String = "C-11 glass circle (size.global.circleButtonSmall, color.global.glass, icon.global.close in color.global.textOnMedia) at week.recap.dimension.closeInsetLeading / .closeInsetTop inside the panel"
-            public static let pages: String = "week.recap.layout.pages, swiped sideways"
-            public static let controls: String = "row under the panel, height week.recap.dimension.controlHeight: leading C-11 circle (diameter = controlHeight, color.global.controlOnDeep, icon.global.gallery) → week.edit; centre C-31 page dots (on media); trailing C-09 light pill week.recap.saveAsAlbum (height = controlHeight, padding week.recap.dimension.pillPaddingH) → album sheet; both week.recap.dimension.controlInset from the screen sides"
-        }
-        /// Apple HIG · week.recap · Dynamic Type style the card-name size scales with · PLATFORM
-        /// token: `week.recap.layout.textStyleMap`
-        public enum WeekRecapLayoutTextStyleMap {
-            public static let cardName: String = "footnote"
+            public static let frame: String = "the recap-preview media page of collage.view.layout.screen (capture group, ST-04 2026): full width, safe-area top to mediaPageBottomFromScreenBottom, corners mediaPageCornerRadius, the cover photo blurred inside (layout.global.materials.backdrop); its close circle (C-11 on media) at closeCentreFromTrailing / closeCentreBelowPageTop"
+            public static let pages: String = "week.recap.layout.pages, swiped sideways inside the frame; page dots (C-31, on media) centred dimension.year.story.dots.offset below the frame (memory group)"
+            public static let bottomRow: String = "centre at collage.view.layout.screen bottomRowCentreFromScreenBottom: leading the select-photos thumbnail (week.recap.dimension.selectThumb square, corners week.recap.radius.selectThumb, week.recap.dimension.selectThumbBorder border in color.global.surfaceLight, the recap's first item, aspect fill) at size.global.buttonMarginH → week.edit; trailing the C-09 light pill week.recap.saveAsAlbum laid out as collage.share.layout.pill (height, paddingHorizontal, trailingInset) → album sheet"
         }
         /// Retro · widget.android · AppWidgetProviderInfo of the Glance widget (default 2 × 2, resizable down to 100 dp) · SOURCED
         /// token: `widget.android.layout.provider`
@@ -2098,7 +2078,7 @@ public enum Tokens {
         public static let globalCardLarge: CGFloat = 36
         /// Retro · global · reply / comment field at the bottom of the viewer (48 pt high, rounded rectangle — not a capsule) · SOURCED
         /// token: `radius.global.commentField`
-        public static let globalCommentField: CGFloat = 12
+        public static let globalCommentField: CGFloat = 12.6
         /// Retro · global · search / text field corners (52 pt field) · SOURCED
         /// token: `radius.global.field`
         public static let globalField: CGFloat = 19
@@ -2114,18 +2094,15 @@ public enum Tokens {
         /// Retro · global · camera viewfinder corners — composition: the viewfinder is drawn as Retro's photo container (radius.global.card) · SOURCED
         /// token: `radius.global.viewfinder`
         public static let globalViewfinder: CGFloat = 18
-        /// Retro · week.recap · corners of the recap list cards and of the recap collage card · SOURCED
+        /// Retro · week.recap · corners of the recap list cards (week cards) · SOURCED
         /// token: `week.recap.radius.card`
         public static let weekRecapRadiusCard: CGFloat = 14
-        /// Retro · week.recap · outer corners of the collage card's photo grid (inner corners square) · SOURCED
-        /// token: `week.recap.radius.grid`
-        public static let weekRecapRadiusGrid: CGFloat = 7.9
         /// Retro · week.recap · recap note corners · SOURCED
         /// token: `week.recap.radius.note`
         public static let weekRecapRadiusNote: CGFloat = 18
-        /// Retro · week.recap · recap preview: corners of the blurred panel · SOURCED
-        /// token: `week.recap.radius.panel`
-        public static let weekRecapRadiusPanel: CGFloat = 23
+        /// Retro · week.recap · recap preview: corners of the select-photos thumbnail · SOURCED
+        /// token: `week.recap.radius.selectThumb`
+        public static let weekRecapRadiusSelectThumb: CGFloat = 9
         /// Retro · widget.android · Glance widget corner radius (root container), every Android version · SOURCED
         /// token: `widget.android.radius.widget`
         public static let widgetAndroidRadiusWidget: CGFloat = 22
@@ -2435,13 +2412,13 @@ public enum Tokens {
         public static let settingsRootSizeRowHeight: CGFloat = 58.7
         /// Retro · global · avatar in a comment row and inside the reply / comment field · SOURCED
         /// token: `size.global.avatarComment`
-        public static let globalAvatarComment: CGFloat = 30
+        public static let globalAvatarComment: CGFloat = 31.2
         /// Retro · global · avatar in a 3-column people grid (name centred below) · SOURCED
         /// token: `size.global.avatarGrid`
         public static let globalAvatarGrid: CGFloat = 81
         /// Retro · global · viewer / story header avatar including its white ring with a gap · SOURCED
         /// token: `size.global.avatarHeader`
-        public static let globalAvatarHeader: CGFloat = 39
+        public static let globalAvatarHeader: CGFloat = 40.7
         /// Retro · global · avatar beside a name above a friend card (home feed) · SOURCED
         /// token: `size.global.avatarList`
         public static let globalAvatarList: CGFloat = 26.5
@@ -2504,7 +2481,7 @@ public enum Tokens {
         public static let globalCircleButtonSmall: CGFloat = 32
         /// Retro · global · reply / comment field at the bottom of the viewer (own avatar leading, trailing glyph) · SOURCED
         /// token: `size.global.commentFieldHeight`
-        public static let globalCommentFieldHeight: CGFloat = 48
+        public static let globalCommentFieldHeight: CGFloat = 51.2
         /// Retro · global · empty-state outline glyph · SOURCED
         /// token: `size.global.emptyIcon`
         public static let globalEmptyIcon: CGFloat = 22
@@ -2594,7 +2571,7 @@ public enum Tokens {
         public static let globalPlanCardPadding: CGFloat = 27
         /// Retro · global · position pill in the viewer header ('3 of 4') · SOURCED
         /// token: `size.global.positionPillHeight`
-        public static let globalPositionPillHeight: CGFloat = 22
+        public static let globalPositionPillHeight: CGFloat = 26.3
         /// Retro · global · list row thumbnail → text · SOURCED
         /// token: `size.global.rowThumbGap`
         public static let globalRowThumbGap: CGFloat = 17
@@ -2661,39 +2638,6 @@ public enum Tokens {
         /// Retro · walls.mine · last header text baseline → action row top · SOURCED
         /// token: `walls.mine.dimension.nameToActions`
         public static let wallsMineDimensionNameToActions: CGFloat = 23
-        /// Retro · week.recap · collage card: panel side → card side · SOURCED
-        /// token: `week.recap.dimension.cardInsetH`
-        public static let weekRecapDimensionCardInsetH: CGFloat = 32.4
-        /// Retro · week.recap · recap preview: panel leading edge → close circle · SOURCED
-        /// token: `week.recap.dimension.closeInsetLeading`
-        public static let weekRecapDimensionCloseInsetLeading: CGFloat = 20.6
-        /// Retro · week.recap · recap preview: panel top → close circle · SOURCED
-        /// token: `week.recap.dimension.closeInsetTop`
-        public static let weekRecapDimensionCloseInsetTop: CGFloat = 23.6
-        /// Retro · week.recap · recap preview: diameter of the leading circle and height of the light pill · SOURCED
-        /// token: `week.recap.dimension.controlHeight`
-        public static let weekRecapDimensionControlHeight: CGFloat = 41.6
-        /// Retro · week.recap · recap preview: screen side → leading circle / trailing pill · SOURCED
-        /// token: `week.recap.dimension.controlInset`
-        public static let weekRecapDimensionControlInset: CGFloat = 28.9
-        /// Retro · week.recap · cover page: 'Week {n}' baseline → panel bottom · SOURCED
-        /// token: `week.recap.dimension.coverTextBaseline`
-        public static let weekRecapDimensionCoverTextBaseline: CGFloat = 28.3
-        /// Retro · week.recap · cover page: panel side → 'Week {n}' ink and → name stack ink · SOURCED
-        /// token: `week.recap.dimension.coverTextInset`
-        public static let weekRecapDimensionCoverTextInset: CGFloat = 19.5
-        /// Retro · week.recap · collage card footer: 'Week {n}' baseline (and the range baseline) → card bottom · SOURCED
-        /// token: `week.recap.dimension.footerBaseline`
-        public static let weekRecapDimensionFooterBaseline: CGFloat = 18.3
-        /// Retro · week.recap · collage card footer: card side → 'Week {n}' ink and → name / range ink · SOURCED
-        /// token: `week.recap.dimension.footerInset`
-        public static let weekRecapDimensionFooterInset: CGFloat = 15.3
-        /// Retro · week.recap · collage card footer: group-name baseline → date-range baseline · SOURCED
-        /// token: `week.recap.dimension.footerLinePitch`
-        public static let weekRecapDimensionFooterLinePitch: CGFloat = 18.3
-        /// Retro · week.recap · collage card: card edge → photo grid (top and sides) · SOURCED
-        /// token: `week.recap.dimension.gridInset`
-        public static let weekRecapDimensionGridInset: CGFloat = 7.1
         /// Retro · week.recap · collage card bottom → note top · SOURCED
         /// token: `week.recap.dimension.noteGap`
         public static let weekRecapDimensionNoteGap: CGFloat = 20
@@ -2703,15 +2647,12 @@ public enum Tokens {
         /// Retro · week.recap · recap note: vertical padding · SOURCED
         /// token: `week.recap.dimension.notePaddingV`
         public static let weekRecapDimensionNotePaddingV: CGFloat = 16
-        /// Retro · week.recap · recap preview: screen side → blurred panel · SOURCED
-        /// token: `week.recap.dimension.panelInset`
-        public static let weekRecapDimensionPanelInset: CGFloat = 11.2
-        /// Retro · week.recap · recap preview: panel bottom → controls row top · SOURCED
-        /// token: `week.recap.dimension.panelToControls`
-        public static let weekRecapDimensionPanelToControls: CGFloat = 12.4
-        /// Retro · week.recap · recap preview: light pill side → label ink · SOURCED
-        /// token: `week.recap.dimension.pillPaddingH`
-        public static let weekRecapDimensionPillPaddingH: CGFloat = 23.5
+        /// Retro · week.recap · recap preview: the leading select-photos thumbnail (square) · SOURCED
+        /// token: `week.recap.dimension.selectThumb`
+        public static let weekRecapDimensionSelectThumb: CGFloat = 37.7
+        /// Retro · week.recap · recap preview: white border of the select-photos thumbnail · SOURCED
+        /// token: `week.recap.dimension.selectThumbBorder`
+        public static let weekRecapDimensionSelectThumbBorder: CGFloat = 1.7
         /// Retro · week.recap · recap list card: 'Week {n}' baseline → date-range baseline · SOURCED
         /// token: `week.recap.dimension.weekCardLinePitch`
         public static let weekRecapDimensionWeekCardLinePitch: CGFloat = 20.6

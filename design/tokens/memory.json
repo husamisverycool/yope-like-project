@@ -475,9 +475,9 @@
         "gap": "size.global.stripGap",
         "cornerRadiusRatio": 0.051,
         "footerHeightRatio": 0.21,
-        "background": "color.global.surfaceElevated",
+        "background": "color.global.surfaceLight",
         "backdrop": "the cover photo blurred, full frame (layout.global.materials.backdrop)",
-        "footer": "year: font.global.display, text role headerTitle, color.global.textPrimary at the card padding, bottom-left; group name: text role listTitle, color.global.textPrimary, right-aligned; app line below it: text role meta, color.global.textSecondary"
+        "footer": "year: font.global.display, text role headerTitle, color.global.onSurfaceLight at the card padding, bottom-left; group name: text role listTitle, color.global.onSurfaceLight, right-aligned; app line below it: text role meta, color.global.textSecondary"
       },
       "source_app": "Retro",
       "surface": "year.story",
@@ -486,7 +486,7 @@
       "method": "ratios of the card width (518 px): padding 12.5 ÷ 518; cell 121.5 × 108.5 px; footer 109 ÷ 518; corner 26.4 ÷ 518",
       "level": "SOURCED",
       "precision": "±3 % (render)",
-      "notes": "Components C-34 'recap card' with its corner gap closed (≈5.1 % of the card width). The 2023 header render shows a 3-column variant; the in-app preview (4 columns) is used. The app line under the name is the owner's app name / domain — BLOCKED copy until the owner names the app (copy year.story.card.app); until then the name stands alone."
+      "notes": "Components C-34 'recap card' with its corner gap closed (≈5.1 % of the card width). The 2023 header render shows a 3-column variant; the in-app preview (4 columns) is used. The app line under the name is the owner's app name / domain — BLOCKED copy until the owner names the app (copy year.story.card.app); until then the name stands alone. Lead reconciliation L-4 (MERGE): the card is white with black text in both appearances — tc-2023-12-recaps.png shows the white card on a dark-mode screen (social RS-17 vs memory RM-8)."
     },
     "layout.year.story.summary": {
       "type": "layout",

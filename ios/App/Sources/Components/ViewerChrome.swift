@@ -144,7 +144,7 @@ extension ViewerFooter where Reaction == EmptyView {
 /// The viewer's photo: full width at its native aspect (letterboxed on the black page), square corners
 /// (`radius.global.photo`). `aspectRatio` is the photo's width ÷ height when known (else the image's own). Accessibility:
 /// an image labelled from copy (who, when, place).
-struct ViewerPhoto: View {
+struct ViewerPhotoFrame: View {
     let source: PhotoSource?
     var aspectRatio: CGFloat?
     let accessibilityLabel: String
@@ -177,13 +177,13 @@ struct ViewerPhoto: View {
 /// Sheets presented over it follow the appearance.
 struct ViewerPage<Header: View, Footer: View, Content: View>: View {
     @ViewBuilder let header: () -> Header
-    let photo: ViewerPhoto
+    let photo: ViewerPhotoFrame
     @ViewBuilder let footer: () -> Footer
     @ViewBuilder let content: () -> Content
 
     init(
         @ViewBuilder header: @escaping () -> Header,
-        photo: ViewerPhoto,
+        photo: ViewerPhotoFrame,
         @ViewBuilder footer: @escaping () -> Footer,
         @ViewBuilder content: @escaping () -> Content
     ) {

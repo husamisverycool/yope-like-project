@@ -428,7 +428,7 @@ final class ComponentSnapshotTests: XCTestCase {
         }
         record("c20-week-section-list") {
             WeekSectionList {
-                WeekSection {
+                WeekStripSection {
                     SectionHeader(title: "Week 28", detail: "Jul 6 - 12", moreAccessibilityLabel: "More") { Button("Share") {} }
                 } content: {
                     WeekStrip(
@@ -436,7 +436,7 @@ final class ComponentSnapshotTests: XCTestCase {
                         accessibilityLabel: { $0.id }
                     )
                 }
-                WeekSection {
+                WeekStripSection {
                     SectionHeader(title: "Week 27", detail: "Jun 29 - Jul 5", moreAccessibilityLabel: "More") { Button("Share") {} }
                 } content: {
                     WeekStrip(
@@ -484,7 +484,7 @@ final class ComponentSnapshotTests: XCTestCase {
                         Button("Report", role: .destructive) {}
                     }
                 },
-                photo: ViewerPhoto(source: photo(3, .landscape), accessibilityLabel: "Photo by tim"),
+                photo: ViewerPhotoFrame(source: photo(3, .landscape), accessibilityLabel: "Photo by tim"),
                 footer: {
                     ViewerFooter(location: "Mexico City", date: "Jul 10")
                 },

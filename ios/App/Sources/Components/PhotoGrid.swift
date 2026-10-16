@@ -1,5 +1,5 @@
 // Shared component — C-21 grids (design/components.md): the album photo grid (dated sections of square cells), the
-// composer picker grid, and the people grid. The profile / history week list is `WeekSectionList` of `WeekSection`s
+// composer picker grid, and the people grid. The profile / history week list is `WeekSectionList` of `WeekStripSection`s
 // (SectionHeader.swift). Evidence: TC-J1 (row y=1950 white run x2751–2754), VID-COMP, TC-1B (avatars (1391–1569),
 // (1666–1843)); RV §3.4, §3.5, §3.8, §4 #24.
 //
@@ -67,7 +67,7 @@ struct DatedPhotoSection<MenuContent: View>: View {
     let grid: PhotoGrid
 
     var body: some View {
-        WeekSection {
+        WeekStripSection {
             header
         } content: {
             grid

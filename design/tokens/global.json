@@ -1751,13 +1751,13 @@
       "source_app": "Retro",
       "surface": "global",
       "type": "dimension",
-      "value": 30,
+      "value": 31.2,
       "element": "avatar in a comment row and inside the reply / comment field",
       "evidence": "references/auto/retro/press/tc-2023-07-retro-2b.jpg comment-row avatar x1356–1423 y1703–1768 (67 px → 29.6), field avatar x1377–1446 y1843–1912 (70 px → 30.5) at 2.298 px/pt — measured this pass",
-      "method": "ink extent ÷ px/pt (JPEG)",
+      "method": "ink extent ÷ px/pt (JPEG) at 2.209 px/pt (TC-2B phone 2, full-width viewer photo 868 px = 393 pt)",
       "precision": "±0.5 pt",
       "unit": "pt",
-      "notes": "retro-visual §4 #15 lists the comment avatar as 36; the re-measurement gives 29.6–30.5 (MERGE_DECISIONS R-15)."
+      "notes": "retro-visual §4 #15 lists the comment avatar as 36; the re-measurement gives 29.6–30.5 (MERGE_DECISIONS R-15). Lead reconciliation L-3 (MERGE): TC-2B phone 2 re-scaled to 2.209 px/pt (the viewer photo is full width, 868 px = 393 pt; the comment field's margins then measure 16.3 pt and the home indicator 8.6 pt, both iOS constants), so 30 → 31.2."
     },
     "size.global.avatarSmall": {
       "level": "SOURCED",
@@ -1776,12 +1776,13 @@
       "source_app": "Retro",
       "surface": "global",
       "type": "dimension",
-      "value": 39,
+      "value": 40.7,
       "element": "viewer / story header avatar including its white ring with a gap",
       "evidence": "references/auto/retro/press/tc-2023-07-retro-2b.jpg box 1345–1440, 279–368 at 2.298 px/pt — design/research/retro-visual.md §4 #15",
-      "method": "px ÷ px/pt (2023 render)",
+      "method": "px ÷ px/pt (2023 render) at 2.209 px/pt (TC-2B phone 2, full-width viewer photo 868 px = 393 pt)",
       "precision": "±2 %",
-      "unit": "pt"
+      "unit": "pt",
+      "notes": "Lead reconciliation L-3 (MERGE): TC-2B phone 2 re-scaled to 2.209 px/pt (the viewer photo is full width, 868 px = 393 pt; the comment field's margins then measure 16.3 pt and the home indicator 8.6 pt, both iOS constants), so 39 → 40.7."
     },
     "size.global.avatarProfile": {
       "level": "SOURCED",
@@ -1885,24 +1886,26 @@
       "source_app": "Retro",
       "surface": "global",
       "type": "dimension",
-      "value": 48,
+      "value": 51.2,
       "element": "reply / comment field at the bottom of the viewer (own avatar leading, trailing glyph)",
       "evidence": "references/auto/retro/press/tc-2023-07-retro-2b.jpg — design/research/retro-visual.md §4 #15",
-      "method": "px ÷ px/pt (2023 render)",
+      "method": "px ÷ px/pt (2023 render) at 2.209 px/pt (TC-2B phone 2, full-width viewer photo 868 px = 393 pt)",
       "precision": "±2 %",
-      "unit": "pt"
+      "unit": "pt",
+      "notes": "Lead reconciliation L-3 (MERGE): TC-2B phone 2 re-scaled to 2.209 px/pt (the viewer photo is full width, 868 px = 393 pt; the comment field's margins then measure 16.3 pt and the home indicator 8.6 pt, both iOS constants), so 48 → 51.2."
     },
     "size.global.positionPillHeight": {
       "level": "SOURCED",
       "source_app": "Retro",
       "surface": "global",
       "type": "dimension",
-      "value": 22,
+      "value": 26.3,
       "element": "position pill in the viewer header ('3 of 4')",
       "evidence": "references/auto/retro/press/tc-2023-07-retro-2b.jpg — design/research/retro-visual.md §4 #8",
-      "method": "px ÷ px/pt (2023 render)",
+      "method": "px ÷ px/pt (2023 render) at 2.209 px/pt (TC-2B phone 2, full-width viewer photo 868 px = 393 pt)",
       "precision": "±2 %",
-      "unit": "pt"
+      "unit": "pt",
+      "notes": "Lead reconciliation L-3 (MERGE): TC-2B phone 2 re-scaled to 2.209 px/pt (the viewer photo is full width, 868 px = 393 pt; the comment field's margins then measure 16.3 pt and the home indicator 8.6 pt, both iOS constants), so 22 → 26.3."
     },
     "size.global.rowThumbWidth": {
       "level": "SOURCED",
@@ -2225,13 +2228,13 @@
       "source_app": "Retro",
       "surface": "global",
       "type": "radius",
-      "value": 12,
+      "value": 12.6,
       "element": "reply / comment field at the bottom of the viewer (48 pt high, rounded rectangle — not a capsule)",
       "evidence": "references/auto/retro/press/tc-2023-07-retro-2b.jpg comment field top-left corner, left edge x1357, rows 1821–1866: circle fit R = 27.9 px (residual 7.3) at 2.298 px/pt — measured this pass; references/auto/retro/press/tc-2023-07-retro-1b.webp 2023 search field TL 26 px → 11.8 — design/research/retro-visual.md §3.5; APK RoundedCornerShape(12.dp) ×9 — design/research/retro-package-copy-motion.md §3.5",
-      "method": "corner inset profile fitted to a circle (JPEG)",
+      "method": "corner inset profile fitted to a circle (JPEG) at 2.209 px/pt (TC-2B phone 2, full-width viewer photo 868 px = 393 pt)",
       "precision": "±1 pt",
       "unit": "pt",
-      "notes": "The 2025 search field is rounder (radius.global.field 19 on a 52 pt field)."
+      "notes": "The 2025 search field is rounder (radius.global.field 19 on a 52 pt field). Lead reconciliation L-3 (MERGE): TC-2B phone 2 re-scaled to 2.209 px/pt (the viewer photo is full width, 868 px = 393 pt; the comment field's margins then measure 16.3 pt and the home indicator 8.6 pt, both iOS constants), so 12 → 12.6."
     },
     "radius.global.groupedRow": {
       "level": "SOURCED",

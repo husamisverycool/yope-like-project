@@ -45,7 +45,7 @@ struct OutlineCTALabel: View {
         .padding(.leading, Tokens.Sizes.globalPillPaddingLeading)
         .padding(.trailing, Tokens.Sizes.globalPillPaddingTrailing)
         .frame(minHeight: Tokens.Sizes.globalPillHeight)
-        .overlay(Capsule().strokeBorder(Tokens.Colors.globalTextPrimary))
+        .overlay { Capsule().strokeBorder(Tokens.Colors.globalTextPrimary) }
         .contentShape(Capsule())
     }
 }

@@ -387,6 +387,7 @@ const table = {
   "groups.list.tab.me.accessibilityLabel": "Profile", // Retro · groups.list · SOURCED
   "groups.list.tab.walls.accessibilityLabel": "People", // Retro · groups.list · SOURCED
   "groups.list.title": "Groups", // Retro · groups.list · SOURCED
+  "groups.screen.albums.accessibilityLabel": "Albums", // Retro · groups.screen · SOURCED
   "groups.screen.back.accessibilityLabel": "Back", // Apple HIG · groups.screen · VERIFIED
   "groups.screen.chat": "Messages", // Retro · groups.screen · SOURCED
   "groups.screen.cover.accessibilityLabel": "{group_name} cover", // Apple HIG · groups.screen · VERIFIED
@@ -638,7 +639,6 @@ const table = {
   "photo.viewer.error.delete": "Couldn't delete photo. Please try again.", // Retro · photo.viewer · SOURCED
   "photo.viewer.error.load": "Error loading media. Tap to retry", // Retro · photo.viewer · SOURCED
   "photo.viewer.error.save": "Couldn't save photo", // Retro · photo.viewer · SOURCED
-  "photo.viewer.footer.dateWith": "{date} · with {names}", // Retro · photo.viewer · SOURCED
   "photo.viewer.gone.detail": "It may have been deleted by the person who shared it.", // Retro · photo.viewer · SOURCED
   "photo.viewer.gone.title": "Couldn't find photo", // Retro · photo.viewer · SOURCED
   "photo.viewer.header.groupWeek": "{group_name} · Week {week_number}", // Retro · photo.viewer · SOURCED

@@ -253,7 +253,7 @@ export const tokens = {
   "groups.invite.size.noteGlyphGap": 6.3, // Retro · groups.invite · SOURCED
   "groups.invite.size.targetLabelGap": 11.6, // Retro · groups.invite · SOURCED
   "groups.invite.size.targetPitch": 90.4, // Retro · groups.invite · SOURCED
-  "groups.list.layout.tabBar": {"component":"design/components.md C-04 (icon-only, evenly distributed, page-coloured, no hairline, no labels)","order":"camera · groups (home) · walls (people) · me (profile) — the app's four destinations, unchanged","glyphs":"camera icon.global.camera · groups icon.global.home · walls icon.global.group · me icon.global.wall","badges":"none: no unread dot on our tabs (Retro's dot sits on its Activity tab, which this app does not have)"}, // Retro · groups.list · SOURCED
+  "groups.list.layout.tabBar": {"component":"design/components.md C-04 (icon-only, evenly distributed, page-coloured, no hairline, no labels)","order":"camera · groups (home) · walls (people) · me (profile) — the app's four destinations, unchanged","glyphs":"camera icon.global.camera · groups icon.global.home · walls icon.global.group · me icon.global.wall","badges":"none: no unread dot on our tabs (Retro's dot sits on its Activity tab, which this app does not have)","overMedia":"while the camera tab is selected the bar sits over the black camera surface: selected color.global.textOnMedia, unselected color.global.tabInactiveOnMedia (C-04 over-photo variant, RWA)"}, // Retro · groups.list · SOURCED
   "groups.screen.layout.menu": {"ios":"contextMenu on a grid cell / strip tile (UIMenu with a preview); destructive items role .destructive (red)","android":"DropdownMenu on long press of a grid cell / strip tile; destructive items in color.global.destructive","items":"others' photos: 'Report Post' (safety.report), 'Block {first_name}' (safety.block); own photos: none (the viewer has the full menu)"}, // Apple HIG · groups.screen · PLATFORM
   "groups.screen.shadow.cover": {"color":"#000000","blur":8.5,"x":3,"y":10,"opacity":0.25}, // Retro · groups.screen · SOURCED
   "groups.screen.size.coverHeight": 246, // Retro · groups.screen · SOURCED
@@ -386,7 +386,7 @@ export const tokens = {
   "layout.year.story.frame": {"frame":"the recap-preview media page of collage.view.layout.screen: full screen width, from the safe-area top to mediaPageBottomFromScreenBottom above the screen bottom, corners mediaPageCornerRadius (layout.global.cornerStyle), content clipped","content":"each card is laid out in a 9:16 box (aspectWidth 9, aspectHeight 16) as wide as the frame, centred vertically; backdrops and full-bleed photos fill the whole frame","aspectWidth":9,"aspectHeight":16,"close":"C-11 on media (size.global.circleButton, color.global.controlOnDeep, icon.global.close) at closeCentreFromTrailing / closeCentreBelowPageTop of collage.view.layout.screen","bottomRow":"centre bottomRowCentreFromScreenBottom of collage.view.layout.screen above the screen bottom: leading C-11 circle on media at size.global.buttonMarginH, trailing Share pill collage.share.layout.pill","page":"color.global.backgroundDeep around the frame, both appearances (media)","contentScale":"the share image (layout.year.story.shareCard) is the 9:16 box rendered at 1080 px wide: pt values inside it scale by 1080 ÷ box width"}, // Retro · year.story · SOURCED
   "layout.year.story.monthFormat": {"pattern":"MMMM","example":"December"}, // Retro · year.story · SOURCED
   "layout.year.story.navigation": {"next":"tap the right half of the frame","previous":"tap the left half of the frame","hold":"none","model":"tap-through, one card per fact (Wrapped 2024 pacing)","summary":"swipe between the share styles (pager with page dots)"}, // Spotify Wrapped · year.story · SOURCED
-  "layout.year.story.recapCard": {"widthRatio":0.825,"paddingRatio":0.0241,"columns":4,"maxRows":6,"cellAspect":1.12,"gap":"size.global.stripGap","cornerRadiusRatio":0.051,"footerHeightRatio":0.21,"background":"color.global.surfaceElevated","backdrop":"the cover photo blurred, full frame (layout.global.materials.backdrop)","footer":"year: font.global.display, text role headerTitle, color.global.textPrimary at the card padding, bottom-left; group name: text role listTitle, color.global.textPrimary, right-aligned; app line below it: text role meta, color.global.textSecondary"}, // Retro · year.story · SOURCED
+  "layout.year.story.recapCard": {"widthRatio":0.825,"paddingRatio":0.0241,"columns":4,"maxRows":6,"cellAspect":1.12,"gap":"size.global.stripGap","cornerRadiusRatio":0.051,"footerHeightRatio":0.21,"background":"color.global.surfaceLight","backdrop":"the cover photo blurred, full frame (layout.global.materials.backdrop)","footer":"year: font.global.display, text role headerTitle, color.global.onSurfaceLight at the card padding, bottom-left; group name: text role listTitle, color.global.onSurfaceLight, right-aligned; app line below it: text role meta, color.global.textSecondary"}, // Retro · year.story · SOURCED
   "layout.year.story.shareCard": {"width":1080,"height":1920,"content":"the frame's content of the card in view (no close circle, position pill or bottom bar), rendered at 1080 px wide"}, // Retro + Spotify Wrapped + Meta developer docs · year.story · SOURCED
   "layout.year.story.shareSheet": {"ios":"ShareLink(item:preview:) / UIActivityViewController","android":"Intent.createChooser(ACTION_SEND, content:// URI + FLAG_GRANT_READ_URI_PERMISSION)"}, // Apple HIG / Material 3 · year.story · PLATFORM
   "layout.year.story.summary": {"styles":"two share styles in a horizontal pager inside the frame: 1 = recap card on the blurred backdrop (layout.year.story.recapCard); 2 = the cover photo full-bleed with the footer (dimension.year.story.footer.baseline)","dots":"page dots under the frame (dimension.year.story.dots.offset), one per style","bar":"leading circle = replay (icon.year.story.replay) → card 1; trailing Share pill shares the style in view","cover":"the first photo of data.most_reacted, else the first id of year_stories.post_ids"}, // Retro · year.story · SOURCED
@@ -444,7 +444,7 @@ export const tokens = {
   "radius.global.capsule": {"shape":"capsule","radius":"height / 2"}, // Retro · global · SOURCED
   "radius.global.card": 18, // Retro · global · SOURCED
   "radius.global.cardLarge": 36, // Retro · global · SOURCED
-  "radius.global.commentField": 12, // Retro · global · SOURCED
+  "radius.global.commentField": 12.6, // Retro · global · SOURCED
   "radius.global.field": 19, // Retro · global · SOURCED
   "radius.global.groupedRow": 12, // Retro · global · SOURCED
   "radius.global.photo": 0, // Retro · global · SOURCED
@@ -460,9 +460,9 @@ export const tokens = {
   "settings.root.layout.list": {"component":"design/components.md C-14 on both platforms (custom rows; not List(.insetGrouped) / M3 ListItem)","sheet":"page sheet (C-29) with its own navigation: header = centred title (text role sheetTitle) + trailing close circle (C-11 circle on the page); sub-pages push inside the sheet with the native back button and the same centred title","page":"color.global.background (iOS) / color.global.background.android","sectionGap":"size.global.sectionGap between a group's bottom and the next section header"}, // Retro · settings.root · SOURCED
   "settings.root.layout.toggleHaptic": {"ios":"system (SwiftUI Toggle plays its own haptic; no custom generator)","android":"TOGGLE_ON / TOGGLE_OFF (API 34) only if the Switch does not already play one"}, // Apple HIG · settings.root · PLATFORM
   "settings.root.size.rowHeight": 58.7, // Retro · settings.root · SOURCED
-  "size.global.avatarComment": 30, // Retro · global · SOURCED
+  "size.global.avatarComment": 31.2, // Retro · global · SOURCED
   "size.global.avatarGrid": 81, // Retro · global · SOURCED
-  "size.global.avatarHeader": 39, // Retro · global · SOURCED
+  "size.global.avatarHeader": 40.7, // Retro · global · SOURCED
   "size.global.avatarList": 26.5, // Retro · global · SOURCED
   "size.global.avatarPicker": 37, // Retro · global · SOURCED
   "size.global.avatarProfile": 64, // Retro · global · SOURCED
@@ -483,7 +483,7 @@ export const tokens = {
   "size.global.circleButtonLarge": 64, // Retro · global · SOURCED
   "size.global.circleButtonPhoto": 40, // Retro · global · SOURCED
   "size.global.circleButtonSmall": 32, // Retro · global · SOURCED
-  "size.global.commentFieldHeight": 48, // Retro · global · SOURCED
+  "size.global.commentFieldHeight": 51.2, // Retro · global · SOURCED
   "size.global.emptyIcon": 22, // Retro · global · SOURCED
   "size.global.emptyIconToTitle": 26, // Retro · global · SOURCED
   "size.global.emptyTitleToAction": 25, // Retro · global · SOURCED
@@ -514,7 +514,7 @@ export const tokens = {
   "size.global.pillPaddingTrailing": 17, // Retro · global · SOURCED
   "size.global.planCardGap": 8, // Retro · global · SOURCED
   "size.global.planCardPadding": 27, // Retro · global · SOURCED
-  "size.global.positionPillHeight": 22, // Retro · global · SOURCED
+  "size.global.positionPillHeight": 26.3, // Retro · global · SOURCED
   "size.global.rowThumbGap": 17, // Retro · global · SOURCED
   "size.global.rowThumbHeight": 97, // Retro · global · SOURCED
   "size.global.rowThumbWidth": 72, // Retro · global · SOURCED
@@ -553,41 +553,22 @@ export const tokens = {
   "week.history.layout.currentWeek": {"empty":"no photos yet: the add tile first, then one empty-day tile per day Monday → Sunday (dated: month / day / weekday)","withPhotos":"photo tiles in time order, then the add tile, then one placeholder tile (blank fill) per remaining day without a photo","addTile":"C-17 add tile → camera.capture with this group (walls.mine: any group)","readOnly":"where the viewer cannot post (walls.member) the add tile is left out"}, // Retro · week.history · SOURCED
   "week.history.layout.weekMenu": {"trigger":"the C-20 header's icon.global.more","component":"native menu (C-29), items Sentence case","items":"week.history.menu.viewRecap (only when that week has a ready recap) → week.recap preview · week.history.menu.saveAsAlbum → week.edit album sheet with that week's photos"}, // Retro + Apple HIG / Material 3 · week.history · SOURCED
   "week.history.layout.weeks": {"order":"newest week first, scrolling back without end; pages of 8 (group_history_weeks)","weekNumber":"ISO-8601 week of week_start in the group's time zone (week_start_isodow, Monday)","section":"C-20 header: week.history.header.title + the date range (locale interval Monday–Sunday; omitted for the current week without photos) + icon.global.more → week.history.layout.weekMenu; C-17 strip under it","strip":"one photo tile per post in time order (several photos on a day = several tiles), weekday label from created_at; current week per week.history.layout.currentWeek","limit":"if app_config free_history_days limits browsing (owner), the list ends there with no message"}, // Retro · week.history · SOURCED
-  "week.recap.aspectRatio.card": {"width":518,"height":779}, // Retro · week.recap · SOURCED
-  "week.recap.aspectRatio.gridCell": {"width":122,"height":108}, // Retro · week.recap · SOURCED
   "week.recap.aspectRatio.weekCard": {"width":336,"height":251}, // Retro · week.recap · SOURCED
-  "week.recap.count.gridColumns": 4, // Retro · week.recap · SOURCED
-  "week.recap.dimension.cardInsetH": 32.4, // Retro · week.recap · SOURCED
-  "week.recap.dimension.closeInsetLeading": 20.6, // Retro · week.recap · SOURCED
-  "week.recap.dimension.closeInsetTop": 23.6, // Retro · week.recap · SOURCED
-  "week.recap.dimension.controlHeight": 41.6, // Retro · week.recap · SOURCED
-  "week.recap.dimension.controlInset": 28.9, // Retro · week.recap · SOURCED
-  "week.recap.dimension.coverTextBaseline": 28.3, // Retro · week.recap · SOURCED
-  "week.recap.dimension.coverTextInset": 19.5, // Retro · week.recap · SOURCED
-  "week.recap.dimension.footerBaseline": 18.3, // Retro · week.recap · SOURCED
-  "week.recap.dimension.footerInset": 15.3, // Retro · week.recap · SOURCED
-  "week.recap.dimension.footerLinePitch": 18.3, // Retro · week.recap · SOURCED
-  "week.recap.dimension.gridInset": 7.1, // Retro · week.recap · SOURCED
   "week.recap.dimension.noteGap": 20, // Retro · week.recap · SOURCED
   "week.recap.dimension.notePaddingH": 18, // Retro · week.recap · SOURCED
   "week.recap.dimension.notePaddingV": 16, // Retro · week.recap · SOURCED
-  "week.recap.dimension.panelInset": 11.2, // Retro · week.recap · SOURCED
-  "week.recap.dimension.panelToControls": 12.4, // Retro · week.recap · SOURCED
-  "week.recap.dimension.pillPaddingH": 23.5, // Retro · week.recap · SOURCED
+  "week.recap.dimension.selectThumb": 37.7, // Retro · week.recap · SOURCED
+  "week.recap.dimension.selectThumbBorder": 1.7, // Retro · week.recap · SOURCED
   "week.recap.dimension.weekCardLinePitch": 20.6, // Retro · week.recap · SOURCED
   "week.recap.dimension.weekCardTextInset": 21.2, // Retro · week.recap · SOURCED
   "week.recap.dimension.weekCardTextTop": 21.8, // Retro · week.recap · SOURCED
-  "week.recap.fontSize.cardName": 13, // Retro · week.recap · SOURCED
-  "week.recap.fontWeight.cardName": "semibold", // Retro · week.recap · SOURCED
   "week.recap.layout.list": {"presentation":"page sheet (C-29) over the group; header: C-11 close circle (size.global.circleButton, color.global.control) at the leading margin, centred title week.recap.list.title (text role sheetTitle)","cards":"one card per ready recap, newest first, full width inside size.global.screenMargin, size.global.cardGap apart","card":"cover = the recap's first item (aspect fill), shape week.recap.aspectRatio.weekCard, corners week.recap.radius.card; text at week.recap.dimension.weekCardTextInset / .weekCardTextTop: 'Week {n}' (font.global.display, text role displayMedium) over the date range (listSubtitle), both color.global.textOnMedia; icon.global.chevron at the trailing top in color.global.textOnMedia","pending":"a recap with status pending shows as a C-17 placeholder fill card with week.recap.pending","segmented":"none: only weekly recaps exist (Retro's Yearly / Monthly / Weekly / All Posts control has nothing to switch)"}, // Retro · week.recap · SOURCED
   "week.recap.layout.note": {"component":"Retro's journal note: rounded box, the text in text role body, color.global.textOnMedia, on color.global.controlOnDeep","corners":"week.recap.radius.note","padding":"week.recap.dimension.notePaddingV vertical, week.recap.dimension.notePaddingH horizontal","attribution":"leading: avatar (size.global.avatarComment) of weekly_recaps.edited_by and the name (text role listTitle) before the text, on the first line","place":"page 1, under the collage card, card width, week.recap.dimension.noteGap below the card; the card + note block is centred in the panel"}, // Retro · week.recap · SOURCED
-  "week.recap.layout.pages": {"page1":"collage card: white card (color.global.surfaceLight in both appearances) centred in the panel, week.recap.dimension.cardInsetH from the panel sides, shape week.recap.aspectRatio.card, corners week.recap.radius.card; photo grid week.recap.dimension.gridInset from the card's top and sides: week.recap.count.gridColumns columns, size.global.stripGap gaps, cells week.recap.aspectRatio.gridCell (aspect fill), outer corners week.recap.radius.grid, inner square; footer: 'Week {n}' (font.global.display, text role headerTitle, color.global.onSurfaceLight) leading at week.recap.dimension.footerInset, baseline week.recap.dimension.footerBaseline above the card bottom; trailing stack right-aligned at the same inset: group name (week.recap.fontSize.cardName / .fontWeight.cardName, color.global.onSurfaceLight) over the date range (text role meta, color.global.textSecondary), the range's baseline on the week's baseline, week.recap.dimension.footerLinePitch apart; the recap text (if any) as a note under the card (week.recap.layout.note)","page2":"cover: the first item fills the panel (aspect fill, panel corners) under layout.global.photoScrim; 'Week {n}' (headerTitle serif, color.global.textOnMedia) leading at week.recap.dimension.coverTextInset, baseline week.recap.dimension.coverTextBaseline above the panel bottom; group name / date range stack trailing at the same inset (as page 1, color.global.textOnMedia / color.global.textSecondary)","dots":"C-31 with two pages"}, // Retro · week.recap · SOURCED
-  "week.recap.layout.preview": {"page":"color.global.backgroundDeep in both appearances (photo.viewer.layout.appearance rule)","panel":"a rounded panel inset week.recap.dimension.panelInset from the screen sides, from the top safe area to week.recap.dimension.panelToControls above the controls row; corners week.recap.radius.panel; filled with the blurred cover photo (layout.global.materials.backdrop)","close":"C-11 glass circle (size.global.circleButtonSmall, color.global.glass, icon.global.close in color.global.textOnMedia) at week.recap.dimension.closeInsetLeading / .closeInsetTop inside the panel","pages":"week.recap.layout.pages, swiped sideways","controls":"row under the panel, height week.recap.dimension.controlHeight: leading C-11 circle (diameter = controlHeight, color.global.controlOnDeep, icon.global.gallery) → week.edit; centre C-31 page dots (on media); trailing C-09 light pill week.recap.saveAsAlbum (height = controlHeight, padding week.recap.dimension.pillPaddingH) → album sheet; both week.recap.dimension.controlInset from the screen sides"}, // Retro · week.recap · SOURCED
-  "week.recap.layout.textStyleMap": {"cardName":"footnote"}, // Apple HIG · week.recap · PLATFORM
+  "week.recap.layout.pages": {"page1":"card: layout.year.story.recapCard (memory group: width ratio, padding, 4 columns up to 6 rows, cell aspect, size.global.stripGap gaps, corner ratio, footer) centred in the frame; footer text mapped: the year → 'Week {n}' (font.global.display, text role headerTitle), the name → the group name, the app line → the date range (text role meta, color.global.textSecondary); the recap text (if any) as a note under the card (week.recap.layout.note)","page2":"cover: the first item fills the frame (aspect fill, frame corners) under layout.global.photoScrim; 'Week {n}' (headerTitle serif, color.global.textOnMedia) and the name / range stack at dimension.year.story.frame.padding, baseline dimension.year.story.footer.baseline above the frame bottom (memory group)","fill":"photos fill the card grid per week.recap.layout.gridFill"}, // Retro · week.recap · SOURCED
+  "week.recap.layout.preview": {"page":"color.global.backgroundDeep in both appearances (photo.viewer.layout.appearance rule)","frame":"the recap-preview media page of collage.view.layout.screen (capture group, ST-04 2026): full width, safe-area top to mediaPageBottomFromScreenBottom, corners mediaPageCornerRadius, the cover photo blurred inside (layout.global.materials.backdrop); its close circle (C-11 on media) at closeCentreFromTrailing / closeCentreBelowPageTop","pages":"week.recap.layout.pages, swiped sideways inside the frame; page dots (C-31, on media) centred dimension.year.story.dots.offset below the frame (memory group)","bottomRow":"centre at collage.view.layout.screen bottomRowCentreFromScreenBottom: leading the select-photos thumbnail (week.recap.dimension.selectThumb square, corners week.recap.radius.selectThumb, week.recap.dimension.selectThumbBorder border in color.global.surfaceLight, the recap's first item, aspect fill) at size.global.buttonMarginH → week.edit; trailing the C-09 light pill week.recap.saveAsAlbum laid out as collage.share.layout.pill (height, paddingHorizontal, trailingInset) → album sheet"}, // Retro · week.recap · SOURCED
   "week.recap.radius.card": 14, // Retro · week.recap · SOURCED
-  "week.recap.radius.grid": 7.9, // Retro · week.recap · SOURCED
   "week.recap.radius.note": 18, // Retro · week.recap · SOURCED
-  "week.recap.radius.panel": 23, // Retro · week.recap · SOURCED
+  "week.recap.radius.selectThumb": 9, // Retro · week.recap · SOURCED
   "widget.android.duration.updatePeriod": 3600000, // Retro · widget.android · SOURCED
   "widget.android.layout.provider": {"minWidth":200,"minHeight":200,"minResizeWidth":100,"minResizeHeight":100,"targetCellWidth":2,"targetCellHeight":2,"resizeMode":"horizontal|vertical","reconfigurable":true}, // Retro · widget.android · SOURCED
   "widget.android.layout.sizes": {"defaultSize":"2x2 (minWidth/minHeight 110 dp)","range2x2":"109-306 x 115-276 dp","range4x2":"245-624 x 115-276 dp","range4x3":"245-624 x 185-422 dp","lockScreenHub":"about 4x3 cells"}, // Material 3 · widget.android · VERIFIED

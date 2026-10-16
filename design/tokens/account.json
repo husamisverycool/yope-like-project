@@ -282,7 +282,8 @@
         "component": "design/components.md C-04 (icon-only, evenly distributed, page-coloured, no hairline, no labels)",
         "order": "camera · groups (home) · walls (people) · me (profile) — the app's four destinations, unchanged",
         "glyphs": "camera icon.global.camera · groups icon.global.home · walls icon.global.group · me icon.global.wall",
-        "badges": "none: no unread dot on our tabs (Retro's dot sits on its Activity tab, which this app does not have)"
+        "badges": "none: no unread dot on our tabs (Retro's dot sits on its Activity tab, which this app does not have)",
+        "overMedia": "while the camera tab is selected the bar sits over the black camera surface: selected color.global.textOnMedia, unselected color.global.tabInactiveOnMedia (C-04 over-photo variant, RWA)"
       },
       "source_app": "Retro",
       "surface": "groups.list",

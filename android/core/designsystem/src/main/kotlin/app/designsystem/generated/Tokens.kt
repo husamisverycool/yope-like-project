@@ -71,10 +71,6 @@ object Tokens {
     object AspectRatios {
         /** Retro · albums.view · album grid cell (portrait) · SOURCED — token `albums.view.aspectRatio.gridCell` */
         val albumsViewAspectRatioGridCell: Float = 0.8034f
-        /** Retro · week.recap · collage card (2:3) · SOURCED — token `week.recap.aspectRatio.card` */
-        val weekRecapAspectRatioCard: Float = 0.665f
-        /** Retro · week.recap · collage card grid cell · SOURCED — token `week.recap.aspectRatio.gridCell` */
-        val weekRecapAspectRatioGridCell: Float = 1.1296f
         /** Retro · week.recap · recap list card (cover photo) · SOURCED — token `week.recap.aspectRatio.weekCard` */
         val weekRecapAspectRatioWeekCard: Float = 1.3386f
     }
@@ -227,8 +223,6 @@ object Tokens {
         val yearStoryListLength: Int = 5
         /** Retro · week.edit · columns of the photo grid in the recap editor · SOURCED — token `week.edit.count.gridColumns` */
         val weekEditCountGridColumns: Int = 4
-        /** Retro · week.recap · columns of the collage card's photo grid · SOURCED — token `week.recap.count.gridColumns` */
-        val weekRecapCountGridColumns: Int = 4
     }
     object Durations {
         /** Supabase Auth documentation · auth.code · time after a code request before 'Send again' is enabled · VERIFIED — token `auth.code.duration.resendLock` */
@@ -373,8 +367,6 @@ object Tokens {
         val paywallFontSizePlanSubtitle: TextUnit = 15.sp
         /** Retro · paywall · plan card title ('Annual', 'Monthly') · SOURCED — token `paywall.fontSize.planTitle` */
         val paywallFontSizePlanTitle: TextUnit = 24.sp
-        /** Retro · week.recap · group name in the collage card footer (semibold) · SOURCED — token `week.recap.fontSize.cardName` */
-        val weekRecapFontSizeCardName: TextUnit = 13.sp
         /** Retro · widget.home.small · name and group lines of the widget text stack (both lines the same size) · SOURCED — token `widget.home.small.fontSize.overlay` */
         val widgetHomeSmallFontSizeOverlay: TextUnit = 11.sp
     }
@@ -429,8 +421,6 @@ object Tokens {
         val paywallFontWeightPlanPrice: FontWeight = FontWeight(800)
         /** Retro · paywall · plan card title weight · SOURCED — token `paywall.fontWeight.planTitle` */
         val paywallFontWeightPlanTitle: FontWeight = FontWeight(700)
-        /** Retro · week.recap · group name in the collage card footer · SOURCED — token `week.recap.fontWeight.cardName` */
-        val weekRecapFontWeightCardName: FontWeight = FontWeight(600)
         /** Retro · widget.home.small · name and group lines of the widget text stack · SOURCED — token `widget.home.small.fontWeight.overlay` */
         val widgetHomeSmallFontWeightOverlay: FontWeight = FontWeight(400)
     }
@@ -976,6 +966,7 @@ object Tokens {
             const val order: String = "camera · groups (home) · walls (people) · me (profile) — the app's four destinations, unchanged"
             const val glyphs: String = "camera icon.global.camera · groups icon.global.home · walls icon.global.group · me icon.global.wall"
             const val badges: String = "none: no unread dot on our tabs (Retro's dot sits on its Activity tab, which this app does not have)"
+            const val overMedia: String = "while the camera tab is selected the bar sits over the black camera surface: selected color.global.textOnMedia, unselected color.global.tabInactiveOnMedia (C-04 over-photo variant, RWA)"
         }
         /** Apple HIG · groups.screen · long-press menu on the group's photos · PLATFORM — token `groups.screen.layout.menu` */
         object GroupsScreenLayoutMenu {
@@ -1305,9 +1296,9 @@ object Tokens {
             const val gap: String = "size.global.stripGap"
             const val cornerRadiusRatio: Float = 0.051f
             const val footerHeightRatio: Float = 0.21f
-            const val background: String = "color.global.surfaceElevated"
+            const val background: String = "color.global.surfaceLight"
             const val backdrop: String = "the cover photo blurred, full frame (layout.global.materials.backdrop)"
-            const val footer: String = "year: font.global.display, text role headerTitle, color.global.textPrimary at the card padding, bottom-left; group name: text role listTitle, color.global.textPrimary, right-aligned; app line below it: text role meta, color.global.textSecondary"
+            const val footer: String = "year: font.global.display, text role headerTitle, color.global.onSurfaceLight at the card padding, bottom-left; group name: text role listTitle, color.global.onSurfaceLight, right-aligned; app line below it: text role meta, color.global.textSecondary"
         }
         /** Retro + Spotify Wrapped + Meta developer docs · year.story · exported share image · SOURCED — token `layout.year.story.shareCard` */
         object YearStoryShareCard {
@@ -1601,21 +1592,16 @@ object Tokens {
         }
         /** Retro · week.recap · the recap's pages (styles) · SOURCED — token `week.recap.layout.pages` */
         object WeekRecapLayoutPages {
-            const val page1: String = "collage card: white card (color.global.surfaceLight in both appearances) centred in the panel, week.recap.dimension.cardInsetH from the panel sides, shape week.recap.aspectRatio.card, corners week.recap.radius.card; photo grid week.recap.dimension.gridInset from the card's top and sides: week.recap.count.gridColumns columns, size.global.stripGap gaps, cells week.recap.aspectRatio.gridCell (aspect fill), outer corners week.recap.radius.grid, inner square; footer: 'Week {n}' (font.global.display, text role headerTitle, color.global.onSurfaceLight) leading at week.recap.dimension.footerInset, baseline week.recap.dimension.footerBaseline above the card bottom; trailing stack right-aligned at the same inset: group name (week.recap.fontSize.cardName / .fontWeight.cardName, color.global.onSurfaceLight) over the date range (text role meta, color.global.textSecondary), the range's baseline on the week's baseline, week.recap.dimension.footerLinePitch apart; the recap text (if any) as a note under the card (week.recap.layout.note)"
-            const val page2: String = "cover: the first item fills the panel (aspect fill, panel corners) under layout.global.photoScrim; 'Week {n}' (headerTitle serif, color.global.textOnMedia) leading at week.recap.dimension.coverTextInset, baseline week.recap.dimension.coverTextBaseline above the panel bottom; group name / date range stack trailing at the same inset (as page 1, color.global.textOnMedia / color.global.textSecondary)"
-            const val dots: String = "C-31 with two pages"
+            const val page1: String = "card: layout.year.story.recapCard (memory group: width ratio, padding, 4 columns up to 6 rows, cell aspect, size.global.stripGap gaps, corner ratio, footer) centred in the frame; footer text mapped: the year → 'Week {n}' (font.global.display, text role headerTitle), the name → the group name, the app line → the date range (text role meta, color.global.textSecondary); the recap text (if any) as a note under the card (week.recap.layout.note)"
+            const val page2: String = "cover: the first item fills the frame (aspect fill, frame corners) under layout.global.photoScrim; 'Week {n}' (headerTitle serif, color.global.textOnMedia) and the name / range stack at dimension.year.story.frame.padding, baseline dimension.year.story.footer.baseline above the frame bottom (memory group)"
+            const val fill: String = "photos fill the card grid per week.recap.layout.gridFill"
         }
         /** Retro · week.recap · one recap: preview screen (Retro recap preview) · SOURCED — token `week.recap.layout.preview` */
         object WeekRecapLayoutPreview {
             const val page: String = "color.global.backgroundDeep in both appearances (photo.viewer.layout.appearance rule)"
-            const val panel: String = "a rounded panel inset week.recap.dimension.panelInset from the screen sides, from the top safe area to week.recap.dimension.panelToControls above the controls row; corners week.recap.radius.panel; filled with the blurred cover photo (layout.global.materials.backdrop)"
-            const val close: String = "C-11 glass circle (size.global.circleButtonSmall, color.global.glass, icon.global.close in color.global.textOnMedia) at week.recap.dimension.closeInsetLeading / .closeInsetTop inside the panel"
-            const val pages: String = "week.recap.layout.pages, swiped sideways"
-            const val controls: String = "row under the panel, height week.recap.dimension.controlHeight: leading C-11 circle (diameter = controlHeight, color.global.controlOnDeep, icon.global.gallery) → week.edit; centre C-31 page dots (on media); trailing C-09 light pill week.recap.saveAsAlbum (height = controlHeight, padding week.recap.dimension.pillPaddingH) → album sheet; both week.recap.dimension.controlInset from the screen sides"
-        }
-        /** Apple HIG · week.recap · Dynamic Type style the card-name size scales with · PLATFORM — token `week.recap.layout.textStyleMap` */
-        object WeekRecapLayoutTextStyleMap {
-            const val cardName: String = "footnote"
+            const val frame: String = "the recap-preview media page of collage.view.layout.screen (capture group, ST-04 2026): full width, safe-area top to mediaPageBottomFromScreenBottom, corners mediaPageCornerRadius, the cover photo blurred inside (layout.global.materials.backdrop); its close circle (C-11 on media) at closeCentreFromTrailing / closeCentreBelowPageTop"
+            const val pages: String = "week.recap.layout.pages, swiped sideways inside the frame; page dots (C-31, on media) centred dimension.year.story.dots.offset below the frame (memory group)"
+            const val bottomRow: String = "centre at collage.view.layout.screen bottomRowCentreFromScreenBottom: leading the select-photos thumbnail (week.recap.dimension.selectThumb square, corners week.recap.radius.selectThumb, week.recap.dimension.selectThumbBorder border in color.global.surfaceLight, the recap's first item, aspect fill) at size.global.buttonMarginH → week.edit; trailing the C-09 light pill week.recap.saveAsAlbum laid out as collage.share.layout.pill (height, paddingHorizontal, trailingInset) → album sheet"
         }
         /** Retro · widget.android · AppWidgetProviderInfo of the Glance widget (default 2 × 2, resizable down to 100 dp) · SOURCED — token `widget.android.layout.provider` */
         object WidgetAndroidLayoutProvider {
@@ -1794,7 +1780,7 @@ object Tokens {
         /** Retro · global · large card on a blurred backdrop (paywall plan card) · SOURCED — token `radius.global.cardLarge` */
         val globalCardLarge: Dp = 36.dp
         /** Retro · global · reply / comment field at the bottom of the viewer (48 pt high, rounded rectangle — not a capsule) · SOURCED — token `radius.global.commentField` */
-        val globalCommentField: Dp = 12.dp
+        val globalCommentField: Dp = 12.6.dp
         /** Retro · global · search / text field corners (52 pt field) · SOURCED — token `radius.global.field` */
         val globalField: Dp = 19.dp
         /** Retro · global · grouped list (settings) — first row top corners, last row bottom corners, a single row all corners; middle rows square · SOURCED — token `radius.global.groupedRow` */
@@ -1805,14 +1791,12 @@ object Tokens {
         val globalThumbnail: Dp = 4.dp
         /** Retro · global · camera viewfinder corners — composition: the viewfinder is drawn as Retro's photo container (radius.global.card) · SOURCED — token `radius.global.viewfinder` */
         val globalViewfinder: Dp = 18.dp
-        /** Retro · week.recap · corners of the recap list cards and of the recap collage card · SOURCED — token `week.recap.radius.card` */
+        /** Retro · week.recap · corners of the recap list cards (week cards) · SOURCED — token `week.recap.radius.card` */
         val weekRecapRadiusCard: Dp = 14.dp
-        /** Retro · week.recap · outer corners of the collage card's photo grid (inner corners square) · SOURCED — token `week.recap.radius.grid` */
-        val weekRecapRadiusGrid: Dp = 7.9.dp
         /** Retro · week.recap · recap note corners · SOURCED — token `week.recap.radius.note` */
         val weekRecapRadiusNote: Dp = 18.dp
-        /** Retro · week.recap · recap preview: corners of the blurred panel · SOURCED — token `week.recap.radius.panel` */
-        val weekRecapRadiusPanel: Dp = 23.dp
+        /** Retro · week.recap · recap preview: corners of the select-photos thumbnail · SOURCED — token `week.recap.radius.selectThumb` */
+        val weekRecapRadiusSelectThumb: Dp = 9.dp
         /** Retro · widget.android · Glance widget corner radius (root container), every Android version · SOURCED — token `widget.android.radius.widget` */
         val widgetAndroidRadiusWidget: Dp = 22.dp
     }
@@ -2020,11 +2004,11 @@ object Tokens {
         /** Retro · settings.root · minimum height of a one-line grouped row (C-14) on the settings surfaces; two-line rows (title + subtitle) grow with their text · SOURCED — token `settings.root.size.rowHeight` */
         val settingsRootSizeRowHeight: Dp = 58.7.dp
         /** Retro · global · avatar in a comment row and inside the reply / comment field · SOURCED — token `size.global.avatarComment` */
-        val globalAvatarComment: Dp = 30.dp
+        val globalAvatarComment: Dp = 31.2.dp
         /** Retro · global · avatar in a 3-column people grid (name centred below) · SOURCED — token `size.global.avatarGrid` */
         val globalAvatarGrid: Dp = 81.dp
         /** Retro · global · viewer / story header avatar including its white ring with a gap · SOURCED — token `size.global.avatarHeader` */
-        val globalAvatarHeader: Dp = 39.dp
+        val globalAvatarHeader: Dp = 40.7.dp
         /** Retro · global · avatar beside a name above a friend card (home feed) · SOURCED — token `size.global.avatarList` */
         val globalAvatarList: Dp = 26.5.dp
         /** Retro · global · avatar in a people row (friend request, member rows) · SOURCED — token `size.global.avatarPicker` */
@@ -2066,7 +2050,7 @@ object Tokens {
         /** Retro · global · small close circle (glass over colour on the paywall) · SOURCED — token `size.global.circleButtonSmall` */
         val globalCircleButtonSmall: Dp = 32.dp
         /** Retro · global · reply / comment field at the bottom of the viewer (own avatar leading, trailing glyph) · SOURCED — token `size.global.commentFieldHeight` */
-        val globalCommentFieldHeight: Dp = 48.dp
+        val globalCommentFieldHeight: Dp = 51.2.dp
         /** Retro · global · empty-state outline glyph · SOURCED — token `size.global.emptyIcon` */
         val globalEmptyIcon: Dp = 22.dp
         /** Retro · global · empty state: glyph bottom → title cap top · SOURCED — token `size.global.emptyIconToTitle` */
@@ -2126,7 +2110,7 @@ object Tokens {
         /** Retro · global · padding inside the large card on a blurred backdrop (paywall plan card); its capsule sits 16 from the card sides and bottom · SOURCED — token `size.global.planCardPadding` */
         val globalPlanCardPadding: Dp = 27.dp
         /** Retro · global · position pill in the viewer header ('3 of 4') · SOURCED — token `size.global.positionPillHeight` */
-        val globalPositionPillHeight: Dp = 22.dp
+        val globalPositionPillHeight: Dp = 26.3.dp
         /** Retro · global · list row thumbnail → text · SOURCED — token `size.global.rowThumbGap` */
         val globalRowThumbGap: Dp = 17.dp
         /** Retro · global · list row thumbnail height (3:4 cover) · SOURCED — token `size.global.rowThumbHeight` */
@@ -2171,40 +2155,16 @@ object Tokens {
         val wallsMineDimensionActionsToWeeks: Dp = 30.1.dp
         /** Retro · walls.mine · last header text baseline → action row top · SOURCED — token `walls.mine.dimension.nameToActions` */
         val wallsMineDimensionNameToActions: Dp = 23.dp
-        /** Retro · week.recap · collage card: panel side → card side · SOURCED — token `week.recap.dimension.cardInsetH` */
-        val weekRecapDimensionCardInsetH: Dp = 32.4.dp
-        /** Retro · week.recap · recap preview: panel leading edge → close circle · SOURCED — token `week.recap.dimension.closeInsetLeading` */
-        val weekRecapDimensionCloseInsetLeading: Dp = 20.6.dp
-        /** Retro · week.recap · recap preview: panel top → close circle · SOURCED — token `week.recap.dimension.closeInsetTop` */
-        val weekRecapDimensionCloseInsetTop: Dp = 23.6.dp
-        /** Retro · week.recap · recap preview: diameter of the leading circle and height of the light pill · SOURCED — token `week.recap.dimension.controlHeight` */
-        val weekRecapDimensionControlHeight: Dp = 41.6.dp
-        /** Retro · week.recap · recap preview: screen side → leading circle / trailing pill · SOURCED — token `week.recap.dimension.controlInset` */
-        val weekRecapDimensionControlInset: Dp = 28.9.dp
-        /** Retro · week.recap · cover page: 'Week {n}' baseline → panel bottom · SOURCED — token `week.recap.dimension.coverTextBaseline` */
-        val weekRecapDimensionCoverTextBaseline: Dp = 28.3.dp
-        /** Retro · week.recap · cover page: panel side → 'Week {n}' ink and → name stack ink · SOURCED — token `week.recap.dimension.coverTextInset` */
-        val weekRecapDimensionCoverTextInset: Dp = 19.5.dp
-        /** Retro · week.recap · collage card footer: 'Week {n}' baseline (and the range baseline) → card bottom · SOURCED — token `week.recap.dimension.footerBaseline` */
-        val weekRecapDimensionFooterBaseline: Dp = 18.3.dp
-        /** Retro · week.recap · collage card footer: card side → 'Week {n}' ink and → name / range ink · SOURCED — token `week.recap.dimension.footerInset` */
-        val weekRecapDimensionFooterInset: Dp = 15.3.dp
-        /** Retro · week.recap · collage card footer: group-name baseline → date-range baseline · SOURCED — token `week.recap.dimension.footerLinePitch` */
-        val weekRecapDimensionFooterLinePitch: Dp = 18.3.dp
-        /** Retro · week.recap · collage card: card edge → photo grid (top and sides) · SOURCED — token `week.recap.dimension.gridInset` */
-        val weekRecapDimensionGridInset: Dp = 7.1.dp
         /** Retro · week.recap · collage card bottom → note top · SOURCED — token `week.recap.dimension.noteGap` */
         val weekRecapDimensionNoteGap: Dp = 20.dp
         /** Retro · week.recap · recap note: horizontal padding · SOURCED — token `week.recap.dimension.notePaddingH` */
         val weekRecapDimensionNotePaddingH: Dp = 18.dp
         /** Retro · week.recap · recap note: vertical padding · SOURCED — token `week.recap.dimension.notePaddingV` */
         val weekRecapDimensionNotePaddingV: Dp = 16.dp
-        /** Retro · week.recap · recap preview: screen side → blurred panel · SOURCED — token `week.recap.dimension.panelInset` */
-        val weekRecapDimensionPanelInset: Dp = 11.2.dp
-        /** Retro · week.recap · recap preview: panel bottom → controls row top · SOURCED — token `week.recap.dimension.panelToControls` */
-        val weekRecapDimensionPanelToControls: Dp = 12.4.dp
-        /** Retro · week.recap · recap preview: light pill side → label ink · SOURCED — token `week.recap.dimension.pillPaddingH` */
-        val weekRecapDimensionPillPaddingH: Dp = 23.5.dp
+        /** Retro · week.recap · recap preview: the leading select-photos thumbnail (square) · SOURCED — token `week.recap.dimension.selectThumb` */
+        val weekRecapDimensionSelectThumb: Dp = 37.7.dp
+        /** Retro · week.recap · recap preview: white border of the select-photos thumbnail · SOURCED — token `week.recap.dimension.selectThumbBorder` */
+        val weekRecapDimensionSelectThumbBorder: Dp = 1.7.dp
         /** Retro · week.recap · recap list card: 'Week {n}' baseline → date-range baseline · SOURCED — token `week.recap.dimension.weekCardLinePitch` */
         val weekRecapDimensionWeekCardLinePitch: Dp = 20.6.dp
         /** Retro · week.recap · recap list card: card leading edge → 'Week {n}' ink · SOURCED — token `week.recap.dimension.weekCardTextInset` */

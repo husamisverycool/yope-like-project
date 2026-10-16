@@ -773,6 +773,8 @@ public enum Copy {
     public static var groupsListTabWallsAccessibilityLabel: String { CopyLookup.string("groups.list.tab.walls.accessibilityLabel", default: "People") }
     /// "Groups" — Retro · groups.list · adapted · SOURCED
     public static var groupsListTitle: String { CopyLookup.string("groups.list.title", default: "Groups") }
+    /// "Albums" — Retro · groups.screen · verbatim · SOURCED
+    public static var groupsScreenAlbumsAccessibilityLabel: String { CopyLookup.string("groups.screen.albums.accessibilityLabel", default: "Albums") }
     /// "Back" — Apple HIG · groups.screen · new · VERIFIED
     public static var groupsScreenBackAccessibilityLabel: String { CopyLookup.string("groups.screen.back.accessibilityLabel", default: "Back") }
     /// "Messages" — Retro · groups.screen · verbatim · SOURCED
@@ -1275,8 +1277,6 @@ public enum Copy {
     public static var photoViewerErrorLoad: String { CopyLookup.string("photo.viewer.error.load", default: "Error loading media. Tap to retry") }
     /// "Couldn't save photo" — Retro · photo.viewer · new · SOURCED
     public static var photoViewerErrorSave: String { CopyLookup.string("photo.viewer.error.save", default: "Couldn't save photo") }
-    /// "{date} · with {names}" — Retro · photo.viewer · new · SOURCED
-    public static func photoViewerFooterDateWith(date: String, names: String) -> String { CopyLookup.format("photo.viewer.footer.dateWith", default: "{date} · with {names}", ["date": date, "names": names]) }
     /// "It may have been deleted by the person who shared it." — Retro · photo.viewer · new · SOURCED
     public static var photoViewerGoneDetail: String { CopyLookup.string("photo.viewer.gone.detail", default: "It may have been deleted by the person who shared it.") }
     /// "Couldn't find photo" — Retro · photo.viewer · adapted · SOURCED

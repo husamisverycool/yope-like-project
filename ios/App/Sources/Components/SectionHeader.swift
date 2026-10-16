@@ -10,7 +10,7 @@ import SwiftUI
 /// '•••' (`icon.global.more`, `color.global.textPrimary`) with its glyph box on the right margin, centred on the text's
 /// cap middle, opening a native menu (C-29; Retro's week menu contents were not captured — Gap). The dated variant
 /// (album grid, 'January 25, 2024') is a title without a range. Inset `size.global.screenMargin`. The header's frame is
-/// its text (the menu's hit area overhangs it), so `WeekSection` / `WeekSectionList` space by its baseline and cap top.
+/// its text (the menu's hit area overhangs it), so `WeekStripSection` / `WeekSectionList` space by its baseline and cap top.
 /// Accessibility: header trait, read as one element (`accessibilityLabel` from copy: "Week 27, July 3 to 9"); the
 /// menu is a separate labelled button. Contrast: the range on white 2.85:1 FAIL (failure 1), reported, not changed.
 struct SectionHeader<MenuContent: View>: View {
@@ -75,7 +75,7 @@ extension SectionHeader where MenuContent == EmptyView {
 
 /// A week section (C-21 profile / history list): the C-20 header, then its content (the C-17 strip) with its top
 /// `size.global.sectionHeaderToContent` below the header's baseline.
-struct WeekSection<Header: View, Content: View>: View {
+struct WeekStripSection<Header: View, Content: View>: View {
     @ViewBuilder let header: () -> Header
     @ViewBuilder let content: () -> Content
 

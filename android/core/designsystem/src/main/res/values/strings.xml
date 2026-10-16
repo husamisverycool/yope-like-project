@@ -771,6 +771,8 @@
     <string name="groups_list_tab_walls_accessibilitylabel" formatted="false">People</string>
     <!-- Retro · groups.list · adapted · SOURCED -->
     <string name="groups_list_title" formatted="false">Groups</string>
+    <!-- Retro · groups.screen · verbatim · SOURCED -->
+    <string name="groups_screen_albums_accessibilitylabel" formatted="false">Albums</string>
     <!-- Apple HIG · groups.screen · new · VERIFIED -->
     <string name="groups_screen_back_accessibilitylabel" formatted="false">Back</string>
     <!-- Retro · groups.screen · verbatim · SOURCED -->
@@ -1273,8 +1275,6 @@
     <string name="photo_viewer_error_load" formatted="false">Error loading media. Tap to retry</string>
     <!-- Retro · photo.viewer · new · SOURCED -->
     <string name="photo_viewer_error_save" formatted="false">Couldn\'t save photo</string>
-    <!-- Retro · photo.viewer · new · SOURCED · args: date, names -->
-    <string name="photo_viewer_footer_datewith">%1$s · with %2$s</string>
     <!-- Retro · photo.viewer · new · SOURCED -->
     <string name="photo_viewer_gone_detail" formatted="false">It may have been deleted by the person who shared it.</string>
     <!-- Retro · photo.viewer · adapted · SOURCED -->

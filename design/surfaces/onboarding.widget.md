@@ -27,11 +27,15 @@ Tokens: `onboarding.widget.*`. Copy: `onboarding.widget.*`.
    groups, aspect-fill, with the widget's bottom scrim (`layout.global.photoScrim`) and the sender's first name in
    text role `listTitle` `color.global.textOnMedia` bottom-trailing (Retro widget art: name stack bottom-right). No photo
    yet → `color.global.control` fill with `icon.global.gallery` centred in `color.global.textSecondary`.
+   `size.global.sectionHeaderToContent` below the tile: the widget's gallery name `widget.home.small.gallery.name`
+   ("Group Updates", capture group) in text role `meta`, `color.global.textSecondary`, centred — as Retro labels its
+   widget thumbnails in Settings (VID-SET: "Memories", "Friend Updates").
 5. `size.global.titleToContent` below: **steps**, one row each (iOS `onboarding.widget.step.ios.1` … `.5`; Android
    `.step.android.1` … `.3`): a 36 pt circle (`size.global.circleButton`, `color.global.control`) holding the numeral in
    text role `listTitle` `color.global.textPrimary`, then the step text (text role `body`, `color.global.textPrimary`)
    starting `size.global.rowThumbGap` (17) after the circle; rows `size.global.sectionHeaderToContent` (11.7) apart.
-   After the last step: `onboarding.widget.done` (text role `listTitle`).
+   After the last step: `onboarding.widget.done` (text role `listTitle`), then the note `widget.arrival.help.delay`
+   (capture group; text role `meta`, `color.global.textSecondary`).
 6. Flexible space.
 7. Bottom (frame of the `auth.*` capsules): iOS — C-05 `onboarding.widget.continue`. Android — C-05
    `onboarding.widget.add` (pin request) and, `auth.phone.size.capsuleToLink` below, C-08 `onboarding.widget.skip`.
@@ -41,7 +45,8 @@ Tokens: `onboarding.widget.*`. Copy: `onboarding.widget.*`.
 | element | tokens / component | copy | behaviour |
 |---|---|---|---|
 | preview | `onboarding.widget.size.preview`, `onboarding.widget.radius.preview`, `layout.global.photoScrim`, `color.global.textOnMedia`; fallback `color.global.control` + `icon.global.gallery` | `onboarding.widget.preview.accessibilityLabel` | decorative preview of what the widget shows |
-| step rows | C-11 circle (`size.global.circleButton`, `color.global.control`), text roles `listTitle` / `body` | step keys; `onboarding.widget.stepNumber.accessibilityLabel` | static |
+| widget name | text role `meta`, `color.global.textSecondary` | `widget.home.small.gallery.name` | static |
+| step rows | C-11 circle (`size.global.circleButton`, `color.global.control`), text roles `listTitle` / `body` | step keys; `onboarding.widget.stepNumber.accessibilityLabel`; note `widget.arrival.help.delay` | static |
 | Next (iOS) | C-05 | `onboarding.widget.continue` | moves on whether or not a widget was added (no check, no gate) |
 | Add Widget (Android) | C-05 | `onboarding.widget.add`; result toasts `onboarding.widget.added` / `onboarding.widget.pinFailed` (C-26) | `AppWidgetManager.requestPinAppWidget` (when `isRequestPinAppWidgetSupported`), then moves on; unsupported launcher → the steps are the path |
 | Maybe later (Android) | C-08 | `onboarding.widget.skip` | moves on |

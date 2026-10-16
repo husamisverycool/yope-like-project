@@ -1667,6 +1667,16 @@
       "pattern": "platform.a11yLabel",
       "level": "VERIFIED"
     },
+    "groups.screen.albums.accessibilityLabel": {
+      "text": "Albums",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "groups.screen",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journals_tab_screen_title`; references/auto/retro/lazyweb/retro-lazyweb-20260528-week22-dark-a.png (book glyph beside the chat glyph in the home header)",
+      "pattern": "platform.a11yLabel",
+      "level": "SOURCED",
+      "notes": "Icon-only header glyph → albums.list."
+    },
     "groups.screen.chat": {
       "text": "Messages",
       "origin": "verbatim",

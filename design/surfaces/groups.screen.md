@@ -20,8 +20,8 @@ Tokens: `groups.screen.*` + `global.*`. Copy: `groups.screen.*`.
 
 1. **Header row (C-02 without a title)**: back chevron `icon.global.back` at `size.global.backInset`; trailing glyphs
    (C-01 metrics: `size.global.icon` box, `size.global.headerIconPitch` 48 apart, last ink at `size.global.headerInset`):
-   `icon.global.calendar` → `week.history`, then `icon.global.chats` → `chat.thread`. The row sits where C-01 centres its
-   glyphs (on the cap middle of a title at `size.global.titleTop`).
+   `icon.global.albums` → `albums.list`, then `icon.global.chats` → `chat.thread` — Retro's 2026 home header pair (book +
+   chat, H22). The row sits where C-01 centres its glyphs (on the cap middle of a title at `size.global.titleTop`).
 2. **Cover** (C-24): `size.global.titleToContent` below the title baseline line, centred, `groups.screen.size.coverWidth` ×
    `.coverHeight`, `radius.global.thumbnail`, shadow `groups.screen.shadow.cover`; aspect-fill; no cover →
    `color.global.control` fill with `icon.global.group` centred in `color.global.textSecondary`.
@@ -34,19 +34,37 @@ Tokens: `groups.screen.*` + `global.*`. Copy: `groups.screen.*`.
    `size.global.screenMargin`: outline capsule `groups.screen.recap.accessibilityLabel` ("Recaps") and outline capsule
    `groups.screen.invite` ("Invite"), equal widths, then the icon-only outline capsule (`size.global.iconPillWidth` 49,
    `icon.global.settings` `size.global.iconSmall`), all `size.global.pillHeight` high, `size.global.pillGap` apart.
-6. **This week** — `size.global.sectionGap` (36.4) below the capsules:
-   - C-20 header: `groups.screen.week.title` (text role `sectionLabel`) + date range (`listSubtitle`,
-     `color.global.textSecondary`; locale range format); the current week shows no range when it has no photos (C-20);
+6. **Birthday request row** (only while a request for this group is open for you — `birthday.request` places its copy
+   here): `size.global.sectionGap` below the capsules, one C-14 single row inside the margins: honoree avatar
+   `size.global.avatarPicker` (C-16), title `birthday.request.title` (`listTitle`), line `birthday.request.due`
+   (`listSubtitle`, `color.global.textSecondary`), trailing `icon.global.chevron` → `birthday.request`.
+7. **This week** — `size.global.sectionGap` (36.4) below the capsules (or the birthday row):
+   - C-20 header as one button: `groups.screen.week.title` (text role `sectionLabel`) + date range (`listSubtitle`,
+     `color.global.textSecondary`; locale range format; the current week shows no range when it has no photos) and, in
+     place of C-20's "•••" (Retro's week menu was not captured), `icon.global.chevron` in `color.global.textSecondary` at
+     the right margin → `week.history` (all of the group's weeks);
    - `size.global.sectionHeaderToContent` (11.7) below: **week strip (C-17)** at the margin: the group's photos posted
      this week (group time zone, Monday start), oldest → newest, photo tiles 84 × 112 with the weekday label;
      **add tile last** (→ `camera.capture` for this group); when the week has no photos yet: add tile **first**, then
      empty-day tiles for each remaining day of the week (Retro's empty week, H43 / H22) and the C-27 block below
      (see States).
-7. **Members' weeks** — shown when at least one member shared this week: `size.global.sectionGap` below the strip,
-   a horizontal pager of **friend cards (C-18)**, one per member who shared this week (newest first): avatar
-   `size.global.avatarList` + first name (`listTitle`) above a 240 × 361 card showing that member's newest photo of the
-   week; cards `size.global.cardGap` apart, the next card peeking; no badge (Retro's "N new" / "Seen" are do-not-copy).
-8. **Earlier** — photos from before this week, newest first, paged: dated sections (C-20 dated variant: the day in
+8. **Members' weeks and memories** — shown when it has at least one card: `size.global.sectionGap` below the strip,
+   a horizontal pager (Retro's home feed) of 240 × 361 cards (`size.global.friendCardWidth` / `.friendCardHeight`,
+   `radius.global.card`), `size.global.cardGap` apart, the next card peeking, first card at the margin:
+   - **friend cards (C-18)**, one per member who shared this week (newest first): avatar `size.global.avatarList` +
+     first name (`listTitle`) above the card showing that member's newest photo of the week; no badge (Retro's
+     "N new" / "Seen" are do-not-copy);
+   - then the **feed cards** Retro puts in the same pager (its Rewind and "Year in Photos" cards, APK-S
+     `home_rewind_upsell_feed_card_*`, `home_feed_card_annual_recap_title`), each while its feature has content:
+     on this day (`onthisday` entry) and the year story (`year.story` entry). Card = the feature's newest photo,
+     aspect-fill, with the bottom scrim (`layout.global.photoScrim`); at the bottom inside `size.global.screenMargin`:
+     title in `font.global.display` text role `displaySmall` (24) `color.global.textOnMedia`, line (`listSubtitle`,
+     `color.global.textOnMedia`), then the light pill C-09 with the action; the header line above the card shows the
+     feature's glyph (`icon.global.rewind` / `icon.global.recap`, `size.global.avatarList` box) instead of an avatar.
+     Copy: `onthisday.entry.title` / `.subtitle` / `.button`; `year.story.entry.title` / `.subtitle` / `.button`
+     (memory group). Retro's feed cards set their text in Roslindale Display Narrow (24 / 29 sp, RP §2.3); the card
+     image itself was not captured — composition of C-18, C-09 and the display role.
+9. **Earlier** — photos from before this week, newest first, paged: dated sections (C-20 dated variant: the day in
    the long date format, text role `sectionLabel`; no "•••") over a 3-column grid of square cells (C-21, `radius.global.photo`
    0, `size.global.stripGap` 2 gaps, full width inside the margins); `size.global.sectionGap` between sections.
 
@@ -55,7 +73,7 @@ Tokens: `groups.screen.*` + `global.*`. Copy: `groups.screen.*`.
 | element | tokens / component | copy | behaviour |
 |---|---|---|---|
 | back | C-02 | `groups.screen.back.accessibilityLabel` | pop |
-| calendar glyph | C-01 glyph `icon.global.calendar` | `groups.screen.weeks.accessibilityLabel` | → `week.history` |
+| albums glyph | C-01 glyph `icon.global.albums` | `groups.screen.albums.accessibilityLabel` | → `albums.list` |
 | chat glyph | C-01 glyph `icon.global.chats` | `groups.screen.chat` | → `chat.thread` |
 | cover | `groups.screen.size.coverWidth` / `.coverHeight`, `radius.global.thumbnail`, `groups.screen.shadow.cover` | `groups.screen.cover.accessibilityLabel` | decorative (no action) |
 | name | `font.global.display`, `displayMedium`, `groups.screen.size.coverToTitle` | group name (data) | header trait |
@@ -63,7 +81,9 @@ Tokens: `groups.screen.*` + `global.*`. Copy: `groups.screen.*`.
 | Recaps | C-06 outline | `groups.screen.recap.accessibilityLabel` | → latest `week.recap` (or `week.history` when none) |
 | Invite | C-06 outline | `groups.screen.invite` | → `groups.invite` |
 | settings capsule | C-06 icon-only (`size.global.iconPillWidth`, `icon.global.settings`) | `groups.screen.settings.accessibilityLabel` | → `groups.settings` (sheet) |
-| week header | C-20 | `groups.screen.week.title` ({number} ISO week) + range | static |
+| week header | C-20 + `icon.global.chevron` | `groups.screen.week.title` ({number} ISO week) + range; action label `groups.screen.weeks.accessibilityLabel` | → `week.history` |
+| birthday row | C-14 + C-16 | `birthday.request.title`, `birthday.request.due` | → `birthday.request` |
+| feed card | C-18 geometry + `layout.global.photoScrim` + `displaySmall` + C-09 | `onthisday.entry.*`, `year.story.entry.*` | → `onthisday` / `year.story` |
 | strip tiles | C-17 (`size.global.stripTileWidth` / `.stripTileHeight`, `size.global.stripGap`, `radius.global.card` outer, `layout.global.photoScrim`, `tileLabel`; empty-day `color.global.control` + `color.global.emptyTileText`) | photo tile `groups.screen.photo.accessibilityLabel` ({date}, {first_name}); add tile `groups.screen.week.add.accessibilityLabel` | photo → `photo.viewer` (this week, this group); add → `camera.capture` (`DeepLink.camera(groupID:)`); long press → `groups.screen.layout.menu` |
 | friend card | C-18 | name (data); card label `groups.screen.photo.accessibilityLabel` | → `photo.viewer` on that member's photos of the week |
 | grid cell | C-21 dated grid | `groups.screen.photo.accessibilityLabel` | → `photo.viewer`; long press → menu (`groups.screen.photo.menu.report`, `.block`) |
@@ -105,8 +125,9 @@ Presses (glyphs, capsules, tiles, cards, cells) → `haptic.global.tap` (Android
 - Announce new photos (`.layoutChanged` / `announceForAccessibility`) only while the screen has focus.
 - Dynamic Type: name `largeTitle`; capsules `subheadline`; section headers `subheadline`; tile labels `footnote`;
   empty-day day number `title`; card names `subheadline`.
-- Focus order: back → calendar → chat → name → members → Recaps → Invite → settings → week header → strip tiles →
-  friend cards → dated sections (header, cells).
+- Feed cards: one button each (title + line + action).
+- Focus order: back → albums → chat → name → members → Recaps → Invite → settings → birthday row → week header →
+  strip tiles → friend and feed cards → dated sections (header, cells).
 - Contrast (`design/CONTRAST.md`):
 
 | pair | light | dark |
@@ -115,7 +136,8 @@ Presses (glyphs, capsules, tiles, cards, cells) → `haptic.global.tap` (Android
 | outline capsule border | 21:1 (row 20) | 21:1 |
 | week range `textSecondary` | **2.85:1 FAIL** (row 3) | 7.37:1 |
 | empty-day tile text | **1.25:1 FAIL** (rows 15–16) | **1.91:1 FAIL** |
-| weekday label on photo | photo-dependent (failure 8) | same |
+| weekday label / feed-card text on photo over the scrim | photo-dependent (failure 8) | same |
+| feed-card pill label #000000 on #FFFFFF | 21:1 (row 43) | 21:1 |
 | tile / placeholder fill vs page | **1.13:1 FAIL** (row 13) | **1.39:1 FAIL** |
 
 ## Data & actions
@@ -126,8 +148,10 @@ Presses (glyphs, capsules, tiles, cards, cells) → `haptic.global.tap` (Android
 - Realtime: channel `group-<id>` inserts (`posts`) and private broadcast `group:<id>` (`post_deleted`) (§8); refetch on
   foreground / reconnect.
 - In: `groups.list`, `groups.create`, invite join, deep links (`DeepLink.post`, `.chatMessage`, `.recap` put this screen
-  in the back stack). Out: `chat.thread`, `week.history`, `week.recap`, `photo.viewer`, `groups.invite`, `groups.settings`,
-  `camera.capture`, `safety.report`, `safety.block`.
+  in the back stack). Out: `chat.thread`, `albums.list`, `week.history`, `week.recap`, `photo.viewer`, `groups.invite`,
+  `groups.settings`, `camera.capture`, `onthisday`, `year.story`, `birthday.request`, `safety.report`, `safety.block`.
+- Entry conditions: `on_this_day(group, localDate)` returns rows (§6.4); `year_stories` row `status = 'ready'` for the
+  current year (§5.19); an open `tribute_requests` row for you in this group (§5.16).
 
 ## Platform notes
 
