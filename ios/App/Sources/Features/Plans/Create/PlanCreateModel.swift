@@ -158,6 +158,9 @@ final class PlanCreateModel {
     /// The date / time row was tapped: its picker opens under it (another open picker closes).
     func toggle(_ picker: Picker) {
         openPicker = openPicker == picker ? nil : picker
+        // The inline calendar always shows a selected day (today, its minimum, until one is chosen), and tapping the
+        // selected day does not change the selection: the shown day is the chosen one, so a plan for today can be made.
+        if openPicker == .date, day == nil { setDay(minimumDate) }
     }
 
     /// A photo from the system picker, stored as a square crop (Partiful's 1:1 poster).

@@ -29,6 +29,26 @@ final class PlansModelTests: XCTestCase {
         XCTAssertFalse(model.canSubmit)
     }
 
+    func testOpeningTheCalendarChoosesTheDayItShows() async {
+        // The inline calendar opens on today selected, and tapping the selected day changes nothing: without this a plan
+        // for today could not be made.
+        let fixture = PlansFixture()
+        let model = PlanCreateModel(groupID: PlansFixture.groupID, editing: nil, services: fixture.services)
+        await model.load()
+        model.setTitle("Dinner at ours")
+        XCTAssertNil(model.day)
+        model.toggle(.date)
+        XCTAssertEqual(model.openPicker, .date)
+        XCTAssertEqual(model.day, model.minimumDate, "the day the calendar shows selected")
+        XCTAssertTrue(model.canSubmit)
+        model.setDay(PlansFixture.dinnerStart)
+        model.toggle(.date)
+        XCTAssertNil(model.openPicker)
+        model.toggle(.date)
+        // Reopened: the chosen day stays.
+        XCTAssertEqual(model.startsAt, PlanCalendar.start(of: LocalDate(year: 2026, month: 10, day: 17)!, in: TimeZone(identifier: "UTC")!))
+    }
+
     func testCreateCombinesDayAndTimeInTheGroupZoneAndMakerGoes() async throws {
         let fixture = PlansFixture()
         let services = fixture.services
