@@ -3,7 +3,8 @@
 // references/auto/retro/press/tc-2023-12-recaps.png); built in Features/Social/UI/WeekRecapViews.swift with Tokens.* / Copy.*.
 import SwiftUI
 
-/// One weekly recap (`DeepLink.recap`, `week.history`'s "View recap"): the recap preview.
+/// One weekly recap opened by a link (`DeepLink.recap`, `AppRoute.recap`): the recap preview. (The recap list and
+/// week.history's "View recap" present it themselves as a full-screen cover.)
 struct RecapScreen: View {
     let groupID: String
     let recapID: String

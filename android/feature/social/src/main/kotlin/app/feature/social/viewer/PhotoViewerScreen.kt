@@ -93,6 +93,7 @@ import app.feature.memory.tagging.TagRun
 import app.feature.memory.tagging.TaggedPerson
 import app.feature.social.common.PhotoSaveUi
 import app.feature.social.common.RemotePhoto
+import app.ui.media.DualImage
 import app.feature.social.common.SocialBlocked
 import app.feature.social.common.SystemAppearance
 import app.feature.social.common.announce
@@ -372,7 +373,13 @@ private fun PhotoArea(
     onSave: () -> Unit,
 ) {
     val media = photo.media
-    val aspect = media?.let { m -> if ((m.width ?: 0) > 0 && (m.height ?: 0) > 0) m.width!!.toFloat() / m.height!! else null }
+    val front = media?.frontImagePath(Media.Rendition.Display)
+    // A dual capture is daily.dualimage (3:4, `daily.dualimage.layout.composition`); a single photo keeps its own aspect.
+    val aspect = if (front != null) {
+        Tokens.Layouts.DailyDualimageLayoutComposition.mainAspect
+    } else {
+        media?.let { m -> if ((m.width ?: 0) > 0 && (m.height ?: 0) > 0) m.width!!.toFloat() / m.height!! else null }
+    }
     val next by rememberUpdatedState(onNext)
     val previous by rememberUpdatedState(onPrevious)
     val backZone = if (SocialBlocked.viewerBackZone || LocalApproximations.current) BuildApproximations.BACK_ZONE_FRACTION else 0f
@@ -413,6 +420,15 @@ private fun PhotoArea(
                     color = Tokens.Colors.globalTextSecondary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.tapClickable(onClick = onRetry).padding(horizontal = Tokens.Sizes.globalScreenMargin),
+                )
+            } else if (front != null) {
+                // core:ui daily.dualimage with the viewer's square corners on media black; the photo's semantics stay on this box.
+                DualImage(
+                    main = photoModel(media.imagePath(Media.Rendition.Display)),
+                    inset = photoModel(front),
+                    contentDescription = null,
+                    cornerRadius = Tokens.Radii.globalPhoto,
+                    loadingFill = Tokens.Colors.globalBackgroundDeep,
                 )
             } else {
                 RemotePhoto(

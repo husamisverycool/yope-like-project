@@ -89,6 +89,8 @@ import app.feature.social.common.LocalSocialServices
 import app.feature.social.common.PersonAvatar
 import app.feature.social.common.PhotoSaveUi
 import app.feature.social.common.RemotePhoto
+import app.feature.social.common.photoModel
+import app.ui.media.DualImage
 import app.feature.social.common.SocialBlocked
 import app.feature.social.common.announce
 import app.feature.social.common.rememberPhotoSaver
@@ -972,7 +974,20 @@ private fun PhotoMessage(row: ChatRow, afterHeader: Boolean, ui: ChatUiState, na
                 .combinedClickable(onClick = tap, onLongClick = { ui.menuFor = row.key })
                 .then(semantics),
         ) {
-            RemotePhoto(media?.imagePath(app.data.model.Media.Rendition.Display), null, Modifier.fillMaxSize(), fallbackPath = media?.imagePath(app.data.model.Media.Rendition.Thumb))
+            val front = media?.frontImagePath(app.data.model.Media.Rendition.Display)
+            if (front != null) {
+                // A post with a front photo is core:ui daily.dualimage, in the card's corners.
+                DualImage(
+                    main = photoModel(media.imagePath(app.data.model.Media.Rendition.Display)),
+                    inset = photoModel(front),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    cornerRadius = Tokens.Radii.globalCard,
+                    loadingFill = Tokens.Colors.globalControl,
+                )
+            } else {
+                RemotePhoto(media?.imagePath(app.data.model.Media.Rendition.Display), null, Modifier.fillMaxSize(), fallbackPath = media?.imagePath(app.data.model.Media.Rendition.Thumb))
+            }
         }
         if (row.reactions.isNotEmpty()) {
             Spacer(Modifier.height(Tokens.Sizes.chatReactionsDimensionChipTop))
