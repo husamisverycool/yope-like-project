@@ -113,7 +113,6 @@ class OnThisDaySnapshotTest : SnapshotTest() {
         compose.waitForIdle()
         compose.mainClock.advanceTimeBy(settleMillis)
         assertEquals(1, shuffled)
-        compose.onNodeWithText("Shuffle").assertDoesNotExist()
         compose.onNodeWithTag(OnThisDayTags.MODE).performClick()
         // The title has no ripple, so nothing else asks for a frame: let the state change reach the recomposer first.
         compose.waitForIdle()

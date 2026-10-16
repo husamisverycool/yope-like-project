@@ -392,7 +392,9 @@ private fun ModeTitle(menu: ModeTitleActions, capMiddle: Dp, title: @Composable 
     val chevron = Tokens.Icons.globalChevronDown
     val ink = GlyphInk.bounds(chevron)
     val box = Tokens.Sizes.onthisdayModeChevronWidth * (chevron.viewportWidth / ink.width)
-    val lead = (Tokens.Sizes.onthisdayModeChevronGap - GlyphInk.leading(chevron, box)).coerceAtLeast(0.dp)
+    // The gap and the drop are measured on the ink: shift the box by the glyph's own side bearing and ink centre.
+    val lead = Tokens.Sizes.onthisdayModeChevronGap - GlyphInk.leading(chevron, box)
+    val inkCentreBelowBoxCentre = box * ((ink.top + ink.bottom) / 2f / chevron.viewportHeight) - box / 2
     Row(
         Modifier
             .onGloballyPositioned { menu.onPlaced(it.boundsInRoot()) }
@@ -408,8 +410,8 @@ private fun ModeTitle(menu: ModeTitleActions, capMiddle: Dp, title: @Composable 
             contentDescription = null,
             tint = Tokens.Colors.globalTextOnMedia,
             modifier = Modifier
-                .padding(start = lead)
-                .centreAt(capMiddle + Tokens.Sizes.onthisdayModeChevronDrop)
+                .offset(x = lead)
+                .centreAt(capMiddle + Tokens.Sizes.onthisdayModeChevronDrop - inkCentreBelowBoxCentre)
                 .size(box),
         )
     }
