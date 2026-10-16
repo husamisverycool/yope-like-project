@@ -93,12 +93,6 @@ class ViewerSnapshotTest : SnapshotBase() {
         viewer(state("v-1", d), ViewerUiState(draft = TextFieldValue("where is this")), d)
     }
 
-    /** "with {names}" tapped: the "In this photo" sheet (system appearance), your row with "Remove tag". */
-    @Test fun inThisPhotoSheet() {
-        val d = viewerData()
-        viewer(state("v-1", d), ViewerUiState(inThisPhoto = true), d, screen = true)
-    }
-
     @Test fun reactionsSheet() {
         val d = viewerData()
         viewer(state("v-1", d), ViewerUiState(reactions = true), d, screen = true)

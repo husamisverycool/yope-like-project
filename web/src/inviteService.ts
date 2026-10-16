@@ -16,8 +16,8 @@ export interface LoadedInvite {
   /** Indexes into preview.members whose avatar was signed and can be served. */
   avatarIndexes: Set<number>;
   /**
-   * The member who is the inviter, when it can be told: invite_preview returns the inviter's first name but no
-   * avatar, so the inviter is the one member with that first name (null when none or several match).
+   * The member whose avatar is the inviter's: invite_preview returns the inviter's avatar path (the invite's creator,
+   * a current member), which is that member's avatar_path. Null when the inviter has no (servable) photo.
    */
   inviterIndex: number | null;
 }
@@ -44,12 +44,12 @@ export interface InviteServiceOptions {
   log?: (msg: string) => void;
 }
 
-/** The member whose first name is the inviter's, if exactly one has it. */
+/** The member carrying the inviter's avatar (invite_preview.inviter_avatar_path), or null. */
 export function inviterIndex(preview: InvitePreview): number | null {
-  const name = preview.inviter_first_name;
-  if (!name) return null;
-  const matches = preview.members.flatMap((m, i) => (m.first_name === name ? [i] : []));
-  return matches.length === 1 ? matches[0]! : null;
+  const path = preview.inviter_avatar_path;
+  if (!path) return null;
+  const i = preview.members.findIndex((m) => m.avatar_path === path);
+  return i < 0 ? null : i;
 }
 
 export class InviteService {

@@ -39,68 +39,99 @@ private struct ReportFlowModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .background {
-                Color.clear
-                    .confirmationDialog(
-                        Text(target.map { ReportModel(target: $0, data: dependencies.data).title } ?? ""),
-                        isPresented: Binding(get: { target != nil }, set: { if !$0 { target = nil } }),
-                        titleVisibility: .visible,
-                        presenting: target
-                    ) { reported in
-                        ForEach(ReportReason.reasons(for: reported.kind)) { reason in
-                            Button(reason.title) { choose(reason, for: reported) }
-                        }
-                        Button(Copy.safetyReportCancel, role: .cancel) { target = nil }
-                    }
-            }
-            .background {
-                Color.clear
-                    .confirmationDialog(
-                        Text(Copy.safetyReportNextStepsTitle),
-                        isPresented: Binding(get: { nextSteps != nil }, set: { if !$0 { nextSteps = nil } }),
-                        titleVisibility: .visible,
-                        presenting: nextSteps
-                    ) { reported in
-                        if reported.groupID != nil {
-                            Button(Copy.safetyReportNextStepsLeave, role: .destructive) { leaving = reported }
-                        }
-                        if let person = reported.person {
-                            Button(Copy.safetyReportNextStepsBlock(firstName: person.firstName), role: .destructive) { blockTarget = person }
-                        }
-                        Button(Copy.safetyReportCancel, role: .cancel) {}
-                    }
-            }
-            .background {
-                Color.clear
-                    .alert(
-                        Text(Copy.groupsSettingsLeaveTitle(groupName: leaving?.groupName ?? "")),
-                        isPresented: Binding(get: { leaving != nil }, set: { if !$0 { leaving = nil } }),
-                        presenting: leaving
-                    ) { reported in
-                        Button(Copy.groupsSettingsAlertCancel, role: .cancel) {}
-                        Button(Copy.groupsSettingsLeaveConfirm, role: .destructive) { leave(reported) }
-                    } message: { _ in
-                        Text(Copy.groupsSettingsLeaveMessage)
-                    }
-            }
-            .background {
-                Color.clear
-                    .alert(
-                        Text(failure == .failed ? Copy.safetyReportErrorTitle : ""),
-                        isPresented: Binding(get: { failure != nil }, set: { if !$0 { failure = nil } }),
-                        presenting: failure
-                    ) { _ in
-                        Button(Copy.authPhoneErrorDismiss, role: .cancel) {}
-                    } message: { shown in
-                        Text(shown == .notFound ? Copy.safetyReportErrorNotFound : Copy.safetyReportErrorDetail)
-                    }
-            }
+            .background { reasonsDialog }
+            .background { nextStepsDialog }
+            .background { leaveAlert }
+            .background { failureAlert }
             .blockConfirmation(target: $blockTarget, toasts: dependencies.toasts) { person in
                 try await dependencies.data.block(userID: UserID(person.userID))
             }
             .dsHaptic(Tokens.Haptics.globalSuccess, trigger: successCount)
             .dsHaptic(Tokens.Haptics.globalError, trigger: errorCount)
             .dsHaptic(Tokens.Haptics.globalWarning, trigger: warningCount)
+    }
+
+    // Each presentation hangs on its own clear view (one presentation per anchor) and is built in small steps so the
+    // type checker stays fast.
+
+    private var reasonsTitle: Text {
+        guard let target else { return Text(verbatim: "") }
+        return Text(ReportModel(target: target, data: dependencies.data).title)
+    }
+
+    private var reasonsPresented: Binding<Bool> {
+        Binding(get: { target != nil }, set: { shown in if !shown { target = nil } })
+    }
+
+    private var reasonsDialog: some View {
+        Color.clear.confirmationDialog(reasonsTitle, isPresented: reasonsPresented, titleVisibility: .visible, presenting: target) { reported in
+            reasonButtons(for: reported)
+        }
+    }
+
+    @ViewBuilder
+    private func reasonButtons(for reported: ReportTarget) -> some View {
+        ForEach(ReportReason.reasons(for: reported.kind)) { reason in
+            Button(reason.title) { choose(reason, for: reported) }
+        }
+        Button(Copy.safetyReportCancel, role: .cancel) { target = nil }
+    }
+
+    private var nextStepsPresented: Binding<Bool> {
+        Binding(get: { nextSteps != nil }, set: { shown in if !shown { nextSteps = nil } })
+    }
+
+    private var nextStepsDialog: some View {
+        Color.clear.confirmationDialog(
+            Text(Copy.safetyReportNextStepsTitle), isPresented: nextStepsPresented, titleVisibility: .visible, presenting: nextSteps
+        ) { reported in
+            nextStepButtons(for: reported)
+        }
+    }
+
+    @ViewBuilder
+    private func nextStepButtons(for reported: ReportTarget) -> some View {
+        if reported.groupID != nil {
+            Button(Copy.safetyReportNextStepsLeave, role: .destructive) { leaving = reported }
+        }
+        if let person = reported.person {
+            Button(Copy.safetyReportNextStepsBlock(firstName: person.firstName), role: .destructive) { blockTarget = person }
+        }
+        Button(Copy.safetyReportCancel, role: .cancel) {}
+    }
+
+    private var leavePresented: Binding<Bool> {
+        Binding(get: { leaving != nil }, set: { shown in if !shown { leaving = nil } })
+    }
+
+    private var leaveTitle: Text {
+        Text(Copy.groupsSettingsLeaveTitle(groupName: leaving?.groupName ?? ""))
+    }
+
+    private var leaveAlert: some View {
+        Color.clear.alert(leaveTitle, isPresented: leavePresented, presenting: leaving) { reported in
+            Button(Copy.groupsSettingsAlertCancel, role: .cancel) {}
+            Button(Copy.groupsSettingsLeaveConfirm, role: .destructive) { leave(reported) }
+        } message: { _ in
+            Text(Copy.groupsSettingsLeaveMessage)
+        }
+    }
+
+    private var failurePresented: Binding<Bool> {
+        Binding(get: { failure != nil }, set: { shown in if !shown { failure = nil } })
+    }
+
+    /// `safety.report.error.title` + detail, or the message-only `safety.report.error.notFound`.
+    private var failureTitle: Text {
+        failure == .failed ? Text(Copy.safetyReportErrorTitle) : Text(verbatim: "")
+    }
+
+    private var failureAlert: some View {
+        Color.clear.alert(failureTitle, isPresented: failurePresented, presenting: failure) { _ in
+            Button(Copy.authPhoneErrorDismiss, role: .cancel) {}
+        } message: { shown in
+            Text(shown == .notFound ? Copy.safetyReportErrorNotFound : Copy.safetyReportErrorDetail)
+        }
     }
 
     private func choose(_ reason: ReportReason, for reported: ReportTarget) {

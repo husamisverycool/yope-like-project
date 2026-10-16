@@ -347,6 +347,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
     }
 
     func recaps(groupID: GroupID) async throws -> [WeeklyRecap] {
+        await hold("recaps")
         try call("recaps")
         return read { $0.recaps.filter { $0.groupID == groupID }.sorted { $0.weekStart > $1.weekStart } }
     }
@@ -360,6 +361,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
     func cachedRecap(id: RecapID) async -> WeeklyRecap? { read { $0.cachedRecaps[id] } }
 
     func updateRecap(id: RecapID, items: [PostID], text: String) async throws -> WeeklyRecap {
+        await hold("updateRecap")
         try call("updateRecap")
         guard var recap = read({ $0.recaps.first { $0.id == id } }) else { throw DataError.api(.recapNotFound) }
         guard recap.status == .ready else { throw DataError.api(.recapNotReady) }
@@ -402,6 +404,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
     func cachedAlbums(groupID: GroupID) async -> [AlbumWithItems]? { read { $0.cachedAlbums[groupID] } }
 
     func saveAlbum(groupID: GroupID, name: String, postIDs: [PostID]) async throws -> Album {
+        await hold("saveAlbum")
         try call("saveAlbum")
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw DataError.api(.invalidName) }

@@ -200,6 +200,7 @@ export function createApp(deps: AppDeps): Hono {
         group_name: preview.group_name,
         group_kind: preview.group_kind,
         inviter_first_name: preview.inviter_first_name,
+        inviter_avatar_url: r.invite.inviterIndex !== null && avatarIndexes.has(r.invite.inviterIndex) ? `${base}/avatar/${r.invite.inviterIndex}.jpg` : null,
         cover: cover ? { url: `${base}/cover.jpg`, width: cover.width, height: cover.height } : null,
         members: preview.members.map((m, i) => ({ first_name: m.first_name, avatar_url: avatarIndexes.has(i) ? `${base}/avatar/${i}.jpg` : null })),
       },

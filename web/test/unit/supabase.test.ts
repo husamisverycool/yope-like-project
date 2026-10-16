@@ -10,6 +10,7 @@ describe("invite_preview parsing", () => {
       group_kind: "family",
       cover_path: `u/${UID}/covers/c.jpg`,
       inviter_first_name: "Ana",
+      inviter_avatar_path: `avatars/${UID}/a.jpg`,
       members: [{ first_name: "Ana", avatar_path: `avatars/${UID}/a.jpg`, user_id: UID, phone: "+1555" }],
       member_count: 3,
       group_id: UID,
@@ -19,8 +20,11 @@ describe("invite_preview parsing", () => {
       group_kind: "family",
       cover_path: `u/${UID}/covers/c.jpg`,
       inviter_first_name: "Ana",
+      inviter_avatar_path: `avatars/${UID}/a.jpg`,
       members: [{ first_name: "Ana", avatar_path: `avatars/${UID}/a.jpg` }],
     });
+    // an RPC from before migration 0016 has no inviter_avatar_path
+    expect(parsePreview({ group_name: "g", group_kind: "friends", cover_path: null, inviter_first_name: null, members: [] }).inviter_avatar_path).toBeNull();
   });
 
   it("never signs paths outside the cover/avatar conventions", () => {
@@ -29,9 +33,11 @@ describe("invite_preview parsing", () => {
       group_kind: "friends",
       cover_path: `g/${UID}/collages/x.jpg`,
       inviter_first_name: null,
+      inviter_avatar_path: `u/${UID}/covers/c.jpg`,
       members: [{ first_name: null, avatar_path: `avatars/${UID}/../../u/x.jpg` }, { first_name: "B", avatar_path: "avatars/not-a-uuid/a.jpg" }],
     });
     expect(p.cover_path).toBeNull();
+    expect(p.inviter_avatar_path).toBeNull();
     expect(p.members.map((m) => m.avatar_path)).toEqual([null, null]);
   });
 

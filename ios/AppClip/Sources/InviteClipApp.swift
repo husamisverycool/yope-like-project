@@ -224,13 +224,13 @@ struct InviteClipContainer: View {
                         onRetry: { Task { await model.load() } }
                     )
                     .toolbar(.hidden, for: .navigationBar)
+                    // The card is drawn on dark photos in both appearances: light status bar while it is on top. The
+                    // sign-in screens follow the system appearance.
+                    .mediaStatusBar()
                     .navigationDestination(for: InviteClipModel.Step.self) { step in
                         destination(step)
                     }
                 }
-                // The card is drawn on dark photos in both appearances: while it is on screen the status bar is light.
-                // The sign-in screens follow the system appearance.
-                .preferredColorScheme(model.path.isEmpty ? .dark : nil)
             }
         }
         .toastHost(model.toasts)

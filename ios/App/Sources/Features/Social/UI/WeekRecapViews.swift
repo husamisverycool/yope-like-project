@@ -220,8 +220,10 @@ struct WeekRecapPreviewScreen: View {
         )
     }
 
-    init(model: WeekRecapModel, isPresentedModally: Bool = false) {
+    /// `page`: the page shown first (0: the card; snapshots of page 2).
+    init(model: WeekRecapModel, isPresentedModally: Bool = false, page: Int = 0) {
         _model = State(initialValue: model)
+        _page = State(initialValue: page)
         self.isPresentedModally = isPresentedModally
     }
 

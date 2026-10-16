@@ -43,10 +43,10 @@ const HAS_PHOTO = [true, false, true, true, true, true, true, true];
 export function fixtureUpstream(): FakeUpstream {
   const up = new FakeUpstream();
   const members = MEMBERS.map((first_name, i) => ({ first_name, avatar_path: HAS_PHOTO[i] ? avatarPath(i) : null }));
-  const base: InvitePreview = { group_name: GROUP, group_kind: "family", cover_path: COVER, inviter_first_name: "Ana", members };
+  const base: InvitePreview = { group_name: GROUP, group_kind: "family", cover_path: COVER, inviter_first_name: "Ana", inviter_avatar_path: avatarPath(0), members };
   up.setPreview(TOKENS.valid, base);
   up.setPreview(TOKENS.noCover, { ...base, group_name: "Roommates", cover_path: null, members: members.slice(0, 3) });
-  up.setPreview(TOKENS.noPhotos, { ...base, group_name: "Roommates", cover_path: null, inviter_first_name: "Rui", members: [members[1]!] });
+  up.setPreview(TOKENS.noPhotos, { ...base, group_name: "Roommates", cover_path: null, inviter_first_name: "Rui", inviter_avatar_path: null, members: [members[1]!] });
   up.previews.set(TOKENS.expired, { status: "unavailable", reason: "expired" });
   up.previews.set(TOKENS.revoked, { status: "unavailable", reason: "revoked" });
   up.objects.set(COVER, photo("family-dinner-4x3.jpg"));

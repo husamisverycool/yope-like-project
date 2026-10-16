@@ -18,7 +18,7 @@ import jsQR from "jsqr";
 import type { Page } from "playwright-core";
 import sharp from "sharp";
 import { cardPairs, desktopPairs, SPEC_BACKDROP_SAMPLE, statePairs, toHex, type PairResult } from "../src/contrastReport.js";
-import { cssEasing } from "../src/design.js";
+import { colorHex, cssEasing, inviteBackdrop } from "../src/design.js";
 import { copy } from "../src/generated/copy.js";
 import { tokens as t } from "../src/generated/tokens.js";
 import { backdropTone } from "../src/images.js";
@@ -98,18 +98,19 @@ async function main() {
       const hit = await page.evaluate(([x, y]) => document.elementFromPoint(x!, y!)?.textContent, [terms.box.x + terms.box.w / 2, terms.box.y + terms.box.h / 2 - half]);
       const backdrop = await m(".backdrop", ["filter"]);
       const dim = await page.$eval(".card", (e) => getComputedStyle(e, "::after").backgroundColor);
-      const sigma = t["size.global.backdropBlur"];
+      const { blurSigmaToWidth: k, dim: dimToken } = inviteBackdrop();
+      const sigma = k * card.box.w;
+      const sigmaRendered = parseFloat(/blur\(([0-9.]+)px\)/.exec(backdrop.s.filter!)?.[1] ?? "NaN");
       const inset = t["invite.web.size.cardInset"];
 
       section("Mobile card (390 × 664 CSS px @3x, iPhone; viewport ≤ invite.web.size.breakpoint 840)");
       check("`invite.web.size.cardInset` (card x, y)", `${inset}, ${inset}`, `${card.box.x}, ${card.box.y}`);
       check("card height (full viewport − 2 × inset)", px(664 - 2 * inset), px(card.box.h));
       check("`invite.web.radius.card`", px(t["invite.web.radius.card"]), card.s["border-top-left-radius"]!);
-      check("card fill: C-34 backdrop blur `size.global.backdropBlur` (σ)", `blur(${sigma}px)`, backdrop.s.filter!, "CSS blur() takes σ; the image extends 3σ past the card (clipped) so its edges stay photo");
-      check("card fill: C-34 dim `color.global.backdropDim` (black 22 %)", css(t["color.global.backdropDim"]), dim);
-      check("backdrop bleed (3σ each side)", px(card.box.w + 6 * sigma), px(backdrop.box.w));
-      row("card fill reads as a colour field", "spec: 'the group cover blurred to a colour field (C-34 backdrop)'", `C-34 as measured (L-5): σ ${sigma} pt + 22 % black — the cover stays recognisable`, "approximated", "Retro's /u/ card is a stock image blurred far more (bg2.jpeg); C-34's σ was fitted on the recap preview (ST-04). If the invite card should stay a colour field it needs its own blur token");
-      row("card fill fallbacks", "no cover → inviter's avatar blurred; neither → `color.global.backgroundDeep`", "as spec (renders valid-no-cover-*, valid-no-photos-*)", "matched", "the inviter is the one member whose first name is inviter_first_name (the RPC returns no inviter avatar); ambiguous → placeholder");
+      check("card fill blur `invite.web.layout.backdrop.blurSigmaToWidth` (σ = 0.08 × card width)", px(sigma), px(sigmaRendered), `${k} × ${card.box.w} px; CSS blur() takes σ, from 100cqw of the card (viewport fallback for browsers without container units); MERGE_DECISIONS L-6`);
+      check("card fill dim `invite.web.layout.backdrop.dim` (`color.global.backdropDim`, black 22 %)", css(colorHex(dimToken)), dim);
+      check("backdrop bleed (3σ each side, `invite.web.layout.backdrop.source`)", px(card.box.w + 6 * sigma), px(backdrop.box.w));
+      row("card fill fallbacks", "no cover → inviter's avatar blurred; neither → `color.global.backgroundDeep`", "as spec (renders valid-no-cover-*, valid-no-photos-*)", "matched", "the inviter's avatar is invite_preview.inviter_avatar_path (migration 0016)");
       check("`invite.web.size.avatar`", `${t["invite.web.size.avatar"]} × ${t["invite.web.size.avatar"]}`, `${avatar.box.w} × ${avatar.box.h}`);
       row("avatar position", "centred above the text block (approximated in the spec — the capture lost the photo)", `centre ${px(avatar.box.y + avatar.box.h / 2)}; space above the text ${px(hero.box.y)}–${px(hero.box.bottom)} → centre ${px(hero.box.y + hero.box.h / 2)}`, "approximated", "Retro's broken-image alt text ('athan', clipped by the 112-pt circle) puts the box top ≈ 152 CSS px → centre ≈ 208 on Retro's page; the space-centre rule gives ≈ 209 there");
       row("headline family `font.global.display`", "display serif (Retro: Roslindale Display Narrow — commercial)", h1.s["font-family"]!, "approximated", "PLATFORM stack: New York on Apple (ui-serif), Noto Serif on Android; this Linux render uses the bundled Noto Serif. Narrower Roslindale fits more per line");
@@ -201,7 +202,7 @@ async function main() {
 
       section("Desktop column (1440 × 900 @1x; viewport > 840)");
       check("page background (#FFFFFF, `color.global.background` light)", css(t["color.global.background"].light), bg);
-      row("order", "spec text: avatar → headline → line → QR → link → footer", "QR (avatar in its centre) → headline → line → link → footer", "approximated", "follows the spec's own WEBD reference (capture: QR above the headline, photo inside the QR) and Retro's DOM [QR(profilePhotoURL), h1, p]; the spec's Structure list orders it otherwise — spec text to fix");
+      row("order", "QR (avatar in its centre) → headline → line → link → footer", "QR (avatar in its centre) → headline → line → link → footer", "matched", "WEBD capture and Retro's DOM [QR(profilePhotoURL), h1, p]; spec Structure text corrected (RA-31)");
       check("`invite.web.size.qrDesktop`", `${q} × ${q}`, `${qr.box.w} × ${qr.box.h}`);
       row("QR modules", "black on white", `square, ${k} px each (whole pixels), centred; level H`, "approximated", "Retro's code uses rounded dot modules (style not tokenised); 231-px ink in its 250-px box = 33 × 7 px, the same whole-pixel rule");
       check("QR content", `https://<domain>/i/<token>`, decoded === `https://invite.example.com/i/${TOKENS.valid}` ? `https://<domain>/i/<token>` : String(decoded), "decoded from the screenshot (jsQR) with the avatar over the centre");
@@ -294,7 +295,8 @@ async function main() {
     check("name baseline: ink rows end at 348 (Retro 'nathan' 309–348)", 348, ink[gap - 1]!, "'Roommates' has no descender, so its last ink row is the baseline row");
     check("domain ink from row 369 (name baseline + `nameToDomain` 21)", 369, ink[gap]!);
     check("background without a cover: `color.global.backgroundDeep`", "#000000", toHex(at(10, 10) as [number, number, number]));
-    row("background with a cover (C-34)", "cover blurred to a colour field (C-34 backdrop); Retro: a dark blurred gradient", `C-34: σ ${t["size.global.backdropBlur"]} px (1 px = 1 pt of the layout token) + \`color.global.backdropDim\` (og-cover.png)`, "approximated", "Retro's share image is a much softer, darker field; C-34's mild blur keeps the cover recognisable behind the name");
+    const ogBackdrop = inviteBackdrop();
+    row("background with a cover", "`invite.web.layout.backdrop`: σ = 0.08 × 600 = 48 px under `color.global.backdropDim`", `σ ${ogBackdrop.blurSigmaToWidth * 600} px (sharp Gaussian, float precision) + ${css(colorHex(ogBackdrop.dim))} layer (og-cover.png)`, "matched", "Retro's own field is also darker overall (its profile photo is darker than this cover): photo-dependent");
     row("name face", "`font.global.display`, ≈ 52 px; weight not measurable (Gap)", "Noto Serif Regular 52 px (bundled, OFL)", "approximated", "Retro's OG name reads bold; the display role's weight (regular) is used");
     row("domain line", "`font.global.family` 20 px, white ≈ 70 % (#BBC5C9 over Retro's navy)", `Inter 20 px, #FFFFFF at 0.7 (brightest ${brightest} on black = #${brightest.toString(16).toUpperCase().repeat(3)})`, "matched", "colour over a black field; Retro's reading includes its backdrop");
     row("cover circle when there is no cover", "not specified", "`invite.web.color.avatarPlaceholder` circle", "approximated", "the page's no-photo avatar");
@@ -313,7 +315,7 @@ Large text = 24 CSS px, or 18.66 CSS px bold (WCAG's 18 pt / 14 pt). Sourced val
 |---|---|---|---|---|
 ${table(cardPairs(SPEC_BACKDROP_SAMPLE))}
 
-**Mobile card over this render's backdrop** (\`fixtures/photos/family-dinner-4x3.jpg\`: mean of its lower half under \`color.global.backdropDim\` = ${toHex(tone)})
+**Mobile card over this render's backdrop** (\`fixtures/photos/family-dinner-4x3.jpg\`: mean of its lower half under the \`invite.web.layout.backdrop\` dim = ${toHex(tone)})
 
 | pair | colours | ratio | needs | result |
 |---|---|---|---|---|
@@ -395,16 +397,9 @@ ${body}
 ${contrast}
 ## Not built / open
 
-- **Colour field vs C-34**: the spec asks for the cover "blurred to a colour field (C-34 backdrop)". C-34 is now measured
-  (L-5: σ 1.8 pt + 22 % black, fitted on the recap preview), and the page and share image use exactly that, so the cover
-  stays recognisable; Retro's own /u/ card (a stock image) and share image are much softer. A separate invite blur token
-  would be needed to make them colour fields.
 - **Member stack ring** (C-23 Gap): not drawn, as in the native components.
 - **Initials avatar** (C-23 Gap): the no-photo member shows \`icon.global.person\`; the inviter without a photo shows the
   \`invite.web.color.avatarPlaceholder\` circle (spec).
-- **Inviter's photo**: \`invite_preview\` returns no inviter avatar; the page uses the one member whose first name equals
-  \`inviter_first_name\` and shows the placeholder when none or several match. An \`inviter_avatar_path\` field in the RPC
-  would remove the guess (backend change, not made).
 - **App mark on the card**: none (owner's mark, decision 0.2).
 - **Document title**: \`invite.web.documentTitle\` is BLOCKED until the app is named.
 - **"Full" state**: not a web state in the spec; a full group is reported by \`join_group\` in the App Clip / app.

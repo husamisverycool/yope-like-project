@@ -100,6 +100,16 @@ export function layoutNumber(name: TokenName, field: string, pattern: RegExp): n
   return Number(m[1]);
 }
 
+/**
+ * invite.web.layout.backdrop (MERGE_DECISIONS L-6): the card / share-image backdrop is the photo blurred to a colour
+ * field — Gaussian σ = blurSigmaToWidth × the backdrop's width — under the colour token named by `dim`.
+ */
+export function inviteBackdrop(): { blurSigmaToWidth: number; dim: TokenName } {
+  const v = layout<{ blurSigmaToWidth?: unknown; dim?: unknown }>("invite.web.layout.backdrop");
+  if (typeof v.blurSigmaToWidth !== "number" || typeof v.dim !== "string" || !(v.dim in tokens)) throw new Error("invite.web.layout.backdrop: expected { blurSigmaToWidth: number, dim: <colour token> }");
+  return { blurSigmaToWidth: v.blurSigmaToWidth, dim: v.dim as TokenName };
+}
+
 // ---------- colours ----------
 
 export type Rgb = [number, number, number];

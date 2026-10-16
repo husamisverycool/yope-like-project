@@ -233,7 +233,7 @@ struct GroupFeedView: View {
             SettingsGroup(rows: [
                 SettingsCustomRow {
                     HStack {
-                        AvatarView(source: nil, diameter: Tokens.Sizes.globalAvatarPicker)
+                        AvatarView(path: content.avatarPath, diameter: Tokens.Sizes.globalAvatarPicker)
                         VStack(alignment: .leading) {
                             Text(content.title)
                                 .dsTextStyle(TextRole.listTitle)
@@ -401,19 +401,21 @@ struct GroupFeedView: View {
             }
             OnThisDayEntry(groupID: groupID) { content in
                 MemoryFeedCard(
-                    glyph: Tokens.Icons.globalRewind,
+                    glyph: content.icon ?? Tokens.Icons.globalRewind,
                     title: content.title,
                     line: content.subtitle,
-                    action: content.buttonTitle ?? Copy.onthisdayEntryButton
+                    action: content.buttonTitle ?? Copy.onthisdayEntryButton,
+                    photo: content.photoPath.map { PhotoSource.storage($0) }
                 )
                 .padding(.top, Tokens.Sizes.globalSectionGap)
             }
             YearStoryEntry(groupID: groupID) { content in
                 MemoryFeedCard(
-                    glyph: Tokens.Icons.globalRecap,
+                    glyph: content.icon ?? Tokens.Icons.globalRecap,
                     title: content.title,
                     line: content.subtitle,
-                    action: content.buttonTitle ?? Copy.yearStoryEntryButton
+                    action: content.buttonTitle ?? Copy.yearStoryEntryButton,
+                    photo: content.photoPath.map { PhotoSource.storage($0) }
                 )
                 .padding(.top, Tokens.Sizes.globalSectionGap)
             }
@@ -666,8 +668,7 @@ struct GroupPhotoGrid<Menu: View>: View {
 /// `color.global.backgroundDeep` with the bottom scrim (`layout.global.photoScrim`); at the bottom inside
 /// `size.global.screenMargin`: the title (text role `displaySmall`, `color.global.textOnMedia`), the line (`listSubtitle`,
 /// `color.global.textOnMedia`) and the C-09 light pill with the action. The memory entry draws it inside its button, so
-/// it is read as one element. (The memory entries do not hand over the feature's photo yet: the card is the media
-/// black until they do.)
+/// it is read as one element. Without a photo (`MemoryEntryContent.photoPath` nil) the card is the media black.
 struct MemoryFeedCard: View {
     let glyph: String
     let title: String

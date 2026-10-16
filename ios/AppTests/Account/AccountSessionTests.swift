@@ -230,17 +230,25 @@ final class AccountSessionTests: XCTestCase {
         router.path = [.birthdayRequest(requestID: "r1", groupID: "g1")]
         XCTAssertTrue(shell.presentModalRoute(router: router))
         XCTAssertTrue(router.path.isEmpty)
-        XCTAssertEqual(shell.presentedRoute, PresentedRoute(route: .birthdayRequest(requestID: "r1", groupID: "g1"), style: .sheet))
+        XCTAssertEqual(shell.presentedRoute, PresentedRoute(route: .birthdayRequest(requestID: "r1", groupID: "g1"), style: .fullScreen))
 
         router.path = [.tribute(tributeID: "t1", groupID: nil)]
         XCTAssertTrue(shell.presentModalRoute(router: router))
         XCTAssertEqual(shell.presentedRoute?.style, .fullScreen)
 
-        router.path = [.group(id: "g1"), .memory(.onThisDay(groupID: "g1"))]
+        router.path = [.capture(.collage(groupID: "g1", invitationID: "i1"))]
         XCTAssertTrue(shell.presentModalRoute(router: router))
-        XCTAssertEqual(router.modal, .memory(.onThisDay(groupID: "g1")), "onthisday: full-screen modal")
+        XCTAssertEqual(shell.presentedRoute?.style, .fullScreen, "collage.view: a media cover")
 
-        router.modal = nil
+        router.path = [.account(.groupSettings(groupID: "g1"))]
+        XCTAssertTrue(shell.presentModalRoute(router: router))
+        XCTAssertEqual(shell.presentedRoute?.style, .sheet, "groups.settings: a page sheet")
+
+        router.path = [.group(id: "g1"), .memory(.onThisDay(groupID: "g1"))]
+        XCTAssertFalse(shell.presentModalRoute(router: router), "onthisday is pushed in the group's stack")
+        XCTAssertEqual(router.path, [.group(id: "g1"), .memory(.onThisDay(groupID: "g1"))])
+        XCTAssertNil(router.modal)
+
         router.path = [.group(id: "g1")]
         XCTAssertFalse(shell.presentModalRoute(router: router), "ordinary routes stay pushed")
         XCTAssertEqual(router.path, [.group(id: "g1")])

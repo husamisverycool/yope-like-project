@@ -4,14 +4,14 @@
 // Pixel sizes are token sizes times device pixel ratio: avatars at the mobile avatar size
 // (invite.web.size.avatar) at 3x, which also covers the desktop avatar and the member stack; the
 // cover at the widest viewport the mobile card is drawn in (invite.web.size.breakpoint) at 2x.
-// The card's backdrop (C-34) is drawn by the page (CSS blur + dim over cover.jpg); the share image
-// follows invite.web.layout.ogImage with the same C-34 backdrop.
+// The card's backdrop (invite.web.layout.backdrop) is drawn by the page (CSS blur + dim over
+// cover.jpg); the share image follows invite.web.layout.ogImage with the same backdrop.
 
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp, { type OverlayOptions } from "sharp";
-import { colorHex, layout, layoutNumber, num, rgba, tokens, type Rgb, type TokenName } from "./design.js";
+import { colorHex, inviteBackdrop, layout, layoutNumber, num, rgba, tokens, type Rgb, type TokenName } from "./design.js";
 import { over } from "./contrastReport.js";
 
 export const COVER_MAX_WIDTH = Math.round(num("invite.web.size.breakpoint") * 2);
@@ -52,14 +52,14 @@ export async function processAvatar(buf: Buffer): Promise<Buffer> {
 }
 
 /**
- * Colour under the card's text for contrast reporting: the mean of the photo's lower half (where the text sits; the
- * mild C-34 blur leaves means unchanged) under color.global.backdropDim.
+ * Colour under the card's text for contrast reporting: the mean of the photo's lower half (where the text sits; a
+ * blur moves colour between the halves only near their border) under the backdrop's dim.
  */
 export async function backdropTone(jpeg: Buffer): Promise<Rgb> {
   const meta = await sharp(jpeg).metadata();
   const h = meta.height ?? 1;
   const lower = await sharp(jpeg).extract({ left: 0, top: Math.floor(h / 2), width: meta.width ?? 1, height: Math.ceil(h / 2) }).stats();
-  const dim = rgba("color.global.backdropDim");
+  const dim = rgba(inviteBackdrop().dim);
   return over(dim.rgb, dim.alpha, lower.channels.slice(0, 3).map((c) => c.mean) as Rgb);
 }
 
@@ -160,20 +160,20 @@ export interface OgInput {
   domain: string | null;
 }
 
-/** 600 × 600 share image: the cover as a C-34 backdrop, the cover in a circle, group name (serif), domain. */
+/** 600 × 600 share image: the cover as the invite backdrop, the cover in a circle, group name (serif), domain. */
 export async function composeOgImage({ cover, groupName, domain }: OgInput): Promise<Buffer> {
   const [r, g, b] = rgba("color.global.backgroundDeep").rgb;
   let base: Buffer;
   let circle: Buffer;
   const mask = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${AVATAR}" height="${AVATAR}"><circle cx="${AVATAR / 2}" cy="${AVATAR / 2}" r="${AVATAR / 2}"/></svg>`);
   if (cover) {
-    // C-34 backdrop: Gaussian σ size.global.backdropBlur (the image's px are the layout token's pt) under
-    // color.global.backdropDim.
-    const dim = rgba("color.global.backdropDim");
+    // invite.web.layout.backdrop: Gaussian σ = blurSigmaToWidth × the image width, under its dim colour.
+    const { blurSigmaToWidth, dim: dimToken } = inviteBackdrop();
+    const dim = rgba(dimToken);
     const [dr, dg, db] = dim.rgb;
     base = await sharp(cover)
       .resize(OG_WIDTH, OG_HEIGHT, { fit: "cover", position: "centre" })
-      .blur({ sigma: num("size.global.backdropBlur"), precision: "float" })
+      .blur({ sigma: blurSigmaToWidth * OG_WIDTH, precision: "float" })
       .composite([{ input: { create: { width: OG_WIDTH, height: OG_HEIGHT, channels: 4, background: { r: dr, g: dg, b: db, alpha: dim.alpha } } } }])
       .png()
       .toBuffer();

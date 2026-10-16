@@ -175,42 +175,9 @@ private struct GroupCreateDetails: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            GroupCreateHeader(
-                title: model.isEditing ? Copy.groupsCreateTitleEdit : Copy.groupsCreateTitle,
-                onBack: showsBack ? back : nil,
-                onClose: onClose
-            )
-            ScrollView {
-                MetricStack(alignment: .center) {
-                    cover
-                        .metricGap(Tokens.Sizes.globalTitleToContent, from: .top, to: .top)
-                    coverAction
-                        .metricGap(Tokens.Sizes.groupsScreenSizeCoverToTitle, from: .bottom, to: .top)
-                    FormField(
-                        Copy.groupsCreateNamePlaceholder,
-                        text: Binding(get: { model.name }, set: { model.setName($0) }),
-                        accessibilityLabel: Copy.groupsCreateNameAccessibilityLabel,
-                        errorMessage: model.isNameTooLong ? Copy.groupsCreateErrorTooLong : nil
-                    )
-                    .disabled(model.isWorking)
-                    .accessibilityIdentifier("groups.create.name")
-                    .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
-                    .metricGap(Tokens.Sizes.globalTitleToContent, from: .bottom, to: .top)
-                }
-                .padding(.bottom, Tokens.Sizes.globalButtonMarginH)
-            }
-            .scrollBounceBehavior(.basedOnSize)
-            PrimaryButton(
-                model.isEditing ? Copy.groupsCreateSave : Copy.groupsCreateCta,
-                height: .sheet,
-                isEnabled: !model.trimmedName.isEmpty && !model.isNameTooLong,
-                isBusy: model.isWorking
-            ) {
-                Task { await onSubmit() }
-            }
-            .accessibilityIdentifier("groups.create.submit")
-            .padding(.horizontal, Tokens.Sizes.globalButtonMarginHSheet)
-            .padding(.bottom, Tokens.Sizes.globalButtonMarginHSheet)
+            header
+            form
+            submitButton
         }
         .background(Tokens.Colors.globalBackground.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
@@ -229,6 +196,57 @@ private struct GroupCreateDetails: View {
         .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
         .formErrorAlert(model.failureMessage, trigger: model.errorCount)
         .accessibilityIdentifier("groups.create.details")
+    }
+
+    private var header: some View {
+        let back: (() -> Void)? = showsBack ? { self.back() } : nil
+        return GroupCreateHeader(
+            title: model.isEditing ? Copy.groupsCreateTitleEdit : Copy.groupsCreateTitle,
+            onBack: back,
+            onClose: onClose
+        )
+    }
+
+    private var nameBinding: Binding<String> {
+        Binding(get: { model.name }, set: { model.setName($0) })
+    }
+
+    private var form: some View {
+        ScrollView {
+            MetricStack(alignment: .center) {
+                cover
+                    .metricGap(Tokens.Sizes.globalTitleToContent, from: .top, to: .top)
+                coverAction
+                    .metricGap(Tokens.Sizes.groupsScreenSizeCoverToTitle, from: .bottom, to: .top)
+                nameField
+                    .metricGap(Tokens.Sizes.globalTitleToContent, from: .bottom, to: .top)
+            }
+            .padding(.bottom, Tokens.Sizes.globalButtonMarginH)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+    }
+
+    private var nameField: some View {
+        FormField(
+            Copy.groupsCreateNamePlaceholder,
+            text: nameBinding,
+            accessibilityLabel: Copy.groupsCreateNameAccessibilityLabel,
+            errorMessage: model.isNameTooLong ? Copy.groupsCreateErrorTooLong : nil
+        )
+        .disabled(model.isWorking)
+        .accessibilityIdentifier("groups.create.name")
+        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+    }
+
+    private var submitButton: some View {
+        let title = model.isEditing ? Copy.groupsCreateSave : Copy.groupsCreateCta
+        let enabled = !model.trimmedName.isEmpty && !model.isNameTooLong
+        return PrimaryButton(title, height: .sheet, isEnabled: enabled, isBusy: model.isWorking) {
+            Task { await onSubmit() }
+        }
+        .accessibilityIdentifier("groups.create.submit")
+        .padding(.horizontal, Tokens.Sizes.globalButtonMarginHSheet)
+        .padding(.bottom, Tokens.Sizes.globalButtonMarginHSheet)
     }
 
     /// Back to step A (a native pop inside the sheet).

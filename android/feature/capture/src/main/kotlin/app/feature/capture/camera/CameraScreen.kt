@@ -116,6 +116,7 @@ fun CameraRoute(
             sizeOf = ::photoSize,
         )
     }
+    app.feature.capture.ui.MediaSystemBars()
     val state by vm.ui.collectAsStateWithLifecycle()
     val controller = remember(lifecycleOwner) { CameraControllers.factory(context, lifecycleOwner) }
     val scope = rememberCoroutineScope()

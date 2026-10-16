@@ -13,7 +13,7 @@
 // Layout: one DOM for both layouts, like Retro's CSS: the desktop column is the default and
 // `@media (max-width: invite.web.size.breakpoint)` turns it into the mobile card.
 
-import { cssColor, cssEasing, cssFontStack, cssWeight, num, px } from "../design.js";
+import { cssColor, cssEasing, cssFontStack, cssWeight, inviteBackdrop, num, px } from "../design.js";
 
 const capsule = (height: string) => `calc(${height} / 2)`; // radius.global.capsule: "height / 2"
 
@@ -22,9 +22,14 @@ export function pageCss(): string {
   const minTarget = px("size.global.minTouchTarget.ios");
   const pillT = `background-color ${num("invite.web.duration.pill")}ms ${cssEasing("invite.web.easing.pill")}`;
   const memberGlyph = `${Math.min(num("size.global.avatarSmall"), num("size.global.icon"))}px`;
-  // C-34 backdrop: CSS blur() takes the Gaussian's standard deviation, as the token is defined. The image extends 3σ
-  // past the card (clipped) so the blur has photo, not transparency, at the card's edges.
-  const bleed = `calc(-3 * ${px("size.global.backdropBlur")})`;
+  // invite.web.layout.backdrop: Gaussian σ = blurSigmaToWidth × the card's width. CSS blur() takes σ; 100cqw is the
+  // card's width (the card is an inline-size container). Browsers without container units get the viewport-based
+  // width of the same card (100vw − 2 × inset) from the preceding declaration. The image extends 3σ past the card
+  // (clipped) so the blur has photo, not transparency, at the card's edges.
+  const backdrop = inviteBackdrop();
+  const sigmaCq = `calc(${backdrop.blurSigmaToWidth} * 100cqw)`;
+  const sigmaVw = `calc(${backdrop.blurSigmaToWidth} * (100vw - 2 * ${px("invite.web.size.cardInset")}))`;
+  const bleedRule = (sigma: string) => `top:calc(-3 * ${sigma});left:calc(-3 * ${sigma});width:calc(100% + 6 * ${sigma});height:calc(100% + 6 * ${sigma});filter:blur(${sigma})`;
   return `
 :root{color-scheme:light}
 *,*::before,*::after{box-sizing:border-box}
@@ -56,9 +61,9 @@ img{display:block}
 .desktop-only,.qr{display:none}
 .mobile-only{display:revert}
 .page{min-height:100vh;min-height:100dvh;padding:${px("invite.web.size.cardInset")};display:flex}
-.card{flex:1 1 auto;min-height:0;border-radius:${px("invite.web.radius.card")};overflow:hidden;background:${cssColor("color.global.backgroundDeep")}}
-.backdrop{display:block;position:absolute;z-index:-1;top:${bleed};left:${bleed};width:calc(100% - 2 * ${bleed});height:calc(100% - 2 * ${bleed});object-fit:cover;filter:blur(${px("size.global.backdropBlur")})}
-.photo::after{content:"";position:absolute;inset:0;z-index:-1;background:${cssColor("color.global.backdropDim")}}
+.card{flex:1 1 auto;min-height:0;border-radius:${px("invite.web.radius.card")};overflow:hidden;background:${cssColor("color.global.backgroundDeep")};container-type:inline-size}
+.backdrop{display:block;position:absolute;z-index:-1;object-fit:cover;${bleedRule(sigmaVw)};${bleedRule(sigmaCq)}}
+.photo::after{content:"";position:absolute;inset:0;z-index:-1;background:${cssColor(backdrop.dim)}}
 .hero{margin-top:0;flex:1 1 auto;display:flex;align-items:center;justify-content:center;width:100%}
 .avatar{width:${px("invite.web.size.avatar")};height:${px("invite.web.size.avatar")}}
 .text{margin-bottom:${px("invite.web.size.bodyToPill")}}

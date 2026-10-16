@@ -73,6 +73,7 @@ fun SendToRoute(
             maxCaption = Tokens.Counts.cameraSendtoSizeCaptionMaxLength,
         )
     }
+    app.feature.capture.ui.MediaSystemBars()
     val state by vm.ui.collectAsStateWithLifecycle()
     val media = state.media
     var messageSheet by rememberSaveable { mutableStateOf(false) }

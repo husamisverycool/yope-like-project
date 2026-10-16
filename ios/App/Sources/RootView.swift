@@ -59,10 +59,10 @@ struct MainShell: View {
                             ShellNavigation.select(tab, router: router, shell: shell)
                         }
                     }
-                    // The camera tab is part of the main window: while it is on screen the window takes the dark
-                    // appearance so the status bar is light on the black camera. Scoped to this branch, the other
-                    // tabs keep the system appearance (`layout.global.appearance`).
-                    .preferredColorScheme(.dark)
+                    // The camera tab is part of the main window: while it is on screen the status bar is light on the
+                    // black camera. Scoped to this branch, the other tabs keep the system appearance
+                    // (`layout.global.appearance`).
+                    .mediaStatusBar()
             default:
                 NavigationStack(path: $router.path) {
                     GroupsHomeScreen()
@@ -115,7 +115,8 @@ struct MainShell: View {
     }
 
     /// A route pushed from anywhere (notification, link) shows the groups stack, except the routes whose specs present
-    /// them modally (year.story, birthday.request, birthday.tribute), which move off the stack.
+    /// them modally (year.story, birthday.request, birthday.tribute, collage.view, settings, groups.settings), which move
+    /// off the stack.
     private func routePathChanged(_ path: [AppRoute]) {
         if shell.presentModalRoute(router: router) { return }
         if !path.isEmpty { shell.showGroups() }
@@ -286,7 +287,13 @@ struct RouteDestination: View {
         case .memory(.birthdayAdd):
             BirthdayAddRoute()
         case let .memory(route):
-            MemoryDestination(route: route)
+            if case .onThisDay = route {
+                // onthisday is pushed in the group's stack (onthisday.md B): a dark media page, light status bar.
+                MemoryDestination(route: route)
+                    .mediaStatusBar()
+            } else {
+                MemoryDestination(route: route)
+            }
         }
     }
 }

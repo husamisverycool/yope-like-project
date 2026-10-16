@@ -102,6 +102,30 @@ import kotlinx.coroutines.delay
 @Composable
 internal fun OnMedia(content: @Composable () -> Unit) = AppTheme(dark = true, content = content)
 
+/**
+ * Media screens show light status- and navigation-bar content in both appearances (camera.capture → Structure:
+ * "status bar light content"; the app's edge-to-edge style otherwise follows the appearance). Restores the
+ * previous style when the screen leaves.
+ */
+@Composable
+internal fun MediaSystemBars() {
+    val view = androidx.compose.ui.platform.LocalView.current
+    androidx.compose.runtime.DisposableEffect(view) {
+        var context = view.context
+        while (context is android.content.ContextWrapper && context !is android.app.Activity) context = context.baseContext
+        val window = (context as? android.app.Activity)?.window ?: return@DisposableEffect onDispose { }
+        val bars = androidx.core.view.WindowCompat.getInsetsController(window, view)
+        val status = bars.isAppearanceLightStatusBars
+        val navigation = bars.isAppearanceLightNavigationBars
+        bars.isAppearanceLightStatusBars = false
+        bars.isAppearanceLightNavigationBars = false
+        onDispose {
+            bars.isAppearanceLightStatusBars = status
+            bars.isAppearanceLightNavigationBars = navigation
+        }
+    }
+}
+
 /** OpenType tabular figures: the countdown's and durations' monospaced digits. */
 internal const val TABULAR_DIGITS = "tnum" // provenance-ok: OpenType feature tag, not a design value
 

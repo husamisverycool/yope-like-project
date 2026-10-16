@@ -11,7 +11,7 @@ import XCTest
 final class MemoryOnThisDayTests: XCTestCase {
     private let utc = TimeZone(identifier: "UTC")!
 
-    private func model(_ context: MemoryTestContext, savePhoto: @escaping @Sendable (Data) async throws -> Void = { _ in }, random: @escaping (Int) -> Int = { _ in 0 }) -> OnThisDayModel {
+    private func makeModel(_ context: MemoryTestContext, savePhoto: @escaping @Sendable (Data) async throws -> Void = { _ in }, random: @escaping (Int) -> Int = { _ in 0 }) -> OnThisDayModel {
         OnThisDayModel(groupID: MemoryIDs.group, dependencies: context.dependencies, savePhoto: savePhoto, randomIndex: random)
     }
 
@@ -28,7 +28,7 @@ final class MemoryOnThisDayTests: XCTestCase {
 
     func testLoadsTheDayNewestFirstOneMemoryPerSlot() async {
         let context = MemoryTestContext()
-        let model = model(context)
+        let model = makeModel(context)
         XCTAssertEqual(model.phase, .idle)
         await model.loadIfNeeded()
         XCTAssertEqual(model.phase, .loaded)
@@ -57,19 +57,19 @@ final class MemoryOnThisDayTests: XCTestCase {
 
     func testTheFeatureIntroShowsOncePerAccount() async {
         let context = MemoryTestContext()
-        let first = model(context)
+        let first = makeModel(context)
         await first.loadIfNeeded()
         XCTAssertTrue(first.showsIntro, "the first open shows the intro")
         first.dismissIntro()
         XCTAssertFalse(first.showsIntro)
-        let second = model(context)
+        let second = makeModel(context)
         await second.loadIfNeeded()
         XCTAssertFalse(second.showsIntro, "never again on this account")
     }
 
     func testTheDialStepsOneMemoryPerSlotWithATickAndStopsAtTheEnds() async {
         let context = MemoryTestContext()
-        let model = model(context)
+        let model = makeModel(context)
         await model.loadIfNeeded()
         XCTAssertFalse(model.previous(), "the first memory: counter-clockwise does nothing")
         XCTAssertTrue(model.next())
@@ -88,7 +88,7 @@ final class MemoryOnThisDayTests: XCTestCase {
 
     func testPlayAdvancesEveryHoldWithATickAndStopsAfterTheLast() async {
         let context = MemoryTestContext()
-        let model = model(context)
+        let model = makeModel(context)
         await model.loadIfNeeded()
         model.togglePlay()
         XCTAssertTrue(model.isPlaying)
@@ -120,7 +120,7 @@ final class MemoryOnThisDayTests: XCTestCase {
 
     func testShuffleShowsRandomMemoriesFromTheGroupsHistoryAndGoesBackThroughThem() async {
         let context = MemoryTestContext()
-        let model = model(context)
+        let model = makeModel(context)
         await model.loadIfNeeded()
         await model.shuffle()
         XCTAssertEqual(model.mode, .shuffle)
@@ -141,7 +141,7 @@ final class MemoryOnThisDayTests: XCTestCase {
     func testSaveDownloadsTheOriginalAndConfirms() async {
         let saved = SavedData()
         let context = MemoryTestContext()
-        let model = model(context, savePhoto: { await saved.append($0) })
+        let model = makeModel(context, savePhoto: { await saved.append($0) })
         await model.loadIfNeeded()
         await model.save()
         let count = await saved.count
@@ -151,7 +151,7 @@ final class MemoryOnThisDayTests: XCTestCase {
         XCTAssertEqual(context.haptics, [Tokens.Haptics.globalSuccess])
 
         let denied = MemoryTestContext()
-        let deniedModel = self.model(denied, savePhoto: { _ in throw PhotoLibraryService.LibraryError.notAuthorized(.denied) })
+        let deniedModel = makeModel(denied, savePhoto: { _ in throw PhotoLibraryService.LibraryError.notAuthorized(.denied) })
         await deniedModel.loadIfNeeded()
         await deniedModel.save()
         XCTAssertTrue(deniedModel.showsSaveDenied, "add-only access denied: the native alert that opens Settings")
@@ -159,7 +159,7 @@ final class MemoryOnThisDayTests: XCTestCase {
 
         struct Broken: Error {}
         let failing = MemoryTestContext()
-        let failingModel = self.model(failing, savePhoto: { _ in throw Broken() })
+        let failingModel = makeModel(failing, savePhoto: { _ in throw Broken() })
         await failingModel.loadIfNeeded()
         await failingModel.save()
         XCTAssertFalse(failingModel.showsSaveDenied)
@@ -168,7 +168,7 @@ final class MemoryOnThisDayTests: XCTestCase {
 
     func testReportOpensSafetyReportForSomeoneElsesMemoryOnly() async {
         let context = MemoryTestContext()
-        let model = model(context)
+        let model = makeModel(context)
         await model.loadIfNeeded()
         model.report()
         XCTAssertEqual(context.reports.count, 1)
@@ -185,7 +185,7 @@ final class MemoryOnThisDayTests: XCTestCase {
 
     func testDeletingYourMemoryAsksThenRemovesItFromTheDial() async {
         let context = MemoryTestContext()
-        let model = model(context)
+        let model = makeModel(context)
         await model.loadIfNeeded()
         model.requestDelete()
         XCTAssertNil(model.deleteCandidate, "someone else's memory cannot be deleted")
@@ -206,7 +206,7 @@ final class MemoryOnThisDayTests: XCTestCase {
 
     func testDeletedMemoriesLeaveTheDialAndTheEmptyBlockShowsWhenNoneRemain() async {
         let context = MemoryTestContext()
-        let model = model(context)
+        let model = makeModel(context)
         await model.loadIfNeeded()
         model.next()
         // Broadcast path: `post_deleted` on the group's private topic.
@@ -225,13 +225,13 @@ final class MemoryOnThisDayTests: XCTestCase {
     func testErrorAndOfflineStates() async {
         let offline = MemoryTestContext()
         offline.data.fail(.onThisDay, with: .offline)
-        let offlineModel = model(offline)
+        let offlineModel = makeModel(offline)
         await offlineModel.loadIfNeeded()
         XCTAssertEqual(offlineModel.phase, .offline)
 
         let failing = MemoryTestContext()
         failing.data.fail(.onThisDay, with: .api(.notGroupMember))
-        let errorModel = model(failing)
+        let errorModel = makeModel(failing)
         await errorModel.loadIfNeeded()
         XCTAssertEqual(errorModel.phase, .error)
         failing.data.fail(.onThisDay, with: nil)
@@ -245,10 +245,10 @@ final class MemoryOnThisDayTests: XCTestCase {
 
     func testCachedDayShowsAtOnceAndStaysWhenTheRefreshIsOffline() async {
         let context = MemoryTestContext()
-        let first = model(context)
+        let first = makeModel(context)
         await first.loadIfNeeded()
         context.data.fail(.onThisDay, with: .offline)
-        let second = model(context)
+        let second = makeModel(context)
         await second.loadIfNeeded()
         XCTAssertEqual(second.phase, .loaded, "cached content first; no offline screen over it")
         XCTAssertEqual(second.memories.count, 4)
@@ -256,7 +256,7 @@ final class MemoryOnThisDayTests: XCTestCase {
 
     func testTheNeighboursArePreloadedForTheCrossFade() async {
         let context = MemoryTestContext()
-        let model = model(context)
+        let model = makeModel(context)
         await model.loadIfNeeded()
         model.imagePixelSize = 2532
         model.preloadNeighbours()

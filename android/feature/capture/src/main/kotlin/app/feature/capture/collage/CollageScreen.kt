@@ -60,6 +60,7 @@ fun CollageRoute(groupId: String, invitationId: String, onBack: () -> Unit, onOp
     val vm: CollageViewModel = viewModel(key = "collage:$invitationId") {
         CollageViewModel(CaptureDataProvider.get(context), groupId, invitationId, context.cacheDir)
     }
+    app.feature.capture.ui.MediaSystemBars()
     val state by vm.ui.collectAsStateWithLifecycle()
     val date = state.date?.let(Formats::longDate).orEmpty()
     val sheetTitle = stringResource(R.string.collage_share_sheettitle, date)

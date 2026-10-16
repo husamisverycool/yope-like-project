@@ -239,6 +239,13 @@ final class SocialVoiceRecorder {
         if phase == .holding { phase = .locked }
     }
 
+    #if DEBUG
+    /// Snapshot tests: the composer's recording row without a microphone.
+    func showRecordingForSnapshot(_ phase: Phase) {
+        self.phase = phase
+    }
+    #endif
+
     /// Slide left, or the trash glyph: nothing is sent.
     func cancel() {
         recorder.cancel()

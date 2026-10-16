@@ -117,8 +117,8 @@ export function invitePage(token: string, invite: LoadedInvite, ctx: PageContext
 <meta name="twitter:image:alt" content="${esc(coverAlt)}">
 ${ctx.smartBanner ? `<meta name="apple-itunes-app" content="${esc(`${ctx.smartBanner}, app-argument=${inviteUrl}`)}">\n` : ""}`;
 
-  // C-34 backdrop: the cover (named), else the inviter's avatar (decorative: the avatar itself is named), blurred and
-  // dimmed by the stylesheet; without either the card is color.global.backgroundDeep.
+  // Backdrop (invite.web.layout.backdrop): the cover (named), else the inviter's avatar (decorative: the avatar itself
+  // is named), blurred and dimmed by the stylesheet; without either the card is color.global.backgroundDeep.
   const source = InviteService.backdropSource(invite);
   const backdrop = !source
     ? ""

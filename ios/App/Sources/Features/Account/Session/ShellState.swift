@@ -13,8 +13,8 @@ final class ShellState {
     private(set) var cameraGroupID: String?
 
     /// A route whose spec presents it modally when it arrives as a push from a link (`AppRouter` pushes every link
-    /// route): birthday.request, settings.root and groups.settings are sheets; birthday.tribute and collage.view are
-    /// full screen. `MainShell` presents it.
+    /// route): settings.root and groups.settings are sheets; birthday.request, birthday.tribute and collage.view are full
+    /// screen. `MainShell` presents it.
     var presentedRoute: PresentedRoute?
 
     /// The shell on screen (the paywall entry closes the camera before prompting): the latest one created, and the
@@ -65,8 +65,8 @@ struct PresentedRoute: Identifiable, Hashable {
     static func modal(for route: AppRoute) -> PresentedRoute? {
         switch route {
         case .birthdayRequest:
-            // birthday.request.md platform notes: `.sheet` with `.presentationDetents([.large])`.
-            return PresentedRoute(route: route, style: .sheet)
+            // birthday.request.md structure and presentation: full screen.
+            return PresentedRoute(route: route, style: .fullScreen)
         case .tribute:
             // birthday.tribute.md structure: full screen.
             return PresentedRoute(route: route, style: .fullScreen)
@@ -83,21 +83,16 @@ struct PresentedRoute: Identifiable, Hashable {
 }
 
 extension ShellState {
-    /// Takes a pushed route whose spec presents it modally off the stack: year.story and onthisday become
-    /// `AppModal.memory(.yearStory / .onThisDay)` (full screen, their platform notes), birthday.request and
-    /// birthday.tribute become `presentedRoute`. Returns true when it moved one.
+    /// Takes a pushed route whose spec presents it modally off the stack: year.story becomes `AppModal.memory(.yearStory)`
+    /// (full screen, its platform notes); birthday.request, birthday.tribute, collage.view, settings.root and
+    /// groups.settings become `presentedRoute`. onthisday stays pushed in the group's stack (onthisday.md B). Returns true
+    /// when it moved one.
     @discardableResult
     func presentModalRoute(router: AppRouter) -> Bool {
         guard let last = router.path.last else { return false }
         if case let .yearStory(groupID, year) = last {
             router.path.removeLast()
             router.modal = .memory(.yearStory(groupID: groupID, year: year))
-            return true
-        }
-        if case let .memory(.onThisDay(groupID)) = last {
-            // onthisday.md platform notes: `.fullScreenCover`.
-            router.path.removeLast()
-            router.modal = .memory(.onThisDay(groupID: groupID))
             return true
         }
         guard let presented = PresentedRoute.modal(for: last) else { return false }

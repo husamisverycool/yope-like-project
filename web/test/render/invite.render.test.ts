@@ -89,14 +89,16 @@ describe("mobile card (viewport ≤ invite.web.size.breakpoint)", () => {
       expect(card.box).toMatchObject({ x: inset, y: inset, w: 390 - 2 * inset, h: 664 - 2 * inset });
       expect(card.s["border-top-left-radius"]).toBe(PX(t["invite.web.radius.card"]));
 
-      // C-34 backdrop: the cover with a Gaussian σ = size.global.backdropBlur, 3σ past the card, under color.global.backdropDim
-      const sigma = t["size.global.backdropBlur"];
+      // invite.web.layout.backdrop: the cover with a Gaussian σ = blurSigmaToWidth × the card width, 3σ past the card,
+      // under its dim colour
+      const sigma = +(t["invite.web.layout.backdrop"].blurSigmaToWidth * card.box.w).toFixed(4);
       const backdrop = await measure(page, ".backdrop", ["filter", "object-fit"]);
-      expect([backdrop.s.filter, backdrop.s["object-fit"]]).toEqual([`blur(${sigma}px)`, "cover"]);
+      expect(backdrop.s["object-fit"]).toBe("cover");
+      near(parseFloat(/blur\(([0-9.]+)px\)/.exec(backdrop.s.filter!)![1]!), sigma, 0.01);
       near(backdrop.box.x, card.box.x - 3 * sigma, 0.1);
       near(backdrop.box.w, card.box.w + 6 * sigma, 0.1);
       const dim = await page.$eval(".card", (e) => getComputedStyle(e, "::after").backgroundColor);
-      expect(dim).toBe(rgba(t["color.global.backdropDim"]));
+      expect(dim).toBe(rgba(t[t["invite.web.layout.backdrop"].dim as "color.global.backdropDim"]));
 
       const hero = await measure(page, ".hero");
       const avatar = await measure(page, ".avatar", ["border-radius", "object-fit"]);

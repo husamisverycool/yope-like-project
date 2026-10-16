@@ -3,14 +3,17 @@ package app.feature.account
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.data.error.DataError
 import app.data.model.Group
@@ -19,6 +22,7 @@ import app.data.model.GroupKind
 import app.data.model.Post
 import app.data.model.ReportTargetKind
 import app.designsystem.LocalReduceMotionOverride
+import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.account.auth.AgeGateScreen
 import app.feature.account.auth.AgeGateUiState
@@ -31,17 +35,22 @@ import app.feature.account.auth.PhoneScreen
 import app.feature.account.auth.PhoneUiState
 import app.feature.account.auth.ProfileError
 import app.feature.account.auth.ProfileScreen
+import app.feature.account.auth.ProfileStep
 import app.feature.account.auth.ProfileUiState
-import app.feature.account.groups.CoverPhoto
-import app.feature.account.groups.FeedItem
+import app.feature.account.groups.BirthdayRequestRow
+import app.feature.account.groups.CreateError
+import app.feature.account.groups.CreateStep
+import app.feature.account.groups.FeedEntryCard
 import app.feature.account.groups.GroupCreateScreen
 import app.feature.account.groups.GroupCreateUiState
 import app.feature.account.groups.GroupFeedScreen
 import app.feature.account.groups.GroupFeedUiState
+import app.feature.account.groups.GroupInviteActions
 import app.feature.account.groups.GroupInviteScreen
 import app.feature.account.groups.GroupInviteUiState
-import app.feature.account.groups.GroupProfileScreen
+import app.feature.account.groups.GroupPhoto
 import app.feature.account.groups.GroupRow
+import app.feature.account.groups.GroupScreenActions
 import app.feature.account.groups.GroupSettingsActions
 import app.feature.account.groups.GroupSettingsScreen
 import app.feature.account.groups.GroupSettingsUiState
@@ -50,50 +59,54 @@ import app.feature.account.groups.GroupsListUiState
 import app.feature.account.groups.LeaveGroupDialog
 import app.feature.account.groups.MemberRow
 import app.feature.account.groups.RowSubtitle
-import app.feature.account.groups.SettingsSection
+import app.feature.account.groups.TimeDialog
 import app.feature.account.invite.InviteJoinScreen
 import app.feature.account.invite.InviteJoinState
+import app.feature.account.invite.InviteJoinUiState
+import app.feature.account.invite.InvitePreviewResult
 import app.feature.account.onboarding.NotificationsPermissionScreen
+import app.feature.account.onboarding.WidgetPreview
 import app.feature.account.onboarding.WidgetScreen
+import app.feature.account.paywall.PaywallActions
 import app.feature.account.paywall.PaywallMessage
 import app.feature.account.paywall.PaywallScreen
 import app.feature.account.paywall.PaywallUiState
+import app.feature.account.paywall.PaywallWelcome
 import app.feature.account.paywall.PlanOption
 import app.feature.account.paywall.PlanPeriod
-import app.feature.account.paywall.PlanSheet
 import app.feature.account.paywall.PlansStatus
-import app.feature.account.paywall.WelcomeSheet
+import app.feature.account.platform.AgeRefusal
 import app.feature.account.platform.DeviceContact
 import app.feature.account.platform.LegalLinks
 import app.feature.account.safety.BlockConfirmation
 import app.feature.account.safety.BlockUiState
-import app.feature.account.safety.ReportContent
+import app.feature.account.safety.ReportFlow
 import app.feature.account.safety.ReportPhase
 import app.feature.account.safety.ReportTarget
 import app.feature.account.safety.ReportUiState
 import app.feature.account.settings.BlockedPerson
 import app.feature.account.settings.GroupToggle
+import app.feature.account.settings.PermissionRow
+import app.feature.account.settings.SettingsAccountActions
 import app.feature.account.settings.SettingsAccountScreen
 import app.feature.account.settings.SettingsAccountUiState
 import app.feature.account.settings.SettingsBlockedScreen
 import app.feature.account.settings.SettingsBlockedUiState
 import app.feature.account.settings.SettingsNotificationsScreen
 import app.feature.account.settings.SettingsNotificationsUiState
+import app.feature.account.settings.SettingsRootActions
 import app.feature.account.settings.SettingsRootScreen
+import app.feature.account.settings.SettingsRootUiState
+import app.feature.account.settings.SubscriptionState
 import app.feature.account.testing.fakeEnvironment
-import app.ui.components.PermissionCard
-import app.ui.permissions.PermissionRationale
+import app.feature.account.blocked.BlockedCopy
+import app.testing.SamplePhotos
+import app.ui.components.EmptyState
+import app.ui.components.EmptyStateAction
 import app.ui.system.SystemAlertDialog
 import app.ui.theme.AppTheme
-import com.github.takahirom.roborazzi.captureScreenRoboImage
-import app.ui.components.ToastHost
-import app.ui.components.ToastState
-import app.feature.account.groups.CreateError
-import androidx.compose.runtime.remember
-import app.feature.account.auth.CountryList
-import app.feature.account.groups.GroupEntryCard
-import app.testing.SamplePhotos
 import coil3.SingletonImageLoader
+import com.github.takahirom.roborazzi.captureScreenRoboImage
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -102,16 +115,18 @@ import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.util.Locale
 
 /**
- * One snapshot per account screen per state (docs/SCREENS_BRIEF.md rule 7), rendered from the
- * screens' stateless composables at 393 × 852 dp (the references' 393-pt width), xhdpi. Baselines:
- * `src/test/snapshots/<surface-id>/<state>.png` (`./gradlew :feature:account:recordRoborazziDebug`).
- * Debug build: BLOCKED copy shows with the literal `{app_name}` placeholder. Names, numbers and
- * times below are test data.
+ * Every account surface per state (docs/SCREENS_BRIEF.md rule 7; Pass 4): every state in light, the primary state of each
+ * surface also in dark, rendered from the screens' stateless composables at 393 × 852 dp (the references' 393-pt width),
+ * xhdpi, Reduce Motion off, real sample photos (`fixtures/photos`, `app.testing.SamplePhotos`). Baselines:
+ * `src/test/snapshots/<surface-id>/<state>-<light|dark>.png` (`./gradlew :feature:account:recordRoborazziDebug`).
+ * Debug build: BLOCKED copy shows with the literal `{app_name}` placeholder (release omits those elements). Names, numbers
+ * and times below are test data. Toasts (C-26) are the platform's `Toast` and are not drawn by the app.
  */
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -120,262 +135,469 @@ class ScreenSnapshotTest {
     @get:Rule val compose = createComposeRule()
 
     private val zone = ZoneId.of("UTC")
+
+    /** Thursday of ISO week 42 (the week starts Monday 12 October). */
     private val now = Instant.parse("2026-10-15T17:00:00Z")
-    private val legal = LegalLinks("https://example.test/terms", "https://example.test/privacy", null)
+    private val legal = LegalLinks("https://example.test/terms", "https://example.test/privacy", "help@example.test")
     private val noop: () -> Unit = {}
+    private val context get() = ApplicationProvider.getApplicationContext<android.content.Context>()
 
     /** Storage URLs in the fixtures are sample-photo URLs, answered by a Coil loader without network. */
-    @Before fun photos() = SingletonImageLoader.setUnsafe(SamplePhotos.imageLoader(androidx.test.core.app.ApplicationProvider.getApplicationContext()))
+    @Before fun photos() = SingletonImageLoader.setUnsafe(SamplePhotos.imageLoader(ApplicationProvider.getApplicationContext()))
 
     @After fun resetPhotos() = SingletonImageLoader.reset()
 
-    private fun avatar(name: String) = SamplePhotos.url(name)
+    private fun photo(name: String) = SamplePhotos.url(name)
 
-    private fun snap(surface: String, state: String, content: @Composable () -> Unit) {
+    /**
+     * Renders [content] (light, or [dark]), runs [act] (a tap that opens a sheet or an alert), lets [settleMs] of animation
+     * pass (sheets and pages need their enter transition; the default is one frame so spinners stop on the same frame) and
+     * records `<surface>/<state>-<light|dark>.png`.
+     */
+    private fun snap(
+        surface: String,
+        state: String,
+        dark: Boolean = false,
+        settleMs: Long = FRAME_MS,
+        act: (() -> Unit)? = null,
+        content: @Composable () -> Unit,
+    ) {
         compose.mainClock.autoAdvance = false
         compose.setContent {
             CompositionLocalProvider(LocalAccountEnvironment provides fakeEnvironment(), LocalReduceMotionOverride provides false) {
-                AppTheme { content() }
+                AppTheme(dark = dark) { content() }
             }
         }
         compose.mainClock.advanceTimeBy(FRAME_MS)
-        captureScreenRoboImage("src/test/snapshots/$surface/$state.png")
+        if (act != null) {
+            act()
+            compose.mainClock.advanceTimeBy(SHEET_MS)
+        }
+        compose.mainClock.advanceTimeBy(settleMs)
+        captureScreenRoboImage("src/test/snapshots/$surface/$state-${if (dark) "dark" else "light"}.png")
     }
 
+    private fun tap(text: Int) = compose.onNodeWithText(context.getString(text)).performClick()
+
     // auth.phone ------------------------------------------------------------------------------------
-    @Test fun phoneDefault() = snap("auth.phone", "default") { PhoneScreen(PhoneUiState(phone = "+1", prefill = "+1", region = "US"), {}, noop, noop, noop, noop, focusOnAppear = false) }
-    @Test fun phoneFilled() = snap("auth.phone", "filled") { PhoneScreen(PhoneUiState(phone = "+1 415-555-0100", prefill = "+1", region = "US"), {}, noop, noop, noop, noop, focusOnAppear = false) }
-    @Test fun phoneSending() = snap("auth.phone", "sending") { PhoneScreen(PhoneUiState(phone = "+1 415-555-0100", prefill = "+1", region = "US", sending = true), {}, noop, noop, noop, noop, focusOnAppear = false) }
-    @Test fun phoneInvalidNumber() = snap("auth.phone", "invalidNumber") { PhoneScreen(PhoneUiState(phone = "+1 12", prefill = "+1", region = "US", error = PhoneError.InvalidNumber), {}, noop, noop, noop, noop, focusOnAppear = false) }
-    // The sheet's content (the modal sheet itself is the platform's).
-    @Test fun phoneCountryList() = snap("auth.phone", "countryList") { Box(Modifier.fillMaxSize().background(Tokens.Colors.globalSystemSurfaceContainerLow)) { CountryList("GB", {}) } }
-    @Test fun phoneOffline() = snap("auth.phone", "offline") { PhoneScreen(PhoneUiState(offline = true), {}, noop, noop, noop, noop, focusOnAppear = false) }
+    private val form = PhoneUiState(landing = false, phone = "+1 ", prefill = "+1 ", region = "US")
+    private val filled = form.copy(phone = "+1 415-555-0100")
+    private fun phone(state: PhoneUiState) = @Composable { PhoneScreen(state, {}, noop, noop, noop, noop, focusOnAppear = false) }
+    @Test fun phoneLanding() = snap("auth.phone", "landing", content = phone(PhoneUiState()))
+    @Test fun phoneLandingDark() = snap("auth.phone", "landing", dark = true, content = phone(PhoneUiState()))
+    @Test fun phoneForm() = snap("auth.phone", "form", content = phone(form))
+    @Test fun phoneFormDark() = snap("auth.phone", "form-filled", dark = true, content = phone(filled))
+    @Test fun phoneFilled() = snap("auth.phone", "form-filled", content = phone(filled))
+    @Test fun phoneSending() = snap("auth.phone", "sending", content = phone(filled.copy(sending = true)))
+    @Test fun phoneInvalidNumber() = snap("auth.phone", "invalidNumber", content = phone(form.copy(phone = "+1 12", error = PhoneError.InvalidNumber)))
+    @Test fun phoneRateLimited() = snap("auth.phone", "rateLimited", content = phone(filled.copy(error = PhoneError.RateLimited)))
+    @Test fun phoneSendFailed() = snap("auth.phone", "sendFailed", content = phone(filled.copy(error = PhoneError.SendFailed)))
+    @Test fun phoneOffline() = snap("auth.phone", "offline", content = phone(form.copy(offline = true)))
+    @Test fun phoneCountryList() = snap("auth.phone", "countryList", settleMs = SHEET_MS, content = phone(filled.copy(pickingCountry = true)))
 
     // auth.code -------------------------------------------------------------------------------------
     private val code = CodeUiState(phoneDisplay = "+1 415-555-0100")
-    @Test fun codeDefault() = snap("auth.code", "default") { CodeScreen(code, {}, noop, noop, noop, noop, focusOnAppear = false) }
-    @Test fun codeFilledResendOpen() = snap("auth.code", "filled-resendEnabled") { CodeScreen(code.copy(code = "123456", resendLocked = false), {}, noop, noop, noop, noop, focusOnAppear = false) }
-    @Test fun codeVerifying() = snap("auth.code", "verifying") { CodeScreen(code.copy(code = "123456", verifying = true), {}, noop, noop, noop, noop, focusOnAppear = false) }
-    @Test fun codeWrong() = snap("auth.code", "wrong") { CodeScreen(code.copy(error = CodeError.Wrong), {}, noop, noop, noop, noop, focusOnAppear = false) }
-    @Test fun codeResentToast() = snap("auth.code", "resent-toast") {
-        val toasts = remember { ToastState().apply { show("new code sent") } }
-        Box(Modifier.fillMaxSize()) {
-            CodeScreen(code, {}, noop, noop, noop, noop, focusOnAppear = false)
-            ToastHost(toasts, Modifier.align(Alignment.TopCenter))
-        }
-    }
-    @Test fun codeOffline() = snap("auth.code", "offline") { CodeScreen(code.copy(offline = true), {}, noop, noop, noop, noop, focusOnAppear = false) }
+    private fun codeScreen(state: CodeUiState) = @Composable { CodeScreen(state, {}, noop, noop, noop, noop, focusOnAppear = false) }
+    @Test fun codeDefault() = snap("auth.code", "default", content = codeScreen(code))
+    @Test fun codeDefaultDark() = snap("auth.code", "default", dark = true, content = codeScreen(code))
+    @Test fun codeFilledResend() = snap("auth.code", "filled-resendEnabled", content = codeScreen(code.copy(code = "123456", resendLocked = false)))
+    @Test fun codeVerifying() = snap("auth.code", "verifying", content = codeScreen(code.copy(code = "123456", verifying = true)))
+    @Test fun codeWrong() = snap("auth.code", "wrong", content = codeScreen(code.copy(error = CodeError.Wrong)))
+    @Test fun codeExpired() = snap("auth.code", "expired", content = codeScreen(code.copy(error = CodeError.Expired)))
+    @Test fun codeService() = snap("auth.code", "serviceError", content = codeScreen(code.copy(code = "123456", error = CodeError.Service)))
+    @Test fun codeTooMany() = snap("auth.code", "tooMany", content = codeScreen(code.copy(error = CodeError.TooMany)))
+    @Test fun codeOffline() = snap("auth.code", "offline", content = codeScreen(code.copy(offline = true)))
 
     // auth.agegate ----------------------------------------------------------------------------------
     private val us = DateEntryPattern.of(Locale.US)
-    @Test fun ageDefault() = snap("auth.agegate", "default") { AgeGateScreen(AgeGateUiState(), us, false, {}, {}, noop, noop, focusOnAppear = false) }
-    @Test fun ageFilledOptIn() = snap("auth.agegate", "filled-optIn") { AgeGateScreen(AgeGateUiState(digits = "03142001", optIn = true), us, true, {}, {}, noop, noop, focusOnAppear = false) }
-    @Test fun ageChecking() = snap("auth.agegate", "checking") { AgeGateScreen(AgeGateUiState(digits = "03142001", checking = true), us, false, {}, {}, noop, noop, focusOnAppear = false) }
-    @Test fun ageInvalid() = snap("auth.agegate", "invalidDate") { AgeGateScreen(AgeGateUiState(digits = "02302001", invalidDate = true), us, false, {}, {}, noop, noop, focusOnAppear = false) }
-    @Test fun ageNotConfigured() = snap("auth.agegate", "notConfigured") { AgeGateScreen(AgeGateUiState(notConfigured = true), us, false, {}, {}, noop, noop, focusOnAppear = false) }
-    @Test fun ageUnderAge() = snap("auth.agegate", "underAge") { AgeGateScreen(AgeGateUiState(refusal = app.feature.account.platform.AgeRefusal(13)), us, false, {}, {}, noop, noop, focusOnAppear = false) }
-    @Test fun ageOffline() = snap("auth.agegate", "offline") { AgeGateScreen(AgeGateUiState(offline = true), us, false, {}, {}, noop, noop, focusOnAppear = false) }
+    private fun age(state: AgeGateUiState, canContinue: Boolean = false) = @Composable { AgeGateScreen(state, us, canContinue, {}, {}, noop, noop, focusOnAppear = false) }
+    @Test fun ageDefault() = snap("auth.agegate", "default", content = age(AgeGateUiState()))
+    @Test fun ageDefaultDark() = snap("auth.agegate", "default", dark = true, content = age(AgeGateUiState()))
+    @Test fun ageFilledOptIn() = snap("auth.agegate", "filled-optIn", content = age(AgeGateUiState(digits = "03142001", optIn = true), canContinue = true))
+    @Test fun ageChecking() = snap("auth.agegate", "checking", content = age(AgeGateUiState(digits = "03142001", checking = true)))
+    @Test fun ageInvalid() = snap("auth.agegate", "invalidDate", content = age(AgeGateUiState(digits = "02302001", invalidDate = true)))
+    @Test fun ageNotConfigured() = snap("auth.agegate", "notConfigured", content = age(AgeGateUiState(notConfigured = true)))
+    @Test fun ageUnderAge() = snap("auth.agegate", "underAge", content = age(AgeGateUiState(refusal = AgeRefusal(13))))
+    @Test fun ageOffline() = snap("auth.agegate", "offline", content = age(AgeGateUiState(offline = true)))
 
     // auth.profile ----------------------------------------------------------------------------------
-    @Test fun profileDefault() = snap("auth.profile", "default") { ProfileScreen(ProfileUiState(), {}, noop, noop, noop) }
-    @Test fun profileFilled() = snap("auth.profile", "filled-photo") { ProfileScreen(ProfileUiState(name = "Ana Lima"), {}, noop, noop, noop, avatarImage = SamplePhotos.painter("avatar-01")) }
-    @Test fun profileSaving() = snap("auth.profile", "saving") { ProfileScreen(ProfileUiState(name = "Ana Lima", saving = true), {}, noop, noop, noop) }
-    @Test fun profileUploadFailed() = snap("auth.profile", "uploadFailed") { ProfileScreen(ProfileUiState(name = "Ana Lima", error = ProfileError.Upload), {}, noop, noop, noop) }
-    @Test fun profileOffline() = snap("auth.profile", "offline") { ProfileScreen(ProfileUiState(offline = true), {}, noop, noop, noop) }
+    private val named = ProfileUiState(name = "Ana Lima")
+    private val photoStep = named.copy(step = ProfileStep.Photo)
+    private fun profile(state: ProfileUiState, avatar: Any? = null) = @Composable { ProfileScreen(state, {}, noop, noop, noop, avatarImage = avatar, focusOnAppear = false) }
+    @Test fun profileName() = snap("auth.profile", "name", content = profile(ProfileUiState()))
+    @Test fun profileNameDark() = snap("auth.profile", "name-filled", dark = true, content = profile(named))
+    @Test fun profileNameFilled() = snap("auth.profile", "name-filled", content = profile(named))
+    @Test fun profileNameTooLong() = snap("auth.profile", "name-tooLong", content = profile(ProfileUiState(name = "Ana Lima ".repeat(10))))
+    @Test fun profileSavingName() = snap("auth.profile", "name-saving", content = profile(named.copy(saving = true)))
+    @Test fun profileNameFailed() = snap("auth.profile", "name-failed", content = profile(named.copy(error = ProfileError.Save)))
+    @Test fun profilePhotoEmpty() = snap("auth.profile", "photo-empty", content = profile(photoStep))
+    @Test fun profilePhotoEmptyDark() = snap("auth.profile", "photo-chosen", dark = true, content = profile(photoStep, photo("avatar-01")))
+    @Test fun profilePhotoChosen() = snap("auth.profile", "photo-chosen", content = profile(photoStep, photo("avatar-01")))
+    @Test fun profileUploading() = snap("auth.profile", "photo-uploading", content = profile(photoStep.copy(saving = true), photo("avatar-01")))
+    @Test fun profileUploadFailed() = snap("auth.profile", "photo-uploadFailed", content = profile(photoStep.copy(error = ProfileError.Upload)))
+    @Test fun profileOffline() = snap("auth.profile", "offline", content = profile(ProfileUiState(offline = true)))
 
-    // onboarding ------------------------------------------------------------------------------------
-    @Test fun notificationsAndroid13() = snap("onboarding.permission.notifications", "default-android13") { NotificationsPermissionScreen(showSkip = true, onContinue = noop, onSkip = noop) }
-    @Test fun widgetDefault() = snap("onboarding.widget", "default") {
-        WidgetScreen(listOf("Hold down on an empty\nspace on your Home Screen", "Tap the “Widgets” button\nto add a new widget", "Search for {app_name} and\nadd the widget"), noop)
-    }
-    @Test fun cameraDenied() = snap("onboarding.permission.camera", "denied") { CardOnBlack { PermissionCard("can’t take pics?", "enable camera", "enable", noop) } }
-    @Test fun photosDenied() = snap("onboarding.permission.photos", "denied") { CardOnBlack { PermissionCard("can’t save pics?", "enable photos", "enable", noop, onDismiss = noop, dismissLabel = "dismiss") } }
+    // onboarding.permission.* -----------------------------------------------------------------------
+    @Test fun notificationsDefault() = snap("onboarding.permission.notifications", "default") { NotificationsPermissionScreen(showSkip = true, onContinue = noop, onSkip = noop) }
+    @Test fun notificationsDefaultDark() = snap("onboarding.permission.notifications", "default", dark = true) { NotificationsPermissionScreen(showSkip = true, onContinue = noop, onSkip = noop) }
+    @Test fun notificationsNoSkip() = snap("onboarding.permission.notifications", "api32-noSkip") { NotificationsPermissionScreen(showSkip = false, onContinue = noop, onSkip = noop) }
 
+    /**
+     * The denied blocks are drawn in place by their hosts (camera.capture, photo.viewer) on the media surface: here the same
+     * composition — C-27 with the media colours on `color.global.backgroundDeep`, in both appearances.
+     */
     @Composable
-    private fun CardOnBlack(card: @Composable () -> Unit) {
-        Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep).padding(horizontal = Tokens.Sizes.onboardingPermissionContactsSizeCardMarginH), contentAlignment = Alignment.Center) { card() }
+    private fun DeniedOnMedia(icon: androidx.compose.ui.graphics.vector.ImageVector, title: Int, detail: Int, button: Int) {
+        AppTheme(dark = true) {
+            Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep), contentAlignment = Alignment.Center) {
+                EmptyState(stringResource(title), stringResource(detail), action = EmptyStateAction(stringResource(button), noop), icon = icon)
+            }
+        }
     }
+    private val cameraDenied = @Composable {
+        DeniedOnMedia(Tokens.Icons.globalCamera, R.string.onboarding_permission_camera_denied_title, R.string.onboarding_permission_camera_denied_detail, R.string.onboarding_permission_camera_denied_button)
+    }
+    private val photosDenied = @Composable {
+        DeniedOnMedia(Tokens.Icons.globalDownload, R.string.onboarding_permission_photos_denied_title, R.string.onboarding_permission_photos_denied_detail, R.string.onboarding_permission_photos_denied_button)
+    }
+    @Test fun cameraDeniedLight() = snap("onboarding.permission.camera", "denied", content = cameraDenied)
+    @Test fun cameraDeniedDark() = snap("onboarding.permission.camera", "denied", dark = true, content = cameraDenied)
+    @Test fun cameraRationale() = snap("onboarding.permission.camera", "rationale") {
+        rationaleOver(R.string.system_permissions_rationale_camera_title, R.string.system_permissions_rationale_camera_message, R.string.system_permissions_rationale_continue)
+    }
+    @Test fun photosDeniedLight() = snap("onboarding.permission.photos", "denied", content = photosDenied)
+    @Test fun photosDeniedDark() = snap("onboarding.permission.photos", "denied", dark = true, content = photosDenied)
+
+    // onboarding.permission.contacts lives in groups.invite (its Contacts section).
+    @Test fun contactsNotAsked() = snap("onboarding.permission.contacts", "notAsked", content = inviteScreen(linkOn))
+    @Test fun contactsNotAskedDark() = snap("onboarding.permission.contacts", "notAsked", dark = true, content = inviteScreen(linkOn))
+    @Test fun contactsGranted() = snap("onboarding.permission.contacts", "granted", content = inviteScreen(withContacts))
+    @Test fun contactsNone() = snap("onboarding.permission.contacts", "noContacts", content = inviteScreen(linkOn.copy(contactsGranted = true, contacts = emptyList())))
+    @Test fun contactsRationale() = snap("onboarding.permission.contacts", "rationale") {
+        inviteScreen(linkOn)()
+        SystemAlertDialog(
+            stringResource(R.string.system_permissions_rationale_contacts_title),
+            stringResource(R.string.system_permissions_rationale_contacts_message),
+            stringResource(R.string.system_permissions_rationale_continue),
+            noop,
+            stringResource(R.string.system_permissions_rationale_notnow),
+            noop,
+        )
+    }
+
+    // onboarding.widget -----------------------------------------------------------------------------
+    private val widgetSteps @Composable get() = listOf(
+        stringResource(R.string.onboarding_widget_step_android_1),
+        stringResource(R.string.onboarding_widget_step_android_2),
+        BlockedCopy.widgetStepAndroid3(LocalContext.current),
+    ).filterNotNull()
+    private val widgetPreview = WidgetPreview(photo("dinner-pizza-cheers-3x4"), "Sam")
+    @Test fun widgetDefault() = snap("onboarding.widget", "default") { WidgetScreen(widgetSteps, widgetPreview, noop, noop) }
+    @Test fun widgetDefaultDark() = snap("onboarding.widget", "default", dark = true) { WidgetScreen(widgetSteps, widgetPreview, noop, noop) }
+    @Test fun widgetNoPhoto() = snap("onboarding.widget", "noPhotoYet") { WidgetScreen(widgetSteps, null, noop, noop) }
+    @Test fun widgetFromSettings() = snap("onboarding.widget", "fromSettings") { WidgetScreen(widgetSteps, widgetPreview, noop, noop, onBack = noop) }
 
     // system.permissions ----------------------------------------------------------------------------
-    private val rationale = PermissionRationale("can’t see your friends?", "{app_name} uses the contacts you choose to invite people to your groups.", "Not Now", "Continue", "Open Settings")
-    @Test fun rationaleDialog() = snap("system.permissions", "rationale-contacts") {
+    @Composable
+    private fun rationaleOver(title: Int, message: Int, confirm: Int) {
         Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep))
-        SystemAlertDialog(rationale.title, rationale.message, rationale.continueLabel, noop, rationale.notNow, noop)
+        SystemAlertDialog(stringResource(title), stringResource(message), stringResource(confirm), noop, stringResource(R.string.system_permissions_rationale_notnow), noop)
     }
-    @Test fun permanentDenialDialog() = snap("system.permissions", "permanentlyDenied") {
-        Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep))
-        SystemAlertDialog(rationale.title, rationale.message, rationale.openSettings, noop, rationale.notNow, noop)
+    @Test fun rationaleMicrophone() = snap("system.permissions", "rationale-microphone") {
+        rationaleOver(R.string.system_permissions_rationale_microphone_title, R.string.system_permissions_rationale_microphone_message, R.string.system_permissions_rationale_continue)
+    }
+    @Test fun rationaleMicrophoneDark() = snap("system.permissions", "rationale-microphone", dark = true) {
+        rationaleOver(R.string.system_permissions_rationale_microphone_title, R.string.system_permissions_rationale_microphone_message, R.string.system_permissions_rationale_continue)
+    }
+    @Test fun rationaleNotifications() = snap("system.permissions", "rationale-notifications") {
+        rationaleOver(R.string.system_permissions_rationale_notifications_title, R.string.system_permissions_rationale_notifications_message, R.string.system_permissions_rationale_continue)
+    }
+    @Test fun permanentlyDenied() = snap("system.permissions", "permanentlyDenied-camera") {
+        rationaleOver(R.string.system_permissions_rationale_camera_title, R.string.system_permissions_rationale_camera_message, R.string.system_permissions_opensettings)
     }
 
     // groups.list -----------------------------------------------------------------------------------
+    private val faces = listOf(photo("avatar-01"), photo("avatar-02"), photo("avatar-06"), photo("avatar-04"))
     private val rows = listOf(
-        GroupRow("g1", "Sunday dinners", SamplePhotos.url("dinner-long-table-3x4"), RowSubtitle.SentPic("Sam", now.minusSeconds(7200)), now),
-        GroupRow("g2", "Roomies", SamplePhotos.url("movie-night-couch-4x3"), RowSubtitle.NewPic(now.minusSeconds(18000)), now.minusSeconds(18000)),
-        GroupRow("g3", "Lima family", null, RowSubtitle.NoPics, now.minusSeconds(86400)),
+        GroupRow("g1", "Sunday Dinners", photo("dinner-long-table-3x4"), RowSubtitle.SentPic("Sam"), now.minusSeconds(7200), faces),
+        GroupRow("g2", "Roomies", photo("movie-night-couch-4x3"), RowSubtitle.NewPic, now.minusSeconds(18000), faces.take(3)),
+        GroupRow("g3", "Lima Family", photo("family-dinner-4x3"), RowSubtitle.CreatedBy("Rui"), now.minusSeconds(86400), listOf(photo("avatar-06"), null)),
+        GroupRow("g4", "Book Club", null, RowSubtitle.CreatedByYou, now.minusSeconds(3 * 86400L), listOf(photo("avatar-01"))),
     )
-    private fun list(state: GroupsListUiState) = @Composable { GroupsListScreen(state, zone, noop, {}, {}, noop, {}) }
-    @Test fun listLoading() = snap("groups.list", "loading", list(GroupsListUiState()))
-    @Test fun listRows() = snap("groups.list", "default", list(GroupsListUiState(rows = rows, cover = CoverPhoto("g1", "p1", SamplePhotos.url("dinner-pizza-cheers-3x4"), "Sam", "Sunday dinners"), refreshing = false)))
-    @Test fun listRowsNoPhotos() = snap("groups.list", "default-noCoverPhoto", list(GroupsListUiState(rows = rows.drop(2), refreshing = false)))
-    @Test fun listEmpty() = snap("groups.list", "empty", list(GroupsListUiState(rows = emptyList(), refreshing = false)))
-    @Test fun listError() = snap("groups.list", "error", list(GroupsListUiState(refreshing = false, error = DataError.Unexpected("x"))))
-    @Test fun listOffline() = snap("groups.list", "offline", list(GroupsListUiState(refreshing = false, error = DataError.Network)))
-    @Test fun listOfflineCached() = snap("groups.list", "offline-cached", list(GroupsListUiState(rows = rows, refreshing = false, error = DataError.Network)))
+    private fun list(state: GroupsListUiState) = @Composable { GroupsListScreen(state, noop, {}, {}, noop, {}) }
+    @Test fun listLoading() = snap("groups.list", "loading", content = list(GroupsListUiState()))
+    @Test fun listDefault() = snap("groups.list", "default", content = list(GroupsListUiState(rows = rows, refreshing = false)))
+    @Test fun listDefaultDark() = snap("groups.list", "default", dark = true, content = list(GroupsListUiState(rows = rows, refreshing = false)))
+    @Test fun listEmpty() = snap("groups.list", "empty", content = list(GroupsListUiState(rows = emptyList(), refreshing = false)))
+    @Test fun listError() = snap("groups.list", "error", content = list(GroupsListUiState(refreshing = false, error = DataError.Unexpected("x"))))
+    @Test fun listOffline() = snap("groups.list", "offline", content = list(GroupsListUiState(refreshing = false, error = DataError.Network)))
+    @Test fun listOfflineCached() = snap("groups.list", "offline-cached", content = list(GroupsListUiState(rows = rows, refreshing = false, error = DataError.Network)))
 
     // groups.create ---------------------------------------------------------------------------------
-    @Test fun createDefault() = snap("groups.create", "default") { GroupCreateScreen(GroupCreateUiState(), noop, {}, {}, noop, noop) }
-    @Test fun createFilled() = snap("groups.create", "filled") { GroupCreateScreen(GroupCreateUiState(name = "Book club", kind = GroupKind.Family), noop, {}, {}, noop, noop, coverImage = SamplePhotos.painter("friends-coffee-highfive-3x4")) }
-    @Test fun createCreating() = snap("groups.create", "creating") { GroupCreateScreen(GroupCreateUiState(name = "Book club", working = true), noop, {}, {}, noop, noop) }
-    @Test fun createError() = snap("groups.create", "error") { GroupCreateScreen(GroupCreateUiState(name = "Book club", error = CreateError.Failed), noop, {}, {}, noop, noop) }
-    @Test fun createEdit() = snap("groups.create", "edit") { GroupCreateScreen(GroupCreateUiState(editGroupId = "g1", name = "Sunday dinners", kind = GroupKind.Custom, currentCoverUrl = SamplePhotos.url("dinner-long-table-3x4")), noop, {}, {}, noop, noop) }
+    private val details = GroupCreateUiState(step = CreateStep.Details, kind = GroupKind.Friends)
+    private fun create(state: GroupCreateUiState, cover: Any? = state.coverImage) = @Composable { GroupCreateScreen(state, noop, {}, {}, noop, noop, coverImage = cover) }
+    @Test fun createType() = snap("groups.create", "stepA", content = create(GroupCreateUiState()))
+    @Test fun createTypeDark() = snap("groups.create", "stepA", dark = true, content = create(GroupCreateUiState()))
+    @Test fun createDetails() = snap("groups.create", "stepB", content = create(details))
+    @Test fun createDetailsDark() = snap("groups.create", "stepB-filled", dark = true, content = create(details.copy(name = "Sunday Dinners"), photo("dinner-long-table-3x4")))
+    @Test fun createFilled() = snap("groups.create", "stepB-filled", content = create(details.copy(name = "Sunday Dinners"), photo("dinner-long-table-3x4")))
+    @Test fun createPreset() = snap("groups.create", "stepB-preset", content = create(details.copy(kind = GroupKind.Family, kindPreset = true)))
+    @Test fun createTooLong() = snap("groups.create", "stepB-tooLong", content = create(details.copy(name = "Sunday Dinners ".repeat(6))))
+    @Test fun createCreating() = snap("groups.create", "creating", content = create(details.copy(name = "Sunday Dinners", working = true), photo("dinner-long-table-3x4")))
+    @Test fun createFailed() = snap("groups.create", "createFailed", content = create(details.copy(name = "Sunday Dinners", error = CreateError.Failed)))
+    @Test fun createCoverFailed() = snap("groups.create", "coverFailed", content = create(details.copy(name = "Sunday Dinners", error = CreateError.Cover)))
+    @Test fun createOffline() = snap("groups.create", "offline", content = create(details.copy(name = "Sunday Dinners", error = CreateError.Offline)))
+    private val edit = GroupCreateUiState(editGroupId = "g1", step = CreateStep.Details, kindPreset = true, name = "Sunday Dinners", currentCoverUrl = photo("dinner-long-table-3x4"))
+    @Test fun createEdit() = snap("groups.create", "edit", content = create(edit))
+    @Test fun createSaveFailed() = snap("groups.create", "saveFailed", content = create(edit.copy(error = CreateError.SaveFailed)))
 
     // groups.invite ---------------------------------------------------------------------------------
-    private val invite = GroupInviteUiState(groupName = "Sunday dinners", maxMembers = 30)
     private val liveInvite = GroupInvite("i1", "g1", "AbCdEfGhIjKlMnOpQrStUvWx", "u-me", now, now.plusSeconds(14 * 86400L), null)
-    private fun inviteScreen(state: GroupInviteUiState) = @Composable { GroupInviteScreen(state, zone, noop, noop, noop, noop, noop, noop, noop, noop, {}) }
-    @Test fun inviteDefault() = snap("groups.invite", "default-contactsCard", inviteScreen(invite))
-    @Test fun inviteReady() = snap("groups.invite", "linkReady", inviteScreen(invite.copy(invite = liveInvite, canTurnOff = true, cardDismissed = true)))
-    @Test fun inviteContacts() = snap("groups.invite", "contacts", inviteScreen(invite.copy(contactsGranted = true, contacts = listOf(DeviceContact("1", "Ana Lima", "+1", null), DeviceContact("2", "Rui Costa", "+2", null)), invited = setOf("2"))))
-    @Test fun inviteLoading() = snap("groups.invite", "loading", inviteScreen(invite.copy(loading = true)))
-    @Test fun inviteFull() = snap("groups.invite", "full", inviteScreen(invite.copy(full = true)))
-    @Test fun inviteError() = snap("groups.invite", "error", inviteScreen(invite.copy(error = true)))
-    @Test fun inviteTurnOff() = snap("groups.invite", "turnOffAlert", inviteScreen(invite.copy(invite = liveInvite, canTurnOff = true, confirmTurnOff = true)))
-    @Test fun inviteFamily() = snap("groups.invite", "default-family", inviteScreen(invite.copy(kind = GroupKind.Family, cardDismissed = true)))
+    private val invite = GroupInviteUiState(groupName = "Sunday Dinners", coverUrl = photo("dinner-long-table-3x4"), loading = false, maxMembers = 30)
+    private val linkOn = invite.copy(invite = liveInvite)
+    private val withContacts = linkOn.copy(
+        contactsGranted = true,
+        contacts = listOf(
+            DeviceContact("1", "Ana Lima", "+14155550101", null),
+            DeviceContact("2", "Rui Costa", "+14155550102", null),
+            DeviceContact("3", "Sam Lee", "+14155550103", null),
+            DeviceContact("4", "Zoe Park", "+14155550104", null),
+        ),
+        invited = setOf("2"),
+    )
+    private fun inviteScreen(state: GroupInviteUiState) = @Composable { GroupInviteScreen(state, zone, GroupInviteActions()) }
+    @Test fun inviteLoading() = snap("groups.invite", "loading", content = inviteScreen(invite.copy(loading = true)))
+    @Test fun inviteLinkOff() = snap("groups.invite", "linkOff", content = inviteScreen(invite))
+    @Test fun inviteLinkOn() = snap("groups.invite", "linkOn", content = inviteScreen(linkOn))
+    @Test fun inviteLinkOnDark() = snap("groups.invite", "linkOn", dark = true, content = inviteScreen(linkOn))
+    @Test fun inviteCreating() = snap("groups.invite", "creating", content = inviteScreen(invite.copy(creating = true)))
+    @Test fun inviteFull() = snap("groups.invite", "full", content = inviteScreen(invite.copy(full = true)))
+    @Test fun inviteError() = snap("groups.invite", "error", content = inviteScreen(invite.copy(error = true)))
+    @Test fun inviteOffline() = snap("groups.invite", "offline", content = inviteScreen(invite.copy(error = true, offline = true)))
+    @Test fun inviteTurnOff() = snap("groups.invite", "turnOffAlert", content = inviteScreen(linkOn.copy(confirmTurnOff = true)))
+    @Test fun inviteNoCover() = snap("groups.invite", "linkOn-noCover-family", content = inviteScreen(linkOn.copy(coverUrl = null, kind = GroupKind.Family, groupName = "Lima Family")))
 
     // groups.screen ---------------------------------------------------------------------------------
-    private val group = Group("g1", "Sunday dinners", GroupKind.Friends, null, "UTC", null, null, false, "u-me", now, now)
-    private val groupCover = SamplePhotos.url("dinner-long-table-3x4")
-    private fun photo(id: String, author: String, mine: Boolean, at: Instant, caption: String? = null, picture: String, face: String) =
-        FeedItem.Photo(Post(id, "m$id", "g1", if (mine) "u-me" else "u-x", caption, null, null, null, false, null, at), SamplePhotos.url(picture), author, avatar(face), mine)
-    private val feedItems = listOf(
-        photo("p1", "Sam", false, now.minusSeconds(3600), "dinner", picture = "dinner-pizza-cheers-3x4", face = "avatar-02"),
-        FeedItem.Joined("u-sam", "Sam", avatar("avatar-02"), now.minusSeconds(7200)),
-        photo("p2", "Ana", true, now.minusSeconds(10800), picture = "friends-picnic-blanket-3x4", face = "avatar-01"),
+    private val group = Group("g1", "Sunday Dinners", GroupKind.Friends, "covers/g1.jpg", "UTC", LocalTime.of(9, 0), LocalTime.of(21, 0), false, "u-me", now.minusSeconds(40 * 86400L), now)
+    private val members = listOf(photo("avatar-01"), photo("avatar-02"), photo("avatar-06"), photo("avatar-04"), null, photo("avatar-09"))
+    private fun post(id: String, author: String, at: String) = Post(id, "m$id", "g1", author, null, null, null, null, true, null, Instant.parse(at))
+    private fun item(id: String, author: String, first: String, face: String, at: String, picture: String) =
+        GroupPhoto(post(id, author, at), photo(picture), first, photo(face), mine = author == "u-me")
+    private val photos = listOf(
+        item("p1", "u-sam", "Sam", "avatar-02", "2026-10-15T14:00:00Z", "dinner-pizza-cheers-3x4"),
+        item("p2", "u-me", "Ana", "avatar-01", "2026-10-14T19:30:00Z", "friends-picnic-blanket-3x4"),
+        item("p3", "u-rui", "Rui", "avatar-06", "2026-10-13T09:10:00Z", "coffee-latte-heart-3x4"),
+        item("p4", "u-sam", "Sam", "avatar-02", "2026-10-12T16:45:00Z", "hike-meadow-trail-3x4"),
+        item("p5", "u-rui", "Rui", "avatar-06", "2026-10-10T20:00:00Z", "campfire-woods-3x4"),
+        item("p6", "u-sam", "Sam", "avatar-02", "2026-10-10T13:00:00Z", "picnic-spread-3x4"),
+        item("p7", "u-me", "Ana", "avatar-01", "2026-10-10T11:00:00Z", "friends-stairs-laughing-3x4"),
+        item("p8", "u-zoe", "Zoe", "avatar-04", "2026-10-09T18:00:00Z", "dinner-toast-candles-3x4"),
+        item("p9", "u-rui", "Rui", "avatar-06", "2026-10-09T10:00:00Z", "autumn-path-3x4"),
     )
-    private fun feed(state: GroupFeedUiState) = @Composable { GroupFeedScreen(state, zone, noop, noop, noop, noop, {}, {}, {}, noop, noop, noop, noop, noop) }
-    // The memory entries above the feed (copy is the memory pass's; test strings here).
-    @Test fun feedEntries() = snap("groups.screen", "entries") {
-        GroupFeedScreen(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, items = feedItems, isCreator = true), zone, noop, noop, noop, noop, {}, {}, {}, noop, noop, noop, noop, noop) {
-            GroupEntryCard("Sunday dinners’s Day in History", "1 year ago", noop)
-            GroupEntryCard("It’s time for your 2026 story", "Your year together", noop, button = "Let’s go")
-            GroupEntryCard("Sam’s birthday is coming", "due Oct 20", noop)
-        }
+    private val feedState = GroupFeedUiState(group = group, coverUrl = photo("dinner-long-table-3x4"), photos = photos, isCreator = true, memberAvatars = members)
+    private fun feed(state: GroupFeedUiState, entries: Boolean = false) = @Composable {
+        GroupFeedScreen(
+            state,
+            now,
+            zone,
+            GroupScreenActions(),
+            birthdayRows = {
+                if (entries) BirthdayRequestRow(stringResource(R.string.birthday_request_title, "Zoe"), stringResource(R.string.birthday_request_due, "Oct 20"), photo("avatar-04"), noop)
+            },
+            feedCards = {
+                if (entries) {
+                    FeedEntryCard(Tokens.Icons.globalRewind, stringResource(R.string.onthisday_entry_title), stringResource(R.string.onthisday_entry_subtitle, "Sunday Dinners"), stringResource(R.string.onthisday_entry_button), null, noop)
+                    FeedEntryCard(Tokens.Icons.globalRecap, stringResource(R.string.year_story_entry_title), stringResource(R.string.year_story_entry_subtitle, "2025"), stringResource(R.string.year_story_entry_button), null, noop)
+                }
+            },
+        )
     }
-    @Test fun feedLoading() = snap("groups.screen", "loading", feed(GroupFeedUiState(group = group, groupAvatarUrl = groupCover)))
-    @Test fun feedDefault() = snap("groups.screen", "default", feed(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, items = feedItems, isCreator = true)))
-    @Test fun feedCreated() = snap("groups.screen", "created", feed(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, items = emptyList(), isCreator = true)))
-    @Test fun feedCreatedNames() = snap("groups.screen", "created-joined", feed(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, items = emptyList(), isCreator = true, otherNames = listOf("Sam", "Rui"))))
-    @Test fun feedEmpty() = snap("groups.screen", "empty", feed(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, items = emptyList(), isCreator = false)))
-    @Test fun feedError() = snap("groups.screen", "error", feed(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, error = DataError.Unexpected("x"))))
-    @Test fun feedOffline() = snap("groups.screen", "offline", feed(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, error = DataError.Network)))
-    @Test fun feedRemoved() = snap("groups.screen", "removed", feed(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, removed = true)))
-    @Test fun profilePage() = snap("groups.screen", "profile") {
-        GroupProfileScreen(GroupFeedUiState(group = group, groupAvatarUrl = groupCover, items = feedItems, memberAvatars = listOf(avatar("avatar-01"), avatar("avatar-02"), null)), noop, noop, {}, noop, noop, noop, noop, noop, noop)
-    }
+    @Test fun feedLoading() = snap("groups.screen", "loading", content = feed(GroupFeedUiState(group = group, coverUrl = photo("dinner-long-table-3x4"))))
+    @Test fun feedDefault() = snap("groups.screen", "default", content = feed(feedState))
+    @Test fun feedDefaultDark() = snap("groups.screen", "default", dark = true, content = feed(feedState))
+    @Test fun feedEntries() = snap("groups.screen", "default-memoryEntries", content = feed(feedState, entries = true))
+    @Test fun feedCreated() = snap("groups.screen", "created", content = feed(feedState.copy(photos = emptyList(), memberAvatars = members.take(1))))
+    @Test fun feedEmpty() = snap("groups.screen", "empty", content = feed(feedState.copy(photos = emptyList(), isCreator = false)))
+    @Test fun feedQuietWeek() = snap("groups.screen", "quietWeek", content = feed(feedState.copy(photos = photos.drop(4))))
+    @Test fun feedError() = snap("groups.screen", "error", content = feed(GroupFeedUiState(group = group, coverUrl = photo("dinner-long-table-3x4"), memberAvatars = members, error = DataError.Unexpected("x"))))
+    @Test fun feedOffline() = snap("groups.screen", "offline", content = feed(GroupFeedUiState(group = group, coverUrl = photo("dinner-long-table-3x4"), error = DataError.Network)))
+    @Test fun feedRemoved() = snap("groups.screen", "removed", content = feed(GroupFeedUiState(group = group, removed = true)))
 
     // groups.settings -------------------------------------------------------------------------------
-    private val members = listOf(
-        MemberRow("u-me", "Ana Lima", "Ana", avatar("avatar-01"), admin = true, you = true),
-        MemberRow("u-sam", "Sam Lee", "Sam", avatar("avatar-02"), admin = false, you = false),
-        MemberRow("u-rui", "Rui Costa", "Rui", avatar("avatar-06"), admin = true, you = false),
+    private val memberRows = listOf(
+        MemberRow("u-me", "Ana Lima", "Ana", photo("avatar-01"), admin = true, you = true),
+        MemberRow("u-sam", "Sam Lee", "Sam", photo("avatar-02"), admin = false, you = false),
+        MemberRow("u-rui", "Rui Costa", "Rui", photo("avatar-06"), admin = true, you = false),
+        MemberRow("u-zoe", "Zoe Park", "Zoe", null, admin = false, you = false),
     )
-    private val settings = GroupSettingsUiState(group = group.copy(wakingStart = LocalTime.of(9, 0), wakingEnd = LocalTime.of(21, 0)), members = members, isAdmin = true)
-    @Test fun groupSettingsLoading() = snap("groups.settings", "loading") { GroupSettingsScreen(GroupSettingsUiState(), false, GroupSettingsActions()) }
-    @Test fun groupSettingsAdmin() = snap("groups.settings", "default-admin") { GroupSettingsScreen(settings, false, GroupSettingsActions()) }
-    @Test fun groupSettingsMember() = snap("groups.settings", "nonAdmin") { GroupSettingsScreen(settings.copy(isAdmin = false, group = group, muted = true), false, GroupSettingsActions()) }
-    @Test fun groupSettingsError() = snap("groups.settings", "error-save") { GroupSettingsScreen(settings.copy(errorIn = SettingsSection.Notifications), false, GroupSettingsActions()) }
-    @Test fun groupSettingsInvalid() = snap("groups.settings", "invalidWindow") { GroupSettingsScreen(settings.copy(invalidWindow = true), false, GroupSettingsActions()) }
-    @Test fun groupSettingsOffline() = snap("groups.settings", "offline") { GroupSettingsScreen(settings.copy(online = false), false, GroupSettingsActions()) }
-    @Test fun groupSettingsNotificationsOff() = snap("groups.settings", "permissionDenied") { GroupSettingsScreen(settings, true, GroupSettingsActions()) }
+    private val settings = GroupSettingsUiState(group = group, members = memberRows, isAdmin = true)
+    private fun groupSettings(state: GroupSettingsUiState) = @Composable { GroupSettingsScreen(state, GroupSettingsActions()) }
+    @Test fun groupSettingsLoading() = snap("groups.settings", "loading", content = groupSettings(GroupSettingsUiState()))
+    @Test fun groupSettingsAdmin() = snap("groups.settings", "default-admin", content = groupSettings(settings))
+    @Test fun groupSettingsAdminDark() = snap("groups.settings", "default-admin", dark = true, content = groupSettings(settings))
+    @Test fun groupSettingsMember() = snap("groups.settings", "member", content = groupSettings(settings.copy(isAdmin = false, muted = true, group = group.copy(invitationPaused = true))))
+    @Test fun groupSettingsFailed() = snap("groups.settings", "changeFailed", content = groupSettings(settings.copy(failed = true)))
+    @Test fun groupSettingsInvalid() = snap("groups.settings", "invalidWindow", content = groupSettings(settings.copy(invalidWindow = true)))
+    @Test fun groupSettingsOffline() = snap("groups.settings", "offline", content = groupSettings(settings.copy(online = false)))
     @Test fun groupSettingsLeave() = snap("groups.settings", "leaveAlert") {
-        GroupSettingsScreen(settings, false, GroupSettingsActions())
-        LeaveGroupDialog("Sunday dinners", last = false, onConfirm = noop, onDismiss = noop)
+        groupSettings(settings)()
+        LeaveGroupDialog("Sunday Dinners", last = false, onConfirm = noop, onDismiss = noop)
+    }
+    @Test fun groupSettingsLeaveLast() = snap("groups.settings", "leaveAlert-lastMember") {
+        groupSettings(settings.copy(members = memberRows.take(1)))()
+        LeaveGroupDialog("Sunday Dinners", last = true, onConfirm = noop, onDismiss = noop)
+    }
+    @Test fun groupSettingsHours() = snap("groups.settings", "hoursPicker", settleMs = SHEET_MS) {
+        groupSettings(settings)()
+        TimeDialog(stringResource(R.string.settings_notifications_quiethours_start), LocalTime.of(9, 0), onCancel = noop) {}
     }
 
-    // settings.* ------------------------------------------------------------------------------------
-    private fun root(premium: Boolean) = @Composable { SettingsRootScreen(premium, legal, noop, noop, noop, noop, noop, noop, {}, {}, noop) }
-    @Test fun settingsRoot() = snap("settings.root", "default", root(false))
-    @Test fun settingsRootPremium() = snap("settings.root", "premiumActive", root(true))
+    // settings.root ---------------------------------------------------------------------------------
+    private val rootState = SettingsRootUiState(name = "Ana Lima", phone = "+1 415-555-0100", avatar = photo("avatar-01"), subscription = SubscriptionState.None)
+    private val granted = listOf(
+        PermissionRow(R.string.settings_root_permissions_camera, false),
+        PermissionRow(R.string.settings_root_permissions_microphone, false),
+        PermissionRow(R.string.settings_root_permissions_contacts, false),
+        PermissionRow(R.string.settings_root_permissions_notifications, false),
+    )
+    private fun root(state: SettingsRootUiState, permissions: List<PermissionRow> = granted) = @Composable { SettingsRootScreen(state, legal, permissions, "1.0 (1)", SettingsRootActions()) }
+    @Test fun settingsRoot() = snap("settings.root", "default", content = root(rootState))
+    @Test fun settingsRootDark() = snap("settings.root", "default", dark = true, content = root(rootState))
+    @Test fun settingsRootLoading() = snap("settings.root", "subscriptionLoading", content = root(rootState.copy(subscription = SubscriptionState.Loading)))
+    @Test fun settingsRootSubscriber() = snap("settings.root", "subscriber-annual", content = root(rootState.copy(subscription = SubscriptionState.Annual)))
+    @Test fun settingsRootDenied() = snap("settings.root", "permissionsDenied-scrolled", act = { compose.onNodeWithText(context.getString(R.string.settings_root_permissions_camera)).performScrollTo() }) {
+        root(rootState, granted.mapIndexed { i, row -> row.copy(denied = i % 2 == 0) })()
+    }
+    @Test fun settingsRootSigningOut() = snap("settings.root", "signingOut-scrolled", act = { compose.onNodeWithText(context.getString(R.string.settings_root_signout)).performScrollTo() }) {
+        root(rootState.copy(signingOut = true))()
+    }
+    @Test fun settingsRootSignOutAlert() = snap("settings.root", "signOutAlert", act = {
+        compose.onNodeWithText(context.getString(R.string.settings_root_signout)).performScrollTo()
+        tap(R.string.settings_root_signout)
+    }) { root(rootState)() }
 
-    private val notif = SettingsNotificationsUiState(groups = listOf(GroupToggle("g1", "Sunday dinners", false), GroupToggle("g2", "Roomies", true)), quietStart = LocalTime.of(22, 0), quietEnd = LocalTime.of(7, 0), quietOn = true, loaded = true)
+    // settings.notifications ------------------------------------------------------------------------
+    private val notif = SettingsNotificationsUiState(
+        groups = listOf(
+            GroupToggle("g1", "Sunday Dinners", false, photo("dinner-long-table-3x4")),
+            GroupToggle("g2", "Roomies", true, photo("movie-night-couch-4x3")),
+            GroupToggle("g3", "Lima Family", false, null),
+        ),
+        quietStart = LocalTime.of(22, 0),
+        quietEnd = LocalTime.of(7, 0),
+        quietOn = true,
+        loaded = true,
+    )
     private fun notifications(state: SettingsNotificationsUiState, off: Boolean = false) = @Composable { SettingsNotificationsScreen(state, off, noop, noop, { _, _ -> }, {}, {}, {}, noop) }
-    @Test fun notificationsLoading() = snap("settings.notifications", "loading", notifications(SettingsNotificationsUiState()))
-    @Test fun notificationsDefault() = snap("settings.notifications", "default", notifications(notif))
-    @Test fun notificationsSystemOff() = snap("settings.notifications", "permissionDenied", notifications(notif.copy(quietOn = false), off = true))
-    @Test fun notificationsError() = snap("settings.notifications", "error", notifications(notif.copy(error = true)))
-    @Test fun notificationsOffline() = snap("settings.notifications", "offline", notifications(notif.copy(online = false)))
+    @Test fun notificationsLoading() = snap("settings.notifications", "loading", content = notifications(SettingsNotificationsUiState()))
+    @Test fun notificationsSettingsDefault() = snap("settings.notifications", "default", content = notifications(notif))
+    @Test fun notificationsSettingsDefaultDark() = snap("settings.notifications", "default", dark = true, content = notifications(notif))
+    @Test fun notificationsSystemOff() = snap("settings.notifications", "permissionOff", content = notifications(notif.copy(quietOn = false, quietStart = null, quietEnd = null), off = true))
+    @Test fun notificationsNoGroups() = snap("settings.notifications", "noGroups", content = notifications(notif.copy(groups = emptyList())))
+    @Test fun notificationsError() = snap("settings.notifications", "changeFailed", content = notifications(notif.copy(error = true)))
 
-    private val account = SettingsAccountUiState(name = "Ana Lima", phone = "+14155550100", avatar = avatar("avatar-01"))
-    private fun accountScreen(state: SettingsAccountUiState) = @Composable { SettingsAccountScreen(state, noop, {}, noop, noop, noop, noop, noop, noop) }
-    @Test fun accountDefault() = snap("settings.account", "default", accountScreen(account))
-    @Test fun accountPremium() = snap("settings.account", "premiumActive", accountScreen(account.copy(premium = true)))
-    @Test fun accountConfirm() = snap("settings.account", "deleteConfirm", accountScreen(account.copy(confirmDelete = true)))
-    @Test fun accountConfirmPremium() = snap("settings.account", "deleteConfirm-premium", accountScreen(account.copy(confirmDelete = true, premium = true)))
-    @Test fun accountDeleting() = snap("settings.account", "deleting", accountScreen(account.copy(deleting = true)))
-    @Test fun accountDeleteError() = snap("settings.account", "deleteError", accountScreen(account.copy(deleteError = true)))
-    @Test fun accountNameError() = snap("settings.account", "nameError", accountScreen(account.copy(nameError = true)))
-    @Test fun accountOffline() = snap("settings.account", "offline", accountScreen(account.copy(online = false)))
+    // settings.account ------------------------------------------------------------------------------
+    private val account = SettingsAccountUiState(name = "Ana Lima", avatar = photo("avatar-01"), hasPhoto = true, phone = "+1 415-555-0100", birthday = LocalDate.of(2001, 7, 5))
+    private fun accountScreen(state: SettingsAccountUiState) = @Composable { SettingsAccountScreen(state, SettingsAccountActions()) }
+    @Test fun accountDefault() = snap("settings.account", "default", content = accountScreen(account))
+    @Test fun accountDefaultDark() = snap("settings.account", "default", dark = true, content = accountScreen(account))
+    @Test fun accountNoPhoto() = snap("settings.account", "noPhoto-noBirthday", content = accountScreen(account.copy(avatar = null, hasPhoto = false, birthday = null)))
+    @Test fun accountPhotoSheet() = snap("settings.account", "photoSheet", act = { tap(R.string.settings_account_photo) }, content = accountScreen(account))
+    @Test fun accountSavingPhoto() = snap("settings.account", "savingPhoto", content = accountScreen(account.copy(savingPhoto = true)))
+    @Test fun accountEditName() = snap("settings.account", "editName", settleMs = SHEET_MS, content = accountScreen(account.copy(editingName = true)))
+    @Test fun accountSavingName() = snap("settings.account", "editName-saving", settleMs = SHEET_MS, content = accountScreen(account.copy(editingName = true, savingName = true)))
+    @Test fun accountSaveError() = snap("settings.account", "saveFailed", content = accountScreen(account.copy(saveError = true)))
+    @Test fun accountConfirm() = snap("settings.account", "deleteConfirm", content = accountScreen(account.copy(confirmDelete = true)))
+    @Test fun accountConfirmPremium() = snap("settings.account", "deleteConfirm-premium", content = accountScreen(account.copy(confirmDelete = true, premium = true)))
+    @Test fun accountDeleting() = snap("settings.account", "deleting", content = accountScreen(account.copy(deleting = true)))
+    @Test fun accountDeleteError() = snap("settings.account", "deleteFailed", content = accountScreen(account.copy(deleteError = true)))
+    @Test fun accountCameraDenied() = snap("settings.account", "cameraDenied", content = accountScreen(account.copy(cameraDenied = true)))
 
+    // settings.blocked ------------------------------------------------------------------------------
+    private val blockedPeople = listOf(
+        BlockedPerson("u1", "Sam Lee", photo("avatar-02"), "Sam"),
+        BlockedPerson("u2", "Zoe Park", photo("avatar-04"), "Zoe"),
+        BlockedPerson("u3", null, null),
+    )
     private fun blocked(state: SettingsBlockedUiState) = @Composable { SettingsBlockedScreen(state, noop, {}, noop) }
-    @Test fun blockedLoading() = snap("settings.blocked", "loading", blocked(SettingsBlockedUiState()))
-    @Test fun blockedList() = snap("settings.blocked", "default", blocked(SettingsBlockedUiState(people = listOf(BlockedPerson("u1", "Sam Lee", avatar("avatar-02")), BlockedPerson("u2", null, null)))))
-    @Test fun blockedEmpty() = snap("settings.blocked", "empty", blocked(SettingsBlockedUiState(people = emptyList())))
-    @Test fun blockedError() = snap("settings.blocked", "error", blocked(SettingsBlockedUiState(error = true)))
+    @Test fun blockedLoading() = snap("settings.blocked", "loading", content = blocked(SettingsBlockedUiState()))
+    @Test fun blockedList() = snap("settings.blocked", "default", content = blocked(SettingsBlockedUiState(people = blockedPeople)))
+    @Test fun blockedListDark() = snap("settings.blocked", "default", dark = true, content = blocked(SettingsBlockedUiState(people = blockedPeople)))
+    @Test fun blockedEmpty() = snap("settings.blocked", "empty", content = blocked(SettingsBlockedUiState(people = emptyList())))
+    @Test fun blockedError() = snap("settings.blocked", "error", content = blocked(SettingsBlockedUiState(error = true)))
+    @Test fun blockedUnblockFailed() = snap("settings.blocked", "unblockFailed", content = blocked(SettingsBlockedUiState(people = blockedPeople, unblockFailed = true)))
 
-    // safety ----------------------------------------------------------------------------------------
+    // safety.report ---------------------------------------------------------------------------------
     private val postTarget = ReportTarget(ReportTargetKind.Post, "p1", "g1", "u-sam")
-    @Composable
-    private fun Sheet(content: @Composable () -> Unit) {
-        Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackground), contentAlignment = Alignment.BottomCenter) {
-            val corner = Tokens.Layouts.GlobalSheet.android.dp
-            Box(Modifier.background(Tokens.Colors.globalSystemSurfaceContainerLow, RoundedCornerShape(topStart = corner, topEnd = corner)).padding(top = corner)) { content() }
-        }
+    private fun report(state: ReportUiState) = @Composable {
+        feed(feedState)()
+        ReportFlow(state, noop, {}, noop, noop, {})
     }
-    private fun report(state: ReportUiState) = @Composable { Sheet { ReportContent(state, {}, noop, noop, noop, {}) } }
-    @Test fun reportPost() = snap("safety.report", "default-post", report(ReportUiState(postTarget, firstName = "Sam")))
-    @Test fun reportUser() = snap("safety.report", "default-user", report(ReportUiState(ReportTarget(ReportTargetKind.User, "u-sam", "g1", "u-sam"), details = "they keep posting my photos", firstName = "Sam")))
-    @Test fun reportGroup() = snap("safety.report", "default-group", report(ReportUiState(ReportTarget(ReportTargetKind.Group, "g1", "g1", null), groupName = "Sunday dinners")))
-    @Test fun reportSending() = snap("safety.report", "sending", report(ReportUiState(postTarget, phase = ReportPhase.Sending, firstName = "Sam")))
-    @Test fun reportSent() = snap("safety.report", "sent", report(ReportUiState(postTarget, phase = ReportPhase.Sent, firstName = "Sam")))
-    @Test fun reportSentGroup() = snap("safety.report", "sent-group", report(ReportUiState(ReportTarget(ReportTargetKind.Group, "g1", "g1", null), phase = ReportPhase.Sent)))
-    @Test fun reportError() = snap("safety.report", "error", report(ReportUiState(postTarget, details = "kept", phase = ReportPhase.Error, firstName = "Sam")))
-    @Test fun reportGone() = snap("safety.report", "targetGone", report(ReportUiState(postTarget, phase = ReportPhase.NotFound)))
+    @Test fun reportPost() = snap("safety.report", "reasons-post", settleMs = SHEET_MS, content = report(ReportUiState(postTarget, firstName = "Sam", groupName = "Sunday Dinners")))
+    @Test fun reportPostDark() = snap("safety.report", "reasons-post", dark = true, settleMs = SHEET_MS, content = report(ReportUiState(postTarget, firstName = "Sam", groupName = "Sunday Dinners")))
+    @Test fun reportUser() = snap("safety.report", "reasons-user", settleMs = SHEET_MS, content = report(ReportUiState(ReportTarget(ReportTargetKind.User, "u-sam", "g1", "u-sam"), firstName = "Sam")))
+    @Test fun reportGroup() = snap("safety.report", "reasons-group", settleMs = SHEET_MS, content = report(ReportUiState(ReportTarget(ReportTargetKind.Group, "g1", "g1", null), groupName = "Sunday Dinners")))
+    @Test fun reportMessage() = snap("safety.report", "reasons-message", settleMs = SHEET_MS, content = report(ReportUiState(ReportTarget(ReportTargetKind.Message, "m1", "g1", "u-sam"), firstName = "Sam")))
+    @Test fun reportNextSteps() = snap("safety.report", "nextSteps", settleMs = SHEET_MS, content = report(ReportUiState(postTarget, phase = ReportPhase.NextSteps, firstName = "Sam", groupName = "Sunday Dinners")))
+    @Test fun reportConfirmLeave() = snap("safety.report", "confirmLeave", content = report(ReportUiState(postTarget, phase = ReportPhase.ConfirmLeave, firstName = "Sam", groupName = "Sunday Dinners")))
+    @Test fun reportSending() = snap("safety.report", "sending", content = report(ReportUiState(postTarget, phase = ReportPhase.Sending, firstName = "Sam")))
+    @Test fun reportError() = snap("safety.report", "failed", content = report(ReportUiState(postTarget, phase = ReportPhase.Error, firstName = "Sam")))
+    @Test fun reportGone() = snap("safety.report", "targetGone", content = report(ReportUiState(postTarget, phase = ReportPhase.NotFound)))
 
+    // safety.block ----------------------------------------------------------------------------------
     private fun block(state: BlockUiState) = @Composable {
-        Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackground))
+        feed(feedState)()
         BlockConfirmation(state, noop, noop)
     }
-    @Test fun blockConfirm() = snap("safety.block", "confirm", block(BlockUiState("Sam")))
-    @Test fun blockBlocking() = snap("safety.block", "blocking", block(BlockUiState("Sam", blocking = true)))
-    @Test fun blockError() = snap("safety.block", "error", block(BlockUiState("Sam", error = true)))
+    @Test fun blockConfirm() = snap("safety.block", "confirming", content = block(BlockUiState("Sam")))
+    @Test fun blockConfirmDark() = snap("safety.block", "confirming", dark = true, content = block(BlockUiState("Sam")))
+    @Test fun blockBlocking() = snap("safety.block", "blocking", content = block(BlockUiState("Sam", blocking = true)))
+    @Test fun blockError() = snap("safety.block", "failed", content = block(BlockUiState("Sam", error = true)))
 
     // paywall ---------------------------------------------------------------------------------------
-    private val plans = listOf(PlanOption(PlanPeriod.Yearly, "$35.99", null), PlanOption(PlanPeriod.Monthly, "$3.99", null))
-    private fun paywall(state: PaywallUiState) = @Composable { PaywallScreen(state, legal, noop, noop, noop, {}, noop, noop, noop, {}, noop) }
-    @Test fun paywallLoading() = snap("paywall", "loading", paywall(PaywallUiState()))
-    @Test fun paywallReady() = snap("paywall", "default", paywall(PaywallUiState(plans = plans, status = PlansStatus.Ready)))
-    @Test fun paywallHistory() = snap("paywall", "default-historyLimited", paywall(PaywallUiState(plans = plans, status = PlansStatus.Ready, historyLimited = true)))
-    @Test fun paywallUnavailable() = snap("paywall", "productsUnavailable", paywall(PaywallUiState(status = PlansStatus.Unavailable)))
-    @Test fun paywallOffline() = snap("paywall", "offline", paywall(PaywallUiState(status = PlansStatus.Offline)))
-    @Test fun paywallRestored() = snap("paywall", "restoreNone", paywall(PaywallUiState(plans = plans, status = PlansStatus.Ready, message = PaywallMessage.NothingToRestore)))
-    private fun planSheet(state: PaywallUiState) = @Composable { Box(Modifier.fillMaxSize().background(Tokens.Colors.paywallColorBackgroundTop), contentAlignment = Alignment.BottomCenter) { PlanSheet(state, {}, noop, noop) } }
-    @Test fun planSheetYearly() = snap("paywall", "planSheet-yearly", planSheet(PaywallUiState(plans = plans, status = PlansStatus.Ready)))
-    @Test fun planSheetMonthly() = snap("paywall", "planSheet-monthly", planSheet(PaywallUiState(plans = plans, status = PlansStatus.Ready, selected = PlanPeriod.Monthly)))
-    @Test fun planSheetPurchasing() = snap("paywall", "planSheet-purchasing", planSheet(PaywallUiState(plans = plans, status = PlansStatus.Ready, purchasing = true)))
-    @Test fun planSheetFailed() = snap("paywall", "planSheet-purchaseFailed", planSheet(PaywallUiState(plans = plans, status = PlansStatus.Ready, message = PaywallMessage.PurchaseFailed)))
-    @Test fun planSheetPending() = snap("paywall", "planSheet-pending", planSheet(PaywallUiState(plans = plans, status = PlansStatus.Ready, message = PaywallMessage.Pending)))
-    @Test fun welcome() = snap("paywall", "welcome") { Box(Modifier.fillMaxSize().background(Tokens.Colors.paywallColorBackgroundTop), contentAlignment = Alignment.BottomCenter) { WelcomeSheet(noop) } }
+    private val plans = listOf(PlanOption(PlanPeriod.Monthly, "$3.99", null), PlanOption(PlanPeriod.Yearly, "$35.99", null))
+    private val ready = PaywallUiState(plans = plans, status = PlansStatus.Ready, media = photo("friends-beach-hug-4x5"))
+    private fun paywall(state: PaywallUiState) = @Composable { PaywallScreen(state, legal, PaywallActions()) }
+    @Test fun paywallLoading() = snap("paywall", "loading", content = paywall(PaywallUiState(media = photo("friends-beach-hug-4x5"))))
+    @Test fun paywallReady() = snap("paywall", "default", content = paywall(ready))
+    @Test fun paywallReadyDark() = snap("paywall", "default", dark = true, content = paywall(ready))
+    @Test fun paywallNoMedia() = snap("paywall", "default-noPhoto-historyLimited", content = paywall(ready.copy(media = null, historyLimited = true)))
+    @Test fun paywallUnavailable() = snap("paywall", "productsUnavailable", content = paywall(PaywallUiState(status = PlansStatus.Unavailable, media = photo("friends-beach-hug-4x5"))))
+    @Test fun paywallOffline() = snap("paywall", "offline", content = paywall(PaywallUiState(status = PlansStatus.Offline, media = photo("friends-beach-hug-4x5"))))
+    @Test fun paywallPurchasing() = snap("paywall", "purchasing", content = paywall(ready.copy(purchasing = true)))
+    @Test fun paywallFailed() = snap("paywall", "purchaseFailed", content = paywall(ready.copy(message = PaywallMessage.PurchaseFailed)))
+    @Test fun paywallPending() = snap("paywall", "pending", content = paywall(ready.copy(message = PaywallMessage.Pending)))
+    @Test fun paywallRestoreNone() = snap("paywall", "nothingToRestore", content = paywall(ready.copy(message = PaywallMessage.NothingToRestore)))
+    @Test fun paywallWelcome() = snap("paywall", "welcome", content = paywall(ready.copy(welcome = PaywallWelcome.Purchased)))
+    @Test fun paywallRestored() = snap("paywall", "welcome-restored", content = paywall(ready.copy(welcome = PaywallWelcome.Restored)))
 
     // invite.web (Android join path) ----------------------------------------------------------------
-    @Test fun inviteJoinLoading() = snap("invite.web", "android-loading") { InviteJoinScreen(InviteJoinState.Loading, noop) }
-    @Test fun inviteJoinUnavailable() = snap("invite.web", "android-unavailable") { InviteJoinScreen(InviteJoinState.Unavailable, noop) }
-    @Test fun inviteJoinNotFound() = snap("invite.web", "android-notFound") { InviteJoinScreen(InviteJoinState.NotFound, noop) }
-    @Test fun inviteJoinFull() = snap("invite.web", "android-full") { InviteJoinScreen(InviteJoinState.Full, noop) }
-    @Test fun inviteJoinError() = snap("invite.web", "android-error") { InviteJoinScreen(InviteJoinState.Error, noop) }
-    @Test fun inviteJoinOffline() = snap("invite.web", "android-offline") { InviteJoinScreen(InviteJoinState.Offline, noop) }
+    private val preview = InvitePreviewResult.Valid(
+        groupName = "Sunday Dinners",
+        groupKind = GroupKind.Friends,
+        inviterFirstName = "Sam",
+        coverUrl = photo("dinner-long-table-3x4"),
+        inviterAvatarUrl = photo("avatar-02"),
+        memberAvatars = listOf(photo("avatar-02"), photo("avatar-06"), photo("avatar-04"), null),
+    )
+    private fun join(state: InviteJoinUiState) = @Composable { InviteJoinScreen(state, noop, noop, onTerms = noop, onPrivacy = noop) }
+    @Test fun inviteJoinLoading() = snap("invite.web", "android-loading", content = join(InviteJoinUiState()))
+    @Test fun inviteJoinReady() = snap("invite.web", "android-valid", content = join(InviteJoinUiState(InviteJoinState.Ready, preview)))
+    @Test fun inviteJoinReadyDark() = snap("invite.web", "android-valid", dark = true, content = join(InviteJoinUiState(InviteJoinState.Ready, preview)))
+    @Test fun inviteJoinOpening() = snap("invite.web", "android-opening", content = join(InviteJoinUiState(InviteJoinState.Ready, preview, opening = true)))
+    @Test fun inviteJoinNoCover() = snap("invite.web", "android-valid-noCover", content = join(InviteJoinUiState(InviteJoinState.Ready, preview.copy(coverUrl = null, memberAvatars = emptyList()))))
+    @Test fun inviteJoinUnavailable() = snap("invite.web", "android-unavailable", content = join(InviteJoinUiState(InviteJoinState.Unavailable)))
+    @Test fun inviteJoinNotFound() = snap("invite.web", "android-notFound", content = join(InviteJoinUiState(InviteJoinState.NotFound)))
+    @Test fun inviteJoinFull() = snap("invite.web", "android-full", content = join(InviteJoinUiState(InviteJoinState.Full, preview)))
+    @Test fun inviteJoinError() = snap("invite.web", "android-error", content = join(InviteJoinUiState(InviteJoinState.Error)))
+    @Test fun inviteJoinRateLimited() = snap("invite.web", "android-rateLimited", content = join(InviteJoinUiState(InviteJoinState.RateLimited)))
+    @Test fun inviteJoinOffline() = snap("invite.web", "android-offline", content = join(InviteJoinUiState(InviteJoinState.Offline)))
 
     private companion object {
         /** One frame after composition (fixed, so the spinner frame is the same on every run). */
         const val FRAME_MS = 16L
+
+        /** Long enough for a sheet's or a page's enter transition. */
+        const val SHEET_MS = 1_000L
     }
 }

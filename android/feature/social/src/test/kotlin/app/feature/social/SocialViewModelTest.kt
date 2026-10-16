@@ -430,20 +430,14 @@ class SocialViewModelTest {
         assertTrue(data.calls.contains("sendText:love:p-1"))
     }
 
-    /** photo.viewer: comments are the photo's replies (oldest first); tags load with the photo; "I'm in this" is optimistic. */
-    @Test fun viewerLoadsCommentsAndTagsAndTagsYouOptimistically() {
+    /** photo.viewer: comments are the photo's replies (oldest first); tags load with the photo (for the tag run). */
+    @Test fun viewerLoadsCommentsAndTags() {
         val data = viewerData()
         val vm = PhotoViewerViewModel(data, GROUP, "v-1", PhotoContext.Album, "a-v", null)
         val photo = vm.state.value.current!!
         assertEquals(listOf("c-1", "c-2"), photo.comments.map { it.id })
         assertEquals(listOf(ANA, ME), photo.tagged)
         assertTrue(vm.state.value.taggedByMe)
-        vm.setTagged(false)
-        assertFalse(vm.state.value.taggedByMe)
-        assertTrue(data.calls.contains("untagSelf:v-1"))
-        data.failNext += "tagSelf:v-1"
-        vm.setTagged(true)
-        assertFalse("reverted after the failure", vm.state.value.taggedByMe)
     }
 
     /** Tap to advance: past the last photo the viewer closes; tap back stops at the first. */

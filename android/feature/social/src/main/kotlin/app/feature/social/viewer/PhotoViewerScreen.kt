@@ -171,10 +171,6 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
         deleteFailed = stringRes(R.string.photo_viewer_error_delete),
         saved = stringRes(R.string.photo_viewer_toast_saved),
         saveFailed = stringRes(R.string.photo_viewer_error_save),
-        tagError = stringRes(R.string.tagging_error),
-        tagRemoveError = stringRes(R.string.tagging_removeerror),
-        tagNotFound = stringRes(R.string.tagging_notfound),
-        tagOffline = stringRes(R.string.tagging_offline),
     )
     LaunchedEffect(vm) {
         vm.effects.collect { effect ->
@@ -186,17 +182,6 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
                 ViewerEffect.DeleteFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.deleteFailed) }
                 ViewerEffect.Saved -> { haptics.perform(Tokens.Haptics.globalSuccess); PlatformToast.show(context, texts.saved) }
                 ViewerEffect.SaveFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.saveFailed) }
-                is ViewerEffect.TagFailed -> {
-                    haptics.perform(Tokens.Haptics.globalError)
-                    PlatformToast.show(
-                        context,
-                        when (effect.reason) {
-                            TagFailure.NotFound -> texts.tagNotFound
-                            TagFailure.Offline -> texts.tagOffline
-                            TagFailure.Error -> if (effect.removing) texts.tagRemoveError else texts.tagError
-                        },
-                    )
-                }
             }
         }
     }
@@ -243,10 +228,6 @@ private class ViewerTexts(
     val deleteFailed: String,
     val saved: String,
     val saveFailed: String,
-    val tagError: String,
-    val tagRemoveError: String,
-    val tagNotFound: String,
-    val tagOffline: String,
 )
 
 /** The viewer without its view model (snapshots render this with fixed states). Dark in both appearances. */

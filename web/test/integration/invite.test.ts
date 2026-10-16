@@ -115,7 +115,8 @@ describe("valid invite (local stack)", () => {
   it("serves preview.json for the App Clip", async () => {
     const { app: a } = app();
     const body = (await (await get(a, `/i/${g.token}/preview.json`)).json()) as Record<string, any>;
-    expect(Object.keys(body).sort()).toEqual(["cover", "group_kind", "group_name", "inviter_first_name", "members"]);
+    expect(Object.keys(body).sort()).toEqual(["cover", "group_kind", "group_name", "inviter_avatar_url", "inviter_first_name", "members"]);
+    expect(body.inviter_avatar_url).toBe(`https://invite.example.com/i/${g.token}/avatar/0.jpg`); // from invite_preview.inviter_avatar_path
     expect(body.members).toEqual([
       { first_name: "Ana", avatar_url: `https://invite.example.com/i/${g.token}/avatar/0.jpg` },
       { first_name: "Rui", avatar_url: null },

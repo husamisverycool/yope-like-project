@@ -15,6 +15,8 @@ export interface InvitePreview {
   group_kind: string;
   cover_path: string | null;
   inviter_first_name: string | null;
+  /** Avatar of the invite's creator while they are a member (migration 0016); null otherwise or from an older RPC. */
+  inviter_avatar_path: string | null;
   members: PreviewMember[];
 }
 
@@ -60,11 +62,13 @@ export function parsePreview(body: unknown): InvitePreview {
   const b = body as Record<string, unknown>;
   if (typeof b.group_name !== "string" || typeof b.group_kind !== "string" || !Array.isArray(b.members)) invalid();
   const cover = nullableString(b.cover_path);
+  const inviterAvatar = nullableString(b.inviter_avatar_path);
   return {
     group_name: b.group_name,
     group_kind: b.group_kind,
     cover_path: cover !== null && COVER_PATH.test(cover) && safe(cover) ? cover : null,
     inviter_first_name: nullableString(b.inviter_first_name),
+    inviter_avatar_path: inviterAvatar !== null && AVATAR_PATH.test(inviterAvatar) && safe(inviterAvatar) ? inviterAvatar : null,
     members: b.members.map((m: unknown) => {
       if (typeof m !== "object" || m === null) invalid();
       const r = m as Record<string, unknown>;

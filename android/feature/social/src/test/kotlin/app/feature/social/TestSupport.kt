@@ -146,9 +146,22 @@ fun TestScreen(
         LocalSocialServices provides services,
         LocalApproximations provides approximations,
         LocalReduceMotionOverride provides false,
+        // The memory group's tag run reads and writes tags through its own backend: the fake's, here.
+        app.feature.memory.common.LocalMemoryBackend provides TagBackend(data),
     ) {
         SocialRoot(dark = dark, content = content)
     }
+}
+
+/** The memory group's backend over [SocialData] for the tag run (the only calls the viewer's run makes). */
+class TagBackend(private val data: SocialData) : app.feature.memory.common.MemoryBackend by app.feature.memory.common.UnconfiguredMemoryBackend {
+    override val currentUserId: String? get() = data.currentUserId()
+    override fun isOnline(): Boolean = (data as? FakeSocialData)?.offline != true
+    override suspend fun profiles(ids: List<String>) = data.profiles(ids)
+    override suspend fun signedUrls(paths: Collection<String>) = data.signedUrls(paths)
+    override suspend fun postTags(postId: String) = data.tags(postId)
+    override suspend fun tagSelf(postId: String) = data.tagSelf(postId)
+    override suspend fun untagSelf(postId: String) = data.untagSelf(postId)
 }
 
 /** Ensures [StateFlow] values are read after the view model settled. */

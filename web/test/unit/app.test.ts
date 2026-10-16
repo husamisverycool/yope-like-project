@@ -20,6 +20,7 @@ const preview = (over: Partial<InvitePreview> = {}): InvitePreview => ({
   group_kind: "family",
   cover_path: COVER,
   inviter_first_name: "Ana",
+  inviter_avatar_path: AVATAR,
   members: [
     { first_name: "Ana", avatar_path: AVATAR },
     { first_name: "Rui", avatar_path: null },
@@ -110,18 +111,29 @@ describe("GET /i/:token — valid invite", () => {
     expect(visibleText(crowded)).not.toMatch(/\+|[0-9]/);
   });
 
-  it("falls back when the inviter cannot be shown", async () => {
-    const noName = await page(preview({ inviter_first_name: null }));
-    expect(noName).toContain(`<h1 class="headline">${c["invite.web.invitedFallback"]!.replace(/'/g, "&#39;")}</h1>`);
-    expect(noName).toContain(`<span class="avatar" aria-hidden="true"></span>`);
-    // two members share the inviter's first name: not guessed, the placeholder circle is labelled with the name
-    const twoAnas = await page(preview({ members: [{ first_name: "Ana", avatar_path: AVATAR }, { first_name: "Ana", avatar_path: null }] }));
-    expect(twoAnas).toContain(`<span class="avatar" role="img" aria-label="Ana"></span>`);
+  it("shows the inviter's photo from invite_preview.inviter_avatar_path, not a first-name match", async () => {
+    // two members named Ana: the inviter is the second one (her avatar path decides)
+    const AVATAR_2 = `avatars/${UID_B}/b.jpg`;
+    const up = fake(preview({ inviter_avatar_path: AVATAR_2, members: [{ first_name: "Ana", avatar_path: AVATAR }, { first_name: "Ana", avatar_path: AVATAR_2 }] }));
+    up.objects.set(AVATAR_2, avatarJpeg);
+    const html = await (await get(testApp(up).app, `/i/${TOKEN}`)).text();
+    expect(html).toContain(`<img class="avatar" src="/i/${TOKEN}/avatar/1.jpg" alt="Ana">`);
   });
 
-  it("backdrop (C-34): the cover, else the inviter's avatar (decorative), else none; blurred and dimmed by tokens", async () => {
+  it("falls back when the inviter has no photo or no name", async () => {
+    const noPhoto = await page(preview({ inviter_avatar_path: null }));
+    expect(noPhoto).toContain(`<span class="avatar" role="img" aria-label="Ana"></span>`);
+    const noName = await page(preview({ inviter_first_name: null, inviter_avatar_path: null }));
+    expect(noName).toContain(`<h1 class="headline">${c["invite.web.invitedFallback"]!.replace(/'/g, "&#39;")}</h1>`);
+    expect(noName).toContain(`<span class="avatar" aria-hidden="true"></span>`);
+  });
+
+  it("backdrop (invite.web.layout.backdrop): the cover, else the inviter's avatar (decorative), else none; blurred and dimmed", async () => {
     const html = await page();
-    expect(html).toContain(`filter:blur(${tokens["size.global.backdropBlur"]}px)`);
+    const k = tokens["invite.web.layout.backdrop"].blurSigmaToWidth;
+    expect(html).toContain(`filter:blur(calc(${k} * 100cqw))`);
+    expect(html).toContain(`filter:blur(calc(${k} * (100vw - 2 * ${tokens["invite.web.size.cardInset"]}px)))`); // without container units
+    expect(html).toContain("container-type:inline-size");
     expect(html).toMatch(/\.photo::after\{content:"";position:absolute;inset:0;z-index:-1;background:rgb\(0 0 0 \/ 0\.22[0-9]*\)\}/);
     const noCover = await page(preview({ cover_path: null }));
     expect(noCover).toContain(`<main class="card photo">\n<img class="backdrop" src="/i/${TOKEN}/avatar/0.jpg" alt="">`);
@@ -378,6 +390,7 @@ describe("preview.json (App Clip and apps before joining)", () => {
       group_name: "Lima family",
       group_kind: "family",
       inviter_first_name: "Ana",
+      inviter_avatar_url: `https://invite.example.com/i/${TOKEN}/avatar/0.jpg`,
       cover: { url: `https://invite.example.com/i/${TOKEN}/cover.jpg`, width: 1200, height: 900 },
       members: [
         { first_name: "Ana", avatar_url: `https://invite.example.com/i/${TOKEN}/avatar/0.jpg` },
