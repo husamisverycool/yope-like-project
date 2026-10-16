@@ -674,8 +674,8 @@
       "origin": "new",
       "source_app": "Retro",
       "surface": "notifications.push",
-      "evidence": "design/copy-patterns.md `locket.push.reaction` (content) + Retro activity lines ('%1$s commented on your post: …', '%1$s liked your post.' — `notification_settings_description_*`)",
-      "pattern": "locket.push.reaction (content: name, emoji inline, no count) with retro.voice.push case and punctuation (statement with a period, noun 'post')",
+      "evidence": "design/copy-patterns.md `messaging.reaction` (content: WhatsApp help ‘a message, photo, gif, or video you reacted to’, Apple iPhone User Guide ‘Senders and their tapbacks’) + Retro activity lines ('%1$s commented on your post: …', '%1$s liked your post.' — `notification_settings_description_*`)",
+      "pattern": "messaging.reaction (content: name, emoji inline, no count) with retro.voice.push case and punctuation (statement with a period, noun 'post')",
       "level": "SOURCED",
       "notes": "Never a number of reactions."
     },

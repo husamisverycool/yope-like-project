@@ -6,7 +6,7 @@
     <!-- Retro · invite.web · adapted · SOURCED · args: app_name, title -->
     <string name="invite_web_documenttitle">%1$s - %2$s</string>
     <!-- Locket · onboarding.widget · adapted · SOURCED · args: app_name -->
-    <string name="onboarding_widget_step_android_3">Search for %1$s and add the widget</string>
+    <string name="onboarding_widget_step_android_3">Search for “%1$s”, tap on the widget, then tap Add.</string>
     <!-- Locket · onboarding.widget · adapted · SOURCED · args: app_name -->
     <string name="onboarding_widget_step_ios_4">Search for “%1$s”, then tap on it.</string>
     <!-- Material 3 · paywall · new · VERIFIED · args: app_name -->

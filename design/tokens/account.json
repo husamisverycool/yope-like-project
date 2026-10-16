@@ -96,24 +96,25 @@
       "type": "layout",
       "value": {
         "pattern": "flag at the field's leading edge + the calling code typed inline with the number ('+1 555 …'); no separate code button",
-        "flagWidth": 20,
-        "flagHeight": 13,
-        "flagLeading": 20,
-        "flagToText": 5,
+        "flagWidth": 30,
+        "flagHeight": 20,
+        "flagLeading": 19,
+        "flagToText": 10,
         "prefill": "'+' and the device region's calling code (Locale / libphonenumber); the flag follows the code as it is typed or edited",
         "autoFormat": true,
         "allowZeroAfterCountryCode": true,
         "flagTap": "opens a country list in a native sheet (C-29); choosing a country replaces the calling code",
-        "flagArt": "regional-indicator flag emoji (PLATFORM) in the 20 × 13 slot",
+        "flagArt": "regional-indicator flag emoji (PLATFORM) in the 30 × 20 slot",
         "field": "drawn as design/components.md C-12 (fill color.global.control, size.global.fieldHeight, radius.global.field, text role placeholder)"
       },
-      "source_app": "Locket",
+      "source_app": "react-native-phone-input (open source) + Android",
       "surface": "auth.phone",
       "element": "country calling-code selector inside the phone field (mechanics)",
-      "evidence": "references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (Locket Android 1.243.0: react-native-phone-input, flag {width 20, height 13, marginLeft 20, marginRight 5}, autoFormat true, allowZeroAfterCountryCode true, flag press → picker.selectCountry + show)",
-      "method": "mechanics of Locket's phone-first sign-up drawn in Retro's field (C-12); Retro's sign-up form was not captured (RV §2 rows 36–41)",
+      "evidence": "react-native-phone-input 1.4.1 (MIT; public npm package https://registry.npmjs.org/react-native-phone-input/-/react-native-phone-input-1.4.1.tgz, repository github.com/rili-live/react-native-phone-input; read 2026-10-16): dist/styles.js container {flexDirection: 'row', alignItems: 'center'} with the flag first (no margin: at the container's leading edge) and flag {width: 30, height: 20}; dist/PhoneInput.js the number's view {flex: 1, marginLeft: this.props.offset || 10} (README: 'offset | int | 10 | distance between flag and phone number'); onPressFlag without a handler: picker.selectCountry(iso2) + picker.show() (the country list); README 'autoFormat | boolean | false | Format phone number while typing', 'allowZeroAfterCountryCode | bool | true'; formatting while typing is the platform's own behaviour: https://developer.android.com/reference/android/telephony/PhoneNumberFormattingTextWatcher ('Watches a TextView and if a phone number is entered will format it.')",
+      "method": "the open-source phone-input component’s documented defaults, placed in Retro’s field: its container is the field’s content box, so the flag starts at C-12’s text inset (radius.global.field, 19); autoFormat on (the platform formats as you type)",
       "level": "SOURCED",
-      "notes": "Gap fill G2-4 kept as the mechanics; its colours and shape now come from C-12 (Retro). Retro's own phone form: one raw screenshot of the first sign-up step on a fresh install."
+      "notes": "Replaces the gap-fill values G2-4 (flag 20 × 13, 20 leading, 5 to the text) — owner decision 22 (2026-10-16): values read from Locket’s decompiled app bundle no longer count as evidence. Colours and shape come from C-12 (Retro). Retro’s own phone form: one raw screenshot of the first sign-up step on a fresh install.",
+      "precision": "exact (source constants)"
     },
     "auth.phone.layout.inlineError": {
       "type": "layout",
@@ -129,7 +130,7 @@
       "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt error_message_dialog_default_title 'Something went wrong', error_message_expired_auth_code_title 'Code Expired' + error_message_expired_auth_code, error_message_invalid_auth_code_title 'SMS Code Error', error_message_auth_code_service_title 'Couldn't Verify Code', onboarding_landing_error_send_new_code 'Send a new code', onboarding_landing_error_edit_code 'Edit code', onboarding_landing_error_try_again 'Try again'",
       "method": "Retro's sign-up error strings come as dialog title + message pairs with recovery actions; the dialog itself is native (C-29)",
       "level": "SOURCED",
-      "notes": "Replaces the Locket-sourced message-only alert (gap fill G2-5). Retro's error sheet (onboarding_landing_error_sheet_cta 'Get help') has a help destination we do not have; its 'Get help' action is not built."
+      "notes": "Replaces the earlier message-only alert (gap fill G2-5, withdrawn by owner decision 22). Retro’s error sheet (onboarding_landing_error_sheet_cta ‘Get help’) has a help destination we do not have; its ‘Get help’ action is not built."
     },
     "auth.code.layout.codeField": {
       "type": "layout",

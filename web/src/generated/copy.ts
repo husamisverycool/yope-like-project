@@ -232,7 +232,7 @@ const table = {
   "chat.reactions.a11y.add": "Add reaction", // Retro · chat.reactions · SOURCED
   "chat.reactions.a11y.cluster": "Reactions: {emoji_names}", // Retro · chat.reactions · SOURCED
   "chat.reactions.a11y.quick": "React with {emoji_name}", // Retro · chat.reactions · SOURCED
-  "chat.reactions.activity.row": "{name} reacted {emoji}", // Locket · chat.reactions · SOURCED
+  "chat.reactions.activity.row": "{name} reacted {emoji}", // WhatsApp + Apple Messages · chat.reactions · SOURCED
   "chat.reactions.activity.rowMine": "You reacted {emoji}", // Retro · chat.reactions · SOURCED
   "chat.reactions.activity.title": "Reactions", // Retro · chat.reactions · SOURCED
   "chat.reactions.empty": "Nothing to see here yet", // Retro · chat.reactions · SOURCED
@@ -551,8 +551,8 @@ const table = {
   "onboarding.widget.pinFailed": "Couldn't add the widget. Please try again.", // Retro · onboarding.widget · SOURCED
   "onboarding.widget.preview.accessibilityLabel": "Widget preview", // Apple HIG · onboarding.widget · VERIFIED
   "onboarding.widget.skip": "Maybe later", // Retro · onboarding.widget · SOURCED
-  "onboarding.widget.step.android.1": "Hold down on an empty space on your Home Screen", // Locket · onboarding.widget · SOURCED
-  "onboarding.widget.step.android.2": "Tap the “Widgets” button to add a new widget", // Locket · onboarding.widget · SOURCED
+  "onboarding.widget.step.android.1": "From your Home Screen, touch and hold on an empty space.", // Locket · onboarding.widget · SOURCED
+  "onboarding.widget.step.android.2": "Tap Widgets.", // Locket · onboarding.widget · SOURCED
   "onboarding.widget.step.ios.1": "From your Home Screen, touch and hold a widget or empty area until the apps jiggle.", // Locket · onboarding.widget · SOURCED
   "onboarding.widget.step.ios.2": "Tap Edit in the upper-left corner.", // Locket · onboarding.widget · SOURCED
   "onboarding.widget.step.ios.3": "Tap Add Widget.", // Locket · onboarding.widget · SOURCED

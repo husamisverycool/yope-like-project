@@ -9,8 +9,8 @@ public enum BlockedCopy {
     public static func groupsInviteLinkMessage(groupName: String, appName: String, link: String) -> String { CopyLookup.format("groups.invite.link.message", default: "Check out {group_name} on {app_name}: {link}", ["group_name": groupName, "app_name": appName, "link": link]) }
     /// "{app_name} - {title}" — Retro · invite.web · adapted · SOURCED
     public static func inviteWebDocumentTitle(appName: String, title: String) -> String { CopyLookup.format("invite.web.documentTitle", default: "{app_name} - {title}", ["app_name": appName, "title": title]) }
-    /// "Search for {app_name} and add the widget" — Locket · onboarding.widget · adapted · SOURCED
-    public static func onboardingWidgetStepAndroid3(appName: String) -> String { CopyLookup.format("onboarding.widget.step.android.3", default: "Search for {app_name} and add the widget", ["app_name": appName]) }
+    /// "Search for “{app_name}”, tap on the widget, then tap Add." — Locket · onboarding.widget · adapted · SOURCED
+    public static func onboardingWidgetStepAndroid3(appName: String) -> String { CopyLookup.format("onboarding.widget.step.android.3", default: "Search for “{app_name}”, tap on the widget, then tap Add.", ["app_name": appName]) }
     /// "Search for “{app_name}”, then tap on it." — Locket · onboarding.widget · adapted · SOURCED
     public static func onboardingWidgetStepIos4(appName: String) -> String { CopyLookup.format("onboarding.widget.step.ios.4", default: "Search for “{app_name}”, then tap on it.", ["app_name": appName]) }
     /// "You don't need a subscription to use {app_name}." — Material 3 · paywall · new · VERIFIED

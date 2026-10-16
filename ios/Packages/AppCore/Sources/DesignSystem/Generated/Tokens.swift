@@ -720,19 +720,19 @@ public enum Tokens {
             public static let android: String = "one TextField, KeyboardType.NumberPassword with visualTransformation None, autofill ContentType.SmsOtpCode; SMS User Consent (SmsRetriever.getClient(context).startSmsUserConsent) shows the system consent sheet and fills the field"
             public static let field: String = "drawn as C-12"
         }
-        /// Locket · auth.phone · country calling-code selector inside the phone field (mechanics) · SOURCED
+        /// react-native-phone-input (open source) + Android · auth.phone · country calling-code selector inside the phone field (mechanics) · SOURCED
         /// token: `auth.phone.layout.countryCode`
         public enum AuthPhoneLayoutCountryCode {
             public static let pattern: String = "flag at the field's leading edge + the calling code typed inline with the number ('+1 555 …'); no separate code button"
-            public static let flagWidth: CGFloat = 20
-            public static let flagHeight: CGFloat = 13
-            public static let flagLeading: CGFloat = 20
-            public static let flagToText: CGFloat = 5
+            public static let flagWidth: CGFloat = 30
+            public static let flagHeight: CGFloat = 20
+            public static let flagLeading: CGFloat = 19
+            public static let flagToText: CGFloat = 10
             public static let prefill: String = "'+' and the device region's calling code (Locale / libphonenumber); the flag follows the code as it is typed or edited"
             public static let autoFormat: Bool = true
             public static let allowZeroAfterCountryCode: Bool = true
             public static let flagTap: String = "opens a country list in a native sheet (C-29); choosing a country replaces the calling code"
-            public static let flagArt: String = "regional-indicator flag emoji (PLATFORM) in the 20 × 13 slot"
+            public static let flagArt: String = "regional-indicator flag emoji (PLATFORM) in the 30 × 20 slot"
             public static let field: String = "drawn as design/components.md C-12 (fill color.global.control, size.global.fieldHeight, radius.global.field, text role placeholder)"
         }
         /// Retro · auth.phone · how a field-level error is presented on the sign-up screens · SOURCED
@@ -2334,9 +2334,9 @@ public enum Tokens {
         /// Retro · auth.profile · profile-photo circle centred on the 'Add a profile photo' step · SOURCED
         /// token: `auth.profile.size.avatar`
         public static let authProfileSizeAvatar: CGFloat = 112
-        /// Locket · camera.capture · progress stroke traced around the viewfinder (radius.global.viewfinder) while a video records, colour color.global.surfaceLight · SOURCED
+        /// Locket (mechanics) + Material 3 · camera.capture · progress stroke traced around the viewfinder (radius.global.viewfinder) while a video records, colour color.global.surfaceLight · PLATFORM
         /// token: `camera.capture.size.recordingOutline`
-        public static let cameraCaptureSizeRecordingOutline: CGFloat = 6
+        public static let cameraCaptureSizeRecordingOutline: CGFloat = 4
         /// Locket · camera.capture · shutter disc diameter (color.global.surfaceLight) · SOURCED
         /// token: `camera.capture.size.shutterDisc`
         public static let cameraCaptureSizeShutterDisc: CGFloat = 70

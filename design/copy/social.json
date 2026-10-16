@@ -522,10 +522,10 @@
     "chat.reactions.activity.row": {
       "text": "{name} reacted {emoji}",
       "origin": "new",
-      "source_app": "Locket",
+      "source_app": "WhatsApp + Apple Messages",
       "surface": "chat.reactions",
-      "evidence": "design/copy-patterns.md locket.push.reaction",
-      "pattern": "locket.push.reaction ('{name} reacted {emoji} to your photo' — content only, no count); platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "evidence": "design/copy-patterns.md `messaging.reaction` — https://faq.whatsapp.com/424198503229937 ('a message, photo, gif, or video you reacted to'), https://support.apple.com/guide/iphone/react-with-tapbacks-iph018d3c336/ios ('Senders and their tapbacks appear near the top of the screen')",
+      "pattern": "messaging.reaction ('{name} reacted {emoji}' — who and which reaction, no count); platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED",
       "notes": "Accessibility label of a row in the Reactions sheet; no count."
     },
@@ -534,8 +534,8 @@
       "origin": "new",
       "source_app": "Retro",
       "surface": "chat.reactions",
-      "evidence": "design/copy-patterns.md locket.push.reaction",
-      "pattern": "locket.push.reaction ('{name} reacted {emoji} to your photo' — content only, no count); platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "evidence": "design/copy-patterns.md `messaging.reaction` — https://faq.whatsapp.com/424198503229937 ('a message, photo, gif, or video you reacted to'), https://support.apple.com/guide/iphone/react-with-tapbacks-iph018d3c336/ios ('Senders and their tapbacks appear near the top of the screen')",
+      "pattern": "messaging.reaction ('{name} reacted {emoji}' — who and which reaction, no count); platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
     "chat.reactions.list.removeHint": {

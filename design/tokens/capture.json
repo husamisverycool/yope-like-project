@@ -103,16 +103,16 @@
     },
     "camera.capture.size.recordingOutline": {
       "type": "dimension",
-      "value": 6,
-      "source_app": "Locket",
+      "value": 4,
+      "source_app": "Locket (mechanics) + Material 3",
       "surface": "camera.capture",
       "element": "progress stroke traced around the viewfinder (radius.global.viewfinder) while a video records, colour color.global.surfaceLight",
-      "evidence": "references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (Locket Android 1.243.0, decompiled Hermes JS bundle): the camera screen draws BorderProgressBarOverlay with props {size, borderRadius: 60, color} only; BorderProgressBar defaults strokeWidth to 6 and color to YELLOW, and fills its stroke with withTiming(1, {duration, easing: Easing.linear}) (strokeDashoffset = dasharray x (1 - progress)); https://help.locket.com/en/articles/7915017 'The yellow outline around the viewfinder indicates that capture is in progress.'",
-      "level": "SOURCED",
-      "notes": "Mechanics (Locket BorderProgressBar default, MERGE G2-9): the stroke fills linearly over camera.capture.duration.videoMax. Colour mapped from Locket's accent to Retro's primary fill on media, color.global.surfaceLight (RC-3); Yope's lime is gone.",
+      "evidence": "https://help.locket.com/en/articles/7915017 (read 2026-10-16): ‘The yellow outline around the viewfinder indicates that capture is in progress.’ (the mechanic); stroke: the platform progress indicator’s default thickness — androidx compose material3 tokens/CircularProgressIndicatorTokens.kt (VERSION v0_7_0) ActiveThickness = TrackThickness = 4.0.dp, ProgressIndicator.kt ProgressIndicatorDefaults.CircularStrokeWidth = TrackThickness (https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/, read 2026-10-16)",
+      "level": "PLATFORM",
+      "notes": "Replaces 6 pt (gap fill G2-9) — owner decision 22 (2026-10-16): values read from Locket’s decompiled app bundle no longer count as evidence. No public frame of Locket while a video records was found (App Store and Play screenshots, help center, the @locketcamera TikTok listing; YouTube tutorials sit behind a sign-in check) — the smallest capture that closes it: one screenshot of Locket recording a video. Colour color.global.surfaceLight (RC-3).",
       "unit": "pt",
-      "method": "source default read from the decompiled bundle (React Native dp = pt)",
-      "precision": "exact (source constant)"
+      "method": "a determinate progress stroke traced around the viewfinder (radius.global.viewfinder), filling linearly over camera.capture.duration.videoMax; thickness = Material 3’s progress-indicator default, used on both platforms (HIG gives no progress stroke)",
+      "precision": "exact (platform constant)"
     },
     "camera.sendto.layout.header": {
       "type": "layout",
@@ -129,7 +129,7 @@
       "method": "edge scans; pt = (y − 576) ÷ 2.389; centre below the safe area = 84.8 − 59 (393 × 852 device, 59-pt safe-area top)",
       "level": "SOURCED",
       "precision": "±0.5 pt",
-      "notes": "The leading save circle mirrors the close circle (Locket puts save opposite discard — design/research/locket.md §6); Retro's Postcard has only the trailing circle (RC-5)."
+      "notes": "The leading save circle mirrors the close circle (Locket’s capture review puts download opposite discard: references/auto/locket/frames/locket-tt-7069892557970345259-03.533s-review-sendto-all-friends-2022.jpg, ✕ and download); Retro’s Postcard has only the trailing circle (RC-5)."
     },
     "camera.sendto.layout.preview": {
       "type": "layout",
@@ -209,7 +209,7 @@
       "element": "longest message the 'Add a Message' sheet accepts (counter '{count}/{max}')",
       "evidence": "references/auto/retro/press/tc-2023-12-retro3.png (TechCrunch 2023-12) phone 3 ('Add a Message' modal, counter '58/250'); design/research/retro-visual.md §2 row 18",
       "level": "SOURCED",
-      "notes": "Retro's message limit in its composer's message modal; the API allows 1000 (docs/API.md 'caption ≤ 1000'). Was Locket's 36 (one-line widget caption), which no longer applies: the Retro widget shows name + group, not the caption.",
+      "notes": "Retro’s message limit in its composer’s message modal; the API allows 1000 (docs/API.md ‘caption ≤ 1000’). Replaces the earlier 36 (gap fill G2-11, withdrawn by owner decision 22); the Retro widget shows name + group, not the caption.",
       "method": "read from the counter",
       "precision": "exact"
     },
@@ -267,8 +267,8 @@
       "source_app": "Locket",
       "surface": "camera.fromwidget",
       "element": "what a widget tap does",
-      "evidence": "references/auto/locket/store/locket-store-07.png (deskewed 2.0°; 2.036 px/pt; App Store listing v2.68.0) headline 'Tap the widget to open the camera'; references/auto/locket/play/locket-play-05.png; Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) Hermes strings 'logOpenedFromWidget', 'Failed to parse widget launch URL'; https://developer.apple.com/documentation/widgetkit/adding-interactivity-to-widgets-and-live-activities ('a button should do more than open the app' → widgetURL, not a Button)",
-      "method": "store copy + bundle strings; native API",
+      "evidence": "references/auto/locket/store/locket-store-07.png (deskewed 2.0°; 2.036 px/pt; App Store listing v2.68.0) headline ‘Tap the widget to open the camera’; references/auto/locket/play/locket-play-05.png (‘Capture / Tap the widget to open the camera’); https://developer.apple.com/documentation/widgetkit/adding-interactivity-to-widgets-and-live-activities (‘a button should do more than open the app’ → widgetURL, not a Button)",
+      "method": "store copy; native API",
       "level": "SOURCED",
       "notes": "Mechanics (Locket: 'Tap the widget to open the camera'). Unchanged by the redesign; Retro's own widget tap reloads (do-not-copy for us: our widget opens the camera)."
     },
@@ -282,7 +282,7 @@
       "source_app": "Retro",
       "surface": "widget.home.small",
       "element": "newest photo of the configured group (or the collage's first page) filling the whole widget; bottom scrim layout.global.photoScrim under the text stack",
-      "evidence": "references/auto/retro/apk/widget_preview_friends.webp, widget_preview_journals.webp, widget_preview_memories.webp (Retro APK 2026.10.1150 mdpi previews, 158×158 px = 158 dp, 1 px = 1 dp); references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Glance widget: corner radius 22dp' — design/research/retro-package-copy-motion.md §6.1; mechanics (newest photo per group): Locket store-03 / store-06 (design/research/locket.md §2)",
+      "evidence": "references/auto/retro/apk/widget_preview_friends.webp, widget_preview_journals.webp, widget_preview_memories.webp (Retro APK 2026.10.1150 mdpi previews, 158×158 px = 158 dp, 1 px = 1 dp); references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Glance widget: corner radius 22dp' — design/research/retro-package-copy-motion.md §6.1; mechanics (newest photo per group): references/auto/locket/store/locket-store-03.png, locket-store-06.png (App Store listing 2.68.0)",
       "method": "inspection of Retro's widget preview art (full-bleed photo) + platform container APIs",
       "level": "SOURCED",
       "notes": "Full bleed as Retro's Glance widgets; content shown is Locket's mechanic (the group's newest item). iOS corners are the system's (ContainerRelativeShape); Android corners widget.android.radius.widget."
@@ -570,7 +570,7 @@
       "method": "package constants",
       "level": "SOURCED",
       "precision": "exact",
-      "notes": "Replaces Locket's 110-dp minimum. resizeMode: Retro's provider is resizable (minResize set); exact flag string not excerpted — both axes as Locket (design/research/locket.md §2)."
+      "notes": "Replaces Locket’s 110-dp minimum. resizeMode: Retro’s provider sets both minResizeWidth and minResizeHeight (100 dp), i.e. it resizes on both axes; https://developer.android.com/develop/ui/views/appwidgets/layouts (read 2026-10-16): ‘Each widget is resizable within the size ranges between the minResizeWidth/minResizeHeight and maxResizeWidth/maxResizeHeight attributes’."
     },
     "widget.android.layout.lockScreen": {
       "type": "layout",
@@ -907,7 +907,7 @@
       "source_app": "Material 3",
       "surface": "notifications.push",
       "element": "Android notification channels that carry the push texts (one per kind of event)",
-      "evidence": "android/core/push/src/main/kotlin/app/push/Notifications.kt (AppChannel); https://developer.android.com/develop/ui/views/notifications/channels (names ≤ 40, descriptions ≤ 300 characters; importance immutable); design/research/locket.md §9 (Locket's channels, one per kind)",
+      "evidence": "android/core/push/src/main/kotlin/app/push/Notifications.kt (AppChannel); https://developer.android.com/develop/ui/views/notifications/channels (read 2026-10-16): ‘Create a channel for each type of notification you need to send.’, ‘Users can change these settings and decide which notification channels from your app can be intrusive or visible.’; names ≤ 40, descriptions ≤ 300 characters; importance immutable",
       "method": "existing channel ids; platform rule",
       "level": "PLATFORM",
       "notes": "AppChannel.YearStory has no event the worker sends (backend/worker/COPY_KEYS.md) → no channel copy; owner decision whether to register it."

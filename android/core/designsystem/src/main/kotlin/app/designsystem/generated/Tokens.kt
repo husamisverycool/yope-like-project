@@ -586,18 +586,18 @@ object Tokens {
             const val android: String = "one TextField, KeyboardType.NumberPassword with visualTransformation None, autofill ContentType.SmsOtpCode; SMS User Consent (SmsRetriever.getClient(context).startSmsUserConsent) shows the system consent sheet and fills the field"
             const val field: String = "drawn as C-12"
         }
-        /** Locket · auth.phone · country calling-code selector inside the phone field (mechanics) · SOURCED — token `auth.phone.layout.countryCode` */
+        /** react-native-phone-input (open source) + Android · auth.phone · country calling-code selector inside the phone field (mechanics) · SOURCED — token `auth.phone.layout.countryCode` */
         object AuthPhoneLayoutCountryCode {
             const val pattern: String = "flag at the field's leading edge + the calling code typed inline with the number ('+1 555 …'); no separate code button"
-            const val flagWidth: Float = 20f
-            const val flagHeight: Float = 13f
-            const val flagLeading: Float = 20f
-            const val flagToText: Float = 5f
+            const val flagWidth: Float = 30f
+            const val flagHeight: Float = 20f
+            const val flagLeading: Float = 19f
+            const val flagToText: Float = 10f
             const val prefill: String = "'+' and the device region's calling code (Locale / libphonenumber); the flag follows the code as it is typed or edited"
             const val autoFormat: Boolean = true
             const val allowZeroAfterCountryCode: Boolean = true
             const val flagTap: String = "opens a country list in a native sheet (C-29); choosing a country replaces the calling code"
-            const val flagArt: String = "regional-indicator flag emoji (PLATFORM) in the 20 × 13 slot"
+            const val flagArt: String = "regional-indicator flag emoji (PLATFORM) in the 30 × 20 slot"
             const val field: String = "drawn as design/components.md C-12 (fill color.global.control, size.global.fieldHeight, radius.global.field, text role placeholder)"
         }
         /** Retro · auth.phone · how a field-level error is presented on the sign-up screens · SOURCED — token `auth.phone.layout.inlineError` */
@@ -1994,8 +1994,8 @@ object Tokens {
         val authPhoneSizeWordmarkToTagline: Dp = 19.3.dp
         /** Retro · auth.profile · profile-photo circle centred on the 'Add a profile photo' step · SOURCED — token `auth.profile.size.avatar` */
         val authProfileSizeAvatar: Dp = 112.dp
-        /** Locket · camera.capture · progress stroke traced around the viewfinder (radius.global.viewfinder) while a video records, colour color.global.surfaceLight · SOURCED — token `camera.capture.size.recordingOutline` */
-        val cameraCaptureSizeRecordingOutline: Dp = 6.dp
+        /** Locket (mechanics) + Material 3 · camera.capture · progress stroke traced around the viewfinder (radius.global.viewfinder) while a video records, colour color.global.surfaceLight · PLATFORM — token `camera.capture.size.recordingOutline` */
+        val cameraCaptureSizeRecordingOutline: Dp = 4.dp
         /** Locket · camera.capture · shutter disc diameter (color.global.surfaceLight) · SOURCED — token `camera.capture.size.shutterDisc` */
         val cameraCaptureSizeShutterDisc: Dp = 70.dp
         /** Locket · camera.capture · gap between ring and disc (color.global.backgroundDeep shows through) · SOURCED — token `camera.capture.size.shutterGap` */

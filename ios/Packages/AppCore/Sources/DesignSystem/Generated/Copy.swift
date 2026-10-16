@@ -463,7 +463,7 @@ public enum Copy {
     public static func chatReactionsA11yCluster(emojiNames: String) -> String { CopyLookup.format("chat.reactions.a11y.cluster", default: "Reactions: {emoji_names}", ["emoji_names": emojiNames]) }
     /// "React with {emoji_name}" — Retro · chat.reactions · new · SOURCED
     public static func chatReactionsA11yQuick(emojiName: String) -> String { CopyLookup.format("chat.reactions.a11y.quick", default: "React with {emoji_name}", ["emoji_name": emojiName]) }
-    /// "{name} reacted {emoji}" — Locket · chat.reactions · new · SOURCED
+    /// "{name} reacted {emoji}" — WhatsApp + Apple Messages · chat.reactions · new · SOURCED
     public static func chatReactionsActivityRow(name: String, emoji: String) -> String { CopyLookup.format("chat.reactions.activity.row", default: "{name} reacted {emoji}", ["name": name, "emoji": emoji]) }
     /// "You reacted {emoji}" — Retro · chat.reactions · new · SOURCED
     public static func chatReactionsActivityRowMine(emoji: String) -> String { CopyLookup.format("chat.reactions.activity.rowMine", default: "You reacted {emoji}", ["emoji": emoji]) }
@@ -1101,10 +1101,10 @@ public enum Copy {
     public static var onboardingWidgetPreviewAccessibilityLabel: String { CopyLookup.string("onboarding.widget.preview.accessibilityLabel", default: "Widget preview") }
     /// "Maybe later" — Retro · onboarding.widget · verbatim · SOURCED
     public static var onboardingWidgetSkip: String { CopyLookup.string("onboarding.widget.skip", default: "Maybe later") }
-    /// "Hold down on an empty space on your Home Screen" — Locket · onboarding.widget · verbatim · SOURCED
-    public static var onboardingWidgetStepAndroid1: String { CopyLookup.string("onboarding.widget.step.android.1", default: "Hold down on an empty space on your Home Screen") }
-    /// "Tap the “Widgets” button to add a new widget" — Locket · onboarding.widget · verbatim · SOURCED
-    public static var onboardingWidgetStepAndroid2: String { CopyLookup.string("onboarding.widget.step.android.2", default: "Tap the “Widgets” button to add a new widget") }
+    /// "From your Home Screen, touch and hold on an empty space." — Locket · onboarding.widget · verbatim · SOURCED
+    public static var onboardingWidgetStepAndroid1: String { CopyLookup.string("onboarding.widget.step.android.1", default: "From your Home Screen, touch and hold on an empty space.") }
+    /// "Tap Widgets." — Locket · onboarding.widget · verbatim · SOURCED
+    public static var onboardingWidgetStepAndroid2: String { CopyLookup.string("onboarding.widget.step.android.2", default: "Tap Widgets.") }
     /// "From your Home Screen, touch and hold a widget or empty area until the apps jiggle." — Locket · onboarding.widget · verbatim · SOURCED
     public static var onboardingWidgetStepIos1: String { CopyLookup.string("onboarding.widget.step.ios.1", default: "From your Home Screen, touch and hold a widget or empty area until the apps jiggle.") }
     /// "Tap Edit in the upper-left corner." — Locket · onboarding.widget · verbatim · SOURCED

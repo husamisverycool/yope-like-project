@@ -75,7 +75,7 @@ Content rules only; case and punctuation follow the Retro patterns above.
 |---|---|---|---|---|
 | `bereal.format.countdown` | countdown text (`daily.capture`, `daily.liveactivity`, `daily.ongoing`) | `MM:SS`, both fields zero-padded; no label text; never a "late" state. | "01:31", "00:59" (BeReal) | none |
 | `locket.onboarding.widgetSteps` | `onboarding.widget` | Numbered imperative steps that name the system UI ("Edit", "Add Widget", "Widgets"); a closing line. | "Tap Edit in the upper-left corner." / "Tap Add Widget." (Locket help) | Title / closing line in Retro voice ("New! Widgets for your home screen", "Try out widgets" — `retro.voice.widget`) |
-| `locket.push.reaction` | reaction activity and push | "{name} reacted {emoji} to your photo" — the emoji inline, no count, no period. | "{{contactName}} reacted {{emoji}} to your Locket" (Locket APK) | noun "photo" (Retro says "post": "%1$s commented on your post") |
+| `messaging.reaction` | reaction activity and push | "{name} reacted {emoji} to your photo" — who reacted and with which emoji, inline; no count, no period. | "a message, photo, gif, or video you reacted to" (WhatsApp help, faq.whatsapp.com/424198503229937); "Senders and their tapbacks appear near the top of the screen" (Apple iPhone User Guide, React with Tapbacks) | noun "photo" (Retro says "post": "%1$s commented on your post"); replaces `messaging.reaction`, whose example came from Locket's decompiled app (owner decision 22) |
 | `P-BR-1` invitation | `birthday.request` | "You're invited to {action} for {name}." + a bar-lowering line. | "Hey — I'm organizing a birthday video for [Name]'s birthday on [date]. Would love a short clip from you." (Tribute) | Retro tone (`retro.voice.second-person`, "no pressure") |
 | `P-BR-2` prompt | `birthday.request` | Open question about the person, with the name. | "What do you appreciate most about Harper?" (VidDay) | — |
 | `P-BR-3` due line | `birthday.request` | A date, never a countdown. | "Submit by Wednesday, December 31, 2025" (Tribute) | date format per `retro.voice.formats` |
@@ -136,7 +136,7 @@ Loading · empty · error · offline · permission-denied states use `retro.voic
 | `camera.capture`, `camera.sendto`, `camera.fromwidget` | Retro set (`retro.voice.placeholder` for the caption: "Add a caption…") |
 | `widget.home.*`, `widget.lock.*`, `widget.arrival`, `widget.android` | `retro.voice.widget`, `platform.widgetDescription`, `retro.voice.push-channel` (Android refresh channel) |
 | `chat.thread`, `chat.composer`, `chat.voice` | Retro set (`retro.voice.placeholder`: "Send a private message reply…"-style) |
-| `chat.reactions` | Retro set + `locket.push.reaction` (content); never a count |
+| `chat.reactions` | Retro set + `messaging.reaction` (content); never a count |
 | `photo.viewer` | Retro set + `retro.voice.coach` (viewer tips), `retro.voice.menu-labels`, `retro.voice.terse-numbers` (position) |
 | `walls.mine`, `walls.member`, `walls.browse` | Retro set (`retro.voice.title-case` for "Share Profile"-style pills) |
 | `daily.notification` | `retro.voice.push` + `retro.voice.prompt` (tenet-5 adaptation below) |
@@ -153,7 +153,7 @@ Loading · empty · error · offline · permission-denied states use `retro.voic
 | `paywall` | `retro.voice.paywall` + Retro set; required links "Restore Purchases" / "Terms of Use" / "Privacy Policy" per `platform.alertButton` |
 | `safety.report`, `safety.block` | `retro.voice.confirm` ("Block {name}?"), `retro.voice.menu-labels`, Retro report flow ("Why are you reporting this post?", "Other", "Submitted!" — `media_viewer_report_reason_*`, `profile_report_*`) |
 | `system.permissions` | `platform.purposeString` |
-| `notifications.push` | `retro.voice.push`; reactions `locket.push.reaction` (content); birthday request `P-BR-1`; tribute `P-BT-1`; Android channels `retro.voice.push-channel` |
+| `notifications.push` | `retro.voice.push`; reactions `messaging.reaction` (content); birthday request `P-BR-1`; tribute `P-BT-1`; Android channels `retro.voice.push-channel` |
 
 ## Adaptation rules
 

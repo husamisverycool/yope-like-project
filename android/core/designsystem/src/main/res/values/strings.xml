@@ -461,7 +461,7 @@
     <string name="chat_reactions_a11y_cluster">Reactions: %1$s</string>
     <!-- Retro · chat.reactions · new · SOURCED · args: emoji_name -->
     <string name="chat_reactions_a11y_quick">React with %1$s</string>
-    <!-- Locket · chat.reactions · new · SOURCED · args: name, emoji -->
+    <!-- WhatsApp + Apple Messages · chat.reactions · new · SOURCED · args: name, emoji -->
     <string name="chat_reactions_activity_row">%1$s reacted %2$s</string>
     <!-- Retro · chat.reactions · new · SOURCED · args: emoji -->
     <string name="chat_reactions_activity_rowmine">You reacted %1$s</string>
@@ -1100,9 +1100,9 @@
     <!-- Retro · onboarding.widget · verbatim · SOURCED -->
     <string name="onboarding_widget_skip" formatted="false">Maybe later</string>
     <!-- Locket · onboarding.widget · verbatim · SOURCED -->
-    <string name="onboarding_widget_step_android_1" formatted="false">Hold down on an empty space on your Home Screen</string>
+    <string name="onboarding_widget_step_android_1" formatted="false">From your Home Screen, touch and hold on an empty space.</string>
     <!-- Locket · onboarding.widget · verbatim · SOURCED -->
-    <string name="onboarding_widget_step_android_2" formatted="false">Tap the “Widgets” button to add a new widget</string>
+    <string name="onboarding_widget_step_android_2" formatted="false">Tap Widgets.</string>
     <!-- Locket · onboarding.widget · verbatim · SOURCED -->
     <string name="onboarding_widget_step_ios_1" formatted="false">From your Home Screen, touch and hold a widget or empty area until the apps jiggle.</string>
     <!-- Locket · onboarding.widget · verbatim · SOURCED -->

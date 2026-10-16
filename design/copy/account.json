@@ -832,33 +832,33 @@
       "level": "SOURCED"
     },
     "onboarding.widget.step.android.1": {
-      "text": "Hold down on an empty space on your Home Screen",
+      "text": "From your Home Screen, touch and hold on an empty space.",
       "origin": "verbatim",
       "source_app": "Locket",
       "surface": "onboarding.widget",
-      "evidence": "Locket Android 1.243.0 string table (design/research/locket.md §8)",
+      "evidence": "https://help.locket.com/en/articles/7914857 (Android steps, read 2026-10-16): 'From your Home Screen, touch and hold on an empty space.'",
       "pattern": "locket.onboarding.widgetSteps",
       "level": "SOURCED",
-      "notes": "Locket's manual line break removed (the step wraps to its width)."
+      "notes": "Re-sourced from Locket’s public help page (owner decision 22: the app’s string table was read from its decompiled bundle)."
     },
     "onboarding.widget.step.android.2": {
-      "text": "Tap the “Widgets” button to add a new widget",
+      "text": "Tap Widgets.",
       "origin": "verbatim",
       "source_app": "Locket",
       "surface": "onboarding.widget",
-      "evidence": "Locket Android 1.243.0 string table (design/research/locket.md §8)",
+      "evidence": "https://help.locket.com/en/articles/7914857 (Android steps, read 2026-10-16): 'Tap Widgets.'",
       "pattern": "locket.onboarding.widgetSteps",
       "level": "SOURCED"
     },
     "onboarding.widget.step.android.3": {
-      "text": "Search for {app_name} and add the widget",
+      "text": "Search for “{app_name}”, tap on the widget, then tap Add.",
       "origin": "adapted",
       "source_app": "Locket",
       "surface": "onboarding.widget",
-      "evidence": "Locket Android 1.243.0 string table (design/research/locket.md §8)",
+      "evidence": "https://help.locket.com/en/articles/7914857 (Android steps, read 2026-10-16): 'Search for “Locket”, tap on the widget, then tap Add.'",
       "pattern": "locket.onboarding.widgetSteps",
       "level": "SOURCED",
-      "notes": "App name swapped for {app_name}."
+      "notes": "App name swapped for {app_name}, as onboarding.widget.step.ios.4."
     },
     "onboarding.widget.done": {
       "text": "You're done!",
