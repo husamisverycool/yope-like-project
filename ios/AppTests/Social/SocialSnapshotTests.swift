@@ -753,7 +753,7 @@ final class SocialSnapshotTests: XCTestCase {
         record(AlbumScreen(model: cached), "albums.view", "offline", navigation: false)
 
         // The rename sheet (prefilled), then submitted empty.
-        func renameSheet(_ name: String, missing: Bool) -> some View {
+        func renameSheet(_ name: String, missing: Bool) -> SocialNameSheet {
             var text = name
             return SocialNameSheet(
                 title: Copy.albumsViewRenameTitle,

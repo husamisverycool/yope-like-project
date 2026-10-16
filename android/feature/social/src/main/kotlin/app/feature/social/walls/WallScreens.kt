@@ -382,7 +382,7 @@ private fun WallHeader(name: String, avatarPath: String?, back: (() -> Unit)?, a
                 }
             }
             Box(Modifier.align(Alignment.TopEnd).padding(end = margin).centredOverlay(capMiddle)) {
-                PersonAvatar(avatarPath, Tokens.Sizes.globalAvatarProfile)
+                PersonAvatar(avatarPath, Tokens.Sizes.globalAvatarProfile, Modifier.testTag("wall.avatar"))
             }
         }
         Row(Modifier.fillMaxWidth().padding(top = Tokens.Sizes.wallsMineDimensionNameToActions).padding(horizontal = margin), horizontalArrangement = Arrangement.End) {

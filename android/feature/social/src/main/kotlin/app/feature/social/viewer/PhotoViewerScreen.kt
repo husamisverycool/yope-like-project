@@ -398,6 +398,7 @@ private fun PhotoArea(
             Modifier
                 .fillMaxWidth()
                 .height(height)
+                .testTag("viewer.photo")
                 .pointerInput(backZone, rtl) {
                     detectTapGestures(
                         onTap = { offset -> if (ViewerTaps.isPrevious(offset.x, size.width.toFloat(), backZone, rtl)) previous() else next() },
@@ -580,7 +581,7 @@ private fun AddReactionGlyph(onClick: () -> Unit) {
 private fun Comments(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, onUnsendComment: (String) -> Unit) {
     if (photo.comments.isEmpty()) return
     Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionFooterToDivider))
-    Hairline(Modifier.padding(horizontal = Tokens.Sizes.globalScreenMargin), onMedia = true)
+    Hairline(Modifier.padding(horizontal = Tokens.Sizes.globalScreenMargin).testTag("viewer.divider"), onMedia = true)
     Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionDividerToComments))
     Column(verticalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalListGap)) {
         photo.comments.forEach { m -> CommentLine(m, photo, state, ui, onUnsendComment) }

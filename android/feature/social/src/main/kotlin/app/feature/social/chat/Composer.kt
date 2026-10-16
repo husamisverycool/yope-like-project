@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -133,7 +134,8 @@ fun MessageField(
             .padding(horizontal = Tokens.Sizes.globalScreenMargin)
             .heightIn(min = height)
             .clip(shape)
-            .background(fill, shape),
+            .background(fill, shape)
+            .testTag("message.field"),
         verticalAlignment = Alignment.Top,
     ) {
         if (recording != null) {
