@@ -139,9 +139,14 @@ final class SocialChatFlowUITests: XCTestCase {
             .matching(NSPredicate(format: "label == %@ OR label == %@", "React with fire", "🔥"))
             .firstMatch
         XCTAssertTrue(fire.waitForExistence(timeout: 5), "the quick-reaction row of the context menu")
+        let save = app.buttons["Save"].firstMatch
+        XCTAssertTrue(save.exists, "the menu's items under the row")
         fire.tap()
         let chip = app.descendants(matching: .any)[Demo.myPhotoReactions]
         XCTAssertTrue(chip.waitForExistence(timeout: 5), "the chip shows at once")
+        // A reaction closes the menu (run 105: the palette's toggles kept it open over the viewer).
+        expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: save)
+        waitForExpectations(timeout: 5)
         XCTAssertTrue(chip.label.localizedCaseInsensitiveContains("fire"))
         XCTAssertNil(chip.label.rangeOfCharacter(from: .decimalDigits), "reactions are never counted")
     }

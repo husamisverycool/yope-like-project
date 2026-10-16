@@ -51,7 +51,10 @@ struct ReactionChip: View {
 // MARK: - Quick reactions (`chat.reactions.layout.quickReactions`)
 
 /// The first row of a photo's native context menu (C-29): a palette of 🔥, 💖 and the add-reaction glyph. An emoji I
-/// already used shows selected and takes it back; the glyph opens the picker. iOS 17 palette `ControlGroup`.
+/// already used shows selected and takes it back; the glyph opens the picker. iOS 17 palette `ControlGroup`. A tap
+/// closes the menu, as the row's references (Messages' Tapbacks, WhatsApp) and Android's `PhotoContextMenu` do: a
+/// `Toggle` in a menu keeps it open by default (`.automatic`), which left the menu over the viewer after a reaction
+/// (run 105's "ios e2e").
 struct QuickReactionsPalette: View {
     let mine: Set<String>
     let onEmoji: (String) -> Void
@@ -64,6 +67,7 @@ struct QuickReactionsPalette: View {
                     Text(emoji)
                 }
                 .accessibilityLabel(Text(Copy.chatReactionsA11yQuick(emojiName: SocialEmoji.name(emoji))))
+                .menuActionDismissBehavior(.enabled)
             }
             Button(action: onAdd) {
                 Image(systemName: Tokens.Icons.chatReactionsIconAdd)
