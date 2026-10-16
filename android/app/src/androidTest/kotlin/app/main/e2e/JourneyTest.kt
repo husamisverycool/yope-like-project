@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.SystemClock
 import android.util.Log
 import androidx.annotation.StringRes
@@ -426,10 +427,8 @@ class JourneyTest {
     }
 
     /**
-     * The invite link Copy Link put on the clipboard. Android lets only the focused app read the clipboard, and the
-     * system's "Copied" overlay (Android 13+) holds focus while it shows after a copy (run 74's logcat: the
-     * ClipboardOverlay window closed ≈ 7 s after Copy Link, 0.9 s after a 6 s retry gave up), so the read is retried
-     * for [CLIPBOARD] before it counts as a problem.
+     * The invite link Copy Link put on the clipboard, retried for [CLIPBOARD] (the copy lands asynchronously) before it
+     * counts as a problem.
      */
     private fun clipboardLink(): String? {
         val deadline = SystemClock.uptimeMillis() + CLIPBOARD
@@ -440,13 +439,28 @@ class JourneyTest {
         }
     }
 
-    /** The clipboard as the app sees it (read on the main thread while the app has focus). */
+    /**
+     * The clipboard's text, read in the app's process. Android lets only the focused app read the clipboard, and the
+     * system's "Copied" overlay (Android 13+) takes focus after a copy: in run 74 the overlay closed ≈ 7 s after Copy
+     * Link; in run 78 focus did not come back to the app after the overlay closed and every read for 15 s was denied
+     * ("application is not in focus"). So the read borrows the shell's READ_CLIPBOARD_IN_BACKGROUND for its own
+     * duration, as the platform's compatibility test reads the clipboard in the background (CTS ClipboardManagerTest,
+     * `callWithShellPermissionIdentity(… READ_CLIPBOARD_IN_BACKGROUND)`).
+     */
     private fun clipboardText(): String? {
         compose.waitForIdle()
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val automation = instrumentation.uiAutomation
+        val borrows = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+        if (borrows) automation.adoptShellPermissionIdentity(READ_CLIPBOARD_IN_BACKGROUND)
         var text: String? = null
-        InstrumentationRegistry.getInstrumentation().runOnMainSync {
-            val clip = context.getSystemService(ClipboardManager::class.java)?.primaryClip
-            text = clip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(context)?.toString()
+        try {
+            instrumentation.runOnMainSync {
+                val clip = context.getSystemService(ClipboardManager::class.java)?.primaryClip
+                text = clip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(context)?.toString()
+            }
+        } finally {
+            if (borrows) automation.dropShellPermissionIdentity()
         }
         return text
     }
@@ -479,8 +493,10 @@ class JourneyTest {
         const val BACK_ATTEMPTS = 4
 
         const val SHORT = 10_000L
-        /** How long a clipboard read is retried after a copy (the system's "Copied" overlay stays ≈ 7 s on the emulator). */
+        /** How long a clipboard read is retried after a copy. */
         const val CLIPBOARD = 15_000L
+        /** System permission (not in the public SDK's Manifest.permission) the shell holds; see [clipboardText]. */
+        const val READ_CLIPBOARD_IN_BACKGROUND = "android.permission.READ_CLIPBOARD_IN_BACKGROUND"
         const val LONG = 30_000L
         /** Upload (storage + `media` + `create_post`) through WorkManager, then the realtime insert. */
         const val UPLOAD = 90_000L

@@ -46,6 +46,31 @@ final class AccountFlowUITests: XCTestCase {
         for character in text {
             target.typeText(String(character))
         }
+        closeKeyboardTip(app)
+    }
+
+    /// iOS shows a one-time "slide to type" tip over a simulator's first letter keyboard ("Speed up your typing by
+    /// sliding your finger across the letters to compose a word." · Continue). Keys still type while it is up, but a tap
+    /// outside the keyboard only closes the tip and the keyboard: in run 78 the profile step's "Next" was pressed and its
+    /// action never ran (the result bundle's screen recording). The tip is closed with its own button when it shows.
+    @MainActor
+    private func closeKeyboardTip(_ app: XCUIApplication) {
+        let tipText = app.keyboards.descendants(matching: .staticText)
+            .matching(NSPredicate(format: "label CONTAINS[c] %@", "sliding your finger")).firstMatch
+        guard tipText.exists else { return }
+        let tipButton = app.keyboards.buttons["Continue"]
+        if tipButton.exists { tipButton.tap() }
+    }
+
+    /// Taps `control` and waits for `next`. When the tap only closed the system's keyboard tip (`closeKeyboardTip`
+    /// could not reach it), the control is still there: it is tapped once more, as a person would.
+    @MainActor
+    private func advance(_ control: String, to next: String, in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        tap(control, in: app, file: file, line: line)
+        if !element(app, next).waitForExistence(timeout: 3), element(app, control).exists {
+            tap(control, in: app, file: file, line: line)
+        }
+        expect(next, in: app, timeout: 5, "", file: file, line: line)
     }
 
     /// The control carrying `identifier`: the button when there is one (a block's identifier also reaches its title and
@@ -97,11 +122,11 @@ final class AccountFlowUITests: XCTestCase {
         tap("auth.agegate.continue", in: app)
 
         expect("auth.profile", in: app, timeout: 5)
+        // The first letter keyboard of the run (the system's slide-to-type tip can show over it).
         type("Ana", into: "auth.profile.field", in: app)
-        tap("auth.profile.continue", in: app)
+        advance("auth.profile.continue", to: "auth.profile.photo", in: app)
 
         // Step 2 (Retro's profile photo step): "Maybe Later".
-        expect("auth.profile.photo", in: app, timeout: 5)
         tap("auth.profile.photo.secondary", in: app)
 
         expect("onboarding.permission.notifications", in: app, timeout: 5)

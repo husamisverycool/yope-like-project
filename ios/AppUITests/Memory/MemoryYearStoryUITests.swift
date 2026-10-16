@@ -59,7 +59,7 @@ final class MemoryYearStoryUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments += MemoryUITestLaunch.arguments(open: "yearStory")
         app.launch()
-        _ = try MemoryUITestLaunch.waitForScreen(app, "year.story")
+        let story = try MemoryUITestLaunch.waitForScreen(app, "year.story")
 
         // No taps: intro → setup → "moments shared" (the first card with a share row) on their own,
         // one `duration.year.story.card` each.
@@ -73,11 +73,36 @@ final class MemoryYearStoryUITests: XCTestCase {
         XCTAssertNotEqual(pause.label, pauseLabel, "pause becomes play")
 
         // Paused: the card in view stays well past a card's time.
-        let shown = app.staticTexts.allElementsBoundByIndex.map(\.label)
+        let shown = try settledTexts(of: story)
+        XCTAssertFalse(shown.isEmpty, "the card's texts are read from the story")
         _ = XCTWaiter.wait(for: [XCTestExpectation(description: "paused")], timeout: 6)
-        XCTAssertEqual(app.staticTexts.allElementsBoundByIndex.map(\.label), shown, "no card change while paused")
+        XCTAssertEqual(try texts(of: story), shown, "no card change while paused")
 
         pause.tap()
         XCTAssertEqual(pause.label, pauseLabel, "play becomes pause")
+    }
+
+    /// The story's texts from one accessibility snapshot. Reading them one query at a time races the screen: in run 78
+    /// the list held 16 texts and only 15 were left when the last one was read.
+    @MainActor
+    private func texts(of element: XCUIElement) throws -> [String] {
+        func collect(_ snapshot: any XCUIElementSnapshot) -> [String] {
+            (snapshot.elementType == .staticText ? [snapshot.label] : []) + snapshot.children.flatMap(collect)
+        }
+        return collect(try element.snapshot())
+    }
+
+    /// The story's texts once two snapshots half a second apart agree: a pause can land during the cross-fade to the
+    /// next card, which still finishes after the pause (both cards' texts are on screen until it does).
+    @MainActor
+    private func settledTexts(of element: XCUIElement) throws -> [String] {
+        var previous = try texts(of: element)
+        for _ in 0..<6 {
+            _ = XCTWaiter.wait(for: [XCTestExpectation(description: "settle")], timeout: 0.5)
+            let current = try texts(of: element)
+            if current == previous { return current }
+            previous = current
+        }
+        return previous
     }
 }
