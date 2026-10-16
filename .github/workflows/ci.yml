@@ -397,7 +397,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: bash .github/scripts/ios-e2e-wait.sh "ios e2e (the app against a real server)" 80
       - name: what the server and the worker did
-        run: bash .github/scripts/e2e-server-check.sh ios | tee build/ios-e2e/server.txt
+        run: |
+          set -o pipefail
+          bash .github/scripts/e2e-server-check.sh ios | tee build/ios-e2e/server.txt
       - name: upload the server's evidence
         if: always()
         uses: actions/upload-artifact@v4
