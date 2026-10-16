@@ -661,6 +661,19 @@
       "precision": "±4 pt",
       "notes": "Draw as an alpha mask on the clipped card (ramp from opaque at height − fade to clear at the bottom edge); the card keeps its frame for layout (the headline's titleToContent counts from the card's bottom edge). Pass 5 review finding 11."
     },
+    "paywall.size.planPillInset": {
+      "type": "dimension",
+      "value": 19.5,
+      "unit": "pt",
+      "source_app": "Retro",
+      "surface": "paywall",
+      "element": "trailing inset of the premium pill ('FREE', C-25) from the plan card's edge; the pill is centred on the title's cap middle",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png row y=1487 (3.000 px/pt): card edges x 61.5 / 1143.5 (background → card step), pill fill x 933.5–1085 (card → #A23ABB step); title '1 Year Free' ink x142 (left padding 26.8 = size.global.planCardPadding), cap y1465–1514 (middle 1489.5) vs pill rows 1446–1528 (middle 1487)",
+      "method": "(1143.5 − 1085) px ÷ 3.000 px/pt = 19.5; pill 151.5 px = 50.5 pt wide (C-25 51)",
+      "level": "SOURCED",
+      "precision": "±0.5 pt",
+      "notes": "The pill sits outside the card's 27-pt text padding (size.global.planCardPadding): draw it in the title row, shifted toward the edge by planCardPadding − planPillInset (owner decision 7: shown on a plan with a free trial)."
+    },
     "paywall.radius.mediaCard": {
       "type": "radius",
       "value": 27,

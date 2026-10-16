@@ -443,6 +443,7 @@ export const tokens = {
   "paywall.radius.mediaCard": 27, // Retro · paywall · SOURCED
   "paywall.size.mediaCardFade": 48, // Retro · paywall · SOURCED
   "paywall.size.mediaCardWidth": 248, // Retro · paywall · SOURCED
+  "paywall.size.planPillInset": 19.5, // Retro · paywall · SOURCED
   "photo.viewer.dimension.closeCircle": 23.7, // Retro · photo.viewer · SOURCED
   "photo.viewer.dimension.closeGlyph": 6.8, // Retro · photo.viewer · SOURCED
   "photo.viewer.dimension.commentsToField": 24.4, // Retro · photo.viewer · SOURCED

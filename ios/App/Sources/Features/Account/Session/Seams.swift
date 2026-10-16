@@ -27,14 +27,26 @@ struct PlanOption: Identifiable, Hashable {
     /// The store package identifier.
     let id: String
     let period: Period
-    /// The billed amount for the period, localized by the store (`{yearly_price}` / `{monthly_price}` / `{price}`).
+    /// The billed amount for the period, localized by the store (`{yearly_price}` / `{monthly_price}` / `{price}`). The
+    /// paywall shows no per-month breakdown (design/surfaces/paywall.md lists none; MERGE A-2).
     let price: String
-    /// Yearly plans: the price ÷ 12 in the product's currency (`{monthly_equivalent}`).
-    let monthlyEquivalent: String?
     /// The localized subscription period unit for the billing line (`{period}`: "year" / "month").
     let periodUnit: String?
-    /// The free trial's length in the store's terms (`{trial_duration}`: "1 week"); nil without a trial.
+    /// The free trial's length in the store's terms (`{trial_duration}`: "1 week"); nil without a trial or when the person
+    /// is not eligible for it (StoreKit introductory offer, owner decision 7).
     var trialDuration: String?
+
+    /// `{trial_duration}`: a period in the locale's full unit names ("1 week", "3 days"; `DateComponentsFormatter`
+    /// `.full`, PLATFORM — Android formats Play's ISO period with ICU `MeasureFormat` WIDE).
+    static func trialDuration(_ components: DateComponents, locale: Locale = .current) -> String? {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .full
+        formatter.allowedUnits = [.day, .weekOfMonth, .month, .year]
+        var calendar = Calendar.current
+        calendar.locale = locale
+        formatter.calendar = calendar
+        return formatter.string(from: components)
+    }
 }
 
 enum PurchaseResult: Equatable {

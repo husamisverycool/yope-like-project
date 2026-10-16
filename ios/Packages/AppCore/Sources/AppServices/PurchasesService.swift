@@ -53,6 +53,14 @@ public final class PurchasesService {
         return try await Purchases.shared.offerings()
     }
 
+    /// Whether the person is eligible for the product's introductory offer (the annual plan's free trial, owner decision 7).
+    /// RevenueCat: "The best course of action on unknown status is to display the non-intro pricing, to not create a
+    /// misleading situation" (`checkTrialOrIntroDiscountEligibility(product:)`), so only `.eligible` counts.
+    public func isEligibleForIntroOffer(_ product: StoreProduct) async -> Bool {
+        guard isConfigured, product.introductoryDiscount != nil else { return false }
+        return await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product).isEligible
+    }
+
     public func purchase(_ package: Package) async throws -> PurchaseOutcome {
         try requireConfigured()
         let result = try await Purchases.shared.purchase(package: package)

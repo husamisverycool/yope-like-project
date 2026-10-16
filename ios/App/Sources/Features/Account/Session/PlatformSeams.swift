@@ -53,13 +53,14 @@ final class RevenueCatPurchases: PurchasesProviding {
             guard let package = offering.availablePackages.first(where: { $0.packageType == type }) else { continue }
             packages[package.identifier] = package
             let product = package.storeProduct
+            // The free trial (owner decision 7: one week on the annual plan) only for a person StoreKit still offers it to.
+            let eligible = await service.isEligibleForIntroOffer(product)
             result.append(PlanOption(
                 id: package.identifier,
                 period: type == .annual ? .year : .month,
                 price: product.localizedPriceString,
-                monthlyEquivalent: type == .annual ? product.localizedPricePerMonth : nil,
                 periodUnit: product.sk2Product?.subscription?.subscriptionPeriod.unit.localizedDescription,
-                trialDuration: Self.trialDuration(of: product)
+                trialDuration: eligible ? Self.trialDuration(of: product) : nil
             ))
         }
         guard !result.isEmpty else { throw PurchasesFailure.unavailable }
@@ -117,10 +118,7 @@ final class RevenueCatPurchases: PurchasesProviding {
         case .year: components.year = period.value
         @unknown default: return nil
         }
-        let formatter = DateComponentsFormatter()
-        formatter.unitsStyle = .full
-        formatter.allowedUnits = [.day, .weekOfMonth, .month, .year]
-        return formatter.string(from: components)
+        return PlanOption.trialDuration(components)
     }
 
     private static func map(_ error: Error, otherwise: PurchasesFailure) -> PurchasesFailure {

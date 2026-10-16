@@ -365,7 +365,9 @@ struct PlanCard: View {
                         .foregroundStyle(Tokens.Colors.paywallColorPlanText)
                     Spacer(minLength: 0)
                     if plan?.trialDuration != nil {
+                        // PAY: the pill sits `paywall.size.planPillInset` from the card's edge, outside the text padding.
                         PremiumPill(label: Copy.paywallPlansTrialBadge)
+                            .offset(x: Tokens.Sizes.globalPlanCardPadding - Tokens.Sizes.paywallSizePlanPillInset)
                     }
                 }
                 Text(isYearly ? Copy.paywallPlansYearlySubtitle : Copy.paywallPlansMonthlySubtitle)

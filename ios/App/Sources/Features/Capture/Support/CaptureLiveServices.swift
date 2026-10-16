@@ -281,14 +281,22 @@ final class LiveCapturePremium: CapturePremium {
 
 @MainActor
 final class LiveCaptureVoiceRecorder: CaptureVoiceRecorder {
-    /// The send-to voice note draws no waveform; one sample per second paces the elapsed time
-    /// (`chat.voice.layout.durationFormat` mm:ss).
-    private let recorder = VoiceRecorder(meteringInterval: .seconds(1))
-    private let player = VoicePlayer(progressInterval: .seconds(1))
+    /// The recorder samples its level every 30 ms for the waveform (C-36); the player's progress moves the played bars.
+    private let recorder = VoiceRecorder()
+    private let player = VoicePlayer(progressInterval: .milliseconds(50)) // provenance-ok: progress refresh rate (engineering), at least once per bar of a 2-s note
 
     var isRecording: Bool { recorder.isRecording }
     var elapsedMs: Int { recorder.elapsedMs }
+    var levels: [Int] { recorder.levels }
     var isPlaying: Bool { player.isPlaying }
+
+    var playbackProgress: Double? {
+        guard player.currentURL != nil else { return nil }
+        if player.isPlaying { return player.progress }
+        return player.progress > 0 && player.progress < 1 ? player.progress : nil
+    }
+
+    var playingFile: URL? { player.currentURL }
 
     func togglePlayback(_ fileURL: URL) {
         if player.isPlaying, player.currentURL == fileURL {
@@ -302,10 +310,13 @@ final class LiveCaptureVoiceRecorder: CaptureVoiceRecorder {
     func permission() -> PermissionStatus { VoiceRecorder.permission() }
     func requestPermission() async -> PermissionStatus { await VoiceRecorder.requestPermission() }
     func start() throws { try recorder.start() }
+    func pause() { recorder.pause() }
+    func resume() throws { try recorder.resume() }
+    func draftFile() async throws -> URL { try await recorder.draftFile() }
 
-    func stop() throws -> VoiceNote {
-        let recording = try recorder.stop()
-        return VoiceNote(fileURL: recording.fileURL, durationMs: recording.durationMs)
+    func stop() async throws -> VoiceNote {
+        let recording = try await recorder.stop()
+        return VoiceNote(fileURL: recording.fileURL, durationMs: recording.durationMs, levels: recording.levels)
     }
 
     func cancel() { recorder.cancel() }

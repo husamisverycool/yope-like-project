@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
@@ -405,8 +406,8 @@ private fun PlanCardContent(plan: PlanOption?, loadingPeriod: PlanPeriod, state:
         actionLoading = plan != null && state.purchasing == plan.period,
     ) {
         val text = Tokens.Colors.paywallColorPlanText
-        // Title with the C-25 premium pill "FREE" at the trailing edge on a plan with a free trial (PAY: pill centred
-        // on the title line at the card's trailing padding).
+        // Title with the C-25 premium pill "FREE" on a plan with a free trial (PAY: centred on the title's cap middle,
+        // `paywall.size.planPillInset` from the card's edge — outside the text padding, so shifted by the difference).
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 stringResource(if (yearly) R.string.paywall_plans_yearly_title else R.string.paywall_plans_monthly_title),
@@ -414,7 +415,12 @@ private fun PlanCardContent(plan: PlanOption?, loadingPeriod: PlanPeriod, state:
                 color = text,
                 modifier = Modifier.weight(1f),
             )
-            if (trial != null) PremiumPill(stringResource(R.string.paywall_plans_trial_badge))
+            if (trial != null) {
+                PremiumPill(
+                    stringResource(R.string.paywall_plans_trial_badge),
+                    Modifier.offset(x = Tokens.Sizes.globalPlanCardPadding - Tokens.Sizes.paywallSizePlanPillInset),
+                )
+            }
         }
         Text(
             stringResource(if (yearly) R.string.paywall_plans_yearly_subtitle else R.string.paywall_plans_monthly_subtitle),

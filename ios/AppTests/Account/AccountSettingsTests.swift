@@ -211,8 +211,9 @@ final class AccountSettingsTests: XCTestCase {
 
     // MARK: paywall
 
-    private let yearly = PlanOption(id: "annual", period: .year, price: "$29.99", monthlyEquivalent: "$2.49", periodUnit: "Year")
-    private let monthly = PlanOption(id: "monthly", period: .month, price: "$3.99", monthlyEquivalent: nil, periodUnit: "Month")
+    // Owner decision 7: $35.99 a year (1-week trial where StoreKit offers it), $3.99 a month.
+    private let yearly = PlanOption(id: "annual", period: .year, price: "$35.99", periodUnit: "Year")
+    private let monthly = PlanOption(id: "monthly", period: .month, price: "$3.99", periodUnit: "Month")
 
     func testPaywallPreselectsTheYearlyPlan() async {
         let purchases = InMemoryPurchases()
@@ -221,7 +222,7 @@ final class AccountSettingsTests: XCTestCase {
         await model.load()
         XCTAssertEqual(model.plansPhase, .loaded)
         XCTAssertEqual(model.selectedPlanID, "annual")
-        XCTAssertEqual(model.billingLine, Copy.paywallLegalBillingIos(price: "$29.99", period: "year"))
+        XCTAssertEqual(model.billingLine, Copy.paywallLegalBillingIos(price: "$35.99", period: "year"))
         model.select(monthly)
         XCTAssertEqual(model.selectedPlan, monthly)
     }
@@ -276,6 +277,23 @@ final class AccountSettingsTests: XCTestCase {
         await model.loadPlans()
         XCTAssertEqual(model.plan(for: .year)?.trialDuration, "1 week")
         XCTAssertEqual(model.plan(for: .month), monthly)
+    }
+
+    func testTrialDurationIsTheIntroPeriodInFullUnits() {
+        let us = Locale(identifier: "en_US")
+        XCTAssertEqual(PlanOption.trialDuration(DateComponents(weekOfMonth: 1), locale: us), "1 week")
+        XCTAssertEqual(PlanOption.trialDuration(DateComponents(day: 3), locale: us), "3 days")
+        XCTAssertEqual(PlanOption.trialDuration(DateComponents(month: 1), locale: us), "1 month")
+    }
+
+    func testHistoryPerkStaysHiddenWhileFreeHistoryDaysIsNull() async {
+        // SPEC_FLAGS T1 / owner decision 7: app_config.free_history_days stays NULL.
+        let purchases = InMemoryPurchases()
+        purchases.plansResult = .success([yearly, monthly])
+        let model = PaywallModel(purchases: purchases, data: InMemoryAccountData())
+        await model.load()
+        XCTAssertFalse(model.showsHistoryPerk)
+        XCTAssertEqual(PaywallPerk.listed(showsHistory: model.showsHistoryPerk), [.video, .widgets, .export])
     }
 
     func testRestoreMessages() async {

@@ -2577,6 +2577,9 @@ public enum Tokens {
         /// Retro · paywall · benefit media card (the locked feature's preview) centred under the title · SOURCED
         /// token: `paywall.size.mediaCardWidth`
         public static let paywallSizeMediaCardWidth: CGFloat = 248
+        /// Retro · paywall · trailing inset of the premium pill ('FREE', C-25) from the plan card's edge; the pill is centred on the title's cap middle · SOURCED
+        /// token: `paywall.size.planPillInset`
+        public static let paywallSizePlanPillInset: CGFloat = 19.5
         /// Retro · photo.viewer · close circle in the viewer header (fill color.global.controlOnDeep) · SOURCED
         /// token: `photo.viewer.dimension.closeCircle`
         public static let photoViewerDimensionCloseCircle: CGFloat = 23.7

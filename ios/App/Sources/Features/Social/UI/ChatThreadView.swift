@@ -306,7 +306,7 @@ struct ChatThreadView: View {
                 camera: openCamera,
                 recorder: recorder,
                 onRecorded: { recording in
-                    Task { await model.sendVoice(fileURL: recording.fileURL, durationMs: recording.durationMs) }
+                    Task { await model.sendVoice(fileURL: recording.fileURL, durationMs: recording.durationMs, levels: recording.levels) }
                 },
                 onRecordFailed: { model.voiceRecordingFailed() },
                 onMicDenied: { micDenied = true },
@@ -489,6 +489,7 @@ struct ChatMessageRow: View {
             path: message.voicePath,
             localFile: model.localVoiceFiles[message.id],
             durationMs: message.voiceDurationMs ?? 0,
+            levels: message.voiceLevels,
             accessibilityLabel: row.isMine ? Copy.chatVoiceA11yMessageMine(duration: duration) : Copy.chatVoiceA11yMessage(name: authorName, duration: duration)
         )
         .modifier(MessageMenu(row: row, model: model, actions: actions))
@@ -517,6 +518,7 @@ struct ChatMessageRow: View {
                 key: post.id.rawValue,
                 path: voicePath,
                 durationMs: duration,
+                levels: post.post.voiceLevels,
                 accessibilityLabel: row.isMine
                     ? Copy.chatVoiceA11yMessageMine(duration: SocialFormat.spokenDuration(milliseconds: duration))
                     : Copy.chatVoiceA11yMessage(name: authorName, duration: SocialFormat.spokenDuration(milliseconds: duration))

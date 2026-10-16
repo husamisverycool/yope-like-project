@@ -225,18 +225,32 @@ final class FakeCapturePremium: CapturePremium {
 final class FakeCaptureVoiceRecorder: CaptureVoiceRecorder {
     var status: PermissionStatus = .granted
     private(set) var isRecording = false
+    /// Paused (between `pause()` and `resume()`).
+    private(set) var isPaused = false
     var elapsedMs = 0
+    /// The live waveform the fake reports, and the levels of the next stopped recording.
+    var levels: [Int] = (0..<100).map { ($0 * 7) % 32 }
     /// Length of the next stopped recording.
     var recordedDurationMs = 1000
     private(set) var isPlaying = false
     private(set) var playedFiles: [URL] = []
+    private(set) var playingFile: URL?
+    var playbackProgress: Double? { playingFile == nil ? nil : 0 }
+    /// Drafts handed out for previews.
+    private(set) var draftsMade = 0
 
     func togglePlayback(_ fileURL: URL) {
         isPlaying.toggle()
-        if isPlaying { playedFiles.append(fileURL) }
+        if isPlaying {
+            playedFiles.append(fileURL)
+            playingFile = fileURL
+        }
     }
 
-    func stopPlayback() { isPlaying = false }
+    func stopPlayback() {
+        isPlaying = false
+        playingFile = nil
+    }
 
     func permission() -> PermissionStatus { status }
     /// The system prompt: the fake grants.
@@ -247,17 +261,35 @@ final class FakeCaptureVoiceRecorder: CaptureVoiceRecorder {
 
     func start() throws {
         isRecording = true
+        isPaused = false
     }
 
-    func stop() throws -> VoiceNote {
-        isRecording = false
+    func pause() {
+        if isRecording { isPaused = true }
+    }
+
+    func resume() throws {
+        isPaused = false
+    }
+
+    func draftFile() async throws -> URL {
+        draftsMade += 1
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString).appendingPathExtension("m4a")
         try Data().write(to: url)
-        return VoiceNote(fileURL: url, durationMs: recordedDurationMs)
+        return url
+    }
+
+    func stop() async throws -> VoiceNote {
+        isRecording = false
+        isPaused = false
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString).appendingPathExtension("m4a")
+        try Data().write(to: url)
+        return VoiceNote(fileURL: url, durationMs: recordedDurationMs, levels: levels)
     }
 
     func cancel() {
         isRecording = false
+        isPaused = false
     }
 }
 

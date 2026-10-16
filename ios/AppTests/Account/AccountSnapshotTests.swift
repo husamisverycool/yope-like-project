@@ -538,8 +538,9 @@ final class AccountSnapshotTests: XCTestCase {
     // MARK: paywall
 
     private let plans = [
-        PlanOption(id: "annual", period: .year, price: "$29.99", monthlyEquivalent: "$2.49", periodUnit: "Year", trialDuration: "1 week"),
-        PlanOption(id: "monthly", period: .month, price: "$3.99", monthlyEquivalent: nil, periodUnit: "Month"),
+        // Owner decision 7: $35.99 a year with a 1-week free trial (StoreKit introductory offer), $3.99 a month.
+        PlanOption(id: "annual", period: .year, price: "$35.99", periodUnit: "Year", trialDuration: "1 week"),
+        PlanOption(id: "monthly", period: .month, price: "$3.99", periodUnit: "Month"),
     ]
 
     func testPaywall() async {
@@ -547,9 +548,15 @@ final class AccountSnapshotTests: XCTestCase {
         let photo = image("dinner-long-table-3x4")
         record(PaywallView(model: PaywallModel(purchases: purchases, data: fixture.data), photo: photo), "paywall", "loading")
 
+        // SPEC_FLAGS T1 (owner decision 7): free_history_days stays NULL, so the history perk is not listed.
         let loaded = PaywallModel(purchases: purchases, data: fixture.data)
-        loaded.seed(plans: plans, phase: .loaded, showsHistoryPerk: true)
+        loaded.seed(plans: plans, phase: .loaded)
         record(PaywallView(model: loaded, photo: photo), "paywall", "default", appearances: AccountSnapshot.both)
+
+        // A person no longer eligible for the trial: "Continue" and "Billed … yearly", no pill.
+        let noTrial = PaywallModel(purchases: purchases, data: fixture.data)
+        noTrial.seed(plans: plans.map { plan in var plan = plan; plan.trialDuration = nil; return plan }, phase: .loaded)
+        record(PaywallView(model: noTrial, photo: photo), "paywall", "default-noTrial")
 
         let unavailable = PaywallModel(purchases: purchases, data: fixture.data)
         unavailable.seed(plans: [], phase: .unavailable)
@@ -565,6 +572,12 @@ final class AccountSnapshotTests: XCTestCase {
         purchases.purchaseResult = .success(.purchased)
         await welcome.purchase()
         record(PaywallView(model: welcome, photo: photo), "paywall", "welcome")
+
+        let restored = PaywallModel(purchases: purchases, data: fixture.data)
+        restored.seed(plans: plans, phase: .loaded)
+        purchases.restoreResult = .success(true)
+        await restored.restore()
+        record(PaywallView(model: restored, photo: photo), "paywall", "welcome-restored")
     }
 
     // MARK: invite.appclip

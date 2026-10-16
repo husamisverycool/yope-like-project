@@ -2156,6 +2156,8 @@ object Tokens {
         val paywallSizeMediaCardFade: Dp = 48.dp
         /** Retro · paywall · benefit media card (the locked feature's preview) centred under the title · SOURCED — token `paywall.size.mediaCardWidth` */
         val paywallSizeMediaCardWidth: Dp = 248.dp
+        /** Retro · paywall · trailing inset of the premium pill ('FREE', C-25) from the plan card's edge; the pill is centred on the title's cap middle · SOURCED — token `paywall.size.planPillInset` */
+        val paywallSizePlanPillInset: Dp = 19.5.dp
         /** Retro · photo.viewer · close circle in the viewer header (fill color.global.controlOnDeep) · SOURCED — token `photo.viewer.dimension.closeCircle` */
         val photoViewerDimensionCloseCircle: Dp = 23.7.dp
         /** Retro · photo.viewer · × ink inside the viewer close circle (icon.global.close, color.global.textOnMedia) · SOURCED — token `photo.viewer.dimension.closeGlyph` */

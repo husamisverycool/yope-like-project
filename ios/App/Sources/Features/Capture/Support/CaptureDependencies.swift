@@ -105,18 +105,35 @@ protocol CapturePremium: AnyObject, Sendable {
 struct VoiceNote: Sendable, Equatable {
     var fileURL: URL
     var durationMs: Int
+    /// The waveform (100 levels of 0…31; design/components.md C-36); nil when none was recorded.
+    var levels: [Int]? = nil
 }
 
+/// The send-to voice note's recorder (`chat.voice.layout.recording` / `.locked`): record, pause, continue, a playable
+/// draft while paused, stop, cancel; plays the draft and the kept note.
 @MainActor
 protocol CaptureVoiceRecorder: AnyObject, Sendable {
+    /// A recording exists (recording or paused).
     var isRecording: Bool { get }
     /// Elapsed recording time (observable in the live recorder).
     var elapsedMs: Int { get }
+    /// The live / paused draft's waveform (observable in the live recorder).
+    var levels: [Int] { get }
     var isPlaying: Bool { get }
+    /// 0…1 of the file playing or paused part-way; nil when nothing is.
+    var playbackProgress: Double? { get }
+    /// The file playing or paused part-way.
+    var playingFile: URL? { get }
     func permission() -> PermissionStatus
     func requestPermission() async -> PermissionStatus
     func start() throws
-    func stop() throws -> VoiceNote
+    /// Recording → paused.
+    func pause()
+    /// Paused → recording, at the end of the draft.
+    func resume() throws
+    /// The paused draft as one playable file.
+    func draftFile() async throws -> URL
+    func stop() async throws -> VoiceNote
     func cancel()
     /// Plays (or pauses) a recorded note.
     func togglePlayback(_ fileURL: URL)

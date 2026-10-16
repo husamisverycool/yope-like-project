@@ -121,6 +121,8 @@ struct SocialFieldInput: View {
 /// `icon.global.mic` in `color.global.textSecondary`; with text both give way to `icon.global.send` in
 /// `color.global.textPrimary` at the mic's place (cross-fade `duration.global.crossfade`). Holding the mic records
 /// (`chat.voice.layout.recording`): the field's content becomes the recording row and the lock circle shows above the mic.
+/// Locked (`chat.voice.layout.locked`): the field shows the live (or paused draft's) waveform and a controls row under it
+/// holds delete · pause / continue · send.
 struct ChatComposer: View {
     @Binding var text: String
     let avatar: PhotoSource?
@@ -145,8 +147,29 @@ struct ChatComposer: View {
     private var hasText: Bool { !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 
     var body: some View {
+        VStack(spacing: Tokens.Sizes.globalPillGap) {
+            field
+            if recorder.isLocked {
+                lockedControls
+                    .transition(.opacity)
+            }
+        }
+        .padding(.bottom, Tokens.Sizes.chatComposerDimensionBottomInset)
+        .dsAnimation(ComponentMotion.fade, value: recorder.isActive)
+        .dsAnimation(ComponentMotion.fade, value: recorder.phase)
+        .onChange(of: recorder.isActive) { _, active in
+            if !active { drag = .zero }
+        }
+        .onChange(of: touching) { _, isTouching in
+            if !isTouching { didStart = false }
+        }
+    }
+
+    private var field: some View {
         HStack(alignment: .top, spacing: 0) {
-            if recorder.isActive {
+            if recorder.isLocked {
+                lockedField
+            } else if recorder.isActive {
                 recordingRow
             } else {
                 SocialFieldInput(
@@ -158,10 +181,12 @@ struct ChatComposer: View {
                     focus: focus
                 )
             }
-            trailing
-                .padding(.top, SocialFieldMetrics.glyphTop)
-                .padding(.trailing, SocialFieldMetrics.glyphTrailing)
-                .dsAnimation(ComponentMotion.crossfade, value: hasText)
+            if !recorder.isLocked {
+                trailing
+                    .padding(.top, SocialFieldMetrics.glyphTop)
+                    .padding(.trailing, SocialFieldMetrics.glyphTrailing)
+                    .dsAnimation(ComponentMotion.crossfade, value: hasText)
+            }
         }
         .socialFieldShape(onMedia: false)
         .background {
@@ -171,14 +196,6 @@ struct ChatComposer: View {
                     .onChange(of: proxy.size.width) { _, value in rowWidth = value }
             }
         }
-        .padding(.bottom, Tokens.Sizes.chatComposerDimensionBottomInset)
-        .dsAnimation(ComponentMotion.fade, value: recorder.isActive)
-        .onChange(of: recorder.isActive) { _, active in
-            if !active { drag = .zero }
-        }
-        .onChange(of: touching) { _, isTouching in
-            if !isTouching { didStart = false }
-        }
     }
 
     // MARK: Trailing glyphs (`chat.composer.layout.typingState`)
@@ -186,16 +203,8 @@ struct ChatComposer: View {
     @ViewBuilder
     private var trailing: some View {
         switch recorder.phase {
-        case .locked:
-            HStack(spacing: SocialFieldMetrics.glyphSpacing) {
-                SocialFieldGlyph(icon: Tokens.Icons.globalTrash, color: Tokens.Colors.globalDestructive, accessibilityLabel: Copy.chatVoiceA11yDiscard) {
-                    recorder.cancel()
-                }
-                SocialFieldGlyph(
-                    icon: Tokens.Icons.globalSend, color: Tokens.Colors.globalTextPrimary, accessibilityLabel: Copy.chatComposerA11ySend,
-                    identifier: "chat.composer.send" // provenance-ok: accessibility identifier for UI tests
-                ) { finishRecording() }
-            }
+        case .locked, .paused:
+            EmptyView()
         case .idle where hasText:
             SocialFieldGlyph(
                 icon: Tokens.Icons.globalSend, color: Tokens.Colors.globalTextPrimary, accessibilityLabel: Copy.chatComposerA11ySend,
@@ -320,11 +329,106 @@ struct ChatComposer: View {
     }
 
     private func finishRecording() {
-        do {
-            if let recording = try recorder.finish() { onRecorded(recording) }
-        } catch {
-            onRecordFailed()
+        Task {
+            do {
+                if let recording = try await recorder.finish() { onRecorded(recording) }
+            } catch {
+                onRecordFailed()
+            }
         }
+    }
+
+    // MARK: Locked recording (`chat.voice.layout.locked`)
+
+    /// The field while hands-free: recording — `icon.global.mic` in `color.global.destructive` in the avatar's place ·
+    /// the elapsed time (text role `body`, monospaced, a live region) · the C-36 live waveform to the trailing glyph inset;
+    /// paused — the preview glyph (`icon.global.play` / `.pause`, a button) · the draft's waveform with the preview's
+    /// progress · its length (previewing: the elapsed time).
+    private var lockedField: some View {
+        let paused = recorder.phase == .paused
+        return HStack(spacing: Tokens.Sizes.chatComposerDimensionAvatarToText) {
+            Group {
+                if paused {
+                    Button {
+                        Task { await recorder.togglePreview() }
+                    } label: {
+                        Glyph(recorder.isPreviewing ? Tokens.Icons.globalPause : Tokens.Icons.globalPlay)
+                            .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                            .frame(width: Tokens.Sizes.globalAvatarComment, height: Tokens.Sizes.globalAvatarComment)
+                            .minimumHitArea(drawn: CGSize(width: Tokens.Sizes.globalAvatarComment, height: Tokens.Sizes.globalAvatarComment))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text(recorder.isPreviewing
+                        ? Copy.chatVoiceA11yPause
+                        : Copy.chatVoiceA11yPlay(duration: SocialFormat.spokenDuration(milliseconds: recorder.elapsedMs))))
+                    .accessibilityIdentifier("chat.composer.preview") // provenance-ok: accessibility identifier for UI tests
+                } else {
+                    Glyph(Tokens.Icons.globalMic)
+                        .foregroundStyle(Tokens.Colors.globalDestructive)
+                        .frame(width: Tokens.Sizes.globalAvatarComment, height: Tokens.Sizes.globalAvatarComment)
+                        .accessibilityHidden(true)
+                }
+            }
+            .dsAnimation(ComponentMotion.crossfade, value: recorder.isPreviewing)
+            if !paused {
+                elapsedLabel(recorder.elapsedMs)
+            }
+            VoiceWaveform(
+                levels: recorder.levels,
+                progress: paused ? recorder.previewProgress : nil,
+                holderHeight: SocialFieldMetrics.height
+            )
+            .frame(maxWidth: .infinity)
+            if paused {
+                elapsedLabel(recorder.pausedLabelMs)
+            }
+        }
+        .frame(maxWidth: .infinity, minHeight: SocialFieldMetrics.height)
+        .padding(.leading, Tokens.Sizes.chatComposerDimensionAvatarInset)
+        .padding(.trailing, Tokens.Sizes.chatComposerDimensionGlyphInsetTrailing)
+    }
+
+    private func elapsedLabel(_ milliseconds: Int) -> some View {
+        Text(SocialFormat.duration(milliseconds: milliseconds))
+            .dsTextStyle(TextRole.body)
+            .monospacedDigit()
+            .foregroundStyle(Tokens.Colors.globalTextPrimary)
+            .fixedSize()
+            .accessibilityLabel(Text(SocialFormat.spokenDuration(milliseconds: milliseconds)))
+            .accessibilityAddTraits(.updatesFrequently)
+    }
+
+    /// The controls row `size.global.pillGap` under the field (`size.global.headerButton` high): delete — a bare
+    /// `icon.global.trash` in `color.global.destructive` under the field's leading glyph; centred, a C-11 page circle with
+    /// `icon.global.pause` (recording) or `icon.global.mic` (paused) in `color.global.destructive`; send — a C-11 circle in
+    /// the primary fill under the field's trailing glyph.
+    private var lockedControls: some View {
+        let paused = recorder.phase == .paused
+        let leadingCentre = Tokens.Sizes.globalScreenMargin + Tokens.Sizes.chatComposerDimensionAvatarInset + Tokens.Sizes.globalAvatarComment / 2
+        let trailingCentre = Tokens.Sizes.globalScreenMargin + Tokens.Sizes.chatComposerDimensionGlyphInsetTrailing + Tokens.Sizes.globalIcon / 2
+        return ZStack {
+            HStack(spacing: 0) {
+                SocialFieldGlyph(icon: Tokens.Icons.globalTrash, color: Tokens.Colors.globalDestructive, accessibilityLabel: Copy.chatVoiceA11yDiscard) {
+                    recorder.cancel()
+                }
+                .padding(.leading, max(0, leadingCentre - Tokens.Sizes.globalHeaderButton / 2))
+                Spacer(minLength: 0)
+                CircleButton(icon: Tokens.Icons.globalSend, accessibilityLabel: Copy.chatComposerA11ySend, style: .primary) {
+                    finishRecording()
+                }
+                .accessibilityIdentifier("chat.composer.send") // provenance-ok: accessibility identifier for UI tests
+                .padding(.trailing, max(0, trailingCentre - Tokens.Sizes.globalCircleButton / 2))
+            }
+            Button {
+                if paused { recorder.resume() } else { recorder.pause() }
+            } label: {
+                CircleButtonFace(icon: paused ? Tokens.Icons.globalMic : Tokens.Icons.globalPause, style: .page, glyphColor: Tokens.Colors.globalDestructive)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(paused ? Copy.chatVoiceA11yResumeRecording : Copy.chatVoiceA11yPauseRecording))
+            .accessibilityIdentifier("chat.composer.pauseResume") // provenance-ok: accessibility identifier for UI tests
+        }
+        .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.globalHeaderButton)
     }
 }
 

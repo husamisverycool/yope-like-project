@@ -15,15 +15,15 @@ import UIKit
 @Observable
 final class SendToModel: Identifiable {
     /// `chat.voice.layout.recording`: press and hold the mic to record, lift to keep the note, slide left
-    /// to cancel, slide up onto the lock for hands-free; while locked, pause stops into a draft that
-    /// can be played; the mic circle (showing send) keeps it.
+    /// to cancel, slide up onto the lock for hands-free; while locked, pause keeps a draft that can be
+    /// previewed, continued or deleted (`chat.voice.layout.locked`); the mic capsule (showing send) keeps it.
     enum VoicePhase: Equatable {
         case idle
         /// Finger down on the mic.
         case holding
         /// Hands-free (slid onto the lock, or started by VoiceOver).
         case locked
-        /// Locked and paused: the draft is finished and can be played.
+        /// Locked and paused: the draft can be previewed, continued, deleted or kept.
         case paused
     }
 
@@ -58,8 +58,6 @@ final class SendToModel: Identifiable {
     private(set) var voiceNote: VoiceNote? = nil
     /// The recorder's state (`chat.voice.layout.recording`).
     private(set) var voicePhase: VoicePhase = .idle
-    /// A locked recording paused into a draft (play it, then attach or delete it).
-    private(set) var voiceDraft: VoiceNote? = nil
     private(set) var isPremium = false
     /// While the capture uploads and `create_post` runs (busy capsule, title "Sending…", controls disabled).
     private(set) var isSending = false
@@ -133,14 +131,30 @@ final class SendToModel: Identifiable {
     /// The recorder row replaces the message field while recording, with a draft or an attached note.
     var showsVoiceRow: Bool { voicePhase != .idle || voiceNote != nil }
 
-    /// Elapsed time of the recording, or the length of the draft / attached note.
+    /// Elapsed time of the recording, or the length of the paused draft / attached note.
     var voiceElapsedMs: Int {
-        if let voiceDraft { return voiceDraft.durationMs }
         if voicePhase == .idle, let voiceNote { return voiceNote.durationMs }
         return voice.elapsedMs
     }
 
     var isPlayingVoice: Bool { voice.isPlaying }
+
+    /// The live / paused draft's waveform (C-36).
+    var voiceLevels: [Int] { voice.levels }
+
+    /// The attached note is playing.
+    var isPlayingNote: Bool { voice.isPlaying && voiceNote != nil && voice.playingFile == voiceNote?.fileURL }
+
+    /// 0…1 of the attached note while it plays or is paused part-way (its played bars); nil when idle.
+    var noteProgress: Double? {
+        guard let voiceNote, voice.playingFile == voiceNote.fileURL else { return nil }
+        return voice.playbackProgress
+    }
+
+    /// 0…1 of the paused draft's preview; nil when it is not playing or paused part-way.
+    var draftProgress: Double? {
+        voicePhase == .paused ? voice.playbackProgress : nil
+    }
 
     /// A video needs premium at `create_post`; a free member's video cannot be sent.
     var isMediaSendable: Bool { !media.needsPremium || isPremium }
@@ -236,7 +250,7 @@ final class SendToModel: Identifiable {
     /// with `haptic.global.send` and the confirmation announced (iOS, C-26). Failed: everything stays and the alert shows.
     func send() async {
         guard canSend, !isSending else { return }
-        if voicePhase != .idle { keepVoiceRecording() }
+        if voicePhase != .idle { await keepVoiceRecording() }
         voice.stopPlayback()
         sendFailure = nil
         isSending = true
@@ -330,33 +344,35 @@ final class SendToModel: Identifiable {
     func cancelVoiceRecording() {
         voice.stopPlayback()
         voice.cancel()
-        if let voiceDraft { try? FileManager.default.removeItem(at: voiceDraft.fileURL) }
-        voiceDraft = nil
         voicePhase = .idle
     }
 
-    /// Locked → paused: the recording stops into a draft that can be played.
+    /// Locked → paused (`chat.voice.a11y.pauseRecording`): the draft can be previewed, continued, deleted or kept.
     func pauseVoiceRecording() {
         guard voicePhase == .locked else { return }
-        voiceDraft = try? voice.stop()
-        voicePhase = voiceDraft == nil ? .idle : .paused
+        voice.pause()
+        voicePhase = .paused
     }
 
-    /// Lift (holding) or the send circle (locked / paused): the recording becomes the post's voice
-    /// note, replacing an earlier one. A recording that reads 00:00 is not a note.
-    func keepVoiceRecording() {
-        let recording: VoiceNote?
-        switch voicePhase {
-        case .idle:
-            return
-        case .paused:
-            recording = voiceDraft
-        case .holding, .locked:
-            recording = try? voice.stop()
+    /// Paused → locked (`chat.voice.a11y.resumeRecording`): recording continues at the end of the draft.
+    func resumeVoiceRecording() {
+        guard voicePhase == .paused else { return }
+        voice.stopPlayback()
+        do {
+            try voice.resume()
+            voicePhase = .locked
+        } catch {
+            // The draft stays paused (it can still be kept or deleted).
         }
-        voiceDraft = nil
+    }
+
+    /// Lift (holding) or the send capsule (locked / paused): the recording becomes the post's voice
+    /// note, replacing an earlier one. A recording that reads 00:00 is not a note.
+    func keepVoiceRecording() async {
+        guard voicePhase != .idle else { return }
+        voice.stopPlayback()
         voicePhase = .idle
-        guard let recording else { return }
+        guard let recording = try? await voice.stop() else { return }
         guard recording.durationMs >= 1000 else {
             try? FileManager.default.removeItem(at: recording.fileURL)
             return
@@ -372,9 +388,20 @@ final class SendToModel: Identifiable {
         voiceNote = nil
     }
 
-    /// ▶ / pause on a draft or the attached note.
+    /// ▶ / pause on the attached note.
     func toggleVoicePlayback() {
-        guard let file = (voiceDraft ?? voiceNote)?.fileURL else { return }
+        guard let file = voiceNote?.fileURL else { return }
         voice.togglePlayback(file)
+    }
+
+    /// ▶ / pause on the paused draft (the preview): the first tap makes the draft playable.
+    func toggleDraftPreview() async {
+        guard voicePhase == .paused else { return }
+        if let playing = voice.playingFile {
+            voice.togglePlayback(playing)
+            return
+        }
+        guard let draft = try? await voice.draftFile(), voicePhase == .paused else { return }
+        voice.togglePlayback(draft)
     }
 }

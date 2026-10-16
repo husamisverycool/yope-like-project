@@ -531,6 +531,7 @@ struct ViewerPostPage: View {
                     key: post.id.rawValue,
                     path: voicePath,
                     durationMs: duration,
+                    levels: post.post.voiceLevels,
                     onMedia: true,
                     accessibilityLabel: model.isOwn(post)
                         ? Copy.chatVoiceA11yMessageMine(duration: SocialFormat.spokenDuration(milliseconds: duration))
@@ -634,6 +635,7 @@ struct ViewerCommentRow: View {
                         key: message.id.rawValue,
                         path: message.voicePath,
                         durationMs: message.voiceDurationMs ?? 0,
+                        levels: message.voiceLevels,
                         onMedia: true,
                         accessibilityLabel: isMine
                             ? Copy.chatVoiceA11yMessageMine(duration: SocialFormat.spokenDuration(milliseconds: message.voiceDurationMs ?? 0))
