@@ -49,6 +49,15 @@ object Haptics {
         return c
     }
 
+    /**
+     * The [HapticFeedbackConstants] constant a `haptic` layout token names per platform
+     * (`Tokens.Layouts.GlobalTap.android` = "VIRTUAL_KEY", `GlobalLongPressStart.android` = "LONG_PRESS",
+     * `GlobalShutter.android` = "none"): looked up by field name, so a token never needs a code change.
+     * "none", or a name the platform does not have, is [NO_HAPTICS].
+     */
+    fun named(name: String): Int =
+        runCatching { HapticFeedbackConstants::class.java.getField(name.trim()).getInt(null) }.getOrDefault(NO_HAPTICS)
+
     // Platform constant values, spelled out so the table compiles against any SDK level.
     const val NO_HAPTICS = -1
     private const val KEYBOARD_RELEASE = 7 // API 27

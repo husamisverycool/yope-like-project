@@ -1,257 +1,93 @@
 {
-  "$comment": "Capture group (camera.*, widget.*, daily.*, collage.*, notifications.push). Consolidated 2026-10-15 from design/research/{locket,yope-a,yope-b,bereal,platform}.md, design/proposals/*.json and measurements logged in design/MERGE_DECISIONS.md 'Capture'. Global foundations are referenced by name in design/surfaces/*.md, never copied here.",
+  "$comment": "Capture group (camera.*, widget.*, daily.*, collage.*, notifications.push) — redesign Pass 2 on Retro, 2026-10-16. Surface tokens exist only where Retro measured something specific to the surface (Postcard modal ST-03, recap preview ST-04, Rewind control row RWA/RWB, Glance widget APK/preview art) or where the mechanics reference defines the control (Locket shutter, BeReal dual image, worker composition). Everything else is a global token or a component (design/components.md) named in design/surfaces/*.md. Decisions: design/MERGE_DECISIONS.md 'Redesign — Capture (RC-*)'.",
   "tokens": {
     "camera.capture.layout.viewfinder": {
       "type": "layout",
       "value": {
-        "width": "full screen width",
-        "heightOverWidth": 1.38,
-        "top": 103
+        "aspect": 0.75,
+        "width": "screen width − 2 × size.global.screenMargin",
+        "corners": "radius.global.viewfinder",
+        "top": "size.global.titleToContent below the header title baseline (C-01)",
+        "fill": "aspect-fill live preview; what the frame shows is what is captured",
+        "shrink": "if the control row would get less than size.global.screenMargin above and below the shutter, the viewfinder height shrinks (3:4 kept, centred horizontally)"
       },
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.capture",
-      "element": "live viewfinder: full screen width, portrait, top edge below the status bar (corner radius = radius.global.viewfinder)",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) viewfinder y150–946 × x72–647 (yope-a proposal layout.camera.viewfinder); re-checked this pass: bottom edge y937.5 at x150/550/600 (aspect 1.37)",
-      "method": "edge runs; pt = px ÷ 1.466 (720-px recording; phone screen x 72–647 = 576 px = 393 pt, design/research/yope-a.md §0.3)",
+      "element": "live viewfinder: a Retro photo container (3:4, 16-pt margins, 18-pt continuous corners) under the root header",
+      "evidence": "Retro photo containers: references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png (strip at the 16 margin, 3:4 tiles, outer corners 18), references/auto/retro/store/retro-store-01.png (friend card 18 corners) — design/research/retro-visual.md §3.4, §3.5, §3.8; header C-01 (design/components.md); mechanics order: Locket camera (viewfinder → control row), references/auto/locket/store/locket-store-07.png (AS-7, Locket App Store 2026, 2.036 px/pt) — design/research/locket.md §5 'Measured values'",
+      "method": "composition of Retro components C-01 (root header), C-17/C-18 photo container (radius.global.viewfinder), C-04 (tab bar) in Locket's order (viewfinder above the shutter row)",
       "level": "SOURCED",
-      "precision": "aspect ±0.03; top ±2 pt",
-      "notes": "Not exactly 3:4 (1.33). If the recording device was 430/440 pt wide, the true value is 9–12 % larger (yope-a §0.3)."
+      "notes": "3:4 is Retro's single-photo container shape (strip tiles 84 × 112, album covers 72 × 97 — retro-visual §3.8) and the camera's native 4:3 photo output (PLATFORM), so the frame is captured as shown. Replaces Yope's full-width 1 : 1.38 viewfinder (MERGE_DECISIONS RC-2). A full-bleed preview (C-35) was rejected: a 3:4 photo filling a 393 × 852 screen shows only 61 % of the captured width (RC-2)."
+    },
+    "camera.capture.layout.controlRow": {
+      "type": "layout",
+      "value": {
+        "centre": "the shutter, horizontally centred",
+        "sideControls": "two circles of size.global.circleButtonLarge (64): library (leading), flip (trailing)",
+        "sideCentre": "each side circle is centred in the free space between the screen edge and the shutter's outer edge",
+        "vertical": "the row is vertically centred between the viewfinder bottom and the tab bar top (daily.capture: the safe-area bottom)",
+        "minimumGap": "size.global.screenMargin above and below the shutter"
+      },
+      "source_app": "Retro",
+      "surface": "camera.capture",
+      "element": "control row under the viewfinder: shutter flanked by two 64-pt circles (Retro's central control flanked by 64-pt circles, C-35)",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320×2868, 3.000 px/pt, 440 pt wide): left circle x118–310, y2192–2384 (64 × 64 pt), centre x 71.3 pt; right circle x1009–1201, centre 71.7 pt from the right edge; dial 150 pt Ø centred → (440 ÷ 2 − 75) ÷ 2 = 72.5. references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (RAW iOS JPEG 1260×2736, 3.000 px/pt, 420 pt wide): circle centres 67.7 / 68.3 pt from the edges on a 420-pt screen → (420 ÷ 2 − 75) ÷ 2 = 67.5",
+      "method": "edge scans of the glass circles on both RAW captures; the side circles sit centred between the screen edge and the central control's edge (±1 pt on both devices)",
+      "level": "SOURCED",
+      "precision": "±1 pt",
+      "notes": "Rule measured on Retro's Rewind (design/components.md C-35) and applied with the shutter as the central control. Side circles on the black page use the 'circle on media' fill color.global.controlOnDeep (C-11): glass is only drawn over photos (layout.global.materials)."
     },
     "camera.capture.size.shutterOuter": {
       "type": "dimension",
-      "value": 80,
+      "value": 86,
       "unit": "pt",
-      "source_app": "Yope",
+      "source_app": "Locket",
       "surface": "camera.capture",
-      "element": "shutter outer diameter (lime ring outer edge)",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) row 1050 ring x≈298–420; col 360 ring y994–1110",
-      "method": "runs; pt = px ÷ 1.466 (720-px recording; phone screen x 72–647 = 576 px = 393 pt, design/research/yope-a.md §0.3)",
+      "element": "shutter outer diameter (outer edge of the ring)",
+      "evidence": "references/auto/locket/store/locket-store-07.png (AS-7, Locket App Store 2026, 2.036 px/pt) — design/research/locket.md §5 'Measured values': yellow ring bbox x530→703, y1972→2146",
+      "method": "mask bbox ÷ 2.036 px/pt",
       "level": "SOURCED",
-      "precision": "±2 pt",
-      "notes": "Locket AS-7 measures 86 pt (MERGE_DECISIONS capture C-1: Yope governs). If the recording device was 430/440 pt wide, the true value is 9–12 % larger (yope-a §0.3)."
+      "precision": "±1 pt",
+      "notes": "Retro has no camera and no shutter; the shutter's geometry is the mechanics reference's (Locket, the camera reference in docs/SURFACES.md), its colours are Retro's: ring and disc color.global.surfaceLight (Retro's primary fill on media, as on 'Send Postcard'), gap color.global.backgroundDeep; pressed = platform default (design/components.md 'Pressed'). MERGE_DECISIONS RC-3."
     },
     "camera.capture.size.shutterRing": {
       "type": "dimension",
-      "value": 3.5,
+      "value": 4.5,
       "unit": "pt",
-      "source_app": "Yope",
+      "source_app": "Locket",
       "surface": "camera.capture",
-      "element": "shutter ring stroke (color.global.accent)",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) row 1050 ring x≈298–306 / 413–420; col 360 y994–997 / 1106–1110",
-      "method": "runs; pt = px ÷ 1.466 (720-px recording; phone screen x 72–647 = 576 px = 393 pt, design/research/yope-a.md §0.3)",
+      "element": "shutter ring stroke (color.global.surfaceLight)",
+      "evidence": "references/auto/locket/store/locket-store-07.png (AS-7, Locket App Store 2026, 2.036 px/pt) — design/research/locket.md §5 'Measured values': row 2059 x529→538; column 616 y1972→1980",
+      "method": "pixel scan ÷ 2.036 px/pt",
       "level": "SOURCED",
-      "precision": "±1 pt"
+      "precision": "±0.5 pt",
+      "notes": "Retro has no camera and no shutter; the shutter's geometry is the mechanics reference's (Locket, the camera reference in docs/SURFACES.md), its colours are Retro's: ring and disc color.global.surfaceLight (Retro's primary fill on media, as on 'Send Postcard'), gap color.global.backgroundDeep; pressed = platform default (design/components.md 'Pressed'). MERGE_DECISIONS RC-3."
     },
     "camera.capture.size.shutterGap": {
       "type": "dimension",
-      "value": 5.5,
+      "value": 3,
       "unit": "pt",
-      "source_app": "Yope",
+      "source_app": "Locket",
       "surface": "camera.capture",
-      "element": "black gap between ring and disc (color.global.backgroundDeep)",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) row 1050 gap x307–314",
-      "method": "runs; pt = px ÷ 1.466 (720-px recording; phone screen x 72–647 = 576 px = 393 pt, design/research/yope-a.md §0.3)",
+      "element": "gap between ring and disc (color.global.backgroundDeep shows through)",
+      "evidence": "references/auto/locket/store/locket-store-07.png (AS-7, Locket App Store 2026, 2.036 px/pt) — design/research/locket.md §5 'Measured values': x539→544; y1981→1987",
+      "method": "pixel scan ÷ 2.036 px/pt",
       "level": "SOURCED",
-      "precision": "±1 pt"
+      "precision": "±0.5 pt",
+      "notes": "Retro has no camera and no shutter; the shutter's geometry is the mechanics reference's (Locket, the camera reference in docs/SURFACES.md), its colours are Retro's: ring and disc color.global.surfaceLight (Retro's primary fill on media, as on 'Send Postcard'), gap color.global.backgroundDeep; pressed = platform default (design/components.md 'Pressed'). MERGE_DECISIONS RC-3."
     },
     "camera.capture.size.shutterDisc": {
       "type": "dimension",
-      "value": 59,
+      "value": 70,
       "unit": "pt",
-      "source_app": "Yope",
+      "source_app": "Locket",
       "surface": "camera.capture",
-      "element": "white shutter disc diameter (color.global.surfaceLight)",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) row 1050 disc x317–403; col 360 y1009–1095; disc core (254,252,253) at (360,1052)",
-      "method": "runs; pt = px ÷ 1.466 (720-px recording; phone screen x 72–647 = 576 px = 393 pt, design/research/yope-a.md §0.3)",
-      "level": "SOURCED",
-      "precision": "±1 pt"
-    },
-    "camera.capture.size.shutterTopGap": {
-      "type": "dimension",
-      "value": 38,
-      "unit": "pt",
-      "source_app": "Yope",
-      "surface": "camera.capture",
-      "element": "viewfinder bottom edge → shutter ring top",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) viewfinder bottom y937.5 (cols 150/550/600) → ring top y994",
-      "method": "difference ÷ 1.466 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1.5 pt",
-      "notes": "If the recording device was 430/440 pt wide, the true value is 9–12 % larger (yope-a §0.3)."
-    },
-    "camera.capture.size.sideControlOffset": {
-      "type": "dimension",
-      "value": 110,
-      "unit": "pt",
-      "source_app": "Yope",
-      "surface": "camera.capture",
-      "element": "horizontal distance shutter centre → library thumbnail centre and → flip button centre",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) thumbnail x165–232 (centre 198.5), shutter centre x360, flip x486–554 (centre 520)",
-      "method": "centre differences 161.5 / 160 px ÷ 1.466 = 110.2 / 109.1 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1.5 pt",
-      "notes": "If the recording device was 430/440 pt wide, the true value is 9–12 % larger (yope-a §0.3)."
-    },
-    "camera.capture.size.flipButton": {
-      "type": "dimension",
-      "value": 47,
-      "unit": "pt",
-      "source_app": "Yope",
-      "surface": "camera.capture",
-      "element": "flip-camera circle button diameter",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) bbox x486–554 (69 px)",
-      "method": "bbox; pt = px ÷ 1.466 (720-px recording; phone screen x 72–647 = 576 px = 393 pt, design/research/yope-a.md §0.3)",
+      "element": "shutter disc diameter (color.global.surfaceLight)",
+      "evidence": "references/auto/locket/store/locket-store-07.png (AS-7, Locket App Store 2026, 2.036 px/pt) — design/research/locket.md §5 'Measured values': disc starts x545 and y1988; centre (616.5, 2059)",
+      "method": "pixel scan ÷ 2.036 px/pt",
       "level": "SOURCED",
       "precision": "±1 pt",
-      "notes": "If the recording device was 430/440 pt wide, the true value is 9–12 % larger (yope-a §0.3)."
-    },
-    "camera.capture.color.flipButton": {
-      "type": "color",
-      "value": "#1F1F1F",
-      "source_app": "Yope",
-      "surface": "camera.capture",
-      "element": "flip-camera circle fill",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) bbox x486–554 y1018–1086 median #1F1C20; this pass (31,28,32)…(33,30,34) at row 1070",
-      "method": "bbox median (yope-a proposal color.camera.flipButton)",
-      "level": "SOURCED",
-      "precision": "±8/255 (H.264; videos read darker than PNG, F-5)"
-    },
-    "camera.capture.size.libraryThumb": {
-      "type": "dimension",
-      "value": 46,
-      "unit": "pt",
-      "source_app": "Yope",
-      "surface": "camera.capture",
-      "element": "photo-library thumbnail (last photo) square, left of the shutter",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) row 1052 border peaks x165 / x232; col 199 border y1018 / y1084",
-      "method": "edge peaks 68 × 67 px ÷ 1.466 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1.5 pt",
-      "notes": "If the recording device was 430/440 pt wide, the true value is 9–12 % larger (yope-a §0.3)."
-    },
-    "camera.capture.radius.libraryThumb": {
-      "type": "radius",
-      "value": 8,
-      "unit": "pt",
-      "source_app": "Yope",
-      "surface": "camera.capture",
-      "element": "library thumbnail corner radius",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) top-left corner: left border x172/170/168/166/165 at y1018/1019/1020/1023/1025 (top border y1017)",
-      "method": "circle fit r ≈ 11–12 px ÷ 1.466 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1.5 pt"
-    },
-    "camera.capture.size.libraryThumbBorder": {
-      "type": "dimension",
-      "value": 1,
-      "unit": "pt",
-      "source_app": "Yope",
-      "surface": "camera.capture",
-      "element": "white border around the library thumbnail (color.global.textPrimary)",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) 1–2 px bright peak (129 / 168 luminance) at x165 / x232",
-      "method": "peak width ÷ 1.466 (this pass)",
-      "level": "SOURCED",
-      "precision": "±0.5 pt (blurred video)"
-    },
-    "camera.capture.layout.flashGlyph": {
-      "type": "layout",
-      "value": {
-        "centerFromLeading": 28.3,
-        "centerFromBottom": 33,
-        "glyphHeight": 15
-      },
-      "source_app": "Yope",
-      "surface": "camera.capture",
-      "element": "flash toggle glyph inside the viewfinder, bottom-left (centre from the viewfinder's leading and bottom edges)",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) white glyph bbox x106–121, y879–900; viewfinder left x72, bottom y937.5",
-      "method": "bbox centre (113.5, 889.5); differences ÷ 1.466 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1.5 pt",
-      "notes": "The filter-name carousel and '1x' label on the same line are not built (no filters / zoom in the product; MERGE_DECISIONS capture C-4)."
-    },
-    "camera.capture.layout.coach": {
-      "type": "layout",
-      "value": {
-        "height": 34,
-        "cornerRadius": 8,
-        "paddingHorizontal": 13.6,
-        "textToCloseGap": 13.6,
-        "closeGlyph": 9.5,
-        "pointerWidth": 13.6,
-        "pointerHeight": 6.8,
-        "pointerToTarget": 2
-      },
-      "source_app": "Yope",
-      "surface": "camera.capture",
-      "element": "first-use coach tooltip (lime pill with leading glyph, text, ✕, and a pointer at the control it explains)",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) lime body y932–981, x226–495; pointer y982–991, base x350–369, apex x359.5 (= shutter centre); ring top y994; ✕ glyph x461–474 y951–964; text x283–441; corner: x240/232/228/226 at y932/934/936/939",
-      "method": "lime mask runs ÷ 1.466 (this pass; body height agrees with yope-a proposal dimension.camera.tooltip 34)",
-      "level": "SOURCED",
-      "precision": "±1.5 pt (radius ±2 pt)",
-      "notes": "Fill color.global.accent, text and glyphs color.global.onAccent. If the recording device was 430/440 pt wide, the true value is 9–12 % larger (yope-a §0.3)."
-    },
-    "camera.capture.fontSize.coach": {
-      "type": "fontSize",
-      "value": 11,
-      "unit": "pt",
-      "source_app": "Yope",
-      "surface": "camera.capture",
-      "element": "coach tooltip text ('hold down to record')",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) 'hold': ascender y951–962 (12 px), x-height y955–962 (8 px)",
-      "method": "x-height 8 px ÷ 1.466 ÷ 0.526 = 10.4; ascender 12 px ÷ 1.466 ÷ 0.74 = 11.1 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1.5 pt",
-      "notes": "If the recording device was 430/440 pt wide, the true value is 9–12 % larger (yope-a §0.3)."
-    },
-    "camera.capture.fontWeight.coach": {
-      "type": "fontWeight",
-      "value": "semibold",
-      "source_app": "Yope",
-      "surface": "camera.capture",
-      "element": "coach tooltip text weight",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (https://www.tiktok.com/@jacob.jessi/video/7691153057177931039 @3.73 s, 2026-09-30) stems 2 px at 12 px ascender",
-      "method": "visual",
-      "level": "SOURCED",
-      "precision": "visual (semibold/bold)"
-    },
-    "camera.capture.spring.shutterPress": {
-      "type": "spring",
-      "value": {
-        "response": 0.233,
-        "dampingFraction": 1
-      },
-      "source_app": "Locket",
-      "surface": "camera.capture",
-      "element": "shutter press: scale to camera.capture.layout.shutterPress.scale and dim the disc",
-      "evidence": "https://www.tiktok.com/@locketcamera/video/7069892557970345259 (raw iOS screen recording, 30 fps, 2022-02-28) frames k=12→19 (t=3.200–3.433 s): ring 204, 200, 191, 184, 179, 176, 175, 173 px",
-      "method": "first/last changed frame = 233 ms; per-frame deltas 4, 9, 7, 5, 3, 1, 2 px (velocity peaks in frame 2, decelerates, no overshoot) → response = measured duration, dampingFraction 1 (no overshoot; global platform-default damping)",
-      "level": "SOURCED",
-      "precision": "±33 ms",
-      "notes": "2022 Locket build; Yope's press was not observed. Reduce Motion: no scale, the disc color change only (layout.global.reduceMotion)."
-    },
-    "camera.capture.layout.shutterPress": {
-      "type": "layout",
-      "value": {
-        "scale": 0.85
-      },
-      "source_app": "Locket",
-      "surface": "camera.capture",
-      "element": "shutter scale at full press",
-      "evidence": "https://www.tiktok.com/@locketcamera/video/7069892557970345259 (raw iOS screen recording, 30 fps, 2022-02-28) t=3.200–3.467 s ring 204 → 173 px",
-      "method": "per-frame yellow-ring diameter",
-      "level": "SOURCED",
-      "precision": "±0.01"
-    },
-    "camera.capture.color.shutterDiscPressed": {
-      "type": "color",
-      "value": "#E0DEDF",
-      "source_app": "Locket",
-      "surface": "camera.capture",
-      "element": "shutter disc while pressed",
-      "evidence": "references/auto/locket/frames/locket-tt-7069892557970345259-03.367s-shutter-pressed-2022.jpg centre (2022 build; idle disc #FDFDFD in the same recording)",
-      "method": "mean of 30×30 px",
-      "level": "SOURCED",
-      "precision": "±3/255"
+      "notes": "Retro has no camera and no shutter; the shutter's geometry is the mechanics reference's (Locket, the camera reference in docs/SURFACES.md), its colours are Retro's: ring and disc color.global.surfaceLight (Retro's primary fill on media, as on 'Send Postcard'), gap color.global.backgroundDeep; pressed = platform default (design/components.md 'Pressed'). MERGE_DECISIONS RC-3."
     },
     "camera.capture.duration.videoMax": {
       "type": "duration",
@@ -259,258 +95,164 @@
       "unit": "ms",
       "source_app": "Locket",
       "surface": "camera.capture",
-      "element": "maximum length of a hold-to-record video (premium)",
+      "element": "maximum length of a hold-to-record video (premium); the recording outline fills over this time",
       "evidence": "references/auto/locket/lazyweb/ (LZ 2026-08 paywall) perk 'Longer videos / Record up to 10 seconds' (design/research/locket.md §10)",
       "method": "verbatim perk text",
       "level": "SOURCED",
-      "notes": "Product limit taken from the reference's premium video perk; recording stops automatically at this length. Owner may change."
+      "notes": "Mechanics (Locket). Unchanged by the redesign."
     },
     "camera.capture.size.recordingOutline": {
       "type": "dimension",
       "value": 6,
       "source_app": "Locket",
       "surface": "camera.capture",
-      "element": "outline drawn around the viewfinder while a video records (color.global.accent)",
+      "element": "progress stroke traced around the viewfinder (radius.global.viewfinder) while a video records, colour color.global.surfaceLight",
       "evidence": "references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (Locket Android 1.243.0, decompiled Hermes JS bundle): the camera screen draws BorderProgressBarOverlay with props {size, borderRadius: 60, color} only; BorderProgressBar defaults strokeWidth to 6 and color to YELLOW, and fills its stroke with withTiming(1, {duration, easing: Easing.linear}) (strokeDashoffset = dasharray x (1 - progress)); https://help.locket.com/en/articles/7915017 'The yellow outline around the viewfinder indicates that capture is in progress.'",
       "level": "SOURCED",
-      "notes": "Gap fill (MERGE G2-9). Colour color.global.accent (C-1: Yope's camera). Locket's outline is a progress stroke: it traces the viewfinder's rounded outline from empty to full linearly over the maximum video length (Locket passes its viewfinder radius; ours follows radius.global.viewfinder).",
+      "notes": "Mechanics (Locket BorderProgressBar default, MERGE G2-9): the stroke fills linearly over camera.capture.duration.videoMax. Colour mapped from Locket's accent to Retro's primary fill on media, color.global.surfaceLight (RC-3); Yope's lime is gone.",
       "unit": "pt",
       "method": "source default read from the decompiled bundle (React Native dp = pt)",
       "precision": "exact (source constant)"
     },
-    "camera.capture.size.permissionButtonHeight": {
-      "type": "dimension",
-      "value": 45,
-      "unit": "pt",
-      "source_app": "Yope",
-      "surface": "camera.capture",
-      "element": "light pill action in empty / permission-denied states ('invite more friends' empty-state pill)",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png row 418 x168–408, col 200 y394–446 (yope-a §1.4: 205 × ~45 pt)",
-      "method": "runs ÷ 1.181",
+    "camera.sendto.layout.header": {
+      "type": "layout",
+      "value": {
+        "title": "centred, text role sheetTitle, colour color.global.textOnMedia; its cap middle on the circles' centre line",
+        "trailing": "close circle (C-11 on media): size.global.circleButton, centre 37.7 pt from the trailing edge",
+        "leading": "save circle, mirrored (centre 37.7 pt from the leading edge)",
+        "centreBelowSafeArea": 25.8
+      },
+      "source_app": "Retro",
+      "surface": "camera.sendto",
+      "element": "sheet header on the black composer: centred title + close circle (Retro 'Postcard' modal); shared by daily.capture",
+      "evidence": "references/auto/retro/store/retro-store-03.png (App Store listing 124.0, 'Postcard' modal, 1284×2778, 2.389 px/pt; phone screen y576–2611 = 852 pt, x171–1110 = 393 pt): close circle y736–821 (67.0–102.6 pt from the screen top, 35.6 pt Ø), x≈977–1063 (centre 37.7 pt from the right edge); title 'Postcard' cap y763–793 (78.3–90.8 pt, middle 84.6 = circle centre 84.8)",
+      "method": "edge scans; pt = (y − 576) ÷ 2.389; centre below the safe area = 84.8 − 59 (393 × 852 device, 59-pt safe-area top)",
       "level": "SOURCED",
-      "precision": "±3 pt",
-      "notes": "Fill color.global.surfaceLight, label color.global.onSurfaceLight, shape radius.global.capsule (README empty state), text role button. Shared by every empty / error state in this group."
+      "precision": "±0.5 pt",
+      "notes": "The leading save circle mirrors the close circle (Locket puts save opposite discard — design/research/locket.md §6); Retro's Postcard has only the trailing circle (RC-5)."
     },
     "camera.sendto.layout.preview": {
       "type": "layout",
       "value": {
-        "width": 218,
-        "height": 290,
-        "top": 130,
-        "gapBelowHeader": 30.5
+        "width": 297.6,
+        "maxHeight": 422.8,
+        "cornerRadius": 8.5,
+        "topBelowHeaderCircle": 20,
+        "fit": "native aspect, aspect-fill; height = min(width ÷ aspect, maxHeight); centred horizontally"
       },
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "element": "captured-photo preview card, centred (corners radius.global.photo per MERGE_DECISIONS F-10)",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10) card bbox x160–416, y159–500; header circle bottom y123; screen top y5",
-      "method": "bbox ÷ 1.181 (yope-a proposal dimension.sendto.preview; top and gap this pass)",
+      "element": "captured-photo preview (the Postcard modal's photo frame)",
+      "evidence": "references/auto/retro/store/retro-store-03.png (App Store listing 124.0, 'Postcard' modal, 1284×2778, 2.389 px/pt; phone screen y576–2611 = 852 pt, x171–1110 = 393 pt): photo x286–997 (711 px = 297.6 pt), y869–1879 (122.6–545.4 pt from the screen top, 422.8 pt), corners 8.5 — design/research/retro-visual.md §3.8 'Postcard composer'; header circle bottom 102.6 pt → photo top 122.6 pt",
+      "method": "edge scans ÷ 2.389 px/pt",
       "level": "SOURCED",
-      "precision": "±2 pt",
-      "notes": "If the recording device was 430/440 pt wide, the true value is 9–12 % larger (yope-a §0.3)."
-    },
-    "camera.sendto.fontSize.caption": {
-      "type": "fontSize",
-      "value": 16,
-      "unit": "pt",
-      "source_app": "Yope",
-      "surface": "camera.sendto",
-      "element": "caption typed on the preview, centred under the hour overlay (color.global.textPrimary)",
-      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t5.73-sendto-caption-keyboard.png (https://www.tiktok.com/@savannahclooney/video/7683341732695592206 @5.73 s, 2026-09-09) 'i got here so war': x-height y458–470 (12 px), 'h' ascender y453–470 (18 px)",
-      "method": "x-height ÷ 1.466 ÷ 0.526 = 15.6; ascender ÷ 1.466 ÷ 0.74 = 16.6 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1.5 pt",
-      "notes": "If the recording device was 430/440 pt wide, the true value is 9–12 % larger (yope-a §0.3)."
-    },
-    "camera.sendto.fontWeight.caption": {
-      "type": "fontWeight",
-      "value": "semibold",
-      "source_app": "Yope",
-      "surface": "camera.sendto",
-      "element": "caption on the preview",
-      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t5.73-sendto-caption-keyboard.png (https://www.tiktok.com/@savannahclooney/video/7683341732695592206 @5.73 s, 2026-09-09)",
-      "method": "visual (yope-a §2.15 'white semibold, centred')",
-      "level": "SOURCED",
-      "precision": "visual"
-    },
-    "camera.sendto.size.captionBaselineOffset": {
-      "type": "dimension",
-      "value": 31,
-      "unit": "pt",
-      "source_app": "Yope",
-      "surface": "camera.sendto",
-      "element": "hour-overlay baseline → caption baseline",
-      "evidence": "references/auto/yope/frames/a-savannahclooney-7683341732695592206-t5.73-sendto-caption-keyboard.png (https://www.tiktok.com/@savannahclooney/video/7683341732695592206 @5.73 s, 2026-09-09) overlay digits baseline y425, caption baseline y470",
-      "method": "difference 45 px ÷ 1.466 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1.5 pt"
+      "precision": "±0.5 pt",
+      "notes": "Replaces Yope's 218 × 290 card. Our camera photos are 3:4 (397 pt tall at this width); library photos keep their aspect up to the Postcard frame height."
     },
     "camera.sendto.layout.messageField": {
       "type": "layout",
       "value": {
-        "height": 37,
-        "insetLeading": 10,
-        "insetBottom": 14.5,
-        "gapToMic": 7.5,
-        "micDiameter": 38,
-        "insetTrailing": 8.5
+        "message": "C-09 glass pill on the photo: fill color.global.controlOnDeep, icon.global.edit + label text role pill, colour color.global.textOnMedia, height size.global.pillHeight, width hugs the label",
+        "voice": "icon-only capsule after it: width size.global.iconPillWidth, height size.global.pillHeight, same fill, icon.global.mic",
+        "gap": "size.global.pillGap",
+        "bottomInset": 20.5,
+        "align": "the pair centred horizontally on the photo"
       },
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "element": "'add a message' capsule and mic circle along the bottom of the preview card",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10) field x172–352, y438–482 (cols 200/260); mic x361–406, y438–483 (col 383); card left x160, right x416, bottom y500",
-      "method": "edge transitions ÷ 1.181 (this pass)",
+      "element": "'Add a message' pill and the voice-note capsule along the bottom of the preview",
+      "evidence": "references/auto/retro/store/retro-store-03.png (App Store listing 124.0, 'Postcard' modal, 1284×2778, 2.389 px/pt; phone screen y576–2611 = 852 pt, x171–1110 = 393 pt): 'Add a message' pill (463–819, 1743–1830) = 149 × 36.4 pt, fill #262626, pencil glyph + white label; photo bottom y1879 → pill bottom 1830: 49 px = 20.5 pt — design/components.md C-09, C-06 (icon-only capsule 49 wide, gap 8.8: references/auto/retro/store/retro-store-02.png)",
+      "method": "edge scans ÷ 2.389 px/pt; composition of C-09 and the C-06 icon-only capsule in Locket's order (message field, then voice)",
       "level": "SOURCED",
-      "precision": "±1.5 pt",
-      "notes": "Shape radius.global.capsule for the field, circle for the mic. If the recording device was 430/440 pt wide, the true value is 9–12 % larger (yope-a §0.3)."
-    },
-    "camera.sendto.color.messageField": {
-      "type": "color",
-      "value": "#0000007A",
-      "source_app": "Yope",
-      "surface": "camera.sendto",
-      "element": "translucent fill of the 'add a message' capsule and the mic circle",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (576 x 1024): 'add a message' field over the beige photo: field (90,78,61) at x180-200 y442-448 and (81,68.5,57) at y474-479 vs the photo just above the field (161,144,117) at x180-200 y418-434; field (86,76.5,63) at x200-220 vs photo above (172,158.5,87)",
-      "level": "SOURCED",
-      "notes": "Gap fill (MERGE G2-10). Covers the field and the mic circle (same material). Draw it over a backdrop blur of the photo (as observed; radius not measured). Cross-checks in this pass: BeReal's controls over a photo solve to black ≈0.46 (daily.capture.color.overlayControl), Yope's home header circle ≈0.58.",
-      "method": "single-background solve; a neutral grey tint g fits the three channels only for g ≤ 0 (g = -47 for the first pair), so the tint is black: alpha = 1 - C/B = 0.44/0.46/0.48 (first pair), 0.50/0.52 (second pair, R/G; its blue channel 0.28 is off because the yellowish photo above differs from the photo under the field) -> mean 0.48 -> #000000 at 0.48 (122/255 = 0x7A)",
-      "precision": "±0.05 alpha (video; the blurred photo under the field is assumed equal to the photo just above it; the blur radius is not measured)"
-    },
-    "camera.sendto.fontSize.messagePlaceholder": {
-      "type": "fontSize",
-      "value": 15,
-      "unit": "pt",
-      "source_app": "Yope",
-      "surface": "camera.sendto",
-      "element": "'add a message' placeholder (color.global.textPrimary: measured near-white (254,251,238), not the gray placeholder of text fields)",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10) x-height y458–466 (9 px), ascender y454–466 (13 px)",
-      "method": "x-height ÷ 1.181 ÷ 0.526 = 14.5; ascender ÷ 1.181 ÷ 0.74 = 14.9 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1.5 pt",
-      "notes": "Differs from fontSize.global.placeholder (17 pt, composer field). If the recording device was 430/440 pt wide, the true value is 9–12 % larger (yope-a §0.3)."
+      "precision": "±0.5 pt",
+      "notes": "Replaces Yope's translucent field (#0000007A) and mic circle; the caption is no longer drawn on the photo (Retro shows the message in its own modal and relabels the pill 'Edit message')."
     },
     "camera.sendto.layout.recipientRow": {
       "type": "layout",
       "value": {
-        "pitch": 60,
-        "avatarCenterInset": 51.5,
-        "nameInset": 83,
-        "checkTrailingInset": 29,
-        "firstRowCenterBelowPreview": 49.5
+        "label": "section label above the rows: text role meta, color.global.textSecondary, 35.2 pt below the preview bottom, at size.global.screenMargin",
+        "row": "C-16 people row: group cover avatar size.global.avatarPicker (circle; no cover → icon.global.group on color.global.controlOnDeep), name text role listTitle color.global.textOnMedia, trailing check size.global.checkCircle",
+        "padding": 16,
+        "insets": "size.global.screenMargin",
+        "divider": "C-32 hairline between rows, color.global.separator dark value (#4D4D4D) on media, inside the margins",
+        "check": "selected icon.global.check in color.global.selection; not selected icon.global.uncheck in color.global.textSecondary"
       },
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "element": "recipient (group) row: avatar (size.global.avatarSmall), name (text role headerTitle), check circle (size.global.checkCircle) at the trailing edge",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10) check circles x456–485, y544–573 and y615–643 (blue); avatar centre x117; name 'my wall' starts x154; screen x56–519; card bottom y500",
-      "method": "centres and edges ÷ 1.181 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1.5 pt",
-      "notes": "Name glyphs: x-height 9 px, ascender 12 px → 14.5 pt bold, equal to fontSize.global.headerTitle (15 bold) within precision, so that role is reused. Check circle measures 25.4 pt (global 24). If the recording device was 430/440 pt wide, the true value is 9–12 % larger (yope-a §0.3)."
-    },
-    "camera.sendto.size.countDisc": {
-      "type": "dimension",
-      "value": 18.5,
-      "unit": "pt",
-      "source_app": "Yope",
-      "surface": "camera.sendto",
-      "element": "black disc after 'send' holding the number of selected groups (fill color.global.onAccent, number color.global.accent)",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10) disc x303–324, y931–952 (22 px)",
-      "method": "bbox ÷ 1.181 (this pass)",
+      "element": "group chooser rows under the preview (rows with checks on the black composer)",
+      "evidence": "references/auto/retro/store/retro-store-03.png (App Store listing 124.0, 'Postcard' modal, 1284×2778, 2.389 px/pt; phone screen y576–2611 = 852 pt, x171–1110 = 393 pt): 'Mailing Address' label (13 pt grey) y1963–1992 = 580.6–592.7 pt, i.e. 35.2 pt below the photo bottom 545.4; divider y2159 x210–1069 (16.3 pt margins); references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt grouped list `pik` padding 16 dp (design/research/retro-visual.md §4 #17); people row avatar 37 (references/auto/retro/press/tc-2023-07-retro-1b.webp, C-16); check circle 24 (C-29, design/tokens/global.json size.global.checkCircle)",
+      "method": "composition of Retro components C-16 (people row), C-32 (divider), check circle (size.global.checkCircle) with the Postcard modal's label and divider placement; row height = avatar 37 + 2 × 16 padding = 69 pt (Postcard 2023 rows ≈67 pt: TC-R3 phone 2 divider → row centre 37.6 / 33.5 pt)",
       "level": "SOURCED",
       "precision": "±1 pt",
-      "notes": "A selection count (how many groups this goes to), not a social count (yope-a §1.4)."
-    },
-    "camera.sendto.size.countDiscGap": {
-      "type": "dimension",
-      "value": 7,
-      "unit": "pt",
-      "source_app": "Yope",
-      "surface": "camera.sendto",
-      "element": "'send' label → count disc",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10) 'd' right edge x295 → disc x303",
-      "method": "difference ÷ 1.181 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1 pt"
-    },
-    "camera.sendto.fontSize.countNumber": {
-      "type": "fontSize",
-      "value": 11,
-      "unit": "pt",
-      "source_app": "Yope",
-      "surface": "camera.sendto",
-      "element": "number inside the count disc",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10) digit '2' y937–945 (9 px)",
-      "method": "digit height ÷ 1.181 ÷ 0.705 = 10.8 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1.5 pt"
-    },
-    "camera.sendto.fontWeight.countNumber": {
-      "type": "fontWeight",
-      "value": "bold",
-      "source_app": "Yope",
-      "surface": "camera.sendto",
-      "element": "number inside the count disc",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10)",
-      "method": "visual",
-      "level": "SOURCED",
-      "precision": "visual"
+      "notes": "Replaces Yope's recipient rows (avatar 22.6, serif-sized names, 60-pt pitch)."
     },
     "camera.sendto.size.sendButtonBottom": {
       "type": "dimension",
-      "value": 41.5,
+      "value": 44.5,
       "unit": "pt",
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "element": "send button bottom edge → screen bottom",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png (https://www.tiktok.com/@chuongxetank/video/7694968408424582452 @6.73 s, 2026-10-10) button bottom y969/970; screen bottom y1019 (lime frame inner edge at col 288)",
-      "method": "difference ÷ 1.181 (this pass)",
+      "element": "bottom capsule (C-05 on media, 'Send') bottom edge → screen bottom",
+      "evidence": "references/auto/retro/store/retro-store-03.png (App Store listing 124.0, 'Postcard' modal, 1284×2778, 2.389 px/pt; phone screen y576–2611 = 852 pt, x171–1110 = 393 pt): 'Send Postcard' capsule y2362–2505 (747.6–807.5 pt, 60 high); screen bottom 852 → 44.5 pt (34-pt home-indicator safe area + 10.5)",
+      "method": "edge scan ÷ 2.389 px/pt",
       "level": "SOURCED",
-      "precision": "±1.5 pt",
-      "notes": "Button itself: size.global.buttonHeightSheet, size.global.buttonMarginHSheet, radius.global.button, color.global.accent / .onAccent, text role button."
-    },
-    "camera.sendto.layout.toast": {
-      "type": "layout",
-      "value": {
-        "height": 49,
-        "marginHorizontal": 8.5,
-        "top": 59,
-        "cornerRadius": 20,
-        "glyph": 17,
-        "glyphInset": 19.5,
-        "glyphToText": 11
-      },
-      "source_app": "Yope",
-      "surface": "camera.sendto",
-      "element": "confirmation toast ('posted in …'): lime bar under the status bar with a check glyph and text",
-      "evidence": "references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png (@7.73 s, 2026-10-10) lime x66–509 at y89; top y74–76, bottom y131/132; corner: x84/78/74/70/68 at y131/129/126/122/120; check disc x89–109, y95–113; text starts x122",
-      "method": "lime mask runs ÷ 1.181; circle fit r ≈ 24 px (this pass)",
-      "level": "SOURCED",
-      "precision": "±2 pt",
-      "notes": "Fill color.global.accent (measured (194,255,13), video), glyph icon.global.check and text color.global.onAccent, text role button (x-height 9 px → 14.5–14.9 pt). If the recording device was 430/440 pt wide, the true value is 9–12 % larger (yope-a §0.3)."
-    },
-    "camera.sendto.duration.toastVisible": {
-      "type": "duration",
-      "value": 2000,
-      "source_app": "Locket",
-      "surface": "camera.sendto",
-      "element": "how long the confirmation toast stays, and its entrance / exit motion",
-      "evidence": "references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (Locket Android 1.243.0, decompiled Hermes JS bundle): Locket's confirmation toasts use ToastAndroid.SHORT; references/auto/platform/aosp-toast-duration-excerpt.txt: SHORT_DELAY = 2000 ms. Yope: references/auto/yope/frames/a-chuongxetank-7694968408424582452-1080p-toast-lime-track.csv (60 fps: the toast enters 7.567 -> 7.683 s, ≈117 ms; still on screen when the edit cuts away at ≈8.25 s)",
-      "level": "SOURCED",
-      "notes": "Gap fill (MERGE G2-7): same dwell as safety.block.duration.toast (one toast component). Yope's own dwell is not observable (the TikTok edit cuts away while the toast is shown).",
-      "unit": "ms",
-      "method": "platform constant behind the reference's toast; Yope entrance from per-frame lime pixel counts (60 fps)",
-      "precision": "dwell exact (platform constant); entrance ±17 ms (1 frame at 60 fps), curve not measurable; exit not visible"
+      "precision": "±0.5 pt",
+      "notes": "Capsule: size.global.buttonHeight, margins size.global.buttonMarginH, fill color.global.surfaceLight, label color.global.onSurfaceLight (C-05 on media). Disabled (nothing selected): fill color.global.controlRaised dark value #4D4D4D, label #000000 — Retro's own disabled 'Send Postcard' on this composer (TC-R3 phone 2). Was Yope's 41.5."
     },
     "camera.sendto.size.captionMaxLength": {
       "type": "count",
-      "value": 36,
-      "source_app": "Locket",
+      "value": 250,
+      "source_app": "Retro",
       "surface": "camera.sendto",
-      "element": "longest caption the field accepts",
-      "evidence": "references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (Locket Android 1.243.0, decompiled Hermes JS bundle): the caption TextInput on the photo (style captionInput) has maxLength = MAX_CHARS; the caption module exports MULTILINE_MAX_LINES 4, MULTILINE_MAX_CHARS 200, MAX_CHARS 36, MIN_WIDTH 28; MULTILINE is Locket Gold's 'Send longer captions' perk ('Type even more on your photos!')",
+      "element": "longest message the 'Add a Message' sheet accepts (counter '{count}/{max}')",
+      "evidence": "references/auto/retro/press/tc-2023-12-retro3.png (TechCrunch 2023-12) phone 3 ('Add a Message' modal, counter '58/250'); design/research/retro-visual.md §2 row 18",
       "level": "SOURCED",
-      "notes": "Gap fill (MERGE G2-11). camera.sendto is Yope + Locket; Yope's limit was not observed, Locket's free single-line caption is the same element (a one-line caption over the photo, shown in the widget pill). The server bound (1000, docs/API.md §12.18) stays integrity only. No counter (Locket shows none).",
-      "method": "source constant read from the decompiled bundle",
-      "precision": "exact (source constant)"
+      "notes": "Retro's message limit in its composer's message modal; the API allows 1000 (docs/API.md 'caption ≤ 1000'). Was Locket's 36 (one-line widget caption), which no longer applies: the Retro widget shows name + group, not the caption.",
+      "method": "read from the counter",
+      "precision": "exact"
+    },
+    "camera.sendto.layout.messageSheet": {
+      "type": "layout",
+      "value": {
+        "header": "native sheet toolbar: centred title text role sheetTitle; trailing 'Done' text button (C-08, text role textButton, color.global.textPrimary)",
+        "field": "multi-line text, text role placeholder (17), typed color.global.textPrimary, placeholder color.global.textSecondary, on color.global.background",
+        "textInset": 22,
+        "counterTrailingInset": 20.7,
+        "counterAboveKeyboard": 22,
+        "counter": "camera.sendto.fontSize.counter, monospaced digits (iOS Font.Design.monospaced; Android FontFamily.Monospace), color.global.textSecondary"
+      },
+      "source_app": "Retro",
+      "surface": "camera.sendto",
+      "element": "'Add a Message' sheet (message entry; follows the appearance like every sheet over media)",
+      "evidence": "references/auto/retro/press/tc-2023-12-retro3.png (TechCrunch 2023-12) phone 3 (light, screen x1937–2564 = 627 px ÷ 393 pt = 1.595 px/pt): typed text from x1972 (21.9 pt); title 'Add a Message' and 'Done' cap rows y353–378; counter '58/250' x2439–2531, y1006–1028, right edge 20.7 pt from the screen edge, 22 pt above the keyboard's suggestion bar (y1062); APK `vv3.e` #999999 'character counter /250' (design/research/retro-package-copy-motion.md §3.3)",
+      "method": "edge scans ÷ 1.595 px/pt",
+      "level": "SOURCED",
+      "precision": "±1 pt (2023 render)",
+      "notes": "The stamp art on Retro's modal is do-not-copy (postcard stamp). The counter face in the render is a monospaced slab (not identified; Retro bundles PP Fraktion Mono, commercial — not shipped): the platform's monospaced design is used."
+    },
+    "camera.sendto.fontSize.counter": {
+      "type": "fontSize",
+      "value": 16,
+      "unit": "pt",
+      "source_app": "Retro",
+      "surface": "camera.sendto",
+      "element": "character counter '58/250' in the 'Add a Message' sheet",
+      "evidence": "references/auto/retro/press/tc-2023-12-retro3.png (TechCrunch 2023-12) phone 3: digit height y1009–1026 = 18 px ÷ 1.595 px/pt = 11.3 pt",
+      "method": "digit height ÷ 0.70 (cap / em of SF Mono and the platform monospaced faces)",
+      "level": "SOURCED",
+      "precision": "±1 pt"
+    },
+    "camera.sendto.layout.textStyleMap": {
+      "type": "layout",
+      "value": {
+        "counter": "callout"
+      },
+      "source_app": "Apple HIG",
+      "surface": "camera.sendto",
+      "element": "Dynamic Type style the counter scales with (16 pt = Callout); every other text uses global roles",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography (iOS Dynamic Type sizes: Callout 16 pt at Large)",
+      "method": "nearest text style at the default size",
+      "level": "PLATFORM"
     },
     "camera.fromwidget.layout.target": {
       "type": "layout",
@@ -526,7 +268,7 @@
       "evidence": "references/auto/locket/store/locket-store-07.png (deskewed 2.0°; 2.036 px/pt; App Store listing v2.68.0) headline 'Tap the widget to open the camera'; references/auto/locket/play/locket-play-05.png; Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) Hermes strings 'logOpenedFromWidget', 'Failed to parse widget launch URL'; https://developer.apple.com/documentation/widgetkit/adding-interactivity-to-widgets-and-live-activities ('a button should do more than open the app' → widgetURL, not a Button)",
       "method": "store copy + bundle strings; native API",
       "level": "SOURCED",
-      "notes": "Deep link format from ios/Packages/AppCore/Sources/AppModels/DeepLink.swift (.camera(groupID:))."
+      "notes": "Mechanics (Locket: 'Tap the widget to open the camera'). Unchanged by the redesign; Retro's own widget tap reloads (do-not-copy for us: our widget opens the camera)."
     },
     "widget.home.small.layout.photo": {
       "type": "layout",
@@ -535,252 +277,81 @@
         "ios": "containerBackground(for: .widget) with the image; contentMarginsDisabled",
         "android": "ImageView centerCrop"
       },
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.home.small",
-      "element": "newest photo (or the collage page 1) filling the whole widget",
-      "evidence": "references/auto/locket/store/locket-store-03.png (deskewed 1.72°; 800-px screen = 393 pt, 2.036 px/pt); references/auto/locket/store/locket-store-06.png; references/auto/locket/help/locket-help-7914857-widget-with-avatar-crop.png; Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) res/layout/widget.xml scaleType=centerCrop",
-      "method": "visual; Android layout attribute",
+      "element": "newest photo of the configured group (or the collage's first page) filling the whole widget; bottom scrim layout.global.photoScrim under the text stack",
+      "evidence": "references/auto/retro/apk/widget_preview_friends.webp, widget_preview_journals.webp, widget_preview_memories.webp (Retro APK 2026.10.1150 mdpi previews, 158×158 px = 158 dp, 1 px = 1 dp); references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Glance widget: corner radius 22dp' — design/research/retro-package-copy-motion.md §6.1; mechanics (newest photo per group): Locket store-03 / store-06 (design/research/locket.md §2)",
+      "method": "inspection of Retro's widget preview art (full-bleed photo) + platform container APIs",
       "level": "SOURCED",
-      "notes": "Applies to every home size (small, medium, large, xl) and to widget.android."
+      "notes": "Full bleed as Retro's Glance widgets; content shown is Locket's mechanic (the group's newest item). iOS corners are the system's (ContainerRelativeShape); Android corners widget.android.radius.widget."
     },
-    "widget.home.small.size.avatar": {
-      "type": "dimension",
-      "value": 24,
-      "unit": "pt",
-      "source_app": "Locket",
+    "widget.home.small.layout.overlay": {
+      "type": "layout",
+      "value": {
+        "lines": "line 1: the poster's first name; line 2: the group name (collage: the group name alone, one line)",
+        "align": "trailing-aligned stack at the bottom-trailing corner",
+        "trailingInset": 11,
+        "lastBaselineFromBottom": 15,
+        "linePitch": 13,
+        "colour": "color.global.textOnMedia",
+        "scrim": "layout.global.photoScrim"
+      },
+      "source_app": "Retro",
       "surface": "widget.home.small",
-      "element": "sender avatar circle, bottom-leading corner of the photo",
-      "evidence": "references/auto/locket/store/locket-store-03.png (deskewed 1.72°; 800-px screen = 393 pt, 2.036 px/pt) x275–327 y1151–1201; locket-store-06.png 48 px of a 320-px widget; help drawing 24 px of 155; references/auto/locket/frames/locket-tt-7168613044728155438-15.133s-widget-placeholder-just-added.jpg (raw iOS screen recording, 1.21 px/pt, 2022-11-21) 30 px",
-      "method": "edge scans; widget-relative ratio × 158 pt",
+      "element": "white text stack bottom-trailing over the photo (Retro 'Albums' widget: name over album title)",
+      "evidence": "references/auto/retro/apk/widget_preview_friends.webp, widget_preview_journals.webp, widget_preview_memories.webp (Retro APK 2026.10.1150 mdpi previews, 158×158 px = 158 dp, 1 px = 1 dp): friends / journals — 'cheryl' x-height rows 124–129, ascender from 122, baseline 129; 'Naoshima' / 'Seoul 2024' cap rows 135–142, baseline 142; both lines end at x146 (widget right edge x157 → 11 dp); last baseline 142 → bottom edge 157: 15 dp; journals preview shows the album line ('Seoul 2024') without the location glyph",
+      "method": "ASCII luminance maps of the bottom-right 60 × 40 px (threshold 170/200 on 0–255) at 1 px = 1 dp",
       "level": "SOURCED",
-      "precision": "±1 pt",
-      "notes": "Four sources: 25.0, 23.7, 24.5, 24.8 pt. Fixed size on every home family (Locket's resizable Android widget keeps a fixed 32-dp avatar at every size)."
+      "precision": "±1 dp (mdpi preview art)",
+      "notes": "Retro's Friend Updates / Your Memories widgets show a location line with a location-arrow glyph; our posts carry no location (docs/API.md), so the Albums variant (name over album title → group name) is used. Replaces Locket's avatar + caption pill (RC-9)."
     },
-    "widget.home.small.size.avatarInset": {
-      "type": "dimension",
-      "value": 6,
-      "unit": "pt",
-      "source_app": "Locket",
-      "surface": "widget.home.small",
-      "element": "avatar inset from the widget's leading and bottom edges",
-      "evidence": "references/auto/locket/store/locket-store-03.png (deskewed 1.72°; 800-px screen = 393 pt, 2.036 px/pt) left 14.5 px, bottom 9.5 px; locket-store-06.png left 11.75, bottom 12.5 px",
-      "method": "edge scans ÷ 2.036",
-      "level": "SOURCED",
-      "precision": "±1.5 pt",
-      "notes": "Inside HIG's 16-pt standard margin: the reference draws the overlay at 6 pt (MERGE_DECISIONS capture C-6)."
-    },
-    "widget.home.small.size.avatarRing": {
-      "type": "dimension",
-      "value": 1,
-      "unit": "pt",
-      "source_app": "Locket",
-      "surface": "widget.home.small",
-      "element": "ring around the avatar",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) drawable/bg_circle_border stroke 1 dp; help drawing / locket-store-06.png (≈1 pt)",
-      "method": "resource value",
-      "level": "SOURCED",
-      "precision": "exact (Android)"
-    },
-    "widget.home.small.color.avatarRing": {
-      "type": "color",
-      "value": "#0000001A",
-      "source_app": "Locket",
-      "surface": "widget.home.small",
-      "element": "avatar ring color (black 10 %)",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) drawable/bg_circle_border",
-      "method": "resource value",
-      "level": "SOURCED",
-      "precision": "exact",
-      "notes": "iOS images show a ≤2-px 'subtle light' ring that cannot be measured; the exact resource of the same element is used on both platforms. Android resource ARGB #1A000000 written as #RRGGBBAA (CONVENTIONS / tools/designgen.mjs read the last two digits as alpha)."
-    },
-    "widget.home.small.size.captionHeight": {
-      "type": "dimension",
-      "value": 23,
-      "unit": "pt",
-      "source_app": "Locket",
-      "surface": "widget.home.small",
-      "element": "caption pill height (pill right of the avatar, vertically centred on it)",
-      "evidence": "references/auto/locket/store/locket-store-03.png (deskewed 1.72°; 800-px screen = 393 pt, 2.036 px/pt) y1151–1198 at x340–480",
-      "method": "pixel-row render ÷ 2.036",
-      "level": "SOURCED",
-      "precision": "±1 pt"
-    },
-    "widget.home.small.size.captionPadding": {
-      "type": "dimension",
-      "value": 7,
-      "unit": "pt",
-      "source_app": "Locket",
-      "surface": "widget.home.small",
-      "element": "caption pill horizontal padding",
-      "evidence": "references/auto/locket/store/locket-store-03.png (deskewed 1.72°; 800-px screen = 393 pt, 2.036 px/pt) pill left 336.7 → text 350; text end ≈470 → pill right 483; Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) pill padding 7 dp",
-      "method": "edge scan",
-      "level": "SOURCED",
-      "precision": "±1 pt"
-    },
-    "widget.home.small.size.captionGap": {
-      "type": "dimension",
-      "value": 5,
-      "unit": "pt",
-      "source_app": "Locket",
-      "surface": "widget.home.small",
-      "element": "avatar → caption pill gap",
-      "evidence": "references/auto/locket/store/locket-store-03.png (deskewed 1.72°; 800-px screen = 393 pt, 2.036 px/pt) avatar right 327 → pill left 336.7",
-      "method": "edge scan ÷ 2.036",
-      "level": "SOURCED",
-      "precision": "±1 pt",
-      "notes": "Android resource: 6 dp (widget.android)."
-    },
-    "widget.home.small.fontSize.caption": {
+    "widget.home.small.fontSize.overlay": {
       "type": "fontSize",
-      "value": 12,
+      "value": 11,
       "unit": "pt",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.home.small",
-      "element": "caption text ('Sundays ☀️'), color.global.textPrimary (measured (253.5,254,253.5))",
-      "evidence": "references/auto/locket/store/locket-store-03.png (deskewed 1.72°; 800-px screen = 393 pt, 2.036 px/pt) 'S' cap height 17 px (y1167–1183)",
-      "method": "cap height ÷ 2.036 ÷ 0.705",
+      "element": "name and group lines of the widget text stack (both lines the same size)",
+      "evidence": "references/auto/retro/apk/widget_preview_friends.webp, widget_preview_journals.webp, widget_preview_memories.webp (Retro APK 2026.10.1150 mdpi previews, 158×158 px = 158 dp, 1 px = 1 dp): x-height 6 px (rows 124–129 and 137–142), ascender / cap 8 px (rows 122–129, 135–142)",
+      "method": "x-height 6 ÷ 0.546 (Inter x-height / em) = 11.0; cap 8 ÷ 0.727 = 11.0",
       "level": "SOURCED",
-      "precision": "±1 pt"
+      "precision": "±1 dp",
+      "notes": "Android sp, iOS pt."
     },
-    "widget.home.small.fontWeight.caption": {
+    "widget.home.small.fontWeight.overlay": {
       "type": "fontWeight",
-      "value": "semibold",
-      "source_app": "Locket",
+      "value": "regular",
+      "source_app": "Retro",
       "surface": "widget.home.small",
-      "element": "caption text weight",
-      "evidence": "references/auto/locket/store/locket-store-03.png (deskewed 1.72°; 800-px screen = 393 pt, 2.036 px/pt)",
-      "method": "visual",
+      "element": "name and group lines of the widget text stack",
+      "evidence": "references/auto/retro/apk/widget_preview_friends.webp, widget_preview_journals.webp, widget_preview_memories.webp (Retro APK 2026.10.1150 mdpi previews, 158×158 px = 158 dp, 1 px = 1 dp): stems one column wide at ≈78 % coverage ('l' of 'cheryl' x146, luminance 218 over a ≈90 background)",
+      "method": "stem width ≈0.8 px at 11 px → ≈0.075 em (Inter Regular ≈0.08 em; Semibold ≈0.11 em)",
       "level": "SOURCED",
-      "precision": "visual (semibold or bold; verify side by side)"
+      "precision": "±1 weight step (mdpi art)"
     },
-    "widget.home.small.color.captionPill": {
+    "widget.home.small.color.stateTint": {
       "type": "color",
-      "value": "#333333CC",
-      "source_app": "Locket",
+      "value": "#FFFFFFD9",
+      "source_app": "Retro",
       "surface": "widget.home.small",
-      "element": "caption pill fill, iOS and Android (shape radius.global.capsule)",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) color/overlayBackgroundDark used by drawable/bg_overlay_caption_regular (capsule, padding 7 dp = the iOS pill's capsule and 7-pt padding); iOS references/auto/locket/store/locket-store-03.png (deskewed 1.72°; 800-px screen = 393 pt, 2.036 px/pt) pill ≈(88–92) gray over light hair",
-      "method": "Android resource value (exact); iOS pill additionally blurs the photo (blur radius not measurable)",
-      "level": "SOURCED",
-      "precision": "exact (Android); iOS blur not measured",
-      "notes": "Android ARGB #CC333333 written as #RRGGBBAA (tools/designgen.mjs reads the last two digits as alpha). Over white it composites to #5C5C5C (white text 6.71:1), matching the iOS pill over light areas. Used on Android too: Locket's Android text-caption style bg_rounded (#4D000000, radius 17 dp, padding 6/6.5 dp) gives white text 2.12:1 over a white photo, so the same APK's capsule style is the sourced alternative (MERGE_DECISIONS capture C-8). Locket proposal chose the same value for iOS."
-    },
-    "widget.home.small.color.placeholderTop": {
-      "type": "color",
-      "value": "#2D2B2F",
-      "source_app": "Locket",
-      "surface": "widget.home.small",
-      "element": "loading placeholder tile (just added, before the first photo), top of the vertical gradient",
-      "evidence": "references/auto/locket/frames/locket-tt-7168613044728155438-15.133s-widget-placeholder-just-added.jpg (raw iOS screen recording, 1.21 px/pt, 2022-11-21) block x150–220 y120–140",
-      "method": "median",
-      "level": "SOURCED",
-      "precision": "±5/255 (lossy)"
-    },
-    "widget.home.small.color.placeholderBottom": {
-      "type": "color",
-      "value": "#201E21",
-      "source_app": "Locket",
-      "surface": "widget.home.small",
-      "element": "loading placeholder tile, bottom of the vertical gradient",
-      "evidence": "references/auto/locket/frames/locket-tt-7168613044728155438-15.133s-widget-placeholder-just-added.jpg (raw iOS screen recording, 1.21 px/pt, 2022-11-21) block x200–260 y240–255",
-      "method": "median",
-      "level": "SOURCED",
-      "precision": "±5/255 (lossy)"
-    },
-    "widget.home.small.layout.placeholderAvatars": {
-      "type": "layout",
-      "value": {
-        "diameter": 25,
-        "gap": 2.5,
-        "max": 3,
-        "inset": 6
-      },
-      "source_app": "Locket",
-      "surface": "widget.home.small",
-      "element": "loading placeholder content: up to 3 member avatars in a row at the bottom-leading corner, not overlapping",
-      "evidence": "references/auto/locket/frames/locket-tt-7168613044728155438-15.133s-widget-placeholder-just-added.jpg (raw iOS screen recording, 1.21 px/pt, 2022-11-21) avatars 30 px, centre step 33 px, y250→280; inset ≈7 px",
-      "method": "zoom read ÷ 1.21",
-      "level": "SOURCED",
-      "precision": "±1.5 pt",
-      "notes": "2022 iOS build. 'max 3' = the three avatars shown; not a count."
-    },
-    "widget.home.small.color.emptyTop": {
-      "type": "color",
-      "value": "#2E2E2E",
-      "source_app": "Locket",
-      "surface": "widget.home.small",
-      "element": "empty / unconfigured widget background, top of the vertical gradient (angle 270)",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) drawable/bg_widget_empty startColor #FF2E2E2E",
-      "method": "resource value (re-read this pass)",
-      "level": "SOURCED",
-      "precision": "exact"
-    },
-    "widget.home.small.color.emptyBottom": {
-      "type": "color",
-      "value": "#1B1B1B",
-      "source_app": "Locket",
-      "surface": "widget.home.small",
-      "element": "empty widget background, bottom of the gradient",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) drawable/bg_widget_empty endColor #FF1B1B1B",
-      "method": "resource value",
-      "level": "SOURCED",
-      "precision": "exact"
-    },
-    "widget.home.small.layout.empty": {
-      "type": "layout",
-      "value": {
-        "circle": 72,
-        "ring": 82,
-        "ringStroke": 3,
-        "glyphWidth": 32,
-        "glyphHeight": 28,
-        "label": 19,
-        "labelGap": 9
-      },
-      "source_app": "Locket",
-      "surface": "widget.home.small",
-      "element": "empty state centred stack: translucent circle with a photo glyph inside a ring, then one label line (default 'md' variant)",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) res/layout/widget_empty.xml (decoded this pass: 72-dp circle, 82-dp ring, glyph ImageView, label ImageView marginTop 9 dp), drawable/bg_widget_empty_circle_outline (stroke 3 dp), ic_widget_empty_icon (32×28 dp), dimen/empty_widget_label_font_size_md 19 sp",
-      "method": "resource values",
-      "level": "SOURCED",
-      "precision": "exact (dp / sp; iOS uses the same numbers in pt)",
-      "notes": "Variants exist: sm (circle 54, ring 62, glyph 24×21, label 14, gap 6) and lg (98, 110, 43×36, 21, 24). widget.home.large / .xl use lg; the rule Locket uses to pick a variant is in code (not observed)."
-    },
-    "widget.home.small.color.emptyCircle": {
-      "type": "color",
-      "value": "#FFFFFF3D",
-      "source_app": "Locket",
-      "surface": "widget.home.small",
-      "element": "empty-state circle fill (white 24 %)",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) drawable/bg_widget_empty_circle solid #3DFFFFFF",
-      "method": "resource value",
+      "element": "glyph and message of the widget's states (empty, not set up, signed out): white 85 % on color.global.backgroundDeep",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Glance widget … refresh glyph 48dp box tint White 85%' (qmh.java: `qmh.a = u32.b(0.85f, u32.f)`), the same colour on the state message (m16.java passes qmh.a to the state text) — design/research/retro-package-copy-motion.md §6.1",
+      "method": "package constant (white, alpha 0.85 → 0xD9)",
       "level": "SOURCED",
       "precision": "exact",
-      "notes": "Android resource ARGB #3DFFFFFF written as #RRGGBBAA (CONVENTIONS / tools/designgen.mjs read the last two digits as alpha)."
+      "notes": "Retro's state glyph is a refresh glyph because its tap reloads; ours opens the camera (Locket mechanic), so the glyph is icon.global.camera at size.global.icon in a 48-pt box (12 padding, APK). Background of the states: color.global.backgroundDeep (composition — Retro's state background not captured; RC-10)."
     },
-    "widget.home.small.color.emptyRing": {
-      "type": "color",
-      "value": "#FFB800",
-      "source_app": "Locket",
+    "widget.home.small.layout.textStyleMap": {
+      "type": "layout",
+      "value": {
+        "overlay": "caption2"
+      },
+      "source_app": "Apple HIG",
       "surface": "widget.home.small",
-      "element": "empty-state ring stroke",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) drawable/bg_widget_empty_circle_outline stroke #FFFFB800",
-      "method": "resource value",
-      "level": "SOURCED",
-      "precision": "exact",
-      "notes": "Locket's brand yellow, kept because Locket is the assigned reference for widgets (MERGE_DECISIONS capture C-7: owner may prefer color.global.accent). Glyph: white #FFFFFFFF (= color.global.textPrimary)."
-    },
-    "widget.home.small.color.emptyLabel": {
-      "type": "color",
-      "value": "#969696",
-      "source_app": "Yope",
-      "surface": "widget.home.small",
-      "element": "empty-state label color",
-      "evidence": "Locket's label colour is not recoverable: in the APK the label is ImageView id/locket_widget_empty_text (res/layout/widget_empty.xml, marginTop 9 dp) whose bitmap is drawn at run time; no colour resource or JS style for it was found (APK 1.243.0 resources and Hermes bundle searched in the gap-fill pass). Value = color.global.textSecondary (Yope, #969696: references/auto/yope/store/yope-store-05.png placeholder plateau 279 px exactly (150,150,150))",
-      "level": "SOURCED",
-      "notes": "Gap fill. Contrast on the empty widget's top fill #2E2E2E: 4.59:1 (pass), on #1B1B1B 5.8:1. Smallest capture that would replace it: one screenshot of a just-added, empty Locket Android widget.",
-      "method": "role rule (MERGE G2-12): when the surface reference's colour is unknown, keep the app's global colour for the same role (secondary label text on a dark tile)",
-      "precision": "±1/255 (lossless store PNG)"
+      "element": "Dynamic Type style of the widget text (11 pt = Caption 2); widgets support Large–AX5 and the two lines truncate",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography (Caption 2: 11 pt at Large)",
+      "method": "nearest text style at the default size",
+      "level": "PLATFORM"
     },
     "widget.home.small.layout.size": {
       "type": "layout",
@@ -939,17 +510,18 @@
     "widget.lock.rect.layout.content": {
       "type": "layout",
       "value": {
-        "noCaptionRectangular": "the sender avatar alone, in its 24-pt leading slot (Locket's small widget without a caption shows only the avatar)",
-        "noCaptionInline": "the sentence of widget.home.small.a11y.photo ('{name}’s photo in {group}') as the inline text (the inline widget has no avatar slot)",
-        "newestIsCollage": "keep showing the newest single photo's sender (avatar, and its caption if any): Locket's widget always shows one sender's newest photo and has no collage state"
+        "rectangular": "C-16 people row in vibrant rendering: the newest poster's avatar size.global.avatarPicker, then name (text role listTitle) over the group name (text role listSubtitle)",
+        "circular": "the newest poster's avatar filling the circle (C-23)",
+        "inline": "one line '{name} · {group}' (copy widget.lock.inline.text)",
+        "newestIsCollage": "rectangular / inline show the group name alone; circular shows icon.global.camera"
       },
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.lock.rect",
-      "element": "what the Lock Screen widgets show in the two cases Locket's small-widget anatomy cannot fill: the newest photo has no caption (rectangular, inline) and the newest item is a collage (all three)",
-      "evidence": "references/auto/locket/store/locket-store-06.png (small widget, photo + avatar at the bottom-left, no caption, no badge) next to references/auto/locket/store/locket-store-03.png (avatar + caption pill); https://developer.apple.com/design/human-interface-guidelines/widgets ('Provide useful information in your Lock Screen widget'; 'show content quickly without hiding stale data behind placeholder content')",
+      "element": "what the Lock Screen widgets show (Retro has no Lock Screen widget: its home-widget text stack, name over group, drawn with Retro's people-row roles)",
+      "evidence": "references/auto/retro/apk/widget_preview_friends.webp, widget_preview_journals.webp, widget_preview_memories.webp (Retro APK 2026.10.1150 mdpi previews, 158×158 px = 158 dp, 1 px = 1 dp) (name over album title); design/components.md C-16, C-23; HIG Widgets §Vibrant (widget.lock.rect.layout.rendering)",
       "level": "SOURCED",
-      "notes": "Gap fill (MERGE G2-13). No Lock Screen widget exists in Locket, BeReal or any source found (BeReal / Locket help searched); this is the closest sourced composition, flagged for the owner. widget.lock.circular already shows the newest sender's avatar, so the collage rule keeps the three Lock Screen sizes consistent.",
-      "method": "composition from the reference's own no-caption anatomy (store-06) and its one-photo-at-a-time content rule (C-19 brief: compose from the small anatomy + HIG)",
+      "notes": "Replaces the Locket avatar + caption composition (MERGE G2-13): name and group always exist, so the no-caption case is gone (RC-11).",
+      "method": "composition of Retro components C-16 / C-23 with the Retro widget's two lines, in HIG's accessory families",
       "precision": "—"
     },
     "widget.arrival.duration.transition": {
@@ -963,7 +535,7 @@
       "method": "frame diff: the widget region changes in one frame, the rest of the screen is identical",
       "level": "SOURCED",
       "precision": "≤33 ms (1 frame); 2022 iOS build",
-      "notes": "HIG allows ≤ 2 s update animations; the reference uses none. Reduce Motion: unchanged."
+      "notes": "Mechanics (Locket 2022 instant swap). Retro's widget arrival was not captured; Glance replaces its content without a transition too."
     },
     "widget.arrival.duration.expectedDelay": {
       "type": "duration",
@@ -977,103 +549,52 @@
       "level": "SOURCED",
       "notes": "Expectation for QA, not a promise: iOS reloads are budgeted and 'delivered opportunistically' (docs/PLATFORM_CONSTRAINTS.md §1). Copy never says 'instant'."
     },
-    "widget.android.size.minSize": {
-      "type": "dimension",
-      "value": 110,
-      "unit": "dp",
-      "source_app": "Locket",
+    "widget.android.layout.provider": {
+      "type": "layout",
+      "value": {
+        "minWidth": 200,
+        "minHeight": 200,
+        "minResizeWidth": 100,
+        "minResizeHeight": 100,
+        "targetCellWidth": 2,
+        "targetCellHeight": 2,
+        "resizeMode": "horizontal|vertical",
+        "reconfigurable": true
+      },
+      "source_app": "Retro",
       "surface": "widget.android",
-      "element": "minWidth and minHeight",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) res/xml/widget_info.xml",
-      "method": "compiled resource",
+      "element": "AppWidgetProviderInfo of the Glance widget (default 2 × 2, resizable down to 100 dp)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'WIDGET PROVIDERS (res/xml): friends/journals/memories_widget_info: minWidth 200dp minHeight 200dp, minResize 100dp, targetCell 2x2, updatePeriodMillis 3600000' — design/research/retro-package-copy-motion.md §6.1",
+      "method": "package constants",
       "level": "SOURCED",
       "precision": "exact",
-      "notes": "resizeMode horizontal|vertical; widgetCategory home_screen (+ keyguard by default on Android 16 QPR2+, see spec)."
+      "notes": "Replaces Locket's 110-dp minimum. resizeMode: Retro's provider is resizable (minResize set); exact flag string not excerpted — both axes as Locket (design/research/locket.md §2)."
     },
-    "widget.android.size.avatar": {
-      "type": "dimension",
-      "value": 32,
-      "unit": "dp",
-      "source_app": "Locket",
-      "surface": "widget.android",
-      "element": "sender avatar diameter",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) res/layout/widget.xml locket_profile_view 32.0dip; dimen/widget_profile_photo_size",
-      "method": "compiled resource (re-read this pass)",
-      "level": "SOURCED",
-      "precision": "exact"
-    },
-    "widget.android.size.overlayMargin": {
-      "type": "dimension",
-      "value": 8,
-      "unit": "dp",
-      "source_app": "Locket",
-      "surface": "widget.android",
-      "element": "avatar start / bottom margin; caption bottom and end margins",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) res/layout/widget.xml marginStart / marginBottom / marginEnd 8.0dip",
-      "method": "compiled resource",
-      "level": "SOURCED",
-      "precision": "exact"
-    },
-    "widget.android.size.captionGap": {
-      "type": "dimension",
-      "value": 6,
-      "unit": "dp",
-      "source_app": "Locket",
-      "surface": "widget.android",
-      "element": "avatar → caption gap",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) res/layout/widget.xml caption container marginStart 6.0dip",
-      "method": "compiled resource",
-      "level": "SOURCED",
-      "precision": "exact"
-    },
-    "widget.android.color.avatarPlaceholderTop": {
-      "type": "color",
-      "value": "#A0A0A0F5",
-      "source_app": "Locket",
-      "surface": "widget.android",
-      "element": "avatar placeholder (sender has no avatar), gradient start (angle 270)",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) drawable/bg_profile_placeholder",
-      "method": "compiled resource",
-      "level": "SOURCED",
-      "precision": "exact",
-      "notes": "Android resource ARGB #F5A0A0A0 written as #RRGGBBAA (CONVENTIONS / tools/designgen.mjs read the last two digits as alpha)."
-    },
-    "widget.android.color.avatarPlaceholderBottom": {
-      "type": "color",
-      "value": "#828282F5",
-      "source_app": "Locket",
-      "surface": "widget.android",
-      "element": "avatar placeholder gradient end",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) drawable/bg_profile_placeholder",
-      "method": "compiled resource",
-      "level": "SOURCED",
-      "precision": "exact",
-      "notes": "Android resource ARGB #F5828282 written as #RRGGBBAA (CONVENTIONS / tools/designgen.mjs read the last two digits as alpha)."
-    },
-    "widget.android.radius.fallback": {
+    "widget.android.radius.widget": {
       "type": "radius",
-      "value": 8,
+      "value": 22,
       "unit": "dp",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.android",
-      "element": "widget corner radius before Android 12 (theme attr appWidgetRadius); 12+ uses @android:dimen/system_app_widget_background_radius",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) style AppTheme.AppWidgetContainerParent; https://developer.android.com/develop/ui/compose/glance/create-app-widget#implement-rounded-corners",
-      "method": "compiled resource; Android doc",
+      "element": "Glance widget corner radius (root container), every Android version",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Glance widget: corner radius 22dp (rx2(c54(22)))' (qmh.java); preview art corners ≈24–27 px (references/auto/retro/apk/widget_preview_friends.webp, widget_preview_journals.webp, widget_preview_memories.webp (Retro APK 2026.10.1150 mdpi previews, 158×158 px = 158 dp, 1 px = 1 dp))",
+      "method": "package constant",
       "level": "SOURCED",
-      "precision": "exact"
+      "precision": "exact",
+      "notes": "Replaces Locket's 8-dp pre-Android-12 fallback and the system radius."
     },
     "widget.android.duration.updatePeriod": {
       "type": "duration",
-      "value": 86400000,
+      "value": 3600000,
       "unit": "ms",
-      "source_app": "Locket",
+      "source_app": "Retro",
       "surface": "widget.android",
-      "element": "system periodic update interval (safety net; refresh is push-driven)",
-      "evidence": "Locket Android APK 1.243.0 (APKMirror, uploaded 2026-10-09; design/research/locket.md §2) res/xml/widget_info.xml updatePeriodMillis",
-      "method": "compiled resource",
+      "element": "system periodic update interval (safety net; refresh stays push-driven)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt provider XML updatePeriodMillis 3600000 — design/research/retro-package-copy-motion.md §6.1",
+      "method": "package constant",
       "level": "SOURCED",
       "precision": "exact",
-      "notes": "Android: values under 30 min are not supported; the FCM + WorkManager path does the real refresh (docs/PLATFORM_CONSTRAINTS.md §1.6, §4.3)."
+      "notes": "Retro refreshes hourly; was Locket's 24 h. Android honours ≥ 30 min."
     },
     "widget.android.layout.sizes": {
       "type": "layout",
@@ -1106,293 +627,42 @@
       "level": "PLATFORM",
       "notes": "Conflict with backend/worker/src/push/payloads.ts (time-sensitive when Live Activities are off) and android AppChannel.DailyInvitation comment — MERGE_DECISIONS capture C-10."
     },
-    "daily.capture.color.text": {
-      "type": "color",
-      "value": "#FAFAFA",
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "countdown digits, SEND label, prompt line (all BeReal capture text)",
-      "evidence": "references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (lossless, 2x) countdown digits bbox x333–374 y206–238; references/auto/bereal/help/help-21083730354333_feed-bonus-3x.png (lossless, 3x) 'My Friends' (230–520, 300–370)",
-      "method": "median of top-10 % luminance pixels (max 250 while the status bar in the same file is 255)",
-      "level": "SOURCED",
-      "precision": "exact (lossless)",
-      "notes": "Video samples (253,250,254) AP, (246,244,247) TT prompt — consistent within compression."
-    },
-    "daily.capture.layout.dismiss": {
-      "type": "layout",
-      "value": {
-        "centerFromLeading": 31.7,
-        "centerFromTop": 74.5
-      },
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "dismiss chevron (icon.global.chevronDown, color daily.capture.color.text) centre",
-      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (BeReal App Store preview #106, 886 px = 393 pt, 2.2545 px/pt; listing v4.96.1) glyph bbox x56–87, y159–177",
-      "method": "bbox centre; pt = px ÷ 2.2545 (AP frame 886 px = 393 pt; 1:1 checked by wordmark width)",
-      "level": "SOURCED",
-      "precision": "±0.5 pt",
-      "notes": "Hit area size.global.minTouchTarget.*."
-    },
-    "daily.capture.layout.countdown": {
-      "type": "layout",
-      "value": {
-        "digitsTop": 92.3,
-        "gapAboveViewfinder": 16.2
-      },
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "countdown position: centred, digits top from the screen top",
-      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (BeReal App Store preview #106, 886 px = 393 pt, 2.2545 px/pt; listing v4.96.1) digits y208–244, centre x441 (screen 443); viewfinder top y280",
-      "method": "differences; pt = px ÷ 2.2545 (AP frame 886 px = 393 pt; 1:1 checked by wordmark width)",
-      "level": "SOURCED",
-      "precision": "±0.5 pt",
-      "notes": "BeReal's wordmark sat 10.2 pt above the digits; the wordmark is not copied and its slot stays empty."
-    },
-    "daily.capture.fontSize.countdown": {
-      "type": "fontSize",
-      "value": 23,
-      "unit": "pt",
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "countdown digits (MM:SS) in the platform font",
-      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (BeReal App Store preview #106, 886 px = 393 pt, 2.2545 px/pt; listing v4.96.1) digit height 16.4 pt (y208–244); references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (lossless, 2x) '0' 16.5 pt",
-      "method": "derived: digit height ÷ 0.705 (SF Pro cap-height ratio)",
-      "level": "SOURCED",
-      "precision": "±1 pt",
-      "notes": "Derivation for a PLATFORM font (bereal proposal font.size.daily.capture.countdown). Verify digit height side by side."
-    },
-    "daily.capture.fontWeight.countdown": {
-      "type": "fontWeight",
-      "value": "bold",
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "countdown digit weight",
-      "evidence": "references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (lossless 2x): countdown '1' stem x370-376, row coverage (156 + 5 x 250 + 187) / 250 = 6.37 px at y225, digit height 31 rows (y207-237) -> stem / height 0.205; references/auto/platform/sf-pro-display-digit-one-stem-ratio.csv: SF Pro Display '1' stem / height regular 0.121, medium 0.152, semibold 0.175, bold 0.207, heavy 0.253, black 0.294",
-      "level": "SOURCED",
-      "notes": "Gap fill (MERGE G2-14). Android uses the same weight with Roboto (Roboto Bold stem / cap 0.208, memory pass).",
-      "method": "closing step of the capture pass: the platform font's '1' rendered per weight (SF Pro Display web font from apple.com, measurement only, not stored) and compared with BeReal's ratio; nearest = Bold (0.207 vs 0.205)",
-      "precision": "±0.007 ratio (sub-pixel coverage on a 31-px digit); neighbours differ by ≥0.03"
-    },
     "daily.capture.layout.viewfinder": {
       "type": "layout",
       "value": {
-        "width": 378.7,
-        "sideMargin": 7,
-        "top": 124.4,
         "aspect": 0.75,
-        "cornerRadius": 16
+        "width": "screen width − 2 × size.global.screenMargin",
+        "corners": "radius.global.viewfinder",
+        "top": "20 pt below the header circle's bottom (camera.sendto.layout.preview.topBelowHeaderCircle)",
+        "shrink": "as camera.capture.layout.viewfinder"
       },
-      "source_app": "BeReal",
+      "source_app": "Retro",
       "surface": "daily.capture",
-      "element": "live viewfinder: 3:4, centred, rounded",
-      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (BeReal App Store preview #106, 886 px = 393 pt, 2.2545 px/pt; listing v4.96.1) edges L 15.64, R 869.35, T 280.46, B 1422.50 px; corner fit r 36.0 / 35.75 px",
-      "method": "subpixel max-gradient edges (medians of 801 rows / 501 columns); circle fit; pt = px ÷ 2.2545 (AP frame 886 px = 393 pt; 1:1 checked by wordmark width)",
+      "element": "live viewfinder and preview frame of the daily capture (Retro photo container under the sheet header)",
+      "evidence": "camera.capture.layout.viewfinder (Retro photo container) + camera.sendto.layout.header / .preview (references/auto/retro/store/retro-store-03.png (App Store listing 124.0, 'Postcard' modal, 1284×2778, 2.389 px/pt; phone screen y576–2611 = 852 pt, x171–1110 = 393 pt)); mechanics order: BeReal 2026 capture screen references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (countdown → 3:4 viewfinder → flash / shutter / flip)",
+      "method": "composition of Retro components C-29 (sheet header with the countdown in the title slot), C-17/C-18 photo container and C-11 circles in BeReal's order",
       "level": "SOURCED",
-      "precision": "±0.5 pt",
-      "notes": "2023–2024 builds were full-bleed; the 2026 build is used (newest). Width = screen width − 2 × sideMargin on other screens."
+      "notes": "BeReal's own 378.7-pt, 16-corner viewfinder, its 23-pt bold countdown and its 'SEND ➤' are replaced by Retro components (RC-12)."
     },
-    "daily.capture.layout.shutter": {
+    "daily.dualimage.layout.composition": {
       "type": "layout",
       "value": {
-        "outer": 74,
-        "ring": 4,
-        "gap": 2.75,
-        "disc": 60.5,
-        "centerFromBottom": 148
+        "mainAspect": 0.75,
+        "mainRadiusRatio": 0.0455,
+        "insetWidthRatio": 0.31,
+        "insetAspect": 0.75,
+        "insetMarginRatio": 0.03,
+        "insetBorderRatio": 0.0051,
+        "insetOuterRadiusRatio": 0.126
       },
       "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "shutter: white ring (color.global.surfaceLight), black gap, white disc; horizontally centred",
-      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (BeReal App Store preview #106, 886 px = 393 pt, 2.2545 px/pt; listing v4.96.1) x360.1–526.65 (row 1587), y1503.5–1670.3 (col 443); ring 8.6–9.1 px; gap 6.05–6.25 px; disc 136.5 px; centre (443.4, 1586.9)",
-      "method": "threshold-128 crossings; pt = px ÷ 2.2545 (AP frame 886 px = 393 pt; 1:1 checked by wordmark width)",
+      "surface": "daily.dualimage",
+      "element": "one answer: back photo 3:4 with the front photo inset top-leading; every value a ratio of the main width (the worker composes collage tiles with it)",
+      "evidence": "references/auto/bereal/help/help-21083730354333_feed-bonus-3x.png (lossless, 3x) inset x34.72–400.46, y1990.72–2478.40, border 6 px, margin 35.2 px both axes, corners 44.5–48.75 px; references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (lossless, 2x) / references/auto/bereal/help/help-21083730407325_bts-gif-frame48.png (242/786, margin 24 px, border 4 px, radii 29.75–31 px); AP #205/#220 (0.3102, 0.3126)",
+      "method": "subpixel edges, circle fits; ratios agree across 5 sources (0.308–0.313)",
       "level": "SOURCED",
-      "precision": "±0.5 pt",
-      "notes": "2024 build: hollow 80-pt ring (superseded)."
-    },
-    "daily.capture.layout.sideControls": {
-      "type": "layout",
-      "value": {
-        "flashCenterFromLeading": 59.2,
-        "flipCenterFromTrailing": 60.1
-      },
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "flash (icon.global.flashOff / .flashOn) and flip (icon.global.flip) glyph centres, vertically centred on the shutter",
-      "evidence": "references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (BeReal App Store preview #106, 886 px = 393 pt, 2.2545 px/pt; listing v4.96.1) flash bbox x113–154 y1559–1614 (18.6 × 24.8 pt); flip bbox x721–780 y1562–1611 (26.6 × 22.2 pt)",
-      "method": "bbox centres; pt = px ÷ 2.2545 (AP frame 886 px = 393 pt; 1:1 checked by wordmark width)",
-      "level": "SOURCED",
-      "precision": "±0.5 pt"
-    },
-    "daily.capture.size.progress": {
-      "type": "dimension",
-      "value": 34.7,
-      "unit": "pt",
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "spinner shown between the two captures (platform progress indicator), centred in the viewfinder",
-      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t17.63s_black-spinner-prompt.png (TT #530, 1.846 px/pt) bbox x332–395 y600–662",
-      "method": "bbox ÷ 1.846",
-      "level": "SOURCED",
-      "precision": "±1 pt"
-    },
-    "daily.capture.layout.prompt": {
-      "type": "layout",
-      "value": {
-        "gapBelowSpinner": 11.4
-      },
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "one centred prompt line under the spinner",
-      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t17.63s_black-spinner-prompt.png (TT #530, 1.846 px/pt) spinner bottom y661 → text top y682",
-      "method": "difference ÷ 1.846 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1 pt"
-    },
-    "daily.capture.fontSize.prompt": {
-      "type": "fontSize",
-      "value": 17,
-      "unit": "pt",
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "prompt line under the spinner",
-      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t17.63s_black-spinner-prompt.png (TT #530, 1.846 px/pt) text bbox x179–550 y682–710; 'S' cap y683–705 (23 px incl. overshoot)",
-      "method": "cap height ÷ 1.846 ÷ 0.705 = 17.7 (this pass; bereal proposal: block 31 px)",
-      "level": "SOURCED",
-      "precision": "±1 pt",
-      "notes": "Weight not measured (no token)."
-    },
-    "daily.capture.layout.retake": {
-      "type": "layout",
-      "value": {
-        "diameter": 34,
-        "inset": 12,
-        "glyph": 14
-      },
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "retake ✕ circle (icon.global.close) inside the preview image, top-trailing",
-      "evidence": "references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (lossless, 2x) circle x694–761, y288–355; glyph 714–741 × 308–335; image right edge 786, top 264; cross-check references/auto/bereal/store/bereal-store-02.png 0.083 × main width",
-      "method": "luminance profile ÷ 2",
-      "level": "SOURCED",
-      "precision": "±0.5 pt"
-    },
-    "daily.capture.color.overlayControl": {
-      "type": "color",
-      "value": "#00000075",
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "translucent dark fill of the retake circle and the audience chip over the photo",
-      "evidence": "references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (lossless 2x, under a uniform tutorial dimming): retake ✕ circle interior (4,14,26) at x700-712 y300-345 vs the flat sky beside it (8,23,44) at x676-690; 'BTS On' chip (6,14,26) at x640-655 vs sky (13,27,46) at x462-472",
-      "level": "SOURCED",
-      "notes": "Gap fill (MERGE G2-15): BeReal's own lossless frame; earlier attempts used a busy concert photo (bereal-store-02) where the blur makes a flat-tint solve inconsistent. Draw over a backdrop blur of the photo (the controls blur what is under them).",
-      "method": "single-background solve for a black tint; ratios are unchanged by the uniform dimming: alpha = 1 - C/B = 0.50/0.39/0.41 (retake) and 0.54/0.48/0.44 (chip), mean 0.46 -> #000000 at 0.46 (117/255 = 0x75)",
-      "precision": "±0.06 alpha (dark 8-bit values; backdrop blur not measured)"
-    },
-    "daily.capture.layout.audienceChip": {
-      "type": "layout",
-      "value": {
-        "height": 37.4,
-        "paddingLeading": 15.7,
-        "paddingTrailing": 18,
-        "glyphToText": 7.6,
-        "bottomInset": 12.5
-      },
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "audience chip (icon.global.group + group name) centred near the bottom of the preview image (shape radius.global.capsule)",
-      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (TT #640, 1.846 px/pt) chip y1019–1087 (col 300), left edge x143, right edge x425; glyph x172–203; text x217–392; image bottom y1110",
-      "method": "edge transitions ÷ 1.846 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1 pt",
-      "notes": "BeReal's location chip ('Off') next to it is not built (no location feature); the remaining chip stays centred as the chip group is."
-    },
-    "daily.capture.fontSize.chip": {
-      "type": "fontSize",
-      "value": 13,
-      "unit": "pt",
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "audience chip text",
-      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (TT #640, 1.846 px/pt) 'M' cap y1045–1061 (17 px)",
-      "method": "cap height ÷ 1.846 ÷ 0.705 = 13.1 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1 pt",
-      "notes": "Weight not measured."
-    },
-    "daily.capture.layout.send": {
-      "type": "layout",
-      "value": {
-        "capTopBelowImage": 69,
-        "glyphGap": 11.4,
-        "glyph": 19.5
-      },
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "SEND label + right-pointing triangle (icon.global.play), centred under the preview image",
-      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (TT #640, 1.846 px/pt) SEND bbox x246–442 y1239–1291, triangle x463–498 y1247–1282, image bottom y1110 (70 pt); references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (lossless, 2x) SEND top y1447, image bottom y1311 (68 pt)",
-      "method": "differences ÷ 1.846 and ÷ 2 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1 pt"
-    },
-    "daily.capture.fontSize.send": {
-      "type": "fontSize",
-      "value": 40.5,
-      "unit": "pt",
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "SEND label (capitals)",
-      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (TT #640, 1.846 px/pt) cap height y1239–1291 (53 px)",
-      "method": "cap height ÷ 1.846 ÷ 0.705 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1 pt"
-    },
-    "daily.capture.fontWeight.send": {
-      "type": "fontWeight",
-      "value": "heavy",
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "SEND label weight",
-      "evidence": "references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (TT #640, 1.846 px/pt); references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (lossless, 2x)",
-      "method": "visual (very heavy display weight)",
-      "level": "SOURCED",
-      "precision": "visual"
-    },
-    "daily.capture.layout.countdownTick": {
-      "type": "layout",
-      "value": {
-        "tick": 1000,
-        "digitOut": 100,
-        "digitIn": 300,
-        "digitFadeIn": 550,
-        "travel": 3
-      },
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "countdown roll: only changed digits move; old digit slides up and fades out, new digit rises from 3 pt below and fades in (ms; travel pt)",
-      "evidence": "https://www.tiktok.com/@bereal/video/7339559678604627233 (official @bereal unedited screen recording, 30 fps, 2024-02-25) ticks starting #484 and #514; references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (BeReal App Store preview #106, 886 px = 393 pt, 2.2545 px/pt; listing v4.96.1) (frames #95–#125, references/auto/bereal/frames/appstore-preview-2026_timer-roll_f086-f129.png); references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (lossless, 2x) (lossless still: old digit clipped at top, new digit rising)",
-      "method": "frame counts at 30 fps; centroid / peak brightness per frame",
-      "level": "SOURCED",
-      "precision": "±1 frame (33 ms)",
-      "notes": "Curves not measurable (3–9 samples, sub-3-pt travel); the new digit decelerates into place. Colon never moves. Reduce Motion: cross-fade the changed digits over digitOut / digitIn."
-    },
-    "daily.capture.layout.captureSequence": {
-      "type": "layout",
-      "value": {
-        "pressScale": 0.912,
-        "press": 133,
-        "controlsOut": 370,
-        "viewfinderFadeOut": 267,
-        "betweenShots": 500,
-        "backPhotoFadeIn": 200
-      },
-      "source_app": "BeReal",
-      "surface": "daily.capture",
-      "element": "shutter press → controls leave → black + spinner + prompt → back photo fades in → front capture → preview (ms)",
-      "evidence": "https://www.tiktok.com/@bereal/video/7339559678604627233 (official @bereal unedited screen recording, 30 fps, 2024-02-25) #515–#546 (scale 1.000→0.986→0.966→0.939→0.912; then 0.872…0; viewfinder mean 133→3; back photo mean 6→150); references/auto/bereal/frames/tiktok-bereal-7339559678604627233_shutter-press_f518-f546.jpg",
-      "method": "frame counts at 30 fps",
-      "level": "SOURCED",
-      "precision": "±1 frame",
-      "notes": "Second capture (≈1830 ms) and total (≈2900 ms) are camera-dependent, not design constants. The preview appears in one frame. Reduce Motion: no scale; fades only."
+      "precision": "±0.003 (radius ratio ±0.01)",
+      "notes": "Mechanics (BeReal dual image), read by the worker (backend/worker/COPY_KEYS.md 'Collage and media'). In the app the main image's outer corners follow its host container (Retro photo treatment, retro-visual §3.8): radius.global.viewfinder in daily.capture, radius.global.photo (0) in the viewer, radius.global.card on cards; mainRadiusRatio applies only where no host shape exists. Inset border colour color.global.backgroundDeep (Retro black)."
     },
     "daily.liveactivity.layout.size": {
       "type": "layout",
@@ -1434,40 +704,6 @@
       "method": "quoted",
       "level": "VERIFIED"
     },
-    "daily.liveactivity.layout.typography": {
-      "type": "layout",
-      "value": {
-        "groupName": "headline (17 pt semibold, Dynamic Type)",
-        "countdownLockScreen": "daily.capture.fontSize.countdown (23 pt), monospaced digits",
-        "countdownCompact": "headline, monospaced digits",
-        "countdownMinimal": "caption1, semibold, monospaced digits"
-      },
-      "source_app": "Apple HIG",
-      "surface": "daily.liveactivity",
-      "element": "text styles per presentation",
-      "evidence": "https://developer.apple.com/design/human-interface-guidelines/live-activities (change log 2026-10-13; screenshot references/auto/platform/hig-live-activities-ios-dimensions.png) (medium weight or higher; 'use shortened units or less precise data to maintain appropriate width'); platform typography table design/research/platform.md §Accessibility (Headline 17/22 Semibold; Caption 1 12/16, emphasized Semibold)",
-      "method": "HIG text styles",
-      "level": "PLATFORM",
-      "notes": "Countdown weight is daily.capture.fontWeight.countdown (BLOCKED) on the Lock Screen; compact/minimal use the HIG emphasized styles."
-    },
-    "daily.liveactivity.layout.colors": {
-      "type": "layout",
-      "value": {
-        "islandBackground": "system black (not customizable)",
-        "lockScreenBackground": "color.global.backgroundDeep",
-        "countdown": "color.global.accent",
-        "text": "color.global.textPrimary",
-        "keyLine": "color.global.accent",
-        "systemActionForeground": "color.global.textPrimary"
-      },
-      "source_app": "Apple HIG",
-      "surface": "daily.liveactivity",
-      "element": "colors of the Live Activity",
-      "evidence": "https://developer.apple.com/design/human-interface-guidelines/live-activities (change log 2026-10-13; screenshot references/auto/platform/hig-live-activities-ios-dimensions.png) §Choosing colors ('Live Activities in the Dynamic Island use a black opaque background'; 'you can use a custom background color for the Lock Screen presentation'; 'Consider using bold colors for text and objects to convey the personality and brand of your app'; 'Tint your Live Activity’s key line color so that it matches your content'); §Lock Screen ('Verify the generated color of the dismiss button')",
-      "method": "quoted rules mapped to the app's foundation colors",
-      "level": "PLATFORM",
-      "notes": "The app is dark-only (layout.global.appearance), so the Lock Screen background is the app's black in both system appearances; lime on black passes contrast (design/CONTRAST.md)."
-    },
     "daily.liveactivity.duration.animationMax": {
       "type": "duration",
       "value": 2000,
@@ -1495,6 +731,41 @@
       "level": "PLATFORM",
       "notes": "No summary after the window: anything shown after closes_at would read as 'late' (SPEC_FLAGS T4)."
     },
+    "daily.liveactivity.layout.typography": {
+      "type": "layout",
+      "value": {
+        "groupNameLockScreen": "font.global.display, text role displaySmall (24, regular), color.global.textOnMedia",
+        "countdownLockScreen": "text role sheetTitle (17 semibold), monospaced digits, color.global.textOnMedia",
+        "groupNameExpanded": "text role sheetTitle (17 semibold)",
+        "countdownCompact": "text role sheetTitle (17 semibold), monospaced digits",
+        "countdownMinimal": "Caption 1 (12 pt) semibold, monospaced digits (system; Retro has no role this small)"
+      },
+      "source_app": "Retro",
+      "surface": "daily.liveactivity",
+      "element": "text styles per presentation: Retro roles where they fit the presentation, the system's in the minimal presentation",
+      "evidence": "design/research/retro-visual.md §5 ('Live Activity drawn with D tokens (black, white SF, serif \"Week\"-style title if a title is used)'); design/tokens/global.json text roles; HIG Live Activities (≥ medium weight, daily.liveactivity.fontWeight.min)",
+      "method": "composition of Retro text roles in HIG's presentations",
+      "level": "SOURCED",
+      "notes": "Was BeReal's 23-pt countdown and HIG Headline. Every weight ≥ medium (HIG)."
+    },
+    "daily.liveactivity.layout.colors": {
+      "type": "layout",
+      "value": {
+        "islandBackground": "system black (not customizable)",
+        "lockScreenBackground": "color.global.backgroundDeep",
+        "countdown": "color.global.textOnMedia",
+        "text": "color.global.textOnMedia",
+        "keyLine": "color.global.textOnMedia",
+        "systemActionForeground": "color.global.textOnMedia"
+      },
+      "source_app": "Retro",
+      "surface": "daily.liveactivity",
+      "element": "colours of the Live Activity (media surface: black page, white text — Retro has no brand colour in chrome)",
+      "evidence": "design/tokens/global.json layout.global.appearance.media, color.global.textOnMedia; design/research/retro-visual.md §5 (Live Activity drawn with dark tokens); HIG Live Activities (custom Lock Screen background allowed; Dynamic Island background is system black)",
+      "method": "Retro media-surface colours in HIG's presentation slots",
+      "level": "SOURCED",
+      "notes": "Yope's lime countdown and key line are gone (color.global.accent is now the black / white primary fill)."
+    },
     "daily.ongoing.layout.notification": {
       "type": "layout",
       "value": {
@@ -1504,7 +775,7 @@
         "ongoing": "false (dismissible)",
         "promoted": "no (Live Update only after an explicit opt-in, with an Unpin action)",
         "channel": "daily_invitation",
-        "color": "color.global.accent",
+        "color": "not set (system default) — Retro's notification colour was not captured",
         "tap": "app://daily?group=<id>&invitation=<id>"
       },
       "source_app": "Material 3",
@@ -1513,27 +784,7 @@
       "evidence": "https://developer.android.com/reference/android/app/Notification.Builder (setUsesChronometer, setChronometerCountDown API 24, setTimeoutAfter API 26); https://developer.android.com/develop/ui/views/notifications/live-update (2026-10-07: 'Don't allow activities triggered by other parties to generate Live Updates'); docs/PLATFORM_CONSTRAINTS.md §4.6",
       "method": "native APIs and quoted usage criteria",
       "level": "PLATFORM",
-      "notes": "The system chronometer renders MM:SS (DateUtils.formatElapsedTime), which is BeReal's format (bereal.format.countdown). Conflict with android DailyInvitationNotifier (asks for promotion) — MERGE_DECISIONS capture C-11."
-    },
-    "daily.dualimage.layout.composition": {
-      "type": "layout",
-      "value": {
-        "mainAspect": 0.75,
-        "mainRadiusRatio": 0.0455,
-        "insetWidthRatio": 0.31,
-        "insetAspect": 0.75,
-        "insetMarginRatio": 0.03,
-        "insetBorderRatio": 0.0051,
-        "insetOuterRadiusRatio": 0.126
-      },
-      "source_app": "BeReal",
-      "surface": "daily.dualimage",
-      "element": "back photo 3:4 with the front photo inset top-leading; every value is a ratio of the main image width except the inset radius (ratio of the inset width)",
-      "evidence": "references/auto/bereal/help/help-21083730354333_feed-bonus-3x.png (lossless, 3x) inset x34.72–400.46, y1990.72–2478.40, border 6 px, margin 35.2 px both axes, corners 44.5–48.75 px; references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png (lossless, 2x) / references/auto/bereal/help/help-21083730407325_bts-gif-frame48.png (242/786, margin 24 px, border 4 px, radii 29.75–31 px); AP #205/#220 (0.3102, 0.3126)",
-      "method": "subpixel edges, circle fits; ratios agree across 5 sources (0.308–0.313)",
-      "level": "SOURCED",
-      "precision": "±0.003 (radius ratio ±0.01)",
-      "notes": "Inner (photo) radius = outer − border. Border and background color.global.backgroundDeep (BeReal #000000 exact, H3). A single-camera answer shows the back photo alone. Same values as the collage proposal layout.collage.dualTile (worker)."
+      "notes": "Was tinted color.global.accent (Yope lime); the redesign's accent is black / white and Retro's notification tint is unknown, so the system default applies (PLATFORM)."
     },
     "collage.view.layout.page": {
       "type": "layout",
@@ -1552,165 +803,47 @@
       "method": "20 / 402 = 0.0498; 3 × (4/9) = 16/9 so 4 rows of 3:4 tiles fill 9:16 exactly; width = Stories canvas 1080 px (collage.share)",
       "level": "SOURCED",
       "precision": "radius ±2 pt",
-      "notes": "Production fallback while the owner has not chosen (A / B / C). Tiles are daily.dualimage.layout.composition. Empty cells of a part-filled page are not observed in Yope (README)."
+      "notes": "Worker composition of the collage image (option B 'wall pages', owner choice pending — design/collage-options/README.md), unchanged by the redesign: the worker reads it (backend/worker/COPY_KEYS.md). Its 0.0498 corner ratio matches Retro's recap card (≈4.5–5 % of the card width, TC-H) — the app clips the page to it on the blurred backdrop. A Retro-styled composition (recap card: white card, 1–2 pt gaps, serif footer) is an owner option (MERGE_DECISIONS RC-14)."
     },
     "collage.view.layout.screen": {
       "type": "layout",
       "value": {
-        "headerCenterFromTop": 81,
-        "dotsCenterFromTop": 125,
-        "pageTop": 145,
-        "pageFit": "9:16, aspect-fit in the space above the home indicator, centred"
+        "mediaPage": "the page-1 image blurred full-bleed inside a rounded media page (layout.global.materials.backdrop)",
+        "mediaPageTop": "safe-area top",
+        "mediaPageSideInset": 0,
+        "mediaPageBottomFromScreenBottom": 94.8,
+        "mediaPageCornerRadius": 26.5,
+        "closeCentreFromTrailing": 37.7,
+        "closeCentreBelowPageTop": 38,
+        "card": "the composed page, aspect-fit and centred in the media page with at least 32 pt side insets, clipped to collage.view.layout.page.outerRadiusRatio × its width",
+        "bottomRowCentreFromScreenBottom": 59.2,
+        "bottomRow": "page dots (C-31) centred; 'Share' pill (collage.share.layout.pill) at size.global.buttonMarginH from the trailing edge"
       },
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "collage.view",
-      "element": "day-view screen: back circle + date title, page dots, then the page",
-      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png (https://www.tiktok.com/@alexaa.yope/video/7652512140875566349 @5.33 s, 2026-06-17) back circle y91–157 (centre 124), dots y188, first card top y218; screen top y5",
-      "method": "positions ÷ 1.466 (this pass)",
+      "element": "recap-preview layout around the collage: rounded media page with a blurred backdrop, close circle, card, bottom row with page dots and Share",
+      "evidence": "references/auto/retro/store/retro-store-04.png (App Store listing 124.0, recap preview, 1284×2778, 2.389 px/pt; phone screen y576–2611, x171–1110): media page x171–1110 (full width), y717–2385 (59.0 pt from the screen top = safe-area top; bottom 94.8 pt above the screen bottom); corner fits on 70 rows (circle r 64.8 px = 27.1 pt, continuous s 0.6 r 63.5 px = 26.6 pt, threshold profile 61 px = 25.5 pt); close circle #262626, ≈36 pt Ø, centre (1020, 808) = 37.7 pt from the right edge, 38 pt below the page top; Share pill centre y2469.5 = 59.2 pt above the screen bottom, right edge x1062 = 20.1 pt from the screen edge; references/auto/retro/press/tc-2023-12-recaps.png phone 2: card centred with 32–33 pt side insets (x1130–1647 in a page x1075–1703 at 1.697 px/pt)",
+      "method": "edge scans ÷ 2.389 px/pt (ST-04) and ÷ 1.697 px/pt (TC-REC); corner fitted against a circular arc and a figma-squircle continuous corner (smoothing 0.6 / 0.75; rmse 1.7–2.3 px, page content near the corner limits the fit)",
       "level": "SOURCED",
-      "precision": "±1.5 pt"
-    },
-    "collage.view.fontSize.title": {
-      "type": "fontSize",
-      "value": 16,
-      "unit": "pt",
-      "source_app": "Yope",
-      "surface": "collage.view",
-      "element": "date title ('26 May') centred on the back circle's centre line (color.global.textPrimary)",
-      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png (https://www.tiktok.com/@alexaa.yope/video/7652512140875566349 @5.33 s, 2026-06-17) '26 May' bbox x317–402 y115–136; digit '2' y115–131 (17 px)",
-      "method": "digit height ÷ 1.466 ÷ 0.72 = 16.1 (this pass)",
-      "level": "SOURCED",
-      "precision": "±1.5 pt"
-    },
-    "collage.view.fontWeight.title": {
-      "type": "fontWeight",
-      "value": "semibold",
-      "source_app": "Yope",
-      "surface": "collage.view",
-      "element": "date title weight",
-      "evidence": "references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png (https://www.tiktok.com/@alexaa.yope/video/7652512140875566349 @5.33 s, 2026-06-17)",
-      "method": "visual",
-      "level": "SOURCED",
-      "precision": "visual"
-    },
-    "collage.view.layout.pageDots": {
-      "type": "layout",
-      "value": {
-        "diameter": 7.6,
-        "pitch": 15.5,
-        "inactive": "color.global.controlRaised",
-        "ios": "native page control (UIPageControl / TabView .page index)"
-      },
-      "source_app": "Yope",
-      "surface": "collage.view",
-      "element": "page indicator under the header (Android draws these dots; iOS uses the native control Yope uses)",
-      "evidence": "references/auto/yope/store/yope-store-01.png row 832 x506–524 … x703–720 (yope-a §1.3, lossless: 7.6 pt, pitch 15.5, inactive #424242, active #F4F4F4); references/auto/yope/frames/b-alexaa-7652512140875566349-t5.33-day-view-recap.png (https://www.tiktok.com/@alexaa.yope/video/7652512140875566349 @5.33 s, 2026-06-17) dots at y188 shrink toward the ends, the native page-control behaviour (active 12 px white, inactive ≈ (69,69,69))",
-      "method": "runs (yope-a); visual (this pass)",
-      "level": "SOURCED",
-      "precision": "±0.5 pt"
-    },
-    "collage.view.color.pageDotActive": {
-      "type": "color",
-      "value": "#F4F4F4",
-      "source_app": "Yope",
-      "surface": "collage.view",
-      "element": "active page dot (Android)",
-      "evidence": "references/auto/yope/store/yope-store-01.png row 832 (yope-a §1.3)",
-      "method": "runs on a lossless PNG",
-      "level": "SOURCED",
-      "precision": "±2/255"
-    },
-    "collage.view.layout.hud": {
-      "type": "layout",
-      "value": {
-        "width": 100,
-        "height": 99,
-        "cornerRadius": 8.5
-      },
-      "source_app": "Yope",
-      "surface": "collage.view",
-      "element": "loading HUD: dark rounded square with the platform activity indicator over 'Loading'",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png (https://www.tiktok.com/@itsmthuyope/video/7644974799302823175 @50.60 s, 2026-05-28) HUD x229–347, y467–584; corner: x240/235/231/229 at y467/468/471/476",
-      "method": "edge runs ÷ 1.181 (this pass; yope-a §1.8 ≈100 × 98)",
-      "level": "SOURCED",
-      "precision": "±1.5 pt (radius ±2 pt)"
-    },
-    "collage.view.color.hud": {
-      "type": "color",
-      "value": "#0C0C0C",
-      "source_app": "Yope",
-      "surface": "collage.view",
-      "element": "loading HUD fill",
-      "evidence": "references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png (https://www.tiktok.com/@itsmthuyope/video/7644974799302823175 @50.60 s, 2026-05-28) (12,12,12) at x300–330 y475–485 and (13,13,13) at x240–260 y560–575",
-      "method": "median of flat blocks (this pass)",
-      "level": "SOURCED",
-      "precision": "±8/255 (H.264 reads darker, F-5)",
-      "notes": "yope-a §1.8 reported ≈#262626 (median over the whole HUD incl. glyphs) — MERGE_DECISIONS capture C-13."
+      "precision": "±0.5 pt positions; corner ±1.5 pt",
+      "notes": "Replaces Yope's day view (back circle + '26 May' title + Yope dots + HUD). Retro's bottom-left 'selected photos' thumbnail with its count badge is not copied (counts; our collage has no photo selection). The 2023 recap preview (TC-REC) had a page inset 11 pt with ≈29-pt corners; the 2026 render wins (newer)."
     },
     "collage.share.layout.pill": {
       "type": "layout",
       "value": {
-        "width": 126,
-        "height": 58,
-        "cornerRadius": 10,
-        "bottomFromScreenBottom": 36,
-        "glyph": 25.7
+        "height": 43.5,
+        "paddingHorizontal": 23,
+        "trailingInset": "size.global.buttonMarginH",
+        "centreFromScreenBottom": 59.2
       },
-      "source_app": "Yope",
+      "source_app": "Retro",
       "surface": "collage.share",
-      "element": "'share' pill, bottom centre over the collage page (glyph collage.share.icon.share and label, both color.global.textPrimary)",
-      "evidence": "references/auto/yope/frames/b-derot-store-04-rot-3.65.png (references/auto/yope/store/yope-store-04.png rotated -3.65 deg; App Store listing 1.229.0) pill x466–751, y2328–2459; screen x166.5–1053 (886.5 px), screen bottom y≈2540 (col 610); glyph rows 2360–2418",
-      "method": "rim profiles; pt = px ÷ 2.256 (yope-b §9; bottom offset this pass)",
+      "element": "'Share' light pill on the recap preview (C-09 light: fill color.global.surfaceLight, label color.global.onSurfaceLight text role button, no glyph)",
+      "evidence": "references/auto/retro/store/retro-store-04.png (App Store listing 124.0, recap preview, 1284×2778, 2.389 px/pt; phone screen y576–2611, x171–1110): white run x846–1062 (90.8 pt), y2418–2521 (43.5 pt); label 'Share' glyphs x901–1007 → 23 pt each side; 'S' cap 29 px, x-height 21 px → 17 pt; 'h' stem 5 px → semibold (text role button); references/auto/retro/press/tc-2023-12-recaps.png phones 2–3: 85 × 42 pt (2023)",
+      "method": "edge scans and glyph maps ÷ 2.389 px/pt; size from cap 12.1 pt ÷ 0.705 and x-height 8.8 ÷ 0.517",
       "level": "SOURCED",
-      "precision": "±1.5 pt (radius ±2 pt)"
-    },
-    "collage.share.color.pill": {
-      "type": "color",
-      "value": "#9A9489A8",
-      "source_app": "Yope",
-      "surface": "collage.share",
-      "element": "frosted, backdrop-dependent pill fill with a light rim",
-      "evidence": "references/auto/yope/store/yope-store-04.png (lossless, App Store listing 1.229.0): 'share' pill spans a light hoodie and dark hair; pill left (169,166,158) at x535-550 y2370-2430, right (123,107,90) at x790-805; backgrounds beside it left (218,219,210) at x488-512, right (39,20,8) at x830-860; second background estimate above the pill (191,191,181) / (61,31,12) at y2290-2315",
-      "level": "SOURCED",
-      "notes": "Gap fill (MERGE G2-16). A light frosted material: draw this tint over a backdrop blur of the collage (blur radius not measured). Label and glyph stay white (as observed).",
-      "method": "two-background solve C = a*T + (1-a)*B: (1-a) = (C1-C2)/(B1-B2) per channel = 0.26/0.30/0.34 (beside) and 0.35/0.37/0.40 (above) -> a = 0.66 mean; tint T = (C - (1-a)B)/a = (152,144,132) and (157,151,143) -> mean (154,148,137) -> #9A9489 at 0.66 (168/255 = 0xA8)",
-      "precision": "tint ±8/255 per channel, alpha ±0.08 (the pill blurs the photo, so the backdrop under it is only estimated from beside / above it)"
-    },
-    "collage.share.fontSize.label": {
-      "type": "fontSize",
-      "value": 18,
-      "unit": "pt",
-      "source_app": "Yope",
-      "surface": "collage.share",
-      "element": "'share' label",
-      "evidence": "references/auto/yope/frames/b-derot-store-04-rot-3.65.png (references/auto/yope/store/yope-store-04.png rotated -3.65 deg; App Store listing 1.229.0) x-height rows 2384–2404 (21 px = 9.3 pt)",
-      "method": "x-height ÷ 0.526",
-      "level": "SOURCED",
-      "precision": "±1 pt"
-    },
-    "collage.share.fontWeight.label": {
-      "type": "fontWeight",
-      "value": "bold",
-      "source_app": "Yope",
-      "surface": "collage.share",
-      "element": "'share' label weight",
-      "evidence": "references/auto/yope/frames/b-derot-store-04-rot-3.65.png (references/auto/yope/store/yope-store-04.png rotated -3.65 deg; App Store listing 1.229.0)",
-      "method": "visual",
-      "level": "SOURCED",
-      "precision": "visual"
-    },
-    "collage.share.icon.share": {
-      "type": "icon",
-      "value": {
-        "ios": "square.and.arrow.up.fill",
-        "android": "Rounded.IosShare"
-      },
-      "source_app": "Yope",
-      "surface": "collage.share",
-      "element": "filled share glyph (box + up arrow) in the pill",
-      "evidence": "references/auto/yope/frames/b-derot-store-04-rot-3.65.png (references/auto/yope/store/yope-store-04.png rotated -3.65 deg; App Store listing 1.229.0) rows 2360–2418",
-      "level": "PLATFORM",
-      "notes": "Filled variant of icon.global.share (outline); the pill's glyph is filled (yope-b proposal icon.share)."
+      "precision": "±0.5 pt",
+      "notes": "Measured on this surface's Retro analog, so it overrides C-09's provisional pillHeight (37) and pill label (15) here — reported to the foundations (RC-15). Replaces Yope's 126 × 58 frosted pill."
     },
     "collage.share.layout.export": {
       "type": "layout",
@@ -1774,104 +907,6 @@
       "evidence": "docs/PLATFORM_CONSTRAINTS.md §1.2, §1.6; https://developer.apple.com/design/human-interface-guidelines/notifications; design/copy-patterns.md tenet filters (no TIME SENSITIVE)",
       "method": "native API + rule",
       "level": "PLATFORM"
-    },
-    "camera.capture.layout.textStyleMap": {
-      "type": "layout",
-      "value": {
-        "coach": "caption2"
-      },
-      "source_app": "Apple HIG",
-      "surface": "camera.capture",
-      "element": "Dynamic Type style each camera.capture font size scales with",
-      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography (Large sizes: Large Title 34, Title 1 28, Title 2 22, Title 3 20, Headline 17 semibold, Body 17, Callout 16, Subheadline 15, Footnote 13, Caption 1 12, Caption 2 11; design/research/platform.md §Accessibility)",
-      "method": "nearest Large (default) size; tie → weight match; still tied → larger (foundations rule, design/MERGE_DECISIONS.md F-13)",
-      "level": "PLATFORM",
-      "notes": "Android: the fontSize tokens are emitted in sp and follow the system font scale."
-    },
-    "camera.sendto.layout.textStyleMap": {
-      "type": "layout",
-      "value": {
-        "caption": "callout",
-        "messagePlaceholder": "subheadline",
-        "countNumber": "caption2"
-      },
-      "source_app": "Apple HIG",
-      "surface": "camera.sendto",
-      "element": "Dynamic Type style each camera.sendto font size scales with",
-      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography (Large sizes: Large Title 34, Title 1 28, Title 2 22, Title 3 20, Headline 17 semibold, Body 17, Callout 16, Subheadline 15, Footnote 13, Caption 1 12, Caption 2 11; design/research/platform.md §Accessibility)",
-      "method": "nearest Large (default) size; tie → weight match; still tied → larger (foundations rule, design/MERGE_DECISIONS.md F-13)",
-      "level": "PLATFORM",
-      "notes": "Android: the fontSize tokens are emitted in sp and follow the system font scale."
-    },
-    "widget.home.small.layout.textStyleMap": {
-      "type": "layout",
-      "value": {
-        "caption": "caption",
-        "emptyLabel": "title3"
-      },
-      "source_app": "Apple HIG",
-      "surface": "widget.home.small",
-      "element": "Dynamic Type style of the widget caption (12 pt) and the empty label (19 pt) — widgets support Large to AX5 (HIG Widgets)",
-      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography (Large sizes: Large Title 34, Title 1 28, Title 2 22, Title 3 20, Headline 17 semibold, Body 17, Callout 16, Subheadline 15, Footnote 13, Caption 1 12, Caption 2 11; design/research/platform.md §Accessibility)",
-      "method": "nearest Large (default) size; tie → weight match; still tied → larger (foundations rule, design/MERGE_DECISIONS.md F-13)",
-      "level": "PLATFORM",
-      "notes": "Android: the fontSize tokens are emitted in sp and follow the system font scale."
-    },
-    "daily.capture.layout.textStyleMap": {
-      "type": "layout",
-      "value": {
-        "countdown": "title2",
-        "prompt": "body",
-        "chip": "footnote",
-        "send": "largeTitle"
-      },
-      "source_app": "Apple HIG",
-      "surface": "daily.capture",
-      "element": "Dynamic Type style each daily.capture font size scales with",
-      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography (Large sizes: Large Title 34, Title 1 28, Title 2 22, Title 3 20, Headline 17 semibold, Body 17, Callout 16, Subheadline 15, Footnote 13, Caption 1 12, Caption 2 11; design/research/platform.md §Accessibility)",
-      "method": "nearest Large (default) size; tie → weight match; still tied → larger (foundations rule, design/MERGE_DECISIONS.md F-13)",
-      "level": "PLATFORM",
-      "notes": "Android: the fontSize tokens are emitted in sp and follow the system font scale."
-    },
-    "collage.view.layout.textStyleMap": {
-      "type": "layout",
-      "value": {
-        "title": "callout"
-      },
-      "source_app": "Apple HIG",
-      "surface": "collage.view",
-      "element": "Dynamic Type style of the date title",
-      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography (Large sizes: Large Title 34, Title 1 28, Title 2 22, Title 3 20, Headline 17 semibold, Body 17, Callout 16, Subheadline 15, Footnote 13, Caption 1 12, Caption 2 11; design/research/platform.md §Accessibility)",
-      "method": "nearest Large (default) size; tie → weight match; still tied → larger (foundations rule, design/MERGE_DECISIONS.md F-13)",
-      "level": "PLATFORM",
-      "notes": "Android: the fontSize tokens are emitted in sp and follow the system font scale."
-    },
-    "collage.share.layout.textStyleMap": {
-      "type": "layout",
-      "value": {
-        "label": "headline"
-      },
-      "source_app": "Apple HIG",
-      "surface": "collage.share",
-      "element": "Dynamic Type style of the 'share' label (18 pt bold)",
-      "evidence": "https://developer.apple.com/design/human-interface-guidelines/typography (Large sizes: Large Title 34, Title 1 28, Title 2 22, Title 3 20, Headline 17 semibold, Body 17, Callout 16, Subheadline 15, Footnote 13, Caption 1 12, Caption 2 11; design/research/platform.md §Accessibility)",
-      "method": "nearest Large (default) size; tie → weight match; still tied → larger (foundations rule, design/MERGE_DECISIONS.md F-13)",
-      "level": "PLATFORM",
-      "notes": "Android: the fontSize tokens are emitted in sp and follow the system font scale."
-    },
-    "camera.capture.icon.recordHint": {
-      "type": "icon",
-      "value": {
-        "ios": "video.fill",
-        "android": "Rounded.Videocam"
-      },
-      "source_app": "Yope",
-      "surface": "camera.capture",
-      "element": "video-camera glyph leading the 'hold down to record' coach tooltip",
-      "evidence": "references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png (tooltip glyph); yope-a §1.7 glyph table (video camera → video.fill / videocam, exact)",
-      "method": "visual glyph match to SF Symbols / Material Icons",
-      "level": "PLATFORM",
-      "notes": "Rendered at the tooltip text size (SF Symbols scale with the text style)."
     }
   }
 }

@@ -1,7 +1,9 @@
 // Shared component — text roles (design/tokens/README.md "A text role").
-// A role = `fontSize.global.<role>` + `fontWeight.global.<role>` (+ `lineHeight.global.<role>` where measured),
-// scaled with Dynamic Type relative to `layout.global.textStyleMap.<role>`. Screens apply them with
-// `.dsTextStyle(TextRole.<role>)`; italic roles (`emptyDetail`, sign-up subtitles) add `.italic()` on the Text.
+// A role = `fontSize.global.<role>` + `fontWeight.global.<role>` (+ `lineHeight.global.<role>` where measured), in
+// `font.global.family` (SF Pro) — or `font.global.display` (the platform serif, New York) for the display roles
+// `headerTitle`, `displayMedium`, `displaySmall` — scaled with Dynamic Type relative to
+// `layout.global.textStyleMap.<role>`. Screens apply them with `.dsTextStyle(TextRole.<role>)`, or `.dsTextRole(_:)`
+// where a component places views by the text's baseline / cap height (ComponentSupport.swift).
 import DesignSystem
 import SwiftUI
 
@@ -26,47 +28,101 @@ extension Font.TextStyle {
     }
 }
 
-/// The global text roles as `DSTextStyle`s. Weights that were never measured (emptyDetail, the HUD label)
-/// use the platform's regular weight; nothing here chooses a size.
+/// The global text roles as `DSTextStyle`s. Roles whose weight was never measured (`placeholder`, `tileMonth`) use the
+/// platform's regular weight; nothing here chooses a size.
 enum TextRole {
-    private static func role(_ size: CGFloat, _ weight: Font.Weight, _ style: String, lineHeight: CGFloat? = nil) -> DSTextStyle {
-        DSTextStyle(family: Tokens.Fonts.globalFamily, size: size, weight: weight, relativeTo: Font.TextStyle(tokenName: style), lineHeight: lineHeight)
+    private static func role(
+        _ size: CGFloat,
+        _ weight: Font.Weight,
+        _ style: String,
+        family: DSFontFamily = Tokens.Fonts.globalFamily,
+        lineHeight: CGFloat? = nil
+    ) -> DSTextStyle {
+        DSTextStyle(family: family, size: size, weight: weight, relativeTo: Font.TextStyle(tokenName: style), lineHeight: lineHeight)
     }
 
-    /// Sign-up / onboarding big title (`fontSize.global.onboardingTitle`, heavy; Dynamic Type largeTitle).
+    // MARK: Display (serif, `font.global.display`)
+
+    /// Display serif screen title ('Week 43', 'Albums', a profile name; the date title on full-bleed photos):
+    /// `fontSize.global.headerTitle` 40 / `lineHeight.global.headerTitle` 48, regular (C-01, C-02, C-19, C-35).
+    static let headerTitle = role(
+        Tokens.FontSizes.globalHeaderTitle, Tokens.FontWeights.fontWeightGlobalHeaderTitle, Tokens.Layouts.GlobalTextStyleMap.headerTitle,
+        family: Tokens.Fonts.globalDisplay, lineHeight: Tokens.LineHeights.globalHeaderTitle
+    )
+    /// Display serif headline on cards, sheets and onboarding (`fontSize.global.displayMedium` 32, regular; C-33).
+    static let displayMedium = role(
+        Tokens.FontSizes.globalDisplayMedium, Tokens.FontWeights.fontWeightGlobalDisplayMedium, Tokens.Layouts.GlobalTextStyleMap.displayMedium,
+        family: Tokens.Fonts.globalDisplay
+    )
+    /// Small display serif: recap month cards, album titles on covers, the recap year (`fontSize.global.displaySmall`
+    /// 24, regular; C-34).
+    static let displaySmall = role(
+        Tokens.FontSizes.globalDisplaySmall, Tokens.FontWeights.fontWeightGlobalDisplaySmall, Tokens.Layouts.GlobalTextStyleMap.displaySmall,
+        family: Tokens.Fonts.globalDisplay
+    )
+
+    // MARK: UI text (`font.global.family`)
+
+    /// The large grey line on the sign-up landing ('Friends Only'; `fontSize.global.onboardingTitle` 30, regular; C-33).
     static let onboardingTitle = role(Tokens.FontSizes.globalOnboardingTitle, Tokens.FontWeights.fontWeightGlobalOnboardingTitle, Tokens.Layouts.GlobalTextStyleMap.onboardingTitle)
-    /// Sheet title between header circles (`fontSize.global.sheetTitle`, bold).
+    /// Centred sheet / modal title (`fontSize.global.sheetTitle` 17, semibold; C-29).
     static let sheetTitle = role(Tokens.FontSizes.globalSheetTitle, Tokens.FontWeights.fontWeightGlobalSheetTitle, Tokens.Layouts.GlobalTextStyleMap.sheetTitle)
-    /// Group name in the header capsule (`fontSize.global.headerTitle`, bold).
-    static let headerTitle = role(Tokens.FontSizes.globalHeaderTitle, Tokens.FontWeights.fontWeightGlobalHeaderTitle, Tokens.Layouts.GlobalTextStyleMap.headerTitle)
-    /// Card / row name (`fontSize.global.listTitle`, bold).
+    /// Name / row title, friend-card name, secondary link (`fontSize.global.listTitle` 15, semibold).
     static let listTitle = role(Tokens.FontSizes.globalListTitle, Tokens.FontWeights.fontWeightGlobalListTitle, Tokens.Layouts.GlobalTextStyleMap.listTitle)
-    /// Card / row subtitle (`fontSize.global.listSubtitle`, regular).
+    /// Row subtitle, date range, secondary line (`fontSize.global.listSubtitle` 15, regular).
     static let listSubtitle = role(Tokens.FontSizes.globalListSubtitle, Tokens.FontWeights.fontWeightGlobalListSubtitle, Tokens.Layouts.GlobalTextStyleMap.listSubtitle)
-    /// Body text (`fontSize.global.body`, regular).
+    /// Body / list row text (`fontSize.global.body` 15, regular).
     static let body = role(Tokens.FontSizes.globalBody, Tokens.FontWeights.fontWeightGlobalBody, Tokens.Layouts.GlobalTextStyleMap.body)
-    /// Button labels (`fontSize.global.button`, semibold).
+    /// Label of the 60 pt full-width capsule (`fontSize.global.button` 17, semibold; C-05).
     static let button = role(Tokens.FontSizes.globalButton, Tokens.FontWeights.fontWeightGlobalButton, Tokens.Layouts.GlobalTextStyleMap.button)
-    /// Small meta text and the legal footer (`fontSize.global.caption`, semibold, `lineHeight.global.caption`).
+    /// Label of the 37 pt capsules (`fontSize.global.pill` 15, semibold; C-06, C-07, C-09).
+    static let pill = role(Tokens.FontSizes.globalPill, Tokens.FontWeights.fontWeightGlobalPill, Tokens.Layouts.GlobalTextStyleMap.pill)
+    /// App-drawn text button in a header (`fontSize.global.textButton` 17, regular; C-08).
+    static let textButton = role(Tokens.FontSizes.globalTextButton, Tokens.FontWeights.fontWeightGlobalTextButton, Tokens.Layouts.GlobalTextStyleMap.textButton)
+    /// Fine print and timestamps (`fontSize.global.caption` 14, regular, `lineHeight.global.caption` 21.7).
     static let caption = role(Tokens.FontSizes.globalCaption, Tokens.FontWeights.fontWeightGlobalCaption, Tokens.Layouts.GlobalTextStyleMap.caption, lineHeight: Tokens.LineHeights.globalCaption)
-    /// Time overlay on a photo (`fontSize.global.overlayTime`, heavy).
-    static let overlayTime = role(Tokens.FontSizes.globalOverlayTime, Tokens.FontWeights.fontWeightGlobalOverlayTime, Tokens.Layouts.GlobalTextStyleMap.overlayTime)
-    /// Section label (`fontSize.global.sectionLabel`, semibold) — drawn in `color.global.textSecondary`.
+    /// Small secondary line: real name under a profile name, field labels, inline field errors, grouped-section headers
+    /// (`fontSize.global.meta` 13, regular).
+    static let meta = role(Tokens.FontSizes.globalMeta, Tokens.FontWeights.fontWeightGlobalMeta, Tokens.Layouts.GlobalTextStyleMap.meta)
+    /// Placeholder and typed text in the search / text field (`fontSize.global.placeholder` 17; weight not measured →
+    /// platform regular; C-12).
+    static let placeholder = role(Tokens.FontSizes.globalPlaceholder, Font.Weight.regular, Tokens.Layouts.GlobalTextStyleMap.placeholder)
+    /// Section header 'Week 27' (`fontSize.global.sectionLabel` 15, semibold; C-20).
     static let sectionLabel = role(Tokens.FontSizes.globalSectionLabel, Tokens.FontWeights.fontWeightGlobalSectionLabel, Tokens.Layouts.GlobalTextStyleMap.sectionLabel)
-    /// Empty-state title (`fontSize.global.emptyTitle`, bold).
+    /// Empty-state title (`fontSize.global.emptyTitle` 20, semibold; C-27).
     static let emptyTitle = role(Tokens.FontSizes.globalEmptyTitle, Tokens.FontWeights.fontWeightGlobalEmptyTitle, Tokens.Layouts.GlobalTextStyleMap.emptyTitle)
-    /// Empty-state detail (`fontSize.global.emptyDetail`; weight not measured → platform regular). Apply `.italic()`.
-    static let emptyDetail = role(Tokens.FontSizes.globalEmptyDetail, Font.Weight.regular, Tokens.Layouts.GlobalTextStyleMap.emptyDetail)
+    /// Empty-state explanation (`fontSize.global.emptyDetail` 14, regular; C-27).
+    static let emptyDetail = role(Tokens.FontSizes.globalEmptyDetail, Tokens.FontWeights.fontWeightGlobalEmptyDetail, Tokens.Layouts.GlobalTextStyleMap.emptyDetail)
+    /// Weekday label on a photo tile (`fontSize.global.tileLabel` 13, semibold; C-17).
+    static let tileLabel = role(Tokens.FontSizes.globalTileLabel, Tokens.FontWeights.fontWeightGlobalTileLabel, Tokens.Layouts.GlobalTextStyleMap.tileLabel)
+    /// Day number on an empty-day tile (`fontSize.global.tileDay` 28, semibold, tabular digits; C-17).
+    static let tileDay = role(Tokens.FontSizes.globalTileDay, Tokens.FontWeights.fontWeightGlobalTileDay, Tokens.Layouts.GlobalTextStyleMap.tileDay)
+    /// Month and weekday lines on an empty-day tile (`fontSize.global.tileMonth` 14; weight not measured → platform
+    /// regular; C-17).
+    static let tileMonth = role(Tokens.FontSizes.globalTileMonth, Font.Weight.regular, Tokens.Layouts.GlobalTextStyleMap.tileMonth)
+    /// Badge, relative-week pill and position pill labels (`fontSize.global.badge` 11, semibold; C-03, C-22, C-24).
+    static let badge = role(Tokens.FontSizes.globalBadge, Tokens.FontWeights.fontWeightGlobalBadge, Tokens.Layouts.GlobalTextStyleMap.badge)
+    /// Small pills on media / the paywall ('FREE', '1:00'; `fontSize.global.pillSmall` 13, bold; C-25).
+    static let pillSmall = role(Tokens.FontSizes.globalPillSmall, Tokens.FontWeights.fontWeightGlobalPillSmall, Tokens.Layouts.GlobalTextStyleMap.pillSmall)
 
-    // MARK: Surface roles shared by the account group's form screens
+    // MARK: Retired roles (Pass 4 replaces the call sites)
 
-    /// Italic subtitle under sign-up titles (`auth.phone.fontSize.subtitle`, `auth.phone.layout.subtitle`:
-    /// regular; Dynamic Type subheadline per the auth.* specs). Apply `.italic()`.
-    static let signUpSubtitle = DSTextStyle(family: Tokens.Fonts.globalFamily, size: Tokens.FontSizes.authPhoneFontSizeSubtitle, weight: Font.Weight.regular, relativeTo: .subheadline)
-    /// Typed text and placeholder of the Yope form field (`groups.create.fontSize.fieldText` / `.fontWeight.fieldText`; subheadline).
-    static let fieldText = DSTextStyle(family: Tokens.Fonts.globalFamily, size: Tokens.FontSizes.groupsCreateFontSizeFieldText, weight: Tokens.FontWeights.groupsCreateFontWeightFieldText, relativeTo: .subheadline)
-    /// Lime text link (`auth.code.fontSize.textLink` / `.fontWeight.textLink`; subheadline).
-    static let textLink = DSTextStyle(family: Tokens.Fonts.globalFamily, size: Tokens.FontSizes.authCodeFontSizeTextLink, weight: Tokens.FontWeights.authCodeFontWeightTextLink, relativeTo: .subheadline)
-    /// Loading HUD label (`groups.create.fontSize.hudLabel`; weight not measured → regular; subheadline).
-    static let hudLabel = DSTextStyle(family: Tokens.Fonts.globalFamily, size: Tokens.FontSizes.groupsCreateFontSizeHudLabel, weight: Font.Weight.regular, relativeTo: .subheadline)
+    /// Yope's time overlay on photos (`fontSize.global.overlayTime`, removed in the redesign). Retro's on-photo text is
+    /// the weekday tile label (design/tokens/README.md "Redesign renames").
+    @available(*, deprecated, renamed: "tileLabel", message: "overlayTime was removed (Yope-only); Retro's on-photo text is tileLabel")
+    static var overlayTime: DSTextStyle { tileLabel }
+
+    /// Yope's italic sign-up subtitle (`auth.phone.fontSize.subtitle`). Onboarding steps compose C-27 / C-33: the line
+    /// under a title is the empty-state explanation role.
+    @available(*, deprecated, renamed: "emptyDetail", message: "sign-up subtitles compose C-27 / C-33 (emptyDetail, color.global.textSecondary)")
+    static var signUpSubtitle: DSTextStyle { emptyDetail }
+
+    /// Yope's form-field text (`groups.create.fontSize.fieldText`). C-12's typed text and placeholder are `placeholder`.
+    @available(*, deprecated, renamed: "placeholder", message: "C-12 field text is the placeholder role")
+    static var fieldText: DSTextStyle { placeholder }
+
+    /// Yope's lime text link (`auth.code.fontSize.textLink`). C-08's secondary link is `listTitle` in
+    /// `color.global.textSecondary` (use `TextButton(style: .link)`).
+    @available(*, deprecated, renamed: "listTitle", message: "C-08 secondary link: TextButton(style: .link)")
+    static var textLink: DSTextStyle { listTitle }
 }

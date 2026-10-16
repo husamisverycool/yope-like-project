@@ -2,6 +2,7 @@ package app.designsystem
 
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.spring
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
@@ -14,8 +15,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.DeviceFontFamilyName
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontVariation
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
+import app.designsystem.generated.Tokens
 
 /**
  * A font family named by a `font` token (`Tokens.Fonts.*`). `System` is the platform face
@@ -41,16 +46,55 @@ sealed interface DSFontFamily {
 @Composable
 fun DSFontFamily.toFontFamily(): FontFamily {
     val context = LocalContext.current
-    return remember(this) {
-        when (this) {
-            DSFontFamily.System -> FontFamily.Default
-            DSFontFamily.Serif -> FontFamily.Serif
-            is DSFontFamily.Custom -> {
-                @Suppress("DiscouragedApi") // name-based lookup is the point: tokens name fonts by string
-                val id = context.resources.getIdentifier(resourceName, "font", context.packageName)
-                if (id != 0) FontFamily(Font(id)) else FontFamily(Font(DeviceFontFamilyName(name)))
-            }
-        }
+    return remember(this, context) { toFontFamily(context) }
+}
+
+/**
+ * Resolves the family outside composition (notifications, widgets, measurement). A bundled font
+ * (`res/font/<resourceName>`) is a **variable** font with a `wght` axis (Inter Variable 4.001, axes
+ * `opsz` 14–32 and `wght` 100–900 — design/research/retro-package-copy-motion.md §2.2): every weight in
+ * [DSVariableWeights] is registered as its own instance of the axis
+ * (`Font(id, FontWeight(w), variationSettings = FontVariation.Settings(FontVariation.weight(w)))`), so
+ * `FontWeight(450)` draws the font at wght 450 — the weight Retro's Android body text uses
+ * (`layout.global.variableWeight.android.body`) — instead of a synthesized or nearest static face.
+ */
+fun DSFontFamily.toFontFamily(context: Context): FontFamily = when (this) {
+    DSFontFamily.System -> FontFamily.Default
+    DSFontFamily.Serif -> FontFamily.Serif
+    is DSFontFamily.Custom -> {
+        @Suppress("DiscouragedApi") // name-based lookup is the point: tokens name fonts by string
+        val id = context.resources.getIdentifier(resourceName, "font", context.packageName)
+        if (id != 0) variableFamily(id) else FontFamily(Font(DeviceFontFamilyName(name)))
+    }
+}
+
+/**
+ * The `wght` instances registered for a bundled variable font: the font's nine named instances (its
+ * `fvar` table: Thin 100 … Black 900, the CSS / OpenType weight classes) plus every weight the tokens
+ * name off that grid (`layout.global.variableWeight.android`: body 450). A requested weight that is not
+ * in the list resolves to the nearest one (Compose font matching, CSS rules).
+ */
+object DSVariableWeights {
+    val all: List<FontWeight> by lazy {
+        val named = (FontWeight.W100.weight..FontWeight.W900.weight step NAMED_INSTANCE_STEP).map(::FontWeight)
+        val tokens = listOf(FontWeight(Tokens.Layouts.GlobalVariableWeightAndroid.body.toInt()))
+        (named + tokens).distinct().sortedBy { it.weight }
+    }
+
+    /** OpenType weight classes are hundreds (OS/2 usWeightClass; the font's fvar instances 100, 200 … 900). */
+    private const val NAMED_INSTANCE_STEP = 100
+}
+
+private val variableFamilies = HashMap<Int, FontFamily>()
+
+/** One [FontFamily] per resource: Compose caches typefaces per family instance, so it is shared. */
+private fun variableFamily(resId: Int): FontFamily = synchronized(variableFamilies) {
+    variableFamilies.getOrPut(resId) {
+        FontFamily(
+            DSVariableWeights.all.map { weight ->
+                Font(resId, weight, FontStyle.Normal, variationSettings = FontVariation.Settings(FontVariation.weight(weight.weight)))
+            },
+        )
     }
 }
 

@@ -1,5 +1,6 @@
 package app.designsystem
 
+import android.content.res.Configuration
 import android.os.Build
 import android.provider.Settings
 import android.view.HapticFeedbackConstants
@@ -10,6 +11,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.text.font.FontWeight
+import app.designsystem.generated.Tokens
+import java.util.Locale
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.sp
 import androidx.test.core.app.ApplicationProvider
@@ -87,6 +91,50 @@ class DesignSystemTest {
 
     @Test fun customFontResourceName() {
         assertEquals("inter_display", DSFontFamily.Custom("Inter Display").resourceName)
+    }
+
+    @Test fun variableFontRegistersEveryRoleWeight() {
+        val weights = DSVariableWeights.all.map { it.weight }
+        // Retro's Android type roles: 400 (regular), 450 (body), 600 (semibold), 700 (bold pill label).
+        listOf(400, Tokens.Layouts.GlobalVariableWeightAndroid.body.toInt(), 600, 700).forEach { assertTrue("missing $it", it in weights) }
+        assertEquals(weights.sorted(), weights)
+    }
+
+    @Test fun trackingAppliesOnlyToLatinScript() {
+        val tracking = Tokens.Tracking.globalBodyAndroid
+        assertEquals(tracking, DSTracking.forLocale(tracking, Locale.US))
+        assertEquals(tracking, DSTracking.forLocale(tracking, Locale.forLanguageTag("vi-VN")))
+        assertEquals(tracking, DSTracking.forLocale(tracking, Locale.forLanguageTag("sr-Latn-RS")))
+        assertEquals(0.sp, DSTracking.forLocale(tracking, Locale.JAPAN))
+        assertEquals(0.sp, DSTracking.forLocale(tracking, Locale.forLanguageTag("ru-RU")))
+        assertEquals(0.sp, DSTracking.forLocale(tracking, Locale.forLanguageTag("sr-RS")))
+        assertEquals(0.sp, DSTracking.forLocale(tracking, Locale.forLanguageTag("ar-EG")))
+    }
+
+    @Test fun hapticTokensNamedByPlatformConstant() {
+        assertEquals(HapticFeedbackConstants.VIRTUAL_KEY, Haptics.named(Tokens.Layouts.GlobalTap.android))
+        assertEquals(HapticFeedbackConstants.LONG_PRESS, Haptics.named(Tokens.Layouts.GlobalLongPressStart.android))
+        assertEquals(Haptics.NO_HAPTICS, Haptics.named(Tokens.Layouts.GlobalShutter.android))
+    }
+
+    @Test fun appearanceOutsideComposition() {
+        val night = Configuration().apply { uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL }
+        val day = Configuration().apply { uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL }
+        assertTrue(DsAppearance.isDark(night))
+        assertFalse(DsAppearance.isDark(day))
+        assertEquals(Tokens.ColorsDark.globalAccent, if (DsAppearance.isDark(night)) Tokens.ColorsDark.globalAccent else Tokens.ColorsLight.globalAccent)
+    }
+
+    @Test fun dsThemeSelectsTheDarkValues() {
+        var light: androidx.compose.ui.graphics.Color? = null
+        var dark: androidx.compose.ui.graphics.Color? = null
+        compose.setContent {
+            DsTheme(dark = false) { light = Tokens.Colors.globalTextPrimary }
+            DsTheme(dark = true) { dark = Tokens.Colors.globalTextPrimary }
+        }
+        compose.waitForIdle()
+        assertEquals(Tokens.ColorsLight.globalTextPrimary, light)
+        assertEquals(Tokens.ColorsDark.globalTextPrimary, dark)
     }
 
     @Test fun textStyleKeepsSpSoItScalesWithFontSize() {

@@ -8,15 +8,18 @@ import androidx.compose.ui.platform.LocalDensity
 import app.designsystem.generated.Tokens
 
 /**
- * The row hairline of app (Yope-referenced) surfaces: `color.global.separator`, one physical pixel
- * thick at any density (the token's note: "Android 1 px"). Yope itself separates cards with gaps
- * (`size.global.listGap`), so draw this only where a surface's spec names the separator; system
- * surfaces use `SystemDivider` (`color.global.system.outline`).
+ * C-32 Divider: `size.global.hairline` (android: 1 device pixel at any density) in `color.global.separator`
+ * (#CCCCCC / #4D4D4D), full width of its parent (the caller keeps it inside the margins). Used sparingly:
+ * between the viewer footer and comments, above "Total", between grouped rows. On media surfaces
+ * ([onMedia], the black viewer in both appearances) it is the separator's dark value. Decorative (no
+ * semantics).
  */
 @Composable
-fun Hairline(modifier: Modifier = Modifier) {
-    val onePixel = with(LocalDensity.current) { ONE_PHYSICAL_PIXEL.toDp() }
-    HorizontalDivider(modifier.fillMaxWidth(), thickness = onePixel, color = Tokens.Colors.globalSeparator)
+fun Hairline(modifier: Modifier = Modifier, onMedia: Boolean = false) {
+    val onePixel = with(LocalDensity.current) { ONE_DEVICE_PIXEL.toDp() }
+    val color = if (onMedia) Tokens.ColorsDark.globalSeparator else Tokens.Colors.globalSeparator
+    HorizontalDivider(modifier.fillMaxWidth(), thickness = onePixel, color = color)
 }
 
-private const val ONE_PHYSICAL_PIXEL = 1f
+/** `size.global.hairline` android value: "1 device pixel". */
+private const val ONE_DEVICE_PIXEL = 1f

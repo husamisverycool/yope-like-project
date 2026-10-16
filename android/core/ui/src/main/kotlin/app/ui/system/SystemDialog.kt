@@ -1,6 +1,5 @@
 package app.ui.system
 
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -8,20 +7,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import app.designsystem.generated.Tokens
 
 /**
- * The M3 basic dialog used for confirmations and permission rationales
- * (`settings.account.layout.alert`, android): container `color.global.system.surfaceContainerHigh`,
- * corners `settings.account.layout.alert` androidCornerDp (28), headline `headlineSmall` in
- * `color.global.system.onSurface`, text `bodyMedium` in `color.global.system.onSurfaceVariant`,
- * actions `labelLarge` text buttons in `color.global.system.primary`; at most 2 actions, dismissive
- * leading, confirming trailing; a [destructive] confirm label is `color.global.system.error`.
- * While [confirmBusy] the confirm action shows the platform progress indicator and is disabled
- * (safety.block "blocking", settings.account "deleting"). [dismissible] false: tapping outside and
- * Back do not close it (only its buttons do).
+ * C-29 alert / dialog: the native M3 `AlertDialog` (PLATFORM), coloured by the theme's Retro scheme
+ * (`color.global.system.*`: container surfaceContainerHigh, headline onSurface, text onSurfaceVariant, actions
+ * primary #0A84FF; a [destructive] confirm label in error #EA3337 — Retro's "Yes, delete"). Shape, type and
+ * motion are the platform's (`MaterialTheme.typography` with Retro's overrides). At most two actions,
+ * dismissive leading, confirming trailing. While [confirmBusy] the confirm action shows the platform progress
+ * indicator and is disabled. [dismissible] false: tapping outside and Back do not close it. M3 dialog actions in
+ * Retro blue are a recorded contrast failure (CONTRAST failure 6).
  */
 @Composable
 fun SystemAlertDialog(
@@ -36,43 +31,29 @@ fun SystemAlertDialog(
     confirmBusy: Boolean = false,
     dismissible: Boolean = true,
 ) {
+    val scheme = MaterialTheme.colorScheme
     AlertDialog(
         onDismissRequest = { if (!confirmBusy) onDismiss() },
         modifier = modifier,
         properties = DialogProperties(dismissOnBackPress = dismissible, dismissOnClickOutside = dismissible),
-        shape = RoundedCornerShape(Tokens.Layouts.SettingsAccountLayoutAlert.androidCornerDp.dp),
-        containerColor = Tokens.Colors.globalSystemSurfaceContainerHigh,
-        titleContentColor = Tokens.Colors.globalSystemOnSurface,
-        textContentColor = Tokens.Colors.globalSystemOnSurfaceVariant,
-        title = title?.let { { Text(it, style = MaterialTheme.typography.headlineSmall) } },
-        text = text?.let { { Text(it, style = MaterialTheme.typography.bodyMedium) } },
+        title = title?.let { { Text(it) } },
+        text = text?.let { { Text(it) } },
         confirmButton = {
             TextButton(onClick = onConfirm, enabled = !confirmBusy) {
                 if (confirmBusy) {
-                    CircularProgressIndicator(color = Tokens.Colors.globalSystemPrimary)
+                    CircularProgressIndicator(color = scheme.primary)
                 } else {
-                    Text(
-                        confirmLabel,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = if (destructive) Tokens.Colors.globalSystemError else Tokens.Colors.globalSystemPrimary,
-                    )
+                    Text(confirmLabel, color = if (destructive) scheme.error else scheme.primary)
                 }
             }
         },
-        dismissButton = dismissLabel?.let {
-            {
-                TextButton(onClick = onDismiss, enabled = !confirmBusy) {
-                    Text(it, style = MaterialTheme.typography.labelLarge, color = Tokens.Colors.globalSystemPrimary)
-                }
-            }
-        },
+        dismissButton = dismissLabel?.let { { TextButton(onClick = onDismiss, enabled = !confirmBusy) { Text(it, color = scheme.primary) } } },
     )
 }
 
 /**
- * A field-level error on the sign-up and form screens (`auth.phone.layout.inlineError`, android): the
- * M3 basic dialog with no title, the error sentence as its message and one button ([buttonLabel])
- * that closes it; tapping outside or Back does not close it.
+ * A field-level error on form screens: the native dialog with no title, the error sentence as its message and
+ * one button ([buttonLabel]) that closes it; tapping outside or Back does not close it.
  */
 @Composable
 fun ErrorAlert(message: String, buttonLabel: String, onDismiss: () -> Unit, modifier: Modifier = Modifier) {

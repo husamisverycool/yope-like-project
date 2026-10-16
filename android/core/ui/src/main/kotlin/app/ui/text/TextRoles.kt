@@ -2,100 +2,157 @@ package app.ui.text
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
+import app.designsystem.DSFontFamily
 import app.designsystem.dsTextStyle
+import app.designsystem.dsTracking
 import app.designsystem.generated.Tokens
-import app.designsystem.toFontFamily
 
 /**
- * The global text roles of `design/tokens/README.md` ("A text role is four tokens with the same role
- * name"), built from `fontSize.global.<role>` (sp: they scale with the person's font size),
+ * The global text roles of design/tokens/README.md ("A text role is up to four tokens with the same role
+ * name"): `fontSize.global.<role>` (sp — they follow the person's font size, no cap),
  * `fontWeight.global.<role>` where measured, `lineHeight.global.<role>` where measured (otherwise the
- * platform's default leading) and `font.global.family`. Colours are not part of a role: callers pass
- * the `color.*` token of their element.
+ * platform's leading), on `font.global.family` (Inter Variable on Android, true `wght` instances —
+ * core:designsystem `DSVariableWeights`) or, for the display roles (`headerTitle`, `displayMedium`,
+ * `displaySmall`), `font.global.display` (platform serif, PLATFORM, until a licensed face exists).
  *
- * Roles without a measured weight (`placeholder`, `emptyDetail`) leave the weight unset, so the
- * platform default applies (tokens README → "Not available yet").
+ * Android siblings (README → Platform pairs) replace the shared value where Retro's Android app differs:
+ * `body` = `fontSize.global.body.android` 14 / `lineHeight.global.body.android` 17 /
+ * `layout.global.variableWeight.android.body` 450 / `letterSpacing.global.body.android` −0.3;
+ * `listTitle` line 18 / tracking −0.35; `badge` line 11 / tracking −0.2. Tracking applies only when the
+ * locale's script is Latin (`dsTracking`). Colours are not part of a role: callers pass the `color.*` token
+ * of their element. Roles without a measured weight (`placeholder`, `tileMonth`) leave the weight to the
+ * platform default (regular).
  */
 object TextRoles {
-    /** `fontSize.global.onboardingTitle` 40 / heavy — onboarding and sign-up big titles. */
-    val onboardingTitle: TextStyle
-        @Composable get() = role(Tokens.FontSizes.globalOnboardingTitle, Tokens.FontWeights.fontWeightGlobalOnboardingTitle)
-
-    /** `fontSize.global.sheetTitle` 19.5 / bold. */
-    val sheetTitle: TextStyle
-        @Composable get() = role(Tokens.FontSizes.globalSheetTitle, Tokens.FontWeights.fontWeightGlobalSheetTitle)
-
-    /** `fontSize.global.headerTitle` 15 / bold — group name in the header capsule. */
+    /** `headerTitle` 40 / line 48, regular, display serif — screen titles ("Week 27"), profile name, Rewind date title. */
     val headerTitle: TextStyle
-        @Composable get() = role(Tokens.FontSizes.globalHeaderTitle, Tokens.FontWeights.fontWeightGlobalHeaderTitle)
+        @Composable get() = display(Tokens.FontSizes.globalHeaderTitle, Tokens.FontWeights.fontWeightGlobalHeaderTitle, Tokens.LineHeights.globalHeaderTitle)
 
-    /** `fontSize.global.listTitle` 17.5 / bold. */
+    /** `displayMedium` 32 regular, display serif — headlines on cards, sheets and onboarding pages. */
+    val displayMedium: TextStyle
+        @Composable get() = display(Tokens.FontSizes.globalDisplayMedium, Tokens.FontWeights.fontWeightGlobalDisplayMedium)
+
+    /** `displaySmall` 24 regular, display serif — recap month cards, album titles on covers, recap year. */
+    val displaySmall: TextStyle
+        @Composable get() = display(Tokens.FontSizes.globalDisplaySmall, Tokens.FontWeights.fontWeightGlobalDisplaySmall)
+
+    /** `onboardingTitle` 30 regular — the large grey line on the landing ("Friends Only"). */
+    val onboardingTitle: TextStyle
+        @Composable get() = ui(Tokens.FontSizes.globalOnboardingTitle, Tokens.FontWeights.fontWeightGlobalOnboardingTitle)
+
+    /** `sheetTitle` 17 semibold — centred sheet / modal title. */
+    val sheetTitle: TextStyle
+        @Composable get() = ui(Tokens.FontSizes.globalSheetTitle, Tokens.FontWeights.fontWeightGlobalSheetTitle)
+
+    /** `listTitle` 15 semibold, Android line 18 / tracking −0.35 — names, row titles, secondary link. */
     val listTitle: TextStyle
-        @Composable get() = role(Tokens.FontSizes.globalListTitle, Tokens.FontWeights.fontWeightGlobalListTitle)
+        @Composable get() = ui(
+            Tokens.FontSizes.globalListTitle,
+            Tokens.FontWeights.fontWeightGlobalListTitle,
+            Tokens.LineHeights.globalListTitleAndroid,
+            dsTracking(Tokens.Tracking.globalListTitleAndroid),
+        )
 
-    /** `fontSize.global.listSubtitle` 14 / regular. */
+    /** `listSubtitle` 15 regular — row subtitles, date ranges, "Week 28" in the viewer header. */
     val listSubtitle: TextStyle
-        @Composable get() = role(Tokens.FontSizes.globalListSubtitle, Tokens.FontWeights.fontWeightGlobalListSubtitle)
+        @Composable get() = ui(Tokens.FontSizes.globalListSubtitle, Tokens.FontWeights.fontWeightGlobalListSubtitle)
 
-    /** `fontSize.global.body` 17 / regular. */
+    /** `body` on Android: 14 / line 17 / wght 450 / tracking −0.3 (Retro's most used Android style, `wv3.c`). */
     val body: TextStyle
-        @Composable get() = role(Tokens.FontSizes.globalBody, Tokens.FontWeights.fontWeightGlobalBody)
+        @Composable get() = ui(
+            Tokens.FontSizes.globalBodyAndroid,
+            FontWeight(Tokens.Layouts.GlobalVariableWeightAndroid.body.toInt()),
+            Tokens.LineHeights.globalBodyAndroid,
+            dsTracking(Tokens.Tracking.globalBodyAndroid),
+        )
 
-    /** `fontSize.global.button` 15 / semibold — primary button and pill labels. */
+    /** `button` 17 semibold — label of the 60 pt capsule. */
     val button: TextStyle
-        @Composable get() = role(Tokens.FontSizes.globalButton, Tokens.FontWeights.fontWeightGlobalButton)
+        @Composable get() = ui(Tokens.FontSizes.globalButton, Tokens.FontWeights.fontWeightGlobalButton)
 
-    /** `fontSize.global.caption` 12 / semibold, `lineHeight.global.caption` 15.2. */
+    /** `pill` 15 semibold — label of the 37 pt capsules. */
+    val pill: TextStyle
+        @Composable get() = ui(Tokens.FontSizes.globalPill, Tokens.FontWeights.fontWeightGlobalPill)
+
+    /** `textButton` 17 regular — app-drawn header text buttons ("Invite"). */
+    val textButton: TextStyle
+        @Composable get() = ui(Tokens.FontSizes.globalTextButton, Tokens.FontWeights.fontWeightGlobalTextButton)
+
+    /** `caption` 14 regular, line 21.7 — fine print, timestamps. */
     val caption: TextStyle
-        @Composable get() = dsTextStyle(
-            Tokens.FontSizes.globalCaption,
-            Tokens.FontWeights.fontWeightGlobalCaption,
-            Tokens.Fonts.globalFamily,
-            lineHeight = Tokens.LineHeights.globalCaption,
-        )
+        @Composable get() = ui(Tokens.FontSizes.globalCaption, Tokens.FontWeights.fontWeightGlobalCaption, Tokens.LineHeights.globalCaption)
 
-    /** `fontSize.global.sectionLabel` 16 / semibold. */
-    val sectionLabel: TextStyle
-        @Composable get() = role(Tokens.FontSizes.globalSectionLabel, Tokens.FontWeights.fontWeightGlobalSectionLabel)
+    /** `meta` 13 regular — real name under the profile name, field labels, settings subtitles and section headers. */
+    val meta: TextStyle
+        @Composable get() = ui(Tokens.FontSizes.globalMeta, Tokens.FontWeights.fontWeightGlobalMeta)
 
-    /** `fontSize.global.emptyTitle` 16 / bold. */
-    val emptyTitle: TextStyle
-        @Composable get() = role(Tokens.FontSizes.globalEmptyTitle, Tokens.FontWeights.fontWeightGlobalEmptyTitle)
-
-    /** `fontSize.global.emptyDetail` 14, italic (weight not measured). */
-    val emptyDetail: TextStyle
-        @Composable get() = TextStyle(
-            fontSize = Tokens.FontSizes.globalEmptyDetail,
-            fontStyle = FontStyle.Italic,
-            fontFamily = Tokens.Fonts.globalFamily.toFontFamily(),
-        )
-
-    /** `fontSize.global.placeholder` 17 (weight not measured). */
+    /** `placeholder` 17 (weight not measured) — placeholder and typed text in fields. */
     val placeholder: TextStyle
-        @Composable get() = TextStyle(fontSize = Tokens.FontSizes.globalPlaceholder, fontFamily = Tokens.Fonts.globalFamily.toFontFamily())
+        @Composable get() = ui(Tokens.FontSizes.globalPlaceholder, null)
 
-    /** `fontSize.global.overlayTime` 21 / heavy — time centred on a photo. */
-    val overlayTime: TextStyle
-        @Composable get() = role(Tokens.FontSizes.globalOverlayTime, Tokens.FontWeights.fontWeightGlobalOverlayTime)
+    /** `sectionLabel` 15 semibold — "Week 27" before its range; dated album headers. */
+    val sectionLabel: TextStyle
+        @Composable get() = ui(Tokens.FontSizes.globalSectionLabel, Tokens.FontWeights.fontWeightGlobalSectionLabel)
+
+    /** `emptyTitle` 20 semibold. */
+    val emptyTitle: TextStyle
+        @Composable get() = ui(Tokens.FontSizes.globalEmptyTitle, Tokens.FontWeights.fontWeightGlobalEmptyTitle)
+
+    /** `emptyDetail` 14 regular. */
+    val emptyDetail: TextStyle
+        @Composable get() = ui(Tokens.FontSizes.globalEmptyDetail, Tokens.FontWeights.fontWeightGlobalEmptyDetail)
+
+    /** `tileLabel` 13 semibold — weekday on a photo tile. */
+    val tileLabel: TextStyle
+        @Composable get() = ui(Tokens.FontSizes.globalTileLabel, Tokens.FontWeights.fontWeightGlobalTileLabel)
+
+    /** `tileDay` 28 semibold, tabular digits — day number on an empty-day tile. */
+    val tileDay: TextStyle
+        @Composable get() = ui(Tokens.FontSizes.globalTileDay, Tokens.FontWeights.fontWeightGlobalTileDay).copy(fontFeatureSettings = TABULAR_DIGITS)
+
+    /** `tileMonth` 14 (weight not measured) — month / weekday lines on an empty-day tile. */
+    val tileMonth: TextStyle
+        @Composable get() = ui(Tokens.FontSizes.globalTileMonth, null)
+
+    /** `badge` 11 semibold, Android line 11 / tracking −0.2 — "new" badge, relative-week pill, position pill. */
+    val badge: TextStyle
+        @Composable get() = ui(
+            Tokens.FontSizes.globalBadge,
+            Tokens.FontWeights.fontWeightGlobalBadge,
+            Tokens.LineHeights.globalBadgeAndroid,
+            dsTracking(Tokens.Tracking.globalBadgeAndroid),
+        )
+
+    /** `pillSmall` 13 bold — "FREE", video duration (tabular digits: "monospaced digits", PAY). */
+    val pillSmall: TextStyle
+        @Composable get() = ui(Tokens.FontSizes.globalPillSmall, Tokens.FontWeights.fontWeightGlobalPillSmall).copy(fontFeatureSettings = TABULAR_DIGITS)
 
     /**
-     * The italic onboarding subtitle: `auth.phone.fontSize.subtitle` 14 with `auth.phone.layout.subtitle`
-     * (style italic, weight regular, centred). Colour `color.global.textPrimary` per the same layout token.
+     * M3 `bodyMedium` override of Retro's theme (`layout.global.system.typography`: "bodyMedium = Inter 14/17
+     * W600"): the Android body size / line / tracking at the semibold weight (`fontWeight.global.listTitle`,
+     * 600). Used only inside native components (dialogs, menus).
      */
-    val onboardingSubtitle: TextStyle
-        @Composable get() = TextStyle(
-            fontSize = Tokens.FontSizes.authPhoneFontSizeSubtitle,
-            fontWeight = FontWeight.Normal, // auth.phone.layout.subtitle weight "regular"
-            fontStyle = FontStyle.Italic, // auth.phone.layout.subtitle style "italic"
-            fontFamily = Tokens.Fonts.globalFamily.toFontFamily(),
-            textAlign = TextAlign.Center,
-            color = Tokens.Colors.globalTextPrimary,
+    val systemBodyMedium: TextStyle
+        @Composable get() = ui(
+            Tokens.FontSizes.globalBodyAndroid,
+            Tokens.FontWeights.fontWeightGlobalListTitle,
+            Tokens.LineHeights.globalBodyAndroid,
+            dsTracking(Tokens.Tracking.globalBodyAndroid),
         )
 
+    /** OpenType feature: tabular (monospaced) figures. */
+    private const val TABULAR_DIGITS = "tnum"
+
     @Composable
-    private fun role(size: androidx.compose.ui.unit.TextUnit, weight: FontWeight): TextStyle =
-        dsTextStyle(size, weight, Tokens.Fonts.globalFamily)
+    private fun ui(size: TextUnit, weight: FontWeight?, lineHeight: TextUnit = TextUnit.Unspecified, tracking: TextUnit = TextUnit.Unspecified): TextStyle =
+        dsTextStyle(size, weight ?: FontWeight.Normal, Tokens.Fonts.globalFamily, lineHeight, tracking)
+
+    @Composable
+    private fun display(size: TextUnit, weight: FontWeight, lineHeight: TextUnit = TextUnit.Unspecified): TextStyle =
+        dsTextStyle(size, weight, Tokens.Fonts.globalDisplay, lineHeight)
+
+    /** The family of the display roles (exposed for measuring cap heights). */
+    val displayFamily: DSFontFamily get() = Tokens.Fonts.globalDisplay
 }
