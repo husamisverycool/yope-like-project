@@ -13,6 +13,10 @@ final class CaptureEnvironment {
         if CaptureLaunchArgument.isSet(CaptureLaunchArgument.fakes) {
             return CaptureFakes.environment(arguments: DemoMode.launchArguments, router: AppEnvironment.shared.router)
         }
+        // The real-server journey: everything live but the camera (the simulator has none).
+        if CaptureLaunchArgument.isSet(CaptureLaunchArgument.fakeCamera) {
+            return .live(AppEnvironment.shared) { _ in FakeCaptureCamera() }
+        }
         #endif
         return .live(AppEnvironment.shared)
     }()
@@ -57,10 +61,13 @@ final class CaptureEnvironment {
         overnightQueue = CaptureOvernightQueue(posting: posting)
     }
 
-    static func live(_ app: AppEnvironment) -> CaptureEnvironment {
+    static func live(
+        _ app: AppEnvironment,
+        makeCamera: @escaping @MainActor (_ supportsDualCapture: Bool) -> CaptureCamera = { LiveCaptureCamera(supportsDualCapture: $0) }
+    ) -> CaptureEnvironment {
         let data = app.data
         return CaptureEnvironment(
-            makeCamera: { LiveCaptureCamera(supportsDualCapture: $0) },
+            makeCamera: makeCamera,
             makeVoiceRecorder: { LiveCaptureVoiceRecorder() },
             library: LiveCaptureLibrary(),
             groups: LiveCaptureGroups(data: data, widgetStore: app.widgetStore),

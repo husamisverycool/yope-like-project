@@ -50,7 +50,13 @@ final class AppEnvironment {
     private var wasInBackground = false
 
     init(bundle: Bundle) {
-        let configuration = AppConfiguration.load(from: bundle) ?? AppConfiguration()
+        let bundled = AppConfiguration.load(from: bundle) ?? AppConfiguration()
+        #if DEBUG
+        // The real-server UI journey's stack (launch environment; ServerJourneyOverrides).
+        let configuration = ServerJourneyOverrides.apply(to: bundled)
+        #else
+        let configuration = bundled
+        #endif
         self.configuration = configuration
         parser = DeepLinkParser(configuration: configuration)
         let router = AppRouter(parser: parser)

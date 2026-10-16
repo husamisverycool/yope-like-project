@@ -24,7 +24,7 @@ adb shell rm -rf /sdcard/Download/e2e || true
   -Pandroid.testInstrumentationRunnerArguments.serviceRoleKey="${E2E_SERVICE_ROLE_KEY:?E2E_SERVICE_ROLE_KEY is not set}"
 status=$?
 
-bash ../.github/scripts/e2e-server-check.sh > "$OUT/server.txt" 2>&1 || status=1
+bash ../.github/scripts/e2e-server-check.sh android > "$OUT/server.txt" 2>&1 || status=1
 cat "$OUT/server.txt"
 
 adb logcat -d -v threadtime > "$OUT/logcat.txt" || true

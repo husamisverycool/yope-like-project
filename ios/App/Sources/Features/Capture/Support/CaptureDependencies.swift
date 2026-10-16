@@ -255,6 +255,8 @@ enum CaptureLaunchArgument {
     static let fakePremium = "-capture-fake-premium"
     /// With `fakes`: the member has no groups.
     static let fakeNoGroups = "-capture-fake-no-groups"
+    /// Without `fakes`: only the camera is the fake one (its stills), everything else is live (the real-server journey).
+    static let fakeCamera = "-capture-fake-camera"
 
     /// `arguments`: the launch arguments, with the Jolt demo build's (`DemoMode`).
     static func isSet(_ argument: String, in arguments: [String] = DemoMode.launchArguments) -> Bool {
