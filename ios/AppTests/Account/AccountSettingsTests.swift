@@ -1,5 +1,5 @@
 // Account group — settings and safety view models: settings.notifications, settings.account, settings.blocked,
-// safety.report, and the paywall (PaywallModel over the purchases seam).
+// safety.report (Retro's reason sheets), and the paywall (PaywallModel over the purchases seam).
 @testable import App
 import AppData
 import AppModels
@@ -89,6 +89,27 @@ final class AccountSettingsTests: XCTestCase {
         XCTAssertEqual(model.profileError, Copy.settingsAccountNameError)
     }
 
+    func testAccountNameTooLongBirthdayAndPhotoRemoval() async throws {
+        let fixture = AccountFixture()
+        let birthday = try XCTUnwrap(LocalDate(year: 1990, month: 7, day: 5))
+        fixture.data.privateProfile?.birthday = birthday
+        fixture.data.profilesByID[fixture.me.id]?.avatarPath = "avatars/ana.jpg"
+        let model = SettingsAccountModel(data: fixture.data)
+        await model.load(premium: false)
+        XCTAssertEqual(model.birthday, birthday)
+        XCTAssertNotNil(SettingsAccountView.birthdayText(birthday))
+
+        model.nameDraft = String(repeating: "a", count: ProfileModel.maxNameLength + 1)
+        XCTAssertTrue(model.isNameTooLong)
+        XCTAssertFalse(model.canSaveName)
+
+        XCTAssertTrue(model.hasPhoto)
+        await model.removeAvatar()
+        XCTAssertNil(model.profile?.avatarPath)
+        XCTAssertFalse(model.hasPhoto)
+        XCTAssertEqual(model.successCount, 1)
+    }
+
     func testAccountPremiumComesFromTheStoreOrTheServer() async {
         let fixture = AccountFixture()
         fixture.data.premium = true
@@ -145,40 +166,47 @@ final class AccountSettingsTests: XCTestCase {
 
     // MARK: safety.report
 
-    func testReportSendsTheReasonOrTheKind() async {
-        let fixture = AccountFixture()
-        let target = ReportTarget(kind: .user, id: fixture.rui.id.rawValue, name: "Rui", person: BlockTarget(userID: fixture.rui.id.rawValue, firstName: "Rui"))
-        let model = ReportModel(target: target, data: fixture.data)
-        XCTAssertEqual(model.title, Copy.safetyReportTitleUser(firstName: "Rui"))
-        XCTAssertEqual(model.sentMessage, Copy.safetyReportSentMessage(firstName: "Rui"))
-        await model.submit()
-        XCTAssertEqual(model.phase, .sent)
-        XCTAssertEqual(fixture.data.reports.first?.reason, "user", "empty details: the target kind")
-
-        let post = ReportModel(target: ReportTarget(kind: .post, id: "p1"), data: fixture.data)
-        post.setDetails("  spam  ")
-        await post.submit()
-        XCTAssertEqual(fixture.data.reports.last?.reason, "spam")
-        XCTAssertEqual(fixture.data.reports.last?.kind, .post)
+    func testReportReasonsFollowTheTarget() {
+        XCTAssertEqual(ReportReason.reasons(for: .post), [.dontLike, .nudity, .other])
+        XCTAssertEqual(ReportReason.reasons(for: .message), [.dontLike, .nudity, .other])
+        XCTAssertEqual(ReportReason.reasons(for: .user), [.impersonation, .inappropriate, .other])
+        XCTAssertEqual(ReportReason.reasons(for: .group), [.impersonation, .inappropriate, .other])
+        XCTAssertEqual(ReportModel(target: ReportTarget(kind: .post, id: "p1"), data: InMemoryAccountData()).title, Copy.safetyReportTitlePost)
+        XCTAssertEqual(ReportModel(target: ReportTarget(kind: .user, id: "u1"), data: InMemoryAccountData()).title, Copy.safetyReportTitleUser)
+        XCTAssertFalse(ReportReason.dontLike.filesReport, "'I don't like it' opens Next Steps instead")
     }
 
-    func testReportFailureKeepsTheFormAndNotFoundIsItsOwnState() async {
+    func testReportFilesTheReasonsEnglishTextAtOnce() async {
+        let fixture = AccountFixture()
+        let model = ReportModel(target: ReportTarget(kind: .post, id: "p1"), data: fixture.data)
+        let filed = await model.submit(.nudity)
+        XCTAssertTrue(filed)
+        XCTAssertEqual(model.filedReason, .nudity)
+        XCTAssertEqual(fixture.data.reports.last?.reason, "Nudity or sexual activity")
+        XCTAssertEqual(fixture.data.reports.last?.kind, .post)
+
+        let user = ReportModel(target: ReportTarget(kind: .user, id: fixture.rui.id.rawValue), data: fixture.data)
+        await user.submit(.impersonation)
+        XCTAssertEqual(fixture.data.reports.last?.reason, "It's impersonating someone")
+
+        let nothing = await model.submit(.dontLike)
+        XCTAssertFalse(nothing)
+        XCTAssertEqual(fixture.data.reports.count, 2)
+    }
+
+    func testReportFailureAndNotFound() async {
         let fixture = AccountFixture()
         fixture.data.failures["report"] = .offline
         let model = ReportModel(target: ReportTarget(kind: .group, id: "g1", name: "Lima family"), data: fixture.data)
-        await model.submit()
-        XCTAssertEqual(model.phase, .form)
-        XCTAssertTrue(model.failed)
+        var filed = await model.submit(.inappropriate)
+        XCTAssertFalse(filed)
+        XCTAssertEqual(model.failure, .failed)
+        XCTAssertEqual(model.errorCount, 1)
 
         fixture.data.failures["report"] = .api(.targetNotFound)
-        await model.submit()
-        XCTAssertEqual(model.phase, .notFound)
-    }
-
-    func testReportDetailsAreCapped() {
-        let model = ReportModel(target: ReportTarget(kind: .message, id: "m1"), data: InMemoryAccountData())
-        model.setDetails(String(repeating: "x", count: 1500))
-        XCTAssertEqual(model.details.count, ReportModel.maxDetails)
+        filed = await model.submit(.inappropriate)
+        XCTAssertFalse(filed)
+        XCTAssertEqual(model.failure, .notFound)
     }
 
     // MARK: paywall
@@ -228,11 +256,26 @@ final class AccountSettingsTests: XCTestCase {
         await model.purchase()
         XCTAssertEqual(model.purchaseMessage, Copy.paywallErrorPurchase)
 
+        XCTAssertEqual(model.alertMessage, Copy.paywallErrorPurchase)
+        XCTAssertEqual(model.alertCount, 2, "pending and failed each raise the alert")
+
         purchases.purchaseResult = .success(.purchased)
         await model.purchase()
         XCTAssertTrue(model.showsWelcome)
+        XCTAssertEqual(model.welcome, .purchased)
         model.welcomeDismissed()
         XCTAssertFalse(model.showsWelcome)
+    }
+
+    func testPaywallCardsReadThePlanOfTheirPeriod() async {
+        let purchases = InMemoryPurchases()
+        var trial = yearly
+        trial.trialDuration = "1 week"
+        purchases.plansResult = .success([monthly, trial])
+        let model = PaywallModel(purchases: purchases, data: InMemoryAccountData())
+        await model.loadPlans()
+        XCTAssertEqual(model.plan(for: .year)?.trialDuration, "1 week")
+        XCTAssertEqual(model.plan(for: .month), monthly)
     }
 
     func testRestoreMessages() async {
@@ -241,6 +284,8 @@ final class AccountSettingsTests: XCTestCase {
         purchases.restoreResult = .success(true)
         await model.restore()
         XCTAssertEqual(model.restoreMessage, Copy.paywallRestoreDone)
+        XCTAssertEqual(model.welcome, .restored)
+        model.welcomeDismissed()
         purchases.restoreResult = .success(false)
         await model.restore()
         XCTAssertEqual(model.restoreMessage, Copy.paywallRestoreNone)

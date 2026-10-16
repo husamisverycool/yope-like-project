@@ -119,8 +119,8 @@ class MeasurementTest : SnapshotTest() {
     }
 
     private fun tag(t: String) = hasTestTag(t)
-    private fun text(t: String) = hasText(t)
-    private fun label(t: String) = hasContentDescription(t)
+    private fun text(t: String, substring: Boolean = false) = hasText(t, substring = substring)
+    private fun label(t: String, substring: Boolean = false) = hasContentDescription(t, substring = substring)
 
     @Test fun onthisday() = measure(
         "onthisday",
