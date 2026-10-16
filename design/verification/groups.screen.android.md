@@ -10,7 +10,7 @@ States rendered (`android/feature/account/src/test/snapshots/groups.screen/`): `
 
 Memory entries (memory pass APIs `OnThisDayEntry`, `YearStoryEntry`, `BirthdayRequestEntries`): this screen draws the birthday request row (C-14 + C-16) above this week and the feed cards (C-18 frame, Rewind / Recap glyph) in the members' pager; `groups.screen/default-memoryEntries` renders them with the memory copy. The entry APIs pass no photo or avatar, so the cards show `color.global.backgroundDeep` under the scrim (approximated).
 
-**Result: 86 checks — 81 match, 2 approx, 2 MISS, 1 n/a.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 88 checks — 82 match, 2 approx, 3 MISS, 1 n/a.** (`match` includes measured, token, behaviour and copy rows.)
 
 ## Default (groups.screen/default-light)
 
@@ -21,8 +21,10 @@ Memory entries (memory pass APIs `OnThisDayEntry`, `YearStoryEntry`, `BirthdayRe
 | match | cover centred: `groups.screen.size.coverWidth` | 196.5 | 196.75 | references/auto/retro/press/tc-2024-04-journals-1.webp phone 3 (album detail 'C… |  |
 | match | cover → name (ink top): `groups.screen.size.coverToTitle` | 36.7 | 35.5 | references/auto/retro/press/tc-2024-04-journals-1.webp phone 3: cover ink botto… | ink top of the serif capital ≈ cap top; the shadow is outside the cover box |
 | approx | trailing glyph pair: right edge inset: `size.global.headerInset` | 16 | 16 | references/auto/retro/lazyweb/retro-lazyweb-20260528-week22-dark-a.png chat gly… | glyph ink edge (the 24 dp box has ≈ 2 dp padding) |
-| MISS | strip tile leading inset: `size.global.screenMargin` | 16 | 56 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
-| MISS | strip tile height: `size.global.stripTileHeight` | 112 | 45.5 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png y468–803 (… |  |
+| MISS | strip tile leading inset: `size.global.screenMargin` | 16 | 18 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
+| MISS | strip tile width: `size.global.stripTileWidth` | 84 | 82 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png x48–299 (2… |  |
+| match | strip gap: `size.global.stripGap` | 2 | 2 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png x300–305 (… |  |
+| MISS | strip tile height (tallest clean column): `size.global.stripTileHeight` | 112 | 97.5 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png y468–803 (… |  |
 | match | page: `color.global.background.android` | #FFFFFF | #FFFFFF | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Retro palett… |  |
 
 ## Tokens named in the spec
@@ -71,8 +73,8 @@ Memory entries (memory pass APIs `OnThisDayEntry`, `YearStoryEntry`, `BirthdayRe
 | match (token) | `icon.global.rewind` | Outlined.History | Tokens.Icons.globalRewind | references/auto/retro/lazyweb/retro-lazyweb-20260528-week22-dark-a.png, referen… |  |
 | match (token) | `icon.global.recap` | Outlined.VideoLibrary | Tokens.Icons.globalRecap | glyph table design/research/retro-visual.md §3.6 (SF Symbol / Material candidat… |  |
 | match (token) | `radius.global.photo` | 0 pt | Tokens.Radii.globalPhoto | references/auto/retro/store/retro-store-02.png (419–424,1341–1343) full-colour … |  |
-| match (token) | `size.global.stripGap` | 2 pt | Tokens.Sizes.globalStripGap | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png x300–305 (… |  |
-| match (token) | `size.global.stripTileWidth` | 84 pt | Tokens.Sizes.globalStripTileWidth | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png x48–299 (2… |  |
+| match (token) | `size.global.stripGap` | 2 pt | Tokens.Sizes.globalStripGap · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png x300–305 (… |  |
+| match (token) | `size.global.stripTileWidth` | 84 pt | Tokens.Sizes.globalStripTileWidth · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png x48–299 (2… |  |
 | match (token) | `color.global.emptyTileText` | light: #D9D9D9; dark: #515151 | Tokens.Colors.globalEmptyTileText | light: references/auto/retro/press/tc-2023-07-retro-2b.jpg tile x378–564 y402–6… |  |
 | approx | `groups.screen.layout.menu` | DropdownMenu on long press of a grid cell / strip tile; destructive items in color.global… | long-press on others' strip tiles / grid cells opens a DsDropdownMenu (Report Post / Block {first_name}); own… | design/research/retro-visual.md §4 #20 (Retro keeps native menus; destructive i… | core:ui DayTile / GridCell got a `menu` slot (Modifier.tapLongPressable) |
 | match (token) | `icon.global.calendar` | Outlined.CalendarMonth | Tokens.Icons.globalCalendar | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png; glyph tab… |  |

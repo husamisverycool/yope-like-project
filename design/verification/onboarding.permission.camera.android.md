@@ -8,16 +8,16 @@ Side by side: [`onboarding.permission.camera.android.png`](onboarding.permission
 
 States rendered (`android/feature/account/src/test/snapshots/onboarding.permission.camera/`): `denied-dark`, `denied-light`, `rationale-light`.
 
-**Result: 25 checks — 18 match, 1 approx, 2 MISS, 3 n/a, 1 UNREVIEWED.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 25 checks — 20 match, 1 approx, 3 n/a, 1 UNREVIEWED.** (`match` includes measured, token, behaviour and copy rows.)
 
 ## Denied block (onboarding.permission.camera/denied-light)
 
 | status | token / copy | expected (spec) | ours | reference evidence | note |
 |---|---|---|---|---|---|
 | match | media surface (both appearances): `color.global.backgroundDeep` | #000000 | #000000 | references/auto/retro/press/tc-2023-12-retro3.png phone 1: black viewer under a… |  |
-| MISS | glyph size: `size.global.emptyIcon` | 22 | 150 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png icon y1380… | the Material glyph's ink inside its 22 dp box |
-| MISS | glyph → title (cap top): `size.global.emptyIconToTitle` | 26 | 1 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 1445 → 152… | measured glyph ink bottom → title ink top |
-| approx | title / outline capsule colour: `color.global.textOnMedia` | #FFFFFF | #999999 | references/auto/retro/press/tc-2023-12-retro3.png phone 1 viewer name 'nathan' … | sampled on a glyph; anti-aliasing lowers the peak |
+| approx | denied block glyph ink: `size.global.emptyIcon` | 22 | 18 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png icon y1380… | Material glyph ink ≈ 80 % of its 22 dp box |
+| match | denied block glyph box → title cap top: `size.global.emptyIconToTitle` | 26 | 27.25 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 1445 → 152… | glyph box = its ink centre ± 11; title ink top of a capital = cap top |
+| match | denied block centred: `size.global.emptyIcon` | 196.5 | 196.5 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png icon y1380… |  |
 
 ## Tokens named in the spec
 
@@ -28,7 +28,7 @@ States rendered (`android/feature/account/src/test/snapshots/onboarding.permissi
 | match (token) | `color.global.backgroundDeep` | #000000 | Tokens.Colors.globalBackgroundDeep · measured above | references/auto/retro/press/tc-2023-12-retro3.png phone 1: black viewer under a… |  |
 | match (token) | `icon.global.camera` | Outlined.PhotoCamera | Tokens.Icons.globalCamera | references/auto/retro/video/ig-DDbA_F7x-j7-composer-f130-147-f188-197.png; glyp… |  |
 | match (token) | `size.global.emptyIcon` | 22 pt | Tokens.Sizes.globalEmptyIcon · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png icon y1380… |  |
-| match (token) | `color.global.textOnMedia` | #FFFFFF | Tokens.Colors.globalTextOnMedia · measured above | references/auto/retro/press/tc-2023-12-retro3.png phone 1 viewer name 'nathan' … |  |
+| match (token) | `color.global.textOnMedia` | #FFFFFF | Tokens.Colors.globalTextOnMedia | references/auto/retro/press/tc-2023-12-retro3.png phone 1 viewer name 'nathan' … |  |
 | match (token) | `size.global.emptyIconToTitle` | 26 pt | Tokens.Sizes.globalEmptyIconToTitle · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 1445 → 152… |  |
 | match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |
 | match (token) | `size.global.emptyTitleToAction` | 25 pt | Tokens.Sizes.globalEmptyTitleToAction | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 1565.5 → 1… |  |

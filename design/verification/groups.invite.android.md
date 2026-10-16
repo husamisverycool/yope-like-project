@@ -8,7 +8,7 @@ Side by side: [`groups.invite.android.png`](groups.invite.android.png) — ours 
 
 States rendered (`android/feature/account/src/test/snapshots/groups.invite/`): `creating-light`, `error-light`, `full-light`, `linkOff-light`, `linkOn-dark`, `linkOn-light`, `linkOn-noCover-family-light`, `loading-light`, `offline-light`, `turnOffAlert-light`.
 
-**Result: 64 checks — 61 match, 1 MISS, 1 BLOCKED, 1 n/a.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 64 checks — 62 match, 1 BLOCKED, 1 n/a.** (`match` includes measured, token, behaviour and copy rows.)
 
 ## Link off (groups.invite/linkOff-light)
 
@@ -17,7 +17,7 @@ States rendered (`android/feature/account/src/test/snapshots/groups.invite/`): `
 | match | sheet title centred: layout.global.sheetHeader | 196.5 | 197 |  | centre x of the title ink |
 | match | cover width: `groups.invite.size.coverWidth` | 281.8 | 282 | references/auto/retro/press/tc-2024-04-retro-journals-5.png phones 1 and 2: cov… |  |
 | match | cover height: `groups.invite.size.coverHeight` | 393.5 | 393.5 | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2: cover ink … |  |
-| MISS | cover → note (ink top): `groups.invite.size.coverToNote` | 29 | 1 | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 1: cover bott… | the shadow below the cover is excluded from the cover box |
+| match | cover → note (ink top): `groups.invite.size.coverToNote` | 29 | 32 | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 1: cover bott… | the shadow below the cover is excluded from the cover box |
 | match | Turn on link sharing height: `size.global.buttonHeight` | 60 | 60 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png y2032–2211 (180… |  |
 | match | Turn on link sharing side inset: `size.global.buttonMarginH` | 20 | 20.5 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
 
