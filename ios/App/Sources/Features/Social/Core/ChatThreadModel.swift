@@ -48,6 +48,10 @@ final class ChatThreadModel {
     private(set) var signals = SocialSignals()
     /// The newest message someone else sent while the thread was open (announced to VoiceOver).
     private(set) var arrival: Message?
+    /// `chat.thread.layout.followNewest`: my newest message the list has to bring into view — sent from the composer, or
+    /// arriving from elsewhere (the photo viewer's reply field). The view scrolls to it once the thread shows and calls
+    /// `didFollow(_:)`; others' messages never set it (they are followed only while the reader is at the bottom).
+    private(set) var followRequest: MessageID?
     /// Composer text.
     var draft = ""
     /// The message or photo the composer replies to (the reply bar shows while set).
@@ -142,6 +146,7 @@ final class ChatThreadModel {
         do {
             let page = try await data.messages(groupID: groupID, before: nil)
             isOffline = false
+            let known = Set(messages.map(\.id))
             let newest = Self.ascending(page.items)
             let local = messages.filter { pending.contains($0.id) }
             if let oldestNew = newest.first, hasLoadedBeyondFirstPage {
@@ -151,6 +156,9 @@ final class ChatThreadModel {
                 olderCursor = page.nextCursor
             }
             for message in local where !messages.contains(where: { $0.id == message.id }) { insert(message) }
+            if !known.isEmpty, let last = messages.last, isMine(last), !known.contains(last.id), !pending.contains(last.id) {
+                followRequest = last.id
+            }
             await loadDetails(for: newest)
             phase = messages.isEmpty ? .empty : .ready
         } catch {
@@ -284,8 +292,10 @@ final class ChatThreadModel {
         switch event {
         case let .messageInserted(message):
             guard message.groupID == groupID, !messages.contains(where: { $0.id == message.id }) else { return }
+            let replacesPendingCopy = followRequest.map { pending.contains($0) } ?? false
             removePendingCopy(of: message)
             insert(message)
+            if message.authorID == me, messages.last?.id == message.id || replacesPendingCopy { followRequest = message.id }
             await loadDetails(for: [message])
             phase = .ready
             if message.authorID != me { arrival = message }
@@ -348,6 +358,11 @@ final class ChatThreadModel {
     private func insert(_ message: Message) {
         let index = messages.firstIndex { Self.isOrdered(message, before: $0) } ?? messages.endIndex
         messages.insert(message, at: index)
+    }
+
+    /// The list has brought `id` into view (`chat.thread.layout.followNewest`).
+    func didFollow(_ id: MessageID) {
+        if followRequest == id { followRequest = nil }
     }
 
     // MARK: Replies
@@ -476,11 +491,13 @@ final class ChatThreadModel {
         }
         pending.insert(local.id)
         messages.append(local)
+        followRequest = local.id
         phase = .ready
         return local
     }
 
     private func confirm(_ localID: MessageID, with message: Message) {
+        if followRequest == localID { followRequest = message.id }
         pending.remove(localID)
         failed.remove(localID)
         isSending = !inFlight.isEmpty

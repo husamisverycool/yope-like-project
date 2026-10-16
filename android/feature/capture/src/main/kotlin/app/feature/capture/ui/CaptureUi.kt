@@ -299,7 +299,7 @@ internal fun Shutter(
 }
 
 /**
- * The recording outline (`camera.capture.size.recordingOutline` 6 in `color.global.surfaceLight`): a progress
+ * The recording outline (`camera.capture.size.recordingOutline` in `color.global.surfaceLight`): a progress
  * stroke tracing the viewfinder's rounded outline (`radius.global.viewfinder`) from empty to full, linearly over
  * `camera.capture.duration.videoMax` (progress, so unchanged under Reduce Motion). Starts after the top-leading
  * corner and runs clockwise, inside the edge.

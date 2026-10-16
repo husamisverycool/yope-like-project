@@ -11,7 +11,6 @@ media surface). Retro's own widget tap reloads the widget (its "Tap to reload" s
 | image / source | what it verifies |
 |---|---|
 | `references/auto/locket/store/locket-store-07.png` ("Tap the widget to open the camera"), `references/auto/locket/play/locket-play-05.png` | the mechanic on iOS and Android |
-| Locket APK 1.243.0 Hermes strings 'logOpenedFromWidget', 'Failed to parse widget launch URL' (design/research/locket.md §5) | the widget launches the app with a URL |
 | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` `app_widget_empty_message` ("No media. Tap to reload") | Retro's tap behaviour (not used — RC-9) |
 
 ## Structure

@@ -31,7 +31,7 @@ Each notification has a title and a body (Android requires a title; iOS shows bo
 | `notifications.push.newPost.title` | `{name}`, `{group}` | `notifications.push` | Someone in the group posted a photo. |
 | `notifications.push.newPost.body` | `{name}`, `{group}` | `notifications.push` | Body of the new-photo notification (Locket pattern `notifications.push.newPost.body.single`, without counts). |
 | `notifications.push.reaction.title` | `{name}`, `{emoji}`, `{group}` | `notifications.push` | Someone reacted to your photo. Repeated reactions to one photo replace each other on the device. |
-| `notifications.push.reaction.body` | `{name}`, `{emoji}`, `{group}` | `notifications.push` | Body of the reaction notification (Locket `notifications.push.reaction.inApp.reference` pattern). Never a number. |
+| `notifications.push.reaction.body` | `{name}`, `{emoji}`, `{group}` | `notifications.push` | Body of the reaction notification (`messaging.reaction` content pattern, design/copy-patterns.md). Never a number. |
 | `notifications.push.reply.title` | `{name}`, `{group}` | `notifications.push` | Someone replied to your photo or your message. |
 | `notifications.push.reply.body.text` | `{name}`, `{group}`, `{message}` | `notifications.push` | Body of a text reply. |
 | `notifications.push.reply.body.voice` | `{name}`, `{group}` | `notifications.push` | Body of a voice-message reply. |
@@ -92,8 +92,10 @@ proposal values). A missing token fails the job with `missing design token <name
 All tribute tokens are canonical. If one goes missing, `tribute.render` fails with
 `missing design token …` and is retried; no tribute is delivered.
 
-The font is Roboto (vendored in `fonts/`, Apache 2.0, level PLATFORM); weights map to the
-nearest of Thin/Light/Regular/Medium/Bold/Black.
+Card text is set in the app's faces (vendored in `fonts/`, SIL OFL, `fonts/SOURCE.txt`): title and end cards in Roboto
+Serif Headline, captions in Inter (weights map to the nearest of the vendored 400 / 600). Names and lines in other scripts
+and emoji come from the fallback fonts of `../../fonts/fallback/` (Noto, SIL OFL; colour emoji via Noto Color Emoji
+COLRv1) through `fonts/fonts.conf` — see `fonts/fallback/SOURCE.txt`.
 
 ### Collage and media
 

@@ -16,6 +16,7 @@ import app.feature.capture.data.MemoryCapturePrefs
 import app.feature.capture.data.PostSend
 import app.feature.capture.sendto.SendToViewModel
 import app.feature.capture.sendto.VoiceNoteFile
+import app.feature.capture.sendto.VoicePhase
 import app.media.DualCaptureMode
 import app.media.Lens
 import app.model.CountdownState
@@ -269,13 +270,11 @@ class ViewModelTests {
         handoff.put(media(), "g1", null)
         val vm = SendToViewModel(data, handoff, SessionPromptGate(), voiceRecorderAvailable = true)
         assertTrue(vm.ui.value.micAvailable)
-        vm.onVoiceRecording(true, startedAt = 42L)
+        vm.onVoicePhase(VoicePhase.Holding)
         assertTrue(vm.ui.value.recordingVoice)
-        assertEquals(42L, vm.ui.value.recordingStartedAt)
         val first = File(dir, "v1.m4a").apply { writeBytes(byteArrayOf(1)) }
         vm.onVoiceNote(VoiceNoteFile(first, 1_000))
         assertFalse(vm.ui.value.recordingVoice)
-        assertNull(vm.ui.value.recordingStartedAt)
         assertTrue(vm.ui.value.hasAdditions)
         // A new note replaces (and deletes) the previous one.
         val second = File(dir, "v2.m4a").apply { writeBytes(byteArrayOf(2)) }
@@ -286,6 +285,100 @@ class ViewModelTests {
         vm.deleteVoice()
         assertNull(vm.ui.value.voice)
         assertFalse(second.exists())
+    }
+
+    private fun voiceSendTo(io: FakeSendToVoice): SendToViewModel {
+        data.loaded(group("g1", "Family"))
+        handoff.put(media(), "g1", null)
+        return SendToViewModel(data, handoff, SessionPromptGate(), voiceRecorderAvailable = true, voiceIo = io)
+    }
+
+    /** `chat.voice.layout.recording`: hold records, lift keeps (with its levels), slide left discards; lift while locked goes on. */
+    @Test fun voiceHoldLiftKeepsAndSlideCancels() {
+        val io = FakeSendToVoice(dir)
+        val vm = voiceSendTo(io)
+        assertTrue(vm.beginVoice())
+        assertEquals(VoicePhase.Holding, vm.ui.value.voicePhase)
+        assertFalse(vm.beginVoice()) // already recording
+        vm.releaseVoice()
+        assertEquals(VoicePhase.Idle, vm.ui.value.voicePhase)
+        val note = vm.ui.value.voice!!
+        assertEquals(4_000, note.durationMs)
+        assertEquals(FakeSendToVoice.LEVELS, note.levels)
+        // Slide left: discarded, the attached note stays.
+        vm.beginVoice()
+        vm.cancelVoice()
+        assertEquals(VoicePhase.Idle, vm.ui.value.voicePhase)
+        assertEquals(note, vm.ui.value.voice)
+        assertEquals("cancel", io.calls.last())
+        // Slide up locks: lifting the finger keeps recording.
+        vm.beginVoice()
+        vm.lockVoice()
+        vm.releaseVoice()
+        assertEquals(VoicePhase.Locked, vm.ui.value.voicePhase)
+        // Shorter than a second (reads 0:00): not a note; the earlier note stays.
+        io.noteMs = 400
+        vm.keepVoice()
+        assertEquals(note, vm.ui.value.voice)
+        // The microphone could not start: nothing changes.
+        io.startFails = true
+        assertFalse(vm.beginVoice())
+        assertEquals(VoicePhase.Idle, vm.ui.value.voicePhase)
+    }
+
+    /** `chat.voice.layout.locked`: pause → draft preview → continue → pause → send keeps the whole recording. */
+    @Test fun voicePausePreviewContinueAndKeep() {
+        val io = FakeSendToVoice(dir)
+        val vm = voiceSendTo(io)
+        vm.beginVoice(locked = true)
+        assertEquals(VoicePhase.Locked, vm.ui.value.voicePhase)
+        vm.resumeVoice() // not paused: nothing
+        vm.toggleDraftPreview() // not paused: nothing
+        assertEquals(listOf("stopPlayback", "start"), io.calls)
+        vm.pauseVoice()
+        assertEquals(VoicePhase.Paused, vm.ui.value.voicePhase)
+        vm.toggleDraftPreview()
+        assertEquals(listOf("pause", "draft", "toggle:draft.m4a"), io.calls.drop(2))
+        assertTrue(vm.voicePlay.value.isPlaying)
+        // Continue: the preview stops, recording goes on at the end of the draft.
+        vm.resumeVoice()
+        assertEquals(VoicePhase.Locked, vm.ui.value.voicePhase)
+        assertFalse(vm.voicePlay.value.isPlaying)
+        assertEquals(listOf("stopPlayback", "resume"), io.calls.takeLast(2))
+        vm.pauseVoice()
+        vm.keepVoice()
+        assertEquals(VoicePhase.Idle, vm.ui.value.voicePhase)
+        assertNotNull(vm.ui.value.voice)
+        assertEquals("finish", io.calls.last())
+        // The attached note plays and pauses.
+        vm.toggleNote()
+        assertEquals(vm.ui.value.voice?.file, vm.voicePlay.value.file)
+        assertTrue(vm.voicePlay.value.isPlaying)
+        vm.toggleNote()
+        assertFalse(vm.voicePlay.value.isPlaying)
+    }
+
+    /** Paused: the trash discards the draft; closing asks first while recording; send keeps a running recording. */
+    @Test fun voiceDiscardCloseAndSendWhileRecording() = runTest(dispatcher) {
+        val io = FakeSendToVoice(dir)
+        val vm = voiceSendTo(io)
+        vm.beginVoice(locked = true)
+        vm.pauseVoice()
+        vm.cancelVoice()
+        assertEquals(VoicePhase.Idle, vm.ui.value.voicePhase)
+        assertNull(vm.ui.value.voice)
+        assertFalse(vm.ui.value.hasAdditions)
+        vm.beginVoice()
+        assertTrue(vm.ui.value.hasAdditions)
+        vm.close()
+        assertEquals(SendToViewModel.Alert.Discard, vm.ui.value.alert)
+        vm.dismissAlert()
+        vm.lockVoice()
+        vm.send()
+        val post = data.enqueued.single()
+        assertEquals(4_000, post.voiceDurationMs)
+        assertEquals(FakeSendToVoice.LEVELS, post.voiceLevels)
+        assertEquals(VoicePhase.Idle, vm.ui.value.voicePhase)
     }
 
     @Test fun nothingSelectedDisablesSend() {

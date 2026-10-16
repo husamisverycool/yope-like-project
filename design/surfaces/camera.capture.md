@@ -33,7 +33,7 @@ Page `color.global.backgroundDeep` in both appearances; status bar light content
 2. **Viewfinder** — `camera.capture.layout.viewfinder`: 3:4, width = screen − 2 × `size.global.screenMargin` (361 ×
    481), corners `radius.global.viewfinder` (18, `layout.global.cornerStyle` continuous on iOS), top
    `size.global.titleToContent` (30) below the title baseline; live preview aspect-fill (WYSIWYG: the 3:4 frame is the
-   photo). On it, while a video records: the **recording outline** (`camera.capture.size.recordingOutline` 6,
+   photo). On it, while a video records: the **recording outline** (`camera.capture.size.recordingOutline` 4 — Material 3's progress-indicator thickness,
    `color.global.surfaceLight`) traced along the viewfinder's rounded outline from empty to full, linearly over
    `camera.capture.duration.videoMax`. First use only: the **coach pill** (C-09 on media: fill
    `color.global.controlOnDeep`, `icon.global.video` at `size.global.iconSmall` + `camera.capture.coach.holdToRecord`,
@@ -154,6 +154,6 @@ badge, photo-tinted background, yellow ring, 'History' row. Yope: wordmark, hour
 |---|---|---|
 | Retro press state | not recorded → platform default (RC-3) | 60 fps recording of any Retro capsule press (README "Not available yet") |
 | Live Photo on / off control | not built (no reference shows one) | one screenshot of a camera with a Live Photo control in Locket |
-| hold-to-record visuals on the current Locket build | outline known from help text + Locket source default (G2-9) | 10-s iPhone recording of Locket hold-to-record |
+| hold-to-record visuals on the current Locket build | outline known from Locket's help text; its width is Material 3's progress-indicator default (4), since the earlier 6 came from Locket's decompiled bundle (owner decision 22) | one screenshot (or a 10-s recording) of Locket recording a video |
 | zoom, tap to focus | not built (not observed) | — |
 | camera as a tab vs a modal | follows `groups.list.layout.tabBar` (account group) | — |

@@ -52,6 +52,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -710,13 +711,17 @@ private fun MessageList(
     // Older pages load when the oldest loaded message comes into view.
     val nearTop by remember(items) { derivedStateOf { (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) >= items.size - 2 } }
     LaunchedEffect(nearTop) { if (nearTop) onLoadOlder() }
-    // The newest message stays in view: when one arrives while the bottom of the thread is showing, scroll to it.
+    // `chat.thread.layout.followNewest`: my own new message is always brought into view — also a reply sent from the
+    // photo viewer, seen when the thread shows again (the last newest message shown survives the navigation); someone
+    // else's only while the bottom of the thread is showing.
     val newest = items.firstOrNull()?.key
-    var shownNewest by remember { mutableStateOf<String?>(null) }
+    val newestIsMine = (items.firstOrNull() as? ThreadItem.Item)?.row?.mine == true
+    var shownNewest by rememberSaveable { mutableStateOf<String?>(null) }
     LaunchedEffect(newest) {
         val previous = shownNewest
         shownNewest = newest
-        if (newest != null && previous != null && previous != newest && listState.layoutInfo.visibleItemsInfo.any { it.key == previous }) listState.scrollToItem(0)
+        if (newest == null || previous == null || previous == newest) return@LaunchedEffect
+        if (newestIsMine || listState.layoutInfo.visibleItemsInfo.any { it.key == previous }) listState.scrollToItem(0)
     }
     LaunchedEffect(focusMessageId, items.isNotEmpty()) {
         val i = items.indexOfFirst { it is ThreadItem.Item && it.row.id == focusMessageId }

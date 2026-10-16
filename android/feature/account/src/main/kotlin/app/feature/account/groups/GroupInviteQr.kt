@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -141,10 +142,10 @@ fun QrCodeImage(matrix: QrMatrix, modifier: Modifier = Modifier) {
 /**
  * The QR card (`groups.invite.layout.qrCard`): Retro's recap card shell (`layout.year.story.recapCard`, white in both
  * appearances — L-4) [width] wide, corners `cornerRadiusRatio` × the width, padding `paddingRatio` × the width; the
- * symbol of [link] in its square grid area (width − 2 × padding); then the footer, `footerHeightRatio` × the width, its
- * two lines centred in it at the padding: [groupName] (text role `displayTitle`, `color.global.onSurfaceLight`, one line)
- * over the tagline `groups.invite.qr.tagline` (`groups.invite.fontSize.qrTagline` in `font.global.family`,
- * `groups.invite.color.note`). A picture (also the saved / shared image): its text ignores the font scale. TalkBack:
+ * symbol of [link] in its square grid area (width − 2 × padding); then the footer, `footerHeightRatio` × the width:
+ * [groupName] (text role `displayTitle`, `color.global.onSurfaceLight`, one line) over the tagline
+ * `groups.invite.qr.tagline` (`groups.invite.fontSize.qrTagline` in `font.global.family`, `groups.invite.color.note`), at
+ * the padding, placed by baselines (`lastBaselineFromBottomRatio`, `baselinePitchRatio`, measured on TC-REC). A picture (also the saved / shared image): its text ignores the font scale. TalkBack:
  * one image, `groups.invite.qr.accessibilityLabel`.
  */
 @Composable
@@ -167,11 +168,26 @@ fun InviteQrCard(link: String, groupName: String, width: Dp, modifier: Modifier 
                 },
         ) {
             QrCodeImage(matrix, Modifier.padding(start = padding, top = padding, end = padding).size(width - padding * 2))
-            Box(Modifier.fillMaxWidth().height(width * card.footerHeightRatio).padding(horizontal = padding), contentAlignment = Alignment.CenterStart) {
-                Column {
-                    Text(groupName, style = TextRoles.displayTitle, color = Tokens.Colors.globalOnSurfaceLight, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(stringResource(R.string.groups_invite_qr_tagline), style = tagline, color = Tokens.Colors.groupsInviteColorNote, maxLines = 1)
-                }
+            // Placed by baselines, as Retro's recap card footer (TC-REC): the tagline's baseline `lastBaselineFromBottomRatio`
+            // × width above the card's bottom edge, the name's `baselinePitchRatio` × width above it.
+            val taglineBaseline = width * Tokens.Layouts.GroupsInviteLayoutQrCard.lastBaselineFromBottomRatio
+            val namePitch = width * Tokens.Layouts.GroupsInviteLayoutQrCard.baselinePitchRatio
+            Box(Modifier.fillMaxWidth().height(width * card.footerHeightRatio).padding(horizontal = padding)) {
+                Text(
+                    stringResource(R.string.groups_invite_qr_tagline),
+                    style = tagline,
+                    color = Tokens.Colors.groupsInviteColorNote,
+                    maxLines = 1,
+                    modifier = Modifier.align(Alignment.BottomStart).paddingFromBaseline(bottom = taglineBaseline),
+                )
+                Text(
+                    groupName,
+                    style = TextRoles.displayTitle,
+                    color = Tokens.Colors.globalOnSurfaceLight,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.align(Alignment.BottomStart).paddingFromBaseline(bottom = taglineBaseline + namePitch),
+                )
             }
         }
     }

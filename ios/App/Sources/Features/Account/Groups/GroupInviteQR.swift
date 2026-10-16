@@ -135,9 +135,9 @@ struct QRCodeView: View {
 /// The QR card (`groups.invite.layout.qrCard`): Retro's recap card shell (`layout.year.story.recapCard`, white in both
 /// appearances — L-4) `width` wide, corners `cornerRadiusRatio` × the width (continuous), padding `paddingRatio` × the
 /// width; the symbol of `link` in its square grid area (width − 2 × padding); then the footer, `footerHeightRatio` × the
-/// width, its two lines centred in it at the padding: the group's name (text role `displayTitle`,
-/// `color.global.onSurfaceLight`, one line) over `groups.invite.qr.tagline` (`groups.invite.fontSize.qrTagline` in
-/// `font.global.family`, `groups.invite.color.note`). A picture (also the saved / shared image): its text keeps the
+/// width: the group's name (text role `displayTitle`, `color.global.onSurfaceLight`, one line) over
+/// `groups.invite.qr.tagline` (`groups.invite.fontSize.qrTagline` in `font.global.family`, `groups.invite.color.note`),
+/// at the padding, placed by baselines (`lastBaselineFromBottomRatio`, `baselinePitchRatio`, measured on TC-REC). A picture (also the saved / shared image): its text keeps the
 /// default size. VoiceOver: one image, `groups.invite.qr.accessibilityLabel`.
 struct InviteQRCard: View {
     let groupName: String
@@ -159,6 +159,8 @@ struct InviteQRCard: View {
     var body: some View {
         let padding = width * Card.paddingRatio
         let side = max(0, width - 2 * padding)
+        let taglineBaseline = width * Tokens.Layouts.GroupsInviteLayoutQrCard.lastBaselineFromBottomRatio
+        let namePitch = width * Tokens.Layouts.GroupsInviteLayoutQrCard.baselinePitchRatio
         VStack(alignment: .leading, spacing: 0) {
             Group {
                 if let matrix {
@@ -168,18 +170,23 @@ struct InviteQRCard: View {
                 }
             }
             .padding([.top, .horizontal], padding)
-            VStack(alignment: .leading, spacing: 0) {
-                Text(groupName)
-                    .dsTextStyle(TextRole.displayTitle)
-                    .foregroundStyle(Tokens.Colors.globalOnSurfaceLight)
-                    .lineLimit(1)
+            // Placed by baselines, as Retro's recap card footer (TC-REC): the tagline's baseline `lastBaselineFromBottomRatio`
+            // × width above the card's bottom edge, the name's `baselinePitchRatio` × width above it.
+            ZStack(alignment: .bottomLeading) {
+                Color.clear
                 Text(Copy.groupsInviteQrTagline)
                     .font(Tokens.Fonts.globalFamily.font(size: Tokens.FontSizes.groupsInviteFontSizeQrTagline, weight: Font.Weight.regular))
                     .foregroundStyle(Tokens.Colors.groupsInviteColorNote)
                     .lineLimit(1)
+                    .alignmentGuide(.bottom) { line in line[.lastTextBaseline] + taglineBaseline }
+                Text(groupName)
+                    .dsTextStyle(TextRole.displayTitle)
+                    .foregroundStyle(Tokens.Colors.globalOnSurfaceLight)
+                    .lineLimit(1)
+                    .alignmentGuide(.bottom) { line in line[.lastTextBaseline] + taglineBaseline + namePitch }
             }
             .padding(.horizontal, padding)
-            .frame(width: width, height: width * Card.footerHeightRatio, alignment: .leading)
+            .frame(width: width, height: width * Card.footerHeightRatio)
         }
         .frame(width: width)
         .background(Tokens.Colors.globalSurfaceLight, in: DSShape.rounded(width * Card.cornerRadiusRatio))

@@ -759,6 +759,12 @@ object Tokens {
             const val action: String = "tap the line or the message → send again (menu item chat.thread.menu.retry does the same)"
             const val haptic: String = "haptic.global.error when a send fails"
         }
+        /** MUI X Chat / Stream Chat · chat.thread · which new messages the thread scrolls to · SOURCED — token `chat.thread.layout.followNewest` */
+        object ChatThreadLayoutFollowNewest {
+            const val ownMessage: String = "a message I send — from the composer, or from the photo viewer's reply field — brings the thread to it (the list scrolls to the newest message), wherever the reader was; sent while the viewer covers the thread, the scroll happens when the thread shows again"
+            const val othersMessage: String = "followed only while the newest message is showing (the reader is at the bottom); scrolled up, the list keeps its place (the arrival is announced to VoiceOver / TalkBack)"
+            const val motion: String = "the list's own scroll (system)"
+        }
         /** Retro · chat.thread · photo message inside the thread · SOURCED — token `chat.thread.layout.photoFit` */
         object ChatThreadLayoutPhotoFit {
             const val frame: String = "size.global.friendCardWidth × size.global.friendCardHeight (C-18 photo card, 2:3)"
@@ -1011,7 +1017,9 @@ object Tokens {
             const val encoder: String = "the invite URL exactly as the sheet shares it (https://<domain>/i/<token>), byte mode, error correction H, as web/src/render/qr.ts (qrcode-generator, invite.web); iOS CoreImage CIQRCodeGenerator inputCorrectionLevel H; Android ZXing core Encoder ErrorCorrectionLevel.H (Apache-2.0, licence android/feature/account/licenses/ZXing-LICENSE.txt)"
             const val modules: String = "square, a whole number of device pixels each, nearest-neighbour (web/src/render/qr.ts: crisp at every pixel ratio), centred in the qrSide square; the card fill around them is the quiet zone"
             const val moduleColor: String = "color.global.onSurfaceLight"
-            const val footer: String = "footer height = layout.year.story.recapCard footerHeightRatio × card width, contents centred in it (TC-REC), leading at the card padding: the group name in font.global.display text role displayTitle, color.global.onSurfaceLight, one line, tail truncation; under it groups.invite.qr.tagline at groups.invite.fontSize.qrTagline in font.global.family, groups.invite.color.note. The card is a picture (also the exported image): its text keeps the default size at every Dynamic Type / font scale"
+            const val footer: String = "footer height = layout.year.story.recapCard footerHeightRatio × card width; at the card padding, leading: the group name in font.global.display text role displayTitle, color.global.onSurfaceLight, one line, tail truncation; under it groups.invite.qr.tagline at groups.invite.fontSize.qrTagline in font.global.family, groups.invite.color.note. Placed by baselines as Retro's recap card footer: the tagline's baseline lastBaselineFromBottomRatio × card width above the card's bottom edge, the name's baseline baselinePitchRatio × card width above the tagline's. The card is a picture (also the exported image): its text keeps the default size at every Dynamic Type / font scale"
+            const val lastBaselineFromBottomRatio: Float = 0.0637f
+            const val baselinePitchRatio: Float = 0.056f
             const val exportScale: Float = 3f
             const val export: String = "Save and Share use the card alone (no backdrop) as a PNG: iOS ImageRenderer at exportScale; Android the card's drawn layer at the device density"
             const val accessibility: String = "the card is one image element labelled groups.invite.qr.accessibilityLabel; Save and Share are buttons labelled with their copy"

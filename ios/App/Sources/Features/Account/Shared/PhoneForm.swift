@@ -1,8 +1,8 @@
 // Surface: auth.phone — state B, the phone form (also the App Clip's first sign-in step, invite.appclip). Visual
 // reference: Retro sign-up landing (references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png, LAND) and Retro's
 // sign-up order; the form screens were not captured, so this is the onboarding form composition of C-02, C-12, C-05
-// (design/surfaces/auth.phone.md B; MERGE RA-2). Country-code mechanics: Locket
-// (references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt).
+// (design/surfaces/auth.phone.md B; MERGE RA-2). Country-code mechanics: the open-source
+// react-native-phone-input component's documented defaults (auth.phone.layout.countryCode).
 import AppData
 import AppModels
 import DesignSystem

@@ -225,3 +225,51 @@ object Images {
     private const val COLLAGE_GAP = 6
 }
 
+
+/** The send-to recorder and player without a microphone: records calls; [finish] returns a note of [noteMs]. */
+class FakeSendToVoice(private val dir: File) : app.feature.capture.sendto.SendToVoice {
+    val calls = mutableListOf<String>()
+    var noteMs = 4_000L
+    var startFails = false
+    override val elapsedMs = MutableStateFlow(0L)
+    override val levels = MutableStateFlow<List<Int>>(emptyList())
+    override val playback = MutableStateFlow(app.feature.capture.sendto.VoicePlay())
+
+    override fun start() {
+        if (startFails) error("no microphone")
+        calls += "start"
+    }
+
+    override fun pause() { calls += "pause" }
+    override fun resume() { calls += "resume" }
+
+    override suspend fun draftFile(): File {
+        calls += "draft"
+        return File(dir, "draft.m4a").apply { writeBytes(byteArrayOf(1)) }
+    }
+
+    override suspend fun finish(): app.voice.VoiceNote {
+        calls += "finish"
+        return app.voice.VoiceNote(File(dir, "note-${calls.size}.m4a").apply { writeBytes(byteArrayOf(1)) }, noteMs, LEVELS)
+    }
+
+    override fun cancel() { calls += "cancel" }
+
+    override fun toggle(file: File) {
+        calls += "toggle:${file.name}"
+        val p = playback.value
+        playback.value = if (p.file == file && p.isPlaying) p.copy(isPlaying = false) else app.feature.capture.sendto.VoicePlay(file, true, 0f)
+    }
+
+    override fun stopPlayback() {
+        calls += "stopPlayback"
+        playback.value = app.feature.capture.sendto.VoicePlay()
+    }
+
+    override fun release() { calls += "release" }
+
+    companion object {
+        /** 100 levels of 0…31 (C-36). */
+        val LEVELS: List<Int> = List(100) { (it * 7) % 32 }
+    }
+}

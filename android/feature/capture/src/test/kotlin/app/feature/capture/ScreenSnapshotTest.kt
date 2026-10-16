@@ -30,7 +30,10 @@ import app.feature.capture.data.CapturedMedia
 import app.feature.capture.sendto.SendToChrome
 import app.feature.capture.sendto.SendToScreen
 import app.feature.capture.sendto.SendToViewModel
+import app.feature.capture.sendto.VoiceLive
 import app.feature.capture.sendto.VoiceNoteFile
+import app.feature.capture.sendto.VoicePhase
+import app.feature.capture.sendto.VoicePlay
 import app.ui.media.DualImage
 import app.feature.capture.widget.WidgetPickerScreen
 import app.feature.capture.widget.WidgetPickerState
@@ -115,13 +118,14 @@ class ScreenSnapshotTest {
     private val covers = mapOf("g1" to SamplePhotos.painter("dinner-long-table-3x4", 1, 1), "g2" to SamplePhotos.painter("movie-night-couch-4x3", 1, 1))
     private val loaded = SendToViewModel.UiState(media = media, groups = SendToViewModel.Groups.Loaded(groups), selected = setOf("g1", "g2"), micAvailable = true)
 
-    private fun sendTo(name: String, state: SendToViewModel.UiState, dark: Boolean = false, sheet: Boolean = false) = snap("camera.sendto_$name", dark) {
+    private fun sendTo(name: String, state: SendToViewModel.UiState, dark: Boolean = false, sheet: Boolean = false, live: VoiceLive = VoiceLive()) = snap("camera.sendto_$name", dark) {
         SendToScreen(
             state = state,
             chrome = SendToChrome(preview = photo, covers = covers),
             onClose = {}, onSave = {}, onCaption = {}, onToggle = {}, onSend = {},
             onCreateGroup = {}, onRetryGroups = {}, onConfirmDiscard = {}, onDismissAlert = {}, onRetrySend = {},
             now = { RECORDING_STARTED + 7_000 },
+            voiceLive = live,
             messageSheetOpen = sheet,
         )
     }
@@ -140,8 +144,22 @@ class ScreenSnapshotTest {
     @Test fun sendToSendOffline() = sendTo("offline", loaded.copy(alert = SendToViewModel.Alert.SendFailed(offline = true)))
     @Test fun sendToDiscard() = sendTo("discard", loaded.copy(caption = "Sunday dinner", alert = SendToViewModel.Alert.Discard))
     @Test fun sendToVideoFreeMember() = sendTo("video-free", loaded.copy(media = media.copy(kind = MediaKind.Video, durationMs = 3000), premium = false))
-    @Test fun sendToVoiceRecording() = sendTo("voice-recording", loaded.copy(recordingVoice = true, recordingStartedAt = RECORDING_STARTED))
-    @Test fun sendToVoiceAttached() = sendTo("voice-attached", loaded.copy(voice = VoiceNoteFile(File(dir, "v.m4a"), 7_000)))
+    // Voice note (`camera.sendto.layout.messageField` `.recording` / `.note`, chat.voice, C-36), iOS CaptureSnapshotTests' states.
+    private val recordingLive = VoiceLive(elapsedMs = 7_000, levels = VOICE_LEVELS)
+    private val note = VoiceNoteFile(File(dir, "v.m4a"), 7_000, VOICE_LEVELS)
+    private val attached = loaded.copy(voice = note)
+
+    @Test fun sendToVoiceRecording() = sendTo("voice-recording", loaded.copy(voicePhase = VoicePhase.Holding), live = recordingLive)
+    @Test fun sendToVoiceLocked() = sendTo("voice-locked", loaded.copy(voicePhase = VoicePhase.Locked), live = recordingLive)
+    @Test fun sendToVoicePaused() = sendTo("voice-paused", loaded.copy(voicePhase = VoicePhase.Paused), live = recordingLive)
+    @Test fun sendToVoicePausedPreview() = sendTo(
+        "voice-paused-preview",
+        loaded.copy(voicePhase = VoicePhase.Paused),
+        live = recordingLive.copy(play = VoicePlay(File(dir, "draft.m4a"), isPlaying = true, progress = 0.45f)),
+    )
+    @Test fun sendToVoiceAttached() = sendTo("voice-attached", attached)
+    @Test fun sendToVoiceAttachedDark() = sendTo("voice-attached", attached, dark = true)
+    @Test fun sendToVoiceAttachedPlaying() = sendTo("voice-attached-playing", attached, live = VoiceLive(play = VoicePlay(note.file, isPlaying = true, progress = 0.45f)))
 
     // ---- daily.capture / daily.dualimage --------------------------------------------------------
 
@@ -248,6 +266,13 @@ class ScreenSnapshotTest {
 
 private const val SETTLE_MS = 1_000L
 private const val RECORDING_STARTED = 1_000_000L
+
+/** A spoken-like note: 100 levels of 0…31 (syllable peaks under a phrase envelope), as stored (C-36). */
+private val VOICE_LEVELS: List<Int> = List(100) { i ->
+    val phrase = kotlin.math.sin(Math.PI * (i % 50) / 50)
+    val syllable = 0.55 + 0.45 * kotlin.math.abs(kotlin.math.sin(i * 0.9))
+    (31 * phrase * syllable).toInt().coerceIn(0, 31)
+}
 
 /** An option-B page (test fixture): 3 × 4 dual tiles of sample photos (back scene + selfie inset) on the matte, 9:16. */
 object CollagePage {

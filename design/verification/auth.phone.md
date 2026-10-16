@@ -4,7 +4,7 @@ Landing (state A) and phone form (state B) — `Features/Account/Auth/PhoneScree
 
 Checklist written from the spec (`design/surfaces/auth.phone.md`) against the iOS code: every token and copy key the spec names, its reference value, and where the iOS code uses it. The snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>-<light|dark>.png` (AccountSnapshotTests: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/auth.phone.png` next to the reference image(s) below.
 
-Reference image(s): `references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png`, `references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css`, `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`, `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png`, `references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt`
+Reference image(s): `references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png`, `references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css`, `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`, `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png`, react-native-phone-input 1.4.1 (public source; `auth.phone.layout.countryCode`)
 
 Snapshots (CI, `ios/build/snapshots/account/`): `auth.phone-landing-light.png`, `auth.phone-landing-dark.png`, `auth.phone-form-light.png`, `auth.phone-form-filled-light.png`, `auth.phone-form-filled-dark.png`, `auth.phone-sending-light.png`, `auth.phone-offline-light.png`, `auth.phone-country-list-light.png`
 
@@ -16,7 +16,7 @@ Snapshots (CI, `ios/build/snapshots/account/`): `auth.phone-landing-light.png`, 
 | status | token / copy | reference value | iOS implementation |
 |---|---|---|---|
 | matched | `auth.phone.fontSize.wordmark` | 64 pt (SOURCED) | `Tokens.FontSizes.authPhoneFontSizeWordmark` in PhoneScreen.swift |
-| approximated | `auth.phone.layout.countryCode` | pattern: flag at the field's leading edge + the calling code typed inline with the number ('+1 555 …'); no separate code button; flagWidth: 20; flagHeight: 1… (SOURCED) | `Tokens.Layouts.AuthPhoneLayoutCountryCode` in PhoneForm.swift — flag, prefill, inline code, country list done; `autoFormat` not done (no phone-number formatting library: the number stays as typed) |
+| approximated | `auth.phone.layout.countryCode` | pattern: flag at the field's leading edge + the calling code typed inline with the number ('+1 555 …'); no separate code button; flagWidth: 30; flagHeight: 2… (SOURCED) | `Tokens.Layouts.AuthPhoneLayoutCountryCode` in PhoneForm.swift — flag, prefill, inline code, country list done; `autoFormat` not done (no phone-number formatting library: the number stays as typed) |
 
 ## Structure
 

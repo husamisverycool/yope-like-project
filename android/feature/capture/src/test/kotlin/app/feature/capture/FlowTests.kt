@@ -34,8 +34,11 @@ import app.feature.capture.sendto.SendToScreen
 import app.data.model.MediaKind
 import app.feature.capture.data.CapturedMedia
 import app.feature.capture.sendto.SendToViewModel
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.unit.Dp
 import app.feature.capture.sendto.VoiceActions
 import app.feature.capture.sendto.VoiceNoteFile
+import app.feature.capture.sendto.VoicePhase
 import app.data.error.DataError
 import app.feature.capture.ui.VoiceGestures
 import app.designsystem.generated.Tokens
@@ -200,13 +203,18 @@ class FlowTests {
         assertTrue(compose.onAllNodes(hasTestTag("camera.shutter")).fetchSemanticsNodes().isEmpty())
     }
 
-    /** The voice capsule (`chat.voice` mechanics): hold records, lift keeps, slide left discards; a note's tap opens its menu. */
-    @Test fun voiceCapsuleHoldSlideAndNoteMenu() {
+    /**
+     * The voice capsule (`chat.voice` mechanics): hold records, lift keeps, slide left discards, slide up locks; locked it
+     * is a send button; paused the capsule's glyphs pause / continue / preview / delete; a note's tap plays it and its long
+     * press opens its menu.
+     */
+    @Test fun voiceCapsuleHoldSlideLockAndNoteMenu() {
         val calls = mutableListOf<String>()
         val gestures = object : VoiceGestures {
             override fun down() { calls += "down" }
             override fun release() { calls += "release" }
             override fun cancel() { calls += "cancel" }
+            override fun lock() { calls += "lock" }
         }
         val state = androidx.compose.runtime.mutableStateOf(
             SendToViewModel.UiState(
@@ -223,21 +231,54 @@ class FlowTests {
                 chrome = SendToChrome(preview = null),
                 onClose = {}, onSave = {}, onCaption = {}, onToggle = {}, onSend = {},
                 onCreateGroup = {}, onRetryGroups = {}, onConfirmDiscard = {}, onDismissAlert = {}, onRetrySend = {},
-                voice = VoiceActions(gestures = gestures, onDelete = { deleted++ }),
+                voice = VoiceActions(
+                    gestures = gestures,
+                    onDelete = { deleted++ },
+                    onKeep = { calls += "keep" },
+                    onPause = { calls += "pause" },
+                    onResume = { calls += "resume" },
+                    onPreview = { calls += "preview" },
+                    onDiscard = { calls += "discard" },
+                    onToggleNote = { calls += "note" },
+                ),
             )
         }
         val capsule = compose.onNodeWithTag("sendto.voice", useUnmergedTree = true)
-        val far = with(compose.density) { (Tokens.Sizes.globalIconPillWidth * 2).toPx() }
-        // Hold, then lift: the note is kept.
+        val far = with(compose.density) { Dp(Tokens.Layouts.CameraSendtoLayoutPreview.width).toPx() }
+        val up = with(compose.density) { (Tokens.Sizes.globalPillHeight * 2).toPx() }
+        // Hold, then lift.
         capsule.performTouchInput { down(center); advanceEventTime(500); up() }
         assertEquals(listOf("down", "release"), calls)
-        // Slide left past the threshold: discarded, the lift does nothing more.
+        // Holding: slide left past half the row cancels; slide up locks.
         calls.clear()
+        compose.runOnIdle { state.value = state.value.copy(voicePhase = VoicePhase.Holding) }
+        compose.onNodeWithTag("sendto.voice.lock", useUnmergedTree = true).assertExists()
         capsule.performTouchInput { down(center); moveBy(androidx.compose.ui.geometry.Offset(-far, 0f)); up() }
-        assertEquals(listOf("down", "cancel"), calls)
-        // With a note: a tap opens its menu; "Delete recording" removes it.
-        compose.runOnIdle { state.value = state.value.copy(voice = VoiceNoteFile(java.io.File(app.cacheDir, "v.m4a"), 7_000)) }
-        compose.onNodeWithTag("sendto.voice.attached", useUnmergedTree = true).performClick()
+        assertEquals(listOf("down", "cancel", "release"), calls)
+        calls.clear()
+        capsule.performTouchInput { down(center); moveBy(androidx.compose.ui.geometry.Offset(0f, -up)); up() }
+        assertEquals(listOf("down", "lock", "release"), calls)
+        // Locked: the capsule is send; the recording capsule's glyph pauses.
+        calls.clear()
+        compose.runOnIdle { state.value = state.value.copy(voicePhase = VoicePhase.Locked) }
+        compose.onNodeWithTag("sendto.voice.lock", useUnmergedTree = true).assertDoesNotExist()
+        capsule.performClick()
+        compose.onNodeWithTag("sendto.voice.pauseResume", useUnmergedTree = true).performClick()
+        assertEquals(listOf("keep", "pause"), calls)
+        // Paused: continue, preview, delete.
+        calls.clear()
+        compose.runOnIdle { state.value = state.value.copy(voicePhase = VoicePhase.Paused) }
+        compose.onNodeWithTag("sendto.voice.pauseResume", useUnmergedTree = true).performClick()
+        compose.onNodeWithTag("sendto.voice.preview", useUnmergedTree = true).performClick()
+        compose.onNodeWithTag("sendto.voice.discard", useUnmergedTree = true).performClick()
+        assertEquals(listOf("resume", "preview", "discard"), calls)
+        // With a note: a tap plays it; a long press opens its menu; "Delete recording" removes it.
+        calls.clear()
+        compose.runOnIdle { state.value = state.value.copy(voicePhase = VoicePhase.Idle, voice = VoiceNoteFile(java.io.File(app.cacheDir, "v.m4a"), 7_000)) }
+        val note = compose.onNodeWithTag("sendto.voice.attached", useUnmergedTree = true)
+        note.performClick()
+        assertEquals(listOf("note"), calls)
+        note.performTouchInput { longClick() }
         compose.waitUntil(WAIT_MS) { compose.onAllNodes(hasText("Delete recording")).fetchSemanticsNodes().isNotEmpty() }
         compose.onNode(hasText("Delete recording")).performClick()
         compose.waitForIdle()

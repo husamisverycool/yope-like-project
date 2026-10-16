@@ -1448,6 +1448,22 @@
       "method": "composition of Retro components C-13, C-36, C-10 (red glyphs), C-11 (circles; send in C-06's primary fill) in WhatsApp's locked-recording order",
       "precision": "layout",
       "notes": "WhatsApp's green send circle and red ring become Retro's primary fill and red glyph (C-10). No haptics (microphone)."
+    },
+    "chat.thread.layout.followNewest": {
+      "type": "layout",
+      "value": {
+        "ownMessage": "a message I send — from the composer, or from the photo viewer's reply field — brings the thread to it (the list scrolls to the newest message), wherever the reader was; sent while the viewer covers the thread, the scroll happens when the thread shows again",
+        "othersMessage": "followed only while the newest message is showing (the reader is at the bottom); scrolled up, the list keeps its place (the arrival is announced to VoiceOver / TalkBack)",
+        "motion": "the list's own scroll (system)"
+      },
+      "source_app": "MUI X Chat / Stream Chat",
+      "surface": "chat.thread",
+      "element": "which new messages the thread scrolls to",
+      "evidence": "references/auto/mui/docs-chat-scrolling-excerpt.txt (https://mui.com/x/react-chat/behavior/scrolling/: 'The message list automatically scrolls to the bottom when: The user sends a new message (always active, regardless of configuration). New messages arrive … while the user is near the bottom'); references/auto/stream/docs-react-reactions-excerpt.txt (Stream Chat MessageList: scrolled up, new messages show a notification instead of scrolling — scrolledUpThreshold); the same mechanic as Apple Messages and WhatsApp threads",
+      "method": "read from the documentation of two widely used chat UI kits; 'near the bottom' kept as this thread's existing rule (the newest message is in view)",
+      "level": "SOURCED",
+      "precision": "exact (rule)",
+      "notes": "Owns the e2e finding of 2026-10-16: a reply sent from the photo viewer left the thread where it was. No 'new message' button is added (no reference value for it in this product)."
     }
   }
 }

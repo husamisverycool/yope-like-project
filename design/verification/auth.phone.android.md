@@ -54,7 +54,7 @@ States rendered (`android/feature/account/src/test/snapshots/auth.phone/`): `cou
 | status | token / copy | expected (spec) | ours | reference evidence | note |
 |---|---|---|---|---|---|
 | match (token) | `auth.phone.fontSize.wordmark` | 71.4 pt | Tokens.FontSizes.authPhoneFontSizeWordmark | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css (.page_largeRetroWordm… |  |
-| match (token) | `auth.phone.layout.countryCode` | pattern: flag at the field's leading edge + the calling code typed inline with the number… | Tokens.Layouts.AuthPhoneLayoutCountryCode | references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (Locket Android 1… |  |
+| match (token) | `auth.phone.layout.countryCode` | pattern: flag at the field's leading edge + the calling code typed inline with the number… | Tokens.Layouts.AuthPhoneLayoutCountryCode | react-native-phone-input 1.4.1 (MIT, public npm package): dist/styles.js flag {width: 30, height: 20}… |  |
 | match (token) | `color.global.background` | light: #FFFFFF; dark: #000000 | Tokens.Colors.globalBackground | light: references/auto/retro/store/retro-store-02.png box (600–606,1700–1706); … |  |
 | match (token) | `color.global.background.android` | light: #FFFFFF; dark: #1C1C1E | Tokens.Colors.globalBackgroundAndroid · measured above | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Retro palett… |  |
 | match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |

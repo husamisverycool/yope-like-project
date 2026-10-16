@@ -290,20 +290,11 @@ final class SocialSnapshotTests: XCTestCase {
 
     // MARK: chat.voice
 
-    /// The composer alone at the bottom of a page (the recording row needs no microphone in the snapshot).
-    private func composer(_ recorder: SocialVoiceRecorder) -> some View {
-        var text = ""
-        return Tokens.Colors.globalBackground
-            .ignoresSafeArea()
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                ChatComposer(
-                    text: Binding(get: { text }, set: { text = $0 }),
-                    avatar: SocialImages.source(SocialDemo.profiles[0].avatarPath),
-                    isReplying: false,
-                    send: {}, camera: {}, recorder: recorder,
-                    onRecorded: { _ in }, onRecordFailed: {}, onMicDenied: {}
-                )
-            }
+    /// The loaded thread (header + messages) with [recorder] in the composer (no microphone needed in the snapshot).
+    private func recordingThread(_ recorder: SocialVoiceRecorder) async -> some View {
+        let model = ChatThreadModel(groupID: SocialDemo.groupID, data: use(SocialDemo.makeData()))
+        await model.load()
+        return ChatThreadView(model: model, recorder: recorder)
     }
 
     func testChatVoice() async {
@@ -314,17 +305,17 @@ final class SocialSnapshotTests: XCTestCase {
 
         let holding = SocialVoiceRecorder()
         holding.showRecordingForSnapshot(.holding)
-        record(composer(holding), "chat.voice", "recording")
+        record(await recordingThread(holding), "chat.voice", "recording")
 
         // Locked (`chat.voice.layout.locked`): the live waveform in the field, delete · pause · send under it.
         let locked = SocialVoiceRecorder()
         locked.showRecordingForSnapshot(.locked, elapsedMs: 7_000, levels: SocialDemo.voiceLevelsMessage)
-        record(composer(locked), "chat.voice", "recording-locked", both)
+        record(await recordingThread(locked), "chat.voice", "recording-locked", both)
 
         // Paused draft, previewing part-way: preview glyph · played / unplayed bars · elapsed; delete · continue · send.
         let paused = SocialVoiceRecorder()
         paused.showRecordingForSnapshot(.paused, elapsedMs: 11_000, levels: SocialDemo.voiceLevelsNote, previewProgress: 0.45)
-        record(composer(paused), "chat.voice", "recording-paused", both)
+        record(await recordingThread(paused), "chat.voice", "recording-paused", both)
 
         // The audio could not be fetched: `chat.voice.error.play` in the capsule.
         let broken = use(SocialDemo.makeData())

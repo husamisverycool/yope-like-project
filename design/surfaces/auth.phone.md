@@ -18,7 +18,7 @@ Two states of one surface: **A. landing** (first launch, signed out) and **B. ph
 | WEB | `references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css` (`.page_largeRetroWordmark` 4rem) | wordmark size `auth.phone.fontSize.wordmark` |
 | APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | form copy: `onboarding_form_input_hint_phone_number`, `onboarding_form_input_next`, `onboarding_landing_phone_number_error`, `onboarding_landing_welcome_*` |
 | H43 | `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png` | title baseline 64 below the safe area (C-01 metric used for the form title) |
-| LK | `references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt` | country-code mechanics (`auth.phone.layout.countryCode`) |
+| RNPI | react-native-phone-input 1.4.1 (MIT, public npm package; `dist/styles.js`, `dist/PhoneInput.js`, README) + https://developer.android.com/reference/android/telephony/PhoneNumberFormattingTextWatcher | country-code mechanics and sizes (`auth.phone.layout.countryCode`: flag 30 × 20 at C-12's text inset, 10 to the number, flag tap → country list, formatted while typing); re-sourced by owner decision 22 |
 
 ## Structure
 

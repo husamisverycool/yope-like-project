@@ -66,10 +66,13 @@ over the sheet that Back closes), a media surface, dark in both appearances:
      `color.global.onSurfaceLight`, square, a whole number of device pixels each (nearest-neighbour), centred, with a
      white quiet zone of `quietZoneModules` (4, DW) inside the card. Light card in dark appearance too: some readers do
      not decode reversed codes.
-   - **Footer** `footerHeightRatio` × width, two lines centred in it at the card padding: the group's name (text role
-     `displayTitle`, `color.global.onSurfaceLight`, one line, tail truncation) over `groups.invite.qr.tagline`
-     (`groups.invite.fontSize.qrTagline` 10 in `font.global.family`, `groups.invite.color.note`). The card is a picture
-     (also the exported image): its text keeps the default size.
+   - **Footer** `footerHeightRatio` × width, at the card padding: the group's name (text role `displayTitle`,
+     `color.global.onSurfaceLight`, one line, tail truncation) over `groups.invite.qr.tagline`
+     (`groups.invite.fontSize.qrTagline` 10 in `font.global.family`, `groups.invite.color.note`), placed by baselines as
+     Retro's recap card footer (TC-REC: "retro.app" baseline 33 px of a 518-px card above its bottom edge, "nathan" 29 px
+     above that): the tagline's baseline `lastBaselineFromBottomRatio` (0.0637) × width above the card's bottom edge, the
+     name's `baselinePitchRatio` (0.056) × width above the tagline's. The card is a picture (also the exported image):
+     its text keeps the default size.
 3. **Bottom row** (`collage.view.layout.screen.bottomRowCentreFromScreenBottom`): Save circle (C-11 on media,
    `icon.global.download`, label `groups.invite.qr.save`) leading, light Share pill (C-09, `collage.share.layout.pill`,
    `groups.invite.qr.share`) trailing, both at `size.global.buttonMarginH`.

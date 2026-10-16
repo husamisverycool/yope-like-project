@@ -21,6 +21,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.assertIsSelected
 import androidx.navigation.NavHostController
@@ -29,6 +30,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.data.model.MessageKind
 import app.data.repo.ReactionEntry
 import app.feature.social.FakeSocialData.Companion.ANA
 import app.feature.social.FakeSocialData.Companion.BEN
@@ -87,6 +89,38 @@ class SocialFlowTest {
         compose.setContent { TestScreen(data) { ChatScreen(vm, null, chatNav) } }
         compose.waitForIdle()
         return vm
+    }
+
+    /**
+     * `chat.thread.layout.followNewest`: scrolled up to older messages, someone else's new message leaves the reader where
+     * they were; my own (here a reply sent from the photo viewer, arriving by realtime) brings the thread to it.
+     */
+    @Test fun myNewMessageIsFollowedOthersAreNotWhenScrolledUp() {
+        val data = FakeSocialData().apply {
+            seedChat()
+            repeat(30) { i -> messages += FakeSocialData.message("x-$i", GROUP, if (i % 2 == 0) ANA else BEN, MessageKind.Text, body = "earlier $i", at = FakeSocialData.BASE.minusSeconds(600L * (30 - i))) }
+        }
+        chat(data)
+        compose.onNode(androidx.compose.ui.test.hasScrollToIndexAction())
+            .performScrollToNode(androidx.compose.ui.test.hasContentDescription("earlier 0", substring = true))
+        compose.waitForIdle()
+        fun shown(text: String) = compose.onAllNodesWithContentDescription(text, substring = true).fetchSemanticsNodes().isNotEmpty()
+        assertFalse("scrolled up: the newest message is out of view", shown("valid"))
+
+        data.eventsOf(GROUP).tryEmit(app.data.realtime.GroupEvent.MessageInserted(
+            GROUP,
+            FakeSocialData.message("n-1", GROUP, ANA, MessageKind.Text, body = "while you read", at = FakeSocialData.BASE.plusSeconds(1_000)),
+        ))
+        compose.waitForIdle()
+        assertFalse("someone else's message does not move the list", shown("while you read"))
+        assertTrue(shown("earlier 0"))
+
+        data.eventsOf(GROUP).tryEmit(app.data.realtime.GroupEvent.MessageInserted(
+            GROUP,
+            FakeSocialData.message("n-2", GROUP, FakeSocialData.ME, MessageKind.Text, body = "love this", replyToPostId = "p-1", at = FakeSocialData.BASE.plusSeconds(1_100)),
+        ))
+        compose.waitForIdle()
+        assertTrue("my own message is brought into view", shown("love this"))
     }
 
     /** Typing swaps camera + mic for the send glyph (`chat.composer.layout.typingState`); send sends and clears. */

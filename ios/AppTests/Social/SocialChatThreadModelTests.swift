@@ -124,6 +124,45 @@ final class SocialChatThreadModelTests: XCTestCase {
         XCTAssertEqual(model.arrival?.id, incoming.id, "my own messages are not announced")
     }
 
+    // MARK: Following new messages (`chat.thread.layout.followNewest`)
+
+    func testMyOwnSendAsksTheListToBringItIntoView() async {
+        let model = makeModel()
+        await model.load()
+        XCTAssertNil(model.followRequest)
+        model.draft = "on my way"
+        await model.sendDraft()
+        let sent = model.messages.last
+        XCTAssertEqual(sent?.body, "on my way")
+        XCTAssertEqual(model.followRequest, sent?.id, "the confirmed message, not its local copy")
+        model.didFollow(sent!.id)
+        XCTAssertNil(model.followRequest)
+    }
+
+    func testAReplyFromTheViewerIsFollowedButSomeoneElsesMessageIsNot() async {
+        let model = makeModel()
+        await model.load()
+        // My reply sent from the photo viewer reaches the thread as a realtime insert.
+        let mine = SocialDemo.message(41, by: SocialDemo.me, at: SocialDemo.monday.addingTimeInterval(6 * SocialDemo.day), text: "love this", replyTo: SocialDemo.p2)
+        await model.handle(.messageInserted(mine))
+        XCTAssertEqual(model.followRequest, mine.id)
+        model.didFollow(mine.id)
+        let incoming = SocialDemo.message(42, by: SocialDemo.ana, at: SocialDemo.monday.addingTimeInterval(7 * SocialDemo.day), text: "ha")
+        await model.handle(.messageInserted(incoming))
+        XCTAssertNil(model.followRequest, "others' messages are followed only while the reader is at the bottom (the view's rule)")
+    }
+
+    func testARefreshThatBringsMyNewMessageAsksToFollowIt() async {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data)
+        await model.load()
+        let mine = SocialDemo.message(43, by: SocialDemo.me, at: SocialDemo.monday.addingTimeInterval(8 * SocialDemo.day), text: "sent from the viewer")
+        data.update { $0.messages.append(mine) }
+        await model.refresh()
+        XCTAssertEqual(model.messages.last?.id, mine.id)
+        XCTAssertEqual(model.followRequest, mine.id)
+    }
+
     func testRealtimeInsertIntoEmptyThreadLeavesEmptyState() async {
         let data = SocialDemo.makeEmptyData()
         let model = makeModel(data)

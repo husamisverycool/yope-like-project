@@ -1,7 +1,7 @@
 // Surface: onboarding.widget — guided add-the-widget step. Visual reference: Retro Settings → Widgets
 // (references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png, VID-SET: rounded widget thumbnails with
 // their names) and Retro's widget art (references/auto/retro/apk/widget_preview_friends.webp, 22-dp corners); step text
-// from Locket's add-widget steps (references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt). Composition of C-33
+// from Locket's public add-widget help (https://help.locket.com/en/articles/7914857). Composition of C-33
 // (page title), the widget preview, C-11 numbered circles, C-05 (design/surfaces/onboarding.widget.md).
 import DesignSystem
 import SwiftUI

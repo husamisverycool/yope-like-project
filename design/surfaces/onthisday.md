@@ -39,8 +39,11 @@ appearance, `layout.global.appearance.media`). Top to bottom:
    `size.global.backInset`; the **date title** after `size.global.headerGap`: the memory's date as
    `layout.onthisday.dateFormat` ("Jul 22, 2022"), `font.global.display`, text role `headerTitle`
    (`fontSize.global.headerTitle` / `fontWeight.global.headerTitle` / `lineHeight.global.headerTitle`),
-   `color.global.textOnMedia`, baseline `size.global.titleTop` below the safe-area top. No expand chevron (one mode;
-   Retro's mode menu "On this week… / Pick a date… / Shuffle" is not built — the dice starts shuffle).
+   `color.global.textOnMedia`, baseline `size.global.titleTop` below the safe-area top. After the date: Retro's
+   **expand chevron** (RWA 'May 1, 2019 ⌄') — `icon.global.chevronDown` in `color.global.textOnMedia`, scaled so its
+   ink is `dimension.onthisday.modeChevron.width` (19.7) wide, symbol weight `fontWeight.onthisday.modeChevron` (iOS),
+   its ink `dimension.onthisday.modeChevron.gap` (8.7) after the title, centred `dimension.onthisday.modeChevron.drop`
+   (2.0) below the title's cap middle. Title and chevron open the **mode menu** (E).
 3. **Subtitle** — baseline `dimension.onthisday.subtitleBaseline` below the date's baseline, aligned with the date's
    leading edge: `onthisday.subtitle.day` ("On this day · {name}") or, after a shuffle, `onthisday.subtitle.shuffle`
    ("Memories · {name}"); `{name}` = the poster's first name. Text role `textButton` (17 regular),
@@ -53,7 +56,8 @@ appearance, `layout.global.appearance.media`). Top to bottom:
    safe-area bottom, distributed with equal gaps across the width: **share** circle, **dial**, **random** circle.
    - Share / random: glass circles (C-11 large) `size.global.circleButtonLarge`, `color.global.glass`, glyphs
      `icon.global.share` / `icon.global.random` in a `size.global.icon` box, `color.global.textOnMedia`. Hidden
-     while playing.
+     while playing. **Share shows only on your own memory** (owner decision 12: a photo leaves the app only when it
+     is your own); on another member's memory its place stays empty, so the dial does not move (as while playing).
    - **Dial** (`layout.onthisday.dial`): `count.onthisday.dial.ticks` (44) slots on a ring of outer diameter
      `dimension.onthisday.dial.diameter`; slot 0 at 6° clockwise from 3 o'clock, pitch 8.18°; even slots long
      (`dimension.onthisday.dial.tickLong`), odd slots short (`dimension.onthisday.dial.tickShort`), every tick
@@ -75,12 +79,13 @@ the newest). One post = one memory. The indicator starts on slot 0; slot index =
 - **Tap the dial centre**: play / pause. Playing advances every `duration.onthisday.playHold` with a cross-fade of
   `duration.onthisday.memoryChange`, one tick each step, and stops after the last memory (play glyph again). Share
   and random fade out while playing and back in when paused (`duration.global.fade`, `easing.global.standard`).
-- **Share**: native share sheet with the memory's photo (original); preview title = today's date as
-  `layout.year.story.dateFormat` ("Tuesday, December 2"), subtitle `onthisday.share.subtitle` ("Memory") — as Retro.
+- **Share** (your own memory only — owner decision 12): native share sheet with the memory's photo (original);
+  preview title = today's date as `layout.year.story.dateFormat` ("Tuesday, December 2"), subtitle
+  `onthisday.share.subtitle` ("Memory") — as Retro, whose Rewind shares only the user's own camera-roll photos.
 - **Random (dice) = shuffle**: shows a random memory from the group's whole history (data below); the subtitle
   switches to `onthisday.subtitle.shuffle`; the dial then steps through further random memories (each slot = one new
-  random pick; previous = back through the picks already shown). Going back to the day: the back chevron (pops) or
-  reopening from the entry.
+  random pick; previous = back through the picks already shown). Going back to the day: the mode menu's "On this
+  day…" (E), the back chevron (pops) or reopening from the entry.
 - No swipe or tap-to-advance on the photo (Retro advances only by the dial).
 
 **C. Feature intro (first open, once per account)** — components C-29 feature-intro sheet over the page: title
@@ -88,13 +93,22 @@ the newest). One post = one memory. The indicator starts on slot 0; slot index =
 `onthisday.nux.button` ("Try it out") which closes it. Retro shows the same intro for Rewind (`rewind_home_nux_*`).
 Never shown again (no nagging).
 
-**D. Menu ('•••', native — C-29 context menu)**, items in this order: `onthisday.menu.save` ("Save to Camera
-Roll", every memory); `onthisday.menu.report` ("Report Post", someone else's memory, destructive red) → `safety.report`;
-`onthisday.menu.delete` ("Delete Post", your own memory, destructive red) → native confirmation
+**D. Menu ('•••', native — C-29 context menu)**, items in this order: your own memory — `onthisday.menu.save` ("Save
+to Camera Roll") and `onthisday.menu.delete` ("Delete Post", destructive red); someone else's memory —
+`onthisday.menu.report` ("Report Post", destructive red) only: saving or sharing another member's photo is not
+offered (owner decision 12; the camera roll is outside the app). Report → `safety.report`; Delete → native confirmation
 (`onthisday.delete.title` / `.message` / `.confirm` "Yes, delete" / `.cancel`) → `delete_post` → toast
 `onthisday.toast.deleted`, the memory leaves the dial. Save → toast `onthisday.toast.saved`; failure
 `onthisday.saveFailed`; add-only photo access denied → native alert `onthisday.saveDenied.title` / `.message` /
 `.button` (opens Settings).
+
+**E. Mode menu (native — C-29 pull-down menu anchored to the date title; Retro's Rewind mode selection)**, items in
+this order: `onthisday.mode.day` ("On this day…", Retro's 'On this week…' with the noun swapped as RM-2) → the day's
+memories from the newest (from shuffle; nothing changes in day mode), and `onthisday.mode.shuffle` ("Shuffle",
+verbatim) → as the dice. Retro's third item 'Pick a date…' is not built (Do-not-copy; its picker and subtitle were never
+captured). Presentation: iOS SwiftUI `Menu` over the title (HIG pull-down buttons), Android M3 `DropdownMenu` anchored
+under the title; no haptic of its own (the platform menu's). For VoiceOver / TalkBack the title is the menu button
+(header trait, pop-up / dropdown role), read as the date.
 
 ## Elements
 
@@ -103,11 +117,12 @@ Roll", every memory); `onthisday.menu.report` ("Report Post", someone else's mem
 | entry card | `groups.screen` feed card | `onthisday.entry.title`, `.entry.subtitle`, `.entry.button` | shown only when the day has rows |
 | photo | `layout.global.appearance` (media), `color.global.backgroundDeep`, `radius.global.photo` | `onthisday.a11y.photo` ("Photo by {name}, {date}") | `media.display_path` (original until `renditions_ready_at`) |
 | back | C-02: `icon.global.back`, `size.global.backInset`, `color.global.textOnMedia`, hit `size.global.minTouchTarget.*` | `onthisday.a11y.back` | pops to the group screen |
-| date title | C-35: `font.global.display`, text role `headerTitle`, `size.global.titleTop`, `size.global.headerGap`, `color.global.textOnMedia`, `layout.onthisday.dateFormat` | — (data) | changes with the memory (cross-fade) |
+| date title | C-35: `font.global.display`, text role `headerTitle`, `size.global.titleTop`, `size.global.headerGap`, `color.global.textOnMedia`, `layout.onthisday.dateFormat` | — (data) | changes with the memory (cross-fade); opens the mode menu (E) |
+| expand chevron + mode menu | `icon.global.chevronDown`, `dimension.onthisday.modeChevron.width` / `.gap` / `.drop`, `fontWeight.onthisday.modeChevron`, `color.global.textOnMedia`; C-29 menu | `onthisday.mode.day`, `.mode.shuffle` | "On this day…" back to the day; "Shuffle" as the dice |
 | subtitle | text role `textButton`, `color.onthisday.subtitle`, `dimension.onthisday.subtitleBaseline` | `onthisday.subtitle.day`, `.subtitle.shuffle` | `{name}` = poster |
 | more | C-11 glass: `size.global.circleButtonPhoto`, `color.global.glass`, `icon.global.more`, `size.global.headerInset` | `onthisday.a11y.more`; menu `onthisday.menu.*`, `onthisday.delete.*`, `onthisday.toast.*`, `onthisday.saveFailed`, `onthisday.saveDenied.*` | native menu (D) |
 | scrim | `layout.global.photoScrim`, `color.global.scrim` | — | decorative |
-| share | C-11 large glass: `size.global.circleButtonLarge`, `color.global.glass`, `icon.global.share`, `size.global.icon`, `layout.onthisday.controls` | `onthisday.a11y.share`, `onthisday.share.subtitle` | native share sheet |
+| share | C-11 large glass: `size.global.circleButtonLarge`, `color.global.glass`, `icon.global.share`, `size.global.icon`, `layout.onthisday.controls` | `onthisday.a11y.share`, `onthisday.share.subtitle` | native share sheet; your own memory only (owner decision 12) — elsewhere its place stays empty |
 | random | same, `icon.global.random` | `onthisday.a11y.shuffle` | shuffle |
 | dial | `layout.onthisday.dial`, `dimension.onthisday.dial.*`, `count.onthisday.dial.ticks`, `color.onthisday.dial.tick`, `color.global.textOnMedia`, `icon.global.play` / `.pause`, `dimension.onthisday.controls.centerY` | `onthisday.a11y.dial`, `.a11y.dialValue`, `.a11y.play`, `.a11y.pause`, `.a11y.next`, `.a11y.previous` | drag = step, centre tap = play / pause |
 | feature intro | C-29 feature-intro sheet, C-05 | `onthisday.nux.*` | once per account |
@@ -179,7 +194,7 @@ dial step, SEGMENT_FREQUENT_TICK / CLOCK_TICK). Taps on back, more, share, rando
 - **Shuffle (dice):** `rpc("group_history_weeks", p_group_id, p_limit: 52)` paged with `p_before_week` until a page
   has fewer than 52 rows (cache per session); pick a random week, then a random `post_id` of it; then `posts` /
   `media` / `profiles` as above. Respects `free_history_days` (older weeks are left out for free users — T1).
-- **Writes:** save (download the original to the photo library; no API call); `rpc("delete_post", p_post_id)` (own
+- **Writes:** save (your own memory: download the original to the photo library; no API call); `rpc("delete_post", p_post_id)` (own
   post); report → `safety.report` (target kind `post`).
 - **Realtime:** private broadcast `group:<group_id>` `post_deleted` → drop that memory.
 - **Navigation in:** the entry card on `groups.screen` (no deep link, no push). **Out:** back → group screen; menu →
@@ -215,4 +230,6 @@ banners, progress bar, streaks, mascot, watermark and nag pushes; any count of m
 | photo change animation | cross-fades (global crossfade when scrubbing; VidDay 700 ms while playing) | same recording |
 | play cadence | 4 s (VidDay) | 20 s recording of Rewind playing |
 | top legibility over bright photos | no top scrim, as Retro (contrast not guaranteed) | — (owner / verification) |
-| shuffle source and sharing others' photos | built (RM-5, RM-6) | owner decision |
+| shuffle source | built (RM-5) | owner decision |
+| sharing others' photos | decided: your own photos only (owner decision 12; RM-6 closed) | — |
+| Retro's 'Pick a date…' and its mode menu's look | not built / platform menu (Retro's sheet never captured) | one RAW recording of Retro's Rewind: tap the date title, pick a date |

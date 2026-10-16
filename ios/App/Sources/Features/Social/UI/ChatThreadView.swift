@@ -30,6 +30,12 @@ struct ChatThreadView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
 
+    /// - Parameter recorder: the composer's voice recorder (snapshots pass one showing a recording state); nil → a new one.
+    init(model: ChatThreadModel, recorder: SocialVoiceRecorder? = nil) {
+        _model = Bindable(model)
+        _recorder = State(initialValue: recorder ?? SocialVoiceRecorder())
+    }
+
     var body: some View {
         ZStack {
             Tokens.Colors.globalBackground.ignoresSafeArea()
@@ -196,11 +202,16 @@ struct ChatThreadView: View {
         .scrollPosition(id: $anchor, anchor: .bottom)
         .scrollDismissesKeyboard(.interactively)
         .onChange(of: model.messages.last?.id) { old, new in
-            // Follow new messages only when the reader was at the bottom (or sent it).
-            guard let new else { return }
-            if anchor == nil || anchor == old?.rawValue || model.messages.last.map({ model.isMine($0) }) == true {
+            // `chat.thread.layout.followNewest`: someone else's message is followed only while the reader is at the
+            // bottom; my own sends go through `followRequest` (below), which also covers a reply sent from the viewer.
+            guard let new, let last = model.messages.last, !model.isMine(last), viewer == nil else { return }
+            if anchor == nil || anchor == old?.rawValue {
                 anchor = new.rawValue
             }
+        }
+        .onChange(of: model.followRequest) { _, id in follow(id) }
+        .onChange(of: viewer == nil) { _, closed in
+            if closed { follow(model.followRequest) }
         }
         .onAppear { scrollToFocus() }
         .onChange(of: model.messages.count) { _, _ in scrollToFocus() }
@@ -260,6 +271,17 @@ struct ChatThreadView: View {
             openPicker: { pickerTarget = ReactionPickerTarget(postID: $0) },
             openReactions: { reactionsTarget = ReactionsSheetTarget(postID: $0) }
         )
+    }
+
+    /// `chat.thread.layout.followNewest`: brings my just-sent message into view — at once from the composer, or as the
+    /// photo viewer closes when the reply was sent from there (a covered list does not scroll).
+    private func follow(_ id: MessageID?) {
+        guard let id, viewer == nil, model.messages.contains(where: { $0.id == id }) else { return }
+        Task { @MainActor in
+            await Task.yield()
+            self.anchor = id.rawValue
+            self.model.didFollow(id)
+        }
     }
 
     /// Deep link (`DeepLink.chatMessage`): the thread opens on that message.
