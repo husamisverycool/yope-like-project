@@ -12,8 +12,12 @@ OUT="${E2E_OUT:-$PWD/build/e2e}"
 mkdir -p "$OUT"
 
 # No system crash / "isn't responding" dialogs over the journey (run 96: "Pixel Launcher isn't responding" covered the
-# screen of the CI emulator, an image under load); the app's own crashes still fail the run and show in logcat.
+# screen of the CI emulator, an image under load); the app's own crashes still fail the run and show in logcat. The
+# setting is read at the next global configuration change (ActivityTaskManagerService.updateShouldShowDialogsLocked),
+# so a font scale round trip follows it: set alone, the dialog still covered run 103's screenshots.
 adb shell settings put global hide_error_dialogs 1 || true
+adb shell settings put system font_scale 1.1 || true
+adb shell settings put system font_scale 1.0 || true
 adb logcat -G 16M || true
 adb logcat -c || true
 adb shell rm -rf /sdcard/Download/e2e || true
