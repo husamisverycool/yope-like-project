@@ -1,0 +1,103 @@
+# "Send Jolt to Google Play": builds the real Android app (a release App Bundle, signed with the upload key made by
+# "create the Android signing key") and uploads it to Google Play's internal testing track (docs/OWNER_SETUP.md §2, §10).
+# Run it from GitHub → Actions → this workflow → Run workflow. Each run is a new build number (the run number).
+# Needs: the locked key android/keystore/upload.p12.enc + the secret ANDROID_KEYSTORE_PASSWORD (or the older
+# ANDROID_UPLOAD_KEYSTORE_B64 secrets), PLAY_SERVICE_ACCOUNT_JSON, the app in Play Console under the package name below,
+# and config/app.json displayName, domain, supabase.url / anonKey. ANDROID_GOOGLE_SERVICES_JSON (Firebase) is optional:
+# without it the build has no notifications.
+# Google takes a new app's very first bundle only through Play Console: the signed bundle is always kept as this run's
+# artifact, and when Play does not know the app yet the run's summary says, click by click, how to upload it once.
+name: send Jolt to Google Play
+
+on:
+  workflow_dispatch:
+    inputs:
+      package_name:
+        description: "Package name (must match the app in Play Console)"
+        required: false
+        default: ""
+
+concurrency:
+  group: play
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  play:
+    name: build and upload
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_UPLOAD_KEYSTORE_B64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_B64 }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      ANDROID_GOOGLE_SERVICES_JSON: ${{ secrets.ANDROID_GOOGLE_SERVICES_JSON }}
+      PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+      # The input, else the repository variable ANDROID_APPLICATION_ID, else the same default as TestFlight's bundle ID.
+      ANDROID_APPLICATION_ID: ${{ inputs.package_name || vars.ANDROID_APPLICATION_ID || 'com.husamisverycool.jolt' }}
+      FLY_WEB_APP: ${{ vars.FLY_WEB_APP }}
+      ARTIFACT: jolt-android-${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: the app's identity
+        run: python3 tools/release/app_identity.py
+      - name: what is set up
+        run: python3 tools/release/check_setup.py play
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: install Android platform 37 (Compose 1.12 needs compileSdk 37; targetSdk stays 36)
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0"
+      - name: the signing key
+        run: python3 tools/release/android_key.py prepare
+      - name: Firebase (notifications)
+        run: |
+          python3 - <<'PY'
+          import json, os, sys
+          sys.path.insert(0, "tools/release")
+          from release_common import json_secret
+          firebase = json_secret("ANDROID_GOOGLE_SERVICES_JSON")
+          if firebase is None:
+              print("no ANDROID_GOOGLE_SERVICES_JSON: building without notifications")
+          else:
+              path = "android/app/google-services.json"
+              with open(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), "w") as fh:
+                  json.dump(firebase, fh)
+              print("google-services.json written (git-ignored, this job only)")
+          PY
+      # Build number = this workflow's run number, so every upload is new to Google Play.
+      - name: build the signed app bundle
+        working-directory: android
+        run: ./gradlew --no-daemon :app:bundleRelease -Papp.versionCode="$GITHUB_RUN_NUMBER"
+      - name: check the signature
+        run: |
+          mkdir -p "$RUNNER_TEMP/out"
+          cp android/app/build/outputs/bundle/release/app-release.aab "$RUNNER_TEMP/out/jolt-$GITHUB_RUN_NUMBER.aab"
+          python3 tools/release/android_key.py check-aab "$RUNNER_TEMP/out/jolt-$GITHUB_RUN_NUMBER.aab"
+      # Always kept: Google wants a new app's first bundle uploaded by hand in Play Console (see the run's summary).
+      - name: keep the app bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT }}
+          path: ${{ runner.temp }}/out/jolt-${{ github.run_number }}.aab
+          if-no-files-found: error
+      - name: Google's tools
+        run: |
+          python3 -m venv "$RUNNER_TEMP/play"
+          "$RUNNER_TEMP/play/bin/pip" install --quiet --disable-pip-version-check -r tools/release/requirements-play.txt
+      - name: upload to Google Play (internal testing)
+        run: |
+          VERSION_NAME=$(sed -n 's/.*versionName = "\(.*\)".*/\1/p' android/app/build.gradle.kts | head -1)
+          "$RUNNER_TEMP/play/bin/python" tools/release/play_upload.py --package "$ANDROID_APPLICATION_ID" \
+            --aab "$RUNNER_TEMP/out/jolt-$GITHUB_RUN_NUMBER.aab" --track internal \
+            --release-name "$VERSION_NAME ($GITHUB_RUN_NUMBER)" --artifact "$ARTIFACT"
+      - name: remove the key
+        if: always()
+        run: rm -rf "$RUNNER_TEMP"/android-key-* android/app/google-services.json

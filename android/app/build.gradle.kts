@@ -17,11 +17,28 @@ if (file("google-services.json").exists()) {
     apply(plugin = libs.plugins.google.services.get().pluginId)
 }
 
+// Release signing and build number ("send Jolt to Google Play", tools/release/android_key.py): the upload key comes
+// from the environment, never from the repository; -Papp.versionCode=<n> sets the build number. Without them release
+// builds are unsigned with versionCode 1.
+val uploadStoreFile = providers.environmentVariable("ANDROID_UPLOAD_STORE_FILE").orNull
+val releaseVersionCode = providers.gradleProperty("app.versionCode").orNull?.toInt()
+
 android {
     namespace = "app.main"
+    signingConfigs {
+        if (uploadStoreFile != null) {
+            create("upload") {
+                val storePass = providers.environmentVariable("ANDROID_KEYSTORE_PASSWORD").get()
+                storeFile = file(uploadStoreFile)
+                storePassword = storePass
+                keyAlias = providers.environmentVariable("ANDROID_UPLOAD_KEY_ALIAS").orNull ?: "upload"
+                keyPassword = providers.environmentVariable("ANDROID_UPLOAD_KEY_PASSWORD").orNull ?: storePass
+            }
+        }
+    }
     defaultConfig {
         applicationId = appId
-        versionCode = 1
+        versionCode = releaseVersionCode ?: 1
         versionName = "0.1.0"
         // App Links host for https://<domain>/i/<token>. While `domain` is BLOCKED a reserved
         // never-resolving name (RFC 2606 .invalid) keeps the filter inert.
@@ -43,6 +60,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (uploadStoreFile != null) signingConfig = signingConfigs.getByName("upload")
         }
     }
 }

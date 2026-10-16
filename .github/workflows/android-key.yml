@@ -1,0 +1,55 @@
+# "Create the Android signing key": run once (GitHub → Actions → this workflow → Run workflow), before the first
+# "send Jolt to Google Play". Makes the upload key that signs every Android version (a PKCS12 keystore, alias `upload`,
+# valid about 27 years), locks it with the secret ANDROID_KEYSTORE_PASSWORD (AES-256, PBKDF2 with a million rounds;
+# tools/release/android_key.py) and commits the locked file as android/keystore/upload.p12.enc on the branch it runs on,
+# together with the key's SHA-256 fingerprint in config/app.json android.sha256CertFingerprints (app links).
+# It never replaces a key: it stops when the file already exists. Needs only ANDROID_KEYSTORE_PASSWORD (docs/OWNER_SETUP.md §2).
+name: create the Android signing key
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: android-key
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  key:
+    name: make, lock and save the key
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+    steps:
+      # The branch as it is now (not as it was when the run was queued), so an existing key is always seen.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - name: what is set up
+        run: python3 tools/release/check_setup.py android-key
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: make the key and lock it with your password
+        run: python3 tools/release/android_key.py create
+      - name: save it in the repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add android/keystore/upload.p12.enc config/app.json
+          git commit --quiet -m "Android upload key, locked with ANDROID_KEYSTORE_PASSWORD" \
+            -m "Made by the \"create the Android signing key\" workflow (run $GITHUB_RUN_ID); its SHA-256 fingerprint is in config/app.json android.sha256CertFingerprints."
+          # Someone may have pushed meanwhile: replay this one commit on top (a key pushed meanwhile makes it conflict and stop).
+          for _ in 1 2 3; do
+            if git push --quiet origin "HEAD:$GITHUB_REF_NAME"; then
+              echo "saved android/keystore/upload.p12.enc on $GITHUB_REF_NAME"
+              exit 0
+            fi
+            git pull --quiet --rebase origin "$GITHUB_REF_NAME" || break
+          done
+          echo "::error::GitHub did not accept the new key on $GITHUB_REF_NAME (a protected branch, or a key was saved there meanwhile). Nothing was saved; run this workflow again."
+          exit 1

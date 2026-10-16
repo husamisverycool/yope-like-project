@@ -1,0 +1,41 @@
+# Fly.io settings of the worker (backend/worker): jobs, the scheduler, pushes, the RevenueCat webhook.
+# "start the background service" (.github/workflows/services.yml) deploys it from the repository root (the Docker build
+# context, docs/DEPLOY.md §2):
+#   flyctl deploy --config deploy/worker.fly.toml --app <name> --primary-region <region> --remote-only --ha=false
+# The app name is not written here: the workflow passes it (repository variable FLY_WORKER_APP, else
+# jolt-worker-<GitHub owner>). Secrets (SUPABASE_*, APNS_*, FCM_*, …) are set by the workflow, never in this file.
+#
+# One machine, always on: it runs the scheduler (docs/DEPLOY.md §3). 1 shared vCPU and 1 GB RAM, the minimum for ffmpeg
+# (docs/OWNER_SETUP.md §7, docs/COSTS.md); for a busy deployment use cpu_kind = "performance" with memory = "2gb".
+
+primary_region = "iad" # the repository variable FLY_REGION overrides it
+kill_signal = "SIGTERM"
+# Above SHUTDOWN_GRACE_MS (25 s by default): running jobs finish or go back to the queue before the machine stops.
+kill_timeout = "30s"
+
+[build]
+  # Paths are relative to this file.
+  dockerfile = "../backend/worker/Dockerfile"
+  ignorefile = "../backend/worker/Dockerfile.dockerignore"
+
+[env]
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "30s"
+    interval = "15s"
+    timeout = "5s"
+    method = "GET"
+    path = "/healthz"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "1gb"

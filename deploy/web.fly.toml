@@ -1,0 +1,43 @@
+# Fly.io settings of the invite page (web/): https://<domain>/i/<token>, the share image and the association files
+# (/.well-known/apple-app-site-association, /.well-known/assetlinks.json). "start the background service"
+# (.github/workflows/services.yml) deploys it from the repository root (the Docker build context, docs/DEPLOY.md §2):
+#   flyctl deploy --config deploy/web.fly.toml --app <name> --primary-region <region> --remote-only --ha=false
+# The app name is not written here: the workflow passes it (repository variable FLY_WEB_APP, else jolt-<GitHub owner>),
+# and https://<name>.fly.dev works as the app's link domain until you have your own (docs/OWNER_SETUP.md §4).
+# Secrets (SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY) are set by the workflow.
+#
+# One small machine, always on, so link previews and Apple's association check never wait for a cold start.
+
+primary_region = "iad" # the repository variable FLY_REGION overrides it
+kill_signal = "SIGTERM"
+kill_timeout = "10s"
+
+[build]
+  # Paths are relative to this file.
+  dockerfile = "../web/Dockerfile"
+  ignorefile = "../web/Dockerfile.dockerignore"
+
+[env]
+  PORT = "8080"
+  # Fly.io's proxy appends the visitor's address to X-Forwarded-For; per-address rate limits use that entry
+  # (web/src/config.ts TRUST_PROXY_HOPS).
+  TRUST_PROXY_HOPS = "1"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "20s"
+    interval = "15s"
+    timeout = "5s"
+    method = "GET"
+    path = "/healthz"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "512mb"

@@ -4,6 +4,45 @@ One page for putting the backend worker (and the secrets around it) into product
 need the owner's accounts are in [`OWNER_SETUP.md`](OWNER_SETUP.md); this file says where each
 resulting value goes.
 
+## 0. The one-button way: Fly.io
+
+GitHub → Actions → **start the background service** (`.github/workflows/services.yml`, OWNER_SETUP §7) does §2–§4 and
+§7 below on Fly.io for both services:
+
+1. `tools/release/app_identity.py` writes the run's store identity (repository variables `IOS_BUNDLE_ID`,
+   `ANDROID_APPLICATION_ID`, the secret `APPLE_TEAM_ID`) into the job's copy of `config/app.json` (never committed), so
+   the worker's `APNS_BUNDLE_ID` and the invite page's association files name the apps the stores have.
+2. `tools/release/check_setup.py services` stops on a missing required value (`FLY_API_TOKEN`,
+   `SUPABASE_SERVICE_ROLE_KEY`, `config/app.json` `supabase.url`, malformed optional keys) and warns for each optional
+   one. It decides whether the invite page can start: the page refuses to run in production without the anon key, a
+   domain, the iOS team / bundle / App Store IDs and the Android package and fingerprints (`web/src/config.ts`); while
+   any is missing only the worker is deployed.
+3. `tools/release/fly_service.py ensure-app` creates the apps on the first run: `FLY_WORKER_APP` / `FLY_WEB_APP`
+   (repository variables), else `jolt-worker-<owner>` / `jolt-<owner>`; `FLY_ORG` when the token sees several
+   organizations.
+4. `fly_service.py secrets worker|web` stages the settings of §4 on each app (`flyctl secrets set NAME=- --stage`, the
+   value on standard input, never on a command line or in the log). Worker: `SUPABASE_URL` (from `config/app.json`),
+   `SUPABASE_SERVICE_ROLE_KEY`, the `APNS_*` set (`APNS_BUNDLE_ID` = `config/app.json` `ios.bundleId`, `APNS_TEAM_ID` =
+   `APNS_TEAM_ID` or `APPLE_TEAM_ID`, `APNS_ENV` default `production`), `FCM_SERVICE_ACCOUNT_JSON`,
+   `REVENUECAT_WEBHOOK_AUTH`, `ANTHROPIC_API_KEY`, `RECAP_MODEL`, `MODERATION_WEBHOOK_URL` (each only when set). Web:
+   `SUPABASE_URL`, `SUPABASE_ANON_KEY` (from `config/app.json`), `SUPABASE_SERVICE_ROLE_KEY`.
+5. `flyctl deploy --config deploy/worker.fly.toml` (then `deploy/web.fly.toml`) `--app <name> --primary-region
+   <FLY_REGION, default iad> --remote-only --ha=false`, from the repository root: the build context is the root and the
+   `dockerfile` / `ignorefile` paths in the `.toml` files are relative to the `.toml` (flyctl
+   `internal/command/deploy/deploy_build.go`, v0.4.110, the version the workflow pins). Fly.io's builders build the
+   images; the first deploy assigns the app a shared IPv4 and an IPv6 address.
+6. `fly_service.py wait` polls `https://<worker>.fly.dev/healthz`, then the invite page's `/healthz`,
+   `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json`, until each answers 200 (2 minutes
+   each), and writes the addresses on the run's summary page (with the RevenueCat webhook address, §6).
+7. When `config/app.json` `domain` is not a `*.fly.dev` name, `fly_service.py cert` asks Fly.io for its certificate
+   (`flyctl certs add`) and puts the DNS records Fly.io wants on the summary page.
+
+Machines (`deploy/*.fly.toml`): worker 1 shared vCPU / 1 GB, invite page 1 shared vCPU / 512 MB, one machine each,
+always on (`auto_stop_machines = "off"`, `min_machines_running = 1`), health check `GET /healthz` every 15 s;
+`kill_timeout` 30 s for the worker (above `SHUTDOWN_GRACE_MS`, §3), 10 s for the page. The page sets
+`TRUST_PROXY_HOPS = 1` (Fly.io's proxy adds one `X-Forwarded-For` entry). By hand, with `flyctl` logged in, the same
+deploy is `flyctl deploy --config deploy/worker.fly.toml --app <name> --remote-only` from the repository root.
+
 ## 1. Database
 
 From `backend/`: `npx supabase link --project-ref <ref>` then `npx supabase db push`. This applies
@@ -105,10 +144,13 @@ Without the APNs or FCM values the worker runs and skips that platform's pushes 
 | Supabase anon key + URL | `config/app.json` → `supabase` (apps, web) |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SERVICE_SID` | Supabase Auth → Phone → Twilio Verify (backend/README.md) |
 | RevenueCat public SDK keys | `config/app.json` → `revenuecat.iosApiKey` / `androidApiKey` |
-| `google-services.json` / `ANDROID_GOOGLE_SERVICES_JSON` | Android build (CI secret, base64) |
+| `google-services.json` / `ANDROID_GOOGLE_SERVICES_JSON` | Android build ("send Jolt to Google Play"; GitHub secret, the file's text or base64) |
 | `APPLE_TEAM_ID`, `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8` | GitHub Actions secrets (iOS signing, TestFlight) |
-| `ANDROID_UPLOAD_KEYSTORE_B64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`, `PLAY_SERVICE_ACCOUNT_JSON` | GitHub Actions secrets (Android signing, Play upload) |
-| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | also the web service (invite page signing) |
+| `ANDROID_KEYSTORE_PASSWORD` + `android/keystore/upload.p12.enc` | The Android upload key, made and locked by "create the Android signing key" (`tools/release/android_key.py`: PKCS12, alias `upload`, RSA 4096, `openssl enc -aes-256-cbc -pbkdf2 -iter 1000000`); "send Jolt to Google Play" unlocks it into the runner's temporary folder and hands it to Gradle as `ANDROID_UPLOAD_STORE_FILE` / `ANDROID_UPLOAD_KEY_ALIAS` (`android/app/build.gradle.kts`) |
+| `ANDROID_UPLOAD_KEYSTORE_B64`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | An owner's own keystore instead, used only while the locked file does not exist |
+| `PLAY_SERVICE_ACCOUNT_JSON` | Play upload (`tools/release/play_upload.py`, Google Play Developer API v3 edits) |
+| `FLY_API_TOKEN` | "start the background service" (§0) |
+| `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | also the web service (invite page signing); `PORT` 8080 and `TRUST_PROXY_HOPS` are in `deploy/web.fly.toml` |
 
 ## 5. Apple / Google settings the worker relies on
 
@@ -128,14 +170,17 @@ Without the APNs or FCM values the worker runs and skips that platform's pushes 
 
 ## 6. RevenueCat webhook
 
-RevenueCat → Integrations → Webhooks: URL `https://<worker-host>/webhooks/revenuecat`,
+RevenueCat → Integrations → Webhooks: URL `https://<worker-host>/webhooks/revenuecat` (on Fly.io
+`https://<FLY_WORKER_APP or jolt-worker-<owner>>.fly.dev/webhooks/revenuecat`, printed on the summary page of "start the
+background service"),
 Authorization header = `REVENUECAT_WEBHOOK_AUTH`. The worker answers 200 with
 `applied | duplicate | stale | ignored`; 401 on a wrong header; RevenueCat retries other failures.
 Events are applied once per event id; an older event never overwrites a newer one.
 
 ## 7. After deploy
 
-1. `curl https://<worker-host>/healthz` → 200.
+1. `curl https://<worker-host>/healthz` → 200 ("start the background service" checks it, and the invite page's
+   association files, after every deploy).
 2. Logs show `runner started` and a `scheduler tick` every minute (`invitations.created` on the
    first tick of a day; `recaps` > 0 on Sunday evenings, group-local).
 3. Post a photo from a test account: logs show `push batch` for `new_post` and `widget.refresh`.

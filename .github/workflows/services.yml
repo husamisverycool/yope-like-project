@@ -1,0 +1,108 @@
+# "Start the background service": puts the worker (daily invitations, notifications, collages, videos, recaps, the
+# RevenueCat webhook) and the invite page on Fly.io, always on (docs/OWNER_SETUP.md §7, docs/DEPLOY.md). Run it from
+# GitHub → Actions → this workflow → Run workflow; run it again after changing a secret or the code (it redeploys).
+# Needs the secrets FLY_API_TOKEN and SUPABASE_SERVICE_ROLE_KEY and config/app.json supabase.url; the notification,
+# subscription and recap secrets are optional (the run says which are missing). The invite page starts once
+# config/app.json has everything it needs (the run lists what is missing); until then only the worker is started.
+# App names: repository variables FLY_WORKER_APP / FLY_WEB_APP, else jolt-worker-<owner> / jolt-<owner>;
+# FLY_REGION (default iad) and FLY_ORG (when the token sees several organizations) are optional variables.
+name: start the background service
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: services
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: worker and invite page (Fly.io)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      FLY_ORG: ${{ vars.FLY_ORG }}
+      FLY_REGION: ${{ vars.FLY_REGION || 'iad' }}
+      FLY_WORKER_APP: ${{ vars.FLY_WORKER_APP }}
+      FLY_WEB_APP: ${{ vars.FLY_WEB_APP }}
+      # The same identity as "send Jolt to TestFlight" / "send Jolt to Google Play": the worker's iPhone pushes and the
+      # invite page's association files name these apps.
+      IOS_BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID || 'com.husamisverycool.jolt' }}
+      ANDROID_APPLICATION_ID: ${{ vars.ANDROID_APPLICATION_ID || 'com.husamisverycool.jolt' }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      APNS_KEY_P8: ${{ secrets.APNS_KEY_P8 }}
+      APNS_KEY_ID: ${{ secrets.APNS_KEY_ID }}
+      APNS_TEAM_ID: ${{ secrets.APNS_TEAM_ID || secrets.APPLE_TEAM_ID }}
+      APNS_ENV: ${{ secrets.APNS_ENV || vars.APNS_ENV }}
+      FCM_SERVICE_ACCOUNT_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}
+      REVENUECAT_WEBHOOK_AUTH: ${{ secrets.REVENUECAT_WEBHOOK_AUTH }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      RECAP_MODEL: ${{ vars.RECAP_MODEL }}
+      MODERATION_WEBHOOK_URL: ${{ secrets.MODERATION_WEBHOOK_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: the app's identity
+        run: python3 tools/release/app_identity.py
+      - name: what is set up
+        id: setup
+        run: python3 tools/release/check_setup.py services
+      - uses: superfly/flyctl-actions/setup-flyctl@1.6
+        with:
+          version: 0.4.110
+      # check_setup.py has set WORKER_APP, WEB_APP and WEB (ready | wait) for the steps below.
+      - name: the apps on Fly.io (made on the first run)
+        run: |
+          python3 tools/release/fly_service.py ensure-app "$WORKER_APP"
+          if [ "$WEB" = ready ]; then python3 tools/release/fly_service.py ensure-app "$WEB_APP"; fi
+      - name: worker settings
+        run: python3 tools/release/fly_service.py secrets worker "$WORKER_APP"
+      # Built by Fly.io's builders from backend/worker/Dockerfile (build context: the repository root).
+      - name: start the worker
+        run: |
+          flyctl deploy --config deploy/worker.fly.toml --app "$WORKER_APP" \
+            --primary-region "$FLY_REGION" --remote-only --ha=false --yes --wait-timeout 10m
+      - name: the worker answers
+        run: |
+          {
+            echo "## The background service"
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+          python3 tools/release/fly_service.py wait "The worker is running" "https://$WORKER_APP.fly.dev/healthz"
+          {
+            echo "- RevenueCat webhook address (OWNER_SETUP.md §6.2): https://$WORKER_APP.fly.dev/webhooks/revenuecat"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: invite page settings
+        if: steps.setup.outputs.web == 'ready'
+        run: python3 tools/release/fly_service.py secrets web "$WEB_APP"
+      - name: start the invite page
+        if: steps.setup.outputs.web == 'ready'
+        run: |
+          flyctl deploy --config deploy/web.fly.toml --app "$WEB_APP" \
+            --primary-region "$FLY_REGION" --remote-only --ha=false --yes --wait-timeout 10m
+      - name: your own domain (when config/app.json names one)
+        if: steps.setup.outputs.web == 'ready'
+        run: |
+          DOMAIN=$(python3 -c "import json; print(json.load(open('config/app.json'))['domain']['value'])")
+          case "$DOMAIN" in
+            *.fly.dev) echo "the invite page uses its fly.dev address: no certificate needed" ;;
+            *) python3 tools/release/fly_service.py cert "$WEB_APP" "$DOMAIN" ;;
+          esac
+      - name: the invite page answers
+        if: steps.setup.outputs.web == 'ready'
+        run: |
+          SITE="https://$WEB_APP.fly.dev"
+          python3 tools/release/fly_service.py wait "The invite page is running" "$SITE/healthz" \
+            "$SITE/.well-known/apple-app-site-association" "$SITE/.well-known/assetlinks.json"
+          echo "- Invite links look like $SITE/i/… — until you have a domain of your own, \`$WEB_APP.fly.dev\` is the app's link domain (config/app.json \`domain\`, OWNER_SETUP.md §4)." >> "$GITHUB_STEP_SUMMARY"
+      - name: the invite page waits
+        if: steps.setup.outputs.web != 'ready'
+        run: |
+          {
+            echo "- The invite page was **not started yet**: config/app.json still misses what it needs (the yellow"
+            echo "  warnings at the top of this run list each item). Fill them in, then run this workflow again."
+          } >> "$GITHUB_STEP_SUMMARY"

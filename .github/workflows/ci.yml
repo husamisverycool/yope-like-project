@@ -49,6 +49,16 @@ jobs:
       - name: no literal design values or taste-based wording in code
         run: node tools/provenance-check.mjs
 
+  # The one-button release workflows' scripts (tools/release): setup checks, the Google Play request sequence (against a
+  # fake session), the Android signing key's create → lock → unlock round trip.
+  release-tools:
+    name: release tools
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: unit tests
+        run: python3 -m unittest discover -s tools/release -v
+
   backend:
     name: backend (Supabase, RLS, security tests)
     runs-on: ubuntu-24.04
