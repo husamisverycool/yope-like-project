@@ -203,8 +203,33 @@ final class SocialWeekModelTests: XCTestCase {
         XCTAssertEqual(model.checkedInOrder, [SocialDemo.p6, SocialDemo.p5])
         XCTAssertFalse(model.hasChanges, "back to the saved order")
         XCTAssertFalse(model.move(SocialDemo.p5, by: 1), "nothing after the last tile")
+        // week.edit.a11y.moveLeft / .moveRight are offered only where a neighbour exists on that side.
+        XCTAssertTrue(model.canMove(SocialDemo.p6, by: WeekEditModel.screenStep(.right, rightToLeft: false)))
+        XCTAssertFalse(model.canMove(SocialDemo.p6, by: WeekEditModel.screenStep(.left, rightToLeft: false)), "the first tile has no left neighbour")
+        XCTAssertTrue(model.canMove(SocialDemo.p6, by: WeekEditModel.screenStep(.left, rightToLeft: true)), "right to left: left is later")
+        XCTAssertFalse(model.canMove(SocialDemo.p5, by: WeekEditModel.screenStep(.right, rightToLeft: false)), "the last tile has no right neighbour")
         model.toggle(SocialDemo.p6)
         XCTAssertFalse(model.move(SocialDemo.p5, to: SocialDemo.p6), "only tiles in the strip move")
+    }
+
+    /// `week.recap.layout.gridFill`: ⌊√n⌋ columns (1 … 4), ⌈n ÷ columns⌉ rows (≤ 6) — Retro's 1, 9 and 24-photo cards.
+    func testRecapGridFillFollowsRetrosCards() {
+        func shape(_ count: Int) -> [Int]? { RecapGridFill.shape(count: count).map { [$0.columns, $0.rows] } }
+        XCTAssertNil(shape(0))
+        XCTAssertEqual(shape(1), [1, 1])
+        XCTAssertEqual(shape(2), [1, 2])
+        XCTAssertEqual(shape(4), [2, 2])
+        XCTAssertEqual(shape(5), [2, 3])
+        XCTAssertEqual(shape(8), [2, 4])
+        XCTAssertEqual(shape(9), [3, 3])
+        XCTAssertEqual(shape(12), [3, 4])
+        XCTAssertEqual(shape(16), [4, 4])
+        XCTAssertEqual(shape(24), [4, 6])
+        XCTAssertEqual(shape(30), [4, 6])
+        XCTAssertEqual(RecapGridFill.shape(count: 5)?.areaAspect, 0.75)
+        XCTAssertEqual(RecapGridFill.shown(count: 5), 5)
+        XCTAssertEqual(RecapGridFill.shown(count: 30), 24, "photos past the grid stay in the recap, not on the card")
+        XCTAssertEqual(RecapGridFill.shown(count: 0), 0)
     }
 
     func testTextAloneIsAChange() async {

@@ -26,7 +26,7 @@ Short names used below:
 | "A photo appears instantly on other members' widgets" (`widget.arrival`) | **Not guaranteed on either OS.** iOS widget reloads and widget pushes are budgeted and "delivered opportunistically" [WKP]. Locket documents "a slight delay of up to 5 minutes" (§1). | Use the layered path in §1. Design the arrival state for a delay of minutes. Never promise "instant" in copy. |
 | `widget.home.xl` on iPhone | **Impossible.** HIG: System extra large on iPhone is "Not supported" (https://developer.apple.com/design/human-interface-guidelines/widgets). | Offer it on iPad only. On iPhone the largest is systemLarge (338×354 pt on 393-pt screens). |
 | Color photos on `widget.lock.*` (iPhone Lock Screen) | **Impossible.** Lock Screen widgets use the vibrant mode, which "desaturates text, images, and gauges" (HIG widgets). | Monochrome or text accessory widgets (name, time, "new photo" glyph). Color stays on the Home Screen and in StandBy (full color). |
-| `widget.lock.*` on Android | **No phone equivalent of iOS accessory widgets.** Android 16+ has a lock-screen widget *hub* (Pixel phones from Android 16 QPR2; OEM-dependent) that shows ordinary widgets at about 4×3 cells (§4). | Make the Glance widget lock-screen-safe. Use lock-screen-visible notifications for new photos. |
+| `widget.lock.*` on Android | **No phone equivalent of iOS accessory widgets.** Android 16+ has a lock-screen widget *hub* (Pixel phones from Android 16 QPR2; OEM-dependent) that shows ordinary widgets at about 4×3 cells (§4). | The Glance widget opts in (`widgetCategory="home_screen\|keyguard"`, owner decision 18) and draws its Medium layout in the hub slot; taps open the app after unlock. Use lock-screen-visible notifications for new photos. |
 | `daily.ongoing` as an Android 16 "Live Update" (promoted chip) | **Not compliant by default.** Live Updates must be "explicitly triggered by the user"; "Don't allow activities triggered by other parties to generate Live Updates" (§4). | Use a standard notification with a chronometer countdown (`setUsesChronometer` + `setChronometerCountDown` + `setTimeoutAfter`). Promote only after an explicit opt-in, with an Unpin action. |
 | Instant-app invite preview on Android (`invite.web` equivalent of the App Clip) | **Impossible.** Google Play Instant ended December 2025 (§4). | Web page plus Play Store link with Install Referrer; Android App Links for installed users. |
 | Skippable iOS pre-permission screens (`onboarding.permission.contacts` "skip") | **Non-compliant on iOS.** HIG: pre-alert screens must have one button and no way to leave without the system alert (`design/research/platform.md`). | Contacts are offered inside the invite flow (`ContactAccessButton` / `contactAccessPicker`, iOS 18+). Show iOS pre-alert screens only with a single "Continue". |
@@ -313,9 +313,25 @@ Server, on each new post, for each recipient device:
 - Pixel **phones** received it in Android 16 QPR2 (Android Authority, not a Google doc:
   https://www.androidauthority.com/lock-screen-widgets-on-phones-android-16-qpr2-3589668/). Google's official
   help page covers Pixel Tablet only (https://support.google.com/googlepixeltablet/answer/15627499).
+- **Opt-in (owner decision 18, implemented):** the group photo widget declares
+  `android:widgetCategory="home_screen|keyguard"` (`core/widget/src/main/res/xml/group_photo_widget_info.xml`;
+  token `widget.android.layout.lockScreen`).
+  - `WIDGET_CATEGORY_KEYGUARD` "Indicates that the widget can be displayed on the keyguard" (added in API level 17); a
+    widget shown on both "needs to ensure that it follows the design guidelines for both widget classes"
+    (https://developer.android.com/reference/android/appwidget/AppWidgetProviderInfo). Releases without a lock-screen
+    hub ignore the flag: the widget stays a home-screen widget there ("shown only where the OS supports it").
+  - Layout check: the hub slot (about 4 × 3 cells = `PlatformWidgetGrid.minSize(4, 3)`, 276 × 183 dp) selects the
+    responsive Medium layout; Roborazzi renders of the real Glance widget at that size — photo, collage, empty, signed
+    out (`android/feature/capture/src/test/snapshots/widget.android_keyguard_*.png`) — keep the full-bleed photo and the
+    bottom-trailing text stack.
+  - Privacy: the person places the widget on the hub; it shows what the home-screen widget shows (the newest group
+    photo, as the iOS Home Screen widget does — iOS Lock Screen accessories stay monochrome, §summary). A tap needs
+    authentication (`MainActivity` has no `showWhenLocked`), so the app itself never opens over the lock screen.
+  - Preview: Glance's generated preview defaults to one preview for "WIDGET_CATEGORY_HOME_SCREEN or
+    WIDGET_CATEGORY_KEYGUARD or WIDGET_CATEGORY_SEARCHBOX"
+    (https://raw.githubusercontent.com/androidx/androidx/androidx-main/glance/glance-appwidget/src/main/java/androidx/glance/appwidget/GlanceAppWidgetManager.kt).
 - **Closest compliant equivalent of iOS accessory widgets on phones:**
-  - A lock-screen-safe Glance widget (no private content shown before unlock, since all widgets are
-    eligible by default).
+  - The Glance widget on the lock-screen hub (above).
   - Lock-screen notification visibility for new photos (channel/notification `VISIBILITY_*`).
   - The daily countdown notification (§4.6).
 
@@ -554,6 +570,22 @@ Server, on each new post, for each recipient device:
   - Violations include a missing or unclear dismiss button, monthly-breakdown-first pricing, and unlocalized
     currency.
   - Account settings must link to the Play Subscription Center or a cancellation flow.
+- **Free trials (owner decision 7: one week on the annual plan, both stores).**
+  - Play: a trial is an offer on an auto-renewing base plan; "Free trial: Provides a set number of days, weeks, or months
+    at no charge", "Free trial phases can range from 3 days to 3 years"; eligibility "New customer acquisition" (never had
+    this subscription / any subscription in the app) is evaluated by Google
+    (https://support.google.com/googleplay/android-developer/answer/12154973). `queryProductDetailsAsync()` returns "a
+    maximum of 50 user eligible offers per subscription" (https://developer.android.com/google/play/billing/integrate);
+    each offer's `PricingPhase` has `getBillingPeriod()` ("P1W equates to one week") and `getPriceAmountMicros()`
+    (https://developer.android.com/reference/com/android/billingclient/api/ProductDetails.PricingPhase). The app reads the
+    zero-priced phase of the offer RevenueCat buys (`StoreProduct.defaultOption`, "longest free trial"; RevenueCat:
+    ineligible offers do "not show up in the `subscriptionOptions`",
+    https://www.revenuecat.com/docs/subscription-guidance/subscription-offers/google-play-offers).
+  - App Store: an introductory offer of type free trial on `premium_yearly`; one per subscription group per person.
+    RevenueCat `checkTrialOrIntroDiscountEligibility(product:)`: "The best course of action on unknown status is to
+    display the non-intro pricing" (purchases-ios 5.95.0 `PurchasesType.swift`); the app shows the trial only when eligible.
+  - Disclosure (both): the trial length is on the capsule ("Try 1 week free"), the price after it on the card ("And then
+    billed {price} yearly after") and in the billing line under the cards (design/surfaces/paywall.md).
 - **Tenet check:** "at most one prompt per session" (SURFACES `paywall`) is stricter than any store rule, so
   it is compatible.
 

@@ -37,6 +37,7 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         XCTAssertNotNil(model.profiles[SocialDemo.me], "my avatar leads the reply field")
         XCTAssertEqual(model.position?.index, 2)
         XCTAssertEqual(model.position?.total, 4)
+        XCTAssertEqual(model.ringFraction, 0.5, accuracy: 0.0001, "photo.viewer.layout.avatarRing: 2 of 4 draws half the circle")
         XCTAssertEqual(model.current.map(model.weekNumber), 42, "ISO week of Tue 13 Oct 2026 in the group's zone")
         XCTAssertFalse(model.showsGroupName)
     }
@@ -46,6 +47,7 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         await model.load()
         XCTAssertTrue(model.showsGroupName)
         XCTAssertNil(makeModel(ids: [SocialDemo.p2]).position, "one photo: no position pill")
+        XCTAssertEqual(makeModel(ids: [SocialDemo.p2]).ringFraction, 1, "one photo: the full ring")
     }
 
     func testTapsAdvanceAndGoBackAndCloseAfterTheLast() async {

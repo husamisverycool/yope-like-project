@@ -238,7 +238,7 @@ class VoiceRecorderTest {
         assertNotNull(note)
         assertEquals(2_345L, note!!.durationMs)
         assertTrue(VoiceLevels.isValid(note.levels))
-        assertTrue(joined.isEmpty(), "one segment: nothing to join")
+        assertTrue("one segment: nothing to join", joined.isEmpty())
         assertFalse(r.isRecording)
         assertTrue(r.levels.value.isEmpty())
         r.release()
@@ -253,7 +253,7 @@ class VoiceRecorderTest {
         r.pause()
         val first = r.draftFile()
         assertTrue(first.exists())
-        assertTrue(joined.isEmpty(), "a one-segment draft plays as is")
+        assertTrue("a one-segment draft plays as is", joined.isEmpty())
         r.resume()
         engine.openTimeMs = 500
         r.pause()

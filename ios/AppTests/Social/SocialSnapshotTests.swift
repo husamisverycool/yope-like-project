@@ -578,6 +578,19 @@ final class SocialSnapshotTests: XCTestCase {
         record(WeekRecapPreviewScreen(model: ready), "week.recap", "preview", both)
         record(WeekRecapPreviewScreen(model: ready, page: 1), "week.recap", "preview-cover")
 
+        // week.recap.layout.gridFill: 1 photo fills the area, 5 → 2 × 3 with a short last row, 9 → 3 × 3 (Retro TC-H).
+        for (count, name) in [(1, "preview-one"), (5, "preview-five"), (9, "preview-nine")] {
+            let filled = use(richData())
+            filled.update { state in
+                if let index = state.recaps.firstIndex(where: { $0.id == SocialDemo.recapID }) {
+                    state.recaps[index].items = Array(([SocialDemo.p6, SocialDemo.p5] + (0..<9).map(Self.extraID)).prefix(count))
+                }
+            }
+            let model = WeekRecapModel(groupID: SocialDemo.groupID, recapID: SocialDemo.recapID, data: filled)
+            await model.load()
+            record(WeekRecapPreviewScreen(model: model), "week.recap", name)
+        }
+
         let noted = use(richData())
         noted.update { state in
             if let index = state.recaps.firstIndex(where: { $0.id == SocialDemo.recapID }) {

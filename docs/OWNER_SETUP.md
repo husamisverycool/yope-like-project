@@ -26,12 +26,13 @@ Placeholders used below:
    `ios/project.yml` (App target → `settings.base`; it is `""` until then so the catalog of template covers builds without
    an icon set).
 3. **Same-moment collage option** — pick one of the options in `design/collage-options/`.
-4. **Premium price** — default in `config/app.json`: $3.99/month, $35.99/year. Change if you want.
-5. **Free history window** — see "Open decisions" in the final session report: the spec asks for
-   "unlimited history beyond the free window" as a premium perk, which pulls against tenet 4
-   ("nothing gets lost"). Our implementation never deletes anything; the window (if you set one)
-   only limits browsing old weeks for free users. `app_config.free_history_days` = NULL means
-   unlimited for everyone.
+4. **Premium price** — decided by the lead (docs/OWNER_DECISIONS.md #7): **$3.99/month, $35.99/year,
+   with a 1-week free trial on the yearly plan** on both stores (`config/app.json` `premium`). The app
+   always shows the store's localized prices, so you set the prices and the trial in App Store Connect
+   (§1.6) and Play Console (§2.3); change them there (and in `config/app.json`) if you ever want to.
+5. **Free history window** — decided (OWNER_DECISIONS #7, SPEC_FLAGS T1): **none**.
+   `app_config.free_history_days` stays NULL (unlimited for everyone; tenet 4 "nothing gets lost"), and
+   the paywall does not list a history perk.
 6. **Display typeface (titles such as "Week 27", profile names, headlines).** The design follows
    Retro, whose display face is **Roslindale** by David Jonathan Ross (DJR) — a commercial font we
    may not copy from Retro's app. Choose one:
@@ -79,10 +80,18 @@ Placeholders used below:
    subtitle, action "Open") and an **Advanced App Clip Experience** for the URL prefix
    `https://APP_DOMAIN/i/`. Header image and subtitle are owner-provided marketing assets.
 6. **In-app purchases** (App Store Connect → your app → Subscriptions): create a subscription
-   group "Premium" with two auto-renewable products: `premium_monthly` and `premium_yearly`,
-   prices per decision 0.4. Add the localized display names from `design/copy.json`
-   (`paywall.*`). Then create an **App Store Connect API key** (Users and Access → Integrations →
-   In-App Purchase) and give it to RevenueCat (step 6).
+   group "Premium" with two auto-renewable products: `premium_monthly` (1 month, **$3.99**) and
+   `premium_yearly` (1 year, **$35.99**) — Subscription Prices → set the US price, let App Store
+   Connect fill the other storefronts. Add the localized display names from `design/copy/account.json`
+   (`paywall.*`).
+   - **Free trial on the yearly plan:** `premium_yearly` → Subscription Prices → View all Subscription
+     pricing → **Set up Introductory Offer** → select all countries or regions → start date today, no end
+     date → **Free**, duration **1 Week** → Confirm
+     (https://developer.apple.com/help/app-store-connect/manage-subscriptions/set-up-introductory-offers-for-auto-renewable-subscriptions:
+     "each person is only eligible to redeem one introductory offer per subscription group"); the app shows
+     "Try 1 week free" only to people StoreKit still offers it to. `premium_monthly` gets no offer.
+   - Then create an **App Store Connect API key** (Users and Access → Integrations → In-App Purchase)
+     and give it to RevenueCat (step 6).
 7. **Privacy nutrition labels** (App Store Connect → App Privacy): fill from
    `docs/PRIVACY_LABELS.md` (generated from what the code actually collects).
 8. **Age rating** questionnaire: answer per `docs/PLATFORM_CONSTRAINTS.md` §9.
@@ -96,9 +105,18 @@ Placeholders used below:
    **app signing key SHA-256 fingerprint** (Setup → App signing) → `config/app.json`
    `android.sha256CertFingerprints` (used by `assetlinks.json`). Also add your upload key's
    fingerprint for internal builds.
-3. **Subscriptions** (Monetize → Subscriptions): `premium_monthly`, `premium_yearly` with base
-   plans matching the iOS prices. Create a **service account** with Play Console access for
-   RevenueCat (RevenueCat's guide: https://www.revenuecat.com/docs/service-credentials/creating-play-service-credentials).
+3. **Subscriptions** (Monetize with Play → Products → Subscriptions): `premium_monthly` with an
+   auto-renewing base plan (billing period 1 month, **$3.99**) and `premium_yearly` with an
+   auto-renewing base plan (1 year, **$35.99**); activate both base plans.
+   - **Free trial on the yearly plan:** `premium_yearly` → its base plan → **Add offer** → eligibility
+     **New customer acquisition** ("Never had this subscription") → phase **Free trial**, duration
+     **1 week** → activate
+     (https://support.google.com/googleplay/android-developer/answer/12154973: "Free trial phases can range
+     from 3 days to 3 years"). Do not tag it `rc-ignore-offer`: RevenueCat buys the eligible offer with the
+     longest free trial by default, and the app reads that offer's free phase for "Try 1 week free"
+     (`android/core/billing`). `premium_monthly` gets no offer.
+   - Create a **service account** with Play Console access for RevenueCat (RevenueCat's guide:
+     https://www.revenuecat.com/docs/service-credentials/creating-play-service-credentials).
 4. **Data safety form**: fill from `docs/PRIVACY_LABELS.md`.
 5. **Internal testing** track: upload the AAB from CI (step 10), add testers by email.
 
