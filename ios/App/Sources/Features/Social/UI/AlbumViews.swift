@@ -214,7 +214,7 @@ struct AlbumScreen: View {
             cover
                 .metricGap(Tokens.Sizes.albumsViewDimensionCoverTop, from: .top, to: .top)
             Text(name)
-                .dsTextRole(TextRole.displayMedium)
+                .dsTextRole(TextRole.albumTitle)
                 .foregroundStyle(Tokens.Colors.globalTextPrimary)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)

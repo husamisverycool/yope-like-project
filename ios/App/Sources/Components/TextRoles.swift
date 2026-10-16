@@ -56,6 +56,13 @@ enum TextRole {
         Tokens.FontSizes.globalDisplayMedium, Tokens.FontWeights.fontWeightGlobalDisplayMedium, Tokens.Layouts.GlobalTextStyleMap.displayMedium,
         family: Tokens.Fonts.globalDisplayNarrow
     )
+    /// An album's (a group's) name on its page: the title face (`font.global.display`) at the `displayMedium` size (34.4,
+    /// regular) — retro.app sets album titles in Roslindale Retro, Retro's title cut (design/research/
+    /// retro-package-copy-motion.md §2.3; MERGE L-8).
+    static let albumTitle = role(
+        Tokens.FontSizes.globalDisplayMedium, Tokens.FontWeights.fontWeightGlobalDisplayMedium, Tokens.Layouts.GlobalTextStyleMap.displayMedium,
+        family: Tokens.Fonts.globalDisplay
+    )
     /// Small narrow display serif: recap month cards, album titles on covers, the recap year
     /// (`font.global.displayNarrow`, `fontSize.global.displaySmall` 25.8, regular; C-34).
     static let displaySmall = role(

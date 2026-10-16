@@ -527,10 +527,10 @@ private fun Cover(state: GroupFeedUiState) {
     }
 }
 
-/** The name: `font.global.display` text role `displayMedium`, centred, ≤ 2 lines, cap top `groups.screen.size.coverToTitle` under the cover; header trait. */
+/** The name: text role `albumTitle` (`font.global.display` at `displayMedium`, L-8), centred, ≤ 2 lines, cap top `groups.screen.size.coverToTitle` under the cover; header trait. */
 @Composable
 private fun Name(name: String?) {
-    val style = TextRoles.displayMedium
+    val style = TextRoles.albumTitle
     Text(
         name.orEmpty(),
         style = style,

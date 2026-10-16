@@ -59,6 +59,8 @@ Paths under `references/auto/retro/` (`INDEX.md`); research files `design/resear
 
 ---
 
+**Display faces (L-8).** Titles (C-01, C-02, C-19, Rewind dates, the wordmark) use `font.global.display` (Roboto Serif Title); headlines (cards, sheets, onboarding, invite) use `font.global.displayNarrow` (Roboto Serif Headline) via text roles displayMedium / displaySmall. An album's / a group's name on its page is the title face at the `displayMedium` size (text role `albumTitle`): retro.app sets album titles in Roslindale Retro, the title cut.
+
 ## C-01 Screen header (root): serif title + trailing icon buttons
 
 **Anatomy.** Display serif title at the leading margin; up to two trailing glyph buttons (e.g. albums `book`,
