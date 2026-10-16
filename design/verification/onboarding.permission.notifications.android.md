@@ -15,7 +15,7 @@ States rendered (`android/feature/account/src/test/snapshots/onboarding.permissi
 | status | token / copy | expected (spec) | ours | reference evidence | note |
 |---|---|---|---|---|---|
 | match | title baseline below the safe-area top: `size.global.titleTop` | 64 | 64 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
-| match | title leading inset (ink): `size.global.screenMargin` | 16 | 17.5 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… | the first glyph's side bearing (≈ 1 dp) is inside the measure |
+| match | title leading inset (ink): `size.global.screenMargin` | 16 | 17 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… | the first glyph's side bearing (≈ 1 dp) is inside the measure |
 | match | page: `color.global.background.android` | #FFFFFF | #FFFFFF | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Retro palett… |  |
 | match | Enable notifications height: `size.global.buttonHeight` | 60 | 60 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png y2032–2211 (180… |  |
 | match | Enable notifications side inset: `size.global.buttonMarginH` | 20 | 20.5 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
@@ -30,7 +30,7 @@ States rendered (`android/feature/account/src/test/snapshots/onboarding.permissi
 | match (behaviour) | `onboarding.permission.notifications.layout.preAlert` | API 33+: the same page plus a text button 'Maybe later' (C-08 secondary link) under the c… | OnboardingForm page (title, explanation, capsule + 'Maybe later' link on API 33+) | https://developer.apple.com/design/human-interface-guidelines/privacy#Pre-alert… |  |
 | match (token) | `auth.phone.size.capsuleToLink` | 20.7 pt | Tokens.Sizes.authPhoneSizeCapsuleToLink · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png capsule y 2032–… |  |
 | match (token) | `color.global.background` | light: #FFFFFF; dark: #000000 | Tokens.Colors.globalBackground | light: references/auto/retro/store/retro-store-02.png box (600–606,1700–1706); … |  |
-| match (token) | `font.global.display` | serif | Tokens.Fonts.globalDisplay | Retro's display face: Roslindale Retro v0.2 (+ Display Narrow, Deck Narrow), Da… |  |
+| match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |
 | match (token) | `color.global.textPrimary` | light: #000000; dark: #FFFFFF | Tokens.Colors.globalTextPrimary | light: references/auto/retro/store/retro-store-02.png info row 'Weeks Posted' d… |  |
 | match (token) | `size.global.screenMargin` | 16 pt | Tokens.Sizes.globalScreenMargin · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match (token) | `size.global.titleTop` | 64 pt | Tokens.Sizes.globalTitleTop · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |

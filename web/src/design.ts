@@ -166,22 +166,37 @@ export function cssEasing(name: TokenName): string {
 }
 
 /**
- * CSS font stack for a font token (PLATFORM: the page loads no web font, so every face is one the visitor's system
- * already has; Retro's own faces — Roslindale, SF Pro Display by name — are never referenced or bundled):
+ * Faces the page serves itself (web/assets/fonts, SIL OFL; MERGE_DECISIONS L-8). A bundled font token's iOS value is
+ * the face's PostScript name; this maps it to the CSS family name the WOFF2 file declares and the file the server
+ * hands out under /fonts/. Retro's own faces (Roslindale, SF Pro Display by name) are never referenced or bundled.
+ */
+export const WEB_FONTS: Readonly<Record<string, { family: string; file: string }>> = {
+  "RobotoSerifHeadline-Regular": { family: "Roboto Serif Headline", file: "RobotoSerifHeadline-Regular.woff2" },
+};
+
+/** The served face of a font token, or null when it is a platform font. */
+export function webFont(name: TokenName): { family: string; file: string } | null {
+  const ios = (tokens[name] as unknown as { ios?: string }).ios;
+  return (ios && WEB_FONTS[ios]) || null;
+}
+
+/**
+ * CSS font stack for a font token:
  *
  * - `font.global.family` {ios: "system", android: "Inter"} → `-apple-system, BlinkMacSystemFont, system-ui,
- *   sans-serif`: -apple-system / BlinkMacSystemFont select SF Pro in Safari / Chromium on Apple platforms (the iOS
- *   value "system", and the face of Retro's web stack 'SF Pro Display, -apple-system, BlinkMacSystemFont, …');
- *   system-ui is the platform UI face elsewhere (Roboto on Android, Segoe UI on Windows) — Inter is the Android app's
- *   bundled face and is not installed on visitors' devices; sans-serif is the last resort.
- * - `font.global.display` {ios: "system-serif", android: "serif"} → `ui-serif, "Noto Serif", serif`: ui-serif is
- *   New York in Safari on Apple platforms (the iOS value "system-serif"); "Noto Serif" is Android's serif (the
- *   Android value "serif") when a browser does not map the generic family to it; serif is the generic fallback
- *   (Times on desktops without either face).
+ *   sans-serif` (PLATFORM, no web font): -apple-system / BlinkMacSystemFont select SF Pro in Safari / Chromium on
+ *   Apple platforms (the iOS value "system", and the face of Retro's web stack 'SF Pro Display, -apple-system,
+ *   BlinkMacSystemFont, …'); system-ui is the platform UI face elsewhere (Roboto on Android, Segoe UI on Windows) —
+ *   Inter is the Android app's bundled face and is not installed on visitors' devices; sans-serif is the last resort.
+ * - A bundled face (WEB_FONTS; `font.global.displayNarrow` {ios: "RobotoSerifHeadline-Regular", …}, Roboto Serif
+ *   Headline, the instance matched to Retro's Roslindale Display Narrow, L-8) → `"Roboto Serif Headline", ui-serif,
+ *   serif`: the page serves the face as WOFF2 (@font-face, font-display: swap); while it loads, or where fonts are
+ *   blocked, ui-serif (New York in Safari on Apple platforms) and then the generic serif stand in.
  */
 export function cssFontStack(name: TokenName): string {
   const v = tokens[name] as unknown as { ios?: string; android?: string };
   if (v?.ios === "system") return "-apple-system, BlinkMacSystemFont, system-ui, sans-serif";
-  if (v?.ios === "system-serif" && v?.android === "serif") return 'ui-serif, "Noto Serif", serif';
+  const served = webFont(name);
+  if (served) return `"${served.family}", ui-serif, serif`;
   throw new Error(`token ${name}: no web font stack for ${JSON.stringify(v)}`);
 }

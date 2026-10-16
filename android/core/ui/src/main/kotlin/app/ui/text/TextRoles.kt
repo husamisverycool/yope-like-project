@@ -15,7 +15,8 @@ import app.designsystem.generated.Tokens
  * `fontWeight.global.<role>` where measured, `lineHeight.global.<role>` where measured (otherwise the
  * platform's leading), on `font.global.family` (Inter Variable on Android, true `wght` instances —
  * core:designsystem `DSVariableWeights`) or, for the display roles (`headerTitle`, `displayMedium`,
- * `displaySmall`), `font.global.display` (platform serif, PLATFORM, until a licensed face exists).
+ * `displaySmall`), the bundled display faces: `font.global.display` (titles) and `font.global.displayNarrow` (headlines),
+ * static instances of Roboto Serif (SIL OFL) matched to Retro's two display cuts by measurement (MERGE_DECISIONS L-8).
  *
  * Android siblings (README → Platform pairs) replace the shared value where Retro's Android app differs:
  * `body` = `fontSize.global.body.android` 14 / `lineHeight.global.body.android` 17 /
@@ -26,17 +27,17 @@ import app.designsystem.generated.Tokens
  * platform default (regular).
  */
 object TextRoles {
-    /** `headerTitle` 40 / line 48, regular, display serif — screen titles ("Week 27"), profile name, Rewind date title. */
+    /** `headerTitle` 43 / line 48, regular, `font.global.display` — screen titles ("Week 27"), profile name, Rewind date title. */
     val headerTitle: TextStyle
         @Composable get() = display(Tokens.FontSizes.globalHeaderTitle, Tokens.FontWeights.fontWeightGlobalHeaderTitle, Tokens.LineHeights.globalHeaderTitle)
 
-    /** `displayMedium` 32 regular, display serif — headlines on cards, sheets and onboarding pages. */
+    /** `displayMedium` 34.4 regular, `font.global.displayNarrow` — headlines on cards, sheets and onboarding pages. */
     val displayMedium: TextStyle
-        @Composable get() = display(Tokens.FontSizes.globalDisplayMedium, Tokens.FontWeights.fontWeightGlobalDisplayMedium)
+        @Composable get() = display(Tokens.FontSizes.globalDisplayMedium, Tokens.FontWeights.fontWeightGlobalDisplayMedium, family = Tokens.Fonts.globalDisplayNarrow)
 
-    /** `displaySmall` 24 regular, display serif — recap month cards, album titles on covers, recap year. */
+    /** `displaySmall` 25.8 regular, `font.global.displayNarrow` — recap month cards, album titles on covers, recap year. */
     val displaySmall: TextStyle
-        @Composable get() = display(Tokens.FontSizes.globalDisplaySmall, Tokens.FontWeights.fontWeightGlobalDisplaySmall)
+        @Composable get() = display(Tokens.FontSizes.globalDisplaySmall, Tokens.FontWeights.fontWeightGlobalDisplaySmall, family = Tokens.Fonts.globalDisplayNarrow)
 
     /** `onboardingTitle` 30 regular — the large grey line on the landing ("Friends Only"). */
     val onboardingTitle: TextStyle
@@ -150,9 +151,13 @@ object TextRoles {
         dsTextStyle(size, weight ?: FontWeight.Normal, Tokens.Fonts.globalFamily, lineHeight, tracking)
 
     @Composable
-    private fun display(size: TextUnit, weight: FontWeight, lineHeight: TextUnit = TextUnit.Unspecified): TextStyle =
-        dsTextStyle(size, weight, Tokens.Fonts.globalDisplay, lineHeight)
+    private fun display(
+        size: TextUnit,
+        weight: FontWeight,
+        lineHeight: TextUnit = TextUnit.Unspecified,
+        family: DSFontFamily = Tokens.Fonts.globalDisplay,
+    ): TextStyle = dsTextStyle(size, weight, family, lineHeight)
 
-    /** The family of the display roles (exposed for measuring cap heights). */
+    /** The family of the title role (`font.global.display`; exposed for measuring cap heights). */
     val displayFamily: DSFontFamily get() = Tokens.Fonts.globalDisplay
 }

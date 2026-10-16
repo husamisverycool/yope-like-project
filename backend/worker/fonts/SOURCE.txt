@@ -1,7 +1,10 @@
 Fonts for server-rendered text (tribute videos), matching the app's type roles (design/tokens/global.json).
 
-NotoSerif-Regular.ttf — Noto Serif (display serif role, font.global.display: the platform serif), SIL Open Font
-License 1.1 (OFL-NotoSerif.txt). Source: https://raw.githubusercontent.com/notofonts/notofonts.github.io/main/fonts/NotoSerif/unhinted/ttf/NotoSerif-Regular.ttf
+RobotoSerifHeadline-Regular.ttf — Roboto Serif Headline (narrow display serif role, font.global.displayNarrow), a static
+instance of Roboto Serif (wdth 52, opsz 96, wght 430, GRAD -50; SIL Open Font License 1.1, OFL-RobotoSerif.txt) made with
+fontTools.varLib.instancer and renamed — the same file the apps bundle (android/core/designsystem/src/main/res/font/
+roboto_serif_headline.ttf, ios/Packages/AppCore/Sources/DesignSystem/Fonts/). Source: https://github.com/google/fonts
+ofl/robotoserif/RobotoSerif[GRAD,opsz,wdth,wght].ttf. Axis values: design/MERGE_DECISIONS.md L-8.
 
 Inter-Regular.ttf, Inter-SemiBold.ttf — Inter (UI role, font.global.family on Android), SIL Open Font License 1.1
 (OFL-Inter.txt). Static instances (wght 400 / 600, default opsz) made with fontTools.varLib.instancer from the

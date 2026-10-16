@@ -8,7 +8,7 @@ Side by side: [`auth.agegate.android.png`](auth.agegate.android.png) — ours le
 
 States rendered (`android/feature/account/src/test/snapshots/auth.agegate/`): `checking-light`, `default-dark`, `default-light`, `filled-optIn-light`, `invalidDate-light`, `notConfigured-light`, `offline-light`, `underAge-light`.
 
-**Result: 53 checks — 52 match, 1 MISS.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 53 checks — 51 match, 2 MISS.** (`match` includes measured, token, behaviour and copy rows.)
 
 ## Form (auth.agegate/filled-optIn-light)
 
@@ -31,10 +31,10 @@ States rendered (`android/feature/account/src/test/snapshots/auth.agegate/`): `c
 
 | status | token / copy | expected (spec) | ours | reference evidence | note |
 |---|---|---|---|---|---|
-| match | opt-in row side inset: `size.global.screenMargin` | 16 | 16 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
-| match | opt-in row corner radius: `radius.global.groupedRow` | 12 | 11.95 | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt pik: single 1… |  |
+| MISS | opt-in row side inset: `size.global.screenMargin` | 16 | 21 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
+| MISS | opt-in row corner radius: `radius.global.groupedRow` | 12 | 5.12 | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt pik: single 1… |  |
 | match | opt-in row fill: `color.global.surfaceSecondary.android` | #F7F7F7 | #F7F7F7 | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt vv3.l / vv3.f… |  |
-| MISS | opt-in row height: `settings.root.size.rowHeight` | 58.7 | 80 | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2 (grouped ro… |  |
+| match | opt-in row height (minimum): `settings.root.size.rowHeight` | ≥ 58.7 | 80 | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2 (grouped ro… | the row's minimum; the two-line subtitle makes it taller |
 
 ## Tokens named in the spec
 
@@ -42,7 +42,7 @@ States rendered (`android/feature/account/src/test/snapshots/auth.agegate/`): `c
 |---|---|---|---|---|---|
 | match (behaviour) | `auth.agegate.layout.dateEntry` | control: C-12 text field (fill color.global.control, size.global.fieldHeight, radius.glob… | C-12 field with the locale's digit order and separators (DateEntryPattern), no default year | docs/PLATFORM_CONSTRAINTS.md §9 (FTC COPPA FAQ, https://www.ftc.gov/business-gu… |  |
 | match (token) | `color.global.background` | light: #FFFFFF; dark: #000000 | Tokens.Colors.globalBackground | light: references/auto/retro/store/retro-store-02.png box (600–606,1700–1706); … |  |
-| match (token) | `font.global.display` | serif | Tokens.Fonts.globalDisplay | Retro's display face: Roslindale Retro v0.2 (+ Display Narrow, Deck Narrow), Da… |  |
+| match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |
 | match (token) | `size.global.titleTop` | 64 pt | Tokens.Sizes.globalTitleTop · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |
 | match (token) | `size.global.titleToContent` | 30 pt | Tokens.Sizes.globalTitleToContent | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |

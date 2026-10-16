@@ -20,7 +20,7 @@ RUN --mount=type=secret,id=build_ca,required=false \
 
 COPY backend/worker/tsconfig.json ./
 COPY backend/worker/src ./src
-# Noto Serif + Inter (SIL OFL, see fonts/SOURCE.txt): read by path for server-rendered text, also registered with fontconfig
+# Roboto Serif Headline + Inter (SIL OFL, see fonts/SOURCE.txt): read by path for server-rendered text, also registered with fontconfig
 COPY backend/worker/fonts ./fonts
 RUN mkdir -p /usr/share/fonts/truetype/app \
  && cp fonts/*.ttf /usr/share/fonts/truetype/app/ \

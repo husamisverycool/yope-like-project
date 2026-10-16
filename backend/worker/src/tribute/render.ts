@@ -1,5 +1,5 @@
 // Tribute video (surface birthday.tribute): title card → one card per contribution (photo +
-// contributor first name + their one line) → end card, rendered with sharp (cards; text in the app's fonts: Noto Serif display, Inter UI)
+// contributor first name + their one line) → end card, rendered with sharp (cards; text in the app's fonts: Roboto Serif Headline display, Inter UI)
 // and ffmpeg (sequence, transitions, H.264 MP4).
 //
 // Structure and timings come from design tokens (research: design/research/wrapped-tribute-
@@ -95,13 +95,14 @@ export interface TributeTexts {
 
 /**
  * Fonts the video text is set in, matching the app (design/tokens/global.json): title and end cards use the
- * display serif role (`font.global.display` → the platform serif; Noto Serif, SIL OFL), captions the UI role
+ * narrow display serif role (`font.global.displayNarrow` → Roboto Serif Headline, the app's bundled headline face,
+ * SIL OFL — MERGE_DECISIONS L-8), captions the UI role
  * (`font.global.family` on Android → Inter, SIL OFL, static instances of the app's variable font).
  * Files and licences: fonts/SOURCE.txt.
  */
 export type FontRole = "display" | "ui";
 const FONTS: Record<FontRole, { family: string; files: Array<[number, string]> }> = {
-  display: { family: "Noto Serif", files: [[400, "NotoSerif-Regular.ttf"]] },
+  display: { family: "Roboto Serif Headline", files: [[400, "RobotoSerifHeadline-Regular.ttf"]] },
   ui: { family: "Inter Variable", files: [[400, "Inter-Regular.ttf"], [600, "Inter-SemiBold.ttf"]] },
 };
 const PANGO_WEIGHTS: Record<number, string> = { 100: "Thin", 200: "Ultra-Light", 300: "Light", 400: "", 500: "Medium", 600: "Semi-Bold", 700: "Bold", 800: "Ultra-Bold", 900: "Heavy" };

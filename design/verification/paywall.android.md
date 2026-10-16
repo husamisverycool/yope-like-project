@@ -37,7 +37,7 @@ States rendered (`android/feature/account/src/test/snapshots/paywall/`): `defaul
 | match (token) | `paywall.size.mediaCardWidth` | 248 pt | Tokens.Sizes.paywallSizeMediaCardWidth | references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png media card edg… |  |
 | match (token) | `paywall.radius.mediaCard` | 27 pt | Tokens.Radii.paywallRadiusMediaCard | references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png top-left corne… |  |
 | match (token) | `size.global.titleToContent` | 30 pt | Tokens.Sizes.globalTitleToContent | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
-| match (token) | `font.global.display` | serif | Tokens.Fonts.globalDisplay | Retro's display face: Roslindale Retro v0.2 (+ Display Narrow, Deck Narrow), Da… |  |
+| match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |
 | match (token) | `color.global.pageDotInactive` | light: #DDDDDD; dark: #808080 | Tokens.Colors.globalPageDotInactive | light: references/auto/retro/press/tc-2023-07-retro-1b.webp row y=1116 x1696–17… |  |
 | match (behaviour) | `paywall.layout.planCard` | fill: color.global.surfaceLight (#FFFFFF) in both appearances (Retro's card reads translu… | core:ui PlanCardPager / PlanCard inside AppTheme(dark = false): white card, black capsule in both appearances… | references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png card x 60–1144… | measured below |
 | match (token) | `size.global.buttonMarginH` | 20 pt | Tokens.Sizes.globalButtonMarginH · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |

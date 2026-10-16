@@ -276,11 +276,11 @@ private fun copyToClipboard(context: Context, url: String) {
     clipboard.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.groups_invite_link_copy), url))
 }
 
-/** What the invite sheet does on each control. */
-@Immutable
 /** Test tag of the sheet's list (UI tests scroll it to the Contacts section). */
 const val GROUP_INVITE_LIST_TAG = "groups.invite.list" // provenance-ok: test tag, not shown
 
+/** What the invite sheet does on each control. */
+@Immutable
 data class GroupInviteActions(
     val onClose: () -> Unit = {},
     val onTurnOn: () -> Unit = {},

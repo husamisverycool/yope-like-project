@@ -68,7 +68,7 @@ enum WidgetType {
         role(Tokens.FontSizes.globalSheetTitle, Tokens.FontWeights.fontWeightGlobalSheetTitle, Tokens.Layouts.GlobalTextStyleMap.sheetTitle)
     }
 
-    /// The group name on the Lock Screen presentation: the display serif (`font.global.display`), text role
+    /// The group name on the Lock Screen presentation: the narrow display serif (`font.global.displayNarrow`), text role
     /// `displaySmall` (24). Its regular weight is raised to `daily.liveactivity.fontWeight.min` (medium): HIG asks every
     /// Live Activity weight to be at least medium.
     static var liveActivityGroupName: DSTextStyle {
@@ -76,7 +76,7 @@ enum WidgetType {
             Tokens.FontSizes.globalDisplaySmall,
             heavier(Tokens.FontWeights.fontWeightGlobalDisplaySmall, Tokens.FontWeights.dailyLiveactivityFontWeightMin),
             Tokens.Layouts.GlobalTextStyleMap.displaySmall,
-            family: Tokens.Fonts.globalDisplay
+            family: Tokens.Fonts.globalDisplayNarrow
         )
     }
 

@@ -40,9 +40,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -311,10 +309,6 @@ fun GroupFeedRoute(nav: NavHostController, groupId: String) {
             }
         }
     }
-    var recapTarget by remember { mutableStateOf<AppRoute?>(null) }
-    LaunchedEffect(groupId) {
-        recapTarget = runCatching { env.backend.latestRecapId(groupId) }.getOrNull()?.let { AppRoute.WeekRecap(groupId, it) }
-    }
     GroupFeedScreen(
         state = state,
         now = env.clock.instant(),
@@ -324,7 +318,8 @@ fun GroupFeedRoute(nav: NavHostController, groupId: String) {
             onAlbums = { nav.navigate(AppRoute.AlbumsList(groupId)) },
             onChat = { nav.navigate(AppRoute.Chat(groupId)) },
             onMembers = { nav.navigate(AppRoute.GroupSettings(groupId)) },
-            onRecaps = { nav.navigate(recapTarget ?: AppRoute.WeekHistory(groupId)) },
+            // "Recaps" opens the group's recap list sheet (week.recap list; social pass).
+            onRecaps = { nav.navigate(app.model.WeekRecapList(groupId)) },
             onInvite = { nav.navigate(AppRoute.GroupInvite(groupId)) },
             onSettings = { nav.navigate(AppRoute.GroupSettings(groupId)) },
             onWeeks = { nav.navigate(AppRoute.WeekHistory(groupId)) },

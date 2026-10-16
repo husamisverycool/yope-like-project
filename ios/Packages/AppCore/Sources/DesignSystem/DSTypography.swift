@@ -102,6 +102,7 @@ public enum DSDynamicType {
             let serif = base.fontDescriptor.withDesign(.serif).map { UIFont(descriptor: $0, size: size) } ?? base
             return serif.lineHeight
         case let .custom(name):
+            DSBundledFonts.registerOnce()
             return UIFont(name: name, size: size)?.lineHeight ?? size
         }
     }

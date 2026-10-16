@@ -115,7 +115,8 @@ describe("mobile card (viewport ≤ invite.web.size.breakpoint)", () => {
         rgba(t["color.global.textOnMedia"]),
         PX(t["invite.web.size.textMaxWidth"]),
       ]);
-      expect(h1.s["font-family"]).toBe('ui-serif, "Noto Serif", serif');
+      expect(h1.s["font-family"]).toBe('"Roboto Serif Headline", ui-serif, serif'); // font.global.displayNarrow (L-8)
+      expect(await page.evaluate(() => document.fonts.check('34.4px "Roboto Serif Headline"') && [...document.fonts].some((f) => f.family.replace(/"/g, "") === "Roboto Serif Headline" && f.status === "loaded"))).toBe(true);
       near(h1.box.y, hero.box.bottom);
 
       const line = await measure(page, ".line.mobile-only", ["font-size", "line-height", "letter-spacing", "color", "font-family"]);

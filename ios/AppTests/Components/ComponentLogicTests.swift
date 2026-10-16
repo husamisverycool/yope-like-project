@@ -151,8 +151,9 @@ final class ComponentLogicTests: XCTestCase {
     }
 
     func testDisplayRolesUseTheSerifAndUIRolesTheSans() {
-        for role in [TextRole.headerTitle, TextRole.displayMedium, TextRole.displaySmall] {
-            XCTAssertEqual(role.family, Tokens.Fonts.globalDisplay)
+        XCTAssertEqual(TextRole.headerTitle.family, Tokens.Fonts.globalDisplay)
+        for role in [TextRole.displayMedium, TextRole.displaySmall] {
+            XCTAssertEqual(role.family, Tokens.Fonts.globalDisplayNarrow)
         }
         for role in [TextRole.body, TextRole.listTitle, TextRole.button, TextRole.pill, TextRole.badge, TextRole.tileLabel] {
             XCTAssertEqual(role.family, Tokens.Fonts.globalFamily)
@@ -211,5 +212,13 @@ final class ComponentLogicTests: XCTestCase {
         // Title baseline `size.global.titleTop` below the top; content `size.global.titleToContent` below the baseline.
         let height = fittingHeight(ScreenHeader(title: "Week 43").environment(\.dynamicTypeSize, .large))
         XCTAssertEqual(height, Tokens.Sizes.globalTitleTop + Tokens.Sizes.globalTitleToContent, accuracy: 2)
+    }
+
+    func testBundledDisplayFacesResolve() {
+        DSBundledFonts.registerOnce()
+        for family in [Tokens.Fonts.globalDisplay, Tokens.Fonts.globalDisplayNarrow] {
+            guard case let .custom(name) = family else { return XCTFail("display families are bundled faces (L-8)") }
+            XCTAssertNotNil(UIFont(name: name, size: Tokens.FontSizes.globalHeaderTitle), "\(name) is registered from DesignSystem/Fonts")
+        }
     }
 }

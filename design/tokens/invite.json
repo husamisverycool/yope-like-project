@@ -298,13 +298,13 @@
     },
     "invite.web.fontSize.headlineDesktop": {
       "type": "fontSize",
-      "value": 48,
+      "value": 51.5,
       "unit": "pt",
       "source_app": "Retro",
       "surface": "invite.web",
-      "element": "desktop page: headline, font.global.display regular, #000000, line height 48",
+      "element": "desktop page: headline, font.global.displayNarrow regular, #000000, line height 48",
       "evidence": "references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css .page_newProfilePageContent h1{font-size:3rem;color:#000;margin-top:70px}; references/auto/retro/web/retro.app-web-copy-excerpts.txt computed 48px/48px",
-      "method": "CSS constant",
+      "method": "CSS constant; re-fitted to the bundled face (L-8): 48 × (0.7625 ÷ 0.71) = 51.5",
       "level": "SOURCED"
     },
     "invite.web.size.headlineTopDesktop": {

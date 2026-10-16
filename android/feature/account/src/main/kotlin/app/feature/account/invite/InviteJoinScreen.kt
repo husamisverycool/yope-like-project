@@ -239,7 +239,7 @@ fun InviteJoinScreen(
                 }
                 Text(
                     title,
-                    style = dsTextStyle(Tokens.FontSizes.globalDisplayMedium, Tokens.FontWeights.fontWeightGlobalDisplayMedium, Tokens.Fonts.globalDisplay, Tokens.LineHeights.inviteWebLineHeightHeadline),
+                    style = dsTextStyle(Tokens.FontSizes.globalDisplayMedium, Tokens.FontWeights.fontWeightGlobalDisplayMedium, Tokens.Fonts.globalDisplayNarrow, Tokens.LineHeights.inviteWebLineHeightHeadline),
                     color = white,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.widthIn(max = Tokens.Sizes.inviteWebSizeTextMaxWidth).semantics { heading() },

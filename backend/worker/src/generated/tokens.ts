@@ -16,7 +16,7 @@ export const tokens = {
   "auth.agegate.layout.optIn": {"control":"C-14 grouped section with a single row: title (text role body) + subtitle (text role meta, color.global.textSecondary) + trailing native switch (tint color.global.selection / color.global.system.primary)","default":"off","inset":"size.global.screenMargin"}, // Retro · auth.agegate · SOURCED
   "auth.code.duration.resendLock": 60000, // Supabase Auth documentation · auth.code · VERIFIED
   "auth.code.layout.codeField": {"ios":"one TextField, textContentType .oneTimeCode, keyboardType .numberPad; no per-digit boxes (a custom input view cannot show the AutoFill suggestion)","android":"one TextField, KeyboardType.NumberPassword with visualTransformation None, autofill ContentType.SmsOtpCode; SMS User Consent (SmsRetriever.getClient(context).startSmsUserConsent) shows the system consent sheet and fills the field","field":"drawn as C-12"}, // Apple HIG · auth.code · PLATFORM
-  "auth.phone.fontSize.wordmark": 64, // Retro · auth.phone · SOURCED
+  "auth.phone.fontSize.wordmark": 71.4, // Retro · auth.phone · SOURCED
   "auth.phone.layout.countryCode": {"pattern":"flag at the field's leading edge + the calling code typed inline with the number ('+1 555 …'); no separate code button","flagWidth":20,"flagHeight":13,"flagLeading":20,"flagToText":5,"prefill":"'+' and the device region's calling code (Locale / libphonenumber); the flag follows the code as it is typed or edited","autoFormat":true,"allowZeroAfterCountryCode":true,"flagTap":"opens a country list in a native sheet (C-29); choosing a country replaces the calling code","flagArt":"regional-indicator flag emoji (PLATFORM) in the 20 × 13 slot","field":"drawn as design/components.md C-12 (fill color.global.control, size.global.fieldHeight, radius.global.field, text role placeholder)"}, // Locket · auth.phone · SOURCED
   "auth.phone.layout.inlineError": {"presentation":"native alert: iOS SwiftUI .alert / Android M3 AlertDialog (settings.account.layout.alert); not dismissed by tapping outside","titled":"code errors carry Retro's title + message pair (auth.code.error.*.title + message); phone and generic errors show the message only","buttons":"one 'OK' (auth.phone.error.dismiss); code errors offer Retro's two recoveries instead: 'Send a new code' (auth.code.error.sendNew) and 'Edit code' (auth.code.error.editCode)","appliesTo":"auth.phone, auth.code and auth.agegate field errors; full-screen states (offline, not configured, under age) use the empty-state block (C-27)"}, // Retro · auth.phone · SOURCED
   "auth.phone.layout.keyboard": {"ios":"TextField keyboardType .phonePad, textContentType .telephoneNumber (system AutoFill offers the person's own number)","android":"TextField KeyboardOptions(keyboardType = KeyboardType.Phone), autofill ContentType.PhoneNumber"}, // Apple HIG · auth.phone · PLATFORM
@@ -195,7 +195,8 @@ export const tokens = {
   "easing.global.system.standard": {"x1":0.2,"y1":0,"x2":0,"y2":1}, // Material 3 · global.system · PLATFORM
   "easing.year.story.reveal": {"x1":0.56,"y1":0.08,"x2":0.14,"y2":0.87}, // Spotify Wrapped · year.story · SOURCED
   "easing.year.story.reveal.subline": {"x1":0.05,"y1":0.36,"x2":0.26,"y2":0.94}, // Spotify Wrapped · year.story · SOURCED
-  "font.global.display": {"ios":"system-serif","android":"serif"}, // Apple HIG / Material 3 · global · PLATFORM
+  "font.global.display": {"ios":"RobotoSerifTitle-Regular","android":"roboto_serif_title"}, // Retro · global · SOURCED
+  "font.global.displayNarrow": {"ios":"RobotoSerifHeadline-Regular","android":"roboto_serif_headline"}, // Retro · global · SOURCED
   "font.global.family": {"ios":"system","android":"Inter"}, // Retro · global · SOURCED
   "fontSize.birthday.request.cardTitle": 24, // Retro · birthday.request · SOURCED
   "fontSize.global.badge": 11, // Retro · global · SOURCED
@@ -203,11 +204,11 @@ export const tokens = {
   "fontSize.global.body.android": 14, // Retro · global · SOURCED
   "fontSize.global.button": 17, // Retro · global · SOURCED
   "fontSize.global.caption": 14, // Retro · global · SOURCED
-  "fontSize.global.displayMedium": 32, // Retro · global · SOURCED
-  "fontSize.global.displaySmall": 24, // Retro · global · SOURCED
+  "fontSize.global.displayMedium": 34.4, // Retro · global · SOURCED
+  "fontSize.global.displaySmall": 25.8, // Retro · global · SOURCED
   "fontSize.global.emptyDetail": 14, // Retro · global · SOURCED
   "fontSize.global.emptyTitle": 20, // Retro · global · SOURCED
-  "fontSize.global.headerTitle": 40, // Retro · global · SOURCED
+  "fontSize.global.headerTitle": 43, // Retro · global · SOURCED
   "fontSize.global.listSubtitle": 15, // Retro · global · SOURCED
   "fontSize.global.listTitle": 15, // Retro · global · SOURCED
   "fontSize.global.meta": 13, // Retro · global · SOURCED
@@ -332,7 +333,7 @@ export const tokens = {
   "invite.web.fontSize.body": 14, // Retro · invite.web · SOURCED
   "invite.web.fontSize.bodyDesktop": 20, // Retro · invite.web · SOURCED
   "invite.web.fontSize.footer": 8, // Retro · invite.web · SOURCED
-  "invite.web.fontSize.headlineDesktop": 48, // Retro · invite.web · SOURCED
+  "invite.web.fontSize.headlineDesktop": 51.5, // Retro · invite.web · SOURCED
   "invite.web.fontSize.pill": 16, // Retro · invite.web · SOURCED
   "invite.web.fontWeight.pill": "semibold", // Retro · invite.web · SOURCED
   "invite.web.layout.backdrop": {"blurSigmaToWidth":0.08,"dim":"color.global.backdropDim","source":"the group cover photo, object-fit cover, extended 3σ past the card so the blur has no faded edge"}, // Retro · invite.web · SOURCED

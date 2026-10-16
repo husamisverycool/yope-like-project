@@ -1060,6 +1060,24 @@ puts a busy grid behind the grid card, a look no Retro capture shows. week.recap
 photo; collage.view now blurs the collage's first photo (`post_ids[0]`, display rendition), with page 1's image only
 until that photo loads.
 
+**L-8 — Display faces: Roboto Serif instances matched to Retro's two display cuts (over the platform serif, R-8).**
+The platform serif (New York / Noto Serif) made every title read as a different product: on the RAW capture H43, Noto
+Serif sets "Week 43" 36 % wider than Retro at the same cap height, with a lower x-height and thinner strokes. Retro
+uses two Roslindale cuts (APK): **Roslindale Retro** for screen titles (heavy, narrow, x-height 0.72 of the cap) and
+**Roslindale Display Narrow** for headlines (lighter, narrow). Each was measured (cap-height-normalised ink width of the
+whole title and of 'Week' / 'e' / '4' or 'n' / 'N', x-height, ascender, ink coverage) on H43 + H22 ("Week 43" / "Week
+22") and on retro.app's invite headline ("Nathan Invited You!", Display Narrow 32 px at 3×), and 15 OFL serifs were
+searched over their variable axes for the smallest mean relative error. Roboto Serif wins both by a wide margin:
+**title** wdth 50 · opsz 120 · wght 530 · GRAD 100 (error 0.038; Fraunces 0.142, Noto Serif Display 0.143, Noto Serif
+0.241) and **headline** wdth 52 · opsz 96 · wght 430 · GRAD −50 (0.028; Noto Serif Display 0.075, Instrument Serif
+0.080). Static instances (fontTools instancer, renamed "Roboto Serif Title" / "Roboto Serif Headline", SIL OFL with
+its licence) are bundled on iOS (DesignSystem/Fonts, registered at first use), Android (core:designsystem res/font),
+the worker and the web page. `font.global.display` → title instance; new `font.global.displayNarrow` → headline
+instance for text roles displayMedium / displaySmall, the invite headline, the Live Activity group name and the
+tribute cards. Sizes are re-fitted so cap heights equal Retro's (Roboto Serif cap/em 0.71 vs Roslindale 0.7625):
+headerTitle 40 → 43, displayMedium 32 → 34.4, displaySmall 24 → 25.8, wordmark 64 → 71.4 (cap 50.7 pt measured),
+invite desktop headline 48 → 51.5; line heights stay Retro's. Licensing Roslindale (owner) remains the exact match.
+
 ---
 
 ## Redesign — Account (RA-*)

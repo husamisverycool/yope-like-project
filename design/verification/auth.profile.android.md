@@ -43,7 +43,7 @@ States rendered (`android/feature/account/src/test/snapshots/auth.profile/`): `n
 | status | token / copy | expected (spec) | ours | reference evidence | note |
 |---|---|---|---|---|---|
 | match (token) | `auth.profile.size.avatar` | 112 pt | Tokens.Sizes.authProfileSizeAvatar · measured above | design/research/retro-package-copy-motion.md §7 (/u/[username] mobile: avatar 1… |  |
-| match (token) | `font.global.display` | serif | Tokens.Fonts.globalDisplay | Retro's display face: Roslindale Retro v0.2 (+ Display Narrow, Deck Narrow), Da… |  |
+| match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |
 | match (token) | `size.global.titleTop` | 64 pt | Tokens.Sizes.globalTitleTop · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |
 | match (token) | `size.global.titleToContent` | 30 pt | Tokens.Sizes.globalTitleToContent | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |

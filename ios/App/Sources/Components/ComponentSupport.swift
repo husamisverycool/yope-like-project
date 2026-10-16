@@ -190,6 +190,7 @@ struct TextMetrics {
             guard let serif = base.fontDescriptor.withDesign(.serif) else { return base }
             return UIFont(descriptor: serif, size: size)
         case let .custom(name):
+            DSBundledFonts.registerOnce()
             return UIFont(name: name, size: size) ?? UIFont.systemFont(ofSize: size, weight: uiWeight)
         }
     }

@@ -85,7 +85,8 @@ let package = Package(
     targets: [
         .target(name: "AppModels"),
         appDataTarget,
-        .target(name: "DesignSystem", dependencies: ["AppModels"]),
+        // Fonts/: the bundled display faces (SIL OFL), registered at first use (DSBundledFonts).
+        .target(name: "DesignSystem", dependencies: ["AppModels"], resources: [.copy("Fonts")]),
         .target(
             name: "AppServices",
             dependencies: [

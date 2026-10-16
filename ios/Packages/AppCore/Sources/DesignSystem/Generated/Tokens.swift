@@ -313,7 +313,7 @@ public enum Tokens {
     public enum FontSizes {
         /// Retro · auth.phone · the app's name set in the display serif (font.global.display) where Retro's landing shows its wordmark, centred above the tagline · SOURCED
         /// token: `auth.phone.fontSize.wordmark`
-        public static let authPhoneFontSizeWordmark: CGFloat = 64
+        public static let authPhoneFontSizeWordmark: CGFloat = 71.4
         /// Retro · camera.sendto · character counter '58/250' in the 'Add a Message' sheet · SOURCED
         /// token: `camera.sendto.fontSize.counter`
         public static let cameraSendtoFontSizeCounter: CGFloat = 16
@@ -335,12 +335,12 @@ public enum Tokens {
         /// Retro · global · fine print and timestamps: legal footer under the sign-up button ('By continuing, I confirm…'), timestamps ('1d', '2h') · SOURCED
         /// token: `fontSize.global.caption`
         public static let globalCaption: CGFloat = 14
-        /// Retro · global · display serif headline on cards, sheets and onboarding ('Share Video' paywall headline, invite page headline, feed-card titles) — family font.global.display · SOURCED
+        /// Retro · global · display serif headline on cards, sheets and onboarding ('Share Video' paywall headline, invite page headline, feed-card titles) — family font.global.displayNarrow · SOURCED
         /// token: `fontSize.global.displayMedium`
-        public static let globalDisplayMedium: CGFloat = 32
-        /// Retro · global · small display serif: recap month cards ('December'), album titles on covers, recap year ('2023') — family font.global.display · SOURCED
+        public static let globalDisplayMedium: CGFloat = 34.4
+        /// Retro · global · small display serif: recap month cards ('December'), album titles on covers, recap year ('2023') — family font.global.displayNarrow · SOURCED
         /// token: `fontSize.global.displaySmall`
-        public static let globalDisplaySmall: CGFloat = 24
+        public static let globalDisplaySmall: CGFloat = 25.8
         /// Retro · global · empty-state explanation (two lines, grey) under the title · SOURCED
         /// token: `fontSize.global.emptyDetail`
         public static let globalEmptyDetail: CGFloat = 14
@@ -349,7 +349,7 @@ public enum Tokens {
         public static let globalEmptyTitle: CGFloat = 20
         /// Retro · global · display serif screen title ('Week 43', 'Albums', 'Friends', 'Messages', profile username); also the date title on full-bleed photos ('May 1, 2019') — family font.global.display · SOURCED
         /// token: `fontSize.global.headerTitle`
-        public static let globalHeaderTitle: CGFloat = 40
+        public static let globalHeaderTitle: CGFloat = 43
         /// Retro · global · row subtitle and secondary line ('daniel shared 2 posts', date range 'Jul 3 - 9', 'Week 28' in the viewer header) · SOURCED
         /// token: `fontSize.global.listSubtitle`
         public static let globalListSubtitle: CGFloat = 15
@@ -398,9 +398,9 @@ public enum Tokens {
         /// Retro · invite.web · mobile page: footer line ('Terms & Privacy'), #FFFFFF, centred · SOURCED
         /// token: `invite.web.fontSize.footer`
         public static let inviteWebFontSizeFooter: CGFloat = 8
-        /// Retro · invite.web · desktop page: headline, font.global.display regular, #000000, line height 48 · SOURCED
+        /// Retro · invite.web · desktop page: headline, font.global.displayNarrow regular, #000000, line height 48 · SOURCED
         /// token: `invite.web.fontSize.headlineDesktop`
-        public static let inviteWebFontSizeHeadlineDesktop: CGFloat = 48
+        public static let inviteWebFontSizeHeadlineDesktop: CGFloat = 51.5
         /// Retro · invite.web · mobile page: pill label (semibold, #FFFFFF) · SOURCED
         /// token: `invite.web.fontSize.pill`
         public static let inviteWebFontSizePill: CGFloat = 16
@@ -442,10 +442,10 @@ public enum Tokens {
         /// Retro · global · fine print and timestamps: legal footer under the sign-up button ('By continuing, I confirm…'), timestamps ('1d', '2h') · SOURCED
         /// token: `fontWeight.global.caption`
         public static let fontWeightGlobalCaption: Font.Weight = .regular
-        /// Retro · global · display serif headline on cards, sheets and onboarding ('Share Video' paywall headline, invite page headline, feed-card titles) — family font.global.display · SOURCED
+        /// Retro · global · display serif headline on cards, sheets and onboarding ('Share Video' paywall headline, invite page headline, feed-card titles) — family font.global.displayNarrow · SOURCED
         /// token: `fontWeight.global.displayMedium`
         public static let fontWeightGlobalDisplayMedium: Font.Weight = .regular
-        /// Retro · global · small display serif: recap month cards ('December'), album titles on covers, recap year ('2023') — family font.global.display · SOURCED
+        /// Retro · global · small display serif: recap month cards ('December'), album titles on covers, recap year ('2023') — family font.global.displayNarrow · SOURCED
         /// token: `fontWeight.global.displaySmall`
         public static let fontWeightGlobalDisplaySmall: Font.Weight = .regular
         /// Retro · global · empty-state explanation (two lines, grey) under the title · SOURCED
@@ -504,9 +504,12 @@ public enum Tokens {
         public static let widgetHomeSmallFontWeightOverlay: Font.Weight = .regular
     }
     public enum Fonts {
-        /// Apple HIG / Material 3 · global · display serif for screen titles ('Week 27', 'Albums', profile name), the date title on Rewind, recap month cards and headlines: New York on iOS, Noto Serif on Android · PLATFORM
+        /// Retro · global · display serif for screen titles ('Week 27', 'Albums', profile name), the date title on full-bleed photos ('May 1, 2019') and the landing wordmark — Retro's Roslindale Retro role; bundled static instance of Roboto Serif (SIL OFL) named Roboto Serif Title · SOURCED
         /// token: `font.global.display`
-        public static let globalDisplay: DSFontFamily = .systemSerif
+        public static let globalDisplay: DSFontFamily = .custom("RobotoSerifTitle-Regular")
+        /// Retro · global · narrow display serif for headlines on cards, sheets, onboarding and the invite page, recap month cards and album titles (text roles displayMedium, displaySmall) — Retro's Roslindale Display Narrow role; bundled static instance of Roboto Serif (SIL OFL) named Roboto Serif Headline · SOURCED
+        /// token: `font.global.displayNarrow`
+        public static let globalDisplayNarrow: DSFontFamily = .custom("RobotoSerifHeadline-Regular")
         /// Retro · global · UI typeface of all non-display text: SF Pro on iOS, Inter Variable on Android · SOURCED
         /// token: `font.global.family`
         public static let globalFamily: DSFontFamily = .system

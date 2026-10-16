@@ -8,20 +8,24 @@ Side by side: [`auth.code.android.png`](auth.code.android.png) — ours left (`a
 
 States rendered (`android/feature/account/src/test/snapshots/auth.code/`): `default-dark`, `default-light`, `expired-light`, `filled-resendEnabled-light`, `offline-light`, `serviceError-light`, `tooMany-light`, `verifying-light`, `wrong-light`.
 
-**Result: 51 checks — 50 match, 1 MISS.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 55 checks — 55 match.** (`match` includes measured, token, behaviour and copy rows.)
 
-## Form (auth.code/default-light)
+## Form (auth.code/filled-resendEnabled-light)
 
 | status | token / copy | expected (spec) | ours | reference evidence | note |
 |---|---|---|---|---|---|
 | match | title baseline below the safe-area top: `size.global.titleTop` | 64 | 64 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
-| match | title leading inset (ink): `size.global.screenMargin` | 16 | 17.5 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… | the first glyph's side bearing (≈ 1 dp) is inside the measure |
+| match | title leading inset (ink): `size.global.screenMargin` | 16 | 17 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… | the first glyph's side bearing (≈ 1 dp) is inside the measure |
 | match | page: `color.global.background.android` | #FFFFFF | #FFFFFF | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Retro palett… |  |
 | match | field height: `size.global.fieldHeight` | 52 | 52 | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
 | match | field side inset: `size.global.screenMargin` | 16 | 16 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match | field corner radius: `radius.global.field` | 19 | 18.92 | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
 | match | field fill: `color.global.control` | #F1F1F1 | #F1F1F1 | light: references/auto/retro/store/retro-store-01.png (850–1030,870–1130) 104 s… |  |
-| MISS | Next: capsule found: `size.global.buttonHeight` | 60 | — | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png y2032–2211 (180… |  |
+| match | Next height: `size.global.buttonHeight` | 60 | 60 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png y2032–2211 (180… |  |
+| match | Next side inset: `size.global.buttonMarginH` | 20 | 20.5 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
+| match | Next corner radius: `radius.global.button` | 30 | 29.03 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png, references/aut… |  |
+| match | Next fill: `color.global.accent` | #000000 | #000000 | light: references/auto/retro/press/tc-2023-07-retro-1b.webp Accept col x=1550 y… |  |
+| match | Next bottom gap: `size.global.buttonMarginH` | 20 | 20 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
 
 ## Tokens named in the spec
 
@@ -31,7 +35,7 @@ States rendered (`android/feature/account/src/test/snapshots/auth.code/`): `defa
 | match (token) | `color.global.background` | light: #FFFFFF; dark: #000000 | Tokens.Colors.globalBackground | light: references/auto/retro/store/retro-store-02.png box (600–606,1700–1706); … |  |
 | match (token) | `icon.global.back` | AutoMirrored.Rounded.ArrowBackIos | Tokens.Icons.globalBack | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
 | match (token) | `size.global.backInset` | 21.1 pt | Tokens.Sizes.globalBackInset | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
-| match (token) | `font.global.display` | serif | Tokens.Fonts.globalDisplay | Retro's display face: Roslindale Retro v0.2 (+ Display Narrow, Deck Narrow), Da… |  |
+| match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |
 | match (token) | `color.global.textPrimary` | light: #000000; dark: #FFFFFF | Tokens.Colors.globalTextPrimary | light: references/auto/retro/store/retro-store-02.png info row 'Weeks Posted' d… |  |
 | match (token) | `size.global.screenMargin` | 16 pt | Tokens.Sizes.globalScreenMargin · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match (token) | `size.global.titleTop` | 64 pt | Tokens.Sizes.globalTitleTop · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
@@ -39,7 +43,7 @@ States rendered (`android/feature/account/src/test/snapshots/auth.code/`): `defa
 | match (token) | `size.global.titleToContent` | 30 pt | Tokens.Sizes.globalTitleToContent | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match (behaviour) | `auth.code.layout.codeField` | one TextField, KeyboardType.NumberPassword with visualTransformation None, autofill Conte… | one FormTextField, KeyboardType.NumberPassword, ContentType.SmsOtpCode; SMS User Consent fills it | docs/PLATFORM_CONSTRAINTS.md §7 (https://developer.apple.com/documentation/secu… |  |
 | match (token) | `size.global.sectionHeaderToContent` | 11.7 pt | Tokens.Sizes.globalSectionHeaderToContent | references/auto/retro/store/retro-store-02.png baseline 1313 → strip 1341 (also… |  |
-| match (token) | `size.global.buttonMarginH` | 20 pt | Tokens.Sizes.globalButtonMarginH | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
+| match (token) | `size.global.buttonMarginH` | 20 pt | Tokens.Sizes.globalButtonMarginH · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
 | match (token) | `color.global.textTertiary` | light: #C1C1C1; dark: #FFFFFF4D | Tokens.Colors.globalTextTertiary | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt vv3.p #C1C1C1… |  |
 | match (token) | `auth.code.duration.resendLock` | 60000 ms | Tokens.Durations.authCodeDurationResendLock | https://supabase.com/docs/guides/auth/phone-login ('By default, a user can only… |  |
 | match (behaviour) | `easing.global.native` | sheet: system (.sheet / ModalBottomSheet) — measured on Retro: spring.global.sheetPresent… | Navigation Compose transitions, M3 ModalBottomSheet / AlertDialog / Switch keep the system motion | references/auto/retro/video/retro-motion-measurements.txt §A, §C (sheet = UIKit… | PLATFORM curve: nothing to set |

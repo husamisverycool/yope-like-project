@@ -44,4 +44,5 @@ polish and spec precision, and Apple's design language is already the platform l
   We copy values and patterns, never its name, wordmark, icon, illustrations or font files. Owner's
   own name, icon and (ideally) a licensed display face keep the product distinct.
 - Retro's display face is Roslindale (DJR). Until the owner licenses it (or picks another licensed
-  face), the display role uses the platform serif (New York on iOS, Noto Serif on Android) — PLATFORM.
+  face), the display roles use two static instances of Roboto Serif (SIL OFL) matched to Retro's two
+  display cuts by measured glyph features (MERGE_DECISIONS L-8).

@@ -77,10 +77,9 @@ export const VIEWPORTS: Record<Layout, Parameters<Browser["newContext"]>[0]> = {
   desktop: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, userAgent: DESKTOP },
 };
 
-/** Chromium with the bundled faces visible to it (web/assets/fonts/fonts.conf: "Noto Serif" — Android's serif, named
- *  in the display stack — then the system fonts), so renders on a Linux runner show a platform serif. */
+/** Chromium (PLAYWRIGHT_BROWSERS_PATH). The headline face comes from the page itself (/fonts/, @font-face). */
 export async function launch(): Promise<Browser> {
-  return chromium.launch({ env: { ...process.env, FONTCONFIG_FILE: path.join(ROOT, "web/assets/fonts/fonts.conf") } });
+  return chromium.launch();
 }
 
 export async function open(browser: Browser, layout: Layout, scheme: Scheme): Promise<{ context: BrowserContext; page: Page }> {
@@ -94,6 +93,7 @@ export async function open(browser: Browser, layout: Layout, scheme: Scheme): Pr
 export async function load(page: Page, url: string): Promise<number> {
   const res = await page.goto(url, { waitUntil: "networkidle" });
   await page.evaluate(() => Promise.all([...document.images].map((i) => (i.complete ? null : new Promise((r) => (i.onload = i.onerror = r))))));
+  await page.evaluate(() => document.fonts.ready.then(() => undefined)); // the served headline face (font-display: swap)
   return res?.status() ?? 0;
 }
 

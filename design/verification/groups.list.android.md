@@ -15,7 +15,7 @@ States rendered (`android/feature/account/src/test/snapshots/groups.list/`): `de
 | status | token / copy | expected (spec) | ours | reference evidence | note |
 |---|---|---|---|---|---|
 | match | title baseline below the safe-area top: `size.global.titleTop` | 64 | 64 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
-| match | title leading inset (ink): `size.global.screenMargin` | 16 | 18.5 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… | the serif capital's side bearing at 40 sp (≈ 2.5 dp) is inside the measure |
+| match | title leading inset (ink): `size.global.screenMargin` | 16 | 17.5 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… | the serif capital's side bearing at 40 sp (≈ 2.5 dp) is inside the measure |
 | match | cover thumbnail height: `size.global.rowThumbHeight` | 97 | 97 | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
 | match | cover thumbnail width: `size.global.rowThumbWidth` | 72 | 72 | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
 | match | thumbnail leading inset: `size.global.screenMargin` | 16 | 16 | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
@@ -28,7 +28,7 @@ States rendered (`android/feature/account/src/test/snapshots/groups.list/`): `de
 | match (behaviour) | `groups.list.layout.tabBar` | component: design/components.md C-04 (icon-only, evenly distributed, page-coloured, no ha… | shell ShellTabBar → core:ui TabBar (C-04): camera, home, walls, me icons; over media on the camera | design/components.md C-04; design/research/retro-visual.md §3.6 (Home house, Fr… |  |
 | match (token) | `icon.global.newAlbum` | Outlined.LibraryAdd | Tokens.Icons.globalNewAlbum | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
 | match (token) | `color.global.background` | light: #FFFFFF; dark: #000000 | Tokens.Colors.globalBackground | light: references/auto/retro/store/retro-store-02.png box (600–606,1700–1706); … |  |
-| match (token) | `font.global.display` | serif | Tokens.Fonts.globalDisplay | Retro's display face: Roslindale Retro v0.2 (+ Display Narrow, Deck Narrow), Da… |  |
+| match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |
 | match (token) | `color.global.textPrimary` | light: #000000; dark: #FFFFFF | Tokens.Colors.globalTextPrimary | light: references/auto/retro/store/retro-store-02.png info row 'Weeks Posted' d… |  |
 | match (token) | `size.global.screenMargin` | 16 pt | Tokens.Sizes.globalScreenMargin · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match (token) | `size.global.titleTop` | 64 pt | Tokens.Sizes.globalTitleTop · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |

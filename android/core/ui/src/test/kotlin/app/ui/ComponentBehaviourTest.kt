@@ -29,6 +29,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.designsystem.LocalDsDarkTheme
 import app.designsystem.generated.Tokens
+import app.designsystem.toFontFamily
 import app.ui.components.CircleIconButton
 import app.ui.components.HeaderIconButton
 import app.ui.components.PrimaryButton
@@ -176,12 +177,26 @@ class ComponentBehaviourTest {
         assertTrue(body.fontSize.isSp)
     }
 
-    @Test fun displayRolesUseTheDisplayFamily() {
+    @Test fun displayRolesUseTheBundledDisplayFaces() {
         var header: TextStyle? = null
-        compose.setContent { header = TextRoles.headerTitle }
+        var headline: TextStyle? = null
+        var title: androidx.compose.ui.text.font.FontFamily? = null
+        var narrow: androidx.compose.ui.text.font.FontFamily? = null
+        compose.setContent {
+            header = TextRoles.headerTitle
+            headline = TextRoles.displayMedium
+            title = Tokens.Fonts.globalDisplay.toFontFamily()
+            narrow = Tokens.Fonts.globalDisplayNarrow.toFontFamily()
+        }
         compose.waitForIdle()
-        assertEquals(androidx.compose.ui.text.font.FontFamily.Serif, header!!.fontFamily)
+        // Both faces are bundled under res/font (L-8), so they resolve to resource fonts, not a device family.
+        assertTrue(Tokens.Fonts.globalDisplay is app.designsystem.DSFontFamily.Custom)
+        assertTrue(Tokens.Fonts.globalDisplayNarrow is app.designsystem.DSFontFamily.Custom)
+        assertEquals(title, header!!.fontFamily)
+        assertEquals(narrow, headline!!.fontFamily)
+        assertTrue(title != narrow)
         assertEquals(Tokens.FontSizes.globalHeaderTitle, header!!.fontSize)
         assertEquals(Tokens.LineHeights.globalHeaderTitle, header!!.lineHeight)
+        assertEquals(Tokens.FontSizes.globalDisplayMedium, headline!!.fontSize)
     }
 }

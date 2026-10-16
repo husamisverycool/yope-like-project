@@ -41,24 +41,26 @@ enum TextRole {
         DSTextStyle(family: family, size: size, weight: weight, relativeTo: Font.TextStyle(tokenName: style), lineHeight: lineHeight)
     }
 
-    // MARK: Display (serif, `font.global.display`)
+    // MARK: Display (serif: `font.global.display` titles, `font.global.displayNarrow` headlines — MERGE L-8)
 
     /// Display serif screen title ('Week 43', 'Albums', a profile name; the date title on full-bleed photos):
-    /// `fontSize.global.headerTitle` 40 / `lineHeight.global.headerTitle` 48, regular (C-01, C-02, C-19, C-35).
+    /// `font.global.display`, `fontSize.global.headerTitle` 43 / `lineHeight.global.headerTitle` 48, regular
+    /// (C-01, C-02, C-19, C-35).
     static let headerTitle = role(
         Tokens.FontSizes.globalHeaderTitle, Tokens.FontWeights.fontWeightGlobalHeaderTitle, Tokens.Layouts.GlobalTextStyleMap.headerTitle,
         family: Tokens.Fonts.globalDisplay, lineHeight: Tokens.LineHeights.globalHeaderTitle
     )
-    /// Display serif headline on cards, sheets and onboarding (`fontSize.global.displayMedium` 32, regular; C-33).
+    /// Narrow display serif headline on cards, sheets and onboarding (`font.global.displayNarrow`,
+    /// `fontSize.global.displayMedium` 34.4, regular; C-33).
     static let displayMedium = role(
         Tokens.FontSizes.globalDisplayMedium, Tokens.FontWeights.fontWeightGlobalDisplayMedium, Tokens.Layouts.GlobalTextStyleMap.displayMedium,
-        family: Tokens.Fonts.globalDisplay
+        family: Tokens.Fonts.globalDisplayNarrow
     )
-    /// Small display serif: recap month cards, album titles on covers, the recap year (`fontSize.global.displaySmall`
-    /// 24, regular; C-34).
+    /// Small narrow display serif: recap month cards, album titles on covers, the recap year
+    /// (`font.global.displayNarrow`, `fontSize.global.displaySmall` 25.8, regular; C-34).
     static let displaySmall = role(
         Tokens.FontSizes.globalDisplaySmall, Tokens.FontWeights.fontWeightGlobalDisplaySmall, Tokens.Layouts.GlobalTextStyleMap.displaySmall,
-        family: Tokens.Fonts.globalDisplay
+        family: Tokens.Fonts.globalDisplayNarrow
     )
 
     // MARK: UI text (`font.global.family`)

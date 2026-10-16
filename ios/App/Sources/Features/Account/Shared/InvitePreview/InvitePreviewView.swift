@@ -10,9 +10,9 @@ import SwiftUI
 /// Text styles of the card (`invite.web.*` + `global.*`). Dynamic Type: headline `largeTitle`, line `subheadline`,
 /// pill `headline` (invite.appclip Accessibility); the footer scales with `caption2`.
 enum InviteCardStyle {
-    /// `font.global.display`, `fontSize.global.displayMedium` (32) / `invite.web.lineHeight.headline` (32), regular.
+    /// `font.global.displayNarrow`, `fontSize.global.displayMedium` (34.4) / `invite.web.lineHeight.headline` (32), regular.
     static let headline = DSTextStyle(
-        family: Tokens.Fonts.globalDisplay,
+        family: Tokens.Fonts.globalDisplayNarrow,
         size: Tokens.FontSizes.globalDisplayMedium,
         weight: Tokens.FontWeights.fontWeightGlobalDisplayMedium,
         relativeTo: Font.TextStyle(tokenName: Tokens.Layouts.GlobalTextStyleMap.displayMedium),

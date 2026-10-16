@@ -14,6 +14,7 @@
 // `@media (max-width: invite.web.size.breakpoint)` turns it into the mobile card.
 
 import { cssColor, cssEasing, cssFontStack, cssWeight, inviteBackdrop, num, px } from "../design.js";
+import { fontFace } from "../fonts.js";
 
 const capsule = (height: string) => `calc(${height} / 2)`; // radius.global.capsule: "height / 2"
 
@@ -31,6 +32,7 @@ export function pageCss(): string {
   const sigmaVw = `calc(${backdrop.blurSigmaToWidth} * (100vw - 2 * ${px("invite.web.size.cardInset")}))`;
   const bleedRule = (sigma: string) => `top:calc(-3 * ${sigma});left:calc(-3 * ${sigma});width:calc(100% + 6 * ${sigma});height:calc(100% + 6 * ${sigma});filter:blur(${sigma})`;
   return `
+${fontFace("font.global.displayNarrow", cssWeight("fontWeight.global.displayMedium"))}
 :root{color-scheme:light}
 *,*::before,*::after{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -50,7 +52,7 @@ img{display:block}
 .qr{display:block;width:${px("invite.web.size.qrDesktop")};height:${px("invite.web.size.qrDesktop")};color:${cssColor("color.global.textPrimary")}}
 .avatar{width:${px("invite.web.size.avatarDesktop")};height:${px("invite.web.size.avatarDesktop")};border-radius:50%;object-fit:cover;background:${cssColor("invite.web.color.avatarPlaceholder")}}
 .text{display:flex;flex-direction:column;align-items:center;margin-bottom:${px("invite.web.size.bodyToQrDesktop")}}
-.headline{margin-top:${px("invite.web.size.headlineTopDesktop")};font-family:${cssFontStack("font.global.display")};font-size:${px("invite.web.fontSize.headlineDesktop")};font-weight:${cssWeight("fontWeight.global.displayMedium")};line-height:1;color:${cssColor("color.global.textPrimary")}}
+.headline{margin-top:${px("invite.web.size.headlineTopDesktop")};font-family:${cssFontStack("font.global.displayNarrow")};font-size:${px("invite.web.fontSize.headlineDesktop")};font-weight:${cssWeight("fontWeight.global.displayMedium")};line-height:1;color:${cssColor("color.global.textPrimary")}}
 .line{margin-top:${px("invite.web.size.headlineToBody")};max-width:${px("invite.web.size.bodyMaxWidthDesktop")};font-size:${px("invite.web.fontSize.bodyDesktop")};line-height:${px("invite.web.lineHeight.bodyDesktop")};letter-spacing:${px("invite.web.letterSpacing.body")};color:${cssColor("invite.web.color.bodyDesktop")}}
 .link{display:inline-block;font-size:${px("fontSize.global.textButton")};font-weight:${cssWeight("fontWeight.global.textButton")};color:${cssColor("color.global.textPrimary")}}
 .footer{margin:auto ${px("invite.web.size.footerMargin")} ${px("invite.web.size.footerMargin")};font-size:${px("fontSize.global.caption")};font-weight:${cssWeight("fontWeight.global.caption")};line-height:${px("lineHeight.global.caption")};color:${cssColor("invite.web.color.bodyDesktop")}}

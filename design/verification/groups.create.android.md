@@ -38,7 +38,7 @@ States rendered (`android/feature/account/src/test/snapshots/groups.create/`): `
 | match (token) | `color.global.control` | light: #F1F1F1; dark: #262626 | Tokens.Colors.globalControl · measured above | light: references/auto/retro/store/retro-store-01.png (850–1030,870–1130) 104 s… |  |
 | match (token) | `icon.global.close` | Rounded.Close | Tokens.Icons.globalClose | references/auto/retro/store/retro-store-03.png, references/auto/retro/lazyweb/r… |  |
 | match (token) | `size.global.titleToContent` | 30 pt | Tokens.Sizes.globalTitleToContent | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
-| match (token) | `font.global.display` | serif | Tokens.Fonts.globalDisplay | Retro's display face: Roslindale Retro v0.2 (+ Display Narrow, Deck Narrow), Da… |  |
+| match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |
 | match (token) | `size.global.listGap` | 22.5 pt | Tokens.Sizes.globalListGap | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
 | match (token) | `groups.screen.size.coverWidth` | 173.5 pt | Tokens.Sizes.groupsScreenSizeCoverWidth · measured above | references/auto/retro/press/tc-2024-04-journals-1.webp phone 3 (album detail 'C… |  |
 | match (token) | `radius.global.thumbnail` | 4 pt | Tokens.Radii.globalThumbnail | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |

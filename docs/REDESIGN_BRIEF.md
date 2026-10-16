@@ -39,8 +39,8 @@ viewers stay dark in both appearances only if Retro's own equivalent does (recor
 
 ## Type
 Retro uses a serif display face for titles ("Week 27", profile names) and a sans for UI text. The
-display role's family token is `{"ios": "system-serif", "android": "serif"}` (PLATFORM: New York /
-Noto Serif) with `notes` naming Retro's face (Roslindale, David Jonathan Ross — commercial licence;
+display role's family token was first the platform serif (New York / Noto Serif); since L-8 the two display
+roles are bundled Roboto Serif instances matched to Retro's cuts, with `notes` naming Retro's face (Roslindale, David Jonathan Ross — commercial licence;
 OWNER_SETUP lists the purchase). Sizes, weights, tracking and line heights are Retro's measured values.
 UI text follows Retro's package (`design/research/retro-package-copy-motion.md`): SF Pro on iOS
 (`"system"`), **Inter Variable on Android** (SIL OFL — bundle the font file from the official

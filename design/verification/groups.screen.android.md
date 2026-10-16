@@ -48,7 +48,7 @@ Memory entries (memory pass APIs `OnThisDayEntry`, `YearStoryEntry`, `BirthdayRe
 | match (token) | `icon.global.group` | Outlined.Group | Tokens.Icons.globalGroup | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png; glyph tab… |  |
 | match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |
 | match (token) | `groups.screen.size.coverToTitle` | 36.7 pt | Tokens.Sizes.groupsScreenSizeCoverToTitle · measured above | references/auto/retro/press/tc-2024-04-journals-1.webp phone 3: cover ink botto… |  |
-| match (token) | `font.global.display` | serif | Tokens.Fonts.globalDisplay | Retro's display face: Roslindale Retro v0.2 (+ Display Narrow, Deck Narrow), Da… |  |
+| match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |
 | match (token) | `color.global.textPrimary` | light: #000000; dark: #FFFFFF | Tokens.Colors.globalTextPrimary | light: references/auto/retro/store/retro-store-02.png info row 'Weeks Posted' d… |  |
 | match (token) | `groups.screen.size.titleToMeta` | 16 pt | Tokens.Sizes.groupsScreenSizeTitleToMeta | references/auto/retro/press/tc-2024-04-journals-1.webp phone 3: title ink botto… |  |
 | match (token) | `size.global.avatarSmall` | 22.6 pt | Tokens.Sizes.globalAvatarSmall | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |

@@ -37,12 +37,16 @@ Placeholders used below:
      (smaller display text), with an **app-embedding licence for iOS and Android** (and a web licence
      if the invite page should match). Retro's own "Roslindale Retro v0.2" cut is custom and only DJR
      can offer it. Send back the licensed font files (`.otf` / `.ttf`) and the licence text; we bundle
-     them and set `font.global.display` (design/tokens/global.json) to their names — every display
-     size is already Retro's.
-   - **Keep the platform serif** (New York on iOS, Noto Serif on Android — free, already in place).
-     The titles keep Retro's sizes but look like the system serif, not Retro's face.
+     them and set `font.global.display` / `font.global.displayNarrow` (design/tokens/global.json) to their
+     names.
+   - **Keep the free stand-ins** (already in place): two static instances of Roboto Serif (Google, SIL
+     Open Font License) whose width, weight, x-height and ink were matched to Retro's two display cuts
+     by measurement (design/MERGE_DECISIONS.md L-8) — "Roboto Serif Title" for screen titles and
+     "Roboto Serif Headline" for headlines. Close to Retro's look; not Roslindale's letterforms.
    - Or name **another licensed display serif** you prefer (same steps as the first option).
-   Until you decide, the platform serif ships. (The UI text face needs nothing from you: SF Pro is
+   Until you decide, the Roboto Serif stand-ins ship (licences bundled next to the font files). If you license
+   Roslindale, also set the display sizes back to Retro's (40 / 32 / 24; the stand-in sizes are re-fitted to
+   Roboto Serif's smaller cap height). (The UI text face needs nothing from you: SF Pro is
    the iPhone's own font and Inter, used on Android, is free under the SIL Open Font License —
    bundled with its licence at `android/core/designsystem/licenses/Inter-OFL.txt`.)
 

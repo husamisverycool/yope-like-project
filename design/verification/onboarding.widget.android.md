@@ -32,7 +32,7 @@ States rendered (`android/feature/account/src/test/snapshots/onboarding.widget/`
 | match (token) | `onboarding.widget.size.preview` | 158 pt | Tokens.Sizes.onboardingWidgetSizePreview · measured above | references/auto/retro/apk/widget_preview_friends.webp (158 × 158 px at mdpi = 1… |  |
 | match (token) | `onboarding.widget.radius.preview` | 22 pt | Tokens.Radii.onboardingWidgetRadiusPreview | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Glance widge… |  |
 | match (token) | `color.global.background` | light: #FFFFFF; dark: #000000 | Tokens.Colors.globalBackground | light: references/auto/retro/store/retro-store-02.png box (600–606,1700–1706); … |  |
-| match (token) | `font.global.display` | serif | Tokens.Fonts.globalDisplay | Retro's display face: Roslindale Retro v0.2 (+ Display Narrow, Deck Narrow), Da… |  |
+| match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |
 | match (token) | `size.global.titleTop` | 64 pt | Tokens.Sizes.globalTitleTop · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |
 | match (token) | `size.global.titleToContent` | 30 pt | Tokens.Sizes.globalTitleToContent | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |

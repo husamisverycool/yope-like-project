@@ -1,5 +1,8 @@
 // Value types referenced by generated `Tokens.Shadows`, `Tokens.Haptics` and `Tokens.Fonts`.
 import SwiftUI
+#if canImport(CoreText)
+import CoreText
+#endif
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -101,8 +104,27 @@ public enum DSFontFamily: Hashable, Sendable {
         case .systemSerif:
             return .system(size: size, weight: weight, design: .serif) // provenance-ok: size and weight are token parameters
         case let .custom(name):
+            DSBundledFonts.registerOnce()
             return .custom(name, fixedSize: size).weight(weight)
         }
+    }
+}
+
+/// The font files bundled in this package's `Fonts/` folder (the display faces of `font.global.display` and
+/// `font.global.displayNarrow`, SIL OFL — Fonts/SOURCE.txt). They are registered for the process the first time a
+/// `.custom` family is drawn or measured, so every target linking DesignSystem (app, widgets, App Clip, tests) has
+/// them without Info.plist entries.
+public enum DSBundledFonts {
+    private static let registration: Void = {
+        #if canImport(CoreText)
+        let urls = (Bundle.module.urls(forResourcesWithExtension: "ttf", subdirectory: "Fonts") ?? [])
+        CTFontManagerRegisterFontURLs(urls as CFArray, .process, true, nil)
+        #endif
+    }()
+
+    /// Registers the bundled fonts; later calls do nothing.
+    public static func registerOnce() {
+        _ = registration
     }
 }
 

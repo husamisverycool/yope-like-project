@@ -88,8 +88,6 @@ interface AccountBackend {
     suspend fun media(ids: Collection<String>): List<Media>
     suspend fun post(postId: String): Post?
     fun groupEvents(groupId: String): Flow<GroupEvent>
-    /** The newest ready weekly recap of [groupId] (groups.screen recap circle), or null. */
-    suspend fun latestRecapId(groupId: String): String?
 
     // Settings (§5.21) ----------------------------------------------------------------------------
     suspend fun notificationSettings(): NotificationSettings?

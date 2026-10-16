@@ -256,7 +256,6 @@ class FakeAccountBackend(val now: Instant = Instant.parse("2026-10-15T17:00:00Z"
     override suspend fun media(ids: Collection<String>): List<Media> = ids.mapNotNull(media::get)
     override suspend fun post(postId: String): Post? = posts.values.flatten().firstOrNull { it.id == postId }
     override fun groupEvents(groupId: String): Flow<GroupEvent> = events
-    override suspend fun latestRecapId(groupId: String): String? = null
 
     // Settings --------------------------------------------------------------------------------------
     override suspend fun notificationSettings(): NotificationSettings? = notificationSettings.also { call("notificationSettings") }

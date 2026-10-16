@@ -3,13 +3,13 @@
   "tokens": {
     "auth.phone.fontSize.wordmark": {
       "type": "fontSize",
-      "value": 64,
+      "value": 71.4,
       "unit": "pt",
       "source_app": "Retro",
       "surface": "auth.phone",
       "element": "the app's name set in the display serif (font.global.display) where Retro's landing shows its wordmark, centred above the tagline",
       "evidence": "references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css (.page_largeRetroWordmark font-size 4rem = 64 px under the 840 px breakpoint, Roslindale Retro Web 400); references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png wordmark ink y 1025–1176 (50.7 pt cap at 3.000 px/pt)",
-      "method": "CSS constant of Retro's own mobile wordmark; cap height on the RAW landing agrees (50.7 pt ÷ 0.79 cap ratio ≈ 64 pt)",
+      "method": "CSS constant of Retro's own mobile wordmark; cap height on the RAW landing agrees (50.7 pt ÷ 0.79 cap ratio ≈ 64 pt); re-fitted to the bundled face (L-8): the RAW cap 50.7 pt ÷ Roboto Serif Title's cap/em 0.71 = 71.4 pt",
       "level": "SOURCED",
       "precision": "±1 pt",
       "notes": "Only the size and role are sourced: the wordmark itself is the owner's (config/app.json displayName or a logo, BLOCKED until set). Retro's wordmark, its 3-D 'R' mark and Roslindale files are do-not-copy."

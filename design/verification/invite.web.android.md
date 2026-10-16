@@ -36,8 +36,8 @@ States rendered (`android/feature/account/src/test/snapshots/invite.web/`): `and
 | match (token) | `color.global.backgroundDeep` | #000000 | Tokens.Colors.globalBackgroundDeep | references/auto/retro/press/tc-2023-12-retro3.png phone 1: black viewer under a… |  |
 | match (token) | `invite.web.size.avatar` | 112 pt | Tokens.Sizes.inviteWebSizeAvatar | design/research/retro-package-copy-motion.md §7 (/u/[username] mobile: avatar 1… |  |
 | match (token) | `invite.web.color.avatarPlaceholder` | #EDEDED | Tokens.Colors.inviteWebColorAvatarPlaceholder | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css .page_profilePicture{b… |  |
-| match (token) | `font.global.display` | serif | Tokens.Fonts.globalDisplay | Retro's display face: Roslindale Retro v0.2 (+ Display Narrow, Deck Narrow), Da… |  |
-| match (token) | `fontSize.global.displayMedium` | 32 pt | Tokens.FontSizes.globalDisplayMedium | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'FONT FAMILY … |  |
+| match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |
+| match (token) | `fontSize.global.displayMedium` | 34.4 pt | Tokens.FontSizes.globalDisplayMedium | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'FONT FAMILY … |  |
 | match (token) | `invite.web.lineHeight.headline` | 32 pt | Tokens.LineHeights.inviteWebLineHeightHeadline | design/research/retro-package-copy-motion.md §7; references/auto/retro/web/retr… |  |
 | match (token) | `invite.web.size.textMaxWidth` | 260 pt | Tokens.Sizes.inviteWebSizeTextMaxWidth | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css .page_mobileProfilePag… |  |
 | match (token) | `invite.web.size.headlineToBody` | 16 pt | Tokens.Sizes.inviteWebSizeHeadlineToBody | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css .page_mobileProfilePag… |  |
@@ -62,7 +62,7 @@ States rendered (`android/feature/account/src/test/snapshots/invite.web/`): `and
 | match (token) | `invite.web.size.footerMargin` | 18 pt | Tokens.Sizes.inviteWebSizeFooterMargin | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css .page_mobileInviteFoot… |  |
 | n/a | `invite.web.size.qrDesktop` | 250 pt | desktop layout | references/auto/retro/web/retro.app-web-copy-excerpts.txt computed styles (QR s… | web pass |
 | n/a | `invite.web.size.avatarDesktop` | 70 pt | desktop layout | references/auto/retro/web/retro.app-web-copy-excerpts.txt computed styles (/u/n… | web pass |
-| n/a | `invite.web.fontSize.headlineDesktop` | 48 pt | desktop layout | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css .page_newProfilePageCo… | web pass |
+| n/a | `invite.web.fontSize.headlineDesktop` | 51.5 pt | desktop layout | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css .page_newProfilePageCo… | web pass |
 | n/a | `invite.web.size.headlineTopDesktop` | 70 pt | desktop layout | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css .page_newProfilePageCo… | web pass |
 | n/a | `invite.web.fontSize.bodyDesktop` | 20 pt | desktop layout | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css .page_newProfilePageCo… | web pass |
 | n/a | `invite.web.lineHeight.bodyDesktop` | 28 pt | desktop layout | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css (140 % of 20 px); refe… | web pass |

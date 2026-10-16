@@ -26,7 +26,7 @@ every migration, including the worker's:
 docker build -f backend/worker/Dockerfile -t worker .
 ```
 
-- Base image `node:22-slim` + Debian `ffmpeg` (libx264, AAC) + `fontconfig`; Noto Serif and Inter (SIL OFL)
+- Base image `node:22-slim` + Debian `ffmpeg` (libx264, AAC) + `fontconfig`; Roboto Serif Headline and Inter (SIL OFL)
   are vendored in `backend/worker/fonts/` (see `SOURCE.txt`).
 - Docker Hub rate limits: `--build-arg NODE_IMAGE=public.ecr.aws/docker/library/node:22-slim`.
 - Behind a TLS-intercepting proxy: `--build-arg HTTPS_PROXY=… --secret id=build_ca,src=<ca.pem>`.
@@ -78,7 +78,7 @@ Without the APNs or FCM values the worker runs and skips that platform's pushes 
 | `SCHEDULER_INTERVAL_MS` | 60000 | scheduler tick (invitations are additionally dispatched exactly at `fires_at` by a timer) |
 | `SHUTDOWN_GRACE_MS` | 25000 | how long running jobs may finish on SIGTERM |
 | `MODERATION_WEBHOOK_URL` | unset | where `moderation.report` POSTs reports (docs/API.md §12.19); unset = logged, reports stay `open` |
-| `FONTS_DIR`, `DESIGN_DIR` | image paths | Noto Serif / Inter files; design folder with `proposals/` and `copy-patterns.md` |
+| `FONTS_DIR`, `DESIGN_DIR` | image paths | Roboto Serif Headline / Inter files; design folder with `proposals/` and `copy-patterns.md` |
 | `APNS_ORIGIN`, `APNS_MANAGE_ORIGIN`, `FCM_ORIGIN` | Apple / Google hosts | test or staging overrides only |
 
 ### Everything else in OWNER_SETUP.md (not worker variables)

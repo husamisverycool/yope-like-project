@@ -5,6 +5,7 @@
 //   GET /i/:token/avatar/:n.jpg   member n's avatar, re-encoded
 //   GET /i/:token/og.png          600×600 link-preview image (invite.web.layout.ogImage)
 //   GET /i/:token/preview.json    the same preview for the App Clip and the apps before joining
+//   GET /fonts/:file              the page's bundled display face (WOFF2, immutable)
 //   GET /.well-known/apple-app-site-association, /.well-known/assetlinks.json
 //   GET /privacy, /terms          redirect to the owner's documents (404 until configured)
 //   GET /healthz
@@ -13,6 +14,7 @@ import { randomBytes } from "node:crypto";
 import { Hono, type Context } from "hono";
 import { appClipBundleId, type Config } from "./config.js";
 import { cardPairs } from "./contrastReport.js";
+import { fontFile } from "./fonts.js";
 import type { InviteService, LoadedInvite } from "./inviteService.js";
 import { detectPlatform, getAppUrl, letsGoUrl } from "./platform.js";
 import { clientAddress, RateLimiter } from "./rateLimit.js";
@@ -72,7 +74,7 @@ export function createApp(deps: AppDeps): Hono {
 
   // script-src: the one inline script (the "Let's go" busy state), by nonce like the stylesheet.
   const pageCsp = (nonce: string) =>
-    `default-src 'none'; img-src 'self'; style-src 'nonce-${nonce}'; script-src 'nonce-${nonce}'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'` +
+    `default-src 'none'; img-src 'self'; font-src 'self'; style-src 'nonce-${nonce}'; script-src 'nonce-${nonce}'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'` +
     (production ? "; upgrade-insecure-requests" : "");
 
   function html(c: Context, status: number, body: string, nonce: string, cache: string) {
@@ -207,6 +209,13 @@ export function createApp(deps: AppDeps): Hono {
       200,
       { "Cache-Control": `private, max-age=${ttl}` },
     );
+  });
+
+  // ---------- the page's served face ----------
+  app.get("/fonts/:file", (c) => {
+    const body = fontFile(c.req.param("file"));
+    if (!body) return state(c, "not_found", 404);
+    return c.body(new Uint8Array(body), 200, { "Content-Type": "font/woff2", "Cache-Control": "public, max-age=31536000, immutable" });
   });
 
   // ---------- association files ----------

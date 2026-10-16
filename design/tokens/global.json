@@ -620,28 +620,42 @@
       "notes": "Android bundles the identical file from the official rsms/inter v4.1 build as android/core/designsystem/src/main/res/font/inter.ttf (licence android/core/designsystem/licenses/Inter-OFL.txt); DSFontFamily.Custom(\"Inter\") resolves resource name 'inter'. To get Inter's weights from the variable axis (W450, W600) the family must declare one Font per weight with FontVariation.weight — Pass 3 (MERGE_DECISIONS R-9)."
     },
     "font.global.display": {
-      "level": "PLATFORM",
-      "source_app": "Apple HIG / Material 3",
+      "level": "SOURCED",
+      "source_app": "Retro",
       "surface": "global",
       "type": "font",
       "value": {
-        "ios": "system-serif",
-        "android": "serif"
+        "ios": "RobotoSerifTitle-Regular",
+        "android": "roboto_serif_title"
       },
-      "element": "display serif for screen titles ('Week 27', 'Albums', profile name), the date title on Rewind, recap month cards and headlines: New York on iOS, Noto Serif on Android",
-      "evidence": "Retro's display face: Roslindale Retro v0.2 (+ Display Narrow, Deck Narrow), David Jonathan Ross, commercial, fsType 4 — references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'BUNDLED FONT FILES', design/research/retro-package-copy-motion.md §2.2–§2.4; serif titles in references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png, references/auto/retro/store/retro-store-01.png, references/auto/retro/store/retro-store-02.png, references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png, references/auto/retro/press/tc-2025-12-rewind-device-a.png — design/research/retro-visual.md §3.3",
-      "method": "platform serif until the owner licenses a display face (docs/OWNER_SETUP.md §0)",
-      "notes": "Retro's face is Roslindale (DJR): Roslindale Display Narrow / Deck Narrow are retail styles at djr.com/roslindale; the 'Retro v0.2' cut is custom. Never bundle Retro's font files. When licensed, set ios to the PostScript name and android to the bundled resource name; the sizes below are already Retro's."
+      "element": "display serif for screen titles ('Week 27', 'Albums', profile name), the date title on full-bleed photos ('May 1, 2019') and the landing wordmark — Retro's Roslindale Retro role; bundled static instance of Roboto Serif (SIL OFL) named Roboto Serif Title",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' (RAW, 3 px/pt) and references/auto/retro/lazyweb/retro-lazyweb-20260528-week22-dark-a.png 'Week 22': cap 92 px, ink width 375 px, x-height 66 px, 'e' 47 × 66 px at 59 % ink — MERGE_DECISIONS L-8",
+      "method": "closest OFL face by measured glyph features at equal cap height (ink width of the title, 'Week', 'e' and '4', x-height, ascender, ink coverage of 'e' and '4'; 15 OFL serifs with their variable axes searched): Roboto Serif at wdth 50, opsz 120, wght 530, GRAD 100 scores 0.038 mean relative error (the platform serif Noto Serif 0.241: 36 % too wide); instanced with fontTools and renamed",
+      "notes": "Retro's face is Roslindale Retro (DJR, commercial; never bundle Retro's files). If the owner licenses Roslindale, set ios / android to it and set the display sizes back to Retro's em sizes (40 / 32 / 24): the sizes below are re-fitted to this face's cap/em 0.71 (Roslindale 0.7625) so cap heights equal Retro's."
+    },
+    "font.global.displayNarrow": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global",
+      "type": "font",
+      "value": {
+        "ios": "RobotoSerifHeadline-Regular",
+        "android": "roboto_serif_headline"
+      },
+      "element": "narrow display serif for headlines on cards, sheets, onboarding and the invite page, recap month cards and album titles (text roles displayMedium, displaySmall) — Retro's Roslindale Display Narrow role; bundled static instance of Roboto Serif (SIL OFL) named Roboto Serif Headline",
+      "evidence": "references/auto/retro/web/retro.app-u-nathan-iphone.png 'Nathan Invited You!' (Roslindale Display Narrow, 32 px at 3×): cap 73 px, ink width 729 px, x-height 50 px — design/research/retro-package-copy-motion.md §2.3 (Display Narrow roles) — MERGE_DECISIONS L-8",
+      "method": "same feature match as font.global.display against the Display Narrow headline: Roboto Serif at wdth 52, opsz 96, wght 430, GRAD −50 scores 0.028 (Noto Serif Display 0.075, Instrument Serif 0.080, Noto Serif much wider)",
+      "notes": "Retro's face is Roslindale Display Narrow (commercial). Cap/em 0.71 vs Roslindale's 0.76: sizes re-fitted (L-8)."
     },
     "fontSize.global.headerTitle": {
       "level": "SOURCED",
       "source_app": "Retro",
       "surface": "global",
       "type": "fontSize",
-      "value": 40,
+      "value": 43.0,
       "element": "display serif screen title ('Week 43', 'Albums', 'Friends', 'Messages', profile username); also the date title on full-bleed photos ('May 1, 2019') — family font.global.display",
       "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt wv3.e Roslindale Retro 40 sp / 48 sp line, W400, tracking 0 (M3 headlineLarge) — design/research/retro-package-copy-motion.md §2.3; iOS cap height 30.5 pt: references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'W' y287–378 (92 px → 30.7), references/auto/retro/store/retro-store-01.png 73 px → 30.6, references/auto/retro/press/tc-2023-07-retro-1b.webp 'F' 69 px → 31.3, references/auto/retro/press/tc-2025-12-rewind-device-a.png '1' y285–376 — design/research/retro-visual.md §3.3",
-      "method": "Android size read from the package; the iOS cap height (30.5 pt) is what Roslindale Retro gives at 40 pt (cap/em 0.76), so both platforms set the same size",
+      "method": "Android size read from the package; the iOS cap height (30.5 pt) is what Roslindale Retro gives at 40 pt (cap/em 0.76), so both platforms set the same size; re-fitted to the bundled face (L-8): Retro's 40 pt × (0.7625 ÷ 0.71) = 43.0 pt keeps Retro's cap height",
       "precision": "exact (APK); ±0.4 pt cap (iOS)",
       "unit": "pt",
       "notes": "With the platform serif fallback the cap height renders smaller than Retro's at the same size (a different face); the size is Retro's and is not re-fitted (MERGE_DECISIONS R-8). Role kept from Yope's header title (the screen's title)."
@@ -662,10 +676,10 @@
       "source_app": "Retro",
       "surface": "global",
       "type": "fontSize",
-      "value": 32,
-      "element": "display serif headline on cards, sheets and onboarding ('Share Video' paywall headline, invite page headline, feed-card titles) — family font.global.display",
+      "value": 34.4,
+      "element": "display serif headline on cards, sheets and onboarding ('Share Video' paywall headline, invite page headline, feed-card titles) — family font.global.displayNarrow",
       "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'FONT FAMILY USAGE': Roslindale Display Narrow 32/34 (e2c.java:1598, pkc.java:291), 32/40 (nbk.java:93), Deck Narrow 32/38 tracking −0.6 (agk.java:65), 32 (zrk.java:171); retro.app invite h1 32 px mobile — design/research/retro-package-copy-motion.md §2.3, §7; iOS references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png 'Share Video' cap 22.3 pt — design/research/retro-visual.md §3.3",
-      "method": "most frequent display-narrow size in the package and the web invite page",
+      "method": "most frequent display-narrow size in the package and the web invite page; re-fitted to the bundled face (L-8): Retro's 32 pt × (0.7625 ÷ 0.71) = 34.4 pt keeps Retro's cap height",
       "precision": "exact (APK)",
       "unit": "pt",
       "notes": "iOS PAY cap 22.3 pt would be ≈29 pt at the title's cap/em ratio; the face of that headline is unknown, so the exact package size is used (MERGE_DECISIONS R-8). Line heights in the package vary (34 / 38 / 40) — platform default leading."
@@ -676,7 +690,7 @@
       "surface": "global",
       "type": "fontWeight",
       "value": "regular",
-      "element": "display serif headline on cards, sheets and onboarding ('Share Video' paywall headline, invite page headline, feed-card titles) — family font.global.display",
+      "element": "display serif headline on cards, sheets and onboarding ('Share Video' paywall headline, invite page headline, feed-card titles) — family font.global.displayNarrow",
       "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'FONT FAMILY USAGE': Roslindale Display Narrow 32/34 (e2c.java:1598, pkc.java:291), 32/40 (nbk.java:93), Deck Narrow 32/38 tracking −0.6 (agk.java:65), 32 (zrk.java:171); retro.app invite h1 32 px mobile — design/research/retro-package-copy-motion.md §2.3, §7; iOS references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png 'Share Video' cap 22.3 pt — design/research/retro-visual.md §3.3",
       "method": "visual weight comparison against the regular / semibold text in the same capture",
       "precision": "±1 weight step"
@@ -686,10 +700,10 @@
       "source_app": "Retro",
       "surface": "global",
       "type": "fontSize",
-      "value": 24,
-      "element": "small display serif: recap month cards ('December'), album titles on covers, recap year ('2023') — family font.global.display",
+      "value": 25.8,
+      "element": "small display serif: recap month cards ('December'), album titles on covers, recap year ('2023') — family font.global.displayNarrow",
       "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt Roslindale Display Narrow 24/29 (a8b.java:79), 24/28 (p5k.java:582, :645) — design/research/retro-package-copy-motion.md §2.3; iOS renders cap ≈17–20 pt: references/auto/retro/press/tc-2023-12-recaps.png, references/auto/retro/press/tc-2024-04-journals-1.webp, references/auto/retro/press/tc-2023-12-retro-header.png — design/research/retro-visual.md §3.3",
-      "method": "package size; renders agree within their ±10 %",
+      "method": "package size; renders agree within their ±10 %; re-fitted to the bundled face (L-8): Retro's 24 pt × (0.7625 ÷ 0.71) = 25.8 pt keeps Retro's cap height",
       "precision": "exact (APK)",
       "unit": "pt"
     },
@@ -699,7 +713,7 @@
       "surface": "global",
       "type": "fontWeight",
       "value": "regular",
-      "element": "small display serif: recap month cards ('December'), album titles on covers, recap year ('2023') — family font.global.display",
+      "element": "small display serif: recap month cards ('December'), album titles on covers, recap year ('2023') — family font.global.displayNarrow",
       "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt Roslindale Display Narrow 24/29 (a8b.java:79), 24/28 (p5k.java:582, :645) — design/research/retro-package-copy-motion.md §2.3; iOS renders cap ≈17–20 pt: references/auto/retro/press/tc-2023-12-recaps.png, references/auto/retro/press/tc-2024-04-journals-1.webp, references/auto/retro/press/tc-2023-12-retro-header.png — design/research/retro-visual.md §3.3",
       "method": "visual weight comparison against the regular / semibold text in the same capture",
       "precision": "±1 weight step"

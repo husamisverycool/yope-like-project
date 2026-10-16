@@ -8,7 +8,7 @@ Side by side: [`auth.phone.android.png`](auth.phone.android.png) — ours left (
 
 States rendered (`android/feature/account/src/test/snapshots/auth.phone/`): `countryList-light`, `form-filled-dark`, `form-filled-light`, `form-light`, `invalidNumber-light`, `landing-dark`, `landing-light`, `offline-light`, `rateLimited-light`, `sendFailed-light`, `sending-light`.
 
-**Result: 83 checks — 81 match, 1 MISS, 1 n/a.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 83 checks — 82 match, 1 n/a.** (`match` includes measured, token, behaviour and copy rows.)
 
 ## A. Landing (auth.phone/landing-light)
 
@@ -19,7 +19,7 @@ States rendered (`android/feature/account/src/test/snapshots/auth.phone/`): `cou
 | match | Get started corner radius: `radius.global.button` | 30 | 29.03 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png, references/aut… |  |
 | match | Get started fill: `color.global.accent` | #000000 | #000000 | light: references/auto/retro/press/tc-2023-07-retro-1b.webp Accept col x=1550 y… |  |
 | match | capsule → link (cap top): `auth.phone.size.capsuleToLink` | 20.7 | 20.5 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png capsule y 2032–… | ink top of the lower-case link ≈ x-height; the token is to the cap top |
-| MISS | legal last line → screen bottom: `auth.phone.size.legalToBottom` | 40 | 36.5 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png legal line 2 in… |  |
+| match | legal last line → screen bottom: `auth.phone.size.legalToBottom` | 40 | 40 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png legal line 2 in… |  |
 | match | page (landing): `color.global.background.android` | #FFFFFF | #FFFFFF | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Retro palett… |  |
 
 ## B. Form (auth.phone/form-filled-light)
@@ -53,11 +53,11 @@ States rendered (`android/feature/account/src/test/snapshots/auth.phone/`): `cou
 
 | status | token / copy | expected (spec) | ours | reference evidence | note |
 |---|---|---|---|---|---|
-| match (token) | `auth.phone.fontSize.wordmark` | 64 pt | Tokens.FontSizes.authPhoneFontSizeWordmark | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css (.page_largeRetroWordm… |  |
+| match (token) | `auth.phone.fontSize.wordmark` | 71.4 pt | Tokens.FontSizes.authPhoneFontSizeWordmark | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css (.page_largeRetroWordm… |  |
 | match (token) | `auth.phone.layout.countryCode` | pattern: flag at the field's leading edge + the calling code typed inline with the number… | Tokens.Layouts.AuthPhoneLayoutCountryCode | references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt (Locket Android 1… |  |
 | match (token) | `color.global.background` | light: #FFFFFF; dark: #000000 | Tokens.Colors.globalBackground | light: references/auto/retro/store/retro-store-02.png box (600–606,1700–1706); … |  |
 | match (token) | `color.global.background.android` | light: #FFFFFF; dark: #1C1C1E | Tokens.Colors.globalBackgroundAndroid · measured above | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Retro palett… |  |
-| match (token) | `font.global.display` | serif | Tokens.Fonts.globalDisplay | Retro's display face: Roslindale Retro v0.2 (+ Display Narrow, Deck Narrow), Da… |  |
+| match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |
 | match (token) | `color.global.textPrimary` | light: #000000; dark: #FFFFFF | Tokens.Colors.globalTextPrimary | light: references/auto/retro/store/retro-store-02.png info row 'Weeks Posted' d… |  |
 | match (token) | `auth.phone.size.wordmarkToTagline` | 19.3 pt | Tokens.Sizes.authPhoneSizeWordmarkToTagline | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png wordmark ink bo… |  |
 | match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |

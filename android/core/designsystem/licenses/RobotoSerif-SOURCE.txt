@@ -1,0 +1,7 @@
+Roboto Serif Title / Roboto Serif Headline — static instances of Roboto Serif (variable font,
+https://github.com/googlefonts/RobotoSerif, file ofl/robotoserif/RobotoSerif[GRAD,opsz,wdth,wght].ttf from
+https://github.com/google/fonts, SIL Open Font License 1.1, see OFL-RobotoSerif.txt). Modified: instanced with
+fontTools.varLib.instancer and renamed.
+  RobotoSerifTitle-Regular.ttf     wdth 50, opsz 120, wght 530, GRAD 100   (font.global.display)
+  RobotoSerifHeadline-Regular.ttf  wdth 52, opsz 96,  wght 430, GRAD -50   (font.global.displayNarrow)
+Axis values chosen by measured glyph-feature match to Retro's display titles (design/MERGE_DECISIONS.md L-8).

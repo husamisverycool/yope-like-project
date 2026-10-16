@@ -65,19 +65,19 @@ export async function backdropTone(jpeg: Buffer): Promise<Rgb> {
 
 // ---------- share image (invite.web.layout.ogImage) ----------
 
-// Fonts of the share image. A server has no platform fonts, so the image uses the Android values of the font
-// tokens (PLATFORM): font.global.display {android: "serif"} → Noto Serif, font.global.family {android: "Inter"} →
-// Inter (the face the Android app bundles). Both are SIL OFL 1.1 files in web/assets/fonts with their licences; no
-// Retro face is used. fonts.conf there makes them visible to librsvg (FONTCONFIG_FILE is read when fontconfig first
-// initialises, i.e. at the first text render), after the system fonts, which only supply missing glyphs.
+// Fonts of the share image, the files the apps bundle (SIL OFL 1.1, in web/assets/fonts with their licences; no
+// Retro face is used): the name in font.global.displayNarrow — Roboto Serif Headline (ios value = its PostScript
+// name), the page headline's face (MERGE_DECISIONS L-8) — and the domain in font.global.family's Android value,
+// Inter. fonts.conf there makes them visible to librsvg (FONTCONFIG_FILE is read when fontconfig first initialises,
+// i.e. at the first text render), after the system fonts, which only supply missing glyphs.
 const FONT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "assets", "fonts");
-const FACES: Record<"display" | "text", { token: TokenName; android: string; family: string; file: string }> = {
-  display: { token: "font.global.display", android: "serif", family: "Noto Serif", file: "NotoSerif-Regular.ttf" },
-  text: { token: "font.global.family", android: "Inter", family: "Inter Variable", file: "Inter-Variable.ttf" },
+const FACES: Record<"display" | "text", { token: TokenName; platform: "ios" | "android"; value: string; family: string; file: string }> = {
+  display: { token: "font.global.displayNarrow", platform: "ios", value: "RobotoSerifHeadline-Regular", family: "Roboto Serif Headline", file: "RobotoSerifHeadline-Regular.ttf" },
+  text: { token: "font.global.family", platform: "android", value: "Inter", family: "Inter Variable", file: "Inter-Variable.ttf" },
 };
 for (const f of Object.values(FACES)) {
-  const android = (tokens[f.token] as { android?: string }).android;
-  if (android !== f.android) throw new Error(`${f.token}.android is ${android}; the share image bundles ${f.family} for "${f.android}"`);
+  const v = (tokens[f.token] as { ios?: string; android?: string })[f.platform];
+  if (v !== f.value) throw new Error(`${f.token}.${f.platform} is ${v}; the share image bundles ${f.family} for "${f.value}"`);
   if (!fs.existsSync(path.join(FONT_DIR, f.file))) throw new Error(`missing font file ${path.join(FONT_DIR, f.file)}`);
 }
 if (!process.env.FONTCONFIG_FILE) process.env.FONTCONFIG_FILE = path.join(FONT_DIR, "fonts.conf");
@@ -95,7 +95,6 @@ const N = "invite.web.layout.ogImage" as const;
 const AVATAR = layoutNumber(N, "avatar", /circle, ([0-9.]+) px/);
 const AVATAR_TOP = layoutNumber(N, "avatar", /top at ([0-9.]+) px/);
 const NAME_INK = layoutNumber(N, "name", /ink height ([0-9.]+) px/);
-const NAME_SIZE = layoutNumber(N, "name", /≈ ([0-9.]+) px type/);
 const DOMAIN_SIZE = layoutNumber(N, "domain", /, ([0-9.]+) px,/);
 const DOMAIN_ALPHA = layoutNumber(N, "domain", /white ≈ ([0-9.]+) %/) / 100;
 // Rows as measured on Retro's image (inclusive pixel rows): avatar 208–290, name ink 309–348, domain ink from 369.
@@ -137,11 +136,26 @@ async function inkBox(svg: Buffer): Promise<{ top: number; left: number; width: 
   return top < 0 ? null : { top, left, width: right - left + 1, height: bottom - top + 1 };
 }
 
+/**
+ * Name size: the measured ink height of an ascender word (NAME_INK, 40 px) in the bundled face — its 'h' (ascender,
+ * no descender) is rendered once at a probe size and scaled; the token's "≈ 52 px type" was Roslindale's estimate.
+ */
+let nameSize: Promise<number> | undefined;
+const NAME_PROBE = 100; // probe size in px (a measuring scale, not a design value)
+function nameFontSize(): Promise<number> {
+  nameSize ??= inkBox(textSvg("h", "display", NAME_PROBE, OG_HEIGHT / 2, 1)).then((b) => {
+    if (!b) throw new Error("share image: the display face rendered no ink");
+    return (NAME_PROBE * NAME_INK) / b.height;
+  });
+  return nameSize;
+}
+
 /** The name at its measured baseline; shrunk only when it is wider than NAME_MAX_WIDTH. */
 async function nameLayer(name: string): Promise<Buffer> {
-  let svg = textSvg(name, "display", NAME_SIZE, NAME_BASELINE, 1);
+  const size = await nameFontSize();
+  let svg = textSvg(name, "display", size, NAME_BASELINE, 1);
   const box = await inkBox(svg);
-  if (box && box.width > NAME_MAX_WIDTH) svg = textSvg(name, "display", (NAME_SIZE * NAME_MAX_WIDTH) / box.width, NAME_BASELINE, 1);
+  if (box && box.width > NAME_MAX_WIDTH) svg = textSvg(name, "display", (size * NAME_MAX_WIDTH) / box.width, NAME_BASELINE, 1);
   return svg;
 }
 

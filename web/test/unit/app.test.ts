@@ -415,7 +415,7 @@ describe("security headers", () => {
     const res = await get(testApp(fake()).app, `/i/${TOKEN}`);
     const csp = res.headers.get("content-security-policy")!;
     const nonce = /style-src 'nonce-([A-Za-z0-9+/=]+)'/.exec(csp)![1]!;
-    expect(csp).toBe(`default-src 'none'; img-src 'self'; style-src 'nonce-${nonce}'; script-src 'nonce-${nonce}'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`);
+    expect(csp).toBe(`default-src 'none'; img-src 'self'; font-src 'self'; style-src 'nonce-${nonce}'; script-src 'nonce-${nonce}'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`);
     expect(await res.text()).toContain(`<style nonce="${nonce}">`);
     expect(res.headers.get("x-content-type-options")).toBe("nosniff");
     expect(res.headers.get("referrer-policy")).toBe("no-referrer");
@@ -469,6 +469,26 @@ describe("rate limiting", () => {
     const { app } = testApp(up, { rateLimitLookups: 1, rateLimitRequests: 4 });
     for (let i = 0; i < 4; i++) expect((await get(app, `/i/${TOKEN}`)).status).toBe(200);
     expect((await get(app, `/i/${TOKEN}`)).status).toBe(429);
+  });
+});
+
+describe("served face (font.global.displayNarrow, MERGE_DECISIONS L-8)", () => {
+  it("the stylesheet declares it (swap, content-hashed URL) and the headline uses it", async () => {
+    const html = await page();
+    const m = /@font-face\{font-family:"Roboto Serif Headline";src:url\("(\/fonts\/RobotoSerifHeadline-Regular\.woff2\?v=[0-9a-f]{12})"\) format\("woff2"\);font-weight:400;font-style:normal;font-display:swap\}/.exec(html);
+    expect(m).not.toBeNull();
+    expect(html).toContain(`font-family:"Roboto Serif Headline", ui-serif, serif;`);
+    const res = await testApp(null).app.request(m![1]!);
+    expect([res.status, res.headers.get("content-type"), res.headers.get("cache-control")]).toEqual([200, "font/woff2", "public, max-age=31536000, immutable"]);
+    const buf = Buffer.from(await res.arrayBuffer());
+    expect(buf.subarray(0, 4).toString("latin1")).toBe("wOF2");
+  });
+
+  it("serves nothing else under /fonts/", async () => {
+    const { app } = testApp(null);
+    for (const p of ["/fonts/Inter-Variable.ttf", "/fonts/RobotoSerifHeadline-Regular.ttf", "/fonts/fonts.conf", "/fonts/..%2Fsrc%2Fapp.ts", "/fonts/"]) {
+      expect((await app.request(p)).status, p).toBe(404);
+    }
   });
 });
 

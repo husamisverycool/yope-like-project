@@ -1,9 +1,13 @@
 package app.main
 
 import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
@@ -276,7 +280,10 @@ class AccountFlowsTest {
         compose.waitUntil(WAIT_MS) {
             runCatching { compose.onNodeWithTag(GROUP_SCREEN_LIST_TAG).performScrollToNode(hasText("On this day")) }.isSuccess
         }
-        compose.onNode(hasText("On this day"), useUnmergedTree = true).performClick()
+        // The card sits in the horizontally scrolling pager near the bottom edge (under the shell's overlays): bring it
+        // into view and trigger its click action.
+        compose.onNode(hasText("On this day"), useUnmergedTree = true).performScrollTo()
+        compose.onNode(hasText("On this day") and hasClickAction()).performSemanticsAction(SemanticsActions.OnClick)
         compose.waitForIdle()
         assertTrue("at ${nav.currentDestination?.route}", nav.currentBackStack.value.any { it.destination.hasRoute<OnThisDayRoute>() })
     }
