@@ -36,33 +36,47 @@ enum UploadImage {
 /// notifications ask.
 struct ProfileScreen: View {
     @State private var model: ProfileModel
+    /// The step on screen, held by the view (the model's `step` follows it). CI run 80's trace: after the name was saved
+    /// the model moved to `.photo`, the screen's body ran once while that change was being made and read `.name`, and
+    /// the model's change never re-rendered the screen again — the photo step never came, and every later "Next" saved
+    /// the name again. A view state change is stored before the view re-renders, so the switch below always reads it.
+    @State private var step: ProfileModel.Step
     @Environment(AccountDependencies.self) private var dependencies
 
     init(model: ProfileModel) {
         _model = State(initialValue: model)
+        _step = State(initialValue: model.step)
     }
 
     private static let pageTransition = DSAnimation.timing(duration: Tokens.Durations.globalPageTransition, easing: Tokens.Easings.globalStandard)
 
     var body: some View {
-        let _ = AccountTrace.log("profile body step=\(model.step) model=\(AccountTrace.id(model))")
+        let _ = AccountTrace.log("profile body step=\(step) model.step=\(model.step) model=\(AccountTrace.id(model))")
         ZStack {
-            switch model.step {
+            switch step {
             case .name:
                 ProfileNameForm(model: model, network: dependencies.network) {
                     AccountTrace.log("profile showPhotoStep model=\(AccountTrace.id(model))")
-                    withDSAnimation(Self.pageTransition) { model.showPhotoStep() }
+                    show(.photo)
                 }
                 .transition(.opacity)
             case .photo:
                 ProfilePhotoStep(model: model, network: dependencies.network) {
-                    withDSAnimation(Self.pageTransition) { model.showNameStep() }
+                    show(.name)
                 } onDone: {
                     Task { await dependencies.session.profileSaved() }
                 }
                 .transition(.opacity)
             }
         }
+    }
+
+    private func show(_ next: ProfileModel.Step) {
+        switch next {
+        case .name: model.showNameStep()
+        case .photo: model.showPhotoStep()
+        }
+        withDSAnimation(Self.pageTransition) { step = next }
     }
 }
 
